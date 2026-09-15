@@ -1,10 +1,15 @@
 import logging from '@tryghost/logging';
+import { IncorrectUsageError, InternalServerError } from '@tryghost/errors';
 import { getMailgunConfig, getMailgunDomains, type ConfigReader } from '../lib/mailgun-config';
 import { MailgunLogsClient, type MailgunAnalyticsEvent } from './mailgun-logs-client';
+import { MailgunRateLimit, isThrottled } from './mailgun-rate-limit';
 
 // A domain whose pages keep paging without matching events still bounds its
 // work: raw records count toward the budget, and pages are capped outright.
 const MAX_PAGES_PER_DOMAIN = 1000;
+
+type Page = Awaited<ReturnType<MailgunLogsClient['getPage']>>;
+type PageOutcome = { ok: true; page: Page } | { ok: false; error: unknown };
 
 export async function fetchMailgunLogs({
   config,
@@ -15,6 +20,8 @@ export async function fetchMailgunLogs({
   end,
   batchHandler,
   maxEvents = Infinity,
+  rateLimiter = new MailgunRateLimit(),
+  signal,
 }: {
   config: ConfigReader;
   settings: ConfigReader;
@@ -23,6 +30,8 @@ export async function fetchMailgunLogs({
   begin?: Date;
   end?: Date;
   maxEvents?: number;
+  rateLimiter?: MailgunRateLimit;
+  signal?: AbortSignal;
   batchHandler: (events: MailgunAnalyticsEvent[]) => Promise<void> | void;
 }): Promise<{ safeCursor?: Date } | void> {
   const mailgun = getMailgunConfig(config, settings);
@@ -31,6 +40,18 @@ export async function fetchMailgunLogs({
     return;
   }
   const client = new MailgunLogsClient(mailgun);
+  const readPage = (options: Parameters<MailgunLogsClient['getPage']>[0]) =>
+    rateLimiter.run(async () => {
+      const page = await client.getPage(options);
+      return { value: page, rateLimit: page.rateLimit };
+    }, options.signal);
+  const prefetch = config.get('emailAnalytics:fetchPrefetch') ?? false;
+  if (typeof prefetch !== 'boolean') {
+    // A string from an environment override would silently disable prefetch.
+    throw new IncorrectUsageError({
+      message: 'Invalid emailAnalytics.fetchPrefetch; expected a boolean',
+    });
+  }
   // Fix the provider window at fetch start so long runs retain the sliding retry overlap.
   const windowEnd = new Date(Math.min(end?.getTime() ?? Infinity, Date.now()));
   const windowBegin = begin ?? new Date(windowEnd.getTime() - 24 * 60 * 60 * 1000);
@@ -41,8 +62,10 @@ export async function fetchMailgunLogs({
     }
   };
   // Keep callbacks serial: all domains share the active lane's processor state.
-  for (const domain of getMailgunDomains(config, mailgun.domain)) {
+  const domains = getMailgunDomains(config, mailgun.domain);
+  for (const [index, domain] of domains.entries()) {
     const prefix = `[MailgunLogs fetch ${domain}]`;
+    let throttled = false;
     let token: string | undefined;
     const seenTokens = new Set<string>();
     let eventCount = 0;
@@ -53,46 +76,109 @@ export async function fetchMailgunLogs({
     // Everything the provider returned up to this timestamp was either
     // processed or irrelevant, so a capped cursor may safely rest here.
     let covered: Date | undefined;
+    let pending: Promise<PageOutcome> | undefined;
+    const controller = new AbortController();
+    const readSignal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
     try {
       do {
-        const page = await client.getPage({
+        const options = {
           domain,
           tags,
           events,
           begin: windowBegin,
           end: windowEnd,
           token,
-        });
+          signal: readSignal,
+        };
+        let page: Page;
+        try {
+          if (pending) {
+            const result = await pending;
+            pending = undefined;
+            if (!result.ok) {
+              throw result.error;
+            }
+            page = result.page;
+          } else {
+            page = await readPage(options);
+          }
+        } catch (error) {
+          if (!isThrottled(error)) {
+            throw error;
+          }
+          // The provider is throttling beyond what this run may wait for. Keep
+          // what the run covered instead of failing it and rewinding the whole
+          // window: the next cycle resumes from here once the cooldown passes.
+          logging.warn(
+            `${prefix}: provider throttling exceeds the polling budget; stopping after ${pages} pages`,
+          );
+          cap(covered && covered > windowBegin ? covered : windowBegin);
+          status = 'throttled';
+          throttled = true;
+          break;
+        }
+        if (readSignal.aborted) {
+          throw new InternalServerError({
+            message: 'Fetching canceled',
+            code: 'MAILGUN_POLLING_CANCELED',
+          });
+        }
         pages += 1;
         rawCount += page.rawCount;
         skipped += page.skipped;
         if (page.lastTimestamp && (!covered || page.lastTimestamp > covered)) {
           covered = page.lastTimestamp;
         }
+        // Decide before delivery whether this domain continues, so the next
+        // page can be requested while this one is processed. The cursor is
+        // re-covered on the next fetch, but begin-time ties are finished to
+        // make progress.
+        const budgetSpent = eventCount + page.items.length >= maxEvents || rawCount >= maxEvents;
+        let stop: 'capped' | 'exhausted' | 'pages' | 'repeated' | undefined;
+        if (budgetSpent && covered && covered > windowBegin) {
+          stop = 'capped';
+        } else if (!page.next) {
+          stop = 'exhausted';
+        } else if (seenTokens.has(page.next)) {
+          // A provider that echoes the last token has nothing more; one that
+          // repeats an earlier token must not skip anything. This page is still
+          // delivered, then the cursor rests on what the domain covered so far.
+          stop = 'repeated';
+        } else if (pages >= MAX_PAGES_PER_DOMAIN) {
+          stop = 'pages';
+        }
+        if (prefetch && !stop) {
+          // Attach both outcomes immediately: a fast failure must not become an
+          // unhandled rejection while the current page is still being processed.
+          pending = readPage({ ...options, token: page.next }).then(
+            (nextPage) => ({ ok: true, page: nextPage }),
+            (error) => ({ ok: false, error }),
+          );
+        }
         if (page.items.length) {
           await batchHandler(page.items);
+          if (readSignal.aborted) {
+            throw new InternalServerError({
+              message: 'Fetching canceled',
+              code: 'MAILGUN_POLLING_CANCELED',
+            });
+          }
           eventCount += page.items.length;
         }
-        // Re-cover the boundary on the next fetch, but finish begin-time ties to make progress.
-        const budgetSpent = eventCount >= maxEvents || rawCount >= maxEvents;
-        if (budgetSpent && covered && covered > windowBegin) {
+        if (stop === 'capped' && covered) {
           cap(covered);
           status = 'capped';
           break;
         }
-        if (!page.next) {
+        if (stop === 'exhausted' || !page.next) {
           break;
         }
-        // A provider that echoes the last token has nothing more; one that
-        // repeats an earlier token must not skip anything. The page was still
-        // delivered, and the cursor rests on what the domain covered so far.
-        const repeated = seenTokens.has(page.next);
         seenTokens.add(page.next);
-        if (repeated || pages >= MAX_PAGES_PER_DOMAIN) {
+        if (stop === 'pages' || stop === 'repeated') {
           logging.warn(
-            repeated
-              ? `${prefix}: repeated pagination token after ${pages} pages`
-              : `${prefix}: stopped after ${pages} pages`,
+            stop === 'pages'
+              ? `${prefix}: stopped after ${pages} pages`
+              : `${prefix}: repeated pagination token after ${pages} pages`,
           );
           if (covered && covered > windowBegin) {
             cap(covered);
@@ -105,12 +191,32 @@ export async function fetchMailgunLogs({
         token = page.next;
       } while (token);
     } catch (error) {
-      logging.error(`${prefix}: Error fetching logs after ${eventCount} events in ${pages} pages`);
+      if (readSignal.aborted) {
+        logging.info(`${prefix}: Canceled after ${eventCount} events in ${pages} pages`);
+      } else {
+        logging.error(
+          `${prefix}: Error fetching logs after ${eventCount} events in ${pages} pages`,
+        );
+      }
       throw error;
+    } finally {
+      if (pending) {
+        // A callback can fail while the next request is running. Stop and settle it
+        // before returning so no detached request survives the failed fetch.
+        controller.abort();
+        await pending;
+      }
     }
     logging.info(
       `${prefix}: Processed ${eventCount} events in ${pages} pages (${rawCount} records, ${skipped} skipped). Status: ${status}. Cursor: ${safeCursor?.toISOString() ?? 'none'}`,
     );
+    if (throttled) {
+      // Later domains would hit the same cooldown; they keep the whole window.
+      if (index < domains.length - 1) {
+        cap(windowBegin);
+      }
+      break;
+    }
   }
   return { safeCursor };
 }

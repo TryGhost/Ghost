@@ -64,6 +64,65 @@ describe('EmailAnalyticsService', function () {
     clock.restore();
   });
 
+  it.each(['processing', 'final flush'])(
+    'preserves the retry cursor when stopped during %s',
+    async function (when) {
+      const controller = new AbortController();
+      const begin = new Date(Date.now() - 3600000);
+      const processor = createStubEventProcessor();
+      processor.processBatch.callsFake(async (_events, _result, fetchData) => {
+        fetchData.lastEventTimestamp = new Date(begin.getTime() + 10000);
+        if (when === 'processing') {
+          controller.abort();
+        }
+      });
+      processor.aggregate.callsFake(async ({ isFinal }) => {
+        if (when === 'final flush' && isFinal) {
+          controller.abort();
+        }
+        return { emailAggregationTimeMs: 0, memberAggregationTimeMs: 0 };
+      });
+      const service = createService({
+        signal: controller.signal,
+        queries: { getLastEventTimestamp: sinon.stub().resolves(begin) },
+        createEventProcessor: () => processor,
+        fetchEvents: async ({ batchHandler }) => {
+          await batchHandler([{ id: 'one' }]);
+        },
+      });
+      await assert.rejects(service.fetchLatestOpenedEvents(), /Fetching canceled/);
+      sinon.assert.calledWith(processor.aggregate, sinon.match({ isFinal: true }));
+      sinon.assert.calledOnceWithExactly(
+        service.queries.setJobTimestamp as sinon.SinonStub,
+        JOB_NAMES.latestOpened,
+        'started',
+        begin,
+      );
+      assert.equal((await service.getLastOpenedEventTimestamp()).getTime(), begin.getTime());
+      assert.equal(service.getStatus().latestOpened.running, false);
+    },
+  );
+
+  it('keeps a scheduled backfill persisted when shutdown interrupts an empty page read', async function () {
+    const controller = new AbortController();
+    const begin = new Date(Date.now() - 3600000);
+    const end = new Date(Date.now() - 1800000);
+    const service = createService({
+      signal: controller.signal,
+      fetchEvents: async () => {
+        controller.abort();
+      },
+    });
+    await service.schedule({ begin, end });
+    await assert.rejects(service.fetchScheduled(), /Fetching canceled/);
+    sinon.assert.calledOnceWithExactly(
+      service.queries.setJobMetadata as sinon.SinonStub,
+      JOB_NAMES.scheduled,
+      { begin: begin.toISOString(), end: end.toISOString() },
+    );
+    assert.deepEqual(service.getStatus().scheduled.schedule, { begin, end });
+  });
+
   describe('getStatus', function () {
     it('returns status object', function () {
       // these are null because we're not running them before calling this
