@@ -1,26 +1,62 @@
-// @ts-check
-const assert = require('node:assert/strict');
-const crypto = require('node:crypto');
-const ObjectId = require('bson-objectid').default;
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
-const { mockSystemTime } = require('../../../utils/clock-utils');
-const testUtils = require('../../../utils');
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import ObjectId from 'bson-objectid';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
 
-const {
-  welcomeEmailAutomationPoll,
-} = require('../../../../core/server/services/automations/welcome-email-automation-poll');
-const {
-  MEMBER_WELCOME_EMAIL_SLUGS,
-} = require('../../../../core/server/services/member-welcome-emails/constants');
-const { Member, WelcomeEmailAutomationRun } = require('../../../../core/server/models');
+import { mockSystemTime } from '../../../utils/clock-utils';
+// @ts-expect-error Test utilities currently lack type definitions.
+import testUtils from '../../../utils';
+import { welcomeEmailAutomationPoll } from '../../../../core/server/services/automations/welcome-email-automation-poll';
+import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../core/server/services/member-welcome-emails/constants';
+// @ts-expect-error Models currently lack type definitions.
+import { Member, WelcomeEmailAutomationRun } from '../../../../core/server/models';
 
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_RUNS_PER_BATCH = 100;
 
+type DatabaseValue = string | number | boolean | Date | null;
+type DatabaseRow = Record<string, DatabaseValue>;
+type MemberRow = {
+  id: string;
+  uuid: string;
+  email: string;
+};
+type EmailDesignSettingRow = {
+  id: string;
+};
+type AutomationRow = {
+  id: string;
+};
+type AutomatedEmailRow = {
+  id: string;
+};
+type RunRow = {
+  id: string;
+};
+type SendOptions = {
+  member: {
+    name: string | null | undefined;
+    email: string;
+    uuid: string;
+  };
+  memberStatus: 'free' | 'paid';
+};
+
+type PollOptions = {
+  memberWelcomeEmailService: {
+    init: sinon.SinonStub<[], unknown>;
+    api: {
+      loadMemberWelcomeEmails: sinon.SinonStub<[], Promise<void>>;
+      send: sinon.SinonStub<[SendOptions], Promise<void>>;
+    };
+  };
+  enqueueAnotherPollAt: sinon.SinonStub<[Readonly<Date>], unknown>;
+};
+
 describe('welcome email automations poll', function () {
-  let options;
+  let options: PollOptions;
 
   beforeAll(async function () {
     await testUtils.setup('default')();
@@ -33,13 +69,13 @@ describe('welcome email automations poll', function () {
 
     options = {
       memberWelcomeEmailService: {
-        init: sinon.stub(),
+        init: sinon.stub<[], unknown>(),
         api: {
-          loadMemberWelcomeEmails: sinon.stub().resolves(),
-          send: sinon.stub().resolves(),
+          loadMemberWelcomeEmails: sinon.stub<[], Promise<void>>().resolves(),
+          send: sinon.stub<[SendOptions], Promise<void>>().resolves(),
         },
       },
-      enqueueAnotherPollAt: sinon.stub(),
+      enqueueAnotherPollAt: sinon.stub<[Readonly<Date>], unknown>(),
     };
   });
 
@@ -60,12 +96,12 @@ describe('welcome email automations poll', function () {
       .del();
   }
 
-  async function insert(table, attrs) {
+  async function insert<T extends object>(table: string, attrs: T): Promise<T> {
     await testUtils.knex(table).insert(attrs);
     return attrs;
   }
 
-  async function createMember(attrs = {}) {
+  async function createMember(attrs: DatabaseRow = {}): Promise<MemberRow> {
     const currentTime = new Date();
     return insert('members', {
       id: ObjectId().toHexString(),
@@ -84,7 +120,7 @@ describe('welcome email automations poll', function () {
     });
   }
 
-  async function createEmailDesignSetting(attrs = {}) {
+  async function createEmailDesignSetting(attrs: DatabaseRow = {}): Promise<EmailDesignSettingRow> {
     const currentTime = new Date();
     return insert('email_design_settings', {
       id: ObjectId().toHexString(),
@@ -109,7 +145,7 @@ describe('welcome email automations poll', function () {
     });
   }
 
-  async function createAutomation(attrs = {}) {
+  async function createAutomation(attrs: DatabaseRow = {}): Promise<AutomationRow> {
     const currentTime = new Date();
     return insert('automations', {
       id: ObjectId().toHexString(),
@@ -122,7 +158,7 @@ describe('welcome email automations poll', function () {
     });
   }
 
-  async function createAutomatedEmail(attrs = {}) {
+  async function createAutomatedEmail(attrs: DatabaseRow = {}): Promise<AutomatedEmailRow> {
     const emailDesignSetting = attrs.email_design_setting_id
       ? null
       : await createEmailDesignSetting();
@@ -137,14 +173,14 @@ describe('welcome email automations poll', function () {
       sender_name: null,
       sender_email: null,
       sender_reply_to: null,
-      email_design_setting_id: attrs.email_design_setting_id ?? emailDesignSetting.id,
+      email_design_setting_id: attrs.email_design_setting_id ?? emailDesignSetting?.id ?? null,
       created_at: currentTime,
       updated_at: currentTime,
       ...attrs,
     });
   }
 
-  async function createRun(attrs = {}) {
+  async function createRun(attrs: DatabaseRow = {}): Promise<RunRow> {
     const currentTime = new Date();
     return insert('welcome_email_automation_runs', {
       id: ObjectId().toHexString(),
@@ -161,11 +197,11 @@ describe('welcome email automations poll', function () {
     });
   }
 
-  async function readRun(id) {
+  async function readRun(id: string) {
     return await testUtils.knex('welcome_email_automation_runs').where({ id }).first();
   }
 
-  async function readTrackedRecipients() {
+  async function readTrackedRecipients(): Promise<{ member_email: string }[]> {
     return await testUtils.knex('automated_email_recipients').select().orderBy('id');
   }
 
@@ -382,11 +418,14 @@ describe('welcome email automations poll', function () {
     });
 
     const originalEdit = WelcomeEmailAutomationRun.edit;
-    sinon.stub(WelcomeEmailAutomationRun, 'edit').callsFake(async function (attrs) {
+    sinon.stub(WelcomeEmailAutomationRun, 'edit').callsFake(async function (
+      attrs: DatabaseRow,
+      ...args: unknown[]
+    ) {
       if (attrs.exit_reason === 'finished') {
         throw new Error('mark finished failed');
       }
-      return originalEdit.apply(this, arguments);
+      return originalEdit.call(WelcomeEmailAutomationRun, attrs, ...args);
     });
 
     // The failed edit hits processRun's catch block and logs an expected
@@ -487,9 +526,9 @@ describe('welcome email automations poll', function () {
 
     // Simulate race: member (and run, via cascade) deleted while run is being processed
     const originalFindOne = Member.findOne;
-    sinon.stub(Member, 'findOne').callsFake(async function () {
+    sinon.stub(Member, 'findOne').callsFake(async function (...args: unknown[]) {
       await testUtils.knex('members').where({ id: member.id }).del();
-      return originalFindOne.apply(this, arguments);
+      return originalFindOne.call(Member, ...args);
     });
 
     await welcomeEmailAutomationPoll(options);

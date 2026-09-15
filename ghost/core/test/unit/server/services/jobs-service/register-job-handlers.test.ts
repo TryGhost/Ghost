@@ -16,7 +16,7 @@ describe('register-job-handlers', function () {
   let jobsService: sinon.SinonStubbedInstance<JobsService>;
   let mediaInliner: sinon.SinonStubbedInstance<ExternalMediaInliner>;
   let memberJobs: { cleanTokens: sinon.SinonStub; cleanExpiredComped: sinon.SinonStub };
-  let giftService: { cleanup: sinon.SinonStub };
+  let giftService: { cleanup: sinon.SinonStub; processReminders: sinon.SinonStub };
   let mentionsController: { processWebmention: sinon.SinonStub };
   let mentionsSendingService: { sendWebmentions: sinon.SinonStub };
 
@@ -41,7 +41,7 @@ describe('register-job-handlers', function () {
       cleanTokens: sinon.stub().resolves(0),
       cleanExpiredComped: sinon.stub().resolves(),
     };
-    giftService = { cleanup: sinon.stub().resolves() };
+    giftService = { cleanup: sinon.stub().resolves(), processReminders: sinon.stub().resolves() };
     mentionsController = { processWebmention: sinon.stub().resolves() };
     mentionsSendingService = { sendWebmentions: sinon.stub().resolves() };
 
@@ -65,6 +65,26 @@ describe('register-job-handlers', function () {
     await cleanGiftsHandler({});
 
     assert.ok(giftService.cleanup.calledOnce);
+  });
+
+  it('runs send-gift-reminders with the injected gift service', async function () {
+    const sendGiftRemindersHandler = handlerFor('send-gift-reminders');
+
+    await sendGiftRemindersHandler({});
+
+    assert.ok(giftService.processReminders.calledOnce);
+  });
+
+  // A failed reminder poll must reach the jobs service as a failure, not be
+  // swallowed into a completion the way the legacy event subscription did.
+  it('propagates send-gift-reminders failures', async function () {
+    const error = new Error('reminder poll is broken');
+    giftService.processReminders.rejects(error);
+    const sendGiftRemindersHandler = handlerFor('send-gift-reminders');
+
+    await assert.rejects(async () => {
+      await sendGiftRemindersHandler({});
+    }, error);
   });
 
   it('runs clean-tokens with the injected member jobs module', async function () {

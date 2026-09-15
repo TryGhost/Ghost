@@ -1038,6 +1038,34 @@ describe('AutomationEditor', () => {
     expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
   });
 
+  it('hides the performance toggle and panel when run analytics is disabled', () => {
+    mockLabs.current = { automationRunAnalytics: false };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [automationDetail] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderEditor();
+
+    expect(screen.queryByRole('button', { name: /performance/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Performance')).not.toBeInTheDocument();
+  });
+
+  it('renders the performance toggle and panel shell when run analytics is enabled', () => {
+    mockLabs.current = { automationRunAnalytics: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [automationDetail] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderEditor();
+
+    expect(screen.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    expect(screen.getByText('Performance')).toBeInTheDocument();
+  });
+
   it('renders styled canvas zoom controls without the interaction toggle', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },

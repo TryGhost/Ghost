@@ -39,6 +39,8 @@ import type {
 import { Background, BackgroundVariant, ReactFlow } from '@xyflow/react';
 import type { Edge } from '@xyflow/react';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { Inline } from '@tryghost/shade/primitives';
+import { PerformanceSidebar } from './performance-sidebar';
 import { type StepPickerType } from './step-picker';
 import { StepSidebar } from './step-sidebar';
 import { formatWait } from './format-wait';
@@ -565,6 +567,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
 
   const initialViewport = useRef(getInitialViewport(window.innerWidth));
   const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
+  const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
 
   const graph = useMemo(() => {
     if (!automation) {
@@ -674,45 +677,49 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   }
 
   return (
-    <div
-      ref={viewport.measureCanvas}
-      className="relative flex-1 overflow-hidden bg-background"
+    <Inline
+      align="stretch"
+      className="relative min-h-0 flex-1 overflow-hidden bg-background"
       data-testid="automation-canvas"
+      gap="none"
     >
-      <ReactFlow
-        className="[--xy-background-color:var(--color-gray-50)] [--xy-background-pattern-color:var(--color-gray-500)] [--xy-edge-stroke:var(--color-gray-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-gray-900)] dark:[--xy-edge-stroke:var(--color-gray-800)]"
-        defaultViewport={initialViewport.current}
-        edges={graph.edges}
-        edgesFocusable={false}
-        edgeTypes={edgeTypes}
-        maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
-        minZoom={CANVAS_ZOOM_CONFIG.minZoom}
-        nodes={graph.nodes}
-        nodesConnectable={false}
-        nodesDraggable={false}
-        nodesFocusable={false}
-        nodeTypes={nodeTypes}
-        proOptions={{ hideAttribution: true }}
-        translateExtent={viewport.translateExtent}
-        zoomOnDoubleClick={false}
-        zoomOnScroll={false}
-        panOnScroll
-        onInit={viewport.onInit}
-        onMove={viewport.onMove}
-        onNodeClick={(event, node) => {
-          if (event.button !== 0) {
-            return;
-          }
-          if (node.id !== TAIL_CANVAS_ID) {
-            setSelectedStep({ id: node.id });
-          }
-        }}
-        onNodeDoubleClick={handleNodeDoubleClick}
-        onPaneClick={clearDetail}
-      >
-        <Background variant={BackgroundVariant.Dots} />
-        <AutomationCanvasControls />
-      </ReactFlow>
+      {automationRunAnalyticsEnabled && <PerformanceSidebar />}
+      <div ref={viewport.measureCanvas} className="relative min-w-0 flex-1">
+        <ReactFlow
+          className="[--xy-background-color:var(--color-gray-50)] [--xy-background-pattern-color:var(--color-gray-500)] [--xy-edge-stroke:var(--color-gray-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-gray-900)] dark:[--xy-edge-stroke:var(--color-gray-800)]"
+          defaultViewport={initialViewport.current}
+          edges={graph.edges}
+          edgesFocusable={false}
+          edgeTypes={edgeTypes}
+          maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+          minZoom={CANVAS_ZOOM_CONFIG.minZoom}
+          nodes={graph.nodes}
+          nodesConnectable={false}
+          nodesDraggable={false}
+          nodesFocusable={false}
+          nodeTypes={nodeTypes}
+          proOptions={{ hideAttribution: true }}
+          translateExtent={viewport.translateExtent}
+          zoomOnDoubleClick={false}
+          zoomOnScroll={false}
+          panOnScroll
+          onInit={viewport.onInit}
+          onMove={viewport.onMove}
+          onNodeClick={(event, node) => {
+            if (event.button !== 0) {
+              return;
+            }
+            if (node.id !== TAIL_CANVAS_ID) {
+              setSelectedStep({ id: node.id });
+            }
+          }}
+          onNodeDoubleClick={handleNodeDoubleClick}
+          onPaneClick={clearDetail}
+        >
+          <Background variant={BackgroundVariant.Dots} />
+          <AutomationCanvasControls />
+        </ReactFlow>
+      </div>
       <StepSidebar
         automation={automation}
         isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
@@ -779,7 +786,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </Inline>
   );
 };
 

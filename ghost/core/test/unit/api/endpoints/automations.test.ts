@@ -1,17 +1,15 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const domainEvents = require('@tryghost/domain-events');
-const {
-  controller: automationsController,
-} = require('../../../../core/server/api/endpoints/automations');
-const {
-  StartAutomationsPollEvent,
-} = require('../../../../core/server/services/automations/events/start-automations-poll-event');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+
+// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
+import domainEvents from '@tryghost/domain-events';
+import { controller as automationsController } from '../../../../core/server/api/endpoints/automations';
+import { StartAutomationsPollEvent } from '../../../../core/server/services/automations/events/start-automations-poll-event';
 
 describe('Automations controller', function () {
   // Other endpoints are tested in E2E tests.
 
-  let dispatchStub;
+  let dispatchStub: sinon.SinonStub;
 
   beforeEach(function () {
     dispatchStub = sinon.stub(domainEvents, 'dispatch');
@@ -23,7 +21,7 @@ describe('Automations controller', function () {
 
   describe('poll', function () {
     it('dispatches a StartAutomationsPollEvent', function () {
-      const result = automationsController.poll.query({});
+      const result = automationsController.poll.query();
 
       sinon.assert.calledOnceWithExactly(
         dispatchStub,

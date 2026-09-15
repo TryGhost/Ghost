@@ -1,38 +1,51 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const nock = require('nock');
-const { LimitService } = require('@tryghost/limit-service');
+import assert from 'node:assert/strict';
+import { promises as dnsPromises } from 'node:dns';
+import nock from 'nock';
+import sinon from 'sinon';
+import { LimitService } from '@tryghost/limit-service';
 
-const WebhookTrigger = require('../../../core/server/services/webhooks/webhook-trigger');
-const configUtils = require('../../utils/config-utils');
-
-// for dns stub needed by request-external
-const dnsPromises = require('dns').promises;
+// @ts-expect-error This module lacks type definitions.
+import WebhookTrigger from '../../../core/server/services/webhooks/webhook-trigger';
+// @ts-expect-error This module lacks type definitions.
+import configUtils from '../../utils/config-utils';
 
 const WEBHOOK_EVENT = 'post.added';
 const WEBHOOK_TARGET = 'https://test-webhook-receiver.com';
 const WEBHOOK_PATH = '/webhook-delivery/';
 
+function createModels() {
+  return {
+    Webhook: {
+      edit: sinon.stub().resolves(null),
+      destroy: sinon.stub().resolves(null),
+      findAllByEvent: sinon.stub(),
+    },
+  };
+}
+
+function createPayload() {
+  return sinon.stub().resolves({ post: { current: { id: 1, title: 'Test' }, previous: {} } });
+}
+
+function isWrapped(value: unknown): boolean {
+  return typeof value === 'function' && Reflect.has(value, 'restore');
+}
+
 describe('Webhook delivery', function () {
-  let models, payload, limitService;
+  let models: ReturnType<typeof createModels>;
+  let payload: ReturnType<typeof createPayload>;
+  let limitService: sinon.SinonStubbedInstance<LimitService>;
 
   beforeEach(function () {
-    models = {
-      Webhook: {
-        edit: sinon.stub().resolves(null),
-        destroy: sinon.stub().resolves(null),
-        findAllByEvent: sinon.stub(),
-      },
-    };
-
-    payload = sinon.stub().resolves({ post: { current: { id: 1, title: 'Test' }, previous: {} } });
+    models = createModels();
+    payload = createPayload();
 
     const realLimitService = new LimitService();
     limitService = sinon.stub(realLimitService);
     limitService.isLimited.withArgs('customIntegrations').returns(false);
 
     // Stub DNS so request-external doesn't fail on fake domains
-    if (!dnsPromises.lookup.restore) {
+    if (!isWrapped(dnsPromises.lookup)) {
       sinon.stub(dnsPromises, 'lookup').resolves({ address: '123.123.123.123', family: 4 });
     }
 
