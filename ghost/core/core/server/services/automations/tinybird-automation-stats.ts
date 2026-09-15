@@ -141,3 +141,32 @@ export async function fetchAutomationStatusStats(
     return null;
   }
 }
+
+export async function fetchAutomationRuns(client: TinybirdClient, automationId: string) {
+  try {
+    const rows = await client.fetch('api_automation_runs', { version: '', automationId });
+    const parsed = z
+      .array(
+        z
+          .object({
+            id: z.string().min(1),
+            created_at: z.iso.datetime().transform((value) => new Date(value).toISOString()),
+            status: z.enum(['in_progress', 'completed', 'exited_early', 'unclassified']),
+            failed: z.boolean(),
+          })
+          .refine((run) => !run.failed || run.status === 'exited_early', {
+            message: 'Only exited-early runs can have a failure flag.',
+          }),
+      )
+      .max(10)
+      .safeParse(rows);
+    if (!parsed.success || new Set(parsed.data.map((row) => row.id)).size !== parsed.data.length) {
+      logging.error('Unexpected response from the Tinybird automation runs pipe');
+      return null;
+    }
+    return parsed.data;
+  } catch (error) {
+    logging.error('Error fetching Tinybird automation runs:', error);
+    return null;
+  }
+}

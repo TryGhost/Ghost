@@ -132,7 +132,13 @@ same result. The status pipe combines each run's latest step categories with a
 bit mask: pending=1, finished=2, known exit=4, unknown=8. Any pending bit wins;
 finished-only is 2; known exits with or without finished steps are 6 or 4. Missing
 and unknown history is the selected run count minus the three classified counts.
-The list continues using its existing pending-run view.
+The automation list continues using its existing pending-run view.
+
+`api_automation_runs` returns the latest ten runs for one automation, ordered by
+entry time then run ID descending. It limits run IDs before reading their step
+history and applies the same bit-mask classification, retaining missing history
+as `unclassified`. It reuses the existing materialized tables without a rebuild.
+Member details are joined in Core, not stored in these Tinybird tables.
 
 Do not turn these into incrementing materialized counters without a retraction
 or deduplication strategy: inserted versions include retries and status changes.

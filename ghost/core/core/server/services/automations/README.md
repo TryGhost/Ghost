@@ -116,6 +116,41 @@ the range does not change or refetch any status counts. The status endpoint has 
 date-range parameters. Closing, reopening, focus, and reconnect do not refresh
 either request. Navigation clears the entry-range cache and starts a new page visit.
 
+## Run list
+
+`GET /ghost/api/admin/automations/:id/runs/` returns the latest ten runs:
+
+```json
+{
+  "automation_runs": [{
+    "id": "…",
+    "created_at": "2026-09-14T12:00:00.123Z",
+    "status": "completed",
+    "failed": false,
+    "member": {"id": "…", "name": "Alex", "email": "alex@example.com"}
+  }]
+}
+```
+
+Each row is a run, including repeat entries by the same member. Ordering is entry
+time (`created_at`) descending, then run ID descending for ties. Timestamps are UTC
+with millisecond precision. Status is `in_progress`, `completed`, `exited_early`,
+or `unclassified`, using the same recorded-step rules as the status counts.
+`failed` is true only for an exited-early run with a latest step record marked
+`failed`. Pending runs, unclassified history, and superseded failures do not set
+this flag. It is a failure detail, not an additional run status.
+
+Tinybird selects the runs and classifies their latest step versions. Core looks up
+current member details for those IDs in one query scoped to the automation. A
+missing name remains null so Admin can use the email. A deleted member or missing
+Core run returns `member: null`; it does not remove the Tinybird run or substitute
+the historical email. A failed lookup returns an error rather than null members.
+
+The list covers all time, independently of the Entries selector. This initial
+endpoint has no date/status/search filters or pagination controls. An empty history
+returns `automation_runs: []`. It requires automation read permission, returns 404
+for unknown automations, and uses the same Tinybird availability checks as summaries.
+
 ## Availability
 
 This spike deliberately requires `automationsTinybirdSync`. A disabled flag,
