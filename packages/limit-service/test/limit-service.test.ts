@@ -712,3 +712,51 @@ describe('Checking every limit at once', function () {
         assert.equal(await limitService.checkIfAnyOverLimit(), true);
     });
 });
+
+/**
+ * What a host sends is not always something that can be built. These were found by driving
+ * Ghost, and are recorded here because they are the package's behaviour, not Ghost's.
+ */
+describe('Limits a host configures that cannot be built', function () {
+    it('stops at the one it cannot build, losing the limits configured alongside it', function () {
+        // An allowlist limit with an empty list cannot be built, and building stops there,
+        // so a site ends up unlimited in ways nobody asked for.
+        assert.throws(
+            () => new LimitService({
+                limits: {
+                    customThemes: {allowlist: []},
+                    limitStripeConnect: {disabled: true}
+                },
+                errors
+            }),
+            (err) => {
+                assertThrownError(err);
+                assert.equal(err.errorType, 'IncorrectUsageError');
+                assert.match(err.message, /allowlist limit without an allowlist/);
+                return true;
+            }
+        );
+    });
+
+    it('registers a periodic limit whose start date cannot be read', function () {
+        // It counts from that date, so an unreadable one leaves the limit counting against
+        // nothing while reporting itself as applied.
+        const limitService = new LimitService({
+            limits: {emails: {maxPeriodic: 1}},
+            subscription: {startDate: 'not a date', interval: 'month'},
+            errors
+        });
+
+        assert.equal(limitService.isLimited('emails'), true);
+    });
+
+    it('ignores a name it has never heard of, leaving the feature available', function () {
+        const limitService = new LimitService({
+            limits: {aLimitNobodyShipped: {disabled: true}},
+            errors
+        });
+
+        assert.deepEqual(limitService.limits, {});
+        assert.equal(limitService.isLimited(undeclared('aLimitNobodyShipped')), false);
+    });
+});
