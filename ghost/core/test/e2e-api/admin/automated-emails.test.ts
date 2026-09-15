@@ -1,3 +1,4 @@
+import ObjectId from 'bson-objectid';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import {
@@ -239,6 +240,27 @@ describe('Automated Emails API', function () {
           assert.equal(body.automated_emails[0].sender_name, null);
           assert.equal(body.automated_emails[0].sender_email, null);
           assert.equal(body.automated_emails[0].sender_reply_to, null);
+        });
+    });
+
+    it('Does not list automations that are not member welcome emails', async function () {
+      const automatedEmail = await createAutomatedEmail();
+
+      await models.Base.knex('automations').insert({
+        id: ObjectId().toHexString(),
+        name: 'Some other automation',
+        slug: 'some-other-automation',
+        status: 'active',
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+
+      await agent
+        .get('automated_emails')
+        .expectStatus(200)
+        .expect(({ body }) => {
+          const ids = body.automated_emails.map((email) => email.id);
+          assert.deepEqual(ids, [automatedEmail.id]);
         });
     });
   });

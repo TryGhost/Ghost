@@ -6,6 +6,7 @@ const memberWelcomeEmailService = require('../../services/member-welcome-emails/
 const emailAddressService = require('../../services/email-address');
 const {
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
+  MEMBER_WELCOME_EMAIL_SLUGS,
 } = require('../../services/member-welcome-emails/constants');
 const { validateEmailSenderFields } = require('./utils/validate-email-sender-fields');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
@@ -22,6 +23,10 @@ const messages = {
 const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
 const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
 const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
+
+const MEMBER_WELCOME_EMAIL_FILTER = Object.values(MEMBER_WELCOME_EMAIL_SLUGS)
+  .map((slug) => `slug:${slug}`)
+  .join(',');
 
 function flattenAutomation(
   automation,
@@ -99,6 +104,7 @@ const controller = {
     async query(frame) {
       const result = await models.Automation.findPage({
         ...restrictAdminApiQueryOptions(frame.options),
+        filter: MEMBER_WELCOME_EMAIL_FILTER,
         withRelated: [
           'welcomeEmailAutomatedEmail',
           'welcomeEmailAutomatedEmail.emailDesignSetting',
