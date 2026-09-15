@@ -1,4 +1,5 @@
 import React, { useId, useState } from 'react';
+import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
 import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -14,10 +15,13 @@ import {
 export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automationId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
+  const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
+  const [requestRevision, setRequestRevision] = useState(0);
   const [dateRange, setDateRange] = useState(() => createPerformanceDateRange('all'));
   const rangeLabel = PERFORMANCE_RANGES.find((range) => range.value === dateRange.value)!.label;
   const panelId = useId();
   const headingId = useId();
+  const requestId = `${panelId}:${requestRevision}`;
 
   return (
     <>
@@ -80,8 +84,16 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
                 </Button>
               )}
               <TotalEntries automationId={automationId} dateRange={dateRange} />
-              <StatusCounts automationId={automationId} />
-              <RunList automationId={automationId} />
+              <StatusCounts
+                automationId={automationId}
+                requestId={requestId}
+                selectedStatus={status}
+                onStatusChange={(selected) => {
+                  setStatus(status === selected ? null : selected);
+                  setRequestRevision((revision) => revision + 1);
+                }}
+              />
+              <RunList automationId={automationId} requestId={requestId} status={status} />
             </Stack>
           )}
         </Box>

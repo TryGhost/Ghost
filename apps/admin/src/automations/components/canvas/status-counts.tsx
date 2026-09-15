@@ -1,14 +1,28 @@
 import React from 'react';
+import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
 import { Button } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { useAutomationStatusStats } from '@/automations/hooks/use-automation-status-stats';
 import { StatusCards } from './status-cards';
 
-export const StatusCounts: React.FC<{ automationId: string }> = ({ automationId }) => {
-  const { data, isLoading, isError, unavailable, retry } = useAutomationStatusStats(automationId);
+export const StatusCounts: React.FC<{
+  automationId: string;
+  requestId: string;
+  selectedStatus: AutomationRunStatusFilter | null;
+  onStatusChange: (status: AutomationRunStatusFilter) => void;
+}> = ({ automationId, requestId, selectedStatus, onStatusChange }) => {
+  const { data, isLoading, isError, unavailable, retry } = useAutomationStatusStats(
+    automationId,
+    requestId,
+  );
   return (
     <Stack aria-label="Automation status counts" className="@container" gap="sm" role="region">
-      <StatusCards data={data} isLoading={isLoading} />
+      <StatusCards
+        data={data}
+        isLoading={isLoading}
+        selectedStatus={selectedStatus}
+        onStatusChange={onStatusChange}
+      />
       {isLoading && (
         <Text className="sr-only" role="status">
           Loading automation statuses

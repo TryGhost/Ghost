@@ -274,14 +274,14 @@ describe('Automation total entries', () => {
 });
 
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
-const statusCard = (name: string) => statuses().getByRole('group', { name, exact: true });
+const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
 const prepareStatuses = (id = 'first') => {
   read(id);
   fakeAdminEndpoint('GET', new RegExp(`^/automations/${id}/entry-stats/\\?`), response(id));
 };
 
 describe('Automation status counts', () => {
-  it('fetches only when opened and renders three display-only status cards', async () => {
+  it('fetches only when opened and renders three status counts', async () => {
     prepareStatuses();
     const request = fakeAdminEndpoint(
       'GET',
@@ -299,7 +299,7 @@ describe('Automation status counts', () => {
     await expect.element(statusCard('In progress')).toHaveTextContent('118');
     await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
     await expect.element(statusCard('Exited early')).toHaveTextContent('54');
-    await expect.element(statuses().getByRole('button')).not.toBeInTheDocument();
+    await expect.element(statuses().getByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
     await expect.element(entries()).toHaveTextContent('1,432');
     await expect
       .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
@@ -324,7 +324,7 @@ describe('Automation status counts', () => {
     await expect.poll(() => document.querySelector('aside')?.getBoundingClientRect().width).toBe(0);
     const panel = chartElement.closest('aside')!;
     const cards = ['In progress', 'Completed', 'Exited early'].map((name) =>
-      panel.querySelector(`[role="group"][aria-label="${name}"]`)!,
+      panel.querySelector(`button[aria-label="${name}"]`)!,
     );
     const expectedCardWidths = cards.map((card) => card.getBoundingClientRect().width);
     // Pause the real CSS transition and seek through it, independent of frame timing.
@@ -527,7 +527,7 @@ describe('Automation status counts', () => {
         .toHaveTextContent(
           `Status is unavailable for ${count} ${count === 1 ? 'entry' : 'entries'}.`,
         );
-      await expect(statuses().getByRole('group')).toHaveCount(3);
+      await expect(statuses().getByRole('button')).toHaveCount(3);
       await expect.element(statusCard('Completed')).toHaveTextContent('6');
     },
   );
@@ -564,7 +564,7 @@ describe('Automation status counts', () => {
     for (const name of ['In progress', 'Completed', 'Exited early']) {
       await expect.element(statusCard(name)).toHaveTextContent('—');
     }
-    await expect.element(statuses().getByRole('button')).not.toBeInTheDocument();
+    await expect.element(statuses().getByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
   });
 
   it.each([
@@ -1198,5 +1198,316 @@ describe('Automation run list', () => {
     } finally {
       await page.viewport(1280, 800);
     }
+  });
+});
+
+const filteredRunsResponse = (
+  status: 'in_progress' | 'completed' | 'exited_early',
+  name: string,
+) => ({
+  automation_runs: [
+    {
+      ...runsResponse().automation_runs[0],
+      id: `${status}-run`,
+      status,
+      member: { id: `${status}-member`, name, email: `${status}@example.com` },
+    },
+  ],
+});
+
+describe('Automation run status filtering', () => {
+  it('refreshes counts and runs on each status change while keeping the entries chart independent', async () => {
+    prepareStatuses();
+    let refresh = 0;
+    const summary = fakeAdminEndpoint('GET', '/automations/first/status-stats/', () => {
+      const refreshedCounts = statusResponse('first', { completed_run_count: 6 + refresh });
+      refresh += 1;
+      return refreshedCounts;
+    });
+    const chart = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url),
+    );
+    const all = fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    const completed = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed',
+      filteredRunsResponse('completed', 'Completed member'),
+    );
+    const exited = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=exited_early',
+      filteredRunsResponse('exited_early', 'Exited member'),
+    );
+    const pending = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=in_progress',
+      filteredRunsResponse('in_progress', 'Pending member'),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
+    await statusCard('Completed').click();
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(runsRegion()).toHaveTextContent('Completed member');
+    await expect.element(statusCard('Completed')).toHaveAccessibleDescription('7');
+    await statusCard('Exited early').click();
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'false');
+    await expect.element(statusCard('Exited early')).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(runsRegion()).toHaveTextContent('Exited member');
+    await statusCard('In progress').click();
+    await expect.element(runsRegion()).toHaveTextContent('Pending member');
+    await statusCard('In progress').click();
+    await expect.element(statusCard('In progress')).toHaveAttribute('aria-pressed', 'false');
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+    expect(chart.requests).toHaveLength(1);
+    expect(summary.requests).toHaveLength(5);
+    await statusCard('Completed').click();
+    await selectRange('Last 7 days');
+    await expect.element(entries().getByText('21', { exact: true })).toBeVisible();
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(statusCard('Completed')).toHaveTextContent('11');
+    await expect.element(runsRegion()).toHaveTextContent('Completed member');
+    await close();
+    await open();
+    window.dispatchEvent(new Event('focus'));
+    window.dispatchEvent(new Event('online'));
+    await settleRequests();
+    expect(all.requests).toHaveLength(2);
+    expect(completed.requests).toHaveLength(2);
+    expect(exited.requests).toHaveLength(1);
+    expect(pending.requests).toHaveLength(1);
+    expect(summary.requests).toHaveLength(6);
+    await expect.element(statusCard('In progress')).toHaveTextContent('10');
+    await expect.element(statusCard('Exited early')).toHaveTextContent('6');
+  });
+
+  it('supports Tab, Space and Enter on status cards', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed',
+      filteredRunsResponse('completed', 'Keyboard member'),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    statusCard('In progress').element().focus();
+    await userEvent.tab();
+    await expect.element(statusCard('Completed')).toHaveFocus();
+    await userEvent.keyboard(' ');
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(runsRegion()).toHaveTextContent('Keyboard member');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'false');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet.');
+  });
+
+  it('allows zero-count cards to show no matches and clear the filter', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first', { completed_run_count: 0 }),
+    );
+    fakeAdminEndpoint('GET', '/automations/first/runs/?status=completed', { automation_runs: [] });
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(statusCard('Completed')).toHaveTextContent('0');
+    await statusCard('Completed').click();
+    await expect
+      .element(runsRegion().getByRole('status'))
+      .toHaveTextContent('No matching entries.');
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+    await statusCard('Completed').click();
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet.');
+  });
+
+  it('refetches a failed filter on reselection and supports explicit retry while idle', async () => {
+    prepareStatuses();
+    const request = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed',
+      {},
+      { status: 500 },
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await statusCard('Completed').click();
+    await expect
+      .element(runsRegion().getByRole('alert'))
+      .toHaveTextContent('Could not load automation runs.');
+    await statusCard('Completed').click();
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet.');
+    await statusCard('Completed').click();
+    await expect.element(runsRegion().getByRole('alert')).toBeVisible();
+    await settleRequests();
+    expect(request.requests).toHaveLength(2);
+    const retry = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed',
+      filteredRunsResponse('completed', 'Recovered member'),
+    );
+    await runsRegion().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(runsRegion()).toHaveTextContent('Recovered member');
+    expect(retry.requests).toHaveLength(1);
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('keeps fresh runs usable when refreshing counts fails and retries counts independently', async () => {
+    prepareStatuses();
+    const runs = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed',
+      filteredRunsResponse('completed', 'Completed member'),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(statusCard('Completed')).toHaveAccessibleDescription('6');
+    const failed = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      {},
+      { status: 500 },
+    );
+    await statusCard('Completed').click();
+    await expect.element(runsRegion()).toHaveTextContent('Completed member');
+    await expect
+      .element(statuses().getByRole('alert'))
+      .toHaveTextContent('Could not load status counts.');
+    await expect.element(statusCard('Completed')).toHaveAccessibleDescription('Unavailable');
+    await close();
+    await open();
+    await settleRequests();
+    expect(failed.requests).toHaveLength(1);
+    const retry = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first', { completed_run_count: 7 }),
+    );
+    await statuses().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(statusCard('Completed')).toHaveAccessibleDescription('7');
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+    expect(retry.requests).toHaveLength(1);
+    expect(runs.requests).toHaveLength(1);
+  });
+
+  it('shows unavailable for a filtered 404 and allows clearing back to the list', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/?status=completed', {}, { status: 404 });
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await statusCard('Completed').click();
+    await expect
+      .element(runsRegion().getByRole('status'))
+      .toHaveTextContent('The run list is unavailable on this version of Ghost.');
+    await expect(runsRegion().getByRole('button')).toHaveCount(0);
+    await expect.element(runsRegion()).not.toHaveTextContent('No matching entries.');
+    await statusCard('Completed').click();
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet.');
+  });
+
+  it('discards late counts and runs when returning to a filter before its first request resolves', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const slow = fakeAdminEndpoint('GET', '/automations/first/runs/?status=completed', async () => {
+      await pending;
+      return filteredRunsResponse('completed', 'Late completed member');
+    });
+    let summaryRequests = 0;
+    fakeAdminEndpoint('GET', '/automations/first/status-stats/', async () => {
+      summaryRequests += 1;
+      const requestNumber = summaryRequests;
+      if (requestNumber === 2) {
+        await pending;
+      }
+      return statusResponse('first', { completed_run_count: requestNumber });
+    });
+    fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=exited_early',
+      filteredRunsResponse('exited_early', 'Current exited member'),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
+    await statusCard('Completed').click();
+    await expect.poll(() => slow.requests.length).toBe(1);
+    await expect
+      .element(runsRegion().getByRole('status'))
+      .toHaveTextContent('Loading automation runs');
+    await expect.element(runsRegion()).not.toHaveTextContent('Noah Bennett');
+    await statusCard('Exited early').click();
+    await expect.element(runsRegion()).toHaveTextContent('Current exited member');
+    const fresh = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed',
+      filteredRunsResponse('completed', 'Fresh completed member'),
+    );
+    await statusCard('Completed').click();
+    await expect.element(runsRegion()).toHaveTextContent('Fresh completed member');
+    await expect.element(statusCard('Completed')).toHaveAccessibleDescription('4');
+    expect(fresh.requests).toHaveLength(1);
+    finish();
+    await settleRequests();
+    await expect.element(runsRegion()).not.toHaveTextContent('Late completed member');
+    await expect.element(runsRegion()).toHaveTextContent('Fresh completed member');
+    await expect.element(statusCard('Completed')).toHaveAccessibleDescription('4');
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('clears selection and fetches fresh results on automation navigation, including pending results', async () => {
+    prepareStatuses();
+    prepareStatuses('second');
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const old = fakeAdminEndpoint('GET', '/automations/first/runs/?status=completed', async () => {
+      await pending;
+      return filteredRunsResponse('completed', 'Previous visit');
+    });
+    fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=exited_early',
+      filteredRunsResponse('exited_early', 'Cached previous visit'),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await statusCard('Exited early').click();
+    await expect.element(runsRegion()).toHaveTextContent('Cached previous visit');
+    await statusCard('Completed').click();
+    await expect.poll(() => old.requests.length).toBe(1);
+    window.location.hash = '#/automations/second';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'false');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet.');
+    const fresh = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed',
+      filteredRunsResponse('completed', 'New visit'),
+    );
+    const freshExited = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=exited_early',
+      filteredRunsResponse('exited_early', 'Fresh exited member'),
+    );
+    window.location.hash = '#/automations/first';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'false');
+    await statusCard('Completed').click();
+    await expect.element(runsRegion()).toHaveTextContent('New visit');
+    expect(fresh.requests).toHaveLength(1);
+    await statusCard('Exited early').click();
+    await expect.element(runsRegion()).toHaveTextContent('Fresh exited member');
+    expect(freshExited.requests).toHaveLength(1);
+    finish();
+    await settleRequests();
+    await expect.element(runsRegion()).not.toHaveTextContent('Previous visit');
   });
 });
