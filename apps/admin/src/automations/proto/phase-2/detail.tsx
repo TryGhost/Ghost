@@ -10,10 +10,6 @@ import {
   AlertDialogTitle,
   Banner,
   Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
   EmptyIndicator,
   LoadingIndicator,
 } from '@tryghost/shade/components';
@@ -33,7 +29,6 @@ import {
 } from '@/automations/proto/shared/store';
 import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
-import { useToasterInset } from '@/automations/proto/shared/use-toaster-inset';
 import { HeaderBar } from './header-bar';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { LeftPanel } from './left-panel';
@@ -245,8 +240,6 @@ const AutomationFloat: React.FC = () => {
   // A ref rather than state because both are read during the same render that
   // removes or replaces the automation, and a setState wouldn't have landed yet.
   const leaving = useRef(false);
-  // The canvas region, measured by useToasterInset.
-  const canvasRef = useRef<HTMLDivElement>(null);
   // Name and description, edited in their own dialog. Held as draft fields while
   // it's open and written on Save — nothing is committed by typing, so Cancel is a
   // real cancel rather than an undo of writes that already landed.
@@ -300,10 +293,6 @@ const AutomationFloat: React.FC = () => {
   // width it draws, while every change after that — publishing, the toggle — still
   // animates. Cheaper and more reliable than working out which of the mount's style
   // recalculations was firing the transition.
-  // Toasts sit over the canvas rather than over the pane. Measured from the canvas
-  // region itself, so it tracks the pane opening and closing without this screen
-  // knowing how wide the pane is — see useToasterInset.
-  useToasterInset(canvasRef);
   const [paneAnimated, setPaneAnimated] = useState(false);
   useEffect(() => {
     setPaneAnimated(true);
@@ -605,94 +594,51 @@ const AutomationFloat: React.FC = () => {
   //
   // No save indicator. Flickering "Saving…" on every keystroke draws the eye to
   // plumbing rather than to anything the publisher can act on.
-  // The ⋯ leads and the primary trails: overflow menus sit to the LEFT of the
-  // action they qualify everywhere else in the app.
+  // One borderless button, the way the post editor does it — and the way Exploration
+  // does it, which is where the rest of this header came from.
   //
-  // modal={false} so the canvas underneath stays live — same reason the node
-  // menus and the option picker are non-modal.
-  const overflowMenu = (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button aria-label="Automation actions" size="icon" type="button" variant="ghost">
-          <LucideIcon.MoreHorizontal strokeWidth={2} />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {/* Save moves in here below lg (1024px), where the header has two rows and
-                    three actions is one too many beside a title. It's the action that gives
-                    up its slot rather than Publish: Publish is why you're on this screen,
-                    and Save is reachable in a menu without the moment feeling worse.
-
-                    Duplicated rather than moved — the button below carries the inverse
-                    class, so exactly one of the two is ever rendered.
-
-                    Still conditional, unlike Delete below. That one is temporarily
-                    unavailable; this one doesn't exist while the automation is live,
-                    because Publish IS the save then. A greyed Save there would say changes
-                    can't be committed, which is the opposite of true. */}
-        {liveStatus === 'inactive' && (
-          <DropdownMenuItem className="lg:hidden" disabled={!hasChanges} onClick={handleSave}>
-            <LucideIcon.Save /> Save
-          </DropdownMenuItem>
-        )}
-        {/* A verb, like every other row here — "Settings" was the one noun in a list
-                    of things you do, which read as somewhere to go rather than something to
-                    perform.
-
-                    "Edit details" rather than "Rename", which this was briefly. Rename is
-                    the sharper word for the name alone, and the dialog behind it edits the
-                    description too — so it promised less than it did, and someone looking
-                    for the description had no reason to open it. "Details" is vaguer on
-                    purpose: it covers both of the things in there. */}
-        <DropdownMenuItem onClick={openSettings}>
-          <LucideIcon.PenLine /> Edit details
-        </DropdownMenuItem>
-        {/* Archive, where Delete used to be, and no longer coloured — nothing is
-                    destroyed, so the red was claiming a weight this doesn't have.
-
-                    Still last. It's the item that takes you off this screen, and a menu
-                    opens with the cursor at the top.
-
-                    Live from the first frame: the automation exists the moment this screen
-                    opens, which also makes this the way out for anyone who opened New
-                    automation and changed their mind. */}
-        <DropdownMenuItem onClick={() => setArchiveOpen(true)}>
-          <LucideIcon.Archive /> Archive
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+  // Publish and Turn off moved into the switch, and the ⋯ that held Edit details and
+  // Archive is gone, so what's left is the act of committing the draft. That also
+  // retires a responsive shuffle: three actions beside a title didn't fit below
+  // 1024px, so Save was duplicated into the menu with each copy carrying the inverse
+  // visibility class. One button fits everywhere.
+  //
+  // "Update" only once the automation is live — the word means "push these edits to
+  // the thing that's already running", which is a promise a stopped automation can't
+  // keep. Off, there's no live version for edits to diverge from, so the same press is
+  // just "Save".
+  //
+  // Ghost rather than outline or primary. Two bordered boxes beside a switch made
+  // three controls of equal weight, none of which was obviously the state; unbordered,
+  // the row reads as the post editor's — plain text for what you do, and the switch as
+  // the one object with a shape.
+  //
+  // Always there and disabled when there's nothing to commit, rather than swapping to
+  // a "Published" label. A control that changes its word to say "nothing to do" is
+  // still claiming to be pressable, and the disabled state already says it better.
+  //
+  // Two handlers, because in THIS lane they're genuinely different acts: Save writes
+  // the draft down with no ceremony, while committing to something live confirms
+  // first. Exploration routes both through one because publishing is its only write.
+  const chromeActions = (
+    <Button
+      disabled={!hasChanges}
+      variant="ghost"
+      onClick={liveStatus === 'active' ? handlePublishClick : handleSave}
+    >
+      {liveStatus === 'active' ? 'Update' : 'Save'}
+    </Button>
   );
 
-  const chromeActions =
-    liveStatus === 'inactive' ? (
-      <>
-        {overflowMenu}
-        {/* Nothing to save until something changes. Publish stays available
-                either way — an unedited draft is still publishable, which is how
-                the shipping editor behaves. */}
-        <Button
-          className="hidden lg:inline-flex"
-          disabled={!hasChanges}
-          variant="outline"
-          onClick={handleSave}
-        >
-          Save
-        </Button>
-        <Button disabled={!canGoLive} onClick={() => setStartOpen(true)}>
-          Publish
-        </Button>
-      </>
-    ) : (
-      <>
-        {overflowMenu}
-        <Button variant="outline" onClick={() => setStopOpen(true)}>
-          Turn off
-        </Button>
-        <Button disabled={!hasChanges} onClick={handlePublishClick}>
-          {hasChanges ? 'Publish changes' : 'Published'}
-        </Button>
-      </>
-    );
+  // The switch never flips itself: both directions open their confirm, and the status
+  // only moves when that's answered.
+  const handleStatusToggle = (next: boolean) => {
+    if (next) {
+      setStartOpen(true);
+      return;
+    }
+    setStopOpen(true);
+  };
 
   return (
     // flex-col in both variants: the docked header is a row above the pane and
@@ -719,6 +665,7 @@ const AutomationFloat: React.FC = () => {
                 screen uses. */}
       <HeaderBar
         actions={chromeActions}
+        canGoLive={canGoLive}
         notice={
           stripeMissing ? (
             <Banner role="alert" size="sm" variant="warning">
@@ -735,6 +682,7 @@ const AutomationFloat: React.FC = () => {
         title={automation.name}
         onBack={goBack}
         onEditTitle={openSettings}
+        onStatusChange={handleStatusToggle}
       />
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* Left pane docked flush to the edge. On entering edit it slides off the
@@ -813,7 +761,6 @@ const AutomationFloat: React.FC = () => {
                 REACT_FLOW_THEME paints inside it, so the region and the flow's own
                 background can't disagree at the edges. */}
         <div
-          ref={canvasRef}
           className={cn(
             'relative min-w-0 flex-1 overflow-hidden',
             // This region owns the canvas palette. Everything inside it — both

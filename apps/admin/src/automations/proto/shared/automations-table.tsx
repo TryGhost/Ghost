@@ -110,7 +110,7 @@ const AutomationRow: React.FC<{
     <>
       {onRename && (
         <Item onSelect={() => onRename(entry)}>
-          <LucideIcon.PenLine /> Edit details
+          <LucideIcon.Pen /> Edit details
         </Item>
       )}
       {/* No dialog. It used to ask for a name first, on the reasoning that creating a

@@ -27,7 +27,6 @@ import {
 } from '@/automations/proto/shared/store';
 import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
-import { useToasterInset } from '@/automations/proto/shared/use-toaster-inset';
 import { HeaderBar, StatusSwitch } from './header-bar';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { LeftPanel } from './left-panel';
@@ -204,8 +203,6 @@ const AutomationFloat: React.FC = () => {
   // external, so deleting re-renders this synchronously and the "not found" read
   // would fire before the route change lands.
   const leaving = useRef(false);
-  // The canvas region, measured by useToasterInset.
-  const canvasRef = useRef<HTMLDivElement>(null);
   // No model behind it yet — see the panel. Held here so the choice survives a tab
   // switch, which is enough to tell whether the question belongs in this panel.
   const [allowReentry, setAllowReentry] = useState(false);
@@ -245,11 +242,6 @@ const AutomationFloat: React.FC = () => {
     const timer = setTimeout(() => setHudVisible(true), CHROME_MS);
     return () => clearTimeout(timer);
   }, [paneCollapsed]);
-
-  // Toasts sit over the canvas rather than over the pane. Measured from the canvas
-  // region itself, so it tracks the pane opening and closing without this screen
-  // knowing how wide the pane is — see useToasterInset.
-  useToasterInset(canvasRef);
 
   // What's running vs what's being edited. Derived up here, before the early
   // return, because the leave guards below need to know whether anything differs
@@ -619,7 +611,6 @@ const AutomationFloat: React.FC = () => {
                 REACT_FLOW_THEME paints inside it, so the region and the flow's own
                 background can't disagree at the edges. */}
         <div
-          ref={canvasRef}
           className={cn(
             'relative min-w-0 flex-1 overflow-hidden',
             // This region owns the canvas palette. Everything inside it — both

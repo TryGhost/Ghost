@@ -1,13 +1,26 @@
 import React from 'react';
-import { Button } from '@tryghost/shade/components';
+import { Button, Separator } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { StatusBadge } from '@/automations/proto/shared/status-badge';
 
-// PHASE 2 — the screen's header, docked: its own elevated surface with a rule
-// under it. Two zones on one row: navigation and identity at the left — back
-// arrow, then the title and its status — and the screen's actions at the right.
-// The arrangement is shared with the other lanes; only the surface differs.
+// PHASE 2 — the screen's header, docked: its own elevated surface with a rule under
+// it. Two zones on one row: navigation and identity at the left — back arrow and
+// title — and the screen's actions at the right, ending in the on/off switch.
+//
+// The switch came from Exploration, along with the shape of the row. What it replaced
+// was a status BADGE beside the title plus Publish and Turn off buttons on the right:
+// three places saying one thing, none of which was the control. The switch is the
+// readout and the control at once, and it confirms itself — flipping it is visible
+// where you pressed it, so the lifecycle no longer depends on a toast to say what
+// happened. It's also closer to what the post editor does, which is the shape this
+// lane is meant to end up in.
+//
+// Phase 1 still has the original header, so the badge-and-buttons version is one lane
+// away if this doesn't hold up.
+//
+// No overflow menu. It held Edit details and Archive; the title opens details
+// directly now, and archiving belongs to the list, where the automation is a row
+// among others rather than the thing you're inside.
 //
 // A centred "Automations / <name>" breadcrumb has now been tried here twice and
 // rejected twice, on the same ground both times: it puts the automation's name at
@@ -17,6 +30,80 @@ import { StatusBadge } from '@/automations/proto/shared/status-badge';
 // thing it's genuinely better at — but it isn't worth splitting identity from
 // navigation, and a crumb that doubles as the way back still reads as a label
 // first. If it comes up a third time, this is the objection to answer.
+// The on/off control: a button with the state written in it and a switch beside it.
+//
+// Four earlier arrangements tried to say the state twice — a badge next to a switch,
+// a switch tinted like the badge, the badge's pill wrapped around a switch, then the
+// badge redrawn AS the switch. All of them were a readout and a control competing
+// for the same fact, and the last one solved that by inventing a control Ghost
+// doesn't otherwise have.
+//
+// This one is the word and the switch as a single control, so there is nothing on
+// the other side of the header doing the communicating and nothing new to learn.
+//
+// Ghost rather than outline. It was outlined, which made it a button sitting beside
+// other buttons — three bordered boxes in a row, none of which was obviously the
+// state. Unbordered it reads as what it is: the automation's status, which happens
+// to be operable. What separates it from the actions is a rule, not a box.
+//
+// "Live", not "On", because this control replaced the badge and inherited its job:
+// it's the list's word (and production's), and a control that said "On" beside a
+// list that said "Live" would be the same fact under two names. Live and Off aren't
+// a natural antonym pair, which is the cost — but Live says the automation is
+// enrolling members right now, and On doesn't say anything.
+//
+// A button with role="switch" rather than a real Switch inside a button: nesting two
+// interactive elements is a bug in waiting, and to a screen reader this is exactly
+// what a switch is.
+const StatusSwitch: React.FC<{
+  status: 'active' | 'inactive';
+  canGoLive: boolean;
+  onChange: (next: boolean) => void;
+}> = ({ status, canGoLive, onChange }) => {
+  const on = status === 'active';
+  return (
+    <Button
+      aria-checked={on}
+      aria-label="Automation live"
+      // The only deviation from the component: gap-2 rather than its gap-1.5, which
+      // is sized for a 16px icon and reads tight against a 28px switch. Height,
+      // radius, padding and type are all the button's own.
+      className="gap-2"
+      disabled={!on && !canGoLive}
+      role="switch"
+      type="button"
+      variant="ghost"
+      onClick={() => onChange(!on)}
+    >
+      {/* No type classes: the label inherits the button's text-control (13px) and
+                font-medium, so it matches every other button rather than being a size of
+                its own. */}
+      <span>{on ? 'Live' : 'Off'}</span>
+      {/* Decorative: the button is the control, and a second focusable thing inside
+                it would be one tab stop too many. Shade's unchecked fill, so it reads as
+                the same component even though it can't be one here.
+                
+                20x36 with a 16px thumb — one step up from Shade's own 16x28, which is
+                sized to sit in a settings list rather than to carry a header's primary
+                state. Travel is the width less the thumb and both insets: 36 - 16 - 4. */}
+      <span
+        className={cn(
+          'inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
+          on ? 'bg-green-500' : 'bg-input',
+        )}
+        aria-hidden
+      >
+        <span
+          className={cn(
+            'size-4 rounded-full bg-white transition-transform duration-200 ease-out motion-reduce:transition-none',
+            on ? 'translate-x-4.5' : 'translate-x-0.5',
+          )}
+        />
+      </span>
+    </Button>
+  );
+};
+
 interface HeaderBarProps {
   title: string;
   status: 'active' | 'inactive';
@@ -28,6 +115,12 @@ interface HeaderBarProps {
   // Opens the automation's settings. Without it the title is plain text, which is
   // what the other lanes want — nothing there is editable from the header.
   onEditTitle?: () => void;
+  // Asks for the status to change. The screen decides what that costs — both
+  // directions confirm first — so the switch renders `status` and never its own
+  // guess: one that flips before the answer is one that can be wrong.
+  onStatusChange: (next: boolean) => void;
+  // Nothing to turn on yet — an automation with no trigger has nothing to run.
+  canGoLive: boolean;
   /**
    * A transient message about the automation as a whole — today, that it can't be
    * published without Stripe.
@@ -50,6 +143,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   onBack,
   actions,
   onEditTitle,
+  onStatusChange,
+  canGoLive,
   notice,
 }) => (
   // A column, not a row: the bar is one 64px row wide enough for the notice to
@@ -105,48 +200,56 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 text-md it was a step BELOW the pane heading beneath it, which inverted
                 the hierarchy — the region label outranking the thing it reports on.
 
-                Editable, it becomes a button — a hover fill and a pointer, and
-                nothing else. It carried a pencil that faded in on hover, which
-                reserved its width at rest and left a gap between the name and its
-                status badge that nothing occupied. An affordance that is invisible
-                but still takes up space is paying rent twice: it doesn't advertise
-                anything, and it pushes the header apart while not advertising it.
+                Editable, it becomes a button carrying a pencil — a hover fill, a
+                pointer, and a glyph that says so at rest.
 
-                Discovery isn't this control's job anyway — the ⋯'s Settings row
-                does that, and one findable route is enough. This is the shortcut
-                for people who guess that a title is clickable, which most do.
+                The pencil used to fade in on hover, and came out on the grounds that an
+                invisible affordance still reserving its width pays rent twice. That was
+                right about the FADE and wrong about the pencil: the fix is to show it
+                always, which costs the same 16px and actually advertises something. It
+                mattered less when the ⋯ carried an Edit details row that did the
+                discovering; with the menu gone this is the only way in, so it has to
+                say so.
+
+                Muted, and it doesn't brighten on hover — the title is the target and
+                the pencil is a label for it, not a second thing to aim at.
 
                 px-2 so the hover fill has room, and -ml-2 to take that padding back out
                 of the layout — otherwise turning the title into a button would shift the
                 text 8px right of where it sits when it isn't one. This inset cancels its
-                own padding; it isn't the column inset the back arrow just lost. */}
+                own padding; it isn't the column inset the back arrow just lost.
+
+                h-9 rather than py-1, which sized the fill to the TEXT and came out at
+                ~28px — visibly shorter than the 36px back arrow standing next to it, so
+                two controls on one line had two different hover targets. Shade's
+                size="icon" is 36, and matching the number directly is more honest than
+                arriving at it through padding that would drift the moment the title's
+                type scale moved. */}
         {onEditTitle ? (
           <button
-            className="-ml-2 flex min-w-0 rounded-md px-2 py-1 transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-            title="Automation settings"
+            className="-ml-2 flex h-9 min-w-0 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
+            title="Edit details"
             type="button"
             onClick={onEditTitle}
           >
             <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
+            <LucideIcon.Pen className="size-4 shrink-0 text-muted-foreground" strokeWidth={2} />
           </button>
         ) : (
           <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
         )}
-        {/* Beside the name, which is where the list puts it and where you look to
-                    answer "what am I looking at".
-
-                    It was tried at the far right, after the actions, on the argument that a
-                    badge matters most when it CHANGES — and publishing flips it at the
-                    opposite end of the header from the button you pressed, the dialog
-                    lifting and the toast. Moving it there did put the change under the
-                    cursor, and it read as a control: a pill at the end of a row of buttons
-                    looks pressable, doubly so when the same position is genuinely a switch
-                    in the exploration lanes. A readout has to look like one first. */}
-        <StatusBadge status={status} />
       </Inline>
 
       <Inline align="center" className="shrink-0" gap="sm">
         {actions}
+        {/* A rule, not a border. The status isn't another action — it's what the
+                    actions are acting on — so it's set apart rather than lined up with
+                    them. h-5 rather than full height: a hairline the height of the row
+                    would divide the header, where this only divides the group. */}
+        <Separator className="h-5" orientation="vertical" />
+        {/* Ends the row. It's the only control here that changes what the automation
+                    DOES rather than what you're looking at, so it gets the far edge. */}
+        <StatusSwitch canGoLive={canGoLive} status={status} onChange={onStatusChange} />
       </Inline>
     </div>
 

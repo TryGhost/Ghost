@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';
 import {
@@ -63,6 +63,9 @@ const AutomationsList: React.FC = () => {
   // The row waiting on the archive confirm. Held here rather than per row, so the list
   // has one dialog instead of one behind every menu.
   const [pendingArchive, setPendingArchive] = useState<ProtoAutomation | null>(null);
+  // The automation just created here, hidden from the list until this screen is gone.
+  // See handleCreate.
+  const creatingId = useRef<string | null>(null);
   // The row being renamed, and the name and description offered for it.
   const [pendingRename, setPendingRename] = useState<ProtoAutomation | null>(null);
   const [renameDraft, setRenameDraft] = useState({ name: '', description: '' });
@@ -86,11 +89,38 @@ const AutomationsList: React.FC = () => {
   // list waiting on the canvas.
   const handleCreate = () => {
     const record = blankAutomation();
+    // Held before the write, so the row never draws here.
+    //
+    // insertAutomation and navigate are both in this handler and React batches state
+    // updates — but the store is a useSyncExternalStore, and React flushes those
+    // synchronously to avoid tearing. So the list re-rendered WITH the new row before
+    // the route change had a chance to land, and you saw it appear for a frame on the
+    // screen you were leaving.
+    //
+    // A ref rather than state for exactly that reason: it's written now, not
+    // scheduled, so the forced re-render already reads the new value. Nothing resets
+    // it, because this list is on its way out — and if the navigation somehow doesn't
+    // happen, one hidden row on a screen you didn't leave is a better failure than a
+    // flash on every creation.
+    creatingId.current = record.automation.id;
     insertAutomation(record);
     navigate(toVersioned(`${lanePath(LANE)}/${record.automation.id}`));
     // Past tense and no action. It reports something that already happened, and the
     // screen it happened on is the one you're now looking at — there's nowhere for a
-    // "View" to take you. Duplicate's toast has one because that copy is elsewhere.
+    // "View" to take you.
+    //
+    // Bottom-left, with every other toast in the app, and nothing overriding it. Three
+    // positions were tried on this one — top-center over the canvas, `invert` in place,
+    // then top-right — and all of them were solving the same thing: the canvas's
+    // bottom-left corner holds the zoom controls, so a toast lands on top of them.
+    //
+    // That's a reason to move the CONTROLS, not the toasts. Ghost puts its help
+    // launcher bottom-right and its toasts bottom-left — the two far corners,
+    // deliberately opposite — so bottom-left isn't habit, it's reserved. A screen that
+    // answers "where do confirmations appear" differently from every other screen is a
+    // worse trade than a zoom pill somewhere less conventional.
+    //
+    // Parked rather than solved: the controls stay where they are for now.
     toast.success('Automation created');
   };
 
@@ -171,8 +201,10 @@ const AutomationsList: React.FC = () => {
     toast.success('Automation archived');
   };
 
-  const visible = automations.filter((entry) =>
-    view === 'all' ? true : view === 'archived' ? entry.archived : !entry.archived,
+  const visible = automations.filter(
+    (entry) =>
+      entry.automation.id !== creatingId.current &&
+      (view === 'all' ? true : view === 'archived' ? entry.archived : !entry.archived),
   );
 
   return (
