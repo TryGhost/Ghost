@@ -13,7 +13,7 @@ const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const models = require('../../models');
 const { GhostMailer } = require('../mail');
-const jobsService = require('../jobs');
+const jobsService = require('../jobs-service');
 const tiersService = require('../tiers');
 const giftService = require('../gifts');
 const VerificationTrigger = require('../verification-trigger');
@@ -21,6 +21,7 @@ const { verificationWebhookService } = require('../verification/verification-web
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
 const RequestIntegrityTokenProvider = require('./request-integrity-token-provider');
+const { InFlightImports } = require('./import-export/import/in-flight');
 
 const messages = {
   noLiveKeysInDevelopment:
@@ -44,6 +45,10 @@ const membersStats = new MembersStats({
   settingsCache: settingsCache,
   isSQLite: DatabaseInfo.isSQLite(db.knex),
 });
+
+// Outlives init(), which builds a new importer each time, so an import dispatched by
+// one importer is still waited on once another handles it.
+const inFlightImports = new InFlightImports();
 
 let membersApi;
 let verificationTrigger;
@@ -83,7 +88,10 @@ const buildImporterDeps = ({ stripeAPIService }) => {
     },
     getGiftService: () => giftService.service,
     sendEmail: ghostMailer.send.bind(ghostMailer),
-    addJob: jobsService.addJob.bind(jobsService),
+    // Resolved per dispatch rather than here: init() also runs where nothing has
+    // initialised the jobs service.
+    dispatchJob: (job) => jobsService.getInstance().dispatch(job),
+    inFlight: inFlightImports,
     knex: db.knex,
     urlFor: urlUtils.urlFor.bind(urlUtils),
     stripeAPIService,
@@ -233,6 +241,8 @@ module.exports = {
       membersCSVImporter.importCSV(request, verificationTrigger);
     module.exports.importInline = (request) =>
       membersCSVImporter.importInline(request, verificationTrigger);
+    // The members-import job handler, registered by boot with the jobs service.
+    module.exports.handleImportJob = (job) => membersCSVImporter.handle(job, verificationTrigger);
 
     // Constructed here rather than required statically: the exporter needs the
     // metafields services, which boot builds before this one.
@@ -265,6 +275,9 @@ module.exports = {
 
   importCSV: null,
   importInline: null,
+  handleImportJob: null,
+  // Test-facing: resolves once every deferred import has finished, email included.
+  allImportsSettled: () => inFlightImports.allSettled(),
 
   stats: membersStats,
   export: null,

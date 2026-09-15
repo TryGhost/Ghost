@@ -4,7 +4,9 @@ import { stripFormulaGuard } from '../csv';
 import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-types/csv';
 import type { Knex } from 'knex';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
-import type { RowSpool, SpooledRows } from './spool';
+import type { RowSpool } from './spool';
+import type { InFlightImports } from './in-flight';
+import MembersImportJob from '../../jobs/members-import-job';
 
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
@@ -129,7 +131,8 @@ interface ImporterDeps {
   metafields: MetafieldsImport;
   email: EmailNotifications;
   report: FailureReporter;
-  addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
+  dispatchJob: (job: MembersImportJob) => Promise<void>;
+  inFlight: InFlightImports;
   getTimezone: () => string;
   getInlineThreshold: () => number;
 }
@@ -224,7 +227,8 @@ class MembersCSVImporter {
   private _metafields: MetafieldsImport;
   private _email: EmailNotifications;
   private _report: FailureReporter;
-  private _addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
+  private _dispatchJob: (job: MembersImportJob) => Promise<void>;
+  private _inFlight: InFlightImports;
   private _getTimezone: () => string;
   private _getInlineThreshold: () => number;
 
@@ -239,7 +243,8 @@ class MembersCSVImporter {
     metafields,
     email,
     report,
-    addJob,
+    dispatchJob,
+    inFlight,
     getTimezone,
     getInlineThreshold,
   }: ImporterDeps) {
@@ -253,7 +258,8 @@ class MembersCSVImporter {
     this._metafields = metafields;
     this._email = email;
     this._report = report;
-    this._addJob = addJob;
+    this._dispatchJob = dispatchJob;
+    this._inFlight = inFlight;
     this._getTimezone = getTimezone;
     this._getInlineThreshold = getInlineThreshold;
   }
@@ -271,11 +277,11 @@ class MembersCSVImporter {
       return { deferred: false, originalImportSize: rows.length, result };
     }
 
-    await this.deferImport(
-      rows,
-      { labelName, extraLabels, requestUserEmail: request.requestUserEmail },
-      verificationTrigger,
-    );
+    await this.deferImport(rows, {
+      labelName,
+      extraLabels,
+      requestUserEmail: request.requestUserEmail,
+    });
     return { deferred: true, originalImportSize: rows.length };
   }
 
@@ -299,34 +305,43 @@ class MembersCSVImporter {
       extraLabels,
       requestUserEmail,
     }: { labelName: string; extraLabels: Label[]; requestUserEmail: string | null },
-    verificationTrigger: VerificationTrigger,
   ): Promise<void> {
     // Resolved here, not at the API boundary, so the owner lookup only runs when
     // a request without a user actually reaches the deferred path.
     const emailRecipient: string = requestUserEmail ?? (await this._email.getDefaultRecipient());
-    const spooled = await this._spool.write(rows);
+    const spoolKey = await this._spool.write(rows);
 
     logging.info(
       { event: { name: 'members.import.queued' }, rows: rows.length },
       'Members import queued',
     );
-    this._addJob({
-      job: () =>
-        this.runImportJob(spooled, { labelName, extraLabels, emailRecipient }, verificationTrigger),
-      offloaded: false,
-      name: 'members-import',
-    });
+    // Tracked before dispatch: the jobs service can start the job before dispatch resolves.
+    this._inFlight.track(spoolKey);
+    try {
+      await this._dispatchJob(
+        new MembersImportJob({ spoolKey, labelName, extraLabels, emailRecipient }),
+      );
+    } catch (error) {
+      // No job will ever read the rows, so they are not left behind for one.
+      await this.settle(() => this._spool.remove(spoolKey));
+      this._inFlight.release(spoolKey);
+      throw error;
+    }
   }
 
-  // Must resolve in every case: the job manager reads a rejected inline job as a defect
-  // in the job itself, and there is no retry behind it.
+  // The members-import job handler. Resolves in every case, as the legacy inline job did:
+  // everything that can fail is already reported here, so a rejection would only make the
+  // jobs service report it again, and there is no retry behind it.
+  async handle(job: MembersImportJob, verificationTrigger: VerificationTrigger): Promise<void> {
+    try {
+      await this.runImportJob(job, verificationTrigger);
+    } finally {
+      this._inFlight.release(job.spoolKey);
+    }
+  }
+
   private async runImportJob(
-    spooled: SpooledRows,
-    {
-      labelName,
-      extraLabels,
-      emailRecipient,
-    }: { labelName: string; extraLabels: Label[]; emailRecipient: string },
+    { spoolKey, labelName, extraLabels, emailRecipient }: MembersImportJob,
     verificationTrigger: VerificationTrigger,
   ): Promise<void> {
     const startedAt = Date.now();
@@ -335,13 +350,13 @@ class MembersCSVImporter {
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
     try {
-      const spooledRows = await spooled.read();
+      const spooledRows = await this._spool.read(spoolKey);
       result = await this.importRows(spooledRows, labelName, extraLabels, verificationTrigger);
     } catch (error) {
       // importRows only throws before its write loop, so nothing was written.
       this._report(error);
     } finally {
-      await this.settle(() => spooled.remove());
+      await this.settle(() => this._spool.remove(spoolKey));
     }
 
     // Whatever became of it, the publisher hears exactly once. If this is what fails,
