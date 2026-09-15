@@ -409,7 +409,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     indexnow.init(),
     slack.init(),
     audienceFeedback.init(),
-    emailService.init({ ghostServer }),
+    emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       automationsApi,
       config,
@@ -704,10 +704,12 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const gifts = require('./server/services/gifts');
     const memberJobs = require('./server/services/members/jobs');
     const mentionsService = require('./server/services/mentions');
+    const emailService = require('./server/services/email-service');
     memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
     assert(mentionsService.controller, 'Mentions controller should be initialized');
     assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
+    assert(emailService.service, 'Email service should be initialized');
     registerJobHandlers({
       jobsService,
       memberJobs,
@@ -715,6 +717,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       mediaInliner: mediaInliner.getInstance(),
       mentionsController: mentionsService.controller,
       mentionsSendingService: mentionsService.sendingService,
+      emailService: emailService.service,
     });
     await jobsService.start();
     debug('End: Register job handlers');
