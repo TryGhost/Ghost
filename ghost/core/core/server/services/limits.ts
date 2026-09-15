@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { LimitService } from '@tryghost/limit-service';
-import type { Db, LimitConfig, Limits, Subscription } from '@tryghost/limit-service';
+import type { Db, LimitConfig, LimitName, Limits, Subscription } from '@tryghost/limit-service';
 
 export interface LimitServiceInitOptions {
   limits: Record<string, LimitConfig>;
@@ -63,7 +63,7 @@ export const service: Limits = {
  * change it. Answers 403 with the host's own wording, which is a different thing to tell a
  * caller than the 404 a labs flag gives: the feature exists, this plan does not include it.
  */
-export const requireFeature = (limitName: string) =>
+export const requireFeature = (limitName: LimitName) =>
   async function requireFeatureMw(_req: Request, _res: Response, next: NextFunction) {
     try {
       await service.errorIfWouldGoOverLimit(limitName);
