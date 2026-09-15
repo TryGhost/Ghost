@@ -85,7 +85,9 @@ function makeImporter(): ContentCSVImporter {
       }),
     email,
     dispatchJob: (job) => getJobsService().dispatch(job),
-    fileStager: createImportFileStager(),
+    fileStager: createImportFileStager(() =>
+      require('../adapter-manager').default.getAdapter('storage:imports'),
+    ),
     report,
     store: new ImportRunStore(),
     urlForPost: (post) =>

@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
-import os from 'node:os';
 import path from 'node:path';
-import fs from 'fs-extra';
+import type { StorageBase } from 'ghost-storage-base';
 
 export interface StagedImportFile {
   path: string;
@@ -13,24 +12,22 @@ export interface ImportFileStager {
   remove(file: StagedImportFile): Promise<void>;
 }
 
-export function createImportFileStager(): ImportFileStager {
+// Stages uploads at the root of the imports storage adapter. The job reads the staged
+// file from its path, so the adapter is the local store storage:imports defaults to.
+export function createImportFileStager(getStorage: () => StorageBase): ImportFileStager {
   return {
     async stage({ filePath, fileName }) {
-      const stagedPath = path.join(os.tmpdir(), `content-csv-import-${crypto.randomUUID()}`);
+      const storage = getStorage();
+      const url = await storage.save(
+        { name: `content-csv-import-${crypto.randomUUID()}`, path: filePath },
+        storage.storagePath,
+      );
 
-      try {
-        await fs.copyFile(filePath, stagedPath, fs.constants.COPYFILE_EXCL);
-        await fs.chmod(stagedPath, 0o600);
-      } catch (error) {
-        await fs.remove(stagedPath).catch(() => {});
-        throw error;
-      }
-
-      return { path: stagedPath, name: fileName };
+      return { path: path.join(storage.storagePath, storage.urlToPath(url)), name: fileName };
     },
 
     async remove(file) {
-      await fs.remove(file.path);
+      await getStorage().delete(path.basename(file.path));
     },
   };
 }
