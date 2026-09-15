@@ -437,6 +437,122 @@ describe('Mail: Ghostmailer', function () {
       assert.equal(sentMessage.trackOpens, undefined);
     });
 
+    it('should use SMTP configuration from settingsCache when mail_transport is smtp', function () {
+      sandbox.stub(settingsCache, 'get').callsFake((key) => {
+        if (key === 'mail_transport') {
+          return 'smtp';
+        }
+        if (key === 'mail_smtp_host') {
+          return 'smtp.custom.org';
+        }
+        if (key === 'mail_smtp_port') {
+          return '465';
+        }
+        if (key === 'mail_smtp_secure') {
+          return 'true';
+        }
+        if (key === 'mail_smtp_user') {
+          return 'custom_user';
+        }
+        if (key === 'mail_smtp_pass') {
+          return 'custom_pass';
+        }
+        return null;
+      });
+
+      mailer = new mail.GhostMailer();
+      assert.equal(mailer.state.usingDirect, false);
+      assert.equal(mailer.state.usingMailgun, false);
+      assert.equal(mailer.transport.options.host, 'smtp.custom.org');
+      assert.equal(mailer.transport.options.port, 465);
+      assert.equal(mailer.transport.options.secure, true);
+      assert.deepEqual(mailer.transport.options.auth, {
+        user: 'custom_user',
+        pass: 'custom_pass',
+      });
+    });
+
+    it('should use Mailgun configuration from settingsCache when mail_transport is mailgun', function () {
+      sandbox.stub(settingsCache, 'get').callsFake((key) => {
+        if (key === 'mail_transport') {
+          return 'mailgun';
+        }
+        if (key === 'mailgun_domain') {
+          return 'mg.example.com';
+        }
+        if (key === 'mailgun_api_key') {
+          return 'key-123456';
+        }
+        if (key === 'mailgun_base_url') {
+          return 'https://api.eu.mailgun.net/v3';
+        }
+        return null;
+      });
+
+      mailer = new mail.GhostMailer();
+      assert.equal(mailer.state.usingDirect, false);
+      assert.equal(mailer.state.usingMailgun, true);
+      assert.equal(mailer.transport.transporter.options.host, 'api.eu.mailgun.net');
+      assert.deepEqual(mailer.transport.transporter.options.auth, {
+        api_key: 'key-123456',
+        domain: 'mg.example.com',
+      });
+    });
+
+    it('should fallback to environment config when mail_transport is default', function () {
+      configUtils.set({
+        mail: {
+          transport: 'direct',
+        },
+      });
+      sandbox.stub(settingsCache, 'get').callsFake((key) => {
+        if (key === 'mail_transport') {
+          return 'default';
+        }
+        return null;
+      });
+
+      mailer = new mail.GhostMailer();
+      assert.equal(mailer.state.usingDirect, true);
+    });
+
+    it('should dynamically refresh transport on send when settings change', async function () {
+      let currentTransport = 'default';
+      sandbox.stub(settingsCache, 'get').callsFake((key) => {
+        if (key === 'mail_transport') {
+          return currentTransport;
+        }
+        if (key === 'mail_smtp_host') {
+          return 'smtp.dynamic.org';
+        }
+        if (key === 'mail_smtp_port') {
+          return '587';
+        }
+        return null;
+      });
+
+      configUtils.set({
+        mail: {
+          transport: 'direct',
+        },
+      });
+
+      mailer = new mail.GhostMailer();
+      assert.equal(mailer.state.usingDirect, true);
+
+      currentTransport = 'smtp';
+      sandbox.stub(mailer, 'sendMail').resolves('OK');
+
+      await mailer.send({
+        subject: 'Dynamic test',
+        html: '<p>Dynamic</p>',
+        to: 'test@example.com',
+      });
+
+      assert.equal(mailer.state.usingDirect, false);
+      assert.equal(mailer.transport.options.host, 'smtp.dynamic.org');
+    });
+
     it('should explicitly disable Mailgun open and click tracking for transactional messages that require it', async function () {
       configUtils.set({
         mail: {

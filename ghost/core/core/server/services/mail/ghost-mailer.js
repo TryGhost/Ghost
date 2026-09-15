@@ -114,16 +114,74 @@ function createMailError({ message, err, ignoreDefaultMessage } = { message: '' 
   });
 }
 
+function getEffectiveMailConfig() {
+    const validDbTransports = ['smtp', 'mailgun'];
+    const dbTransport = settingsCache.get('mail_transport');
+    if (dbTransport && typeof dbTransport === 'string' && validDbTransports.includes(dbTransport.toLowerCase())) {
+        const transport = dbTransport.toLowerCase();
+        let options = {};
+        if (transport === 'smtp') {
+            const host = settingsCache.get('mail_smtp_host');
+            if (host) {
+                options = {
+                    host: host,
+                    port: parseInt(settingsCache.get('mail_smtp_port'), 10) || 587,
+                    secure: settingsCache.get('mail_smtp_secure') === true || settingsCache.get('mail_smtp_secure') === 'true',
+                    auth: {
+                        user: settingsCache.get('mail_smtp_user'),
+                        pass: settingsCache.get('mail_smtp_pass')
+                    }
+                };
+                return {
+                    transport,
+                    options
+                };
+            }
+        } else if (transport === 'mailgun') {
+            const bulkEmailMailgun = config.get('bulkEmail')?.mailgun;
+            const domain = settingsCache.get('mailgun_domain') || bulkEmailMailgun?.domain;
+            const apiKey = settingsCache.get('mailgun_api_key') || bulkEmailMailgun?.apiKey;
+            const baseUrl = settingsCache.get('mailgun_base_url') || bulkEmailMailgun?.baseUrl;
+            options = {
+                auth: {
+                    api_key: apiKey,
+                    domain: domain
+                }
+            };
+            if (baseUrl && typeof baseUrl === 'string' && baseUrl.includes('eu')) {
+                options.host = 'api.eu.mailgun.net';
+            }
+            return {
+                transport,
+                options
+            };
+        }
+    }
+
+    let transport = config.get('mail') && config.get('mail').transport || 'direct';
+    transport = transport.toLowerCase();
+    const options = config.get('mail') && _.clone(config.get('mail').options) || {};
+    return {
+        transport,
+        options
+    };
+}
+
 module.exports = class GhostMailer {
   constructor() {
+    this.refreshTransport();
+  }
+
+  refreshTransport() {
     const nodemailer = require('@tryghost/nodemailer');
+    const { transport, options } = getEffectiveMailConfig();
+    const configKey = JSON.stringify({ transport, options });
 
-    let transport = (config.get('mail') && config.get('mail').transport) || 'direct';
-    transport = transport.toLowerCase();
+    if (this.currentConfigKey === configKey && this.transport) {
+      return;
+    }
 
-    // nodemailer mutates the options passed to createTransport
-    const options = (config.get('mail') && _.clone(config.get('mail').options)) || {};
-
+    this.currentConfigKey = configKey;
     this.state = {
       usingDirect: transport === 'direct',
       usingMailgun: transport === 'mailgun',
@@ -156,6 +214,8 @@ module.exports = class GhostMailer {
         ignoreDefaultMessage: true,
       });
     }
+
+    this.refreshTransport();
 
     const messageToSend = createMessage(message);
     if (this.state.usingMailgun) {

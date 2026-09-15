@@ -472,6 +472,30 @@
         }
     },
     "email": {
+        "mail_transport": {
+            "defaultValue": "smtp",
+            "type": "string"
+        },
+        "mail_smtp_host": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "mail_smtp_port": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "mail_smtp_user": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "mail_smtp_pass": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "mail_smtp_secure": {
+            "defaultValue": "false",
+            "type": "boolean"
+        },
         "mailgun_domain": {
             "defaultValue": null,
             "type": "string"
