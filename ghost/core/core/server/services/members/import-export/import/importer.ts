@@ -1,10 +1,12 @@
+import readline from 'node:readline';
 import moment from 'moment-timezone';
 import buildImportEmail, { type EmailLinks } from './completion-email';
 import { stripFormulaGuard } from '../csv';
 import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-types/csv';
 import type { Knex } from 'knex';
+import type { ImportFileStore } from '@tryghost/adapter-base-import-files';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
-import type { RowSpool, SpooledRows } from './spool';
+import { importFileKey } from '../../../import-files/keys';
 
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
@@ -15,9 +17,9 @@ const tpl = require('@tryghost/tpl');
 // design: importCSV decides inline-vs-deferred by load, since a large import must not
 // hold a request open; importInline always runs now, for callers with no request to
 // protect (the Revue data import). The kernel takes a plain MemberImportRow array -- the
-// CSV reader and the deferred spool both produce one -- so a test can drive it from a
-// literal array. Collaborators are injected one per concern; knex is first-class, and no
-// Bookshelf model is referenced below the boundary that owns it.
+// CSV reader and the stored rows of a deferred import both produce one -- so a test can
+// drive it from a literal array. Collaborators are injected one per concern; knex is
+// first-class, and no Bookshelf model is referenced below the boundary that owns it.
 
 // The import service's arguments, built by the endpoint from the request frame.
 // requestUserEmail is null when the request carried no user, so the deferred path falls
@@ -117,11 +119,13 @@ export interface MetafieldsImport {
   applyWrite(memberId: string, plan: MetafieldPlan[], executor: Knex): Promise<void>;
 }
 
-// The collaborators the import depends on, one per concern.
+// The collaborators the import depends on, one per concern. importFiles is where a
+// deferred import's rows wait for their job, keyed by the id newImportId mints.
 interface ImporterDeps {
   knex: Knex;
   readRows: ReadRows;
-  spool: RowSpool;
+  importFiles: ImportFileStore;
+  newImportId: () => string;
   members: MembersRepository;
   tiers: TiersRepository;
   stripe: StripeSubscriptions;
@@ -201,6 +205,15 @@ function buildImportLabelName(timezone: string): string {
   return `Import ${moment().tz(timezone).format('YYYY-MM-DD HH:mm')}`;
 }
 
+// The rows of a deferred import cross the store as one JSON object per line, so a
+// job can read them back a line at a time and nothing but the import's own row shape
+// crosses that boundary.
+const ROWS_CONTENT_TYPE = 'application/x-ndjson';
+
+function serialiseRows(rows: MemberImportRow[]): Buffer {
+  return Buffer.from(`${rows.map((row) => JSON.stringify(row)).join('\n')}\n`, 'utf8');
+}
+
 function hasExpensiveColumns(rows: MemberImportRow[]): boolean {
   return rows.some((row) => EXPENSIVE_COLUMNS.some((column) => !!row[column]));
 }
@@ -216,7 +229,8 @@ function canImportInline(rowCount: number, expensive: boolean, inlineThreshold: 
 class MembersCSVImporter {
   private _knex: Knex;
   private _readRows: ReadRows;
-  private _spool: RowSpool;
+  private _importFiles: ImportFileStore;
+  private _newImportId: () => string;
   private _members: MembersRepository;
   private _tiers: TiersRepository;
   private _stripe: StripeSubscriptions;
@@ -231,7 +245,8 @@ class MembersCSVImporter {
   constructor({
     knex,
     readRows,
-    spool,
+    importFiles,
+    newImportId,
     members,
     tiers,
     stripe,
@@ -245,7 +260,8 @@ class MembersCSVImporter {
   }: ImporterDeps) {
     this._knex = knex;
     this._readRows = readRows;
-    this._spool = spool;
+    this._importFiles = importFiles;
+    this._newImportId = newImportId;
     this._members = members;
     this._tiers = tiers;
     this._stripe = stripe;
@@ -304,7 +320,8 @@ class MembersCSVImporter {
     // Resolved here, not at the API boundary, so the owner lookup only runs when
     // a request without a user actually reaches the deferred path.
     const emailRecipient: string = requestUserEmail ?? (await this._email.getDefaultRecipient());
-    const spooled = await this._spool.write(rows);
+    const key = importFileKey('members-import', this._newImportId(), 'rows.ndjson');
+    await this._importFiles.put(key, serialiseRows(rows), { contentType: ROWS_CONTENT_TYPE });
 
     logging.info(
       { event: { name: 'members.import.queued' }, rows: rows.length },
@@ -312,16 +329,30 @@ class MembersCSVImporter {
     );
     this._addJob({
       job: () =>
-        this.runImportJob(spooled, { labelName, extraLabels, emailRecipient }, verificationTrigger),
+        this.runImportJob(key, { labelName, extraLabels, emailRecipient }, verificationTrigger),
       offloaded: false,
       name: 'members-import',
     });
   }
 
+  private async readStoredRows(key: string): Promise<MemberImportRow[]> {
+    const rows: MemberImportRow[] = [];
+    const lines = readline.createInterface({
+      input: await this._importFiles.get(key),
+      crlfDelay: Infinity,
+    });
+    for await (const line of lines) {
+      if (line) {
+        rows.push(JSON.parse(line));
+      }
+    }
+    return rows;
+  }
+
   // Must resolve in every case: the job manager reads a rejected inline job as a defect
   // in the job itself, and there is no retry behind it.
   private async runImportJob(
-    spooled: SpooledRows,
+    key: string,
     {
       labelName,
       extraLabels,
@@ -335,13 +366,15 @@ class MembersCSVImporter {
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
     try {
-      const spooledRows = await spooled.read();
-      result = await this.importRows(spooledRows, labelName, extraLabels, verificationTrigger);
+      const storedRows = await this.readStoredRows(key);
+      result = await this.importRows(storedRows, labelName, extraLabels, verificationTrigger);
     } catch (error) {
       // importRows only throws before its write loop, so nothing was written.
       this._report(error);
     } finally {
-      await this.settle(() => spooled.remove());
+      // The file holds member names, emails and Stripe customer ids, so one left
+      // behind is worth a report rather than silence.
+      await this.settle(() => this._importFiles.delete(key));
     }
 
     // Whatever became of it, the publisher hears exactly once. If this is what fails,

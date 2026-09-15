@@ -1,11 +1,11 @@
 import { Job } from '../../jobs-service/job';
 
+// The upload waits in the import file store under fileKey; fileName keeps the
+// original name so the job knows whether it holds a CSV or a zip.
 export interface ContentCSVImportJobData {
   importId: string;
-  file: {
-    path: string;
-    name: string;
-  };
+  fileKey: string;
+  fileName: string;
   mapping?: Record<string, string>;
   importTagNames: string[];
   emailRecipient: string;
@@ -14,7 +14,8 @@ export interface ContentCSVImportJobData {
 export default class ContentCSVImportJob extends Job {
   static type = 'content-csv-import';
   readonly importId: string;
-  readonly file: ContentCSVImportJobData['file'];
+  readonly fileKey: string;
+  readonly fileName: string;
   readonly mapping?: Record<string, string>;
   readonly importTagNames: string[];
   readonly emailRecipient: string;
@@ -22,7 +23,8 @@ export default class ContentCSVImportJob extends Job {
   constructor(data: ContentCSVImportJobData) {
     super();
     this.importId = data.importId;
-    this.file = data.file;
+    this.fileKey = data.fileKey;
+    this.fileName = data.fileName;
     this.mapping = data.mapping;
     this.importTagNames = data.importTagNames;
     this.emailRecipient = data.emailRecipient;

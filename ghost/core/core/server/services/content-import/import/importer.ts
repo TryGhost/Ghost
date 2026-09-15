@@ -1,4 +1,8 @@
+import path from 'node:path';
+import type { Readable } from 'node:stream';
+import fs from 'fs-extra';
 import moment from 'moment-timezone';
+import type { ImportFileStore } from '@tryghost/adapter-base-import-files';
 import buildPostData, {
   RowSkipped,
   type CleanHTML,
@@ -13,18 +17,21 @@ import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
 import type { PreparedPostRow, PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
-import type { ImportFileStager, StagedImportFile } from './staged-file';
 import ContentCSVImportJob from '../jobs/content-csv-import-job';
+import { importFileKey } from '../../import-files/keys';
+import { withLocalCopy as copyStoredFileLocally } from '../../import-files/local-copy';
 
 export type { ImportRequest } from './schema';
 
 const errors = require('@tryghost/errors');
+const { isGhostError } = require('@tryghost/errors').utils;
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
-// The upload is staged because the request temp file is deleted with the response.
-// Request-time parsing preserves synchronous validation and the current row count;
-// the class-based job reparses the staged file so its payload stays serializable.
+// The upload is put in the import file store because the request temp file is deleted
+// with the response. Request-time parsing preserves synchronous validation and the
+// current row count; the class-based job copies the stored file back and reparses it,
+// so its payload carries a key and stays serializable.
 
 // The id is what a completion report will be looked up by.
 export interface ImportAccepted {
@@ -45,6 +52,39 @@ type ReadRows = (
   mapping?: Record<string, string>,
 ) => Promise<PreparedPostRows | PostImportRow[]>;
 type PrepareSource = (request: ImportRequest) => Promise<PreparedImportSource>;
+// Opens the request's upload for storing. Injected so a test never touches the disk.
+type OpenUpload = (filePath: string) => Promise<{ body: Readable; size: number }>;
+// Copies a stored file to a local path for the steps that need one (zip extraction,
+// the CSV parser) and removes the copy afterwards.
+type WithLocalCopy = <T>(
+  store: ImportFileStore,
+  key: string,
+  fn: (localPath: string) => Promise<T>,
+) => Promise<T>;
+
+const CONTENT_TYPES_BY_EXTENSION: Record<string, string> = {
+  '.csv': 'text/csv',
+  '.zip': 'application/zip',
+};
+
+const openUploadFromDisk: OpenUpload = async (filePath) => {
+  const { size } = await fs.stat(filePath);
+  return { body: fs.createReadStream(filePath), size };
+};
+
+// The stored file keeps the upload's extension, and only that, so the job's zip-or-csv
+// check sees what the request saw while the key stays within the store's key rules. A
+// real extension is a few characters; anything longer is cut so the key stays valid and
+// the file name check downstream gives the same answer it always did.
+const MAX_EXTENSION_LENGTH = 16;
+
+function uploadExtension(fileName: string): string {
+  return path
+    .extname(fileName)
+    .toLowerCase()
+    .replace(/[^a-z0-9.]/g, '')
+    .slice(0, MAX_EXTENSION_LENGTH);
+}
 
 const messages = {
   unreadableFile: 'The file could not be parsed as a CSV file.',
@@ -75,7 +115,9 @@ interface ImporterDeps {
   createMediaInliner: () => PostMediaInlining;
   email: EmailNotifications;
   dispatchJob: (job: ContentCSVImportJob) => Promise<void>;
-  fileStager: ImportFileStager;
+  importFiles: ImportFileStore;
+  openUpload?: OpenUpload;
+  withLocalCopy?: WithLocalCopy;
   report: FailureReporter;
   store: ImportRunStore;
   urlForPost: (post: WrittenPost) => string;
@@ -101,7 +143,9 @@ class ContentCSVImporter {
   private _createMediaInliner: () => PostMediaInlining;
   private _email: EmailNotifications;
   private _dispatchJob: ImporterDeps['dispatchJob'];
-  private _fileStager: ImportFileStager;
+  private _importFiles: ImportFileStore;
+  private _openUpload: OpenUpload;
+  private _withLocalCopy: WithLocalCopy;
   private _report: FailureReporter;
   private _store: ImportRunStore;
   private _urlForPost: (post: WrittenPost) => string;
@@ -119,7 +163,9 @@ class ContentCSVImporter {
     createMediaInliner,
     email,
     dispatchJob,
-    fileStager,
+    importFiles,
+    openUpload = openUploadFromDisk,
+    withLocalCopy,
     report,
     store,
     urlForPost,
@@ -136,7 +182,14 @@ class ContentCSVImporter {
     this._createMediaInliner = createMediaInliner;
     this._email = email;
     this._dispatchJob = dispatchJob;
-    this._fileStager = fileStager;
+    this._importFiles = importFiles;
+    this._openUpload = openUpload;
+    // A local copy that cannot be removed afterwards is reported, as a staged file
+    // that could not be removed always was; it never changes the run's outcome.
+    this._withLocalCopy =
+      withLocalCopy ??
+      ((files, fileKey, fn) =>
+        copyStoredFileLocally(files, fileKey, fn, { onCleanupError: report }));
     this._report = report;
     this._store = store;
     this._urlForPost = urlForPost;
@@ -147,10 +200,30 @@ class ContentCSVImporter {
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
     const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
-    let stagedFile: StagedImportFile;
+    const runId = this._newRunId();
+    const fileKey = importFileKey(
+      'content-csv-import',
+      runId,
+      `upload${uploadExtension(request.fileName)}`,
+    );
+    let upload: { body: Readable; size: number } | undefined;
     try {
-      stagedFile = await this._fileStager.stage(request);
+      upload = await this._openUpload(request.filePath);
+      await this._importFiles.put(fileKey, upload.body, {
+        contentType:
+          CONTENT_TYPES_BY_EXTENSION[uploadExtension(request.fileName)] ??
+          'application/octet-stream',
+        contentLength: upload.size,
+      });
     } catch (error) {
+      // The store may have failed before reading the upload; release its handle.
+      upload?.body.destroy();
+      // A store that refuses (a root it cannot use, a key it will not take) is a
+      // server-side problem and says so; only a file that cannot be read is the
+      // publisher's, as before.
+      if (isGhostError(error)) {
+        throw error;
+      }
       throw new errors.ValidationError({
         message: tpl(messages.unreadableFile),
         err: error,
@@ -159,23 +232,17 @@ class ContentCSVImporter {
     let handedOff = false;
 
     try {
-      const stagedRequest = {
-        filePath: stagedFile.path,
-        fileName: stagedFile.name,
-        mapping: request.mapping,
-        requestUserEmail: request.requestUserEmail,
-      };
-      const { source, preparedRows } = await this.readPreparedRows(stagedRequest);
+      const { source, preparedRows } = await this.readPreparedRows(request);
       await this.cleanupSource(source.cleanup);
 
       this.assertWithinPostLimit(preparedRows.rows);
 
-      const runId = this._newRunId();
       const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
       this._store.create(runId, preparedRows.rows.length, preparedRows.columns);
       const job = new ContentCSVImportJob({
         importId: runId,
-        file: stagedFile,
+        fileKey,
+        fileName: request.fileName,
         mapping: request.mapping,
         importTagNames,
         emailRecipient,
@@ -194,7 +261,7 @@ class ContentCSVImporter {
       return { importId: runId, total: preparedRows.rows.length };
     } finally {
       if (!handedOff) {
-        await this.cleanupStagedFile(stagedFile);
+        await this.deleteStoredFile(fileKey);
       }
     }
   }
@@ -203,19 +270,21 @@ class ContentCSVImporter {
     let source: PreparedImportSource | undefined;
 
     try {
-      const prepared = await this.readPreparedRows({
-        filePath: job.file.path,
-        fileName: job.file.name,
-        mapping: job.mapping,
+      await this.withStoredUpload(job.fileKey, async (localPath) => {
+        const prepared = await this.readPreparedRows({
+          filePath: localPath,
+          fileName: job.fileName,
+          mapping: job.mapping,
+        });
+        source = prepared.source;
+        this.assertWithinPostLimit(prepared.preparedRows.rows);
+        await this.processRows(
+          job.importId,
+          job.importTagNames,
+          prepared.preparedRows.rows,
+          prepared.source,
+        );
       });
-      source = prepared.source;
-      this.assertWithinPostLimit(prepared.preparedRows.rows);
-      await this.processRows(
-        job.importId,
-        job.importTagNames,
-        prepared.preparedRows.rows,
-        prepared.source,
-      );
     } catch (error) {
       this._store.fail(job.importId, messageOf(error));
       throw error;
@@ -228,7 +297,7 @@ class ContentCSVImporter {
         await this.settle(() => this._email.send(run, job.emailRecipient));
       }
       this._store.release(job.importId);
-      await this.cleanupStagedFile(job.file);
+      await this.deleteStoredFile(job.fileKey);
     }
   }
 
@@ -453,9 +522,33 @@ class ContentCSVImporter {
     }
   }
 
-  private async cleanupStagedFile(file: StagedImportFile): Promise<void> {
+  // A stored upload that cannot be copied back is reported the way an unreadable
+  // staged file always was, so the run's failure reason and its email do not change.
+  // A failure inside `fn` is the import's own and passes through untouched.
+  private async withStoredUpload<T>(
+    key: string,
+    fn: (localPath: string) => Promise<T>,
+  ): Promise<T> {
+    let inside = false;
     try {
-      await this._fileStager.remove(file);
+      return await this._withLocalCopy(this._importFiles, key, async (localPath) => {
+        inside = true;
+        return fn(localPath);
+      });
+    } catch (error) {
+      if (inside) {
+        throw error;
+      }
+      throw new errors.ValidationError({
+        message: tpl(messages.unreadableFile),
+        err: error,
+      });
+    }
+  }
+
+  private async deleteStoredFile(key: string): Promise<void> {
+    try {
+      await this._importFiles.delete(key);
     } catch (error) {
       this._report(error);
     }

@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import { Readable } from 'node:stream';
+import fs from 'fs-extra';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
+import type { ImportFileStore } from '@tryghost/adapter-base-import-files';
 import ContentCSVImporter from '../../../../../../core/server/services/content-import/import/importer';
 import { MediaInliningFailure } from '../../../../../../core/server/services/content-import/import/media';
 import { ImportRunStore } from '../../../../../../core/server/services/content-import/import/store';
@@ -9,6 +12,8 @@ import type { PostData } from '../../../../../../core/server/services/content-im
 import type { PostWriteMetadata } from '../../../../../../core/server/services/content-import/import/post-repository';
 import type { ImportRun } from '../../../../../../core/server/services/content-import/import/store';
 import ContentCSVImportJob from '../../../../../../core/server/services/content-import/jobs/content-csv-import-job';
+
+const errors = require('@tryghost/errors');
 
 const row = (title: string, html = `<p>${title}</p>`): PostImportRow => ({
   title,
@@ -25,8 +30,8 @@ function harness(
   const created: Array<{ data: PostData; options: object; metadata?: PostWriteMetadata }> = [];
   const reported: unknown[] = [];
   const jobs: ContentCSVImportJob[] = [];
-  const stagedFiles: Array<{ path: string; name: string }> = [];
-  const removedFiles: Array<{ path: string; name: string }> = [];
+  const storedKeys: string[] = [];
+  const deletedKeys: string[] = [];
   const createFailures = new Map<string, unknown>();
   const duplicateSlugs = new Set<string>();
   const updatedTitles = new Set<string>();
@@ -105,16 +110,25 @@ function harness(
     dispatchJob: async (job: ContentCSVImportJob) => {
       jobs.push(job);
     },
-    fileStager: {
-      stage: async ({ fileName }: { fileName: string }) => {
-        const file = { path: `/tmp/staged-${stagedFiles.length + 1}`, name: fileName };
-        stagedFiles.push(file);
-        return file;
+    importFiles: {
+      put: async (key: string) => {
+        storedKeys.push(key);
+        return { size: 0, contentType: 'text/csv' };
       },
-      remove: async (file: { path: string; name: string }) => {
-        removedFiles.push(file);
+      get: async () => Readable.from([]),
+      head: async () => null,
+      delete: async (key: string) => {
+        deletedKeys.push(key);
       },
-    },
+    } as ImportFileStore,
+    // Neither the upload nor the local copy touches the disk here: the rows come
+    // from readRows and the paths are labels.
+    openUpload: async () => ({ body: Readable.from([]), size: 0 }),
+    withLocalCopy: async <T>(
+      _store: ImportFileStore,
+      key: string,
+      fn: (localPath: string) => Promise<T>,
+    ): Promise<T> => fn(`/tmp/local/${key}`),
     report: (error: unknown) => {
       reported.push(error);
     },
@@ -164,8 +178,8 @@ function harness(
     created,
     reported,
     jobs,
-    stagedFiles,
-    removedFiles,
+    storedKeys,
+    deletedKeys,
     createFailures,
     duplicateSlugs,
     updatedTitles,
@@ -213,10 +227,12 @@ describe('ContentCSVImporter', function () {
     const serialized = JSON.parse(JSON.stringify(h.jobs[0]));
     assert.deepEqual(serialized, {
       importId: 'run_test',
-      file: { path: '/tmp/staged-1', name: 'posts.csv' },
+      fileKey: 'content-csv-import/run_test/upload.csv',
+      fileName: 'posts.csv',
       importTagNames: ['#Import 2026-01-01 11:30', '#Import Run run_test'],
       emailRecipient: 'owner@example.com',
     });
+    assert.deepEqual(h.storedKeys, ['content-csv-import/run_test/upload.csv']);
     assert.deepEqual(JSON.parse(JSON.stringify(new ContentCSVImportJob(serialized))), serialized);
     assert.equal(h.created.length, 0, 'nothing is written until the job runs');
     assert.equal(
@@ -232,7 +248,7 @@ describe('ContentCSVImporter', function () {
     await h.run();
 
     sinon.assert.calledWithExactly(infoLog, '[Background Job] content-csv-import queued');
-    assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.csv' }]);
+    assert.deepEqual(h.deletedKeys, ['content-csv-import/run_test/upload.csv']);
   });
 
   it('settles only after the dispatched import has finished reporting and cleanup', async function () {
@@ -721,17 +737,17 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.jobs.length, 0, 'no job was scheduled');
     sinon.assert.calledOnce(cleanup);
     assert.equal(h.reported.at(-1), cleanupError);
-    assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.csv' }]);
+    assert.deepEqual(h.deletedKeys, ['content-csv-import/run_test/upload.csv']);
   });
 
-  it('reports an upload that cannot be staged as an unreadable file', async function () {
+  it('reports an upload that cannot be stored as an unreadable file', async function () {
     const h = harness();
     const importer = new ContentCSVImporter({
       ...h.deps,
-      fileStager: {
-        ...h.deps.fileStager,
-        stage: async () => {
-          throw new Error('copy failed');
+      importFiles: {
+        ...h.deps.importFiles,
+        put: async () => {
+          throw new Error('bucket unreachable');
         },
       },
     });
@@ -743,6 +759,185 @@ describe('ContentCSVImporter', function () {
 
     assert.equal(h.jobs.length, 0);
     assert.equal(h.store.get('run_test'), undefined);
+    assert.deepEqual(h.deletedKeys, [], 'nothing was stored, so nothing is deleted');
+  });
+
+  it('passes a store refusal through rather than blaming the file', async function () {
+    const h = harness();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      importFiles: {
+        ...h.deps.importFiles,
+        put: async () => {
+          throw new errors.IncorrectUsageError({
+            message: 'The import files directory /tmp/x is not owned by the user Ghost runs as.',
+          });
+        },
+      },
+    });
+
+    await assert.rejects(
+      importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
+      (error: { errorType?: string; message?: string }) => {
+        assert.equal(error.errorType, 'IncorrectUsageError');
+        assert.match(error.message ?? '', /not owned by the user Ghost runs as/);
+        return true;
+      },
+    );
+
+    assert.equal(h.jobs.length, 0);
+    assert.equal(h.store.get('run_test'), undefined);
+  });
+
+  it('keeps the key valid for an absurdly long extension and lets the file check answer as before', async function () {
+    const h = harness();
+    const puts: string[] = [];
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      importFiles: {
+        ...h.deps.importFiles,
+        put: async (key: string) => {
+          puts.push(key);
+          return { size: 0, contentType: 'application/octet-stream' };
+        },
+      },
+      prepareSource: async () => {
+        throw new errors.ValidationError({ message: 'Please select a valid CSV or ZIP file.' });
+      },
+    });
+
+    await assert.rejects(
+      importer.importCSV({ filePath: '/tmp/upload', fileName: `posts.${'a'.repeat(2000)}` }),
+      (error: { errorType?: string }) => error.errorType === 'ValidationError',
+    );
+
+    assert.deepEqual(puts, [`content-csv-import/run_test/upload.${'a'.repeat(15)}`]);
+  });
+
+  it('destroys the opened upload when it cannot be stored', async function () {
+    const h = harness();
+    const body = new Readable({ read() {} });
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      openUpload: async () => ({ body, size: 10 }),
+      importFiles: {
+        ...h.deps.importFiles,
+        put: async () => {
+          throw new Error('directory not writable');
+        },
+      },
+    });
+
+    await assert.rejects(
+      importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
+      /could not be parsed as a CSV/,
+    );
+
+    assert.equal(body.destroyed, true);
+  });
+
+  it('keys the stored upload by its lowercased extension only, with bytes as the fallback type', async function () {
+    const cases: Array<[string, string, string]> = [
+      ['posts.CSV', 'content-csv-import/run_test/upload.csv', 'text/csv'],
+      ['posts.tar.gz', 'content-csv-import/run_test/upload.gz', 'application/octet-stream'],
+      ['noext', 'content-csv-import/run_test/upload', 'application/octet-stream'],
+    ];
+    for (const [fileName, expectedKey, expectedType] of cases) {
+      const h = harness();
+      const puts: Array<{ key: string; contentType: string }> = [];
+      const importer = new ContentCSVImporter({
+        ...h.deps,
+        importFiles: {
+          ...h.deps.importFiles,
+          put: async (key: string, _body: unknown, options: { contentType: string }) => {
+            puts.push({ key, contentType: options.contentType });
+            return { size: 0, contentType: options.contentType };
+          },
+        },
+      });
+
+      await importer.importCSV({ filePath: '/tmp/upload', fileName });
+
+      assert.deepEqual(puts, [{ key: expectedKey, contentType: expectedType }], fileName);
+    }
+  });
+
+  it('deletes a stored upload that the source check then rejects', async function () {
+    const h = harness();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      prepareSource: async () => {
+        throw new errors.ValidationError({ message: 'Please select a valid CSV or ZIP file.' });
+      },
+    });
+
+    await assert.rejects(
+      importer.importCSV({ filePath: '/tmp/posts.tar.gz', fileName: 'posts.tar.gz' }),
+      /valid CSV or ZIP/,
+    );
+
+    assert.equal(h.jobs.length, 0);
+    assert.deepEqual(h.deletedKeys, ['content-csv-import/run_test/upload.gz']);
+  });
+
+  it('reports a local copy that could not be removed without failing the completed run', async function () {
+    const h = harness();
+    const stored = new Map<string, Buffer>();
+    const cleanupError = Object.assign(new Error('EBUSY: resource busy'), { code: 'EBUSY' });
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      // The real local copy this time, so the default cleanup wiring is exercised.
+      withLocalCopy: undefined,
+      importFiles: {
+        ...h.deps.importFiles,
+        put: async (key: string, body: Buffer | Readable) => {
+          stored.set(key, Buffer.isBuffer(body) ? body : Buffer.from('title\nFirst\n'));
+          return { size: 0, contentType: 'text/csv' };
+        },
+        get: async (key: string) => Readable.from([stored.get(key) ?? Buffer.alloc(0)]),
+      },
+    });
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    const remove = sinon.stub(fs, 'remove').rejects(cleanupError);
+
+    try {
+      await importer.handle(h.jobs[0]);
+    } finally {
+      remove.restore();
+    }
+
+    assert.equal(h.store.get('run_test')?.status, 'complete');
+    assert.deepEqual(h.reported, [cleanupError]);
+  });
+
+  it('stores the upload as a stream with its size and a type matching its extension', async function () {
+    const h = harness();
+    const puts: Array<{ key: string; isStream: boolean; options: unknown }> = [];
+    const body = Readable.from(['title\nFirst\n']);
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      openUpload: async (filePath: string) => {
+        assert.equal(filePath, '/tmp/posts.zip');
+        return { body, size: 1234 };
+      },
+      importFiles: {
+        ...h.deps.importFiles,
+        put: async (key: string, streamed: unknown, options: unknown) => {
+          puts.push({ key, isStream: streamed === body, options });
+          return { size: 1234, contentType: 'application/zip' };
+        },
+      },
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' });
+
+    assert.deepEqual(puts, [
+      {
+        key: 'content-csv-import/run_test/upload.zip',
+        isStream: true,
+        options: { contentType: 'application/zip', contentLength: 1234 },
+      },
+    ]);
   });
 
   it('resolves the html converter once per run, not per row', async function () {
@@ -800,7 +995,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test'), undefined, 'no run was registered');
     sinon.assert.notCalled(storeAssets);
     sinon.assert.calledOnce(cleanup);
-    assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.zip' }]);
+    assert.deepEqual(h.deletedKeys, ['content-csv-import/run_test/upload.zip']);
   });
 
   it('rechecks the temporary cap inside the job before writing', async function () {
@@ -822,10 +1017,10 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.created.length, 0);
     assert.equal(h.store.get('run_test')?.status, 'failed');
     assert.match(h.store.get('run_test')?.failureReason ?? '', /more than 100 posts/);
-    assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.csv' }]);
+    assert.deepEqual(h.deletedKeys, ['content-csv-import/run_test/upload.csv']);
   });
 
-  it('fails and emails the run if the staged file cannot be reparsed by the job', async function () {
+  it('fails and emails the run if the stored file cannot be reparsed by the job', async function () {
     const h = harness();
     let readCount = 0;
     const importer = new ContentCSVImporter({
@@ -833,7 +1028,7 @@ describe('ContentCSVImporter', function () {
       readRows: async () => {
         readCount += 1;
         if (readCount === 2) {
-          throw new Error('staged file unavailable');
+          throw new Error('stored file unavailable');
         }
         return [row('Preflight')];
       },
@@ -849,7 +1044,7 @@ describe('ContentCSVImporter', function () {
       sinon.match({ status: 'failed' }),
       'owner@example.com',
     );
-    assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.csv' }]);
+    assert.deepEqual(h.deletedKeys, ['content-csv-import/run_test/upload.csv']);
   });
 
   it('cleans a prepared source if dispatch fails', async function () {
@@ -872,7 +1067,7 @@ describe('ContentCSVImporter', function () {
     sinon.assert.calledOnce(cleanup);
     sinon.assert.notCalled(h.sendEmail);
     sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
-    assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.zip' }]);
+    assert.deepEqual(h.deletedKeys, ['content-csv-import/run_test/upload.zip']);
   });
 
   it('reports cleanup failures without rejecting the completed job', async function () {
@@ -895,14 +1090,14 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(h.reported, [cleanupError, cleanupError]);
   });
 
-  it('reports a staged-file cleanup failure without rejecting the completed job', async function () {
+  it('reports a stored-file delete failure without rejecting the completed job', async function () {
     const h = harness();
-    const cleanupError = new Error('staged cleanup failed');
+    const cleanupError = new Error('delete denied');
     const importer = new ContentCSVImporter({
       ...h.deps,
-      fileStager: {
-        ...h.deps.fileStager,
-        remove: async () => {
+      importFiles: {
+        ...h.deps.importFiles,
+        delete: async () => {
           throw cleanupError;
         },
       },
@@ -913,6 +1108,48 @@ describe('ContentCSVImporter', function () {
 
     assert.equal(h.store.get('run_test')?.status, 'complete');
     assert.deepEqual(h.reported, [cleanupError]);
+  });
+
+  it('fails the run as an unreadable file when the stored upload cannot be copied back', async function () {
+    const h = harness();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      withLocalCopy: async () => {
+        throw new Error('Import file not found: content-csv-import/run_test/upload.csv');
+      },
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    await assert.rejects(importer.handle(h.jobs[0]), /could not be parsed as a CSV/);
+
+    assert.equal(h.store.get('run_test')?.status, 'failed');
+    assert.match(h.store.get('run_test')?.failureReason ?? '', /could not be parsed as a CSV/);
+    sinon.assert.calledOnceWithExactly(
+      h.sendEmail,
+      sinon.match({ status: 'failed' }),
+      'owner@example.com',
+    );
+    assert.deepEqual(h.deletedKeys, ['content-csv-import/run_test/upload.csv']);
+  });
+
+  it('hands the job a local copy named like the stored file', async function () {
+    const h = harness();
+    const seenPaths: string[] = [];
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      prepareSource: async ({ filePath }: { filePath: string }) => {
+        seenPaths.push(filePath);
+        return { filePath, cleanup: async () => {} };
+      },
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    await importer.handle(h.jobs[0]);
+
+    assert.deepEqual(seenPaths, [
+      '/tmp/posts.csv',
+      '/tmp/local/content-csv-import/run_test/upload.csv',
+    ]);
   });
 
   it('accepts a file exactly at the cap', async function () {
