@@ -8,6 +8,7 @@ import {
   type LeaveDecision,
   type PersistedIdentity,
   type PostStatus,
+  type PrepareOutcome,
   type PublishOptions,
   type SaveCompletion,
   type ScheduleOptions,
@@ -40,7 +41,6 @@ import {
   type EditorSettingsPatch,
   type EditorSettingsFields,
   type SettingsFieldKey,
-  type ValidatedSettingsFields,
 } from './settings-fields';
 import type { EditorCreatePayload, EditorEditPayload } from './write-payload';
 
@@ -64,8 +64,6 @@ interface PreparedWrite extends SaveRequest<EditorSaveSnapshot> {
   projection: EditablePostPatch;
   /** What the live post held for the authored fields when the request was built. */
   authoredFrom: AuthoredFields;
-  /** Field values captured for validation of this request. */
-  validated: ValidatedSettingsFields;
   /** The edit version the request was built at, for the settings adoption guard. */
   builtAtVersion: number;
   options: PostWriteOptions;
@@ -75,6 +73,17 @@ interface PreparedWrite extends SaveRequest<EditorSaveSnapshot> {
 export type PreparedSave =
   | (PreparedWrite & { isCreate: true; payload: EditorCreatePayload })
   | (PreparedWrite & { isCreate: false; payload: EditorEditPayload });
+
+const MISSING_COLLISION_TOKEN = 'Cannot save without the version this post was loaded at.';
+
+function preparedOrInvalid(
+  prepared: PreparedSave,
+  invalid: string | null,
+): PrepareOutcome<PreparedSave> {
+  return invalid
+    ? { ok: false, error: { kind: 'validation', message: invalid } }
+    : { ok: true, prepared };
+}
 
 export interface EditorSessionTransport {
   create: (payload: EditorCreatePayload) => Promise<EditorRecord | undefined>;
@@ -91,6 +100,8 @@ export interface EditorSessionOptions {
   /** Authors the create. Core rejects an Author's or Contributor's create without it. */
   currentUserId?: string;
   saveFailureMessage: string;
+  /** Reads the autosave debounce in milliseconds; defaults to the engine's 3 seconds. */
+  autosaveDebounceMs?: () => number | undefined;
   transport: EditorSessionTransport;
   /** Called once the create acknowledges; the caller replaces the URL. */
   onIdAcquired: (id: string) => void;
@@ -101,6 +112,8 @@ export interface EditorSessionOptions {
 export interface EditorSessionView {
   readonly state: SaveEngineState;
   readonly isDirty: boolean;
+  /** The title the engine holds, which is DEFAULT_TITLE while the input is blank. */
+  readonly title: string;
   readonly slug: string;
   readonly settings: EditorSettingsFields;
   readonly publishTime: { status: PostStatus; publishedAt: string | null };
@@ -205,6 +218,7 @@ export function createEditorSession({
   siteUrl,
   currentUserId,
   saveFailureMessage,
+  autosaveDebounceMs,
   transport,
   onIdAcquired,
   onError,
@@ -283,13 +297,14 @@ export function createEditorSession({
       view &&
       view.state === state &&
       view.isDirty === isDirty &&
+      view.title === live.title &&
       view.slug === currentSlug &&
       view.settings === settings &&
       view.publishTime === publishTime
     ) {
       return;
     }
-    view = { state, isDirty, slug: currentSlug, settings, publishTime };
+    view = { state, isDirty, title: live.title, slug: currentSlug, settings, publishTime };
     for (const listener of changeListeners) {
       try {
         listener();
@@ -385,7 +400,32 @@ export function createEditorSession({
   // the URL input hears about them through the session's own subscribers.
   const stopSlugNotifications = machine.subscribe(notifyChanged);
 
-  function prepare(request: SaveRequest<EditorSaveSnapshot>): Promise<PreparedSave> {
+  // The post validator runs before every save: an explicit tier selection needs a
+  // tier even on the first save, and an over-long field is not sent.
+  function requestInvalid(
+    request: SaveRequest<EditorSaveSnapshot>,
+    projection: EditablePostPatch,
+  ): string | null {
+    const invalid = settingsFieldError(validatedFieldsOf(live));
+    if (invalid) {
+      return invalid;
+    }
+    // A status command with no time of its own carries whatever the sidebar
+    // staged; Core validates the publish time for scheduled posts only.
+    if (
+      request.target.publishedAt !== publishedAt &&
+      publishedAtInFuture(request.target.status, request.target.publishedAt)
+    ) {
+      return PUBLISHED_AT_MUST_BE_PAST;
+    }
+    // Only an emptied list reaches the request; an untouched create is credited
+    // to the current user while the payload is built.
+    return projection.authors?.length === 0 ? AUTHORS_REQUIRED : null;
+  }
+
+  function prepare(
+    request: SaveRequest<EditorSaveSnapshot>,
+  ): Promise<PrepareOutcome<PreparedSave>> {
     const id = request.snapshot.id;
     const projection: EditablePostPatch = {
       title: request.title,
@@ -435,7 +475,6 @@ export function createEditorSession({
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
-      validated: validatedFieldsOf(live),
       builtAtVersion: version,
       options: {
         saveRevision: request.saveRevision,
@@ -443,45 +482,34 @@ export function createEditorSession({
         emailSegment: request.target.emailSegment,
       },
     };
+    const invalid = requestInvalid(request, projection);
 
     if (id === null) {
-      return Promise.resolve({ ...prepared, isCreate: true, payload });
+      return Promise.resolve(preparedOrInvalid({ ...prepared, isCreate: true, payload }, invalid));
     }
     if (!projection.updated_at) {
       // Without the token the server skips its collision check entirely and the
       // save would overwrite whatever landed in the meantime.
-      return Promise.reject(new Error('Cannot save without the version this post was loaded at.'));
+      return Promise.resolve({
+        ok: false,
+        error: { kind: 'unknown', message: MISSING_COLLISION_TOKEN },
+      });
     }
-    return Promise.resolve({
-      ...prepared,
-      isCreate: false,
-      payload: { ...payload, id, updated_at: projection.updated_at },
-    });
+    return Promise.resolve(
+      preparedOrInvalid(
+        {
+          ...prepared,
+          isCreate: false,
+          payload: { ...payload, id, updated_at: projection.updated_at },
+        },
+        invalid,
+      ),
+    );
   }
 
   // No abort signal: the transport owns its own controller and takes none. A
   // response arriving after disposal is dropped by the engine instead.
   async function execute(prepared: PreparedSave): Promise<SaveOutcome<EditorSaveResult>> {
-    // The post validator runs before every save: an explicit tier selection
-    // needs a tier even on the first save, and an over-long field is not sent.
-    const invalid = settingsFieldError(prepared.validated);
-    if (invalid) {
-      return { ok: false, error: { kind: 'validation', message: invalid } };
-    }
-    // A status command with no time of its own carries whatever the sidebar
-    // staged; Core validates the publish time for scheduled posts only.
-    if (
-      prepared.target.publishedAt !== publishedAt &&
-      publishedAtInFuture(prepared.target.status, prepared.target.publishedAt)
-    ) {
-      return { ok: false, error: { kind: 'validation', message: PUBLISHED_AT_MUST_BE_PAST } };
-    }
-    // Only an emptied list reaches the request; an untouched create is credited
-    // to the current user by `prepare` instead.
-    if (prepared.projection.authors?.length === 0) {
-      return { ok: false, error: { kind: 'validation', message: AUTHORS_REQUIRED } };
-    }
-
     inFlightSince = prepared.builtAtVersion;
     try {
       const saved = prepared.isCreate
@@ -563,6 +591,7 @@ export function createEditorSession({
     prepare,
     execute,
     reconcile,
+    autosaveDebounceMs,
     onStateChange: (next) => {
       if (next.kind === 'error' || next.kind === 'conflict') {
         tracker.markSaveError(next.error.message);

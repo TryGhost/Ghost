@@ -10,7 +10,7 @@ import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useState } from 'react';
 import {
   publishAlreadySent,
-  publishContinueButton,
+  publishContinue,
   publishEmailSizeWarning,
   publishFlowOptions,
   publishLimitsError,
@@ -218,7 +218,7 @@ export function OptionsStep({
       {publishBlocked ? null : (
         <div>
           <Button
-            data-testid={publishContinueButton}
+            data-testid={publishContinue}
             disabled={!limitsChecked || !state.canPublish}
             size="lg"
             onClick={onContinue}

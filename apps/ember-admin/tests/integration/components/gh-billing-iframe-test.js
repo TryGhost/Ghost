@@ -75,6 +75,27 @@ describe('Integration: Component: gh-billing-iframe', function () {
         })).to.be.true;
     });
 
+    [
+        {label: 'missing flag', flag: undefined, enabled: false},
+        {label: 'disabled flag', flag: false, enabled: false},
+        {label: 'enabled flag', flag: true, enabled: true},
+        {label: 'non-boolean flag', flag: 'true', enabled: false}
+    ].forEach(({label, flag, enabled}) => {
+        it(`advertises dunning return support for ${label}`, async function () {
+            const feature = this.owner.lookup('service:feature');
+            // The accessor is introduced with the dunning UI and return handler.
+            // Older Admin versions do not define it at all.
+            Object.defineProperty(feature, 'dunningWarnings', {configurable: true, value: flag});
+            const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
+
+            await render(hbs`<GhBillingIframe />`);
+            await postBillingMessage({request: 'forceUpgradeInfo'});
+
+            expect(postMessage.calledOnce).to.be.true;
+            expect(postMessage.firstCall.args[0].response.dunningReturnEnabled).to.equal(enabled);
+        });
+    });
+
     it('handles valid route messages without marking the billing app loaded', async function () {
         const markBillingAppLoaded = sinon.spy(billing, 'markBillingAppLoaded');
         const handleRouteChangeInIframe = sinon.spy(billing, 'handleRouteChangeInIframe');

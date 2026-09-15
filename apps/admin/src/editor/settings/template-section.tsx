@@ -16,6 +16,7 @@ import {
 import type { PostType } from '@/editor/card-config';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import { SectionLoadError } from './section-load-error';
 import { SettingsSection } from './settings-section';
 import {
   DEFAULT_TEMPLATE_LABEL,
@@ -37,7 +38,7 @@ export interface TemplateSectionProps {
  */
 export function TemplateSection({ session, postType }: TemplateSectionProps) {
   const selectId = useId();
-  const { data } = useBrowseThemes({
+  const { data, isError, refetch } = useBrowseThemes({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
@@ -46,6 +47,15 @@ export function TemplateSection({ session, postType }: TemplateSectionProps) {
   const options = templateOptions(templates);
   const matched = slugTemplate(templates, postType, session.slug);
 
+  if (isError) {
+    return (
+      <SettingsSection>
+        <SectionLoadError message="Couldn’t load templates." onRetry={() => void refetch()} />
+      </SettingsSection>
+    );
+  }
+
+  // A theme that offers no templates is not an error, so the section stays out.
   if (options.length === 0) {
     return null;
   }

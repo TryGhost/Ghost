@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-default-cards",
-  "version": "10.3.5",
+  "version": "10.3.6",
   "description": "Mobiledoc card definitions for Ghost's editor",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -43,7 +43,7 @@
     "@tryghost/string": "catalog:",
     "@tryghost/url-utils": "catalog:",
     "handlebars": "4.7.9",
-    "juice": "12.1.1",
+    "juice": "catalog:",
     "luxon": "3.7.2"
   },
   "devDependencies": {

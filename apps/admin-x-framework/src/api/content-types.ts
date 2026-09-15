@@ -1,5 +1,7 @@
 /** Shared Admin API type contracts for posts and pages. */
 
+import type { Newsletter } from './newsletters';
+
 type Override<Base, Changes> = Omit<Base, keyof Changes> & Changes;
 
 export type Email = {
@@ -130,10 +132,13 @@ export type ContentRecord = {
 } & ContentListFields &
   ContentEditorFields;
 
+// `include=newsletter` embeds the newsletter row itself; Core does not project it.
+export type PostNewsletter = Newsletter;
+
 export type PostEmailFields = {
   email?: Email | null;
   email_subject?: string | null;
-  newsletter?: object | null;
+  newsletter?: PostNewsletter | null;
   email_only?: boolean;
   email_segment?: string | null;
 };

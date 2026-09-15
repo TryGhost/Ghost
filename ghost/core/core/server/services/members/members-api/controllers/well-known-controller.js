@@ -7,7 +7,8 @@ const messages = {
 };
 
 /**
- * @typedef {import('node-jose').JWK[]} JWKS
+ * @typedef {import('../../../../lib/public-jwk').PublicRsaJwk & {kid: string}} PublicJWK
+ * @typedef {{keys: PublicJWK[]}} JWKS
  */
 
 /**

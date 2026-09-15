@@ -61,7 +61,7 @@ module.exports = class Mention {
 
     if (contentType.includes('text/html')) {
       try {
-        const cheerio = require('cheerio');
+        const cheerio = require('cheerio/slim');
         const $ = cheerio.load(html);
         const hasTargetUrl =
           $(

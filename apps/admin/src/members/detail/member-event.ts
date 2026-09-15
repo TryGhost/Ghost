@@ -33,6 +33,7 @@ export interface RawMemberEvent {
       id?: string;
       name?: string | null;
       email?: string;
+      avatar_image?: string | null;
     } | null;
     name?: string;
     // The Ember helper reads many arbitrary event-specific fields — the

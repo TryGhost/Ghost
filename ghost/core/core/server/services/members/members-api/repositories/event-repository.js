@@ -428,6 +428,8 @@ module.exports = class EventRepository {
       delete json.postAttribution?.mobiledoc;
       delete json.postAttribution?.lexical;
       delete json.postAttribution?.plaintext;
+      delete json.postAttribution?.auto_excerpt;
+      delete json.postAttribution?.reading_time;
       const createdWithStatus = json.signupStatusEvent?.to_status ?? null;
       delete json.signupStatusEvent;
       return {
@@ -488,6 +490,8 @@ module.exports = class EventRepository {
       delete json.postAttribution?.mobiledoc;
       delete json.postAttribution?.lexical;
       delete json.postAttribution?.plaintext;
+      delete json.postAttribution?.auto_excerpt;
+      delete json.postAttribution?.reading_time;
       return {
         type: 'donation_event',
         data: {

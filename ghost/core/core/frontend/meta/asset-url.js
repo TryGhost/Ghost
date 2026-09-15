@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const path = require('path');
 const config = require('../../shared/config');
 const { blogIcon } = require('../services/proxy');
@@ -14,20 +13,6 @@ const { cardAssets } = require('../services/assets-minification');
  */
 function getFaviconUrl() {
   return blogIcon.getIconUrl();
-}
-
-/**
- * Get the fallback global asset hash (used for non-theme assets or when file hash unavailable)
- * @returns {string}
- */
-function getGlobalAssetHash() {
-  if (!config.get('assetHash')) {
-    config.set(
-      'assetHash',
-      crypto.createHash('md5').update(Date.now().toString()).digest('hex').substring(0, 10),
-    );
-  }
-  return config.get('assetHash');
 }
 
 /**
@@ -176,7 +161,7 @@ function getAssetUrl(assetPath, hasMinFile) {
 
   // Fallback to global hash if file hash unavailable
   if (!hash) {
-    hash = getGlobalAssetHash();
+    hash = assetHash.getGlobalHash();
   }
 
   // if url has # make sure the hash is at the right place

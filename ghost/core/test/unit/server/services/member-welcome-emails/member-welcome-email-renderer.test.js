@@ -7,6 +7,7 @@ const config = require('../../../../../core/shared/config');
 const emailDesign = require('../../../../../core/server/services/email-rendering/email-design');
 const linkTracking = require('../../../../../core/server/services/link-tracking');
 const MemberWelcomeEmailRenderer = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
+const { malformedCssCases } = require('../../../../utils/fixtures/email-service/malformed-css');
 
 describe('MemberWelcomeEmailRenderer', function () {
   let lexicalRenderStub;
@@ -144,6 +145,20 @@ describe('MemberWelcomeEmailRenderer', function () {
       const $ = cheerio.load(result.html);
       const $link = $('a[href="https://example.com"]');
       assert($link.attr('style').includes('color: #ff0000'));
+    });
+
+    it.each(malformedCssCases)('renders content with $name', async function ({ name, html }) {
+      lexicalRenderStub.resolves(html);
+      const renderer = createRenderer();
+
+      const result = await renderer.render({
+        lexical: '{}',
+        subject: 'Welcome!',
+        member: { name: 'John', email: 'john@example.com' },
+        siteSettings: defaultSiteSettings,
+      });
+
+      assert.ok(result.html.includes(`Malformed CSS case: ${name}`));
     });
 
     it('substitutes template variables in subject', async function () {

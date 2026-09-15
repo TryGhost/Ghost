@@ -8,7 +8,7 @@ import metrics from '@tryghost/metrics';
 // @ts-expect-error This module lacks type definitions.
 import notify from './notify';
 import { errify } from '../shared/errify';
-import { flushLogs } from '../shared/flush-logs';
+import { flushLogsAndMetrics } from '../shared/flush';
 import moment from 'moment';
 import stoppable from 'stoppable';
 import type { Promisable } from 'type-fest';
@@ -170,11 +170,11 @@ export class GhostServer {
       this.isShuttingDown = true;
       logging.warn(tpl(messages.ghostIsShuttingDown));
       await this.stop();
-      await flushLogs();
+      await flushLogsAndMetrics();
       process.exit(code);
     } catch (error) {
       logging.error(error);
-      await flushLogs();
+      await flushLogsAndMetrics();
       process.exit(1);
     }
   }

@@ -121,6 +121,7 @@ export class EmailAnalyticsServiceWrapper {
     jobType: string,
     fetchResult: EmailAnalyticsFetchResult,
     totalDurationMs: number,
+    lagSeconds: number | null = null,
   ): void {
     const config = this.#getConfig();
 
@@ -150,6 +151,7 @@ export class EmailAnalyticsServiceWrapper {
     const logMessage = [
       `[Background Job] ${this.#backgroundJobName} processed ${jobType} | ${this.#logPrefix}`,
       `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
+      ...(lagSeconds === null ? [] : [`Lag: ${(lagSeconds / 60).toFixed(1)}m`]),
       `Mode: ${batchMode}`,
       `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%) [Email ${(emailAggregationTimeMs / 1000).toFixed(1)}s / Member ${(memberAggregationTimeMs / 1000).toFixed(1)}s]`,
       `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`,
@@ -163,6 +165,7 @@ export class EmailAnalyticsServiceWrapper {
           task: jobType,
           event_count: eventCount,
           duration_ms: totalDurationMs,
+          ...(lagSeconds === null ? {} : { lag_seconds: lagSeconds }),
         },
       },
       logMessage,
@@ -194,53 +197,45 @@ export class EmailAnalyticsServiceWrapper {
     }
   }
 
+  async #fetchAndLog(
+    jobType: string,
+    fetch: () => Promise<EmailAnalyticsFetchResult>,
+    lagPipeline?: 'latestOpened' | 'latest',
+  ): Promise<number> {
+    const fetchStartedAt = Date.now();
+    const fetchResult = await fetch();
+    const totalDuration = Date.now() - fetchStartedAt;
+
+    // Lag is read after the fetch so a clean run counts as caught up
+    const lagSeconds = lagPipeline ? this.service.getStatus()[lagPipeline].lagSeconds : null;
+    this._logJobCompletion(jobType, fetchResult, totalDuration, lagSeconds);
+
+    return fetchResult.eventCount;
+  }
+
   async fetchLatestOpenedEvents({
     maxEvents = Infinity,
   }: { maxEvents?: number } = {}): Promise<number> {
-    const config = this.#getConfig();
-
-    const beginTimestamp = await this.service.getLastOpenedEventTimestamp();
-    const lagMinutes = (Date.now() - beginTimestamp.getTime()) / 60000;
-    const lagThreshold = config.get('emailAnalytics:openedJobLagWarningMinutes');
-
-    // NOTE: We only update the begin timestamp when we process events, so there's cases where we can have a false positive
-    //  - Ghost or Mailgun outages
-    //  - Lack of actual email activity
-    if (lagThreshold && lagMinutes > lagThreshold) {
-      logging.warn(
-        `${this.#logPrefix} Opened events processing is ${lagMinutes.toFixed(1)} minutes behind (threshold: ${lagThreshold})`,
-      );
-    }
-
-    const fetchStartedAt = Date.now();
-    const fetchResult = await this.service.fetchLatestOpenedEvents({ maxEvents });
-    const totalDuration = Date.now() - fetchStartedAt;
-
-    this._logJobCompletion('latest-opened', fetchResult, totalDuration);
-
-    return fetchResult.eventCount;
+    return this.#fetchAndLog(
+      'latest-opened',
+      () => this.service.fetchLatestOpenedEvents({ maxEvents }),
+      'latestOpened',
+    );
   }
 
   async fetchLatestNonOpenedEvents({
     maxEvents = Infinity,
   }: { maxEvents?: number } = {}): Promise<number> {
-    const fetchStartedAt = Date.now();
-    const fetchResult = await this.service.fetchLatestNonOpenedEvents({ maxEvents });
-    const totalDuration = Date.now() - fetchStartedAt;
-
-    this._logJobCompletion('latest', fetchResult, totalDuration);
-
-    return fetchResult.eventCount;
+    return this.#fetchAndLog(
+      'latest',
+      () => this.service.fetchLatestNonOpenedEvents({ maxEvents }),
+      'latest',
+    );
   }
 
   async fetchMissing({ maxEvents = Infinity }: { maxEvents?: number } = {}): Promise<number> {
-    const fetchStartedAt = Date.now();
-    const fetchResult = await this.service.fetchMissing({ maxEvents });
-    const totalDuration = Date.now() - fetchStartedAt;
-
-    this._logJobCompletion('missing', fetchResult, totalDuration);
-
-    return fetchResult.eventCount;
+    // The missing-events sweep trails the delivery pipeline by design, so it has no lag of its own
+    return this.#fetchAndLog('missing', () => this.service.fetchMissing({ maxEvents }));
   }
 
   async fetchScheduled({ maxEvents }: { maxEvents: number }): Promise<number> {
@@ -248,13 +243,7 @@ export class EmailAnalyticsServiceWrapper {
       return 0;
     }
 
-    const fetchStartedAt = Date.now();
-    const fetchResult = await this.service.fetchScheduled({ maxEvents });
-    const totalDuration = Date.now() - fetchStartedAt;
-
-    this._logJobCompletion('scheduled', fetchResult, totalDuration);
-
-    return fetchResult.eventCount;
+    return this.#fetchAndLog('scheduled', () => this.service.fetchScheduled({ maxEvents }));
   }
 
   async startFetch(): Promise<void> {

@@ -8,6 +8,7 @@ const membersService = require('../../services/members');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const { ADMIN } = require('../../services/members-metafields');
 
 // Shape the import service's outcome into the API response envelope: an inline import
@@ -68,7 +69,9 @@ const controller = {
       },
     },
     async query(frame) {
-      const page = await membersService.api.memberBREADService.browse(frame.options);
+      const page = await membersService.api.memberBREADService.browse(
+        restrictAdminApiQueryOptions(frame.options),
+      );
 
       return page;
     },
@@ -383,7 +386,7 @@ const controller = {
     validation: {},
     async query(frame) {
       return {
-        data: await membersService.export(frame.options),
+        data: await membersService.export(restrictAdminApiQueryOptions(frame.options)),
         filename: getCSVExportFileName('members'),
       };
     },

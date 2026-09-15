@@ -8,6 +8,7 @@ const {
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
 } = require('../../services/member-welcome-emails/constants');
 const { validateEmailSenderFields } = require('./utils/validate-email-sender-fields');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const messages = {
   automatedEmailNotFound: 'Automated email not found.',
@@ -97,7 +98,7 @@ const controller = {
     permissions: true,
     async query(frame) {
       const result = await models.Automation.findPage({
-        ...frame.options,
+        ...restrictAdminApiQueryOptions(frame.options),
         withRelated: [
           'welcomeEmailAutomatedEmail',
           'welcomeEmailAutomatedEmail.emailDesignSetting',
@@ -122,7 +123,7 @@ const controller = {
     permissions: true,
     async query(frame) {
       const model = await models.Automation.findOne(frame.data, {
-        ...frame.options,
+        ...restrictAdminApiQueryOptions(frame.options),
         withRelated: [
           'welcomeEmailAutomatedEmail',
           'welcomeEmailAutomatedEmail.emailDesignSetting',
