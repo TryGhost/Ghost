@@ -154,11 +154,7 @@ function ActivityPage() {
               </PageHeader.Left>
               <PageHeader.Actions className="max-w-full min-w-0">
                 <Inline className="max-w-full min-w-0" gap="md" wrap>
-                  {memberId ? (
-                    <Button variant="outline" onClick={() => updateParam('member')}>
-                      Clear member <LucideIcon.X className="size-4" />
-                    </Button>
-                  ) : (
+                  {!memberId && (
                     <ActivityMemberSearch onSelect={(id) => updateParam('member', id)} />
                   )}
                   <DropdownMenu>
@@ -205,16 +201,16 @@ function ActivityPage() {
               <Inline className="py-6" gap="lg">
                 <Avatar
                   {...memberAvatarProps(member)}
-                  className="size-16"
+                  className="size-12 min-w-12 [&_span]:text-lg"
                   src={member.avatar_image}
                 />
-                <Stack className="min-w-0" gap="xs">
+                <Stack className="min-w-0" gap="none">
                   <h2 className="truncate text-xl font-semibold">{formatMemberName(member)}</h2>
                   {member.name?.trim() && (
-                    <p className="text-sm text-muted-foreground">{member.email}</p>
+                    <p className="truncate text-muted-foreground">{member.email}</p>
                   )}
                   <Link
-                    className="text-sm font-medium hover:underline"
+                    className="mt-0.5 text-sm font-medium hover:underline"
                     to={`/members/${encodeURIComponent(member.id)}`}
                   >
                     View member profile →
@@ -266,12 +262,18 @@ function ActivityPage() {
               <>
                 {events.length > 0 ? (
                   <Box className="shrink-0 overflow-x-auto">
-                    <Table aria-label="Member activity">
+                    <Table aria-label="Member activity" className="text-[13px]">
                       <TableHeader>
                         <TableRow>
-                          {!memberId && <TableHead scope="col">Member</TableHead>}
-                          <TableHead scope="col">Event</TableHead>
-                          <TableHead className="text-right" scope="col">
+                          {!memberId && (
+                            <TableHead className="text-[13px]" scope="col">
+                              Member
+                            </TableHead>
+                          )}
+                          <TableHead className="text-[13px]" scope="col">
+                            Event
+                          </TableHead>
+                          <TableHead className="text-[13px]" scope="col">
                             Time
                           </TableHead>
                         </TableRow>

@@ -84,9 +84,9 @@ describe('Member activity', () => {
     await expect.element(screen.memberColumn()).toBeVisible();
     window.history.forward();
     await expect.element(screen.heading('Ada Lovelace')).toBeVisible();
-    await screen.clearMember().click();
+    await screen.link('Member activity').click();
     await expect.element(screen.heading('Member activity')).toBeVisible();
-    await expect.poll(currentRoute).toBe('/members-activity?excludedEvents=login_event');
+    await expect.poll(currentRoute).toBe('/members-activity');
   });
 
   it('searches the real members endpoint with a debounce and selects a member', async () => {
