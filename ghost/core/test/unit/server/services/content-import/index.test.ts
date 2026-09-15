@@ -8,7 +8,8 @@ describe('content import service', function () {
   it('fails loudly when a job is delivered before the service is initialised', async function () {
     const job = new ContentCSVImportJob({
       importId: 'run_test',
-      file: { path: '/tmp/staged-import', name: 'posts.csv' },
+      fileKey: 'content-csv-import/run_test/upload.csv',
+      fileName: 'posts.csv',
       importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
       emailRecipient: 'owner@example.com',
     });

@@ -13,7 +13,6 @@ import { prepareImportSource } from './import/source';
 import { PostMediaInliner } from './import/media';
 import { isLocalMediaUrl } from './import/local-media-url';
 import { urlForImportedPost } from './import/post-link';
-import { createImportFileStager } from './import/staged-file';
 import ContentCSVImportJob from './jobs/content-csv-import-job';
 import { getInstance as getJobsService } from '../jobs-service';
 
@@ -40,6 +39,9 @@ function makeImporter(): ContentCSVImporter {
   const config = require('../../../shared/config');
   const ObjectID = require('bson-objectid').default;
   const { GhostMailer } = require('../mail');
+  // Required here too: the store is a per-process singleton that boot resolves, and a
+  // module loaded a second time (the lifecycle test does this) must see that one.
+  const importFiles = require('../import-files');
   const ghostMailer = new GhostMailer();
 
   // Row aggregates and best-effort cleanup are intentionally reported without
@@ -85,7 +87,9 @@ function makeImporter(): ContentCSVImporter {
       }),
     email,
     dispatchJob: (job) => getJobsService().dispatch(job),
-    fileStager: createImportFileStager(),
+    // Resolved at boot before this root is built, so the upload waits wherever the
+    // operator's import-files adapter puts it.
+    importFiles: importFiles.getStore(),
     report,
     store: new ImportRunStore(),
     urlForPost: (post) =>
