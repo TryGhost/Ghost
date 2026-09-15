@@ -9,9 +9,10 @@ import tailwindcss from '@tailwindcss/vite';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
 /**
- * Acceptance tier: full-app tests in real Chromium via Vitest Browser Mode,
- * against a fake Ghost Admin API (test-utils/acceptance/). Unit tests stay
- * in vite.config.ts (jsdom).
+ * Browser mode: real Chromium via Vitest Browser Mode against a fake Ghost
+ * Admin API (test-utils/acceptance/). `*.acceptance.test.tsx` boots the whole
+ * app; `*.component.test.tsx` mounts one component in the app's provider
+ * stack. Unit tests stay in vite.config.ts (jsdom).
  */
 
 /*
@@ -34,18 +35,16 @@ export default defineConfig({
     // suite. Test files and screen helpers import test-lane modules the
     // browser bundler can't process; vitest serves those itself.
     entries: ['src/**/*.{ts,tsx}', '!src/**/*.test.*', '!src/**/*.screen.ts'],
-    // limit-service is CommonJS, and Vite only converts CommonJS while pre-bundling. A
-    // workspace package is treated as source and served raw, where `module` does not exist,
-    // so the import fails and the limiter silently falls back to reporting every host limit
-    // as absent. Force it through the pre-bundler until the package itself is converted.
-    include: ['@tryghost/limit-service'],
   },
   resolve: sharedResolve,
   test: {
     name: 'acceptance',
-    include: ['src/**/*.acceptance.test.tsx'],
+    include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
     setupFiles: ['./test-utils/acceptance/setup.ts'],
+    // Most journeys finish well under a second, but a few that wait out a
+    // product-side hold reach ~6s; this leaves those headroom on slower CI.
+    testTimeout: 15_000,
     expect: {
       // Full-app renders are slower than unit renders; the harness's
       // toHaveCount matcher derives its polling from this too.

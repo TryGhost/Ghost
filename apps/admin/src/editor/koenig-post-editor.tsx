@@ -1,5 +1,6 @@
 import { Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
+import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
   type EditorResource,
@@ -7,8 +8,8 @@ import {
   loadKoenig,
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
-import { reportKoenigError } from './koenig-error';
 import { editorFileUploader } from './koenig-file-uploader';
+import { reportKoenigError } from './report-error';
 
 const NOOP = () => {};
 
@@ -57,7 +58,7 @@ function KoenigInstanceMount({
   return (
     <div
       data-secondary-instance={isSecondary ? 'true' : 'false'}
-      data-testid={isSecondary ? 'editor-secondary-instance' : 'editor-body'}
+      data-testid={isSecondary ? editorSecondaryInstance : editorBody}
       hidden={isSecondary}
     >
       <KoenigComposer

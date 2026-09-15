@@ -1,6 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const ALLOWED_INCLUDES = ['count.posts'];
 
@@ -26,7 +27,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      return models.Tag.findPage(frame.options);
+      return models.Tag.findPage(restrictAdminApiQueryOptions(frame.options));
     },
   },
 
@@ -45,7 +46,10 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      const model = await models.Tag.findOne(frame.data, frame.options);
+      const model = await models.Tag.findOne(
+        frame.data,
+        restrictAdminApiQueryOptions(frame.options),
+      );
       if (!model) {
         throw new errors.NotFoundError({
           message: tpl(messages.tagNotFound),

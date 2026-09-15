@@ -192,7 +192,7 @@ function escapeRegExp(string) {
  * @return {ReturnType<typeof cheerio.load>}
  */
 function cheerioLoad(html) {
-  const cheerio = require('cheerio');
+  const cheerio = require('cheerio/slim');
   return cheerio.load(html);
 }
 
@@ -709,7 +709,12 @@ class EmailRenderer {
 
     // Juice HTML (inline CSS)
     const juice = require('juice');
-    html = juice(html, { inlinePseudoElements: true, removeStyleTags: true });
+    // resolveCSSVariables crashes on nameless declarations in user-authored style attributes
+    html = juice(html, {
+      inlinePseudoElements: true,
+      removeStyleTags: true,
+      resolveCSSVariables: false,
+    });
 
     // happens after inlining of CSS so we can change element types without worrying about styling
     $ = cheerioLoad(html);

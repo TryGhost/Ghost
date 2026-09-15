@@ -4,7 +4,6 @@ const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const assert = require('node:assert/strict');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
 const { settingsCache } = require('../../../../core/server/services/settings-helpers');
@@ -17,6 +16,8 @@ const {
   matchEmailSnapshot,
   getDefaultNewsletter,
   retryEmail,
+  waitForEmailStatus,
+  waitForNoActiveSends,
 } = require('../../../utils/batch-email-utils');
 const {
   setupEmailVerificationUtils,
@@ -145,8 +146,9 @@ describe('Batch sending tests', function () {
       ],
       { context: { internal: true } },
     );
+    // Wait before restoring: a send still in flight needs the Mailgun mock alive.
+    await waitForNoActiveSends();
     mockManager.restore();
-    await jobManager.allSettled();
 
     // Drop any members a test created so they don't leak into later tests —
     // a leaked subscriber shifts recipient counts and cascades failures.
@@ -242,8 +244,9 @@ describe('Batch sending tests', function () {
     // Retry sending a couple of times concurrently
     await Promise.all(emailModels.map((model) => emailService.service.retryEmail(model)));
 
-    // Await sending job
-    await jobManager.allSettled();
+    // Wait for the winning job to land. `allSettled` releases while up to three
+    // inline jobs are still running, which can leave the email short of `submitted`.
+    await waitForEmailStatus(emailModel.id);
 
     // Despite 50 concurrent retries each scheduling a job, the emailJob status lock
     // (pending/failed -> submitting) ensures only one job actually sends. The already
@@ -614,7 +617,7 @@ describe('Batch sending tests', function () {
     const infoLog = sinon.stub(logging, 'info');
 
     await retryEmail(agent, emailModel.id);
-    await jobManager.allSettled();
+    await waitForEmailStatus(emailModel.id);
 
     const skipLogs = infoLog
       .getCalls()

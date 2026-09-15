@@ -25,6 +25,9 @@ failed email.
 The rough ETA measures recent recipient throughput, including work completed by
 concurrent workers. It stays `null` until enough timing samples are available in
 the current phase and attempt, so short sends may finish without showing an ETA.
+The rate uses the last minute of completions, including the interval crossing
+the window boundary. Early estimates use the available history. Sparse sends
+retain at least two measured intervals.
 Progress counts update independently of the estimate.
 
 The ETA is always `null` for failed emails and `0` once no work remains in the

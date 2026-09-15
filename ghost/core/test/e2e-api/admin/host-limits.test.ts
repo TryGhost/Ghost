@@ -435,11 +435,12 @@ describe('Host limits', function () {
   describe('the package Ghost is built against', function () {
     it('exports something a caller can construct directly', function () {
       // Two places construct the service themselves rather than using Ghost's, so the shape
-      // of the export is part of what a change to this package must not break.
-      const exported = require('@tryghost/limit-service');
+      // of the export is part of what a change to this package must not break. The package
+      // is ESM now, so requiring it hands back the namespace and the class comes off that.
+      const { LimitService } = require('@tryghost/limit-service');
 
-      assert.equal(typeof exported, 'function');
-      assert.doesNotThrow(() => new exported());
+      assert.equal(typeof LimitService, 'function');
+      assert.doesNotThrow(() => new LimitService());
     });
   });
 

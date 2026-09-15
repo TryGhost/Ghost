@@ -131,6 +131,34 @@ describe('HTTP', function () {
     });
   });
 
+  it('does not set an integration for staff tokens', async function () {
+    await new Promise((resolve) => {
+      req.user = { id: 'user-id' };
+      req.api_key = {
+        get(key) {
+          return {
+            id: 'api-key-id',
+            type: 'admin',
+            integration_id: null,
+            user_id: 'user-id',
+          }[key];
+        },
+      };
+
+      const apiImpl = sinon.stub().resolves({ ok: true });
+
+      res.json.callsFake(() => {
+        const frame = apiImpl.args[0][0];
+        assert.equal(frame.options.context.api_key.id, 'api-key-id');
+        assert.equal(frame.options.context.integration, null);
+        assert.equal(frame.options.context.user, 'user-id');
+        resolve();
+      });
+
+      shared.http(apiImpl)(req, res, next);
+    });
+  });
+
   it('supports async response format and statusCode function', async function () {
     await new Promise((resolve) => {
       const apiImpl = sinon.stub().resolves({ ok: true });

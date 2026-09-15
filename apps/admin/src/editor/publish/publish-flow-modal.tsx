@@ -5,7 +5,7 @@ import { useState } from 'react';
 import {
   publicPreviewWarningDialog,
   publishFlowModal,
-  publishFlowPreviewButton,
+  publishFlowPreview,
   tkReminderDialog,
 } from '@tryghost/test-data/selectors/editor';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
@@ -167,11 +167,7 @@ function PublishFlowDialog({
                 Close
               </Button>
               {flow.emailErrorMessage || !onPreview ? null : (
-                <Button
-                  data-testid={publishFlowPreviewButton}
-                  variant="outline"
-                  onClick={onPreview}
-                >
+                <Button data-testid={publishFlowPreview} variant="outline" onClick={onPreview}>
                   Preview
                 </Button>
               )}

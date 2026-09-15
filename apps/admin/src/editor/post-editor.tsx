@@ -3,6 +3,14 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
 import { focusKoenigEditorOnBottomClick } from '@tryghost/admin-x-framework';
+import {
+  editorExcerptInput,
+  editorTitleInput,
+  editorWordCount,
+  postEditor,
+  tkIndicator,
+  tkIndicatorExcerpt,
+} from '@tryghost/test-data/selectors/editor';
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig, PostType } from './card-config';
 import { FeatureImage } from './feature-image';
@@ -249,7 +257,7 @@ export function PostEditor({
   };
 
   return (
-    <div className="relative h-full min-h-0" data-testid="post-editor">
+    <div className="relative h-full min-h-0" data-testid={postEditor}>
       <div className="h-full overflow-y-auto">
         <Stack
           className="min-h-full px-6 pt-12 pb-24"
@@ -273,7 +281,7 @@ export function PostEditor({
               onImageClear={featureImage.onFeatureImageClear}
               onTkCountChange={setFeatureImageTkCount}
             />
-            {titleHasTk && <TkIndicator testId="tk-indicator" onClick={focusTitle} />}
+            {titleHasTk && <TkIndicator testId={tkIndicator} onClick={focusTitle} />}
             <textarea
               ref={titleRef}
               aria-label={`${capitalize(postType)} title`}
@@ -282,7 +290,7 @@ export function PostEditor({
                 fieldClassName,
                 'heading-font-features mb-4 text-4xl leading-tight font-bold tracking-tight text-foreground placeholder:font-bold placeholder:text-muted-foreground',
               )}
-              data-testid="editor-title-input"
+              data-testid={editorTitleInput}
               placeholder={`${capitalize(postType)} title`}
               rows={1}
               value={title}
@@ -293,9 +301,7 @@ export function PostEditor({
             />
             {showExcerpt && (
               <div className="relative">
-                {excerptHasTk && (
-                  <TkIndicator testId="tk-indicator-excerpt" onClick={focusExcerpt} />
-                )}
+                {excerptHasTk && <TkIndicator testId={tkIndicatorExcerpt} onClick={focusExcerpt} />}
                 <textarea
                   ref={excerptRef}
                   aria-label="Excerpt"
@@ -303,7 +309,7 @@ export function PostEditor({
                     fieldClassName,
                     'text-xl leading-normal tracking-tight text-text-secondary placeholder:text-muted-foreground',
                   )}
-                  data-testid="editor-excerpt-input"
+                  data-testid={editorExcerptInput}
                   placeholder="Add an excerpt"
                   rows={1}
                   value={excerpt}
@@ -332,7 +338,7 @@ export function PostEditor({
         </Stack>
       </div>
       <Inline className="absolute right-0 bottom-0 px-4 py-3" gap="sm">
-        <Text data-testid="editor-word-count" size="xs" tone="secondary">
+        <Text data-testid={editorWordCount} size="xs" tone="secondary">
           {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
         </Text>
         <a

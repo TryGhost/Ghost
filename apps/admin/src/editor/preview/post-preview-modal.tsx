@@ -18,7 +18,6 @@ import {
 } from '@tryghost/shade/components';
 import {
   getSettingValue,
-  useBrowseSettings,
   useNewslettersEnabled,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
@@ -37,6 +36,8 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
+import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
@@ -94,7 +95,7 @@ export function PostPreviewModal({
 
   const handleError = useHandleError();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useEditorSettings();
   const paidMembersEnabled = usePaidMembersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const newslettersEnabled = useNewslettersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const membersEnabled =
@@ -277,7 +278,7 @@ export function PostPreviewModal({
   return (
     <FullscreenDialog
       aria-describedby={undefined}
-      data-testid="post-preview-modal"
+      data-testid={postPreviewModal}
       headerActions={
         <>
           <Inline gap="md">
@@ -412,7 +413,7 @@ export function PostPreviewModal({
               </Button>
             }
             className="grow justify-center"
-            data-testid="post-preview-save-failed"
+            data-testid={postPreviewSaveFailed}
             description="Saving the post failed, so there is nothing new to preview."
             title="Couldn’t preview this post"
           >

@@ -1,3 +1,5 @@
+import type { Count } from '@tryghost/limit-service';
+
 // API errors
 
 export interface ErrorResponse {
@@ -114,7 +116,7 @@ export class ThemeValidationError extends JSONError {
 export interface HostLimitErrorDetails {
   name?: string;
   limit?: number;
-  total?: number;
+  total?: Count;
 }
 
 interface HostLimitOptions {

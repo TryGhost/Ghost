@@ -15,9 +15,6 @@ interface ExtendedPost extends Post {
     name: string;
   }[];
   excerpt?: string;
-  newsletter?: {
-    name: string;
-  };
 }
 
 export const usePostSuccessModal = () => {

@@ -17,7 +17,7 @@ const generateTags = function generateTags(data) {
 };
 
 const generateItem = function generateItem(post) {
-  const cheerio = require('cheerio');
+  const cheerio = require('cheerio/slim');
 
   // RSS feeds carry posts (pages don't appear in RSS), so the router-level
   // type is always 'posts'. The post object on the public API has its DB

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { newsletter } from '@tryghost/test-data';
 import type { PageEditorRecord } from '@tryghost/admin-x-framework/api/pages';
 import type { PostEditorRecord } from '@tryghost/admin-x-framework/api/posts';
 import type { EditorSaveSnapshot } from '@/editor/session/snapshot';
@@ -41,7 +42,8 @@ function record(overrides: Partial<PostEditorRecord> = {}): PostEditorRecord {
   };
 }
 
-const NEWSLETTER = { slug: 'weekly', name: 'Weekly', status: 'active' };
+// Built through the shared builder: the record carries the whole API relation.
+const NEWSLETTER = newsletter({ slug: 'weekly', name: 'Weekly', status: 'active' });
 
 const CASES = [
   {
@@ -90,7 +92,7 @@ const CASES = [
     record: record({
       status: 'scheduled',
       published_at: '2026-03-01T10:00:00.000Z',
-      newsletter: { slug: 'weekly', name: 'Weekly', status: 'archived' },
+      newsletter: newsletter({ slug: 'weekly', name: 'Weekly', status: 'archived' }),
     }),
     expected: {
       status: 'scheduled',

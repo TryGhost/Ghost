@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   settingsTiersError,
@@ -18,9 +18,11 @@ import {
   settingsVisibilitySelect,
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
+import { useEditorSettings } from '@/editor/use-editor-settings';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { TIERS_REQUIRED, tiersIncomplete } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import { SectionLoadError } from './section-load-error';
 import { SettingsSection } from './settings-section';
 import {
   VISIBILITY_OPTIONS,
@@ -96,10 +98,7 @@ export interface AccessSectionProps {
 export function AccessSection({ session, postType }: AccessSectionProps) {
   const selectId = useId();
   const tiersErrorId = useId();
-  const { data: settingsData } = useBrowseSettings({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
+  const { data: settingsData } = useEditorSettings();
   const defaultContentVisibility = getSettingValue<string>(
     settingsData?.settings ?? null,
     'default_content_visibility',
@@ -109,7 +108,11 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
   const selected = new Set(selectedTierIds(session.settings.tiers));
   const tiersMissing = tiersIncomplete(session.settings);
 
-  const { data: tiersData } = useBrowseTiers({
+  const {
+    data: tiersData,
+    isError: tiersFailed,
+    refetch: refetchTiers,
+  } = useBrowseTiers({
     defaultErrorHandler: false,
     enabled: visibility === 'tiers',
     requestOptions: EDITOR_REQUEST_OPTIONS,
@@ -157,18 +160,24 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
           gap="md"
           role="group"
         >
-          <TierGroup
-            heading="Active tiers"
-            options={options.filter((option) => !option.archived)}
-            selected={selected}
-            onToggle={toggleTier}
-          />
-          <TierGroup
-            heading="Archived tiers"
-            options={options.filter((option) => option.archived)}
-            selected={selected}
-            onToggle={toggleTier}
-          />
+          {tiersFailed ? (
+            <SectionLoadError message="Couldn’t load tiers." onRetry={() => void refetchTiers()} />
+          ) : (
+            <>
+              <TierGroup
+                heading="Active tiers"
+                options={options.filter((option) => !option.archived)}
+                selected={selected}
+                onToggle={toggleTier}
+              />
+              <TierGroup
+                heading="Archived tiers"
+                options={options.filter((option) => option.archived)}
+                selected={selected}
+                onToggle={toggleTier}
+              />
+            </>
+          )}
           {tiersMissing ? (
             <FieldError data-testid={settingsTiersError} id={tiersErrorId}>
               {TIERS_REQUIRED}

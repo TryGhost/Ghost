@@ -11,11 +11,20 @@ import {
 } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { getSettingValues, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useEmailPreview } from '@tryghost/admin-x-framework/api/email-previews';
 import type { Newsletter } from '@tryghost/admin-x-framework/api/newsletters';
+import {
+  postPreviewEmail,
+  postPreviewEmailFrame,
+  postPreviewEmailFrom,
+  postPreviewEmailSubject,
+  postPreviewNewsletterMissing,
+  postPreviewNewslettersError,
+} from '@tryghost/test-data/selectors/editor';
 
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useEditorSettings } from '@/editor/use-editor-settings';
 import { SendTestEmail } from './send-test-email';
 import {
   audienceDescription,
@@ -85,7 +94,7 @@ export function EmailPreview({
   onNewsletterChange,
   onRetryNewsletterLookup,
 }: EmailPreviewProps) {
-  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useEditorSettings();
   const [defaultEmailAddress] = getSettingValues<string>(settingsData?.settings ?? [], [
     'default_email_address',
   ]);
@@ -104,7 +113,7 @@ export function EmailPreview({
   const senderAddress = (sender: string | null) => sender ?? defaultEmailAddress ?? '';
 
   return (
-    <PreviewChrome data-testid="post-preview-email" device={device}>
+    <PreviewChrome data-testid={postPreviewEmail} device={device}>
       <Stack className="size-full bg-background" gap="none">
         <Stack className="border-b border-border-default p-4" gap="md">
           <Inline gap="lg" justify="between">
@@ -118,7 +127,7 @@ export function EmailPreview({
               ) : newsletterMissing ? (
                 <p
                   className="min-w-0 truncate text-sm text-muted-foreground"
-                  data-testid="post-preview-newsletter-missing"
+                  data-testid={postPreviewNewsletterMissing}
                 >
                   This newsletter no longer exists
                 </p>
@@ -139,7 +148,7 @@ export function EmailPreview({
                       </SelectContent>
                     </Select>
                   ) : (
-                    <p className="min-w-0 truncate text-sm" data-testid="post-preview-email-from">
+                    <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailFrom}>
                       {selectedNewsletter?.name}{' '}
                       <span className="text-muted-foreground">
                         &lt;{senderAddress(selectedNewsletter?.sender_email ?? null)}&gt;
@@ -161,7 +170,7 @@ export function EmailPreview({
           </Inline>
           <Inline className="min-w-0" gap="md">
             <span className="shrink-0 text-sm text-muted-foreground">Subject</span>
-            <p className="min-w-0 truncate text-sm" data-testid="post-preview-email-subject">
+            <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailSubject}>
               {!isFetching && preview?.subject}
             </p>
           </Inline>
@@ -178,7 +187,7 @@ export function EmailPreview({
               </Button>
             }
             className="grow justify-center"
-            data-testid="post-preview-newsletters-error"
+            data-testid={postPreviewNewslettersError}
             description="The newsletters could not be loaded."
             title="Couldn’t load newsletters"
           >
@@ -208,7 +217,7 @@ export function EmailPreview({
         ) : (
           <iframe
             className="min-h-0 grow border-0"
-            data-testid="post-preview-email-frame"
+            data-testid={postPreviewEmailFrame}
             sandbox="allow-popups allow-popups-to-escape-sandbox"
             srcDoc={withPreviewDocumentStyles(preview?.html ?? '')}
             title="Email preview"
