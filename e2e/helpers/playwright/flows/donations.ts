@@ -44,7 +44,7 @@ export async function completeDonationViaFakeCheckout(
     .poll(
       async () => {
         const candidates = await mailpit.search(
-          { subject: opts.name ?? email },
+          { subject: opts.name ?? 'One-time payment received:' },
           { timeoutMs: null },
         );
         const messages = await Promise.all(
