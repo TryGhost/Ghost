@@ -445,7 +445,7 @@ describe('Automation status counts', () => {
       await open();
       await expect.element(statusCard('Completed')).toHaveTextContent('6');
       const panel = document.querySelector('aside')!;
-      const expectedWidth = Math.min(480, panel.parentElement!.getBoundingClientRect().width - 60);
+      const expectedWidth = panel.parentElement!.getBoundingClientRect().width;
       await expect.poll(() => panel.getBoundingClientRect().width).toBeCloseTo(expectedWidth, 0);
       expect(panel.scrollWidth).toBe(panel.clientWidth);
       for (const name of ['In progress', 'Completed', 'Exited early']) {
@@ -1031,7 +1031,9 @@ describe('Automation run list', () => {
       .element(runsRegion().getByRole('img', { name: 'Exited early — Failed', exact: true }))
       .toHaveAttribute('title', 'Exited early — Failed');
     await expect(runsRegion().getByRole('link')).toHaveCount(0);
-    await expect(runsRegion().getByRole('button')).toHaveCount(0);
+    await expect(runsRegion().getByRole('button', { name: /^View run history for / })).toHaveCount(
+      10,
+    );
     expect(request.requests).toHaveLength(1);
     await expect
       .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
@@ -1188,7 +1190,7 @@ describe('Automation run list', () => {
         .element(runsRegion().getByRole('img', { name: 'Completed' }).first())
         .toBeVisible();
       const panel = document.querySelector('aside')!;
-      const expectedWidth = Math.min(480, panel.parentElement!.getBoundingClientRect().width - 60);
+      const expectedWidth = panel.parentElement!.getBoundingClientRect().width;
       await expect.poll(() => panel.getBoundingClientRect().width).toBeCloseTo(expectedWidth, 0);
       expect(panel.scrollWidth).toBe(panel.clientWidth);
       const table = runsRegion().getByRole('table').element();
