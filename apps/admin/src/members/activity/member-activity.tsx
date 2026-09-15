@@ -316,6 +316,7 @@ function ActivityPage() {
                           </Button>
                         ) : undefined
                       }
+                      className="grow"
                       title={
                         hasFilter
                           ? 'No activities match the current filter'
