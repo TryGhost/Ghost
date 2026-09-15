@@ -24,8 +24,6 @@ const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
 const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
 const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
-// This endpoint only ever exposes the member welcome email automations, however many
-// automations of other kinds may exist in the `automations` table.
 const MEMBER_WELCOME_EMAIL_FILTER = Object.values(MEMBER_WELCOME_EMAIL_SLUGS)
   .map((slug) => `slug:${slug}`)
   .join(',');
