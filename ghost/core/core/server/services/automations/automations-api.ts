@@ -18,6 +18,7 @@ import {
   parseEntryStatsOptions,
 } from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
+import { readRunHistory as loadRunHistory } from './automation-run-history';
 
 const { knex } = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
@@ -210,6 +211,15 @@ export async function browseRuns(automationId: string, status?: unknown) {
     runs.map((run) => run.id),
   );
   return runs.map((run) => ({ ...run, member: members.get(run.id) ?? null }));
+}
+
+export async function readRunHistory(automationId: string, runId: string) {
+  await requireAutomation(automationId);
+  const history = await loadRunHistory(knex, automationId, runId);
+  if (!history) {
+    throw new errors.NotFoundError({ message: 'Automation run not found.' });
+  }
+  return history;
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {
