@@ -24,6 +24,13 @@ class BaseMailAdapter implements Adapter {
 
 class IncompleteMailAdapter extends BaseMailAdapter {}
 
+// What storage config always gains for storage:imports when nothing configures it.
+const PRIVATE_IMPORTS_CONFIG = {
+  storagePath: os.tmpdir(),
+  staticFileURLPrefix: 'content/imports',
+  fileMode: 0o600,
+};
+
 class CustomMailAdapter extends BaseMailAdapter {
   someMethod() {}
 }
@@ -332,9 +339,9 @@ describe('AdapterManager', function () {
       adapterManager.init();
 
       // Both the active adapter and the media feature (distinct merged
-      // config, with the `adapter` key stripped) validate.
-      assert.equal(calls.length, 2);
-      assert.deepEqual(calls, [{ which: 'active' }, { which: 'media' }]);
+      // config, with the `adapter` key stripped) validate, plus the imports default.
+      assert.equal(calls.length, 3);
+      assert.deepEqual(calls, [{ which: 'active' }, { which: 'media' }, PRIVATE_IMPORTS_CONFIG]);
     });
 
     it('dedupes adapters resolving to the same class and config', function () {
@@ -359,8 +366,9 @@ describe('AdapterManager', function () {
 
       adapterManager.init();
 
-      assert.equal(calls.length, 1);
-      assert.deepEqual(calls[0], { shared: 'config' });
+      // The shared adapter validates once, plus the imports default.
+      assert.equal(calls.length, 2);
+      assert.deepEqual(calls, [{ shared: 'config' }, PRIVATE_IMPORTS_CONFIG]);
     });
 
     it('aggregates failures from multiple adapters into one error', function () {
@@ -371,6 +379,8 @@ describe('AdapterManager', function () {
       loadAdapterFromPath
         .withArgs('/path/storage/bad-storage')
         .returns(makeValidatingAdapter([], { shouldThrow: true }));
+      // The imports default loads cleanly.
+      loadAdapterFromPath.withArgs('/path/storage/LocalStorageBase').returns(CustomMailAdapter);
 
       const adapterManager = new AdapterManager({
         loadAdapterFromPath,

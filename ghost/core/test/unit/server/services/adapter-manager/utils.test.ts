@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import os from 'node:os';
 import { Provider } from 'nconf';
 import {
   resolveAdapterOptions,
@@ -43,6 +44,55 @@ describe('Adapter Manager: utils', function () {
         'local-storage': {
           basePath: '/some/path',
         },
+        imports: {
+          adapter: 'LocalStorageBase',
+          storagePath: os.tmpdir(),
+          staticFileURLPrefix: 'content/imports',
+          fileMode: 0o600,
+        },
+      });
+    });
+
+    describe('storage:imports', function () {
+      const PRIVATE_LOCAL_IMPORTS = {
+        adapterClassName: 'LocalStorageBase',
+        adapterConfig: {
+          storagePath: os.tmpdir(),
+          staticFileURLPrefix: 'content/imports',
+          fileMode: 0o600,
+        },
+      };
+      const importsAdapterFor = (storage: object, where: 'storage' | 'adapters') => {
+        const conf = loadNconf();
+        if (where === 'storage') {
+          conf.set('storage', storage);
+        } else {
+          conf.set('adapters', { storage });
+        }
+        return resolveAdapterOptions('storage:imports', normalizeAdapterConfig(conf));
+      };
+
+      it('resolves to the private local store when nothing configures it', function () {
+        // The shape Ghost(Pro) configures: image, media and file features on a shared
+        // S3Storage block, and nothing for imports.
+        const storage = {
+          images: { adapter: 'S3Storage', staticFileURLPrefix: 'content/images' },
+          media: { adapter: 'S3Storage', staticFileURLPrefix: 'content/media' },
+          files: { adapter: 'S3Storage', staticFileURLPrefix: 'content/files' },
+          S3Storage: { bucket: 'assets', tenantPrefix: 'c/ab/cd/site' },
+        };
+
+        for (const where of ['storage', 'adapters'] as const) {
+          assert.deepEqual(importsAdapterFor(storage, where), PRIVATE_LOCAL_IMPORTS, where);
+        }
+
+        const conf = loadNconf();
+        conf.set('storage', storage);
+        const { adapterClassName } = resolveAdapterOptions(
+          'storage:images',
+          normalizeAdapterConfig(conf),
+        );
+        assert.equal(adapterClassName, 'S3Storage');
       });
     });
 
