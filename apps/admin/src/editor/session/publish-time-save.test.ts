@@ -1,11 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
-import { serializePostPayload } from '@tryghost/admin-x-framework/api/post-contract';
-import { createEditorSession, type EditorCreatePayload } from './editor-session';
+import { deferred } from '@/utils/deferred';
+import {
+  LOADED_AT,
+  record,
+  serializedFields,
+  sessionHarness,
+} from '@/editor/session/__test-utils__/session-harness';
 import type { EditorRecord } from './projection';
 import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from './settings-fields';
-import { deferred } from '@/utils/deferred';
 
-const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PAST = '2020-06-01T10:00:00.000Z';
 const OLDER = '2019-03-04T08:30:00.000Z';
 // What a real publish stamps: the same minute as PAST, with seconds of its own.
@@ -19,7 +22,7 @@ function future(): string {
 }
 
 function publishTimeSession(status: EditorRecord['status'], publishedAt: string | null) {
-  let saved: EditorRecord = {
+  const saved = record({
     id: 'post-id',
     uuid: 'post-uuid',
     url: 'https://example.com/post/',
@@ -31,28 +34,18 @@ function publishTimeSession(status: EditorRecord['status'], publishedAt: string 
     lexical: null,
     updated_at: LOADED_AT,
     published_at: publishedAt,
-    tags: [],
-  };
-  let saves = 0;
-  const persist = (payload: EditorCreatePayload) => {
-    saves += 1;
-    // The payload is not a record, so the post serializer stands in for the
-    // transport to resolve it into the fields a saved record carries.
-    const serialized = serializePostPayload(payload);
-    saved = { ...saved, ...serialized, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return Promise.resolve(saved);
-  };
-  const create = vi.fn(persist);
-  const update = vi.fn(persist);
-  const session = createEditorSession({
-    record: saved,
-    saveFailureMessage: 'Saving failed',
-    onIdAcquired: vi.fn(),
-    onError: vi.fn(),
-    transport: { create, update, generateSlug: () => Promise.resolve('post') },
   });
-  session.setBaseline(null);
-  return { session, create, update };
+
+  return sessionHarness(
+    {
+      record: saved,
+      acknowledged: saved,
+      createdId: saved.id,
+      saveFailureMessage: 'Saving failed',
+      baseline: null,
+    },
+    { applied: serializedFields, generateSlug: () => Promise.resolve('post') },
+  );
 }
 
 describe('publishedAtInFuture', () => {

@@ -60,6 +60,7 @@ import {
   settingsDeleteDialog,
   settingsDeleteError,
   settingsExcerptInput,
+  settingsLoadError,
   settingsFacebookDescriptionInput,
   settingsFacebookPreview,
   settingsFacebookPreviewImage,
@@ -93,6 +94,7 @@ import {
   settingsTagsToken,
   settingsTemplateSelect,
   settingsTemplateSlugMatch,
+  settingsTiersError,
   settingsTiersPicker,
   settingsUrlPreview,
   settingsVisibilitySelect,
@@ -164,6 +166,10 @@ export const editorScreen = {
   settingsToggle: () => page.getByTestId(settingsMenuToggle),
   settingsSidebar: () => page.getByTestId(postSettingsSidebar),
   settingsExcerpt: () => page.getByTestId(settingsExcerptInput),
+  /** A section's failed-browse notice, wherever the sidebar shows one. */
+  settingsLoadError: () => page.getByTestId(settingsLoadError),
+  settingsLoadErrorRetry: () =>
+    page.getByTestId(settingsLoadError).getByRole('button', { name: 'Retry', exact: true }),
   settingsFeatured: () => page.getByTestId(settingsFeaturedToggle),
   settingsShowTitle: () => page.getByTestId(settingsShowTitleToggle),
   settingsShowTitleWarning: () => page.getByTestId(settingsShowTitleWarning),
@@ -178,7 +184,7 @@ export const editorScreen = {
   settingsTiers: () => page.getByTestId(settingsTiersPicker),
   settingsTier: (name: string) =>
     page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
-  settingsTiersError: () => page.getByTestId(settingsTiersPicker).getByRole('alert'),
+  settingsTiersError: () => page.getByTestId(settingsTiersError),
   settingsTagsField: () => page.getByTestId(settingsTagsField),
   settingsTagsInput: () => page.getByTestId(settingsTagsInput),
   settingsTagsTokens: () => page.getByTestId(settingsTagsToken),

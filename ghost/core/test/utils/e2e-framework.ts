@@ -12,44 +12,53 @@
 // Can include building a DB state, file system state (themes, config files), building configuration state (config files) etc.
 //
 // The output state checker is responsible for checking the response from the app after performing a request.
-const _ = require('lodash');
-const debug = require('@tryghost/debug')('test');
-const { any, stringMatching } = require('@tryghost/express-test').snapshot;
-const { AsymmetricMatcher } = require('expect');
-const fs = require('fs-extra');
-const path = require('path');
-const os = require('os');
-const crypto = require('crypto');
-
-const assert = require('node:assert/strict');
-
-const fixtureUtils = require('./fixture-utils');
-const { cacheRules } = require('./fixtures/cache-rules');
-const redirectsUtils = require('./redirects');
-const configUtils = require('./config-utils');
-const urlServiceUtils = require('./url-service-utils');
-const mockManager = require('./e2e-framework-mock-manager');
-const mentionsJobsService = require('../../core/server/services/mentions-jobs');
-const jobsService = require('../../core/server/services/jobs');
-
-const boot = require('../../core/boot');
-const {
+import debugFactory from '@tryghost/debug';
+// @ts-expect-error This module lacks type definitions.
+import * as expressTest from '@tryghost/express-test';
+import { AsymmetricMatcher } from 'expect';
+import * as fs from 'fs-extra';
+import * as path from 'node:path';
+import * as os from 'node:os';
+import * as crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import fixtureUtils from './fixture-utils';
+import { cacheRules } from './fixtures/cache-rules';
+import * as redirectsUtils from './redirects';
+// @ts-expect-error This module lacks type definitions.
+import configUtils from './config-utils';
+import * as urlServiceUtils from './url-service-utils';
+// @ts-expect-error This module lacks type definitions.
+import mockManager from './e2e-framework-mock-manager';
+// @ts-expect-error This module lacks type definitions.
+import mentionsJobsService from '../../core/server/services/mentions-jobs';
+// @ts-expect-error This module lacks type definitions.
+import jobsService from '../../core/server/services/jobs';
+// @ts-expect-error This module lacks type definitions.
+import boot from '../../core/boot';
+import {
   AdminAPITestAgent,
   ContentAPITestAgent,
   GhostAPITestAgent,
   MembersAPITestAgent,
-} = require('./agents');
-const db = require('./db-utils');
+  // @ts-expect-error This module lacks type definitions.
+} from './agents';
+// @ts-expect-error This module lacks type definitions.
+import db from './db-utils';
+// @ts-expect-error This module lacks type definitions.
+import settingsService from '../../core/server/services/settings/settings-service';
+import supertest from 'supertest';
+// @ts-expect-error This module lacks type definitions.
+import { stopGhost } from './e2e-utils';
+import adapterManager from '../../core/server/services/adapter-manager';
+// @ts-expect-error This module lacks type definitions.
+import DomainEvents from '@tryghost/domain-events';
+import * as hostLimits from './host-limits-utils';
+// @ts-expect-error This module lacks type definitions.
+import urlUtils from './url-utils';
 
-// Services that need resetting
-const settingsService = require('../../core/server/services/settings/settings-service');
-const supertest = require('supertest');
-const { stopGhost } = require('./e2e-utils');
-const adapterManager = require('../../core/server/services/adapter-manager').default;
-const DomainEvents = require('@tryghost/domain-events');
-
-// Require additional assertions which help us keep our tests small and clear
-require('./assertions');
+const debug = debugFactory('test');
+const { any, stringMatching } = expressTest.snapshot;
 
 let totalResetTime = 0;
 let totalStartTime = 0;
@@ -124,7 +133,15 @@ const startGhost = async (options = {}) => {
  * Slightly simplified copy-paste from e2e-utils.
  * @param {Object} options
  */
-const prepareContentFolder = async ({ contentFolder, redirectsFile = true, routesFile = true }) => {
+const prepareContentFolder = async ({
+  contentFolder,
+  redirectsFile = true,
+  routesFile = true,
+}: {
+  contentFolder: string;
+  redirectsFile?: boolean;
+  routesFile?: boolean;
+}) => {
   const contentFolderForTests = contentFolder;
 
   await fs.ensureDir(contentFolderForTests);
@@ -156,21 +173,19 @@ const prepareContentFolder = async ({ contentFolder, redirectsFile = true, route
 
 /**
  * Database state builder. By default inserts an owner user into the database.
- * @param  {...any} [options]
+ * @param {...string} [options]
  * @returns {Promise<void>}
  */
-const initFixtures = async (...options) => {
+const initFixtures = async (...options: string[]) => {
   // No DB setup, but override the owner
-  options = _.merge(
-    { 'owner:post': true },
-    _.transform(options, function (result, val) {
-      if (val) {
-        result[val] = true;
-      }
-    }),
-  );
+  const fixtureOptions: Record<string, boolean> = { 'owner:post': true };
+  for (const option of options) {
+    if (option) {
+      fixtureOptions[option] = true;
+    }
+  }
 
-  const fixtureOps = fixtureUtils.getFixtureOps(options);
+  const fixtureOps = fixtureUtils.getFixtureOps(fixtureOptions);
 
   const results = [];
   for (const fixtureOp of fixtureOps) {
@@ -180,7 +195,7 @@ const initFixtures = async (...options) => {
   return results;
 };
 
-const getFixture = (type, index = 0) => {
+const getFixture = (type: string, index = 0) => {
   return fixtureUtils.DataGenerator.forKnex[type][index];
 };
 
@@ -189,7 +204,9 @@ const getFixture = (type, index = 0) => {
  */
 const resetRateLimits = async () => {
   // Reset rate limiting instances
-  const { spamPrevention } = require('../../core/server/web/shared/middleware/api');
+  // @ts-expect-error This module lacks type definitions.
+  const { default: apiMiddleware } = await import('../../core/server/web/shared/middleware/api');
+  const { spamPrevention } = apiMiddleware;
   spamPrevention.reset();
 };
 
@@ -201,8 +218,10 @@ const resetRateLimits = async () => {
  * committed snapshot expects the un-resized URL (a fresh probe of the 1x1 fixture
  * yields no dimensions). Clear it between boots so each file probes fresh.
  */
-const resetImageSizeCache = () => {
-  require('../../core/server/lib/image').cachedImageSizeFromUrl.cache.reset();
+const resetImageSizeCache = async () => {
+  // @ts-expect-error This module lacks type definitions.
+  const { default: image } = await import('../../core/server/lib/image');
+  image.cachedImageSizeFromUrl.cache.reset();
 };
 
 /**
@@ -221,7 +240,7 @@ const resetData = async () => {
   // Reset rate limiting instances (resetting the table is not enough!)
   await resetRateLimits();
 
-  resetImageSizeCache();
+  await resetImageSizeCache();
 };
 
 /**
@@ -240,7 +259,9 @@ const getContentAPIAgent = async () => {
       originURL,
     });
   } catch (error) {
-    error.message = `Unable to create test agent. ${error.message}`;
+    if (error instanceof Error) {
+      error.message = `Unable to create test agent. ${error.message}`;
+    }
     throw error;
   }
 };
@@ -255,8 +276,8 @@ const getContentAPIAgent = async () => {
  * @param {string} [options.staffTokenRole] Authenticate with the fixture staff token for this role
  * @returns {Promise<InstanceType<AdminAPITestAgent>>} agent
  */
-const getAdminAPIAgent = async (options = {}) => {
-  const bootOptions = {};
+const getAdminAPIAgent = async (options: { members?: boolean; staffTokenRole?: string } = {}) => {
+  const bootOptions: { frontend?: boolean } = {};
 
   if (options.members) {
     bootOptions.frontend = true;
@@ -277,7 +298,9 @@ const getAdminAPIAgent = async (options = {}) => {
 
     return agent;
   } catch (error) {
-    error.message = `Unable to create test agent. ${error.message}`;
+    if (error instanceof Error) {
+      error.message = `Unable to create test agent. ${error.message}`;
+    }
     throw error;
   }
 };
@@ -302,7 +325,9 @@ const getMembersAPIAgent = async () => {
       originURL,
     });
   } catch (error) {
-    error.message = `Unable to create test agent. ${error.message}`;
+    if (error instanceof Error) {
+      error.message = `Unable to create test agent. ${error.message}`;
+    }
     throw error;
   }
 };
@@ -327,7 +352,9 @@ const getWebmentionsAPIAgent = async () => {
       originURL,
     });
   } catch (error) {
-    error.message = `Unable to create test agent. ${error.message}`;
+    if (error instanceof Error) {
+      error.message = `Unable to create test agent. ${error.message}`;
+    }
     throw error;
   }
 };
@@ -353,7 +380,9 @@ const getGhostAPIAgent = async () => {
       originURL,
     });
   } catch (error) {
-    error.message = `Unable to create test agent. ${error.message}`;
+    if (error instanceof Error) {
+      error.message = `Unable to create test agent. ${error.message}`;
+    }
     throw error;
   }
 };
@@ -383,7 +412,9 @@ const getAgentsForMembers = async () => {
       originURL,
     });
   } catch (error) {
-    error.message = `Unable to create test agent. ${error.message}`;
+    if (error instanceof Error) {
+      error.message = `Unable to create test agent. ${error.message}`;
+    }
     throw error;
   }
 
@@ -435,7 +466,9 @@ const getAgentsWithFrontend = async () => {
     });
     frontendAgent = supertest.agent(originURL);
   } catch (error) {
-    error.message = `Unable to create test agent. ${error.message}`;
+    if (error instanceof Error) {
+      error.message = `Unable to create test agent. ${error.message}`;
+    }
     throw error;
   }
 
@@ -449,7 +482,15 @@ const getAgentsWithFrontend = async () => {
   };
 };
 
-const insertWebhook = ({ event, url, integrationType = undefined }) => {
+const insertWebhook = ({
+  event,
+  url,
+  integrationType = undefined,
+}: {
+  event: string;
+  url: string;
+  integrationType?: string;
+}) => {
   return fixtureUtils.fixtures.insertWebhook(
     {
       event: event,
@@ -461,12 +502,19 @@ const insertWebhook = ({ event, url, integrationType = undefined }) => {
   );
 };
 
-class Nullable extends AsymmetricMatcher {
-  constructor(sample) {
+type MatcherSample = {
+  asymmetricMatch(other: unknown): boolean;
+  toString(): string;
+  getExpectedType(): string;
+  toAsymmetricMatcher?(): string;
+};
+
+class Nullable extends AsymmetricMatcher<MatcherSample> {
+  constructor(sample: MatcherSample) {
     super(sample);
   }
 
-  asymmetricMatch(other) {
+  asymmetricMatch(other: unknown) {
     if (other === null) {
       return true;
     }
@@ -496,7 +544,7 @@ class Nullable extends AsymmetricMatcher {
  * @returns {Function}
  */
 function cacheInvalidateHeaderNotSet() {
-  return ({ headers }) => {
+  return ({ headers }: { headers: Record<string, string | undefined> }) => {
     // Assert header should not exist
     assert.equal(
       headers['x-cache-invalidate'],
@@ -511,7 +559,7 @@ function cacheInvalidateHeaderNotSet() {
  * @returns {Function}
  */
 function cacheInvalidateHeaderSetToWildcard() {
-  return ({ headers }) => {
+  return ({ headers }: { headers: Record<string, string | undefined> }) => {
     assert.equal(
       headers['x-cache-invalidate'],
       '/*',
@@ -520,77 +568,69 @@ function cacheInvalidateHeaderSetToWildcard() {
   };
 }
 
-module.exports = {
-  // request agent
-  agentProvider: {
-    getAdminAPIAgent,
-    getMembersAPIAgent,
-    getWebmentionsAPIAgent,
-    getContentAPIAgent,
-    getAgentsForMembers,
-    getGhostAPIAgent,
-    getAgentsWithFrontend,
-  },
-  // @NOTE: startGhost only exposed for playwright tests
-  startGhost,
-  // Mocks and Stubs
-  mockManager,
-
-  // DB State Manipulation
-  fixtureManager: {
-    get: getFixture,
-    insertWebhook: insertWebhook,
-    getCurrentOwnerUser: fixtureUtils.getCurrentOwnerUser,
-    init: initFixtures,
-    restore: resetData,
-    getPathForFixture: (fixturePath) => {
-      return path.join(__dirname, 'fixtures', fixturePath);
-    },
-  },
-  regexes: {
-    anyMajorMinorVersion: /v\d+\.\d+/gi,
-    queryStringToken: (paramName) => new RegExp(`${paramName}=(\\w|-)+`, 'g'),
-  },
-  matchers: {
-    anyBoolean: any(Boolean),
-    anyString: any(String),
-    anyArray: any(Array),
-    anyObject: any(Object),
-    anyNumber: any(Number),
-    nullable: (expectedObject) => new Nullable(expectedObject), // usage: nullable(anyString)
-    anyStringNumber: stringMatching(/\d+/),
-    anyISODateTime: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/),
-    anyISODate: stringMatching(/\d{4}-\d{2}-\d{2}/),
-    anyISODateTimeWithTZ: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000\+\d{2}:\d{2}/),
-    anyEtag: stringMatching(/(?:W\/)?"(?:[ !#-\x7E\x80-\xFF]*|\r\n[\t ]|\\.)*"/),
-    anyContentLength: stringMatching(/\d+/),
-    anyContentVersion: stringMatching(/v\d+\.\d+/),
-    anyObjectId: stringMatching(/[a-f0-9]{24}/),
-    anyErrorId: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
-    anyUuid: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
-    anyLocationFor: (resource) => {
-      return stringMatching(new RegExp(`https?://.*?/${resource}/[a-f0-9]{24}/`));
-    },
-    anyGhostAgent: stringMatching(
-      /Ghost\/\d+\.\d+(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?\s\(https:\/\/github.com\/TryGhost\/Ghost\)/,
-    ),
-    // @NOTE: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
-    //        this matcher should be removed once the issue is solved - routing is redesigned
-    //        An ideal solution would be removal of this matcher altogether.
-    anyLocalURL: stringMatching(/http:\/\/127.0.0.1:\d+\/[A-Za-z0-9_-]+\//),
-    stringMatching,
-  },
-
-  assertions: {
-    cacheInvalidateHeaderNotSet,
-    cacheInvalidateHeaderSetToWildcard,
-  },
-
-  // utilities
-  configUtils: require('./config-utils'),
-  hostLimits: require('./host-limits-utils'),
-  dbUtils: require('./db-utils'),
-  urlUtils: require('./url-utils'),
-  resetRateLimits,
-  cacheRules,
+// Request agents
+export const agentProvider = {
+  getAdminAPIAgent,
+  getMembersAPIAgent,
+  getWebmentionsAPIAgent,
+  getContentAPIAgent,
+  getAgentsForMembers,
+  getGhostAPIAgent,
+  getAgentsWithFrontend,
 };
+
+// DB state manipulation
+export const fixtureManager = {
+  get: getFixture,
+  insertWebhook: insertWebhook,
+  getCurrentOwnerUser: fixtureUtils.getCurrentOwnerUser,
+  init: initFixtures,
+  restore: resetData,
+  getPathForFixture: (fixturePath: string) => {
+    return path.join(__dirname, 'fixtures', fixturePath);
+  },
+};
+
+export const regexes = {
+  anyMajorMinorVersion: /v\d+\.\d+/gi,
+  queryStringToken: (paramName: string) => new RegExp(`${paramName}=(\\w|-)+`, 'g'),
+};
+
+export const matchers = {
+  anyBoolean: any(Boolean),
+  anyString: any(String),
+  anyArray: any(Array),
+  anyObject: any(Object),
+  anyNumber: any(Number),
+  nullable: (expectedObject: MatcherSample) => new Nullable(expectedObject), // usage: nullable(anyString)
+  anyStringNumber: stringMatching(/\d+/),
+  anyISODateTime: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/),
+  anyISODate: stringMatching(/\d{4}-\d{2}-\d{2}/),
+  anyISODateTimeWithTZ: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000\+\d{2}:\d{2}/),
+  anyEtag: stringMatching(/(?:W\/)?"(?:[ !#-\x7E\x80-\xFF]*|\r\n[\t ]|\\.)*"/),
+  anyContentLength: stringMatching(/\d+/),
+  anyContentVersion: stringMatching(/v\d+\.\d+/),
+  anyObjectId: stringMatching(/[a-f0-9]{24}/),
+  anyErrorId: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
+  anyUuid: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
+  anyLocationFor: (resource: string) => {
+    return stringMatching(new RegExp(`https?://.*?/${resource}/[a-f0-9]{24}/`));
+  },
+  anyGhostAgent: stringMatching(
+    /Ghost\/\d+\.\d+(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?\s\(https:\/\/github.com\/TryGhost\/Ghost\)/,
+  ),
+  // @NOTE: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
+  //        this matcher should be removed once the issue is solved - routing is redesigned
+  //        An ideal solution would be removal of this matcher altogether.
+  anyLocalURL: stringMatching(/http:\/\/127.0.0.1:\d+\/[A-Za-z0-9_-]+\//),
+  stringMatching,
+};
+
+export const assertions = {
+  cacheInvalidateHeaderNotSet,
+  cacheInvalidateHeaderSetToWildcard,
+};
+
+export { db as dbUtils };
+// @NOTE: startGhost only exposed for playwright tests
+export { startGhost, mockManager, configUtils, hostLimits, urlUtils, resetRateLimits, cacheRules };

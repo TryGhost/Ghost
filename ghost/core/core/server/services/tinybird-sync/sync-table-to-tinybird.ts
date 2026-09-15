@@ -18,6 +18,7 @@ export type TinybirdSyncOptions = {
   createId: () => string;
   batchSize: number;
   maxPayloadBytes: number;
+  maxPayloadMessages: number;
   requestTimeoutMs: number;
 };
 
@@ -75,13 +76,17 @@ const toEventLine = (row: Row, siteUuid: string, type: string): string => {
   });
 };
 
-function* chunkByBytes(lines: string[], maxBytes: number): Generator<string[]> {
+function* chunkByPayloadLimits(
+  lines: string[],
+  maxBytes: number,
+  maxMessages: number,
+): Generator<string[]> {
   let current: string[] = [];
   let currentBytes = 0;
 
   for (const line of lines) {
     const bytes = Buffer.byteLength(line) + '\n'.length;
-    if (current.length && currentBytes + bytes > maxBytes) {
+    if (current.length && (currentBytes + bytes > maxBytes || current.length === maxMessages)) {
       yield current;
       current = [];
       currentBytes = 0;
@@ -181,7 +186,7 @@ export async function syncTableToTinybird(
   target: TinybirdSyncTarget,
   options: TinybirdSyncOptions,
 ): Promise<number> {
-  const { knex, siteUuid, now, createId, batchSize, maxPayloadBytes } = options;
+  const { knex, siteUuid, now, createId, batchSize, maxPayloadBytes, maxPayloadMessages } = options;
   const cutoff = toDatabaseDate(new Date(now().getTime() - SAFETY_LAG_MS));
   let cursor = await readWatermark(knex, target.table);
   let sent = 0;
@@ -193,7 +198,7 @@ export async function syncTableToTinybird(
     }
 
     const lines = rows.map((row) => toEventLine(row, siteUuid, target.table));
-    for (const chunk of chunkByBytes(lines, maxPayloadBytes)) {
+    for (const chunk of chunkByPayloadLimits(lines, maxPayloadBytes, maxPayloadMessages)) {
       await postEvents(chunk, target, options);
     }
 

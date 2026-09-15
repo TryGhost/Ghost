@@ -9,6 +9,7 @@ export default class GhBillingIframe extends Component {
     @service ajax;
     @service billing;
     @service configManager;
+    @service feature;
     @service ghostPaths;
     @service limit;
     @service notifications;
@@ -131,7 +132,10 @@ export default class GhBillingIframe extends Component {
             response: {
                 forceUpgrade: this.config.hostSettings?.forceUpgrade,
                 isOwner: this.isOwner,
-                ownerUser
+                ownerUser,
+                // The flag accessor ships with the dunning return handler.
+                // Until then it is undefined, so Billing stays on its overview.
+                dunningReturnEnabled: this.feature.dunningWarnings === true
             }
         });
     }
@@ -168,7 +172,7 @@ export default class GhBillingIframe extends Component {
         // Detect if the current subscription is in a grace state and render a notification
         if (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid') {
             // This notification needs to be shown to every user regardless their permissions to see billing
-            this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
+            this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}/update-card">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
         } else {
             this.notifications.closeAlerts('billing.overdue');
         }

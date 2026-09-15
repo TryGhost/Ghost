@@ -12,24 +12,21 @@ import {
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withoutAutosave,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 // The suite's own viewport, restored after the case that narrows it.
 const WIDE_VIEWPORT = { width: 1280, height: 800 };
 
-// A settings save waits on the engine's queue, so these journeys outlast the default timeout.
-const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -151,179 +148,137 @@ afterEach(async () => {
  * field on its own, every other status stages it until an explicit save.
  */
 describe('Post settings sidebar', () => {
-  it(
-    'persists a draft’s Featured toggle on its own',
-    async () => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('persists a draft’s Featured toggle on its own', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      await editorScreen.settingsFeatured().click();
+    await editorScreen.settingsFeatured().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ featured: true });
-      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
-    },
-    SLOW,
-  );
+    await expect(saveApi).toHaveSavedFields({ featured: true });
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+  });
 
-  it(
-    'stages a published post’s Featured toggle until Update',
-    async () => {
-      const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('stages a published post’s Featured toggle until Update', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      await expect.element(editorScreen.updateButton()).toBeDisabled();
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
-      await editorScreen.settingsFeatured().click();
+    await editorScreen.settingsFeatured().click();
 
-      // The unsaved signal for a published post is the Update button, not the chip.
-      await expect.element(editorScreen.updateButton()).toBeEnabled();
-      await expect.poll(unsavedChangesGuarded).toBe(true);
-      expect(saveApi.requests).toHaveLength(0);
+    // The unsaved signal for a published post is the Update button, not the chip.
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    expect(saveApi.requests).toHaveLength(0);
 
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ featured: true, status: 'published' });
-      await expect.element(editorScreen.updateButton()).toBeDisabled();
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({ featured: true, status: 'published' });
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+  });
 
-  it(
-    'keeps a staged field through a collision and drops it on reload',
-    async () => {
-      const saveApi = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('keeps a staged field through a collision and drops it on reload', async () => {
+    const saveApi = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      await editorScreen.settingsFeatured().click();
-      await editorScreen.updateButton().click();
+    await editorScreen.settingsFeatured().click();
+    await editorScreen.updateButton().click();
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      await expect.element(editorScreen.conflictBanner()).toBeVisible();
-      // The rejected save keeps what the writer staged.
-      await expect
-        .element(editorScreen.settingsFeatured())
-        .toHaveAttribute('data-state', 'checked');
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
+    // The rejected save keeps what the writer staged.
+    await expect.element(editorScreen.settingsFeatured()).toHaveAttribute('data-state', 'checked');
 
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
 
-      await expect(editorScreen.conflictBanner()).toHaveCount(0);
-      await expect
-        .element(editorScreen.settingsFeatured())
-        .toHaveAttribute('data-state', 'unchecked');
-    },
-    SLOW,
-  );
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    await expect
+      .element(editorScreen.settingsFeatured())
+      .toHaveAttribute('data-state', 'unchecked');
+  });
 
-  it(
-    'saves the sidebar excerpt when the inline one is off',
-    async () => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('saves the sidebar excerpt when the inline one is off', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      await editorScreen.settingsExcerpt().fill('From the sidebar');
-      await editorScreen.titleInput().click();
+    await editorScreen.settingsExcerpt().fill('From the sidebar');
+    await editorScreen.titleInput().click();
 
-      await expect.poll(() => submittedPost(saveApi).custom_excerpt, POLL).toBe('From the sidebar');
-    },
-    SLOW,
-  );
+    await expect.poll(() => submittedPost(saveApi).custom_excerpt, POLL).toBe('From the sidebar');
+  });
 
-  it(
-    'shows a field the acknowledgement adopted, with no refetch to carry it',
-    async () => {
-      // The writer never touches Featured; the server's copy arrives on the save.
-      const saveApi = fakeAdoptingPost({ featured: true });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('shows a field the acknowledgement adopted, with no refetch to carry it', async () => {
+    // The writer never touches Featured; the server's copy arrives on the save.
+    const saveApi = fakeAdoptingPost({ featured: true });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      await expect
-        .element(editorScreen.settingsFeatured())
-        .toHaveAttribute('data-state', 'unchecked');
+    await expect
+      .element(editorScreen.settingsFeatured())
+      .toHaveAttribute('data-state', 'unchecked');
 
-      await editorScreen.settingsExcerpt().fill('From the sidebar');
-      await editorScreen.titleInput().click();
+    await editorScreen.settingsExcerpt().fill('From the sidebar');
+    await editorScreen.titleInput().click();
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      await expect
-        .element(editorScreen.settingsFeatured())
-        .toHaveAttribute('data-state', 'checked');
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    await expect.element(editorScreen.settingsFeatured()).toHaveAttribute('data-state', 'checked');
+  });
 
-  it(
-    'shows the excerpt the acknowledgement normalized',
-    async () => {
-      const saveApi = fakeAdoptingPost({ custom_excerpt: 'From the server' });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('shows the excerpt the acknowledgement normalized', async () => {
+    const saveApi = fakeAdoptingPost({ custom_excerpt: 'From the server' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      await editorScreen.settingsExcerpt().fill('From the sidebar');
-      await editorScreen.titleInput().click();
+    await editorScreen.settingsExcerpt().fill('From the sidebar');
+    await editorScreen.titleInput().click();
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      await expect.element(editorScreen.settingsExcerpt()).toHaveValue('From the server');
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    await expect.element(editorScreen.settingsExcerpt()).toHaveValue('From the server');
+  });
 
-  it(
-    'leaves the excerpt out of the sidebar when it renders under the title',
-    async () => {
-      fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, {
-        labs: { editorReact: true, editorExcerpt: true },
-      });
-      await openSidebar();
+  it('leaves the excerpt out of the sidebar when it renders under the title', async () => {
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      labs: { editorReact: true, editorExcerpt: true },
+    });
+    await openSidebar();
 
-      await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
-      await expect.element(editorScreen.excerptInput()).toBeVisible();
-    },
-    SLOW,
-  );
+    await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
+    await expect.element(editorScreen.excerptInput()).toBeVisible();
+  });
 
-  it(
-    'overlays the editor rather than narrowing it on a narrow viewport',
-    async () => {
-      fakeSavablePost();
-      await page.viewport(900, 800);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await expect.element(editorScreen.root()).toBeVisible();
+  it('overlays the editor rather than narrowing it on a narrow viewport', async () => {
+    fakeSavablePost();
+    await page.viewport(900, 800);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.root()).toBeVisible();
 
-      const editorWidth = editorWidthPx();
+    const editorWidth = editorWidthPx();
 
-      await openSidebar();
+    await openSidebar();
 
-      expect(editorWidthPx()).toBe(editorWidth);
-    },
-    SLOW,
-  );
+    expect(editorWidthPx()).toBe(editorWidth);
+  });
 
-  it(
-    'gives a contributor the sidebar without the fields their role cannot write',
-    async () => {
-      // A contributor may only open a draft they authored.
-      const saveApi = fakeSavablePost({ authors: [{ id: CURRENT_USER_ID }] });
-      await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
-      await openSidebar();
+  it('gives a contributor the sidebar without the fields their role cannot write', async () => {
+    // A contributor may only open a draft they authored.
+    const saveApi = fakeSavablePost({ authors: [{ id: CURRENT_USER_ID }] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
+    await openSidebar();
 
-      await expect(editorScreen.settingsFeatured()).toHaveCount(0);
+    await expect(editorScreen.settingsFeatured()).toHaveCount(0);
 
-      await editorScreen.settingsExcerpt().fill('A contributor’s excerpt');
-      await editorScreen.titleInput().click();
+    await editorScreen.settingsExcerpt().fill('A contributor’s excerpt');
+    await editorScreen.titleInput().click();
 
-      await expect
-        .poll(() => submittedPost(saveApi).custom_excerpt, POLL)
-        .toBe('A contributor’s excerpt');
-    },
-    SLOW,
-  );
+    await expect
+      .poll(() => submittedPost(saveApi).custom_excerpt, POLL)
+      .toBe('A contributor’s excerpt');
+  });
 });

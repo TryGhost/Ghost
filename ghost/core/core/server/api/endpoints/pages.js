@@ -2,7 +2,7 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
-const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const ALLOWED_INCLUDES = [
   'tags',
   'authors',
@@ -54,11 +54,7 @@ const controller = {
       unsafeAttrs: UNSAFE_ATTRS,
     },
     query(frame) {
-      const options = {
-        ...frame.options,
-        mongoTransformer: rejectAdminApiRestrictedFieldsTransformer,
-      };
-      return models.Post.findPage(options);
+      return models.Post.findPage(restrictAdminApiQueryOptions(frame.options));
     },
   },
 

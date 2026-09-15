@@ -8,7 +8,7 @@ import {
 } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { getHomepageUrl, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import {
   type CardConfigPostSource,
@@ -19,6 +19,7 @@ import {
   buildPostCardConfig,
 } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { useEditorSettings, useSiteTimezone } from './use-editor-settings';
 import { usePostLinkSuggestions } from './use-post-link-suggestions';
 
 export interface PostCardConfigOptions {
@@ -38,7 +39,8 @@ export function usePostCardConfig({
   createSnippet,
   deleteSnippet,
 }: PostCardConfigOptions): PostCardConfig | null {
-  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useEditorSettings();
+  const timezone = useSiteTimezone();
   const { data: configData } = useBrowseConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { data: siteData } = useBrowseSite({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
@@ -73,7 +75,7 @@ export function usePostCardConfig({
     donationsEnabled: getSettingValue<boolean>(settings, 'donations_enabled') === true,
     recommendationsEnabled: getSettingValue<boolean>(settings, 'recommendations_enabled') === true,
     membersEnabled: getSettingValue<string>(settings, 'members_signup_access') !== 'none',
-    timezone: getSettingValue<string>(settings, 'timezone') ?? 'Etc/UTC',
+    timezone,
   });
 
   const defaultContentVisibility =

@@ -21,17 +21,17 @@ import { AuthorsSection } from './authors-section';
 import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
-import { FacebookCardSection } from './facebook-card-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
 import { SubviewContext, useSubviewController } from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
+import { FACEBOOK_CARD_NETWORK, X_CARD_NETWORK } from './social-card-networks';
+import { SocialCardSection } from './social-card-section';
 import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
-import { XCardSection } from './x-card-section';
 
 function ExcerptSection({ session }: { session: EditorSessionHandle }) {
   const inputId = useId();
@@ -127,17 +127,19 @@ export function PostSettingsSidebar({
     'meta-data': <MetaDataSection session={session} siteUrl={siteUrl} />,
     'keyboard-shortcuts': <KeyboardShortcutsSection />,
     'x-card': (
-      <XCardSection
+      <SocialCardSection
         cardConfig={cardConfig}
         featureImage={featureImage}
+        network={X_CARD_NETWORK}
         session={session}
         siteUrl={siteUrl}
       />
     ),
     'facebook-card': (
-      <FacebookCardSection
+      <SocialCardSection
         cardConfig={cardConfig}
         featureImage={featureImage}
+        network={FACEBOOK_CARD_NETWORK}
         session={session}
         siteUrl={siteUrl}
       />

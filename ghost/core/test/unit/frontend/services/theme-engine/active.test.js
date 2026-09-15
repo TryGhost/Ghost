@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const config = require('../../../../../core/shared/config');
 
 // is only exposed via themeEngine.getActive()
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
@@ -15,7 +14,6 @@ describe('Themes', function () {
   describe('Active', function () {
     describe('Mount', function () {
       let engineStub;
-      let configStub;
       let fakeSettings;
       let fakeBlogApp;
       let fakeLoadedTheme;
@@ -23,7 +21,6 @@ describe('Themes', function () {
 
       beforeEach(function () {
         engineStub = sinon.stub(engine, 'configure');
-        configStub = sinon.stub(config, 'set');
 
         fakeSettings = {
           locale: 'en',
@@ -62,11 +59,7 @@ describe('Themes', function () {
         // Call mount!
         theme.mount(fakeBlogApp);
 
-        // Check the asset hash gets reset
-        sinon.assert.calledOnce(configStub);
-        sinon.assert.calledWith(configStub, 'assetHash', null);
-
-        // Check the file-based asset hash cache is cleared
+        // Check the asset hash caches (file-based and global) get cleared
         sinon.assert.calledOnce(clearCacheSpy);
 
         // Check te view cache was cleared
@@ -99,11 +92,7 @@ describe('Themes', function () {
         // Call mount!
         theme.mount(fakeBlogApp);
 
-        // Check the asset hash gets reset
-        sinon.assert.calledOnce(configStub);
-        sinon.assert.calledWith(configStub, 'assetHash', null);
-
-        // Check the file-based asset hash cache is cleared
+        // Check the asset hash caches (file-based and global) get cleared
         sinon.assert.calledOnce(clearCacheSpy);
 
         // Check te view cache was cleared

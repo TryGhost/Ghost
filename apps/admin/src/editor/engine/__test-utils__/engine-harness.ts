@@ -3,6 +3,7 @@ import { deferred, type Deferred } from '@/utils/deferred';
 import {
   createSaveEngine,
   type DispatchIntent,
+  type PrepareOutcome,
   type SaveEngine,
   type SaveEngineState,
   type SaveError,
@@ -54,7 +55,10 @@ export function dispatchAny(engine: SaveEngine, kind: DispatchIntent) {
   }
 }
 
-export function setup(overrides: Partial<SnapshotFields> = {}) {
+export function setup(
+  overrides: Partial<SnapshotFields> = {},
+  ports: { autosaveDebounceMs?: () => number | undefined } = {},
+) {
   let snapshot = { ...BASE, ...overrides } as SaveSnapshot;
   const requests: SaveRequest[] = [];
   const signals: AbortSignal[] = [];
@@ -86,7 +90,10 @@ export function setup(overrides: Partial<SnapshotFields> = {}) {
     }),
   };
 
-  const prepare = vi.fn((request: SaveRequest) => Promise.resolve(request));
+  // Annotated so a test can answer with a typed prepare failure.
+  const prepare = vi.fn((request: SaveRequest): Promise<PrepareOutcome<SaveRequest>> =>
+    Promise.resolve({ ok: true, prepared: request }),
+  );
 
   const execute = vi.fn(async (prepared: SaveRequest, signal: AbortSignal) => {
     requests.push(prepared);
@@ -131,6 +138,7 @@ export function setup(overrides: Partial<SnapshotFields> = {}) {
     reconcile,
     onStateChange: (state) => states.push(state),
     onListenerError: (error) => listenerErrors.push(error),
+    ...ports,
   });
 
   function nextRequest() {

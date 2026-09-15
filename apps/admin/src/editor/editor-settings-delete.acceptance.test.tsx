@@ -23,8 +23,6 @@ const LOADED_AT = '2026-01-01T00:00:00.000Z';
 // The lists are React-owned so the delete's navigation stays in the router.
 const FLAG_ON = { labs: { editorReact: true, postsListReact: true } };
 
-// A delete waits on the engine's queue for the way out, so these outlast the default timeout.
-const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
 
 type SavedPost = ReturnType<typeof post>;
@@ -141,255 +139,217 @@ async function typeIntoBody(text: string) {
  * to the API, and the only exit from the editor that leaves no post behind.
  */
 describe('Post settings delete', () => {
-  it(
-    'offers nothing to delete until the post exists',
-    async () => {
-      editorChrome();
-      let created = post({
-        id: NEW_POST_ID,
-        title: '(Untitled)',
-        slug: 'untitled',
-        status: 'draft',
-        updated_at: LOADED_AT,
-        published_at: null,
-        tags: [],
-      });
-      fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
-        const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-        created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: LOADED_AT };
-        return { posts: [created] };
-      });
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
-        posts: [created],
-      }));
-      fakeAdminEndpoint('PUT', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
-        posts: [created],
-      }));
+  it('offers nothing to delete until the post exists', async () => {
+    editorChrome();
+    let created = post({
+      id: NEW_POST_ID,
+      title: '(Untitled)',
+      slug: 'untitled',
+      status: 'draft',
+      updated_at: LOADED_AT,
+      published_at: null,
+      tags: [],
+    });
+    fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+      const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+      created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: LOADED_AT };
+      return { posts: [created] };
+    });
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+      posts: [created],
+    }));
+    fakeAdminEndpoint('PUT', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+      posts: [created],
+    }));
 
-      await renderAdminApp('/editor/post', FLAG_ON);
-      await openSidebar();
+    await renderAdminApp('/editor/post', FLAG_ON);
+    await openSidebar();
 
-      await expect(editorScreen.settingsDelete()).toHaveCount(0);
+    await expect(editorScreen.settingsDelete()).toHaveCount(0);
 
-      await typeIntoBody('First words');
+    await typeIntoBody('First words');
 
-      // The create gives the post an ID, which is all the button was waiting for.
-      await expect.element(editorScreen.settingsDelete(), POLL).toBeVisible();
-    },
-    SLOW,
-  );
+    // The create gives the post an ID, which is all the button was waiting for.
+    await expect.element(editorScreen.settingsDelete(), POLL).toBeVisible();
+  });
 
-  it(
-    'names the post it is about to delete and warns that it is permanent',
-    async () => {
-      fakeDeletablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('names the post it is about to delete and warns that it is permanent', async () => {
+    fakeDeletablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      await expect.element(editorScreen.settingsDelete()).toHaveTextContent('Delete post');
+    await expect.element(editorScreen.settingsDelete()).toHaveTextContent('Delete post');
 
-      await editorScreen.settingsDelete().click();
+    await editorScreen.settingsDelete().click();
 
-      const dialog = editorScreen.settingsDeleteDialog();
-      await expect.element(dialog).toHaveTextContent('Are you sure you want to delete this post?');
-      await expect
-        .element(dialog)
-        .toHaveTextContent(
-          'You’re about to delete "Hello from React". This is permanent! We warned you, k?',
-        );
-      await expect.element(editorScreen.confirmSettingsDelete()).toBeVisible();
-      await expect.element(editorScreen.cancelSettingsDelete()).toBeVisible();
-
-      // Focus follows the dialog rather than staying on the button behind the
-      // overlay, so the keyboard reaches the choice it is asking for.
-      await expect
-        .poll(() => editorScreen.settingsDeleteDialog().element().contains(document.activeElement))
-        .toBe(true);
-      await expect.element(editorScreen.cancelSettingsDelete()).toHaveFocus();
-    },
-    SLOW,
-  );
-
-  it(
-    'keeps the post when the writer cancels',
-    async () => {
-      const { deleteApi } = fakeDeletablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openDeleteDialog();
-
-      await editorScreen.cancelSettingsDelete().click();
-
-      await expect(editorScreen.settingsDeleteDialog()).toHaveCount(0);
-      await expect.element(editorScreen.settingsDelete()).toHaveFocus();
-      expect(deleteApi.requests.length).toBe(0);
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    },
-    SLOW,
-  );
-
-  it(
-    'deletes a dirty draft and leaves for the list without saving it on the way out',
-    async () => {
-      const { calls, deleteApi } = fakeDeletablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await openSidebar();
-      // Unsaved work is what the leave guard would otherwise save on the way out.
-      await typeIntoBody(' and more');
-
-      await editorScreen.settingsDelete().click();
-      await editorScreen.confirmSettingsDelete().click();
-
-      await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
-      await expect.poll(currentRoute, POLL).toBe('/posts');
-      // Nothing may be written to a post that is gone, dirty body or not.
-      expect(calls.slice(calls.indexOf('DELETE'))).toEqual(['DELETE']);
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
-    },
-    SLOW,
-  );
-
-  it(
-    'keeps the editor and shows why when the API refuses',
-    async () => {
-      fakeRefusedDelete({
-        message: 'Cannot delete post.',
-        context: 'You do not have permission to delete this post.',
-      });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openDeleteDialog();
-
-      await editorScreen.confirmSettingsDelete().click();
-
-      // The sentence that explains the refusal, not the serializer's summary.
-      await expect
-        .element(editorScreen.settingsDeleteError(), POLL)
-        .toHaveTextContent('You do not have permission to delete this post.');
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-      await expect.element(editorScreen.settingsDeleteDialog()).toBeVisible();
-
-      await editorScreen.cancelSettingsDelete().click();
-
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    },
-    SLOW,
-  );
-
-  it(
-    'keeps unsaved work editable when the delete is refused by an expired session',
-    async () => {
-      const { saveApi } = fakeDeletablePost();
-      fakeAdminEndpoint(
-        'DELETE',
-        `/posts/${POST_ID}/`,
-        { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
-        { status: 401 },
+    const dialog = editorScreen.settingsDeleteDialog();
+    await expect.element(dialog).toHaveTextContent('Are you sure you want to delete this post?');
+    await expect
+      .element(dialog)
+      .toHaveTextContent(
+        'You’re about to delete "Hello from React". This is permanent! We warned you, k?',
       );
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await typeIntoBody(' and more');
-      await expect.poll(unsavedChangesGuarded).toBe(true);
-      await openDeleteDialog();
-      await editorScreen.confirmSettingsDelete().click();
+    await expect.element(editorScreen.confirmSettingsDelete()).toBeVisible();
+    await expect.element(editorScreen.cancelSettingsDelete()).toBeVisible();
 
-      await expect
-        .element(editorScreen.settingsDeleteError())
-        .toHaveTextContent(
-          'Your session expired. Sign in again in a new tab, then try deleting again.',
-        );
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-      await editorScreen.cancelSettingsDelete().click();
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    // Focus follows the dialog rather than staying on the button behind the
+    // overlay, so the keyboard reaches the choice it is asking for.
+    await expect
+      .poll(() => editorScreen.settingsDeleteDialog().element().contains(document.activeElement))
+      .toBe(true);
+    await expect.element(editorScreen.cancelSettingsDelete()).toHaveFocus();
+  });
 
-      await typeIntoBody(' after refusal');
-      await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect
-        .poll(() => JSON.stringify(saveApi.lastRequest?.body), POLL)
-        .toContain('after refusal');
-    },
-    SLOW,
-  );
+  it('keeps the post when the writer cancels', async () => {
+    const { deleteApi } = fakeDeletablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openDeleteDialog();
 
-  it(
-    'leaves for a list that no longer carries the deleted post',
-    async () => {
-      const { deleteApi } = fakeDeletablePost();
-      fakePostsListScreen();
-      const row = post({ id: POST_ID, title: 'Hello from React', status: 'draft' });
-      // The list the delete returns to, which stops serving the post once it is gone.
-      const listApi = fakePosts(() => (deleteApi.requests.length ? [] : [row]));
+    await editorScreen.cancelSettingsDelete().click();
 
-      await renderAdminApp('/posts', FLAG_ON);
-      await expect
-        .element(postsListScreen.listItems().first())
-        .toHaveTextContent('Hello from React');
-      const browsesBefore = listApi.requests.length;
+    await expect(editorScreen.settingsDeleteDialog()).toHaveCount(0);
+    await expect.element(editorScreen.settingsDelete()).toHaveFocus();
+    expect(deleteApi.requests.length).toBe(0);
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+  });
 
-      await postsListScreen.rowLink().first().click();
-      await expect.element(editorScreen.body(), POLL).toHaveTextContent('Hello from React');
-      await openSidebar();
-      await editorScreen.settingsDelete().click();
-      await editorScreen.confirmSettingsDelete().click();
+  it('deletes a dirty draft and leaves for the list without saving it on the way out', async () => {
+    const { calls, deleteApi } = fakeDeletablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await openSidebar();
+    // Unsaved work is what the leave guard would otherwise save on the way out.
+    await typeIntoBody(' and more');
 
-      await expect.poll(currentRoute, POLL).toBe('/posts');
-      // Without the delete invalidating it, the list is served from the cache it
-      // was left with — within the five-minute staleTime, deleted row and all.
-      await expect.poll(() => listApi.requests.length, POLL).toBeGreaterThan(browsesBefore);
-      await expect.poll(() => postsListScreen.listItems().elements().length, POLL).toBe(0);
-    },
-    SLOW,
-  );
+    await editorScreen.settingsDelete().click();
+    await editorScreen.confirmSettingsDelete().click();
 
-  it(
-    'offers the delete to a Contributor on their own draft',
-    async () => {
-      const { deleteApi } = fakeDeletablePost({ authors: [{ id: '1' }] });
-      await renderAdminApp(`/editor/post/${POST_ID}`, asContributor());
-      await openSidebar();
+    await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
+    await expect.poll(currentRoute, POLL).toBe('/posts');
+    // Nothing may be written to a post that is gone, dirty body or not.
+    expect(calls.slice(calls.indexOf('DELETE'))).toEqual(['DELETE']);
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+  });
 
-      // The Access section is not theirs to see, but the delete is.
-      await expect(editorScreen.settingsVisibility()).toHaveCount(0);
-      await editorScreen.settingsDelete().click();
-      await editorScreen.confirmSettingsDelete().click();
+  it('keeps the editor and shows why when the API refuses', async () => {
+    fakeRefusedDelete({
+      message: 'Cannot delete post.',
+      context: 'You do not have permission to delete this post.',
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openDeleteDialog();
 
-      await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
-      await expect.poll(currentRoute, POLL).toBe('/posts');
-    },
-    SLOW,
-  );
+    await editorScreen.confirmSettingsDelete().click();
 
-  it(
-    'deletes a page through the pages API and returns to the pages list',
-    async () => {
-      editorChrome();
-      const current = post({
-        id: POST_ID,
-        title: 'A page',
-        slug: 'a-page',
-        status: 'draft',
-        lexical: buildLexicalParagraph('A page'),
-        updated_at: LOADED_AT,
-        published_at: null,
-        tags: [],
-      });
-      fakeAdminEndpoint('GET', new RegExp(`^/pages/${POST_ID}/\\?`), () => ({ pages: [current] }));
-      fakeAdminEndpoint('PUT', new RegExp(`^/pages/${POST_ID}/\\?`), () => ({ pages: [current] }));
-      const deleteApi = fakeAdminEndpoint('DELETE', `/pages/${POST_ID}/`, null, { status: 204 });
+    // The sentence that explains the refusal, not the serializer's summary.
+    await expect
+      .element(editorScreen.settingsDeleteError(), POLL)
+      .toHaveTextContent('You do not have permission to delete this post.');
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.settingsDeleteDialog()).toBeVisible();
 
-      await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+    await editorScreen.cancelSettingsDelete().click();
 
-      await expect.element(editorScreen.settingsDelete()).toHaveTextContent('Delete page');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+  });
 
-      await editorScreen.settingsDelete().click();
-      await expect
-        .element(editorScreen.settingsDeleteDialog())
-        .toHaveTextContent('Are you sure you want to delete this page?');
-      await editorScreen.confirmSettingsDelete().click();
+  it('keeps unsaved work editable when the delete is refused by an expired session', async () => {
+    const { saveApi } = fakeDeletablePost();
+    fakeAdminEndpoint(
+      'DELETE',
+      `/posts/${POST_ID}/`,
+      { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
+      { status: 401 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await typeIntoBody(' and more');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    await openDeleteDialog();
+    await editorScreen.confirmSettingsDelete().click();
 
-      await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
-      await expect.poll(currentRoute, POLL).toBe('/pages');
-    },
-    SLOW,
-  );
+    await expect
+      .element(editorScreen.settingsDeleteError())
+      .toHaveTextContent(
+        'Your session expired. Sign in again in a new tab, then try deleting again.',
+      );
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    await editorScreen.cancelSettingsDelete().click();
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+
+    await typeIntoBody(' after refusal');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect
+      .poll(() => JSON.stringify(saveApi.lastRequest?.body), POLL)
+      .toContain('after refusal');
+  });
+
+  it('leaves for a list that no longer carries the deleted post', async () => {
+    const { deleteApi } = fakeDeletablePost();
+    fakePostsListScreen();
+    const row = post({ id: POST_ID, title: 'Hello from React', status: 'draft' });
+    // The list the delete returns to, which stops serving the post once it is gone.
+    const listApi = fakePosts(() => (deleteApi.requests.length ? [] : [row]));
+
+    await renderAdminApp('/posts', FLAG_ON);
+    await expect.element(postsListScreen.listItems().first()).toHaveTextContent('Hello from React');
+    const browsesBefore = listApi.requests.length;
+
+    await postsListScreen.rowLink().first().click();
+    await expect.element(editorScreen.body(), POLL).toHaveTextContent('Hello from React');
+    await openSidebar();
+    await editorScreen.settingsDelete().click();
+    await editorScreen.confirmSettingsDelete().click();
+
+    await expect.poll(currentRoute, POLL).toBe('/posts');
+    // Without the delete invalidating it, the list is served from the cache it
+    // was left with — within the five-minute staleTime, deleted row and all.
+    await expect.poll(() => listApi.requests.length, POLL).toBeGreaterThan(browsesBefore);
+    await expect.poll(() => postsListScreen.listItems().elements().length, POLL).toBe(0);
+  });
+
+  it('offers the delete to a Contributor on their own draft', async () => {
+    const { deleteApi } = fakeDeletablePost({ authors: [{ id: '1' }] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, asContributor());
+    await openSidebar();
+
+    // The Access section is not theirs to see, but the delete is.
+    await expect(editorScreen.settingsVisibility()).toHaveCount(0);
+    await editorScreen.settingsDelete().click();
+    await editorScreen.confirmSettingsDelete().click();
+
+    await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
+    await expect.poll(currentRoute, POLL).toBe('/posts');
+  });
+
+  it('deletes a page through the pages API and returns to the pages list', async () => {
+    editorChrome();
+    const current = post({
+      id: POST_ID,
+      title: 'A page',
+      slug: 'a-page',
+      status: 'draft',
+      lexical: buildLexicalParagraph('A page'),
+      updated_at: LOADED_AT,
+      published_at: null,
+      tags: [],
+    });
+    fakeAdminEndpoint('GET', new RegExp(`^/pages/${POST_ID}/\\?`), () => ({ pages: [current] }));
+    fakeAdminEndpoint('PUT', new RegExp(`^/pages/${POST_ID}/\\?`), () => ({ pages: [current] }));
+    const deleteApi = fakeAdminEndpoint('DELETE', `/pages/${POST_ID}/`, null, { status: 204 });
+
+    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+
+    await expect.element(editorScreen.settingsDelete()).toHaveTextContent('Delete page');
+
+    await editorScreen.settingsDelete().click();
+    await expect
+      .element(editorScreen.settingsDeleteDialog())
+      .toHaveTextContent('Are you sure you want to delete this page?');
+    await editorScreen.confirmSettingsDelete().click();
+
+    await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
+    await expect.poll(currentRoute, POLL).toBe('/pages');
+  });
 });

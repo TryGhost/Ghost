@@ -42,6 +42,9 @@ export default defineConfig({
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
     setupFiles: ['./test-utils/acceptance/setup.ts'],
+    // Most journeys finish well under a second, but a few that wait out a
+    // product-side hold reach ~6s; this leaves those headroom on slower CI.
+    testTimeout: 15_000,
     expect: {
       // Full-app renders are slower than unit renders; the harness's
       // toHaveCount matcher derives its polling from this too.

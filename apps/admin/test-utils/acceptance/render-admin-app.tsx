@@ -3,7 +3,12 @@ import { render } from 'vitest-browser-react';
 import '@/index.css';
 import { AdminAppRoot } from '@/app-root';
 
-import { composeLabsBootOverrides, installBootOverrides, type BootOverrides } from './boot';
+import {
+  composeConfigBootOverrides,
+  composeLabsBootOverrides,
+  installBootOverrides,
+  type BootOverrides,
+} from './boot';
 import { createFrameworkProps } from './framework-props';
 
 export interface RenderAdminAppOptions {
@@ -18,6 +23,11 @@ export interface RenderAdminAppOptions {
    * merge into `browseConfig`/`browseSettings` override responses.
    */
   boot?: BootOverrides;
+  /**
+   * The editor's autosave debounce in milliseconds, for a spec that must keep
+   * autosave out of the way or run it fast; defaults to the editor's 3s.
+   */
+  autosaveDebounceMs?: number;
 }
 
 /**
@@ -36,9 +46,15 @@ export function currentRoute(): string {
  */
 export async function renderAdminApp(
   route: string = '/',
-  { labs, boot }: RenderAdminAppOptions = {},
+  { labs, boot, autosaveDebounceMs }: RenderAdminAppOptions = {},
 ): Promise<Awaited<ReturnType<typeof render>>> {
-  const overrides: BootOverrides = labs ? composeLabsBootOverrides(labs, boot) : { ...boot };
+  let overrides: BootOverrides = labs ? composeLabsBootOverrides(labs, boot) : { ...boot };
+  if (autosaveDebounceMs !== undefined) {
+    overrides = composeConfigBootOverrides(
+      { editorAutosaveDebounceMs: autosaveDebounceMs },
+      overrides,
+    );
+  }
 
   if (Object.keys(overrides).length > 0) {
     installBootOverrides(overrides);

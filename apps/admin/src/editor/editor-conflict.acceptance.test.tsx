@@ -9,6 +9,7 @@ import {
   post,
   renderAdminApp,
   unsavedChangesGuarded,
+  withFastAutosave,
   type CapturedEndpointRequest,
   type EndpointCapture,
 } from '@test-utils/acceptance';
@@ -16,17 +17,13 @@ import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const THEIR_SAVE_AT = '2026-01-01T09:00:00.000Z';
 const AFTER_SAVE_AT = '2026-01-01T10:00:00.000Z';
 const MY_IMAGE = 'https://example.com/content/images/mine.jpg';
 const THEIR_IMAGE = 'https://example.com/content/images/theirs.jpg';
 const READ_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
-
-// The autosave debounce is 3s, so these journeys outlast the default timeout.
-const SLOW = 20_000;
-const POLL = { timeout: 10_000 };
 
 // Captured before any test stubs it, so afterEach can put it back. Normally
 // undefined: `clipboard` lives on the prototype, not as an own property.
@@ -137,15 +134,16 @@ const saveFails = (status: number) =>
     { status },
   );
 
-async function typeIntoBody(text: string) {
-  await editorScreen.body().click();
-  await userEvent.keyboard(`{End}${text}`);
+async function appendToBody(text: string) {
+  const body = editorScreen.body();
+  // One input event: a fast autosave must not split a keyboard sequence into several saves.
+  await body.fill(`${body.element().textContent ?? ''}${text}`);
 }
 
 async function collide(saveApi: EndpointCapture) {
   await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-  await typeIntoBody(' and more');
-  await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+  await appendToBody(' and more');
+  await expect.poll(() => saveApi.requests.length).toBe(1);
   await expect.element(editorScreen.conflictBanner()).toBeVisible();
 }
 
@@ -163,367 +161,144 @@ describe('Post editor update collision', () => {
     }
   });
 
-  it(
-    'asks before a reload discards unsaved work, and cancelling keeps it',
-    async () => {
-      const { readApi, saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
-      const readsBefore = readApi.requests.length;
+  it('asks before a reload discards unsaved work, and cancelling keeps it', async () => {
+    const { readApi, saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
+    const readsBefore = readApi.requests.length;
 
-      await editorScreen.reloadAfterConflict().click();
+    await editorScreen.reloadAfterConflict().click();
 
-      await expect.element(editorScreen.conflictReloadConfirm()).toBeVisible();
-      await editorScreen.cancelConflictReload().click();
+    await expect.element(editorScreen.conflictReloadConfirm()).toBeVisible();
+    await editorScreen.cancelConflictReload().click();
 
-      await expect(editorScreen.conflictReloadConfirm()).toHaveCount(0);
-      expect(readApi.requests.length).toBe(readsBefore);
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-      await expect.element(editorScreen.conflictBanner()).toBeVisible();
-    },
-    SLOW,
-  );
+    await expect(editorScreen.conflictReloadConfirm()).toHaveCount(0);
+    expect(readApi.requests.length).toBe(readsBefore);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
+  });
 
-  it(
-    'protects conflicted work on leave and clears the guard after reloading',
-    async () => {
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, {
-        labs: { editorReact: true, postsListReact: true },
-      });
-      await collide(saveApi);
-      await expect.poll(unsavedChangesGuarded).toBe(true);
+  it('protects conflicted work on leave and clears the guard after reloading', async () => {
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(
+      `/editor/post/${POST_ID}`,
+      withFastAutosave({ labs: { editorReact: true, postsListReact: true } }),
+    );
+    await collide(saveApi);
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
-      await editorScreen.backLink('post').click();
-      await expect.element(editorScreen.leaveDialog()).toBeVisible();
-      await editorScreen.stayInEditor().click();
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await editorScreen.backLink('post').click();
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    await editorScreen.stayInEditor().click();
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
 
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-      await expect.element(editorScreen.body()).toHaveTextContent('Their version of the body');
-      await expect.poll(unsavedChangesGuarded).toBe(false);
-      await editorScreen.backLink('post').click();
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+    await expect.element(editorScreen.body()).toHaveTextContent('Their version of the body');
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    await editorScreen.backLink('post').click();
 
-      await expect.poll(currentRoute).toBe('/posts');
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
-      expect(saveApi.requests.length).toBe(1);
-    },
-    SLOW,
-  );
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+    expect(saveApi.requests.length).toBe(1);
+  });
 
-  it(
-    'reloads without asking when only the refused save makes the post dirty',
-    async () => {
-      const { readApi, saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('reloads without asking when only the refused save makes the post dirty', async () => {
+    const { readApi, saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await editorScreen.titleInput().fill('Renamed by me');
-      await editorScreen.body().click();
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      await expect.element(editorScreen.conflictBanner()).toBeVisible();
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await editorScreen.titleInput().fill('Renamed by me');
+    await editorScreen.body().click();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
 
-      // The writer puts the title back: nothing of theirs is left to discard,
-      // even though the refused save still counts the post as dirty.
-      await editorScreen.titleInput().fill('Hello from React');
-      const readsBefore = readApi.requests.length;
+    // The writer puts the title back: nothing of theirs is left to discard,
+    // even though the refused save still counts the post as dirty.
+    await editorScreen.titleInput().fill('Hello from React');
+    const readsBefore = readApi.requests.length;
 
-      await editorScreen.reloadAfterConflict().click();
+    await editorScreen.reloadAfterConflict().click();
 
-      await expect.poll(() => readApi.requests.length, POLL).toBe(readsBefore + 1);
-      await expect(editorScreen.conflictReloadConfirm()).toHaveCount(0);
-      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
-    },
-    SLOW,
-  );
+    await expect.poll(() => readApi.requests.length).toBe(readsBefore + 1);
+    await expect(editorScreen.conflictReloadConfirm()).toHaveCount(0);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+  });
 
-  it(
-    'replaces the post with the server copy and saves against its version next',
-    async () => {
-      const { readApi, saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
-      const readsBefore = readApi.requests.length;
-      expect(featureImageSrc()).toBe(MY_IMAGE);
+  it('replaces the post with the server copy and saves against its version next', async () => {
+    const { readApi, saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
+    const readsBefore = readApi.requests.length;
+    expect(featureImageSrc()).toBe(MY_IMAGE);
 
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
 
-      // The reload reads through the editor's own request options.
-      await expect.poll(() => readApi.requests.length, POLL).toBe(readsBefore + 1);
-      expect(readApi.lastRequest?.url ?? '').toContain('formats=mobiledoc%2Clexical');
+    // The reload reads through the editor's own request options.
+    await expect.poll(() => readApi.requests.length).toBe(readsBefore + 1);
+    expect(readApi.lastRequest?.url ?? '').toContain('formats=mobiledoc%2Clexical');
 
-      await expect
-        .element(editorScreen.body(), POLL)
-        .toHaveTextContent('Their version of the body');
-      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
-      await expect.poll(featureImageSrc, POLL).toBe(THEIR_IMAGE);
-      await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    await expect.element(editorScreen.body()).toHaveTextContent('Their version of the body');
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+    await expect.poll(featureImageSrc).toBe(THEIR_IMAGE);
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
 
-      await typeIntoBody(' plus mine');
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await appendToBody(' plus mine');
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(2);
-      expect(postIn(saveApi.lastRequest)).toMatchObject({
-        id: POST_ID,
-        updated_at: THEIR_SAVE_AT,
-      });
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+    expect(postIn(saveApi.lastRequest)).toMatchObject({
+      id: POST_ID,
+      updated_at: THEIR_SAVE_AT,
+    });
+  });
 
-  it(
-    'keeps the accepted server copy in the editor query cache',
-    async () => {
-      const { readApi, saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
+  it('keeps the accepted server copy in the editor query cache', async () => {
+    const { readApi, saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
 
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
-      const readsAfterReload = readApi.requests.length;
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+    const readsAfterReload = readApi.requests.length;
 
-      window.location.hash = '#/posts';
-      await expect(editorScreen.titleInput()).toHaveCount(0);
-      window.location.hash = `#/editor/post/${POST_ID}`;
+    window.location.hash = '#/posts';
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+    window.location.hash = `#/editor/post/${POST_ID}`;
 
-      await expect.element(editorScreen.titleInput(), POLL).toHaveValue('Hello from someone else');
-      expect(readApi.requests.length).toBe(readsAfterReload);
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+    expect(readApi.requests.length).toBe(readsAfterReload);
+  });
 
-  it(
-    'keeps an older in-flight read from replacing the accepted cache',
-    async () => {
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
+  it('keeps an older in-flight read from replacing the accepted cache', async () => {
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
 
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
 
-      const beforeLatest = theirs({
-        title: 'Server copy before latest',
-        updated_at: AFTER_SAVE_AT,
-      });
-      const pendingRead = deferred<{ posts: ReturnType<typeof theirs>[] }>();
-      const staleRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingRead.promise);
-      const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({
-        posts: [beforeLatest],
-      }));
+    const beforeLatest = theirs({
+      title: 'Server copy before latest',
+      updated_at: AFTER_SAVE_AT,
+    });
+    const pendingRead = deferred<{ posts: ReturnType<typeof theirs>[] }>();
+    const staleRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingRead.promise);
+    const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({
+      posts: [beforeLatest],
+    }));
 
-      await typeIntoBody(' accepted first');
-      await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.poll(() => acceptedSave.requests.length, POLL).toBe(1);
-      await expect.poll(() => staleRead.requests.length, POLL).toBe(1);
+    await appendToBody(' accepted first');
+    await expect.poll(() => acceptedSave.requests.length).toBe(1);
+    await expect.poll(() => staleRead.requests.length).toBe(1);
 
-      const collisionSave = fakeAdminEndpoint(
-        'PUT',
-        READ_ROUTE,
-        {
-          errors: [
-            {
-              code: 'UPDATE_COLLISION',
-              type: 'UpdateCollisionError',
-              message: 'Saving failed! Someone else is editing this post.',
-            },
-          ],
-        },
-        { status: 409 },
-      );
-      await typeIntoBody(' then conflicted');
-      await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.poll(() => collisionSave.requests.length, POLL).toBe(1);
-      await expect.element(editorScreen.conflictBanner()).toBeVisible();
-
-      const latest = theirs({
-        title: 'Latest server copy',
-        updated_at: '2026-01-01T11:00:00.000Z',
-      });
-      readAnswers(200, { posts: [latest] });
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-      await expect.element(editorScreen.titleInput()).toHaveValue('Latest server copy');
-
-      // The network work cannot be aborted by this fake, so let its older value
-      // arrive after the accepted reload. React Query must ignore it.
-      pendingRead.resolve({ posts: [beforeLatest] });
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 0);
-      });
-
-      window.location.hash = '#/posts';
-      await expect(editorScreen.titleInput()).toHaveCount(0);
-      window.location.hash = `#/editor/post/${POST_ID}`;
-
-      await expect.element(editorScreen.titleInput(), POLL).toHaveValue('Latest server copy');
-    },
-    SLOW,
-  );
-
-  it(
-    'accepts a newer detail read that finishes before an older reload',
-    async () => {
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
-
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
-
-      const afterSave = theirs({ updated_at: AFTER_SAVE_AT });
-      const pendingDetailRead = deferred<{ posts: ReturnType<typeof theirs>[] }>();
-      const detailRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingDetailRead.promise);
-      const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({ posts: [afterSave] }));
-
-      await typeIntoBody(' accepted first');
-      await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.poll(() => acceptedSave.requests.length, POLL).toBe(1);
-      await expect.poll(() => detailRead.requests.length, POLL).toBe(1);
-
-      const collisionSave = fakeAdminEndpoint(
-        'PUT',
-        READ_ROUTE,
-        {
-          errors: [
-            {
-              code: 'UPDATE_COLLISION',
-              type: 'UpdateCollisionError',
-              message: 'Saving failed! Someone else is editing this post.',
-            },
-          ],
-        },
-        { status: 409 },
-      );
-      await typeIntoBody(' then conflicted');
-      await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.poll(() => collisionSave.requests.length, POLL).toBe(1);
-      await expect.element(editorScreen.conflictBanner()).toBeVisible();
-
-      const pendingReload = deferred<{ posts: ReturnType<typeof theirs>[] }>();
-      const reloadRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingReload.promise);
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-      await expect.poll(() => reloadRead.requests.length, POLL).toBe(1);
-
-      const newest = theirs({
-        title: 'Newest detail response',
-        updated_at: '2026-01-01T11:00:00.000Z',
-      });
-      pendingDetailRead.resolve({ posts: [newest] });
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 0);
-      });
-      pendingReload.resolve({
-        posts: [
-          theirs({
-            title: 'Older reload response',
-            updated_at: '2026-01-01T10:30:00.000Z',
-          }),
-        ],
-      });
-
-      await expect.element(editorScreen.titleInput(), POLL).toHaveValue('Newest detail response');
-      await expect(editorScreen.conflictBanner()).toHaveCount(0);
-
-      window.location.hash = '#/posts';
-      await expect(editorScreen.titleInput()).toHaveCount(0);
-      window.location.hash = `#/editor/post/${POST_ID}`;
-
-      await expect.element(editorScreen.titleInput(), POLL).toHaveValue('Newest detail response');
-    },
-    SLOW,
-  );
-
-  it(
-    'keeps the editor standing when the reload cannot read the post, and retries later',
-    async () => {
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
-
-      const failedRead = readFails(500);
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-
-      await expect.poll(() => failedRead.requests.length, POLL).toBe(1);
-      await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-      await expect.element(editorScreen.conflictBanner()).toBeVisible();
-      await expect(editorScreen.loadError()).toHaveCount(0);
-
-      const servingRead = readAnswers(200, { posts: [theirs()] });
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-
-      await expect.poll(() => servingRead.requests.length, POLL).toBe(1);
-      await expect
-        .element(editorScreen.body(), POLL)
-        .toHaveTextContent('Their version of the body');
-      await expect(editorScreen.conflictBanner()).toHaveCount(0);
-    },
-    SLOW,
-  );
-
-  it.each<[string, () => Record<string, unknown>]>([
-    ['has no collision token', () => ({ ...theirs(), updated_at: null })],
-    ['has a malformed collision token', () => theirs({ updated_at: 'not-a-date' })],
-    ['has the rejected collision token', () => theirs({ updated_at: LOADED_AT })],
-    ['has an older collision token', () => theirs({ updated_at: '2025-12-31T23:59:59.000Z' })],
-    ['belongs to another post', () => theirs({ id: 'someone-else' })],
-  ])(
-    'keeps local content when the reload response %s',
-    async (_label, invalidRecordOf) => {
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
-
-      const invalidRead = readAnswers(200, { posts: [invalidRecordOf()] });
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-
-      await expect.poll(() => invalidRead.requests.length, POLL).toBe(1);
-      await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
-      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-      await expect.element(editorScreen.conflictBanner()).toBeVisible();
-    },
-    SLOW,
-  );
-
-  it(
-    'keeps local content when a save starts before the reload answers',
-    async () => {
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
-
-      const pendingRead = deferred<{ posts: ReturnType<typeof theirs>[] }>();
-      const reloadRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingRead.promise);
-      const pendingSave = deferred<object>();
-      const retrySave = fakeAdminEndpoint('PUT', READ_ROUTE, () => pendingSave.promise, {
-        status: 409,
-      });
-
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-      await expect.poll(() => reloadRead.requests.length, POLL).toBe(1);
-
-      await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.poll(() => retrySave.requests.length, POLL).toBe(1);
-      pendingRead.resolve({ posts: [theirs()] });
-
-      await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
-      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-
-      pendingSave.resolve({
+    const collisionSave = fakeAdminEndpoint(
+      'PUT',
+      READ_ROUTE,
+      {
         errors: [
           {
             code: 'UPDATE_COLLISION',
@@ -531,33 +306,204 @@ describe('Post editor update collision', () => {
             message: 'Saving failed! Someone else is editing this post.',
           },
         ],
-      });
-      await expect.element(editorScreen.conflictBanner()).toBeVisible();
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-    },
-    SLOW,
-  );
+      },
+      { status: 409 },
+    );
+    await appendToBody(' then conflicted');
+    await expect.poll(() => collisionSave.requests.length).toBe(1);
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
 
-  it(
-    'follows the status the other writer left the post in',
-    async () => {
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
+    const latest = theirs({
+      title: 'Latest server copy',
+      updated_at: '2026-01-01T11:00:00.000Z',
+    });
+    readAnswers(200, { posts: [latest] });
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+    await expect.element(editorScreen.titleInput()).toHaveValue('Latest server copy');
 
-      await expect.element(editorScreen.status()).toHaveTextContent('Draft');
-      readAnswers(200, {
-        posts: [theirs({ status: 'published', published_at: THEIR_SAVE_AT })],
-      });
+    // The network work cannot be aborted by this fake, so let its older value
+    // arrive after the accepted reload. React Query must ignore it.
+    pendingRead.resolve({ posts: [beforeLatest] });
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
 
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
+    window.location.hash = '#/posts';
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+    window.location.hash = `#/editor/post/${POST_ID}`;
 
-      // A stale chip would offer Draft for a post the next save publishes.
-      await expect.element(editorScreen.status(), POLL).toHaveTextContent('Published');
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.titleInput()).toHaveValue('Latest server copy');
+  });
+
+  it('accepts a newer detail read that finishes before an older reload', async () => {
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
+
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+
+    const afterSave = theirs({ updated_at: AFTER_SAVE_AT });
+    const pendingDetailRead = deferred<{ posts: ReturnType<typeof theirs>[] }>();
+    const detailRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingDetailRead.promise);
+    const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({ posts: [afterSave] }));
+
+    await appendToBody(' accepted first');
+    await expect.poll(() => acceptedSave.requests.length).toBe(1);
+    await expect.poll(() => detailRead.requests.length).toBe(1);
+
+    const collisionSave = fakeAdminEndpoint(
+      'PUT',
+      READ_ROUTE,
+      {
+        errors: [
+          {
+            code: 'UPDATE_COLLISION',
+            type: 'UpdateCollisionError',
+            message: 'Saving failed! Someone else is editing this post.',
+          },
+        ],
+      },
+      { status: 409 },
+    );
+    await appendToBody(' then conflicted');
+    await expect.poll(() => collisionSave.requests.length).toBe(1);
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
+
+    const pendingReload = deferred<{ posts: ReturnType<typeof theirs>[] }>();
+    const reloadRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingReload.promise);
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+    await expect.poll(() => reloadRead.requests.length).toBe(1);
+
+    const newest = theirs({
+      title: 'Newest detail response',
+      updated_at: '2026-01-01T11:00:00.000Z',
+    });
+    pendingDetailRead.resolve({ posts: [newest] });
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    pendingReload.resolve({
+      posts: [
+        theirs({
+          title: 'Older reload response',
+          updated_at: '2026-01-01T10:30:00.000Z',
+        }),
+      ],
+    });
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Newest detail response');
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
+
+    window.location.hash = '#/posts';
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+    window.location.hash = `#/editor/post/${POST_ID}`;
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Newest detail response');
+  });
+
+  it('keeps the editor standing when the reload cannot read the post, and retries later', async () => {
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
+
+    const failedRead = readFails(500);
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+
+    await expect.poll(() => failedRead.requests.length).toBe(1);
+    await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
+    await expect(editorScreen.loadError()).toHaveCount(0);
+
+    const servingRead = readAnswers(200, { posts: [theirs()] });
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+
+    await expect.poll(() => servingRead.requests.length).toBe(1);
+    await expect.element(editorScreen.body()).toHaveTextContent('Their version of the body');
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
+  });
+
+  it.each<[string, () => Record<string, unknown>]>([
+    ['has no collision token', () => ({ ...theirs(), updated_at: null })],
+    ['has a malformed collision token', () => theirs({ updated_at: 'not-a-date' })],
+    ['has the rejected collision token', () => theirs({ updated_at: LOADED_AT })],
+    ['has an older collision token', () => theirs({ updated_at: '2025-12-31T23:59:59.000Z' })],
+    ['belongs to another post', () => theirs({ id: 'someone-else' })],
+  ])('keeps local content when the reload response %s', async (_label, invalidRecordOf) => {
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
+
+    const invalidRead = readAnswers(200, { posts: [invalidRecordOf()] });
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+
+    await expect.poll(() => invalidRead.requests.length).toBe(1);
+    await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
+  });
+
+  it('keeps local content when a save starts before the reload answers', async () => {
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
+
+    const pendingRead = deferred<{ posts: ReturnType<typeof theirs>[] }>();
+    const reloadRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingRead.promise);
+    const pendingSave = deferred<object>();
+    const retrySave = fakeAdminEndpoint('PUT', READ_ROUTE, () => pendingSave.promise, {
+      status: 409,
+    });
+
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+    await expect.poll(() => reloadRead.requests.length).toBe(1);
+
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.poll(() => retrySave.requests.length).toBe(1);
+    pendingRead.resolve({ posts: [theirs()] });
+
+    await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+
+    pendingSave.resolve({
+      errors: [
+        {
+          code: 'UPDATE_COLLISION',
+          type: 'UpdateCollisionError',
+          message: 'Saving failed! Someone else is editing this post.',
+        },
+      ],
+    });
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+  });
+
+  it('follows the status the other writer left the post in', async () => {
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
+
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft');
+    readAnswers(200, {
+      posts: [theirs({ status: 'published', published_at: THEIR_SAVE_AT })],
+    });
+
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+
+    // A stale chip would offer Draft for a post the next save publishes.
+    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+  });
 
   it.each([
     ['public', 'paid', 'Paid members only'],
@@ -567,9 +513,10 @@ describe('Post editor update collision', () => {
     async (initialVisibility, reloadedVisibility, expectedLabel) => {
       const { saveApi } = fakeCollidingPost();
       readAnswers(200, { posts: [{ ...mine(), visibility: initialVisibility }] });
-      await renderAdminApp(`/editor/post/${POST_ID}`, {
-        labs: { editorReact: true, paywallImprovements: true },
-      });
+      await renderAdminApp(
+        `/editor/post/${POST_ID}`,
+        withFastAutosave({ labs: { editorReact: true, paywallImprovements: true } }),
+      );
       await collide(saveApi);
 
       const lexical = JSON.parse(buildLexicalParagraph('Their version of the body')) as {
@@ -583,49 +530,44 @@ describe('Post editor update collision', () => {
       await editorScreen.confirmConflictReload().click();
 
       await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
-      await expect.element(editorScreen.body(), POLL).toHaveTextContent(expectedLabel);
+      await expect.element(editorScreen.body()).toHaveTextContent(expectedLabel);
       await expect(editorScreen.conflictBanner()).toHaveCount(0);
     },
-    SLOW,
   );
 
-  it(
-    'keeps the reloaded status when a later read answers with the copy it replaced',
-    async () => {
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
+  it('keeps the reloaded status when a later read answers with the copy it replaced', async () => {
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
 
-      readAnswers(200, {
-        posts: [theirs({ status: 'published', published_at: THEIR_SAVE_AT })],
-      });
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
-      await expect.element(editorScreen.status(), POLL).toHaveTextContent('Published');
+    readAnswers(200, {
+      posts: [theirs({ status: 'published', published_at: THEIR_SAVE_AT })],
+    });
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
+    await expect.element(editorScreen.status()).toHaveTextContent('Published');
 
-      // The save lands and invalidates the screen's query, whose refetch answers
-      // with the draft the reload replaced. A read older than what the editor
-      // holds must not roll the post back to it.
-      const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({
-        posts: [
-          theirs({
-            status: 'published',
-            published_at: THEIR_SAVE_AT,
-            updated_at: AFTER_SAVE_AT,
-          }),
-        ],
-      }));
-      const staleRead = readAnswers(200, { posts: [mine()] });
+    // The save lands and invalidates the screen's query, whose refetch answers
+    // with the draft the reload replaced. A read older than what the editor
+    // holds must not roll the post back to it.
+    const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({
+      posts: [
+        theirs({
+          status: 'published',
+          published_at: THEIR_SAVE_AT,
+          updated_at: AFTER_SAVE_AT,
+        }),
+      ],
+    }));
+    const staleRead = readAnswers(200, { posts: [mine()] });
 
-      await typeIntoBody(' plus mine');
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await appendToBody(' plus mine');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => acceptedSave.requests.length, POLL).toBe(1);
-      await expect.poll(() => staleRead.requests.length, POLL).toBeGreaterThan(0);
-      await expect.element(editorScreen.status(), POLL).toHaveTextContent('Published');
-    },
-    SLOW,
-  );
+    await expect.poll(() => acceptedSave.requests.length).toBe(1);
+    await expect.poll(() => staleRead.requests.length).toBeGreaterThan(0);
+    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+  });
 
   it.each<[string, () => EndpointCapture]>([
     ['the read is a not-found', () => readFails(404)],
@@ -642,7 +584,7 @@ describe('Post editor update collision', () => {
       await editorScreen.reloadAfterConflict().click();
       await editorScreen.confirmConflictReload().click();
 
-      await expect.poll(() => missingRead.requests.length, POLL).toBe(1);
+      await expect.poll(() => missingRead.requests.length).toBe(1);
       await expect
         .element(editorScreen.conflictBanner())
         .toHaveTextContent('This post has been deleted');
@@ -652,34 +594,29 @@ describe('Post editor update collision', () => {
       // The way out of a deleted post is the copy, so it has to still be there.
       await editorScreen.copyConflictedContent().click();
 
-      await expect.poll(() => copied.length, POLL).toBe(1);
+      await expect.poll(() => copied.length).toBe(1);
       expect(copied[0]).toContain('Hello from React and more');
 
       const missingSave = saveFails(404);
       await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => missingSave.requests.length, POLL).toBe(1);
+      await expect.poll(() => missingSave.requests.length).toBe(1);
       await expect
         .element(editorScreen.conflictBanner())
         .toHaveTextContent('This post has been deleted');
       await expect.element(editorScreen.copyConflictedContent()).toBeVisible();
     },
-    SLOW,
   );
 
-  it(
-    'copies the unsaved title and body so the writer keeps their words',
-    async () => {
-      const copied = recordClipboard();
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
+  it('copies the unsaved title and body so the writer keeps their words', async () => {
+    const copied = recordClipboard();
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
 
-      await editorScreen.copyConflictedContent().click();
+    await editorScreen.copyConflictedContent().click();
 
-      await expect.poll(() => copied.length, POLL).toBe(1);
-      expect(copied[0]).toBe('Hello from React\n\nHello from React and more');
-    },
-    SLOW,
-  );
+    await expect.poll(() => copied.length).toBe(1);
+    expect(copied[0]).toBe('Hello from React\n\nHello from React and more');
+  });
 });

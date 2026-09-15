@@ -4,6 +4,8 @@ FROM node:$NODE_VERSION-bookworm-slim
 
 WORKDIR /home/ghost
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
+# pnpm reads patchedDependencies even for filtered installs.
+COPY patches patches
 # Keep dependency installation cached when source files change. All workspace
 # manifests are needed to resolve E2E's workspace references from the lockfile.
 COPY --parents ghost/*/package.json apps/*/package.json koenig/*/package.json configs/*/package.json packages/**/package.json e2e/package.json scripts/package.json ./

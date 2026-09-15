@@ -15,3 +15,32 @@ index 809e0ac78bc01a98675b43a771140e9f35cd4c71..23c565ad94ec15dd2e7f8e605b1bb849
  var utils = require('./utils');
  
  var cheerioLoad = function(html, options, encodeEntities) {
+diff --git a/lib/inline.js b/lib/inline.js
+index 083b8c58eb90184d0190cd0e3361a39638e4981b..492d0230dd2a3ee179359e3027f73cc7257023fe 100644
+--- a/lib/inline.js
++++ b/lib/inline.js
+@@ -117,7 +117,12 @@ module.exports = function makeJuiceClient(juiceClient) {
+               ? decode(styleAttributeValue)
+               : styleAttributeValue;
+             var cssText = '* { ' + cssStyleAttributeValue + ' } ';
+-            addProps(utils.parseCSS(cssText)[0][1], new utils.Selector('<style>', true));
++            // Ghost patch: parseCSS drops rules with no declarations, so a style
++            // attribute with none (e.g. `style=";"`) has no rule to read
++            var styleAttributeRule = utils.parseCSS(cssText)[0];
++            if (styleAttributeRule) {
++              addProps(styleAttributeRule[1], new utils.Selector('<style>', true));
++            }
+           }
+ 
+           // store reference to an element we need to compile style="" attr for
+@@ -158,7 +163,9 @@ module.exports = function makeJuiceClient(juiceClient) {
+         // go through the properties
+         function addProps(style, selector) {
+           for (var i = 0, l = style.length; i < l; i++) {
+-            if (style[i].type == 'property') {
++            // Ghost patch: mensch parses input like `a{b}` into a property with no
++            // value, which would throw on value.match below
++            if (style[i].type == 'property' && typeof style[i].value === 'string') {
+               var name = style[i].name;
+               var value = style[i].value;
+ 

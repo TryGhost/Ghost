@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { deferred, type Deferred } from '@/utils/deferred';
 import {
   createSaveEngine,
+  type PrepareOutcome,
   type SaveOutcome,
   type SaveRequest,
   type SaveSnapshot,
@@ -29,7 +30,10 @@ describe('createSaveEngine', () => {
         getSnapshot: () => doc,
         slug: idleSlug,
         prepare: (request) =>
-          Promise.resolve({ ...request, method: request.snapshot.id ? 'PUT' : 'POST' }),
+          Promise.resolve({
+            ok: true,
+            prepared: { ...request, method: request.snapshot.id ? 'PUT' : 'POST' },
+          }),
         execute: async (prepared) => {
           wire.push({
             method: prepared.method,
@@ -83,7 +87,7 @@ describe('createSaveEngine', () => {
 
     it('starts IO only after prepare settles', async () => {
       const h = setup();
-      const prepared = deferred<SaveRequest>();
+      const prepared = deferred<PrepareOutcome<SaveRequest>>();
       h.prepare.mockReturnValueOnce(prepared.promise);
 
       void h.engine.dispatch('explicit');
@@ -91,7 +95,7 @@ describe('createSaveEngine', () => {
       expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'explicit' });
       expect(h.execute).not.toHaveBeenCalled();
 
-      prepared.resolve(h.prepare.mock.calls[0][0]);
+      prepared.resolve({ ok: true, prepared: h.prepare.mock.calls[0][0] });
       await flush();
       expect(h.execute).toHaveBeenCalledTimes(1);
     });

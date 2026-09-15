@@ -16,6 +16,7 @@ Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.ts
 | Element counts    | `await expect(locator).toHaveCount(n)`                                                                                                                               |
 | Captured requests | `await expect(membersApi).toHaveSentFilter("label:[VIP]")` / `toHaveSentSearch(...)` — string for an exact match against the decoded param, RegExp for a partial one |
 | Edited settings   | `await expect(settingsApi).toHaveEditedSettings([{key: "title", value: "New title"}])` — exact settings in the latest `PUT /settings/` payload; order-independent    |
+| Saved post fields | `await expect(saveApi).toHaveSavedFields({slug: "new-slug"})` — waits for the write and asserts the named fields of the latest post/page payload, deep-equal per key |
 
 The request matchers assert against the **latest** captured request; inspect `capture.requests` for history. For anything they don't cover — other captured fields (`url`, `order`, `page`, `limit`), payload bodies, the current URL — fall back to raw polling:
 
@@ -53,6 +54,11 @@ The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConf
 // Labs flags (sugar for lockstep settings + config overrides; merges into
 // any browseSettings/browseConfig boot override, named flags winning):
 await renderAdminApp("/tags", {labs: {someFlag: true}});
+
+// The editor's autosave debounce, injected as a test-only `/config/` key, so a
+// save that lands proves it was sent without waiting (`withoutAutosave()`), or
+// autosave fires at once (`withFastAutosave()`):
+await renderAdminApp("/editor/post/abc123", withoutAutosave({labs: {editorReact: true}}));
 
 // Persisted user state, e.g. what's-new preferences:
 const me = currentUserResponse();

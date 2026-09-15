@@ -79,6 +79,20 @@ describe('createSaveEngine', () => {
       expect(h.execute).not.toHaveBeenCalled();
       expect(h.engine.getState()).toMatchObject({ kind: 'error', intent: 'explicit' });
     });
+
+    it('fails on a typed prepare error with the kind prepare reported and no request sent', async () => {
+      const h = setup();
+      h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
+
+      await expect(h.engine.dispatch('explicit')).resolves.toEqual({
+        kind: 'failed',
+        error: validation,
+        executedAs: 'explicit',
+      });
+      expect(h.execute).not.toHaveBeenCalled();
+      expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'explicit', error: validation });
+      expect(h.snapshot.isDirty).toBe(true);
+    });
   });
 
   describe('collisions', () => {

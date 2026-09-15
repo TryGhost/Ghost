@@ -20,6 +20,11 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
+    title: 'Automations per tier',
+    description: 'Allow automations to be configured for individual tiers.',
+    flag: 'automationsPerTier',
+  },
+  {
     title: 'Automation run analytics',
     description: 'Track run-level analytics for automations.',
     flag: 'automationRunAnalytics',
@@ -116,6 +121,11 @@ const features: Feature[] = [
     description:
       'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
     flag: 'editorReact',
+  },
+  {
+    title: 'React member activity',
+    description: 'Preview the new member activity screen.',
+    flag: 'membersActivityReact',
   },
   {
     title: 'Self-serve archives',
