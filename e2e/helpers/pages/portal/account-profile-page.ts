@@ -8,12 +8,14 @@ import { PortalPage } from './portal-page';
 export class PortalAccountProfilePage extends PortalPage {
   readonly title: Locator;
   readonly saveButton: Locator;
+  readonly backButton: Locator;
 
   constructor(page: Page) {
     super(page);
 
     this.title = this.portalFrame.getByRole('heading', { name: 'Account settings' });
     this.saveButton = this.portalFrame.getByRole('button', { name: 'Save' });
+    this.backButton = this.portalFrame.getByRole('button', { name: 'Back' });
   }
 
   /** A scalar field's single input, named for the field it holds. */
@@ -28,5 +30,10 @@ export class PortalAccountProfilePage extends PortalPage {
 
   async save(): Promise<void> {
     await this.saveButton.click();
+  }
+
+  /** The error a part is carrying, or null when it carries none. */
+  partError(key: string, part: string): Locator {
+    return this.portalFrame.locator(`[name="custom:${key}:${part}"]`);
   }
 }
