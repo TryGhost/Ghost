@@ -867,23 +867,51 @@ async function refreshMemberData({ state, api }) {
  * email address does.
  */
 function refusalOf(error, state, fallback) {
+  // The site names every value it refused. The error's own message and property are the
+  // first of them, so one refusal and several are read the same way.
+  const refusals = error?.details?.length
+    ? error.details
+    : [{ property: error?.property, message: error?.message }];
+
+  const fieldErrors = {};
+  let sentence = null;
+
+  for (const refusal of refusals) {
+    const placed = placeRefusal(refusal, state);
+    if (placed.input) {
+      fieldErrors[placed.input] = placed.message;
+    } else if (placed.sentence && !sentence) {
+      // The first that belongs to no input. The rest are on the inputs themselves, and
+      // a notification saying several things at once says none of them well.
+      sentence = placed.sentence;
+    }
+  }
+
+  return { fieldErrors, message: sentence ?? fallback };
+}
+
+/**
+ * Where one refusal belongs: on the input that holds the value, or, when no one input
+ * does, in the notification.
+ */
+function placeRefusal({ property, message }, state) {
   // The server names a refused value as `metafields.custom.<key>[.<part>]`. Read as text
   // or not at all: this is the path that explains a failure, and it reaching for `split`
   // on something that is not a string would fail while reporting that something failed.
-  const named = typeof error?.property === 'string' ? error.property : '';
+  const named = typeof property === 'string' ? property : '';
   const [qualifier, , key, ...partPath] = named.split('.');
   if (qualifier !== 'metafields') {
-    return { fieldErrors: {}, message: fallback };
+    return {};
   }
 
-  const message = chooseBestErrorMessage(error);
+  const said = chooseBestErrorMessage({ message });
   const field = state.customFields?.find((f) => f.key === key);
 
   // A refusal of the write rather than of a value — too many fields at once, say — names
   // no field, and this build may not know the one it does name. Either way there is no
   // input to mark, and the server's sentence is the only thing that says what happened.
   if (!field) {
-    return { fieldErrors: {}, message };
+    return { sentence: said };
   }
 
   const part = partPath.join('.');
@@ -893,10 +921,7 @@ function refusalOf(error, state, fallback) {
   // field itself to put it in. It stays in the notification, with the field named:
   // nothing the member retypes would fix it anyway.
   if (!part && subFieldsOf(field.type)) {
-    return {
-      fieldErrors: {},
-      message: t('{field}: {message}', { field: field.name, message }),
-    };
+    return { sentence: t('{field}: {message}', { field: field.name, message: said }) };
   }
 
   // A part the field does not declare has no box on the page, and marking a box that is
@@ -904,11 +929,10 @@ function refusalOf(error, state, fallback) {
   // to fail in silence. The rows drawn cannot drift from what the field declares: they
   // are typed to its parts, and every one of them must be given words.
   if (part && !(subFieldsOf(field.type) ?? []).includes(part)) {
-    return { fieldErrors: {}, message: t('{field}: {message}', { field: field.name, message }) };
+    return { sentence: t('{field}: {message}', { field: field.name, message: said }) };
   }
 
-  const name = part ? `custom:${field.key}:${part}` : `custom:${field.key}`;
-  return { fieldErrors: { [name]: message }, message: fallback };
+  return { input: part ? `custom:${field.key}:${part}` : `custom:${field.key}`, message: said };
 }
 
 /**

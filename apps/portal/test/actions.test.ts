@@ -243,6 +243,83 @@ describe('updateProfile action', () => {
     expect(result.popupNotification.message).toBe('Shipping address: Unrecognized key: "line3"');
   });
 
+  // The site refuses every value it objects to in one answer, so a member fixes an
+  // address in one pass rather than learning about the next line each time they save.
+  test('marks every part the site refused, not only the first', async () => {
+    const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
+    const refusal = new HumanReadableError('Use 255 characters or fewer.', {
+      property: 'metafields.custom.shipping_address.line1',
+      details: [
+        {
+          property: 'metafields.custom.shipping_address.line1',
+          message: 'Use 255 characters or fewer.',
+        },
+        {
+          property: 'metafields.custom.shipping_address.line2',
+          message: 'Use 255 characters or fewer.',
+        },
+        {
+          property: 'metafields.custom.shipping_address.country',
+          message: 'Enter a 2-letter country code, like US.',
+        },
+      ],
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [address],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { shipping_address: { line1: 'x' } } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.fieldErrors).toEqual({
+      'custom:shipping_address:line1': 'Use 255 characters or fewer.',
+      'custom:shipping_address:line2': 'Use 255 characters or fewer.',
+      'custom:shipping_address:country': 'Enter a 2-letter country code, like US.',
+    });
+    // Every one of them is on a box, so nothing is left for a notification to add.
+    expect(result.popupNotification).toBeNull();
+  });
+
+  // A site answering in a shape this build does not know is read as one refusal, not as
+  // a reason to take the page down: what reads these asks them for a translation, and
+  // that does not survive being handed something which is not text.
+  test('reads a refusal list it cannot make sense of as a single refusal', async () => {
+    const nickname = { key: 'nickname', name: 'Nickname', type: 'short_text' };
+    const refusal = new HumanReadableError('Keep it under 255 characters.', {
+      property: 'metafields.custom.nickname',
+      details: [{ property: 42, message: { nope: true } }, 'not even an object', null] as never,
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [nickname],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { nickname: 'x' } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('updateProfile:failed');
+    expect(result.fieldErrors).toEqual({ 'custom:nickname': 'Keep it under 255 characters.' });
+  });
+
   // Leaving the page discards what was typed, so a refusal of it must not come back to
   // mark a value the member never sees again.
   test('forgets a refusal when the member leaves the page', async () => {
