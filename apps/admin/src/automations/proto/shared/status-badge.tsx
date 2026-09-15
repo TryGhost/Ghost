@@ -19,8 +19,20 @@ import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automatio
 // label — leaving it at 500 made it glow next to darker text. Dark keeps 500
 // throughout, which was never the problem. Production has the same weakness; if
 // this holds up in review it's a fix for the real badge too.
-export const StatusBadge: React.FC<{ status: AutomationDetail['status'] }> = ({ status }) =>
-  status === 'active' ? (
+// `archived` wins over the status when both are set. An archived automation is
+// always off (see setAutomationArchived), so there's no live/archived combination to
+// resolve — but "Off" on an archived row would answer the less interesting of the two
+// questions. The same muted pill as Off, because archiving is not a state to raise a
+// hand about; only the word changes.
+export const StatusBadge: React.FC<{
+  status: AutomationDetail['status'];
+  archived?: boolean;
+}> = ({ status, archived = false }) =>
+  archived ? (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground uppercase">
+      Archived
+    </span>
+  ) : status === 'active' ? (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-green/20 px-2 py-0.5 text-xs font-medium text-green-600 uppercase dark:text-green">
       <span className="size-1.5 rounded-full bg-green-600 dark:bg-green" />
       Live

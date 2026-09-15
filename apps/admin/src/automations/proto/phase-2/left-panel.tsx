@@ -273,7 +273,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                   from the thing standing in it. aria-hidden and out of the tab order —
                   the real button carries both. */}
         <Button
-          className="invisible -ml-2"
+          className="invisible"
           size="icon"
           tabIndex={-1}
           type="button"

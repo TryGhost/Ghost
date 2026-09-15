@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -10,23 +9,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-  buttonVariants,
   EmptyIndicator,
   Separator,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
-import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
 import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { getRunData } from '@/automations/proto/shared/mock';
 import {
-  deleteAutomation,
+  setAutomationArchived,
   saveAutomation,
   setAutomationStatus,
   updateAutomationDetails,
   useProtoAutomation,
 } from '@/automations/proto/shared/store';
+import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar, StatusSwitch } from './header-bar';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
@@ -198,8 +197,8 @@ const AutomationFloat: React.FC = () => {
   // waiting on Save with the rest of the edits.
   const liveStatus: LiveStatus = savedAutomation?.status ?? 'inactive';
   const [stopOpen, setStopOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   // Set while the automation is being removed under the screen: the store is
   // external, so deleting re-renders this synchronously and the "not found" read
   // would fire before the route change lands.
@@ -299,18 +298,28 @@ const AutomationFloat: React.FC = () => {
   // is in the automations table — see the settings panel).
   // Parked rather than solved — it's a real action and it'll need somewhere, but
   // inventing a place for it wasn't the point of removing the menu.
-  const handleDelete = () => {
-    setDeleteOpen(false);
-    // Flagged before either of the next two lines, because removing the automation
-    // re-renders this screen synchronously — the store is an external store — and the
-    // route change lands after it.
-    leaving.current = true;
-    if (!id) {
+  // Archive, and leave. Same act and same wording as phase 2's — behind the shared
+  // confirm, and Undo puts the status back as well as unarchiving.
+  const handleArchive = () => {
+    setArchiveOpen(false);
+    if (!id || !savedAutomation) {
       return;
     }
-    deleteAutomation(id);
+    const status = savedAutomation.status;
+    // Flagged before the navigate: the store is external, so this re-renders the
+    // screen synchronously and the route change lands after it.
+    leaving.current = true;
+    setAutomationArchived(id, true);
     navigate(toVersioned(lanePath(LANE)));
-    toast.success('Automation deleted');
+    toast.success(status === 'active' ? 'Archived and turned off' : 'Automation archived', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          setAutomationArchived(id, false);
+          setAutomationStatus(id, status);
+        },
+      },
+    });
   };
 
   if (!scenario || !record || !id) {
@@ -597,7 +606,7 @@ const AutomationFloat: React.FC = () => {
                   updateAutomationDetails(id, name, description),
                 allowReentry,
                 onAllowReentryChange: setAllowReentry,
-                onDelete: () => setDeleteOpen(true),
+                onArchive: () => setArchiveOpen(true),
               }}
               onQueryChange={setQuery}
               onSelectMember={setSelectedMemberId}
@@ -859,27 +868,13 @@ const AutomationFloat: React.FC = () => {
       />
       <TurnOffAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
       {/* Opened from Settings, not the header — see the panel. */}
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete “{automation.name}”?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {scenario.metrics.in_progress > 0
-                ? `${formatNumber(scenario.metrics.in_progress)} ${scenario.metrics.in_progress === 1 ? 'member is' : 'members are'} currently in this automation. Deleting it ends their runs, and its history goes with it.`
-                : 'This automation and its run history will be deleted. This can’t be undone.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className={buttonVariants({ variant: 'destructive' })}
-              onClick={handleDelete}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ArchiveAutomationDialog
+        live={liveStatus === 'active'}
+        name={automation.name}
+        open={archiveOpen}
+        onConfirm={handleArchive}
+        onOpenChange={setArchiveOpen}
+      />
 
       {/* Publish — a deliberate confirm when the automation is already live. */}
       <PublishChangesDialog

@@ -51,6 +51,24 @@ export interface ProtoAutomation {
    */
   description: string;
   trigger: TriggerConfig | null;
+  /**
+   * Out of the working list, still on disk.
+   *
+   * Its own flag rather than a third `automation.status`, which is how offers do it
+   * (`status === 'archived'`, see settings/growth/offers). Two reasons it can't be
+   * that here: status comes from admin-x-framework's AutomationDetail and isn't ours
+   * to widen, and the two facts are genuinely independent — archiving answers "is
+   * this still in front of me", status answers "is it running". Folding them loses
+   * which of the two an unarchived automation goes back to being.
+   *
+   * Archiving stops a live automation as it goes. Unarchiving brings it back OFF,
+   * never live: restoring something into a running state is not a thing a publisher
+   * should discover after the fact.
+   *
+   * Optional on read, because records written before this existed don't carry it —
+   * see the version note. Everywhere else treats undefined as false.
+   */
+  archived?: boolean;
 }
 
 interface StoreState {
@@ -72,7 +90,7 @@ interface StoreState {
 // migrate it. This is fixture data behind a Labs flag — a reseed is the correct
 // response to a shape change, and a migration path would be ceremony around data
 // nobody is going to miss.
-const VERSION = 13;
+const VERSION = 14;
 const STORAGE_KEY = 'ghost-automations-proto-store';
 
 const seed = (): StoreState => ({
@@ -426,6 +444,42 @@ export const setAutomationStatus = (id: string, status: AutomationDetail['status
   );
 };
 
+/**
+ * Archive and unarchive.
+ *
+ * Archiving forces the automation off in the same write. A live automation is
+ * enrolling members; leaving it running while it's out of the list would mean work
+ * happening where nobody is looking, which is the one outcome archiving must not
+ * produce. Unarchiving leaves it off — see the `archived` note.
+ */
+export const setAutomationArchived = (id: string, archived: boolean): void => {
+  update((automations) =>
+    automations.map((entry) =>
+      entry.automation.id === id
+        ? {
+            ...entry,
+            archived,
+            automation: {
+              ...entry.automation,
+              status: archived ? 'inactive' : entry.automation.status,
+            },
+          }
+        : entry,
+    ),
+  );
+};
+
+/**
+ * Still here, deliberately unreachable from the UI.
+ *
+ * Archive is what the screens offer now. Delete isn't gone because we don't yet know
+ * that archive is the answer — most things in Ghost are archived rather than
+ * destroyed, but the core content types (posts, pages, tags) really do delete, and
+ * the worry that prompted this was losing the history of an old automation. Keeping
+ * the write means turning delete back on is a UI change rather than a data-layer one.
+ *
+ * If archive settles, this goes.
+ */
 export const deleteAutomation = (id: string): void => {
   update((automations) => automations.filter((entry) => entry.automation.id !== id));
 };

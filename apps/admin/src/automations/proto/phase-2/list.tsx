@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
-import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   EmptyIndicator,
-  buttonVariants,
 } from '@tryghost/shade/components';
 import { Box, Container } from '@tryghost/shade/primitives';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { AutomationsTable } from '@/automations/proto/shared/automations-table';
@@ -24,13 +19,15 @@ import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
 import type { ProtoAutomation } from '@/automations/proto/shared/store';
 import {
   blankAutomation,
-  deleteAutomation,
   duplicateAutomation,
   insertAutomation,
+  setAutomationArchived,
+  setAutomationStatus,
   suggestCopyName,
   updateAutomationDetails,
   useProtoAutomations,
 } from '@/automations/proto/shared/store';
+import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import { DetailsDialog } from './details-dialog';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 
@@ -40,13 +37,33 @@ import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 // read-only and stays that way.
 const LANE = 'phase-2' as const;
 
+type ViewKey = 'active' | 'archived' | 'all';
+
+// "Active automations", not "Active" — the control sits beside "New automation" with
+// no column header or label to say what it filters, so each option has to name the
+// noun as well as the slice.
+//
+// "Active" rather than "Live": live is the on/off status of a single automation, and
+// this cuts across that — an active automation can be off. Reusing the word would
+// have made "Active automations" look like a status filter and left archived-but-live
+// as a state a reader would go looking for.
+const VIEWS: { value: ViewKey; label: string }[] = [
+  { value: 'active', label: 'Active automations' },
+  { value: 'archived', label: 'Archived automations' },
+  { value: 'all', label: 'All automations' },
+];
+
 const AutomationsList: React.FC = () => {
   const navigate = useNavigate();
   const toVersioned = useVersionLink();
   const automations = useProtoAutomations();
-  // Held rather than confirmed per row, so the list has one dialog instead of
-  // one behind every overflow menu.
-  const [pendingDelete, setPendingDelete] = useState<AutomationDetail | null>(null);
+  // Which slice of the list is on screen. Active is the default because it's the
+  // working set — archiving exists so the list can be the automations you're actually
+  // running, and opening onto everything you've ever made would undo that.
+  const [view, setView] = useState<ViewKey>('active');
+  // The row waiting on the archive confirm. Held here rather than per row, so the list
+  // has one dialog instead of one behind every menu.
+  const [pendingArchive, setPendingArchive] = useState<ProtoAutomation | null>(null);
   // The row being renamed, and the name and description offered for it.
   const [pendingRename, setPendingRename] = useState<ProtoAutomation | null>(null);
   const [renameDraft, setRenameDraft] = useState({ name: '', description: '' });
@@ -120,14 +137,52 @@ const AutomationsList: React.FC = () => {
     toast.success('Automation updated');
   };
 
-  const confirmDelete = () => {
-    if (!pendingDelete) {
+  // No confirm. Archiving takes nothing away — the automation, its history and its
+  // configuration are all still there, one view switch away — so a dialog would be
+  // asking you to agree to something that hasn't got a downside. What it does do is
+  // stop a live automation, which is why the toast says so rather than just
+  // confirming the archive.
+  //
+  // The undo is the real safety net, and it's the same write in reverse.
+  // Unarchiving needs no confirm — putting something back where you can see it has no
+  // consequence to warn about. Archiving raises the dialog; this only runs once it's
+  // been answered.
+  const handleArchive = (entry: ProtoAutomation) => {
+    if (entry.archived) {
+      setAutomationArchived(entry.automation.id, false);
+      toast.success(`“${entry.automation.name}” restored`);
       return;
     }
-    deleteAutomation(pendingDelete.id);
-    setPendingDelete(null);
-    toast.success('Automation deleted');
+    setPendingArchive(entry);
   };
+
+  const confirmArchive = () => {
+    if (!pendingArchive) {
+      return;
+    }
+    const { id, name, status } = pendingArchive.automation;
+    setPendingArchive(null);
+    setAutomationArchived(id, true);
+    toast.success(
+      status === 'active' ? `“${name}” archived and turned off` : `“${name}” archived`,
+      {
+        action: {
+          label: 'Undo',
+          // Puts the status back too. Unarchiving on its own always returns an
+          // automation OFF, which is right when a publisher asks for it deliberately
+          // — but Undo means "as it was", and for a live one that included running.
+          onClick: () => {
+            setAutomationArchived(id, false);
+            setAutomationStatus(id, status);
+          },
+        },
+      },
+    );
+  };
+
+  const visible = automations.filter((entry) =>
+    view === 'all' ? true : view === 'archived' ? entry.archived : !entry.archived,
+  );
 
   return (
     <Box className="size-full">
@@ -149,22 +204,74 @@ const AutomationsList: React.FC = () => {
                                 which is the same split those lists make: a header CTA is a
                                 compact label beside other chrome, an empty state's button is
                                 the whole invitation and can afford a sentence. */}
+                {/* Left of the primary action, as its qualifier: it says which
+                                automations the button is about to add to. Shade's `dropdown`
+                                button variant, which draws its own chevron — a Select was the
+                                other option and reads as a form field, which this isn't. */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="dropdown">
+                      {VIEWS.find((option) => option.value === view)?.label}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  {/* align="start": the trigger is the left half of a two-control group
+                                    flush to the page's right edge, so the menu opens under its own
+                                    label rather than reaching across the button beside it. */}
+                  <DropdownMenuContent align="start">
+                    {VIEWS.map((option) => (
+                      <DropdownMenuItem key={option.value} onSelect={() => setView(option.value)}>
+                        {option.label}
+                        {/* Trailing check, Shade's active-option convention. Opacity
+                                                    rather than conditional render so the rows keep a
+                                                    stable width. */}
+                        <LucideIcon.Check
+                          className={cn(
+                            'ms-auto text-primary',
+                            view === option.value ? 'opacity-100' : 'opacity-0',
+                          )}
+                        />
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button onClick={handleCreate}>New automation</Button>
               </PageHeader.Actions>
             </PageHeader>
           </ListPage.Header>
           <ListPage.Body>
-            {automations.length === 0 ? (
+            {/* Three empty states, because they mean different things. Nothing at all
+                            is an invitation and gets the button. An empty ARCHIVE is a report —
+                            offering "create an automation" under it would answer a question
+                            nobody asked, since a new one wouldn't appear there anyway. An empty
+                            Active view with archived automations behind it is the one that
+                            needs a way out, and the way out is the filter, not a new record. */}
+            {visible.length === 0 ? (
               <EmptyIndicator
-                actions={<Button onClick={handleCreate}>Create a new automation</Button>}
-                description="Automations you create will show up here."
-                title="No automations yet"
+                actions={
+                  automations.length === 0 ? (
+                    <Button onClick={handleCreate}>Create a new automation</Button>
+                  ) : undefined
+                }
+                description={
+                  automations.length === 0
+                    ? 'Automations you create will show up here.'
+                    : view === 'archived'
+                      ? 'Archiving an automation takes it off your list without deleting it.'
+                      : 'Every automation you have is archived. Switch views to see them.'
+                }
+                title={
+                  automations.length === 0
+                    ? 'No automations yet'
+                    : view === 'archived'
+                      ? 'Nothing archived'
+                      : 'No active automations'
+                }
               />
             ) : (
               <AutomationsTable
-                automations={automations}
+                automations={visible}
                 basePath={lanePath(LANE)}
-                onDelete={setPendingDelete}
+                onArchive={handleArchive}
                 onDuplicate={handleDuplicate}
                 onRename={openRename}
               />
@@ -186,28 +293,15 @@ const AutomationsList: React.FC = () => {
         onOpenChange={() => setPendingRename(null)}
       />
 
-      <AlertDialog open={Boolean(pendingDelete)} onOpenChange={() => setPendingDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete “{pendingDelete?.name}”?</AlertDialogTitle>
-            {/* Names the consequence that is not obvious. Deleting the automation
-                            is the part you asked for; that its history goes with it is the
-                            part worth being told before you confirm. */}
-            <AlertDialogDescription>
-              This automation and its run history will be deleted. This can’t be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className={buttonVariants({ variant: 'destructive' })}
-              onClick={confirmDelete}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* The delete confirm that used to live here went with the action — see
+                setAutomationArchived in shared/store for why the write is still around. */}
+      <ArchiveAutomationDialog
+        live={pendingArchive?.automation.status === 'active'}
+        name={pendingArchive?.automation.name ?? ''}
+        open={Boolean(pendingArchive)}
+        onConfirm={confirmArchive}
+        onOpenChange={() => setPendingArchive(null)}
+      />
 
       <LaneSwitcher lane={LANE} />
     </Box>

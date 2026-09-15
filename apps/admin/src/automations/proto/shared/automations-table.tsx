@@ -1,5 +1,4 @@
 import React from 'react';
-import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   Button,
   ContextMenu,
@@ -85,10 +84,10 @@ const MetricCell: React.FC<{ value: number }> = ({ value }) => (
 const AutomationRow: React.FC<{
   entry: ProtoAutomation;
   basePath: string;
-  onDelete?: (automation: AutomationDetail) => void;
+  onArchive?: (entry: ProtoAutomation) => void;
   onDuplicate?: (entry: ProtoAutomation) => void;
   onRename?: (entry: ProtoAutomation) => void;
-}> = ({ entry, basePath, onDelete, onDuplicate, onRename }) => {
+}> = ({ entry, basePath, onArchive, onDuplicate, onRename }) => {
   const { automation, description, trigger } = entry;
   const toVersioned = useVersionLink();
   const { metrics } = getRunData(automation.id);
@@ -125,19 +124,29 @@ const AutomationRow: React.FC<{
           <LucideIcon.Copy /> Duplicate
         </Item>
       )}
-      {/* Last, and the only one that's coloured. A menu opens with the pointer at the
-                top, so the item that destroys something shouldn't be the one under it. */}
-      {onDelete && (
-        <Item
-          className="text-destructive focus:text-destructive"
-          onSelect={() => onDelete(automation)}
-        >
-          <LucideIcon.Trash2 /> Delete
+      {/* Archive, where Delete used to be — and not coloured, because it isn't
+                destructive. The automation and its history stay; it leaves the list.
+                Delete still exists in the store and has no way in from here: see
+                setAutomationArchived in shared/store for why it's kept.
+
+                Still last. It's the one that takes the row off the screen you're
+                looking at, and a menu opens with the pointer at the top. */}
+      {onArchive && (
+        <Item onSelect={() => onArchive(entry)}>
+          {entry.archived ? (
+            <>
+              <LucideIcon.ArchiveRestore /> Unarchive
+            </>
+          ) : (
+            <>
+              <LucideIcon.Archive /> Archive
+            </>
+          )}
         </Item>
       )}
     </>
   );
-  const hasActions = Boolean(onDelete || onDuplicate || onRename);
+  const hasActions = Boolean(onArchive || onDuplicate || onRename);
 
   const row = (
     <TableRow
@@ -192,7 +201,7 @@ const AutomationRow: React.FC<{
       <MetricCell value={metrics?.enrollments ?? 0} />
       <MetricCell value={metrics?.in_progress ?? 0} />
       <TableCell className="lg:p-4">
-        <StatusBadge status={automation.status} />
+        <StatusBadge archived={entry.archived} status={automation.status} />
       </TableCell>
       {/* Above the row's own click overlay (z-10) or the link would swallow the
                 menu, and it stops propagation so opening it doesn't also navigate.
@@ -264,7 +273,10 @@ interface AutomationsTableProps {
   basePath: string;
   // Report the row's action; the caller owns the confirmation and the write, so
   // one dialog serves the whole list instead of one per row.
-  onDelete?: (automation: AutomationDetail) => void;
+  //
+  // onArchive covers both directions — the row knows which one it's offering, and a
+  // separate onUnarchive would be two props for one write with a boolean in it.
+  onArchive?: (entry: ProtoAutomation) => void;
   onDuplicate?: (entry: ProtoAutomation) => void;
   onRename?: (entry: ProtoAutomation) => void;
 }
@@ -274,7 +286,7 @@ interface AutomationsTableProps {
 export const AutomationsTable: React.FC<AutomationsTableProps> = ({
   automations,
   basePath,
-  onDelete,
+  onArchive,
   onDuplicate,
   onRename,
 }) => (
@@ -299,7 +311,7 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
           key={entry.automation.id}
           basePath={basePath}
           entry={entry}
-          onDelete={onDelete}
+          onArchive={onArchive}
           onDuplicate={onDuplicate}
           onRename={onRename}
         />

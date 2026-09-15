@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -16,23 +15,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   EmptyIndicator,
-  buttonVariants,
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
 import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { getRunData } from '@/automations/proto/shared/mock';
 import {
-  deleteAutomation,
+  setAutomationArchived,
   saveAutomation,
   setAutomationStatus,
   updateAutomationDetails,
   useProtoAutomation,
   useStripeConnected,
 } from '@/automations/proto/shared/store';
+import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar } from './header-bar';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
@@ -226,11 +225,11 @@ const AutomationFloat: React.FC = () => {
   // waiting on Save with the rest of the edits.
   const liveStatus: LiveStatus = savedAutomation?.status ?? 'inactive';
   const [stopOpen, setStopOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   // Whether a publish is in flight — see runPublish, below the not-found guard.
   const [publishing, setPublishing] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const stripeConnected = useStripeConnected();
   // Set when the screen is deliberately navigating away — Delete, and the first
   // Save of a new automation, which swaps /new for a real id.
@@ -561,15 +560,32 @@ const AutomationFloat: React.FC = () => {
     toast.success('Automation updated');
   };
 
-  const handleDelete = () => {
-    setDeleteOpen(false);
-    // Flagged before either of the next two lines, because removing the
-    // automation re-renders this screen synchronously (the store is an external
-    // store) and the route change lands after it.
+  // Archive, and leave. The automation is out of the working list, so staying on it
+  // would put you on a screen you can no longer reach from the list you just returned
+  // it to — and the list is where the undo is.
+  //
+  // Behind a confirm, like Turn off is — see shared/archive-dialog for why a
+  // reversible action still asks.
+  const handleArchive = () => {
+    setArchiveOpen(false);
+    const status = automation.status;
+    // Flagged before the navigate for the same reason Delete needed it: the store is
+    // external, so archiving re-renders this screen synchronously and the route change
+    // lands after it. The screen filters archived automations out of nothing, but the
+    // leave guard would otherwise fire on the way out.
     leaving.current = true;
-    deleteAutomation(id);
+    setAutomationArchived(id, true);
     navigate(toVersioned(lanePath(LANE)));
-    toast.success('Automation deleted');
+    toast.success(status === 'active' ? 'Archived and turned off' : 'Automation archived', {
+      action: {
+        label: 'Undo',
+        // Status too — see the same note on the list's handler.
+        onClick: () => {
+          setAutomationArchived(id, false);
+          setAutomationStatus(id, status);
+        },
+      },
+    });
   };
 
   const handleStop = () => {
@@ -630,22 +646,17 @@ const AutomationFloat: React.FC = () => {
         <DropdownMenuItem onClick={openSettings}>
           <LucideIcon.PenLine /> Rename
         </DropdownMenuItem>
-        {/* Delete sits last. A menu opens with the cursor at the top, so leading
-                    with the one item that destroys something would put it directly under
-                    the pointer. It used to be fenced off by a separator too; with four
-                    items the rules were doing more to break the list up than the grouping
-                    justified, and the destructive colour already marks it.
+        {/* Archive, where Delete used to be, and no longer coloured — nothing is
+                    destroyed, so the red was claiming a weight this doesn't have.
 
-                    No longer disabled on arrival. It used to be, because the automation
-                    didn't exist until the first Save and there was nothing to remove. It
-                    exists the moment this screen opens now, so Delete is live from the
-                    first frame — which is also the way out for anyone who opened New
+                    Still last. It's the item that takes you off this screen, and a menu
+                    opens with the cursor at the top.
+
+                    Live from the first frame: the automation exists the moment this screen
+                    opens, which also makes this the way out for anyone who opened New
                     automation and changed their mind. */}
-        <DropdownMenuItem
-          className="text-destructive focus:text-destructive"
-          onClick={() => setDeleteOpen(true)}
-        >
-          <LucideIcon.Trash2 /> Delete
+        <DropdownMenuItem onClick={() => setArchiveOpen(true)}>
+          <LucideIcon.Archive /> Archive
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -865,10 +876,14 @@ const AutomationFloat: React.FC = () => {
                                 button sits off the toggle by the same distance it does in
                                 future. Nothing to keep in sync but the size token.
 
+                                No negative inset, because the toggle has none either — its
+                                box edge sits on the 24px column in both its states, same as
+                                the header's back arrow.
+
                                 Only while collapsed: with the pane open the toggle is
                                 480px away over the pane, and reserving space here would
                                 indent the member button against nothing. */}
-                {paneCollapsed && <div className="-ml-2 size-9 shrink-0" aria-hidden />}
+                {paneCollapsed && <div className="size-9 shrink-0" aria-hidden />}
                 {/* Who you're looking at, and the way out, as one control:
                                 clicking the member's name closes their run. This replaced
                                 a bare X in the canvas's top-right, which said nothing
@@ -928,8 +943,8 @@ const AutomationFloat: React.FC = () => {
                 would appear at the canvas's own left edge — 480px in while the pane is
                 still open — and then ride leftward as the pane collapsed, which is the
                 flash this replaced. Anchored here it is simply always at 16/16 of the
-                row: the pane's px-6 less its -ml-2 horizontally, its pt-4 under a 64px
-                header vertically. The pane collapses out from under a button that never
+                row: the pane's own px-6 horizontally, its pt-4 under a 64px header
+                vertically. The pane collapses out from under a button that never
                 moves, and the same press sends it back.
 
                 z-30 clears the pane's own sticky bars at z-20. The pane holds an
@@ -939,16 +954,31 @@ const AutomationFloat: React.FC = () => {
                     in this layout that doesn't belong to the pane or the canvas, because
                     its whole job is to survive the boundary moving between them.
 
-                    -ml-2, as everywhere else a ghost icon button meets the inset: the box
-                    pulls back so the glyph sits on 24px. */}
+                    Which means it changes surface underneath itself, and its chrome has to
+                    change with it. Pane OPEN, it stands on the pane — a panel, where a
+                    ghost button is what every other control on a panel is. Pane COLLAPSED,
+                    the canvas starts at x=0 and the same button is floating over the dot
+                    grid, where ghost reads as a glyph with nothing holding it: outline on
+                    CANVAS_HUD_BUTTON's opaque surface, the same treatment the zoom controls
+                    and the member button take.
+
+                    What does NOT change is where it sits. left-6 in both, box edge on 24,
+                    no negative inset either way — it used to pull back 8px while the pane
+                    was open, which made the button jump 8px sideways at the moment the
+                    pane went. See the header for why 24 is the box edge and not the
+                    glyph.
+
+                    One button that restyles, not two that swap: it never unmounts, so the
+                    pane collapses out from under a control that stays exactly where it is
+                    and the same press sends it back. */}
         <div className="absolute top-4 left-6 z-30">
           <Button
             aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
             aria-pressed={!paneCollapsed}
-            className="-ml-2"
+            className={paneCollapsed ? CANVAS_HUD_BUTTON : undefined}
             size="icon"
             type="button"
-            variant="ghost"
+            variant={paneCollapsed ? 'outline' : 'ghost'}
             onClick={() => setPaneCollapsed(!paneCollapsed)}
           >
             <LucideIcon.PanelLeft strokeWidth={2} />
@@ -981,32 +1011,18 @@ const AutomationFloat: React.FC = () => {
         onOpenChange={setSettingsOpen}
       />
 
-      {/* Delete. The one warning this screen can give that the list can't: how
-                many members are mid-flow right now. "This can't be undone" is true of
-                every delete dialog ever written and tells nobody anything; the number
-                of people whose run ends the moment you confirm is the fact that
-                actually decides it. */}
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete “{automation.name}”?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {scenario.metrics.in_progress > 0
-                ? `${formatNumber(scenario.metrics.in_progress)} ${scenario.metrics.in_progress === 1 ? 'member is' : 'members are'} currently in this automation. Deleting it ends their runs, and its history goes with it.`
-                : 'This automation and its run history will be deleted. This can’t be undone.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className={buttonVariants({ variant: 'destructive' })}
-              onClick={handleDelete}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Where the delete confirm used to be. If Delete ever returns to the UI, its
+                dialog is worth writing again rather than reaching for "this can't be
+                undone" — that sentence is true of every delete dialog ever written and
+                tells nobody anything; the number of members mid-flow is what actually
+                decides it. */}
+      <ArchiveAutomationDialog
+        live={liveStatus === 'active'}
+        name={automation.name}
+        open={archiveOpen}
+        onConfirm={handleArchive}
+        onOpenChange={setArchiveOpen}
+      />
 
       {/* Publish — a deliberate confirm when the automation is already live. */}
       <PublishChangesDialog

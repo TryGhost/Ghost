@@ -42,7 +42,7 @@ export interface SettingsPanelProps {
   onDetailsChange: (next: { name: string; description: string }) => void;
   allowReentry: boolean;
   onAllowReentryChange: (next: boolean) => void;
-  onDelete: () => void;
+  onArchive: () => void;
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -51,7 +51,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onDetailsChange,
   allowReentry,
   onAllowReentryChange,
-  onDelete,
+  onArchive,
 }) => {
   return (
     <Stack className="px-6 pb-8" gap="xl">
@@ -124,14 +124,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 what's actually at stake — members mid-flow, and the run history — so the
                 button doesn't have to. */}
       <Inline className="pt-2" gap="sm">
-        <Button
-          className="text-destructive hover:text-destructive"
-          type="button"
-          variant="outline"
-          onClick={onDelete}
-        >
-          <LucideIcon.Trash2 strokeWidth={2} />
-          Delete
+        <Button type="button" variant="outline" onClick={onArchive}>
+          <LucideIcon.Archive strokeWidth={2} />
+          Archive
         </Button>
       </Inline>
     </Stack>

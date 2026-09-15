@@ -81,14 +81,18 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             is what you came here for, and the way back belongs beside it. min-w-0 so
             a long automation name truncates instead of pushing the actions off. */}
       <Inline align="center" className="min-w-0" gap="sm">
-        {/* -ml-2, as everywhere a leading ghost icon button meets the inset: the
-                box pulls back 8px so its 16px glyph lands optically on the 24px
-                column, instead of the box sitting on it and the glyph landing 10px
-                further in. The pane's own leading button does the same, which is
-                what puts the two on one line down the left of the screen. */}
+        {/* No negative inset. It used to pull back 8px so the arrow's 16px GLYPH
+                landed optically on the 24px column rather than its box — which is a real
+                argument, and it lost to a simpler one: the box then starts at 16, and the
+                header's right-hand actions start at 24, so the two ends of the same row
+                disagreed by 8px. The right side has no glyph to inset and can't be moved
+                without breaking the column the pane below it shares.
+
+                So every leading edge on this screen is a box edge on 24: the back arrow,
+                the pane toggle in both its states, and the pane's own content. Optical
+                alignment of one glyph isn't worth a header that's visibly off-centre. */}
         <Button
           aria-label="Back to automations"
-          className="-ml-2"
           size="icon"
           type="button"
           variant="ghost"
@@ -112,8 +116,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 does that, and one findable route is enough. This is the shortcut
                 for people who guess that a title is clickable, which most do.
 
-                -ml-2 with px-2 so the hover fill has room without the text
-                shifting off the line the back arrow's glyph sets. */}
+                px-2 so the hover fill has room, and -ml-2 to take that padding back out
+                of the layout — otherwise turning the title into a button would shift the
+                text 8px right of where it sits when it isn't one. This inset cancels its
+                own padding; it isn't the column inset the back arrow just lost. */}
         {onEditTitle ? (
           <button
             className="-ml-2 flex min-w-0 rounded-md px-2 py-1 transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
