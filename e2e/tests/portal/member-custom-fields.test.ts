@@ -111,6 +111,33 @@ test.describe('Portal - member custom fields', () => {
     }
   });
 
+  // The site answers with every value it refused, so a member correcting an address is
+  // told everything that is wrong with it at once rather than one line per attempt.
+  test('marks every part the site refuses at once', async ({ page, browser, baseURL }) => {
+    const fieldName = `Shipping address ${Date.now()}`;
+    const member = await createMemberFactory(page.request).create({
+      name: 'Ada Lovelace',
+      email: `ada-all-${Date.now()}@ghost.org`,
+    });
+    await anAddressFieldMembersMayEdit(page, fieldName);
+
+    const { context, profile, key } = await accountSettingsAs(browser, baseURL!, member, fieldName);
+    try {
+      await profile.partInput(key, 'line1').fill(OVER_LONG);
+      await profile.partInput(key, 'line2').fill(OVER_LONG);
+      await profile.partInput(key, 'country').fill('nope');
+      await profile.save();
+
+      await expect(profile.partInput(key, 'line1')).toHaveClass(/error/);
+      await expect(profile.partInput(key, 'line2')).toHaveClass(/error/);
+      await expect(profile.partInput(key, 'country')).toHaveClass(/error/);
+      // Untouched, so still fine: the marking follows the refusals rather than the field.
+      await expect(profile.partInput(key, 'city')).not.toHaveClass(/error/);
+    } finally {
+      await context.close();
+    }
+  });
+
   // Two parts share a row, their borders merged so the row reads as one field. An error
   // rendered above its input would add height to one of the pair and leave the other
   // standing higher, breaking that in the very state the message exists to report.

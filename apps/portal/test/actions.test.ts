@@ -214,6 +214,52 @@ describe('updateProfile action', () => {
     );
   });
 
+  // The site refuses every value it objects to in one answer, so a member fixes an
+  // address in one pass rather than learning about the next line each time they save.
+  test('marks every part the site refused, not only the first', async () => {
+    const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
+    const refusal = new HumanReadableError('Use 255 characters or fewer.', {
+      property: 'metafields.custom.shipping_address.line1',
+      details: [
+        {
+          property: 'metafields.custom.shipping_address.line1',
+          message: 'Use 255 characters or fewer.',
+        },
+        {
+          property: 'metafields.custom.shipping_address.line2',
+          message: 'Use 255 characters or fewer.',
+        },
+        {
+          property: 'metafields.custom.shipping_address.country',
+          message: 'Enter a 2-letter country code, like US.',
+        },
+      ],
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [address],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { shipping_address: { line1: 'x' } } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.fieldErrors).toEqual({
+      'custom:shipping_address:line1': 'Use 255 characters or fewer.',
+      'custom:shipping_address:line2': 'Use 255 characters or fewer.',
+      'custom:shipping_address:country': 'Enter a 2-letter country code, like US.',
+    });
+    expect(result.popupNotification.message).toBe('Failed to update account details');
+  });
+
   // Leaving the page discards what was typed, so a refusal of it must not come back to
   // mark a value the member never sees again.
   test('forgets a refusal when the member leaves the page', async () => {
