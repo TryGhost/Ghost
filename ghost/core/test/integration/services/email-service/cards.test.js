@@ -8,6 +8,7 @@ const cheerio = require('cheerio');
 const fs = require('fs-extra');
 const { DEFAULT_NODES } = require('@tryghost/kg-default-nodes');
 const ImageSize = require('../../../../core/server/lib/image/image-size');
+const { malformedCssCases } = require('../../../utils/fixtures/email-service/malformed-css');
 
 const goldenPost = fs.readJsonSync('./test/utils/fixtures/email-service/golden-post.json');
 
@@ -285,5 +286,17 @@ describe('Can send cards via email', function () {
         return typeof value === 'string' && value.includes('/uuid/content/images/post-image.jpg');
       }),
     );
+  });
+
+  it('sends HTML cards with malformed CSS', async function () {
+    const data = await sendEmail(agent, {
+      lexical: createLexicalJson(
+        malformedCssCases.map(({ html }) => ({ type: 'html', version: 1, html })),
+      ),
+    });
+
+    for (const { name } of malformedCssCases) {
+      assert.ok(data.html.includes(`Malformed CSS case: ${name}`), name);
+    }
   });
 });

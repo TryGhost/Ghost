@@ -1,7 +1,9 @@
 import errors from '@tryghost/errors';
-import { getUsedKeys, rejectStatements } from '@tryghost/mongo-utils';
+import { chainTransformers, getUsedKeys, rejectStatements } from '@tryghost/mongo-utils';
 
 const schema = require('../../../data/schema').tables;
+
+type MongoTransformer = (input: unknown) => unknown;
 
 // Never filterable or orderable through the Content API, on any resource or relation.
 const CONTENT_API_RESTRICTED_FIELDS = new Set([
@@ -70,7 +72,10 @@ const CONTENT_API_TAG_RESTRICTED_FIELDS = new Set([
 ]);
 const CONTENT_API_TAG_RELATIONS = new Set(['tag', 'tags', 'primary_tag']);
 
-const ADMIN_API_RESTRICTED_FIELDS = new Set(['password']);
+// Columns Ghost deliberately withholds from every Admin API response. `filter` and
+// `order` are both compiled to SQL against the raw table, so a column hidden from
+// output is still usable as an oracle unless it is blocked on the way in.
+const ADMIN_API_RESTRICTED_FIELDS = new Set(['password', 'token', 'gift_link_token', 'secret']);
 
 function getOrderAttributes(tableName: string): string[] {
   return Object.keys(schema[tableName])
@@ -113,6 +118,10 @@ function hasRestrictedTagSegment(key: string): boolean {
       CONTENT_API_TAG_RELATIONS.has(segments[index - 1]) &&
       CONTENT_API_TAG_RESTRICTED_FIELDS.has(segment),
   );
+}
+
+function isAdminApiRestrictedKey(key: string): boolean {
+  return hasRestrictedSegment(key, ADMIN_API_RESTRICTED_FIELDS);
 }
 
 function isContentApiRestrictedKey(key: string): boolean {
@@ -206,15 +215,80 @@ export const rejectNewslettersContentApiRestrictedFieldsTransformer = (input: un
 };
 
 export const rejectAdminApiRestrictedFieldsTransformer = (input: unknown) => {
-  return rejectStatements(input, (key: string) =>
-    hasRestrictedSegment(key, ADMIN_API_RESTRICTED_FIELDS),
-  );
+  return rejectStatements(input, isAdminApiRestrictedKey);
 };
 
-export const validateAdminApiBulkFilterTransformer = (input: unknown) => {
-  const restrictedField = getUsedKeys(input).find((key: string) =>
-    hasRestrictedSegment(key, ADMIN_API_RESTRICTED_FIELDS),
+/**
+ * `@tryghost/bookshelf-order` resolves an order field to the first order
+ * attribute that ends with it, so `word` sorts by `users.password` and `oken`
+ * by `invites.token`. An unqualified field is therefore restricted when it is a
+ * suffix of any restricted column name. A qualified field can only match a
+ * whole column name after the dot, so its segments are checked exactly.
+ */
+function isAdminApiRestrictedOrderField(field: string): boolean {
+  const normalizedField = field.toLowerCase();
+
+  if (normalizedField.includes('.')) {
+    return isAdminApiRestrictedKey(normalizedField);
+  }
+
+  return [...ADMIN_API_RESTRICTED_FIELDS].some((restrictedField) =>
+    restrictedField.endsWith(normalizedField),
   );
+}
+
+/**
+ * Every schema column is orderable by default (see the base model's
+ * `orderAttributes`), so `order` reaches the SQL `ORDER BY` clause untouched.
+ * Sorting by a withheld column leaks its relative byte ordering, which the
+ * `filter` guard alone does not prevent.
+ */
+export function validateAdminApiRestrictedOrderFields(
+  order: string | string[] | undefined,
+): string | string[] | undefined {
+  if (!order) {
+    return order;
+  }
+
+  const restrictedField = (Array.isArray(order) ? order : [order])
+    .flatMap((value) => String(value).split(','))
+    .map((clause) => clause.trim().split(/\s+/)[0])
+    .filter(Boolean)
+    .find(isAdminApiRestrictedOrderField);
+
+  if (restrictedField) {
+    throw new errors.BadRequestError({
+      message: 'Restricted fields cannot be used in order.',
+    });
+  }
+
+  return order;
+}
+
+/**
+ * Applies the Admin API restricted-field guard to the query options of a single
+ * endpoint. Both client-supplied query surfaces have to be covered: `filter`
+ * compiles to `WHERE` and `order` to `ORDER BY`, and each is an independent
+ * oracle over columns the serializers strip from the response.
+ */
+export function restrictAdminApiQueryOptions<T extends Record<string, unknown>>(
+  options: T,
+): T & { mongoTransformer: MongoTransformer } {
+  validateAdminApiRestrictedOrderFields(options.order as string | string[] | undefined);
+
+  return {
+    ...options,
+    mongoTransformer: options.mongoTransformer
+      ? chainTransformers(
+          options.mongoTransformer as MongoTransformer,
+          rejectAdminApiRestrictedFieldsTransformer,
+        )
+      : rejectAdminApiRestrictedFieldsTransformer,
+  };
+}
+
+export const validateAdminApiBulkFilterTransformer = (input: unknown) => {
+  const restrictedField = getUsedKeys(input).find(isAdminApiRestrictedKey);
 
   if (restrictedField) {
     throw new errors.BadRequestError({

@@ -1,6 +1,4 @@
 import { useCallback, useRef } from 'react';
-import { Button } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 import {
   settingsAuthorChip,
@@ -9,6 +7,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 import { authorName, matchesAuthor, toAuthorOption, type AuthorOption } from './authors-options';
+import { SectionLoadError } from './section-load-error';
 
 export interface AuthorsPickerProps {
   inputId: string;
@@ -70,21 +69,13 @@ export function AuthorsPicker({
       matches={matchesAuthor}
       notice={
         showLoadError ? (
-          <Stack align="start" className="p-2" gap="sm">
-            <Text role="alert" size="sm">
-              Couldn’t load authors.
-            </Text>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                inputRef.current?.focus();
-                onRetry();
-              }}
-            >
-              Retry
-            </Button>
-          </Stack>
+          <SectionLoadError
+            message="Couldn’t load authors."
+            onRetry={() => {
+              inputRef.current?.focus();
+              onRetry();
+            }}
+          />
         ) : null
       }
       options={staff}

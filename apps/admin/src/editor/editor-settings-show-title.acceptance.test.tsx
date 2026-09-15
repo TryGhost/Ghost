@@ -14,6 +14,7 @@ import {
   renderAdminApp,
   staffRole,
   unsavedChangesGuarded,
+  withoutAutosave,
   type EndpointCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -21,17 +22,13 @@ import { editorScreen } from '@/editor/editor.screen';
 const PAGE_ID = 'pg123';
 const NEW_PAGE_ID = 'pg789';
 const POST_ID = 'abc123';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const PAGE_ROUTE = new RegExp(`^/pages/${PAGE_ID}/\\?`);
 const POST_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 
-// A settings save waits on the engine's queue, so these journeys outlast the default timeout.
-const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPage = ReturnType<typeof post>;
 
@@ -140,279 +137,216 @@ async function openSettings() {
  * the warning a theme that cannot honour it earns.
  */
 describe('Post settings show title and feature image', () => {
-  it(
-    'persists a draft page’s choice on its own',
-    async () => {
-      const saveApi = fakeSavablePage();
-      await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
-      await openSettings();
+  it('persists a draft page’s choice on its own', async () => {
+    const saveApi = fakeSavablePage();
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await openSettings();
 
-      await expect
-        .element(editorScreen.settingsShowTitle())
-        .toHaveAttribute('data-state', 'checked');
+    await expect.element(editorScreen.settingsShowTitle()).toHaveAttribute('data-state', 'checked');
 
-      await editorScreen.settingsShowTitle().click();
+    await editorScreen.settingsShowTitle().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPage(saveApi)).toMatchObject({ show_title_and_feature_image: false });
-      await expect
-        .element(editorScreen.settingsShowTitle())
-        .toHaveAttribute('data-state', 'unchecked');
-    },
-    SLOW,
-  );
+    await expect(saveApi).toHaveSavedFields({ show_title_and_feature_image: false });
+    await expect
+      .element(editorScreen.settingsShowTitle())
+      .toHaveAttribute('data-state', 'unchecked');
+  });
 
-  it(
-    'turns the choice back on',
-    async () => {
-      const saveApi = fakeSavablePage({ show_title_and_feature_image: false });
-      await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
-      await openSettings();
+  it('turns the choice back on', async () => {
+    const saveApi = fakeSavablePage({ show_title_and_feature_image: false });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await openSettings();
 
-      await expect
-        .element(editorScreen.settingsShowTitle())
-        .toHaveAttribute('data-state', 'unchecked');
+    await expect
+      .element(editorScreen.settingsShowTitle())
+      .toHaveAttribute('data-state', 'unchecked');
 
-      await editorScreen.settingsShowTitle().click();
+    await editorScreen.settingsShowTitle().click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPage(saveApi)).toMatchObject({ show_title_and_feature_image: true });
-    },
-    SLOW,
-  );
+    await expect(saveApi).toHaveSavedFields({ show_title_and_feature_image: true });
+  });
 
-  it(
-    'stages a published page’s choice until Update',
-    async () => {
-      const saveApi = fakeSavablePage({ status: 'published', published_at: PUBLISHED_AT });
-      await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
-      await openSettings();
+  it('stages a published page’s choice until Update', async () => {
+    const saveApi = fakeSavablePage({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await openSettings();
 
-      await expect.element(editorScreen.updateButton()).toBeDisabled();
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
-      await editorScreen.settingsShowTitle().click();
+    await editorScreen.settingsShowTitle().click();
 
-      await expect.element(editorScreen.updateButton()).toBeEnabled();
-      await expect.poll(unsavedChangesGuarded).toBe(true);
-      expect(saveApi.requests).toHaveLength(0);
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    expect(saveApi.requests).toHaveLength(0);
 
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      expect(submittedPage(saveApi)).toMatchObject({
-        show_title_and_feature_image: false,
-        status: 'published',
-      });
-      await expect.element(editorScreen.updateButton()).toBeDisabled();
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPage(saveApi)).toMatchObject({
+      show_title_and_feature_image: false,
+      status: 'published',
+    });
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+  });
 
-  it(
-    'leaves the section out for a post',
-    async () => {
-      editorChrome();
-      fakeAdminEndpoint('GET', POST_ROUTE, () => ({
-        posts: [post({ id: POST_ID, status: 'draft', published_at: null, tags: [], tiers: [] })],
-      }));
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSettings();
+  it('leaves the section out for a post', async () => {
+    editorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, () => ({
+      posts: [post({ id: POST_ID, status: 'draft', published_at: null, tags: [], tiers: [] })],
+    }));
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSettings();
 
-      // A section the sidebar does render, so the panel is settled before the check.
-      await expect.element(editorScreen.settingsFeatured()).toBeVisible();
-      await expect(editorScreen.settingsShowTitle()).toHaveCount(0);
-    },
-    SLOW,
-  );
+    // A section the sidebar does render, so the panel is settled before the check.
+    await expect.element(editorScreen.settingsFeatured()).toBeVisible();
+    await expect(editorScreen.settingsShowTitle()).toHaveCount(0);
+  });
 
-  it(
-    'offers the choice to a role that cannot manage the rest of the page',
-    async () => {
-      fakeSavablePage({ authors: [{ id: '1' }] });
-      await renderAdminApp(`/editor/page/${PAGE_ID}`, asContributor());
-      await openSettings();
+  it('offers the choice to a role that cannot manage the rest of the page', async () => {
+    fakeSavablePage({ authors: [{ id: '1' }] });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, asContributor());
+    await openSettings();
 
-      await expect.element(editorScreen.settingsShowTitle()).toBeVisible();
-      // The sections that are role-gated stay out, so this one is not riding on them.
-      await expect(editorScreen.settingsFeatured()).toHaveCount(0);
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.settingsShowTitle()).toBeVisible();
+    // The sections that are role-gated stay out, so this one is not riding on them.
+    await expect(editorScreen.settingsFeatured()).toHaveCount(0);
+  });
 
-  it(
-    'never asks for the active theme as a role that cannot read it',
-    async () => {
-      const saveApi = fakeSavablePage({
-        authors: [{ id: '1' }],
-        show_title_and_feature_image: false,
-      });
-      // Reading it needs a permission Contributors lack, so the report that
-      // would earn a warning must never be requested.
-      const themesApi = fakeActiveTheme({ errors: [PAGE_BUILDER_PROBLEM] });
-      await renderAdminApp(`/editor/page/${PAGE_ID}`, asContributor());
-      await openSettings();
+  it('never asks for the active theme as a role that cannot read it', async () => {
+    const saveApi = fakeSavablePage({
+      authors: [{ id: '1' }],
+      show_title_and_feature_image: false,
+    });
+    // Reading it needs a permission Contributors lack, so the report that
+    // would earn a warning must never be requested.
+    const themesApi = fakeActiveTheme({ errors: [PAGE_BUILDER_PROBLEM] });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, asContributor());
+    await openSettings();
 
-      await expect
-        .element(editorScreen.settingsShowTitle())
-        .toHaveAttribute('data-state', 'unchecked');
+    await expect
+      .element(editorScreen.settingsShowTitle())
+      .toHaveAttribute('data-state', 'unchecked');
 
-      await editorScreen.settingsShowTitle().click();
+    await editorScreen.settingsShowTitle().click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPage(saveApi)).toMatchObject({ show_title_and_feature_image: true });
-      await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
-      expect(themesApi.requests).toHaveLength(0);
-    },
-    SLOW,
-  );
+    await expect(saveApi).toHaveSavedFields({ show_title_and_feature_image: true });
+    await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
+    expect(themesApi.requests).toHaveLength(0);
+  });
 
-  it(
-    'defaults a new page to showing its title and feature image',
-    async () => {
-      editorChrome();
-      let created: SavedPage = post({
-        id: NEW_PAGE_ID,
-        title: '(Untitled)',
-        slug: 'untitled',
-        status: 'draft',
-        updated_at: LOADED_AT,
-        published_at: null,
-        tags: [],
-        tiers: [],
-      });
-      const createApi = fakeAdminEndpoint('POST', /^\/pages\/\?/, ({ body }) => {
-        const submitted = (body as { pages: Partial<SavedPage>[] }).pages[0];
-        created = { ...created, ...submitted, id: NEW_PAGE_ID, updated_at: LOADED_AT };
-        return { pages: [created] };
-      });
-      const NEW_PAGE_ROUTE = new RegExp(`^/pages/${NEW_PAGE_ID}/\\?`);
-      fakeAdminEndpoint('GET', NEW_PAGE_ROUTE, () => ({ pages: [created] }));
-      // The autosave that follows the create can land before the test ends.
-      fakeAdminEndpoint('PUT', NEW_PAGE_ROUTE, () => ({ pages: [created] }));
+  it('defaults a new page to showing its title and feature image', async () => {
+    editorChrome();
+    let created: SavedPage = post({
+      id: NEW_PAGE_ID,
+      title: '(Untitled)',
+      slug: 'untitled',
+      status: 'draft',
+      updated_at: LOADED_AT,
+      published_at: null,
+      tags: [],
+      tiers: [],
+    });
+    const createApi = fakeAdminEndpoint('POST', /^\/pages\/\?/, ({ body }) => {
+      const submitted = (body as { pages: Partial<SavedPage>[] }).pages[0];
+      created = { ...created, ...submitted, id: NEW_PAGE_ID, updated_at: LOADED_AT };
+      return { pages: [created] };
+    });
+    const NEW_PAGE_ROUTE = new RegExp(`^/pages/${NEW_PAGE_ID}/\\?`);
+    fakeAdminEndpoint('GET', NEW_PAGE_ROUTE, () => ({ pages: [created] }));
+    // The autosave that follows the create can land before the test ends.
+    fakeAdminEndpoint('PUT', NEW_PAGE_ROUTE, () => ({ pages: [created] }));
 
-      await renderAdminApp('/editor/page', FLAG_ON);
-      await openSettings();
+    await renderAdminApp('/editor/page', FLAG_ON);
+    await openSettings();
 
-      await expect
-        .element(editorScreen.settingsShowTitle())
-        .toHaveAttribute('data-state', 'checked');
+    await expect.element(editorScreen.settingsShowTitle()).toHaveAttribute('data-state', 'checked');
 
-      await editorScreen.settingsShowTitle().click();
+    await editorScreen.settingsShowTitle().click();
 
-      await expect.poll(() => createApi.requests.length, POLL).toBe(1);
-      expect(submittedPage(createApi)).toMatchObject({ show_title_and_feature_image: false });
-    },
-    SLOW,
-  );
+    await expect.poll(() => createApi.requests.length, POLL).toBe(1);
+    expect(submittedPage(createApi)).toMatchObject({ show_title_and_feature_image: false });
+  });
 
-  it(
-    'warns about a theme without the page-builder helper once the choice is off',
-    async () => {
-      fakeSavablePage();
-      await renderAdminApp(
-        `/editor/page/${PAGE_ID}`,
-        withTheme({ errors: [PAGE_BUILDER_PROBLEM] }),
-      );
-      await openSettings();
+  it('warns about a theme without the page-builder helper once the choice is off', async () => {
+    fakeSavablePage();
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, withTheme({ errors: [PAGE_BUILDER_PROBLEM] }));
+    await openSettings();
 
-      // Nothing is hidden yet, so the theme's gap does not matter.
-      await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
+    // Nothing is hidden yet, so the theme's gap does not matter.
+    await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
 
-      await editorScreen.settingsShowTitle().click();
+    await editorScreen.settingsShowTitle().click();
 
-      await expect
-        .element(editorScreen.settingsShowTitleWarning())
-        .toHaveTextContent("Uh-oh. Looks like your theme doesn't support this feature.");
-      await expect
-        .element(editorScreen.settingsShowTitleLearnMore())
-        .toHaveAttribute('href', 'https://docs.ghost.org/themes/helpers/');
+    await expect
+      .element(editorScreen.settingsShowTitleWarning())
+      .toHaveTextContent("Uh-oh. Looks like your theme doesn't support this feature.");
+    await expect
+      .element(editorScreen.settingsShowTitleLearnMore())
+      .toHaveAttribute('href', 'https://docs.ghost.org/themes/helpers/');
 
-      await editorScreen.settingsShowTitle().click();
+    await editorScreen.settingsShowTitle().click();
 
-      await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
-    },
-    SLOW,
-  );
+    await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
+  });
 
-  it(
-    'warns on a theme report that carries the gap as a warning',
-    async () => {
-      fakeSavablePage({ show_title_and_feature_image: false });
-      await renderAdminApp(
-        `/editor/page/${PAGE_ID}`,
-        withTheme({ warnings: [{ ...PAGE_BUILDER_PROBLEM, level: 'warning' }] }),
-      );
-      await openSettings();
+  it('warns on a theme report that carries the gap as a warning', async () => {
+    fakeSavablePage({ show_title_and_feature_image: false });
+    await renderAdminApp(
+      `/editor/page/${PAGE_ID}`,
+      withTheme({ warnings: [{ ...PAGE_BUILDER_PROBLEM, level: 'warning' }] }),
+    );
+    await openSettings();
 
-      await expect.element(editorScreen.settingsShowTitleWarning()).toBeVisible();
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.settingsShowTitleWarning()).toBeVisible();
+  });
 
-  it(
-    'stays quiet for a theme whose report says nothing about the helper',
-    async () => {
-      fakeSavablePage({ show_title_and_feature_image: false });
-      await renderAdminApp(`/editor/page/${PAGE_ID}`, withTheme({ errors: [UNRELATED_PROBLEM] }));
-      await openSettings();
+  it('stays quiet for a theme whose report says nothing about the helper', async () => {
+    fakeSavablePage({ show_title_and_feature_image: false });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, withTheme({ errors: [UNRELATED_PROBLEM] }));
+    await openSettings();
 
-      await expect
-        .element(editorScreen.settingsShowTitle())
-        .toHaveAttribute('data-state', 'unchecked');
-      await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
-    },
-    SLOW,
-  );
+    await expect
+      .element(editorScreen.settingsShowTitle())
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
+  });
 
-  it(
-    'stays quiet for a report that names another page-builder attribute',
-    async () => {
-      fakeSavablePage({ show_title_and_feature_image: false });
-      await renderAdminApp(
-        `/editor/page/${PAGE_ID}`,
-        withTheme({ errors: [OTHER_ATTRIBUTE_PROBLEM] }),
-      );
-      await openSettings();
+  it('stays quiet for a report that names another page-builder attribute', async () => {
+    fakeSavablePage({ show_title_and_feature_image: false });
+    await renderAdminApp(
+      `/editor/page/${PAGE_ID}`,
+      withTheme({ errors: [OTHER_ATTRIBUTE_PROBLEM] }),
+    );
+    await openSettings();
 
-      await expect
-        .element(editorScreen.settingsShowTitle())
-        .toHaveAttribute('data-state', 'unchecked');
-      await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
-    },
-    SLOW,
-  );
+    await expect
+      .element(editorScreen.settingsShowTitle())
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
+  });
 
-  it(
-    'stays quiet for the attribute reported under another code',
-    async () => {
-      fakeSavablePage({ show_title_and_feature_image: false });
-      await renderAdminApp(`/editor/page/${PAGE_ID}`, withTheme({ errors: [OTHER_CODE_PROBLEM] }));
-      await openSettings();
+  it('stays quiet for the attribute reported under another code', async () => {
+    fakeSavablePage({ show_title_and_feature_image: false });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, withTheme({ errors: [OTHER_CODE_PROBLEM] }));
+    await openSettings();
 
-      await expect
-        .element(editorScreen.settingsShowTitle())
-        .toHaveAttribute('data-state', 'unchecked');
-      await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
-    },
-    SLOW,
-  );
+    await expect
+      .element(editorScreen.settingsShowTitle())
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
+  });
 
-  it(
-    'stays quiet when the backend reports no theme at all',
-    async () => {
-      fakeSavablePage({ show_title_and_feature_image: false });
-      await renderAdminApp(`/editor/page/${PAGE_ID}`, {
-        ...FLAG_ON,
-        boot: { browseActiveTheme: { response: { themes: [] } } },
-      });
-      await openSettings();
+  it('stays quiet when the backend reports no theme at all', async () => {
+    fakeSavablePage({ show_title_and_feature_image: false });
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, {
+      ...FLAG_ON,
+      boot: { browseActiveTheme: { response: { themes: [] } } },
+    });
+    await openSettings();
 
-      await expect
-        .element(editorScreen.settingsShowTitle())
-        .toHaveAttribute('data-state', 'unchecked');
-      await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
-    },
-    SLOW,
-  );
+    await expect
+      .element(editorScreen.settingsShowTitle())
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
+  });
 });

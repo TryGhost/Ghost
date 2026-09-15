@@ -1,12 +1,15 @@
-import { describe, expect, it, vi } from 'vitest';
-import { serializePostPayload } from '@tryghost/admin-x-framework/api/post-contract';
-import { createEditorSession, type EditorCreatePayload } from './editor-session';
-import type { EditorRecord } from './projection';
+import { describe, expect, it } from 'vitest';
+import {
+  LOADED_AT,
+  record,
+  serializedFields,
+  sessionHarness,
+} from '@/editor/session/__test-utils__/session-harness';
 
 const TIERS = [{ id: 'gold' }, { id: 'silver' }];
 
 function accessSession(visibility: string | null, tiers = TIERS) {
-  let saved: EditorRecord = {
+  const saved = record({
     id: 'post-id',
     uuid: 'post-uuid',
     url: 'https://example.com/post/',
@@ -16,30 +19,22 @@ function accessSession(visibility: string | null, tiers = TIERS) {
     visibility: visibility ?? 'paid',
     tiers,
     lexical: null,
-    updated_at: '2026-01-01T00:00:00.000Z',
+    updated_at: LOADED_AT,
     published_at: null,
-    tags: [],
-  };
-  let saves = 0;
-  const persist = (payload: EditorCreatePayload) => {
+  });
+
+  return sessionHarness(
+    {
+      record: visibility === null ? undefined : saved,
+      acknowledged: saved,
+      createdId: saved.id,
+      saveFailureMessage: 'Saving failed',
+      baseline: null,
+    },
     // Exercise the same serialization as the post/page transports: an unpaired
     // tier visibility disappears before the API sees it.
-    const serialized = serializePostPayload(payload);
-    saves += 1;
-    saved = { ...saved, ...serialized, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return Promise.resolve(saved);
-  };
-  const create = vi.fn(persist);
-  const update = vi.fn(persist);
-  const session = createEditorSession({
-    record: visibility === null ? undefined : saved,
-    saveFailureMessage: 'Saving failed',
-    onIdAcquired: vi.fn(),
-    onError: vi.fn(),
-    transport: { create, update, generateSlug: () => Promise.resolve('post') },
-  });
-  session.setBaseline(null);
-  return { session, create, update };
+    { applied: serializedFields, generateSlug: () => Promise.resolve('post') },
+  );
 }
 
 describe('saving post access', () => {
@@ -72,7 +67,7 @@ describe('saving post access', () => {
       for (const save of [session.dispatchExplicit, session.dispatchPublish]) {
         expect(await save()).toMatchObject({
           kind: 'failed',
-          error: { kind: 'validation', message: 'Please select at least one tier' },
+          error: { kind: 'validation', message: 'Please select at least one tier.' },
         });
       }
       expect(create).not.toHaveBeenCalled();

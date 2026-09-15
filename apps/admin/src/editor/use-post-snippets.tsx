@@ -16,6 +16,7 @@ import {
   useDeleteSnippet,
   useEditSnippet,
 } from '@tryghost/admin-x-framework/api/snippets';
+import { snippetConfirmModal } from '@tryghost/test-data/selectors/editor';
 import type { CardConfigSnippet, CardConfigSnippetInput } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 
@@ -116,7 +117,7 @@ export function usePostSnippets({ canManage }: { canManage: boolean }): PostSnip
 
   const snippetDialog = (
     <AlertDialog open={pending !== null} onOpenChange={(open) => !open && !isRunning && close()}>
-      <AlertDialogContent data-testid="snippet-confirm-modal">
+      <AlertDialogContent data-testid={snippetConfirmModal}>
         <AlertDialogHeader>
           <AlertDialogTitle>
             {pending?.kind === 'delete' ? 'Confirm snippet deletion' : 'Update this snippet?'}

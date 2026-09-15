@@ -1,0 +1,27 @@
+services:
+  fake-mailgun:
+    build:
+      context: ./
+      dockerfile: docker/fake-mailgun/Dockerfile
+    init: true
+    depends_on:
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:4010/v3/fake.mailgun.test/events').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
+  ghost-dev:
+    environment:
+      bulkEmail__mailgun__apiKey: fake-mailgun-api-key
+      bulkEmail__mailgun__domain: fake.mailgun.test
+      bulkEmail__mailgun__baseUrl: http://fake-mailgun:4010/v3
+    depends_on:
+      fake-mailgun:
+        condition: service_healthy

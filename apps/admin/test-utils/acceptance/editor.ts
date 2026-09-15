@@ -75,6 +75,26 @@ export function fakeUnsplashPhotos(): void {
   fakeEndpoint('GET', 'https://api.unsplash.com/photos/photo-1/download', {});
 }
 
+// Long enough that no acceptance run reaches it, so a save that lands is one
+// the editor sent without waiting for the debounce.
+const NO_AUTOSAVE_MS = 600_000;
+const FAST_AUTOSAVE_MS = 50;
+
+/**
+ * Boots the editor with a debounce no run reaches, so a debounced autosave cannot
+ * be what a spec's assertion sees. The other two paths to a write are untouched:
+ * the engine's 60s timed cycle still arms, and a post with no id still enqueues its
+ * create straight away rather than waiting for the debounce.
+ */
+export function withoutAutosave(options: RenderAdminAppOptions = {}): RenderAdminAppOptions {
+  return { ...options, autosaveDebounceMs: NO_AUTOSAVE_MS };
+}
+
+/** Boots the editor with autosave firing straight away, for specs whose subject is autosave. */
+export function withFastAutosave(options: RenderAdminAppOptions = {}): RenderAdminAppOptions {
+  return { ...options, autosaveDebounceMs: FAST_AUTOSAVE_MS };
+}
+
 /** The site fixture turns Unsplash on, so only the off case needs an override. */
 export function withoutUnsplash(): RenderAdminAppOptions {
   return {

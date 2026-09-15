@@ -41,7 +41,7 @@ export type EditorSettingsPatch = Partial<
   show_title_and_feature_image?: boolean;
 };
 
-export const TIERS_REQUIRED = 'Please select at least one tier';
+export const TIERS_REQUIRED = 'Please select at least one tier.';
 
 /** Ember's post validator refuses an empty author list (validators/post.js). */
 export const AUTHORS_REQUIRED = 'At least one author is required.';
@@ -85,12 +85,13 @@ export const OG_DESCRIPTION_MAX = 500;
 export const X_TITLE_MAX = 300;
 export const X_DESCRIPTION_MAX = 500;
 
-export const META_TITLE_TOO_LONG = `Meta Title cannot be longer than ${META_TITLE_MAX} characters.`;
-export const META_DESCRIPTION_TOO_LONG = `Meta Description cannot be longer than ${META_DESCRIPTION_MAX} characters.`;
-export const OG_TITLE_TOO_LONG = `Facebook Title cannot be longer than ${OG_TITLE_MAX} characters.`;
-export const OG_DESCRIPTION_TOO_LONG = `Facebook Description cannot be longer than ${OG_DESCRIPTION_MAX} characters.`;
-export const X_TITLE_TOO_LONG = `Twitter Title cannot be longer than ${X_TITLE_MAX} characters.`;
-export const X_DESCRIPTION_TOO_LONG = `Twitter Description cannot be longer than ${X_DESCRIPTION_MAX} characters.`;
+/** The field names read as the pane's own labels read. */
+export const META_TITLE_TOO_LONG = `Meta title cannot be longer than ${META_TITLE_MAX} characters.`;
+export const META_DESCRIPTION_TOO_LONG = `Meta description cannot be longer than ${META_DESCRIPTION_MAX} characters.`;
+export const OG_TITLE_TOO_LONG = `Facebook title cannot be longer than ${OG_TITLE_MAX} characters.`;
+export const OG_DESCRIPTION_TOO_LONG = `Facebook description cannot be longer than ${OG_DESCRIPTION_MAX} characters.`;
+export const X_TITLE_TOO_LONG = `X title cannot be longer than ${X_TITLE_MAX} characters.`;
+export const X_DESCRIPTION_TOO_LONG = `X description cannot be longer than ${X_DESCRIPTION_MAX} characters.`;
 
 /** `visibility: 'tiers'` with no tiers: the write contract drops the visibility. */
 export function tiersIncomplete(
@@ -142,28 +143,42 @@ export function validatedFieldsOf(fields: ValidatedSettingsFields): ValidatedSet
   return pick(fields, VALIDATED_SETTINGS_FIELD_KEYS);
 }
 
+/** The width each text field is held to, and what it says when it is past it. */
+const LENGTH_RULES: Record<
+  Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers'>,
+  { max: number; message: string }
+> = {
+  meta_title: { max: META_TITLE_MAX, message: META_TITLE_TOO_LONG },
+  meta_description: { max: META_DESCRIPTION_MAX, message: META_DESCRIPTION_TOO_LONG },
+  og_title: { max: OG_TITLE_MAX, message: OG_TITLE_TOO_LONG },
+  og_description: { max: OG_DESCRIPTION_MAX, message: OG_DESCRIPTION_TOO_LONG },
+  twitter_title: { max: X_TITLE_MAX, message: X_TITLE_TOO_LONG },
+  twitter_description: { max: X_DESCRIPTION_MAX, message: X_DESCRIPTION_TOO_LONG },
+};
+
+/** The rule one settings field breaks, worded as the save-time validator words it. */
+export function settingsFieldErrorFor(
+  key: ValidatedSettingsFieldKey,
+  fields: ValidatedSettingsFields,
+): string | null {
+  // The tier pairing is one rule over two fields, and the tier field carries it.
+  if (key === 'visibility') {
+    return null;
+  }
+  if (key === 'tiers') {
+    return tiersIncomplete(fields) ? TIERS_REQUIRED : null;
+  }
+  const { max, message } = LENGTH_RULES[key];
+  return overLength(fields[key], max) ? message : null;
+}
+
 /** The first rule the settings fields break, in the post validator's order. */
 export function settingsFieldError(fields: ValidatedSettingsFields): string | null {
-  if (tiersIncomplete(fields)) {
-    return TIERS_REQUIRED;
-  }
-  if (overLength(fields.meta_title, META_TITLE_MAX)) {
-    return META_TITLE_TOO_LONG;
-  }
-  if (overLength(fields.meta_description, META_DESCRIPTION_MAX)) {
-    return META_DESCRIPTION_TOO_LONG;
-  }
-  if (overLength(fields.og_title, OG_TITLE_MAX)) {
-    return OG_TITLE_TOO_LONG;
-  }
-  if (overLength(fields.og_description, OG_DESCRIPTION_MAX)) {
-    return OG_DESCRIPTION_TOO_LONG;
-  }
-  if (overLength(fields.twitter_title, X_TITLE_MAX)) {
-    return X_TITLE_TOO_LONG;
-  }
-  if (overLength(fields.twitter_description, X_DESCRIPTION_MAX)) {
-    return X_DESCRIPTION_TOO_LONG;
+  for (const key of VALIDATED_SETTINGS_FIELD_KEYS) {
+    const error = settingsFieldErrorFor(key, fields);
+    if (error) {
+      return error;
+    }
   }
   return null;
 }

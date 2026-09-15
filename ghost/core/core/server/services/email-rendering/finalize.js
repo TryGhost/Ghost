@@ -1,4 +1,4 @@
-const cheerio = require('cheerio');
+const cheerio = require('cheerio/slim');
 const juice = require('juice');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
@@ -12,7 +12,12 @@ const finalizeHtml = (html) => {
   $('figcaption').addClass('kg-card-figcaption');
   html = $.html();
 
-  const juicedHtml = juice(html, { inlinePseudoElements: true, removeStyleTags: true });
+  // resolveCSSVariables crashes on nameless declarations in user-authored style attributes
+  const juicedHtml = juice(html, {
+    inlinePseudoElements: true,
+    removeStyleTags: true,
+    resolveCSSVariables: false,
+  });
 
   // Many email clients, like Outlook and Yahoo, [lack support for <figure>
   // and <figcaption>][0]. To work around this, change the tags to <div>s.

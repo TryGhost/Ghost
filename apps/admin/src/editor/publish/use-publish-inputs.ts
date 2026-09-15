@@ -1,4 +1,3 @@
-import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -6,6 +5,7 @@ import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { useCallback, useEffect, useMemo } from 'react';
 import { z } from 'zod';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useEditorSettings, useSiteTimezone } from '@/editor/use-editor-settings';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
 
 // Core's `all_blocked_email_domains` is array-valued, so a scalar-only union rejects a real response.
@@ -59,7 +59,6 @@ function stringSetting(settings: z.infer<typeof settingSchema>[], key: string): 
 export interface AssembledPublishInputs {
   site: PublishSiteInput;
   user: PublishUserInput;
-  timezone: string;
   isValid: boolean;
 }
 
@@ -74,7 +73,7 @@ export function assemblePublishInputs(boundaryData: {
   const parsed = publishInputsBoundarySchema.safeParse(boundaryData);
 
   if (!parsed.success) {
-    return { site: DEFAULT_SITE, user: DEFAULT_USER, timezone: 'Etc/UTC', isValid: false };
+    return { site: DEFAULT_SITE, user: DEFAULT_USER, isValid: false };
   }
 
   const { settingsData, configData, newslettersData, currentUser, memberCount } = parsed.data;
@@ -88,7 +87,7 @@ export function assemblePublishInputs(boundaryData: {
       : defaultRecipientsSchema.safeParse(defaultRecipientsValue);
 
   if (!defaultRecipients.success) {
-    return { site: DEFAULT_SITE, user: DEFAULT_USER, timezone: 'Etc/UTC', isValid: false };
+    return { site: DEFAULT_SITE, user: DEFAULT_USER, isValid: false };
   }
   const roles = new Set(currentUser.roles.map((role) => role.name));
 
@@ -115,7 +114,6 @@ export function assemblePublishInputs(boundaryData: {
       isAdmin: roles.has('Owner') || roles.has('Administrator'),
       isAuthorOrContributor: roles.has('Author') || roles.has('Contributor'),
     },
-    timezone: stringSetting(settings, 'timezone') ?? 'Etc/UTC',
     isValid: true,
   };
 }
@@ -146,10 +144,8 @@ function publishInputError(error: unknown): Error | null {
  * `isReady`.
  */
 export function usePublishInputs(): PublishInputs {
-  const settingsQuery = useBrowseSettings({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
+  const settingsQuery = useEditorSettings();
+  const timezone = useSiteTimezone();
   const configQuery = useBrowseConfig({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
@@ -255,7 +251,7 @@ export function usePublishInputs(): PublishInputs {
   return {
     site: assembled.site,
     user: assembled.user,
-    timezone: assembled.timezone,
+    timezone,
     isReady: assembled.isValid && !isLoading && !error,
     error,
     retry,

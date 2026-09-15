@@ -1,6 +1,6 @@
-const jose = require('node-jose');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { getPublicKeyInfo } = require('../../../../lib/public-jwk');
 
 // A token's `scope` declares its purpose. Only identity tokens may act as a
 // member; entitlement tokens are read-only and handed to integrations.
@@ -9,24 +9,23 @@ const ENTITLEMENT_TOKEN_SCOPE = 'members:entitlements:read';
 
 module.exports = class TokenService {
   constructor({ privateKey, publicKey, issuer }) {
-    this._keyStore = jose.JWK.createKeyStore();
-    this._keyStoreReady = this._keyStore.add(privateKey, 'pem');
+    this._keyReady = getPublicKeyInfo(privateKey);
     this._privateKey = privateKey;
     this._publicKey = publicKey;
     this._issuer = issuer;
   }
 
   async encodeIdentityToken({ sub }) {
-    const jwk = await this._keyStoreReady;
+    const { kid } = await this._keyReady;
     return jwt.sign(
       {
         sub,
-        kid: jwk.kid,
+        kid,
         scope: IDENTITY_TOKEN_SCOPE,
       },
       this._privateKey,
       {
-        keyid: jwk.kid,
+        keyid: kid,
         algorithm: 'RS512',
         audience: this._issuer,
         expiresIn: '10m',
@@ -36,12 +35,12 @@ module.exports = class TokenService {
   }
 
   async encodeEntitlementToken({ sub, memberUuid, paid, activeTierIds = [] }) {
-    const jwk = await this._keyStoreReady;
+    const { kid } = await this._keyReady;
 
     return jwt.sign(
       {
         sub,
-        kid: jwk.kid,
+        kid,
         scope: ENTITLEMENT_TOKEN_SCOPE,
         member_uuid: memberUuid,
         paid,
@@ -50,7 +49,7 @@ module.exports = class TokenService {
       },
       this._privateKey,
       {
-        keyid: jwk.kid,
+        keyid: kid,
         algorithm: 'RS512',
         audience: this._issuer,
         expiresIn: '5m',
@@ -73,7 +72,7 @@ module.exports = class TokenService {
    * @returns {Promise<jwt.JwtPayload>}
    */
   async decodeToken(token) {
-    await this._keyStoreReady;
+    await this._keyReady;
 
     const result = jwt.verify(token, this._publicKey, {
       algorithms: ['RS512'],
@@ -92,7 +91,7 @@ module.exports = class TokenService {
   }
 
   async getPublicKeys() {
-    await this._keyStoreReady;
-    return this._keyStore.toJSON();
+    const { kid, jwk } = await this._keyReady;
+    return { keys: [{ kty: jwk.kty, kid, n: jwk.n, e: jwk.e }] };
   }
 };
