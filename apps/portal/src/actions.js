@@ -12,10 +12,9 @@ import {
   getProductCadenceFromPrice,
   removePortalLinkFromUrl,
   getRefDomain,
-  hasCustomFieldsEnabled,
 } from './utils/helpers';
+import { fetchMemberCustomFields } from './utils/custom-fields';
 import { t } from './utils/i18n';
-import { isPreviewMode } from './utils/check-mode';
 import { clearGiftFormState } from './components/pages/gift/form-state';
 import { restoreGiftEntryRoute } from './components/pages/gift/navigation';
 
@@ -856,15 +855,16 @@ async function refreshMemberData({ state, api }) {
  * popup opens so the settings page has them before it is drawn.
  */
 async function loadCustomFields({ state, api }) {
-  if (!hasCustomFieldsEnabled({ site: state.site }) || !state.member || isPreviewMode()) {
+  const customFields = await fetchMemberCustomFields({
+    api,
+    site: state.site,
+    member: state.member,
+  });
+
+  if (customFields === null) {
     return null;
   }
-  let customFields = [];
-  try {
-    customFields = await api.member.customFields();
-  } catch (err) {
-    // A site that cannot answer shows no fields, the same as one with none.
-  }
+
   return { customFields, action: 'loadCustomFields:success' };
 }
 

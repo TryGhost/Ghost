@@ -33,11 +33,14 @@ describe('Account Home Page', () => {
     expect(mockDoActionFn).toHaveBeenCalledWith('signout');
   });
 
-  test('asks for the custom fields open to members on opening, when the site has them', () => {
+  // The fields arrive with the member, in the same load, so this page has nothing to
+  // ask for. Asking here would repeat the request on every open of the popup and every
+  // step back from settings, for a page that shows no fields anyway.
+  test('does not ask for custom fields when the site has them', () => {
     const { mockDoActionFn } = setup({
       site: getSiteData({ labs: { membersCustomFields: true } }),
     });
-    expect(mockDoActionFn).toHaveBeenCalledWith('loadCustomFields');
+    expect(mockDoActionFn).not.toHaveBeenCalledWith('loadCustomFields');
   });
 
   test('does not ask for custom fields when the site does not have them', () => {
