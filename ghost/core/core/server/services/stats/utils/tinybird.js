@@ -91,7 +91,12 @@ const create = ({ config, request, settingsCache, tinybirdService }) => {
         Authorization: `Bearer ${token}`,
       },
       timeout: {
-        request: 10000,
+        // Allow Tinybird's 30-second query deadline to finish before timing out locally.
+        request: 35000,
+      },
+      retry: {
+        // A failed request may still be executing; avoid duplicating expensive queries.
+        limit: 0,
       },
     };
 

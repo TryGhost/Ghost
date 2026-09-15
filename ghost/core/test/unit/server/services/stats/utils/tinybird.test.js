@@ -69,6 +69,8 @@ describe('Tinybird Client', function () {
       assertExists(options);
       assertExists(options.headers);
       assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
+      assert.equal(options.timeout.request, 35000);
+      assert.equal(options.retry.limit, 0);
     });
 
     it('uses version from config if provided', function () {
