@@ -151,6 +151,15 @@ endpoint has no date/status/search filters or pagination controls. An empty hist
 returns `automation_runs: []`. It requires automation read permission, returns 404
 for unknown automations, and uses the same Tinybird availability checks as summaries.
 
+Admin displays the Member, Entered, and Status columns below the cards. It fetches
+on first sidebar opening and retains the result or error until navigation, with an
+explicit retry for errors. Closing the sidebar, changing entry dates, focus, and
+reconnect do not refetch the list. Leaving the page also discards pending requests
+so a return visit starts fresh. Entry times use Admin's standard browser-local
+timestamp formatting, with the full timestamp available on hover. Rows and column
+headings are display-only in this slice. Failed exits retain the Exited early icon
+with a red corner dot and an accessible failure label.
+
 ## Availability
 
 This spike deliberately requires `automationsTinybirdSync`. A disabled flag,
