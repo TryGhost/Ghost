@@ -30,6 +30,7 @@ import { cleanTrackedUrl, processAndGroupTopLinks } from '@/posts/analytics/util
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { getEmailStatsRefetchInterval } from '@/posts/analytics/utils/email-stats-polling';
 
 interface NewsletterOverviewProps {
   post: Post;
@@ -63,6 +64,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
 
   // Get top links for this post
   const { data: linksResponse } = useTopLinks({
+    refetchInterval: () => getEmailStatsRefetchInterval(post.email?.submitted_at),
     searchParams: {
       filter: `post_id:'${postId}'`,
     },
