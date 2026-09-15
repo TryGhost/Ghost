@@ -1,11 +1,15 @@
 import { t } from './i18n';
 
 export class HumanReadableError extends Error {
-  constructor(message, { code, property } = {}) {
+  constructor(message, { code, property, details } = {}) {
     super(message);
     this.code = code ?? null;
     // Which part of the request the server refused, when it says (e.g. a custom field).
     this.property = property ?? null;
+    // Every refusal, when the site refused more than one thing at once. The first of
+    // them is this error's own message and property, so a reader that wants one still
+    // has one.
+    this.details = Array.isArray(details) ? details : null;
   }
 
   /**
@@ -54,6 +58,7 @@ function fromErrorsJSON(json) {
   return new HumanReadableError(error.message, {
     code: error.code,
     property: error.property,
+    details: error.details,
   });
 }
 
