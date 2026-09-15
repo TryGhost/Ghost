@@ -9,7 +9,7 @@ import { HostLimitError } from '../utils/errors';
 
 import {
   LimitService,
-  type LimitConfig,
+  parseHostLimits,
   type LimitName,
   type Limits,
 } from '@tryghost/limit-service';
@@ -57,7 +57,11 @@ export const useLimiter = (): Limits => {
       return LimitService.unlimited({ HostLimitError, IncorrectUsageError });
     }
 
-    const limits = { ...config.hostSettings.limits } as Record<string, LimitConfig>;
+    // Host settings arrive as whatever the API sent, so they are read rather than assumed.
+    // An unreadable limit throws here for the same reason it stops the server booting: a
+    // limit that cannot be read is never applied, and failing quietly hides that from the
+    // only people who can correct it.
+    const limits = parseHostLimits(config.hostSettings.limits, { IncorrectUsageError });
 
     if (limits.staff) {
       limits.staff.currentCountQuery = () => {

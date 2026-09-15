@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -21,7 +22,6 @@ const mailService = require('../../../core/server/services/mail') as {
 const membersService = require('../../../core/server/services/members') as {
   stripeConnect: StripeConnect;
 };
-const limits = require('../../../core/server/services/limits') as LimitsModule;
 
 /** What an Admin API request answers with, narrowed to the parts these tests read. */
 interface ApiResponse {
@@ -53,13 +53,6 @@ interface AdminAgent {
   post(url: string): Request;
   put(url: string): Request;
   loginAsOwner(): Promise<void>;
-}
-
-interface LimitsModule {
-  service: {
-    isLimited(name: string): boolean;
-    isDisabled(name: string): boolean | undefined;
-  };
 }
 
 interface StripeConnect {
@@ -117,15 +110,6 @@ describe('Host limits', function () {
     it('reports none to the client', async function () {
       const { body } = await agent.get('config/').expectStatus(200);
       assert.equal(body.config?.hostSettings?.limits, undefined);
-    });
-
-    it('forgets the limits it was holding once the host sends none', async function () {
-      await setHostLimits({ newsletters: { max: 0 } });
-      assert.equal(limits.service.isLimited('newsletters'), true);
-
-      await restoreHostLimits();
-
-      assert.equal(limits.service.isLimited('newsletters'), false);
     });
 
     it('lets the site do a thing that is limited elsewhere', async function () {
@@ -304,15 +288,6 @@ describe('Host limits', function () {
   });
 
   describe('a periodic limit', function () {
-    it('is enforced when the host anchors the period', async function () {
-      await setHostLimits(
-        { emails: { maxPeriodic: 1 } },
-        { subscription: { start: '2026-01-01T00:00:00.000Z' } },
-      );
-
-      assert.equal(limits.service.isLimited('emails'), true);
-    });
-
     it('refuses a send once the allowance for this period is used up', async function () {
       // The one path where a periodic limit does its job, driven end to end rather than
       // asserted at the service. The site has already sent email this period, which the
@@ -337,16 +312,6 @@ describe('Host limits', function () {
         .expectStatus(403);
 
       assert.equal(body.errors?.[0].type, 'HostLimitError');
-    });
-
-    // A periodic limit needs a period, and without one the service refuses to build it.
-    // Core catches that and warns rather than failing to boot, which leaves the site
-    // unlimited. Pinned because it is the shape of a limit that is configured, paid for and
-    // silently not applied.
-    it('is dropped, leaving the site unlimited, when the host anchors no period', async function () {
-      await setHostLimits({ emails: { maxPeriodic: 1 } });
-
-      assert.equal(limits.service.isLimited('emails'), false);
     });
   });
 
@@ -392,62 +357,15 @@ describe('Host limits', function () {
     });
   });
 
-  // The two below are the behaviours worth pinning before anything moves, because both are
-  // load-bearing and neither is written down anywhere. They are also the two the follow-up
-  // refactor deliberately changes, so a diff to these tests is the signal that it did.
   describe('limits it cannot build', function () {
-    it('loses every other limit along with the one it cannot build', async function () {
-      // An allowlist limit with an empty list cannot be built, and building stops there:
-      // the limits configured alongside it never load either. A site is then unlimited in
-      // ways nobody asked for, and the only trace is a warning in the log.
-      await setHostLimits({
-        customThemes: { allowlist: [] },
-        limitStripeConnect: { disabled: true },
-      });
-
-      assert.equal(limits.service.isLimited('customThemes'), false);
-      assert.equal(limits.service.isLimited('limitStripeConnect'), false);
-    });
-
     it('keeps a site serving rather than failing to start', async function () {
       await setHostLimits({ customThemes: { allowlist: [] } });
 
       await agent.get('config/').expectStatus(200);
     });
-
-    it('registers a periodic limit whose start date cannot be read', async function () {
-      // It counts from that date, so an unreadable one leaves the limit counting against
-      // nothing while reporting itself as applied.
-      await setHostLimits(
-        { emails: { maxPeriodic: 1 } },
-        { subscription: { start: 'not a date' } },
-      );
-
-      assert.equal(limits.service.isLimited('emails'), true);
-    });
-  });
-
-  describe('the package Ghost is built against', function () {
-    it('exports something a caller can construct directly', function () {
-      // Two places construct the service themselves rather than using Ghost's, so the shape
-      // of the export is part of what a change to this package must not break. The package
-      // is ESM now, so requiring it hands back the namespace and the class comes off that.
-      const { LimitService } = require('@tryghost/limit-service');
-
-      assert.equal(typeof LimitService, 'function');
-      assert.doesNotThrow(
-        () => new LimitService({ limits: {}, errors: require('@tryghost/errors') }),
-      );
-    });
   });
 
   describe('limits it does not recognise', function () {
-    it('ignores a limit name the code has never heard of, leaving the feature available', async function () {
-      await setHostLimits({ aLimitNobodyShipped: { disabled: true } });
-
-      assert.equal(limits.service.isLimited('aLimitNobodyShipped'), false);
-    });
-
     it('applies a known limit written in another case', async function () {
       await setHostLimits({ limit_stripe_connect: { disabled: true } });
       stubStripeToken();

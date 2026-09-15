@@ -56,3 +56,44 @@ describe('Limit Service Init', function () {
     sinon.assert.notCalled(loggerStub.warn);
   });
 });
+
+describe('Limit Service Config', function () {
+  const { fromHostSettings } = require('../../../../core/server/services/limits/host-settings');
+
+  const asHost = (hostSettings) => ({
+    get: (key) =>
+      key
+        .replace(/^hostSettings:?/, '')
+        .split(':')
+        .filter(Boolean)
+        .reduce((value, part) => (value === undefined ? undefined : value[part]), hostSettings),
+  });
+
+  it('forgets the limits it was holding once the host sends none', function () {
+    limits.init(fromHostSettings(asHost({ limits: { newsletters: { max: 0 } } })));
+    assert.equal(limits.service.isLimited('newsletters'), true);
+
+    limits.init(fromHostSettings(asHost({})));
+
+    assert.equal(limits.service.isLimited('newsletters'), false);
+  });
+
+  it('anchors a periodic limit to the subscription the host sends', function () {
+    limits.init(
+      fromHostSettings(
+        asHost({
+          limits: { emails: { maxPeriodic: 1 } },
+          subscription: { start: '2026-01-01T00:00:00.000Z' },
+        }),
+      ),
+    );
+
+    assert.equal(limits.service.isLimited('emails'), true);
+  });
+
+  it('drops a periodic limit the host anchors to no subscription', function () {
+    limits.init(fromHostSettings(asHost({ limits: { emails: { maxPeriodic: 1 } } })));
+
+    assert.equal(limits.service.isLimited('emails'), false);
+  });
+});
