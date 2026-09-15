@@ -7,6 +7,7 @@ type Override<Base, Changes> = Omit<Base, keyof Changes> & Changes;
 export type Email = {
   id?: string;
   created_at?: string | null;
+  submitted_at?: string | null;
   opened_count: number;
   email_count: number;
   status?: 'pending' | 'submitting' | 'submitted' | 'failed';
