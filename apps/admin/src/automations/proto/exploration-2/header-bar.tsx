@@ -1,5 +1,5 @@
-import React from 'react';
-import { Button } from '@tryghost/shade/components';
+import React, { useState } from 'react';
+import { Button, Popover, PopoverAnchor, PopoverContent } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 
@@ -96,31 +96,45 @@ const StatusAction: React.FC<{
   onChange: (next: boolean) => void;
 }> = ({ status, canGoLive, onChange }) => {
   const on = status === 'active';
+  // Never disabled — a blocked publish explains itself in a popover at the point
+  // of the press, rather than greying out and leaving the why somewhere else on
+  // the screen. Turning off is never blocked. Same treatment every lane's
+  // lifecycle control takes (see phase-2's StatusSwitch for the full rationale).
+  const [blockedOpen, setBlockedOpen] = useState(false);
   return (
-    <Button
-      className={cn(
-        HEADER_ACTION,
-        // green-600, not the --color-green alias. The editor paints its green button
-        // --green-d1 — #30cf43 taken down 5% of HSL lightness, which lands around
-        // #2bba3c — and green-600 is the nearest step on Shade's ramp; --color-green is
-        // green-500, which IS the undarkened #30cf43 and reads as a highlight rather
-        // than as the screen's primary offer.
-        //
-        // The other one takes no colour class at all: the editor's non-green header
-        // buttons are --darkgrey, and the ghost variant's own --foreground is that
-        // role's token here.
-        !on && 'text-green-600 hover:text-green-600',
-      )}
-      // Nothing to publish yet — an automation with no trigger has nothing to run.
-      // Off and ungated, this is the screen's primary offer; there is no state in
-      // which the button is missing, so its absence never has to mean anything.
-      disabled={!on && !canGoLive}
-      type="button"
-      variant="ghost"
-      onClick={() => onChange(!on)}
-    >
-      {on ? 'Turn off' : 'Publish'}
-    </Button>
+    <Popover open={blockedOpen} onOpenChange={setBlockedOpen}>
+      <PopoverAnchor asChild>
+        <Button
+          className={cn(
+            HEADER_ACTION,
+            // green-600, not the --color-green alias. The editor paints its green button
+            // --green-d1 — #30cf43 taken down 5% of HSL lightness, which lands around
+            // #2bba3c — and green-600 is the nearest step on Shade's ramp; --color-green is
+            // green-500, which IS the undarkened #30cf43 and reads as a highlight rather
+            // than as the screen's primary offer.
+            //
+            // The other one takes no colour class at all: the editor's non-green header
+            // buttons are --darkgrey, and the ghost variant's own --foreground is that
+            // role's token here.
+            !on && 'text-green-600 hover:text-green-600',
+          )}
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            if (!on && !canGoLive) {
+              setBlockedOpen(true);
+              return;
+            }
+            onChange(!on);
+          }}
+        >
+          {on ? 'Turn off' : 'Publish'}
+        </Button>
+      </PopoverAnchor>
+      <PopoverContent align="end" className="w-72">
+        <p className="text-md">Fix all issues to publish this automation.</p>
+      </PopoverContent>
+    </Popover>
   );
 };
 

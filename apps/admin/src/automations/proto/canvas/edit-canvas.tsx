@@ -58,6 +58,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { OptionPicker, type PickerOption } from '@/automations/proto/shared/option-picker';
@@ -81,6 +82,7 @@ import {
   NODE_VISUAL_GAP,
   type StepKind,
   formatWait,
+  lexicalHasContent,
   orderActions,
   panTranslateExtent,
   stepKindIcon,
@@ -88,9 +90,10 @@ import {
   useMeasuredColumn,
 } from './flow-utils';
 import { EmailAnalyticsSheet, type SheetEmail } from './email-analytics-sheet';
-import { EmailStatsFooter, EmailStatsInline } from './email-analytics';
+import { EmailStatsFooter } from './email-analytics';
 import { NODE_BODY_PADDING, NODE_CARD_FRAME, NodeCard, NodeHeader } from './flow-node-shell';
 import { EmailPreview } from './email-preview';
+import { EMPTY_LEXICAL, SEEDED_LEXICAL } from '@/automations/proto/shared/mock';
 import { TriggerEmptyState, TriggerFieldsForm } from './trigger-config-form';
 
 // The real editor's StepPicker speaks 'send_email' | 'wait'; the proto's graph
@@ -99,6 +102,12 @@ const toInsertKind = (type: StepPickerType): 'email' | 'wait' =>
   type === 'send_email' ? 'email' : 'wait';
 
 // Wait duration <-> {amount, unit} (mirrors the side panel; whole days when even).
+//
+// Hours and days only. Minutes were tried and backed out: wait_hours is the
+// schema's unit and the framework's updateWaitAction gates on whole hours, so a
+// minutes option means either loosening shipping validation for a proto or a
+// proto-local write bypassing it — neither worth it for an option that isn't in
+// scope. If minutes become real, the schema's unit is the thing to revisit.
 const splitWait = (hours: number): { amount: number; unit: 'days' | 'hours' } =>
   hours % 24 === 0 ? { amount: hours / 24, unit: 'days' } : { amount: hours, unit: 'hours' };
 const waitToHours = (amount: number, unit: 'days' | 'hours'): number =>
@@ -143,11 +152,34 @@ const AddStepPopover: React.FC<{
   </OptionPicker>
 );
 
+// A problem standing between this card and the automation running, worn by the
+// card itself: a warning outline, and a gold alert button in the header slot that
+// opens a popover saying what to do about it.
+//
+// This used to be a Banner centred in the screen's header. The header is where
+// Publish lives, which argued for it — but the card is where the CAUSE lives, and
+// a reader scanning the flow for what's wrong was given a message at the top of
+// the screen about a card they hadn't found yet. Every canvas tool surveyed puts
+// the fault on the node that owns it, and the popover means the explanation
+// arrives where the eye already is.
+//
+// The message states the fix, not the failure — "Connect Stripe to…" rather than
+// "Stripe is not connected". Just the sentence: a first cut carried a resolution
+// button too, and it came out — the fix lives in Settings, and a button that
+// deep an action deserves the journey rather than a shortcut inside a popover.
+export interface NodeWarning {
+  message: string;
+}
+
 type StepNodeData = {
   kind: StepKind;
   title: string;
   subtitle: string;
   selected: boolean;
+  // See NodeWarning. The trigger wears one for a missing Stripe connection, and
+  // an email wears one for a blank subject — nothing here is shaped to either, so
+  // whatever card next has a fault takes the same treatment.
+  warning?: NodeWarning;
   // Email only: opens the right-hand analytics sheet.
   onOpenAnalytics?: () => void;
   // Trigger node. Without onTriggerConfigChange the summary is read-only — the
@@ -178,15 +210,11 @@ type StepNodeData = {
   // itself: swapping the trigger discards the settings and exits configured under
   // the old one, which is a warning the canvas owns.
   onRequestTriggerChange?: (type: TriggerType) => void;
-  // Which action this card is, so the email's link fixtures can be looked up.
-  actionId?: string;
-  // Future concept: an email's numbers live on the card as bars, with the top
-  // links revealed in place, instead of behind the right-hand sheet.
-  inlineAnalytics?: boolean;
-  linksOpen?: boolean;
-  onToggleLinks?: () => void;
   // Always-visible inline edit form (non-trigger nodes).
   subject?: string;
+  // Whether the email has anything written yet — a new one hasn't, and its body
+  // preview shows an empty state instead of standing in content that isn't there.
+  emailHasContent?: boolean;
   stats?: AutomationEmailStats;
   waitHours?: number;
   onSubjectChange?: (subject: string) => void;
@@ -450,11 +478,30 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
         </DropdownMenu>
       </OptionPicker>
     ) : undefined;
+  // The card's warning, in the header slot ahead of the ⋯ — the same position the
+  // email card gives its analytics button, so a second control beside the overflow
+  // is already a shape this header has. A button rather than a static glyph, for
+  // the same reason the lock is one: the icon raises the question and clicking it
+  // should be the answer.
+  const warningAction = d.warning ? (
+    <Popover modal={false}>
+      <PopoverTrigger asChild>
+        <Button aria-label="Why this step needs attention" size="icon" variant="ghost">
+          <LucideIcon.TriangleAlert className="text-state-warning" />
+        </Button>
+      </PopoverTrigger>
+      {/* "always" so the popover tracks its card when the canvas pans — same
+                as every other surface raised from a card. */}
+      <PopoverContent align="end" className="w-72" updatePositionStrategy="always">
+        <p className="text-md">{d.warning.message}</p>
+      </PopoverContent>
+    </Popover>
+  ) : undefined;
   // Email cards raise their analytics from the header, beside the overflow, so
   // the way in is a control that names itself rather than a hover state buried
   // in the metrics.
   const analyticsAction =
-    isEmail && d.stats && !d.inlineAnalytics ? (
+    isEmail && d.stats ? (
       <Button
         aria-label="View email analytics"
         size="icon"
@@ -496,8 +543,9 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
     triggerAction
   );
   const action =
-    analyticsAction || overflowAction ? (
+    warningAction || analyticsAction || overflowAction ? (
       <>
+        {warningAction}
         {analyticsAction}
         {overflowAction}
       </>
@@ -513,7 +561,9 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
 
   return (
     <NodeCard
-      border={d.selected ? 'selected' : 'default'}
+      // Warning outranks selection: a fault the automation can't run with is
+      // worth more than where the cursor happens to be.
+      border={d.warning ? 'warning' : d.selected ? 'selected' : 'default'}
       className={cn(
         // The entrance and an insertion never overlap in practice — one is the
         // canvas arriving, the other needs it to already be there — but they're
@@ -592,7 +642,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
             // with metrics below.
             <div>
               <EmailPreview
-                bare={d.inlineAnalytics}
+                hasContent={d.emailHasContent}
                 subject={d.subject ?? ''}
                 editable
                 onEditContent={d.onEditContent}
@@ -603,19 +653,11 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                                     a hover state on a block of numbers isn't
                                     discoverable. Opening analytics is a labelled
                                     control in the header instead. */}
-              {d.stats &&
-                (d.inlineAnalytics ? (
-                  <EmailStatsInline
-                    actionId={d.actionId ?? ''}
-                    linksOpen={Boolean(d.linksOpen)}
-                    stats={d.stats}
-                    onToggleLinks={() => d.onToggleLinks?.()}
-                  />
-                ) : (
-                  <div className="mt-3">
-                    <EmailStatsFooter divider={false} stats={d.stats} />
-                  </div>
-                ))}
+              {d.stats && (
+                <div className="mt-3">
+                  <EmailStatsFooter divider={false} stats={d.stats} />
+                </div>
+              )}
             </div>
           ) : (
             // No field label — the node header ("Wait") already names this. Both
@@ -863,11 +905,13 @@ interface EditCanvasProps {
   // to the trigger card alone until it's answered.
   triggerConfig?: TriggerConfig | null;
   onTriggerConfigChange?: (next: TriggerConfig) => void;
+  // The screen's verdict on the trigger — see NodeWarning. The canvas just
+  // wears it; whether Stripe is connected is the screen's business.
+  triggerWarning?: NodeWarning;
   triggerLocked?: boolean;
   // Phase 1's plainer trigger names, with no descriptions — see
   // SIMPLE_TRIGGER_OPTIONS. Off everywhere else.
   simpleTriggerNames?: boolean;
-  inlineAnalytics?: boolean;
 }
 
 export const EditCanvas: React.FC<EditCanvasProps> = ({
@@ -875,21 +919,19 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   onChange,
   triggerConfig,
   onTriggerConfigChange,
+  triggerWarning,
   triggerLocked = false,
   simpleTriggerNames = false,
-  inlineAnalytics = false,
 }) => {
   const { canvasRef, onInit, size, centerOn, contentHeightRef, recenter } = useCenteredColumn();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Which email the right-hand analytics sheet is reporting on.
   const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
-  // Which email has its top-links list open. Held here rather than in the node so
-  // the layout can account for the height it adds — node y-positions are derived
-  // from measured heights, and a card that grows without the canvas knowing would
-  // overlap the one below it.
-  const [linksOpenId, setLinksOpenId] = useState<string | null>(null);
   // Email-content dialog, opened from a card's inline "Edit email content" button.
-  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  // Keyed by the action that opened it, because the dialog can now WRITE — its
+  // simulate toggle fills or empties that email's lexical, so it has to know
+  // whose lexical that is.
+  const [emailDialogActionId, setEmailDialogActionId] = useState<string | null>(null);
   // The step just inserted, held only as long as its entrance takes. Left set, the
   // card would animate again on any later re-render.
   const [newStepId, setNewStepId] = useState<string | null>(null);
@@ -913,6 +955,25 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // trigger throws away the settings and exits configured under the old one, so the
   // pick is held here rather than applied where it was made.
   const [pendingTriggerType, setPendingTriggerType] = useState<TriggerType | null>(null);
+  // The one card allowed to be blank without being told off: the step most
+  // recently added, while the user is still plausibly working on it.
+  //
+  // A new email is born with nothing in it, and outlining it gold in the same
+  // breath as creating it would be scolding someone for not having finished a
+  // sentence they just started. So the card gets a grace period, and what ends it
+  // is ATTENTION MOVING — any canvas action that isn't about this card: editing
+  // another step, adding or deleting one, changing the trigger. Not time, which
+  // would fire mid-thought, and not blur, which the canvas doesn't really have.
+  //
+  // Inserting another step passes the grace to it, which is the same rule from the
+  // other side: the old card stopped being the thing being worked on the moment a
+  // newer one existed.
+  const [graceStepId, setGraceStepId] = useState<string | null>(null);
+  // An action about `actionId` keeps the grace; one about anything else ends it.
+  // A functional update, because these calls live inside node-data handlers built
+  // under useMemo and would otherwise close over a stale value.
+  const settleOthers = (actionId: string) =>
+    setGraceStepId((current) => (current !== null && current !== actionId ? null : current));
 
   // No trigger chosen yet — a created automation, before its first decision.
   // `triggerConfig === undefined` is the read canvas passing none and means the
@@ -1032,11 +1093,18 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     const added = next.actions.find((action) => !before.has(action.id))?.id ?? null;
     setNewStepId(added);
     setCenterStepId(added);
+    // The new card is the one being worked on now — see graceStepId. This both
+    // grants the newcomer its grace and ends the previous holder's.
+    setGraceStepId(added);
     onChange(next);
   };
   // The email the analytics sheet is reporting on, resolved from the live draft
   // so edits to its subject show through while the sheet is open.
   const analyticsAction = ordered.find((a) => a.id === analyticsActionId);
+  // Same live resolution for the content dialog: its switch reads the email's
+  // current lexical back off the draft, so the toggle can't drift from the data.
+  const dialogAction = ordered.find((a) => a.id === emailDialogActionId);
+  const dialogEmail = dialogAction?.type === 'send_email' ? dialogAction : undefined;
   const sheetEmail: SheetEmail | null =
     analyticsAction?.type === 'send_email' && analyticsAction.stats
       ? {
@@ -1045,6 +1113,16 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           stats: analyticsAction.stats,
         }
       : null;
+
+  // The trigger config changing is an action about the trigger, so it ends any
+  // step's grace on the way through.
+  const changeTriggerConfig = useCallback(
+    (next: TriggerConfig) => {
+      setGraceStepId(null);
+      onTriggerConfigChange?.(next);
+    },
+    [onTriggerConfigChange],
+  );
 
   // Re-picking the trigger it already has is a no-op, not a warning about
   // discarding settings it isn't going to discard.
@@ -1098,7 +1176,13 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         subtitle: '',
         selected: false,
         triggerConfig: triggerConfig ?? undefined,
-        onTriggerConfigChange,
+        // Wrapped so a config change ends any step's grace; undefined still has
+        // to mean read-only, so the wrap doesn't paper over an absent handler.
+        onTriggerConfigChange: onTriggerConfigChange ? changeTriggerConfig : undefined,
+        // Not while the card is still asking its question — an unanswered
+        // trigger can't be at fault yet, and the options list shouldn't open
+        // gold.
+        warning: showOptions ? undefined : triggerWarning,
         triggerLocked,
         simpleTriggerNames,
         triggerUnset: showOptions,
@@ -1139,9 +1223,23 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           selected: action.id === selectedId || action.id === analyticsActionId,
           // Inline-form values + per-node handlers (each edits its own action).
           subject: action.type === 'send_email' ? action.data.email_subject : undefined,
+          emailHasContent:
+            action.type === 'send_email' ? lexicalHasContent(action.data.email_lexical) : undefined,
+          // A blank email, once the user has moved on from it — same treatment as
+          // the trigger's Stripe warning, and the same register: the fix, not the
+          // failure. Blank means no subject; the body can't be written in the
+          // proto (the content dialog is a stub), so counting it would be a
+          // warning nothing on this screen can clear.
+          warning:
+            action.type === 'send_email' &&
+            !action.data.email_subject.trim() &&
+            action.id !== graceStepId
+              ? { message: 'Add a subject line before this email can be sent.' }
+              : undefined,
           stats: action.type === 'send_email' ? action.stats : undefined,
           waitHours: action.type === 'wait' ? action.data.wait_hours : undefined,
-          onSubjectChange: (subject: string) =>
+          onSubjectChange: (subject: string) => {
+            settleOthers(action.id);
             onChange(
               updateSendEmailAction({
                 detail: draft,
@@ -1149,19 +1247,27 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
                 emailSubject: subject,
                 emailLexical: action.type === 'send_email' ? action.data.email_lexical : '',
               }),
-            ),
-          onWaitChange: (hours: number) =>
-            onChange(updateWaitAction({ detail: draft, actionId: action.id, waitHours: hours })),
+            );
+          },
+          onWaitChange: (hours: number) => {
+            settleOthers(action.id);
+            onChange(updateWaitAction({ detail: draft, actionId: action.id, waitHours: hours }));
+          },
           onDelete: () => {
+            // Deleting ends any grace outright: either the grace card itself just
+            // went, or attention was demonstrably on another card.
+            setGraceStepId(null);
             onChange(removeAction({ detail: draft, actionId: action.id }));
             setSelectedId(null);
           },
-          onEditContent: () => setEmailDialogOpen(true),
-          onOpenAnalytics: () => setAnalyticsActionId(action.id),
-          actionId: action.id,
-          inlineAnalytics,
-          linksOpen: linksOpenId === action.id,
-          onToggleLinks: () => setLinksOpenId(linksOpenId === action.id ? null : action.id),
+          onEditContent: () => {
+            settleOthers(action.id);
+            setEmailDialogActionId(action.id);
+          },
+          onOpenAnalytics: () => {
+            settleOthers(action.id);
+            setAnalyticsActionId(action.id);
+          },
         },
         draggable: false,
         connectable: false,
@@ -1220,9 +1326,10 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     analyticsActionId,
     triggerConfig,
     onTriggerConfigChange,
+    changeTriggerConfig,
+    triggerWarning,
     triggerLocked,
-    inlineAnalytics,
-    linksOpenId,
+    graceStepId,
     layout,
     enterDelay,
     newStepId,
@@ -1345,7 +1452,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
             <AlertDialogAction
               onClick={() => {
                 if (pendingTriggerType) {
-                  onTriggerConfigChange?.(triggerConfigFor(pendingTriggerType));
+                  changeTriggerConfig(triggerConfigFor(pendingTriggerType));
                 }
                 setPendingTriggerType(null);
               }}
@@ -1357,8 +1464,21 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
       </AlertDialog>
 
       {/* Email content editing is out of scope for the prototype — opened from a
-                card's inline "Edit email content" button. */}
-      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+                card's inline "Edit email content" button.
+
+                The one thing it CAN do is pretend: the switch writes a seeded
+                paragraph into this email's lexical, or empties it again. That's a
+                reviewer's control, not a design proposal — the card's empty state
+                and blank-email warning both key off whether content exists, and
+                without a way to flip that, neither could ever be seen resolving. */}
+      <Dialog
+        open={emailDialogActionId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEmailDialogActionId(null);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Email content</DialogTitle>
@@ -1367,6 +1487,33 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
               content editor would open to design the email.
             </DialogDescription>
           </DialogHeader>
+          {dialogEmail && (
+            <div className="flex items-center justify-between gap-4 rounded-md border border-border-default p-4">
+              <div className="flex flex-col gap-0.5">
+                <label className="text-md font-medium" htmlFor="simulate-email-content">
+                  Simulate written content
+                </label>
+                <p className="text-sm text-muted-foreground">
+                  Stands in for writing the email, so you can see how the card reads with and
+                  without content.
+                </p>
+              </div>
+              <Switch
+                checked={lexicalHasContent(dialogEmail.data.email_lexical)}
+                id="simulate-email-content"
+                onCheckedChange={(checked) =>
+                  onChange(
+                    updateSendEmailAction({
+                      detail: draft,
+                      actionId: dialogEmail.id,
+                      emailSubject: dialogEmail.data.email_subject,
+                      emailLexical: checked ? SEEDED_LEXICAL : EMPTY_LEXICAL,
+                    }),
+                  )
+                }
+              />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

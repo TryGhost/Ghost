@@ -1,5 +1,11 @@
-import React from 'react';
-import { Button, Separator } from '@tryghost/shade/components';
+import React, { useState } from 'react';
+import {
+  Button,
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  Separator,
+} from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 
@@ -68,46 +74,63 @@ export const StatusSwitch: React.FC<{
   onChange: (next: boolean) => void;
 }> = ({ status, canGoLive, onChange }) => {
   const on = status === 'active';
+  // Never disabled — a blocked turn-on explains itself in a popover at the point
+  // of the press, rather than greying out and leaving the why somewhere else on
+  // the screen. Turning off is never blocked. Same treatment in every lane with
+  // a switch (see phase-2's copy for the full rationale).
+  const [blockedOpen, setBlockedOpen] = useState(false);
   return (
-    <Button
-      aria-checked={on}
-      aria-label="Automation live"
-      // The only deviation from the component: gap-2 rather than its gap-1.5, which
-      // is sized for a 16px icon and reads tight against a 28px switch. Height,
-      // radius, padding and type are all the button's own.
-      className="gap-2"
-      disabled={!on && !canGoLive}
-      role="switch"
-      type="button"
-      variant="ghost"
-      onClick={() => onChange(!on)}
-    >
-      {/* No type classes: the label inherits the button's text-control (13px) and
+    <Popover open={blockedOpen} onOpenChange={setBlockedOpen}>
+      <PopoverAnchor asChild>
+        <Button
+          aria-checked={on}
+          aria-label="Automation live"
+          // The only deviation from the component: gap-2 rather than its gap-1.5, which
+          // is sized for a 16px icon and reads tight against a 28px switch. Height,
+          // radius, padding and type are all the button's own.
+          className="gap-2"
+          role="switch"
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            if (!on && !canGoLive) {
+              setBlockedOpen(true);
+              return;
+            }
+            onChange(!on);
+          }}
+        >
+          {/* No type classes: the label inherits the button's text-control (13px) and
                 font-medium, so it matches every other button rather than being a size of
                 its own. */}
-      <span>{on ? 'Live' : 'Off'}</span>
-      {/* Decorative: the button is the control, and a second focusable thing inside
+          <span>{on ? 'Live' : 'Off'}</span>
+          {/* Decorative: the button is the control, and a second focusable thing inside
                 it would be one tab stop too many. Shade's unchecked fill, so it reads as
                 the same component even though it can't be one here.
                 
                 20x36 with a 16px thumb — one step up from Shade's own 16x28, which is
                 sized to sit in a settings list rather than to carry a header's primary
                 state. Travel is the width less the thumb and both insets: 36 - 16 - 4. */}
-      <span
-        className={cn(
-          'inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
-          on ? 'bg-green-500' : 'bg-input',
-        )}
-        aria-hidden
-      >
-        <span
-          className={cn(
-            'size-4 rounded-full bg-white transition-transform duration-200 ease-out motion-reduce:transition-none',
-            on ? 'translate-x-4.5' : 'translate-x-0.5',
-          )}
-        />
-      </span>
-    </Button>
+          <span
+            className={cn(
+              'inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
+              on ? 'bg-green-500' : 'bg-input',
+            )}
+            aria-hidden
+          >
+            <span
+              className={cn(
+                'size-4 rounded-full bg-white transition-transform duration-200 ease-out motion-reduce:transition-none',
+                on ? 'translate-x-4.5' : 'translate-x-0.5',
+              )}
+            />
+          </span>
+        </Button>
+      </PopoverAnchor>
+      <PopoverContent align="end" className="w-72">
+        <p className="text-md">Fix all issues to publish this automation.</p>
+      </PopoverContent>
+    </Popover>
   );
 };
 

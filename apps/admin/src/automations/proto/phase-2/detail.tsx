@@ -8,12 +8,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  Banner,
   Button,
   EmptyIndicator,
   LoadingIndicator,
 } from '@tryghost/shade/components';
-import { Inline, Text } from '@tryghost/shade/primitives';
+import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
@@ -649,35 +648,16 @@ const AutomationFloat: React.FC = () => {
     >
       {/* The header never carries the pane control in either release — its left
                 is the back arrow, the title and its status, full stop. */}
-      {/* Says why Publish is unavailable, at the moment it becomes true. Paired
-                with the disabled button deliberately: a control that stops working
-                without explaining itself is the failure this avoids, and the header
-                puts the explanation on the same row as the button it's about.
-
-                Composed exactly as admin's other warning banner is (see
-                settings/advanced/migration-tools/content-import/mapping-step): Shade's
-                Banner takes children only, so the icon is the caller's to place, and
-                copying that arrangement rather than inventing one keeps every warning
-                in the app the same object.
-
-                One sentence, stating the rule rather than this instance. "Members",
-                not "subscribers": Ghost's noun, and the one every other string on this
-                screen uses. */}
+      {/* No notice here any more. The Stripe warning was a Banner centred in this
+                header — the explanation on the same row as the Publish it disables —
+                and it moved onto the trigger card itself (see triggerWarning on the
+                edit canvas): the card is where the cause lives, and a message at the
+                top of the screen was pointing at a card the reader hadn't found yet.
+                The switch still disables via canGoLive, so the header's half of the
+                story is the control refusing, and the card's half is why. */}
       <HeaderBar
         actions={chromeActions}
         canGoLive={canGoLive}
-        notice={
-          stripeMissing ? (
-            <Banner role="alert" size="sm" variant="warning">
-              <Inline align="center" gap="sm">
-                <LucideIcon.TriangleAlert className="size-4 shrink-0 text-state-warning" />
-                <Text size="sm" weight="semibold">
-                  Connect Stripe to publish automations for paid members.
-                </Text>
-              </Inline>
-            </Banner>
-          ) : undefined
-        }
         status={liveStatus}
         title={automation.name}
         onBack={goBack}
@@ -877,6 +857,15 @@ const AutomationFloat: React.FC = () => {
             <EditCanvas
               draft={draftFlow}
               triggerConfig={triggerConfig}
+              // The Stripe problem, worn by the card that has it. The message
+              // states the fix rather than the failure — one sentence, the same
+              // one the header Banner carried: "members", not "subscribers",
+              // Ghost's noun throughout.
+              triggerWarning={
+                stripeMissing
+                  ? { message: 'Connect Stripe to publish automations for paid members.' }
+                  : undefined
+              }
               onChange={handleDraftChange}
               onTriggerConfigChange={handleTriggerConfigChange}
             />

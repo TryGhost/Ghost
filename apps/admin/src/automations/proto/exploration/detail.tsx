@@ -824,10 +824,13 @@ const AutomationFloat: React.FC = () => {
               showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
           >
+            {/* The same email card as every other lane. This lane used to opt
+                into an inline-analytics variant (stats as a bar on the card);
+                that concept was deleted when the card was consolidated — the
+                right-hand sheet is how analytics open everywhere. */}
             <EditCanvas
               draft={draftFlow}
               triggerConfig={triggerConfig}
-              inlineAnalytics
               onChange={handleDraftChange}
               onTriggerConfigChange={handleTriggerConfigChange}
             />

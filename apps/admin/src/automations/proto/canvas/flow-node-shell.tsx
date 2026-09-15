@@ -21,11 +21,25 @@ export const NODE_CARD_PADDING = 'p-6';
 
 // Card border/emphasis per state, shared by both canvases so selection (edit) and
 // run state (read) stay visually consistent.
-export type NodeBorder = 'default' | 'selected' | 'current' | 'done' | 'exited' | 'failed';
+export type NodeBorder =
+  | 'default'
+  | 'selected'
+  | 'current'
+  | 'done'
+  | 'exited'
+  | 'failed'
+  | 'warning';
 const NODE_BORDER: Record<NodeBorder, string> = {
   default: 'border-border-default',
   selected: 'border-blue',
   current: 'border-blue',
+  // Something about this card blocks the automation — today, a trigger that
+  // depends on payments the site can't take. Warning rather than red: the card
+  // is configured fine, the site just can't honour it yet, and red is reserved
+  // for a run that actually failed. Same state-warning family the app's Banner
+  // and Indicator use, so the alert icon in the card's header and the outline
+  // read as one signal.
+  warning: 'border-state-warning',
   done: 'border-green',
   // Where a member left the flow. Grey rather than a colour of its own — exiting
   // isn't a failure to flag, it just isn't a completion, and green here read as

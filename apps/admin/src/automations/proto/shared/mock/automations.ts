@@ -36,7 +36,21 @@ export const PHASE_1_SLUGS: readonly string[] = [
   'member-welcome-email-paid',
 ];
 
-const EMPTY_LEXICAL =
+// One written paragraph, so a seeded email is distinguishable from one nobody has
+// touched. The canvas keys its empty state off whether email_lexical has children
+// (see email-preview's lexicalHasContent) — these fixtures are established emails on
+// a real site, so they have to carry SOMETHING or every card would open saying
+// "Begin writing". The preview still shows its own stand-in copy; this text is
+// never rendered.
+//
+// Exported (with EMPTY_LEXICAL) because the content dialog's simulate toggle
+// writes exactly these two values: the proto can't author lexical, so "has
+// content" and "hasn't" are these constants and nothing else.
+export const SEEDED_LEXICAL =
+  '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Thanks for joining — here’s what to expect next, straight to your inbox.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}';
+// The same empty doc a brand-new email is born with (see the framework's
+// buildSendEmailAction) — an empty root, not an empty string.
+export const EMPTY_LEXICAL =
   '{"root":{"children":[],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
 const DESIGN = 'ds_default';
 
@@ -59,7 +73,7 @@ export const welcomeSeries: AutomationDetail = {
       type: 'send_email',
       data: {
         email_subject: 'Welcome to the club',
-        email_lexical: EMPTY_LEXICAL,
+        email_lexical: SEEDED_LEXICAL,
         email_design_setting_id: DESIGN,
       },
       stats: {
@@ -76,7 +90,7 @@ export const welcomeSeries: AutomationDetail = {
       type: 'send_email',
       data: {
         email_subject: 'Getting the most out of it',
-        email_lexical: EMPTY_LEXICAL,
+        email_lexical: SEEDED_LEXICAL,
         email_design_setting_id: DESIGN,
       },
       stats: {
@@ -92,7 +106,7 @@ export const welcomeSeries: AutomationDetail = {
       type: 'send_email',
       data: {
         email_subject: 'One week in',
-        email_lexical: EMPTY_LEXICAL,
+        email_lexical: SEEDED_LEXICAL,
         email_design_setting_id: DESIGN,
       },
       stats: {
@@ -132,7 +146,7 @@ export const paidUpgradeNudge: AutomationDetail = {
       type: 'send_email',
       data: {
         email_subject: 'Ready for more?',
-        email_lexical: EMPTY_LEXICAL,
+        email_lexical: SEEDED_LEXICAL,
         email_design_setting_id: DESIGN,
       },
       stats: {
@@ -149,7 +163,7 @@ export const paidUpgradeNudge: AutomationDetail = {
       type: 'send_email',
       data: {
         email_subject: 'A little nudge',
-        email_lexical: EMPTY_LEXICAL,
+        email_lexical: SEEDED_LEXICAL,
         email_design_setting_id: DESIGN,
       },
       stats: {

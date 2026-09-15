@@ -451,3 +451,18 @@ export const CANVAS_HUD_INSET = { bottom: 24, left: 24 };
 // button is h-(--control-height) at 32px — and a labelled button next to an icon one
 // has to pick the same number or they read as different classes of control.
 export const CANVAS_HUD_BUTTON = 'h-9 bg-surface-elevated';
+
+// Whether a lexical doc has anything in it. An empty doc is still a JSON skeleton —
+// a root with no children — so blank can't be a falsy check on the string. Drives
+// the email card's empty state and its blank warning; lives here rather than in
+// email-preview because that file exports components and this is a plain function
+// (react-refresh/only-export-components — the same split lane-switcher/lanes makes).
+export const lexicalHasContent = (lexical: string): boolean => {
+  try {
+    return (JSON.parse(lexical) as { root?: { children?: unknown[] } }).root?.children?.length
+      ? true
+      : false;
+  } catch {
+    return lexical.trim().length > 0;
+  }
+};

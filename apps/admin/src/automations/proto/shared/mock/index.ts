@@ -24,7 +24,9 @@ export type {
 
 export {
   AUTOMATION_DESCRIPTIONS,
+  EMPTY_LEXICAL,
   PHASE_1_SLUGS,
+  SEEDED_LEXICAL,
   getAutomation,
   mockAutomations,
 } from './automations';

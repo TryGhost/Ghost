@@ -1,5 +1,11 @@
-import React from 'react';
-import { Button, Separator } from '@tryghost/shade/components';
+import React, { useState } from 'react';
+import {
+  Button,
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  Separator,
+} from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 
@@ -61,46 +67,68 @@ const StatusSwitch: React.FC<{
   onChange: (next: boolean) => void;
 }> = ({ status, canGoLive, onChange }) => {
   const on = status === 'active';
+  // The switch is NEVER disabled. It used to grey out while the automation
+  // couldn't go live, and a disabled control is a dead end — it says no without
+  // saying why, and the why was a warning sitting somewhere else on the screen.
+  // Pressing it while blocked answers at the point of the press instead: a
+  // popover naming the deal — fix the issues, then this works. Turning OFF is
+  // never blocked; a running automation can always be stopped.
+  const [blockedOpen, setBlockedOpen] = useState(false);
   return (
-    <Button
-      aria-checked={on}
-      aria-label="Automation live"
-      // The only deviation from the component: gap-2 rather than its gap-1.5, which
-      // is sized for a 16px icon and reads tight against a 28px switch. Height,
-      // radius, padding and type are all the button's own.
-      className="gap-2"
-      disabled={!on && !canGoLive}
-      role="switch"
-      type="button"
-      variant="ghost"
-      onClick={() => onChange(!on)}
-    >
-      {/* No type classes: the label inherits the button's text-control (13px) and
+    <Popover open={blockedOpen} onOpenChange={setBlockedOpen}>
+      <PopoverAnchor asChild>
+        <Button
+          aria-checked={on}
+          aria-label="Automation live"
+          // The only deviation from the component: gap-2 rather than its gap-1.5, which
+          // is sized for a 16px icon and reads tight against a 28px switch. Height,
+          // radius, padding and type are all the button's own.
+          className="gap-2"
+          role="switch"
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            if (!on && !canGoLive) {
+              setBlockedOpen(true);
+              return;
+            }
+            onChange(!on);
+          }}
+        >
+          {/* No type classes: the label inherits the button's text-control (13px) and
                 font-medium, so it matches every other button rather than being a size of
                 its own. */}
-      <span>{on ? 'Live' : 'Off'}</span>
-      {/* Decorative: the button is the control, and a second focusable thing inside
+          <span>{on ? 'Live' : 'Off'}</span>
+          {/* Decorative: the button is the control, and a second focusable thing inside
                 it would be one tab stop too many. Shade's unchecked fill, so it reads as
                 the same component even though it can't be one here.
                 
                 20x36 with a 16px thumb — one step up from Shade's own 16x28, which is
                 sized to sit in a settings list rather than to carry a header's primary
                 state. Travel is the width less the thumb and both insets: 36 - 16 - 4. */}
-      <span
-        className={cn(
-          'inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
-          on ? 'bg-green-500' : 'bg-input',
-        )}
-        aria-hidden
-      >
-        <span
-          className={cn(
-            'size-4 rounded-full bg-white transition-transform duration-200 ease-out motion-reduce:transition-none',
-            on ? 'translate-x-4.5' : 'translate-x-0.5',
-          )}
-        />
-      </span>
-    </Button>
+          <span
+            className={cn(
+              'inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
+              on ? 'bg-green-500' : 'bg-input',
+            )}
+            aria-hidden
+          >
+            <span
+              className={cn(
+                'size-4 rounded-full bg-white transition-transform duration-200 ease-out motion-reduce:transition-none',
+                on ? 'translate-x-4.5' : 'translate-x-0.5',
+              )}
+            />
+          </span>
+        </Button>
+      </PopoverAnchor>
+      {/* Same voice and dress as the card warnings' popovers (w-72, one text-md
+                sentence): this is the same kind of answer, raised from a control
+                instead of a card. */}
+      <PopoverContent align="end" className="w-72">
+        <p className="text-md">Fix all issues to publish this automation.</p>
+      </PopoverContent>
+    </Popover>
   );
 };
 
@@ -122,17 +150,18 @@ interface HeaderBarProps {
   // Nothing to turn on yet — an automation with no trigger has nothing to run.
   canGoLive: boolean;
   /**
-   * A transient message about the automation as a whole — today, that it can't be
-   * published without Stripe.
+   * A transient message about the automation as a whole. Currently unused: the
+   * Stripe warning that lived here moved onto the trigger card (see triggerWarning
+   * on the edit canvas), which is where the cause of the problem lives.
+   *
+   * The slot stays while that treatment is being evaluated. The objection that
+   * put the message here in the first place — the canvas moves — was about a
+   * banner FLOATING over the flow, colliding with whatever panned under it; a
+   * warning anchored to the card travels with the card, which is a different
+   * thing. If the card treatment sticks, delete this slot and both render sites.
    *
    * Passed as a node for the same reason `actions` is: the header owns where it
    * goes, the screen owns what it says.
-   *
-   * It lives here rather than on the canvas because the canvas moves. Floating it
-   * over the flow put it on a surface that pans and zooms underneath it, so it
-   * collided with whichever card happened to scroll under it. The header is the
-   * one part of this screen that holds still — and it's where Publish is, which
-   * is the thing the message is about.
    */
   notice?: React.ReactNode;
 }

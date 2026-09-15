@@ -90,7 +90,10 @@ interface StoreState {
 // migrate it. This is fixture data behind a Labs flag — a reseed is the correct
 // response to a shape change, and a migration path would be ceremony around data
 // nobody is going to miss.
-const VERSION = 16;
+// 17: seeded emails carry a written paragraph in email_lexical, so the canvas's
+// new empty state (keyed on lexical having children) doesn't fire on fixtures
+// that are meant to read as established emails.
+const VERSION = 17;
 const STORAGE_KEY = 'ghost-automations-proto-store';
 
 const seed = (): StoreState => ({
