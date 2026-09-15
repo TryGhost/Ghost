@@ -303,6 +303,8 @@
     "batchProcessing": false,
     "memberCounterPreparation": false,
     "memberCounterMode": "off",
+    "memberReconciliationBatchSize": 5000,
+    "memberReconciliationPauseHours": 6,
     "metrics": {
       "openThroughput": {
         "enabled": false,

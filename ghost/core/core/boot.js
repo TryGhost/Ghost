@@ -534,6 +534,14 @@ async function initBackgroundServices({ config }) {
   }
 
   try {
+    const emailAnalytics = require('./server/services/email-analytics');
+    await emailAnalytics.memberReconciliation.schedule(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  try {
     const updateCheck = require('./server/services/update-check');
     await updateCheck.scheduleJobs(jobsService);
   } catch (err) {
