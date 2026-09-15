@@ -182,3 +182,69 @@ Admin treats any 404 from these requests as unavailable. Other failures show an
 inline retry. The `automationRunAnalytics` flag controls presentation.
 See the [Tinybird storage notes](../../data/tinybird/README.md#automation-statistics)
 for sorting keys, migration behavior, and query tests.
+
+## Run history
+
+`GET /ghost/api/admin/automations/:id/runs/:run_id/` returns one record in
+`automation_run_history`. It reads Core's stored run and steps directly, regardless
+of list pages, filters, sorting, member existence, or Tinybird availability. It
+requires the same automation read permission as the list. Unknown automation IDs,
+missing Core runs (including analytics-only rows), and runs belonging to another
+automation return 404. Database/read failures remain errors. Clients on older
+servers should treat a missing endpoint as unavailable, not as an empty history.
+
+The response contains:
+
+- `id`, `automation_id`, and `created_at`: the selected run's identity and entry
+  time. Repeated entries by the same member remain separate runs.
+- `member`: current `{id, name, email}`, or null when unavailable. No stored
+  historical member name/email is exposed or used as a fallback.
+- `status` and `failed`: the same pending/completed/exited/unclassified rules as
+  the list, computed from Core's recorded steps. Core and Tinybird may differ
+  while replication catches up; the history describes the Core read.
+- `history_status`: `empty` for no steps, `partial` for an unknown state/action,
+  unavailable revision/content field, or missing terminal timestamp; `available`
+  otherwise. This describes the available records, not proof of a complete graph.
+- `steps`: all recorded steps ordered by `created_at` ascending, then step `id`
+  ascending for ties. Each has `id`, `automation_action_revision_id`, raw `status`,
+  `created_at`, `updated_at`, `ready_at`, nullable `started_at` and `finished_at`,
+  and `action`. Dates are UTC ISO strings. Preserve unknown statuses in clients.
+  Nullable `email_sent_at` and `email_delivered_at` expose the first recorded
+  successful submission and delivery for the same step and revision. Recipient
+  identity is not exposed, and multiple recipient records never duplicate steps.
+  Older servers omit these fields; clients must accept their absence.
+
+Each `action` is `{id, type, data}` from the step's referenced revision. Wait data
+contains nullable `wait_hours`; email data contains nullable `email_subject` and
+`email_lexical`. Null means unavailable; an empty string remains empty. Content is
+stored Lexical, not rendered HTML or proof of the exact personalized email sent.
+An unsupported action or missing revision is `action: null`; the recorded step
+remains visible. Revision lookups are scoped to the selected automation, including
+when malformed historical data refers to another automation. Soft-deleted actions
+retain their historical revision content.
+
+### Limits for history cards
+
+Run creation records entry into the automation (currently member signup). Trigger
+and end nodes are not separate stored steps. The status classification above may
+support an outcome label, but there is no durable run-end event or end timestamp.
+Do not present `updated_at` as a completion time. A finished email action is not
+proof of delivery, opening, or clicking. `email_delivered_at` establishes delivery;
+opening and clicking remain outside this contract. `email_sent_at` uses the
+recipient record's creation time, captured after a successful send. A finished
+email step is a fallback indication of a successful send when this record is
+unavailable; it does not establish delivery.
+
+Only the next action is enqueued when a step finishes. The scheduler uses the
+current graph and latest next-action revision at that moment, so a run can contain
+revisions from different edits. This endpoint never substitutes the currently
+edited graph, adds unrecorded future steps, or reconstructs a workflow snapshot.
+`ready_at` is the stored eligibility time for an enqueued step; it may change on
+retry and is not a guaranteed send time or a prediction for later steps. Stored
+terminal statuses are preserved verbatim; no new exit reason is inferred.
+
+The canvas estimates future steps from the pending `ready_at` and current saved
+wait durations, independently of the editing draft. For overdue pending steps,
+estimates start at the current time. These are labeled Expected; a delayed step
+can shift later dates. Unknown wait durations suppress dates for the remaining
+path. Estimates are display-only and do not affect scheduling.
