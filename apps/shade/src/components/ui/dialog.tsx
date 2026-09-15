@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 
 import { cn } from '@/lib/utils';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 
 const Dialog = DialogPrimitive.Root;
 
@@ -32,7 +32,7 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
-    <div className={SHADE_APP_NAMESPACES}>
+    <ShadeScope>
       <DialogOverlay />
       <DialogPrimitive.Content
         ref={ref}
@@ -44,7 +44,7 @@ const DialogContent = React.forwardRef<
       >
         {children}
       </DialogPrimitive.Content>
-    </div>
+    </ShadeScope>
   </DialogPortal>
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
