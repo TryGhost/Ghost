@@ -14,7 +14,7 @@ const {
 const { stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion } = matchers;
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
-const limits = require('../../../core/server/services/limits');
+const { setHostLimits, restoreHostLimits } = require('../../utils/host-limits-utils');
 const { anyErrorId } = matchers;
 
 // Updated to reflect current total based on test output
@@ -916,16 +916,12 @@ describe('Settings API', function () {
   });
 
   describe('publicSiteAccess limit', function () {
-    function stubPublicSiteAccessDisabled(disabled) {
-      // Stub the singleton directly rather than driving the limit through configUtils +
-      // limits.init(). The hostSettings.limits config is registered once at boot from the
-      // `@tryghost/limit-service` allowlist; bumps of that package are owned by Renovate
-      // so this PR cannot rely on `publicSiteAccess` being a recognised name yet.
-      sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(disabled);
-    }
+    afterEach(async function () {
+      await restoreHostLimits();
+    });
 
     it('marks is_private and password as is_read_only when the limit is disabled', async function () {
-      stubPublicSiteAccessDisabled(true);
+      await setHostLimits({ publicSiteAccess: { disabled: true } });
 
       const response = await agent.get('settings/').expectStatus(200);
       const byKey = Object.fromEntries(response.body.settings.map((s) => [s.key, s]));
@@ -935,7 +931,7 @@ describe('Settings API', function () {
     });
 
     it('rejects external attempts to set is_private = false', async function () {
-      stubPublicSiteAccessDisabled(true);
+      await setHostLimits({ publicSiteAccess: { disabled: true } });
       sinon.stub(logging, 'error');
 
       await agent
@@ -954,7 +950,7 @@ describe('Settings API', function () {
     });
 
     it('rejects external attempts to change the access code', async function () {
-      stubPublicSiteAccessDisabled(true);
+      await setHostLimits({ publicSiteAccess: { disabled: true } });
       sinon.stub(logging, 'error');
 
       await agent
@@ -973,7 +969,7 @@ describe('Settings API', function () {
     });
 
     it('regenerates the access code server-side when settings edits are locked', async function () {
-      stubPublicSiteAccessDisabled(true);
+      await setHostLimits({ publicSiteAccess: { disabled: true } });
       const passwordSetting = await models.Settings.findOne(
         { key: 'password' },
         { context: { internal: true } },
@@ -1002,7 +998,7 @@ describe('Settings API', function () {
     });
 
     it('does not mark is_private or password as is_read_only when the limit is not disabled', async function () {
-      stubPublicSiteAccessDisabled(false);
+      await setHostLimits({ publicSiteAccess: { disabled: false } });
 
       const response = await agent.get('settings/').expectStatus(200);
       const byKey = Object.fromEntries(response.body.settings.map((s) => [s.key, s]));

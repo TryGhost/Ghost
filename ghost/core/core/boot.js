@@ -109,7 +109,8 @@ async function initCore({ ghostServer, config }) {
   // Limit service is booted before settings, so that limits are available for calculated settings
   debug('Begin: limits');
   const limits = require('./server/services/limits');
-  await limits.init();
+  const { fromHostSettings } = require('./server/services/limits/host-settings');
+  limits.init(fromHostSettings(config));
   debug('End: limits');
 
   // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title

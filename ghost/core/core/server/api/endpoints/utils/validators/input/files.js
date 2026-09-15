@@ -2,6 +2,6 @@ const limitService = require('../../../../../services/limits');
 
 module.exports = {
   async upload(apiConfig, frame) {
-    await limitService.errorIfIsOverLimit('uploads', { currentCount: frame.file.size });
+    await limitService.service.errorIfIsOverLimit('uploads', { currentCount: frame.file.size });
   },
 };

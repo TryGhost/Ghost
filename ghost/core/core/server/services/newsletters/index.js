@@ -22,7 +22,7 @@ module.exports = new NewslettersService({
     maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
   }),
   urlUtils,
-  limitService,
+  limitService: limitService.service,
   labs,
   emailAddressService: emailAddressService,
 });

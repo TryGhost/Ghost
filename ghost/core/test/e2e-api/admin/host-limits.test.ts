@@ -5,16 +5,15 @@ import path from 'node:path';
 import FormData from 'form-data';
 import sinon from 'sinon';
 
-import type { HostLimitConfig, HostSettings } from '../../utils/host-limits-utils';
+import type { HostLimitConfig } from '../../utils/host-limits-utils';
+import { restoreHostLimits, setHostLimits } from '../../utils/host-limits-utils';
 
 const {
   agentProvider,
   fixtureManager,
-  hostLimits,
 }: {
   agentProvider: { getAdminAPIAgent(): Promise<AdminAgent> };
   fixtureManager: { init(...fixtures: string[]): Promise<void> };
-  hostLimits: HostLimits;
 } = require('../../utils/e2e-framework');
 const mailService = require('../../../core/server/services/mail') as {
   GhostMailer: { prototype: { send(...args: unknown[]): Promise<unknown> } };
@@ -22,7 +21,7 @@ const mailService = require('../../../core/server/services/mail') as {
 const membersService = require('../../../core/server/services/members') as {
   stripeConnect: StripeConnect;
 };
-const limits = require('../../../core/server/services/limits') as LimitService;
+const limits = require('../../../core/server/services/limits') as LimitsModule;
 
 /** What an Admin API request answers with, narrowed to the parts these tests read. */
 interface ApiResponse {
@@ -56,15 +55,11 @@ interface AdminAgent {
   loginAsOwner(): Promise<void>;
 }
 
-interface HostLimits {
-  setHostLimits(limits: Record<string, HostLimitConfig>, rest?: HostSettings): Promise<void>;
-  restoreHostLimits(): Promise<void>;
-}
-
-interface LimitService {
-  isLimited(name: string): boolean;
-  isDisabled(name: string): boolean | undefined;
-  problems: Array<{ limit: string; reason: string }>;
+interface LimitsModule {
+  service: {
+    isLimited(name: string): boolean;
+    isDisabled(name: string): boolean | undefined;
+  };
 }
 
 interface StripeConnect {
@@ -82,7 +77,7 @@ interface StripeConnect {
  * way Ghost(Pro) does, through host config, let the real service load them, and assert what
  * a caller receives. That is what makes them worth anything when the implementation moves.
  *
- * Setting a limit is setting configuration and nothing else. `hostLimits` hides the one
+ * Setting a limit is setting configuration and nothing else. `setHostLimits` hides the one
  * wrinkle, which is that limits are read during boot and have to be re-read when a test
  * changes them.
  */
@@ -102,7 +97,7 @@ describe('Host limits', function () {
 
   afterEach(async function () {
     sinon.restore();
-    await hostLimits.restoreHostLimits();
+    await restoreHostLimits();
   });
 
   // Stripe is stubbed because the request would otherwise leave the process. That is a
@@ -125,12 +120,12 @@ describe('Host limits', function () {
     });
 
     it('forgets the limits it was holding once the host sends none', async function () {
-      await hostLimits.setHostLimits({ newsletters: { max: 0 } });
-      assert.equal(limits.isLimited('newsletters'), true);
+      await setHostLimits({ newsletters: { max: 0 } });
+      assert.equal(limits.service.isLimited('newsletters'), true);
 
-      await hostLimits.restoreHostLimits();
+      await restoreHostLimits();
 
-      assert.equal(limits.isLimited('newsletters'), false);
+      assert.equal(limits.service.isLimited('newsletters'), false);
     });
 
     it('lets the site do a thing that is limited elsewhere', async function () {
@@ -143,7 +138,7 @@ describe('Host limits', function () {
 
   describe('a flag limit', function () {
     it('refuses the feature', async function () {
-      await hostLimits.setHostLimits(
+      await setHostLimits(
         {
           limitStripeConnect: {
             disabled: true,
@@ -167,7 +162,7 @@ describe('Host limits', function () {
     // there and the host's wording is carried alongside it, so a client showing only the
     // message shows the publisher nothing the host wrote, and nothing about upgrading.
     it('carries the wording the host configured beside the message, not in it', async function () {
-      await hostLimits.setHostLimits({
+      await setHostLimits({
         limitStripeConnect: {
           disabled: true,
           error: 'Payments are available on the Creator plan and above.',
@@ -188,7 +183,7 @@ describe('Host limits', function () {
     });
 
     it('leaves the feature alone when the flag is present but not set', async function () {
-      await hostLimits.setHostLimits({ limitStripeConnect: { disabled: false } });
+      await setHostLimits({ limitStripeConnect: { disabled: false } });
       stubStripeToken();
 
       await agent
@@ -202,7 +197,7 @@ describe('Host limits', function () {
     // never arrives here as a boolean at all. Nothing above this covers that, which means the
     // one shape production actually uses was the one shape going untested.
     it('refuses when the flag arrives as the string a host sends', async function () {
-      await hostLimits.setHostLimits({ limitStripeConnect: { disabled: 'true' } });
+      await setHostLimits({ limitStripeConnect: { disabled: 'true' } });
       stubStripeToken();
 
       await agent
@@ -217,7 +212,7 @@ describe('Host limits', function () {
     // today: a site is exempted from a flag by dropping the limit, not by sending it false.
     // Anyone who changes that upstream needs to change this first.
     it('also refuses when that string is the word false', async function () {
-      await hostLimits.setHostLimits({ limitStripeConnect: { disabled: 'false' } });
+      await setHostLimits({ limitStripeConnect: { disabled: 'false' } });
       stubStripeToken();
 
       await agent
@@ -229,7 +224,7 @@ describe('Host limits', function () {
 
   describe('a counted limit', function () {
     it('refuses once the count is reached, naming the numbers', async function () {
-      await hostLimits.setHostLimits({
+      await setHostLimits({
         newsletters: {
           max: 1,
           error: 'Your plan is limited to {{max}} newsletters. You have {{count}}.',
@@ -254,7 +249,7 @@ describe('Host limits', function () {
     });
 
     it('allows the action while there is room', async function () {
-      await hostLimits.setHostLimits({ newsletters: { max: 100 } });
+      await setHostLimits({ newsletters: { max: 100 } });
 
       await agent
         .post('newsletters/')
@@ -263,14 +258,14 @@ describe('Host limits', function () {
     });
 
     it('compares against a maximum sent as a string, as a host sends it', async function () {
-      await hostLimits.setHostLimits({ newsletters: { max: '0' } });
+      await setHostLimits({ newsletters: { max: '0' } });
 
       await agent
         .post('newsletters/')
         .body({ newsletters: [{ name: 'Never' }] })
         .expectStatus(403);
 
-      await hostLimits.setHostLimits({ newsletters: { max: '100' } });
+      await setHostLimits({ newsletters: { max: '100' } });
 
       await agent
         .post('newsletters/')
@@ -281,7 +276,7 @@ describe('Host limits', function () {
     it('counts what the site actually has, not what the request says', async function () {
       // The count comes from a query the limit service runs, so a limit set below the
       // current number refuses immediately rather than allowing one more.
-      await hostLimits.setHostLimits({ newsletters: { max: 0 } });
+      await setHostLimits({ newsletters: { max: 0 } });
 
       await agent
         .post('newsletters/')
@@ -292,7 +287,7 @@ describe('Host limits', function () {
 
   describe('an allowlist limit', function () {
     it('refuses a value that is not on the list', async function () {
-      await hostLimits.setHostLimits({
+      await setHostLimits({
         customThemes: { allowlist: ['casper'], error: 'Only bundled themes are included.' },
       });
 
@@ -302,7 +297,7 @@ describe('Host limits', function () {
     });
 
     it('allows a value that is on it', async function () {
-      await hostLimits.setHostLimits({ customThemes: { allowlist: ['casper', 'source'] } });
+      await setHostLimits({ customThemes: { allowlist: ['casper', 'source'] } });
 
       await agent.put('themes/source/activate/').expectStatus(200);
     });
@@ -310,12 +305,12 @@ describe('Host limits', function () {
 
   describe('a periodic limit', function () {
     it('is enforced when the host anchors the period', async function () {
-      await hostLimits.setHostLimits(
+      await setHostLimits(
         { emails: { maxPeriodic: 1 } },
         { subscription: { start: '2026-01-01T00:00:00.000Z' } },
       );
 
-      assert.equal(limits.isLimited('emails'), true);
+      assert.equal(limits.service.isLimited('emails'), true);
     });
 
     it('refuses a send once the allowance for this period is used up', async function () {
@@ -323,7 +318,7 @@ describe('Host limits', function () {
       // asserted at the service. The site has already sent email this period, which the
       // limit counts by summing what went out since the period began, so the next send is
       // refused before the post is published.
-      await hostLimits.setHostLimits(
+      await setHostLimits(
         { emails: { maxPeriodic: 0 } },
         { subscription: { start: '2026-01-01T00:00:00.000Z' } },
       );
@@ -349,15 +344,15 @@ describe('Host limits', function () {
     // unlimited. Pinned because it is the shape of a limit that is configured, paid for and
     // silently not applied.
     it('is dropped, leaving the site unlimited, when the host anchors no period', async function () {
-      await hostLimits.setHostLimits({ emails: { maxPeriodic: 1 } });
+      await setHostLimits({ emails: { maxPeriodic: 1 } });
 
-      assert.equal(limits.isLimited('emails'), false);
+      assert.equal(limits.service.isLimited('emails'), false);
     });
   });
 
   describe('the shape of a refusal', function () {
     it("carries the limit name and the host's help link, which integrations read", async function () {
-      await hostLimits.setHostLimits(
+      await setHostLimits(
         { newsletters: { max: 0 } },
         { billing: { enabled: true, url: 'https://billing.example.com' } },
       );
@@ -384,7 +379,7 @@ describe('Host limits', function () {
 
   describe('what the browser is told', function () {
     it('hands the whole limits block to the client, so it can gate the same way', async function () {
-      await hostLimits.setHostLimits(
+      await setHostLimits(
         { limitAnalytics: { disabled: true }, staff: { max: 3 } },
         { billing: { enabled: true, url: 'https://billing.example.com' } },
       );
@@ -405,17 +400,17 @@ describe('Host limits', function () {
       // An allowlist limit with an empty list cannot be built, and building stops there:
       // the limits configured alongside it never load either. A site is then unlimited in
       // ways nobody asked for, and the only trace is a warning in the log.
-      await hostLimits.setHostLimits({
+      await setHostLimits({
         customThemes: { allowlist: [] },
         limitStripeConnect: { disabled: true },
       });
 
-      assert.equal(limits.isLimited('customThemes'), false);
-      assert.equal(limits.isLimited('limitStripeConnect'), false);
+      assert.equal(limits.service.isLimited('customThemes'), false);
+      assert.equal(limits.service.isLimited('limitStripeConnect'), false);
     });
 
     it('keeps a site serving rather than failing to start', async function () {
-      await hostLimits.setHostLimits({ customThemes: { allowlist: [] } });
+      await setHostLimits({ customThemes: { allowlist: [] } });
 
       await agent.get('config/').expectStatus(200);
     });
@@ -423,12 +418,12 @@ describe('Host limits', function () {
     it('registers a periodic limit whose start date cannot be read', async function () {
       // It counts from that date, so an unreadable one leaves the limit counting against
       // nothing while reporting itself as applied.
-      await hostLimits.setHostLimits(
+      await setHostLimits(
         { emails: { maxPeriodic: 1 } },
         { subscription: { start: 'not a date' } },
       );
 
-      assert.equal(limits.isLimited('emails'), true);
+      assert.equal(limits.service.isLimited('emails'), true);
     });
   });
 
@@ -446,13 +441,13 @@ describe('Host limits', function () {
 
   describe('limits it does not recognise', function () {
     it('ignores a limit name the code has never heard of, leaving the feature available', async function () {
-      await hostLimits.setHostLimits({ aLimitNobodyShipped: { disabled: true } });
+      await setHostLimits({ aLimitNobodyShipped: { disabled: true } });
 
-      assert.equal(limits.isLimited('aLimitNobodyShipped'), false);
+      assert.equal(limits.service.isLimited('aLimitNobodyShipped'), false);
     });
 
     it('drops a known limit written in another case, leaving the site unlimited', async function () {
-      await hostLimits.setHostLimits({ limit_stripe_connect: { disabled: true } });
+      await setHostLimits({ limit_stripe_connect: { disabled: true } });
       stubStripeToken();
 
       // The name is matched camelCased but its settings are read under the original key, so
@@ -483,7 +478,7 @@ describe('Host limits', function () {
     };
 
     it('refuses a file over the allowance, sized the way a reader expects', async function () {
-      await hostLimits.setHostLimits({
+      await setHostLimits({
         uploads: { max: 9000, error: 'Files must be under {{max}}.' },
       });
 
@@ -496,7 +491,7 @@ describe('Host limits', function () {
     });
 
     it('accepts a file inside it', async function () {
-      await hostLimits.setHostLimits({ uploads: { max: 1000000 } });
+      await setHostLimits({ uploads: { max: 1000000 } });
 
       await upload().expectStatus(201);
     });
@@ -507,7 +502,7 @@ describe('Host limits', function () {
     // them publishing, which is a different question from the one every other counted limit
     // answers, and the only place Ghost asks it of a count it has to go and fetch.
     it('refuses to publish a post while the site is over its member allowance', async function () {
-      await hostLimits.setHostLimits({ members: { max: 0 } });
+      await setHostLimits({ members: { max: 0 } });
 
       const { body } = await agent
         .post('posts/')
@@ -518,7 +513,7 @@ describe('Host limits', function () {
     });
 
     it('publishes while the site is inside it', async function () {
-      await hostLimits.setHostLimits({ members: { max: 1000 } });
+      await setHostLimits({ members: { max: 1000 } });
 
       await agent
         .post('posts/')
@@ -546,7 +541,7 @@ describe('Host limits', function () {
     };
 
     it('refuses an invitation that would take the site past its staff allowance', async function () {
-      await hostLimits.setHostLimits({ staff: { max: 1 } });
+      await setHostLimits({ staff: { max: 1 } });
 
       const { body } = await agent
         .post('invites/')
@@ -557,7 +552,7 @@ describe('Host limits', function () {
     });
 
     it('invites a contributor regardless, because they are not staff', async function () {
-      await hostLimits.setHostLimits({ staff: { max: 1 } });
+      await setHostLimits({ staff: { max: 1 } });
 
       await agent
         .post('invites/')

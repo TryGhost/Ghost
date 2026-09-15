@@ -102,12 +102,12 @@ Invite = ghostBookshelf.Model.extend(
 
           if (
             isAdd &&
-            limitService.isLimited('staff') &&
+            limitService.service.isLimited('staff') &&
             roleToInvite.get('name') !== 'Contributor'
           ) {
             // CASE: if your site is limited to a certain number of staff users
             // Inviting a new user requires we check we won't go over the limit
-            await limitService.errorIfWouldGoOverLimit('staff');
+            await limitService.service.errorIfWouldGoOverLimit('staff');
           }
 
           let allowed = [];

@@ -48,8 +48,8 @@ const controller = {
     async query(frame) {
       let themeName = frame.options.name;
 
-      if (limitService.isLimited('customThemes')) {
-        await limitService.errorIfWouldGoOverLimit('customThemes', { value: themeName });
+      if (limitService.service.isLimited('customThemes')) {
+        await limitService.service.errorIfWouldGoOverLimit('customThemes', { value: themeName });
       }
 
       const newSettings = [
@@ -110,9 +110,9 @@ const controller = {
       method: 'add',
     },
     async query(frame) {
-      if (limitService.isLimited('customThemes')) {
+      if (limitService.service.isLimited('customThemes')) {
         // Sending a bad string to make sure it fails (empty string isn't valid)
-        await limitService.errorIfWouldGoOverLimit('customThemes', { value: '.' });
+        await limitService.service.errorIfWouldGoOverLimit('customThemes', { value: '.' });
       }
 
       // @NOTE: consistent filename uploads

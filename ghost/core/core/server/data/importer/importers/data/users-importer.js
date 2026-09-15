@@ -64,7 +64,7 @@ class UsersImporter extends BaseImporter {
       // Any other sort of logic for counting staff users would be too complex in this scenario
       // So we essentially don't allow importing staff users
       // The roles can be changed afterwards if the limit permits
-      if (limitService.isLimited('staff')) {
+      if (limitService.service.isLimited('staff')) {
         role = { name: 'Contributor' };
       }
 
