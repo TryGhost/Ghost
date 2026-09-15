@@ -12,8 +12,21 @@ import {
   PERFORMANCE_RANGES,
 } from '@/automations/utils/performance-date-range';
 
-export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automationId }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const PerformanceSidebar: React.FC<{
+  automationId: string;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedRunId: string | null;
+  onSelectRun: (id: string) => void;
+  isRunSelectionDisabled: boolean;
+}> = ({
+  automationId,
+  isOpen,
+  onOpenChange,
+  selectedRunId,
+  onSelectRun,
+  isRunSelectionDisabled,
+}) => {
   const [hasOpened, setHasOpened] = useState(false);
   const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
   const [requestRevision, setRequestRevision] = useState(0);
@@ -29,13 +42,13 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
         aria-controls={panelId}
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide performance' : 'Show performance'}
-        className="absolute top-4 left-4 z-10"
+        className="absolute top-4 left-4 z-20"
         size="icon"
         type="button"
         variant="ghost"
         onClick={() => {
           setHasOpened(true);
-          setIsOpen((open) => !open);
+          onOpenChange(!isOpen);
         }}
       >
         <LucideIcon.PanelLeft strokeWidth={2} />
@@ -93,7 +106,14 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
                   setRequestRevision((revision) => revision + 1);
                 }}
               />
-              <RunList automationId={automationId} requestId={requestId} status={status} />
+              <RunList
+                automationId={automationId}
+                isSelectionDisabled={isRunSelectionDisabled}
+                requestId={requestId}
+                selectedRunId={selectedRunId}
+                status={status}
+                onSelectRun={onSelectRun}
+              />
             </Stack>
           )}
         </Box>

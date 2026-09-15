@@ -26,7 +26,10 @@ export const RunList: React.FC<{
   automationId: string;
   requestId: string;
   status: AutomationRunStatusFilter | null;
-}> = ({ automationId, requestId, status }) => {
+  selectedRunId: string | null;
+  onSelectRun: (id: string) => void;
+  isSelectionDisabled: boolean;
+}> = ({ automationId, requestId, status, selectedRunId, onSelectRun, isSelectionDisabled }) => {
   const { data, isLoading, isError, unavailable, retry } = useAutomationRuns(
     automationId,
     status,
@@ -71,12 +74,28 @@ export const RunList: React.FC<{
           {data?.map((run) => {
             const { Icon, color } = statusIcons[run.status];
             return (
-              <TableRow key={run.id}>
+              <TableRow
+                key={run.id}
+                className={isSelectionDisabled ? undefined : 'cursor-pointer'}
+                data-state={selectedRunId === run.id ? 'selected' : undefined}
+                onClick={() => {
+                  if (!isSelectionDisabled) {
+                    onSelectRun(run.id);
+                  }
+                }}
+              >
                 <TableCell className="h-[72px] p-4">
                   <Stack className="min-w-0" gap="none">
-                    <span className="truncate font-medium" title={run.memberName}>
+                    <button
+                      aria-label={`View run history for ${run.memberName}, entered ${run.enteredDescription}`}
+                      aria-pressed={selectedRunId === run.id}
+                      className="truncate text-left font-medium outline-offset-4 focus-visible:outline-2 focus-visible:outline-focus-ring"
+                      disabled={isSelectionDisabled}
+                      title={run.memberName}
+                      type="button"
+                    >
                       {run.memberName}
-                    </span>
+                    </button>
                     {run.memberEmail && (
                       <span className="truncate text-muted-foreground" title={run.memberEmail}>
                         {run.memberEmail}

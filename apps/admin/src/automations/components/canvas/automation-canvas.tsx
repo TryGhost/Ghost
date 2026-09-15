@@ -39,7 +39,8 @@ import type {
 import { Background, BackgroundVariant, ReactFlow } from '@xyflow/react';
 import type { Edge } from '@xyflow/react';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { Inline } from '@tryghost/shade/primitives';
+import { Box, Inline } from '@tryghost/shade/primitives';
+import { RunHistory } from './run-history';
 import { PerformanceSidebar } from './performance-sidebar';
 import { type StepPickerType } from './step-picker';
 import { StepSidebar } from './step-sidebar';
@@ -365,6 +366,8 @@ type AutomationCanvasProps = {
   isLoading: boolean;
   isError: boolean;
   onChange: (next: AutomationDetail) => void;
+  selectedRunId: string | null;
+  onSelectRun: (id: string | null) => void;
   onDiscardBlockedEmailNavigation?: (closeEmailModal: () => void) => void;
   onEmailDirtyChange?: (isDirty: boolean) => void;
   onKeepEditingAfterBlockedEmailNavigation?: () => void;
@@ -392,10 +395,14 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   isLoading,
   isError,
   onChange,
+  selectedRunId,
+  onSelectRun,
   onDiscardBlockedEmailNavigation,
   onEmailDirtyChange,
   onKeepEditingAfterBlockedEmailNavigation,
 }) => {
+  const [isPerformanceOpen, setIsPerformanceOpen] = useState(false);
+  const editingCanvasRef = useRef<HTMLDivElement | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -568,6 +575,15 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const initialViewport = useRef(getInitialViewport(window.innerWidth));
   const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
   const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
+  const isHistoryOpen = automationRunAnalyticsEnabled && selectedRunId !== null;
+
+  useEffect(() => {
+    // An explicit email deep link returns to editing; modal drafts keep their
+    // existing navigation guard. Run selection itself never changes the URL.
+    if ((!automationRunAnalyticsEnabled || emailModalStepId) && selectedRunId) {
+      onSelectRun(null);
+    }
+  }, [automationRunAnalyticsEnabled, emailModalStepId, selectedRunId, onSelectRun]);
 
   const graph = useMemo(() => {
     if (!automation) {
@@ -683,53 +699,91 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       data-testid="automation-canvas"
       gap="none"
     >
-      {automationRunAnalyticsEnabled && <PerformanceSidebar automationId={automation.id} />}
-      <div ref={viewport.measureCanvas} className="relative min-w-0 flex-1">
-        <ReactFlow
-          className="[--xy-background-color:var(--color-gray-50)] [--xy-background-pattern-color:var(--color-gray-500)] [--xy-edge-stroke:var(--color-gray-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-gray-900)] dark:[--xy-edge-stroke:var(--color-gray-800)]"
-          defaultViewport={initialViewport.current}
-          edges={graph.edges}
-          edgesFocusable={false}
-          edgeTypes={edgeTypes}
-          maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
-          minZoom={CANVAS_ZOOM_CONFIG.minZoom}
-          nodes={graph.nodes}
-          nodesConnectable={false}
-          nodesDraggable={false}
-          nodesFocusable={false}
-          nodeTypes={nodeTypes}
-          proOptions={{ hideAttribution: true }}
-          translateExtent={viewport.translateExtent}
-          zoomOnDoubleClick={false}
-          zoomOnScroll={false}
-          panOnScroll
-          onInit={viewport.onInit}
-          onMove={viewport.onMove}
-          onNodeClick={(event, node) => {
-            if (event.button !== 0) {
-              return;
-            }
-            if (node.id !== TAIL_CANVAS_ID) {
-              setSelectedStep({ id: node.id });
+      {automationRunAnalyticsEnabled && (
+        <PerformanceSidebar
+          automationId={automation.id}
+          isOpen={isPerformanceOpen}
+          isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+          selectedRunId={selectedRunId}
+          onOpenChange={setIsPerformanceOpen}
+          onSelectRun={onSelectRun}
+        />
+      )}
+      <Box ref={viewport.measureCanvas} className="relative min-w-0 flex-1">
+        <Box
+          ref={(element) => {
+            editingCanvasRef.current = element;
+            if (element) {
+              element.inert = isHistoryOpen;
             }
           }}
-          onNodeDoubleClick={handleNodeDoubleClick}
-          onPaneClick={clearDetail}
+          aria-hidden={isHistoryOpen}
+          aria-label="Editing canvas"
+          className={isHistoryOpen ? 'invisible absolute inset-0' : 'absolute inset-0'}
+          role="region"
+          tabIndex={-1}
         >
-          <Background variant={BackgroundVariant.Dots} />
-          <AutomationCanvasControls />
-        </ReactFlow>
-      </div>
-      <StepSidebar
-        automation={automation}
-        isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
-        stepId={selectedStepId}
-        onClose={clearDetail}
-        onDelete={handleRequestDelete}
-        onEditEmail={handleEditEmail}
-        onUpdateSubject={handleUpdateSubject}
-        onUpdateWait={handleUpdateWait}
-      />
+          <ReactFlow
+            className="[--xy-background-color:var(--color-gray-50)] [--xy-background-pattern-color:var(--color-gray-500)] [--xy-edge-stroke:var(--color-gray-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-gray-900)] dark:[--xy-edge-stroke:var(--color-gray-800)]"
+            defaultViewport={initialViewport.current}
+            edges={graph.edges}
+            edgesFocusable={false}
+            edgeTypes={edgeTypes}
+            maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+            minZoom={CANVAS_ZOOM_CONFIG.minZoom}
+            nodes={graph.nodes}
+            nodesConnectable={false}
+            nodesDraggable={false}
+            nodesFocusable={false}
+            nodeTypes={nodeTypes}
+            proOptions={{ hideAttribution: true }}
+            translateExtent={viewport.translateExtent}
+            zoomOnDoubleClick={false}
+            zoomOnScroll={false}
+            panOnScroll
+            onInit={viewport.onInit}
+            onMove={viewport.onMove}
+            onNodeClick={(event, node) => {
+              if (event.button !== 0) {
+                return;
+              }
+              if (node.id !== TAIL_CANVAS_ID) {
+                setSelectedStep({ id: node.id });
+              }
+            }}
+            onNodeDoubleClick={handleNodeDoubleClick}
+            onPaneClick={clearDetail}
+          >
+            <Background variant={BackgroundVariant.Dots} />
+            <AutomationCanvasControls />
+          </ReactFlow>
+        </Box>
+        {isHistoryOpen && (
+          <RunHistory
+            key={selectedRunId}
+            automationId={automation.id}
+            isPerformanceOpen={isPerformanceOpen}
+            runId={selectedRunId}
+            onClose={() => {
+              onSelectRun(null);
+              requestAnimationFrame(() => editingCanvasRef.current?.focus());
+            }}
+          />
+        )}
+      </Box>
+      {/* Keep local field drafts and selected email settings intact while hidden. */}
+      <Box className={isHistoryOpen ? 'hidden' : 'contents'}>
+        <StepSidebar
+          automation={automation}
+          isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+          stepId={selectedStepId}
+          onClose={clearDetail}
+          onDelete={handleRequestDelete}
+          onEditEmail={handleEditEmail}
+          onUpdateSubject={handleUpdateSubject}
+          onUpdateWait={handleUpdateWait}
+        />
+      </Box>
       {emailModalAction && automation && (
         <EmailContentModal
           automationId={automation.id}
