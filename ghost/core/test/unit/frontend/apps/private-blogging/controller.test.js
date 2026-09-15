@@ -83,7 +83,7 @@ describe('Private Controller', function () {
     hasTemplateStub.withArgs('private').returns(true);
 
     res.render = function (view, context) {
-      assert.equal(view, 'private');
+      assert.equal(view, 'private.hbs');
       assertExists(context);
       done();
     };
