@@ -232,10 +232,15 @@ function normalizeAdapterPaths(
  */
 export function normalizeAdapterConfig(config: ConfigInstance) {
   const adapterConfig = config.get('adapters');
+  const storage = adapterConfig?.storage ?? config.get('storage');
 
   return {
     ...adapterConfig,
-    storage: adapterConfig?.storage ?? config.get('storage'),
+    // adapters.storage replaces the top-level storage config, defaults included, so carry
+    // storage:imports over: import files must never fall back to the store that serves images.
+    storage: adapterConfig?.storage
+      ? { imports: config.get('storage:imports'), ...storage }
+      : storage,
     scheduling: getSchedulingConfig(config),
     redirects: normalizeAdapterPaths(config, 'redirects', {
       FileStore: {
