@@ -1,5 +1,7 @@
 // @ts-expect-error This module lacks type definitions.
 import MailgunClient from '../lib/mailgun-client';
+import { fetchMailgunLogs } from './fetch-mailgun-logs';
+import { IncorrectUsageError } from '@tryghost/errors';
 
 const DEFAULT_EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;
@@ -29,6 +31,24 @@ export async function fetchMailgunEvents({
   end,
   events,
 }: FetchMailgunEventsOptions) {
+  const source = config.get('emailAnalytics:fetchSource') ?? 'events';
+  if (source !== 'events' && source !== 'logs') {
+    throw new IncorrectUsageError({
+      message: 'Invalid emailAnalytics.fetchSource; expected events or logs',
+    });
+  }
+  if (source === 'logs') {
+    return fetchMailgunLogs({
+      config,
+      settings,
+      tags,
+      events: events ?? DEFAULT_EVENT_FILTER.split(' OR '),
+      begin,
+      end,
+      maxEvents,
+      batchHandler: (page) => batchHandler(page),
+    });
+  }
   const mailgunClient = new MailgunClient({ config, settings });
   const mailgunOptions = {
     limit: PAGE_LIMIT,

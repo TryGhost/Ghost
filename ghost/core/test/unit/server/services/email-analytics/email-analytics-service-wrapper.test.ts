@@ -76,6 +76,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
         emailAggregationTimeMs: 300,
         memberAggregationTimeMs: 200,
         result: new EventProcessingResult(),
+        capped: false,
       },
       2000,
     );

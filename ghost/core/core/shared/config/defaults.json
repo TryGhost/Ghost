@@ -299,6 +299,7 @@
   "enableTipsAndDonations": true,
   "emailAnalytics": {
     "enabled": true,
+    "fetchSource": "events",
     "batchProcessing": false,
     "metrics": {
       "openThroughput": {
