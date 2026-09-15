@@ -34,6 +34,8 @@ describe('Unit: Service: billing', function () {
         billingService?.clearBillingAppLoadMonitor();
         billingService = null;
         sinon.restore();
+        window.sessionStorage.removeItem('ghost-dunning-pay-return-route');
+        window.sessionStorage.removeItem('ghost-dunning-payment-settled-at');
     });
 
     it('retries loading the billing app before reporting', async function () {
@@ -432,6 +434,54 @@ describe('Unit: Service: billing', function () {
         service.navigateToAdminDestination('newsletters');
 
         expect(transitionTo.calledOnceWithExactly('/settings/newsletters')).to.be.true;
+    });
+
+    it('returns to the recorded route for the previousPage destination', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        window.sessionStorage.setItem('ghost-dunning-pay-return-route', '/editor/post/abc123');
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(transitionTo.calledOnceWithExactly('/editor/post/abc123')).to.be.true;
+        // consumed: a later return without a fresh "Pay now" click must not reuse it
+        expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
+    });
+
+    it('records the settled payment so the dunning warnings stand down', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        sinon.stub(service.router, 'transitionTo');
+
+        service.navigateToAdminDestination('previousPage');
+
+        const settledAt = window.sessionStorage.getItem('ghost-dunning-payment-settled-at');
+        expect(settledAt).to.be.ok;
+        expect(new Date(settledAt).getTime()).to.be.closeTo(Date.now(), 5000);
+    });
+
+    it('falls back to the billing overview without a recorded return route', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        window.sessionStorage.removeItem('ghost-dunning-pay-return-route');
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(transitionTo.calledOnceWithExactly('pro')).to.be.true;
+    });
+
+    it('ignores a recorded return route that is not an absolute path', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        window.sessionStorage.setItem('ghost-dunning-pay-return-route', 'https://evil.example');
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(transitionTo.calledOnceWithExactly('pro')).to.be.true;
+        expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
     });
 
     it('ignores destinations that are not approved keys', function () {
