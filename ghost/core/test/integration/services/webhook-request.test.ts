@@ -27,6 +27,10 @@ function createPayload() {
   return sinon.stub().resolves({ post: { current: { id: 1, title: 'Test' }, previous: {} } });
 }
 
+function isWrapped(value: unknown): boolean {
+  return typeof value === 'function' && Reflect.has(value, 'restore');
+}
+
 describe('Webhook delivery', function () {
   let models: ReturnType<typeof createModels>;
   let payload: ReturnType<typeof createPayload>;
@@ -41,7 +45,9 @@ describe('Webhook delivery', function () {
     limitService.isLimited.withArgs('customIntegrations').returns(false);
 
     // Stub DNS so request-external doesn't fail on fake domains
-    sinon.stub(dnsPromises, 'lookup').resolves({ address: '123.123.123.123', family: 4 });
+    if (!isWrapped(dnsPromises.lookup)) {
+      sinon.stub(dnsPromises, 'lookup').resolves({ address: '123.123.123.123', family: 4 });
+    }
 
     nock.disableNetConnect();
   });
