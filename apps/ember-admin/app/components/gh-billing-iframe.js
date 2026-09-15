@@ -168,7 +168,7 @@ export default class GhBillingIframe extends Component {
         // Detect if the current subscription is in a grace state and render a notification
         if (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid') {
             // This notification needs to be shown to every user regardless their permissions to see billing
-            this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
+            this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}/update-card">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
         } else {
             this.notifications.closeAlerts('billing.overdue');
         }
