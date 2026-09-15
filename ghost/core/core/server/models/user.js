@@ -1036,10 +1036,13 @@ User = ghostBookshelf.Model.extend(
                 }),
               );
             }
-          } else if (roleId !== contextRoleId) {
+          } else if (roleId !== contextRoleId || editedUserId !== context.user) {
             // CASE: you are trying to change a role, but you are not owner
-            // @NOTE: your role is not the same than the role you try to change (!)
-            // e.g. admin can assign admin role to a user, but not owner
+            // @NOTE: assigning any role to *another* user must always go through
+            // the assign check, including your own role. Otherwise an Editor could
+            // promote an Author to Editor, which the role hierarchy disallows.
+            // The only case that skips the check is a self-edit that leaves your
+            // own role untouched, e.g. a profile update that echoes back `roles`.
 
             return permissions
               .canThis(context)

@@ -18,9 +18,11 @@ What that gate does depends on the post's status.
 The gate also holds a draft's field save back while a value it would send is not
 yet valid: an incomplete tier pairing, or a publish time that has not passed. The
 value stays staged, the section says why, and the next save the writer asks for
-is refused with the same message. A draft's body autosave is refused for that
-reason too while such a value stands, and the save banner carries the message
-whether or not the sidebar is open, so closing the panel does not hide it.
+is refused with the same message. A draft's body autosave is not held back the
+same way: it runs, and the same rule fails it before any request is sent, so the
+engine reports that error until the value is valid again. The save banner carries
+the message whether or not the sidebar is open, so closing the panel does not
+hide it.
 
 Staging is not a weaker form of saving. A staged value lives in the same live
 document as the body, so it counts everywhere unsaved work counts: the post
@@ -196,6 +198,10 @@ that cannot write it, falls back to the section list rather than an empty panel.
 The panel owns which pane is open, so closing the panel or leaving the editor
 drops it and the panel is next opened on the section list.
 
+Returning to the section list and reopening the same social-card pane keeps an
+in-progress image upload pending. Its file picker and Unsplash button stay
+disabled until the upload succeeds or fails.
+
 ## Escape
 
 Escape closes one layer, the innermost the writer is in. In a tag or author list
@@ -219,7 +225,8 @@ granted. The tier list is every one of the site's paid
 tiers, active ones before archived, and it loads only while `Specific tier(s)`
 is the choice. Reads carry tier relations for Public, Members and Paid posts;
 the free tier that comes with Public and Members reads is excluded from the
-selection, and a tier ID without type metadata is preserved.
+selection, and a tier ID without type metadata is preserved. A failed tier
+lookup shows an error and a Retry action in place of the list.
 
 The write contract drops `visibility: 'tiers'` whenever no tiers accompany it,
 so sending that pairing would be answered with the post's unchanged visibility
@@ -285,7 +292,9 @@ The theme decides which templates a post may render with, so the section is the
 active theme's list and nothing else: its slugless templates, by name, under a
 Default that stands for the post carrying no template. A template the theme no
 longer offers reads as the default. A theme with no such templates leaves the
-section out entirely, and every role that can open the sidebar sees it.
+section out entirely, and every role that can open the sidebar sees it. A failed
+theme lookup is not the same as an empty one: the section stays and shows an
+error and a Retry action.
 
 A theme may also bind a template to one post URL. Where the post's slug matches
 one, the theme applies that template whatever the field holds, so the select is

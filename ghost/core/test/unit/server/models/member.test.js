@@ -4,12 +4,13 @@ const { Member } = require('../../../../core/server/models/member');
 const { Label } = require('../../../../core/server/models/label');
 const configUtils = require('../../../utils/config-utils');
 const labs = require('../../../../core/shared/labs');
+const assetHash = require('../../../../core/frontend/services/asset-hash');
 
 const config = configUtils.config;
 
 describe('Unit: models/member', function () {
   beforeEach(function () {
-    config.set('assetHash', '1');
+    sinon.stub(assetHash, 'getGlobalHash').returns('1');
   });
 
   afterEach(async function () {

@@ -4,7 +4,7 @@ const Mention = require('../../../../../core/server/services/mentions/mention');
 const MentionsAPI = require('../../../../../core/server/services/mentions/mentions-api');
 const InMemoryMentionRepository = require('../../../../../core/server/services/mentions/in-memory-mention-repository');
 const sinon = require('sinon');
-const cheerio = require('cheerio');
+const cheerio = require('cheerio/slim');
 
 const mockRoutingService = {
   async pageExists() {

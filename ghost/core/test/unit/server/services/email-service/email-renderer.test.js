@@ -10,6 +10,7 @@ const { HtmlValidate } = require('html-validate');
 const crypto = require('crypto');
 const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/cached-image-size-from-url');
 const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
+const { malformedCssCases } = require('../../../../utils/fixtures/email-service/malformed-css');
 
 async function validateHtml(html) {
   const htmlvalidate = new HtmlValidate({
@@ -1681,6 +1682,16 @@ describe('Email renderer', function () {
       const options = {};
 
       await emailRenderer.renderBody(post, newsletter, segment, options);
+    });
+
+    it.each(malformedCssCases)('renders posts with $name', async function ({ name, html }) {
+      renderedPost = html;
+      const post = createModel(basePost);
+      const newsletter = createModel(baseNewsletter);
+
+      const response = await emailRenderer.renderBody(post, newsletter, null, {});
+
+      assert.ok(response.html.includes(`Malformed CSS case: ${name}`));
     });
 
     it('renders the post title as the top-level heading', async function () {
@@ -4548,7 +4559,7 @@ describe('Email renderer', function () {
       assert(!response.html.includes('finishing part only for members'));
       assert(
         response.html.includes(
-          'Devenez un(e) abonn&#xE9;(e) payant de Cathy&#39;s Blog pour acc&#xE9;der &#xE0; du contenu exclusif',
+          'Devenez un(e) abonn&#xe9;(e) payant de Cathy&#39;s Blog pour acc&#xe9;der &#xe0; du contenu exclusif',
         ),
       );
       assert(

@@ -16,8 +16,8 @@ import {
   loadKoenig,
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from '@/editor/card-config';
-import { reportKoenigError } from '@/editor/koenig-error';
 import { editorFileUploader } from '@/editor/koenig-file-uploader';
+import { reportKoenigError } from '@/editor/report-error';
 import type { RevisionEntry } from './post-history';
 
 /** The part of Lexical's editor the loader's minimal instance type leaves out. */

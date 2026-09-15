@@ -16,7 +16,9 @@ import {
   X_TITLE_TOO_LONG,
   overLength,
   settingsFieldError,
+  settingsFieldErrorFor,
   validatedFieldsOf,
+  type ValidatedSettingsFieldKey,
   type ValidatedSettingsFields,
 } from './settings-fields';
 
@@ -120,17 +122,58 @@ describe('settingsFieldError', () => {
   });
 
   it('names the field the message is about', () => {
-    expect(META_TITLE_TOO_LONG).toBe('Meta Title cannot be longer than 300 characters.');
+    expect(META_TITLE_TOO_LONG).toBe('Meta title cannot be longer than 300 characters.');
     expect(META_DESCRIPTION_TOO_LONG).toBe(
-      'Meta Description cannot be longer than 500 characters.',
+      'Meta description cannot be longer than 500 characters.',
     );
-    expect(OG_TITLE_TOO_LONG).toBe('Facebook Title cannot be longer than 300 characters.');
+    expect(OG_TITLE_TOO_LONG).toBe('Facebook title cannot be longer than 300 characters.');
     expect(OG_DESCRIPTION_TOO_LONG).toBe(
-      'Facebook Description cannot be longer than 500 characters.',
+      'Facebook description cannot be longer than 500 characters.',
     );
-    expect(X_TITLE_TOO_LONG).toBe('Twitter Title cannot be longer than 300 characters.');
-    expect(X_DESCRIPTION_TOO_LONG).toBe(
-      'Twitter Description cannot be longer than 500 characters.',
-    );
+    expect(X_TITLE_TOO_LONG).toBe('X title cannot be longer than 300 characters.');
+    expect(X_DESCRIPTION_TOO_LONG).toBe('X description cannot be longer than 500 characters.');
+  });
+});
+
+describe('settingsFieldErrorFor', () => {
+  it('passes a field under and at the column width, and refuses it past', () => {
+    expect(settingsFieldErrorFor('meta_title', { ...VALID, meta_title: 'a' })).toBeNull();
+    expect(
+      settingsFieldErrorFor('meta_title', { ...VALID, meta_title: 'a'.repeat(META_TITLE_MAX) }),
+    ).toBeNull();
+    expect(
+      settingsFieldErrorFor('meta_title', { ...VALID, meta_title: 'a'.repeat(META_TITLE_MAX + 1) }),
+    ).toBe(META_TITLE_TOO_LONG);
+  });
+
+  it('reads only the field it is asked about', () => {
+    const overLongTitle = { ...VALID, meta_title: 'a'.repeat(META_TITLE_MAX + 1) };
+
+    expect(settingsFieldErrorFor('meta_description', overLongTitle)).toBeNull();
+  });
+
+  it('refuses specific-tier access without a tier on the tier field', () => {
+    const noTier: ValidatedSettingsFields = { ...VALID, visibility: 'tiers' };
+
+    expect(settingsFieldErrorFor('tiers', noTier)).toBe(TIERS_REQUIRED);
+    expect(settingsFieldErrorFor('visibility', noTier)).toBeNull();
+  });
+
+  it('says what the save-time validator says about the same field', () => {
+    const past = 'a'.repeat(META_DESCRIPTION_MAX + 1);
+    const overLimit: [ValidatedSettingsFieldKey, ValidatedSettingsFields][] = [
+      ['meta_title', { ...VALID, meta_title: past }],
+      ['meta_description', { ...VALID, meta_description: past }],
+      ['og_title', { ...VALID, og_title: past }],
+      ['og_description', { ...VALID, og_description: past }],
+      ['twitter_title', { ...VALID, twitter_title: past }],
+      ['twitter_description', { ...VALID, twitter_description: past }],
+      ['tiers', { ...VALID, visibility: 'tiers' }],
+    ];
+
+    for (const [key, fields] of overLimit) {
+      expect(settingsFieldErrorFor(key, fields)).not.toBeNull();
+      expect(settingsFieldErrorFor(key, fields)).toBe(settingsFieldError(fields));
+    }
   });
 });

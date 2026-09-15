@@ -19,8 +19,8 @@ import {
   postsBackLink,
   publishAtScheduleOption,
   publishCompleteBookmark,
-  publishConfirmButton,
-  publishContinueButton,
+  publishConfirm,
+  publishContinue,
   publishFlowComplete,
   publishFlowConfirm,
   publishFlowModal,
@@ -34,6 +34,7 @@ import {
   publishTypeEmailOnlyOption,
   publishTypePublishAndEmailOption,
   publishTypePublishOnlyOption,
+  settingsMenuToggle,
 } from '@tryghost/test-data/selectors/editor';
 
 type PublishType = 'publish' | 'publish+send' | 'send';
@@ -160,10 +161,10 @@ class PublishFlow extends BasePage {
       ? page.getByTestId(publishSettingEmailRecipients)
       : page.locator('[data-test-setting="email-recipients"]');
     this.continueButton = react
-      ? page.getByTestId(publishContinueButton)
+      ? page.getByTestId(publishContinue)
       : page.locator('[data-test-modal="publish-flow"] [data-test-button="continue"]');
     this.confirmButton = react
-      ? page.getByTestId(publishConfirmButton)
+      ? page.getByTestId(publishConfirm)
       : page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]');
     this.closeButton = react
       ? this.modal.getByRole('button', { name: 'Close', exact: true })
@@ -319,7 +320,7 @@ export class PostEditorPage extends AdminPage {
       ? headerActions.getByRole('button', { name: editorPreviewButton, exact: true })
       : page.getByRole('button', { name: 'Preview' });
     this.previewModal = new PostPreviewModal(page, { implementation });
-    this.settingsToggleButton = page.getByTestId('settings-menu-toggle');
+    this.settingsToggleButton = page.getByTestId(settingsMenuToggle);
     this.publishFlow = new PublishFlow(page, { implementation });
     this.screenTitle = page.locator('[data-test-screen-title]');
     // Ember marks the Koenig container; React wraps each instance in its own

@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { FieldError, Input, Label, Textarea } from '@tryghost/shade/components';
+import { Field, FieldError, FieldLabel, Input, Textarea } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import {
@@ -7,13 +7,6 @@ import {
   settingsMetaTitleInput,
   settingsSerpPreview,
 } from '@tryghost/test-data/selectors/editor';
-import {
-  META_DESCRIPTION_MAX,
-  META_DESCRIPTION_TOO_LONG,
-  META_TITLE_MAX,
-  META_TITLE_TOO_LONG,
-  overLength,
-} from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import {
   META_DESCRIPTION_RECOMMENDED,
@@ -28,6 +21,7 @@ import {
   serpTitle,
 } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
+import { useSettingsField } from './use-settings-field';
 
 function Countdown({ id, value, recommended }: { id: string; value: string; recommended: number }) {
   const used = characterCount(value);
@@ -82,25 +76,20 @@ export interface MetaDataSectionProps {
  * for the post's own, and the result they produce.
  */
 export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
-  const titleId = useId();
   const titleHintId = useId();
-  const titleErrorId = useId();
-  const descriptionId = useId();
   const descriptionHintId = useId();
-  const descriptionErrorId = useId();
 
-  const metaTitle = session.settings.meta_title ?? '';
-  const metaDescription = session.settings.meta_description ?? '';
-  const titleError = overLength(metaTitle, META_TITLE_MAX) ? META_TITLE_TOO_LONG : null;
-  const descriptionError = overLength(metaDescription, META_DESCRIPTION_MAX)
-    ? META_DESCRIPTION_TOO_LONG
-    : null;
+  const title = useSettingsField(session, 'meta_title', titleHintId);
+  const description = useSettingsField(session, 'meta_description', descriptionHintId);
 
-  const previewTitle = seoTitle(metaTitle, session.bind.title);
-  const previewDescription = seoDescription(metaDescription, session.settings.custom_excerpt ?? '');
+  const previewTitle = seoTitle(title.value, session.bind.title);
+  const previewDescription = seoDescription(
+    description.value,
+    session.settings.custom_excerpt ?? '',
+  );
   const previewUrl = seoUrl({
     siteUrl,
-    slug: session.getSaveSnapshot().slug,
+    slug: session.slug,
     canonicalUrl: session.settings.canonical_url ?? '',
   });
 
@@ -113,49 +102,32 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
       title="Meta data"
       wide
     >
-      <Stack gap="sm">
-        <Label htmlFor={titleId}>Meta title</Label>
+      <Field>
+        <FieldLabel htmlFor={title.fieldProps.id}>Meta title</FieldLabel>
         <Input
-          aria-describedby={titleError ? `${titleHintId} ${titleErrorId}` : titleHintId}
-          aria-invalid={!!titleError}
           data-testid={settingsMetaTitleInput}
-          id={titleId}
           placeholder={previewTitle}
-          value={metaTitle}
-          onBlur={session.commitSettings}
-          // A cleared field is stored as no value, the way the excerpt is.
-          onChange={(event) => session.stageSettings({ meta_title: event.target.value || null })}
+          {...title.fieldProps}
         />
-        <Countdown id={titleHintId} recommended={META_TITLE_RECOMMENDED} value={metaTitle} />
-        {titleError ? <FieldError id={titleErrorId}>{titleError}</FieldError> : null}
-      </Stack>
+        <Countdown id={titleHintId} recommended={META_TITLE_RECOMMENDED} value={title.value} />
+        <FieldError {...title.errorProps}>{title.error}</FieldError>
+      </Field>
 
-      <Stack gap="sm">
-        <Label htmlFor={descriptionId}>Meta description</Label>
+      <Field>
+        <FieldLabel htmlFor={description.fieldProps.id}>Meta description</FieldLabel>
         <Textarea
-          aria-describedby={
-            descriptionError ? `${descriptionHintId} ${descriptionErrorId}` : descriptionHintId
-          }
-          aria-invalid={!!descriptionError}
           data-testid={settingsMetaDescriptionInput}
-          id={descriptionId}
           placeholder={metaDescriptionPlaceholder(previewDescription)}
           rows={3}
-          value={metaDescription}
-          onBlur={session.commitSettings}
-          onChange={(event) =>
-            session.stageSettings({ meta_description: event.target.value || null })
-          }
+          {...description.fieldProps}
         />
         <Countdown
           id={descriptionHintId}
           recommended={META_DESCRIPTION_RECOMMENDED}
-          value={metaDescription}
+          value={description.value}
         />
-        {descriptionError ? (
-          <FieldError id={descriptionErrorId}>{descriptionError}</FieldError>
-        ) : null}
-      </Stack>
+        <FieldError {...description.errorProps}>{description.error}</FieldError>
+      </Field>
 
       <Stack gap="sm">
         <Text size="sm" weight="medium">

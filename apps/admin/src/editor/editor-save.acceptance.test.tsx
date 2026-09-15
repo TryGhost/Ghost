@@ -13,10 +13,14 @@ import {
   staffRole,
   submittedPost,
   tag,
+  withFastAutosave,
+  withoutAutosave,
+  unsavedChangesGuarded,
   type CapturedEndpointRequest,
   type EndpointCapture,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
+import { editorBody } from '@tryghost/test-data/selectors/editor';
 import { editorScreen } from '@/editor/editor.screen';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
 import { deferred } from '@/utils/deferred';
@@ -24,13 +28,9 @@ import { deferred } from '@/utils/deferred';
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new789';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CREATED_AT = '2026-01-01T00:00:05.000Z';
-
-// The autosave debounce is 3s, so these journeys outlast the default timeout.
-const SLOW = 20_000;
-const SAVE_POLL = { timeout: 10_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -90,13 +90,14 @@ function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
   return { ...FLAG_ON, boot: { browseMe: { response: me } } };
 }
 
-async function typeIntoBody(text: string) {
-  await editorScreen.body().click();
-  await userEvent.keyboard(`{End}${text}`);
+async function appendToBody(text: string) {
+  const body = editorScreen.body();
+  // One input event: a fast autosave must not split a keyboard sequence into several saves.
+  await body.fill(`${body.element().textContent ?? ''}${text}`);
 }
 
 function bodyElement(): Element | null {
-  return document.querySelector('[data-testid="editor-body"]');
+  return document.querySelector(`[data-testid="${editorBody}"]`);
 }
 
 /**
@@ -105,111 +106,96 @@ function bodyElement(): Element | null {
  * place instead of losing what was typed.
  */
 describe('Post editor saving', () => {
-  it(
-    'autosaves the body and sends the write contract',
-    async () => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('autosaves the body and sends the write contract', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await typeIntoBody(' and more');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
 
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-      const url = saveApi.lastRequest?.url ?? '';
-      expect(url).toContain('formats=mobiledoc%2Clexical');
-      expect(url).toContain('include=tags%2Cauthors');
-      // A background save never asks the server for a revision.
-      expect(url).not.toContain('save_revision');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    const url = saveApi.lastRequest?.url ?? '';
+    expect(url).toContain('formats=mobiledoc%2Clexical');
+    expect(url).toContain('include=tags%2Cauthors');
+    // A background save never asks the server for a revision.
+    expect(url).not.toContain('save_revision');
 
-      expect(submittedPost(saveApi)).toMatchObject({
-        id: POST_ID,
-        title: 'Hello from React',
-        slug: 'hello-from-react',
-        status: 'draft',
-        updated_at: LOADED_AT,
-      });
-      expect(submittedBody(saveApi)).toContain('Hello from React and more');
-    },
-    SLOW,
-  );
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      title: 'Hello from React',
+      slug: 'hello-from-react',
+      status: 'draft',
+      updated_at: LOADED_AT,
+    });
+    expect(submittedBody(saveApi)).toContain('Hello from React and more');
+  });
 
-  it(
-    'stays clean once the save has been acknowledged and refetched',
-    async () => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('stays clean once the save has been acknowledged and refetched', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await typeIntoBody(' and more');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
 
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-      await editorScreen.titleInput().click();
-      await editorScreen.body().click();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    await editorScreen.titleInput().click();
+    await editorScreen.body().click();
 
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+  });
 
-  it(
-    'leaves an old-schema post alone until it is edited',
-    async () => {
-      const legacy = OLD_SCHEMA_CORPUS.find(({ name }) => name === 'legacy-text-nodes');
-      const saveApi = fakeSavablePost({ lexical: JSON.stringify(legacy?.before) });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('leaves an old-schema post alone until it is edited', async () => {
+    const legacy = OLD_SCHEMA_CORPUS.find(({ name }) => name === 'legacy-text-nodes');
+    const saveApi = fakeSavablePost({ lexical: JSON.stringify(legacy?.before) });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.body()).toBeVisible();
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(0);
+    await expect.element(editorScreen.body()).toBeVisible();
+    await expect.poll(() => saveApi.requests.length).toBe(0);
 
-      await typeIntoBody(' edited');
+    await appendToBody(' edited');
 
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+  });
 
-  it(
-    'creates a new post on the first edit and swaps the URL without remounting',
-    async () => {
-      fakeEditorChrome();
-      fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
-      let created = post({
-        id: NEW_POST_ID,
-        title: '(Untitled)',
-        slug: 'untitled',
-        status: 'draft',
-        updated_at: CREATED_AT,
-        published_at: null,
-        tags: [],
-      });
-      const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
-        const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-        created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: CREATED_AT };
-        return { posts: [created] };
-      });
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
-        posts: [created],
-      }));
-      fakeAdminEndpoint('PUT', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
-        posts: [created],
-      }));
+  it('creates a new post on the first edit and swaps the URL without remounting', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
+    let created = post({
+      id: NEW_POST_ID,
+      title: '(Untitled)',
+      slug: 'untitled',
+      status: 'draft',
+      updated_at: CREATED_AT,
+      published_at: null,
+      tags: [],
+    });
+    const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+      const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+      created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: CREATED_AT };
+      return { posts: [created] };
+    });
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+      posts: [created],
+    }));
+    fakeAdminEndpoint('PUT', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+      posts: [created],
+    }));
 
-      await renderAdminApp('/editor/post', FLAG_ON);
-      await expect.element(editorScreen.body()).toBeVisible();
-      const mountedBody = bodyElement();
+    await renderAdminApp('/editor/post', FLAG_ON);
+    await expect.element(editorScreen.body()).toBeVisible();
+    const mountedBody = bodyElement();
 
-      await typeIntoBody('First words');
+    await appendToBody('First words');
 
-      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
-      expect(submittedPost(createApi)).toMatchObject({ title: '(Untitled)', slug: 'untitled' });
-      expect(submittedPost(createApi).id).toBeUndefined();
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    expect(submittedPost(createApi)).toMatchObject({ title: '(Untitled)', slug: 'untitled' });
+    expect(submittedPost(createApi).id).toBeUndefined();
 
-      await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
-      expect(bodyElement()).toBe(mountedBody);
-      await expect.element(editorScreen.body()).toHaveTextContent('First words');
-    },
-    SLOW,
-  );
+    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+    expect(bodyElement()).toBe(mountedBody);
+    await expect.element(editorScreen.body()).toHaveTextContent('First words');
+  });
 
   // Core refuses an Author's or Contributor's create unless the payload names
   // them as the author, so these roles could not start a post without it.
@@ -221,350 +207,307 @@ describe('Post editor saving', () => {
       await renderAdminApp('/editor/post', bootAs(role));
       await expect.element(editorScreen.body()).toBeVisible();
 
-      await typeIntoBody('First words');
+      await appendToBody('First words');
 
-      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
+      await expect.poll(() => createApi.requests.length).toBe(1);
       expect(submittedPost(createApi).authors).toEqual([{ id: CURRENT_USER_ID }]);
     },
-    SLOW,
   );
 
-  it(
-    'keeps typing that lands while the create is in flight and updates the new post',
-    async () => {
-      fakeEditorChrome();
-      fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
-      let created = post({
-        id: NEW_POST_ID,
-        title: '(Untitled)',
-        slug: 'untitled',
-        status: 'draft',
-        updated_at: CREATED_AT,
-        published_at: null,
-        tags: [],
-      });
-      const createResponse = deferred<{ posts: SavedPost[] }>();
-      const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+  it('keeps typing that lands while the create is in flight and updates the new post', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
+    let created = post({
+      id: NEW_POST_ID,
+      title: '(Untitled)',
+      slug: 'untitled',
+      status: 'draft',
+      updated_at: CREATED_AT,
+      published_at: null,
+      tags: [],
+    });
+    const createResponse = deferred<{ posts: SavedPost[] }>();
+    const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+      const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+      created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: CREATED_AT };
+      return createResponse.promise;
+    });
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+      posts: [created],
+    }));
+    const updateApi = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${NEW_POST_ID}/\\?`),
+      ({ body }) => {
         const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-        created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: CREATED_AT };
-        return createResponse.promise;
-      });
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
-        posts: [created],
-      }));
-      const updateApi = fakeAdminEndpoint(
-        'PUT',
-        new RegExp(`^/posts/${NEW_POST_ID}/\\?`),
-        ({ body }) => {
-          const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-          created = { ...created, ...submitted, updated_at: '2026-01-01T00:00:09.000Z' };
-          return { posts: [created] };
-        },
-      );
+        created = { ...created, ...submitted, updated_at: '2026-01-01T00:00:09.000Z' };
+        return { posts: [created] };
+      },
+    );
 
-      await renderAdminApp('/editor/post', FLAG_ON);
-      await expect.element(editorScreen.body()).toBeVisible();
+    await renderAdminApp('/editor/post', FLAG_ON);
+    await expect.element(editorScreen.body()).toBeVisible();
 
-      await typeIntoBody('First words');
-      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
+    await appendToBody('First words');
+    await expect.poll(() => createApi.requests.length).toBe(1);
 
-      try {
-        await typeIntoBody(' and then some');
-        expect(submittedBody(createApi)).not.toContain('and then some');
-      } finally {
-        createResponse.resolve({ posts: [created] });
-      }
+    try {
+      await appendToBody(' and then some');
+      expect(submittedBody(createApi)).not.toContain('and then some');
+    } finally {
+      createResponse.resolve({ posts: [created] });
+    }
 
-      // The edit made while the create was held reaches the follow-up update.
-      await expect
-        .poll(() => submittedBody(updateApi), SAVE_POLL)
-        .toContain('First words and then some');
-      // The first update carries the id and the token the create handed back.
-      expect(postIn(updateApi.requests[0])).toMatchObject({
-        id: NEW_POST_ID,
-        updated_at: CREATED_AT,
-      });
-      await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
-    },
-    SLOW,
-  );
+    // The edit made while the create was held reaches the follow-up update.
+    await expect.poll(() => submittedBody(updateApi)).toContain('First words and then some');
+    // The first update carries the id and the token the create handed back.
+    expect(postIn(updateApi.requests[0])).toMatchObject({
+      id: NEW_POST_ID,
+      updated_at: CREATED_AT,
+    });
+    await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
+  });
 
-  it(
-    'saves on Cmd-S and asks the server for a revision',
-    async () => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('saves on Cmd-S and asks the server for a revision', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await typeIntoBody(' and more');
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-      expect(saveApi.lastRequest?.url ?? '').toContain('save_revision=true');
-      expect(submittedPost(saveApi)).toMatchObject({
-        id: POST_ID,
-        title: 'Hello from React',
-        slug: 'hello-from-react',
-        status: 'draft',
-        updated_at: LOADED_AT,
-      });
-      expect(String(submittedPost(saveApi).lexical)).toContain('Hello from React and more');
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    expect(saveApi.lastRequest?.url ?? '').toContain('save_revision=true');
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      title: 'Hello from React',
+      slug: 'hello-from-react',
+      status: 'draft',
+      updated_at: LOADED_AT,
+    });
+    expect(String(submittedPost(saveApi).lexical)).toContain('Hello from React and more');
+  });
 
-  it(
-    'lands a renamed draft clean, with the slug the server generated',
-    async () => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('lands a renamed draft clean, with the slug the server generated', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await editorScreen.titleInput().fill('Brand New Name');
-      await editorScreen.body().click();
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await editorScreen.titleInput().fill('Brand New Name');
+    await editorScreen.body().click();
 
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({
-        title: 'Brand New Name',
-        slug: 'brand-new-name',
-      });
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      title: 'Brand New Name',
+      slug: 'brand-new-name',
+    });
 
-      // Nothing is left diverged, so no further save is attempted.
-      await editorScreen.titleInput().click();
-      await editorScreen.body().click();
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-    },
-    SLOW,
-  );
+    // Nothing is left diverged, so no further save is attempted.
+    await editorScreen.titleInput().click();
+    await editorScreen.body().click();
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+  });
 
-  it(
-    'reports the save in the header and settles on saved',
-    async () => {
-      fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('reports the save in the header and settles on saved', async () => {
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
-      await typeIntoBody(' and more');
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await appendToBody(' and more');
 
-      await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Saving');
-      await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Draft - Saved');
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.status()).toHaveTextContent('Saving');
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+  });
 
-  it(
-    'reports a status the post reached elsewhere once a save refetches it',
-    async () => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('reports a status the post reached elsewhere once a save refetches it', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
 
-      // A later handler for the same route wins: from here the read answers
-      // with the post as someone else has just published it.
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-        posts: [
-          post({
-            id: POST_ID,
-            title: 'Hello from React',
-            slug: 'hello-from-react',
-            status: 'published',
-            lexical: buildLexicalParagraph('Hello from React'),
-            updated_at: '2026-01-01T00:01:00.000Z',
-            published_at: '2026-01-01T00:01:00.000Z',
-            tags: [],
-          }),
+    // A later handler for the same route wins: from here the read answers
+    // with the post as someone else has just published it.
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [
+        post({
+          id: POST_ID,
+          title: 'Hello from React',
+          slug: 'hello-from-react',
+          status: 'published',
+          lexical: buildLexicalParagraph('Hello from React'),
+          updated_at: '2026-01-01T00:01:00.000Z',
+          published_at: '2026-01-01T00:01:00.000Z',
+          tags: [],
+        }),
+      ],
+    });
+    await appendToBody(' and more');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+
+    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+  });
+
+  it('leaves tags alone when it saves', async () => {
+    const saveApi = fakeSavablePost({ tags: [tag({ id: 'tag1', name: 'News', slug: 'news' })] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    expect(submittedPost(saveApi)).not.toHaveProperty('tags');
+  });
+
+  it('halts on a collision and keeps the content', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [
+        post({
+          id: POST_ID,
+          title: 'Hello from React',
+          slug: 'hello-from-react',
+          status: 'draft',
+          lexical: buildLexicalParagraph('Hello from React'),
+          updated_at: LOADED_AT,
+          tags: [],
+        }),
+      ],
+    });
+    const saveApi = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      {
+        errors: [
+          {
+            code: 'UPDATE_COLLISION',
+            type: 'UpdateCollisionError',
+            message: 'Saving failed! Someone else is editing this post.',
+          },
         ],
-      });
-      await typeIntoBody(' and more');
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+      },
+      { status: 409 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Published');
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
 
-  it(
-    'leaves tags alone when it saves',
-    async () => {
-      const saveApi = fakeSavablePost({ tags: [tag({ id: 'tag1', name: 'News', slug: 'news' })] });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect
+      .element(editorScreen.conflictBanner())
+      .toHaveTextContent('Someone else is editing this post');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await typeIntoBody(' and more');
+    await appendToBody(' again');
 
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-      expect(submittedPost(saveApi)).not.toHaveProperty('tags');
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.element(editorScreen.body()).toHaveTextContent('and more again');
+  });
 
-  it(
-    'halts on a collision and keeps the content',
-    async () => {
-      fakeEditorChrome();
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-        posts: [
-          post({
-            id: POST_ID,
-            title: 'Hello from React',
-            slug: 'hello-from-react',
-            status: 'draft',
-            lexical: buildLexicalParagraph('Hello from React'),
-            updated_at: LOADED_AT,
-            tags: [],
-          }),
-        ],
-      });
-      const saveApi = fakeAdminEndpoint(
-        'PUT',
-        new RegExp(`^/posts/${POST_ID}/\\?`),
-        {
-          errors: [
-            {
-              code: 'UPDATE_COLLISION',
-              type: 'UpdateCollisionError',
-              message: 'Saving failed! Someone else is editing this post.',
-            },
-          ],
-        },
-        { status: 409 },
-      );
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('offers a retry in place when the session expired', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [
+        post({
+          id: POST_ID,
+          title: 'Hello from React',
+          slug: 'hello-from-react',
+          status: 'draft',
+          lexical: buildLexicalParagraph('Hello from React'),
+          updated_at: LOADED_AT,
+          tags: [],
+        }),
+      ],
+    });
+    const saveApi = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+      { status: 401 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await typeIntoBody(' and more');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
 
-      await expect
-        .element(editorScreen.conflictBanner())
-        .toHaveTextContent('Someone else is editing this post');
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.reauthBanner()).toHaveTextContent('Your session expired');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
 
-      await typeIntoBody(' again');
+    await editorScreen.retryReauth().click();
 
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-      await expect.element(editorScreen.body()).toHaveTextContent('and more again');
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+  });
 
-  it(
-    'offers a retry in place when the session expired',
-    async () => {
-      fakeEditorChrome();
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-        posts: [
-          post({
-            id: POST_ID,
-            title: 'Hello from React',
-            slug: 'hello-from-react',
-            status: 'draft',
-            lexical: buildLexicalParagraph('Hello from React'),
-            updated_at: LOADED_AT,
-            tags: [],
-          }),
-        ],
-      });
-      const saveApi = fakeAdminEndpoint(
-        'PUT',
-        new RegExp(`^/posts/${POST_ID}/\\?`),
-        { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
-        { status: 401 },
-      );
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('still says saving stopped after the session banner is dismissed', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [
+        post({
+          id: POST_ID,
+          title: 'Hello from React',
+          slug: 'hello-from-react',
+          status: 'draft',
+          lexical: buildLexicalParagraph('Hello from React'),
+          updated_at: LOADED_AT,
+          tags: [],
+        }),
+      ],
+    });
+    fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+      { status: 401 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await typeIntoBody(' and more');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
 
-      await expect.element(editorScreen.reauthBanner()).toHaveTextContent('Your session expired');
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.reauthBanner()).toBeVisible();
+    await editorScreen.dismissReauth().click();
 
-      await editorScreen.retryReauth().click();
+    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent('session expired');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+  });
 
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(2);
-    },
-    SLOW,
-  );
+  it('does not leave the editor when the slug request finds no session', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [
+        post({
+          id: POST_ID,
+          title: 'Hello from React',
+          slug: 'hello-from-react',
+          status: 'draft',
+          lexical: buildLexicalParagraph('Hello from React'),
+          updated_at: LOADED_AT,
+          tags: [],
+        }),
+      ],
+    });
+    fakeAdminEndpoint(
+      'GET',
+      /^\/slugs\/post\//,
+      { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+      { status: 401 },
+    );
+    const saveApi = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+      { status: 401 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-  it(
-    'still says saving stopped after the session banner is dismissed',
-    async () => {
-      fakeEditorChrome();
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-        posts: [
-          post({
-            id: POST_ID,
-            title: 'Hello from React',
-            slug: 'hello-from-react',
-            status: 'draft',
-            lexical: buildLexicalParagraph('Hello from React'),
-            updated_at: LOADED_AT,
-            tags: [],
-          }),
-        ],
-      });
-      fakeAdminEndpoint(
-        'PUT',
-        new RegExp(`^/posts/${POST_ID}/\\?`),
-        { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
-        { status: 401 },
-      );
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await editorScreen.titleInput().fill('Brand New Name');
+    await editorScreen.body().click();
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await typeIntoBody(' and more');
-
-      await expect.element(editorScreen.reauthBanner()).toBeVisible();
-      await editorScreen.dismissReauth().click();
-
-      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent('session expired');
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-    },
-    SLOW,
-  );
-
-  it(
-    'does not leave the editor when the slug request finds no session',
-    async () => {
-      fakeEditorChrome();
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-        posts: [
-          post({
-            id: POST_ID,
-            title: 'Hello from React',
-            slug: 'hello-from-react',
-            status: 'draft',
-            lexical: buildLexicalParagraph('Hello from React'),
-            updated_at: LOADED_AT,
-            tags: [],
-          }),
-        ],
-      });
-      fakeAdminEndpoint(
-        'GET',
-        /^\/slugs\/post\//,
-        { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
-        { status: 401 },
-      );
-      const saveApi = fakeAdminEndpoint(
-        'PUT',
-        new RegExp(`^/posts/${POST_ID}/\\?`),
-        { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
-        { status: 401 },
-      );
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      await editorScreen.titleInput().fill('Brand New Name');
-      await editorScreen.body().click();
-
-      // The failing slug lookup must not navigate; the save that follows it
-      // is what tells the writer the session is gone.
-      await expect.element(editorScreen.reauthBanner()).toBeVisible();
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-      expect(saveApi.requests.length).toBeGreaterThan(0);
-    },
-    SLOW,
-  );
+    // The failing slug lookup must not navigate; the save that follows it
+    // is what tells the writer the session is gone.
+    await expect.element(editorScreen.reauthBanner()).toBeVisible();
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    expect(saveApi.requests.length).toBeGreaterThan(0);
+  });
 });

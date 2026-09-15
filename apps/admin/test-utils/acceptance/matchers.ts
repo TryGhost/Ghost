@@ -2,7 +2,7 @@ import { expect } from 'vitest';
 import { server, type Locator } from 'vitest/browser';
 
 import type { EditSettingsCapture, ResourceCapture } from './resources';
-import type { SitePreviewCapture } from './worker';
+import type { EndpointCapture, SitePreviewCapture } from './worker';
 
 type EditedSettings = NonNullable<EditSettingsCapture['lastRequest']>['settings'];
 
@@ -105,6 +105,14 @@ async function pollEditedSettings(
   };
 }
 
+/** The record submitted by the latest editor write; a page editor sends `pages`, a post editor `posts`. */
+function savedRecord(capture: EndpointCapture): Record<string, unknown> {
+  const body = capture.lastRequest?.body as
+    | { posts?: Record<string, unknown>[]; pages?: Record<string, unknown>[] }
+    | undefined;
+  return body?.posts?.[0] ?? body?.pages?.[0] ?? {};
+}
+
 /** Polls until any captured preview request contains every expected parameter. */
 async function pollSitePreview(
   isNot: boolean,
@@ -169,6 +177,36 @@ expect.extend({
     return await pollEditedSettings(Boolean(this.isNot), received, expected);
   },
 
+  /** `await expect(saveApi).toHaveSavedFields({slug: "x"})` — polls until the latest post write carries each field, deep-equal. */
+  async toHaveSavedFields(received: EndpointCapture, expected: Record<string, unknown>) {
+    const isNot = Boolean(this.isNot);
+    const entries = Object.entries(expected);
+    const matches = () => {
+      const saved = savedRecord(received);
+      return entries.every(([key, value]) => key in saved && this.equals(saved[key], value));
+    };
+    const deadline = Date.now() + POLL_TIMEOUT_MS;
+    let pass = matches();
+
+    while (pass === isNot && Date.now() < deadline) {
+      await sleep(POLL_INTERVAL_MS);
+      pass = matches();
+    }
+
+    const seen =
+      received.requests.length === 0
+        ? 'no post write captured yet'
+        : `the latest of ${received.requests.length} write(s) sent ${JSON.stringify(
+            Object.fromEntries(entries.map(([key]) => [key, savedRecord(received)[key]])),
+          )}`;
+
+    return {
+      pass,
+      message: () =>
+        `expected the capture ${isNot ? 'not ' : ''}to have saved ${JSON.stringify(expected)}, but ${seen}`,
+    };
+  },
+
   /** `await expect(preview).toHaveRequestedPreview(params)` — matches a subset against any captured x-ghost-preview header. */
   async toHaveRequestedPreview(received: SitePreviewCapture, expected: Record<string, string>) {
     return await pollSitePreview(Boolean(this.isNot), received, expected);
@@ -182,6 +220,7 @@ declare module 'vitest' {
     toHaveSentFilter(expected: string | RegExp): Promise<void>;
     toHaveSentSearch(expected: string | RegExp): Promise<void>;
     toHaveEditedSettings(expected: EditedSettings): Promise<void>;
+    toHaveSavedFields(expected: Record<string, unknown>): Promise<void>;
     toHaveRequestedPreview(expected: Record<string, string>): Promise<void>;
   }
 }

@@ -64,6 +64,9 @@ module.exports.forPost = (options, model, attrs) => {
   }
 
   // 4. Add `reading_time` if no columns were requested, or if `reading_time` was requested via `columns`
+  // reading_time is also a DB column now; drop the raw value so we only expose it when
+  // computed below (avoids leaking `reading_time: null` into APIs/webhooks).
+  delete attrs.reading_time;
   if (noColumnsRequested || columnsIncludesReadingTime) {
     if (attrs.html) {
       let additionalImages = 0;

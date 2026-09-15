@@ -1,11 +1,10 @@
 import { useMemo, useRef, useState } from 'react';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
 import { settingsPostHistoryButton } from '@tryghost/test-data/selectors/editor';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
-import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useSiteTimezone } from '@/editor/use-editor-settings';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { canViewPostHistory, revisionEntries, type RevisionEntry } from './post-history';
 import { PostHistoryModal } from './post-history-modal';
@@ -33,11 +32,7 @@ export function PostHistorySection({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const { darkMode } = useFocusContext();
-  const { data: settingsData } = useBrowseSettings({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
-  const timezone = getSettingValue<string>(settingsData?.settings ?? null, 'timezone') ?? 'Etc/UTC';
+  const timezone = useSiteTimezone();
 
   const record = session.loadedRecord;
   const revisions = useMemo(() => revisionEntries(record?.post_revisions), [record]);

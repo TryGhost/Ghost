@@ -18,7 +18,7 @@ export const DEV_PRIMARY_DATABASE = process.env.MYSQL_DATABASE || 'ghost_dev';
 /**
  * Caddyfile paths for different modes.
  * - dev: Proxies to host dev servers for HMR
- * - build: Minimal passthrough (assets served by Ghost from /content/files/)
+ * - build: Minimal passthrough (assets served by Ghost from /ghost/assets/)
  */
 export const CADDYFILE_PATHS = {
   dev: path.resolve(REPO_ROOT, 'docker/dev-gateway/Caddyfile'),

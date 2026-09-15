@@ -20,6 +20,11 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
+    title: 'Automations per tier',
+    description: 'Allow automations to be configured for individual tiers.',
+    flag: 'automationsPerTier',
+  },
+  {
     title: 'Automation run analytics',
     description: 'Track run-level analytics for automations.',
     flag: 'automationRunAnalytics',

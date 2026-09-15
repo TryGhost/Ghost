@@ -1,6 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const messages = {
   labelNotFound: 'Label not found.',
@@ -42,7 +43,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      return models.Label.findPage(frame.options);
+      return models.Label.findPage(restrictAdminApiQueryOptions(frame.options));
     },
   },
 
@@ -61,7 +62,10 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      const model = await models.Label.findOne(frame.data, frame.options);
+      const model = await models.Label.findOne(
+        frame.data,
+        restrictAdminApiQueryOptions(frame.options),
+      );
       if (!model) {
         throw new errors.NotFoundError({
           message: tpl(messages.labelNotFound),
