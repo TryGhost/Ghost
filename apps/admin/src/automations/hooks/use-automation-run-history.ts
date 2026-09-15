@@ -26,23 +26,7 @@ export const useAutomationRunHistory = (automationId: string, runId: string) => 
     !planQuery.isFetching && (planQuery.isError || (!!plan && plan.id !== automationId));
   const waitingForPlan =
     needsPlan && !planFailed && (!planQuery.isFetchedAfterMount || planQuery.isFetching);
-  const settled = !!currentHistory && !waitingForPlan;
-  const current = settled
-    ? { history: currentHistory, plan: needsPlan && !planFailed ? plan : undefined, planFailed }
-    : undefined;
-  const [previous, setPrevious] = useState(current);
-  // Publish history and its saved graph together on refresh. Retain the previous
-  // view while either request is pending, without reusing another run's data.
-  if (
-    current &&
-    (current.history !== previous?.history ||
-      current.plan !== previous?.plan ||
-      current.planFailed !== previous?.planFailed)
-  ) {
-    setPrevious(current);
-  }
-  const snapshot = current ?? previous;
-  const history = snapshot?.history ?? currentHistory;
+  const history = !waitingForPlan && !planFailed ? currentHistory : undefined;
   const summary = useMemo(() => history && mapAutomationRuns([history])[0], [history]);
   const unavailable =
     failed && query.error instanceof APIError && query.error.response?.status === 404;
@@ -50,16 +34,12 @@ export const useAutomationRunHistory = (automationId: string, runId: string) => 
   return {
     history,
     summary,
-    isLoading: !history && !failed,
-    isRefreshing: query.isFetching || waitingForPlan,
-    isError: failed && !unavailable,
+    isLoading: !history && !failed && !planFailed,
+    isError: (failed && !unavailable) || !!(needsPlan && planFailed),
     unavailable,
     retry,
     upcoming: {
-      plan: snapshot?.plan,
-      isLoading: !snapshot && waitingForPlan,
-      isError: snapshot?.planFailed ?? false,
-      retry,
+      plan: needsPlan ? plan : undefined,
     },
   };
 };
