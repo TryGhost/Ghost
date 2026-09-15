@@ -22,7 +22,11 @@ describe('EmailAnalyticsServiceWrapper', function () {
     sinon.restore();
   });
 
-  function initWrapper(logName: string, configOverrides: Record<string, unknown> = {}) {
+  function initWrapper(
+    logName: string,
+    configOverrides: Record<string, unknown> = {},
+    initOverrides: Partial<Parameters<EmailAnalyticsServiceWrapper['init']>[0]> = {},
+  ) {
     const wrapper = new EmailAnalyticsServiceWrapper({ logName });
     wrapper.init({
       config: {
@@ -57,6 +61,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
       metrics: {
         metric: metricStub,
       },
+      ...initOverrides,
     });
     return wrapper;
   }
@@ -83,6 +88,22 @@ describe('EmailAnalyticsServiceWrapper', function () {
 
     return wrapper;
   }
+
+  it('subscribes to a start event when one is given', function () {
+    const domainEvents = { subscribe: sinon.stub() };
+
+    initWrapper('automations', {}, { domainEvents });
+
+    sinon.assert.calledOnceWithExactly(domainEvents.subscribe, FakeEvent, sinon.match.func);
+  });
+
+  it('does not subscribe to domain events when no start event is given', function () {
+    const domainEvents = { subscribe: sinon.stub() };
+
+    initWrapper('newsletters', {}, { domainEvents, event: undefined });
+
+    sinon.assert.notCalled(domainEvents.subscribe);
+  });
 
   it('uses existing open throughput metric name for newsletters', function () {
     logLatestOpenedJob('newsletters');

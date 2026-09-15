@@ -58,7 +58,7 @@ export class EmailAnalyticsServiceWrapper {
   }: Readonly<{
     config: Pick<ConfigInstance, 'get'>;
     domainEvents: Pick<DomainEvents, 'subscribe'>;
-    event: Parameters<DomainEvents['subscribe']>[0];
+    event?: Parameters<DomainEvents['subscribe']>[0];
     queries: Queries;
     mailgunTags: string[];
     jobNames: JobNames;
@@ -90,11 +90,13 @@ export class EmailAnalyticsServiceWrapper {
       `${this.#logPrefix} Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`,
     );
 
-    // We currently cannot trigger a non-offloaded job from the job manager
-    // So the email analytics jobs simply emits an event.
-    domainEvents.subscribe(event, async () => {
-      await this.startFetch();
-    });
+    // The legacy job manager cannot trigger a non-offloaded job, so pipelines
+    // still on it emit an event from their worker instead.
+    if (event) {
+      domainEvents.subscribe(event, async () => {
+        await this.startFetch();
+      });
+    }
   }
 
   get service(): EmailAnalyticsService {

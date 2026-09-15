@@ -79,9 +79,6 @@ describe('email analytics service', function () {
       sinon.match({
         config,
         domainEvents,
-        event: {
-          name: 'StartEmailAnalyticsJobEvent',
-        },
         mailgunTags: ['bulk-email', 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-latest-others',
@@ -158,6 +155,13 @@ describe('email analytics service', function () {
         createEventProcessor: sinon.match.func,
       }),
     );
+  });
+
+  it('does not pass a start event to the newsletters wrapper', function () {
+    init(dependencies);
+
+    sinon.assert.calledOnce(newslettersInit);
+    sinon.assert.match(newslettersInit.firstCall.args[0].event, undefined);
   });
 
   it('does not add a site tag to automation analytics when none is configured', function () {
