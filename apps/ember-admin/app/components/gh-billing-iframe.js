@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
+import {parseDunningConfig} from '@tryghost/admin-x-framework/api/dunning';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -172,11 +173,10 @@ export default class GhBillingIframe extends Component {
         // Detect if the current subscription is in a grace state and render a notification.
         // The dunningWarnings flag replaces this alert with the React admin's own
         // payment-failure warning states, so it stands down while the flag is on —
-        // but only when the host actually injects a dunning block; during a
-        // staggered rollout (flag on, hosting config not yet updated) the user
-        // must not be left with no warning at all.
+        // but only when React can use the host's dunning block. Missing or
+        // malformed config must leave the existing overdue alert available.
         const dunningWarningsActive = this.feature.dunningWarnings
-            && this.config.hostSettings?.billing?.dunning?.active === true;
+            && parseDunningConfig(this.config.hostSettings?.billing?.dunning) !== null;
         if (
             (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid')
             && !dunningWarningsActive
