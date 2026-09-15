@@ -888,13 +888,21 @@ async function loadCustomFields({ state, api }) {
 function refusalOf(error, state, fallback) {
   // The server names a refused value as `metafields.custom.<key>[.<part>]`.
   const [qualifier, , key, ...partPath] = error?.property?.split('.') ?? [];
-  const field = qualifier === 'metafields' && state.customFields?.find((f) => f.key === key);
-  if (!field) {
+  if (qualifier !== 'metafields') {
     return { fieldErrors: {}, message: fallback };
   }
 
-  const part = partPath.join('.');
   const message = chooseBestErrorMessage(error);
+  const field = state.customFields?.find((f) => f.key === key);
+
+  // A refusal of the write rather than of a value — too many fields at once, say — names
+  // no field, and this build may not know the one it does name. Either way there is no
+  // input to mark, and the server's sentence is the only thing that says what happened.
+  if (!field) {
+    return { fieldErrors: {}, message };
+  }
+
+  const part = partPath.join('.');
 
   // A refusal of the whole of a composite — the field archived, or closed to members,
   // while the page was open — belongs to no one box, and there is no box named for the
