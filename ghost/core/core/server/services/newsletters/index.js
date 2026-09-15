@@ -3,7 +3,7 @@ const SingleUseTokenProvider = require('../members/single-use-token-provider');
 const mail = require('../mail');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils').default;
-const limitService = require('../limits');
+const limitService = require('../limits').default;
 const labs = require('../../../shared/labs');
 const emailAddressService = require('../email-address');
 

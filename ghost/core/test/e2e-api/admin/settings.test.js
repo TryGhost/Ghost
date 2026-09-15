@@ -921,7 +921,7 @@ describe('Settings API', function () {
       // limits.init(). The hostSettings.limits config is registered once at boot from the
       // `@tryghost/limit-service` allowlist; bumps of that package are owned by Renovate
       // so this PR cannot rely on `publicSiteAccess` being a recognised name yet.
-      sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(disabled);
+      sinon.stub(limits.default, 'isDisabled').withArgs('publicSiteAccess').returns(disabled);
     }
 
     it('marks is_private and password as is_read_only when the limit is disabled', async function () {

@@ -22,7 +22,7 @@ const mailService = require('../../../core/server/services/mail') as {
 const membersService = require('../../../core/server/services/members') as {
   stripeConnect: StripeConnect;
 };
-const limits = require('../../../core/server/services/limits') as LimitService;
+const limits = require('../../../core/server/services/limits').default as LimitService;
 
 /** What an Admin API request answers with, narrowed to the parts these tests read. */
 interface ApiResponse {

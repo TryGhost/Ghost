@@ -1,5 +1,5 @@
 const themeService = require('../../services/themes');
-const limitService = require('../../services/limits');
+const limitService = require('../../services/limits').default;
 const models = require('../../models');
 
 // Used to emit theme.uploaded which is used in core/server/analytics-events

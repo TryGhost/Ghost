@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('importer:users');
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
-const limitService = require('../../../../services/limits');
+const limitService = require('../../../../services/limits').default;
 
 class UsersImporter extends BaseImporter {
   constructor(allDataFromFile) {

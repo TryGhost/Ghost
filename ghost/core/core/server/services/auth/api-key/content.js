@@ -1,6 +1,6 @@
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
-const limitService = require('../../../services/limits');
+const limitService = require('../../../services/limits').default;
 const tpl = require('@tryghost/tpl');
 
 const messages = {

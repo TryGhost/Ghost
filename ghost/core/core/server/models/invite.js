@@ -4,7 +4,7 @@ const security = require('@tryghost/security');
 const moment = require('moment');
 
 const settingsCache = require('../../shared/settings-cache');
-const limitService = require('../services/limits');
+const limitService = require('../services/limits').default;
 const ghostBookshelf = require('./base');
 const { setIsRoles } = require('./role-utils');
 

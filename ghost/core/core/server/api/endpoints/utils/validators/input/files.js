@@ -1,4 +1,4 @@
-const limitService = require('../../../../../services/limits');
+const limitService = require('../../../../../services/limits').default;
 
 module.exports = {
   async upload(apiConfig, frame) {

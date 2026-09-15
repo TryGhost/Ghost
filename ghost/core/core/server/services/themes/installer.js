@@ -4,7 +4,7 @@ const path = require('path');
 const security = require('@tryghost/security');
 const request = require('@tryghost/request');
 const errors = require('@tryghost/errors');
-const limitService = require('../../services/limits');
+const limitService = require('../../services/limits').default;
 const { setFromZip } = require('./storage');
 
 const messages = {

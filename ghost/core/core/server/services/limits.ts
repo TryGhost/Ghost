@@ -1,12 +1,19 @@
-const errors = require('@tryghost/errors');
-const config = require('../../shared/config');
+import type { NextFunction, Request, Response } from 'express';
+
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import { LimitService } from '@tryghost/limit-service';
+
+import config from '../../shared/config';
+
+// Ghost's database module is plain JavaScript, so it has no types to import. The limit
+// service only ever calls it as a query builder, which is the contract it declares.
 const db = require('../data/db');
-const logging = require('@tryghost/logging');
-const { LimitService } = require('@tryghost/limit-service');
-let limitService = new LimitService();
+
+const limitService = new LimitService();
 
 const init = () => {
-  let helpLink;
+  let helpLink: string;
 
   if (
     config.get('hostSettings:billing:enabled') &&
@@ -23,7 +30,7 @@ const init = () => {
   if (config.get('hostSettings:subscription')) {
     subscription = {
       startDate: config.get('hostSettings:subscription:start'),
-      interval: 'month',
+      interval: 'month' as const,
     };
   }
 
@@ -52,8 +59,8 @@ const init = () => {
  * change it. Answers 403 with the host's own wording, which is a different thing to tell a
  * caller than the 404 a labs flag gives: the feature exists, this plan does not include it.
  */
-const requireFeature = (limitName) =>
-  async function requireFeatureMw(req, res, next) {
+const requireFeature = (limitName: string) =>
+  async function requireFeatureMw(_req: Request, _res: Response, next: NextFunction) {
     try {
       await limitService.errorIfWouldGoOverLimit(limitName);
       next();
@@ -62,7 +69,6 @@ const requireFeature = (limitName) =>
     }
   };
 
-module.exports = limitService;
+export default limitService;
 
-module.exports.init = init;
-module.exports.requireFeature = requireFeature;
+export { init, requireFeature };

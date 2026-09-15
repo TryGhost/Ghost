@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const limitService = require('../services/limits');
+const limitService = require('../services/limits').default;
 const ghostBookshelf = require('./base');
 const errors = require('@tryghost/errors');
 const { NoPermissionError } = errors;

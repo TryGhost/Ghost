@@ -15,7 +15,7 @@ describe('Limit Service Init', function () {
     loggerStub = sinon.spy(logging);
     limitServiceStub = sinon.stub();
 
-    sinon.stub(limits, 'loadLimits').callsFake(limitServiceStub);
+    sinon.stub(limits.default, 'loadLimits').callsFake(limitServiceStub);
 
     configUtils.set({
       hostSettings: {},

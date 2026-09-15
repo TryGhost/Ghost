@@ -5,7 +5,7 @@
 module.exports = {
   listen() {
     const models = require('../../models');
-    const limitService = require('../../services/limits');
+    const limitService = require('../../services/limits').default;
     const events = require('../../lib/common/events');
     const urlService = require('../url');
     const createSerialize = require('./serialize');
