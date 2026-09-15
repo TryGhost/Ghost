@@ -10,7 +10,8 @@ it('loads the source export with the native Node loader', () => {
      if (LimitService !== NamedLimitService) process.exit(1);
      // Printed as a string: console.log colours an inspected boolean whenever the
      // environment forces colour, and this inherits the caller's environment.
-     console.log(String(new LimitService().isLimited('staff')));`,
+     const service = new LimitService({limits: {}, errors: {HostLimitError: Error, IncorrectUsageError: Error}});
+     console.log(String(service.isLimited('staff')));`,
   ], {
     cwd: new URL('..', import.meta.url),
     env: { ...process.env, NODE_OPTIONS: '' },

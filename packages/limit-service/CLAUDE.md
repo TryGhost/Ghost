@@ -42,7 +42,7 @@ The limit-service is a centralized limit enforcement system for Ghost that follo
 ### Key Architectural Patterns
 
 - **Strategy Pattern**: Different limit types implement a common interface (`checkIsOverLimit`, `checkWouldGoOverLimit`)
-- **Dependency Injection**: Database connection, errors handler, and configuration are injected at initialization
+- **Dependency Injection**: Database connection, errors handler, and configuration are injected when the service is constructed
 - **Transaction Support**: All database operations can be wrapped in transactions via `options.transacting`
 
 ### Adding New Limits
@@ -58,9 +58,9 @@ The limit-service is a centralized limit enforcement system for Ghost that follo
    ```
 
    This file declares only how a limit counts. The threshold comes from the host's settings
-   at load, and the type is chosen then: `max` or `maxPeriodic` arriving alongside this makes
-   it a counted limit, and if neither does it becomes a flag limit and the query above is
-   never called. So a limit that should count something needs the host configured to send a
+   the service is constructed with, and the type is chosen then: `max` or `maxPeriodic`
+   arriving alongside this makes it a counted limit, and if neither does it becomes a flag
+   limit and the query above is never called. So a limit that should count something needs the host configured to send a
    threshold for it as well as an entry here.
 
 2. Test the new limit following existing patterns in `test/`
@@ -82,14 +82,15 @@ The limit-service is a centralized limit enforcement system for Ghost that follo
 
 ### Error Handling
 
-- Uses `@tryghost/errors` for consistent error formatting
+- Raises the error classes its caller supplies rather than importing any, so the same code
+  raises Ghost's errors on the server and Admin's own in a browser
 - Supports template variables in error messages: `{{max}}`, `{{count}}`, `{{name}}`
 - All limits have fallback error messages
 - Counts in error messages are formatted with `Intl.NumberFormat`, or a limit's own formatter
 
 ### Key Methods Flow
 
-1. `loadLimits()`: Initializes the service with configuration
+1. `new LimitService()`: Builds the service from the limits it is to apply
 2. `isLimited()`: Checks if a limit is configured
 3. `errorIfWouldGoOverLimit()`: Throws if action would exceed limit
 4. `errorIfIsOverLimit()`: Throws if already over limit

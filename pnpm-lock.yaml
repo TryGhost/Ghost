@@ -4389,9 +4389,6 @@ importers:
 
   packages/limit-service:
     dependencies:
-      '@tryghost/errors':
-        specifier: 3.3.14
-        version: 3.3.14
       lodash:
         specifier: 'catalog:'
         version: 4.18.1

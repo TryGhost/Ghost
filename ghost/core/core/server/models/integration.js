@@ -104,10 +104,10 @@ const Integration = ghostBookshelf.Model.extend(
     ) {
       const isAdd = action === 'add';
 
-      if (isAdd && limitService.isLimited('customIntegrations')) {
+      if (isAdd && limitService.service.isLimited('customIntegrations')) {
         // CASE: if your site is limited to a certain number of custom integrations
         // Inviting a new custom integration requires we check we won't go over the limit
-        await limitService.errorIfWouldGoOverLimit('customIntegrations');
+        await limitService.service.errorIfWouldGoOverLimit('customIntegrations');
       }
 
       if (!hasUserPermission || !hasApiKeyPermission) {

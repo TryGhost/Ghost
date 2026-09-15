@@ -3,9 +3,8 @@
 // listeners. Requires are deferred until listen() runs so the model layer
 // isn't loaded before boot wires it.
 module.exports = {
-  listen() {
+  listen({ limitService }) {
     const models = require('../../models');
-    const limitService = require('../../services/limits');
     const events = require('../../lib/common/events');
     const urlService = require('../url');
     const createSerialize = require('./serialize');

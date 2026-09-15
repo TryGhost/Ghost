@@ -44,7 +44,7 @@ const getSettingsBREADServiceInstance = () => {
     SettingsModel: models.Settings,
     settingsCache: SettingsCache,
     labsService: labs,
-    limitsService: limits,
+    limitsService: limits.service,
     mail,
     singleUseTokenProvider: new SingleUseTokenProvider({
       SingleUseTokenModel: models.SingleUseToken,
@@ -109,7 +109,7 @@ module.exports = {
    * @private
    */
   async enforcePublicSiteAccessLimit() {
-    if (!limits.isDisabled('publicSiteAccess')) {
+    if (!limits.service.isDisabled('publicSiteAccess')) {
       return;
     }
 

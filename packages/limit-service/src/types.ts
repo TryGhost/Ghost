@@ -1,3 +1,5 @@
+import type { Limit } from './limits.ts';
+
 import type { Knex as KnexConnection } from 'knex';
 
 /** The only billing interval a periodic limit understands. */
@@ -102,4 +104,19 @@ export interface LoadLimitsOptions {
   helpLink?: string;
   db?: Db;
   errors: ErrorsModule;
+}
+
+/**
+ * What anything asking about limits can rely on. A site with limits and a site without one
+ * both answer these, so a caller never has to know which it has.
+ */
+export interface Limits {
+  limits: Record<string, Limit>;
+  isLimited(limitName: string): boolean;
+  isDisabled(limitName: string): boolean;
+  checkIsOverLimit(limitName: string, options?: CheckOptions): Promise<boolean>;
+  checkWouldGoOverLimit(limitName: string, options?: CheckOptions): Promise<boolean>;
+  checkIfAnyOverLimit(options?: CheckOptions): Promise<boolean>;
+  errorIfIsOverLimit(limitName: string, options?: CheckOptions): Promise<void>;
+  errorIfWouldGoOverLimit(limitName: string, options?: CheckOptions): Promise<void>;
 }

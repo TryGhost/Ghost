@@ -7,7 +7,7 @@ import { useBrowseRoles } from '../api/roles';
 import { useBrowseUsers } from '../api/users';
 import { HostLimitError } from '../utils/errors';
 
-import { LimitService, type LimitConfig } from '@tryghost/limit-service';
+import { LimitService, type LimitConfig, type Limits } from '@tryghost/limit-service';
 
 // limit-service constructs its misconfiguration error with a single options object
 class IncorrectUsageError extends Error {
@@ -16,15 +16,11 @@ class IncorrectUsageError extends Error {
   }
 }
 
-export interface Limiter {
-  isLimited: (limitName: string) => boolean;
-  isDisabled: (limitName: string) => boolean;
-  checkWouldGoOverLimit: (limitName: string) => Promise<boolean>;
-  errorIfWouldGoOverLimit: (limitName: string, metadata?: Record<string, unknown>) => Promise<void>;
-  errorIfIsOverLimit: (limitName: string) => Promise<void>;
-}
+// What answers a question about limits, re-exported so Admin can name it without depending
+// on the limit service directly.
+export type { Limits };
 
-export const useLimiter = (): Limiter => {
+export const useLimiter = (): Limits => {
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
   const config = configData?.config;
   const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers();
@@ -49,22 +45,14 @@ export const useLimiter = (): Limiter => {
   }, [config?.hostSettings?.billing]);
 
   return useMemo(() => {
-    // Return a stable no-op API when the limiter isn't ready
-    // This prevents runtime errors while maintaining backward compatibility
-    const noOpLimiter = {
-      isLimited: (): boolean => false,
-      isDisabled: (): boolean => false,
-      checkWouldGoOverLimit: (): Promise<boolean> => Promise.resolve(false),
-      errorIfWouldGoOverLimit: (): Promise<void> => Promise.resolve(),
-      errorIfIsOverLimit: (): Promise<void> => Promise.resolve(),
-    };
-
+    // Until the config and staff counts have loaded there is nothing to limit against. A
+    // site with no limits answers the same questions, so callers get one shape throughout
+    // rather than having to hold a hook that is sometimes not there yet.
     if (!config?.hostSettings?.limits || isStaffLoading) {
-      return noOpLimiter;
+      return LimitService.unlimited({ HostLimitError, IncorrectUsageError });
     }
 
     const limits = { ...config.hostSettings.limits } as Record<string, LimitConfig>;
-    const limiter = new LimitService();
 
     if (limits.staff) {
       limits.staff.currentCountQuery = () => {
@@ -97,26 +85,10 @@ export const useLimiter = (): Limiter => {
       };
     }
 
-    limiter.loadLimits({
+    return new LimitService({
       limits,
       helpLink,
-      errors: {
-        HostLimitError,
-        IncorrectUsageError,
-      },
+      errors: { HostLimitError, IncorrectUsageError },
     });
-
-    return {
-      isLimited: (limitName: string): boolean => limiter.isLimited(limitName),
-      isDisabled: (limitName: string): boolean => limiter.isDisabled(limitName) ?? false,
-      checkWouldGoOverLimit: async (limitName: string): Promise<boolean> =>
-        (await limiter.checkWouldGoOverLimit(limitName)) ?? false,
-      errorIfWouldGoOverLimit: (
-        limitName: string,
-        metadata: Record<string, unknown> = {},
-      ): Promise<void> => limiter.errorIfWouldGoOverLimit(limitName, metadata),
-      errorIfIsOverLimit: (limitName: string): Promise<void> =>
-        limiter.errorIfIsOverLimit(limitName),
-    };
   }, [config, fetchMembers, fetchNewsletters, helpLink, invites, isStaffLoading, roles, users]);
 };

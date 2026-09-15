@@ -109,7 +109,8 @@ async function initCore({ ghostServer, config }) {
   // Limit service is booted before settings, so that limits are available for calculated settings
   debug('Begin: limits');
   const limits = require('./server/services/limits');
-  await limits.init();
+  const { fromHostSettings } = require('./server/services/limits/host-settings');
+  limits.init(fromHostSettings(config));
   debug('End: limits');
 
   // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
@@ -339,6 +340,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const indexnow = require('./server/services/indexnow-ping').default;
   const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
+  const limits = require('./server/services/limits');
   const postScheduling = require('./server/services/post-scheduling').default;
   const comments = require('./server/services/comments');
   const staffService = require('./server/services/staff');
@@ -409,7 +411,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     indexnow.init(),
     slack.init(),
     audienceFeedback.init(),
-    emailService.init({ ghostServer }),
+    emailService.init({ ghostServer, limitService: limits.service }),
     emailAnalytics.init({
       automationsApi,
       config,
@@ -423,7 +425,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       prometheusClient,
       settingsCache,
     }),
-    webhooks.listen(),
+    webhooks.listen({ limitService: limits.service }),
     comments.init(),
     linkTracking.init(),
     emailSuppressionList.init(),
