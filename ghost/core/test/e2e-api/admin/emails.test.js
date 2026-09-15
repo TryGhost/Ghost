@@ -203,6 +203,19 @@ describe('Emails API', function () {
     mockManager.assert.emittedEvent('email.edited');
   });
 
+  it('Can read the analytics status', async function () {
+    // The analytics job is never scheduled under test, so the pipelines are in their initial
+    // state: nothing running and lag unknown until a fetch has succeeded in this process
+    await agent
+      .get(`emails/${fixtureManager.get('emails', 0).id}/analytics/`)
+      .expectStatus(200)
+      .matchBodySnapshot()
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
   it('Can browse email batches', async function () {
     await agent
       .get(`emails/${fixtureManager.get('emails', 0).id}/batches/`)
