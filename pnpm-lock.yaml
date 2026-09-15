@@ -777,7 +777,7 @@ pnpmfileChecksum: sha256-kpXFyDTmVEdW0Dt/Wo1XBHJmcSxvr6GG8m9cUdo/kq0=
 
 patchedDependencies:
   '@elastic/elasticsearch@8.19.2': 725142a9606e50dff3ed4c17fb9256d5457c7c75ce262898b87ef0ffff14dcc2
-  juice@11.1.1: 8a842a4607c32b9b5937dae19dbcad85858db7f6b0776e4f418cad5592b1a99d
+  juice@11.1.1: 9b56fcd925d7de8dd73a700a918dcb387ef39410581a11d9ac683b3eed9790d0
 
 importers:
 
@@ -2808,7 +2808,7 @@ importers:
         version: 8.5.1
       juice:
         specifier: 'catalog:'
-        version: 11.1.1(patch_hash=8a842a4607c32b9b5937dae19dbcad85858db7f6b0776e4f418cad5592b1a99d)
+        version: 11.1.1(patch_hash=9b56fcd925d7de8dd73a700a918dcb387ef39410581a11d9ac683b3eed9790d0)
       knex:
         specifier: 2.4.2
         version: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
@@ -3233,7 +3233,7 @@ importers:
         version: 4.7.9
       juice:
         specifier: 'catalog:'
-        version: 11.1.1(patch_hash=8a842a4607c32b9b5937dae19dbcad85858db7f6b0776e4f418cad5592b1a99d)
+        version: 11.1.1(patch_hash=9b56fcd925d7de8dd73a700a918dcb387ef39410581a11d9ac683b3eed9790d0)
       luxon:
         specifier: 3.7.2
         version: 3.7.2
@@ -39881,7 +39881,7 @@ snapshots:
       readable-stream: 2.3.8
       setimmediate: 1.0.5
 
-  juice@11.1.1(patch_hash=8a842a4607c32b9b5937dae19dbcad85858db7f6b0776e4f418cad5592b1a99d):
+  juice@11.1.1(patch_hash=9b56fcd925d7de8dd73a700a918dcb387ef39410581a11d9ac683b3eed9790d0):
     dependencies:
       cheerio: 1.2.0
       commander: 12.1.0
