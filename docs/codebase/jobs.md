@@ -9,8 +9,8 @@ Use inline jobs for short work which does not block the event loop. Inline jobs
 cannot be scheduled. Scheduled and offloaded jobs registered through the legacy
 Bree-based service run in worker threads, so they must initialize their own
 dependencies and cannot rely on the main Ghost process's memory. Jobs migrated
-to the class-based service (token cleanup, gift cleanup, update checks) run
-in-process and share the main process's initialized services.
+to the class-based service (token cleanup, gift cleanup, gift reminders, update
+checks) run in-process and share the main process's initialized services.
 
 ## Adding a job
 
@@ -25,7 +25,8 @@ and events.
 
 Existing examples include:
 
-- Gift reminders, which run in a worker on a schedule.
+- Gift reminders, which run in-process on a schedule through the class-based
+  service.
 - Imports, which run as inline jobs.
 - Email analytics, which uses scheduled worker jobs.
 

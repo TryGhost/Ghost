@@ -75,6 +75,7 @@ module.exports = {
   setFromZip: async (zip, { copySettingsFrom } = {}) => {
     const themeName = getStorage().getSanitizedFileName(zip.name.split('.zip')[0]);
     const backupName = `${themeName}_${ObjectID()}`;
+    const stagingName = `${themeName}_${ObjectID()}`;
 
     // check if zip name matches one of the default themes
     if (zip.name === 'casper.zip' || zip.name === 'source.zip') {
@@ -111,6 +112,13 @@ module.exports = {
         await customThemeSettings.api.copySettingsBetweenThemes(copySettingsFrom, themeName);
       }
 
+      // CASE: copy the extracted theme in under a staging name first, so the live
+      // folder is only missing between the two renames below rather than for the whole copy
+      await getStorage().save({
+        name: stagingName,
+        path: checkedTheme.path,
+      });
+
       const themeExists = await getStorage().exists(themeName);
       // CASE: move the existing theme to a backup folder
       if (themeExists) {
@@ -119,11 +127,7 @@ module.exports = {
         await getStorage().rename(themeName, backupName);
       }
 
-      // CASE: store extracted theme
-      await getStorage().save({
-        name: themeName,
-        path: checkedTheme.path,
-      });
+      await getStorage().rename(stagingName, themeName);
 
       // CASE: loads the theme from the fs & sets the theme on the themeList
       const loadedTheme = await themeLoader.loadOneTheme(themeName);
@@ -152,20 +156,9 @@ module.exports = {
       }
 
       // restore backup if we renamed an existing theme but saving failed
-      if (renamedExisting) {
-        return getStorage()
-          .exists(themeName)
-          .then((themeExists) => {
-            if (!themeExists) {
-              return getStorage()
-                .rename(backupName, themeName)
-                .then(() => {
-                  throw error;
-                });
-            }
-
-            throw error;
-          });
+      // awaited so the finally block can't delete the backup before it's restored
+      if (renamedExisting && !(await getStorage().exists(themeName))) {
+        await getStorage().rename(backupName, themeName);
       }
 
       throw error;
@@ -178,12 +171,14 @@ module.exports = {
         });
       }
 
-      // CASE: remove the backup we created earlier
-      getStorage()
-        .delete(backupName)
-        .catch((err) => {
-          logging.error(new errors.InternalServerError({ err: err }));
-        });
+      // CASE: remove the backup and any staging copy left behind by a failure
+      for (const leftover of [backupName, stagingName]) {
+        getStorage()
+          .delete(leftover)
+          .catch((err) => {
+            logging.error(new errors.InternalServerError({ err: err }));
+          });
+      }
     }
   },
   destroy: async function (themeName) {

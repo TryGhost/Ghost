@@ -4,6 +4,7 @@ import type { GiftService } from '../gifts/gift-service';
 import CleanTokensJob from '../members/jobs/clean-tokens-job';
 import CleanExpiredCompedJob from '../members/jobs/clean-expired-comped-job';
 import CleanGiftsJob from '../gifts/jobs/clean-gifts-job';
+import SendGiftRemindersJob from '../gifts/jobs/send-gift-reminders-job';
 import ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
@@ -54,6 +55,10 @@ export default function registerJobHandlers({
 
   jobsService.handle(CleanGiftsJob, async () => {
     await giftService.cleanup();
+  });
+
+  jobsService.handle(SendGiftRemindersJob, async () => {
+    await giftService.processReminders();
   });
 
   jobsService.handle(ExternalMediaInlinerJob, async (job) => {

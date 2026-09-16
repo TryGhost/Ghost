@@ -1407,16 +1407,13 @@ export class GiftService {
     skippedCount: number;
     failedCount: number;
   }> {
+    const startedAt = Date.now();
     const now = new Date();
     const toRemind = await this.deps.giftRepository.findPendingReminder({
       now,
       reminderLeadMs: GIFT_REMINDER_LEAD_MS,
       reminderFloorMs: GIFT_REMINDER_FLOOR_MS,
     });
-
-    if (toRemind.length === 0) {
-      return { remindedCount: 0, skippedCount: 0, failedCount: 0 };
-    }
 
     let remindedCount = 0;
     let skippedCount = 0;
@@ -1437,6 +1434,21 @@ export class GiftService {
         failedCount += 1;
       }
     }
+
+    // The jobs service's lifecycle log carries no counts, so the poll reports
+    // its own summary here for the daily job and the exact scheduler alike.
+    logging.info(
+      {
+        system: {
+          event: 'send_gift_reminders.completed',
+          reminded_count: remindedCount,
+          skipped_count: skippedCount,
+          failed_count: failedCount,
+          duration_ms: Date.now() - startedAt,
+        },
+      },
+      `[Background Job] send-gift-reminders processed reminders: ${remindedCount} sent, ${skippedCount} not due, ${failedCount} rejected`,
+    );
 
     return { remindedCount, skippedCount, failedCount };
   }

@@ -1,7 +1,5 @@
-import os from 'node:os';
-import path from 'node:path';
 import crypto from 'node:crypto';
-import fs from 'fs-extra';
+import type { StorageBase } from 'ghost-storage-base';
 import type { MemberImportRow } from './row';
 
 // remove() lets its failures out rather than hiding them: the file holds member names,
@@ -15,21 +13,22 @@ export interface RowSpool {
   write(rows: MemberImportRow[]): Promise<SpooledRows>;
 }
 
-// Spools import rows to a private JSON file under the OS temp dir, so a deferred
+// Spools import rows to a JSON file in the imports storage adapter, so a deferred
 // import can hand them to a background job and read them back after the request has
 // already returned. The rows go in and come out as MemberImportRow, so nothing but
 // the import's own row shape crosses this boundary.
-export function createRowSpool(): RowSpool {
+export function createRowSpool(getStorage: () => StorageBase): RowSpool {
   return {
     async write(rows) {
-      const spoolPath = path.join(os.tmpdir(), `members-import-${crypto.randomUUID()}.json`);
-      await fs.writeFile(spoolPath, JSON.stringify(rows), { mode: 0o600 });
+      const storage = getStorage();
+      const spoolPath = `members-import-${crypto.randomUUID()}.json`;
+      await storage.saveRaw(Buffer.from(JSON.stringify(rows)), spoolPath);
       return {
         async read() {
-          return JSON.parse(await fs.readFile(spoolPath, 'utf8'));
+          return JSON.parse((await storage.read({ path: spoolPath })).toString('utf8'));
         },
         async remove() {
-          await fs.remove(spoolPath);
+          await storage.delete(spoolPath);
         },
       };
     },

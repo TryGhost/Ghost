@@ -151,7 +151,9 @@ export function makeImporter(deps: ImporterServices) {
   return new MembersCSVImporter({
     knex: deps.knex,
     readRows: readMemberRows,
-    spool: createRowSpool(),
+    spool: createRowSpool(() =>
+      require('../../adapter-manager').default.getAdapter('storage:imports'),
+    ),
     members,
     tiers: {
       getDefault: deps.getDefaultTier,

@@ -406,6 +406,70 @@ describe('Settings API', function () {
         .expect(422);
     });
 
+    it('Can edit navigation items with a localhost icon URL', async function () {
+      await checkCanEdit(
+        'navigation',
+        JSON.stringify([
+          {
+            label: 'Members',
+            url: '/members/',
+            icon: 'http://localhost:2368/content/images/nav-members.svg',
+            visibility: 'public',
+          },
+        ]),
+        [
+          {
+            label: 'Members',
+            url: '/members/',
+            icon: 'http://localhost:2368/content/images/nav-members.svg',
+            visibility: 'public',
+          },
+        ],
+      );
+    });
+
+    it('Cannot edit navigation items with an icon on another TLD-less host', async function () {
+      const settingsToChange = {
+        settings: [
+          {
+            key: 'navigation',
+            value: JSON.stringify([
+              { label: 'Invalid', url: '/invalid/', icon: 'http://intranet/icon.svg' },
+            ]),
+          },
+        ],
+      };
+
+      await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingsToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+    });
+
+    it('Cannot edit navigation items with a non-http(s) localhost icon URL', async function () {
+      const settingsToChange = {
+        settings: [
+          {
+            key: 'navigation',
+            value: JSON.stringify([
+              { label: 'Invalid', url: '/invalid/', icon: 'ftp://localhost:2368/icon.svg' },
+            ]),
+          },
+        ],
+      };
+
+      await request
+        .put(localUtils.API.getApiQuery('settings/'))
+        .set('Origin', config.get('url'))
+        .send(settingsToChange)
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(422);
+    });
+
     it('Cannot edit navigation items with invalid icon', async function () {
       const settingsToChange = {
         settings: [

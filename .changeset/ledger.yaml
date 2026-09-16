@@ -64,6 +64,12 @@
   intents:
     - common-squids-argue
     - six-parents-shout
+"@tryghost/kg-default-cards@10.3.6":
+  dir: koenig/kg-default-cards
+  intents:
+    - early-elephants-press
+    - plain-parsers-share
+    - tidy-sdk-bump-cards
 "@tryghost/kg-default-nodes@2.1.4":
   dir: koenig/kg-default-nodes
   intents:
@@ -97,6 +103,10 @@
   intents:
     - common-squids-argue
     - six-parents-shout
+"@tryghost/kg-lexical-html-renderer@1.5.1":
+  dir: koenig/kg-lexical-html-renderer
+  intents:
+    - tame-shirts-float
 "@tryghost/kg-markdown-html-renderer@7.2.4":
   dir: koenig/kg-markdown-html-renderer
   intents:

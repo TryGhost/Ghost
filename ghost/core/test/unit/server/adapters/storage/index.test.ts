@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import os from 'node:os';
 import fs from 'fs-extra';
 import type LocalStorageBaseClass from '../../../../../core/server/adapters/storage/LocalStorageBase';
 import type adapterManagerInstance from '../../../../../core/server/services/adapter-manager';
@@ -34,6 +35,13 @@ describe('storage: index_spec', function () {
 
     await configUtils.restore();
     adapterManager.clearCache();
+  });
+
+  it('keeps import files on a local store in the OS temp directory by default', function () {
+    const chosenStorage = adapterManager.getAdapter('storage:imports');
+
+    assert.equal(chosenStorage.constructor, LocalStorageBase);
+    assert.equal(chosenStorage.storagePath, os.tmpdir());
   });
 
   it('default image storage is local file storage', function () {
