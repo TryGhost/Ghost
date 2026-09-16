@@ -1,5 +1,6 @@
 import EmailAnalyticsGiftFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job';
 import EmailAnalyticsAutomationFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-automation-fetch-latest-job';
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import EmailAnalyticsFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-fetch-latest-job';
 import { vi } from 'vitest';
@@ -191,6 +192,30 @@ describe('EmailAnalyticsJobScheduler', function () {
     automatedEmailRecipient.done();
 
     await Promise.all([firstSchedule, secondSchedule]);
+
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+  });
+
+  it('does not add another job while a registration is still in flight', async function () {
+    const { scheduler, jobsService } = buildScheduler();
+    const registration = deferred();
+    jobsService.scheduleRecurring.returns(registration.promise);
+
+    const firstSchedule = scheduler.scheduleRecurringGiftDeliveriesJob(true);
+    const secondSchedule = scheduler.scheduleRecurringGiftDeliveriesJob(true);
+    registration.done();
+
+    await Promise.all([firstSchedule, secondSchedule]);
+
+    sinon.assert.calledOnce(jobsService.scheduleRecurring);
+  });
+
+  it('allows scheduling again after a registration is rejected', async function () {
+    const { scheduler, jobsService } = buildScheduler();
+    jobsService.scheduleRecurring.onFirstCall().rejects(new Error('unavailable'));
+
+    await assert.rejects(scheduler.scheduleRecurringGiftDeliveriesJob(true), /unavailable/);
+    await scheduler.scheduleRecurringGiftDeliveriesJob(true);
 
     sinon.assert.calledTwice(jobsService.scheduleRecurring);
   });

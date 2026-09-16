@@ -128,9 +128,18 @@ export class EmailAnalyticsJobScheduler {
       return;
     }
 
+    // Marked before the backend call so a caller arriving while it is in
+    // flight returns above instead of logging and registering a second
+    // schedule with a different cron. Unmarked on rejection so the next
+    // caller can retry.
+    this.#scheduledJobTypes.add(JobClass.type);
     const at = randomFiveMinuteCron();
     logging.info(`[Background Job] ${JobClass.type} scheduled at ${at}`);
-    await this.#jobsService.scheduleRecurring(new JobClass(), { cron: at });
-    this.#scheduledJobTypes.add(JobClass.type);
+    try {
+      await this.#jobsService.scheduleRecurring(new JobClass(), { cron: at });
+    } catch (error) {
+      this.#scheduledJobTypes.delete(JobClass.type);
+      throw error;
+    }
   }
 }
