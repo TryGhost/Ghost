@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
+import { GIFT_DELIVERY_EMAIL_TAG } from '../../../../core/server/services/gifts/constants';
 import { AUTOMATION_EMAIL_TAG } from '../../../../core/server/services/member-welcome-emails/constants';
 import sinon from 'sinon';
 import { vi } from 'vitest';
@@ -16,6 +17,10 @@ const EmailAnalyticsFetchLatestJob =
 
 const EmailAnalyticsAutomationFetchLatestJob =
   require('../../../../core/server/services/email-analytics/jobs/email-analytics-automation-fetch-latest-job').default;
+
+const EmailAnalyticsGiftFetchLatestJob =
+  require('../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job').default;
+const models = require('../../../../core/server/models');
 
 type MailgunEvent = {
   id: string;
@@ -227,6 +232,55 @@ describe('email analytics JobsService delivery', function () {
       await knex('automation_action_revisions').where('id', revisionId).del();
       await knex('automation_actions').where('id', actionId).del();
       await knex('automations').where('id', automationId).del();
+    }
+  });
+  it('persists gift delivery outcomes and its cursor without fetching opens', async function () {
+    const tier = await models.Product.findOne({ type: 'paid' }, { require: true });
+    const token = ObjectId().toHexString();
+    const gift = await models.Gift.add({
+      token,
+      tier_id: tier.id,
+      buyer_email: 'buyer@example.com',
+      cadence: 'year',
+      duration: 1,
+      currency: 'usd',
+      amount: 5000,
+      status: 'purchased',
+      purchased_at: eventDate,
+      expires_at: new Date('2030-01-01'),
+      stripe_checkout_session_id: `cs_${token}`,
+      stripe_payment_intent_id: `pi_${token}`,
+    });
+    const messageId = 'analytics-job-gift@example.com';
+    const delivery = await models.GiftDelivery.add({
+      gift_id: gift.id,
+      recipient_email: 'gift-recipient@example.com',
+      status: 'sent',
+      email_sent_at: eventDate,
+      email_provider_message_id: messageId,
+      outcome: 'unknown',
+    });
+    try {
+      events = [
+        mailgunEvent('delivered', messageId, 'gift-recipient@example.com', GIFT_DELIVERY_EMAIL_TAG),
+      ];
+      await dispatchAndWait(
+        new EmailAnalyticsGiftFetchLatestJob(),
+        EmailAnalyticsGiftFetchLatestJob.type,
+        'email-analytics-gifts',
+      );
+      const updated = await knex('gift_deliveries').where('id', delivery.id).first();
+      assert.equal(updated.outcome, 'delivered');
+      assert.equal(new Date(updated.outcome_at).getTime(), eventDate.getTime());
+      const opened = await knex('jobs')
+        .where('name', 'email-analytics-gifts-latest-opened')
+        .first();
+      assert.equal(new Date(opened.finished_at).getTime(), cursorDate.getTime());
+      const fetches = (MailgunClient.prototype.fetchEvents as sinon.SinonStub).args;
+      assert.ok(fetches.every(([options]) => options.event !== 'opened'));
+    } finally {
+      await knex('gift_deliveries').where('id', delivery.id).del();
+      await knex('gifts').where('id', gift.id).del();
     }
   });
 });
