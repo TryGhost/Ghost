@@ -151,6 +151,7 @@ describe('welcome email automations poll', function () {
       id: ObjectId().toHexString(),
       status: 'active',
       name: `Automation ${ObjectId().toHexString()}`,
+      description: '',
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
       created_at: currentTime,
       updated_at: currentTime,

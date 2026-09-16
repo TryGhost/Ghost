@@ -11,6 +11,7 @@ const Automation = ghostBookshelf.Model.extend(
     defaults() {
       return {
         status: 'inactive',
+        description: '',
       };
     },
 
