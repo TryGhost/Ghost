@@ -172,7 +172,7 @@ changing entry dates, focus, and reconnect do not refetch the list. Leaving the 
 clears status selection and discards every visited filter, including pending requests,
 so a return visit starts fresh. Entry times use Admin's standard browser-local
 timestamp formatting, with the full timestamp available on hover. Rows and column
-headings are display-only in this slice. Failed exits retain the Exited early icon
+headings label their respective columns. Failed exits retain the Exited early icon
 with a red corner dot and an accessible failure label.
 
 ## Availability
@@ -252,3 +252,8 @@ wait durations, independently of the editing draft. For overdue pending steps,
 estimates start at the current time. These are labeled Expected; a delayed step
 can shift later dates. Unknown wait durations suppress dates for the remaining
 path. Estimates are display-only and do not affect scheduling.
+
+Admin makes Entered a keyboard-operable sort control with aria-sort.
+Member and Status remain plain headings.
+Sorting refreshes only the list; filters refresh counts and the list. Selection
+is keyed by run ID and remains independent of sorting and filtering.
