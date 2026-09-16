@@ -6,11 +6,6 @@ import type { EmailAnalyticsFetchResult } from '../../../../../core/server/servi
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 import { Queries } from '../../../../../core/server/services/email-analytics/lib/queries';
 
-class FakeEvent {
-  timestamp = new Date();
-  data = null;
-}
-
 describe('EmailAnalyticsServiceWrapper', function () {
   let metricStub: sinon.SinonStub;
 
@@ -23,15 +18,11 @@ describe('EmailAnalyticsServiceWrapper', function () {
   });
 
   function initWrapper(logName: string, configOverrides: Record<string, unknown> = {}) {
-    const wrapper = new EmailAnalyticsServiceWrapper({ logName });
-    wrapper.init({
+    const wrapper = new EmailAnalyticsServiceWrapper({
+      logName,
       config: {
         get: (key?: string) => (key ? configOverrides[key] : undefined),
       },
-      domainEvents: {
-        subscribe: sinon.stub(),
-      },
-      event: FakeEvent,
       queries: sinon.createStubInstance(Queries),
       mailgunTags: [],
       jobNames: {
@@ -328,11 +319,9 @@ describe('EmailAnalyticsServiceWrapper', function () {
   });
 
   it('skips opened event polling when the cursor seed has no opened column', async function () {
-    const wrapper = new EmailAnalyticsServiceWrapper({ logName: 'gifts' });
-    wrapper.init({
+    const wrapper = new EmailAnalyticsServiceWrapper({
+      logName: 'gifts',
       config: { get: sinon.stub() },
-      domainEvents: { subscribe: sinon.stub() },
-      event: FakeEvent,
       queries: sinon.createStubInstance(Queries),
       mailgunTags: [],
       jobNames: {
