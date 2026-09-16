@@ -20,6 +20,7 @@ type PostWithNewsletter = Post & {
 export const usePostNewsletterStats = (postId: string) => {
   // Fetch the post with main stats (email, clicks)
   const { data: postResponse, isLoading: isPostLoading } = usePost(postId, {
+    refetchIntervalInBackground: false,
     refetchInterval: (query) =>
       getEmailStatsRefetchInterval(query.state.data?.posts[0]?.email?.submitted_at),
   });
@@ -154,6 +155,7 @@ export const usePostNewsletterStats = (postId: string) => {
     isLoading: isClicksLoading,
     refetch: refetchTopLinks,
   } = useTopLinks({
+    refetchIntervalInBackground: false,
     refetchInterval: () => getEmailStatsRefetchInterval(post?.email?.submitted_at),
     searchParams: {
       filter: `post_id:'${postId}'`,

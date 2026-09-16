@@ -24,6 +24,7 @@ const PostAnalyticsProvider = ({ children }: { children: ReactNode }) => {
     isLoading: isPostLoading,
     refetch,
   } = useBrowsePosts({
+    refetchIntervalInBackground: false,
     refetchInterval: (query) =>
       getEmailStatsRefetchInterval(query.state.data?.posts[0]?.email?.submitted_at),
     searchParams: {
