@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, find, findAll} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -97,6 +98,45 @@ describe('Acceptance: Members activity', function () {
         it('filters events payment and donation events', async function () {
             await visit('/members-activity?excludedEvents=payment_event%2Cdonation_event');
             expect(findAll('.gh-members-activity-event').length).to.equal(1);
+        });
+
+        describe('custom field changes', function () {
+            beforeEach(function () {
+                this.server.create('member-activity-event', {
+                    memberId: 1,
+                    createdAt: moment('2024-08-19 08:18:08').format('YYYY-MM-DD HH:mm:ss'),
+                    type: 'metafield_change_event',
+                    data: {
+                        source: 'portal',
+                        metafields: [{namespace: 'custom', key: 'job_title', name: 'Job title'}]
+                    }
+                });
+            });
+
+            it('names the fields and where they were changed, and can be filtered', async function () {
+                enableLabsFlag(this.server, 'membersCustomFields');
+
+                await visit('/members-activity');
+                expect(find('.gh-members-activity-event-text').textContent.trim()).to.equal('Updated Job title in Portal');
+
+                await click('[data-test-id="filter-events-button"]');
+                expect(find('[data-test-id="event-type-filter-checkbox-metafield_change_event"]')).to.exist;
+            });
+
+            it('is not offered where custom fields are not available', async function () {
+                await visit('/members-activity');
+                await click('[data-test-id="filter-events-button"]');
+                expect(find('[data-test-id="event-type-filter-checkbox-metafield_change_event"]')).to.not.exist;
+            });
+
+            it('is not offered when the plan does not include custom fields', async function () {
+                enableLabsFlag(this.server, 'membersCustomFields');
+                this.server.db.configs.update(1, {hostSettings: {limits: {limitCustomFields: {disabled: true}}}});
+
+                await visit('/members-activity');
+                await click('[data-test-id="filter-events-button"]');
+                expect(find('[data-test-id="event-type-filter-checkbox-metafield_change_event"]')).to.not.exist;
+            });
         });
 
         it('includes one time (donation) payments under payments filtering', async function () {

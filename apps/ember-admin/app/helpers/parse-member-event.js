@@ -158,7 +158,37 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'email-changed';
         }
 
+        if (event.type === 'metafield_change_event') {
+            icon = 'metafields-changed';
+        }
+
         return 'event-' + icon;
+    }
+
+    // Mirrors the React Admin activity feed, which describes the same event.
+    getMetafieldChangeAction(event) {
+        const namedFieldsLimit = 3;
+        const places = {
+            admin: 'in Admin',
+            admin_api: 'through the Admin API',
+            import: 'from an import',
+            checkout: 'at checkout',
+            portal: 'in Portal'
+        };
+        const names = (event.data.metafields || []).map(field => field.name);
+
+        let changed = 'custom fields';
+        if (names.length > namedFieldsLimit) {
+            const rest = names.length - namedFieldsLimit;
+            changed = `${names.slice(0, namedFieldsLimit).join(', ')} and ${rest} more ${rest === 1 ? 'field' : 'fields'}`;
+        } else if (names.length === 1) {
+            changed = names[0];
+        } else if (names.length > 1) {
+            changed = `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+        }
+
+        const place = Object.hasOwn(places, event.data.source) ? places[event.data.source] : null;
+        return place ? `updated ${changed} ${place}` : `updated ${changed}`;
     }
 
     getAction(event, hasMultipleNewsletters) {
@@ -268,6 +298,10 @@ export default class ParseMemberEventHelper extends Helper {
                 return `Email address changed from ${event.data.from_email} to ${event.data.to_email}`;
             }
             return 'Email address changed';
+        }
+
+        if (event.type === 'metafield_change_event') {
+            return this.getMetafieldChangeAction(event);
         }
 
         if (event.type === 'donation_event') {
