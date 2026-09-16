@@ -566,16 +566,26 @@ async function initBackgroundServices({ config, emailAnalyticsJobs }) {
     logging.error(err);
   }
 
-  const activitypub = require('./server/services/activitypub');
-  await activitypub.init();
-  // Load email analytics recurring jobs
+  // Load email analytics recurring jobs. Runs before activitypub.init for the
+  // same reason as the schedules above. Each failure is logged rather than
+  // thrown so one failed registration cannot hide a sibling's or stop the
+  // remaining background services from starting.
   if (config.get('backgroundJobs:emailAnalytics')) {
-    await Promise.all([
+    const results = await Promise.allSettled([
       emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
       emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
       emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
     ]);
+    const logging = require('@tryghost/logging');
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        logging.error(result.reason);
+      }
+    }
   }
+
+  const activitypub = require('./server/services/activitypub');
+  await activitypub.init();
 
   const tinybirdSync = require('./server/services/tinybird-sync');
   tinybirdSync.start();
