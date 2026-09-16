@@ -59,6 +59,9 @@ pnpm test:analytics
 ```
 
 E2E test scripts automatically sync Tinybird tokens when Tinybird is running.
+Both dev and build modes use the relative browser endpoints from the development
+setup and the same gateway query route, so the analytics tests exercise
+[analytics URL resolution and routing](../docker/dev-gateway/README.md#analytics-urls).
 
 ### Build Mode (Prebuilt Image)
 

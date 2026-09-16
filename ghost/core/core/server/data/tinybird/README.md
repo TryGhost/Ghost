@@ -8,10 +8,11 @@ The easiest way to run Tinybird with Ghost locally is to use Docker and Docker C
 
 All of these commands should be run from the root of the Ghost repository:
 
-1. `docker compose --profile analytics up -d` - This will start the Tinybird local container, deploy the datafiles in this directory to it, and configure + start the Analytics service.
-1. `docker compose --profile split up` - This will start the Ghost service and configure it to use the bundled Tinybird & Analytics services automatically.
+Run `pnpm dev:analytics`. This starts Ghost and its frontend watchers, deploys the
+Tinybird datafiles, and configures the local traffic analytics service and tokens.
 
-Ghost will be accessible at `http://localhost:2368`, and analytics should work out of the box.
+Ghost is accessible at `http://localhost:2368` by default. For HTTPS or custom
+hostnames, see [Analytics URLs](../../../../../../docker/dev-gateway/README.md#analytics-urls).
 
 #### Using the Tinybird CLI from Docker
 

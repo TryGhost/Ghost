@@ -86,6 +86,23 @@ function sanitizeDatabaseProperties(nconf: Provider): void {
   }
 }
 
+/** Resolve browser analytics paths after the normal configuration hierarchy is loaded. */
+function resolveAnalyticsUrls(nconf: Provider): void {
+  const endpoints = [
+    ['tinybird:tracker:endpoint', nconf.get('url')],
+    ['tinybird:stats:endpointBrowser', nconf.get('admin:url') || nconf.get('url')],
+  ];
+
+  for (const [key, base] of endpoints) {
+    const endpoint = nconf.get(key);
+    if (typeof endpoint === 'string' && endpoint.startsWith('./')) {
+      const baseUrl = new URL(base);
+      baseUrl.pathname = baseUrl.pathname.replace(/\/?$/, '/');
+      nconf.set(key, new URL(endpoint, baseUrl).href);
+    }
+  }
+}
+
 function getNodeEnv(): string {
   return process.env.NODE_ENV || 'development';
 }
@@ -105,6 +122,7 @@ const jsoncFormat: IFormat = {
 
 export {
   makePathsAbsolute,
+  resolveAnalyticsUrls,
   doesContentPathExist,
   checkUrlProtocol,
   sanitizeDatabaseProperties,

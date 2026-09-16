@@ -156,6 +156,7 @@ services:
     volumes:
       # Mount Caddyfile for live config changes without rebuilding
       - ./docker/dev-gateway/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./docker/dev-gateway/tinybird.caddy:/etc/caddy/tinybird.caddy:ro
       # All workspace apps mounted read-only. Caddy file_server resolves
       # /srv/apps/<name>/umd dynamically for the public-app routes (see
       # the Caddyfile @public_app block). Replaces the per-app `vite preview`

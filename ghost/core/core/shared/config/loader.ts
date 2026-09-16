@@ -76,6 +76,9 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   // Check if the URL in config has a protocol
   localUtils.checkUrlProtocol(nconf.get('url'));
 
+  // Browser analytics can share the configured site/Admin origin in development.
+  localUtils.resolveAnalyticsUrls(nconf);
+
   // Ensure that the content path exists
   localUtils.doesContentPathExist(nconf.get('paths:contentPath'));
 

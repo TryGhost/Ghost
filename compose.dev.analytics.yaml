@@ -82,8 +82,8 @@ services:
       TB_HOST: http://tinybird-local:7181
       TB_LOCAL_HOST: tinybird-local
       tinybird__stats__endpoint: http://tinybird-local:7181
-      tinybird__stats__endpointBrowser: http://localhost:7181
-      tinybird__tracker__endpoint: http://localhost:2368/.ghost/analytics/api/v1/page_hit
+      tinybird__stats__endpointBrowser: ./.ghost/tinybird
+      tinybird__tracker__endpoint: ./.ghost/analytics/api/v1/page_hit
       tinybird__tracker__datasource: analytics_events
     depends_on:
       analytics:

@@ -11,6 +11,8 @@
         format console
     }
 
+    import tinybird.caddy
+
     # Analytics API - proxy to analytics service
     # Handles paths like /.ghost/analytics/* or /blog/.ghost/analytics/*
     @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$

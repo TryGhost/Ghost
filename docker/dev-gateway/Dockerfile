@@ -19,4 +19,5 @@ ENV GHOST_BACKEND=ghost-dev:2368 \
     ACTIVITYPUB_PROXY_TARGET=host.docker.internal:8080
 
 COPY Caddyfile /etc/caddy/Caddyfile
+COPY tinybird.caddy /etc/caddy/tinybird.caddy
 EXPOSE 80 2368

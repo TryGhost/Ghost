@@ -53,3 +53,25 @@ The Caddyfile defines these routing rules:
 | Everything else                                                                               | Ghost backend                   | Main Ghost application                                                                      |
 
 **Note:** Port numbers listed for Admin and Lexical are the host ports where those dev servers run by default. Public apps have no dev-server port — Caddy reads their build output straight off disk.
+
+## Analytics URLs
+
+`pnpm dev:analytics` uses the gateway for tracking and Admin queries. Set the site
+URL using the [development URL guide](../../docs/contributing/testing-development-urls.md);
+no analytics-specific `.env` settings are needed.
+
+| Configuration key                | Compose default                      | Resolved against                   |
+| -------------------------------- | ------------------------------------ | ---------------------------------- |
+| `tinybird.tracker.endpoint`      | `./.ghost/analytics/api/v1/page_hit` | `url`                              |
+| `tinybird.stats.endpointBrowser` | `./.ghost/tinybird`                  | `admin.url`, falling back to `url` |
+
+Ghost resolves `./` paths after loading configuration, preserving site
+subdirectories even without a trailing slash. Absolute endpoints are unchanged.
+
+Page hits pass through the analytics service into Tinybird. Admin queries use
+`GET /.ghost/tinybird/v0/pipes/*.json` (optionally beneath a subdirectory), with
+Tinybird enforcing scoped bearer tokens. The route forwards no other API paths or
+write methods; server-side queries keep using the internal Docker address.
+
+Both development and build-mode E2E gateways import this route from
+`tinybird.caddy`, so the analytics tests exercise the same routing.

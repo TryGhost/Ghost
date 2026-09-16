@@ -52,7 +52,8 @@ tracked `config.development.json`, or commit credentials and local overrides.
 The standard `pnpm dev` environment also supplies container connection values
 as environment variables and loads
 `core/shared/config/env/config.development.docker.json`. Environment variables
-have higher precedence than local configuration files.
+have higher precedence than local configuration files. For analytics endpoint
+paths and their resolution, see [Analytics URLs](../../docker/dev-gateway/README.md#analytics-urls).
 
 ## Environment variables
 

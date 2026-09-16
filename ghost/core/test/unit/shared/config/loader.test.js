@@ -146,6 +146,83 @@ describe('Config Loader', function () {
       assert.deepEqual(customConfig.get('logging:transports'), ['stdout']);
     });
 
+    describe('relative analytics endpoints', function () {
+      beforeEach(function () {
+        process.env.NODE_ENV = 'development';
+        delete process.env.url;
+        delete process.env.admin__url;
+        process.env.tinybird__tracker__endpoint = './.ghost/analytics/api/v1/page_hit';
+        process.env.tinybird__stats__endpointBrowser = './.ghost/tinybird';
+        process.env.tinybird__stats__endpoint = 'http://tinybird-local:7181';
+      });
+
+      function loadWithUrls(url, adminUrl) {
+        fs.writeFileSync(
+          path.join(tmpDir, 'config.local.jsonc'),
+          '// Local development URL\n' + JSON.stringify({ url, admin: { url: adminUrl } }),
+        );
+        return loader.loadNconf({ customConfigPath: tmpDir });
+      }
+
+      for (const url of [
+        'http://localhost:2368',
+        'https://new-vm.example',
+        'https://new-vm.example/blog',
+        'https://new-vm.example/blog/',
+      ]) {
+        it(`resolves analytics through the configured site URL: ${url}`, function () {
+          const loaded = loadWithUrls(url);
+          const base = url.replace(/\/?$/, '/');
+          assert.equal(
+            loaded.get('tinybird:tracker:endpoint'),
+            base + '.ghost/analytics/api/v1/page_hit',
+          );
+          assert.equal(loaded.get('tinybird:stats:endpointBrowser'), base + '.ghost/tinybird');
+          assert.equal(loaded.get('tinybird:stats:endpoint'), 'http://tinybird-local:7181');
+        });
+      }
+
+      it('uses the Admin origin for reads and the site origin for page hits', function () {
+        const loaded = loadWithUrls('https://site.example/blog', 'https://admin.example/blog/');
+        assert.equal(
+          loaded.get('tinybird:tracker:endpoint'),
+          'https://site.example/blog/.ghost/analytics/api/v1/page_hit',
+        );
+        assert.equal(
+          loaded.get('tinybird:stats:endpointBrowser'),
+          'https://admin.example/blog/.ghost/tinybird',
+        );
+      });
+
+      it('uses the effective URL after environment overrides', function () {
+        process.env.url = 'https://override.example';
+        const loaded = loadWithUrls('https://file.example');
+        assert.equal(
+          loaded.get('tinybird:tracker:endpoint'),
+          'https://override.example/.ghost/analytics/api/v1/page_hit',
+        );
+      });
+
+      it('preserves explicit absolute analytics URLs', function () {
+        process.env.tinybird__tracker__endpoint = 'https://analytics.example/api/v1/page_hit';
+        process.env.tinybird__stats__endpointBrowser = 'https://api.tinybird.co';
+        const loaded = loadWithUrls('https://site.example');
+        assert.equal(
+          loaded.get('tinybird:tracker:endpoint'),
+          'https://analytics.example/api/v1/page_hit',
+        );
+        assert.equal(loaded.get('tinybird:stats:endpointBrowser'), 'https://api.tinybird.co');
+      });
+
+      it('does not enable analytics when endpoint configuration is absent', function () {
+        delete process.env.tinybird__tracker__endpoint;
+        delete process.env.tinybird__stats__endpointBrowser;
+        const loaded = loadWithUrls('https://site.example');
+        assert.equal(loaded.get('tinybird:tracker:endpoint'), undefined);
+        assert.equal(loaded.get('tinybird:stats:endpointBrowser'), undefined);
+      });
+    });
+
     it('should load JSONC files', function () {
       process.env.NODE_ENV = 'development';
       customConfig = loader.loadNconf({

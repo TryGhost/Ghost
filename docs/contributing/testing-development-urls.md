@@ -38,6 +38,9 @@ the development environment:
 }
 ```
 
+For `pnpm dev:analytics`, see the gateway's
+[analytics URL configuration](../../docker/dev-gateway/README.md#analytics-urls).
+
 Do not commit `config.local.json`. Remove the override when the test is
 finished.
 

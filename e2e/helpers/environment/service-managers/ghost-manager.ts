@@ -271,15 +271,16 @@ export class GhostManager {
     }
 
     // Add Tinybird config if available
-    // Static endpoints are set here; tokens are loaded from a host-generated
+    // Use the same relative browser endpoints as compose.dev.analytics.yaml.
+    // Tokens are loaded from a host-generated
     // e2e/data/state/tinybird.json file when present.
     if (await isTinybirdAvailable()) {
       env.push(
         `TB_HOST=http://${TINYBIRD.LOCAL_HOST}:${TINYBIRD.PORT}`,
         `TB_LOCAL_HOST=${TINYBIRD.LOCAL_HOST}`,
         `tinybird__stats__endpoint=http://${TINYBIRD.LOCAL_HOST}:${TINYBIRD.PORT}`,
-        `tinybird__stats__endpointBrowser=http://localhost:${TINYBIRD.PORT}`,
-        `tinybird__tracker__endpoint=http://localhost:${this.getGatewayPort()}/.ghost/analytics/api/v1/page_hit`,
+        'tinybird__stats__endpointBrowser=./.ghost/tinybird',
+        'tinybird__tracker__endpoint=./.ghost/analytics/api/v1/page_hit',
         'tinybird__tracker__datasource=analytics_events',
       );
 
@@ -422,7 +423,10 @@ export class GhostManager {
     // - build: Minimal passthrough (assets served by Ghost or default CDN)
     const caddyfilePath = mode === 'dev' ? CADDYFILE_PATHS.dev : CADDYFILE_PATHS.build;
 
-    const binds: string[] = [`${caddyfilePath}:/etc/caddy/Caddyfile:ro`];
+    const binds: string[] = [
+      `${caddyfilePath}:/etc/caddy/Caddyfile:ro`,
+      `${REPO_ROOT}/docker/dev-gateway/tinybird.caddy:/etc/caddy/tinybird.caddy:ro`,
+    ];
 
     if (mode === 'dev') {
       binds.push(`${REPO_ROOT}/apps:/srv/apps:ro`);

@@ -1,0 +1,10 @@
+# Read-only Tinybird queries for HTTPS development sites.
+# Tinybird validates the scoped bearer token supplied by Admin.
+@tinybird_queries {
+	method GET
+	path_regexp tinybird_query ^(?:/.*)?/\.ghost/tinybird(/v0/pipes/[^/]+\.json)$
+}
+handle @tinybird_queries {
+	rewrite * {re.tinybird_query.1}
+	reverse_proxy tinybird-local:7181
+}
