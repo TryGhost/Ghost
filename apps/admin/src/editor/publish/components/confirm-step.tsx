@@ -6,7 +6,7 @@ import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { LimitMessage } from './limit-message';
 import {
   publishBackToSettings,
-  publishConfirmButton,
+  publishConfirm,
   publishConfirmError,
   publishFlowConfirm,
 } from '@tryghost/test-data/selectors/editor';
@@ -125,7 +125,7 @@ export function ConfirmStep({
 
       <Stack align="start" gap="sm">
         <Button
-          data-testid={publishConfirmButton}
+          data-testid={publishConfirm}
           disabled={status === 'running'}
           size="lg"
           onClick={onConfirm}

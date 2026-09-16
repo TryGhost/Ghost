@@ -70,6 +70,9 @@ const field = (overrides: Partial<MemberCustomField>): MemberCustomField => ({
   name: 'Nickname',
   type: 'short_text',
   status: 'active',
+  // The server reads a field with no access set as closed to members, so a case that says
+  // nothing about access gets the field the API would return for one.
+  access: { member: 'none' },
   created_at: '2026-07-01T00:00:00.000Z',
   updated_at: null,
   ...overrides,

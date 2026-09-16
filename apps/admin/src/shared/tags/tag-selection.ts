@@ -82,24 +82,6 @@ export function sortTagsByName<T extends TagLike>(tags: ReadonlyArray<T>): T[] {
   );
 }
 
-/** The tags a search term matches, in name order. */
-export function matchingTags<T extends TagLike>(tags: ReadonlyArray<T>, term: string): T[] {
-  const needle = term.toLowerCase();
-
-  return sortTagsByName(tags).filter(
-    (tag) => needle === '' || tagName(tag).toLowerCase().includes(needle),
-  );
-}
-
-/** Those a selection does not already carry. */
-export function availableTags<T extends TagLike>(
-  tags: ReadonlyArray<T>,
-  selected: ReadonlyArray<TagLike>,
-  term: string,
-): T[] {
-  return matchingTags(tags, term).filter((tag) => !selected.some((chosen) => sameTag(chosen, tag)));
-}
-
 /**
  * Whether the term is worth offering as a new tag. Anything already carrying
  * that name — offered a row below, or selected already — would be a duplicate.

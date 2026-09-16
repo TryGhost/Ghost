@@ -13,9 +13,12 @@
  * uses Preact and never installs `@vitejs/plugin-react`).
  *
  * i18n note: apps import their locales via `@tryghost/i18n/registry/<namespace>`,
- * a static ESM registry any bundler can resolve.
+ * a static ESM registry any bundler can resolve. The `source` resolve condition
+ * below makes that (and every other internal package) resolve to raw TypeScript,
+ * so app builds don't wait on a workspace `tsc` pass.
  */
 import { resolve } from 'path';
+import { defaultClientConditions } from 'vite';
 import { defineConfig, mergeConfig } from 'vitest/config';
 
 /**
@@ -66,6 +69,9 @@ export function publicAppViteConfig(opts) {
       plugins,
       define: {
         'process.env.NODE_ENV': JSON.stringify(config.mode),
+      },
+      resolve: {
+        conditions: ['source', ...defaultClientConditions],
       },
       build: {
         outDir: resolve(packageRoot, 'umd'),

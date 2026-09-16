@@ -74,6 +74,10 @@ export type Config = {
         disabled: boolean;
         error?: string;
       };
+      limitCustomFields?: {
+        disabled: boolean;
+        error?: string;
+      };
       publicSiteAccess?: {
         disabled: boolean;
         // Copy shown in the pre-launch banner when public site access is disabled.

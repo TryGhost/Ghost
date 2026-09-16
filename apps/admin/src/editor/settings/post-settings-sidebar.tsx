@@ -18,13 +18,17 @@ import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
+import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
+import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
 import { SubviewContext, useSubviewController } from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
+import { FACEBOOK_CARD_NETWORK, X_CARD_NETWORK } from './social-card-networks';
+import { SocialCardSection } from './social-card-section';
 import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
@@ -78,6 +82,8 @@ export interface PostSettingsSidebarProps {
   siteUrl: string;
   /** Renders the cards of a version being previewed. */
   cardConfig: PostCardConfig;
+  /** The feature image the writer is looking at, which the social cards fall back to. */
+  featureImage: string | null;
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
@@ -92,6 +98,7 @@ export function PostSettingsSidebar({
   postType,
   siteUrl,
   cardConfig,
+  featureImage,
   currentUser,
   hasInlineExcerpt = false,
 }: PostSettingsSidebarProps) {
@@ -102,7 +109,7 @@ export function PostSettingsSidebar({
   const canCreditOthers = !!currentUser && !isAuthorOrContributor(currentUser);
   const subviews = useSubviewController();
 
-  const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
+  const sections: Record<SettingsSectionId, ReactNode> = {
     url: <UrlSection postType={postType} session={session} siteUrl={siteUrl} />,
     'publish-date': <PublishDateSection session={session} />,
     tags: canTag ? <TagsSection session={session} /> : null,
@@ -116,7 +123,27 @@ export function PostSettingsSidebar({
       postType === 'page' ? <ShowTitleSection currentUser={currentUser} session={session} /> : null,
     template: <TemplateSection postType={postType} session={session} />,
     delete: <DeleteSection postType={postType} session={session} />,
+    'code-injection': <CodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MetaDataSection session={session} siteUrl={siteUrl} />,
+    'keyboard-shortcuts': <KeyboardShortcutsSection />,
+    'x-card': (
+      <SocialCardSection
+        cardConfig={cardConfig}
+        featureImage={featureImage}
+        network={X_CARD_NETWORK}
+        session={session}
+        siteUrl={siteUrl}
+      />
+    ),
+    'facebook-card': (
+      <SocialCardSection
+        cardConfig={cardConfig}
+        featureImage={featureImage}
+        network={FACEBOOK_CARD_NETWORK}
+        session={session}
+        siteUrl={siteUrl}
+      />
+    ),
     'post-history': (
       <PostHistorySection
         cardConfig={cardConfig}
@@ -156,7 +183,7 @@ export function PostSettingsSidebar({
           </>
         )}
         {SETTINGS_SECTION_ORDER.map((id) => (
-          <Fragment key={id}>{open && open.id !== id ? null : (sections[id] ?? null)}</Fragment>
+          <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
         ))}
       </aside>
     </SubviewContext.Provider>

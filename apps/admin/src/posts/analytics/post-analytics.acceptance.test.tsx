@@ -238,7 +238,7 @@ describe('Post analytics overview', () => {
 
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     await expect.element(page.getByText(/500 of 1,000/)).toBeVisible();
-    await expect.element(page.getByText('This newsletter is still sending')).toBeVisible();
+    await expect.element(page.getByText('Your newsletter is being sent')).toBeVisible();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
 
     await postAnalyticsScreen.newsletterTab().click();
@@ -291,11 +291,17 @@ describe('Post analytics overview', () => {
 
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Sending emails · 250 of 1,000');
+      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .not.toHaveTextContent('minute');
     estimate = 30;
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Sending emails · 250 of 1,000 · Less than 1 minute left');
+      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .toHaveTextContent('Less than 1 minute left');
   });
 
   it('moves a failed send and its retry action into the banner', async () => {
@@ -461,7 +467,12 @@ describe('Post analytics overview', () => {
       boot: webAnalyticsBootOverrides(),
     });
 
-    await expect.element(page.getByText('Preparing emails')).toBeVisible();
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .toHaveTextContent(/Preparing emails\s*10% complete · 1,000 total/);
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .not.toHaveTextContent('minute');
     // Advance the fake server only after the initial state is visible: extra
     // mount-time requests must not race the assertion straight into failure.
     const initialStatusRequests = statusRequestCount;
@@ -495,9 +506,7 @@ describe('Post analytics overview', () => {
     });
 
     await expect.element(page.getByText('Newsletter performance')).toBeVisible();
-    await expect
-      .element(page.getByText('This newsletter is still sending'))
-      .not.toBeInTheDocument();
+    await expect.element(page.getByText('Your newsletter is being sent')).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
     await expect.poll(() => statusApi.requests.length).toBe(1);
     await app.unmount();

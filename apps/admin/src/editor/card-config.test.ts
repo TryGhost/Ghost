@@ -119,6 +119,56 @@ describe('buildPostCardConfig', () => {
     expect(cardConfig.deleteSnippet).toBe(ports.deleteSnippet);
   });
 
+  it('carries the site images the social cards fall back to', () => {
+    const cardConfig = buildPostCardConfig(
+      sources({
+        settings: settingsFrom({
+          ...baseSettings,
+          og_image: 'site-og.png',
+          twitter_image: 'site-twitter.png',
+          cover_image: 'cover.png',
+        }),
+      }),
+      ports,
+    );
+
+    expect(cardConfig).toMatchObject({
+      siteOgImage: 'site-og.png',
+      siteTwitterImage: 'site-twitter.png',
+      siteCoverImage: 'cover.png',
+    });
+  });
+
+  it('reports a site image the settings do not carry as none', () => {
+    const cardConfig = buildPostCardConfig(sources(), ports);
+
+    expect(cardConfig).toMatchObject({
+      siteOgImage: null,
+      siteTwitterImage: null,
+      siteCoverImage: null,
+    });
+  });
+
+  it.each([123, true])('ignores non-string site images (%s)', (value) => {
+    const cardConfig = buildPostCardConfig(
+      sources({
+        settings: settingsFrom({
+          ...baseSettings,
+          og_image: value,
+          twitter_image: value,
+          cover_image: value,
+        }),
+      }),
+      ports,
+    );
+
+    expect(cardConfig).toMatchObject({
+      siteOgImage: null,
+      siteTwitterImage: null,
+      siteCoverImage: null,
+    });
+  });
+
   it('drops Unsplash when the integration is off', () => {
     const cardConfig = buildPostCardConfig(
       sources({ settings: settingsFrom({ ...baseSettings, unsplash: false }) }),

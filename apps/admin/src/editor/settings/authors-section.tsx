@@ -1,6 +1,5 @@
-import { useId, useState } from 'react';
-import { Label } from '@tryghost/shade/components';
-import { Text } from '@tryghost/shade/primitives';
+import { useCallback, useId, useState } from 'react';
+import { FieldError, Label } from '@tryghost/shade/components';
 import { useBrowseUsers, type User } from '@tryghost/admin-x-framework/api/users';
 import type { PostAuthor } from '@tryghost/admin-x-framework/api/posts';
 import { settingsAuthorsError } from '@tryghost/test-data/selectors/editor';
@@ -9,12 +8,7 @@ import { AUTHORS_REQUIRED } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { SettingsSection } from './settings-section';
 import { AuthorsPicker } from './authors-picker';
-import {
-  AUTHORS_SEARCH_PARAMS,
-  authorSuggestions,
-  selectedAuthors,
-  type AuthorOption,
-} from './authors-options';
+import { AUTHORS_SEARCH_PARAMS, selectedAuthors, type AuthorOption } from './authors-options';
 
 export interface AuthorsSectionProps {
   session: EditorSessionHandle;
@@ -30,7 +24,7 @@ export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
   const inputId = useId();
   const errorId = useId();
   const [browsing, setBrowsing] = useState(false);
-  const [term, setTerm] = useState('');
+  const startBrowsing = useCallback(() => setBrowsing(true), []);
 
   const { data, isFetching, isError, refetch } = useBrowseUsers({
     defaultErrorHandler: false,
@@ -60,23 +54,15 @@ export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
         loadError={isError}
         loading={isFetching}
         selected={selected}
-        suggestions={authorSuggestions(data?.users, selected, term)}
-        term={term}
+        staff={data?.users ?? []}
         onChange={change}
-        onOpen={() => setBrowsing(true)}
+        onOpen={startBrowsing}
         onRetry={() => void refetch()}
-        onSearch={setTerm}
       />
       {invalid ? (
-        <Text
-          className="text-destructive"
-          data-testid={settingsAuthorsError}
-          id={errorId}
-          role="alert"
-          size="sm"
-        >
+        <FieldError data-testid={settingsAuthorsError} id={errorId}>
           {AUTHORS_REQUIRED}
-        </Text>
+        </FieldError>
       ) : null}
     </SettingsSection>
   );

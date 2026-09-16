@@ -46,6 +46,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { useLocation } from '@tryghost/admin-x-framework';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
 import { usePostsList } from './hooks/use-posts-list';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 /**
  * The React posts and pages list screens, served behind the `postsListReact`
@@ -63,6 +64,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     usePostsFilterState();
   const { data: currentUser } = useCurrentUser();
   const { data: settingsData } = useBrowseSettings();
+  const improveSendingUI = useFeatureFlag('improveSendingUI');
 
   // Report the current filters so the sidebar's Posts link can return here.
   const location = useLocation();
@@ -376,6 +378,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       key={item.id}
                       getMenuItems={getMenuItems}
                       hasAdminAccess={isAdmin}
+                      improveSendingUI={improveSendingUI}
                       isContributor={isContributor}
                       isSelected={selection.isSelected(item.id)}
                       memberCounts={memberCounts}

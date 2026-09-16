@@ -1,5 +1,5 @@
 import type { PublishOptions, SaveCompletion, ScheduleOptions } from '@/editor/engine/save-engine';
-import type { PublishDispatcher } from '@/editor/publish/use-publish-flow';
+import type { PublishDispatcher } from '@/editor/publish/publish-options';
 
 /** The engine's status commands, as the publish flow's dispatcher consumes them. */
 export interface StatusDispatchPorts {

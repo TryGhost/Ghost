@@ -147,6 +147,7 @@ module.exports = {
     editor: { user: { roles: [DataGenerator.Content.roles[1]] } },
     author: { user: { roles: [DataGenerator.Content.roles[2]] } },
     contributor: { user: { roles: [DataGenerator.Content.roles[4]] } },
+    super_editor: { user: { roles: [DataGenerator.Content.roles[6]] } },
   },
   roles: {
     ids: {
@@ -155,6 +156,7 @@ module.exports = {
       editor: DataGenerator.Content.roles[1].id,
       author: DataGenerator.Content.roles[2].id,
       contributor: DataGenerator.Content.roles[4].id,
+      super_editor: DataGenerator.Content.roles[6].id,
     },
   },
   cacheRules: cacheRules,

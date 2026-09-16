@@ -23,12 +23,14 @@ import { TextCursorInput } from 'lucide-react';
 import { arrayMove } from '@dnd-kit/sortable';
 import {
   inOrderOf,
+  memberAccessLabel,
   memberCustomFieldsDataType,
   useBrowseMemberCustomFieldsIncludingArchived,
   useReorderMemberCustomFields,
   userTypeForField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
+import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useQueryClient } from '@tryghost/admin-x-framework';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -64,7 +66,9 @@ const FieldRow: React.FC<{
           </span>
           <span className="min-w-0 grow">
             <span className="block font-semibold">{field.name}</span>
-            <span className="block text-sm text-muted-foreground">{userType.label}</span>
+            <span className="block text-sm text-muted-foreground">
+              {userType.label} &middot; {memberAccessLabel(field.access.member)}
+            </span>
           </span>
         </button>
       </ActionListItemContent>
@@ -182,11 +186,11 @@ const FieldList: React.FC<{
 };
 
 const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  // The endpoint is closed (404s) while the flag is off, so keep the query in
-  // step with the flag rather than firing it into a wall. Settings is the one
-  // place that manages archived fields too, so it uses the include-archived
+  // Nothing to fetch when the site cannot use custom fields at all, so keep the
+  // query in step with availability rather than firing it into a wall. Settings is
+  // the one place that manages archived fields too, so it uses the include-archived
   // variant rather than the default active-only browse.
-  const hasCustomFields = useFeatureFlag('membersCustomFields');
+  const hasCustomFields = useCustomFieldsAvailable();
   const { data } = useBrowseMemberCustomFieldsIncludingArchived({
     enabled: hasCustomFields,
   });

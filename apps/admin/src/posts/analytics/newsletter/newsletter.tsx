@@ -438,7 +438,7 @@ const Newsletter: React.FC = () => {
                 </div>
                 <PendingSendEmpty
                   description="Sends, opens and clicks will appear once every email has been sent"
-                  title="This newsletter is still sending"
+                  title="Your newsletter is being sent"
                 >
                   <div
                     className={`mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}

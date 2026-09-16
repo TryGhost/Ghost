@@ -9,16 +9,8 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import {
-  type PageEditorRecord,
-  useEditPage,
-  useEditorPage,
-} from '@tryghost/admin-x-framework/api/pages';
-import {
-  type PostEditorRecord,
-  useEditPost,
-  useEditorPost,
-} from '@tryghost/admin-x-framework/api/posts';
+import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
+import { useEditPost, useEditorPost } from '@tryghost/admin-x-framework/api/posts';
 import {
   type User,
   isAdminUser,
@@ -27,7 +19,11 @@ import {
   isEditorUser,
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
-import { settingsMenuToggle } from '@tryghost/test-data/selectors/editor';
+import {
+  editorLeaveDialog,
+  editorLoadError,
+  settingsMenuToggle,
+} from '@tryghost/test-data/selectors/editor';
 import {
   type CardConfigPostSource,
   type PostCardConfig,
@@ -37,7 +33,7 @@ import {
 import { EditorHeaderActions } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
-import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
+import type { EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
@@ -46,9 +42,8 @@ import { useEditorLeaveGuard } from './session/use-leave-guard';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
-import { useSaveShortcut } from './use-save-shortcut';
-
-type EditorRecord = PostEditorRecord | PageEditorRecord;
+import { useSaveShortcut } from './use-editor-shortcuts';
+import type { EditorRecord } from './session/projection';
 
 function EditorLoading() {
   return (
@@ -60,7 +55,7 @@ function EditorLoading() {
 
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <Stack align="center" className="h-full" data-testid="editor-load-error" justify="center">
+    <Stack align="center" className="h-full" data-testid={editorLoadError} justify="center">
       <Text tone="secondary">{message}</Text>
       <Button variant="outline" onClick={onRetry}>
         Retry
@@ -95,9 +90,7 @@ function statusRecordOf(
   }
 
   const email = 'email' in record ? record.email : null;
-  // The API types the relation as a bare object; the editor read includes it.
-  const newsletter =
-    'newsletter' in record ? (record.newsletter as EditorStatusNewsletter | null) : null;
+  const newsletter = 'newsletter' in record ? (record.newsletter ?? null) : null;
 
   return {
     status: record.status,
@@ -214,6 +207,7 @@ function EditorContent({
           <PostSettingsSidebar
             cardConfig={currentCardConfig}
             currentUser={currentUser}
+            featureImage={featureImage.featureImage}
             hasInlineExcerpt={showExcerpt}
             postType={postType}
             session={session}
@@ -222,7 +216,7 @@ function EditorContent({
         ) : null}
       </Inline>
       {snippetDialog}
-      <DirtyConfirmDialog testId="editor-leave-dialog" {...leaveGuard.dialogProps} />
+      <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
     </Stack>
   );
 }
@@ -312,8 +306,8 @@ function useLexicalConversion(postType: PostType) {
       try {
         const record: EditorRecord | undefined =
           postType === 'page'
-            ? (await editPage({ page: payload, options })).pages[0]
-            : (await editPost({ post: payload, options })).posts[0];
+            ? (await editPage({ page: payload, options, ...EDITOR_REQUEST_OPTIONS })).pages[0]
+            : (await editPost({ post: payload, options, ...EDITOR_REQUEST_OPTIONS })).posts[0];
         setState(record ? { id: source.id, record } : { id: source.id, error: true });
       } catch (error) {
         setState({ id: source.id, error });

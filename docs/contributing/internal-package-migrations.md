@@ -20,6 +20,12 @@ into Ghost as an internal-only package.
 The skill audits current consumers, prepares and tests the Ghost import, and
 opens a PR. It stops when the PR is ready for its exceptional merge.
 
+Internal packages imported through this workflow always live at
+`packages/<package>` in the Ghost repository root. They do not live under
+`ghost/`, even when Ghost Core is their only consumer. The skill reports the
+derived destination before it manipulates history, and the guarded merge
+preflight verifies it from the subtree metadata.
+
 Expect the handoff to include:
 
 - a green, unstacked PR titled `[Don't merge] ...`;

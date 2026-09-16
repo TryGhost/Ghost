@@ -1,7 +1,8 @@
+import { useId } from 'react';
 import { Label, RadioGroup, RadioGroupItem } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { publishScheduleDate, publishScheduleTime } from '@tryghost/test-data/selectors/editor';
-import { DateTimePicker } from '@/editor/publish/components/date-time-picker';
+import { DateTimePicker } from '@/editor/date-time-picker';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
 export interface PublishAtOptionsProps {
@@ -17,6 +18,8 @@ export function PublishAtOptions({
   onToggleScheduled,
   onSetScheduledAt,
 }: PublishAtOptionsProps) {
+  const id = useId();
+
   return (
     <Stack gap="md">
       <RadioGroup
@@ -24,12 +27,12 @@ export function PublishAtOptions({
         onValueChange={(value) => onToggleScheduled(value === 'schedule')}
       >
         <Inline gap="sm">
-          <RadioGroupItem id="publish-at-now" value="now" />
-          <Label htmlFor="publish-at-now">Set it live now</Label>
+          <RadioGroupItem id={`${id}-now`} value="now" />
+          <Label htmlFor={`${id}-now`}>Set it live now</Label>
         </Inline>
         <Inline gap="sm">
-          <RadioGroupItem id="publish-at-schedule" value="schedule" />
-          <Label htmlFor="publish-at-schedule">Schedule for later</Label>
+          <RadioGroupItem id={`${id}-schedule`} value="schedule" />
+          <Label htmlFor={`${id}-schedule`}>Schedule for later</Label>
         </Inline>
       </RadioGroup>
 

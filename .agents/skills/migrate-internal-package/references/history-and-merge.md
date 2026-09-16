@@ -54,6 +54,11 @@ excluding unrelated source-repository paths.
 
 ## Attach the history to Ghost
 
+The destination is always `packages/<package-directory>` at the Ghost
+repository root. A Core consumer does not make `ghost/<package-directory>` a
+valid package location. Record the derived destination in the work log and PR
+body before running `git subtree add`.
+
 Before creating the worktree, inspect collisions rather than discovering them
 halfway through the import:
 
@@ -96,6 +101,11 @@ git-subtree-dir: packages/<ghost-directory>
 git-subtree-mainline: <ghost-parent>
 git-subtree-split: <source-split-tip>
 ```
+
+The guarded merge script reads this metadata from the PR commits and rejects
+the import unless `git-subtree-dir` is exactly one direct child of `packages/`
+with a `package.json` at the reviewed PR head. Treat that check as a backstop,
+not a substitute for reviewing the destination before importing.
 
 Verify the topology before adding integration commits:
 

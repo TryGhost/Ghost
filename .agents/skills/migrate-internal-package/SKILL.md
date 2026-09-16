@@ -68,6 +68,14 @@ Before changing either repository, record the source repository, its default
 branch, the package path within it, the destination path in Ghost, and whether
 the package has been published to npm. Then:
 
+All packages moved by this workflow belong in Ghost's root `packages/`
+workspace. Derive the destination as `packages/<package-directory>` from the
+source package directory and report that exact path to the user before creating
+the subtree. Never place an imported package under `ghost/`, even when Ghost
+Core is its only consumer. If the derived path conflicts with an existing path
+or the request appears to require another workspace, stop and resolve the
+destination explicitly before manipulating history.
+
 1. Find every Ghost and source-repository reference to the package name and
    directory.
 2. Inspect its npm metadata, README, documentation, release configuration and

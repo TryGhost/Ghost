@@ -112,14 +112,20 @@ describe('EmailAnalyticsService', function () {
         latest: {
           jobName: 'email-analytics-latest-others',
           running: false,
+          fetchedThrough: null,
+          lagSeconds: null,
         },
         latestOpened: {
           jobName: 'email-analytics-latest-opened',
           running: false,
+          fetchedThrough: null,
+          lagSeconds: null,
         },
         missing: {
           jobName: 'email-analytics-missing',
           running: false,
+          fetchedThrough: null,
+          lagSeconds: null,
         },
         scheduled: {
           jobName: 'email-analytics-scheduled',
@@ -170,6 +176,144 @@ describe('EmailAnalyticsService', function () {
         },
       ]);
       assert.deepEqual(setJobMetadata.secondCall.args, ['custom-scheduled', null]);
+    });
+  });
+
+  describe('ingestion lag', function () {
+    it('advances through an empty successful window and measures lag using the server clock', async function () {
+      const fetchEvents = sinon.stub().resolves({});
+      const service = createService({ fetchEvents });
+      await service.fetchLatestNonOpenedEvents();
+
+      const end = fetchEvents.firstCall.args[0].end;
+      assert.deepEqual(service.getStatus().latest.fetchedThrough, end);
+      assert.equal(service.getStatus().latest.lagSeconds, 60);
+      assert.equal(service.getStatus().latest.lastEventTimestamp, undefined);
+
+      clock.tick(90_000);
+      assert.equal(service.getStatus().latest.lagSeconds, 150);
+    });
+
+    it('uses the safe cursor when a domain hits its event limit', async function () {
+      const safeCursor = new Date(Date.now() - 25 * 60_000);
+      const service = createService({ fetchEvents: sinon.stub().resolves({ safeCursor }) });
+      await service.fetchLatestNonOpenedEvents({ maxEvents: 100 });
+
+      assert.deepEqual(service.getStatus().latest.fetchedThrough, safeCursor);
+      assert.equal(service.getStatus().latest.lagSeconds, 1500);
+    });
+
+    it('advances past the newest event when the window is exhausted', async function () {
+      const timestamp = new Date(Date.now() - 7 * 60_000);
+      const processor = createStubEventProcessor();
+      processor.processBatch.callsFake(async (_events, _result, data) => {
+        data.lastEventTimestamp = timestamp;
+      });
+      const fetchEvents = sinon.stub().callsFake(async ({ batchHandler }) => {
+        await batchHandler([{ timestamp }]);
+        return {};
+      });
+      const service = createService({ fetchEvents, createEventProcessor: () => processor });
+      await service.fetchLatestNonOpenedEvents();
+
+      assert.equal(service.getStatus().latest.lagSeconds, 60);
+      assert.ok(
+        service.getStatus().latest.fetchedThrough! > service.getStatus().latest.lastEventTimestamp!,
+      );
+    });
+
+    it('keeps progress unknown when fetching is skipped', async function () {
+      const service = createService({ fetchEvents: sinon.stub().resolves() });
+      await service.fetchLatestNonOpenedEvents();
+
+      assert.equal(service.getStatus().latest.fetchedThrough, null);
+      assert.equal(service.getStatus().latest.lagSeconds, null);
+    });
+
+    it('keeps the previous progress after a partially processed fetch fails', async function () {
+      const fetchEvents = sinon.stub().resolves({});
+      const service = createService({ fetchEvents });
+      await service.fetchLatestNonOpenedEvents();
+      const fetchedThrough = service.getStatus().latest.fetchedThrough;
+      clock.tick(60_000);
+      fetchEvents.callsFake(async ({ batchHandler }) => {
+        await batchHandler([{ timestamp: new Date() }]);
+        throw new Error('Mailgun unavailable');
+      });
+
+      await assert.rejects(service.fetchLatestNonOpenedEvents(), /Mailgun unavailable/);
+      assert.deepEqual(service.getStatus().latest.fetchedThrough, fetchedThrough);
+      assert.equal(service.getStatus().latest.lagSeconds, 120);
+    });
+
+    it('keeps progress unknown when the first fetch after a restart fails', async function () {
+      const service = createService({
+        queries: {
+          getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() - 2 * 24 * 60 * 60_000)),
+        },
+        fetchEvents: sinon.stub().rejects(new Error('Mailgun unavailable')),
+      });
+
+      await assert.rejects(service.fetchLatestNonOpenedEvents(), /Mailgun unavailable/);
+
+      // The restored cursor is the last processed event, which can be days old on a quiet
+      // site, so it is not treated as progress
+      assert.equal(service.getStatus().latest.fetchedThrough, null);
+      assert.equal(service.getStatus().latest.lagSeconds, null);
+    });
+
+    it('does not publish progress before processing and final aggregation succeed', async function () {
+      const processor = createStubEventProcessor();
+      const fetchEvents = sinon.stub().callsFake(async () => {
+        assert.equal(service.getStatus().latest.fetchedThrough, null);
+        return {};
+      });
+      const service = createService({ fetchEvents, createEventProcessor: () => processor });
+      processor.aggregate.rejects(new Error('Aggregation failed'));
+
+      await assert.rejects(service.fetchLatestNonOpenedEvents(), /Aggregation failed/);
+      assert.equal(service.getStatus().latest.fetchedThrough, null);
+      assert.equal(service.getStatus().latest.lagSeconds, null);
+    });
+
+    it('reports opens and delivery progress independently', async function () {
+      const safeCursor = new Date(Date.now() - 25 * 60_000);
+      const fetchEvents = sinon.stub();
+      fetchEvents.onFirstCall().resolves({ safeCursor });
+      fetchEvents.onSecondCall().resolves({});
+      const service = createService({ fetchEvents });
+      await service.fetchLatestOpenedEvents();
+      await service.fetchLatestNonOpenedEvents();
+
+      assert.equal(service.getStatus().latestOpened.lagSeconds, 1500);
+      assert.equal(service.getStatus().latest.lagSeconds, 60);
+      assert.equal(service.getStatus().missing.lagSeconds, null);
+    });
+
+    it('reports scheduled refetch progress without wall-clock lag', async function () {
+      const begin = new Date(2023, 0, 1);
+      const end = new Date(2023, 0, 8);
+      const safeCursor = new Date(2023, 0, 2);
+      const fetchEvents = sinon.stub().callsFake(async ({ batchHandler }) => {
+        await batchHandler([{ timestamp: safeCursor }]);
+        return { safeCursor };
+      });
+      const service = createService({ fetchEvents });
+      await service.schedule({ begin, end });
+      await service.fetchScheduled({ maxEvents: 1 });
+
+      const { scheduled } = service.getStatus();
+      assert.deepEqual(scheduled.schedule, { begin, end });
+      assert.deepEqual(scheduled.fetchedThrough, safeCursor);
+      assert.equal(Object.hasOwn(scheduled, 'lagSeconds'), false);
+    });
+
+    it('reports the missing-events recovery window separately', async function () {
+      const service = createService({ fetchEvents: sinon.stub().resolves({}) });
+      await service.fetchMissing();
+
+      assert.equal(service.getStatus().missing.lagSeconds, 1800);
+      assert.equal(service.getStatus().latest.lagSeconds, null);
     });
   });
 

@@ -3,10 +3,14 @@ const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
 const configUtils = require('../../../utils/config-utils');
 const emailService = require('../../../../core/server/services/email-service');
-const { sendEmail } = require('../../../utils/batch-email-utils');
+const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
+const {
+  sendEmail,
+  createPublishedPostEmail,
+  waitForEmailStatus,
+} = require('../../../utils/batch-email-utils');
 
 describe('Resume interrupted sends', function () {
   let agent;
@@ -37,7 +41,6 @@ describe('Resume interrupted sends', function () {
   afterEach(async function () {
     await configUtils.restore();
     mockManager.restore();
-    await jobManager.allSettled();
   });
 
   afterAll(async function () {
@@ -72,9 +75,8 @@ describe('Resume interrupted sends', function () {
 
     // 4. Run the scanner. It will flip email -> pending and call scheduleEmail; the job
     //    that fires re-enters the normal emailJob -> sendBatches path.
-    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
     await emailService.service.resumeInterruptedSends();
-    await completedPromise;
+    await waitForEmailStatus(emailModel.id);
 
     // 5. Final state.
     await emailModel.refresh();
@@ -100,6 +102,42 @@ describe('Resume interrupted sends', function () {
 
     // Mailgun called exactly once (for batchB only — batchA was short-circuited).
     sinon.assert.calledOnce(mailgunStub);
+  });
+
+  it('resumes an email left pending before its job started', async function () {
+    // The lost-job shape: dispatch never happens, so the row lands `pending` with no
+    // batches and no recipients behind it. Recovery has to build the send from scratch,
+    // which is what makes this different from resuming a `submitting` row.
+    const scheduleEmail = sinon.stub(BatchSendingService.prototype, 'scheduleEmail');
+    const emailModel = await createPublishedPostEmail(agent);
+    sinon.assert.called(scheduleEmail);
+    scheduleEmail.restore();
+
+    assert.equal(emailModel.get('status'), 'pending');
+    assert.equal(
+      (await models.EmailBatch.findAll({ filter: `email_id:'${emailModel.id}'` })).models.length,
+      0,
+      'expected no batches for an email whose job never ran',
+    );
+
+    const mailgunStub = mockManager.getMailgunCreateMessageStub();
+    mailgunStub.resetHistory();
+
+    await emailService.service.resumeInterruptedSends();
+    await waitForEmailStatus(emailModel.id);
+
+    await emailModel.refresh();
+    assert.equal(emailModel.get('status'), 'submitted');
+
+    // Batches and recipients were created by the resumed job, not by the original send.
+    const batches = (await models.EmailBatch.findAll({ filter: `email_id:'${emailModel.id}'` }))
+      .models;
+    assert.equal(batches.length, 2);
+    const recipients = await models.EmailRecipient.findAll({
+      filter: `email_id:'${emailModel.id}'`,
+    });
+    assert.equal(recipients.models.length, 4);
+    sinon.assert.calledTwice(mailgunStub);
   });
 
   it('marks email as failed when an orphan submitting batch is encountered', async function () {
@@ -128,9 +166,8 @@ describe('Resume interrupted sends', function () {
     // logger so we can assert that guard fired instead of spamming stdout.
     const errorLog = sinon.stub(logging, 'error');
 
-    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
     await emailService.service.resumeInterruptedSends();
-    await completedPromise;
+    await waitForEmailStatus(emailModel.id);
 
     // The orphan batch causes sendBatches' partial-failure throw; emailJob catches and
     // marks the email failed. The orphan batch row is intentionally left in `submitting`
@@ -187,9 +224,8 @@ describe('Resume interrupted sends', function () {
     const mailgunStub = mockManager.getMailgunCreateMessageStub();
     mailgunStub.resetHistory();
 
+    // No job should be enqueued for this email, so there is nothing to wait for.
     await emailService.service.resumeInterruptedSends();
-    // No job should be enqueued for this email, so no awaitCompletion — we use allSettled
-    // in afterEach to drain anything else.
 
     await emailModel.refresh();
     assert.equal(

@@ -18,9 +18,11 @@ What that gate does depends on the post's status.
 The gate also holds a draft's field save back while a value it would send is not
 yet valid: an incomplete tier pairing, or a publish time that has not passed. The
 value stays staged, the section says why, and the next save the writer asks for
-is refused with the same message. A draft's body autosave is refused for that
-reason too while such a value stands, and the save banner carries the message
-whether or not the sidebar is open, so closing the panel does not hide it.
+is refused with the same message. A draft's body autosave is not held back the
+same way: it runs, and the same rule fails it before any request is sent, so the
+engine reports that error until the value is valid again. The save banner carries
+the message whether or not the sidebar is open, so closing the panel does not
+hide it.
 
 Staging is not a weaker form of saving. A staged value lives in the same live
 document as the body, so it counts everywhere unsaved work counts: the post
@@ -189,11 +191,28 @@ focused field before removing it, so Escape commits the edit as the back button
 does.
 
 An Escape something inside the pane has already answered — a dialog, a select,
-an uploader — leaves the pane open, so the writer dismisses one layer at a time.
+an uploader, the Unsplash search — leaves the pane open, so the writer dismisses
+one layer at a time.
 A pane whose section renders nothing, as a role-gated section does for a role
 that cannot write it, falls back to the section list rather than an empty panel.
 The panel owns which pane is open, so closing the panel or leaving the editor
 drops it and the panel is next opened on the section list.
+
+Returning to the section list and reopening the same social-card pane keeps an
+in-progress image upload pending. Its file picker and Unsplash button stay
+disabled until the upload succeeds or fails.
+
+## Escape
+
+Escape closes one layer, the innermost the writer is in. In a tag or author list
+it closes the list and keeps the term that was typed. In a code injection editor
+it frees the editor's Tab and closes nothing. In a dialog, a select or an
+uploader it closes that control. In the Unsplash search it closes the search and
+leaves the field it was opened from. With none of those open it closes the pane,
+and with no pane open the sidebar answers Escape with nothing.
+
+The Unsplash search traps focus and loops Tab navigation in both directions.
+Closing it returns focus to the picker button when that field is still present.
 
 ## Access
 
@@ -206,7 +225,8 @@ granted. The tier list is every one of the site's paid
 tiers, active ones before archived, and it loads only while `Specific tier(s)`
 is the choice. Reads carry tier relations for Public, Members and Paid posts;
 the free tier that comes with Public and Members reads is excluded from the
-selection, and a tier ID without type metadata is preserved.
+selection, and a tier ID without type metadata is preserved. A failed tier
+lookup shows an error and a Retry action in place of the list.
 
 The write contract drops `visibility: 'tiers'` whenever no tiers accompany it,
 so sending that pairing would be answered with the post's unchanged visibility
@@ -251,7 +271,7 @@ ignoring case and accents, and it leaves out anyone already credited. Arrow keys
 move the highlight, Enter takes the highlighted row and so does Tab once
 something has been typed, Escape closes the list and keeps the term, and both
 clicking away and moving focus out of the field close it and discard the term. A
-chip goes with its own remove button, and Backspace in an empty field drops the
+chip is removed by clicking it, and Backspace in an empty field drops the
 last one and opens the list on the staff it can offer again. A pick that empties
 the row under the highlight moves it to the last row rather than losing it.
 
@@ -272,7 +292,9 @@ The theme decides which templates a post may render with, so the section is the
 active theme's list and nothing else: its slugless templates, by name, under a
 Default that stands for the post carrying no template. A template the theme no
 longer offers reads as the default. A theme with no such templates leaves the
-section out entirely, and every role that can open the sidebar sees it.
+section out entirely, and every role that can open the sidebar sees it. A failed
+theme lookup is not the same as an empty one: the section stays and shows an
+error and a Retry action.
 
 A theme may also bind a template to one post URL. Where the post's slug matches
 one, the theme applies that template whatever the field holds, so the select is
@@ -345,6 +367,63 @@ carries one, else the site's own host and path with the post's slug. Titles and
 descriptions are truncated to what a result shows, counting whole Unicode
 characters and the ellipsis toward the limit.
 
+## X card
+
+The card X renders for the post is a pane, and every role that can open the
+panel can open it. Its image, title and description are the post's `twitter_`
+fields: the title and description are staged as the writer types and committed
+on the blur that ends the edit, and an uploaded or removed image is committed as
+it lands rather than waiting for a blur. Committing is not saving, so the save
+policy above still decides: a draft persists all three, and every other status
+stages them until Update. A field cleared back to empty is stored as no value.
+The image comes from the file picker, a drop, or Unsplash, and an upload the
+server refuses is reported without changing the field. The Unsplash picker is
+offered only while the site's Unsplash integration is on, and it writes the
+image it is given the same way an upload does.
+
+Nothing here is required, and each line falls back rather than emptying. The
+title is the X title, else the meta title, else the title the writer is looking
+at, else `(Untitled)`. The description is the X description, else the post's
+excerpt, else its meta description, else the excerpt the server generated for
+it, else the site's own description. The image is the X image, else the post's
+feature image, else the site's X image and cover image. Those fallbacks are what
+the two inputs show as placeholders, truncated to 40 and 150 characters, and
+what the card under them previews: the title whole, the description truncated to
+140, and the site's address without its scheme.
+
+The lengths that are limits are the column widths, 300 for the title and 500 for
+the description. Past one of those the field says so where the writer is typing
+and nothing is saved — not the field itself, and not a save the writer asks for,
+which is refused with the same message.
+
+## Facebook card
+
+The card Facebook shows for the post is a pane, and every role that can open the
+panel can open it. Its image, title and description are the post's `og_` fields:
+the title and description are staged as the writer types and committed on the
+blur that ends the edit, and an uploaded or removed image is committed as it
+lands rather than waiting for a blur. Committing is not saving, so the save
+policy above still decides: a draft persists all three, and every other status
+stages them until Update. A field cleared back to empty is stored as no value.
+The image comes from the file picker, a drop, or Unsplash. The Unsplash picker
+is offered only while the site's Unsplash integration is on, and it writes the
+image it is given the same way an upload does.
+
+Nothing here is required, and each line falls back rather than emptying. The
+title is the Facebook title, else the meta title, else the title the writer is
+looking at, else `(Untitled)`. The description is the Facebook description, else
+the post's excerpt, else its meta description, else the excerpt the server
+generated for it, else the site's own description. The image is the Facebook
+image, else the post's feature image, else the site's social image and cover
+image. Those fallbacks are what the two inputs show as placeholders, truncated to
+40 and 150 characters, and what the card under them previews, truncated to 140
+and shown against the site's address without its scheme.
+
+The lengths that are limits are the column widths, 300 for the title and 500 for
+the description. Past one of those the field says so where the writer is typing
+and nothing is saved — not the field itself, and not a save the writer asks for,
+which is refused with the same message.
+
 ## Post history
 
 The row opens the post's saved versions, and it is absent whenever there is
@@ -391,6 +470,37 @@ URL edit still waiting on the generator when it lands is released rather than
 left holding the save engine's slug wait. The restore's save carries the slug
 the post already holds, and the URL section accepts the next manual edit
 normally.
+
+## Code injection
+
+The row opens a pane holding the header and footer code this post injects into
+the page it renders on, each an HTML editor labelled with the theme helper it
+lands in. Every role that can open the panel can write both fields. A page's
+editors are named for a page rather than a post.
+
+The two fields are settings fields like any other: staged as the writer types,
+committed on the blur that ends the edit, and persisted or held back by the
+panel's save policy. Closing the pane commits the editor the writer was in, and
+a field cleared back to empty is stored as no value, as the excerpt is. A post
+saved before that convention holds an empty string rather than no value, so
+clearing such a field back to empty counts as a change until the next save.
+
+Escape inside either editor leaves the pane open. An open completion list or a
+selection wider than the cursor takes it first; otherwise it frees the editor's
+Tab, so the next Tab moves on to the footer editor and out of the pane rather
+than indenting. The back button, or Escape from anywhere else in the pane,
+still closes the pane.
+
+## Keyboard shortcuts
+
+A pane every role that can open the panel can open, and the one thing in the
+sidebar that edits nothing: the chords and slash commands the editor answers to,
+grouped as Formatting, Editing, Application and Inserting, with the keys shown
+against each. The modifiers are drawn as the writer's own platform draws them —
+the Mac glyphs for a Mac writer, the key names for everyone else — read from the
+user agent as the pane renders. Hovering a glyph names the key it stands for;
+a key already shown as its name carries no tooltip. A slash command reads the
+same wherever it is typed.
 
 ## Open and closed
 

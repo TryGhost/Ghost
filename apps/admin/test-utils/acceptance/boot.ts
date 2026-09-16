@@ -26,6 +26,14 @@ export interface BootRequestConfig {
   responseStatus?: number;
 }
 
+/**
+ * The site-wide member total, asked for in two shapes: `useMemberCount` sends
+ * only `limit`, `useMembersCount` pins order/page around an empty filter. Both
+ * are shell chrome; the members resource fake skips them so they never land in
+ * a spec's `lastRequest`.
+ */
+export const MEMBER_COUNT_PROBE_PATH = /^\/members\/\?(?:limit=1|filter=&order=id&limit=1&page=1)$/;
+
 // A function so every lookup serves freshly-minted responses — mutations
 // can't leak between tests.
 export function defaultBootRequests() {
@@ -52,7 +60,7 @@ export function defaultBootRequests() {
     },
     browseMembersCount: {
       method: 'GET',
-      path: '/members/?limit=1',
+      path: MEMBER_COUNT_PROBE_PATH,
       response: browseResponse('members', [], { limit: 1 }),
     },
     browseMemberCustomFieldDefinitions: {
@@ -143,7 +151,14 @@ function mergeLabsIntoSettingsBody(body: unknown, labs: LabsFlags): unknown {
   return { ...body, settings };
 }
 
-function withMergedLabs(
+function mergeConfigFields(body: unknown, fields: Record<string, unknown>): unknown {
+  if (!isRecord(body) || !isRecord(body.config)) {
+    return body;
+  }
+  return { ...body, config: { ...body.config, ...fields } };
+}
+
+function withMergedResponse(
   override: BootOverride,
   merge: (body: unknown) => unknown,
   fallback: () => unknown,
@@ -171,15 +186,36 @@ function withMergedLabs(
 export function composeLabsBootOverrides(labs: LabsFlags, boot: BootOverrides = {}): BootOverrides {
   return {
     ...boot,
-    browseConfig: withMergedLabs(
+    browseConfig: withMergedResponse(
       boot.browseConfig ?? {},
       (body) => mergeLabsIntoConfigBody(body, labs),
       () => configResponse({ labs }),
     ),
-    browseSettings: withMergedLabs(
+    browseSettings: withMergedResponse(
       boot.browseSettings ?? {},
       (body) => mergeLabsIntoSettingsBody(body, labs),
       () => settingsResponse({ labs }),
+    ),
+  };
+}
+
+/**
+ * Extra `/config/` fields compiled onto the boot overrides, the way `labs`
+ * flags are: merged into a `browseConfig` override response if the test has
+ * one, otherwise onto the canned test-data response. As with
+ * `composeLabsBootOverrides`, the fields named here win over the same key in a
+ * spec's own `browseConfig` response.
+ */
+export function composeConfigBootOverrides(
+  fields: Record<string, unknown>,
+  boot: BootOverrides = {},
+): BootOverrides {
+  return {
+    ...boot,
+    browseConfig: withMergedResponse(
+      boot.browseConfig ?? {},
+      (body) => mergeConfigFields(body, fields),
+      () => mergeConfigFields(configResponse(), fields),
     ),
   };
 }

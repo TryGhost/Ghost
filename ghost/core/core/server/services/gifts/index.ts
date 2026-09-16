@@ -75,6 +75,7 @@ export function init(options: GiftServiceInitOptions): void {
   });
 
   const giftEmailService = new GiftEmailService({
+    config,
     transactionalMailer: new GhostMailer(),
     bulkMailer: new MailgunClient({ config, settings: settingsCache }),
     settingsCache,

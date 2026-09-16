@@ -135,7 +135,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
           <PendingSendEmpty
             className={cn(fullWidth && 'grid gap-6 md:grid-cols-2 md:gap-0')}
             description="Opens and clicks will appear once every email has been sent"
-            title="This newsletter is still sending"
+            title="Your newsletter is being sent"
           >
             <div className={cn(fullWidth && 'md:border-r md:pr-6')}>
               <div className="grid grid-cols-2 gap-6">

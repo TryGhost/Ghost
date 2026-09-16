@@ -22,8 +22,13 @@ function fold(value: string): string {
     .toLowerCase();
 }
 
-function toOption(user: Pick<User, 'id' | 'name' | 'email'>): AuthorOption {
-  return { id: user.id, name: user.name || user.email, email: user.email };
+/** What a staff member reads as: their name, or their email when they have none. */
+export function authorName(person: Pick<User, 'name' | 'email'>): string {
+  return person.name || person.email;
+}
+
+export function toAuthorOption(user: Pick<User, 'id' | 'name' | 'email'>): AuthorOption {
+  return { id: user.id, name: authorName(user), email: user.email };
 }
 
 /**
@@ -33,19 +38,6 @@ function toOption(user: Pick<User, 'id' | 'name' | 'email'>): AuthorOption {
 export function matchesAuthor(user: Pick<User, 'name' | 'slug' | 'email'>, term: string): boolean {
   const needle = fold(term);
   return [user.name, user.slug, user.email].some((field) => fold(field ?? '').includes(needle));
-}
-
-/** The rows the list offers: everyone not already an author, narrowed by the term. */
-export function authorSuggestions(
-  users: User[] | undefined,
-  selected: ReadonlyArray<AuthorOption>,
-  term: string,
-): AuthorOption[] {
-  const chosen = new Set(selected.map(({ id }) => id));
-  const trimmed = term.trim();
-  return (users ?? [])
-    .filter((user) => !chosen.has(user.id) && (!trimmed || matchesAuthor(user, trimmed)))
-    .map(toOption);
 }
 
 /**
@@ -65,7 +57,7 @@ export function selectedAuthors(
     const user = known.get(author.id);
     options.push(
       user
-        ? toOption(user)
+        ? toAuthorOption(user)
         : {
             id: author.id,
             name: author.name || author.email || author.id,

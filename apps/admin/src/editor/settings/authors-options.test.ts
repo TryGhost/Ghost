@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { User } from '@tryghost/admin-x-framework/api/users';
-import { authorSuggestions, matchesAuthor, selectedAuthors } from './authors-options';
+import { matchesAuthor, selectedAuthors, toAuthorOption } from './authors-options';
 
 function user(overrides: Partial<User>): User {
   return {
@@ -36,29 +36,17 @@ describe('matchesAuthor', () => {
   });
 });
 
-describe('authorSuggestions', () => {
-  it('offers everyone who is not already an author', () => {
-    const suggestions = authorSuggestions(
-      [JANE, JOSE],
-      [{ id: '1', name: 'Jane Doe', email: '' }],
-      '',
-    );
-
-    expect(suggestions.map(({ id }) => id)).toEqual(['2']);
-  });
-
-  it('narrows the offer by the typed term', () => {
-    expect(authorSuggestions([JANE, JOSE], [], 'jane').map(({ id }) => id)).toEqual(['1']);
+describe('toAuthorOption', () => {
+  it('keeps the staff member’s own name', () => {
+    expect(toAuthorOption(JANE)).toEqual({ id: '1', name: 'Jane Doe', email: 'jane@example.com' });
   });
 
   it('falls back to the email when a staff member has no name', () => {
-    expect(authorSuggestions([NAMELESS], [], '')).toEqual([
-      { id: '3', name: 'ghost@example.com', email: 'ghost@example.com' },
-    ]);
-  });
-
-  it('answers with nothing before the staff browse has loaded', () => {
-    expect(authorSuggestions(undefined, [], '')).toEqual([]);
+    expect(toAuthorOption(NAMELESS)).toEqual({
+      id: '3',
+      name: 'ghost@example.com',
+      email: 'ghost@example.com',
+    });
   });
 });
 

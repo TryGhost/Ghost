@@ -11,8 +11,8 @@ import {
   parseIdentity,
 } from '@tryghost/metafield-types/identity';
 import { DbMetafieldLeaf, DbMetafieldValue, FIELD_STATUS, type WrittenBy } from './schema';
-import { activeFields } from './queries';
-import { canWrite, readableFields, type Audience } from './access';
+import { ACTIVE_ONLY, definitions, readableBy } from './queries';
+import { canWrite, type Audience, type MemberAccess } from './access';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
 
 const FIELDS_TABLE = 'members_metafields';
@@ -43,17 +43,18 @@ const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 
 const wireProperty = (identity: string): string => [QUALIFIER, identity].join('.');
 
-interface ActiveField {
+interface AllowedField {
   id: string;
   namespace: string;
   key: string;
   name: string;
   type: FieldType;
+  memberAccess: MemberAccess;
 }
 
 /** An absent `value` means clear the field. */
 export interface PlannedWrite {
-  field: ActiveField;
+  field: AllowedField;
   value?: unknown;
 }
 
@@ -72,7 +73,14 @@ export class MetafieldValuesService {
     this.getMaxDefinitions = getMaxDefinitions;
   }
 
-  private async activeFieldsByIdentity(identities: string[]): Promise<Map<string, ActiveField>> {
+  // The query is scoped to the audience, so a field they may not see is absent from
+  // the map and the caller reports it as unknown. Looking up unscoped and rejecting
+  // afterwards would let a member tell a hidden field from an undefined one by the
+  // reply they got.
+  private async allowedFieldsByIdentity(
+    identities: string[],
+    audience: Audience,
+  ): Promise<Map<string, AllowedField>> {
     const keys = identities
       .map((identity) => parseIdentity(identity))
       .filter((parsed) => parsed !== null && parsed.namespace === CUSTOM_NAMESPACE)
@@ -80,13 +88,20 @@ export class MetafieldValuesService {
     if (keys.length === 0) {
       return new Map();
     }
-    const fields = await activeFields(this.knex)
+    const fields = await definitions(this.knex, { audience, status: ACTIVE_ONLY })
       .whereIn('key', keys)
-      .select('id', 'key', 'name', 'type');
+      .select('id', 'key', 'name', 'type', 'member_access');
     return new Map(
       fields.map((field) => [
         formatIdentity({ namespace: CUSTOM_NAMESPACE, key: field.key, partPath: null }),
-        { ...field, namespace: CUSTOM_NAMESPACE },
+        {
+          id: field.id,
+          key: field.key,
+          name: field.name,
+          type: field.type,
+          namespace: CUSTOM_NAMESPACE,
+          memberAccess: field.member_access,
+        },
       ]),
     );
   }
@@ -102,8 +117,14 @@ export class MetafieldValuesService {
     // Not ordered by field: these rows become an object keyed by field, and an object
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
-    const rows = await this.knex(VALUES_TABLE)
-      .join(FIELDS_TABLE, `${VALUES_TABLE}.metafield_key`, `${FIELDS_TABLE}.key`)
+    const rows = await readableBy(
+      this.knex(VALUES_TABLE).join(
+        FIELDS_TABLE,
+        `${VALUES_TABLE}.metafield_key`,
+        `${FIELDS_TABLE}.key`,
+      ),
+      audience,
+    )
       .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
       .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
       .orderBy(`${VALUES_TABLE}.path`, 'asc')
@@ -132,10 +153,7 @@ export class MetafieldValuesService {
       }
     }
 
-    // Narrowed before assembly, not after: a composite is one value spread across
-    // several rows, and dropping some of its parts later would hand back half an
-    // address rather than no address.
-    const flat = valuesFromLeaves(readableFields(audience, leaves));
+    const flat = valuesFromLeaves(leaves);
     return new Map(
       memberIds.map((memberId) => [memberId, { [CUSTOM_NAMESPACE]: flat.get(memberId) ?? {} }]),
     );
@@ -209,7 +227,7 @@ export class MetafieldValuesService {
       });
     }
 
-    const byIdentity = await this.activeFieldsByIdentity(identities);
+    const byIdentity = await this.allowedFieldsByIdentity(identities, audience);
     const writes: PlannedWrite[] = [];
 
     for (const [identity, raw] of Object.entries(values)) {
@@ -221,6 +239,8 @@ export class MetafieldValuesService {
         });
       }
 
+      // A different refusal from the unknown-field one above: this audience can
+      // already see the field, so naming it discloses nothing.
       if (!canWrite(audience, field)) {
         throw new errors.ValidationError({
           message: `Cannot set custom field: ${identity}`,

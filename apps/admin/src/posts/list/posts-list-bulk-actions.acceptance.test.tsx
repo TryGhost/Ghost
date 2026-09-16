@@ -290,6 +290,8 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.tagSearchInput().fill('C++');
 
       await expect.poll(() => tags.lastRequest?.filter).toContain("tags.name:~'C++'");
+      // An empty include makes the real API refuse the search with withRelated.
+      expect(new URL(tags.lastRequest!.url).searchParams.get('include')).not.toBe('');
       await expect.element(postsListScreen.tagOption('C++')).toBeVisible();
       await expect(postsListScreen.tagOption(/Create/)).toHaveCount(0);
     });
@@ -419,7 +421,8 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.contextMenuItem('Add a tag').click();
       await postsListScreen.tagPickerField().click();
 
-      // First closes the list, second reaches the dialog.
+      // With nothing typed one Escape does both: the dialog's guard stands
+      // aside and the list closes under it. The second has nothing left to do.
       await userEvent.keyboard('{Escape}');
       await userEvent.keyboard('{Escape}');
 

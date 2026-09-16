@@ -588,18 +588,11 @@ describe('Email Service', function () {
   });
 
   describe('resumeInterruptedSends', function () {
-    // Mock factory that mimics the scanner's filter semantics: the scanner runs two
-    // findAll queries, one for stale rows (`created_at:<...`) and one for fresh rows
-    // (`created_at:>...`). For tests that don't care about the stale path, this
-    // returns the given emails for the fresh query and an empty list for stale.
+    // The scanner runs one query per cutoff side. Tests that don't exercise the stale
+    // path get an empty list for it and the given emails for the fresh one.
     const filterAwareFindAll =
       (emails) =>
-      async ({ filter }) => {
-        if (filter.includes('created_at:<')) {
-          return { models: [] };
-        }
-        return { models: emails };
-      };
+      async ({ filter }) => ({ models: filter.includes('created_at:<') ? [] : emails });
 
     it('Per-email try/catch: one bad email does not skip the others', async function () {
       const errorLog = sinon.stub(logging, 'error');
@@ -701,14 +694,18 @@ describe('Email Service', function () {
       sinon.assert.notCalled(scheduleEmail);
     });
 
-    it('Flips stale submitting emails to failed and does not resume them', async function () {
+    it('Flips stale submitting and pending emails to failed and does not resume them', async function () {
       const updateStatusLock = sinon.stub().resolves(createModel({}));
-      // One ancient stale row, one fresh row. The mock differentiates by the filter
-      // string the scanner uses: `created_at:<` for stale, `created_at:>` for fresh.
-      const staleEmail = createModel({
-        id: 'ancient',
+      const staleSubmittingEmail = createModel({
+        id: 'ancient-submitting',
         status: 'submitting',
-        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        post: createModel({ status: 'published' }),
+      });
+      const stalePendingEmail = createModel({
+        id: 'ancient-pending',
+        status: 'pending',
+        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         post: createModel({ status: 'published' }),
       });
       const freshEmail = createModel({
@@ -728,12 +725,11 @@ describe('Email Service', function () {
         verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
         models: {
           Email: {
-            findAll: async ({ filter }) => {
-              if (filter.includes('created_at:<')) {
-                return { models: [staleEmail] };
-              }
-              return { models: [freshEmail] };
-            },
+            findAll: async ({ filter }) => ({
+              models: filter.includes('created_at:<')
+                ? [staleSubmittingEmail, stalePendingEmail]
+                : [freshEmail],
+            }),
           },
         },
         batchSendingService: {
@@ -750,17 +746,81 @@ describe('Email Service', function () {
 
       await localService.resumeInterruptedSends();
 
-      // updateStatusLock called twice: once to flip the stale row to failed, once
-      // to flip the fresh row from submitting -> pending so emailJob picks it up.
-      assert.equal(updateStatusLock.callCount, 2);
-      sinon.assert.calledWith(updateStatusLock, sinon.match.any, 'ancient', 'failed', [
+      assert.equal(updateStatusLock.callCount, 3);
+      sinon.assert.calledWith(updateStatusLock, sinon.match.any, 'ancient-submitting', 'failed', [
         'submitting',
+      ]);
+      sinon.assert.calledWith(updateStatusLock, sinon.match.any, 'ancient-pending', 'failed', [
+        'pending',
       ]);
       sinon.assert.calledWith(updateStatusLock, sinon.match.any, 'recent', 'pending', [
         'submitting',
       ]);
-      // Only the fresh row should reach scheduleEmail.
       sinon.assert.calledOnce(scheduleEmail);
+    });
+
+    it('Resumes fresh pending emails without changing their status', async function () {
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const email = createModel({
+        id: 'pending',
+        status: 'pending',
+        post: createModel({ status: 'published' }),
+      });
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: { Email: { findAll: filterAwareFindAll([email]) } },
+        batchSendingService: { scheduleEmail, updateStatusLock },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      sinon.assert.notCalled(updateStatusLock);
+      sinon.assert.calledOnceWithExactly(scheduleEmail, email);
+    });
+
+    it('Marks fresh pending emails with unsendable posts as failed', async function () {
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const email = createModel({
+        id: 'pending',
+        status: 'pending',
+        post: createModel({ status: 'draft' }),
+      });
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: { Email: { findAll: filterAwareFindAll([email]) } },
+        batchSendingService: { scheduleEmail, updateStatusLock },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      sinon.assert.calledOnceWithExactly(updateStatusLock, sinon.match.any, 'pending', 'failed', [
+        'pending',
+      ]);
+      sinon.assert.notCalled(scheduleEmail);
     });
 
     it('Respects bulkEmail:resumeMaxAgeMs config override', async function () {
@@ -799,7 +859,14 @@ describe('Email Service', function () {
       const after = Date.now();
 
       assert.equal(capturedFilters.length, 2);
-      // Both filters carry the same cutoff timestamp — extract it from one.
+      // Both sides ask for both statuses, against one shared cutoff.
+      for (const filter of capturedFilters) {
+        assert.match(filter, /status:\[pending,submitting\]/);
+      }
+      assert.equal(
+        new Set(capturedFilters.map((filter) => filter.match(/created_at:[<>]'([^']+)'/)[1])).size,
+        1,
+      );
       const match = capturedFilters[0].match(/created_at:[<>]'([^']+)'/);
       assert.ok(match, `expected ISO cutoff in filter, got: ${capturedFilters[0]}`);
       const cutoffMs = new Date(match[1]).getTime();

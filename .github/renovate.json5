@@ -356,7 +356,6 @@
     {
       groupName: 'TryGhost runtime packages',
       matchPackageNames: [
-        '@tryghost/api-framework',
         '@tryghost/bookshelf-plugins',
         '@tryghost/database-info',
         '@tryghost/debug',
