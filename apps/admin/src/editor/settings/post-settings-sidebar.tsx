@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode, useEffect, useId } from 'react';
+import { Fragment, memo, type ReactNode, useEffect, useId } from 'react';
 import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
@@ -34,7 +34,21 @@ import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
 
-function ExcerptSection({ session }: { session: EditorSettingsPort }) {
+const MemoAccessSection = memo(AccessSection);
+const MemoAuthorsSection = memo(AuthorsSection);
+const MemoCodeInjectionSection = memo(CodeInjectionSection);
+const MemoDeleteSection = memo(DeleteSection);
+const MemoKeyboardShortcutsSection = memo(KeyboardShortcutsSection);
+const MemoMetaDataSection = memo(MetaDataSection);
+const MemoPostHistorySection = memo(PostHistorySection);
+const MemoPublishDateSection = memo(PublishDateSection);
+const MemoShowTitleSection = memo(ShowTitleSection);
+const MemoSocialCardSection = memo(SocialCardSection);
+const MemoTagsSection = memo(TagsSection);
+const MemoTemplateSection = memo(TemplateSection);
+const MemoUrlSection = memo(UrlSection);
+
+const ExcerptSection = memo(function ExcerptSection({ session }: { session: EditorSettingsPort }) {
   const inputId = useId();
 
   return (
@@ -50,9 +64,9 @@ function ExcerptSection({ session }: { session: EditorSettingsPort }) {
       />
     </SettingsSection>
   );
-}
+});
 
-function FeaturedSection({
+const FeaturedSection = memo(function FeaturedSection({
   session,
   postType,
 }: {
@@ -74,7 +88,7 @@ function FeaturedSection({
       </Inline>
     </SettingsSection>
   );
-}
+});
 
 export interface PostSettingsSidebarProps {
   session: EditorSessionHandle;
@@ -114,24 +128,26 @@ export function PostSettingsSidebar({
   const subviews = useSubviewController();
 
   const sections: Record<SettingsSectionId, ReactNode> = {
-    url: <UrlSection postType={postType} session={session} siteUrl={siteUrl} />,
-    'publish-date': <PublishDateSection session={session} />,
-    tags: canTag ? <TagsSection session={session} /> : null,
+    url: <MemoUrlSection postType={postType} session={session} siteUrl={siteUrl} />,
+    'publish-date': <MemoPublishDateSection session={session} />,
+    tags: canTag ? <MemoTagsSection session={session} /> : null,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
-    access: canManagePost ? <AccessSection postType={postType} session={session} /> : null,
+    access: canManagePost ? <MemoAccessSection postType={postType} session={session} /> : null,
     authors: canCreditOthers ? (
-      <AuthorsSection currentUser={currentUser} session={session} />
+      <MemoAuthorsSection currentUser={currentUser} session={session} />
     ) : null,
     'show-title-and-feature-image':
-      postType === 'page' ? <ShowTitleSection currentUser={currentUser} session={session} /> : null,
-    template: <TemplateSection postType={postType} session={session} />,
-    delete: <DeleteSection postType={postType} session={session} />,
-    'code-injection': <CodeInjectionSection postType={postType} session={session} />,
-    'meta-data': <MetaDataSection session={session} siteUrl={siteUrl} />,
-    'keyboard-shortcuts': <KeyboardShortcutsSection />,
+      postType === 'page' ? (
+        <MemoShowTitleSection currentUser={currentUser} session={session} />
+      ) : null,
+    template: <MemoTemplateSection postType={postType} session={session} />,
+    delete: <MemoDeleteSection postType={postType} session={session} />,
+    'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
+    'meta-data': <MemoMetaDataSection session={session} siteUrl={siteUrl} />,
+    'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
     'x-card': (
-      <SocialCardSection
+      <MemoSocialCardSection
         cardConfig={cardConfig}
         featureImage={featureImage}
         network={X_CARD_NETWORK}
@@ -140,7 +156,7 @@ export function PostSettingsSidebar({
       />
     ),
     'facebook-card': (
-      <SocialCardSection
+      <MemoSocialCardSection
         cardConfig={cardConfig}
         featureImage={featureImage}
         network={FACEBOOK_CARD_NETWORK}
@@ -149,7 +165,7 @@ export function PostSettingsSidebar({
       />
     ),
     'post-history': (
-      <PostHistorySection
+      <MemoPostHistorySection
         cardConfig={cardConfig}
         postType={postType}
         session={session}
