@@ -7,6 +7,7 @@ import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
 import { RunList } from './run-list';
 import { PerformanceDateFilter } from './performance-date-filter';
+import type { RunSort } from '@/automations/types';
 import {
   createPerformanceDateRange,
   PERFORMANCE_RANGES,
@@ -32,11 +33,15 @@ export const PerformanceSidebar: React.FC<{
   const [hasOpened, setHasOpened] = useState(false);
   const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
   const [requestRevision, setRequestRevision] = useState(0);
+  const [sort, setSort] = useState<RunSort>({ key: 'created_at', direction: 'desc' });
+  const [listRevision, setListRevision] = useState(0);
   const [dateRange, setDateRange] = useState(() => createPerformanceDateRange('all'));
   const rangeLabel = PERFORMANCE_RANGES.find((range) => range.value === dateRange.value)!.label;
   const panelId = useId();
   const headingId = useId();
   const requestId = `${panelId}:${requestRevision}`;
+  // Sorting refreshes only the list; status interactions refresh counts and list together.
+  const listRequestId = `${requestId}:${listRevision}`;
 
   return (
     <>
@@ -124,10 +129,15 @@ export const PerformanceSidebar: React.FC<{
               <RunList
                 automationId={automationId}
                 isSelectionDisabled={isRunSelectionDisabled}
-                requestId={requestId}
+                listRequestId={listRequestId}
                 selectedRunId={selectedRunId}
+                sort={sort}
                 status={status}
                 onSelectRun={onSelectRun}
+                onSortChange={(next) => {
+                  setSort(next);
+                  setListRevision((revision) => revision + 1);
+                }}
               />
             </Stack>
           )}

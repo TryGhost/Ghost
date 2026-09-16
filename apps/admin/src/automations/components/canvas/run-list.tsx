@@ -7,12 +7,14 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableHeadButton,
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useAutomationRuns } from '@/automations/hooks/use-automation-runs';
+import type { RunSort } from '@/automations/types';
 import { CompletedGlyph, ExitedGlyph, InProgressGlyph } from './run-status-icons';
 
 const statusIcons = {
@@ -24,17 +26,35 @@ const statusIcons = {
 
 export const RunList: React.FC<{
   automationId: string;
-  requestId: string;
+  listRequestId: string;
   status: AutomationRunStatusFilter | null;
   selectedRunId: string | null;
   onSelectRun: (id: string, memberName: string) => void;
   isSelectionDisabled: boolean;
-}> = ({ automationId, requestId, status, selectedRunId, onSelectRun, isSelectionDisabled }) => {
-  const { data, isLoading, isError, unavailable, retry } = useAutomationRuns(
+  sort: RunSort;
+  onSortChange: (sort: RunSort) => void;
+}> = ({
+  automationId,
+  listRequestId,
+  status,
+  sort,
+  onSortChange,
+  selectedRunId,
+  onSelectRun,
+  isSelectionDisabled,
+}) => {
+  const { data, isLoading, isError, unavailable, unsupportedSort, retry } = useAutomationRuns(
     automationId,
     status,
-    requestId,
+    sort,
+    listRequestId,
   );
+  const SortIcon = sort.direction === 'asc' ? LucideIcon.ArrowUp : LucideIcon.ArrowDown;
+  const changeSort = () =>
+    onSortChange({
+      key: 'created_at',
+      direction: sort.direction === 'asc' ? 'desc' : 'asc',
+    });
   return (
     <Stack aria-label="Automation runs" gap="sm" role="region">
       <Table aria-label="Automation runs" className="table-fixed">
@@ -43,10 +63,14 @@ export const RunList: React.FC<{
             <TableHead className="px-4" scope="col">
               Member
             </TableHead>
-            <TableHead aria-sort="descending" className="w-28 px-4" scope="col">
-              <Inline gap="xs">
-                Entered <LucideIcon.ArrowDown aria-hidden="true" className="size-4" />
-              </Inline>
+            <TableHead
+              aria-sort={sort.direction === 'asc' ? 'ascending' : 'descending'}
+              className="w-28 px-4"
+              scope="col"
+            >
+              <TableHeadButton className="normal-case" type="button" onClick={changeSort}>
+                Entered <SortIcon aria-hidden="true" />
+              </TableHeadButton>
             </TableHead>
             <TableHead className="w-20 px-4" scope="col">
               Status
@@ -149,6 +173,11 @@ export const RunList: React.FC<{
       {unavailable && (
         <Text className="px-4 py-6" role="status" size="sm" tone="secondary">
           The run list is unavailable on this version of Ghost.
+        </Text>
+      )}
+      {unsupportedSort && (
+        <Text className="px-4 py-6" role="status" size="sm" tone="secondary">
+          Sorting is unavailable on this version of Ghost.
         </Text>
       )}
       {isError && (

@@ -159,7 +159,7 @@ describe('Automation run selection and canvas transitions', () => {
   });
 
   it('switches repeated entries by run ID and ignores earlier responses including A to B to A', async () => {
-    setup('first', [run('a'), { ...run('b'), created_at: '2026-09-15T12:00:00.000Z' }]);
+    setup('first', [run('a'), { ...run('b'), created_at: '2026-09-13T12:00:00.000Z' }]);
     let finish!: () => void;
     const pending = new Promise<void>((resolve) => {
       finish = resolve;

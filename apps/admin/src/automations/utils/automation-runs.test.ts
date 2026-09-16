@@ -3,7 +3,7 @@ import {
   AutomationRunsResponseSchema,
   type AutomationRun,
 } from '@tryghost/admin-x-framework/api/automations';
-import { mapAutomationRuns } from './automation-runs';
+import { isSortedRuns, mapAutomationRuns } from './automation-runs';
 
 const run: AutomationRun = {
   id: 'one',
@@ -85,5 +85,36 @@ describe('automation run response validation', () => {
     },
   ])('rejects $name', ({ body }) => {
     expect(AutomationRunsResponseSchema.safeParse(body).success).toBe(false);
+  });
+});
+
+describe('automation run list ordering check', () => {
+  const at = (id: string, createdAt: string): AutomationRun => ({
+    ...run,
+    id,
+    created_at: createdAt,
+  });
+  const newest = at('b', '2026-09-15T12:00:00.000Z');
+  const olderTieB = at('b', '2026-09-14T12:00:00.000Z');
+  const olderTieA = at('a', '2026-09-14T12:00:00.000Z');
+
+  it('accepts entry time then run ID in the requested direction, including empty lists', () => {
+    expect(isSortedRuns([newest, olderTieB, olderTieA], 'desc')).toBe(true);
+    expect(isSortedRuns([olderTieA, olderTieB, newest], 'asc')).toBe(true);
+    expect(isSortedRuns([], 'asc')).toBe(true);
+    expect(isSortedRuns([newest], 'desc')).toBe(true);
+  });
+
+  it('rejects rows in the opposite direction or with ties out of ID order', () => {
+    expect(isSortedRuns([olderTieA, newest], 'desc')).toBe(false);
+    expect(isSortedRuns([newest, olderTieA], 'asc')).toBe(false);
+    expect(isSortedRuns([olderTieA, olderTieB], 'desc')).toBe(false);
+    expect(isSortedRuns([olderTieB, olderTieA], 'asc')).toBe(false);
+  });
+
+  it('compares equal instants written in different timestamp formats', () => {
+    expect(
+      isSortedRuns([at('b', '2026-09-14T12:00:00Z'), at('a', '2026-09-14T12:00:00.000Z')], 'desc'),
+    ).toBe(true);
   });
 });

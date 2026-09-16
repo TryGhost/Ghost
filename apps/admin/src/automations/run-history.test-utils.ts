@@ -54,7 +54,7 @@ export const detail = (id: string): AutomationDetail => ({
   actions: [{ id: 'draft-wait', type: 'wait', data: { wait_hours: 24 } }],
   edges: [],
 });
-export const setup = (id = 'first', runs = [run('a'), run('b', 'Bea')]) => {
+export const setup = (id = 'first', runs = [run('b', 'Bea'), run('a')]) => {
   fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [detail(id)] });
   const list = fakeAdminEndpoint('GET', `/automations/${id}/runs/`, { automation_runs: runs });
   const counts = fakeAdminEndpoint('GET', `/automations/${id}/status-stats/`, {
