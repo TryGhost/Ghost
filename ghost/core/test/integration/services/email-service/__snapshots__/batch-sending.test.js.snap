@@ -482,11 +482,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -1360,11 +1355,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -2178,11 +2168,6 @@ table.body h2 span {
   .kg-card-figcaption p,
 .kg-card-figcaption p span {
     font-size: 13px!important;
-  }
-}
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
   }
 }
 </style>
@@ -3000,11 +2985,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -3820,11 +3800,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -4601,11 +4576,6 @@ table.body h2 span {
   .kg-card-figcaption p,
 .kg-card-figcaption p span {
     font-size: 13px!important;
-  }
-}
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
   }
 }
 </style>
@@ -5455,11 +5425,6 @@ table.body h2 span {
   .kg-card-figcaption p,
 .kg-card-figcaption p span {
     font-size: 13px!important;
-  }
-}
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
   }
 }
 </style>
@@ -6341,11 +6306,6 @@ table.body h2 span {
   .kg-card-figcaption p,
 .kg-card-figcaption p span {
     font-size: 13px!important;
-  }
-}
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
   }
 }
 </style>
@@ -8561,11 +8521,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -9560,11 +9515,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -9723,7 +9673,7 @@ table.body h2 span {
                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr>
                                                 <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p class=\\"hidden\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Name: not provided</p>
+                                                    
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Email: <a href=\\"#\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">canceled-paid@example.com</a></p>
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Member since: date</p>
                                                 </td>
@@ -9939,7 +9889,7 @@ You are receiving this because you are a paid subscriber to Ghost. Your subscrip
 
 
 
-Name: not provided
+
 
 
 Email: canceled-paid@example.com
@@ -10469,11 +10419,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -10632,7 +10577,7 @@ table.body h2 span {
                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr>
                                                 <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p class=\\"hidden\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Name: not provided</p>
+                                                    
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Email: <a href=\\"#\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">subscription-box-comped@example.com</a></p>
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Member since: date</p>
                                                 </td>
@@ -10848,7 +10793,7 @@ You are receiving this because you are a complimentary subscriber to Ghost.
 
 
 
-Name: not provided
+
 
 
 Email: subscription-box-comped@example.com
@@ -11378,11 +11323,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -11541,7 +11481,7 @@ table.body h2 span {
                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr>
                                                 <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p class=\\"hidden\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Name: not provided</p>
+                                                    
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Email: <a href=\\"#\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">subscription-box-1@example.com</a></p>
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Member since: date</p>
                                                 </td>
@@ -11757,7 +11697,7 @@ You are receiving this because you are a free subscriber to Ghost.
 
 
 
-Name: not provided
+
 
 
 Email: subscription-box-1@example.com
@@ -12287,11 +12227,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -12450,7 +12385,7 @@ table.body h2 span {
                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr>
                                                 <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p class=\\"hidden\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Name: not provided</p>
+                                                    
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Email: <a href=\\"#\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">paid@example.com</a></p>
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Member since: date</p>
                                                 </td>
@@ -12666,7 +12601,7 @@ You are receiving this because you are a paid subscriber to Ghost. Your subscrip
 
 
 
-Name: not provided
+
 
 
 Email: paid@example.com
@@ -13196,11 +13131,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -13359,7 +13289,7 @@ table.body h2 span {
                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr>
                                                 <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p class=\\"hidden\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Name: not provided</p>
+                                                    
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Email: <a href=\\"#\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">trialing-paid@example.com</a></p>
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45; text-decoration: none; color: #15212A;\\">Member since: date</p>
                                                 </td>
@@ -13575,7 +13505,7 @@ You are receiving this because you are a trialing subscriber to Ghost. Your free
 
 
 
-Name: not provided
+
 
 
 Email: trialing-paid@example.com
@@ -14103,11 +14033,6 @@ table.body h2 span {
   .kg-card-figcaption p,
 .kg-card-figcaption p span {
     font-size: 13px!important;
-  }
-}
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
   }
 }
 </style>
@@ -14959,11 +14884,6 @@ table.body h2 span {
   .kg-card-figcaption p,
 .kg-card-figcaption p span {
     font-size: 13px!important;
-  }
-}
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
   }
 }
 </style>
