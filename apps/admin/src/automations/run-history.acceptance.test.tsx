@@ -118,6 +118,73 @@ describe('Automation run selection and canvas transitions', () => {
     await expect.element(editingCanvas()).toBeVisible();
   });
 
+  it('keeps a second-page selection when virtualization and sorting remove its row', async () => {
+    setup();
+    const runs = Array.from({ length: 100 }, (_, index) => {
+      const id = String(99 - index).padStart(3, '0');
+      return run(id, `Member ${id}`);
+    });
+    const response = (rows: typeof runs, cursor: string | null) => ({
+      automation_runs: rows,
+      meta: { pagination: { limit: 50, next_cursor: cursor } },
+    });
+    fakeAdminEndpoint('GET', '/automations/first/status-stats/', {
+      automation_status_stats: [
+        {
+          automation_id: 'first',
+          in_progress_run_count: 0,
+          completed_run_count: 100,
+          exited_early_run_count: 0,
+          unclassified_run_count: 0,
+        },
+      ],
+    });
+    fakeAdminEndpoint('GET', '/automations/first/runs/', response(runs.slice(0, 50), 'next'));
+    const secondPage = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=next',
+      response(runs.slice(50), null),
+    );
+    // Sorting replaces the loaded pages and leaves the selected row outside the viewport.
+    const sorted = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?order=created_at+asc',
+      response(runs.slice(50).reverse(), 'asc-next'),
+    );
+    const request = respond(history('049', 'Member 049'));
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    const region = page.getByRole('region', { name: 'Automation runs', exact: true });
+    const scrollRoot = () => region.element().firstElementChild as HTMLElement;
+    await expect
+      .element(region.getByRole('button', { name: /View run history for Member 099,/ }))
+      .toBeVisible();
+    // Scroll to the boundary so the selected run is on the newly loaded page.
+    await expect
+      .poll(async () => {
+        scrollRoot().scrollTop = 50 * 72;
+        await settleRequests();
+        return secondPage.requests.length;
+      })
+      .toBe(1);
+    await select('Member 049');
+    await expect.element(canvas()).toHaveTextContent('Member 049');
+    scrollRoot().scrollTop = 0;
+    const selection = region.getByRole('button', { name: /View run history for Member 049,/ });
+    await expect.element(selection).not.toBeInTheDocument();
+    await expect.element(canvas()).toHaveTextContent('Member 049');
+    await region.getByRole('button', { name: 'Entered', exact: true }).click();
+    await expect.poll(() => sorted.requests.length).toBe(1);
+    await expect
+      .element(region.getByRole('button', { name: /View run history for Member 000,/ }))
+      .toBeVisible();
+    await expect.element(selection).not.toBeInTheDocument();
+    await expect.element(canvas()).toHaveTextContent('Member 049');
+    expect(request.requests).toHaveLength(1);
+    await close();
+    await expect.element(editingCanvas()).toBeVisible();
+  });
+
   it('switches repeated entries by run ID and ignores earlier responses including A to B to A', async () => {
     setup('first', [run('a'), { ...run('b'), created_at: '2026-09-13T12:00:00.000Z' }]);
     let finish!: () => void;

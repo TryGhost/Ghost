@@ -19,6 +19,7 @@ export const useAutomationStatusStats = (automationId: string, requestId: string
 
   return {
     data: unavailable ? undefined : data,
+    stats: stats && !wrongAutomation && !unavailable ? stats : undefined,
     isLoading: !data && !failed,
     isError: failed && !unavailable,
     unavailable,
