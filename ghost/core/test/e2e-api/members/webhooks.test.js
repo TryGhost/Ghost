@@ -4383,11 +4383,60 @@ describe('Members API', function () {
         assert.equal(response.body.members[0].subscriptions.length, 0);
       });
 
+      it('groups signup with the subscription start when checkout creates a paid member', async function () {
+        // Use a new customer so checkout creates the member and its signup batch.
+        customer.id = createStripeID('cus');
+        customer.email = `${customer.id}@example.com`;
+        subscription.customer = customer.id;
+        subscription.status = 'active';
+        customer.subscriptions.data = [subscription];
+        const checkout = {
+          id: createStripeID('cs'),
+          object: 'checkout.session',
+          mode: 'subscription',
+          customer: customer.id,
+          subscription: subscription.id,
+          payment_status: 'paid',
+          metadata: subscription.metadata,
+        };
+        await deliver('checkout.session.completed', checkout);
+        memberId = (await models.Member.findOne({ email: customer.email })).id;
+        await assertConversions(1);
+        await assertSubscriptionState({ status: 'active', mrr: 150, paid: true });
+
+        const signup = await models.MemberCreatedEvent.findOne({ member_id: memberId });
+        const conversion = await models.SubscriptionCreatedEvent.findOne({ member_id: memberId });
+        assert.ok(signup.get('batch_id'));
+        assert.equal(conversion.get('batch_id'), signup.get('batch_id'));
+
+        const response = await adminAgent
+          .get(
+            `/members/events/?filter=${encodeURIComponent(
+              `type:[signup_event,subscription_event]+data.member_id:'${memberId}'`,
+            )}`,
+          )
+          .expectStatus(200);
+        assert.equal(response.body.events.length, 1);
+        assertObjectMatches(response.body.events[0], {
+          type: 'subscription_event',
+          data: { type: 'created', signup: true },
+        });
+      });
+
       it('counts successful checkout once and retains it after cancellation', async function () {
         const originalWebhook = structuredClone(subscription);
         await deliver('customer.subscription.created');
         const storedId = await assertSubscriptionState({ status: 'incomplete', mrr: 0 });
         await assertConversions(0);
+        const signup = await models.MemberCreatedEvent.findOne({ member_id: memberId });
+        assert.ok(signup.get('batch_id'));
+        const eventsUrl = `/members/events/?filter=${encodeURIComponent(
+          `type:[signup_event,subscription_event]+data.member_id:'${memberId}'`,
+        )}`;
+        const beforeActivation = await adminAgent.get(eventsUrl).expectStatus(200);
+        assert.equal(beforeActivation.body.events.length, 1);
+        assert.equal(beforeActivation.body.events[0].type, 'signup_event');
+
         subscription.status = 'active';
         await deliver('customer.subscription.updated');
         // A delayed creation webhook must use the current Stripe state and not duplicate the conversion.
@@ -4406,6 +4455,19 @@ describe('Members API', function () {
         });
         const response = await adminAgent.get(`/members/${memberId}/`).expectStatus(200);
         assert.equal(response.body.members[0].status, 'paid');
+
+        const conversion = await models.SubscriptionCreatedEvent.findOne({ member_id: memberId });
+        assert.notEqual(conversion.get('batch_id'), signup.get('batch_id'));
+        const afterActivation = await adminAgent.get(eventsUrl).expectStatus(200);
+        const events = afterActivation.body.events;
+        assert.equal(events.length, 2);
+        assert.equal(events.filter((event) => event.type === 'signup_event').length, 1);
+        assertObjectMatches(
+          events.find((event) => event.type === 'subscription_event'),
+          {
+            data: { type: 'created', signup: false },
+          },
+        );
 
         subscription.status = 'canceled';
         subscription.canceled_at = Math.floor(Date.now() / 1000);
