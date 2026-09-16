@@ -1353,6 +1353,27 @@ describe('Acceptance: Posts / Pages', function () {
                     expect(find('[data-test-button="add-to-secondary-navigation"]'), 'add to secondary option').to.not.exist;
                     expect(find('[data-test-button="remove-from-navigation"]'), 'remove option').to.not.exist;
                 });
+
+                it('hides navigation actions when select-all is not fully loaded', async function () {
+                    // navigation updates run client-side against in-memory models;
+                    // ⌘A selects every page including ones not yet paged in, so the
+                    // actions must stay hidden rather than silently updating a subset
+                    this.server.createList('page', 31, {authors: [admin], status: 'published'});
+
+                    await visit('/pages');
+
+                    await triggerKeyEvent(document, 'keydown', 'A', {
+                        metaKey: ctrlOrCmd === 'command',
+                        ctrlKey: ctrlOrCmd === 'ctrl'
+                    });
+
+                    const row = find('[data-test-post-id]');
+                    await triggerEvent(row, 'contextmenu');
+
+                    expect(find('[data-test-button="add-to-primary-navigation"]'), 'add to primary option').to.not.exist;
+                    expect(find('[data-test-button="add-to-secondary-navigation"]'), 'add to secondary option').to.not.exist;
+                    expect(find('[data-test-button="remove-from-navigation"]'), 'remove option').to.not.exist;
+                });
             });
         });
     });

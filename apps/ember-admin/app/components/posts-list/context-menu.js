@@ -547,10 +547,19 @@ export default class PostsContextMenu extends Component {
     // a nav link points at the page's published URL, so only published pages can
     // be placed in navigation - linking a draft/scheduled page would 404. Draft
     // pages set their placement at publish time via the publish flow instead.
+    //
+    // navigation has no server-side bulk endpoint (unlike tag/access/delete), so
+    // we can only act on models already in memory. Hide the actions when the
+    // selection isn't fully loaded (e.g. ⌘A on a multi-page list) to avoid
+    // silently updating a subset while the toast claims the full count.
     get canManageNavigation() {
+        const models = this.selectionList.availableModels;
+
         return this.type === 'page'
             && this.session.user.isAdmin
-            && this.selectionList.availableModels.every(model => model.status === 'published');
+            && models.length > 0
+            && models.length === this.selectionList.count
+            && models.every(model => model.status === 'published');
     }
 
     get selectedPagePlacements() {
