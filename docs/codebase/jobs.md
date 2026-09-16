@@ -68,6 +68,11 @@ Tests for the legacy jobs wrapper live in
 service in `ghost/core/test/unit/server/services/jobs-service/`. Tests should
 cover the job's result and failure behavior.
 
+Awaiting `dispatch()` only waits for the backend's enqueue call. Tests which
+need the work to finish should wait for its observable result. Newsletter
+tests should follow the [email service testing guidance](../../ghost/core/core/server/services/email-service/README.md#testing);
+the legacy job manager's `allSettled` event does not cover class-based jobs.
+
 ## Scheduling
 
 The legacy jobs service uses Bree for scheduled work; the class-based service
