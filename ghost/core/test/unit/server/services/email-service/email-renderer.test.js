@@ -1776,7 +1776,15 @@ describe('Email renderer', function () {
       assert.equal(codeBlockMatch[1], 'const firstLine = 1;\nconst secondLine = 2;');
     });
 
-    for (const name of [null, '', '   ', 'Test User', '<b>A & B</b> $&']) {
+    for (const name of [
+      null,
+      '',
+      '   ',
+      'Test User',
+      '<b>A & B</b> $&',
+      '%%{subscription_name_text}%%<img src=x onerror=alert(1)>',
+      '%%{subscription_name_html}%%<b>Test</b>',
+    ]) {
       it(`personalizes subscription details for name ${JSON.stringify(name)}`, async function () {
         const response = await emailRenderer.renderBody(
           createModel(basePost),
