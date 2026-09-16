@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { vi } from 'vitest';
 import logging from '@tryghost/logging';
 import { EmailAnalyticsServiceWrapper } from '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper';
 import type { EmailAnalyticsFetchResult } from '../../../../../core/server/services/email-analytics/email-analytics-service';
@@ -139,7 +140,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
     sinon.assert.calledOnce(fetch.scheduled);
   });
 
-  it('completes the returned invocation while its detached continuation is pending', async function () {
+  it('awaits its continuation before completing the returned invocation', async function () {
     const wrapper = initWrapper('newsletters');
     const fetch = stubFetch(wrapper);
     let release!: () => void;
@@ -149,17 +150,16 @@ describe('EmailAnalyticsServiceWrapper', function () {
         release = () => resolve(0);
       }),
     );
-    const finished = new Promise<void>((resolve) => {
-      fetch.scheduled.callsFake(async () => {
-        resolve();
-        return 0;
-      });
+    let completed = false;
+    const invocation = wrapper.startFetch().then(() => {
+      completed = true;
     });
-    await wrapper.startFetch();
-    sinon.assert.calledTwice(fetch.opened);
+    await vi.waitFor(() => sinon.assert.calledTwice(fetch.opened));
     sinon.assert.notCalled(fetch.latest);
+    assert.equal(completed, false);
     release();
-    await finished;
+    await invocation;
+    sinon.assert.calledOnce(fetch.scheduled);
   });
 
   it('uses existing open throughput metric name for newsletters', function () {
