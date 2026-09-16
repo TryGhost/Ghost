@@ -229,8 +229,7 @@ export class EmailAnalyticsServiceWrapper {
         ? await this.fetchLatestOpenedEvents({ maxEvents: 10000 })
         : 0;
       if (c1 >= 10000) {
-        this._restartFetch('high opened event count');
-        return;
+        return this._restartFetch('high opened event count');
       }
 
       // Set limits on how much we fetch without checkings for opened events. During surge events (following newsletter send)
@@ -240,15 +239,13 @@ export class EmailAnalyticsServiceWrapper {
 
       // Always restart immediately instead of waiting for the next scheduled job if we're fetching a lot of events
       if (c1 + c2 + c3 > 10000) {
-        this._restartFetch('high event count');
-        return;
+        return this._restartFetch('high event count');
       }
 
       // Only backfill if we're not currently fetching a lot of events
       const c4 = await this.fetchScheduled({ maxEvents: 10000 });
       if (c4 > 0) {
-        this._restartFetch('scheduled backfill');
-        return;
+        return this._restartFetch('scheduled backfill');
       }
 
       logging.info(
@@ -275,9 +272,12 @@ export class EmailAnalyticsServiceWrapper {
     this.#fetching = false;
   }
 
-  _restartFetch(reason: string): void {
+  // Returned so a job handler awaiting startFetch() spans the whole run,
+  // which keeps the jobs runtime's completion timing honest and lets its
+  // shutdown drain cover the continuation.
+  _restartFetch(reason: string): Promise<void> {
     this.#fetching = false;
     logging.info(`[Background Job] ${this.#jobType} continuing due to ${reason}`);
-    this.startFetch();
+    return this.startFetch();
   }
 }
