@@ -99,7 +99,7 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    options: ['filter', 'fields', 'limit', 'order', 'page'],
+    options: ['fields', 'limit', 'order', 'page'],
     permissions: true,
     async query(frame) {
       const result = await models.Automation.findPage({
@@ -124,7 +124,7 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    options: ['filter', 'fields'],
+    options: ['fields'],
     data: ['id'],
     permissions: true,
     async query(frame) {
