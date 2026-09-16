@@ -134,10 +134,11 @@ finished-only is 2; known exits with or without finished steps are 6 or 4. Missi
 and unknown history is the selected run count minus the three classified counts.
 The automation list continues using its existing pending-run view.
 
-`api_automation_runs` returns the latest ten runs for one automation, ordered by
-entry time then run ID descending. Without a filter it limits run IDs before reading
-their step history. With `run_status`, it classifies all runs for the automation,
-then filters before ordering and limiting. Both paths use the same bit-mask
+`api_automation_runs` returns ten runs for one automation, ordered by entry time
+then run ID. `sort_direction` is `desc` (default) or `asc` and applies to both
+columns; other values return a template error. Without a filter it limits run IDs
+before reading their step history. With `run_status`, it classifies all runs for
+the automation, then filters before ordering and limiting. Both paths use the same bit-mask
 classification, retaining missing history as `unclassified` in the unfiltered list.
 It reuses the existing materialized tables without a rebuild.
 Member details are joined in Core, not stored in these Tinybird tables.

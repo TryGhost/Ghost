@@ -1,16 +1,26 @@
 DESCRIPTION >
-    Latest ten runs for one automation, optionally filtered by their current recorded status.
+    Ten runs ordered by entry time and run ID, optionally filtered by their current recorded status.
 
 NODE selected_runs
 SQL >
     %
+    {% if String(sort_direction, 'desc') not in ['asc', 'desc'] %}
+        {{ error('sort_direction must be asc or desc') }}
+    {% end %}
+    {% if String(sort_by, 'created_at') != 'created_at' %}
+        {{ error('sort_by must be created_at') }}
+    {% end %}
     SELECT id, created_at
     FROM _mv_automation_runs FINAL
     WHERE site_uuid = {{ String(site_uuid, required=True) }}
         AND automation_id = {{ String(automation_id, required=True) }}
     {% if not defined(run_status) %}
-        -- Without a filter, only the newest ten runs need classification.
-        ORDER BY created_at DESC, id DESC
+        -- Without a filter, only the page's runs need classification.
+        {% if String(sort_direction, 'desc') == 'asc' %}
+            ORDER BY created_at ASC, id ASC
+        {% else %}
+            ORDER BY created_at DESC, id DESC
+        {% end %}
         LIMIT 10
     {% end %}
 
@@ -52,10 +62,15 @@ SQL >
     %
     SELECT id, created_at, status, failed
     FROM runs_with_status
+    WHERE 1
     {% if defined(run_status) %}
-        WHERE status = {{ String(run_status) }}
+        AND status = {{ String(run_status) }}
     {% end %}
-    ORDER BY created_at DESC, id DESC
+    {% if String(sort_direction, 'desc') == 'asc' %}
+        ORDER BY created_at ASC, id ASC
+    {% else %}
+        ORDER BY created_at DESC, id DESC
+    {% end %}
     LIMIT 10
 
 TYPE ENDPOINT
