@@ -1,3 +1,5 @@
+import EmailAnalyticsFetchLatestJob from '../email-analytics/jobs/email-analytics-fetch-latest-job';
+import type { EmailAnalyticsServiceWrapper } from '../email-analytics/email-analytics-service-wrapper';
 import { JobsService } from './jobs-service';
 import type { JobHandlingOptions } from './jobs-service';
 import type { GiftService } from '../gifts/gift-service';
@@ -35,6 +37,7 @@ const EMAIL_QUEUE: JobHandlingOptions = { queue: 'email', concurrency: 2 };
 
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
+  newsletters: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
   memberJobs: {
     cleanTokens(): Promise<number>;
     cleanExpiredComped(): Promise<unknown>;
@@ -51,6 +54,7 @@ interface RegisterJobHandlersDependencies {
 
 export default function registerJobHandlers({
   jobsService,
+  newsletters,
   memberJobs,
   giftService,
   mediaInliner,
@@ -59,6 +63,11 @@ export default function registerJobHandlers({
   membersService,
   emailService,
 }: RegisterJobHandlersDependencies): void {
+  jobsService.handle(EmailAnalyticsFetchLatestJob, () => newsletters.startFetch(), {
+    queue: EmailAnalyticsFetchLatestJob.type,
+    concurrency: 2,
+  });
+
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
   });

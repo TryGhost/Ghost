@@ -22,7 +22,6 @@ import type { EmailRecipientFailure, EmailSpamComplaintEvent, Email } from '../.
 // @ts-expect-error This module lacks type definitions.
 import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
-import { StartEmailAnalyticsJobEvent } from './events/start-email-analytics-job-event';
 import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
 import { AUTOMATION_EMAIL_TAG } from '../member-welcome-emails/constants';
 import type * as AutomationsApi from '../automations/automations-api';
@@ -31,6 +30,7 @@ import { GiftEmailAnalyticsBatchProcessor } from './gift-email-analytics-batch-p
 import { StartGiftEmailAnalyticsJobEvent } from './events/start-gift-email-analytics-job-event';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import { GIFT_DELIVERY_EMAIL_TAG } from '../gifts/constants';
+import EmailAnalyticsFetchLatestJob from './jobs/email-analytics-fetch-latest-job';
 
 let newsletters: EmailAnalyticsServiceWrapper | undefined;
 let automations: EmailAnalyticsServiceWrapper | undefined;
@@ -124,7 +124,7 @@ export const init = ({
 
   newsletters = new EmailAnalyticsServiceWrapper({
     logName: 'newsletters',
-    jobType: 'email-analytics-fetch-latest',
+    jobType: EmailAnalyticsFetchLatestJob.type,
     config,
     queries,
     mailgunTags: newsletterMailgunTags,
@@ -203,8 +203,6 @@ export const init = ({
     settingsCache,
     createEventProcessor: () => new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService }),
   });
-
-  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => newsletters!.startFetch());
 
   domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, () => automations!.startFetch());
 
