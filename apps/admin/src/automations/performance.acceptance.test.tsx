@@ -70,8 +70,16 @@ const statusResponse = (id: string, counts: Partial<AutomationStatusStats> = {})
   ],
 });
 const read = (id: string) => {
-  fakeAdminEndpoint('GET', `/automations/${id}/runs/`, { automation_runs: [] });
-  fakeAdminEndpoint('GET', `/automations/${id}/status-stats/`, statusResponse(id));
+  fakeAdminEndpoint('GET', new RegExp(`^/automations/${id}/runs/(?:\\?|$)`), ({ url }) => ({
+    automation_runs: [],
+    meta: {
+      entry_window: rangeResponse(url).automation_entry_stats[0].window,
+      pagination: { limit: 50, next_cursor: null },
+    },
+  }));
+  fakeAdminEndpoint('GET', new RegExp(`^/automations/${id}/status-stats/(?:\\?|$)`), ({ url }) =>
+    statusResponse(id, { entry_window: rangeResponse(url).automation_entry_stats[0].window }),
+  );
   return fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [detail(id)] });
 };
 const entries = () => page.getByRole('region', { name: 'Total entries' });
@@ -792,64 +800,85 @@ describe('Automation performance dates', () => {
     expect(retried.lastRequest!.url).toBe(failed.lastRequest!.url);
   });
 
-  it('filters only entries across date presets and clearing, without refetching status counts', async () => {
+  it('uses the same entry dates for the chart, current status counts and member list', async () => {
     read('first');
     const statusRequests = fakeAdminEndpoint(
       'GET',
-      /^\/automations\/first\/status-stats\//,
-      statusResponse('first', {
-        in_progress_run_count: 118,
-        completed_run_count: 1260,
-        exited_early_run_count: 42,
+      /^\/automations\/first\/status-stats\/(?:\?|$)/,
+      ({ url }) => {
+        const entry = rangeResponse(url).automation_entry_stats[0];
+        const count = new URL(url).searchParams.has('date_from') ? entry.entries.length : 10;
+        return statusResponse('first', {
+          in_progress_run_count: count,
+          completed_run_count: count,
+          exited_early_run_count: count,
+          entry_window: entry.window,
+        });
+      },
+    );
+    const listRequests = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/runs\/(?:\?|$)/,
+      ({ url }) => ({
+        automation_runs: [],
+        meta: {
+          entry_window: rangeResponse(url).automation_entry_stats[0].window,
+          pagination: { limit: 50, next_cursor: null },
+        },
       }),
     );
-    const expectUnfilteredStatuses = async () => {
-      await expect.element(statusCard('In progress')).toHaveTextContent('118');
-      await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
-      await expect.element(statusCard('Exited early')).toHaveTextContent('42');
-      await settleRequests();
-      expect(statusRequests.requests).toHaveLength(1);
-      expect(new URL(statusRequests.lastRequest!.url).search).toBe('');
-    };
     const requests = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
       rangeResponse(url),
     );
     await renderAdminApp('/automations/first', flags);
     await open();
-    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
-    await expectUnfilteredStatuses();
-    expect(new URL(requests.requests[0].url).searchParams.has('date_from')).toBe(false);
-    await expect
-      .element(page.getByRole('button', { name: 'Clear date filter' }))
-      .not.toBeInTheDocument();
+    await expect.element(statusCard('In progress')).toHaveTextContent('10');
     for (const days of [7, 30, 90]) {
       await selectRange(`Last ${days} days`);
       await expect.element(entries()).toHaveTextContent(String(days * 3));
+      await expect.element(statusCard('In progress')).toHaveTextContent(String(days));
+      await expect.element(statusCard('Completed')).toHaveTextContent(String(days));
+      await expect.element(statusCard('Exited early')).toHaveTextContent(String(days));
+      await settleRequests();
       const query = new URL(requests.lastRequest!.url).searchParams;
-      expect(
-        (Date.parse(query.get('date_to')!) - Date.parse(query.get('date_from')!)) / 86400000 + 1,
-      ).toBe(days);
-      expect(query.get('timezone')).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
-      await expect
-        .element(entries().getByRole('figure'))
-        .toHaveTextContent(query.get('date_from')!);
-      await expect
-        .element(page.getByRole('button', { name: 'Clear date filter' }))
-        .toHaveTextContent(`Last ${days} days`);
-      await expectUnfilteredStatuses();
+      for (const capture of [statusRequests, listRequests]) {
+        const params = new URL(capture.lastRequest!.url).searchParams;
+        for (const key of ['date_from', 'date_to', 'timezone']) {
+          expect(params.get(key)).toBe(query.get(key));
+        }
+        expect(params.has('cursor')).toBe(false);
+      }
     }
-    const count = requests.requests.length;
+    const count = statusRequests.requests.length;
     await close();
     await open();
-    await expect.element(entries().getByText('270', { exact: true })).toBeVisible();
-    expect(requests.requests.length).toBe(count);
-    await expectUnfilteredStatuses();
+    await expect.element(statusCard('In progress')).toHaveTextContent('90');
+    expect(statusRequests.requests.length).toBe(count);
     await page.getByRole('button', { name: 'Clear date filter' }).click();
     await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
-    await expectUnfilteredStatuses();
-    await expect
-      .element(page.getByRole('button', { name: 'Clear date filter' }))
-      .not.toBeInTheDocument();
+    await expect.element(statusCard('In progress')).toHaveTextContent('10');
+  });
+
+  it('does not show unfiltered cards or rows when older Core ignores entry dates', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/status-stats\/(?:\?|$)/,
+      statusResponse('first'),
+    );
+    fakeAdminEndpoint('GET', /^\/automations\/first\/runs\/(?:\?|$)/, runsResponse());
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
+    await selectRange('Last 7 days');
+    await expect.element(statuses()).toHaveTextContent('Status counts are unavailable');
+    await expect.element(runsRegion()).toHaveTextContent('unavailable');
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Clear date filter' }).click();
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
   });
 
   it('hides old totals while a range loads and ignores its late response after another selection', async () => {
@@ -1064,13 +1093,23 @@ describe('Automation run list', () => {
     expect(request.requests).toHaveLength(1);
   });
 
-  it('caches runs across closing and entry date changes, then fetches again on the next visit', async () => {
+  it('keeps runs on reopening but restarts the list when dates change or clear', async () => {
     prepareStatuses();
     read('second');
     fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
       rangeResponse(url),
     );
-    const request = fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    const request = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/runs\/(?:\?|$)/,
+      ({ url }) => ({
+        ...runsResponse(),
+        meta: {
+          entry_window: rangeResponse(url).automation_entry_stats[0].window,
+          pagination: { limit: 50, next_cursor: null },
+        },
+      }),
+    );
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
@@ -1082,15 +1121,15 @@ describe('Automation run list', () => {
     window.dispatchEvent(new Event('focus'));
     window.dispatchEvent(new Event('online'));
     await settleRequests();
-    expect(request.requests).toHaveLength(1);
+    expect(request.requests).toHaveLength(3);
     await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
     window.location.hash = '#/automations/second';
     await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
     window.location.hash = '#/automations/first';
     await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
-    expect(request.requests).toHaveLength(1);
+    expect(request.requests).toHaveLength(3);
     await open();
-    await expect.poll(() => request.requests.length).toBe(2);
+    await expect.poll(() => request.requests.length).toBe(4);
   });
 
   it('keeps errors until explicit retry without disrupting the chart or counts', async () => {
@@ -1222,19 +1261,32 @@ describe('Automation run status filtering', () => {
   it('refreshes counts and runs on each status change while keeping the entries chart independent', async () => {
     prepareStatuses();
     let refresh = 0;
-    const summary = fakeAdminEndpoint('GET', '/automations/first/status-stats/', () => {
-      const refreshedCounts = statusResponse('first', { completed_run_count: 6 + refresh });
-      refresh += 1;
-      return refreshedCounts;
-    });
+    const summary = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/status-stats\/(?:\?|$)/,
+      ({ url }) => {
+        const refreshedCounts = statusResponse('first', {
+          entry_window: rangeResponse(url).automation_entry_stats[0].window,
+          completed_run_count: 6 + refresh,
+        });
+        refresh += 1;
+        return refreshedCounts;
+      },
+    );
     const chart = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
       rangeResponse(url),
     );
     const all = fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
     const completed = fakeAdminEndpoint(
       'GET',
-      '/automations/first/runs/?status=completed',
-      filteredRunsResponse('completed', 'Completed member'),
+      /^\/automations\/first\/runs\/\?.*status=completed/,
+      ({ url }) => ({
+        ...filteredRunsResponse('completed', 'Completed member'),
+        meta: {
+          entry_window: rangeResponse(url).automation_entry_stats[0].window,
+          pagination: { limit: 50, next_cursor: null },
+        },
+      }),
     );
     const exited = fakeAdminEndpoint(
       'GET',
@@ -1269,7 +1321,7 @@ describe('Automation run status filtering', () => {
     await selectRange('Last 7 days');
     await expect.element(entries().getByText('21', { exact: true })).toBeVisible();
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
-    await expect.element(statusCard('Completed')).toHaveTextContent('11');
+    await expect.element(statusCard('Completed')).toHaveTextContent('12');
     await expect.element(runsRegion()).toHaveTextContent('Completed member');
     await close();
     await open();
@@ -1277,10 +1329,10 @@ describe('Automation run status filtering', () => {
     window.dispatchEvent(new Event('online'));
     await settleRequests();
     expect(all.requests).toHaveLength(2);
-    expect(completed.requests).toHaveLength(2);
+    expect(completed.requests).toHaveLength(3);
     expect(exited.requests).toHaveLength(1);
     expect(pending.requests).toHaveLength(1);
-    expect(summary.requests).toHaveLength(6);
+    expect(summary.requests).toHaveLength(7);
     await expect.element(statusCard('In progress')).toHaveTextContent('10');
     await expect.element(statusCard('Exited early')).toHaveTextContent('6');
   });
@@ -1766,7 +1818,8 @@ describe('Automation run pagination', () => {
   };
   const row = (name: string) => runsRegion().getByText(name, { exact: true });
   const renderedRows = () => runsRegion().element().querySelectorAll('tbody tr[data-index]').length;
-  const scrollRoot = () => runsRegion().element().firstElementChild as HTMLElement;
+  const scrollRoot = () =>
+    document.querySelector('[aria-label="Performance details"]') as HTMLElement;
   // Pages arriving grow the list under the current position; keep scrolling until the height settles.
   const scrollToEnd = async () => {
     let previousHeight = -1;
@@ -1933,7 +1986,7 @@ describe('Automation run pagination', () => {
     expect(first.requests).toHaveLength(1);
   });
 
-  it('starts from the top on status and direction changes and scopes cursors to them', async () => {
+  it('starts from the first result with compact controls on status and direction changes and scopes cursors to them', async () => {
     prepareStatuses();
     fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
     fakeAdminEndpoint('GET', '/automations/first/runs/?cursor=c1', pageResponse(2, null));
@@ -1965,13 +2018,27 @@ describe('Automation run pagination', () => {
     await expect.element(row('Page 2 member 49')).toBeVisible();
     await statusCard('Completed').click();
     await expect.element(row('Page 3 member 0')).toBeVisible();
-    expect(scrollRoot().scrollTop).toBe(0);
+    await expect
+      .poll(() =>
+        Math.abs(
+          runsRegion().element().getBoundingClientRect().top -
+            scrollRoot().getBoundingClientRect().top,
+        ),
+      )
+      .toBeLessThanOrEqual(1);
     await expect.element(runsRegion()).not.toHaveTextContent('Page 2 member');
     await scrollToEnd();
     await expect.element(row('Page 4 member 49')).toBeVisible();
     await runsRegion().getByRole('button', { name: 'Entered', exact: true }).click();
     await expect.element(row('Page 6 member 49')).toBeVisible();
-    expect(scrollRoot().scrollTop).toBe(0);
+    await expect
+      .poll(() =>
+        Math.abs(
+          runsRegion().element().getBoundingClientRect().top -
+            scrollRoot().getBoundingClientRect().top,
+        ),
+      )
+      .toBeLessThanOrEqual(1);
     await scrollToEnd();
     await expect.element(row('Page 5 member 0')).toBeVisible();
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');

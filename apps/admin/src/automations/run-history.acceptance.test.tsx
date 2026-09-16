@@ -195,7 +195,8 @@ describe('Automation run selection and canvas transitions', () => {
     await renderAdminApp('/automations/first', flags);
     await open();
     const region = page.getByRole('region', { name: 'Automation runs', exact: true });
-    const scrollRoot = () => region.element().firstElementChild as HTMLElement;
+    const scrollRoot = () =>
+      document.querySelector('[aria-label="Performance details"]') as HTMLElement;
     await expect
       .element(region.getByRole('button', { name: /View run history for Member 099,/ }))
       .toBeVisible();

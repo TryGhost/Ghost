@@ -1,4 +1,5 @@
-import React, { forwardRef, useLayoutEffect, useRef } from 'react';
+import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
+import React, { forwardRef, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
 import {
   Button,
@@ -58,6 +59,11 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement, { 'data-index': number }>
 export const RunList: React.FC<{
   automationId: string;
   listRequestId: string;
+  dateRange: PerformanceDateRange;
+  search: string;
+  enabled: boolean;
+  isUpdating?: boolean;
+  scrollRef: RefObject<HTMLDivElement>;
   status: AutomationRunStatusFilter | null;
   selectedRunId: string | null;
   onSelectRun: (id: string, memberName: string) => void;
@@ -67,6 +73,11 @@ export const RunList: React.FC<{
 }> = ({
   automationId,
   listRequestId,
+  dateRange,
+  search,
+  enabled,
+  isUpdating = false,
+  scrollRef,
   status,
   sort,
   onSortChange,
@@ -80,25 +91,57 @@ export const RunList: React.FC<{
     isError,
     unavailable,
     unsupportedSort,
+    unsupportedSearch,
+    scanning,
+    paused,
+    continueSearch,
     retry,
     canLoadMore,
     isLoadingMore,
     isMoreError,
     loadMore,
-  } = useAutomationRuns(automationId, status, sort, listRequestId);
+  } = useAutomationRuns(automationId, status, sort, listRequestId, search, enabled, dateRange);
   const SortIcon = sort.direction === 'asc' ? LucideIcon.ArrowUp : LucideIcon.ArrowDown;
   const changeSort = () =>
     onSortChange({
       key: 'created_at',
       direction: sort.direction === 'asc' ? 'desc' : 'asc',
     });
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const items = runs ?? [];
+  const bodyRef = useRef<HTMLTableSectionElement>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+  useLayoutEffect(() => {
+    const scroll = scrollRef.current;
+    const body = bodyRef.current;
+    if (!scroll || !body) {
+      return;
+    }
+    const measure = () =>
+      setScrollMargin(
+        body.getBoundingClientRect().top - scroll.getBoundingClientRect().top + scroll.scrollTop,
+      );
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    });
+    observer.observe(scroll);
+    if (scroll.firstElementChild) {
+      observer.observe(scroll.firstElementChild);
+    }
+    measure();
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [scrollRef, search]);
+  const loading = isUpdating || isLoading;
+  const items = isUpdating ? [] : (runs ?? []);
   // Expose only the next loading row: a scrollbar jump must not fetch the entire history.
   const totalItems = items.length + (canLoadMore ? 1 : 0);
   const { visibleItems, spaceBefore, spaceAfter } = useInfiniteVirtualScroll({
     items,
     totalItems,
+    scrollMargin,
     parentRef: scrollRef,
     hasNextPage: canLoadMore,
     isFetchingNextPage: isLoadingMore,
@@ -107,12 +150,9 @@ export const RunList: React.FC<{
     overscan: 10,
     getScrollElement: (element) => element,
   });
-  useLayoutEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
-  }, [listRequestId]);
   return (
-    <Stack aria-label="Automation runs" className="min-h-0 flex-1" gap="sm" role="region">
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+    <Stack aria-label="Automation runs" className="shrink-0" gap="sm" role="region">
+      <div>
         <Table aria-label="Automation runs" className="table-fixed">
           <TableHeader className="sticky top-0 z-10 bg-surface-elevated">
             <TableRow>
@@ -133,8 +173,8 @@ export const RunList: React.FC<{
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {isLoading &&
+          <TableBody ref={bodyRef}>
+            {loading &&
               Array.from({ length: 10 }, (_, index) => (
                 <PlaceholderRow key={index} data-index={index} />
               ))}
@@ -210,50 +250,78 @@ export const RunList: React.FC<{
             <SpacerRow height={spaceAfter} />
           </TableBody>
         </Table>
-        {isLoading && (
+        {loading && (
           <Text className="sr-only" role="status">
             Loading automation runs
           </Text>
         )}
-        {isLoadingMore && (
-          <Text className="sr-only" role="status">
-            Loading more entries
-          </Text>
-        )}
-        {runs?.length === 0 && (
-          <Text className="px-4 py-6 text-center" role="status" size="sm" tone="secondary">
-            {status ? 'No matching entries.' : 'No entries yet.'}
-          </Text>
-        )}
-        {unavailable && (
-          <Text className="px-4 py-6" role="status" size="sm" tone="secondary">
-            The run list is unavailable on this version of Ghost.
-          </Text>
-        )}
-        {unsupportedSort && (
-          <Text className="px-4 py-6" role="status" size="sm" tone="secondary">
-            Sorting is unavailable on this version of Ghost.
-          </Text>
-        )}
-        {isError && (
-          <Stack className="px-4 py-6" gap="sm" role="alert">
-            <Text size="sm" tone="secondary">
-              Could not load automation runs.
-            </Text>
-            <Button className="self-start" size="sm" variant="outline" onClick={retry}>
-              Retry
-            </Button>
-          </Stack>
-        )}
-        {isMoreError && (
-          <Stack className="px-4 py-6" gap="sm" role="alert">
-            <Text size="sm" tone="secondary">
-              Could not load more runs.
-            </Text>
-            <Button className="self-start" size="sm" variant="outline" onClick={loadMore}>
-              Retry
-            </Button>
-          </Stack>
+        {!isUpdating && (
+          <>
+            {isLoadingMore && (
+              <Text className="sr-only" role="status">
+                Loading more entries
+              </Text>
+            )}
+            {runs?.length === 0 && !scanning && (
+              <Text className="px-4 py-6 text-center" role="status" size="sm" tone="secondary">
+                {status || search ? 'No matching entries.' : 'No entries yet.'}
+              </Text>
+            )}
+            {scanning && !isMoreError && (
+              <Stack className="px-4 py-3" gap="sm">
+                <Text role="status" size="sm" tone="secondary">
+                  {paused
+                    ? 'Search paused. Continue to find more entries.'
+                    : 'Searching more entries…'}
+                </Text>
+                {paused && (
+                  <Button
+                    className="self-start"
+                    size="sm"
+                    variant="outline"
+                    onClick={continueSearch}
+                  >
+                    Continue search
+                  </Button>
+                )}
+              </Stack>
+            )}
+            {unsupportedSearch && (
+              <Text className="px-4 py-6" role="status" size="sm" tone="secondary">
+                Member search is unavailable on this version of Ghost.
+              </Text>
+            )}
+            {unavailable && (
+              <Text className="px-4 py-6" role="status" size="sm" tone="secondary">
+                The run list is unavailable on this version of Ghost.
+              </Text>
+            )}
+            {unsupportedSort && (
+              <Text className="px-4 py-6" role="status" size="sm" tone="secondary">
+                Sorting is unavailable on this version of Ghost.
+              </Text>
+            )}
+            {isError && (
+              <Stack className="px-4 py-6" gap="sm" role="alert">
+                <Text size="sm" tone="secondary">
+                  Could not load automation runs.
+                </Text>
+                <Button className="self-start" size="sm" variant="outline" onClick={retry}>
+                  Retry
+                </Button>
+              </Stack>
+            )}
+            {isMoreError && (
+              <Stack className="px-4 py-6" gap="sm" role="alert">
+                <Text size="sm" tone="secondary">
+                  Could not load more runs.
+                </Text>
+                <Button className="self-start" size="sm" variant="outline" onClick={loadMore}>
+                  Retry
+                </Button>
+              </Stack>
+            )}
+          </>
         )}
       </div>
     </Stack>
