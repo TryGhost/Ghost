@@ -35,7 +35,6 @@ const pipelines = [
 describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperName, schedule }) {
   afterEach(function () {
     sinon.restore();
-    vi.unstubAllEnvs();
   });
 
   it('serializes only an empty payload and reconstructs the exact job type', function () {
@@ -112,7 +111,6 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
   });
 
   it('leaves registration retryable after rejection', async function () {
-    vi.stubEnv('NODE_ENV', 'production');
     const jobsService = {
       scheduleRecurring: sinon.stub().onFirstCall().rejects(new Error('unavailable')),
     };
@@ -133,7 +131,6 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
   });
 
   it('lets the real backend deduplicate concurrent recurring registration without fetching immediately', async function () {
-    vi.stubEnv('NODE_ENV', 'production');
     const backend = new InMemoryJobsBackend();
     const enqueue = sinon.spy(backend, 'enqueue');
     const jobsService = new JobsService({ backend, logging: { info() {}, error() {} } });

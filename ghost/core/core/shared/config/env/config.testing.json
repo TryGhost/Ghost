@@ -112,6 +112,9 @@
     "useStructuredData": true
   },
   "useMinFiles": false,
+  "backgroundJobs": {
+    "emailAnalytics": false
+  },
   "paths": {
     "fixtures": "test/utils/fixtures/fixtures",
     "defaultSettings": "test/utils/fixtures/default-settings.json"

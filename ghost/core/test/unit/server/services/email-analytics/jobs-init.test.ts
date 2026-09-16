@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { vi } from 'vitest';
 
 const JOBS_PATH = '../../../../../core/server/services/email-analytics/jobs';
 
@@ -11,13 +10,11 @@ describe('email analytics scheduler initialization', function () {
   // modules across files, so evict it around each test rather than leak an
   // instance built on stubs into whichever file runs next in this worker.
   beforeEach(function () {
-    vi.stubEnv('NODE_ENV', 'production');
     delete require.cache[require.resolve(JOBS_PATH)];
     init = require(JOBS_PATH).init;
   });
 
   afterEach(function () {
-    vi.unstubAllEnvs();
     delete require.cache[require.resolve(JOBS_PATH)];
   });
 

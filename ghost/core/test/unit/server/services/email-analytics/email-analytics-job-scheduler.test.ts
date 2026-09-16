@@ -3,7 +3,6 @@ import EmailAnalyticsAutomationFetchLatestJob from '../../../../../core/server/s
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import EmailAnalyticsFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-fetch-latest-job';
-import { vi } from 'vitest';
 import { deferred } from '../../../../utils/deferred';
 import { EmailAnalyticsJobScheduler } from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
 
@@ -80,26 +79,8 @@ function buildScheduler({
 }
 
 describe('EmailAnalyticsJobScheduler', function () {
-  beforeEach(function () {
-    vi.stubEnv('NODE_ENV', 'production');
-  });
-
   afterEach(function () {
-    vi.unstubAllEnvs();
     sinon.restore();
-  });
-
-  it('suppresses all scheduling in test environments, including bypasses', async function () {
-    vi.stubEnv('NODE_ENV', 'testing');
-    const { scheduler, jobsService, newsletterQuery, automationsQuery, giftQuery } =
-      buildScheduler();
-    await scheduler.scheduleRecurringNewslettersJob(true);
-    await scheduler.scheduleRecurringAutomationsJob(true);
-    await scheduler.scheduleRecurringGiftDeliveriesJob(true);
-    sinon.assert.notCalled(jobsService.scheduleRecurring);
-    sinon.assert.notCalled(newsletterQuery.count);
-    sinon.assert.notCalled(automationsQuery.first);
-    sinon.assert.notCalled(giftQuery.first);
   });
 
   it('adds a recurring job when conditions are met', async function () {

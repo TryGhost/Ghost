@@ -64,12 +64,9 @@ export class EmailAnalyticsJobScheduler {
   }
 
   #isConfigured(): boolean {
-    return (
-      !process.env.NODE_ENV?.startsWith('test') &&
-      Boolean(
-        this.#config.get('emailAnalytics:enabled') &&
-        this.#config.get('backgroundJobs:emailAnalytics'),
-      )
+    return Boolean(
+      this.#config.get('emailAnalytics:enabled') &&
+      this.#config.get('backgroundJobs:emailAnalytics'),
     );
   }
 
