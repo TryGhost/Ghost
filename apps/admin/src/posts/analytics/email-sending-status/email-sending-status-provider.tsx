@@ -88,9 +88,13 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
 
     if (sendingStatus === 'submitted') {
       void Promise.all(
-        [...NEWSLETTER_DATA_TYPES].map((dataType) =>
-          queryClient.invalidateQueries({ queryKey: [dataType] }),
-        ),
+        [...NEWSLETTER_DATA_TYPES].map(async (dataType) => {
+          const filters = { queryKey: [dataType] };
+          // Invalidation reuses an in-flight initial read, which may still contain
+          // pre-completion counts. Cancel it so the refresh always starts a new read.
+          await queryClient.cancelQueries(filters);
+          await queryClient.invalidateQueries(filters);
+        }),
       ).then(() => setRefreshedSubmittedEmailId(emailId));
     }
   }, [emailId, queryClient, refetchPost, sendingStatus]);
