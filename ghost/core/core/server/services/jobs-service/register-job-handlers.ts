@@ -28,6 +28,11 @@ const updateCheck = require('../update-check');
 // concurrency.
 const WEBMENTIONS_QUEUE: JobHandlingOptions = { queue: 'webmentions', concurrency: 3 };
 
+// Keep newsletter sends independent of imports and other shared work. Two sends
+// can progress at once, each with its own two batch workers, so a long send or
+// retry does not hold up every other newsletter.
+const EMAIL_QUEUE: JobHandlingOptions = { queue: 'email', concurrency: 2 };
+
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
   memberJobs: {
@@ -102,7 +107,11 @@ export default function registerJobHandlers({
     WEBMENTIONS_QUEUE,
   );
 
-  jobsService.handle(SendEmailJob, async (job) => {
-    await emailService.handleSendEmailJob(job);
-  });
+  jobsService.handle(
+    SendEmailJob,
+    async (job) => {
+      await emailService.handleSendEmailJob(job);
+    },
+    EMAIL_QUEUE,
+  );
 }

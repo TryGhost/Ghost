@@ -61,6 +61,12 @@ affects which workers run the job and how many run at once - delivery always
 routes by job type. Webmention processing runs on its own `webmentions` queue
 this way.
 
+Newsletter sends use the dedicated `email` queue with concurrency 2, so they
+do not compete with member imports, content CSV imports, and other shared jobs
+for queue slots. Each send already runs up to two batch workers. Allowing two
+sends keeps one long send or retry from blocking every other newsletter. The
+in-memory backend enforces these limits per process.
+
 ## Testing
 
 Tests for the legacy jobs wrapper live in

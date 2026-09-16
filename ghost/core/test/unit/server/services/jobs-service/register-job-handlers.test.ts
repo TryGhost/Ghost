@@ -231,6 +231,12 @@ describe('register-job-handlers', function () {
     assert.ok(emailService.handleSendEmailJob.calledOnceWithExactly(job));
   });
 
+  it('registers send-email on a dedicated queue with room for two sends', function () {
+    const registration = registrationFor('send-email');
+
+    assert.deepEqual(registration.args[2], { queue: 'email', concurrency: 2 });
+  });
+
   it('propagates send-email failures', async function () {
     const error = new Error('Send failed');
     emailService.handleSendEmailJob.rejects(error);
