@@ -124,7 +124,8 @@ export function createThemeSource(files: ThemeFiles): ThemeSource {
           if (!key) {
             return '';
           }
-          const translation = strings && typeof strings[key] === 'string' ? strings[key] : key;
+          const translation =
+            strings && typeof strings[key] === 'string' && strings[key] ? strings[key] : key;
           return interpolate(translation, bindings);
         },
       };

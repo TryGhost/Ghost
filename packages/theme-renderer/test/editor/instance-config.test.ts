@@ -27,12 +27,19 @@ describe('editor/instance-config', function () {
     assert.deepEqual(scrape.missing, []);
     assert.deepEqual(scrape.config, {
       assetHash: 'aabbcc0011',
+      assetHashes: { '/assets/built/screen.css': 'aabbcc0011' },
       portal: { url: 'https://cdn.example.com/portal/portal.min.js' },
       sodoSearch: {
         url: 'https://cdn.example.com/sodo-search/sodo-search.min.js',
         styles: 'https://cdn.example.com/sodo-search/main.css',
       },
     });
+  });
+
+  it('recognizes the current URL-safe asset hashes', function () {
+    const scrape = scrapeInstanceConfig(FULL_HTML.replace('aabbcc0011', 'CnmG_Srgcm95lmxz-'));
+    assert.equal(scrape.assetHash, 'CnmG_Srgcm95lmxz-');
+    assert.deepEqual(scrape.missing, []);
   });
 
   it('reports every missing scrape and returns an empty config for bare HTML', function () {

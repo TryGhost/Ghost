@@ -90,6 +90,28 @@ describe('{{img_url}}', function () {
 });
 
 describe('{{asset}}', function () {
+  it('preserves per-file hashes scraped from a live page, including anchors and subdirectories', function () {
+    configureTestDeps({
+      siteUrl: 'https://example.com/blog/',
+      config: {
+        assetHash: 'fallback',
+        assetHashes: {
+          '/blog/assets/built/screen.css': 'style-hash',
+          '/blog/public/cards.min.js': 'script-hash',
+        },
+      },
+    });
+    assert.equal(
+      asset('built/screen.css#section', { hash: {} }).toString(),
+      '/blog/assets/built/screen.css?v=style-hash#section',
+    );
+    assert.equal(
+      asset('public/cards.min.js', { hash: {} }).toString(),
+      '/blog/public/cards.min.js?v=script-hash',
+    );
+    assert.equal(asset('other.js', { hash: {} }).toString(), '/blog/assets/other.js?v=fallback');
+  });
+
   it('theme assets get /assets/ prefix and hash', function () {
     const result = asset('css/screen.css', { hash: {} });
     assert.equal(result.toString(), '/assets/css/screen.css?v=themerender');

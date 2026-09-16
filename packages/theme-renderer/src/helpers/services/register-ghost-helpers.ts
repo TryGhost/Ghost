@@ -36,6 +36,7 @@ import postClass from '../post-class.ts';
 import prevPost from '../prev-post.ts';
 import raw from '../raw.ts';
 import readingTime from '../reading-time.ts';
+import socialAccounts from '../social-accounts.ts';
 import t from '../t.ts';
 import tags from '../tags.ts';
 import tiers from '../tiers.ts';
@@ -74,6 +75,7 @@ export const registerGhostHelpers = (registrar: HelperRegistrar): void => {
   registry.registerHelper('prev_post', prevPost);
   registry.registerHelper('raw', raw);
   registry.registerHelper('reading_time', readingTime);
+  registry.registerHelper('social_accounts', socialAccounts);
   registry.registerHelper('t', t);
   registry.registerHelper('tags', tags);
   registry.registerHelper('tiers', tiers);

@@ -33,7 +33,19 @@ export interface InstanceConfigScrape {
 }
 
 export function scrapeInstanceConfig(liveHomeHtml: string): InstanceConfigScrape {
-  const assetHash = liveHomeHtml.match(/\?v=([a-f0-9]+)"/)?.[1];
+  const assetHash = liveHomeHtml.match(/\?v=([A-Za-z0-9_-]+)"/)?.[1];
+  const assetHashes = Object.fromEntries(
+    [
+      ...liveHomeHtml.matchAll(/\b(?:href|src)=["']([^"']+\?v=([A-Za-z0-9_-]+)(?:#[^"']*)?)["']/g),
+    ].flatMap((match) => {
+      try {
+        const pathname = new URL(match[1]!, 'https://renderer.invalid').pathname;
+        return /\/(?:assets|public)\//.test(pathname) ? [[pathname, match[2]!]] : [];
+      } catch {
+        return [];
+      }
+    }),
+  );
   const portalUrl = liveHomeHtml.match(/<script defer src="([^"]+)" data-i18n=/)?.[1];
   const sodoSearchMatch = liveHomeHtml.match(
     /<script defer src="([^"]+)" data-key="[^"]*" data-styles="([^"]*)" data-sodo-search=/,
@@ -66,6 +78,7 @@ export function scrapeInstanceConfig(liveHomeHtml: string): InstanceConfigScrape
       // deltas.md #1 — the live per-boot hash (upstream: config assetHash
       // wins over the boot-time md5 in getGlobalAssetHash)
       ...(assetHash && { assetHash }),
+      ...(Object.keys(assetHashes).length > 0 && { assetHashes }),
       // deltas.md #3 — frontend-app instance config (Ghost server
       // config keys, extraction-map §6)
       ...(portalUrl && { portal: { url: portalUrl } }),

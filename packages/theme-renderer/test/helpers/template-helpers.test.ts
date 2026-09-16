@@ -216,3 +216,24 @@ describe('{{raw}}', function () {
     assert.equal(output, '{{title}}');
   });
 });
+
+describe('{{#social_accounts}}', function () {
+  it('renders current theme social links in canonical order with iteration metadata', function () {
+    const output = render(
+      '{{#social_accounts @site}}{{@index}}:{{type}}:{{href}}:{{@first}}:{{@last}};{{/social_accounts}}',
+      {},
+      { site: { instagram: 'ghost', twitter: '@ghost' } },
+    );
+    assert.equal(
+      output,
+      '0:x:https://x.com/ghost:true:false;1:instagram:https://www.instagram.com/ghost:false:true;',
+    );
+  });
+
+  it('renders the inverse block when a site has no social accounts', function () {
+    assert.equal(
+      render('{{#social_accounts @site}}account{{else}}empty{{/social_accounts}}'),
+      'empty',
+    );
+  });
+});

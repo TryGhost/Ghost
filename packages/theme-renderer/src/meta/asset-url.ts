@@ -73,6 +73,13 @@ function getAssetUrl(assetPath: any, hasMinFile?: boolean) {
     }
   }
 
+  // Browser previews cannot hash server files. Preserve the per-file hashes
+  // scraped from the live theme before falling back to the global hash.
+  if (!hash) {
+    const pathname = new URL(output.split('#')[0]!, urlUtils.getSiteUrl()).pathname;
+    hash = config.get('assetHashes')?.[pathname];
+  }
+
   // Fallback to global hash if file hash unavailable
   if (!hash) {
     hash = getGlobalAssetHash();

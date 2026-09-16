@@ -1,7 +1,7 @@
 # Provenance manifest — @tryghost/theme-renderer
 
 Every file copied from ghost/core (or elsewhere), its origin, the transforms
-applied, and the seam stubs it touches. Origin revision for all ghost/core
+applied, and the seam stubs it touches. Unless noted below, origin revision for ghost/core
 copies: **`407e032dc7`** (branch `theme-renderer`, 2026-08-14). This manifest is
 the drift ledger required by the spec's hybrid copy policy (principle #2):
 resync = diff the origin file at HEAD against `407e032dc7`, apply the same
@@ -74,8 +74,19 @@ transforms, update the revision here.
 | helpers/tpl/partials.ts                    | helpers/tpl/*.hbs (navigation, pagination, content-cta, gift-toast, cancel_link, recommendations) | .hbs sources embedded verbatim as string constants + `registerCoreHelperPartials()` (replaces express-hbs `partialsDir` fs loading)                                                                                                                                                                                                                                                                                         | hbs shim (compiles on register, `preventIndent: true`)                                                                                            |
 | helpers/services/registry.ts               | services/helpers/registry.js                                                                      | module singleton → `createHelperRegistry(registrar)` factory                                                                                                                                                                                                                                                                                                                                                                | HelperRegistrar                                                                                                                                   |
 | helpers/services/handlebars.ts             | services/helpers/handlebars.js                                                                    | engine singleton → injected HelperRegistrar; `process.env.NODE_ENV` → seam `config.get('env')`; `errors.utils` resolved from either the CJS default export or the ES build's named export (@tryghost/errors ships both shapes); the async wrapper's catch is hardened — a throwing error path (unconfigured seam deps, throwing logging) still calls `cb('')` so the placeholder promise settles and the render cannot hang | logging                                                                                                                                           |
-| helpers/services/register-ghost-helpers.ts | services/helpers/register-ghost-helpers.js                                                        | requires → static imports; **trimmed to Tier-2 set**. Omitted registrations: cancel_link, collection, color_to_rgba, content_api_key, content_api_url, contrast_text_color, facebook_url, json, price, readable_url, recommendations, search, social_accounts, social_url, split, total_members, total_paid_members, twitter_url (`tiers` IS registered — the content-cta partial calls it for tier-gated posts)            | —                                                                                                                                                 |
+| helpers/services/register-ghost-helpers.ts | services/helpers/register-ghost-helpers.js                                                        | requires → static imports; **trimmed to Tier-2 set**. Omitted registrations: cancel_link, collection, color_to_rgba, content_api_key, content_api_url, contrast_text_color, facebook_url, json, price, readable_url, recommendations, search, social_url, split, total_members, total_paid_members, twitter_url (`tiers` IS registered — the content-cta partial calls it for tier-gated posts)                             | —                                                                                                                                                 |
 | helpers/services/index.ts                  | services/helpers/index.js                                                                         | re-export shape only                                                                                                                                                                                                                                                                                                                                                                                                        | —                                                                                                                                                 |
+
+### Current-theme compatibility update
+
+`src/helpers/social-accounts.ts` is copied from
+`ghost/core/core/frontend/helpers/social_accounts.js` at `c040b5dfc7` using
+STD transforms. It is registered because current Source and Casper templates
+use it for site and author links. It uses the existing `socialUrls` seam.
+
+The asset URL adapter also accepts per-file `config.assetHashes` scraped from
+the live page. This preserves current content-based hashes without adding
+filesystem access to the browser renderer.
 
 ## src/meta/ (24 modules)
 
