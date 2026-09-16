@@ -5,7 +5,8 @@ const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
-const jobsService = require('../../../core/server/services/jobs');
+const jobsService = require('../../../core/server/services/jobs-service');
+const logging = require('@tryghost/logging');
 const sinon = require('sinon');
 const adapterManager = require('../../../core/server/services/adapter-manager').default;
 const { mockManager } = require('../../utils/e2e-framework');
@@ -64,8 +65,8 @@ describe('Members import path selection', function () {
       assert.equal(res.body.meta.stats, undefined);
 
       // the deferred job reports by email, so it has to finish inside the
-      // test: the mail mock is torn down before the framework settles jobs
-      await jobsService.allSettled();
+      // test: the mail mock is torn down after it, and nothing else waits for it
+      await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
       mockManager.assert.sentEmailCount(1);
     });
   });
@@ -73,16 +74,30 @@ describe('Members import path selection', function () {
   describe('over the threshold', function () {
     it('defers to a background job and reports no stats yet', async function () {
       configUtils.set('members:importer:inlineThreshold', 1);
-      const getAdapter = sinon.spy(adapterManager, 'getAdapter');
+      const saveRaw = sinon.spy(adapterManager.getAdapter('storage:imports'), 'saveRaw');
+      const dispatch = sinon.spy(jobsService.getInstance(), 'dispatch');
+      const loggingInfo = sinon.spy(logging, 'info');
 
       const res = await upload('valid-members-import.csv');
 
       assert.equal(res.status, 202);
       assert.equal(res.body.meta.stats, undefined);
 
-      await jobsService.allSettled();
-      sinon.assert.calledWith(getAdapter, 'storage:imports');
+      await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
+      sinon.assert.calledOnce(saveRaw);
       mockManager.assert.sentEmailCount(1);
+      // Handed to the class-based jobs service as one serialisable members-import job,
+      // and run by it rather than by the legacy job manager.
+      sinon.assert.calledOnce(dispatch);
+      const [job] = dispatch.firstCall.args;
+      assert.equal(job.constructor.type, 'members-import');
+      assert.deepEqual(Object.keys(JSON.parse(JSON.stringify(job))).sort(), [
+        'emailRecipient',
+        'extraLabels',
+        'labelName',
+        'spoolKey',
+      ]);
+      sinon.assert.calledWith(loggingInfo, '[Background Job] members-import started');
     });
 
     it('treats the threshold as inclusive', async function () {

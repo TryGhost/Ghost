@@ -1,4 +1,5 @@
 import MemberRepository from './members-api/repositories/member-repository';
+import type MembersImportJob from './jobs/members-import-job';
 
 interface MemberBREADService {
   disableCommenting(
@@ -30,6 +31,7 @@ interface MembersService {
   createPaidMemberShim(
     tierSlug?: string,
   ): Promise<{ status: 'paid'; products: Array<{ slug: string }> }>;
+  handleImportJob: ((job: MembersImportJob) => Promise<void>) | null;
 }
 
 declare const membersService: MembersService;
