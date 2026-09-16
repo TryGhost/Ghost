@@ -146,7 +146,9 @@ async function applyNavigationPlacement(settings, {pages, placement, siteOrigin}
             // previous arrays, and mutating the shared EmberObject would leave
             // isSecondary dirty on the reverted item
             const item = NavigationItem.create({
-                label: existing?.label || page.label || 'Untitled',
+                // keep a blank label when moving an icon-only item; only fall
+                // back to the page title when creating a brand-new nav entry
+                label: existing ? existing.label : (page.label || 'Untitled'),
                 url: existing?.url || page.path,
                 icon: existing?.icon || '',
                 visibility: existing?.visibility || 'public',

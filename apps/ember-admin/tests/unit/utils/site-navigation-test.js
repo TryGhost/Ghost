@@ -160,5 +160,26 @@ describe('Unit: Util: site-navigation', function () {
             expect(moved.visibility).to.equal('members');
             expect(moved.isSecondary).to.be.true;
         });
+
+        it('preserves a blank label on icon-only items when moving', async function () {
+            const settings = mutableSettings({
+                navigation: [{
+                    label: '',
+                    url: '/about/',
+                    icon: 'https://example.com/about.svg'
+                }]
+            });
+
+            await setPageNavigationPlacement(settings, {
+                label: 'About',
+                path: '/about/',
+                placement: 'secondary',
+                blogUrl
+            });
+
+            const moved = settings.secondaryNavigation[0];
+            expect(moved.label).to.equal('');
+            expect(moved.icon).to.equal('https://example.com/about.svg');
+        });
     });
 });
