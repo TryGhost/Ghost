@@ -30,7 +30,8 @@ function siteContextFor(blogUrl) {
 }
 
 // Pathname comparable to how Ghost stores nav urls (no site subdirectory).
-// External absolute urls return null. If the path starts with the site
+// Absolute urls outside the site origin or subdirectory return null.
+// If the path starts with the site
 // subdirectory plus another segment, strip that prefix so
 // https://site.com/blog/about/ and /about/ both match /about.
 // Equality alone is not enough: a page with slug "blog" on a /blog install
@@ -53,6 +54,16 @@ function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
     }
 
     let pathname = (parsed.pathname.replace(/\/+$/, '') || '/').toLowerCase();
+
+    if (!isRelative && siteSubdir) {
+        if (pathname === siteSubdir) {
+            return '/';
+        }
+
+        if (!pathname.startsWith(`${siteSubdir}/`)) {
+            return null;
+        }
+    }
 
     if (siteSubdir && pathname.startsWith(`${siteSubdir}/`)) {
         pathname = pathname.slice(siteSubdir.length) || '/';

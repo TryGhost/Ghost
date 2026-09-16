@@ -69,6 +69,19 @@ describe('Unit: Util: site-navigation', function () {
             expect(getPagePlacement(settings, pagePathForSlug('about', blogUrl), blogUrl)).to.equal('primary');
         });
 
+        it('does not match absolute links outside the site subdirectory', function () {
+            for (const url of ['https://example.com/about/', 'https://example.com/blogger/about/']) {
+                const settings = settingsWith({navigation: [{url}]});
+                expect(getPagePlacement(settings, '/about/', blogUrl)).to.be.null;
+            }
+        });
+
+        it('distinguishes the absolute site homepage from a page named after the subdirectory', function () {
+            const settings = settingsWith({navigation: [{url: blogUrl}]});
+            expect(getPagePlacement(settings, '/blog/', blogUrl)).to.be.null;
+            expect(getPagePlacement(settings, '/', blogUrl)).to.equal('primary');
+        });
+
         it('does not collapse a page whose slug matches the subdir segment', function () {
             const settings = settingsWith({navigation: [{url: '/blog/'}]});
             expect(getPagePlacement(settings, pagePathForSlug('blog', blogUrl), blogUrl)).to.equal('primary');
@@ -90,6 +103,24 @@ describe('Unit: Util: site-navigation', function () {
 
     describe('setPagesNavigationPlacement', function () {
         const blogUrl = 'https://example.com/';
+
+        it('preserves unrelated absolute links when removing a subdirectory page', async function () {
+            const externalItem = {label: 'Corporate About', url: 'https://example.com/about/'};
+            const settings = mutableSettings({
+                navigation: [externalItem, {label: 'Blog About', url: '/about/'}]
+            });
+
+            await setPageNavigationPlacement(settings, {
+                label: 'Blog About',
+                path: '/about/',
+                placement: null,
+                blogUrl: 'https://example.com/blog/'
+            });
+
+            expect(settings.saved).to.be.true;
+            expect(settings.navigation.map(item => ({label: item.label, url: item.url})))
+                .to.deep.equal([externalItem]);
+        });
 
         it('does not reorder or re-save pages already in the destination', async function () {
             const settings = mutableSettings({
