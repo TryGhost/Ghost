@@ -21,6 +21,7 @@ import { EmberListWithGiftLinks } from './gift-link-modal-host';
 import { EditorGate } from './editor-gate';
 import { PagesListGate, PostsListGate } from './posts-list-gate';
 import { TagDetailGate } from './tag-detail-gate';
+import { MemberActivityGate } from './member-activity-gate';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
@@ -52,7 +53,6 @@ const EMBER_ROUTES: string[] = [
   '/posts/analytics/:postId/debug',
   '/restore',
   '/migrate/*',
-  '/members-activity',
 ];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
@@ -116,6 +116,14 @@ const appRoutes: RouteObject[] = [
     path: '/members',
     handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
     children: membersRouteChildren,
+  },
+  {
+    path: '/members-activity',
+    Component: MemberActivityGate,
+    handle: {
+      ...emberFallbackHandle,
+      requiresAccess: canManageMembers,
+    } satisfies AccessRouteHandle & AdminRouteHandle,
   },
   {
     path: '/posts/analytics/:postId',
@@ -227,6 +235,7 @@ export function useIsEmberOwnedRoute(pathname: string): boolean {
   const tagDetailOwner = useFlagGatedRouteOwner('tagDetailsReact');
   const postsListOwner = useFlagGatedRouteOwner('postsListReact');
   const editorOwner = useFlagGatedRouteOwner('editorReact');
+  const memberActivityOwner = useFlagGatedRouteOwner('membersActivityReact');
   const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
   if (!leaf) {
     return true;
@@ -239,6 +248,9 @@ export function useIsEmberOwnedRoute(pathname: string): boolean {
   }
   if (leaf.Component === EditorGate) {
     return editorOwner !== 'react';
+  }
+  if (leaf.Component === MemberActivityGate) {
+    return memberActivityOwner !== 'react';
   }
   return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
 }

@@ -1,39 +1,57 @@
-const logging = require('@tryghost/logging');
-const db = require('../../data/db');
-const {
+import logging from '@tryghost/logging';
+import type { Knex } from 'knex';
+
+import * as db from '../../data/db';
+import {
   MEMBER_WELCOME_EMAIL_SLUGS,
   MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES,
-} = require('../member-welcome-emails/constants');
-const { AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun } = require('../../models');
-/** @import {Knex} from 'knex' */
+} from '../member-welcome-emails/constants';
+// @ts-expect-error Models currently lack type definitions.
+import { AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun } from '../../models';
 
-/**
- * @internal
- * @typedef {object} Run
- * @prop {string} id
- * @prop {string} member_id
- * @prop {number} step_attempts
- * @prop {null | string} next_welcome_email_automated_email_id
- * @prop {string} automation_slug
- * @prop {string} automation_status
- * @prop {string} automated_email_id
- */
+type Run = {
+  id: string;
+  member_id: string;
+  step_attempts: number;
+  next_welcome_email_automated_email_id: null | string;
+  automation_slug: string;
+  automation_status: string;
+  automated_email_id: string;
+};
 
-/**
- * @internal
- * @typedef {object} MemberWelcomeEmailService
- * @prop {() => unknown} init
- * @prop {object} api
- * @prop {() => PromiseLike<unknown>} api.loadMemberWelcomeEmails
- * @prop {(options: {
- *     member: {
- *         name: undefined | null | string;
- *         email: string;
- *         uuid: string;
- *     };
- *     memberStatus: 'free' | 'paid';
- * }) => PromiseLike<unknown>} api.send
- */
+type MemberStatus = keyof typeof MEMBER_WELCOME_EMAIL_SLUGS;
+
+type MemberWelcomeEmailService = {
+  init: () => unknown;
+  api: {
+    loadMemberWelcomeEmails: () => PromiseLike<unknown>;
+    send: (options: {
+      member: {
+        name: undefined | null | string;
+        email: string;
+        uuid: string;
+      };
+      memberStatus: MemberStatus;
+    }) => PromiseLike<unknown>;
+  };
+};
+
+type MemberModel = {
+  get(key: 'name'): undefined | null | string;
+  get(key: 'email' | 'status' | 'uuid'): string;
+};
+
+type PollOptions = {
+  memberWelcomeEmailService: MemberWelcomeEmailService;
+  enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
+};
+
+type ExitReason =
+  | 'finished'
+  | 'email send failed'
+  | 'member changed status'
+  | 'member unsubscribed'
+  | 'automation disabled';
 
 const LOG_KEY = '[AUTOMATIONS]';
 const MAX_RUNS_PER_BATCH = 100;
@@ -41,32 +59,26 @@ const MAX_ATTEMPTS = 10;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT = 30 * 60 * 1000;
 
-/**
- * @internal
- * @typedef {typeof MEMBER_WELCOME_EMAIL_SLUGS} Slugs
- */
+const isMemberStatus = (value: string): value is MemberStatus =>
+  Object.hasOwn(MEMBER_WELCOME_EMAIL_SLUGS, value);
 
-/** @type {Map<string, keyof Slugs>} */
-const slugToMemberStatus = new Map(
-  Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(
-    /** @param {[keyof Slugs, Slugs[keyof Slugs]]} entry */
-    ([status, slug]) => [slug, status],
-  ),
-);
+const slugToMemberStatus = new Map<string, MemberStatus>();
+for (const [status, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
+  // This should always be true, but TypeScript doesn't know that.
+  if (isMemberStatus(status)) {
+    slugToMemberStatus.set(slug, status);
+  }
+}
 
-/**
- * @returns {Promise<{
- *     runs: Run[];
- *     nextFutureReadyAt: null | Date;
- * }>}
- */
-async function fetchAndLockRuns() {
+async function fetchAndLockRuns(): Promise<{
+  runs: Run[];
+  nextFutureReadyAt: null | Date;
+}> {
   const now = new Date();
   const lockCutoff = new Date(now.getTime() - LOCK_TIMEOUT);
 
-  return await db.knex.transaction(async (trx) => {
-    /** @type {Run[]} */
-    const runs = await trx('welcome_email_automation_runs as r')
+  return await db.knex.transaction(async (trx: Knex.Transaction) => {
+    const runs = await trx<Run>('welcome_email_automation_runs as r')
       .join('automations as a', 'r.welcome_email_automation_id', 'a.id')
       .join(
         'welcome_email_automated_emails as e',
@@ -75,8 +87,8 @@ async function fetchAndLockRuns() {
       )
       .whereNotNull('r.next_welcome_email_automated_email_id')
       .where('r.ready_at', '<=', now)
-      .where(function () {
-        this.whereNull('r.step_started_at').orWhere('r.step_started_at', '<', lockCutoff);
+      .where((builder: Knex.QueryBuilder<Record<string, unknown>, unknown[]>) => {
+        builder.whereNull('r.step_started_at').orWhere('r.step_started_at', '<', lockCutoff);
       })
       .select(
         'r.id',
@@ -94,12 +106,12 @@ async function fetchAndLockRuns() {
         .whereNotNull('next_welcome_email_automated_email_id')
         .where('ready_at', '>', now)
         .select(db.knex.raw('MIN(ready_at) as next_ready_at'))
-        .first();
+        .first<{ next_ready_at: Date | null | string }>();
       const nextFutureReadyAt = result?.next_ready_at ? new Date(result.next_ready_at) : null;
       return { runs, nextFutureReadyAt };
     }
 
-    /** @type {string[]} */ const ids = [];
+    const ids: string[] = [];
 
     for (const run of runs) {
       ids.push(run.id);
@@ -118,23 +130,19 @@ async function fetchAndLockRuns() {
   });
 }
 
-/**
- * @param {string} runId
- * @param {Record<string, unknown>} attrs
- * @param {Knex.Transaction} [transacting]
- * @returns {Promise<void>}
- */
-async function updateRun(runId, attrs, transacting) {
+async function updateRun(
+  runId: string,
+  attrs: Record<string, unknown>,
+  transacting?: Knex.Transaction,
+): Promise<void> {
   await WelcomeEmailAutomationRun.edit(attrs, { id: runId, transacting });
 }
 
-/**
- * @param {string} runId
- * @param {'finished' | 'email send failed' | 'member changed status' | 'member unsubscribed' | 'automation disabled'} exitReason
- * @param {Knex.Transaction} [transacting]
- * @returns {Promise<void>}
- */
-async function markExited(runId, exitReason, transacting) {
+async function markExited(
+  runId: string,
+  exitReason: ExitReason,
+  transacting?: Knex.Transaction,
+): Promise<void> {
   await updateRun(
     runId,
     {
@@ -149,11 +157,7 @@ async function markExited(runId, exitReason, transacting) {
   );
 }
 
-/**
- * @param {string} runId
- * @returns {Promise<void>}
- */
-async function markMaxAttemptsExceeded(runId) {
+async function markMaxAttemptsExceeded(runId: string): Promise<void> {
   await markExited(runId, 'email send failed');
   logging.warn(
     {
@@ -166,12 +170,7 @@ async function markMaxAttemptsExceeded(runId) {
   );
 }
 
-/**
- * @param {string} runId
- * @param {Readonly<Date>} retryAt
- * @returns {Promise<void>}
- */
-async function markRetry(runId, retryAt) {
+async function markRetry(runId: string, retryAt: Readonly<Date>): Promise<void> {
   await updateRun(runId, {
     step_started_at: null,
     ready_at: retryAt,
@@ -179,13 +178,11 @@ async function markRetry(runId, retryAt) {
   });
 }
 
-/**
- * @param {object} options
- * @param {Run} options.run
- * @param {MemberWelcomeEmailService} options.memberWelcomeEmailService
- * @param {(date: Readonly<Date>) => unknown} options.enqueueAnotherPollAt
- */
-async function processRun({ run, memberWelcomeEmailService, enqueueAnotherPollAt }) {
+async function processRun({
+  run,
+  memberWelcomeEmailService,
+  enqueueAnotherPollAt,
+}: PollOptions & { run: Run }): Promise<void> {
   if (run.step_attempts > MAX_ATTEMPTS) {
     await markMaxAttemptsExceeded(run.id);
     return;
@@ -212,7 +209,10 @@ async function processRun({ run, memberWelcomeEmailService, enqueueAnotherPollAt
   }
 
   try {
-    const member = await Member.findOne({ id: run.member_id }, { withRelated: ['newsletters'] });
+    const member: MemberModel | null = await Member.findOne(
+      { id: run.member_id },
+      { withRelated: ['newsletters'] },
+    );
 
     // When a member is deleted, the run is cascade-deleted. In this edge
     // case, when a member is deleted after the run is loaded but before
@@ -230,7 +230,8 @@ async function processRun({ run, memberWelcomeEmailService, enqueueAnotherPollAt
       return;
     }
 
-    const eligibleStatuses = MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES[memberStatus];
+    const eligibleStatuses: readonly string[] =
+      MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES[memberStatus];
     if (!eligibleStatuses.includes(member.get('status'))) {
       await markExited(run.id, 'member changed status');
       return;
@@ -245,7 +246,7 @@ async function processRun({ run, memberWelcomeEmailService, enqueueAnotherPollAt
       memberStatus,
     });
 
-    await db.knex.transaction(async (transacting) => {
+    await db.knex.transaction(async (transacting: Knex.Transaction) => {
       await AutomatedEmailRecipient.add(
         {
           member_id: run.member_id,
@@ -288,12 +289,8 @@ async function processRun({ run, memberWelcomeEmailService, enqueueAnotherPollAt
  *
  * Runs up to 100 in a batch. If that's met or exceeded, a request to poll
  * again is dispatched.
- *
- * @param {object} options
- * @param {MemberWelcomeEmailService} options.memberWelcomeEmailService
- * @param {(date: Readonly<Date>) => unknown} options.enqueueAnotherPollAt
  */
-async function welcomeEmailAutomationPoll(options) {
+export async function welcomeEmailAutomationPoll(options: PollOptions): Promise<void> {
   const { memberWelcomeEmailService, enqueueAnotherPollAt } = options;
   const { runs, nextFutureReadyAt } = await fetchAndLockRuns();
 
@@ -315,7 +312,3 @@ async function welcomeEmailAutomationPoll(options) {
     enqueueAnotherPollAt(new Date());
   }
 }
-
-module.exports = {
-  welcomeEmailAutomationPoll,
-};

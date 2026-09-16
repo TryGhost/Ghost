@@ -20,7 +20,7 @@ const messages = {
   tokenRequired: 'Token is required',
 };
 
-const validateAutomatedEmail = async function (frame) {
+const validateAutomatedEmail = async function (frame, isSlugRequired) {
   if (!frame.data.automated_emails || !frame.data.automated_emails[0]) {
     return Promise.resolve();
   }
@@ -45,7 +45,7 @@ const validateAutomatedEmail = async function (frame) {
     );
   }
 
-  if (data.slug && !ALLOWED_SLUGS.includes(data.slug)) {
+  if ((isSlugRequired && !data.slug) || (data.slug && !ALLOWED_SLUGS.includes(data.slug))) {
     return Promise.reject(
       new ValidationError({
         message: tpl(messages.invalidSlug),
@@ -108,10 +108,10 @@ const validatePreviewData = (frame) => {
 
 module.exports = {
   async add(apiConfig, frame) {
-    await validateAutomatedEmail(frame);
+    await validateAutomatedEmail(frame, true);
   },
   async edit(apiConfig, frame) {
-    await validateAutomatedEmail(frame);
+    await validateAutomatedEmail(frame, false);
   },
   editSenders(apiConfig, frame) {
     const senderName = frame.data.sender_name;

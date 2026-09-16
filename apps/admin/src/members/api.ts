@@ -4,6 +4,7 @@
  * else in this domain is internal.
  */
 export { membersRouteChildren } from './routes';
+export const lazyMemberActivityScreen = () => import('./activity/member-activity');
 export { buildMembersUrl } from './member-route';
 export { formatMemberName, getMemberInitials, memberAvatarProps } from './member-format';
 export {

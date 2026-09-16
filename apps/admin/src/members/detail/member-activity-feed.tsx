@@ -22,8 +22,8 @@ interface MemberActivityFeedProps {
 /**
  * Renders a Lucide substitute for Ember's custom SVG icon names
  * (`event-signed-up`, `event-comment`, …). Intentional visual approximation
- * — pixel-perfect rendering lives behind the "View all member activity"
- * link that routes to Ember. Anything unmapped falls back to the generic
+ * — the full table lives behind the "View all member activity" link.
+ * Anything unmapped falls back to the generic
  * `Activity` icon so a new server-side event type never crashes the row.
  *
  * A switch (rather than a `Record<string, React.ComponentType>` map) sidesteps
@@ -32,7 +32,7 @@ interface MemberActivityFeedProps {
  * under that mix. Inline JSX resolves each icon at its use-site, which is what
  * every other member-detail component already does.
  */
-const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
+export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
   const iconProps = { className: 'shrink-0 text-muted-foreground', size: 16 };
   switch (iconName) {
     case 'event-signed-up':
@@ -75,11 +75,9 @@ const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
 };
 
 /**
- * "View all member activity →" link. Points at Ember's members-activity
- * route (still on Ember post-cutover — the plan calls out that Phase 8 keeps
- * the paginated feed page on Ember for a follow-up). Uses a plain anchor with
- * the `#/…` href so the Ember hash-router picks it up rather than React
- * Router intercepting the click.
+ * "View all member activity →" link. The membersActivityReact experiment
+ * chooses the full feed's owner. A native hash link also notifies Ember when
+ * the experiment is off, while React handles the same URL when it is on.
  */
 const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => (
   <a
@@ -100,9 +98,8 @@ const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) :
 /**
  * Ember's activity-feed row renders an `EmailPreviewLink` when `event.email`
  * is set on delivery/open/sent rows. We don't have that component in the
- * posts app — surface a plain "Email" label so the admin can at least see
- * the row carries an email object; the "View all" link routes them to Ember
- * for the actual preview.
+ * inline feed — surface a plain "Email" label so the admin can at least see
+ * the row carries an email object; the full activity page provides the preview.
  */
 function getEmailLabel(email: unknown): string | undefined {
   if (email && typeof email === 'object') {
