@@ -13,7 +13,7 @@ const obfuscatedSetting = '••••••••';
  * @returns {boolean}
  */
 function isSecretSetting(setting) {
-    return /secret|api_key/.test(setting.key);
+  return /secret|api_key/.test(setting.key);
 }
 
 /**
@@ -24,10 +24,10 @@ function isSecretSetting(setting) {
  * @returns {Object} settings record with obfuscated value if it's a secret
  */
 function hideValueIfSecret(setting) {
-    if (setting.value && isSecretSetting(setting)) {
-        return {...setting, value: obfuscatedSetting};
-    }
-    return setting;
+  if (setting.value && isSecretSetting(setting)) {
+    return { ...setting, value: obfuscatedSetting };
+  }
+  return setting;
 }
 
 // Cached site UUID to ensure consistency
@@ -39,32 +39,34 @@ let SITE_UUID;
  * @returns {string} lowercase UUID
  */
 function getOrGenerateSiteUuid() {
-    if (!SITE_UUID) {
-        try {
-            let configuredSiteUuid = config.get('site_uuid');
-            if (configuredSiteUuid && validator.isUUID(configuredSiteUuid)) {
-                SITE_UUID = configuredSiteUuid.toLowerCase();
-                logging.info(`Setting site_uuid to configured value: ${SITE_UUID}`);
-            } else {
-                SITE_UUID = crypto.randomUUID();
-                logging.info(`Configured site_uuid was not found or invalid. Setting site_uuid to a new value: ${SITE_UUID}`);
-            }
-        } catch (error) {
-            logging.error('Error getting site UUID from config. Setting site_uuid to a new value', error);
-            SITE_UUID = crypto.randomUUID();
-        }
+  if (!SITE_UUID) {
+    try {
+      let configuredSiteUuid = config.get('site_uuid');
+      if (configuredSiteUuid && validator.isUUID(configuredSiteUuid)) {
+        SITE_UUID = configuredSiteUuid.toLowerCase();
+        logging.info(`Setting site_uuid to configured value: ${SITE_UUID}`);
+      } else {
+        SITE_UUID = crypto.randomUUID();
+        logging.info(
+          `Configured site_uuid was not found or invalid. Setting site_uuid to a new value: ${SITE_UUID}`,
+        );
+      }
+    } catch (error) {
+      logging.error('Error getting site UUID from config. Setting site_uuid to a new value', error);
+      SITE_UUID = crypto.randomUUID();
     }
-    return SITE_UUID.toLowerCase();
+  }
+  return SITE_UUID.toLowerCase();
 }
 
 // Reset function for testing
 getOrGenerateSiteUuid._reset = () => {
-    SITE_UUID = undefined;
+  SITE_UUID = undefined;
 };
 
 module.exports = {
-    obfuscatedSetting,
-    isSecretSetting,
-    hideValueIfSecret,
-    getOrGenerateSiteUuid
+  obfuscatedSetting,
+  isSecretSetting,
+  hideValueIfSecret,
+  getOrGenerateSiteUuid,
 };

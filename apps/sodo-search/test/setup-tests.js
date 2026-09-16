@@ -1,14 +1,9 @@
 import '@testing-library/jest-dom/vitest';
-import {afterEach} from 'vitest';
-import {cleanup} from '@testing-library/react';
-import {fetch} from 'cross-fetch';
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 
 // TODO: remove this once we're switched `jest` to `vi` in code
-// eslint-disable-next-line no-undef
 globalThis.jest = vi;
-
-// eslint-disable-next-line no-undef
-globalThis.fetch = fetch;
 
 // Add the cleanup function for React testing library
 afterEach(cleanup);

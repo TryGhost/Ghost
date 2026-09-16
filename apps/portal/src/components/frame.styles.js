@@ -1,33 +1,34 @@
 /** By default, CRAs webpack bundle combines and appends the main css at root level, so they are not applied inside iframe
  * This uses a hack where we append `<style> </style>` tag with all CSS inside the head of iframe dynamically, thus making it available easily
  * We can create separate variables to keep styles grouped logically, and export them as one appended string
-*/
+ */
 
-import {GlobalStyles} from './global.styles';
-import {ActionButtonStyles} from './common/action-button';
-import {BackButtonStyles} from './common/back-button';
-import {SwitchStyles} from './common/switch';
+import { GlobalStyles } from './global.styles';
+import { ActionButtonStyles } from './common/action-button';
+import { BackButtonStyles } from './common/back-button';
+import { SwitchStyles } from './common/switch';
 import AccountHomePageStyles from './pages/AccountHomePage/account-home-page.css?inline';
-import {AccountPlanPageStyles} from './pages/account-plan-page';
-import {InputFieldStyles} from './common/input-field';
-import {SignupPageStyles} from './pages/signup-page';
-import {ProductsSectionStyles} from './common/products-section';
-import {AvatarStyles} from './common/member-gravatar';
-import {MagicLinkStyles} from './pages/magic-link-page';
-import {PopupNotificationStyles} from './common/popup-notification';
-import {OfferPageStyles} from './pages/offer-page';
-import {FeedbackPageStyles} from './pages/feedback-page';
+import { AccountPlanPageStyles } from './pages/account-plan-page';
+import { InputFieldStyles } from './common/input-field';
+import { DatePickerStyles } from './common/date-picker';
+import { SignupPageStyles } from './pages/signup-page';
+import { ProductsSectionStyles } from './common/products-section';
+import { AvatarStyles } from './common/member-gravatar';
+import { MagicLinkStyles } from './pages/magic-link-page';
+import { PopupNotificationStyles } from './common/popup-notification';
+import { OfferPageStyles } from './pages/offer-page';
+import { FeedbackPageStyles } from './pages/feedback-page';
 import EmailSuppressedPage from './pages/email-suppressed-page.css?inline';
 import EmailSuppressionFAQ from './pages/email-suppression-faq.css?inline';
 import EmailReceivingFAQ from './pages/email-receiving-faq.css?inline';
-import {TipsAndDonationsSuccessStyle} from './pages/support-success';
-import {GiftRedemptionStyles} from './pages/gift-redemption-page';
-import {GiftPageStyles} from './pages/gift-page';
-import {GiftSuccessStyle} from './pages/gift-success-page';
-import {TipsAndDonationsErrorStyle} from './pages/support-error';
-import {RecommendationsPageStyles} from './pages/recommendations-page';
-import {ShareModalStyles} from './pages/share/share-modal.styles';
-import {TransistorPodcastsActionStyles} from './pages/AccountHomePage/components/transistor-podcasts-action';
+import { TipsAndDonationsSuccessStyle } from './pages/support-success';
+import { GiftRedemptionStyles } from './pages/gift-redemption-page';
+import { GiftPageStyles } from './pages/gift-page.styles';
+import { GiftSuccessStyle } from './pages/gift-success-page';
+import { TipsAndDonationsErrorStyle } from './pages/support-error';
+import { RecommendationsPageStyles } from './pages/recommendations-page';
+import { ShareModalStyles } from './pages/share/share-modal.styles';
+import { TransistorPodcastsActionStyles } from './pages/AccountHomePage/components/transistor-podcasts-action';
 import NotificationStyle from './notification.styles';
 
 // Global styles
@@ -186,6 +187,22 @@ const FrameStyles = `
     opacity: 0.75;
 }
 
+.gh-portal-list-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    margin: 0 -4px;
+    padding: 0 4px;
+    color: var(--brandcolor);
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1em;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    user-select: none;
+}
+
 .gh-portal-btn-logout {
     position: absolute;
     top: 22px;
@@ -308,6 +325,10 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
     background: linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(249,249,250,1) 100%);
     animation: none;
     pointer-events: none;
+}
+
+.gh-portal-popup-background.preview.preview-dark {
+    background: linear-gradient(45deg, var(--grey0) 0%, var(--black) 100%);
 }
 
 @keyframes fadein {
@@ -528,6 +549,13 @@ html[dir="rtl"] .gh-portal-powered a {
     right: 24px;
     z-index: 10000;
 }
+
+.gh-portal-closeicon-container:focus-visible {
+    outline: 2px solid var(--brandcolor);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
 html[dir="rtl"] .gh-portal-closeicon-container {
     right: unset;
     left: 24px;
@@ -651,9 +679,10 @@ html[dir="rtl"] .gh-portal-logout-container {
 
 .gh-portal-list {
     background: var(--white);
-    padding: 20px;
+    padding: 0;
     border-radius: 8px;
     border: 1px solid var(--grey12);
+    overflow: hidden;
 }
 
 .gh-portal-newsletter-selection {
@@ -690,15 +719,40 @@ html[dir="rtl"] .gh-portal-logout-container {
 .gh-portal-list section {
     display: flex;
     align-items: center;
-    margin: 0 -20px 20px;
-    padding: 0 20px 20px;
+    margin: 0;
+    padding: 20px;
     border-bottom: 1px solid var(--grey12);
 }
 
+.gh-portal-list section:first-of-type {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
 .gh-portal-list section:last-of-type {
-    margin-bottom: 0;
-    padding-bottom: 0;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.gh-portal-list-clickable {
+    cursor: pointer;
+}
+
+.gh-portal-list-clickable:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--brandcolor);
+}
+
+.gh-portal-list section:last-of-type {
     border: none;
+}
+
+.gh-portal-btn-unsubscribe {
+    margin-top: 40px;
+}
+
+.gh-portal-btn-unsubscribe .gh-portal-btn {
+    width: 100%;
 }
 
 .gh-portal-list-detail {
@@ -1294,36 +1348,37 @@ const MultipleProductsGlobalStyles = `
 }
 `;
 
-export function getFrameStyles({site}) {
-    const FrameStyle =
-        GlobalStyles +
-        FrameStyles +
-        AccountHomePageStyles +
-        AccountPlanPageStyles +
-        InputFieldStyles +
-        ProductsSectionStyles({site}) +
-        SwitchStyles +
-        ActionButtonStyles +
-        BackButtonStyles +
-        AvatarStyles +
-        MagicLinkStyles +
-        SignupPageStyles +
-        OfferPageStyles({site}) +
-        NotificationStyle +
-        PopupNotificationStyles +
-        MobileStyles +
-        MultipleProductsGlobalStyles +
-        FeedbackPageStyles +
-        EmailSuppressedPage +
-        EmailSuppressionFAQ +
-        EmailReceivingFAQ +
-        TipsAndDonationsSuccessStyle +
-        GiftRedemptionStyles +
-        GiftPageStyles +
-        TipsAndDonationsErrorStyle +
-        GiftSuccessStyle +
-        RecommendationsPageStyles +
-        ShareModalStyles +
-        TransistorPodcastsActionStyles;
-    return FrameStyle;
+export function getFrameStyles({ site }) {
+  const FrameStyle =
+    GlobalStyles +
+    FrameStyles +
+    AccountHomePageStyles +
+    AccountPlanPageStyles +
+    InputFieldStyles +
+    DatePickerStyles +
+    ProductsSectionStyles({ site }) +
+    SwitchStyles +
+    ActionButtonStyles +
+    BackButtonStyles +
+    AvatarStyles +
+    MagicLinkStyles +
+    SignupPageStyles +
+    OfferPageStyles({ site }) +
+    NotificationStyle +
+    PopupNotificationStyles +
+    MobileStyles +
+    MultipleProductsGlobalStyles +
+    FeedbackPageStyles +
+    EmailSuppressedPage +
+    EmailSuppressionFAQ +
+    EmailReceivingFAQ +
+    TipsAndDonationsSuccessStyle +
+    GiftRedemptionStyles +
+    GiftPageStyles +
+    TipsAndDonationsErrorStyle +
+    GiftSuccessStyle +
+    RecommendationsPageStyles +
+    ShareModalStyles +
+    TransistorPodcastsActionStyles;
+  return FrameStyle;
 }

@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "tiers",
+  "title": "tiers",
+  "description": "Base Tier definitions",
+  "definitions": {
+    "tier": {
+      "description": "A Ghost Tier",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 191
+        },
+        "description": {
+          "type": ["string", "null"],
+          "maxLength": 191
+        },
+        "slug": {
+          "type": ["string", "null"],
+          "maxLength": 191
+        },
+        "welcome_page_url": {
+          "type": ["string", "null"],
+          "maxLength": 2000
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "none"]
+        },
+        "currency": {
+          "type": ["string", "null"]
+        },
+        "monthly_price": {
+          "type": ["number", "null"]
+        },
+        "yearly_price": {
+          "type": ["number", "null"]
+        },
+        "trial_days": {
+          "type": ["number", "null"]
+        },
+        "benefits": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-const {configUtils} = require('../../../../utils/e2e-framework');
+const { configUtils } = require('../../../../utils/e2e-framework');
 const assert = require('node:assert/strict');
 const nock = require('nock');
 const DomainEvents = require('@tryghost/domain-events');
@@ -6,41 +6,43 @@ const MilestoneCreatedEvent = require('../../../../../core/server/services/miles
 const slackNotifications = require('../../../../../core/server/services/slack-notifications');
 
 describe('Slack Notifications Service', function () {
-    let scope;
+  let scope;
 
-    beforeEach(function () {
-        configUtils.set('hostSettings', {milestones: {enabled: true, url: 'https://testhooks.slack.com/', minThreshold: '100'}});
-
-        scope = nock('https://testhooks.slack.com/')
-            .post('/')
-            .reply(200, {ok: true});
+  beforeEach(function () {
+    configUtils.set('hostSettings', {
+      milestones: { enabled: true, url: 'https://testhooks.slack.com/', minThreshold: '100' },
     });
 
-    afterEach(async function () {
-        nock.cleanAll();
-        await configUtils.restore();
-    });
+    scope = nock('https://testhooks.slack.com/').post('/').reply(200, { ok: true });
+  });
 
-    it('Can send a milestone created event', async function () {
-        await slackNotifications.init();
+  afterEach(async function () {
+    nock.cleanAll();
+    await configUtils.restore();
+  });
 
-        DomainEvents.dispatch(MilestoneCreatedEvent.create({
-            milestone: {
-                type: 'arr',
-                currency: 'usd',
-                name: 'arr-1000-usd',
-                value: 1000,
-                createdAt: new Date(),
-                emailSentAt: new Date()
-            },
-            meta: {
-                currentValue: 1005
-            }
-        }));
+  it('Can send a milestone created event', async function () {
+    await slackNotifications.init();
 
-        // Wait for the dispatched events (because this happens async)
-        await DomainEvents.allSettled();
+    DomainEvents.dispatch(
+      MilestoneCreatedEvent.create({
+        milestone: {
+          type: 'arr',
+          currency: 'usd',
+          name: 'arr-1000-usd',
+          value: 1000,
+          createdAt: new Date(),
+          emailSentAt: new Date(),
+        },
+        meta: {
+          currentValue: 1005,
+        },
+      }),
+    );
 
-        assert.equal(scope.isDone(), true);
-    });
+    // Wait for the dispatched events (because this happens async)
+    await DomainEvents.allSettled();
+
+    assert.equal(scope.isDone(), true);
+  });
 });

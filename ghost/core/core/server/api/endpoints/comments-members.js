@@ -1,240 +1,208 @@
 const commentsService = require('../../services/comments');
-const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'replies.disliked', 'count.replies', 'count.direct_replies', 'count.likes', 'liked', 'disliked', 'post', 'parent'];
+const ALLOWED_INCLUDES = [
+  'member',
+  'replies',
+  'replies.member',
+  'replies.count.likes',
+  'replies.liked',
+  'replies.disliked',
+  'count.replies',
+  'count.direct_replies',
+  'count.likes',
+  'liked',
+  'disliked',
+  'post',
+  'parent',
+];
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'comments',
+  docName: 'comments',
 
-    browse: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'post_id',
-            'include',
-            'page',
-            'limit',
-            'fields',
-            'filter',
-            'order',
-            'debug'
-        ],
-        validation: {
-            options: {
-                include: ALLOWED_INCLUDES
-            }
-        },
-        permissions: false,
-        query(frame) {
-            return commentsService.controller.browse(frame);
-        }
+  browse: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    replies: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'page',
-            'limit',
-            'fields',
-            'filter',
-            'order',
-            'debug',
-            'id'
-        ],
-        validation: {
-            options: {
-                include: ALLOWED_INCLUDES
-            }
-        },
-        permissions: false,
-        query(frame) {
-            return commentsService.controller.replies(frame);
-        }
+    options: ['post_id', 'include', 'page', 'limit', 'fields', 'filter', 'order', 'debug'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
     },
-
-    read: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'fields'
-        ],
-        data: [
-            'id',
-            'email'
-        ],
-        validation: {
-            options: {
-                include: ALLOWED_INCLUDES
-            }
-        },
-        permissions: false,
-        query(frame) {
-            return commentsService.controller.read(frame);
-        }
+    permissions: false,
+    query(frame) {
+      return commentsService.controller.browse(frame);
     },
+  },
 
-    edit: {
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id',
-            'include'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                id: {
-                    required: true
-                }
-            }
-        },
-        permissions: false,
-        query(frame) {
-            return commentsService.controller.edit(frame);
-        }
+  replies: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    add: {
-        statusCode: 201,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include'
-        ],
-        validation: {
-            options: {
-                include: ALLOWED_INCLUDES
-            },
-            data: {
-                post_id: {
-                    required: true
-                }
-            }
-        },
-        permissions: false,
-        query(frame) {
-            return commentsService.controller.add(frame);
-        }
+    options: ['include', 'page', 'limit', 'fields', 'filter', 'order', 'debug', 'id'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
     },
-
-    destroy: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'include',
-            'id'
-        ],
-        validation: {
-            options: {
-                include: ALLOWED_INCLUDES
-            }
-        },
-        permissions: false,
-        query() {
-            return commentsService.controller.destroy();
-        }
+    permissions: false,
+    query(frame) {
+      return commentsService.controller.replies(frame);
     },
+  },
 
-    counts: {
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: false,
-        options: [
-            'ids'
-        ],
-        async query(frame) {
-            return commentsService.controller.count(frame);
-        }
+  read: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    like: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id'
-        ],
-        validation: {
-        },
-        permissions: false,
-        async query(frame) {
-            return await commentsService.controller.like(frame);
-        }
+    options: ['include', 'fields'],
+    data: ['id', 'email'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
     },
-
-    unlike: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id'
-        ],
-        validation: {},
-        permissions: false,
-        async query(frame) {
-            return await commentsService.controller.unlike(frame);
-        }
+    permissions: false,
+    query(frame) {
+      return commentsService.controller.read(frame);
     },
+  },
 
-    dislike: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id'
-        ],
-        validation: {
-        },
-        permissions: false,
-        async query(frame) {
-            return await commentsService.controller.dislike(frame);
-        }
+  edit: {
+    headers: {
+      cacheInvalidate: false,
     },
-
-    undislike: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
+    options: ['id', 'include'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        options: [
-            'id'
-        ],
-        validation: {},
-        permissions: false,
-        async query(frame) {
-            return await commentsService.controller.undislike(frame);
-        }
+        id: {
+          required: true,
+        },
+      },
     },
+    permissions: false,
+    query(frame) {
+      return commentsService.controller.edit(frame);
+    },
+  },
 
-    report: {
-        statusCode: 204,
-        headers: {
-            cacheInvalidate: false
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+      data: {
+        post_id: {
+          required: true,
         },
-        options: [
-            'id'
-        ],
-        validation: {},
-        permissions: false,
-        async query(frame) {
-            await commentsService.controller.report(frame);
-        }
-    }
+      },
+    },
+    permissions: false,
+    query(frame) {
+      return commentsService.controller.add(frame);
+    },
+  },
+
+  destroy: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include', 'id'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+    },
+    permissions: false,
+    query() {
+      return commentsService.controller.destroy();
+    },
+  },
+
+  counts: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: false,
+    options: ['ids'],
+    async query(frame) {
+      return commentsService.controller.count(frame);
+    },
+  },
+
+  like: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      return await commentsService.controller.like(frame);
+    },
+  },
+
+  unlike: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      return await commentsService.controller.unlike(frame);
+    },
+  },
+
+  dislike: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      return await commentsService.controller.dislike(frame);
+    },
+  },
+
+  undislike: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      return await commentsService.controller.undislike(frame);
+    },
+  },
+
+  report: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      await commentsService.controller.report(frame);
+    },
+  },
 };
 
 module.exports = controller;

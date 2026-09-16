@@ -1,8 +1,8 @@
-import type {StaffMemberTextData} from './types';
+import type { StaffMemberTextData } from './types';
 
 export function renderText(data: StaffMemberTextData): string {
-    // Be careful when you indent the email, because whitespaces are visible in emails!
-    return `
+  // Be careful when you indent the email, because whitespaces are visible in emails!
+  return `
 Congratulations!
 
 You have a new free member: "${data.memberData.name}"

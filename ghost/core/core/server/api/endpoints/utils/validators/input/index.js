@@ -2,82 +2,85 @@
 // This is a valid index.js file - it just exports a lot of stuff!
 // Long term we would like to change the API architecture to reduce this file,
 // but that's not the problem the index.js max - line eslint "proxy" rule is there to solve.
-/* eslint-disable max-lines */
 
 module.exports = {
-    get automated_emails() {
-        return require('./automated_emails');
-    },
+  get automation_email_previews() {
+    return require('./automation_email_previews');
+  },
 
-    get password_reset() {
-        return require('./password_reset');
-    },
+  get automated_emails() {
+    return require('./automated_emails');
+  },
 
-    get setup() {
-        return require('./setup');
-    },
+  get password_reset() {
+    return require('./password_reset');
+  },
 
-    get posts() {
-        return require('./posts');
-    },
+  get setup() {
+    return require('./setup');
+  },
 
-    get pages() {
-        return require('./pages');
-    },
+  get posts() {
+    return require('./posts');
+  },
 
-    get invites() {
-        return require('./invites');
-    },
+  get pages() {
+    return require('./pages');
+  },
 
-    get invitations() {
-        return require('./invitations');
-    },
+  get invites() {
+    return require('./invites');
+  },
 
-    get members() {
-        return require('./members');
-    },
+  get invitations() {
+    return require('./invitations');
+  },
 
-    get tiers() {
-        return require('./tiers');
-    },
+  get members() {
+    return require('./members');
+  },
 
-    get media() {
-        return require('./media');
-    },
+  get tiers() {
+    return require('./tiers');
+  },
 
-    get files() {
-        return require('./files');
-    },
+  get media() {
+    return require('./media');
+  },
 
-    get settings() {
-        return require('./settings');
-    },
+  get files() {
+    return require('./files');
+  },
 
-    get tags() {
-        return require('./tags');
-    },
+  get settings() {
+    return require('./settings');
+  },
 
-    get labels() {
-        return require('./labels');
-    },
+  get tags() {
+    return require('./tags');
+  },
 
-    get users() {
-        return require('./users');
-    },
+  get labels() {
+    return require('./labels');
+  },
 
-    get images() {
-        return require('./images');
-    },
+  get users() {
+    return require('./users');
+  },
 
-    get oembed() {
-        return require('./oembed');
-    },
+  get images() {
+    return require('./images');
+  },
 
-    get webhooks() {
-        return require('./webhooks');
-    },
+  get oembed() {
+    return require('./oembed');
+  },
 
-    get snippets() {
-        return require('./snippets');
-    }
+  get webhooks() {
+    return require('./webhooks');
+  },
+
+  get snippets() {
+    return require('./snippets');
+  },
 };

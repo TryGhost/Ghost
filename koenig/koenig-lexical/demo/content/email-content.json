@@ -1,0 +1,114 @@
+{
+    "root": {
+        "children": [
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "Welcome! Thanks for subscribing — it's great to have you here.",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "paragraph",
+                "version": 1
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "You'll now receive new posts straight to your inbox. You can also log in any time to read the ",
+                        "type": "extended-text",
+                        "version": 1
+                    },
+                    {
+                        "children": [
+                            {
+                                "detail": 0,
+                                "format": 0,
+                                "mode": "normal",
+                                "style": "",
+                                "text": "full archive",
+                                "type": "extended-text",
+                                "version": 1
+                            }
+                        ],
+                        "direction": "ltr",
+                        "format": "",
+                        "indent": 0,
+                        "type": "link",
+                        "version": 1,
+                        "rel": "noreferrer",
+                        "target": null,
+                        "title": null,
+                        "url": "http://localhost:2368/"
+                    },
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": " or catch up on new posts as they go live.",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "paragraph",
+                "version": 1
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "A little housekeeping: If this email landed in spam or promotions, try moving it to your primary inbox and adding this address to your contacts. Small signals like that help your inbox recognize that these messages matter to you.",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "paragraph",
+                "version": 1
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "Have questions or just want to say hi? Feel free to reply directly to this email or any newsletter in the future.",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "paragraph",
+                "version": 1
+            }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "root",
+        "version": 1
+    }
+}

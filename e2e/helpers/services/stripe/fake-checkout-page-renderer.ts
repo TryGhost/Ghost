@@ -1,33 +1,33 @@
 interface FakeCheckoutPageProps {
-    mode: string;
-    sessionId: string;
+  mode: string;
+  sessionId: string;
 }
 
 interface FakeDonationCheckoutPageProps extends FakeCheckoutPageProps {
-    amount: number;
-    billingName: string;
-    currency: string;
-    email: string;
+  amount: number;
+  billingName: string;
+  currency: string;
+  email: string;
 }
 
 function escapeHtml(value: string): string {
-    return value
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll('\'', '&#39;');
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 function formatCurrency(amount: number, currency: string): string {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currency.toUpperCase()
-    }).format(amount / 100);
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+  }).format(amount / 100);
 }
 
-export function renderFakeCheckoutPage({mode, sessionId}: FakeCheckoutPageProps): string {
-    return `<!DOCTYPE html>
+export function renderFakeCheckoutPage({ mode, sessionId }: FakeCheckoutPageProps): string {
+  return `<!DOCTYPE html>
         <html lang="en">
             <head>
                 <meta charset="utf-8" />
@@ -44,17 +44,17 @@ export function renderFakeCheckoutPage({mode, sessionId}: FakeCheckoutPageProps)
 }
 
 export function renderFakeDonationCheckoutPage({
-    amount,
-    billingName,
-    currency,
-    email,
-    mode,
-    sessionId
+  amount,
+  billingName,
+  currency,
+  email,
+  mode,
+  sessionId,
 }: FakeDonationCheckoutPageProps): string {
-    const formattedAmount = formatCurrency(amount, currency);
-    const amountInputValue = (amount / 100).toFixed(2);
+  const formattedAmount = formatCurrency(amount, currency);
+  const amountInputValue = (amount / 100).toFixed(2);
 
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
         <html lang="en">
             <head>
                 <meta charset="utf-8" />

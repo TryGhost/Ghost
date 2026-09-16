@@ -1,9 +1,10 @@
-const {addPermissionWithRoles} = require('../../utils');
+const { addPermissionWithRoles } = require('../../utils');
 
-module.exports = addPermissionWithRoles({
+module.exports = addPermissionWithRoles(
+  {
     name: 'Poll automations',
     action: 'poll',
-    object: 'automation'
-}, [
-    'Scheduler Integration'
-]);
+    object: 'automation',
+  },
+  ['Scheduler Integration'],
+);

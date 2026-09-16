@@ -1,14 +1,13 @@
 import PostScheduling from './post-scheduling';
 import internalKeys from '../internal-keys';
+import adapterManager from '../adapter-manager';
+import { withErrorCapture } from '../../adapters/scheduling/error-capture';
 
 // CJS modules without TS declarations — typed loosely at the boundary.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const adapterManager = require('../adapter-manager');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 export default new PostScheduling({
-    apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true),
-    adapter: adapterManager.getAdapter('scheduling'),
-    internalKeys
+  apiUrl: urlUtils.urlFor('api', { type: 'admin' }, true),
+  adapter: withErrorCapture(adapterManager.getAdapter('scheduling')),
+  internalKeys,
 });

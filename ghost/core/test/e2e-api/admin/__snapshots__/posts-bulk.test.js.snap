@@ -1,5 +1,19 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`Posts Bulk API Delete Can delete a post with a threaded comment replying to another reply 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+    },
+  },
+}
+`;
+
 exports[`Posts Bulk API Delete Can delete all posts 1: [body] 1`] = `
 Object {
   "bulk": Object {

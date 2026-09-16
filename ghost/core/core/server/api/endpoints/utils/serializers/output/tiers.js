@@ -2,10 +2,10 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:tiers');
 
 module.exports = {
-    browse: createSerializer('browse', paginatedTiers),
-    read: createSerializer('read', singleTier),
-    edit: createSerializer('edit', singleTier),
-    add: createSerializer('add', singleTier)
+  browse: createSerializer('browse', paginatedTiers),
+  read: createSerializer('read', singleTier),
+  edit: createSerializer('edit', singleTier),
+  add: createSerializer('add', singleTier),
 };
 
 /**
@@ -18,12 +18,12 @@ module.exports = {
  * @returns {{tiers: SerializedTier[], meta: PageMeta}}
  */
 function paginatedTiers(page, _apiConfig, frame) {
-    return {
-        tiers: page.data.map((model) => {
-            return serializeTier(model, frame.options);
-        }),
-        meta: page.meta
-    };
+  return {
+    tiers: page.data.map((model) => {
+      return serializeTier(model, frame.options, page.requirements);
+    }),
+    meta: page.meta,
+  };
 }
 
 /**
@@ -34,11 +34,9 @@ function paginatedTiers(page, _apiConfig, frame) {
  * @returns {{tiers: SerializedTier[]}}
  */
 function singleTier(model, _apiConfig, frame) {
-    return {
-        tiers: [
-            serializeTier(model, frame.options)
-        ]
-    };
+  return {
+    tiers: [serializeTier(model, frame.options)],
+  };
 }
 
 /**
@@ -47,38 +45,46 @@ function singleTier(model, _apiConfig, frame) {
  *
  * @returns {SerializedTier}
  */
-function serializeTier(tier, options) {
-    const json = tier.toJSON(options);
+function serializeTier(tier, options, requirements = null) {
+  const json = tier.toJSON(options);
 
-    const serialized = {
-        id: json.id,
-        name: json.name,
-        description: json.description,
-        slug: json.slug,
-        active: json.status === 'active',
-        type: json.type,
-        welcome_page_url: json.welcomePageURL,
-        created_at: json.createdAt,
-        updated_at: json.updatedAt,
-        visibility: json.visibility,
-        benefits: json.benefits,
-        currency: json.currency,
-        monthly_price: json.monthlyPrice,
-        yearly_price: json.yearlyPrice,
-        trial_days: json.trialDays
-    };
+  const serialized = {
+    id: json.id,
+    name: json.name,
+    description: json.description,
+    slug: json.slug,
+    active: json.status === 'active',
+    type: json.type,
+    welcome_page_url: json.welcomePageURL,
+    created_at: json.createdAt,
+    updated_at: json.updatedAt,
+    visibility: json.visibility,
+    benefits: json.benefits,
+    currency: json.currency,
+    monthly_price: json.monthlyPrice,
+    yearly_price: json.yearlyPrice,
+    trial_days: json.trialDays,
+  };
 
-    if (!Array.isArray(serialized.benefits)) {
-        serialized.benefits = null;
-    }
+  if (!Array.isArray(serialized.benefits)) {
+    serialized.benefits = null;
+  }
 
-    if (serialized.type === 'free') {
-        delete serialized.currency;
-        delete serialized.monthly_price;
-        delete serialized.yearly_price;
-    }
+  // Only the payload that was asked for these carries them, so a response that did not
+  // look them up says nothing rather than saying every tier asks for nothing. Where they
+  // were looked up, every tier carries the key and an empty one means it asks for
+  // nothing.
+  if (requirements) {
+    serialized.requirements = requirements.get(json.id) ?? {};
+  }
 
-    return serialized;
+  if (serialized.type === 'free') {
+    delete serialized.currency;
+    delete serialized.monthly_price;
+    delete serialized.yearly_price;
+  }
+
+  return serialized;
 }
 
 /**
@@ -90,11 +96,11 @@ function serializeTier(tier, options) {
  * @returns {(data: Data, apiConfig: APIConfig, frame: Frame) => void}
  */
 function createSerializer(debugString, serialize) {
-    return function serializer(data, apiConfig, frame) {
-        debug(debugString);
-        const response = serialize(data, apiConfig, frame);
-        frame.response = response;
-    };
+  return function serializer(data, apiConfig, frame) {
+    debug(debugString);
+    const response = serialize(data, apiConfig, frame);
+    frame.response = response;
+  };
 }
 
 /**

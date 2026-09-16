@@ -1,0 +1,98 @@
+{
+  "before": {
+    "root": {
+      "children": [
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "Centered paragraph",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": null,
+          "format": "center",
+          "indent": 0,
+          "type": "paragraph",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "Right heading",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": null,
+          "format": "right",
+          "indent": 0,
+          "type": "heading",
+          "version": 1,
+          "tag": "h2"
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  },
+  "after": {
+    "root": {
+      "children": [
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "Centered paragraph",
+              "type": "extended-text",
+              "version": 1
+            }
+          ],
+          "direction": null,
+          "format": "",
+          "indent": 0,
+          "type": "paragraph",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "Right heading",
+              "type": "extended-text",
+              "version": 1
+            }
+          ],
+          "direction": null,
+          "format": "",
+          "indent": 0,
+          "type": "extended-heading",
+          "version": 1,
+          "tag": "h2"
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  }
+}

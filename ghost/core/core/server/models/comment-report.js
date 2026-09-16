@@ -1,36 +1,37 @@
 const ghostBookshelf = require('./base');
 
-const CommentReport = ghostBookshelf.Model.extend({
+const CommentReport = ghostBookshelf.Model.extend(
+  {
     tableName: 'comment_reports',
 
     defaults: function defaults() {
-        return {};
+      return {};
     },
 
     comment() {
-        return this.belongsTo('Comment', 'comment_id');
+      return this.belongsTo('Comment', 'comment_id');
     },
 
     member() {
-        return this.belongsTo('Member', 'member_id');
+      return this.belongsTo('Member', 'member_id');
     },
 
     emitChange: function emitChange(event, options) {
-        const eventToTrigger = 'comment_report' + '.' + event;
-        ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
+      const eventToTrigger = 'comment_report' + '.' + event;
+      ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
     onCreated: function onCreated(model, options) {
-        const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+      const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
-        model.emitChange('added', options);
+      model.emitChange('added', options);
 
-        return result;
-    }
-}, {
-
-});
+      return result;
+    },
+  },
+  {},
+);
 
 module.exports = {
-    CommentReport: ghostBookshelf.model('CommentReport', CommentReport)
+  CommentReport: ghostBookshelf.model('CommentReport', CommentReport),
 };

@@ -1,13 +1,13 @@
-import type {RedirectConfig, RedirectsStore} from '../../../../../../core/server/services/custom-redirects/types';
+import { RedirectsStoreBase, type RedirectConfig } from '@tryghost/adapter-base-redirects';
 
-export class InMemoryStore implements RedirectsStore {
-    private redirects: RedirectConfig[] = [];
+export class InMemoryStore extends RedirectsStoreBase {
+  private redirects: RedirectConfig[] = [];
 
-    async getAll(): Promise<RedirectConfig[]> {
-        return this.redirects.map(r => ({...r}));
-    }
+  async getAll(): Promise<RedirectConfig[]> {
+    return this.redirects.map((r) => ({ ...r }));
+  }
 
-    async replaceAll(redirects: RedirectConfig[]): Promise<void> {
-        this.redirects = redirects.map(r => ({...r}));
-    }
+  async replaceAll(redirects: RedirectConfig[]): Promise<void> {
+    this.redirects = redirects.map((r) => ({ ...r }));
+  }
 }

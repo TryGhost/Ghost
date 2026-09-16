@@ -12,8 +12,8 @@
 <p align="center">
     <a href="https://ghost.org/">Ghost.org</a> •
     <a href="https://forum.ghost.org">Forum</a> •
-    <a href="https://ghost.org/docs/">Docs</a> •
-    <a href="https://github.com/TryGhost/Ghost/blob/main/.github/CONTRIBUTING.md">Contributing</a> •
+    <a href="https://docs.ghost.org">Docs</a> •
+    <a href="https://github.com/TryGhost/Ghost/blob/main/docs/README.md">Contributing</a> •
     <a href="https://twitter.com/ghost">Twitter</a>
     <br /><br />
     <a href="https://ghost.org/">
@@ -23,11 +23,12 @@
         <img src="https://img.shields.io/github/release/TryGhost/Ghost.svg" alt="Latest release" />
     </a>
     <a href="https://github.com/TryGhost/Ghost/actions">
-        <img src="https://github.com/TryGhost/Ghost/workflows/CI/badge.svg?branch=main" alt="Build status" />
+        <img src="https://github.com/TryGhost/Ghost/actions/workflows/ci.yml/badge.svg?branch=main" alt="Build status" />
     </a>
     <a href="https://github.com/TryGhost/Ghost/contributors/">
         <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
     </a>
+    <a href="https://digitalpublicgoods.net/r/ghost"><img src="https://img.shields.io/badge/Verified-DPG-3333AB?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMzMiIHZpZXdCb3g9IjAgMCAzMSAzMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE0LjIwMDggMjEuMzY3OEwxMC4xNzM2IDE4LjAxMjRMMTEuNTIxOSAxNi40MDAzTDEzLjk5MjggMTguNDU5TDE5LjYyNjkgMTIuMjExMUwyMS4xOTA5IDEzLjYxNkwxNC4yMDA4IDIxLjM2NzhaTTI0LjYyNDEgOS4zNTEyN0wyNC44MDcxIDMuMDcyOTdMMTguODgxIDUuMTg2NjJMMTUuMzMxNCAtMi4zMzA4MmUtMDVMMTEuNzgyMSA1LjE4NjYyTDUuODU2MDEgMy4wNzI5N0w2LjAzOTA2IDkuMzUxMjdMMCAxMS4xMTc3TDMuODQ1MjEgMTYuMDg5NUwwIDIxLjA2MTJMNi4wMzkwNiAyMi44Mjc3TDUuODU2MDEgMjkuMTA2TDExLjc4MjEgMjYuOTkyM0wxNS4zMzE0IDMyLjE3OUwxOC44ODEgMjYuOTkyM0wyNC44MDcxIDI5LjEwNkwyNC42MjQxIDIyLjgyNzdMMzAuNjYzMSAyMS4wNjEyTDI2LjgxNzYgMTYuMDg5NUwzMC42NjMxIDExLjExNzdMMjQuNjI0MSA5LjM1MTI3WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg==" alt="DPG Badge"/></a>
 </p>
 
 &nbsp;
@@ -44,7 +45,7 @@
 
 The easiest way to get a production instance deployed is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. It takes about 2 minutes to launch a new site with worldwide CDN, backups, security and maintenance all done for you.
 
-For most people this ends up being the best value option because of [how much time it saves](https://ghost.org/docs/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software *and* getting a great service!
+For most people this ends up being the best value option because of [how much time it saves](https://docs.ghost.org/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software _and_ getting a great service!
 
 &nbsp;
 
@@ -58,7 +59,7 @@ npm install ghost-cli -g
 
 &nbsp;
 
-Then, if installing locally add the `local` flag to get up and running in under a minute - [Local install docs](https://ghost.org/docs/install/local/)
+Then, if installing locally add the `local` flag to get up and running in under a minute - [Local install docs](https://docs.ghost.org/install/local/)
 
 ```
 ghost install local
@@ -66,7 +67,7 @@ ghost install local
 
 &nbsp;
 
-or on a server run the full install, including automatic SSL setup using LetsEncrypt - [Production install docs](https://ghost.org/docs/install/ubuntu/)
+or on a server run the full install, including automatic SSL setup using LetsEncrypt - [Production install docs](https://docs.ghost.org/install/ubuntu/)
 
 ```
 ghost install
@@ -74,11 +75,13 @@ ghost install
 
 &nbsp;
 
-Check out our [official documentation](https://ghost.org/docs/) for more information about our [recommended hosting stack](https://ghost.org/docs/hosting/) & properly [upgrading Ghost](https://ghost.org/docs/update/), plus everything you need to develop your own Ghost [themes](https://ghost.org/docs/themes/) or work with [our API](https://ghost.org/docs/content-api/).
+Check out our [official documentation](https://docs.ghost.org/) for more information about our [recommended hosting stack](https://docs.ghost.org/hosting/) & properly [upgrading Ghost](https://docs.ghost.org/update/), plus everything you need to develop your own Ghost [themes](https://docs.ghost.org/themes/) or work with [our API](https://docs.ghost.org/content-api/).
 
 ### Contributors & advanced developers
 
-For anyone wishing to contribute to Ghost or to hack/customize core files we recommend following our full development setup guides: [Contributor guide](https://ghost.org/docs/contributing/) • [Developer setup](https://ghost.org/docs/install/source/)
+To contribute to Ghost, start with the
+[contributing guide](.github/CONTRIBUTING.md). To work on the monorepo, see the
+[codebase documentation](docs/README.md).
 
 &nbsp;
 
@@ -86,7 +89,7 @@ For anyone wishing to contribute to Ghost or to hack/customize core files we rec
 
 A big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub sponsors](https://github.com/sponsors/TryGhost) :heart:
 
-**[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)** • **[Tinybird](https://tbrd.co/ghost)** • **[BairesDev](https://www.bairesdev.com)** • **[Hostinger](https://www.hostinger.com/)**
+**[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)** • **[Tinybird](https://tbrd.co/ghost)** • **[BairesDev](https://www.bairesdev.com)**
 
 &nbsp;
 

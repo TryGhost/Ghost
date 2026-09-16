@@ -1,7 +1,7 @@
 const express = require('../../../../../shared/express');
 const cors = require('cors');
 const api = require('../../../../api').endpoints;
-const {http} = require('@tryghost/api-framework');
+const { http } = require('@tryghost/api-framework');
 const mw = require('./middleware');
 const config = require('../../../../../shared/config');
 
@@ -9,45 +9,49 @@ const config = require('../../../../../shared/config');
  * @returns {import('express').Router}
  */
 module.exports = function apiRoutes() {
-    const router = express.Router('content api');
+  const router = express.Router('content api');
 
-    router.use(cors({maxAge: config.get('caching:cors:maxAge')}));
+  router.use(cors({ maxAge: config.get('caching:cors:maxAge') }));
 
-    // ## Posts
-    router.get('/posts', mw.authenticatePublic, http(api.postsPublic.browse));
-    router.get('/posts/:id', mw.authenticatePublic, http(api.postsPublic.read));
-    router.get('/posts/slug/:slug', mw.authenticatePublic, http(api.postsPublic.read));
+  // ## Posts
+  router.get('/posts', mw.authenticatePublic, http(api.postsPublic.browse));
+  router.get('/posts/:id', mw.authenticatePublic, http(api.postsPublic.read));
+  router.get('/posts/slug/:slug', mw.authenticatePublic, http(api.postsPublic.read));
 
-    // ## Pages
-    router.get('/pages', mw.authenticatePublic, http(api.pagesPublic.browse));
-    router.get('/pages/:id', mw.authenticatePublic, http(api.pagesPublic.read));
-    router.get('/pages/slug/:slug', mw.authenticatePublic, http(api.pagesPublic.read));
+  // ## Pages
+  router.get('/pages', mw.authenticatePublic, http(api.pagesPublic.browse));
+  router.get('/pages/:id', mw.authenticatePublic, http(api.pagesPublic.read));
+  router.get('/pages/slug/:slug', mw.authenticatePublic, http(api.pagesPublic.read));
 
-    // ## Users
-    router.get('/authors', mw.authenticatePublic, http(api.authorsPublic.browse));
-    router.get('/authors/:id', mw.authenticatePublic, http(api.authorsPublic.read));
-    router.get('/authors/slug/:slug', mw.authenticatePublic, http(api.authorsPublic.read));
+  // ## Users
+  router.get('/authors', mw.authenticatePublic, http(api.authorsPublic.browse));
+  router.get('/authors/:id', mw.authenticatePublic, http(api.authorsPublic.read));
+  router.get('/authors/slug/:slug', mw.authenticatePublic, http(api.authorsPublic.read));
 
-    // ## Tags
-    router.get('/tags', mw.authenticatePublic, http(api.tagsPublic.browse));
-    router.get('/tags/:id', mw.authenticatePublic, http(api.tagsPublic.read));
-    router.get('/tags/slug/:slug', mw.authenticatePublic, http(api.tagsPublic.read));
+  // ## Tags
+  router.get('/tags', mw.authenticatePublic, http(api.tagsPublic.browse));
+  router.get('/tags/:id', mw.authenticatePublic, http(api.tagsPublic.read));
+  router.get('/tags/slug/:slug', mw.authenticatePublic, http(api.tagsPublic.read));
 
-    // ## Settings
-    router.get('/settings', mw.authenticatePublic, http(api.publicSettings.browse));
+  // ## Settings
+  router.get('/settings', mw.authenticatePublic, http(api.publicSettings.browse));
 
-    // ## Members
-    router.get('/newsletters', mw.authenticatePublic, http(api.newslettersPublic.browse));
-    router.get('/tiers', mw.authenticatePublic, http(api.tiersPublic.browse));
-    router.get('/offers/:id', mw.authenticatePublic, http(api.offersPublic.read));
+  // ## Members
+  router.get('/newsletters', mw.authenticatePublic, http(api.newslettersPublic.browse));
+  router.get('/tiers', mw.authenticatePublic, http(api.tiersPublic.browse));
+  router.get('/offers/:id', mw.authenticatePublic, http(api.offersPublic.read));
 
-    // ## Recommendations
-    router.get('/recommendations', mw.authenticatePublic, http(api.recommendationsPublic.browse));
+  // ## Recommendations
+  router.get('/recommendations', mw.authenticatePublic, http(api.recommendationsPublic.browse));
 
-    // ## Search index
-    router.get('/search-index/posts', mw.authenticatePublic, http(api.searchIndexPublic.fetchPosts));
-    router.get('/search-index/authors', mw.authenticatePublic, http(api.searchIndexPublic.fetchAuthors));
-    router.get('/search-index/tags', mw.authenticatePublic, http(api.searchIndexPublic.fetchTags));
+  // ## Search index
+  router.get('/search-index/posts', mw.authenticatePublic, http(api.searchIndexPublic.fetchPosts));
+  router.get(
+    '/search-index/authors',
+    mw.authenticatePublic,
+    http(api.searchIndexPublic.fetchAuthors),
+  );
+  router.get('/search-index/tags', mw.authenticatePublic, http(api.searchIndexPublic.fetchTags));
 
-    return router;
+  return router;
 };

@@ -17,51 +17,51 @@ const privatePattern = new RegExp('^\\/private\\/');
 const homePattern = new RegExp('^\\/$');
 
 function setResponseContext(req, res, data) {
-    const pageParam = req.params && req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+  const pageParam = req.params && req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
 
-    res.locals = res.locals || {};
-    res.locals.context = [];
+  res.locals = res.locals || {};
+  res.locals.context = [];
 
-    // If we don't have a relativeUrl, we can't detect the context, so return
-    // See web/parent/middleware/ghost-locals
-    if (!res.locals.relativeUrl) {
-        return;
+  // If we don't have a relativeUrl, we can't detect the context, so return
+  // See web/parent/middleware/ghost-locals
+  if (!res.locals.relativeUrl) {
+    return;
+  }
+
+  // Paged context - special rule
+  if (!isNaN(pageParam) && pageParam > 1) {
+    res.locals.context.push('paged');
+  }
+
+  // Home context - special rule
+  if (homePattern.test(res.locals.relativeUrl)) {
+    res.locals.context.push('home');
+  }
+
+  // Each page can only have at most one of these
+  if (res.routerOptions && res.routerOptions.context) {
+    res.locals.context = res.locals.context.concat(res.routerOptions.context);
+  }
+
+  if (privatePattern.test(res.locals.relativeUrl)) {
+    if (!res.locals.context.includes('private')) {
+      res.locals.context.push('private');
     }
+  }
 
-    // Paged context - special rule
-    if (!isNaN(pageParam) && pageParam > 1) {
-        res.locals.context.push('paged');
+  if (data && data.page) {
+    if (!res.locals.context.includes('page')) {
+      res.locals.context.push('page');
     }
-
-    // Home context - special rule
-    if (homePattern.test(res.locals.relativeUrl)) {
-        res.locals.context.push('home');
+  } else if (data && data.post) {
+    if (!res.locals.context.includes('post')) {
+      res.locals.context.push('post');
     }
-
-    // Each page can only have at most one of these
-    if (res.routerOptions && res.routerOptions.context) {
-        res.locals.context = res.locals.context.concat(res.routerOptions.context);
+  } else if (data && data.tag) {
+    if (!res.locals.context.includes('tag')) {
+      res.locals.context.push('tag');
     }
-
-    if (privatePattern.test(res.locals.relativeUrl)) {
-        if (!res.locals.context.includes('private')) {
-            res.locals.context.push('private');
-        }
-    }
-
-    if (data && data.page) {
-        if (!res.locals.context.includes('page')) {
-            res.locals.context.push('page');
-        }
-    } else if (data && data.post) {
-        if (!res.locals.context.includes('post')) {
-            res.locals.context.push('post');
-        }
-    } else if (data && data.tag) {
-        if (!res.locals.context.includes('tag')) {
-            res.locals.context.push('tag');
-        }
-    }
+  }
 }
 
 module.exports = setResponseContext;

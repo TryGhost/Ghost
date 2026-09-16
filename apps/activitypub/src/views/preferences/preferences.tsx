@@ -3,24 +3,28 @@ import Layout from '@components/layout';
 import Profile from './components/profile';
 import React from 'react';
 import Settings from './components/settings';
-import {isApiError} from '@src/api/activitypub';
-import {useAccountForUser} from '@hooks/use-activity-pub-queries';
+import { isApiError } from '@src/api/activitypub';
+import { useAccountForUser } from '@hooks/use-activity-pub-queries';
 
 const Preferences: React.FC = () => {
-    const {data: account, isLoading: isLoadingAccount, error: accountError} = useAccountForUser('index', 'me');
+  const {
+    data: account,
+    isLoading: isLoadingAccount,
+    error: accountError,
+  } = useAccountForUser('index', 'me');
 
-    if (accountError && isApiError(accountError)) {
-        return <AppError errorCode={accountError.code} statusCode={accountError.statusCode} />;
-    }
+  if (accountError && isApiError(accountError)) {
+    return <AppError errorCode={accountError.code} statusCode={accountError.statusCode} />;
+  }
 
-    return (
-        <Layout>
-            <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
-                <Profile account={account} isLoading={isLoadingAccount} />
-                <Settings account={account} className='mt-9' />
-            </div>
-        </Layout>
-    );
+  return (
+    <Layout>
+      <div className="mx-auto max-w-[620px] py-[min(4vh,48px)]">
+        <Profile account={account} isLoading={isLoadingAccount} />
+        <Settings account={account} className="mt-9" />
+      </div>
+    </Layout>
+  );
 };
 
 export default Preferences;

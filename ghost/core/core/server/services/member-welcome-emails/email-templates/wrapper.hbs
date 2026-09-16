@@ -20,7 +20,7 @@
                     {{/if}}
                     <tr>
                       <td class="footer">
-                        {{siteTitle}} &copy; {{year}} &mdash; <a href="{{managePreferencesUrl}}">{{t "Manage your preferences"}}</a>
+                        {{siteTitle}} &copy; {{year}} &mdash; {{#if unsubscribeUrl}}<a href="{{unsubscribeUrl}}">{{t "Unsubscribe"}}</a>{{else}}<a href="{{managePreferencesUrl}}">{{t "Manage your preferences"}}</a>{{/if}}
                       </td>
                     </tr>
                     {{#if showBadge }}

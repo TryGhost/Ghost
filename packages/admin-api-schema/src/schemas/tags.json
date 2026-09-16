@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "tags",
+  "title": "tags",
+  "description": "Base tags definitions",
+  "definitions": {
+    "tag": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^([^,]|$)"
+        },
+        "slug": {
+          "type": ["string", "null"],
+          "maxLength": 191
+        },
+        "description": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        },
+        "feature_image": {
+          "type": ["string", "null"],
+          "format": "uri-reference",
+          "maxLength": 2000
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "internal"]
+        },
+        "meta_title": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "meta_description": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        },
+        "og_image": {
+          "type": ["string", "null"],
+          "format": "uri-reference",
+          "maxLength": 2000
+        },
+        "og_title": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "og_description": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        },
+        "twitter_image": {
+          "type": ["string", "null"],
+          "format": "uri-reference",
+          "maxLength": 2000
+        },
+        "twitter_title": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "twitter_description": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        },
+        "codeinjection_head": {
+          "type": ["string", "null"],
+          "maxLength": 65535
+        },
+        "codeinjection_foot": {
+          "type": ["string", "null"],
+          "maxLength": 65535
+        },
+        "canonical_url": {
+          "type": ["string", "null"],
+          "format": "uri-reference",
+          "maxLength": 2000
+        },
+        "accent_color": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        }
+      }
+    }
+  }
+}

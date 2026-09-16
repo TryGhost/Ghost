@@ -1,0 +1,9 @@
+localtesting/
+node_modules/
+bower_components/
+
+#For IDE
+*.iml
+*.ipr
+*.iws
+.idea/

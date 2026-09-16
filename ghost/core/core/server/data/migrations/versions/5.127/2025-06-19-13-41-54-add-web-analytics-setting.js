@@ -1,8 +1,8 @@
-const {addSetting} = require('../../utils');
+const { addSetting } = require('../../utils');
 
 module.exports = addSetting({
-    key: 'web_analytics',
-    value: 'true',
-    type: 'boolean',
-    group: 'analytics'
+  key: 'web_analytics',
+  value: 'true',
+  type: 'boolean',
+  group: 'analytics',
 });

@@ -1,17 +1,28 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.23",
+  "version": "1.8.31",
+  "description": "Search interface for Ghost sites",
   "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
   "files": [
     "umd/",
     "LICENSE",
     "README.md"
   ],
+  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build",
+    "test": "vitest run",
+    "lint": "eslint src test --cache",
+    "preship": "pnpm lint",
+    "ship": "node ../../scripts/release-apps.js",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
@@ -20,58 +31,21 @@
     "react": "catalog:react17",
     "react-dom": "catalog:react17"
   },
-  "scripts": {
-    "dev": "pnpm build && concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
-    "build": "vite build && pnpm tailwind:base",
-    "build:watch": "vite build --watch",
-    "tailwind": "pnpm tailwind:base --watch ",
-    "tailwind:base": "tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
-    "test": "vitest run",
-    "lint": "eslint src --ext .js --cache",
-    "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "pnpm build"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "jest": true
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser",
-      "plugin:react/recommended"
-    ],
-    "plugins": [
-      "ghost"
-    ],
-    "rules": {
-      "react/prop-types": "off",
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ],
-      "ghost/sort-imports-es6-autofix/sort-imports-es6": [
-        "error",
-        {
-          "memberSyntaxSortOrder": [
-            "none",
-            "all",
-            "single",
-            "multiple"
-          ]
-        }
-      ]
-    },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
-    }
+  "devDependencies": {
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-vite-public-app": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:react17",
+    "@vitest/coverage-v8": "catalog:",
+    "autoprefixer": "10.5.4",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "nock": "catalog:",
+    "postcss": "catalog:",
+    "postcss-import": "16.1.1",
+    "tailwindcss": "catalog:tailwind3",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "browserslist": {
     "production": [
@@ -92,24 +66,20 @@
       "html"
     ]
   },
-  "devDependencies": {
-    "@testing-library/jest-dom": "catalog:",
-    "@testing-library/react": "catalog:react17",
-    "@vitejs/plugin-react": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "concurrently": "catalog:",
-    "cross-fetch": "catalog:",
-    "eslint": "catalog:",
-    "jsdom": "catalog:",
-    "nock": "14.0.15",
-    "tailwindcss": "catalog:tailwind3",
-    "vite": "catalog:",
-    "vite-plugin-svgr": "catalog:",
-    "vitest": "catalog:"
-  },
   "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/sodo-search",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
     "tags": [
-      "i18n"
+      "i18n",
+      "public-app"
     ]
   }
 }

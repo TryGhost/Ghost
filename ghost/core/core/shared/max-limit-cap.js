@@ -7,17 +7,17 @@ const config = require('../shared/config');
 // the core limit capping logic that can be used by both middleware and helpers.
 
 const limitConfig = {
-    get allowLimitAll() {
-        return config.get('optimization:allowLimitAll') || false;
-    },
-    get maxLimit() {
-        return config.get('optimization:maxLimit') || 100;
-    },
-    // Temporary exceptions to the max limit rule (HTTP-specific)
-    exceptionEndpoints: [
-        '/ghost/api/admin/posts/export/',
-        '/ghost/api/admin/emails/' // /:id/batches/ and /:id/recipient-failures/
-    ]
+  get allowLimitAll() {
+    return config.get('optimization:allowLimitAll') || false;
+  },
+  get maxLimit() {
+    return config.get('optimization:maxLimit') || 100;
+  },
+  // Temporary exceptions to the max limit rule (HTTP-specific)
+  exceptionEndpoints: [
+    '/ghost/api/admin/posts/export/',
+    '/ghost/api/admin/emails/', // /:id/batches/ and /:id/recipient-failures/
+  ],
 };
 
 /**
@@ -28,38 +28,41 @@ const limitConfig = {
  * @returns {string|number} The capped limit value
  */
 function applyLimitCap(limit, options = {}) {
-    if (!limit) {
-        return limit;
-    }
-
-    // If 'all' is globally allowed, skip everything else
-    if (limit === 'all' && limitConfig.allowLimitAll) {
-        return limit;
-    }
-
-    // Check exception endpoints - they bypass all limits (HTTP-specific)
-    if (options.url && limitConfig.exceptionEndpoints.some(endpoint => options.url.startsWith(endpoint))) {
-        return limit;
-    }
-
-    // 'all' is no longer supported so gets capped to maxLimit
-    if (limit === 'all') {
-        return limitConfig.maxLimit;
-    }
-
-    // Convert to number for comparison
-    const numericLimit = parseInt(String(limit), 10);
-
-    // If it's not a valid number or exceeds maxLimit, cap it
-    if (isNaN(numericLimit) || numericLimit > limitConfig.maxLimit) {
-        return limitConfig.maxLimit;
-    }
-
-    // Return the original limit if it's within bounds
+  if (!limit) {
     return limit;
+  }
+
+  // If 'all' is globally allowed, skip everything else
+  if (limit === 'all' && limitConfig.allowLimitAll) {
+    return limit;
+  }
+
+  // Check exception endpoints - they bypass all limits (HTTP-specific)
+  if (
+    options.url &&
+    limitConfig.exceptionEndpoints.some((endpoint) => options.url.startsWith(endpoint))
+  ) {
+    return limit;
+  }
+
+  // 'all' is no longer supported so gets capped to maxLimit
+  if (limit === 'all') {
+    return limitConfig.maxLimit;
+  }
+
+  // Convert to number for comparison
+  const numericLimit = parseInt(String(limit), 10);
+
+  // If it's not a valid number or exceeds maxLimit, cap it
+  if (isNaN(numericLimit) || numericLimit > limitConfig.maxLimit) {
+    return limitConfig.maxLimit;
+  }
+
+  // Return the original limit if it's within bounds
+  return limit;
 }
 
 module.exports = {
-    applyLimitCap,
-    limitConfig
+  applyLimitCap,
+  limitConfig,
 };

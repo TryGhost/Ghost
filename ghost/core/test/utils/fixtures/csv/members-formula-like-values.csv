@@ -1,0 +1,3 @@
+email,name,note
+formula@example.com,-5,+44 123
+formula2@example.com,=SUM(A1),@handle

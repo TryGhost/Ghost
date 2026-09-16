@@ -35,10 +35,13 @@
 //      subscriptions share the same `created_at` (programmatic creation,
 //      simultaneous webhooks).
 //
-// `mostRelevantSubscription` in apps/posts/src/views/members/member-query-params.ts
-// must match this ordering so the displayed sub matches the filter result.
+// The admin display reads the resolved subscription straight from the
+// `current_subscription` field the backend derives from this view (via the
+// members_current_subscription lookup), so the ordering here is the single
+// source of truth for both filtering and display — see the
+// `current_subscription` reads in apps/admin/src/members/member-query-params.ts.
 module.exports = {
-    members_resolved_subscription: `
+  members_resolved_subscription: `
         SELECT member_id, subscription_id
         FROM (
             SELECT
@@ -56,5 +59,5 @@ module.exports = {
             WHERE mscs.status NOT IN ('incomplete', 'incomplete_expired')
         ) ranked
         WHERE rn = 1
-    `
+    `,
 };

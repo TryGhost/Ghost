@@ -1,4 +1,4 @@
-import i18nLib from '@tryghost/i18n';
+import i18nLib from '@tryghost/i18n/registry/portal';
 
 const i18n = i18nLib('en', 'portal');
 

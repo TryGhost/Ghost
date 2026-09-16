@@ -9,12 +9,12 @@ permissions:
   contents: read
 jobs:
   createComment:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: github.repository_owner == 'TryGhost'
     name: Add migration review requirements
     permissions:
-      issues: write          # github-script addLabels uses the issues API
-      pull-requests: write   # peter-evans/create-or-update-comment on a PR
+      issues: write # github-script addLabels uses the issues API
+      pull-requests: write # peter-evans/create-or-update-comment on a PR
     steps:
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
@@ -44,7 +44,6 @@ jobs:
             - [ ]  Uses the correct utils
             - [ ]  Contains a minimal changeset
             - [ ]  Does not mix DDL/DML operations
-            - [ ]  Tested in MySQL and SQLite
 
             ### Schema changes
 

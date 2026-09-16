@@ -1,0 +1,273 @@
+import path from 'node:path';
+import { availableParallelism } from 'node:os';
+import { defineConfig } from 'vitest/config';
+
+// DB-backed suite runner (integration / e2e / legacy) — separate from the unit
+// vitest.config.ts because these suites boot a real Ghost against a database.
+//
+//  - pool 'forks' + isolate:false → N child processes, each booting ONE Ghost
+//    against its own per-process database + port (derived in vitest-setup-db.ts
+//    before Ghost's config loads). Within a fork, files run serially sharing that
+//    single Ghost (Ghost's db/knex, @tryghost/domain-events, the jobs manager,
+//    nconf, the settings cache and the url service are process-wide singletons
+//    reset in place between boots, never duplicated — exactly one Ghost per
+//    process, the constraint mocha ran under). Across forks, files shard in
+//    parallel — the speedup over the old serial model (~4x locally).
+//    The `legacy` project overrides this to 'threads' — see its note below.
+//  - the per-worker env derivation works under either pool. Both of vitest 4's
+//    pool workers are handed an explicit `env` object (`fork(…, {env})` /
+//    `new Worker(…, {env})`), and an explicit object gives a worker thread its
+//    OWN copy of process.env — only `SHARE_ENV` shares it. So a worker's writes
+//    to process.env stay local to that worker and the derived DB + port never
+//    collide, threads or forks.
+//  - test/utils/vitest-setup-db.ts provisions the per-process DB + port and
+//    bridges @tryghost/express-test's snapshot hooks onto vitest.
+//
+// Every DB-backed suite (integration / e2e / e2e-api / legacy) now runs here;
+// each is a project below, keyed by its include globs.
+
+// Ghost's snapshot tests use @tryghost/jest-snapshot, which manages its own
+// __snapshots__/*.snap files. Point vitest's *native* snapshot system at a
+// separate, never-written path so it doesn't adopt those files, rewrite their
+// headers, or report their entries as obsolete (obsolete snapshots fail CI).
+const resolveSnapshotPath = (testPath: string, snapExtension: string) =>
+  path.join(
+    path.dirname(testPath),
+    '__vitest_snapshots__',
+    path.basename(testPath) + snapExtension,
+  );
+
+// Vitest projects re-create their own Vite config — settings on the parent
+// `defineConfig` aren't inherited. The DB-backed runners use Vite's SSR
+// pipeline, so workspace TS deps with a `source` exports condition (e.g.
+// @tryghost/parse-email-address) need this on every project. Matches the
+// runtime backend's `--conditions=source` (ghost/core/nodemon.json).
+const sharedSsrConfig = {
+  resolve: { conditions: ['source', 'node'] },
+};
+
+/*
+ * Vitest defaults maxWorkers to availableParallelism() - 1, which is 1 on a
+ * 2-core runner — the whole DB suite then runs serially. Floor it at 2: a
+ * 4-core runner measured 2.08x (e2e) and 1.79x (integration) against a 2-core
+ * one purely on worker count. `legacy` runs on the threads pool, so the
+ * "forks 2 hangs" wedge below is not in play here.
+ */
+const getWorkerCount = () => Math.max(2, availableParallelism() - 1);
+
+// Shared by every DB-backed project — the execution model is identical for all
+// of them; only the include globs and per-suite timeouts differ.
+const sharedDbConfig = {
+  globals: true,
+  environment: 'node' as const,
+  // forks (one child process per worker) + isolate:false → each fork boots a
+  // single Ghost against its own per-process DB+port (derived in
+  // vitest-setup-db.ts) and runs its share of files serially, sharing that one
+  // Ghost; files shard across forks in parallel. The default for every project
+  // here except `legacy`, which sets pool: 'threads' (see its note below).
+  pool: 'forks' as const,
+  isolate: false,
+  maxWorkers: getWorkerCount(),
+  sequence: { shuffle: { files: !!process.env.CI } },
+  setupFiles: ['./test/utils/vitest-setup-db.ts'],
+  resolveSnapshotPath,
+  // DB-backed suites run against MySQL in CI and locally. Set the environment
+  // explicitly to reject vitest's own `NODE_ENV='test'` default — Ghost has no
+  // config.test.json, so `test` yields no DB config and bookshelf throws
+  // "Invalid knex instance".
+  env: {
+    NODE_ENV: 'testing-mysql',
+    WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET',
+    // Bree runs jobs in worker_threads that inherit this NODE_OPTIONS; tsx lets
+    // them require() Ghost's .ts sources (job files pull in e.g.
+    // labs-flag-overrides.ts). The old mocha lane got tsx from `--node-option
+    // import=tsx`; vitest only registers tsx in the vitest worker itself (not
+    // in the execArgv Bree's worker_threads inherit) and ignores
+    // poolOptions.*.execArgv here, so route it through the env. Applied on
+    // test.env, i.e. inside the vitest worker once it's up, so only the
+    // worker_threads it spawns pick it up — pool-agnostic, works the same
+    // whether the vitest worker is a fork or a thread.
+    NODE_OPTIONS:
+      (process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + ' ' : '') +
+      '--import tsx --conditions=source',
+  },
+  hookTimeout: 60000,
+};
+
+// Coverage gates per acceptance lane, selected by COVERAGE_LANE (set in the
+// test:ci:* scripts). Baselines measured against MySQL 8.0 + Redis + VersityGW,
+// minus ~2pt of headroom. Unset means no gate — ad-hoc local --coverage runs
+// report without failing.
+type CoverageLane = {
+  reportsDirectory: string;
+  thresholds: {
+    statements: number;
+    branches: number;
+    functions: number;
+    lines: number;
+  };
+};
+
+const COVERAGE_LANES: Record<string, CoverageLane> = {
+  e2e: {
+    reportsDirectory: 'coverage-e2e',
+    thresholds: { statements: 70, branches: 56, functions: 74, lines: 70 },
+  },
+  integration: {
+    reportsDirectory: 'coverage-integration',
+    thresholds: { statements: 47, branches: 32, functions: 47, lines: 47 },
+  },
+};
+
+// Object.hasOwn, not a truthy lookup: 'constructor' and the rest of
+// Object.prototype would otherwise resolve to inherited members and silently
+// skip the gate. An empty string is a bad value too, not "unset".
+const laneName = process.env.COVERAGE_LANE;
+if (laneName !== undefined && !Object.hasOwn(COVERAGE_LANES, laneName)) {
+  // eslint-disable-next-line ghost/ghost-custom/no-native-error
+  throw new Error(
+    `Unknown COVERAGE_LANE '${laneName}' — expected one of: ${Object.keys(COVERAGE_LANES).join(', ')}`,
+  );
+}
+const coverageLane = laneName === undefined ? undefined : COVERAGE_LANES[laneName];
+
+export default defineConfig({
+  test: {
+    resolveSnapshotPath,
+    // Build ONE migrated+seeded "template" database for the whole run, before
+    // any worker fork spawns; each fork then restores its per-process DB from
+    // that template (a cheap bulk copy) on first provision instead of running
+    // a full migrate+seed per file. This is the lever for the MySQL
+    // acceptance-test runtime regression — per-file migrate+seed is
+    // its dominant cost. Defined at the root (not per-project) so a single
+    // template is shared across every project in the invocation. See
+    // test/utils/vitest-global-db-setup.ts and test/utils/db-template.js.
+    globalSetup: ['./test/utils/vitest-global-db-setup.ts'],
+    // Local runs use the compact `dot` reporter. CI uses `default` plus
+    // `github-actions` for inline annotations (mirrors vitest.config.ts).
+    reporters: process.env.GITHUB_ACTIONS ? ['default', 'github-actions'] : ['dot'],
+    // Coverage for the CI acceptance lanes (test:ci:e2e / test:ci:integration),
+    // which pass --coverage and pick their lane via COVERAGE_LANE. `include`
+    // is what reports never-loaded files under vitest 4 (there is no `all`).
+    coverage: {
+      provider: 'v8',
+      include: ['core/*.js', 'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}'],
+      exclude: [
+        'core/frontend/src/**',
+        'core/frontend/public/**',
+        'core/frontend/helpers/**',
+        'core/server/data/migrations/**',
+        'core/server/data/schema/schema.js',
+        'core/server/web/api/testmode/**',
+        'core/server/services/koenig/**',
+        // Type-only declarations: no runtime code, and the remapper's parser
+        // rejects them ('Expected `from` but found `{`' on `import type`).
+        '**/*.d.ts',
+      ],
+      reporter: ['text-summary', 'cobertura'],
+      ...coverageLane,
+    },
+    projects: [
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
+          name: 'e2e',
+          // Widens to e2e-api as it ports.
+          include: [
+            'test/e2e-webhooks/**/*.test.{js,ts}',
+            'test/e2e-server/**/*.test.{js,ts}',
+            'test/e2e-frontend/**/*.test.{js,ts}',
+          ],
+          exclude: [
+            '**/node_modules/**',
+            // ignore isolated e2e server tests
+            'test/e2e-server/**/*.isolated.test.{js,ts}',
+          ],
+          // Matches the mocha `--timeout=15000` for the e2e suites.
+          testTimeout: 15000,
+        },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
+          name: 'integration',
+          // isolate:true (overriding the shared default) gives each file
+          // its own fork → its own fresh per-process DB + Ghost. The
+          // integration suite has inter-file state pollution that the old
+          // fixed serial order masked but nondeterministic fork sharding
+          // exposes — e.g. migration.test.js can leave a rolled-back
+          // schema that a co-located file then inherits. Per-file
+          // isolation removes it by construction. The e2e project keeps
+          // isolate:false (it has no such pollution and is fastest that way).
+          isolate: true,
+          include: ['test/integration/**/*.test.{js,ts}'],
+          exclude: ['**/node_modules/**'],
+          // Probes the optional Docker services (Redis, VersityGW) once in
+          // the main process and exports GHOST_TEST_{REDIS,S3}_AVAILABLE
+          // so the adapter suites skip when their service is down and run
+          // when it's up. Integration-only — no adapter tests live in the
+          // other DB suites.
+          globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
+          // Matches the mocha `--timeout=10000` for the integration suite.
+          testTimeout: 10000,
+        },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
+          name: 'legacy',
+          // threads, not the shared 'forks' default. Under forks this
+          // project intermittently wedged in CI: every file reported a
+          // result, then the run hung with no summary until the job's
+          // 10m timeout fired. The wedge is one fork that finishes its
+          // file but never sends `testfileFinished` — vitest's pool
+          // awaits that message with no deadline (unlike its bounded
+          // start/stop/SIGKILL paths), so main + that one fork sit
+          // parked in the event loop forever. Same symptom the unit
+          // config hit; same fix (see vitest.config.ts). Measured
+          // locally: forks 2 hangs in ~10 runs, threads 0 in 39.
+          // Not a perf change — ~4% at maxWorkers=3, well inside noise.
+          pool: 'threads' as const,
+          // isolate:true for the same reason as integration: the legacy
+          // suite is the most state-pollution-prone (it was parked on
+          // exactly that under the old serial model), so per-file
+          // isolation removes the inter-file bleed by construction.
+          isolate: true,
+          include: ['test/legacy/**/*.test.{js,ts}'],
+          exclude: ['**/node_modules/**'],
+          // Matches the mocha `--timeout=60000` (boot-heavy model/api/site tests).
+          testTimeout: 60000,
+        },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
+          name: 'e2e-api',
+          // Shares the default isolate:false (one shared boot per fork):
+          // the cross-file leakers that forced per-file isolation here are
+          // fixed at the source, dropping the dominant boot cost.
+          include: ['test/e2e-api/**/*.test.{js,ts}'],
+          exclude: ['**/node_modules/**'],
+          // Matches the mocha `--timeout=15000` for the e2e suites.
+          testTimeout: 15000,
+        },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
+          name: 'e2e-isolated',
+          isolate: true,
+          include: ['test/e2e-server/**/*.isolated.test.{js,ts}'],
+          exclude: ['**/node_modules/**'],
+          // Matches the mocha `--timeout=15000` for the e2e suites.
+          testTimeout: 15000,
+        },
+      },
+    ],
+  },
+});

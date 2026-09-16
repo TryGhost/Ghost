@@ -1,74 +1,111 @@
 # Contributing to Ghost
 
-For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)**  🚑.
+For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)** 🚑.
 
 ---
 
 ## Where to Start
 
-If you're a developer looking to contribute, but you're not sure where to begin: Check out the [good first issue](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) label on Github, which contains small piece of work that have been specifically flagged as being friendly to new contributors.
+The [codebase documentation](../docs/README.md) explains how to set up the
+monorepo and find your way around it. Start with the
+[development setup guide](../docs/contributing/development-setup.md), then use
+the [contribution workflow](../docs/contributing/workflow.md) when you are ready
+to make a change.
 
-After that, if you're looking for something a little more challenging to sink your teeth into, there's a broader [help wanted](https://github.com/TryGhost/Ghost/labels/help%20wanted) label encompassing issues which need some love.
+If you're not sure what to work on, start with
+[good first issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue)
+or browse the broader
+[help wanted](https://github.com/TryGhost/Ghost/labels/help%20wanted) list.
 
-If you've got an idea for a new feature, please start by suggesting it in the [forum](https://forum.ghost.org), as adding new features to Ghost first requires generating consensus around a design and spec.
+Discuss new features and substantial product or architectural changes in the
+[forum](https://forum.ghost.org) before implementing them.
 
+## Commit Messages
 
-## Working on Ghost Core
+We have a handful of simple standards for commit messages which keep the main
+branch readable and generate useful release notes. They matter most for pull
+request titles and squash commits; follow them for intermediate commits where
+practical.
 
-If you're going to work on Ghost core you'll need to go through a slightly more involved install and setup process than the usual Ghost CLI version.
+```text
+<optional release-note emoji> <past-tense summary, at most 80 characters>
 
-First you'll need to fork [Ghost](https://github.com/tryghost/ghost) to your personal Github account, and then follow the detailed [install from source](https://ghost.org/docs/install/source/) setup guide.
+<optional issue relationship, or "no ref">
 
+<why this change was made>
+```
 
-### Branching Guide
+- Start the summary with `Fixed`, `Changed`, `Updated`, `Improved`, `Added`,
+  `Removed`, `Reverted`, `Moved`, `Released`, `Bumped`, or `Cleaned`.
+- Keep the second line blank.
+- When an issue exists, use a supported relationship followed by its URL, such
+  as `ref <issue URL>`, `fixes <issue URL>`, or `closes <issue URL>`. Use
+  `no ref` when it is useful to state explicitly that there is no issue, or
+  leave this line blank.
+- Explain the context in the body: why this change, why now, and why this
+  approach. The diff already describes what changed.
 
-`main` on the main repository always contains the latest changes. This means that it is WIP for the next minor version and should NOT be considered stable. Stable versions are tagged using [semantic versioning](http://semver.org/).
+The local hook warns about most deviations without blocking the commit. It
+does require the common invalid forms `refs ...` and `ref: ...` to be corrected
+to a supported relationship such as `ref ...`.
 
-On your local repository, you should always work on a branch to make keeping up-to-date and submitting pull requests easier, but in most cases you should submit your pull requests to `main`. Where necessary, for example if multiple people are contributing on a large feature, or if a feature requires a database change, we make use of feature branches.
+### Release-note emojis
 
-
-### Commit Messages
-
-We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
-
-- **1st line:** Max 80 character summary
-   - Written in past tense e.g. “Fixed the thing” not “Fixes the thing”
-   - Start with one of: Fixed, Changed, Updated, Improved, Added, Removed, Reverted, Moved, Released, Bumped, Cleaned
-- **2nd line:** [Always blank]
-- **3rd line:** `ref <issue link>`, `fixes <issue link>`, `closes <issue link>` or blank
-- **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
-
-If your change is **user-facing** please prepend the first line of your commit with **an emoji key**. If the commit is for an alpha feature, no emoji is needed. We are following [gitmoji](https://gitmoji.carloscuesta.me/).
-
-**Main emojis we are using:**
+A leading release-note emoji opts the squash commit into generated release
+notes. Add one only for a significant change that is relevant to users, and
+write the summary from their perspective. Alpha or experimental work does not
+need an emoji until it becomes user-facing.
 
 - ✨ Feature
-- 🎨 Improvement / change
-- 🐛 Bug Fix
-- 🌐 i18n (translation) submissions  [[See Translating Ghost docs for more detail](https://www.notion.so/5af2858289b44f9194f73f8a1e17af59?pvs=25#bef8c9988e294a4b9a6dd624136de36f)]
-- 💡 Anything else flagged to users or whoever is writing release notes
+- 🎨 Improvement or change
+- 🐛 Bug fix
+- 💡 Other noteworthy user-facing change
 
-Good commit message examples: [new feature](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [bug fix](https://github.com/TryGhost/Ghost/commit/6ef835bb5879421ae9133541ebf8c4e560a4a90e) and [translation](https://github.com/TryGhost/Ghost/commit/83904c1611ae7ab3257b3b7d55f03e50cead62d7).
+Use 🌐 for [translation submissions](../docs/contributing/translating-ghost.md).
+Translation commits are not selected for generated release notes by that emoji
+alone.
+
+Good final commit examples include a [new feature](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f),
+a [bug fix](https://github.com/TryGhost/Ghost/commit/6ef835bb5879421ae9133541ebf8c4e560a4a90e),
+and a [translation](https://github.com/TryGhost/Ghost/commit/83904c1611ae7ab3257b3b7d55f03e50cead62d7).
 
 **Bumping @tryghost dependencies**
 
-When bumping `@tryghost/*` dependencies, the first line should follow the above format and say what has changed, not say what has been bumped.
+When bumping `@tryghost/*` dependencies, describe the user-visible result rather
+than which packages were bumped. The diff already shows the package changes;
+the message should explain what changed because of them. See this
+[good example](https://github.com/TryGhost/Ghost/commit/95751a0e5fb719bb5bca74cb97fb5f29b225094f).
 
-There is no need to include what modules have changed in the commit message, as this is _very_ clear from the contents of the commit. The commit should focus on surfacing the underlying changes from the dependencies - what actually changed as a result of this dependency bump?
+## Changesets
 
-[Good example](https://github.com/TryGhost/Ghost/commit/95751a0e5fb719bb5bca74cb97fb5f29b225094f)
+Ghost publishes several workspace packages to npm — the `@tryghost/*` editor and adapter packages under `koenig/` and `packages/`. When your change affects one of these publishable packages, including by changing a catalog entry it consumes, add a **changeset** so it gets a version bump and a changelog entry:
 
+```bash
+pnpm change
+```
 
+This records which packages changed and the bump type (patch / minor / major); the summary you provide becomes the changelog entry. If the change genuinely needs no release (an internal refactor, tests, tooling), record that explicitly instead:
 
-### Submitting Pull Requests
+```bash
+pnpm change --bump none
+```
 
-We aim to merge any straightforward, well-understood bug fixes or improvements immediately, as long as they pass our tests (run `pnpm test` to check locally). We generally don’t merge new features and larger changes without prior discussion with the core product team for tech/design specification.
+A package `README.md` is published with the package and requires a release.
+Repository-only Markdown such as `AGENTS.md`, `CLAUDE.md`, changelogs, and
+package-local `docs/` does not.
+
+CI enforces this — the **Check app version bump** job fails a pull request that affects a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.
+
+For more detail, see the [contribution workflow](../docs/contributing/workflow.md).
+
+## Submitting Pull Requests
+
+We aim to merge any straightforward, well-understood bug fixes or improvements immediately, as long as they pass our tests (run `pnpm check` to ensure everything works). We generally don’t merge new features and larger changes without prior discussion with the core product team for tech/design specification.
 
 Please provide plenty of context and reasoning around your changes, to help us merge quickly. Closing an already open issue is our preferred workflow. If your PR gets out of date, we may ask you to rebase as you are more familiar with your changes than we will be.
 
-### Sharing feedback on Documentation
-
-While the Docs are no longer Open Source, we welcome revisions and ideas on the forum! Please create a Post with your questions or suggestions in the [Contributing to Ghost Category](https://forum.ghost.org/c/contributing/27). Thank you for helping us keep the Docs relevant and up-to-date.
+For branch, validation, and pull request details, follow the
+[contribution workflow](../docs/contributing/workflow.md).
 
 ---
 

@@ -1,5 +1,5 @@
 module.exports = {
-    get spamPrevention() {
-        return require('./spam-prevention');
-    }
+  get spamPrevention() {
+    return require('./spam-prevention');
+  },
 };

@@ -11,76 +11,162 @@ const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
 
 describe('llms.txt routing', function () {
-    let request;
-    let siteUrl;
+  let request;
+  let siteUrl;
 
-    before(async function () {
-        await testUtils.startGhost();
-        siteUrl = configUtils.config.get('url').replace(/\/$/, '');
-        request = supertest.agent(configUtils.config.get('url'));
-    });
+  beforeAll(async function () {
+    await testUtils.startGhost();
+    siteUrl = configUtils.config.get('url').replace(/\/$/, '');
+    request = supertest.agent(configUtils.config.get('url'));
+  });
 
+  it('serves llms.txt with published public entries and absolute urls', async function () {
+    const res = await request
+      .get('/llms.txt')
+      .expect('Content-Type', /text\/plain/)
+      .expect(200);
+
+    // entries are linked via absolute urls resolved by the public API serializer
+    assert.ok(
+      res.text.includes(`[About this site](${siteUrl}/about.md)`),
+      'expected absolute .md link for the about page',
+    );
+    assert.ok(
+      res.text.includes(
+        `[Start here for a quick overview of everything you need to know](${siteUrl}/welcome.md)`,
+      ),
+      'expected absolute .md link for the welcome post',
+    );
+
+    // descriptions come from plaintext, which is requested via `formats`
+    // on top of the narrowed `fields`
+    assert.match(
+      res.text,
+      /\[Start here for a quick overview of everything you need to know\]\([^)]+\) - We've crammed the most important information/,
+    );
+
+    // the .md discoverability line and the llms-full link in Optional
+    assert.match(res.text, /Append `\.md` to any post or page URL/);
+    assert.ok(
+      res.text.includes(`[Full content of pages and posts](${siteUrl}/llms-full.txt)`),
+      'expected llms-full link in Optional',
+    );
+  });
+
+  it('serves HTML on the canonical URL even when Accept prefers markdown', async function () {
+    const res = await request
+      .get('/welcome/')
+      .set('Accept', 'text/markdown')
+      .expect('Content-Type', /html/)
+      .expect(200);
+
+    assert.doesNotMatch(res.text, /## Content Index/);
+    assert.match(res.text, /<html/i);
+  });
+
+  it('serves llms-full.txt with entry bodies and absolute urls', async function () {
+    const res = await request
+      .get('/llms-full.txt')
+      .expect('Content-Type', /text\/plain/)
+      .expect(200);
+
+    assert.match(res.text, /### About this site/);
+    assert.match(res.text, /### Start here for a quick overview of everything you need to know/);
+    assert.ok(
+      res.text.includes(`URL: ${siteUrl}/about/`),
+      'expected absolute url for the about page entry',
+    );
+
+    // entry bodies are rendered from html, which is requested via
+    // `formats` on top of the narrowed `fields`
+    assert.match(
+      res.text,
+      /An about page is a great example of one you might want to set up early on/,
+    );
+
+    // the .md discoverability line appears in both files
+    assert.match(res.text, /Append `\.md` to any post or page URL/);
+
+    // truncation footer (if present) points at the sitemap, not /llms.txt
+    assert.doesNotMatch(res.text, /Use `\/llms\.txt`/);
+  });
+
+  describe('with machine payments enabled', function () {
     beforeEach(function () {
-        const originalGet = settingsCache.get;
-        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-            if (key === 'labs') {
-                return {llmsTxt: true};
-            }
-
-            return originalGet(key, options);
-        });
+      sinon.restore();
+      const originalGet = settingsCache.get;
+      sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+        if (key === 'labs') {
+          return { machinePayments: true };
+        }
+        if (key === 'llms_enabled') {
+          return true;
+        }
+        if (key === 'machine_payments_enabled') {
+          return true;
+        }
+        if (key === 'stripe_connect_secret_key') {
+          return 'sk_test_machinepayments';
+        }
+        if (key === 'stripe_connect_publishable_key') {
+          return 'pk_test_machinepayments';
+        }
+        return originalGet(key, options);
+      });
     });
 
-    afterEach(function () {
-        sinon.restore();
+    beforeAll(async function () {
+      const paid = testUtils.DataGenerator.forKnex.createPost({
+        slug: 'llms-paid-discoverable',
+        title: 'Paid Discoverable Post',
+        visibility: 'paid',
+        status: 'published',
+        custom_excerpt: 'Agent teaser',
+        lexical: testUtils.DataGenerator.markdownToLexical('secret'),
+      });
+      const membersOnly = testUtils.DataGenerator.forKnex.createPost({
+        slug: 'llms-members-preview',
+        title: 'Members Preview Post',
+        visibility: 'members',
+        status: 'published',
+        custom_excerpt: 'Members teaser',
+        lexical: testUtils.DataGenerator.markdownToLexical('members secret'),
+      });
+      await testUtils.fixtures.insertPosts([paid, membersOnly]);
     });
 
-    it('serves llms.txt with published public entries and absolute urls', async function () {
-        const res = await request.get('/llms.txt')
-            .expect('Content-Type', /text\/plain/)
-            .expect(200);
-
-        // entries are linked via absolute urls resolved by the public API serializer
-        assert.ok(res.text.includes(`[About this site](${siteUrl}/about.md)`), 'expected absolute .md link for the about page');
-        assert.ok(res.text.includes(`[Start here for a quick overview of everything you need to know](${siteUrl}/welcome.md)`), 'expected absolute .md link for the welcome post');
-
-        // descriptions come from plaintext, which is requested via `formats`
-        // on top of the narrowed `fields`
-        assert.match(res.text, /\[Start here for a quick overview of everything you need to know\]\([^)]+\) - We've crammed the most important information/);
-
-        // the .md discoverability line and the llms-full link in Optional
-        assert.match(res.text, /Append `\.md` to any post or page URL/);
-        assert.ok(res.text.includes(`[Full content of pages and posts](${siteUrl}/llms-full.txt)`), 'expected llms-full link in Optional');
+    afterAll(function () {
+      sinon.restore();
     });
 
-    it('serves llms-full.txt with entry bodies and absolute urls', async function () {
-        const res = await request.get('/llms-full.txt')
-            .expect('Content-Type', /text\/plain/)
-            .expect(200);
+    it('includes paid and members posts in llms.txt', async function () {
+      const res = await request
+        .get('/llms.txt')
+        .expect('Content-Type', /text\/plain/)
+        .expect(200);
 
-        assert.match(res.text, /### About this site/);
-        assert.match(res.text, /### Start here for a quick overview of everything you need to know/);
-        assert.ok(res.text.includes(`URL: ${siteUrl}/about/`), 'expected absolute url for the about page entry');
-
-        // entry bodies are rendered from html, which is requested via
-        // `formats` on top of the narrowed `fields`
-        assert.match(res.text, /An about page is a great example of one you might want to set up early on/);
-
-        // the .md discoverability line appears in both files
-        assert.match(res.text, /Append `\.md` to any post or page URL/);
-
-        // truncation footer (if present) points at the sitemap, not /llms.txt
-        assert.doesNotMatch(res.text, /Use `\/llms\.txt`/);
+      assert.ok(
+        res.text.includes(`[Paid Discoverable Post](${siteUrl}/llms-paid-discoverable.md)`),
+        'expected paid post .md link',
+      );
+      assert.match(res.text, /Agent teaser/);
+      assert.ok(
+        res.text.includes(`[Members Preview Post](${siteUrl}/llms-members-preview.md)`),
+        'expected members post .md link with free preview discoverability',
+      );
+      assert.match(res.text, /Members teaser/);
     });
 
-    it('does not serve llms.txt when the labs flag is disabled', async function () {
-        sinon.restore();
+    it('lists gated posts with notices in llms-full.txt', async function () {
+      const res = await request
+        .get('/llms-full.txt')
+        .expect('Content-Type', /text\/plain/)
+        .expect(200);
 
-        // with the flag off the handler defers to the rest of the routing
-        // stack, which treats the path like any other unknown frontend route
-        // (the trailing-slash middleware redirects it)
-        const res = await request.get('/llms.txt');
-
-        assert.equal(res.status, 302);
+      assert.match(res.text, /### Paid Discoverable Post/);
+      assert.match(res.text, /paying subscribers only/i);
+      assert.match(res.text, /### Members Preview Post/);
+      assert.match(res.text, /This post is for subscribers only\./);
     });
+  });
 });

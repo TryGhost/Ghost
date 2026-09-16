@@ -1,0 +1,106 @@
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
+import {groupTiersByActive} from 'ghost-admin/utils/group-tiers';
+import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
+
+export default class GhMembersSegmentSelect extends Component {
+    @service store;
+    @service feature;
+
+    @tracked _baseOptions = [];
+
+    get renderInPlace() {
+        return this.args.renderInPlace === undefined ? false : this.args.renderInPlace;
+    }
+
+    constructor() {
+        super(...arguments);
+        this.fetchOptionsTask.perform();
+    }
+
+    get nonLabelOptions() {
+        if (this.args.hideOptionsWhenAllSelected) {
+            const segments = (this.args.segment || '').split(',');
+            if (segments.includes('status:free') && segments.includes('status:-free')) {
+                return this._baseOptions.filter(option => !option.groupName);
+            }
+        }
+
+        return this._baseOptions;
+    }
+
+    get selectedSegments() {
+        return (this.args.segment || '').split(',').filter(Boolean);
+    }
+
+    get hideLabelsComputed() {
+        return !!this.args.hideLabels;
+    }
+
+    @action
+    setSegment(options) {
+        const segment = options.mapBy('segment').join(',') || null;
+        this.args.onChange?.(segment);
+    }
+
+    @task
+    *fetchOptionsTask() {
+        const options = yield [];
+
+        if (!this.args.hideDefaultSegments) {
+            options.push({
+                name: 'Free members',
+                segment: 'status:free',
+                class: 'segment-status-free'
+            }, {
+                name: 'Paid members',
+                segment: 'status:-free', // paid & comped & gift
+                class: 'segment-status-paid'
+            });
+        }
+
+        // fetch all tiers w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
+        // TODO: add `include: 'count.members` to query once API supports
+        const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all', include: 'monthly_price,yearly_price,benefits'});
+
+        if (tiers.length > 0) {
+            const [activeTiersGroup, archivedTiersGroup] = groupTiersByActive(tiers, tier => ({
+                name: tier.name,
+                segment: `${tier.id}`,
+                count: tier.count?.members,
+                class: 'segment-tier'
+            }));
+
+            options.push(activeTiersGroup);
+            options.push(archivedTiersGroup);
+
+            if (this.args.selectDefaultTier && !this.args.segment) {
+                this.args.onChange?.(activeTiersGroup.options[0].segment);
+            }
+        }
+
+        const offers = yield this.store.findAll('offer');
+
+        if (offers.length > 0) {
+            const offersGroup = {
+                groupName: 'Offers',
+                options: []
+            };
+
+            offers.forEach((offer) => {
+                offersGroup.options.push({
+                    name: offer.name,
+                    segment: `offer_redemptions:${offer.id}`,
+                    count: offer.count?.members,
+                    class: 'segment-offer'
+                });
+            });
+
+            options.push(offersGroup);
+        }
+
+        this._baseOptions = options;
+    }
+}

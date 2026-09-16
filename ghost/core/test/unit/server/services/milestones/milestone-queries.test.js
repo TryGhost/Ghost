@@ -10,36 +10,36 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 describe('MilestoneQueries', function () {
-    let milestoneQueries;
-    let queryMock;
-    let knexMock;
+  let milestoneQueries;
+  let queryMock;
+  let knexMock;
 
-    beforeAll(function () {
-        queryMock = {
-            groupBy: sinon.stub(),
-            select: sinon.stub(),
-            raw: sinon.stub(),
-            count: sinon.stub(),
-            where: sinon.stub()
-        };
+  beforeAll(function () {
+    queryMock = {
+      groupBy: sinon.stub(),
+      select: sinon.stub(),
+      raw: sinon.stub(),
+      count: sinon.stub(),
+      where: sinon.stub(),
+    };
 
-        knexMock = sinon.stub().returns(queryMock);
+    knexMock = sinon.stub().returns(queryMock);
 
-        sinon.stub(db, 'knex').get(function () {
-            return knexMock;
-        });
+    sinon.stub(db, 'knex').get(function () {
+      return knexMock;
     });
+  });
 
-    afterAll(function () {
-        sinon.restore();
-    });
+  afterAll(function () {
+    sinon.restore();
+  });
 
-    it('Provides expected public API', async function () {
-        milestoneQueries = new MilestoneQueries({db: knexMock});
+  it('Provides expected public API', async function () {
+    milestoneQueries = new MilestoneQueries({ db: knexMock });
 
-        assert.ok(milestoneQueries.getMembersCount);
-        assert.ok(milestoneQueries.getARR);
-        assert.ok(milestoneQueries.hasImportedMembersInPeriod);
-        assert.ok(milestoneQueries.getDefaultCurrency);
-    });
+    assert.ok(milestoneQueries.getMembersCount);
+    assert.ok(milestoneQueries.getARR);
+    assert.ok(milestoneQueries.hasImportedMembersInPeriod);
+    assert.ok(milestoneQueries.getDefaultCurrency);
+  });
 });

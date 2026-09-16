@@ -1,32 +1,34 @@
 {
   "name": "@tryghost/signup-form",
-  "version": "0.3.27",
+  "version": "0.3.34",
+  "description": "Embeddable signup form for Ghost sites",
   "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
   "files": [
     "LICENSE",
     "README.md",
     "umd/"
   ],
+  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "pnpm build && concurrently --kill-others --names dev,preview,build \"vite --port 6173\" \"vite preview -l silent\" \"vite build --watch\"",
-    "preview": "concurrently --kill-others --names preview,build \"vite preview -l silent\" \"vite build --watch\"",
+    "dev": "vite build --watch --mode development",
+    "dev:standalone": "vite --port 6173",
     "dev:test": "vite build && vite preview --port 6175",
     "build": "tsc && vite build",
     "lint": "pnpm run lint:js",
-    "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
+    "lint:js": "eslint --cache src test",
     "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
     "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 pnpm test:acceptance --headed",
     "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
+    "ship": "node ../../scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
@@ -35,31 +37,41 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-vite-public-app": "workspace:*",
     "@playwright/test": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-links": "catalog:",
     "@storybook/react-vite": "catalog:",
-    "@tailwindcss/line-clamp": "0.4.4",
     "@tryghost/i18n": "workspace:*",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "catalog:",
-    "autoprefixer": "10.5.0",
-    "concurrently": "catalog:",
+    "@typescript/native": "catalog:",
+    "autoprefixer": "10.5.4",
     "eslint": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
-    "jsdom": "catalog:",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
     "storybook": "catalog:",
     "tailwindcss": "catalog:tailwind3",
-    "vite": "catalog:",
-    "vite-plugin-svgr": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:",
+    "vite": "catalog:"
   },
   "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/signup-form",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
     "tags": [
-      "i18n"
+      "i18n",
+      "public-app",
+      "playwright"
     ]
   }
 }

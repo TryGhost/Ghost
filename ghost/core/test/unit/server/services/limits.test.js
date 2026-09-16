@@ -8,47 +8,47 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 
 describe('Limit Service Init', function () {
-    let loggerStub;
-    let limitServiceStub;
+  let loggerStub;
+  let limitServiceStub;
 
-    beforeEach(function () {
-        loggerStub = sinon.spy(logging);
-        limitServiceStub = sinon.stub();
+  beforeEach(function () {
+    loggerStub = sinon.spy(logging);
+    limitServiceStub = sinon.stub();
 
-        sinon.stub(limits, 'loadLimits').callsFake(limitServiceStub);
+    sinon.stub(limits, 'loadLimits').callsFake(limitServiceStub);
 
-        configUtils.set({
-            hostSettings: {}
-        });
+    configUtils.set({
+      hostSettings: {},
     });
+  });
 
-    afterEach(async function () {
-        await configUtils.restore();
-        sinon.restore();
-    });
+  afterEach(async function () {
+    await configUtils.restore();
+    sinon.restore();
+  });
 
-    it('initiates and loads limits - minimal setup', async function () {
-        limitServiceStub.returns(Promise.resolve());
-        await limits.init();
+  it('initiates and loads limits - minimal setup', async function () {
+    limitServiceStub.returns(Promise.resolve());
+    await limits.init();
 
-        sinon.assert.notCalled(loggerStub.warn);
-    });
-    it('handles limit-service incorrect usage errors gracefully with a warning', async function () {
-        limitServiceStub.throws(new errors.IncorrectUsageError('Incorrect limits'));
+    sinon.assert.notCalled(loggerStub.warn);
+  });
+  it('handles limit-service incorrect usage errors gracefully with a warning', async function () {
+    limitServiceStub.throws(new errors.IncorrectUsageError('Incorrect limits'));
 
-        await limits.init();
+    await limits.init();
 
-        sinon.assert.called(loggerStub.warn);
-    });
-    it('handles limit-service other errors with exit', async function () {
-        const thrownError = new errors.InternalServerError('Something went wrong');
-        limitServiceStub.throws(thrownError);
+    sinon.assert.called(loggerStub.warn);
+  });
+  it('handles limit-service other errors with exit', async function () {
+    const thrownError = new errors.InternalServerError('Something went wrong');
+    limitServiceStub.throws(thrownError);
 
-        try {
-            await limits.init();
-        } catch (error) {
-            sinon.assert.notCalled(loggerStub.warn);
-            assert.deepEqual(error, thrownError);
-        }
-    });
+    try {
+      await limits.init();
+    } catch (error) {
+      sinon.assert.notCalled(loggerStub.warn);
+      assert.deepEqual(error, thrownError);
+    }
+  });
 });

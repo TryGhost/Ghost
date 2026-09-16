@@ -8,7 +8,10 @@ corepack prepare --activate
 
 git submodule update --init --recursive
 
-pnpm install --prefer-offline
+# pnpm install already ran in onCreateCommand against this same fully-mounted
+# workspace (submodules are theme content, not workspace packages, so their
+# absence above didn't affect that install) — a second pass here would just
+# re-walk the whole dependency graph for nothing.
 
 # Build workspace packages that ghost/core imports at runtime with build
 # outputs (not source). @tryghost/parse-email-address is the only one today

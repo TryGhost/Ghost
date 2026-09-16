@@ -5,33 +5,33 @@ const handlebars = require('../../../../core/frontend/services/theme-engine/engi
 let defaultGlobals;
 
 function compile(templateString) {
-    const template = handlebars.compile(templateString);
-    template.with = (locals = {}, globals) => {
-        globals = globals || defaultGlobals;
+  const template = handlebars.compile(templateString);
+  template.with = (locals = {}, globals) => {
+    globals = globals || defaultGlobals;
 
-        return template(locals, globals);
-    };
+    return template(locals, globals);
+  };
 
-    return template;
+  return template;
 }
 
 describe('{{raw}} helper', function () {
-    beforeAll(function () {
-        handlebars.registerHelper('raw', raw);
-    });
+  beforeAll(function () {
+    handlebars.registerHelper('raw', raw);
+  });
 
-    it('can correctly compile space', function () {
-        assert.equal(compile('{{{{raw}}}} {{{{/raw}}}}')
-            .with({}), ' ');
-    });
+  it('can correctly compile space', function () {
+    assert.equal(compile('{{{{raw}}}} {{{{/raw}}}}').with({}), ' ');
+  });
 
-    it('can correctly ignore handlebars', function () {
-        assert.equal(compile('{{{{raw}}}}{{test}}{{{{/raw}}}}')
-            .with({tag: {}}), '{{test}}');
-    });
+  it('can correctly ignore handlebars', function () {
+    assert.equal(compile('{{{{raw}}}}{{test}}{{{{/raw}}}}').with({ tag: {} }), '{{test}}');
+  });
 
-    it('can correctly compile recursive', function () {
-        assert.equal(compile('{{{{raw}}}}{{{{raw}}}}{{{{/raw}}}}{{{{/raw}}}}')
-            .with({tag: {}}), '{{{{raw}}}}{{{{/raw}}}}');
-    });
+  it('can correctly compile recursive', function () {
+    assert.equal(
+      compile('{{{{raw}}}}{{{{raw}}}}{{{{/raw}}}}{{{{/raw}}}}').with({ tag: {} }),
+      '{{{{raw}}}}{{{{/raw}}}}',
+    );
+  });
 });

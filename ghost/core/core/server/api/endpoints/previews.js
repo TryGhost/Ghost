@@ -1,106 +1,101 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const logging = require('@tryghost/logging');
+const membersService = require('../../services/members');
+const urlSerializerUtils = require('./utils/serializers/input/utils/url');
 const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
 const ALLOWED_MEMBER_STATUSES = ['anonymous', 'free', 'paid'];
 
 const messages = {
-    postNotFound: 'Post not found.'
+  postNotFound: 'Post not found.',
+  invalidMemberTier: 'member_tier must be a single tier slug.',
 };
 
 // Simulate serving content as different member states by setting the minimal
 // member context needed for content gating to function
 const _addMemberContextToFrame = async (frame) => {
-    if (!frame?.options?.member_status) {
-        return;
-    }
+  if (!frame?.options?.member_status) {
+    return;
+  }
 
-    // only set apiType when given a member_status to preserve backwards compatibility
-    // where we used to serve "Admin API" content with no gating for all previews
-    frame.apiType = 'content';
-    frame.isPreview = true;
+  // the framework's options validation only supports required/values checks,
+  // so guard the shape here — repeated query params arrive as arrays
+  if (
+    frame.options.member_tier !== undefined &&
+    (typeof frame.options.member_tier !== 'string' || frame.options.member_tier === '')
+  ) {
+    throw new errors.ValidationError({
+      message: tpl(messages.invalidMemberTier),
+    });
+  }
 
-    frame.original ??= {};
-    frame.original.context ??= {};
+  // only set apiType when given a member_status to preserve backwards compatibility
+  // where we used to serve "Admin API" content with no gating for all previews
+  frame.apiType = 'content';
+  frame.isPreview = true;
 
-    if (frame.options?.member_status === 'free') {
-        frame.original.context.member = {
-            status: 'free'
-        };
-    }
+  frame.original ??= {};
+  frame.original.context ??= {};
 
-    if (frame.options?.member_status === 'paid') {
-        // For member_status=paid, add all paid tiers to the member context
-        let memberProducts = [];
-        try {
-            const paidProducts = await models.Product.findAll({
-                status: 'active',
-                type: 'paid'
-            });
-            if (paidProducts.length > 0) {
-                memberProducts = paidProducts.map((product) => {
-                    return {
-                        slug: product.get('slug')
-                    };
-                });
-            }
-        } catch (error) {
-            // Log error but don't fail preview - fallback to empty products array
-            logging.error('Failed to fetch paid products for preview:', error);
-        }
+  if (frame.options?.member_status === 'free') {
+    frame.original.context.member = {
+      status: 'free',
+    };
+  }
 
-        frame.original.context.member = {
-            status: 'paid',
-            products: memberProducts
-        };
-    }
+  if (frame.options?.member_status === 'paid') {
+    // For member_status=paid, render with the selected tier or all active paid tiers
+    frame.original.context.member = await membersService.createPaidMemberShim(
+      frame.options.member_tier,
+    );
+  }
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
-    docName: 'previews',
+  docName: 'previews',
 
-    read: {
-        headers: {
-            cacheInvalidate: false
+  read: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: true,
+    options: ['include', 'member_status', 'member_tier'],
+    data: ['uuid'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
         },
-        permissions: true,
-        options: [
-            'include',
-            'member_status'
-        ],
-        data: [
-            'uuid'
-        ],
-        validation: {
-            options: {
-                include: {
-                    values: ALLOWED_INCLUDES
-                },
-                member_status: {
-                    values: ALLOWED_MEMBER_STATUSES
-                }
-            },
-            data: {
-                uuid: {
-                    required: true
-                }
-            }
+        member_status: {
+          values: ALLOWED_MEMBER_STATUSES,
         },
-        async query(frame) {
-            await _addMemberContextToFrame(frame);
+      },
+      data: {
+        uuid: {
+          required: true,
+        },
+      },
+    },
+    async query(frame) {
+      await _addMemberContextToFrame(frame);
 
-            const model = await models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options);
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.postNotFound)
-                });
-            }
+      // previews has no input serializer, so the URL force-load happens here
+      urlSerializerUtils.forceUrlRelations(frame, 'posts');
 
-            return model;
-        }
-    }
+      const model = await models.Post.findOne(
+        Object.assign({ status: 'all' }, frame.data),
+        frame.options,
+      );
+      if (!model) {
+        throw new errors.NotFoundError({
+          message: tpl(messages.postNotFound),
+        });
+      }
+
+      return model;
+    },
+  },
 };
 
 module.exports = controller;

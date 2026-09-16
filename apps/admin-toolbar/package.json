@@ -1,75 +1,57 @@
 {
   "name": "@tryghost/admin-toolbar",
-  "version": "0.1.0",
+  "version": "0.1.11",
+  "description": "Frontend staff toolbar for Ghost sites",
   "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
   "files": [
     "umd/",
     "LICENSE",
     "README.md"
   ],
+  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch --mode development",
+    "lint": "eslint src test --cache",
+    "test": "pnpm test:unit",
+    "test:unit": "pnpm run build && vitest run",
+    "preship": "pnpm lint",
+    "ship": "node ../../scripts/release-apps.js",
+    "prepublishOnly": "pnpm build"
+  },
   "dependencies": {
     "preact": "catalog:"
   },
-  "scripts": {
-    "build": "pnpm exec vite build",
-    "build:watch": "pnpm exec vite build --watch",
-    "dev": "concurrently --kill-others --names preview,build \"pnpm exec vite preview -l silent\" \"pnpm build:watch\"",
-    "lint": "pnpm exec eslint src --ext .js --cache",
-    "test": "pnpm run build && pnpm exec mocha --exit --trace-warnings --timeout=60000 \"test/**/*.test.js\"",
-    "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "pnpm build"
-  },
   "devDependencies": {
-    "concurrently": "catalog:",
+    "@eslint/js": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-vite-public-app": "workspace:*",
     "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "globals": "catalog:",
     "jsdom": "catalog:",
-    "mocha": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
-  "eslintConfig": {
-    "ignorePatterns": [
-      "umd/**/*.js"
-    ],
-    "env": {
-      "browser": true
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser"
-    ],
-    "plugins": [
-      "ghost"
-    ],
-    "overrides": [
-      {
-        "files": [
-          "test/**/*.js"
-        ],
-        "env": {
-          "mocha": true,
-          "node": true
-        },
-        "parserOptions": {
-          "sourceType": "script"
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin-toolbar",
+          "command": "vite build --watch --mode development"
         }
       }
-    ],
-    "rules": {
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ]
-    }
+    },
+    "tags": [
+      "public-app"
+    ]
   }
 }

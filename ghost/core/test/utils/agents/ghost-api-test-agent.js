@@ -11,9 +11,9 @@ const TestAgent = require('./test-agent');
  * @param {string} options.originURL
  */
 class GhostAPITestAgent extends TestAgent {
-    constructor(app, options) {
-        super(app, options);
-    }
+  constructor(app, options) {
+    super(app, options);
+  }
 }
 
 module.exports = GhostAPITestAgent;

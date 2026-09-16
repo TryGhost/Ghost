@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage:
+  merge-history-pr OWNER/REPO PR_NUMBER SOURCE_SPLIT_TIP --dry-run
+  merge-history-pr OWNER/REPO PR_NUMBER SOURCE_SPLIT_TIP EXPECTED_HEAD --confirm
+
+Safely merge a Ghost history-import PR with a merge commit. The script records
+the repository's merge-commit setting, enables it only when needed, restores it
+on every exit path, and verifies that SOURCE_SPLIT_TIP remains reachable.
+
+--dry-run  Agent preflight; no settings are changed and no merge is performed.
+--confirm  Human administrator checkpoint; require the head validated by the
+           dry run, temporarily enable merge commits, merge the PR, restore the
+           setting, and verify the imported history.
+EOF
+}
+
+fail() {
+    printf 'error: %s\n' "$*" >&2
+    exit 1
+}
+
+[[ $# -eq 4 || $# -eq 5 ]] || {
+    usage >&2
+    exit 2
+}
+
+repo=$1
+pr_number=$2
+split_tip=$3
+if [[ $# -eq 4 ]]; then
+    expected_head=''
+    mode=$4
+else
+    expected_head=$4
+    mode=$5
+fi
+
+[[ $repo =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] ||
+    fail "repository must be OWNER/REPO"
+[[ $pr_number =~ ^[1-9][0-9]*$ ]] ||
+    fail "PR number must be a positive integer"
+[[ $split_tip =~ ^[0-9a-fA-F]{40}$ ]] ||
+    fail "source split tip must be a full 40-character Git SHA"
+[[ $mode == --dry-run || $mode == --confirm ]] ||
+    fail "final argument must be --dry-run or --confirm"
+[[ $mode == --dry-run && -z $expected_head ]] ||
+    [[ $mode == --confirm && $expected_head =~ ^[0-9a-fA-F]{40}$ ]] ||
+    fail "--confirm requires the full PR head SHA reported by --dry-run"
+
+command -v gh >/dev/null || fail "gh is required"
+printf 'Checking GitHub authentication...\n'
+gh auth status >/dev/null
+
+state=$(gh pr view "$pr_number" --repo "$repo" --json state --jq '.state')
+is_draft=$(gh pr view "$pr_number" --repo "$repo" --json isDraft --jq '.isDraft')
+mergeable=$(gh pr view "$pr_number" --repo "$repo" --json mergeable --jq '.mergeable')
+merge_state=$(gh pr view "$pr_number" --repo "$repo" --json mergeStateStatus --jq '.mergeStateStatus')
+head_sha=$(gh pr view "$pr_number" --repo "$repo" --json headRefOid --jq '.headRefOid')
+is_stacked=$(gh api \
+    -H 'Accept: application/vnd.github+json' \
+    -H 'X-GitHub-Api-Version: 2026-03-10' \
+    "repos/$repo/pulls/$pr_number" \
+    --jq 'has("stack") and .stack != null')
+
+if [[ $mode == --confirm && $head_sha != "$expected_head" ]]; then
+    fail "PR head changed after dry-run (expected: $expected_head, current: $head_sha)"
+fi
+
+[[ $state == OPEN ]] || fail "PR is not open (state: $state)"
+[[ $is_draft == false ]] || fail "PR is still a draft"
+[[ $mergeable == MERGEABLE ]] ||
+    fail "PR is not currently mergeable (mergeable: $mergeable)"
+[[ $is_stacked == false ]] ||
+    fail "PR is part of a GitHub stack; unstack it before rerunning the preflight"
+
+printf 'Checking PR checks...\n'
+gh pr checks "$pr_number" --repo "$repo"
+
+history_status=$(gh api "repos/$repo/compare/$split_tip...$head_sha" --jq '.status')
+[[ $history_status == ahead || $history_status == identical ]] ||
+    fail "source split tip is not an ancestor of the PR head (compare status: $history_status)"
+
+subtree_dir=$(gh api --paginate "repos/$repo/pulls/$pr_number/commits" \
+    --jq '.[].commit.message' | sed -n 's/^git-subtree-dir: //p' | sort -u)
+[[ -n $subtree_dir ]] ||
+    fail "PR commits do not contain git-subtree-dir metadata"
+[[ $subtree_dir != *$'\n'* ]] ||
+    fail "PR contains more than one git-subtree-dir: $subtree_dir"
+[[ $subtree_dir =~ ^packages/[A-Za-z0-9._-]+$ ]] ||
+    fail "subtree destination must be one direct child of packages/ (found: $subtree_dir)"
+gh api "repos/$repo/contents/$subtree_dir/package.json?ref=$head_sha" >/dev/null ||
+    fail "reviewed PR head does not contain $subtree_dir/package.json"
+
+original_setting=$(gh api "repos/$repo" --jq '.allow_merge_commit')
+[[ $original_setting == true || $original_setting == false ]] ||
+    fail "could not read the repository merge-commit setting"
+
+printf 'Preflight passed:\n'
+printf '  repository: %s\n' "$repo"
+printf '  PR:         %s\n' "$pr_number"
+printf '  head:       %s\n' "$head_sha"
+printf '  split tip:  %s\n' "$split_tip"
+printf '  destination:%s\n' " $subtree_dir"
+printf '  merge state:%s\n' " $merge_state"
+printf '  setting:    allow_merge_commit=%s\n' "$original_setting"
+
+if [[ $mode == --dry-run ]]; then
+    printf 'Dry run complete; no settings changed and no merge performed.\n'
+    exit 0
+fi
+
+is_admin=$(gh api "repos/$repo" --jq '.permissions.admin')
+[[ $is_admin == true ]] ||
+    fail "--confirm requires a human operator with repository administration permission"
+
+setting_changed=false
+
+restore_setting() {
+    if [[ $setting_changed == true ]]; then
+        printf 'Restoring allow_merge_commit=%s...\n' "$original_setting" >&2
+        if ! gh api --method PATCH "repos/$repo" \
+            -F "allow_merge_commit=$original_setting" >/dev/null; then
+            return 1
+        fi
+        setting_changed=false
+    fi
+}
+
+cleanup() {
+    exit_status=$?
+    trap - EXIT INT TERM
+    if ! restore_setting; then
+        printf 'CRITICAL: failed to restore the repository merge setting.\n' >&2
+        exit_status=1
+    fi
+    exit "$exit_status"
+}
+
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+if [[ $original_setting == false ]]; then
+    printf 'Temporarily enabling merge commits...\n'
+    setting_changed=true
+    gh api --method PATCH "repos/$repo" \
+        -F allow_merge_commit=true >/dev/null
+fi
+
+printf 'Merging PR %s with a merge commit...\n' "$pr_number"
+gh pr merge "$pr_number" --repo "$repo" --merge \
+    --match-head-commit "$head_sha"
+
+restore_setting
+
+restored_setting=$(gh api "repos/$repo" --jq '.allow_merge_commit')
+[[ $restored_setting == "$original_setting" ]] ||
+    fail "repository merge setting was not restored"
+
+merged_at=$(gh pr view "$pr_number" --repo "$repo" --json mergedAt --jq '.mergedAt')
+merge_sha=$(gh pr view "$pr_number" --repo "$repo" --json mergeCommit --jq '.mergeCommit.oid')
+[[ -n $merged_at && $merged_at != null ]] || fail "PR does not report as merged"
+[[ $merge_sha =~ ^[0-9a-fA-F]{40}$ ]] || fail "could not determine merge commit SHA"
+
+parent_count=$(gh api "repos/$repo/commits/$merge_sha" --jq '.parents | length')
+[[ $parent_count == 2 ]] ||
+    fail "merged commit has $parent_count parents; expected 2"
+
+merged_history_status=$(gh api \
+    "repos/$repo/compare/$split_tip...$merge_sha" \
+    --jq '.status')
+[[ $merged_history_status == ahead || $merged_history_status == identical ]] ||
+    fail "source split tip is not an ancestor of the merged commit"
+
+trap - EXIT INT TERM
+
+printf 'History-preserving merge verified:\n'
+printf '  merge commit: %s\n' "$merge_sha"
+printf '  parents:      %s\n' "$parent_count"
+printf '  setting:      allow_merge_commit=%s (restored)\n' "$restored_setting"

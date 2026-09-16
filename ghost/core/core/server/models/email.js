@@ -1,101 +1,104 @@
 const crypto = require('crypto');
 const ghostBookshelf = require('./base');
 
-const Email = ghostBookshelf.Model.extend({
+const Email = ghostBookshelf.Model.extend(
+  {
     tableName: 'emails',
 
     defaults: function defaults() {
-        return {
-            uuid: crypto.randomUUID(),
-            status: 'pending',
-            recipient_filter: 'status:-free',
-            track_opens: false,
-            track_clicks: false,
-            feedback_enabled: false,
-            delivered_count: 0,
-            opened_count: 0,
-            failed_count: 0,
-            source_type: 'html'
-        };
+      return {
+        uuid: crypto.randomUUID(),
+        status: 'pending',
+        recipient_filter: 'status:-free',
+        track_opens: false,
+        track_clicks: false,
+        feedback_enabled: false,
+        delivered_count: 0,
+        opened_count: 0,
+        failed_count: 0,
+        source_type: 'html',
+      };
     },
 
     parse() {
-        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+      const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
 
-        // update legacy recipient_filter values to proper NQL
-        if (attrs.recipient_filter === 'free') {
-            attrs.recipient_filter = 'status:free';
-        }
-        if (attrs.recipient_filter === 'paid') {
-            attrs.recipient_filter = 'status:-free';
-        }
+      // update legacy recipient_filter values to proper NQL
+      if (attrs.recipient_filter === 'free') {
+        attrs.recipient_filter = 'status:free';
+      }
+      if (attrs.recipient_filter === 'paid') {
+        attrs.recipient_filter = 'status:-free';
+      }
 
-        return attrs;
+      return attrs;
     },
 
     formatOnWrite(attrs) {
-        // update legacy recipient_filter values to proper NQL
-        if (attrs.recipient_filter === 'free') {
-            attrs.recipient_filter = 'status:free';
-        }
-        if (attrs.recipient_filter === 'paid') {
-            attrs.recipient_filter = 'status:-free';
-        }
+      // update legacy recipient_filter values to proper NQL
+      if (attrs.recipient_filter === 'free') {
+        attrs.recipient_filter = 'status:free';
+      }
+      if (attrs.recipient_filter === 'paid') {
+        attrs.recipient_filter = 'status:-free';
+      }
 
-        return attrs;
+      return attrs;
     },
 
     post() {
-        return this.belongsTo('Post', 'post_id');
+      return this.belongsTo('Post', 'post_id');
     },
 
     emailBatches() {
-        return this.hasMany('EmailBatch', 'email_id');
+      return this.hasMany('EmailBatch', 'email_id');
     },
 
     recipients() {
-        return this.hasMany('EmailRecipient', 'email_id');
+      return this.hasMany('EmailRecipient', 'email_id');
     },
 
     newsletter() {
-        return this.belongsTo('Newsletter', 'newsletter_id');
+      return this.belongsTo('Newsletter', 'newsletter_id');
     },
 
     emitChange: function emitChange(event, options) {
-        const eventToTrigger = 'email' + '.' + event;
-        ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
+      const eventToTrigger = 'email' + '.' + event;
+      ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
     onCreated: function onCreated(model, options) {
-        const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+      const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
-        model.emitChange('added', options);
+      model.emitChange('added', options);
 
-        return result;
+      return result;
     },
 
     onUpdated: function onUpdated(model, options) {
-        const result = ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+      const result = ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
-        model.emitChange('edited', options);
+      model.emitChange('edited', options);
 
-        return result;
+      return result;
     },
 
     onDestroyed: function onDestroyed(model, options) {
-        const result = ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+      const result = ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
 
-        model.emitChange('deleted', options);
+      model.emitChange('deleted', options);
 
-        return result;
-    }
-}, {});
+      return result;
+    },
+  },
+  {},
+);
 
 const Emails = ghostBookshelf.Collection.extend({
-    model: Email
+  model: Email,
 });
 
 module.exports = {
-    Email: ghostBookshelf.model('Email', Email),
-    Emails: ghostBookshelf.collection('Emails', Emails)
+  Email: ghostBookshelf.model('Email', Email),
+  Emails: ghostBookshelf.collection('Emails', Emails),
 };

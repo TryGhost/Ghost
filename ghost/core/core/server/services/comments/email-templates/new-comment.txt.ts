@@ -1,16 +1,16 @@
-import type {ReadonlyDeep} from 'type-fest';
+import type { ReadonlyDeep } from 'type-fest';
 
 type NewCommentTextData = ReadonlyDeep<{
-    postTitle: string;
-    postUrl: string;
-    siteDomain: string;
-    toEmail: string;
-    staffUrl: string;
+  postTitle: string;
+  postUrl: string;
+  siteDomain: string;
+  toEmail: string;
+  staffUrl: string;
 }>;
 
 export function renderText(data: NewCommentTextData): string {
-    // Be careful when you indent the email, because whitespaces are visible in emails!
-    return `
+  // Be careful when you indent the email, because whitespaces are visible in emails!
+  return `
 Hey there,
 
 Someone just posted a comment on your post "${data.postTitle}"

@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "noEmit": true,
+    // Tests index known-good fixtures (locale maps, i18next's resource store);
+    // requiring a non-null assertion on every lookup adds noise, not safety.
+    "noUncheckedIndexedAccess": false
+  },
+  "include": ["../src/**/*", "**/*"]
+}

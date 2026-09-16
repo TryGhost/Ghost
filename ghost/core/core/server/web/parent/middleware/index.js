@@ -1,7 +1,8 @@
 module.exports = {
-    emitEvents: require('./emit-events'),
-    ghostLocals: require('./ghost-locals'),
-    logRequest: require('./log-request'),
-    queueRequest: require('./queue-request'),
-    requestId: require('./request-id')
+  emitEvents: require('./emit-events'),
+  filterQueryParameters: require('./filter-query-parameters').filterQueryParameters,
+  ghostLocals: require('./ghost-locals').ghostLocals,
+  logRequest: require('./log-request'),
+  queueRequest: require('./queue-request'),
+  requestId: require('./request-id').requestId,
 };

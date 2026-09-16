@@ -1,63 +1,43 @@
 {
   "name": "@tryghost/announcement-bar",
-  "version": "1.1.21",
+  "version": "1.1.28",
+  "description": "Announcement banner for Ghost sites",
   "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
+  "repository": "https://github.com/TryGhost/Ghost",
   "files": [
     "umd/",
     "LICENSE",
     "README.md"
   ],
+  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build",
+    "test": "vitest run",
+    "test:ci": "pnpm test --coverage",
+    "test:unit": "pnpm test:ci",
+    "lint": "eslint src test --cache",
+    "preship": "pnpm lint",
+    "ship": "node ../../scripts/release-apps.js",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "react": "catalog:react17",
     "react-dom": "catalog:react17"
   },
-  "scripts": {
-    "dev": "pnpm build && concurrently --kill-others --names preview,build \"vite preview -l silent\" \"pnpm build:watch\"",
-    "build": "vite build",
-    "build:watch": "vite build --watch",
-    "test": "vitest run",
-    "test:ci": "pnpm test --coverage",
-    "test:unit": "pnpm test:ci",
-    "lint": "eslint src --ext .js --cache",
-    "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "pnpm build"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "jest": true
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser",
-      "plugin:react/recommended"
-    ],
-    "plugins": [
-      "ghost"
-    ],
-    "rules": {
-      "react/prop-types": "off",
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ]
-    },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
-    }
+  "devDependencies": {
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-vite-public-app": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "browserslist": {
     "production": [
@@ -78,15 +58,19 @@
       "html"
     ]
   },
-  "devDependencies": {
-    "@vitejs/plugin-react": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "concurrently": "catalog:",
-    "cross-fetch": "catalog:",
-    "eslint": "catalog:",
-    "jsdom": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-svgr": "catalog:",
-    "vitest": "catalog:"
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/announcement-bar",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
+    "tags": [
+      "public-app"
+    ]
   }
 }

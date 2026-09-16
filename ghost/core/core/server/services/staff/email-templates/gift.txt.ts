@@ -1,18 +1,19 @@
-import type {ReadonlyDeep} from 'type-fest';
-import type {StaffTextBaseData} from './types';
+import type { ReadonlyDeep } from 'type-fest';
+import type { StaffTextBaseData } from './types';
 
-type GiftTextData = StaffTextBaseData & ReadonlyDeep<{
+type GiftTextData = StaffTextBaseData &
+  ReadonlyDeep<{
     gift: {
-        name: string;
-        tierName: string;
-        cadenceLabel: string;
-        amount: string;
+      name: string;
+      tierName: string;
+      cadenceLabel: string;
+      amount: string;
     };
-}>;
+  }>;
 
 export function renderText(data: GiftTextData): string {
-    // Be careful when you indent the email, because whitespaces are visible in emails!
-    return `
+  // Be careful when you indent the email, because whitespaces are visible in emails!
+  return `
 A gift subscription was purchased
 
 From: ${data.gift.name}

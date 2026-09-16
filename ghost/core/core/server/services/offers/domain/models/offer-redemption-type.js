@@ -5,28 +5,28 @@ const InvalidOfferRedemptionType = require('../errors').InvalidOfferRedemptionTy
  * @extends ValueObject<'signup'|'retention'>
  */
 class OfferRedemptionType extends ValueObject {
-    /** @param {unknown} redemptionType */
-    static create(redemptionType) {
-        if (typeof redemptionType !== 'string') {
-            throw new InvalidOfferRedemptionType({
-                message: 'Offer `redemption_type` must be a string.'
-            });
-        }
-
-        if (redemptionType !== 'signup' && redemptionType !== 'retention') {
-            throw new InvalidOfferRedemptionType({
-                message: 'Offer `redemption_type` must be either "signup" or "retention".'
-            });
-        }
-
-        return new OfferRedemptionType(redemptionType);
+  /** @param {unknown} redemptionType */
+  static create(redemptionType) {
+    if (typeof redemptionType !== 'string') {
+      throw new InvalidOfferRedemptionType({
+        message: 'Offer `redemption_type` must be a string.',
+      });
     }
 
-    static InvalidOfferRedemptionType = InvalidOfferRedemptionType;
+    if (redemptionType !== 'signup' && redemptionType !== 'retention') {
+      throw new InvalidOfferRedemptionType({
+        message: 'Offer `redemption_type` must be either "signup" or "retention".',
+      });
+    }
 
-    static Signup = new OfferRedemptionType('signup');
+    return new OfferRedemptionType(redemptionType);
+  }
 
-    static Retention = new OfferRedemptionType('retention');
+  static InvalidOfferRedemptionType = InvalidOfferRedemptionType;
+
+  static Signup = new OfferRedemptionType('signup');
+
+  static Retention = new OfferRedemptionType('retention');
 }
 
 module.exports = OfferRedemptionType;

@@ -1,3 +1,6 @@
+# NOTE: This _v2 Tinybird pipe is NOT currently in use. To make non-breaking, additive changes to the current Tinybird endpoints, modify the un-suffixed "v1" versions of the pipes instead. The _v2 pipes will be removed in a future release.
+# The _v2 pipes were added as part of a performance improvement experiment, which has been put on hold.
+
 TOKEN "axis" READ
 
 NODE sessions_filtered_by_hit_attributes

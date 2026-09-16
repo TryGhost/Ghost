@@ -1,24 +1,11 @@
-import { App } from "@tryghost/admin-x-settings/src/app";
-import { createPortal } from "react-dom";
-import { fetchKoenigLexical } from "@/utils/fetch-koenig-lexical";
+import { App } from './layout/app';
 
 export default function Settings() {
-    return createPortal(
-        <div
-            className="shade shade-admin"
-            style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 20,
-            }}
-        >
-            <App
-                designSystem={{
-                    darkMode: false,
-                    fetchKoenigLexical,
-                }}
-            />
-        </div>,
-        document.body,
-    );
+  // Full-screen takeover inside the shell tree (automations-editor pattern);
+  // the admin sidebar is already unmounted via the route's hideAdminSidebar.
+  return (
+    <div className="fixed inset-0 z-50">
+      <App />
+    </div>
+  );
 }

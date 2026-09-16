@@ -1,29 +1,29 @@
 const ghostBookshelf = require('./base');
 
-const EmailRecipientFailure = ghostBookshelf.Model.extend({
+const EmailRecipientFailure = ghostBookshelf.Model.extend(
+  {
     tableName: 'email_recipient_failures',
     hasTimestamps: false,
 
     defaults() {
-        return {
-        };
+      return {};
     },
 
     email() {
-        return this.belongsTo('Email', 'email_id');
+      return this.belongsTo('Email', 'email_id');
     },
 
     member() {
-        return this.belongsTo('Member', 'member_id');
+      return this.belongsTo('Member', 'member_id');
     },
 
     emailRecipient() {
-        return this.belongsTo('EmailRecipient', 'email_recipient_id');
-    }
-}, {
-
-});
+      return this.belongsTo('EmailRecipient', 'email_recipient_id');
+    },
+  },
+  {},
+);
 
 module.exports = {
-    EmailRecipientFailure: ghostBookshelf.model('EmailRecipientFailure', EmailRecipientFailure)
+  EmailRecipientFailure: ghostBookshelf.model('EmailRecipientFailure', EmailRecipientFailure),
 };
