@@ -28,6 +28,9 @@ import { AutomationEmailAnalyticsBatchProcessor } from './automation-email-analy
 import { GiftEmailAnalyticsBatchProcessor } from './gift-email-analytics-batch-processor';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import { GIFT_DELIVERY_EMAIL_TAG } from '../gifts/constants';
+import EmailAnalyticsFetchLatestJob from './jobs/email-analytics-fetch-latest-job';
+import EmailAnalyticsAutomationFetchLatestJob from './jobs/email-analytics-automation-fetch-latest-job';
+import EmailAnalyticsGiftFetchLatestJob from './jobs/email-analytics-gift-fetch-latest-job';
 
 let newsletters: EmailAnalyticsServiceWrapper | undefined;
 let automations: EmailAnalyticsServiceWrapper | undefined;
@@ -121,7 +124,7 @@ export const init = ({
 
   newsletters = new EmailAnalyticsServiceWrapper({
     logName: 'newsletters',
-    completionEvent: 'email_analytics_fetch_latest.completed',
+    jobType: EmailAnalyticsFetchLatestJob.type,
     config,
     queries,
     mailgunTags: newsletterMailgunTags,
@@ -152,7 +155,7 @@ export const init = ({
 
   automations = new EmailAnalyticsServiceWrapper({
     logName: 'automations',
-    completionEvent: 'email_analytics_automation_fetch_latest.completed',
+    jobType: EmailAnalyticsAutomationFetchLatestJob.type,
     config,
     queries,
     mailgunTags: automationMailgunTags,
@@ -179,7 +182,7 @@ export const init = ({
 
   gifts = new EmailAnalyticsServiceWrapper({
     logName: 'gifts',
-    completionEvent: 'email_analytics_gift_fetch_latest.completed',
+    jobType: EmailAnalyticsGiftFetchLatestJob.type,
     config,
     queries,
     mailgunTags: giftMailgunTags,

@@ -5,6 +5,15 @@ import { EmailAnalyticsServiceWrapper } from '../../../../../core/server/service
 import type { EmailAnalyticsFetchResult } from '../../../../../core/server/services/email-analytics/email-analytics-service';
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 import { Queries } from '../../../../../core/server/services/email-analytics/lib/queries';
+import EmailAnalyticsFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-fetch-latest-job';
+import EmailAnalyticsAutomationFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-automation-fetch-latest-job';
+import EmailAnalyticsGiftFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job';
+
+const jobTypes = {
+  newsletters: EmailAnalyticsFetchLatestJob.type,
+  automations: EmailAnalyticsAutomationFetchLatestJob.type,
+  gifts: EmailAnalyticsGiftFetchLatestJob.type,
+};
 
 describe('EmailAnalyticsServiceWrapper', function () {
   let metricStub: sinon.SinonStub;
@@ -17,9 +26,13 @@ describe('EmailAnalyticsServiceWrapper', function () {
     sinon.restore();
   });
 
-  function initWrapper(logName: string, configOverrides: Record<string, unknown> = {}) {
+  function initWrapper(
+    logName: keyof typeof jobTypes,
+    configOverrides: Record<string, unknown> = {},
+  ) {
     const wrapper = new EmailAnalyticsServiceWrapper({
       logName,
+      jobType: jobTypes[logName],
       config: {
         get: (key?: string) => (key ? configOverrides[key] : undefined),
       },
@@ -65,7 +78,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
     };
   }
 
-  function logLatestOpenedJob(logName: string) {
+  function logLatestOpenedJob(logName: keyof typeof jobTypes) {
     const wrapper = initWrapper(logName, {
       'emailAnalytics:metrics:openThroughput:enabled': true,
       'emailAnalytics:metrics:openThroughput:threshold': 0,
@@ -233,14 +246,19 @@ describe('EmailAnalyticsServiceWrapper', function () {
     await wrapper.startFetch();
 
     const completions = infoLog.args.filter(
-      ([message]) =>
-        typeof message === 'string' &&
-        message.startsWith('[Background Job] email-analytics-fetch-latest completed'),
+      ([, message]) => message === '[Background Job] email-analytics-fetch-latest completed',
     );
     assert.equal(completions.length, 1);
-    assert.match(
-      completions[0][0] as string,
-      /^\[Background Job\] email-analytics-fetch-latest completed in \d+ms with 1 events /,
+    sinon.assert.calledWithExactly(
+      infoLog,
+      {
+        system: {
+          event: 'email_analytics_fetch_latest.completed',
+          event_count: 1,
+          duration_ms: sinon.match.number,
+        },
+      },
+      '[Background Job] email-analytics-fetch-latest completed',
     );
   });
 
@@ -321,6 +339,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
   it('skips opened event polling when the cursor seed has no opened column', async function () {
     const wrapper = new EmailAnalyticsServiceWrapper({
       logName: 'gifts',
+      jobType: jobTypes.gifts,
       config: { get: sinon.stub() },
       queries: sinon.createStubInstance(Queries),
       mailgunTags: [],
