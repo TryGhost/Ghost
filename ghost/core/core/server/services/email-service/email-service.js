@@ -478,9 +478,8 @@ class EmailService {
   replaceDefinitions(htmlOrPlaintext, replacements, member) {
     // Do manual replacements with an example member
     for (const replacement of replacements) {
-      htmlOrPlaintext = htmlOrPlaintext.replace(replacement.token, () =>
-        replacement.getValue(member),
-      );
+      const value = replacement.getValue(member);
+      htmlOrPlaintext = htmlOrPlaintext.replace(replacement.token, () => value);
     }
     return htmlOrPlaintext;
   }
