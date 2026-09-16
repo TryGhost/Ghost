@@ -1,3 +1,4 @@
+import EmailAnalyticsAutomationFetchLatestJob from '../email-analytics/jobs/email-analytics-automation-fetch-latest-job';
 import EmailAnalyticsFetchLatestJob from '../email-analytics/jobs/email-analytics-fetch-latest-job';
 import type { EmailAnalyticsServiceWrapper } from '../email-analytics/email-analytics-service-wrapper';
 import { JobsService } from './jobs-service';
@@ -37,6 +38,7 @@ const EMAIL_QUEUE: JobHandlingOptions = { queue: 'email', concurrency: 2 };
 
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
+  automations: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
   newsletters: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
   memberJobs: {
     cleanTokens(): Promise<number>;
@@ -54,6 +56,7 @@ interface RegisterJobHandlersDependencies {
 
 export default function registerJobHandlers({
   jobsService,
+  automations,
   newsletters,
   memberJobs,
   giftService,
@@ -63,6 +66,11 @@ export default function registerJobHandlers({
   membersService,
   emailService,
 }: RegisterJobHandlersDependencies): void {
+  jobsService.handle(EmailAnalyticsAutomationFetchLatestJob, () => automations.startFetch(), {
+    queue: EmailAnalyticsAutomationFetchLatestJob.type,
+    concurrency: 2,
+  });
+
   jobsService.handle(EmailAnalyticsFetchLatestJob, () => newsletters.startFetch(), {
     queue: EmailAnalyticsFetchLatestJob.type,
     concurrency: 2,

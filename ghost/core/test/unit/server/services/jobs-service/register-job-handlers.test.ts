@@ -52,6 +52,7 @@ describe('register-job-handlers', function () {
     emailService = { handleSendEmailJob: sinon.stub().resolves() };
 
     registerJobHandlers({
+      automations: { startFetch: sinon.stub().resolves() },
       newsletters: { startFetch: sinon.stub().resolves() },
       jobsService,
       memberJobs,
