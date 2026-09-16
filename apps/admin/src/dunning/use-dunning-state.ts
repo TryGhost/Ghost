@@ -108,22 +108,14 @@ export function markPayNowReturnRoute(route: string): void {
  * arrives seconds later. The return navigation triggers the render that
  * picks the value up — no notification needed.
  */
-const PAYMENT_SETTLED_KEY = 'ghost-dunning-payment-settled-at';
+const PAYMENT_SETTLED_KEY = 'ghost-dunning-payment-settled-for';
 
-function readPaymentSettledAt(): string | null {
+function readPaymentSettledFor(): string | null {
   try {
     return window.sessionStorage.getItem(PAYMENT_SETTLED_KEY);
   } catch {
     return null;
   }
-}
-
-function parseDate(value: string | undefined): Date | null {
-  if (!value) {
-    return null;
-  }
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 /**
@@ -156,7 +148,7 @@ export function useDunningState(): DunningState | null {
   }, []);
 
   const lockDismissedFor = useSyncExternalStore(subscribeLockDismissed, readLockDismissedFor);
-  const paymentSettledAt = useSyncExternalStore(subscribeLockDismissed, readPaymentSettledAt);
+  const paymentSettledFor = useSyncExternalStore(subscribeLockDismissed, readPaymentSettledFor);
 
   if (!dunningWarningsEnabled) {
     return null;
@@ -174,12 +166,10 @@ export function useDunningState(): DunningState | null {
     return null;
   }
 
-  // A payment completed this session, after this failure: the billing app is
-  // still settling webhooks in the background, but the outcome is known — no
-  // warning should greet the user on their way back. A later failure carries
-  // a newer paymentFailedAt and re-arms everything.
-  const settledAt = parseDate(paymentSettledAt ?? undefined);
-  if (settledAt && settledAt.getTime() > paymentFailedAt.getTime()) {
+  // Only suppress the failure that was settled this session. Comparing its
+  // server-provided identity avoids relying on the browser clock and lets a
+  // different paymentFailedAt re-arm the warnings.
+  if (paymentSettledFor === paymentFailedAt.toISOString()) {
     return null;
   }
 

@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/ember';
 import Service, {inject as service} from '@ember/service';
 import {inject} from 'ghost-admin/decorators/inject';
+import {parseDunningConfig} from '@tryghost/admin-x-framework/api/dunning';
 import {tracked} from '@glimmer/tracking';
 
 const BILLING_APP_LOAD_TIMEOUT_MS = 10_000;
@@ -27,7 +28,7 @@ const PAY_RETURN_ROUTE_STORAGE_KEY = 'ghost-dunning-pay-return-route';
 // request only follows one); read by the React admin's dunning UI so the
 // warnings stand down immediately instead of lingering until the
 // webhook-settled subscription state arrives seconds later.
-const DUNNING_PAYMENT_SETTLED_STORAGE_KEY = 'ghost-dunning-payment-settled-at';
+const DUNNING_PAYMENT_SETTLED_STORAGE_KEY = 'ghost-dunning-payment-settled-for';
 
 // Approved destinations the Billing app may request Ghost Admin to navigate to,
 // mapped to the Admin route that owns them. Ghost Admin owns this mapping — the
@@ -175,10 +176,21 @@ export default class BillingService extends Service {
     }
 
     _markDunningPaymentSettled() {
+        if (!this.feature.dunningWarnings) {
+            return;
+        }
+
+        const dunning = parseDunningConfig(this.config.hostSettings?.billing?.dunning);
+        if (!dunning) {
+            return;
+        }
+
+        // Identify the failure from the boot config, not the browser's clock.
+        // A later failure must not inherit this payment's suppression.
         try {
             window.sessionStorage.setItem(
                 DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
-                new Date().toISOString()
+                dunning.paymentFailedAt.toISOString()
             );
         } catch (e) {
             // Without storage the warnings stand down when the refreshed

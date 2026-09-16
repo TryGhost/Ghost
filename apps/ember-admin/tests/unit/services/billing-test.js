@@ -35,7 +35,7 @@ describe('Unit: Service: billing', function () {
         billingService = null;
         sinon.restore();
         window.sessionStorage.removeItem('ghost-dunning-pay-return-route');
-        window.sessionStorage.removeItem('ghost-dunning-payment-settled-at');
+        window.sessionStorage.removeItem('ghost-dunning-payment-settled-for');
     });
 
     it('retries loading the billing app before reporting', async function () {
@@ -449,17 +449,45 @@ describe('Unit: Service: billing', function () {
         expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
     });
 
-    it('records the settled payment so the dunning warnings stand down', function () {
-        const service = this.owner.lookup('service:billing');
-        billingService = service;
-        sinon.stub(service.router, 'transitionTo');
+    for (const now of ['2026-07-01T00:00:00Z', '2026-11-01T00:00:00Z']) {
+        it(`records the settled failure with the client clock at ${now}`, function () {
+            const service = this.owner.lookup('service:billing');
+            billingService = service;
+            sinon.stub(service.router, 'transitionTo');
+            sinon.stub(service.feature, 'dunningWarnings').get(() => true);
+            sinon.useFakeTimers({now: new Date(now), toFake: ['Date']});
+            const config = this.owner.lookup('config:main');
+            config.hostSettings.billing.dunning = {
+                active: true,
+                paymentFailedAt: '2026-09-01T04:00:00+04:00',
+                suspendsAt: '2026-09-29T00:00:00Z'
+            };
 
-        service.navigateToAdminDestination('previousPage');
+            service.navigateToAdminDestination('previousPage');
 
-        const settledAt = window.sessionStorage.getItem('ghost-dunning-payment-settled-at');
-        expect(settledAt).to.be.ok;
-        expect(new Date(settledAt).getTime()).to.be.closeTo(Date.now(), 5000);
-    });
+            expect(window.sessionStorage.getItem('ghost-dunning-payment-settled-for'))
+                .to.equal('2026-09-01T00:00:00.000Z');
+        });
+    }
+
+    for (const [label, enabled, dunning] of [
+        ['flag disabled', false, {active: true, paymentFailedAt: '2026-09-01', suspendsAt: '2026-09-29'}],
+        ['missing config', true, undefined],
+        ['malformed config', true, {active: true, paymentFailedAt: 'invalid', suspendsAt: '2026-09-29'}]
+    ]) {
+        it(`does not record a settled failure with ${label}`, function () {
+            const service = this.owner.lookup('service:billing');
+            billingService = service;
+            const transitionTo = sinon.stub(service.router, 'transitionTo');
+            sinon.stub(service.feature, 'dunningWarnings').get(() => enabled);
+            this.owner.lookup('config:main').hostSettings.billing.dunning = dunning;
+
+            service.navigateToAdminDestination('previousPage');
+
+            expect(window.sessionStorage.getItem('ghost-dunning-payment-settled-for')).to.be.null;
+            expect(transitionTo.calledOnceWithExactly('pro')).to.be.true;
+        });
+    }
 
     it('falls back to the billing overview without a recorded return route', function () {
         const service = this.owner.lookup('service:billing');

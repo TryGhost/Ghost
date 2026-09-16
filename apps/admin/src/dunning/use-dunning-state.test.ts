@@ -154,21 +154,42 @@ describe('useDunningState', () => {
     expect(result.current).not.toBeNull();
   });
 
-  test('stands down entirely once a payment settled after the failure', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(8)));
-    // Written by the Ember billing service on the post-payment return
-    window.sessionStorage.setItem('ghost-dunning-payment-settled-at', NOW.toISOString());
+  test.each([-60, 60])(
+    'clears the settled failure with the client clock skewed by %i days',
+    (skewDays) => {
+      const dunning = dunningWindow(8);
+      vi.setSystemTime(new Date(NOW.getTime() + skewDays * DAY_MS));
+      mockUseBrowseConfig.mockReturnValue(withDunning(dunning));
+      mockUseSubscriptionStatus.mockReturnValue({ subscription: { status: 'past_due' } });
+      // Written by the Ember billing service on the post-payment return.
+      window.sessionStorage.setItem('ghost-dunning-payment-settled-for', dunning.paymentFailedAt);
+
+      const { result, rerender } = renderHook(() => useDunningState());
+      expect(result.current).toBeNull();
+
+      // A subsequent failure re-arms even when the browser clock is far ahead.
+      mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(2)));
+      rerender();
+      expect(result.current).not.toBeNull();
+    },
+  );
+
+  test('does not suppress a different failure even if its timestamp is older', () => {
+    window.sessionStorage.setItem(
+      'ghost-dunning-payment-settled-for',
+      dunningWindow(2).paymentFailedAt,
+    );
+    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
 
     const { result } = renderHook(() => useDunningState());
 
-    expect(result.current).toBeNull();
+    expect(result.current).toMatchObject({ phase: 'locked' });
   });
 
-  test('ignores a payment that settled before the current failure', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(2)));
+  test('ignores the old browser-clock settlement marker', () => {
     window.sessionStorage.setItem(
       'ghost-dunning-payment-settled-at',
-      new Date(NOW.getTime() - 5 * DAY_MS).toISOString(),
+      new Date(NOW.getTime() + 60 * DAY_MS).toISOString(),
     );
 
     const { result } = renderHook(() => useDunningState());
