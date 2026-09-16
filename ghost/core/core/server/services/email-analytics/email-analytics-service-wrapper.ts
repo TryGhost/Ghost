@@ -1,4 +1,3 @@
-import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { ConfigInstance } from '../../../shared/config/loader';
 import type { GhostMetrics } from '@tryghost/metrics';
@@ -14,9 +13,9 @@ import { fetchMailgunEvents } from './fetch-mailgun-events';
 
 export class EmailAnalyticsServiceWrapper {
   #logName: string;
-  #config?: Pick<ConfigInstance, 'get'>;
-  #metrics?: Pick<GhostMetrics, 'metric'>;
-  #service?: EmailAnalyticsService;
+  readonly #config: Pick<ConfigInstance, 'get'>;
+  readonly #metrics: Pick<GhostMetrics, 'metric'>;
+  readonly #service: EmailAnalyticsService;
   #fetching = false;
   #restoredSchedule = false;
   #fetchOpenedEvents = true;
@@ -82,23 +81,7 @@ export class EmailAnalyticsServiceWrapper {
   }
 
   get service(): EmailAnalyticsService {
-    const result = this.#service;
-    if (!result) {
-      throw new errors.InternalServerError({
-        message: 'EmailAnalyticsServiceWrapper is not initialized with service',
-      });
-    }
-    return result;
-  }
-
-  #getConfig(): Pick<ConfigInstance, 'get'> {
-    const result = this.#config;
-    if (!result) {
-      throw new errors.InternalServerError({
-        message: 'EmailAnalyticsServiceWrapper is not initialized with config',
-      });
-    }
-    return result;
+    return this.#service;
   }
 
   _logJobCompletion(
@@ -107,7 +90,7 @@ export class EmailAnalyticsServiceWrapper {
     totalDurationMs: number,
     lagSeconds: number | null = null,
   ): void {
-    const config = this.#getConfig();
+    const config = this.#config;
 
     const {
       eventCount,
@@ -166,13 +149,7 @@ export class EmailAnalyticsServiceWrapper {
             ? 'email-analytics-open-throughput'
             : `email-${this.#logName}-analytics-open-throughput`;
 
-        const metrics = this.#metrics;
-        if (!metrics) {
-          throw new errors.InternalServerError({
-            message: 'EmailAnalyticsServiceWrapper is not initialized with metrics',
-          });
-        }
-        metrics.metric(metricName, {
+        this.#metrics.metric(metricName, {
           value: throughput,
           events: eventCount,
           duration: totalDurationMs,
