@@ -197,7 +197,7 @@ export async function readStatusStats(automationId: string, options: unknown = {
   };
 }
 
-export async function browseRuns(automationId: string, status?: unknown) {
+export async function browseRuns(automationId: string, status?: unknown, order?: unknown) {
   const parsedStatus = z
     .enum(['in_progress', 'completed', 'exited_early'])
     .optional()
@@ -207,8 +207,17 @@ export async function browseRuns(automationId: string, status?: unknown) {
       message: 'Automation run status must be one of: in_progress, completed, exited_early.',
     });
   }
+  const parsedOrder = z.enum(['created_at desc', 'created_at asc']).optional().safeParse(order);
+  if (!parsedOrder.success) {
+    throw new errors.ValidationError({
+      message: 'Automation run order must be one of: created_at desc, created_at asc.',
+    });
+  }
   await requireAutomation(automationId);
-  const runs = await fetchAutomationRuns(getTinybirdClient(), automationId, parsedStatus.data);
+  const runs = await fetchAutomationRuns(getTinybirdClient(), automationId, {
+    status: parsedStatus.data,
+    direction: parsedOrder.data?.endsWith(' asc') ? 'asc' : 'desc',
+  });
   if (runs === null) {
     throw new errors.InternalServerError({ message: 'Could not load Tinybird automation runs.' });
   }
@@ -217,7 +226,9 @@ export async function browseRuns(automationId: string, status?: unknown) {
     automationId,
     runs.map((run) => run.id),
   );
-  return runs.map((run) => ({ ...run, member: members.get(run.id) ?? null }));
+  return {
+    data: runs.map((run) => ({ ...run, member: members.get(run.id) ?? null })),
+  };
 }
 
 export async function readRunHistory(automationId: string, runId: string) {

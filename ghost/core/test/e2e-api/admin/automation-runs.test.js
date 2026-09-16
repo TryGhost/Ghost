@@ -80,6 +80,20 @@ describe('Automation runs API', function () {
     assertNoRunLookup();
   });
 
+  it.each([
+    'created_at',
+    'created_at DESC',
+    'created_at asc, id asc',
+    'status unknown',
+    'status asc',
+    'status desc',
+    'member.email desc',
+    '',
+  ])('rejects an unsupported order (%s)', async function (order) {
+    await readRuns(422, `?order=${encodeURIComponent(order)}`);
+    assertNoRunLookup();
+  });
+
   it('requires permission to read automations', async function () {
     await agent.loginAsAuthor();
     try {
@@ -109,7 +123,7 @@ describe('Automation runs API', function () {
       TinybirdServiceWrapper.instance = previousTinybirdInstance;
     });
 
-    function mockRuns(status, response, runStatus) {
+    function mockRuns(status, response, { runStatus, direction = 'desc' } = {}) {
       return nock('https://api.tinybird.co')
         .get('/v0/pipes/api_automation_runs.json')
         .query({
@@ -117,6 +131,7 @@ describe('Automation runs API', function () {
           site_uuid: siteUuid,
           automation_id: automationId,
           ...(runStatus ? { run_status: runStatus } : {}),
+          sort_direction: direction,
         })
         .reply(status, response);
     }
@@ -174,12 +189,9 @@ describe('Automation runs API', function () {
       const deletedRun = runId();
       await addRun(deletedRun, member);
       await models.Base.knex('members').where('id', member.id).del();
-      const rows = [deletedRun, runId()].map((id) => ({
-        id,
-        created_at: timestamp,
-        status: 'completed',
-        failed: false,
-      }));
+      const rows = [deletedRun, runId()]
+        .sort((a, b) => b.localeCompare(a))
+        .map((id) => ({ id, created_at: timestamp, status: 'completed', failed: false }));
       mockRuns(200, { data: rows });
       assert.deepEqual(
         await readRuns(),
@@ -217,7 +229,7 @@ describe('Automation runs API', function () {
         await addRun(rows[0].id, member);
         await addRun(rows[1].id, member);
         await addRun(rows[2].id, null);
-        const request = mockRuns(200, { data: rows }, status);
+        const request = mockRuns(200, { data: rows }, { runStatus: status });
         assert.deepEqual(
           await readRuns(200, `?status=${status}`),
           rows.map((row, i) => ({ ...row, member: i < 2 ? member : null })),
@@ -226,12 +238,63 @@ describe('Automation runs API', function () {
       },
     );
 
+    it.each([
+      ['created_at asc', 'asc'],
+      ['created_at desc', 'desc'],
+    ])(
+      'passes the %s order to Tinybird and keeps the returned order',
+      async function (order, direction) {
+        const member = await addMember('Sorted member');
+        const ids = [runId(), runId(), runId()].sort();
+        const rows = [
+          { id: ids[0], created_at: '2026-09-13T12:00:00.000Z' },
+          { id: ids[1], created_at: '2026-09-14T12:00:00.000Z' },
+          { id: ids[2], created_at: '2026-09-14T12:00:00.000Z' },
+        ].map((row) => ({ ...row, status: 'completed', failed: false }));
+        if (direction === 'desc') {
+          rows.reverse();
+        }
+        await addRun(rows[0].id, member);
+        const request = mockRuns(200, { data: rows }, { direction });
+        assert.deepEqual(
+          await readRuns(200, `?order=${encodeURIComponent(order)}`),
+          rows.map((row, i) => ({ ...row, member: i === 0 ? member : null })),
+        );
+        assert.ok(request.isDone());
+      },
+    );
+
+    it('combines the status filter with the requested order', async function () {
+      const request = mockRuns(200, { data: [] }, { runStatus: 'completed', direction: 'asc' });
+      assert.deepEqual(await readRuns(200, '?status=completed&order=created_at%20asc'), []);
+      assert.ok(request.isDone());
+    });
+
+    it.each([
+      ['ascending rows under the default order', undefined, 'desc', ['a', 'b'], ['13', '14']],
+      ['ties out of ID order under desc', 'created_at desc', 'desc', ['a', 'b'], ['14', '14']],
+      ['ties out of ID order under asc', 'created_at asc', 'asc', ['b', 'a'], ['14', '14']],
+      ['descending rows under asc', 'created_at asc', 'asc', ['a', 'b'], ['14', '13']],
+    ])('rejects %s', async function (_, order, direction, ids, days) {
+      sinon.stub(require('@tryghost/logging'), 'error');
+      const rows = ids.map((id, i) => ({
+        id,
+        created_at: `2026-09-${days[i]}T12:00:00.000Z`,
+        status: 'completed',
+        failed: false,
+      }));
+      const request = mockRuns(200, { data: rows }, { direction });
+      await readRuns(500, order ? `?order=${encodeURIComponent(order)}` : '');
+      assert.ok(request.isDone());
+      assertNoRunLookup();
+    });
+
     it('rejects rows that do not match the requested status', async function () {
       sinon.stub(require('@tryghost/logging'), 'error');
       const request = mockRuns(
         200,
         { data: [{ id: runId(), created_at: timestamp, status: 'in_progress', failed: false }] },
-        'completed',
+        { runStatus: 'completed' },
       );
       await readRuns(500, '?status=completed');
       assert.ok(request.isDone());
@@ -239,10 +302,10 @@ describe('Automation runs API', function () {
     });
 
     it('distinguishes no matching runs from a failed filtered request', async function () {
-      const empty = mockRuns(200, { data: [] }, 'completed');
+      const empty = mockRuns(200, { data: [] }, { runStatus: 'completed' });
       assert.deepEqual(await readRuns(200, '?status=completed'), []);
       assert.ok(empty.isDone());
-      const failed = mockRuns(503, 'Unavailable', 'completed');
+      const failed = mockRuns(503, 'Unavailable', { runStatus: 'completed' });
       await readRuns(500, '?status=completed');
       assert.ok(failed.isDone());
       assertNoRunLookup();

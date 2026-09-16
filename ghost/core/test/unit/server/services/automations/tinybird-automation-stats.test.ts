@@ -3,6 +3,8 @@ import sinon from 'sinon';
 import { afterEach, describe, it } from 'vitest';
 import logging from '@tryghost/logging';
 import {
+  compareRuns,
+  fetchAutomationRuns,
   fetchAutomationStats,
   fetchAutomationEntryStats,
 } from '../../../../../core/server/services/automations/tinybird-automation-stats';
@@ -162,4 +164,97 @@ describe('fetchAutomationEntryStats', function () {
     const client = { fetch: sinon.stub().rejects(new Error('unavailable')) };
     assert.equal(await fetchAutomationEntryStats(client, 'selected'), null);
   });
+});
+
+describe('compareRuns', function () {
+  const older = { id: 'b', created_at: '2026-09-13T12:00:00.000Z' };
+  const newer = { id: 'a', created_at: '2026-09-14T12:00:00.000Z' };
+  const newerTie = { id: 'b', created_at: '2026-09-14T12:00:00.000Z' };
+
+  it('orders by entry time before run ID', function () {
+    assert.equal(compareRuns(older, newer), -1);
+    assert.equal(compareRuns(newer, older), 1);
+  });
+
+  it('breaks equal entry times by run ID and reports identity as equal', function () {
+    assert.equal(compareRuns(newer, newerTie), -1);
+    assert.equal(compareRuns(newerTie, newer), 1);
+    assert.equal(compareRuns(newer, { ...newer }), 0);
+  });
+});
+
+describe('fetchAutomationRuns', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  const row = (id: string, created_at: string, status = 'completed') => ({
+    id,
+    created_at,
+    status,
+    failed: false,
+  });
+  const newest = row('run-3', '2026-09-14T12:00:00.000Z');
+  const tieHigh = row('run-2', '2026-09-13T12:00:00.000Z');
+  const tieLow = row('run-1', '2026-09-13T12:00:00.000Z');
+
+  it('passes the status filter and direction to the pipe', async function () {
+    const client = clientReturning([]);
+    await fetchAutomationRuns(client, 'automation-1', { status: 'completed', direction: 'asc' });
+    assert.ok(
+      client.fetch.calledOnceWithExactly('api_automation_runs', {
+        version: '',
+        automationId: 'automation-1',
+        runStatus: 'completed',
+        sortDirection: 'asc',
+      }),
+    );
+  });
+
+  it('accepts rows ordered by entry time then ID in either direction', async function () {
+    assert.deepEqual(
+      await fetchAutomationRuns(clientReturning([newest, tieHigh, tieLow]), 'a', {
+        direction: 'desc',
+      }),
+      [newest, tieHigh, tieLow],
+    );
+    assert.deepEqual(
+      await fetchAutomationRuns(clientReturning([tieLow, tieHigh, newest]), 'a', {
+        direction: 'asc',
+      }),
+      [tieLow, tieHigh, newest],
+    );
+  });
+
+  it('normalises timestamps before comparing them', async function () {
+    const rows = await fetchAutomationRuns(
+      clientReturning([
+        row('run-2', '2026-09-14T12:00:00Z'),
+        row('run-1', '2026-09-14T12:00:00.000Z'),
+      ]),
+      'a',
+      { direction: 'desc' },
+    );
+    assert.deepEqual(
+      rows?.map((run) => run.created_at),
+      ['2026-09-14T12:00:00.000Z', '2026-09-14T12:00:00.000Z'],
+    );
+  });
+
+  for (const [label, direction, rows] of [
+    ['rows in the opposite direction', 'desc', [tieLow, newest]],
+    ['ties out of ID order', 'desc', [tieLow, tieHigh]],
+    ['ties out of ID order ascending', 'asc', [tieHigh, tieLow]],
+    ['a repeated run', 'desc', [newest, newest]],
+    ['a row outside the status filter', 'desc', [row('run-9', newest.created_at, 'in_progress')]],
+  ] as const) {
+    it(`rejects ${label}`, async function () {
+      sinon.stub(logging, 'error');
+      const result = await fetchAutomationRuns(clientReturning(rows), 'a', {
+        direction,
+        status: 'completed',
+      });
+      assert.equal(result, null);
+    });
+  }
 });
