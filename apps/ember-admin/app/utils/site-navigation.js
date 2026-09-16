@@ -73,12 +73,13 @@ function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
 }
 
 // Path form stored in Settings -> Navigation (no site subdirectory).
-export function pagePathForSlug(slug) {
+export function pagePathForSlug(slug, pageRoutes = {}) {
     if (!slug) {
         return null;
     }
 
-    return `/${slug}/`;
+    // Older servers don't expose pageRoutes. Keep their existing slug paths.
+    return Object.prototype.hasOwnProperty.call(pageRoutes, slug) ? pageRoutes[slug] : `/${slug}/`;
 }
 
 function itemsFor(settings, key) {

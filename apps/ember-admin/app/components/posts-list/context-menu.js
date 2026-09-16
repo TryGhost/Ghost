@@ -559,7 +559,7 @@ export default class PostsContextMenu extends Component {
 
     get selectedPagePlacements() {
         return this.selectionList.availableModels
-            .map(model => getPagePlacement(this.settings, pagePathForSlug(model.slug, this.config.blogUrl), this.config.blogUrl));
+            .map(model => getPagePlacement(this.settings, pagePathForSlug(model.slug, this.config.pageRoutes), this.config.blogUrl));
     }
 
     get isSingleSelection() {
@@ -608,7 +608,7 @@ export default class PostsContextMenu extends Component {
     @task
     *updateNavigationPlacementTask(placement) {
         const pages = this.selectionList.availableModels
-            .map(model => ({label: model.title, path: pagePathForSlug(model.slug, this.config.blogUrl)}));
+            .map(model => ({label: model.title, path: pagePathForSlug(model.slug, this.config.pageRoutes)}));
         const count = pages.length;
         const isMove = count === 1 && this.singleNavigationPlacement && this.singleNavigationPlacement !== placement;
 

@@ -37,17 +37,20 @@ function mutableSettings({navigation = [], secondaryNavigation = []} = {}) {
 
 describe('Unit: Util: site-navigation', function () {
     describe('pagePathForSlug', function () {
-        it('returns /:slug/ regardless of install path', function () {
-            expect(pagePathForSlug('about', 'https://example.com/')).to.equal('/about/');
-            expect(pagePathForSlug('about', 'https://example.com')).to.equal('/about/');
-            expect(pagePathForSlug('about', 'https://example.com/blog/')).to.equal('/about/');
-            expect(pagePathForSlug('about', 'https://example.com/blog')).to.equal('/about/');
+        it('uses the custom route for pages mapped to the homepage or another path', function () {
+            const routes = {home: '/', about: '/company/'};
+            expect(pagePathForSlug('home', routes)).to.equal('/');
+            expect(pagePathForSlug('about', routes)).to.equal('/company/');
+            expect(pagePathForSlug('contact', routes)).to.equal('/contact/');
+        });
+
+        it('returns a site-relative slug path when no custom routes are available', function () {
             expect(pagePathForSlug('about')).to.equal('/about/');
-            expect(pagePathForSlug('about', 'not a url')).to.equal('/about/');
+            expect(pagePathForSlug('about', {})).to.equal('/about/');
         });
 
         it('returns null for an empty slug', function () {
-            expect(pagePathForSlug('', 'https://example.com/')).to.be.null;
+            expect(pagePathForSlug('')).to.be.null;
         });
     });
 
@@ -103,6 +106,20 @@ describe('Unit: Util: site-navigation', function () {
 
     describe('setPagesNavigationPlacement', function () {
         const blogUrl = 'https://example.com/';
+
+        it('moves an existing homepage link without adding a slug-based duplicate', async function () {
+            const settings = mutableSettings({navigation: [{label: 'Home', url: '/'}]});
+            const path = pagePathForSlug('home', {home: '/'});
+
+            expect(getPagePlacement(settings, path, blogUrl)).to.equal('primary');
+            await setPageNavigationPlacement(settings, {label: 'Home', path, placement: 'secondary', blogUrl});
+
+            expect(settings.navigation).to.have.length(0);
+            expect(settings.secondaryNavigation.map(item => item.url)).to.deep.equal(['/']);
+
+            await setPageNavigationPlacement(settings, {label: 'Home', path, placement: null, blogUrl});
+            expect(settings.secondaryNavigation).to.have.length(0);
+        });
 
         it('preserves unrelated absolute links when removing a subdirectory page', async function () {
             const externalItem = {label: 'Corporate About', url: 'https://example.com/about/'};

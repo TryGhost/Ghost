@@ -875,6 +875,21 @@ describe('Acceptance: Publish flow', function () {
     });
 
     describe('pages', function () {
+        it('publishes a custom-routed homepage into navigation using its route', async function () {
+            this.server.db.configs.update(1, {pageRoutes: {home: '/'}});
+            this.server.db.settings.update({key: 'navigation'}, {value: '[]'});
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Home', slug: 'home'});
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="primary"] + label');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation).to.deep.equal([{label: 'Home', url: '/'}]);
+        });
+
         async function openPublishFlow(context, pageAttrs = {}) {
             const attrs = {status: 'draft', ...pageAttrs};
 

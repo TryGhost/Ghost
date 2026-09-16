@@ -1267,6 +1267,24 @@ describe('Acceptance: Posts / Pages', function () {
             });
 
             describe('site navigation', function () {
+                it('recognizes and moves a homepage link for a custom-routed page', async function () {
+                    this.server.db.configs.update(1, {pageRoutes: {home: '/'}});
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'Home', slug: 'home'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    expect(row.querySelector('[data-test-nav-indicator="primary"]')).to.exist;
+                    await triggerEvent(row, 'contextmenu');
+                    await click('[data-test-button="add-to-secondary-navigation"]');
+
+                    const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+                    const secondary = JSON.parse(this.server.db.settings.findBy({key: 'secondary_navigation'}).value);
+                    expect(navigation.map(item => item.url)).to.not.include('/');
+                    expect(secondary).to.deep.include({label: 'Home', url: '/'});
+                    expect(secondary.map(item => item.url)).to.not.include('/home/');
+                });
+
                 it('shows an in-menu indicator for linked pages only', async function () {
                     const linkedPage = this.server.create('page', {authors: [admin], status: 'published', title: 'About', slug: 'about'});
                     const unlinkedPage = this.server.create('page', {authors: [admin], status: 'published', title: 'Partners', slug: 'partners'});

@@ -111,7 +111,7 @@ export default class PublishOptions {
     @tracked navigationSaveFailed = false;
 
     get pageNavigationPath() {
-        return pagePathForSlug(this.post.slug, this.config.blogUrl);
+        return pagePathForSlug(this.post.slug, this.config.pageRoutes);
     }
 
     get currentNavigationPlacement() {
