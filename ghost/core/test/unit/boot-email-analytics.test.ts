@@ -47,6 +47,7 @@ it('initializes dependencies and starts jobs before automation polling can sched
       sendingService: {},
     },
     './server/services/email-analytics': {
+      getNewsletters: () => ({}),
       init: async () => {
         order.push('analytics');
       },
@@ -94,4 +95,53 @@ it('initializes dependencies and starts jobs before automation polling can sched
   assert.ok(order.indexOf('start') < order.indexOf('automations'));
   assert.ok(order.indexOf('schedule') < order.indexOf('reschedule'));
   sinon.assert.calledOnceWithExactly(schedule, true);
+});
+
+it('keeps starting background services when email analytics scheduling fails', async function () {
+  const newsletterError = new Error('newsletter backend unavailable');
+  const giftError = new Error('gift lookup failed');
+  const emailAnalyticsJobs = {
+    scheduleRecurringNewslettersJob: sinon.stub().rejects(newsletterError),
+    scheduleRecurringAutomationsJob: sinon.stub().resolves(),
+    scheduleRecurringGiftDeliveriesJob: sinon.stub().rejects(giftError),
+  };
+  const logging = { error: sinon.stub() };
+  const updateCheck = { scheduleJobs: sinon.stub().resolves() };
+  const milestones = { initAndRun: sinon.stub() };
+  const modules: Record<string, unknown> = {
+    '@tryghost/debug': () => () => {},
+    '@tryghost/logging': logging,
+    './server/services/email-analytics/jobs': emailAnalyticsJobs,
+    './server/services/themes': { loadInactiveThemes() {} },
+    './server/services/email-service': { service: { resumeInterruptedSends: async () => {} } },
+    './server/services/gifts': { recoverPendingDeliveries() {} },
+    './server/services/gifts/jobs': {
+      scheduleGiftCleanupJob: async () => {},
+      scheduleGiftReminderJob: async () => {},
+    },
+    './server/services/members/jobs': {
+      scheduleTokenCleanupJob: async () => {},
+      scheduleExpiredCompCleanupJob: async () => {},
+    },
+    './server/services/jobs-service': { getInstance: () => ({}) },
+    './server/services/activitypub': { init: async () => {} },
+    './server/services/tinybird-sync': { start() {} },
+    './server/services/update-check': updateCheck,
+    './server/services/remote-flags': { init() {} },
+    './server/services/milestones': milestones,
+  };
+  const context = {
+    require: (name: string) => modules[name],
+    module: { exports: {} },
+    process: { env: { NODE_ENV: 'production' } },
+  };
+  const source = readFileSync(resolve(__dirname, '../../core/boot.js'), 'utf8');
+  const initBackgroundServices = runInNewContext(`${source}\ninitBackgroundServices;`, context);
+  await initBackgroundServices({ config: { get: () => true } });
+
+  sinon.assert.calledTwice(logging.error);
+  sinon.assert.calledWithExactly(logging.error, newsletterError);
+  sinon.assert.calledWithExactly(logging.error, giftError);
+  sinon.assert.calledOnce(updateCheck.scheduleJobs);
+  sinon.assert.calledOnce(milestones.initAndRun);
 });

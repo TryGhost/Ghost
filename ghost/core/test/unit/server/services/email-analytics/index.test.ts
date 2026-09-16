@@ -107,10 +107,13 @@ describe('email analytics service', function () {
     sinon.assert.calledOnce(newslettersInit);
     sinon.assert.calledOnce(automationsInit);
     sinon.assert.calledOnce(giftsInit);
-    sinon.assert.calledThrice(domainEvents.subscribe);
+    sinon.assert.calledTwice(domainEvents.subscribe);
+    assert.ok(
+      domainEvents.subscribe.args.every(([event]) => event.name !== 'StartEmailAnalyticsJobEvent'),
+    );
     for (const [index, call] of domainEvents.subscribe.getCalls().entries()) {
       await call.args[1]();
-      sinon.assert.calledOnce(wrappers[index].startFetch as sinon.SinonStub);
+      sinon.assert.calledOnce(wrappers[index + 1].startFetch as sinon.SinonStub);
     }
   });
 

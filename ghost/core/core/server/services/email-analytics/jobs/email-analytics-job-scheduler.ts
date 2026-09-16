@@ -1,5 +1,7 @@
+import EmailAnalyticsFetchLatestJob from './email-analytics-fetch-latest-job';
 import * as path from 'node:path';
 import moment from 'moment';
+import type { JobsService } from '../../jobs-service/jobs-service';
 
 const logging = require('@tryghost/logging');
 
@@ -41,26 +43,30 @@ function thirtyDaysAgo(): Date {
   return moment.utc().subtract(30, 'days').toDate();
 }
 
-type RecurringJob = { name: string; workerPath: string };
+type RecurringJob = { name: string; register: (at: string) => Promise<void> | void };
 
 export class EmailAnalyticsJobScheduler {
   readonly #scheduledJobNames = new Set<string>();
   readonly #models: Models;
   readonly #config: Config;
   readonly #jobManager: JobManager;
+  readonly #jobsService: Pick<JobsService, 'scheduleRecurring'>;
 
   constructor({
     models,
     config,
     jobManager,
+    jobsService,
   }: {
     models: Models;
     config: Config;
     jobManager: JobManager;
+    jobsService: Pick<JobsService, 'scheduleRecurring'>;
   }) {
     this.#models = models;
     this.#config = config;
     this.#jobManager = jobManager;
+    this.#jobsService = jobsService;
   }
 
   #isConfigured(): boolean {
@@ -76,8 +82,9 @@ export class EmailAnalyticsJobScheduler {
     // Mega service will re-run this scheduling task when an email is sent
     await this.#scheduleOnce(
       {
-        name: 'email-analytics-fetch-latest',
-        workerPath: path.resolve(__dirname, 'fetch-latest/index.js'),
+        name: EmailAnalyticsFetchLatestJob.type,
+        register: (at) =>
+          this.#jobsService.scheduleRecurring(new EmailAnalyticsFetchLatestJob(), { cron: at }),
       },
       skipNewsletterEmailCheck,
       async () =>
@@ -91,10 +98,10 @@ export class EmailAnalyticsJobScheduler {
 
   async scheduleRecurringAutomationsJob(skipAutomationEmailCheck: boolean = false): Promise<void> {
     await this.#scheduleOnce(
-      {
-        name: 'email-analytics-automation-fetch-latest',
-        workerPath: path.resolve(__dirname, 'automation-fetch-latest/index.js'),
-      },
+      this.#legacyJob(
+        'email-analytics-automation-fetch-latest',
+        'automation-fetch-latest/index.js',
+      ),
       skipAutomationEmailCheck,
       async () =>
         Boolean(
@@ -108,10 +115,7 @@ export class EmailAnalyticsJobScheduler {
 
   async scheduleRecurringGiftDeliveriesJob(skipGiftDeliveryCheck: boolean = false): Promise<void> {
     await this.#scheduleOnce(
-      {
-        name: 'email-analytics-gift-fetch-latest',
-        workerPath: path.resolve(__dirname, 'gift-fetch-latest/index.js'),
-      },
+      this.#legacyJob('email-analytics-gift-fetch-latest', 'gift-fetch-latest/index.js'),
       skipGiftDeliveryCheck,
       async () =>
         Boolean(
@@ -137,9 +141,25 @@ export class EmailAnalyticsJobScheduler {
       return;
     }
 
+    // Marked before registering so a caller arriving while an async
+    // registration is in flight returns above instead of registering a second
+    // schedule with a different cron. Unmarked on rejection so the next caller
+    // can retry.
+    this.#scheduledJobNames.add(job.name);
     const at = randomFiveMinuteCron();
     logging.info(`[Background Job] ${job.name} scheduled at ${at}`);
-    this.#jobManager.addJob({ at, job: job.workerPath, name: job.name });
-    this.#scheduledJobNames.add(job.name);
+    try {
+      await job.register(at);
+    } catch (error) {
+      this.#scheduledJobNames.delete(job.name);
+      throw error;
+    }
+  }
+
+  #legacyJob(name: string, worker: string): RecurringJob {
+    return {
+      name,
+      register: (at) => this.#jobManager.addJob({ at, job: path.resolve(__dirname, worker), name }),
+    };
   }
 }
