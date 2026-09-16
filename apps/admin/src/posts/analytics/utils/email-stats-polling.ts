@@ -4,7 +4,7 @@ export const getEmailStatsRefetchInterval = (submittedAt?: string | null): 5000 
   }
 
   const age = Date.now() - Date.parse(submittedAt);
-  if (!Number.isFinite(age) || age < 0) {
+  if (!Number.isFinite(age)) {
     return false;
   }
 
