@@ -35,25 +35,37 @@ describe('members import row spool', function () {
     await fs.remove(storagePath);
   });
 
-  it('writes the rows as one JSON file at the root of the imports store', async function () {
+  it('writes the rows as one JSON file at the root of the imports store and returns its key', async function () {
     const rows = [row('first@example.com'), row('second@example.com')];
 
-    await createRowSpool(importsStore).write(rows);
+    const key = await createRowSpool(importsStore()).write(rows);
 
-    const files = await fs.readdir(storagePath);
-    assert.equal(files.length, 1);
-    assert.match(files[0], /^members-import-[0-9a-f-]{36}\.json$/);
-    const filePath = path.join(storagePath, files[0]);
-    assert.equal(await fs.readFile(filePath, 'utf8'), JSON.stringify(rows));
+    assert.match(key, /^members-import-[0-9a-f-]{36}\.json$/);
+    assert.deepEqual(await fs.readdir(storagePath), [key]);
+    assert.equal(await fs.readFile(path.join(storagePath, key), 'utf8'), JSON.stringify(rows));
   });
 
-  it('reads the rows back and removes the file', async function () {
+  it('reads the rows back by key and removes the file', async function () {
+    const rows = [row('first@example.com')];
+    const spool = createRowSpool(importsStore());
+
+    const key = await spool.write(rows);
+
+    assert.deepEqual(await spool.read(key), JSON.parse(JSON.stringify(rows)));
+    await spool.remove(key);
+    assert.deepEqual(await fs.readdir(storagePath), []);
+  });
+
+  // A job reads and removes the rows long after the request wrote them, on whichever
+  // spool instance its process built, so nothing may hang off the instance that wrote.
+  it('reads and removes rows written by another spool instance', async function () {
     const rows = [row('first@example.com')];
 
-    const spooled = await createRowSpool(importsStore).write(rows);
+    const key = await createRowSpool(importsStore()).write(rows);
+    const later = createRowSpool(importsStore());
 
-    assert.deepEqual(await spooled.read(), JSON.parse(JSON.stringify(rows)));
-    await spooled.remove();
+    assert.deepEqual(await later.read(key), JSON.parse(JSON.stringify(rows)));
+    await later.remove(key);
     assert.deepEqual(await fs.readdir(storagePath), []);
   });
 });

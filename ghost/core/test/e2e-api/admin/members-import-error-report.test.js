@@ -5,7 +5,6 @@ const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
-const jobsService = require('../../../core/server/services/jobs');
 const { mockManager } = require('../../utils/e2e-framework');
 
 // The error report a failed import emails back to the manager: one importable row (so
@@ -65,8 +64,8 @@ describe('Members import error report', function () {
     assert.equal(res.status, 202, 'over the threshold the import defers');
 
     // The job reports by email and must finish inside the test: the mail mock is
-    // torn down before the framework settles jobs.
-    await jobsService.allSettled();
+    // torn down after it, and nothing else waits for it.
+    await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
 
     const email = mockManager.assert.sentEmail({ subject: 'Your member import is complete' });
     assert.ok(

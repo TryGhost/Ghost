@@ -16,6 +16,7 @@ import ActionHandler from './actions';
 import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notification';
 import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
 import { clearGiftFormState } from './components/pages/gift/form-state';
+import { fetchMemberCustomFields } from './utils/custom-fields';
 import './app.css';
 import {
   hasRecommendations,
@@ -90,11 +91,17 @@ export default class App extends React.Component {
     this.state = {
       site: null,
       member: null,
+      // The custom fields open to members, asked for with the member during init.
+      customFields: [],
       offers: [],
       page: 'loading',
       showPopup: false,
       action: 'init:running',
       actionErrorMessage: null,
+      // Inputs the site refused on the last save, keyed as the page names them, so the
+      // box that was refused carries the message rather than a notification floating
+      // above six that all look fine.
+      fieldErrors: {},
       initStatus: 'running',
       lastPage: null,
       notification: null,
@@ -296,6 +303,7 @@ export default class App extends React.Component {
         site,
         member,
         offers,
+        customFields,
         page,
         showPopup,
         popupNotification,
@@ -314,6 +322,7 @@ export default class App extends React.Component {
         site,
         member,
         offers,
+        customFields,
         page,
         lastPage,
         pageQuery,
@@ -368,7 +377,13 @@ export default class App extends React.Component {
   async fetchData() {
     const { site: apiSiteData, member, offers } = await this.fetchApiData();
     const { site: devSiteData, ...restDevData } = this.fetchDevData();
-    const linkData = await this.fetchLinkData(apiSiteData, member);
+    // Asked for beside the link data rather than after it: the account settings page is
+    // drawn from these, and a member who opens it should not wait for a round trip that
+    // could have been made while the page was still loading.
+    const [linkData, customFields] = await Promise.all([
+      this.fetchLinkData(apiSiteData, member),
+      fetchMemberCustomFields({ api: this.GhostApi, site: apiSiteData, member }),
+    ]);
     const { site: linkSiteData, ...restLinkData } = linkData?.staleGiftRedemptionRequest
       ? {}
       : linkData;
@@ -378,6 +393,7 @@ export default class App extends React.Component {
     return {
       member,
       offers,
+      customFields,
       page,
       site: {
         ...apiSiteData,
@@ -1399,6 +1415,8 @@ export default class App extends React.Component {
       scrollbarWidth,
       otcRef,
       inboxLinks,
+      customFields,
+      fieldErrors,
     } = this.state;
     const contextPage = this.getContextPage({ site, page, member });
     const contextMember = this.getContextMember({
@@ -1420,6 +1438,8 @@ export default class App extends React.Component {
       pageQuery,
       pageData,
       member: contextMember,
+      customFields,
+      fieldErrors,
       lastPage,
       showPopup,
       popupNotification,

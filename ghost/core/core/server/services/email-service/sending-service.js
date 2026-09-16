@@ -59,7 +59,7 @@ const logging = require('@tryghost/logging');
 
 /**
  * @typedef {object} EmailProviderSuccessResponse
- * @prop {string} id
+ * @prop {string|null} id Null when the batch carries a per-recipient Message-Id
  */
 
 class SendingService {
