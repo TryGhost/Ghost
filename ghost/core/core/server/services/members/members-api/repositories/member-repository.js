@@ -196,16 +196,24 @@ module.exports = class MemberRepository {
    * @param {string} memberEmail
    * @param {'free' | 'paid'} memberStatus
    * @param {object} bookshelfOptions
+   * @param {string | null} memberTierId
    * @param {Knex.Transaction} [bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+  async #triggerMemberSignupAutomation(
+    memberId,
+    memberEmail,
+    memberStatus,
+    bookshelfOptions,
+    memberTierId,
+  ) {
     const trigger = async () => {
       await this._automationsApi.trigger({
         event: 'member_sign_up',
         memberId,
         memberEmail,
         memberStatus,
+        memberTierId,
       });
     };
 
@@ -279,11 +287,24 @@ module.exports = class MemberRepository {
    * @param {string} memberEmail
    * @param {'free' | 'paid'} memberStatus
    * @param {object} bookshelfOptions
+   * @param {string | null} [memberTierId]
    * @returns {Promise<void>}
    */
-  async triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+  async triggerMemberSignupAutomation(
+    memberId,
+    memberEmail,
+    memberStatus,
+    bookshelfOptions,
+    memberTierId = null,
+  ) {
     await Promise.all([
-      this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions),
+      this.#triggerMemberSignupAutomation(
+        memberId,
+        memberEmail,
+        memberStatus,
+        bookshelfOptions,
+        memberTierId,
+      ),
       this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions),
     ]);
   }
@@ -1925,8 +1946,27 @@ module.exports = class MemberRepository {
           memberModel.get('email'),
           'paid',
           options,
+          ghostProduct?.id ?? null,
         );
       }
+    }
+
+    // A paid member can enter a newly matching flow after switching tiers.
+    // The repository keeps members from entering the same automation twice.
+    if (
+      updatedMember.attributes.status === 'paid' &&
+      updatedMember._previousAttributes.status === 'paid' &&
+      WELCOME_EMAIL_SOURCES.includes(this._resolveContextSource(options?.context || {})) &&
+      ghostProduct?.id &&
+      !oldMemberProducts.some((product) => product.id === ghostProduct.id)
+    ) {
+      await this.#triggerMemberSignupAutomation(
+        memberModel.id,
+        memberModel.get('email'),
+        'paid',
+        options,
+        ghostProduct.id,
+      );
     }
 
     // Update the members_current_subscription lookup table

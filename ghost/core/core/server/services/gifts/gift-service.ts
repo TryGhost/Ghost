@@ -71,6 +71,7 @@ interface MemberRepository {
     memberEmail: string,
     memberStatus: 'free' | 'paid',
     options?: Record<string, unknown>,
+    memberTierId?: string | null,
   ): Promise<unknown>;
 }
 
@@ -950,6 +951,7 @@ export class GiftService {
       member.get('email'),
       'paid',
       { transacting },
+      redeemed.tierId,
     );
 
     return { redeemed, member };

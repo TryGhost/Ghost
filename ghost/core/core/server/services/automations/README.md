@@ -4,11 +4,11 @@ Automations run a series of actions for a member after signup. Each automation i
 
 ## How a run moves forward
 
-The member repository calls `trigger()` after signup.
+The member repository calls `trigger()` after signup or a paid tier switch. Gift redemption also passes its tier. The trigger matches `trigger_tier_scope`: `free`, `all_paid`, or `selected_paid` with rows in `automation_trigger_tiers`. Every matching active automation gets one run per member, ever. `all_paid` also matches tiers added later.
 
 The database repository creates run(s) and queues their first step. Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
 
-Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
+Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status, tier, and email preference before sending. A member can move between tiers selected by the same automation and continue its run. Disabled automations and ineligible members stop.
 
 ## Where to look
 

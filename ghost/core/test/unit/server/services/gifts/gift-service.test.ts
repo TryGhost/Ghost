@@ -2040,6 +2040,7 @@ describe('GiftService', function () {
         'member@example.com',
         'paid',
         { transacting },
+        gift.tierId,
       );
     });
 
@@ -2062,6 +2063,7 @@ describe('GiftService', function () {
         'member@example.com',
         'paid',
         { transacting },
+        gift.tierId,
       );
     });
 
@@ -2085,6 +2087,7 @@ describe('GiftService', function () {
         'member@example.com',
         'paid',
         { transacting: externalTrx },
+        gift.tierId,
       );
     });
   });
