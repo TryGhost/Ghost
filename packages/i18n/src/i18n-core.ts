@@ -96,8 +96,12 @@ export function createI18n({
           continue;
         }
 
-        const loaded = generateResources([code], ns);
-        i18nextInstance.addResourceBundle(code, ns, loaded[code]?.[ns] ?? {});
+        // Iterated rather than indexed by `code`: the generator decides what it
+        // returns, and a locale it has nothing for is simply left out of the store
+        // for i18next's fallback chain to handle.
+        for (const [locale, byNamespace] of Object.entries(generateResources([code], ns))) {
+          i18nextInstance.addResourceBundle(locale, ns, byNamespace[ns]);
+        }
       }
     };
 
