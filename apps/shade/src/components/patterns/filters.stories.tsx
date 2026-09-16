@@ -972,6 +972,38 @@ const readOnlyFields: FilterFieldConfig[] = [
   },
 ];
 
+export const SingleOperator: Story = {
+  render: () => (
+    <FilterDemo
+      fields={[
+        {
+          key: 'status',
+          label: 'Status',
+          type: 'select',
+          operators: [{ value: 'is', label: 'is' }],
+          options: [
+            { value: 'published', label: 'Published' },
+            { value: 'draft', label: 'Draft' },
+          ],
+        },
+        { key: 'name', label: 'Name', type: 'text' },
+      ]}
+      initialFilters={[
+        createFilter('status', 'is', ['published']),
+        createFilter('name', 'contains', ['Alex']),
+      ]}
+    />
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A field with one operator automatically shows it as static text without changing the pill appearance. Its value stays editable; fields with multiple operators keep their dropdown.',
+      },
+    },
+  },
+};
+
 export const ReadOnlyFilter: Story = {
   render: () => (
     <FilterDemo
