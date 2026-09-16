@@ -719,7 +719,7 @@ describe('MemberRepository', function () {
         assert.equal(createdEvents().length, 0);
       });
 
-      for (const status of ['active', 'trialing']) {
+      for (const status of ['active', 'trialing', 'past_due', 'unpaid']) {
         it(`records a single attributed conversion when incomplete becomes ${status}`, async function () {
           await link('incomplete');
           await link(status);
@@ -729,7 +729,7 @@ describe('MemberRepository', function () {
           const activity = MemberPaidSubscriptionEvent.add.firstCall.args[0];
           assert.equal(activity.type, 'created');
           assert.equal(activity.from_plan, null);
-          assert.equal(activity.mrr_delta, status === 'active' ? 500 : 0);
+          assert.equal(activity.mrr_delta, status === 'trialing' ? 0 : 500);
           assert.equal(createdEvents().length, 1);
           assert.equal(createdEvents()[0].data.subscriptionId, 'local_subscription_id');
           assert.deepEqual(createdEvents()[0].data.attribution, {
