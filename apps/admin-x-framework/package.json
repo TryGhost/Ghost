@@ -68,7 +68,7 @@
     }
   },
   "scripts": {
-    "dev": "vite build --watch",
+    "dev": "vite build --watch --emptyOutDir=false",
     "build": "tsc -p tsconfig.declaration.json && vite build",
     "test": "pnpm run '/^test:/'",
     "test:types": "tsc --noEmit",
@@ -125,7 +125,7 @@
         "executor": "nx:run-commands",
         "options": {
           "cwd": "apps/admin-x-framework",
-          "command": "vite build --watch"
+          "command": "vite build --watch --emptyOutDir=false"
         },
         "dependsOn": [
           "build"

@@ -70,7 +70,7 @@ Start the SEO baseline and all three editor-block providers together from the re
 pnpm dev:addons
 ```
 
-This starts the four providers and Koenig's integrated build watcher, so editor-host changes are served without a separate `pnpm dev:lexical` process.
+Run this alongside `pnpm dev`. It starts the four providers and Koenig's integrated build watcher. The main development command already starts the add-on kit watcher, so editor-host changes are served without a second watcher or a separate `pnpm dev:lexical` process.
 
 With Ghost and React Admin running, enable the **Add-ons** developer experiment and open **Apps → Browse marketplace**. The marketplace contains all four local providers. Install the three editor demos, then create a post and insert each named block from the slash menu:
 
