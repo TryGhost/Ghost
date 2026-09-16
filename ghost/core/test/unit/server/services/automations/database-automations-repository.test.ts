@@ -1365,6 +1365,41 @@ describe('automations repository', function () {
       assert.equal(await getRunByMemberEmail('free-no-actions@example.com'), undefined);
       assert.equal(await getRunCountByAutomationId(freeAutomation.id), 0);
     });
+
+    it('does not enter the same automation twice for a member', async function () {
+      const options = {
+        memberEmail: 'free@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free' as const,
+      };
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+
+      await repo.trigger(options);
+      await repo.trigger({ ...options, memberEmail: 'changed@example.com' });
+
+      assert.equal(await getRunCountByAutomationId(automation.id), 1);
+      const runs = await knex('automation_runs').where('member_id', options.memberId);
+      assert.equal(runs[0].member_email, options.memberEmail);
+      const steps = await knex('automation_run_steps').where('automation_run_id', runs[0].id);
+      assert.equal(steps.length, 1);
+    });
+
+    it('can enter a different automation for the same member', async function () {
+      await repo.trigger({
+        memberEmail: 'member@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+      });
+      await repo.trigger({
+        memberEmail: 'member@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+      });
+
+      const runs = await knex('automation_runs').where('member_id', 'member_123');
+      assert.equal(runs.length, 2);
+      assert.notEqual(runs[0].automation_id, runs[1].automation_id);
+    });
   });
 
   describe('edit', function () {
