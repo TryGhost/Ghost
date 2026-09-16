@@ -18,6 +18,14 @@ const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
   'member-welcome-email-paid': 'Welcome new paid members after they start their subscription.',
 };
 
+const getAutomationDescription = (automation: AutomationBrowseItem): string | undefined => {
+  if (automation.description !== undefined) {
+    return automation.description;
+  }
+
+  return automation.slug ? AUTOMATION_DESCRIPTIONS[automation.slug] : undefined;
+};
+
 // Widths are scoped to `lg` because below that the stats lay out on the row's
 // grid rather than in table cells, where a fixed width would fight the columns.
 const AUTOMATION_STAT_COLUMNS = [
@@ -137,10 +145,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
       )}
       <TableBody className="flex flex-col lg:table-row-group">
         {automations.map((automation) => {
-          // NOTE: We will soon start reading this description from the API and stop using hard-coded values.
-          const description = automation.slug
-            ? AUTOMATION_DESCRIPTIONS[automation.slug]
-            : undefined;
+          const description = getAutomationDescription(automation);
           const lastEntry = automation.stats?.last_run_created_at;
           const totalEntries = automation.stats?.total_run_count ?? 0;
           const inProgressEntries = automation.stats?.in_progress_run_count ?? 0;
