@@ -19,7 +19,7 @@ type Models = {
   AutomatedEmailRecipient: {
     query(): ExistingRecipientQuery;
   };
-  GiftDelivery?: {
+  GiftDelivery: {
     query(): ExistingRecipientQuery;
   };
 };
@@ -143,11 +143,10 @@ export class EmailAnalyticsJobScheduler {
     const hasGiftDelivery =
       skipGiftDeliveryCheck ||
       Boolean(
-        this.#models.GiftDelivery &&
-        (await this.#models.GiftDelivery.query()
+        await this.#models.GiftDelivery.query()
           .where('email_sent_at', '>', moment.utc().subtract(30, 'days').toDate())
           .whereNotNull('email_provider_message_id')
-          .first('id')),
+          .first('id'),
       );
 
     if (!hasGiftDelivery || this.#hasScheduledGiftDeliveriesJob) {
