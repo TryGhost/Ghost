@@ -223,12 +223,15 @@ function optimiseFilterCacheability(resource, options) {
     return noOptimisation;
   }
 
+  // Themes can pass a SafeString here, e.g. `filter=(concat "id:-" id)`
+  const originalFilter = String(options.filter);
+
   try {
-    if (options.filter.split('id:-').length !== 2) {
+    if (originalFilter.split('id:-').length !== 2) {
       return noOptimisation;
     }
 
-    const parsedFilter = nqlLang.parse(options.filter);
+    const parsedFilter = nqlLang.parse(originalFilter);
     // Support either `id:blah` or `id:blah+other:stuff`
     if (!parsedFilter.$and && !parsedFilter.id) {
       return noOptimisation;
@@ -250,7 +253,7 @@ function optimiseFilterCacheability(resource, options) {
     }
 
     // We replace with id:-null so we don't have to deal with leading/trailing AND operators
-    const filter = options.filter.replace(/id:-[a-f0-9A-F]{24}/, 'id:-null');
+    const filter = originalFilter.replace(/id:-[a-f0-9A-F]{24}/, 'id:-null');
 
     const parseResult = function parseResult(result) {
       const filteredPosts =
