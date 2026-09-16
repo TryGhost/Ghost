@@ -72,7 +72,7 @@ const CANVAS_THEMES: Record<CanvasRelease, { base: string; review?: string }> = 
   // same --background the flow already sits on. Diverge from this only with a
   // reason — the proto is meant to be indistinguishable from the real editor here.
   'phase-1': {
-    base: '[--canvas-fill:var(--color-grey-50)] [--canvas-dots:var(--color-grey-500)] [--canvas-edge:var(--color-grey-500)] dark:[--canvas-fill:var(--background)] dark:[--canvas-dots:var(--color-grey-900)] dark:[--canvas-edge:var(--color-grey-800)]',
+    base: '[--canvas-fill:var(--color-gray-50)] [--canvas-dots:var(--color-gray-500)] [--canvas-edge:var(--color-gray-500)] dark:[--canvas-fill:var(--background)] dark:[--canvas-dots:var(--color-gray-900)] dark:[--canvas-edge:var(--color-gray-800)]',
   },
   // Exploration is free to diverge — its canvas is a detached window rather than a
   // full-bleed surface, so it doesn't have to answer to the shipping editor.
@@ -109,7 +109,7 @@ const CANVAS_THEMES: Record<CanvasRelease, { base: string; review?: string }> = 
   // happened was a row being clicked. The inset frame and the member button carry
   // it instead, both of which sit where the change actually is.
   exploration: {
-    base: '[--canvas-fill:var(--color-grey-100)] [--canvas-dots:var(--color-grey-500)] [--canvas-edge:var(--color-grey-500)] dark:[--canvas-fill:#000] dark:[--canvas-dots:var(--color-grey-900)] dark:[--canvas-edge:var(--color-grey-800)]',
+    base: '[--canvas-fill:var(--color-gray-100)] [--canvas-dots:var(--color-gray-500)] [--canvas-edge:var(--color-gray-500)] dark:[--canvas-fill:#000] dark:[--canvas-dots:var(--color-gray-900)] dark:[--canvas-edge:var(--color-gray-800)]',
   },
 };
 
