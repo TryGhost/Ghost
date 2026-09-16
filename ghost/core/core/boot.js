@@ -319,7 +319,13 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
+async function initServices({
+  ghostServer,
+  config,
+  prometheusClient,
+  jobsService,
+  emailAnalyticsJobs,
+}) {
   debug('Begin: initServices');
 
   debug('Begin: Services');
@@ -378,6 +384,12 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     apiUrl,
     schedulerAdapter,
     internalKeys,
+    giftEmailAnalytics: {
+      schedule: emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob.bind(
+        emailAnalyticsJobs,
+        true,
+      ),
+    },
   });
   const giftDeliveryService = giftService.deliveryService;
   assert(giftDeliveryService, 'Gift delivery service should be initialized');
@@ -401,7 +413,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     indexnow.init(),
     slack.init(),
     audienceFeedback.init(),
-    emailService.init({ ghostServer }),
+    emailService.init({ ghostServer, emailAnalyticsJobs }),
     emailAnalytics.init({
       automationsApi,
       config,
@@ -433,6 +445,10 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       schedulerAdapter,
       internalKeys,
       siteUuid: settingsCache.get('site_uuid'),
+      scheduleAutomationEmailAnalyticsJob: emailAnalyticsJobs.scheduleRecurringAutomationsJob.bind(
+        emailAnalyticsJobs,
+        true,
+      ),
     }),
   ]);
 
@@ -453,7 +469,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
  * @param {object} options
  * @param {object} options.config
  */
-async function initBackgroundServices({ config }) {
+async function initBackgroundServices({ config, emailAnalyticsJobs }) {
   debug('Begin: initBackgroundServices');
 
   // Load all inactive themes
@@ -528,7 +544,6 @@ async function initBackgroundServices({ config }) {
   await activitypub.init();
   // Load email analytics recurring jobs
   if (config.get('backgroundJobs:emailAnalytics')) {
-    const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
     await Promise.all([
       emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
       emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
@@ -683,7 +698,14 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     const jobsService = require('./server/services/jobs-service').init();
 
-    await initServices({ ghostServer, config, prometheusClient, jobsService });
+    const emailAnalyticsJobs = require('./server/services/email-analytics/jobs').init({
+      models: require('./server/models'),
+      config,
+      jobManager: require('./server/services/jobs'),
+      jobsService,
+    });
+
+    await initServices({ ghostServer, config, prometheusClient, jobsService, emailAnalyticsJobs });
 
     debug('Begin: Register job handlers');
     const assert = require('node:assert/strict');
@@ -724,7 +746,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     notifyServerReady();
 
     // Step 7 - Init our background services, we don't wait for this to finish
-    initBackgroundServices({ config });
+    initBackgroundServices({ config, emailAnalyticsJobs });
 
     // If we pass the env var, kill Ghost
     if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {

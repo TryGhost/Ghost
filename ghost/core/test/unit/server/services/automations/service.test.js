@@ -25,6 +25,7 @@ describe('automations service', function () {
       register: sinon.stub(),
     };
     initOptions = {
+      scheduleAutomationEmailAnalyticsJob: sinon.stub().resolves(),
       domainEvents,
       apiUrl: 'https://fake.example.com/ghost/api/admin',
       schedulerAdapter,

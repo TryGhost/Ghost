@@ -11,8 +11,6 @@ import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
 import { setImmediate as flushEventLoop } from 'node:timers/promises';
 import { SoonestTimer } from '../../lib/soonest-timer';
 import { getSchedulerPollTime } from './scheduler-poll-time';
-// @ts-expect-error This module currently lacks type definitions.
-import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
 const logging = require('@tryghost/logging');
@@ -25,10 +23,8 @@ type AutomationsServiceOptions = {
   internalKeys: InternalKeys;
   schedulerAdapter: Pick<SchedulerAdapter, 'schedule' | 'register'>;
   siteUuid: unknown;
+  scheduleAutomationEmailAnalyticsJob: () => Promise<void>;
 };
-
-const scheduleAutomationEmailAnalyticsJob = () =>
-  emailAnalyticsJobs.scheduleRecurringAutomationsJob(true);
 
 export class AutomationsService {
   #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
@@ -39,6 +35,7 @@ export class AutomationsService {
     schedulerAdapter,
     internalKeys,
     siteUuid,
+    scheduleAutomationEmailAnalyticsJob,
   }: AutomationsServiceOptions): void {
     const isInitialized = Boolean(this.#enqueuePollAt);
     if (isInitialized) {

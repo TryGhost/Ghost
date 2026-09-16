@@ -11,6 +11,7 @@ import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
 
 export interface GiftServiceInitOptions {
   apiUrl: string;
+  giftEmailAnalytics: { schedule(): Promise<void> };
   schedulerAdapter: SchedulerAdapter & { rescheduleOnBoot?: boolean };
   internalKeys: InternalKeys;
 }
@@ -48,7 +49,6 @@ export function init(options: GiftServiceInitOptions): void {
   const { SubscriptionActivatedEvent } = require('../../../shared/events');
   const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
   const { StartGiftDeliveryFlushEvent } = require('./events/start-gift-delivery-flush-event');
-  const emailAnalyticsJobs = require('../email-analytics/jobs');
 
   const { GhostMailer } = require('../mail');
   const MailgunClient = require('../lib/mailgun-client');
@@ -100,9 +100,7 @@ export function init(options: GiftServiceInitOptions): void {
     giftDeliveryRepository: deliveryRepository,
     tiersService,
     giftEmailService,
-    giftEmailAnalytics: {
-      schedule: () => emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(true),
-    },
+    giftEmailAnalytics: options.giftEmailAnalytics,
     giftDeliveryScheduler,
   });
 

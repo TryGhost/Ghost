@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const debug = require('@tryghost/debug')('i18n');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
@@ -14,10 +15,11 @@ class EmailServiceWrapper {
     return jsonModel.url;
   }
 
-  init({ ghostServer } = {}) {
+  init({ ghostServer, emailAnalyticsJobs } = {}) {
     if (this.service) {
       return;
     }
+    assert(emailAnalyticsJobs, 'Email service requires the email analytics job scheduler');
 
     const EmailService = require('./email-service');
     const EmailController = require('./email-controller');
@@ -52,7 +54,6 @@ class EmailServiceWrapper {
     const linkTracking = require('../link-tracking');
     const audienceFeedback = require('../audience-feedback');
     const storageUtils = require('../../adapters/storage/utils');
-    const emailAnalyticsJobs = require('../email-analytics/jobs');
     const { cachedImageSizeFromUrl } = require('../../lib/image');
 
     // Mailgun client instance for email provider

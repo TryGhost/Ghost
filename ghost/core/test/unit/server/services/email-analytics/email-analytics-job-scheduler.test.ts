@@ -1,4 +1,5 @@
 import sinon from 'sinon';
+import { vi } from 'vitest';
 import { deferred } from '../../../../utils/deferred';
 import { EmailAnalyticsJobScheduler } from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
 
@@ -66,6 +67,7 @@ function buildScheduler({
       models,
       config,
       jobManager,
+      jobsService: { scheduleRecurring: sinon.stub().resolves() },
     }),
     config,
     jobManager,
@@ -77,8 +79,26 @@ function buildScheduler({
 }
 
 describe('EmailAnalyticsJobScheduler', function () {
+  beforeEach(function () {
+    vi.stubEnv('NODE_ENV', 'production');
+  });
+
   afterEach(function () {
+    vi.unstubAllEnvs();
     sinon.restore();
+  });
+
+  it('suppresses all scheduling in test environments, including bypasses', async function () {
+    vi.stubEnv('NODE_ENV', 'testing');
+    const { scheduler, jobManager, newsletterQuery, automationsQuery, giftQuery } =
+      buildScheduler();
+    await scheduler.scheduleRecurringNewslettersJob(true);
+    await scheduler.scheduleRecurringAutomationsJob(true);
+    await scheduler.scheduleRecurringGiftDeliveriesJob(true);
+    sinon.assert.notCalled(jobManager.addJob);
+    sinon.assert.notCalled(newsletterQuery.count);
+    sinon.assert.notCalled(automationsQuery.first);
+    sinon.assert.notCalled(giftQuery.first);
   });
 
   it('adds a recurring job when conditions are met', async function () {

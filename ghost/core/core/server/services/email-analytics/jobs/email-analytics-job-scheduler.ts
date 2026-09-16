@@ -1,5 +1,6 @@
 import * as path from 'node:path';
 import moment from 'moment';
+import type { JobsService } from '../../jobs-service/jobs-service';
 
 const logging = require('@tryghost/logging');
 
@@ -44,25 +45,32 @@ export class EmailAnalyticsJobScheduler {
   readonly #models: Models;
   readonly #config: Config;
   readonly #jobManager: JobManager;
+  readonly jobsService: Pick<JobsService, 'scheduleRecurring'>;
 
   constructor({
     models,
     config,
     jobManager,
+    jobsService,
   }: {
     models: Models;
     config: Config;
     jobManager: JobManager;
+    jobsService: Pick<JobsService, 'scheduleRecurring'>;
   }) {
     this.#models = models;
     this.#config = config;
     this.#jobManager = jobManager;
+    this.jobsService = jobsService;
   }
 
   #isConfigured(): boolean {
-    return Boolean(
-      this.#config.get('emailAnalytics:enabled') &&
-      this.#config.get('backgroundJobs:emailAnalytics'),
+    return (
+      !process.env.NODE_ENV?.startsWith('test') &&
+      Boolean(
+        this.#config.get('emailAnalytics:enabled') &&
+        this.#config.get('backgroundJobs:emailAnalytics'),
+      )
     );
   }
 
