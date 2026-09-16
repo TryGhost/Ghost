@@ -121,6 +121,7 @@ describe('createTinybirdSyncService', () => {
     assert.deepEqual(
       dependencies.logging.info.mock.calls.map((call) => call[0].system),
       [
+        { event: 'tinybird.sync.started' },
         { event: 'tinybird.sync.completed', table: 'automation_runs', sent: 0 },
         { event: 'tinybird.sync.completed', table: 'automation_run_steps', sent: 0 },
       ],

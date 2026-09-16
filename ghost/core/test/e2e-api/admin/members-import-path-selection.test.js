@@ -6,6 +6,8 @@ const localUtils = require('./utils');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
 const jobsService = require('../../../core/server/services/jobs');
+const sinon = require('sinon');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
 const { mockManager } = require('../../utils/e2e-framework');
 
 // An import is performed while the request is open, or handed to a background
@@ -71,6 +73,7 @@ describe('Members import path selection', function () {
   describe('over the threshold', function () {
     it('defers to a background job and reports no stats yet', async function () {
       configUtils.set('members:importer:inlineThreshold', 1);
+      const getAdapter = sinon.spy(adapterManager, 'getAdapter');
 
       const res = await upload('valid-members-import.csv');
 
@@ -78,6 +81,7 @@ describe('Members import path selection', function () {
       assert.equal(res.body.meta.stats, undefined);
 
       await jobsService.allSettled();
+      sinon.assert.calledWith(getAdapter, 'storage:imports');
       mockManager.assert.sentEmailCount(1);
     });
 

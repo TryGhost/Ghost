@@ -1,6 +1,7 @@
 // # Local File Base Storage module
 // The (default) module for storing files using the local file system
 import fs from 'fs-extra';
+import os from 'os';
 import path from 'path';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import type express from 'express';
@@ -27,7 +28,8 @@ export interface LocalStorageBaseErrorMessages {
 }
 
 export interface LocalStorageBaseOptions {
-  storagePath: string;
+  // Unset, files go in the OS temp directory, which the imports store in defaults.json relies on.
+  storagePath?: string;
   siteUrl?: string;
   staticFileURLPrefix?: string;
   errorMessages?: LocalStorageBaseErrorMessages;
@@ -59,7 +61,7 @@ class LocalStorageBase extends StorageBase {
   }: LocalStorageBaseOptions) {
     super();
 
-    this.storagePath = storagePath;
+    this.storagePath = storagePath ?? os.tmpdir();
     this.staticFileURLPrefix = staticFileURLPrefix;
     this.siteUrl = siteUrl;
     this.staticFileUrl = `${siteUrl}${staticFileURLPrefix}`;

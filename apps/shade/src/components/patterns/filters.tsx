@@ -1379,12 +1379,12 @@ function FilterOperatorDropdown<T = unknown>({
     operators.find((op) => op.value === operator)?.label ||
     context.i18n.helpers.formatOperator(operator);
 
-  // Both `hideOperatorSelect` and a read-only field render the operator as static
-  // text through the shared chrome, rather than a live menu.
+  // A single operator has nothing to choose. Keep its label and chrome static,
+  // just like `hideOperatorSelect` and read-only fields.
   return (
     <SegmentDropdown
       options={operators}
-      readOnly={field.readOnly || field.hideOperatorSelect}
+      readOnly={field.readOnly || field.hideOperatorSelect || operators.length === 1}
       trigger={operatorLabel}
       value={operator}
       onChange={onChange}

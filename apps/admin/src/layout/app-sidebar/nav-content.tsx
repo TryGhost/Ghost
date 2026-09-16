@@ -88,6 +88,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const routing = useEmberRouting();
   const automationsEnabled = useFeatureFlag('automations');
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
+  const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
 
   const showTags = currentUser && canManageTags(currentUser);
   const showMembers = currentUser && canManageMembers(currentUser);
@@ -101,7 +102,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const membersExpanded = savedMembersExpanded;
   const membersNavActive = isMembersRouteActive
     ? !hasActiveMemberView || !membersExpanded
-    : routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
+    : isMemberActivityActive || routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
   const postsRoute = postNavigation.mainUrl;
   const postsNavActive = postNavigation.isMainActive || (!postsExpanded && hasActivePostChild);
   return (
