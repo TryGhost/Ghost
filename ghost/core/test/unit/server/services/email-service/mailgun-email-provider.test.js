@@ -202,6 +202,16 @@ describe('Mailgun Email Provider', function () {
         assert.equal('perRecipientMessageId' in messageData, false);
       });
 
+      it('passes through a missing provider id without failing the send', async function () {
+        sendStub.resolves({ id: null });
+        config.get.withArgs('bulkEmail:perRecipientMessageId').returns(true);
+        const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });
+
+        const response = await mailgunEmailProvider.send(buildEmailData(), sendOptions);
+
+        assert.equal(response.id, null);
+      });
+
       it('only honours a boolean true from config', async function () {
         config.get.withArgs('bulkEmail:perRecipientMessageId').returns('true');
         const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });

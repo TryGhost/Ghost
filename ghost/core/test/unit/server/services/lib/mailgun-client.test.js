@@ -866,6 +866,50 @@ describe('MailgunClient', function () {
         );
       });
 
+      it('reports no provider id when Mailgun echoes the header template', async function () {
+        stubMailgunConfig();
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          id: EMAIL_ID,
+          perRecipientMessageId: true,
+        };
+        // Mailgun returns the Message-Id it was given, so a per-recipient template comes back
+        // unsubstituted and identifies nothing
+        const sendMock = nock('https://api.mailgun.net')
+          .post('/v3/domain.com/messages')
+          .reply(200, { id: '<%recipient.message_id%>', message: 'Queued. Thank you.' });
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        const response = await mailgunClient.send(message, createRecipientData(), []);
+
+        assert(sendMock.isDone());
+        assert.equal(response.id, null);
+      });
+
+      it('keeps a real provider id from Mailgun', async function () {
+        stubMailgunConfig();
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          id: EMAIL_ID,
+          perRecipientMessageId: true,
+        };
+        const sendMock = nock('https://api.mailgun.net')
+          .post('/v3/domain.com/messages')
+          .reply(200, { id: '<20260916041835.abc@domain.com>', message: 'Queued. Thank you.' });
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        const response = await mailgunClient.send(message, createRecipientData(), []);
+
+        assert(sendMock.isDone());
+        assert.equal(response.id, '<20260916041835.abc@domain.com>');
+      });
+
       it('does not mutate the recipient data passed in', async function () {
         stubMailgunConfig();
         const message = {

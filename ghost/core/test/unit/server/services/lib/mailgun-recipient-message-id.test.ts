@@ -4,6 +4,7 @@ import {
   RECIPIENT_MESSAGE_ID_VARIABLE,
   addRecipientMessageIds,
   buildRecipientMessageId,
+  isTemplatedRecipientMessageId,
 } from '../../../../../core/server/services/lib/mailgun-recipient-message-id';
 
 const EMAIL_ID = '64f0c7a5e2b3a1d4c5b6a7f8';
@@ -152,6 +153,36 @@ describe('Mailgun recipient Message-Id generation', function () {
 
     it('returns an empty object when there are no recipients', function () {
       assert.deepEqual(addRecipientMessageIds({}, { emailId: EMAIL_ID, domain: DOMAIN }), {});
+    });
+  });
+
+  describe('isTemplatedRecipientMessageId', function () {
+    it('recognises the header template Mailgun echoes back unsubstituted', function () {
+      assert.equal(isTemplatedRecipientMessageId('<%recipient.message_id%>'), true);
+      assert.equal(isTemplatedRecipientMessageId('%recipient.message_id%'), true);
+    });
+
+    it('accepts a real Mailgun message id', function () {
+      assert.equal(
+        isTemplatedRecipientMessageId('<20260916041835.e655506fe3d629cc@example.com>'),
+        false,
+      );
+      assert.equal(
+        isTemplatedRecipientMessageId(
+          buildRecipientMessageId({
+            emailId: EMAIL_ID,
+            recipientEmail: 'member@example.com',
+            domain: DOMAIN,
+          }),
+        ),
+        false,
+      );
+    });
+
+    it('accepts anything that is not a string', function () {
+      assert.equal(isTemplatedRecipientMessageId(null), false);
+      assert.equal(isTemplatedRecipientMessageId(undefined), false);
+      assert.equal(isTemplatedRecipientMessageId(123), false);
     });
   });
 });

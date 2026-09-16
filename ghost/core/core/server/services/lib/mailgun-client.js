@@ -5,6 +5,7 @@ const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
 const {
   addRecipientMessageIds,
+  isTemplatedRecipientMessageId,
   RECIPIENT_MESSAGE_ID_VARIABLE,
 } = require('./mailgun-recipient-message-id');
 
@@ -138,7 +139,8 @@ module.exports = class MailgunClient {
       });
 
       return {
-        id: response.id,
+        // a batch of per-recipient Message-Ids has no single provider id
+        id: isTemplatedRecipientMessageId(response.id) ? null : response.id,
       };
     } catch (error) {
       logging.error(error);

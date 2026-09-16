@@ -35,6 +35,17 @@ export function buildRecipientMessageId({
   return `${prefix}.${digest}@${domain}`;
 }
 
+/**
+ * Mailgun returns the Message-Id it was given, so when the header is a per-recipient template it
+ * comes back unsubstituted and identifies nothing.
+ */
+export function isTemplatedRecipientMessageId(messageId: unknown): boolean {
+  return (
+    typeof messageId === 'string' &&
+    messageId.includes(`%recipient.${RECIPIENT_MESSAGE_ID_VARIABLE}%`)
+  );
+}
+
 /** Returns a new recipient-variables map with a `message_id` per recipient; the input is not mutated */
 export function addRecipientMessageIds(
   recipientData: RecipientData,

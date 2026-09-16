@@ -30,7 +30,7 @@ const { escapeExpression } = require('handlebars');
 
 /**
  * @typedef {object} EmailProviderSuccessResponse
- * @prop {string} id
+ * @prop {string|null} id Null when the batch carries a per-recipient Message-Id
  */
 
 class MailgunEmailProvider {
@@ -168,7 +168,7 @@ class MailgunEmailProvider {
 
       // Return mailgun provider id, trim <> from response
       return {
-        id: response.id.trim().replace(/^<|>$/g, ''),
+        id: response.id === null ? null : response.id.trim().replace(/^<|>$/g, ''),
       };
     } catch (e) {
       let ghostError;

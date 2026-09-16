@@ -833,6 +833,22 @@ describe('Batch sending tests', function () {
         assert.equal('message_id' in variables, false);
       }
     });
+
+    it('stores no provider id when Mailgun echoes the header template', async function () {
+      configUtils.set('bulkEmail:perRecipientMessageId', true);
+      // Mailgun returns the Message-Id it was given, so the batch has no single provider id
+      stubbedSend = sinon.fake.resolves({ id: '<%recipient.message_id%>' });
+
+      const { emailModel } = await sendEmail(agent);
+
+      assert.equal(emailModel.get('status'), 'submitted');
+      const batches = await models.EmailBatch.findAll({ filter: `email_id:'${emailModel.id}'` });
+      assert.equal(batches.models.length, 1);
+      for (const batch of batches.models) {
+        assert.equal(batch.get('status'), 'submitted');
+        assert.equal(batch.get('mailgun_message_id'), null);
+      }
+    });
   });
 
   describe('Analytics', function () {
