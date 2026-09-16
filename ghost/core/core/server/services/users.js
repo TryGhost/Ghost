@@ -1,16 +1,10 @@
 // @ts-check
-const path = require('path');
 const ObjectId = require('bson-objectid').default;
 
 /**
  * @TODO: pass these in as dependencies
  */
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
-
-/**
- * @typedef {Object} IdbBackup
- * @prop {() => Promise<string>} backup
- */
 
 /**
  * @typedef {Object} IModels
@@ -40,14 +34,12 @@ const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
 class Users {
   /**
    * @param {Object} dependencies
-   * @param {IdbBackup} dependencies.dbBackup
    * @param {IModels} dependencies.models
    * @param {IAuth} dependencies.auth
    * @param {Object} dependencies.apiMail
    * @param {Object} dependencies.apiSettings
    */
-  constructor({ dbBackup, models, auth, apiMail, apiSettings }) {
-    this.dbBackup = dbBackup;
+  constructor({ models, auth, apiMail, apiSettings }) {
     this.models = models;
     this.auth = auth;
     this.apiMail = apiMail;
@@ -183,14 +175,6 @@ class Users {
    * @returns
    */
   async destroyUser(frameOptions) {
-    let filename = null;
-    const backupPath = await this.dbBackup.backup();
-
-    if (backupPath) {
-      const parsedFileName = path.parse(backupPath);
-      filename = `${parsedFileName.name}${parsedFileName.ext}`;
-    }
-
     return this.models.Base.transaction(async (t) => {
       frameOptions.transacting = t;
 
@@ -234,8 +218,6 @@ class Users {
       }
 
       await this.models.User.destroy(Object.assign({ status: 'all' }, frameOptions));
-
-      return filename;
     });
   }
 }

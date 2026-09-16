@@ -37,7 +37,7 @@ async function parse(path) {
       message: tpl(messages.themeFileIsMalformed),
       context: path,
       err: parseError,
-      help: tpl(messages.willBeRequired, { url: 'https://ghost.org/docs/themes/' }),
+      help: tpl(messages.willBeRequired, { url: 'https://docs.ghost.org/themes/' }),
     });
   }
 
@@ -47,7 +47,7 @@ async function parse(path) {
     throw new errors.IncorrectUsageError({
       message: tpl(messages.nameOrVersionMissing),
       context: path,
-      help: tpl(messages.willBeRequired, { url: 'https://ghost.org/docs/themes/' }),
+      help: tpl(messages.willBeRequired, { url: 'https://docs.ghost.org/themes/' }),
     });
   }
 

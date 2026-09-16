@@ -74,7 +74,7 @@ function createLinkRedirectRepository(deps = {}) {
   });
 }
 
-describe('UNIT: LinkRedirectRepository class', function () {
+describe('LinkRedirectRepository class', function () {
   let linkRedirectRepository;
 
   afterEach(function () {

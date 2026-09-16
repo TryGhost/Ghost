@@ -4,10 +4,10 @@ import { PostPage } from '@/helpers/pages';
 import { createMemberFactory, generateSlug } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
 
-async function getNewsletters(request: APIRequestContext): Promise<string[]> {
+async function getNewsletters(request: APIRequestContext): Promise<{ id: string }[]> {
   const response = await request.get('/ghost/api/admin/newsletters/?status=active&limit=all');
   const data = await response.json();
-  return data.newsletters.map((n: { id: string }) => n.id);
+  return data.newsletters.map((n: { id: string }) => ({ id: n.id }));
 }
 
 async function expectFrontendStatus(page: Page, slug: string, status: number, timeout = 20000) {

@@ -1,11 +1,18 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
-const dbController = require('../../../../core/server/api/endpoints/db');
+const dbControllerPath = require.resolve('../../../../core/server/api/endpoints/db');
+const jobsServicePath = require.resolve('../../../../core/server/services/jobs-service');
+const dbController = require(dbControllerPath);
+const jobsService = require(jobsServicePath);
+const ExternalMediaInlinerJob =
+  require('../../../../core/server/services/media-inliner/external-media-inliner-job').default;
 
 describe('DB controller', function () {
-  let settingsCache, importer;
+  let settingsCache, importer, jobsServiceInitialised;
 
   beforeEach(function () {
+    jobsServiceInitialised = false;
     settingsCache = require('../../../../core/shared/settings-cache');
     importer = require('../../../../core/server/data/importer');
 
@@ -16,8 +23,17 @@ describe('DB controller', function () {
     });
   });
 
-  afterEach(function () {
+  afterEach(async function () {
+    if (jobsServiceInitialised) {
+      await jobsService.shutdown({ timeoutMs: 100 });
+      jobsServiceInitialised = false;
+    }
     sinon.restore();
+  });
+
+  afterAll(function () {
+    delete require.cache[dbControllerPath];
+    delete require.cache[jobsServicePath];
   });
 
   describe('importContent', function () {
@@ -66,6 +82,46 @@ describe('DB controller', function () {
           user: { email: 'owner@example.com' },
         }),
       );
+    });
+  });
+
+  describe('inlineMedia', function () {
+    let dispatch;
+
+    beforeEach(function () {
+      const service = jobsService.init();
+      jobsServiceInitialised = true;
+      dispatch = sinon.stub(service, 'dispatch').resolves();
+    });
+
+    it('dispatches explicit domains', async function () {
+      const result = await dbController.inlineMedia.query({
+        data: { domains: ['https://example.com'] },
+      });
+
+      sinon.assert.calledOnce(dispatch);
+      const job = dispatch.firstCall.firstArg;
+      assert.ok(job instanceof ExternalMediaInlinerJob);
+      assert.deepEqual(job.domains, ['https://example.com']);
+      assert.deepEqual(result, { status: 'success' });
+    });
+
+    it('dispatches the default domains when domains are missing', async function () {
+      await dbController.inlineMedia.query({ data: {} });
+
+      assert.deepEqual(dispatch.firstCall.firstArg.domains, [
+        'https://s3.amazonaws.com/revue',
+        'https://substackcdn.com',
+      ]);
+    });
+
+    it('dispatches the default domains when domains are empty', async function () {
+      await dbController.inlineMedia.query({ data: { domains: [] } });
+
+      assert.deepEqual(dispatch.firstCall.firstArg.domains, [
+        'https://s3.amazonaws.com/revue',
+        'https://substackcdn.com',
+      ]);
     });
   });
 });

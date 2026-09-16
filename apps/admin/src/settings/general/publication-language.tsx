@@ -1,4 +1,4 @@
-import LOCALE_DATA from '@tryghost/i18n/lib/locale-data.json';
+import LOCALE_DATA from '@tryghost/i18n/locale-data.json';
 import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
@@ -19,6 +19,16 @@ import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { validateLocale } from '@/settings/utils/locale-validation';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
+
+type LocaleData = {
+  code: string;
+  label: string;
+};
+
+type LocaleOption = {
+  value: string;
+  label: string;
+};
 
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const languageErrorId = React.useId();
@@ -45,15 +55,32 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
     },
   });
 
-  const [publicationLanguage] = getSettingValues(localSettings, ['locale']) as string[];
+  const [publicationLanguage = ''] = getSettingValues<string>(localSettings, ['locale']);
 
-  const localeOptions = React.useMemo(() => {
-    const options = LOCALE_DATA.map((locale) => ({
+  const localeOptions = React.useMemo<LocaleOption[]>(() => {
+    const localeData = LOCALE_DATA as unknown as Array<unknown>;
+
+    if (!Array.isArray(localeData)) {
+      return [];
+    }
+
+    const validLocaleData = localeData.filter((locale): locale is LocaleData => {
+      if (!locale || typeof locale !== 'object') {
+        return false;
+      }
+
+      return (
+        'code' in locale &&
+        'label' in locale &&
+        typeof (locale as { code: unknown }).code === 'string' &&
+        typeof (locale as { label: unknown }).label === 'string'
+      );
+    });
+
+    return validLocaleData.map((locale) => ({
       value: locale.code,
       label: `${locale.label} (${locale.code})`,
     }));
-
-    return options;
   }, []);
 
   const handleLanguageChange = (value: string) => {
@@ -68,7 +95,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
   );
   const [isOtherSelected, setIsOtherSelected] = React.useState(isCustomValue);
   const [validationError, setValidationError] = React.useState<string | null>(null);
-  const localeOptionsWithOther = React.useMemo(
+  const localeOptionsWithOther = React.useMemo<LocaleOption[]>(
     () => [...localeOptions, { label: 'Other...', value: 'other' }],
     [localeOptions],
   );
@@ -97,7 +124,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
       Default: English (<strong>en</strong>); find out more about
       <a
         className="text-primary"
-        href="https://ghost.org/docs/faq/translation/"
+        href="https://docs.ghost.org/faq/translation/"
         rel="noopener noreferrer"
         target="_blank"
       >
@@ -159,7 +186,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
               options={localeOptionsWithOther}
               values={publicationLanguage ? [publicationLanguage] : []}
               autoCloseOnSelect
-              onChange={(values) => {
+              onChange={(values: string[]) => {
                 if (values[0] === 'other') {
                   setIsOtherSelected(true);
                   handleLanguageChange('');

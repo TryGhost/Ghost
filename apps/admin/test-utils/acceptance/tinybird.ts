@@ -47,19 +47,14 @@ export function webAnalyticsBootOverrides(): BootOverrides {
   };
 }
 
-let tokenSerial = 0;
-
 /**
  * Serves the Admin API token request the Tinybird client makes before any
- * pipe query. Each call mints a fresh token: the Tinybird client's SWR cache
- * keys on the full pipe URL (token included) and outlives the render, so a
- * repeated token would let one test's pipe responses satisfy the next test's
- * queries without a request.
+ * pipe query. Pipe queries live on the render's own react-query client, so
+ * nothing outlives the test and a static token is fine.
  */
 export function fakeTinybirdToken(): EndpointCapture {
-  tokenSerial += 1;
   return fakeAdminEndpoint('GET', '/tinybird/token/', {
-    tinybird: { token: `tinybird-test-token-${tokenSerial}` },
+    tinybird: { token: 'tinybird-test-token' },
   });
 }
 

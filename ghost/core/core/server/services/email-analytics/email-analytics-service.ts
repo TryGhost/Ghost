@@ -16,6 +16,8 @@ export type FetchData = {
   /** The begin time used during the last fetch */
   lastBegin?: Date;
   lastEventTimestamp?: Date;
+  /** End of the last successfully fetched window, or its safe cursor when capped. */
+  fetchedThrough?: Date | null;
   /** Set to quit the job early */
   canceled?: boolean;
 };
@@ -23,6 +25,11 @@ export type FetchData = {
 type FetchDataScheduled = FetchData & { schedule?: { begin: Date; end: Date } };
 
 type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed' | 'unsubscribed' | 'complained';
+
+type FetchEventsResult = {
+  /** Earliest processed timestamp for a sending domain that stopped at its event limit. */
+  safeCursor?: Date;
+};
 
 /**
  * Names of the jobs this service runs. Each pipeline needs its own set so their
@@ -68,7 +75,7 @@ type FetchEvents = (options: {
   end: Date;
   maxEvents: number;
   events?: EmailAnalyticsEvent[];
-}) => Promise<void>;
+}) => Promise<FetchEventsResult | void>;
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const FETCH_LATEST_END_MARGIN_MS = 1 * 60 * 1000; // Do not fetch events newer than 1 minute (yet). Reduces the chance of having missed events in fetchLatest.
@@ -148,11 +155,20 @@ export class EmailAnalyticsService {
   }
 
   getStatus() {
+    const now = Date.now();
+    const withLag = <T extends FetchData>(data: T) =>
+      Object.assign(data, {
+        fetchedThrough: data.fetchedThrough ?? null,
+        lagSeconds: data.fetchedThrough
+          ? Math.max(0, Math.floor((now - data.fetchedThrough.getTime()) / 1000))
+          : null,
+      });
+
     return {
-      latest: this.#fetchLatestNonOpenedData,
-      missing: this.#fetchMissingData,
+      latest: withLag(this.#fetchLatestNonOpenedData),
+      missing: withLag(this.#fetchMissingData),
       scheduled: this.#fetchScheduledData,
-      latestOpened: this.#fetchLatestOpenedData,
+      latestOpened: withLag(this.#fetchLatestOpenedData),
     };
   }
 
@@ -538,15 +554,33 @@ export class EmailAnalyticsService {
       }
     };
 
+    let fetchedThrough: Date | undefined;
     try {
-      await this.#fetchEvents({
+      const fetchResult = await this.#fetchEvents({
         batchHandler: processBatch,
         begin,
         end,
         maxEvents,
         events: eventTypes,
       });
+
+      // A void result means fetching was skipped (for example, Mailgun is not configured).
+      // Empty successful windows still establish progress through their requested end.
+      if (fetchResult) {
+        fetchedThrough = fetchResult.safeCursor ?? end;
+      }
+
+      if (
+        fetchResult?.safeCursor &&
+        (!fetchData.lastEventTimestamp || fetchResult.safeCursor < fetchData.lastEventTimestamp)
+      ) {
+        fetchData.lastEventTimestamp = fetchResult.safeCursor;
+      }
     } catch (err) {
+      // A fetch can process events from one domain before another domain fails. Keep the
+      // in-memory cursor at the start of this run so the next attempt retries every domain.
+      fetchData.lastEventTimestamp = begin;
+
       if (!(err instanceof Error) || err.message !== 'Fetching canceled') {
         logging.error('[EmailAnalytics] Error while fetching');
         logging.error(err);
@@ -600,6 +634,10 @@ export class EmailAnalyticsService {
 
     if (error) {
       throw error;
+    }
+
+    if (fetchedThrough) {
+      fetchData.fetchedThrough = fetchedThrough;
     }
 
     return {

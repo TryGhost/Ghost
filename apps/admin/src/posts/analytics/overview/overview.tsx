@@ -31,12 +31,7 @@ import {
   getRangeForStartDate,
   sanitizeChartData,
 } from '@/shared/analytics/chart-helpers';
-import {
-  hasBeenEmailed,
-  isPublishedOnly,
-  useNavigate,
-  useTinybirdQuery,
-} from '@tryghost/admin-x-framework';
+import { isPublishedOnly, useNavigate, useTinybirdQuery } from '@tryghost/admin-x-framework';
 import { useActiveGiftLink } from '@tryghost/admin-x-framework/api/gift-links';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import {
@@ -50,8 +45,11 @@ import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gif
 import { useEffect, useMemo, useState } from 'react';
 import { useGiftLinkUsage } from '@/posts/analytics/hooks/use-gift-link-usage';
 import { usePostReferrers } from '@/posts/analytics/hooks/use-post-referrers';
+import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useShade } from '@tryghost/shade/app';
 
 const Overview: React.FC = () => {
+  const { isAdmin7 } = useShade();
   const navigate = useNavigate();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
@@ -61,6 +59,7 @@ const Overview: React.FC = () => {
   const membersTrackSources = useMembersTrackSources();
   const paidMembersEnabled = usePaidMembersEnabled();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
+  const { hasNewsletterAnalytics, isStatusLoading } = useEmailSendingStatusContext();
 
   // Gift link card: only for eligible posts. Read the active link (without
   // minting) to scope the usage count to the current token, matching the modal.
@@ -165,9 +164,8 @@ const Overview: React.FC = () => {
   const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || chartLoading;
   const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
 
-  // Use the utility function from admin-x-framework
   const showNewsletterSection =
-    hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
+    hasNewsletterAnalytics && emailTrackOpensEnabled && emailTrackClicksEnabled;
   const showWebSection = !post?.email_only && webAnalyticsEnabled;
   const showGrowthSection = membersTrackSources;
   const showGiftLinkCard = Boolean(canManageGiftLink && post && webAnalyticsEnabled);
@@ -208,7 +206,7 @@ const Overview: React.FC = () => {
           )}
           {showNewsletterSection && (
             <NewsletterOverview
-              isNewsletterStatsLoading={isPostLoading}
+              isNewsletterStatsLoading={isPostLoading || isStatusLoading}
               isWebShown={showWebSection}
               post={post as Post}
             />
@@ -230,12 +228,12 @@ const Overview: React.FC = () => {
                     <Button
                       className="absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
                       size="sm"
-                      variant="outline"
+                      variant="subtle"
                       onClick={() => {
                         navigate(`/posts/analytics/${postId}/growth`);
                       }}
                     >
-                      View more
+                      {isAdmin7 ? 'View more →' : 'View more'}
                     </Button>
                   </div>
                   <CardContent className="flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0">
@@ -297,9 +295,10 @@ const Overview: React.FC = () => {
                     <Button
                       className="absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
                       size="sm"
-                      variant="outline"
+                      variant="subtle"
                       onClick={() => setIsGiftLinkOpen(true)}
                     >
+                      {isAdmin7 && <LucideIcon.Share />}
                       Share
                     </Button>
                   </div>

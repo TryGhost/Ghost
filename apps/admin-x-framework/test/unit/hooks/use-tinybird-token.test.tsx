@@ -138,8 +138,10 @@ describe('useTinybirdToken', () => {
     expect(result.current.error).toBe(apiError);
   });
 
-  it('exposes refetch function', () => {
-    const mockRefetch = vi.fn();
+  it('exposes a refetch that resolves the fresh token', async () => {
+    const mockRefetch = vi.fn().mockResolvedValue({
+      data: { tinybird: { token: 'fresh-token' } },
+    });
 
     mockUseTinybirdTokenQuery.mockReturnValue({
       data: { tinybird: { token: 'test-token' } },
@@ -150,7 +152,23 @@ describe('useTinybirdToken', () => {
 
     const { result } = renderHook(() => useTinybirdToken(), { wrapper });
 
-    expect(result.current.refetch).toBe(mockRefetch);
+    await expect(result.current.refetch()).resolves.toBe('fresh-token');
+    expect(mockRefetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('resolves undefined from refetch when no fresh token comes back', async () => {
+    const mockRefetch = vi.fn().mockResolvedValue({ data: null });
+
+    mockUseTinybirdTokenQuery.mockReturnValue({
+      data: { tinybird: { token: 'test-token' } },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+    } as any);
+
+    const { result } = renderHook(() => useTinybirdToken(), { wrapper });
+
+    await expect(result.current.refetch()).resolves.toBeUndefined();
   });
 
   it('refreshes token when stale time expires', () => {

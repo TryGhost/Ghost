@@ -27,8 +27,11 @@ import { useProtoAutomations } from '@/automations/proto/shared/store';
 const LANE = 'phase-1' as const;
 
 const AutomationsList: React.FC = () => {
-  const automations = useProtoAutomations().filter((entry) =>
-    PHASE_1_SLUGS.includes(entry.automation.slug),
+  // slug is optional (and deprecated) on AutomationDetail since the Sep '26
+  // main merge; an automation without one can't be a production default, so it
+  // simply isn't this lane's.
+  const automations = useProtoAutomations().filter(
+    (entry) => entry.automation.slug && PHASE_1_SLUGS.includes(entry.automation.slug),
   );
 
   return (

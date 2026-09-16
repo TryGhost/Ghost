@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "tinybird": {
+      "source": "tinybirdco/tinybird-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tinybird-best-practices/SKILL.md",
+      "computedHash": "3f5d961a3953220b77a91137a019c82a857a43b658ee5a417f6dadcd3b6b5fac"
+    },
+    "tinybird-cli-guidelines": {
+      "source": "tinybirdco/tinybird-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tinybird-cli-guidelines/SKILL.md",
+      "computedHash": "fdd265aa6a502220b17f5d608b87c30beca0eadb9c88c368f3f3b2cebba2ad8a"
+    }
+  }
+}

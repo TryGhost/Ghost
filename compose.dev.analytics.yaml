@@ -41,6 +41,9 @@ services:
     stop_grace_period: 2s
     ports:
       - '7181:7181'
+    volumes:
+      - tinybird-clickhouse:/var/lib/clickhouse
+      - tinybird-metadata:/redis-data
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:7181/v0/health']
       interval: 30s
@@ -90,3 +93,5 @@ services:
 
 volumes:
   shared-config:
+  tinybird-clickhouse:
+  tinybird-metadata:

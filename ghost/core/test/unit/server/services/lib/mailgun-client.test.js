@@ -30,6 +30,31 @@ const createBatchCounter = (customHandler) => {
   return batchCounter;
 };
 
+const createEventsPage = ({ domain, nextPage, timestamps }) => ({
+  items: timestamps.map((timestamp, index) => ({
+    event: 'delivered',
+    recipient: `recipient${index}@example.com`,
+    'user-variables': {
+      'email-id': '5fbe5d9607bdfa3765dc3819',
+    },
+    message: {
+      headers: {
+        'message-id': `message-${index}@${domain}`,
+      },
+    },
+    timestamp,
+  })),
+  paging: {
+    next: `https://api.mailgun.net/v3/${domain}/events/${nextPage}`,
+  },
+});
+
+const mockEventsPage = ({ domain, mailgunOptions, nextPage, page, timestamps }) =>
+  nock('https://api.mailgun.net')
+    .get(`/v3/${domain}/events${page ? `/${page}` : ''}`)
+    .query(mailgunOptions)
+    .reply(200, createEventsPage({ domain, nextPage, timestamps }));
+
 describe('MailgunClient', function () {
   let config, settings;
 
@@ -678,6 +703,234 @@ describe('MailgunClient', function () {
       assert(response.id === 'message-id');
       assert(sendMock.isDone());
     });
+
+    describe('per-recipient Message-Id', function () {
+      const EMAIL_ID = '64f0c7a5e2b3a1d4c5b6a7f8';
+
+      // value of one multipart/form-data field: between the blank line after its header and the next boundary
+      const getFormField = (body, name) => {
+        const fieldStart = body.indexOf(`name="${name}"`);
+        if (fieldStart === -1) {
+          return undefined;
+        }
+        const valueStart = body.indexOf('\r\n\r\n', fieldStart) + '\r\n\r\n'.length;
+        const valueEnd = body.indexOf('\r\n--', valueStart);
+        return body.slice(valueStart, valueEnd);
+      };
+
+      const assertMessageIdShape = (messageId, emailId, suffixShape) => {
+        assert.ok(messageId.startsWith(`${emailId}.`), `unexpected prefix in ${messageId}`);
+        assert.match(messageId.slice(emailId.length + 1), suffixShape);
+      };
+
+      const stubMailgunConfig = () => {
+        sinon
+          .stub(config, 'get')
+          .withArgs('bulkEmail')
+          .returns({
+            mailgun: {
+              apiKey: 'apiKey',
+              domain: 'domain.com',
+              baseUrl: 'https://api.mailgun.net/v3',
+            },
+            batchSize: 1000,
+          });
+      };
+
+      const createRecipientData = () => ({
+        'first@example.com': { name: 'First', list_unsubscribe: 'https://example.com/unsub/1' },
+        'second@example.com': { name: 'Second', list_unsubscribe: 'https://example.com/unsub/2' },
+      });
+
+      const captureSend = (domain = 'domain.com') => {
+        const captured = {};
+        const sendMock = nock('https://api.mailgun.net')
+          .post(`/v3/${domain}/messages`, function (body) {
+            captured.body = body;
+            return true;
+          })
+          .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+            'Content-Type': 'application/json',
+          });
+        return { captured, sendMock };
+      };
+
+      it('sends a per-recipient Message-Id header when requested', async function () {
+        stubMailgunConfig();
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          id: EMAIL_ID,
+          perRecipientMessageId: true,
+        };
+        const { captured, sendMock } = captureSend();
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        const response = await mailgunClient.send(message, createRecipientData(), []);
+
+        assert(response.id === 'message-id');
+        assert(sendMock.isDone());
+        assert.equal(getFormField(captured.body, 'h:Message-Id'), '<%recipient.message_id%>');
+
+        const recipientVariables = JSON.parse(getFormField(captured.body, 'recipient-variables'));
+        const first = recipientVariables['first@example.com'];
+        const second = recipientVariables['second@example.com'];
+        assertMessageIdShape(first.message_id, EMAIL_ID, /^[a-f0-9]{32}@domain\.com$/);
+        assertMessageIdShape(second.message_id, EMAIL_ID, /^[a-f0-9]{32}@domain\.com$/);
+        assert.notEqual(first.message_id, second.message_id);
+        assert.equal(first.name, 'First');
+        assert.equal(first.list_unsubscribe, 'https://example.com/unsub/1');
+        assert.equal(second.name, 'Second');
+        assert.equal(getFormField(captured.body, 'v:email-id'), EMAIL_ID);
+        assert.equal(
+          getFormField(captured.body, 'h:List-Unsubscribe'),
+          '<%recipient.list_unsubscribe%>, <%tag_unsubscribe_email%>',
+        );
+      });
+
+      it('uses the overridden sending domain for per-recipient Message-Ids', async function () {
+        stubMailgunConfig();
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          id: EMAIL_ID,
+          domainOverride: 'fallback.example.net',
+          perRecipientMessageId: true,
+        };
+        const { captured, sendMock } = captureSend('fallback.example.net');
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        await mailgunClient.send(message, createRecipientData(), []);
+
+        assert(sendMock.isDone());
+        const recipientVariables = JSON.parse(getFormField(captured.body, 'recipient-variables'));
+        assert.ok(
+          recipientVariables['first@example.com'].message_id.endsWith('@fallback.example.net'),
+        );
+        assert.ok(
+          recipientVariables['second@example.com'].message_id.endsWith('@fallback.example.net'),
+        );
+      });
+
+      it('does not add a Message-Id header or variable unless requested', async function () {
+        stubMailgunConfig();
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          id: EMAIL_ID,
+        };
+        const recipientData = createRecipientData();
+        const { captured, sendMock } = captureSend();
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        await mailgunClient.send(message, recipientData, []);
+
+        assert(sendMock.isDone());
+        assert.ok(!captured.body.includes('name="h:Message-Id"'));
+        assert.equal(
+          getFormField(captured.body, 'recipient-variables'),
+          JSON.stringify(recipientData),
+        );
+      });
+
+      it('ignores a non-boolean opt-in', async function () {
+        stubMailgunConfig();
+        const recipientData = createRecipientData();
+        const { captured, sendMock } = captureSend();
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        await mailgunClient.send(
+          {
+            subject: 'Test Subject',
+            from: 'from@example.com',
+            html: '<p>Test Content</p>',
+            plaintext: 'Test Content',
+            id: EMAIL_ID,
+            perRecipientMessageId: 'true',
+          },
+          recipientData,
+          [],
+        );
+
+        assert(sendMock.isDone());
+        assert.ok(!captured.body.includes('name="h:Message-Id"'));
+        assert.equal(
+          getFormField(captured.body, 'recipient-variables'),
+          JSON.stringify(recipientData),
+        );
+      });
+
+      it('reports no provider id when Mailgun echoes the header template', async function () {
+        stubMailgunConfig();
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          id: EMAIL_ID,
+          perRecipientMessageId: true,
+        };
+        // Mailgun returns the Message-Id it was given, so a per-recipient template comes back
+        // unsubstituted and identifies nothing
+        const sendMock = nock('https://api.mailgun.net')
+          .post('/v3/domain.com/messages')
+          .reply(200, { id: '<%recipient.message_id%>', message: 'Queued. Thank you.' });
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        const response = await mailgunClient.send(message, createRecipientData(), []);
+
+        assert(sendMock.isDone());
+        assert.equal(response.id, null);
+      });
+
+      it('keeps a real provider id from Mailgun', async function () {
+        stubMailgunConfig();
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          id: EMAIL_ID,
+          perRecipientMessageId: true,
+        };
+        const sendMock = nock('https://api.mailgun.net')
+          .post('/v3/domain.com/messages')
+          .reply(200, { id: '<20260916041835.abc@domain.com>', message: 'Queued. Thank you.' });
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        const response = await mailgunClient.send(message, createRecipientData(), []);
+
+        assert(sendMock.isDone());
+        assert.equal(response.id, '<20260916041835.abc@domain.com>');
+      });
+
+      it('does not mutate the recipient data passed in', async function () {
+        stubMailgunConfig();
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          id: EMAIL_ID,
+          perRecipientMessageId: true,
+        };
+        const recipientData = createRecipientData();
+        const snapshot = JSON.stringify(recipientData);
+        const { sendMock } = captureSend();
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        await mailgunClient.send(message, recipientData, []);
+
+        assert(sendMock.isDone());
+        assert.equal(JSON.stringify(recipientData), snapshot);
+      });
+    });
   });
 
   describe('fetchEvents()', function () {
@@ -1119,6 +1372,165 @@ describe('MailgunClient', function () {
       nock.cleanAll();
     });
 
+    it('returns the capped fallback cursor when the primary domain is exhausted further ahead', async function () {
+      setupDomainWarmingConfig(true);
+
+      const begin = 1606399300;
+      const mailgunOptions = { ...MAILGUN_OPTIONS, begin };
+
+      const primaryPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-next',
+        timestamps: [begin + 10],
+      });
+      const primaryEmptyPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-empty',
+        page: 'primary-next',
+        timestamps: [],
+      });
+      const fallbackPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-unconsumed',
+        timestamps: [begin + 1, begin + 2],
+      });
+      const fallbackNextPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-empty',
+        page: 'fallback-unconsumed',
+        timestamps: [begin + 3],
+      });
+
+      const processedTimestamps = [];
+
+      const result = await new MailgunClient({ config, settings }).fetchEvents(
+        mailgunOptions,
+        (events) => {
+          processedTimestamps.push(...events.map((event) => event.timestamp));
+        },
+        { maxEvents: 2 },
+      );
+
+      assert.equal(primaryPageMock.isDone(), true);
+      assert.equal(primaryEmptyPageMock.isDone(), true);
+      assert.equal(fallbackPageMock.isDone(), true);
+      assert.equal(fallbackNextPageMock.isDone(), false);
+      assert.deepEqual(processedTimestamps, [
+        new Date((begin + 10) * 1000),
+        new Date((begin + 1) * 1000),
+        new Date((begin + 2) * 1000),
+      ]);
+      assert.deepEqual(result, {
+        safeCursor: new Date((begin + 2) * 1000),
+      });
+    });
+
+    it('returns the capped primary cursor when the fallback domain is exhausted further ahead', async function () {
+      setupDomainWarmingConfig(true);
+
+      const begin = 1606399300;
+      const mailgunOptions = { ...MAILGUN_OPTIONS, begin };
+
+      const primaryPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-unconsumed',
+        timestamps: [begin + 1, begin + 2],
+      });
+      const primaryNextPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-empty',
+        page: 'primary-unconsumed',
+        timestamps: [begin + 3],
+      });
+      const fallbackPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-next',
+        timestamps: [begin + 10],
+      });
+      const fallbackEmptyPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-empty',
+        page: 'fallback-next',
+        timestamps: [],
+      });
+
+      const processedTimestamps = [];
+      const result = await new MailgunClient({ config, settings }).fetchEvents(
+        mailgunOptions,
+        (events) => {
+          processedTimestamps.push(...events.map((event) => event.timestamp));
+        },
+        { maxEvents: 2 },
+      );
+
+      assert.equal(primaryPageMock.isDone(), true);
+      assert.equal(primaryNextPageMock.isDone(), false);
+      assert.equal(fallbackPageMock.isDone(), true);
+      assert.equal(fallbackEmptyPageMock.isDone(), true);
+      assert.deepEqual(processedTimestamps, [
+        new Date((begin + 1) * 1000),
+        new Date((begin + 2) * 1000),
+        new Date((begin + 10) * 1000),
+      ]);
+      assert.deepEqual(result, {
+        safeCursor: new Date((begin + 2) * 1000),
+      });
+    });
+
+    it('returns the earliest capped cursor when both domains reach their limits', async function () {
+      setupDomainWarmingConfig(true);
+
+      const begin = 1606399300;
+      const mailgunOptions = { ...MAILGUN_OPTIONS, begin };
+
+      mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-unconsumed',
+        timestamps: [begin + 5, begin + 6],
+      });
+      const primaryNextPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-empty',
+        page: 'primary-unconsumed',
+        timestamps: [begin + 7],
+      });
+      mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-unconsumed',
+        timestamps: [begin + 1, begin + 2],
+      });
+      const fallbackNextPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-empty',
+        page: 'fallback-unconsumed',
+        timestamps: [begin + 3],
+      });
+
+      const result = await new MailgunClient({ config, settings }).fetchEvents(
+        mailgunOptions,
+        () => {},
+        { maxEvents: 2 },
+      );
+
+      assert.equal(primaryNextPageMock.isDone(), false);
+      assert.equal(fallbackNextPageMock.isDone(), false);
+      assert.deepEqual(result, {
+        safeCursor: new Date((begin + 2) * 1000),
+      });
+    });
+
     it('fetches from both primary and fallback domains when enabled', async function () {
       setupDomainWarmingConfig(true);
 
@@ -1141,12 +1553,13 @@ describe('MailgunClient', function () {
 
       const counter = createBatchCounter();
       const mailgunClient = new MailgunClient({ config, settings });
-      await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+      const result = await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
 
       assert.equal(primaryMock.isDone(), true);
       assert.equal(fallbackMock.isDone(), true);
       assert.equal(counter.batches, 2);
       assert.equal(counter.events, 6);
+      assert.deepEqual(result, { safeCursor: undefined });
     });
 
     it('only fetches from primary when disabled', async function () {

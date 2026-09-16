@@ -21,7 +21,7 @@ export const TrialDaysLabel: React.FC<{ size?: 'sm' | 'md'; trialDays: number }>
 
   const containerClassName = clsx(
     size === 'sm' ? 'px-1.5 py-0.5 text-sm' : 'px-2.5 py-1.5',
-    'relative -mt-1 -mr-1 rounded-full leading-none font-semibold tracking-wide whitespace-nowrap text-grey-900',
+    'relative -mt-1 -mr-1 rounded-full leading-none font-semibold tracking-wide whitespace-nowrap text-gray-900',
   );
 
   return (
@@ -35,7 +35,7 @@ export const TrialDaysLabel: React.FC<{ size?: 'sm' | 'md'; trialDays: number }>
 const TierBenefits: React.FC<{ benefits: string[] }> = ({ benefits }) => {
   if (!benefits?.length) {
     return (
-      <div className="mt-4 w-full text-md leading-snug text-grey-900 opacity-30">
+      <div className="mt-4 w-full text-md leading-snug text-gray-900 opacity-30">
         <div className="mb-2.5 flex items-start">
           <LucideIcon.Check className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" />
           <div>Expert analysis</div>
@@ -54,7 +54,7 @@ const TierBenefits: React.FC<{ benefits: string[] }> = ({ benefits }) => {
         return (
           <div
             key={`${benefit}:${occurrence}`}
-            className="mt-4 w-full text-md leading-snug text-grey-900"
+            className="mt-4 w-full text-md leading-snug text-gray-900"
           >
             <div className="mb-2.5 flex items-start">
               <LucideIcon.Check className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" />
@@ -130,7 +130,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier 
           </div>
         )}
       </div>
-      <div className="rounded-sm border border-grey-200 bg-white dark:border-transparent">
+      <div className="rounded-sm border border-gray-200 bg-white dark:border-transparent">
         <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] scale-90 items-start justify-stretch rounded bg-white p-4">
           <div className="min-h-[56px] w-full">
             <h4
@@ -151,7 +151,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier 
                   })}
                 </span>
                 {!isFreeTier && (
-                  <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">
+                  <span className="ml-1 self-end text-[1.5rem] leading-snug text-gray-800">
                     /{showingYearly ? 'year' : 'month'}
                   </span>
                 )}
@@ -163,7 +163,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier 
           <div className="flex-column flex w-full flex-1">
             <div className="flex-1">
               <div
-                className={`mt-4 w-full text-[1.55rem] leading-snug font-semibold text-grey-900 ${!description && 'opacity-30'}`}
+                className={`mt-4 w-full text-[1.55rem] leading-snug font-semibold text-gray-900 ${!description && 'opacity-30'}`}
               >
                 {description || (isFreeTier ? `Free preview` : 'Full access to premium content')}
               </div>

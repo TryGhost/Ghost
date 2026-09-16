@@ -4,6 +4,28 @@ import { type AddressInfo } from 'node:net';
 import http from 'node:http';
 import { promisify } from 'node:util';
 import * as helpers from '../../../src/utils/helpers';
+
+interface RequestOptionsLike {
+  sessionExpiryRedirect?: boolean;
+}
+
+const fetchApiCalls = vi.hoisted(() => [] as RequestOptionsLike[]);
+
+// Wraps the real transport so uploads still run, and records what each call asked for
+vi.mock('../../../src/utils/api/fetch-api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/utils/api/fetch-api')>();
+  return {
+    ...actual,
+    useFetchApi: () => {
+      const fetchApi = actual.useFetchApi();
+      return (endpoint: unknown, options: RequestOptionsLike = {}) => {
+        fetchApiCalls.push(options);
+        return (fetchApi as (...args: unknown[]) => Promise<unknown>)(endpoint, options);
+      };
+    },
+  };
+});
+
 import { useKoenigFileUpload } from '../../../src/hooks/use-koenig-file-upload';
 
 function makeFile(name: string, type = 'image/jpeg'): File {
@@ -59,6 +81,7 @@ describe('useKoenigFileUpload', () => {
   beforeEach(async () => {
     uploadResponse = successfulUploadResponse;
     requestLog = [];
+    fetchApiCalls.length = 0;
 
     server = http.createServer((req, res) => {
       requestLog.push({ method: req.method, url: req.url });
@@ -301,6 +324,28 @@ describe('useKoenigFileUpload', () => {
 
     expect(uploadResult).not.toBeNull();
     expect(result.current.errors).toHaveLength(0);
+  });
+
+  it('keeps the session-expiry redirect when the caller asks for nothing', async () => {
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
+
+    await act(async () => {
+      await result.current.upload([makeFile('photo.jpg')]);
+    });
+
+    expect(fetchApiCalls[0]?.sessionExpiryRedirect).toBeUndefined();
+  });
+
+  it('passes the session-expiry opt-out to the transport', async () => {
+    const { result } = renderHook(() =>
+      useKoenigFileUpload('image', { sessionExpiryRedirect: false }),
+    );
+
+    await act(async () => {
+      await result.current.upload([makeFile('photo.jpg')]);
+    });
+
+    expect(fetchApiCalls[0]?.sessionExpiryRedirect).toBe(false);
   });
 
   it('accepts all supported image extensions', async () => {

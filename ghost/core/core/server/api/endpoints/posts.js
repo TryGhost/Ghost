@@ -3,7 +3,7 @@ const models = require('../../models');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const contentImportService = require('../../services/content-import');
-const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const allowedIncludes = [
   'tags',
   'authors',
@@ -80,11 +80,7 @@ const controller = {
       unsafeAttrs: unsafeAttrs,
     },
     query(frame) {
-      const options = {
-        ...frame.options,
-        mongoTransformer: rejectAdminApiRestrictedFieldsTransformer,
-      };
-      return postsService.browsePosts(options);
+      return postsService.browsePosts(restrictAdminApiQueryOptions(frame.options));
     },
   },
 
@@ -108,12 +104,8 @@ const controller = {
     },
     validation: {},
     async query(frame) {
-      const options = {
-        ...frame.options,
-        mongoTransformer: rejectAdminApiRestrictedFieldsTransformer,
-      };
       return {
-        data: await postsService.export(options),
+        data: await postsService.export(restrictAdminApiQueryOptions(frame.options)),
         filename: getCSVExportFileName('analytics'),
       };
     },
@@ -129,13 +121,13 @@ const controller = {
       method: 'importContent',
     },
     async query(frame) {
-      // The CSV must be parsed before the response goes out: the uploaded temp file is
-      // deleted as soon as it is sent. The posts are written by a background job behind
-      // the 202.
+      // The content-import service stages and validates the upload before this response;
+      // Multer deletes the request temp file as soon as the 202 is sent.
       const { importId, total } = await contentImportService.importCSV({
         filePath: frame.file.path,
         fileName: frame.file.name,
         mapping: frame.data.mapping,
+        requestUserEmail: frame.user ? frame.user.get('email') : null,
       });
       return { meta: { import_id: importId, total } };
     },

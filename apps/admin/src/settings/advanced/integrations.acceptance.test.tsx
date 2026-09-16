@@ -51,7 +51,6 @@ const customIntegrationsLimit = {
 
 function limitedConfig(upgradeUrl?: string) {
   const response = configResponse();
-  response.config.labs = { ...response.config.labs, transistor: true };
   response.config.hostSettings = upgradeUrl
     ? { limits: customIntegrationsLimit, billing: { upgradeUrl } }
     : { limits: customIntegrationsLimit };
@@ -283,12 +282,17 @@ describe('Advanced integrations', () => {
     await modal.getByRole('switch').click();
     await modal.getByRole('button', { name: 'Save' }).click();
     await expect(settingsApi).toHaveEditedSettings([{ key: 'pintura', value: true }]);
+
+    await modal.getByRole('switch').click();
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect(settingsApi).toHaveEditedSettings([{ key: 'pintura', value: false }]);
+    expect(settingsApi.requests).toHaveLength(2);
   });
 
   it('shows the Active badge after enabling the Transistor integration', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/integrations', { labs: { transistor: true } });
+    await renderAdminApp('/settings/integrations');
 
     const item = settingsScreen.section('integrations').getByTestId('transistor-integration');
     const badge = item.getByText('Active', { exact: true });
@@ -297,6 +301,7 @@ describe('Advanced integrations', () => {
     await item.hover();
     await item.getByRole('button', { name: 'Configure' }).click();
     const modal = settingsScreen.section('transistor-modal');
+    await expect.element(modal.getByRole('switch')).toBeVisible();
     await modal.getByRole('switch').click();
     await modal.getByRole('button', { name: 'Save' }).click();
     await expect(settingsApi).toHaveEditedSettings([{ key: 'transistor', value: true }]);
@@ -305,6 +310,38 @@ describe('Advanced integrations', () => {
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(modal).toHaveCount(0);
     await expect.element(badge).toBeVisible();
+  });
+
+  it('clears the Active badge after disabling the Transistor integration', async () => {
+    fakeSettingsScreens();
+    const settingsApi = fakeEditSettings();
+    await renderAdminApp('/settings/integrations');
+
+    const item = settingsScreen.section('integrations').getByTestId('transistor-integration');
+    const badge = item.getByText('Active', { exact: true });
+    await item.hover();
+    await item.getByRole('button', { name: 'Configure' }).click();
+    const modal = settingsScreen.section('transistor-modal');
+    await modal.getByRole('switch').click();
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect(settingsApi).toHaveEditedSettings([{ key: 'transistor', value: true }]);
+    await expect(badge).toHaveCount(1);
+
+    await modal.getByRole('switch').click();
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect(settingsApi).toHaveEditedSettings([{ key: 'transistor', value: false }]);
+    await expect(badge).toHaveCount(0);
+    expect(settingsApi.requests).toHaveLength(2);
+  });
+
+  it('shows the Transistor integration in the built-in list', async () => {
+    // The transistor labs flag was removed (#27082); the card is not gated.
+    fakeSettingsScreens();
+    await renderAdminApp('/settings/integrations');
+
+    const section = settingsScreen.section('integrations');
+    await expect.element(section.getByTestId('unsplash-integration')).toBeVisible();
+    await expect.element(section.getByTestId('transistor-integration')).toBeVisible();
   });
 
   it('shows the upgrade CTA on host-limited integration cards', async () => {
@@ -502,7 +539,6 @@ describe('Advanced integrations', () => {
   it('moves host-limited integrations to the bottom without disturbing relative order', async () => {
     fakeSettingsScreens();
     await renderAdminApp('/settings/integrations', {
-      labs: { transistor: true },
       boot: { browseConfig: { response: limitedConfig() } },
     });
 

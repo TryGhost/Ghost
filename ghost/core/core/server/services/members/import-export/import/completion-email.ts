@@ -1,6 +1,6 @@
 import { serialize } from '../csv';
 import renderImportEmail, { headingFor, type ImportEmailSummary } from './email-template';
-import { isCustomFieldColumn } from '@tryghost/custom-field-types/csv';
+import { isMetafieldColumn } from '@tryghost/metafield-types/csv';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 
 // The finished import as the email reads it: how many imported and which rows
@@ -65,8 +65,7 @@ function humaniseError(row: ImportErrorRow): string {
 // papaparse takes the fixed columns from these keys, so the report cannot drift from the
 // shaper -- a new member column must be added here or the shaper stops compiling. tiers
 // and deleted_at are export-vocabulary columns an import never fills; kept always-empty
-// so the report matches the members export CSV. Any custom_fields.* columns a submitted
-// row carried are dynamic, so they are threaded in separately by buildErrorReport.
+// so the report matches the members export CSV.
 type ErrorReportRow = {
   id: MemberImportRow['id'];
   email: MemberImportRow['email'];
@@ -87,14 +86,12 @@ function stringifyLabels(labels: Array<string | Label>): string {
   return labels.map((label) => (typeof label === 'string' ? label : label.name)).join(',');
 }
 
-// The custom_fields.* cells a submitted row carried, echoed untouched so a manager can
-// fix a failed row and re-upload the values they mapped.
-function customFieldCells(row: ImportErrorRow): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(row).filter(([column]) => isCustomFieldColumn(column)));
+function metafieldCells(row: ImportErrorRow): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(row).filter(([column]) => isMetafieldColumn(column)));
 }
 
 // Shape a failed import row into its fixed error-report cells, with the raw ORM message
-// rewritten into copy the member manager can act on. Custom field cells are merged on by
+// rewritten into copy the member manager can act on. Metafield cells are merged on by
 // buildErrorReport, which owns the dynamic column set.
 function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
   return {
@@ -116,16 +113,15 @@ function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
 
 // The error report attached to the completion email: the failed rows as CSV, called only
 // when there are rows to list. It shares the serialiser with the export but not the
-// shaping -- the export writes db members, this echoes submitted rows. Member columns come from the shaper's keys (so the type
-// stays the single source); the custom_fields.* columns across the rows are threaded in
-// before the last error column, and each row's custom cells merged on.
+// shaping -- the export writes db members, this echoes submitted rows. Member columns
+// come from the shaper's keys, so the type stays the single source.
 function buildErrorReport(errors: ImportErrorRow[]): string {
   const memberColumns = Object.keys(toErrorReportRow(errors[0])).filter(
     (column) => column !== 'error',
   );
-  const customColumns = [...new Set(errors.flatMap((row) => Object.keys(customFieldCells(row))))];
+  const customColumns = [...new Set(errors.flatMap((row) => Object.keys(metafieldCells(row))))];
   const columns = [...memberColumns, ...customColumns, 'error'];
-  const rows = errors.map((row) => ({ ...toErrorReportRow(row), ...customFieldCells(row) }));
+  const rows = errors.map((row) => ({ ...toErrorReportRow(row), ...metafieldCells(row) }));
   return serialize(rows, { columns });
 }
 

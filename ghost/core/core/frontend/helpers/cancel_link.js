@@ -13,7 +13,7 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
   invalidData:
-    'The {{cancel_link}} helper was used outside of a subscription context. See https://ghost.org/docs/themes/members/#cancel-links.',
+    'The {{cancel_link}} helper was used outside of a subscription context. See https://docs.ghost.org/themes/members/#cancel-links.',
 };
 
 // eslint-disable-next-line camelcase
@@ -45,7 +45,7 @@ module.exports = function cancelLabsWrapper() {
       flagKey: 'members',
       flagName: 'Members',
       helperName: 'cancel_link',
-      helpUrl: 'https://ghost.org/docs/themes/members/',
+      helpUrl: 'https://docs.ghost.org/themes/members/',
     },
     () => {
       return cancel_link.apply(self, args); // eslint-disable-line camelcase

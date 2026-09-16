@@ -53,17 +53,82 @@ export const InputFieldStyles = `
         border-color: var(--red);
     }
 
+    /* Keyed on its own class rather than the element: the gift message and the
+       cancellation reason are textareas with the base class too, and keep their look. */
+    .gh-portal-input.gh-portal-input-textarea {
+        height: auto;
+        min-height: 88px;
+        padding: 10px 12px;
+        line-height: 1.4em;
+        resize: vertical;
+    }
+
+    /* Several inputs presented as one field, the way an address is filled in at checkout.
+       Neighbours overlap by a pixel so their borders read as one divider, and the focused
+       or invalid input is lifted so its own border shows whole. */
+    .gh-portal-input-group {
+        margin-bottom: 16px;
+    }
+
+    .gh-portal-input-group .gh-portal-input {
+        position: relative;
+        border-radius: 0;
+        margin-bottom: 0;
+    }
+
+    .gh-portal-input-group .gh-portal-input:focus,
+    .gh-portal-input-group .gh-portal-input.error {
+        z-index: 1;
+    }
+
+    .gh-portal-input-group-row {
+        display: flex;
+    }
+
+    .gh-portal-input-group-row + .gh-portal-input-group-row {
+        margin-top: -1px;
+    }
+
+    .gh-portal-input-group-row .gh-portal-input-section {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .gh-portal-input-group-row .gh-portal-input-section + .gh-portal-input-section {
+        margin-inline-start: -1px;
+    }
+
+    .gh-portal-input-group-row:first-child .gh-portal-input-section:first-child .gh-portal-input {
+        border-start-start-radius: 6px;
+    }
+
+    .gh-portal-input-group-row:first-child .gh-portal-input-section:last-child .gh-portal-input {
+        border-start-end-radius: 6px;
+    }
+
+    .gh-portal-input-group-row:last-child .gh-portal-input-section:first-child .gh-portal-input {
+        border-end-start-radius: 6px;
+    }
+
+    .gh-portal-input-group-row:last-child .gh-portal-input-section:last-child .gh-portal-input {
+        border-end-end-radius: 6px;
+    }
+
     .gh-portal-input::placeholder {
         color: var(--grey8);
     }
 
-    .gh-portal-popup-container:not(.preview) .gh-portal-input:disabled {
+    /* The attribute, not :read-only: a select counts as read-only to that pseudo-class
+       and would take the disabled look while being perfectly usable. */
+    .gh-portal-popup-container:not(.preview) .gh-portal-input:disabled,
+    .gh-portal-popup-container:not(.preview) .gh-portal-input[readonly] {
         background: var(--grey13);
         color: var(--grey9);
         box-shadow: none;
     }
 
-    .gh-portal-popup-container:not(.preview) .gh-portal-input:disabled::placeholder {
+    .gh-portal-popup-container:not(.preview) .gh-portal-input:disabled::placeholder,
+    .gh-portal-popup-container:not(.preview) .gh-portal-input[readonly]::placeholder {
         color: var(--grey9);
     }
 `;
@@ -93,6 +158,7 @@ function InputField({
   value,
   placeholder,
   disabled = false,
+  readOnly = false,
   onChange = () => {},
   onBlur = () => {},
   onKeyDown = () => {},
@@ -100,12 +166,18 @@ function InputField({
   maxLength,
   autoFocus,
   errorMessage,
+  // Marked wrong without saying why here. A composite's inputs share one field, and its
+  // reasons are listed under the group rather than wedged between its rows.
+  invalid = false,
+  // What says why, when it is not printed beside the input: a composite's reasons are
+  // listed under the group, and an input has to point at them to be read out with it.
+  describedBy,
 }) {
   const fieldNode = useRef(null);
   id = id || `input-${name}`;
   const sectionClasses = hidden ? 'gh-portal-input-section hidden' : 'gh-portal-input-section';
   const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
-  const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
+  const inputClasses = errorMessage || invalid ? 'gh-portal-input error' : 'gh-portal-input';
   if (isCookiesDisabled()) {
     disabled = true;
   }
@@ -147,6 +219,24 @@ function InputField({
       fieldNode.current.focus();
     }
   }, [autoFocus]);
+  const fieldProps = {
+    'data-test-input': id,
+    ref: fieldNode,
+    id,
+    className: inputClasses,
+    name,
+    value,
+    placeholder,
+    onChange: (e) => onChange(e, name),
+    onBlur: (e) => onBlur(e, name),
+    disabled,
+    readOnly,
+    tabIndex,
+    maxLength,
+    'aria-label': label,
+    'aria-invalid': errorMessage || invalid ? true : undefined,
+    'aria-describedby': describedBy,
+  };
   return (
     <section className={sectionClasses}>
       <div className="gh-portal-input-labelcontainer">
@@ -156,28 +246,21 @@ function InputField({
         </label>
         <InputError message={errorMessage} name={name} />
       </div>
-      <input
-        data-test-input={id}
-        ref={fieldNode}
-        id={id}
-        className={inputClasses}
-        type={type}
-        name={name}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e, name)}
-        onKeyDown={(e) => onKeyDown(e, name)}
-        onBlur={(e) => onBlur(e, name)}
-        disabled={disabled}
-        tabIndex={tabIndex}
-        maxLength={maxLength}
-        autoComplete={autoComplete}
-        autoCorrect={autoCorrect}
-        autoCapitalize={autoCapitalize}
-        aria-label={label}
-        inputMode={inputMode}
-        pattern={pattern}
-      />
+      {type === 'textarea' ? (
+        // No onKeyDown: Enter adds a line here, where in an input it submits the form.
+        <textarea {...fieldProps} className={`${inputClasses} gh-portal-input-textarea`} />
+      ) : (
+        <input
+          {...fieldProps}
+          type={type}
+          onKeyDown={(e) => onKeyDown(e, name)}
+          autoComplete={autoComplete}
+          autoCorrect={autoCorrect}
+          autoCapitalize={autoCapitalize}
+          inputMode={inputMode}
+          pattern={pattern}
+        />
+      )}
     </section>
   );
 }

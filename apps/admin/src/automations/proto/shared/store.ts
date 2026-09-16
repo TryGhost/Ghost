@@ -104,8 +104,10 @@ const seed = (): StoreState => ({
   automations: mockAutomations.map((automation) => ({
     automation,
     // The fixture map is the seed now, not the lookup — once a description can be
-    // edited, the record has to own it.
-    description: AUTOMATION_DESCRIPTIONS[automation.slug] ?? '',
+    // edited, the record has to own it. slug is optional (and deprecated) on
+    // AutomationDetail as of the Sep '26 main merge, so the lookup guards it —
+    // the fixtures themselves always carry one.
+    description: (automation.slug && AUTOMATION_DESCRIPTIONS[automation.slug]) || '',
     // By slug, because which member a production flow is for IS its slug (see
     // mock/automations). Both used to seed the free-signup default, which put
     // "Free member signs up" on the PAID welcome flow's trigger card.

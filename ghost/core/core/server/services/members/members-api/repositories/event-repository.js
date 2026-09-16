@@ -34,13 +34,11 @@ module.exports = class EventRepository {
     MemberStatusEvent,
     MemberLoginEvent,
     MemberCreatedEvent,
-    SubscriptionCreatedEvent,
     MemberPaidSubscriptionEvent,
     MemberLinkClickEvent,
     MemberFeedback,
     EmailSpamComplaintEvent,
     Comment,
-    labsService,
     memberAttributionService,
     urlService,
     MemberEmailChangeEvent,
@@ -55,10 +53,8 @@ module.exports = class EventRepository {
     this._MemberLoginEvent = MemberLoginEvent;
     this._EmailRecipient = EmailRecipient;
     this._Comment = Comment;
-    this._labsService = labsService;
     this._urlService = urlService;
     this._MemberCreatedEvent = MemberCreatedEvent;
-    this._SubscriptionCreatedEvent = SubscriptionCreatedEvent;
     this._MemberLinkClickEvent = MemberLinkClickEvent;
     this._MemberFeedback = MemberFeedback;
     this._EmailSpamComplaintEvent = EmailSpamComplaintEvent;
@@ -432,6 +428,8 @@ module.exports = class EventRepository {
       delete json.postAttribution?.mobiledoc;
       delete json.postAttribution?.lexical;
       delete json.postAttribution?.plaintext;
+      delete json.postAttribution?.auto_excerpt;
+      delete json.postAttribution?.reading_time;
       const createdWithStatus = json.signupStatusEvent?.to_status ?? null;
       delete json.signupStatusEvent;
       return {
@@ -492,6 +490,8 @@ module.exports = class EventRepository {
       delete json.postAttribution?.mobiledoc;
       delete json.postAttribution?.lexical;
       delete json.postAttribution?.plaintext;
+      delete json.postAttribution?.auto_excerpt;
+      delete json.postAttribution?.reading_time;
       return {
         type: 'donation_event',
         data: {

@@ -37,7 +37,7 @@ The buyer's chosen way of handing over a gift subscription: the publication emai
 _Avoid_: Delivery mode
 
 **Redemption link**:
-A single-use, time-limited link through which a purchased gift subscription can be viewed and claimed. Its bearer may see the gift's buyer name, intended recipient name, and personal message, but not email-routing or delivery details.
+A single-use, time-limited link through which a purchased gift subscription can be viewed and claimed. Its bearer may see the gift's buyer name, intended recipient name, recipient email, and personal message; the intended recipient does not reserve redemption.
 _Avoid_: Gift Link
 
 **Gift redemption**:

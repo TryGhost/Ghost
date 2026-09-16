@@ -27,6 +27,16 @@ const automations = [
       in_progress_run_count: 0,
     },
   },
+  {
+    id: 'automation-id-3',
+    name: 'Another automation',
+    status: 'inactive' as const,
+    stats: {
+      last_run_created_at: null,
+      total_run_count: 0,
+      in_progress_run_count: 0,
+    },
+  },
 ];
 
 const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
@@ -60,21 +70,22 @@ describe('AutomationsList', () => {
   it('renders fetched automations with private beta copy and status labels', () => {
     renderWithRouter(<AutomationsList automations={automations} />);
 
-    expect(screen.getAllByTestId('automation-list-row')).toHaveLength(2);
+    expect(screen.getAllByTestId('automation-list-row')).toHaveLength(3);
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
     expect(screen.getByText('Welcome new free members after they sign up.')).toBeInTheDocument();
     expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
     expect(
       screen.getByText('Welcome new paid members after they start their subscription.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Live')).toBeInTheDocument();
-    expect(screen.getByText('Off')).toBeInTheDocument();
+    expect(screen.getByText('Another automation')).toBeInTheDocument();
+    expect(screen.getAllByText('Live')).toHaveLength(1);
+    expect(screen.getAllByText('Off')).toHaveLength(2);
     expect(screen.getByRole('columnheader', { name: 'Last entry' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Total entries' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'In progress' })).toBeInTheDocument();
     expect(screen.getByText('1,432')).toBeInTheDocument();
     expect(screen.getByText('118')).toBeInTheDocument();
-    expect(screen.getByText('14 days ago')).toHaveAttribute('datetime', '2026-07-21T07:12:00.000Z');
+    expect(screen.getByText('Jul 21')).toHaveAttribute('datetime', '2026-07-21T07:12:00.000Z');
   });
 
   it('renders Never when an automation has no last entry', () => {
@@ -83,11 +94,24 @@ describe('AutomationsList', () => {
     expect(screen.getByText('Never')).toBeInTheDocument();
   });
 
+  it('hides run analytics when stats are unavailable', () => {
+    const automationsWithoutStats = automations.map(
+      ({ stats: _stats, ...automation }) => automation,
+    );
+
+    renderWithRouter(<AutomationsList automations={automationsWithoutStats} />);
+
+    expect(screen.queryByRole('columnheader', { name: 'Last entry' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Total entries' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'In progress' })).not.toBeInTheDocument();
+    expect(screen.queryByText('1,432')).not.toBeInTheDocument();
+  });
+
   it('links each row to the automation sequence by id', () => {
     renderWithRouter(<AutomationsList automations={automations} />);
 
     expect(screen.getByRole('table', { name: 'Automations' })).toBeInTheDocument();
-    expect(screen.getAllByRole('rowheader')).toHaveLength(2);
+    expect(screen.getAllByRole('rowheader')).toHaveLength(3);
     expect(screen.getByRole('link', { name: 'Free member welcome flow' })).toHaveAttribute(
       'href',
       '/automations/automation-id-1',

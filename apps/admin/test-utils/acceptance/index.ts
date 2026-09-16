@@ -1,7 +1,18 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
 export { fakeAnalyticsOverview } from './analytics';
+export {
+  UNSPLASH_PICKED,
+  fakeEditorChrome,
+  fakeEditorPost,
+  fakeUnsplashPhotos,
+  submittedPost,
+  withFastAutosave,
+  withoutAutosave,
+  withoutUnsplash,
+} from './editor';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
+export { InAppProviders, renderInApp } from './render-in-app';
 export {
   defineResource,
   fakeActions,
@@ -16,9 +27,12 @@ export {
   fakeMembers,
   fakeNewsletters,
   fakeOffers,
+  fakePages,
   fakePosts,
+  fakePostsListScreen,
   fakeRoles,
   fakeSettingsScreens,
+  fakeSnippets,
   fakeTags,
   fakeThemes,
   fakeThemeUpload,
@@ -51,6 +65,7 @@ export {
 } from './tinybird';
 export type { TinybirdPipeCapture, TinybirdPipeQuery } from './tinybird';
 export { fakeAdminStats } from './stats';
+export { unsavedChangesGuarded } from './unsaved-changes-guard';
 
 // Test-data re-exports, so a spec needs a single import surface.
 export {
@@ -87,6 +102,7 @@ export {
   post,
   postGrowthStat,
   postReferrerStat,
+  postRevision,
   postStats,
   reply,
   retentionOffer,
@@ -133,6 +149,7 @@ export type {
   Post,
   PostGrowthStat,
   PostReferrerStat,
+  PostRevision,
   PostStats,
   ReplySpec,
   SettingsResponse,
@@ -143,6 +160,7 @@ export type {
   SubscriptionStat,
   Tag,
   Theme,
+  ThemeTemplate,
   Tier,
   TinybirdPipeName,
   TinybirdPipeRows,

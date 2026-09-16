@@ -1,4 +1,4 @@
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationsSettingsImg from '@/settings/assets/images/integrations-settings.png';
 import React, { useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';

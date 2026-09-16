@@ -62,7 +62,7 @@ E2E test scripts automatically sync Tinybird tokens when Tinybird is running.
 
 ### Build Mode (Prebuilt Image)
 
-Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghost image and serves public assets from `/content/files`.
+Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghost image and serves public assets from `/ghost/assets`.
 
 ```bash
 # From repository root
@@ -79,6 +79,18 @@ Build-mode E2E infra uses tmpfs-backed MySQL storage by default so database
 snapshot restore cycles stay fast and isolated from local development data.
 Set `GHOST_E2E_MYSQL_TMPFS=false` to use the normal Docker volume instead, or
 `GHOST_E2E_MYSQL_TMPFS_SIZE=4g` to adjust the tmpfs size.
+
+Set `GHOST_E2E_TINYBIRD_SLIM=true` to swap the Tinybird service for the distilled
+slim image (`ghcr.io/tryghost/tinybird-local-slim`): ~0.7GB pulled and ~2.4GB on
+disk, against ~2.1GB and ~6.9GB for upstream. CI enables it so the analytics jobs
+fit inside the runner disk budget. Override the image/tag with
+`GHOST_E2E_TINYBIRD_SLIM_IMAGE`. Local dev (`compose.dev.analytics.yaml`) always
+uses the upstream image.
+
+The slim image's GHCR package is internal, so a pull can legitimately fail — most
+often on a PR from a public fork, whose token cannot read it. `infra-up.sh` warns
+and falls back to the upstream image rather than failing the run. CI leaves the
+flag off for cross-repo PRs so those runs skip the doomed pull entirely.
 
 For a CI-like local preflight (pulls Playwright + gateway images and starts infra), run:
 
@@ -227,7 +239,7 @@ Global teardown (`tests/global.teardown.ts`) does:
 Modes:
 
 - Dev mode: Ghost mounts source code and proxies assets to host dev servers
-- Build mode: Ghost uses a prebuilt image and serves assets from `/content/files`
+- Build mode: Ghost uses a prebuilt image and serves assets from `/ghost/assets`
 
 ### Best Practices
 
@@ -246,7 +258,7 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 
 1. **Setup**: Ubuntu runner with Node.js and Docker
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
-3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into `/content/files`)
+3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into Ghost's built admin assets, served from `/ghost/assets`)
 4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
 5. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
 6. **Artifacts**: Upload Playwright traces and reports on failure
@@ -350,6 +362,11 @@ its client uses, so what Ghost receives and what the API can hand back are diffe
 renderings: at Stripe's current default the shipping address moves to
 `collected_information.shipping_details`, which Ghost never sees. Ghost reads only
 `event.type` and `event.data.object`, so the envelope carries nothing worth pinning.
+
+The same difference applies to `stripe listen`, which `pnpm dev:stripe --listen` uses:
+it renders events at the account default too. The default `pnpm dev:stripe` lets Ghost
+register its own pinned endpoint, so it receives the payloads production receives (see
+[Stripe testing](../docs/contributing/testing-stripe.md#receive-production-shaped-webhooks)).
 
 ## Resolving issues
 

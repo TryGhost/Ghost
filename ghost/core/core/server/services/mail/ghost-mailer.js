@@ -17,7 +17,7 @@ const messages = {
   reason: ' Reason: {reason}.',
   messageSent: 'Message sent. Double check inbox and spam folder!',
 };
-const EmailAddressParser = require('../email-address/email-address-parser');
+const emailAddressParser = require('../email-address/email-address-parser');
 const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
 const MAX_MAILGUN_TAGS = 10;
 
@@ -54,8 +54,8 @@ function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
   }
 
   return {
-    from: EmailAddressParser.stringify(addresses.from),
-    replyTo: addresses.replyTo ? EmailAddressParser.stringify(addresses.replyTo) : null,
+    from: emailAddressParser.stringify(addresses.from),
+    replyTo: addresses.replyTo ? emailAddressParser.stringify(addresses.replyTo) : null,
   };
 }
 
@@ -100,7 +100,7 @@ function createMessage(message) {
  */
 function createMailError({ message, err, ignoreDefaultMessage } = { message: '' }) {
   const helpMessage = tpl(messages.checkEmailConfigInstructions, {
-    url: 'https://ghost.org/docs/config/#mail',
+    url: 'https://docs.ghost.org/config/#mail',
   });
   const defaultErrorMessage = tpl(messages.failedSendingEmailError);
 

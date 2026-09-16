@@ -6,14 +6,10 @@ import {
   fakeAnalyticsOverview,
   fakeSettingsScreens,
   renderAdminApp,
+  unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import { settingsScreen } from './settings.screen';
 import { fakeStaffWorld } from './general/staff.test-helpers';
-
-const flushEffects = () =>
-  new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve)));
-  });
 
 // Settings navigations are real router pushes; these specs pin the history
 // semantics the router swap introduced.
@@ -41,9 +37,7 @@ describe('Settings navigation history', () => {
     await expect.element(modal).toBeVisible();
     await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}`);
     await modal.getByLabelText('Location').fill('Somewhere new');
-    // The dirty flag reaches the history blocker through passive effects
-    // (dialog → global dirty state → guard re-render); let them flush.
-    await flushEffects();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
     window.history.back();
 
@@ -67,16 +61,22 @@ describe('Settings navigation history', () => {
     const modal = settingsScreen.userDetailModal();
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect.poll(currentRoute).toBe('/settings/staff');
+    // The URL leads the router, so the dialog this spec reopens is still on
+    // screen here. Without waiting it out, the fill below can land on the
+    // instance that is about to unmount and the edit goes nowhere.
+    await expect(modal).toHaveCount(0);
 
     window.history.back();
     await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}`);
+    await expect.element(modal).toBeVisible();
     await modal.getByLabelText('Location').fill('Somewhere new');
-    await flushEffects();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
     window.history.forward();
 
     await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
     await settingsScreen.confirmationAction('Stay').click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}`);
     await expect.element(modal).toBeVisible();
 
@@ -96,7 +96,7 @@ describe('Settings navigation history', () => {
     const modal = settingsScreen.userDetailModal();
     await expect.element(modal).toBeVisible();
     await modal.getByLabelText('Location').fill('Somewhere new');
-    await flushEffects();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
     window.history.back();
 
@@ -114,7 +114,7 @@ describe('Settings navigation history', () => {
     await modal.getByLabelText('Location').fill('Somewhere new');
     await modal.getByRole('tab', { name: 'Social Links' }).click();
     await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}/social-links`);
-    await flushEffects();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
     window.history.back();
 

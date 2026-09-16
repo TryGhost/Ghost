@@ -31,4 +31,47 @@ If a control exists, use it. If it doesn't and you'll reuse it, [Layers](?path=/
 
 See **[Contributing](?path=/docs/overview-contributing--docs)** for the implementation and review checklist.
 
+## Admin 7 milestones
+
+Shade previews use the new controls by default. New screens use ordinary
+`Button`, `SelectTrigger`, `InputGroup`, `Badge`, `FilterBar`, and `PageHeader`
+components; there is no need to add `shape="pill"` or copy milestone classes into
+pages. Explicit shapes remain available for a specific visual need.
+
+Admin reads the existing `admin7Pill` Labs flag at its application boundary,
+excludes unsupported routes, and passes a boolean to Shade's existing provider.
+The generic `isAdmin7` switch follows the current milestone without adding a
+separate Shade prop for each milestone:
+
+```tsx
+<ShadeApp darkMode={darkMode} isAdmin7={isAdmin7}>
+    <App />
+</ShadeApp>
+```
+
+Components can read the same value for temporary structural or interaction
+differences:
+
+```tsx
+import {useShade} from '@tryghost/shade/app';
+
+const {isAdmin7} = useShade();
+```
+
+Pure appearance differences belong in shared recipes and scoped tokens.
+`Button variant="subtle"` expresses a low-emphasis action: ghost chrome with
+`isAdmin7` enabled, outline chrome otherwise. Avoid using control shape as a
+proxy for behavior.
+
+Portals carry `data-admin7` through Shade's internal scope wrapper. Keep
+scope attributes off `document.body`: independently mounted surfaces must not
+change one another's menus or dialogs. Shade previews default to the new
+appearance; Admin supplies its computed boolean and standalone ActivityPub
+explicitly passes `isAdmin7={false}`.
+
+The [feature flag guide](https://github.com/TryGhost/Ghost/blob/main/docs/practices/feature-flags.md#admin-7-milestones)
+covers naming, shared presentation, testing and removal. At rollout, keep the
+enabled behavior and remove the milestone's compatibility branches; ordinary
+component calls already use the intended defaults.
+
 </div>

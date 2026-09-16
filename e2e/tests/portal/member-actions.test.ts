@@ -25,10 +25,7 @@ async function createNewsletter(request: APIRequestContext, name: string): Promi
 async function createSubscribedMember(request: APIRequestContext, memberFactory: MemberFactory) {
   const newsletterIds = await getNewsletterIds(request);
   const newsletters = newsletterIds.map((id) => ({ id }));
-  const member = await memberFactory.create({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    newsletters: newsletters as any,
-  });
+  const member = await memberFactory.create({ newsletters });
   return member;
 }
 

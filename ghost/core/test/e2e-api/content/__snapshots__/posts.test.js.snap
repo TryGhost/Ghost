@@ -70,15 +70,15 @@ Object {
 &lt;article class=\\"article {{post_class}}\\"&gt;
 
     &lt;h1&gt;{{title}}&lt;/h1&gt;
-    
+
     {{#if feature_image}}
     	&lt;img src=\\"{{feature_image}}\\" alt=\\"Feature image\\" /&gt;
     {{/if}}
-    
+
     {{content}}
 
 &lt;/article&gt;
-{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://ghost.org/docs/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
+{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://docs.ghost.org/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
       "id": "6194d3ce51e2700162531a76",
       "meta_description": null,
       "meta_title": null,
@@ -519,15 +519,15 @@ Object {
 &lt;article class=\\"article {{post_class}}\\"&gt;
 
     &lt;h1&gt;{{title}}&lt;/h1&gt;
-    
+
     {{#if feature_image}}
     	&lt;img src=\\"{{feature_image}}\\" alt=\\"Feature image\\" /&gt;
     {{/if}}
-    
+
     {{content}}
 
 &lt;/article&gt;
-{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://ghost.org/docs/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
+{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://docs.ghost.org/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
       "id": "6194d3ce51e2700162531a76",
       "meta_description": null,
       "meta_title": null,
@@ -671,7 +671,7 @@ Object {
     {{content}}
 
 &lt;/article&gt;
-{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://ghost.org/docs/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
+{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://docs.ghost.org/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
       "id": "6194d3ce51e2700162531a76",
       "meta_description": null,
       "meta_title": null,
@@ -921,7 +921,7 @@ Object {
     {{content}}
 
 &lt;/article&gt;
-{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://ghost.org/docs/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
+{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://docs.ghost.org/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
       "id": "6194d3ce51e2700162531a76",
       "meta_description": null,
       "meta_title": null,
@@ -2761,7 +2761,7 @@ Object {
     {{content}}
 
 &lt;/article&gt;
-{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://ghost.org/docs/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
+{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://docs.ghost.org/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
       "id": "6194d3ce51e2700162531a76",
       "meta_description": null,
       "meta_title": null,
@@ -4270,7 +4270,7 @@ Object {
     {{content}}
 
 &lt;/article&gt;
-{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://ghost.org/docs/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
+{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://docs.ghost.org/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
       "id": "6194d3ce51e2700162531a76",
       "meta_description": null,
       "meta_title": null,
@@ -5135,7 +5135,7 @@ Object {
     {{content}}
 
 &lt;/article&gt;
-{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://ghost.org/docs/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
+{{/post}}</code></pre><figcaption>A snippet from a post template</figcaption></figure><p>See? Not that scary! But still completely optional. </p><p>If you're interested in creating your own Ghost theme, check out our extensive <a href=\\"https://docs.ghost.org/themes/?ref=127.0.0.1\\">theme documentation</a> for a full guide to all the different template variables and helpers which are available.</p>",
       "id": "6194d3ce51e2700162531a76",
       "meta_description": null,
       "meta_title": null,

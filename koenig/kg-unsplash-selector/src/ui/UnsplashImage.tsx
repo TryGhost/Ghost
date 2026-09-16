@@ -75,7 +75,7 @@ const UnsplashImage: FC<UnsplashImageProps> = ({
               className="mr-2 size-8 rounded-full"
               src={user.profile_image.medium}
             />
-            <div className="mr-2 truncate font-sans text-sm font-medium text-white">
+            <div className="mr-2 truncate font-sans text-[1.2rem] font-medium text-white">
               {user.name}
             </div>
           </div>

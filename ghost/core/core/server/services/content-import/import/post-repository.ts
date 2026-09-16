@@ -1,4 +1,5 @@
 import type { PostData } from './post-data';
+import type { DuplicateMetadata } from './store';
 import {
   BookshelfPostRelationsResolver,
   type PostRelationSource,
@@ -14,10 +15,11 @@ export interface WrittenPost {
 export type PostWriteResult =
   | { status: 'created'; post: WrittenPost; warnings: string[] }
   | { status: 'updated'; post: WrittenPost; warnings: string[] }
-  | { status: 'skipped'; reason: string };
+  | { status: 'skipped'; reason: string; duplicate: DuplicateMetadata };
 
 export interface PostWriteMetadata extends PostRelationSource {
   sourceUpdatedAt?: string;
+  runTagName?: string;
 }
 
 export interface PostsRepository {
@@ -54,8 +56,18 @@ export class BookshelfPostsRepository implements PostsRepository {
   ): Promise<PostWriteResult> {
     return this._models.Base.transaction(async (transacting) => {
       const writeOptions = { ...options, transacting };
-      const lookupOptions = { ...writeOptions, forUpdate: true };
-      let existingMatch: { post: WrittenPost; duplicateReason: string } | undefined;
+      const lookupOptions = {
+        ...writeOptions,
+        forUpdate: true,
+        ...(metadata.runTagName ? { withRelated: ['tags'] } : {}),
+      };
+      let existingMatch:
+        | {
+            post: WrittenPost;
+            duplicateReason: string;
+            matchedBy: DuplicateMetadata['matchedBy'];
+          }
+        | undefined;
 
       if (data.comment_id) {
         const existing = await this._models.Post.findOne(
@@ -67,6 +79,7 @@ export class BookshelfPostsRepository implements PostsRepository {
           existingMatch = {
             post: existing,
             duplicateReason: `A post with the source ID "${data.comment_id}" already exists.`,
+            matchedBy: 'source_id',
           };
         }
       }
@@ -81,14 +94,19 @@ export class BookshelfPostsRepository implements PostsRepository {
           existingMatch = {
             post: existing,
             duplicateReason: `A post with the slug "${data.slug}" already exists.`,
+            matchedBy: 'slug',
           };
         }
       }
 
       if (existingMatch) {
-        const { post: existing, duplicateReason } = existingMatch;
+        const { post: existing, duplicateReason, matchedBy } = existingMatch;
+        const duplicate: DuplicateMetadata = {
+          origin: hasRunTag(existing, metadata.runTagName) ? 'this_import' : 'pre_existing',
+          matchedBy,
+        };
         if (!metadata.sourceUpdatedAt) {
-          return { status: 'skipped', reason: duplicateReason };
+          return { status: 'skipped', reason: duplicateReason, duplicate };
         }
 
         const incomingInstant = new Date(metadata.sourceUpdatedAt).getTime();
@@ -104,6 +122,7 @@ export class BookshelfPostsRepository implements PostsRepository {
           return {
             status: 'skipped',
             reason: 'The existing post is newer than or as recent as the imported row.',
+            duplicate,
           };
         }
 
@@ -135,4 +154,22 @@ export class BookshelfPostsRepository implements PostsRepository {
       return { status: 'created', post, warnings: resolved.warnings };
     });
   }
+}
+
+function hasRunTag(post: WrittenPost, runTagName?: string): boolean {
+  if (!runTagName) {
+    return false;
+  }
+
+  const tags = post.toJSON().tags;
+  return (
+    Array.isArray(tags) &&
+    tags.some(
+      (tag) =>
+        typeof tag === 'object' &&
+        tag !== null &&
+        'name' in tag &&
+        (tag as { name?: unknown }).name === runTagName,
+    )
+  );
 }

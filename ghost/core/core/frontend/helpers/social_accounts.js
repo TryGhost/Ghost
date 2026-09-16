@@ -54,7 +54,7 @@ module.exports = function social_accounts(source, options) {
     throw new errors.IncorrectUsageError({
       level: 'normal',
       message: tpl(messages.sourceRequired),
-      help: 'https://ghost.org/docs/themes/helpers/social-accounts/',
+      help: 'https://docs.ghost.org/themes/helpers/social-accounts/',
     });
   }
 
@@ -67,7 +67,7 @@ module.exports = function social_accounts(source, options) {
     throw new errors.IncorrectUsageError({
       level: 'normal',
       message: tpl(messages.blockRequired),
-      help: 'https://ghost.org/docs/themes/helpers/social-accounts/',
+      help: 'https://docs.ghost.org/themes/helpers/social-accounts/',
     });
   }
 

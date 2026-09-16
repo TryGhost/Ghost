@@ -1,21 +1,33 @@
-import { QueryClient } from '@tanstack/react-query';
 import { render } from 'vitest-browser-react';
-import { configResponse, settingsResponse } from '@tryghost/test-data';
-import { defaultUnsplashConfig, type TopLevelFrameworkProps } from '@tryghost/admin-x-framework';
 
 import '@/index.css';
 import { AdminAppRoot } from '@/app-root';
 
-import { installBootOverrides, type BootOverrides } from './boot';
+import {
+  composeConfigBootOverrides,
+  composeLabsBootOverrides,
+  installBootOverrides,
+  type BootOverrides,
+} from './boot';
+import { createFrameworkProps } from './framework-props';
 
 export interface RenderAdminAppOptions {
   /**
    * Labs flags for this test; compiles to lockstep settings + config boot
-   * overrides (the admin client reads labs from both).
+   * overrides (the admin client reads labs from both). Merges into any
+   * `boot` override for those entries; flags named here win.
    */
   labs?: Record<string, boolean>;
-  /** Boot-table overrides keyed by entry name (see boot.ts); wins over `labs`. */
+  /**
+   * Boot-table overrides keyed by entry name (see boot.ts); `labs` flags
+   * merge into `browseConfig`/`browseSettings` override responses.
+   */
   boot?: BootOverrides;
+  /**
+   * The editor's autosave debounce in milliseconds, for a spec that must keep
+   * autosave out of the way or run it fast; defaults to the editor's 3s.
+   */
+  autosaveDebounceMs?: number;
 }
 
 /**
@@ -34,15 +46,15 @@ export function currentRoute(): string {
  */
 export async function renderAdminApp(
   route: string = '/',
-  { labs, boot }: RenderAdminAppOptions = {},
+  { labs, boot, autosaveDebounceMs }: RenderAdminAppOptions = {},
 ): Promise<Awaited<ReturnType<typeof render>>> {
-  const overrides: BootOverrides = {
-    ...(labs && {
-      browseSettings: { response: settingsResponse({ labs }) },
-      browseConfig: { response: configResponse({ labs }) },
-    }),
-    ...boot,
-  };
+  let overrides: BootOverrides = labs ? composeLabsBootOverrides(labs, boot) : { ...boot };
+  if (autosaveDebounceMs !== undefined) {
+    overrides = composeConfigBootOverrides(
+      { editorAutosaveDebounceMs: autosaveDebounceMs },
+      overrides,
+    );
+  }
 
   if (Object.keys(overrides).length > 0) {
     installBootOverrides(overrides);
@@ -71,34 +83,11 @@ export async function renderAdminApp(
   // before the router is created.
   window.location.hash = `#${route}`;
 
-  // Fresh QueryClient per render, mirroring the production defaults
-  // (admin-x-framework utils/query-client.ts) so nothing outlives the test.
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: false,
-        staleTime: 5 * (60 * 1000), // 5 mins
-        gcTime: 10 * (60 * 1000), // 10 mins
-        // We have custom retry logic for specific errors in fetchApi()
-        retry: false,
-        networkMode: 'always',
-      },
-    },
-  });
-
-  const framework: TopLevelFrameworkProps = {
-    ghostVersion: '',
+  const framework = createFrameworkProps({
     externalNavigate: (link) => {
       document.body.dataset.externalNavigate = JSON.stringify(link);
     },
-    // Production shape, but without the real API key so tests never hit Unsplash
-    unsplashConfig: { ...defaultUnsplashConfig, Authorization: '' },
-    sentryDSN: null,
-    onUpdate: () => {},
-    onInvalidate: () => {},
-    onDelete: () => {},
-    queryClient,
-  };
+  });
 
   return await render(<AdminAppRoot framework={framework} />, { container: rootElement });
 }

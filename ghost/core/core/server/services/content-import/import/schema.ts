@@ -26,6 +26,7 @@ export const importRequestSchema = z.object({
   filePath: z.string().min(1),
   fileName: z.string().min(1),
   mapping: mappingSchema.optional(),
+  requestUserEmail: z.string().email().nullable().optional(),
 });
 
 export type ImportRequest = z.infer<typeof importRequestSchema>;

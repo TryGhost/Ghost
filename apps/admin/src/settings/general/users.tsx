@@ -33,7 +33,7 @@ import {
 } from '@tryghost/admin-x-framework/api/invites';
 import { UserRoundX } from 'lucide-react';
 import { formatNumber } from '@tryghost/shade/utils';
-import { memberAvatarProps } from '@/members/member-format';
+import { memberAvatarProps } from '@/members/api';
 import { getSettingValue, useEditSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
@@ -95,7 +95,7 @@ const Owner: React.FC<OwnerProps> = ({ user }) => {
             </Button>
           )}
         </span>
-        <span className="text-sm text-grey-700">{user.email}</span>
+        <span className="text-sm text-gray-700">{user.email}</span>
       </div>
     </div>
   );

@@ -26,10 +26,7 @@ describe('Members filtering, every operator admin can emit', function () {
     return body.members.map((member: { email: string }) => member.email).sort();
   }
 
-  /**
-   * Dates must be the `YYYY-MM-DD HH:mm:ss` UTC string Ghost stores. A JS Date reaches SQLite
-   * as epoch milliseconds and compares as a number against the filter's text, matching every row.
-   */
+  /** Dates must use the same `YYYY-MM-DD HH:mm:ss` UTC format Ghost stores. */
   async function setColumns(email: string, columns: Record<string, unknown>) {
     await models.Base.knex('members').where({ email }).update(columns);
   }
@@ -116,9 +113,8 @@ describe('Members filtering, every operator admin can emit', function () {
     ]);
   });
 
-  // Boundaries fall between members, never on one. SQLite compares the stored
-  // `2024-06-01 00:00:00` against the filter's `2024-06-01T00:00:00.000Z` as text, and a space
-  // sorts before `T`, so an exact tie tests storage format rather than the operator.
+  // Boundaries fall between members, never on one, so an exact tie does not test
+  // storage formatting rather than the operator.
   describe('native — a date', function () {
     matrix([
       { what: 'created before', nql: "created_at:<'2024-03-01T00:00:00.000Z'", expect: [ALICE] },

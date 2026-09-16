@@ -19,7 +19,7 @@ import {
   SkeletonTable,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { buildMembersUrl } from '@/members/member-route';
+import { buildMembersUrl } from '@/members/api';
 import { centsToDollars } from '@/shared/analytics/chart-helpers';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';

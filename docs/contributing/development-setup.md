@@ -47,12 +47,19 @@ to run Ghost locally.
 From the repository root:
 
 ```bash
-pnpm setup
+pnpm bootstrap
 ```
 
-`pnpm setup` installs the workspace and initializes all Git submodules. Run it
-after a fresh clone and whenever a branch changes workspace dependencies or
+`pnpm bootstrap` installs the workspace, initializes all Git submodules and
+configures Git to ignore formatting-only revisions in blame output. Run it after
+a fresh clone and whenever a branch changes workspace dependencies or
 submodules.
+
+Ghost calls this command `bootstrap` because [`pnpm setup`](https://pnpm.io/cli/setup)
+is a pnpm CLI command for configuring pnpm's global home and updating shell
+startup files. It does not run Ghost's repository initialization. Using a
+distinct script name avoids silently changing a contributor's shell when the
+intention is to prepare the Ghost checkout.
 
 ## Start Ghost
 
@@ -97,23 +104,29 @@ runs.
 | MySQL                      | `localhost:3306` using the `ghost_dev` database                          |
 | Redis                      | `localhost:6379`                                                         |
 | Tinybird                   | [http://localhost:7181](http://localhost:7181) with `pnpm dev:analytics` |
-| MinIO console              | [http://localhost:9001](http://localhost:9001) with `pnpm dev:storage`   |
-| MinIO S3 API               | [http://localhost:9000](http://localhost:9000) with `pnpm dev:storage`   |
+| VersityGW WebUI            | [http://localhost:9001](http://localhost:9001) with `pnpm dev:storage`   |
+| VersityGW S3 API           | [http://localhost:9000](http://localhost:9000) with `pnpm dev:storage`   |
+
+Sign in to the VersityGW WebUI with access key `s3-user` and secret key
+`s3-pass`.
 
 ## Development variants
 
 Run one root command at a time. Each variant includes the standard development
 environment and adds the listed tooling:
 
-| Command              | Use it when working on                                                                  |
-| -------------------- | --------------------------------------------------------------------------------------- |
-| `pnpm dev`           | Ghost Core, Admin, or Portal                                                            |
-| `pnpm dev:public`    | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                    |
-| `pnpm dev:lexical`   | Koenig's Lexical editor inside Ghost Admin                                              |
-| `pnpm dev:analytics` | Tinybird-backed analytics; also exposes Tinybird on port `7181`                         |
-| `pnpm dev:storage`   | S3-compatible storage through MinIO on ports `9000` and `9001`                          |
-| `pnpm dev:stripe`    | Stripe webhooks; requires `STRIPE_SECRET_KEY` in the environment or a local `.env` file |
-| `pnpm dev:full`      | Public app watchers plus analytics, storage, and Stripe                                 |
+| Command                    | Use it when working on                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                 | Ghost Core, Admin, or Portal                                                                                    |
+| `pnpm dev:public`          | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                                            |
+| `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                                                      |
+| `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service                    |
+| `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service                   |
+| `pnpm dev:storage`         | S3-compatible storage through VersityGW, with its WebUI on port `9001`                                          |
+| `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)                    |
+| `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                                     |
+| `pnpm dev:fake-mailgun`    | Capture newsletters and bulk email in Mailpit through a fake Mailgun API; see [email testing](testing-email.md) |
+| `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                                         |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
 optional integration. Never commit credentials or the local `.env` file.
@@ -134,7 +147,8 @@ pnpm reset:data
 This clears the development database while preserving the owner, then creates
 1,000 members and 100 posts. Use `pnpm reset:data:empty` for an empty site. Both
 commands are destructive and require the Docker development environment to be
-running.
+running. See [Working with test data](test-data.md) for larger and custom
+datasets.
 
 When developing a database migration, apply pending migrations to the running
 development database with:
@@ -144,7 +158,8 @@ pnpm migrate:db
 ```
 
 Development email is captured by Mailpit rather than delivered. Open
-[http://localhost:8025](http://localhost:8025) to inspect messages.
+[http://localhost:8025](http://localhost:8025) to inspect messages. For Mailgun
+delivery and automated-test workflows, see [Email testing](testing-email.md).
 
 ## Updating and recovering
 
@@ -154,7 +169,7 @@ Before starting new work, update your local `main` from the canonical repository
 git fetch origin
 git switch main
 git pull --ff-only origin main
-pnpm setup
+pnpm bootstrap
 ```
 
 If dependencies or Nx state become inconsistent after switching branches, run:

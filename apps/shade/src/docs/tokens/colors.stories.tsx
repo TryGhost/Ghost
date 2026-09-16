@@ -21,19 +21,6 @@ const rawPalettes = {
     '--color-gray-900',
     '--color-gray-950',
   ]),
-  grey: rawPalette([
-    '--color-grey-50',
-    '--color-grey-100',
-    '--color-grey-200',
-    '--color-grey-300',
-    '--color-grey-400',
-    '--color-grey-500',
-    '--color-grey-600',
-    '--color-grey-700',
-    '--color-grey-800',
-    '--color-grey-900',
-    '--color-grey-950',
-  ]),
   green: rawPalette([
     '--color-green-50',
     '--color-green-100',
@@ -162,7 +149,6 @@ export const RawPalette: Story = {
     <div className="flex flex-col gap-10">
       <section className="flex flex-col gap-8">
         <ColorRow swatches={rawPalettes.gray} title="Gray (raw)" />
-        <ColorRow swatches={rawPalettes.grey} title="Grey (raw duplicate)" />
       </section>
       <section className="flex flex-col gap-8">
         <ColorRow swatches={rawPalettes.green} title="Green" />
@@ -191,7 +177,7 @@ export const RawPalette: Story = {
     docs: {
       description: {
         story:
-          'Raw palette. Gray and grey are kept as duplicate 11-step scales for this sweep; naming consolidation is handled separately. Brand palettes use the Tailwind-style 11-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.',
+          'Raw palette. Brand palettes use the Tailwind-style 11-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.',
       },
     },
   },
@@ -253,6 +239,7 @@ export const Surface: Story = {
         { name: 'panel', cssVar: '--surface-panel' },
         { name: 'elevated', cssVar: '--surface-elevated' },
         { name: 'elevated-2', cssVar: '--surface-elevated-2' },
+        { name: 'filter-bar', cssVar: '--filter-bar-background' },
         { name: 'control-readonly', cssVar: '--control-readonly-surface' },
       ]}
       title="Surface"
@@ -275,6 +262,7 @@ export const InteractiveSurfaces: Story = {
       swatches={[
         { name: 'interactive-hover', cssVar: '--interactive-hover' },
         { name: 'button-hover', cssVar: '--button-hover' },
+        { name: 'filter-bar-item-hover', cssVar: '--filter-bar-item-hover' },
         { name: 'tab-hover', cssVar: '--tab-hover' },
         { name: 'tab-active', cssVar: '--tab-active' },
         { name: 'table-row-hover', cssVar: '--table-row-hover' },
@@ -290,6 +278,7 @@ export const InteractiveSurfaces: Story = {
           '',
           '- **interactive-hover** — generic hover surface for dropdown items, menu items, list rows, filter options, etc. The catch-all.',
           '- **button-hover** — outline / dropdown button hover. Currently the same value as interactive-hover; kept as a separate token so the button surface can diverge later.',
+          '- **filter-bar-item-hover** — filter chips and the add-filter button. In dark mode it matches the sidebar navigation hover.',
           '- **tab-hover / tab-active** — `Tabs` (button, button-sm, pill, kpis variants), `PageMenu` items, and sidebar menu items.',
           '- **table-row-hover** — Shade `Table` row hover (also reused for list-row patterns that visually behave like table rows: top posts list, comments list, members sticky cell). This one is opaque — it tracks --color-sidebar-bg in dark — so it works where the row sits over scrolling content.',
           '',

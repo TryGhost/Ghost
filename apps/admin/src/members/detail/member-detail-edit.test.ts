@@ -112,9 +112,9 @@ describe('buildMemberFieldEditPayload', () => {
     expect(payload.newsletters).toEqual([]);
   });
 
-  it('never carries custom_fields — those save individually, not through the page', () => {
+  it('never carries metafields — those save individually, not through the page', () => {
     const payload = buildMemberFieldEditPayload('mem_1', { ...baseline, name: 'Ada B' }, baseline);
-    expect(payload.custom_fields).toBeUndefined();
+    expect(payload.metafields).toBeUndefined();
   });
 });
 
@@ -122,51 +122,70 @@ describe('getEditableCustomFieldValues', () => {
   it('keeps string values trimmed and drops empty/null ones', () => {
     expect(
       getEditableCustomFieldValues({
-        job_title: ' Editor ',
-        cleared: null,
-        blank: '',
-        spaces: '   ',
+        custom: {
+          job_title: ' Editor ',
+          cleared: null,
+          blank: '',
+          spaces: '   ',
+        },
       }),
-    ).toEqual({ job_title: 'Editor' });
+    ).toEqual({ 'custom.job_title': 'Editor' });
   });
 
   it('normalizes address values: trims sub-fields, drops empty and unknown ones', () => {
     expect(
       getEditableCustomFieldValues({
-        home_address: {
-          line1: ' 1 Main St ',
-          line2: '',
-          city: 'Berlin',
-          state: '   ',
-          postal_code: '10115',
-          country: 'DE',
-          not_a_subfield: 'ignored',
+        custom: {
+          home_address: {
+            line1: ' 1 Main St ',
+            line2: '',
+            city: 'Berlin',
+            state: '   ',
+            postal_code: '10115',
+            country: 'DE',
+            not_a_subfield: 'ignored',
+          },
         },
       }),
     ).toEqual({
-      home_address: { line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE' },
+      'custom.home_address': {
+        line1: '1 Main St',
+        city: 'Berlin',
+        postal_code: '10115',
+        country: 'DE',
+      },
     });
   });
 
   it('collapses an all-empty address to an absent key, like an empty string', () => {
     expect(
-      getEditableCustomFieldValues({ home_address: { line1: '', city: '  ', postal_code: null } }),
+      getEditableCustomFieldValues({
+        custom: { home_address: { line1: '', city: '  ', postal_code: null } },
+      }),
     ).toEqual({});
   });
 });
 
 describe('buildCustomFieldSavePayload', () => {
   it('sends only this field as a merge patch, trimmed', () => {
-    expect(buildCustomFieldSavePayload('mem_1', 'job_title', ' Publisher ')).toEqual({
+    expect(
+      buildCustomFieldSavePayload(
+        'mem_1',
+        { namespace: 'custom', key: 'job_title' },
+        ' Publisher ',
+      ),
+    ).toEqual({
       id: 'mem_1',
-      custom_fields: { job_title: 'Publisher' },
+      metafields: { custom: { job_title: 'Publisher' } },
     });
   });
 
   it('sends null to clear an emptied value', () => {
-    expect(buildCustomFieldSavePayload('mem_1', 'job_title', '  ')).toEqual({
+    expect(
+      buildCustomFieldSavePayload('mem_1', { namespace: 'custom', key: 'job_title' }, '  '),
+    ).toEqual({
       id: 'mem_1',
-      custom_fields: { job_title: null },
+      metafields: { custom: { job_title: null } },
     });
   });
 
@@ -174,22 +193,28 @@ describe('buildCustomFieldSavePayload', () => {
     // A write touches the parts it names. Leaving `line2` out would read as "no
     // change" and the stored one would survive the person deleting it.
     expect(
-      buildCustomFieldSavePayload('mem_1', 'home_address', {
-        line1: ' 1 Main St ',
-        line2: '',
-        city: 'Berlin',
-        postal_code: '10115',
-        country: 'DE',
-      }),
-    ).toEqual({
-      id: 'mem_1',
-      custom_fields: {
-        home_address: {
-          line1: '1 Main St',
+      buildCustomFieldSavePayload(
+        'mem_1',
+        { namespace: 'custom', key: 'home_address' },
+        {
+          line1: ' 1 Main St ',
           line2: '',
           city: 'Berlin',
           postal_code: '10115',
           country: 'DE',
+        },
+      ),
+    ).toEqual({
+      id: 'mem_1',
+      metafields: {
+        custom: {
+          home_address: {
+            line1: '1 Main St',
+            line2: '',
+            city: 'Berlin',
+            postal_code: '10115',
+            country: 'DE',
+          },
         },
       },
     });
@@ -198,9 +223,13 @@ describe('buildCustomFieldSavePayload', () => {
   it('sends an address emptied of everything as a cleared field', () => {
     // Every part empty is not an address of empties, it is no address — which the
     // field-level null already says.
-    expect(buildCustomFieldSavePayload('mem_1', 'home_address', { line1: '', city: '  ' })).toEqual(
-      { id: 'mem_1', custom_fields: { home_address: null } },
-    );
+    expect(
+      buildCustomFieldSavePayload(
+        'mem_1',
+        { namespace: 'custom', key: 'home_address' },
+        { line1: '', city: '  ' },
+      ),
+    ).toEqual({ id: 'mem_1', metafields: { custom: { home_address: null } } });
   });
 });
 
@@ -488,9 +517,15 @@ describe('getCustomFieldValidationErrors', () => {
     expect(getCustomFieldValidationErrors({ home_address: whitespaceOnly }, fields)).toEqual({});
 
     // And with nothing left in it, the save clears the field outright.
-    expect(buildCustomFieldSavePayload('m1', 'home_address', whitespaceOnly).custom_fields).toEqual(
-      { home_address: null },
-    );
+    expect(
+      buildCustomFieldSavePayload(
+        'm1',
+        { namespace: 'custom', key: 'home_address' },
+        whitespaceOnly,
+      ).metafields,
+    ).toEqual({
+      custom: { home_address: null },
+    });
   });
 
   it('lets a sub-field with a format be emptied, not just one with a bound', () => {
@@ -508,9 +543,15 @@ describe('getCustomFieldValidationErrors', () => {
     };
 
     expect(getCustomFieldValidationErrors({ home_address: clearedCountry }, fields)).toEqual({});
-    expect(buildCustomFieldSavePayload('m1', 'home_address', clearedCountry).custom_fields).toEqual(
-      { home_address: clearedCountry },
-    );
+    expect(
+      buildCustomFieldSavePayload(
+        'm1',
+        { namespace: 'custom', key: 'home_address' },
+        clearedCountry,
+      ).metafields,
+    ).toEqual({
+      custom: { home_address: clearedCountry },
+    });
   });
 
   it('checks the value the save sends, not the one the screen shows', () => {
@@ -519,11 +560,18 @@ describe('getCustomFieldValidationErrors', () => {
     // then rejects, which is exactly how an unclearable country went unnoticed.
     const emptiedParts = { line1: '62 Ghost Lane', country: '' };
 
-    expect(getEditableCustomFieldValues({ home_address: emptiedParts }).home_address).toEqual({
+    expect(
+      getEditableCustomFieldValues({ custom: { home_address: emptiedParts } })[
+        'custom.home_address'
+      ],
+    ).toEqual({
       line1: '62 Ghost Lane',
     });
-    expect(buildCustomFieldSavePayload('m1', 'home_address', emptiedParts).custom_fields).toEqual({
-      home_address: emptiedParts,
+    expect(
+      buildCustomFieldSavePayload('m1', { namespace: 'custom', key: 'home_address' }, emptiedParts)
+        .metafields,
+    ).toEqual({
+      custom: { home_address: emptiedParts },
     });
     expect(getCustomFieldValidationErrors({ home_address: emptiedParts }, fields)).toEqual({});
   });
@@ -545,21 +593,21 @@ describe('parseCustomFieldServerErrors', () => {
       parseCustomFieldServerErrors(
         serverError([
           {
-            property: 'custom_fields.home_address.postal_code',
+            property: 'metafields.custom.home_address.postal_code',
             context: 'Use 32 characters or fewer.',
             message: 'Validation error, cannot edit member.',
           },
         ]),
       ),
-    ).toEqual({ 'home_address.postal_code': 'Use 32 characters or fewer.' });
+    ).toEqual({ 'custom.home_address.postal_code': 'Use 32 characters or fewer.' });
   });
 
   it('falls back to the message when context is empty', () => {
     expect(
       parseCustomFieldServerErrors(
-        serverError([{ property: 'custom_fields.job_title', context: null, message: 'Nope.' }]),
+        serverError([{ property: 'metafields.custom.job_title', context: null, message: 'Nope.' }]),
       ),
-    ).toEqual({ job_title: 'Nope.' });
+    ).toEqual({ 'custom.job_title': 'Nope.' });
   });
 
   it('returns undefined for failures that are not custom-fields shaped', () => {

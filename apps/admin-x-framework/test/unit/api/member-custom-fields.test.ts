@@ -65,10 +65,14 @@ export {
 };
 
 const field = (overrides: Partial<MemberCustomField>): MemberCustomField => ({
+  namespace: 'custom',
   key: 'nickname',
   name: 'Nickname',
   type: 'short_text',
   status: 'active',
+  // The server reads a field with no access set as closed to members, so a case that says
+  // nothing about access gets the field the API would return for one.
+  access: { member: 'none' },
   created_at: '2026-07-01T00:00:00.000Z',
   updated_at: null,
   ...overrides,
@@ -81,7 +85,7 @@ describe('member custom fields api helpers', () => {
         {
           label: 'Nickname',
           fieldName: 'Nickname',
-          value: 'custom_fields.nickname',
+          value: 'metafields.custom.nickname',
           type: 'short_text',
         },
       ]);
@@ -97,42 +101,42 @@ describe('member custom fields api helpers', () => {
           label: 'Shipping Address (Address line 1)',
           fieldName: 'Shipping Address',
           partLabel: 'Address line 1',
-          value: 'custom_fields.shipping_address.line1',
+          value: 'metafields.custom.shipping_address.line1',
           type: 'address',
         },
         {
           label: 'Shipping Address (Address line 2)',
           fieldName: 'Shipping Address',
           partLabel: 'Address line 2',
-          value: 'custom_fields.shipping_address.line2',
+          value: 'metafields.custom.shipping_address.line2',
           type: 'address',
         },
         {
           label: 'Shipping Address (City)',
           fieldName: 'Shipping Address',
           partLabel: 'City',
-          value: 'custom_fields.shipping_address.city',
+          value: 'metafields.custom.shipping_address.city',
           type: 'address',
         },
         {
           label: 'Shipping Address (State)',
           fieldName: 'Shipping Address',
           partLabel: 'State',
-          value: 'custom_fields.shipping_address.state',
+          value: 'metafields.custom.shipping_address.state',
           type: 'address',
         },
         {
           label: 'Shipping Address (Postal code)',
           fieldName: 'Shipping Address',
           partLabel: 'Postal code',
-          value: 'custom_fields.shipping_address.postal_code',
+          value: 'metafields.custom.shipping_address.postal_code',
           type: 'address',
         },
         {
           label: 'Shipping Address (Country)',
           fieldName: 'Shipping Address',
           partLabel: 'Country',
-          value: 'custom_fields.shipping_address.country',
+          value: 'metafields.custom.shipping_address.country',
           type: 'address',
         },
       ]);
@@ -149,7 +153,7 @@ describe('member custom fields api helpers', () => {
         label: 'Address (Home) (City)',
         fieldName: 'Address (Home)',
         partLabel: 'City',
-        value: 'custom_fields.address_home.city',
+        value: 'metafields.custom.address_home.city',
         type: 'address',
       });
     });
@@ -171,7 +175,7 @@ describe('member custom fields api helpers', () => {
         {
           label: 'Mystery',
           fieldName: 'Mystery',
-          value: 'custom_fields.mystery',
+          value: 'metafields.custom.mystery',
           type: 'a_type_from_the_future',
         },
       ]);
@@ -186,14 +190,14 @@ describe('member custom fields api helpers', () => {
       expect(memberCustomFieldParts('long_text')).toBeNull();
     });
 
-    it("names a composite type's parts in the order its value schema declares them", () => {
+    it("carries each part's key, label and declared type, in schema order", () => {
       expect(memberCustomFieldParts('address')).toEqual([
-        { key: 'line1', label: 'Address line 1' },
-        { key: 'line2', label: 'Address line 2' },
-        { key: 'city', label: 'City' },
-        { key: 'state', label: 'State' },
-        { key: 'postal_code', label: 'Postal code' },
-        { key: 'country', label: 'Country' },
+        { key: 'line1', label: 'Address line 1', type: 'short_text' },
+        { key: 'line2', label: 'Address line 2', type: 'short_text' },
+        { key: 'city', label: 'City', type: 'short_text' },
+        { key: 'state', label: 'State', type: 'short_text' },
+        { key: 'postal_code', label: 'Postal code', type: 'postal_code' },
+        { key: 'country', label: 'Country', type: 'country_code' },
       ]);
     });
   });

@@ -7,9 +7,9 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 // This test exercises the gift reminder polling path end-to-end against a real
 // database and the real GiftService/Repository wiring. It calls
-// `giftService.service.processReminders()` directly rather than spawning the
-// worker thread — the worker script is a thin wrapper and spawning it in-process
-// means we can't intercept the email transport on the parent thread.
+// `giftService.service.processReminders()` directly; the daily job that runs
+// the same poll through the class-based jobs service is covered by
+// test/integration/services/gifts/send-gift-reminders.test.ts.
 
 describe('Gift reminder processing', function () {
   let giftService;
@@ -25,7 +25,7 @@ describe('Gift reminder processing', function () {
     await agent.loginAsOwner();
 
     giftService = require('../../../../core/server/services/gifts');
-    await giftService.init();
+    giftService.init();
 
     paidTier = await models.Product.findOne({ type: 'paid' }, { require: true });
   });

@@ -88,7 +88,8 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
     analytics: { webAnalytics, membersTrackSources },
   });
   const shouldGoToEditor = postDestination.startsWith('/editor/');
-  // Editor destinations are still Ember-owned and need a hash navigation.
+  // Editor destinations need a hash navigation while Ember serves them
+  // (the `editorReact` flag decides which side does).
   const destinationIsEmberOwned = useIsEmberOwnedRoute(postDestination);
 
   return (
@@ -146,7 +147,7 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
               )}
               <div className="flex grow flex-col items-start justify-center self-stretch">
                 <div
-                  className="text-md leading-tighter font-semibold tracking-tight hover:cursor-pointer hover:opacity-75"
+                  className="text-md leading-tighter font-semibold tracking-tight wrap-anywhere hover:cursor-pointer hover:opacity-75"
                   onClick={() => {
                     if (!isLoading && latestPostStats) {
                       navigate(postDestination, { crossApp: destinationIsEmberOwned });
@@ -188,7 +189,7 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
                   )}
                   <Button
                     className={latestPostStats.email_only ? 'w-full' : ''}
-                    variant="outline"
+                    variant={shouldGoToEditor ? 'outline' : 'subtle'}
                     onClick={() => {
                       navigate(postDestination, { crossApp: destinationIsEmberOwned });
                     }}
@@ -211,8 +212,8 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
               </div>
             </div>
 
-            <div className="-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 xl:h-full xl:max-w-none">
-              <div className="grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full">
+            <div className="flex w-full flex-col items-stretch gap-2 px-6 lg:-ml-4 lg:pr-6 lg:pl-0 xl:h-full xl:max-w-none">
+              <div className="grid grid-cols-2 gap-6 lg:border-l lg:pl-10 xl:h-full">
                 {/* Web metrics - only for published posts */}
                 {metricsToShow.showWebMetrics && webAnalytics && (
                   <div

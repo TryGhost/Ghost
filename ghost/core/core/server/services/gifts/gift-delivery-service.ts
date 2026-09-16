@@ -124,6 +124,15 @@ export class GiftDeliveryService {
     return delivery.id;
   }
 
+  async getRecipientEmailForGift(
+    giftToken: string,
+    options: RepositoryTransactionOptions = {},
+  ): Promise<string | null> {
+    const delivery = await this.deps.giftDeliveryRepository.getByGiftToken(giftToken, options);
+
+    return delivery?.recipientEmail ?? null;
+  }
+
   async dispatchForGift({
     giftId,
   }: {

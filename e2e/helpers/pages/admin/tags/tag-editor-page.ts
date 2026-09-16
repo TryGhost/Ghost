@@ -46,13 +46,8 @@ export class TagEditorPage extends TagDetailsPage {
   }
 
   async deleteTag() {
-    if (await this.tagActionsButton.isVisible()) {
-      await this.tagActionsButton.click();
-      await this.deleteMenuItem.click();
-      return;
-    }
-
-    await this.deleteButton.click();
+    await this.tagActionsButton.click();
+    await this.deleteMenuItem.click();
   }
 
   async confirmDelete() {

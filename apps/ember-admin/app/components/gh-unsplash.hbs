@@ -2,7 +2,7 @@
     {{!-- TODO: why does this modal background not cover the PSM without style override? --}}
     <div class="fullscreen-modal-background" role="button" {{on "click" @close}} style="z-index: 999"></div>
     <div
-        class="absolute top-8 right-8 bottom-8 left-8 br4 overflow-hidden bg-white z-9999"
+        class="absolute top-8 right-8 bottom-8 left-8 br4 overflow-hidden gh-unsplash-modal z-9999"
         {{on-resize this.handleResize}}
         {{on-key "Escape" this.handleEscape}}
     >
@@ -82,7 +82,7 @@
 
                 {{!-- zoomed image overlay --}}
                 {{#if this.zoomedPhoto}}
-                    <a href="#" class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{on "click" this.closeZoom}}>
+                    <a href="#" class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 gh-unsplash-modal overflow-hidden" {{on "click" this.closeZoom}}>
                         <GhUnsplashPhoto
                             @photo={{this.zoomedPhoto}}
                             @zoomed={{true}}

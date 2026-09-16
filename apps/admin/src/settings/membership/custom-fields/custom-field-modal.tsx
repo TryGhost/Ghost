@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Field,
+  FieldContent,
   FieldDescription,
   FieldError,
   FieldGroup,
@@ -17,10 +18,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { ValidationError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
+import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
 import {
   memberCustomFieldUserTypes,
   useCreateMemberCustomField,
@@ -46,7 +49,8 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
   const { mutateAsync: editField } = useEditMemberCustomField();
   const { mutateAsync: deleteField } = useDeleteMemberCustomField();
   const handleError = useHandleError();
-  const isEdit = Boolean(field);
+  const memberCount = useMemberCount();
+  const isEdit = field !== undefined;
 
   const { formState, updateForm, handleSave, errors, clearError, setErrors, okProps } = useForm({
     initialState: {
@@ -54,6 +58,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       // Form state tracks the user-type id; it maps to the API storage
       // type on save
       userTypeId: field ? userTypeForField(field).id : memberCustomFieldUserTypes[0].id,
+      access: field ? field.access.member : 'none',
     },
     savingDelay: 500,
     onValidate: (state) => {
@@ -68,10 +73,22 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
     },
     onSave: async (state) => {
       if (field) {
-        await editField({ key: field.key, name: state.name.trim() });
+        // Only the properties this form actually changed. Sending the whole field back
+        // would carry whatever the list held when it was loaded, so saving a rename
+        // would silently restore the access a colleague had changed in the meantime.
+        const name = state.name.trim();
+        await editField({
+          key: field.key,
+          ...(name === field.name ? {} : { name }),
+          ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
+        });
       } else {
-        // Just name and type: the backend mints the immutable key.
-        await createField({ name: state.name.trim(), type: userTypeById(state.userTypeId).id });
+        // No key: the backend mints it from the name.
+        await createField({
+          name: state.name.trim(),
+          type: userTypeById(state.userTypeId).id,
+          access: { member: state.access },
+        });
       }
     },
     onSaveError: (error) => {
@@ -89,6 +106,30 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
 
   const isArchived = field?.status === 'archived';
   const selectedType = userTypeById(formState.userTypeId);
+
+  // The API keeps a third access level, `read`, that the switch doesn't offer. A field
+  // already set to it reads as open and is described as such; saving without touching
+  // the switch leaves it there, since the edit sends only what changed, and switching it
+  // off and on again returns it to the level it had rather than upgrading it.
+  const isOpenToMembers = formState.access !== 'none';
+  const storedOpenLevel = field && field.access.member !== 'none' ? field.access.member : 'write';
+  // Opening a field that was closed discloses whatever staff have recorded in it so far.
+  const isOpeningClosedField = isEdit && isOpenToMembers && field.access.member === 'none';
+
+  let accessDescription;
+  if (isArchived) {
+    accessDescription =
+      'Members never see an archived field. Reactivate it to choose whether they can see this one.';
+  } else if (isOpenToMembers) {
+    // The count is left out while it loads, as the newsletter modal does.
+    const members = `Your ${memberCount === undefined ? '' : formatNumber(memberCount)} member${memberCount === 1 ? '' : 's'}`;
+    accessDescription =
+      formState.access === 'read'
+        ? `${members} can see this field in their Portal account settings, but not change it.`
+        : `${members} can see and update this field in their Portal account settings.`;
+  } else {
+    accessDescription = 'Only staff can see this field and what you record in it.';
+  }
 
   // The modal's third action mirrors the field's state: an active field can
   // be archived, an archived one reactivated. Both confirm first (the
@@ -151,6 +192,12 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
                 on your members, for collecting, and in filters.
               </div>
               <div>Values already collected for this field will remain unchanged.</div>
+              {field!.access.member !== 'none' && (
+                <div className="mt-6">
+                  This field is open to members, so what you have already collected becomes visible
+                  to each of them on their own record.
+                </div>
+              )}
             </>
           ),
           okLabel: 'Reactivate',
@@ -285,6 +332,24 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
             </SelectContent>
           </Select>
           {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}
+        </Field>
+        <Field data-disabled={isArchived || undefined} orientation="horizontal">
+          <FieldContent>
+            <FieldLabel htmlFor="custom-field-visible-to-members">Visible to members</FieldLabel>
+            <FieldDescription>
+              {accessDescription}
+              {isOpeningClosedField && <> Anything already recorded will become visible.</>}
+            </FieldDescription>
+          </FieldContent>
+          <Switch
+            checked={!isArchived && isOpenToMembers}
+            data-testid="custom-field-access"
+            disabled={isArchived}
+            id="custom-field-visible-to-members"
+            onCheckedChange={(checked) =>
+              updateForm((state) => ({ ...state, access: checked ? storedOpenLevel : 'none' }))
+            }
+          />
         </Field>
       </FieldGroup>
     </SettingsModal>

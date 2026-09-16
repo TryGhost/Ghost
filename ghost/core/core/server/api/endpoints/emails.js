@@ -3,6 +3,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const emailService = require('../../services/email-service');
 const emailAnalytics = require('../../services/email-analytics');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const messages = {
   emailNotFound: 'Email not found.',
@@ -23,7 +24,7 @@ const controller = {
     options: ['limit', 'fields', 'filter', 'order', 'page'],
     permissions: true,
     async query(frame) {
-      return await models.Email.findPage(frame.options);
+      return await models.Email.findPage(restrictAdminApiQueryOptions(frame.options));
     },
   },
 
@@ -48,6 +49,19 @@ const controller = {
       }
 
       return model;
+    },
+  },
+
+  sendingStatus: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    data: ['id'],
+    permissions: {
+      method: 'read',
+    },
+    async query(frame) {
+      return await emailService.controller.getSendingStatus(frame);
     },
   },
 
@@ -81,7 +95,9 @@ const controller = {
     async query(frame) {
       const filter =
         `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
-      return await models.EmailBatch.findPage({ ...frame.options, filter });
+      return await models.EmailBatch.findPage(
+        restrictAdminApiQueryOptions({ ...frame.options, filter }),
+      );
     },
   },
 
@@ -104,7 +120,9 @@ const controller = {
     async query(frame) {
       const filter =
         `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
-      return await models.EmailRecipientFailure.findPage({ ...frame.options, filter });
+      return await models.EmailRecipientFailure.findPage(
+        restrictAdminApiQueryOptions({ ...frame.options, filter }),
+      );
     },
   },
 

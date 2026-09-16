@@ -33,6 +33,7 @@ describe('ContentFieldMapping', () => {
       'authors',
       'author_emails',
       'tags',
+      'frontmatter',
       'Something else',
     ]);
 
@@ -45,6 +46,7 @@ describe('ContentFieldMapping', () => {
       authors: 'authors',
       author_emails: 'author_emails',
       tags: 'tags',
+      frontmatter: '',
       'Something else': '',
     });
   });
@@ -106,10 +108,9 @@ describe('ContentFieldMapping', () => {
       'custom_template',
       'codeinjection_head',
       'codeinjection_foot',
-      'frontmatter',
     ]);
     expect(CONTENT_FIELD_MAPPINGS.map((field) => field.value)).not.toEqual(
-      expect.arrayContaining(['newsletter_id', 'email', 'tiers', 'id', 'lexical']),
+      expect.arrayContaining(['frontmatter', 'newsletter_id', 'email', 'tiers', 'id', 'lexical']),
     );
   });
 });

@@ -31,9 +31,9 @@
                     <tr>
                       <td align="left" style="padding-bottom: 22px; text-align: left;">
                         {{#if siteIconUrl}}
-                          <a href="{{siteUrl}}"><img src="{{siteIconUrl}}" alt="{{siteTitle}}" border="0" width="48" height="48" style="border-radius: 4px;"></a>
+                          <img src="{{siteIconUrl}}" alt="{{siteTitle}}" border="0" width="48" height="48" style="border-radius: 4px;">
                         {{else}}
-                          <a href="{{siteUrl}}" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 17px; font-weight: 700; color: {{accentColor}}; text-decoration: none;">{{siteTitle}}</a>
+                          <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 17px; font-weight: 700; color: {{accentColor}};">{{siteTitle}}</span>
                         {{/if}}
                       </td>
                     </tr>
@@ -92,7 +92,7 @@
                     </tr>
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 40px;">
-                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;">{{t 'This message was sent from {siteDomain} to {email} on behalf of {buyerName} ({buyerEmail}).' siteDomain=(linkTag siteUrl siteDomain class="small" style="text-decoration: underline; color: #738A94; font-size: 11px;") email=(linkTag (mailto toEmail) toEmail class="small" style="text-decoration: underline; color: #738A94; font-size: 11px;") buyerName=buyerName buyerEmail=(linkTag (mailto buyerEmail) buyerEmail class="small" style="text-decoration: underline; color: #738A94; font-size: 11px;")}}</p>
+                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;">{{t 'This message was sent from {siteDomain} to {email} on behalf of {buyerName} ({buyerEmail}).' siteDomain=siteDomain email=toEmail buyerName=buyerName buyerEmail=buyerEmail}}</p>
                       </td>
                     </tr>
                   </table>

@@ -109,6 +109,18 @@ describe('Frontend Routing', function () {
   describe('Test with added posts', function () {
     beforeAll(addPosts);
 
+    describe('Post with Ghost in the url', function () {
+      // All of Ghost's admin depends on the /ghost/ in the url to work properly
+      // Badly formed regexs can cause breakage if a post slug starts with the 5 letters ghost
+      it('should retrieve a blog post with ghost at the start of the url', async function () {
+        await request
+          .get('/ghostly-kitchen-sink/')
+          .expect('Cache-Control', testUtils.cacheRules.public)
+          .expect(200)
+          .expect(assertCorrectFrontendHeaders);
+      });
+    });
+
     describe('Static page', function () {
       it('should respond with html', async function () {
         const res = await request
@@ -220,18 +232,6 @@ describe('Frontend Routing', function () {
               .expect(assertCorrectFrontendHeaders);
           });
         });
-      });
-    });
-
-    describe('Post with Ghost in the url', function () {
-      // All of Ghost's admin depends on the /ghost/ in the url to work properly
-      // Badly formed regexs can cause breakage if a post slug starts with the 5 letters ghost
-      it('should retrieve a blog post with ghost at the start of the url', async function () {
-        await request
-          .get('/ghostly-kitchen-sink/')
-          .expect('Cache-Control', testUtils.cacheRules.public)
-          .expect(200)
-          .expect(assertCorrectFrontendHeaders);
       });
     });
   });

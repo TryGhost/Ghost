@@ -1776,7 +1776,7 @@ describe('Batch Sending Service', function () {
             message: 'Test error',
             errorDetails: JSON.stringify({ error: 'test', messageData: 'test' }),
             context: `Mailgun Error 500: Test error`,
-            help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
+            help: `https://docs.ghost.org/newsletters/#bulk-email-configuration`,
             code: 'BULK_EMAIL_SEND_FAILED',
           }),
         ),

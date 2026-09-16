@@ -4,6 +4,21 @@ const errors = require('@tryghost/errors');
 const commands = require('../../../../../core/server/data/schema/commands');
 
 describe('schema commands', function () {
+  describe('getTables', function () {
+    it('excludes the SQLite sequence table', async function () {
+      const fakeKnex = {
+        client: { config: { client: 'better-sqlite3' } },
+        raw: async () => [
+          { tbl_name: 'posts' },
+          { tbl_name: 'sqlite_sequence' },
+          { tbl_name: 'users' },
+        ],
+      };
+
+      assert.deepEqual(await commands.getTables(fakeKnex), ['posts', 'users']);
+    });
+  });
+
   it('_hasForeignSQLite throws when knex is nox configured to use sqlite3', async function () {
     const Knex = require('knex');
     const knex = Knex({

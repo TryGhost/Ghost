@@ -19,9 +19,11 @@ const emberDataTypeMapping = {
     NewslettersResponseType: {type: 'newsletter'},
     RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
+    SnippetsResponseType: {type: 'snippet'},
     TagsResponseType: {type: 'tag'},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
+    TiersCheckoutConfigResponseType: null, // tier checkout collection only exists in React admin
     UsersResponseType: {type: 'user'},
     CustomThemeSettingsResponseType: null // invalidated by React theme activation; nothing to sync in Ember
 };
@@ -57,6 +59,14 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @action
     triggerFeatureFlagsChange() {
         this.trigger('featureFlagsChange');
+    }
+
+    @action
+    refreshFeatureFlagOverrides() {
+        this.feature.refreshFeatureFlagOverrides();
+        // React route ownership subscribes to this event so it can re-read
+        // Ember's invalidated value. It does not write overrides back.
+        this.triggerFeatureFlagsChange();
     }
 
     constructor() {

@@ -1,5 +1,6 @@
 import { BasePage } from '@/helpers/pages';
 import { FrameLocator, Locator, Page } from '@playwright/test';
+import { announcementBar, announcementBarModal } from '@tryghost/test-data/selectors/settings';
 
 export class AnnouncementBarSection extends BasePage {
   readonly section: Locator;
@@ -15,9 +16,9 @@ export class AnnouncementBarSection extends BasePage {
   constructor(page: Page) {
     super(page, '/ghost/#/settings');
 
-    this.section = page.getByTestId('announcement-bar');
+    this.section = page.getByTestId(announcementBar);
     this.customizeButton = this.section.getByRole('button', { name: 'Customize' });
-    this.modal = page.getByTestId('announcement-bar-modal');
+    this.modal = page.getByTestId(announcementBarModal);
     this.freeMembersCheckbox = this.modal.getByLabel('Free members');
     this.editor = this.modal.locator('.koenig-react-editor');
     this.contentEditable = this.modal.locator('[contenteditable="true"]');

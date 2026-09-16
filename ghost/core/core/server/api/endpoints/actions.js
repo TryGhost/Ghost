@@ -1,4 +1,5 @@
 const models = require('../../models');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -11,7 +12,7 @@ const controller = {
     options: ['page', 'limit', 'fields', 'include', 'filter'],
     permissions: true,
     query(frame) {
-      return models.Action.findPage(frame.options);
+      return models.Action.findPage(restrictAdminApiQueryOptions(frame.options));
     },
   },
 };

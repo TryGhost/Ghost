@@ -5,6 +5,7 @@ const config = require('../../../core/shared/config');
 const moment = require('moment');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
+const postsPublicService = require('../../../core/server/services/posts-public');
 const api = require('../../../core/server/api/endpoints');
 const urlUtilsHelper = require('../../utils/url-utils');
 
@@ -29,12 +30,8 @@ const postMatcherShallowIncludes = Object.assign({}, postMatcher, {
   authors: anyArray,
 });
 
-async function trackDb(fn, skip) {
+async function trackDb(fn) {
   const db = require('../../../core/server/data/db');
-  if (db?.knex?.client?.config?.client !== 'better-sqlite3') {
-    return skip();
-  }
-
   /** @type {import('knex').Knex.Client} */
   const client = db.knex.client;
 
@@ -44,18 +41,14 @@ async function trackDb(fn, skip) {
   }
 
   client.on('query', handler);
-
-  await fn();
-
-  client.off('query', handler);
+  try {
+    await fn();
+  } finally {
+    client.off('query', handler);
+  }
 
   return queries;
 }
-
-// trackDb introspects sqlite query traffic, so its tests are sqlite-only; the
-// invalid-filter test is mysql-only. Decided at registration from NODE_ENV
-// (vitest has no runtime this.skip).
-const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
 
 describe('Posts Content API', function () {
   let agent;
@@ -78,8 +71,32 @@ describe('Posts Content API', function () {
     const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
     const postId = testUtils.DataGenerator.Content.posts[0].id;
     await models.Post.edit(
-      { newsletter_id: newsletterId },
-      { id: postId, context: { internal: true } },
+      {
+        newsletter_id: newsletterId,
+        email_recipient_filter: 'status:paid',
+        locale: 'fr',
+        show_title_and_feature_image: false,
+        published_by: fixtureManager.get('users', 1).id,
+      },
+      { id: postId, context: { internal: true }, importing: true },
+    );
+
+    await models.PostsMeta.add(
+      {
+        post_id: postId,
+        email_only: true,
+      },
+      { context: { internal: true } },
+    );
+
+    await models.PostRevision.add(
+      {
+        post_id: postId,
+        lexical: 'private draft revision',
+        created_at_ts: Date.now(),
+        author_id: fixtureManager.get('users', 1).id,
+      },
+      { context: { internal: true } },
     );
   });
 
@@ -146,7 +163,7 @@ describe('Posts Content API', function () {
       });
   });
 
-  it.runIf(isMySQL)('Errors upon invalid filter value', async function () {
+  it('Errors upon invalid filter value', async function () {
     await agent
       .get(`posts/?filter=published_at%3A%3C%271715091791890%27`)
       .expectStatus(422)
@@ -247,6 +264,105 @@ describe('Posts Content API', function () {
       6,
       `Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author`,
     );
+  });
+
+  it('Ignores filters on staff and post data that is not exposed', async function () {
+    for (const filter of [
+      "authors.email:~'example'",
+      "authors.last_seen:>'2000-01-01'",
+      'primary_author.status:active',
+      'authors.roles.name:Owner',
+      'authors.roles_users.role_id:role-id',
+      'email_only:true',
+      'locale:fr',
+      `newsletter_id:${testUtils.DataGenerator.Content.newsletters[0].id}`,
+      'show_title_and_feature_image:false',
+      `published_by:${fixtureManager.get('users', 1).id}`,
+      `post_revisions.author_id:${fixtureManager.get('users', 1).id}`,
+      "post_revisions.lexical:~'private draft'",
+    ]) {
+      await agent
+        .get(`posts/?limit=all&filter=${encodeURIComponent(filter)}`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.posts.length, 13, `filter "${filter}" should be ignored`);
+        });
+    }
+  });
+
+  it('Ignores ordering by fields that are not exposed', async function () {
+    const { body: defaultBody } = await agent.get('posts/?limit=all').expectStatus(200);
+    const defaultIds = defaultBody.posts.map((post) => post.id);
+
+    for (const order of [
+      'email_only asc',
+      'email_recipient_filter asc',
+      'recipient_filter asc',
+      'filter asc',
+      'locale asc',
+      'newsletter_id asc',
+      'published_by asc',
+      'by asc',
+      'show_title_and_feature_image desc',
+    ]) {
+      await agent
+        .get(`posts/?limit=all&order=${encodeURIComponent(order)}`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.deepEqual(
+            body.posts.map((post) => post.id),
+            defaultIds,
+            `order "${order}" should be ignored`,
+          );
+        });
+    }
+  });
+
+  it('Can filter posts by visibility', async function () {
+    await agent
+      .get('posts/?limit=all&filter=visibility:paid')
+      .expectStatus(200)
+      .expect(({ body }) => {
+        assert.equal(body.posts.length, 1);
+        assert.equal(body.posts[0].visibility, 'paid');
+      });
+  });
+
+  it('Ignores hidden selectors in post read request bodies', async function () {
+    const post = fixtureManager.get('posts', 0);
+
+    for (const identifier of [{ id: post.id }, { slug: post.slug }, { uuid: post.uuid }]) {
+      for (const selectors of [
+        { locale: 'not-the-stored-locale' },
+        { newsletter_id: '000000000000000000000000' },
+        { email_recipient_filter: 'not-the-stored-filter' },
+        { published_by: '000000000000000000000000' },
+        { html: 'not-the-stored-body' },
+        { lexical: 'not-the-stored-body' },
+        { mobiledoc: 'not-the-stored-body' },
+        { plaintext: 'not-the-stored-body' },
+      ]) {
+        // A prior successful response must not hide an unsafe lookup behind the cache.
+        await postsPublicService.api.cache?.reset();
+        const { body } = await agent
+          .get(`posts/${post.id}/?fields=id,slug,uuid`, { body: { ...identifier, ...selectors } })
+          .expectStatus(200);
+
+        assert.deepEqual(body.posts, [{ id: post.id, slug: post.slug, uuid: post.uuid }]);
+      }
+    }
+  });
+
+  it('Rejects post read bodies without a public identifier', async function () {
+    const post = fixtureManager.get('posts', 0);
+
+    for (const body of [
+      { locale: 'fr' },
+      { newsletter_id: fixtureManager.get('newsletters', 0).id },
+    ]) {
+      await postsPublicService.api.cache?.reset();
+      await agent.get(`posts/${post.id}/`, { body }).expectStatus(400);
+    }
   });
 
   it('Can request fields of posts', async function () {
@@ -426,6 +542,46 @@ describe('Posts Content API', function () {
     }
   });
 
+  it('Does not allow gated content fields as filter oracles', async function () {
+    const secret = 'Secret paid filter oracle body';
+    const paidPost = testUtils.DataGenerator.forKnex.createPost({
+      slug: 'content-api-filter-oracle',
+      visibility: 'paid',
+      lexical: testUtils.DataGenerator.markdownToLexical(secret),
+      mobiledoc: JSON.stringify({
+        version: '0.3.1',
+        atoms: [],
+        cards: [],
+        markups: [],
+        sections: [[1, 'p', [[0, [], 0, secret]]]],
+      }),
+      html: `<p>${secret}</p>`,
+      plaintext: secret,
+      published_at: moment().add(35, 'seconds').toDate(),
+    });
+    const created = await models.Post.add(paidPost, { context: { internal: true } });
+
+    try {
+      const { body: defaultBody } = await agent.get('posts/?limit=all').expectStatus(200);
+      const defaultIds = defaultBody.posts.map((post) => post.id);
+
+      for (const field of ['html', 'plaintext', 'lexical', 'mobiledoc']) {
+        await agent
+          .get(`posts/?limit=all&filter=${encodeURIComponent(`${field}:~'${secret}'`)}`)
+          .expectStatus(200)
+          .expect(({ body }) => {
+            assert.deepEqual(
+              body.posts.map((post) => post.id),
+              defaultIds,
+              `filter on "${field}" should be ignored`,
+            );
+          });
+      }
+    } finally {
+      await models.Post.destroy({ id: created.id }, { context: { internal: true } });
+    }
+  });
+
   it('Can include specific tier for post with tiers visibility', async function () {
     const res = await agent.get(`tiers/`).expectStatus(200);
 
@@ -499,31 +655,22 @@ describe('Posts Content API', function () {
     );
   });
 
-  it.skipIf(isMySQL)('Does not select * by default', async function () {
-    let queries = await trackDb(
-      () => agent.get('posts/?limit=all').expectStatus(200),
-      () => {},
-    );
+  it('Does not select * by default', async function () {
+    let queries = await trackDb(() => agent.get('posts/?limit=all').expectStatus(200));
     let postsRelatedQueries = queries.filter((q) => q.sql.includes('`posts`'));
     for (const query of postsRelatedQueries) {
       const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
       assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
     }
 
-    queries = await trackDb(
-      () => agent.get('posts/?limit=3').expectStatus(200),
-      () => {},
-    );
+    queries = await trackDb(() => agent.get('posts/?limit=3').expectStatus(200));
     postsRelatedQueries = queries.filter((q) => q.sql.includes('`posts`'));
     for (const query of postsRelatedQueries) {
       const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
       assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
     }
 
-    queries = await trackDb(
-      () => agent.get('posts/?include=tags,authors').expectStatus(200),
-      () => {},
-    );
+    queries = await trackDb(() => agent.get('posts/?include=tags,authors').expectStatus(200));
     postsRelatedQueries = queries.filter((q) => q.sql.includes('`posts`'));
     for (const query of postsRelatedQueries) {
       const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
@@ -531,19 +678,16 @@ describe('Posts Content API', function () {
     }
   });
 
-  it.skipIf(isMySQL)('Can skip pagination counts when skipPagination is true', async function () {
-    const queries = await trackDb(
-      () => {
-        return api.postsPublic.browse({
-          filter: "published_at:>'2015-07-20'",
-          skipPagination: true,
-          limit: 1,
-          order: 'published_at asc',
-          context: {},
-        });
-      },
-      () => {},
-    );
+  it('Can skip pagination counts when skipPagination is true', async function () {
+    const queries = await trackDb(() => {
+      return api.postsPublic.browse({
+        filter: "published_at:>'2015-07-20'",
+        skipPagination: true,
+        limit: 1,
+        order: 'published_at asc',
+        context: {},
+      });
+    });
 
     const postsCountQueries = queries.filter((query) => {
       return query.sql.includes('count(') && query.sql.includes('`posts`');

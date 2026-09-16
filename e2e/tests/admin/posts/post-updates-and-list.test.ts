@@ -3,12 +3,26 @@ import { PostFactory, createPostFactory } from '@/data-factory';
 import { PostPage } from '@/helpers/pages';
 import { expect, test } from '@/helpers/playwright';
 
+// Mirrors the theme's `{{date format="DD MMM YYYY"}}`, which moment renders in the
+// site timezone (Etc/UTC) with English short months. Intl en-GB disagrees ("Sept").
+const SHORT_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
 function formatFrontendDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${day} ${SHORT_MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
 }
 
 test.describe('Ghost Admin - Updating Posts', () => {
@@ -47,7 +61,7 @@ test.describe('Ghost Admin - Updating Posts', () => {
 
     await frontendPage.reload();
     await expect(publicPage.articleBody).toContainText(appendedBodyText);
-    await expect(publicPage.articleHeader).toContainText('7 Jan 2022');
+    await expect(publicPage.articleHeader).toContainText('07 Jan 2022');
     await expect(publicPage.metaDescription).toHaveAttribute('content', customExcerpt);
   });
 });

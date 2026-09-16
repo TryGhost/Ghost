@@ -24,6 +24,10 @@ export interface GiftDeliveryRepository {
     giftId: string,
     options?: RepositoryTransactionOptions,
   ): Promise<GiftDeliveryData | null>;
+  getByGiftToken(
+    giftToken: string,
+    options?: RepositoryTransactionOptions,
+  ): Promise<GiftDeliveryData | null>;
   getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null>;
   findRecoverableForPurchasedGifts(
     now: Date,
@@ -122,6 +126,20 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     const model = await this.model.findOne({ gift_id: giftId }, { require: false, ...options });
 
     return model ? decodeGiftDeliveryRow(model.toJSON()) : null;
+  }
+
+  async getByGiftToken(
+    giftToken: string,
+    options: RepositoryTransactionOptions = {},
+  ): Promise<GiftDeliveryData | null> {
+    const db = options.transacting ?? this.knex;
+    const row = await db('gift_deliveries')
+      .select('gift_deliveries.*')
+      .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
+      .where('gifts.token', giftToken)
+      .first();
+
+    return row ? decodeGiftDeliveryRow(row) : null;
   }
 
   async getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null> {

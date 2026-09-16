@@ -12,8 +12,8 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * filter restored (and the same members matched) proves the compound grammar
  * parses back to exactly what produced it.
  *
- * React member detail (the value editor is React-only) plus the membersCustomFields
- * flag that gates the whole feature.
+ * React member detail (the value editor is React-only) plus the membersCustomFields flag,
+ * which is what lets the test define a field in Settings.
  */
 usePerTestIsolation();
 
@@ -68,7 +68,7 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
     await expect(sidebar.getNavLink(viewName)).not.toHaveAttribute('aria-current', 'page');
 
     // Reopen it: the filter round-trips (the view goes active again only if the
-    // reopened NQL re-serialises to the exact saved string), the custom-field
+    // reopened NQL re-serializes to the exact saved string), the custom-field
     // filter is present, and the same member is matched.
     await sidebar.getNavLink(viewName).click();
 
@@ -76,6 +76,64 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
     await expect(membersPage.getFilterItem(fieldName)).toContainText(fieldName);
     await expect(membersPage.getMemberByName(`Ghost Employee ${stamp}`)).toBeVisible();
     await expect(membersPage.getMemberByName(`Acme Employee ${stamp}`)).toHaveCount(0);
+  });
+
+  /**
+   * A composite stores one row per part, and each part filters as a field in its own right,
+   * so the pill carries a part alongside the value. Filtering on one part must not match a
+   * member whose other parts happen to hold that value.
+   */
+  test('an address filter matches on the chosen part only', async ({ page }) => {
+    test.slow();
+
+    const stamp = Date.now();
+    const fieldName = `Shipping ${stamp}`;
+    const memberFactory = createMemberFactory(page.request);
+
+    const inLondon = await memberFactory.create({
+      name: `London Buyer ${stamp}`,
+      email: `london-${stamp}@example.com`,
+    });
+    const inBoston = await memberFactory.create({
+      name: `Boston Buyer ${stamp}`,
+      email: `boston-${stamp}@example.com`,
+    });
+
+    const settingsPage = new SettingsPage(page);
+    const memberDetailsPage = new MemberDetailsPage(page);
+    const membersPage = new MembersListPage(page);
+
+    await settingsPage.goto();
+    await settingsPage.customFieldsSection.createAddressField(fieldName);
+
+    await page.goto(`/ghost/#/members/${inLondon.id}`);
+    await memberDetailsPage.setCompositeCustomFieldValue(fieldName, {
+      'Address line 1': '1 King St',
+      City: 'London',
+      // The country part validates as a 2-letter code.
+      Country: 'GB',
+    });
+
+    // 'London' sits in this member's Address line 1, so a filter on City must not match it.
+    await page.goto(`/ghost/#/members/${inBoston.id}`);
+    await memberDetailsPage.setCompositeCustomFieldValue(fieldName, {
+      'Address line 1': 'London House',
+      City: 'Boston',
+      Country: 'US',
+    });
+
+    await page.goto('/ghost/#/members');
+    // A composite defaults to the presence operator, which takes no value, so the
+    // operator is chosen explicitly here.
+    await membersPage.addCustomFieldFilter({
+      field: fieldName,
+      subfield: 'City',
+      operator: 'is',
+      value: 'London',
+    });
+
+    await expect(membersPage.getMemberByName(`London Buyer ${stamp}`)).toBeVisible();
+    await expect(membersPage.getMemberByName(`Boston Buyer ${stamp}`)).toHaveCount(0);
   });
 
   test('an is-set custom field filter matches members that have a value', async ({ page }) => {

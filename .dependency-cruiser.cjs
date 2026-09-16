@@ -141,6 +141,69 @@ module.exports = {
       to: { path: '^@tryghost/admin($|/)|^apps/admin/' },
     },
     // ============================================================
+    // apps/ — test data must not reach production source
+    // ============================================================
+    {
+      name: 'no-test-data-in-production-source',
+      comment:
+        'App source must not import @tryghost/test-data. Only the ./selectors/* subpath is allowed, and only for testids — product copy is declared in the component that renders it. Tests, fixtures, and test utilities are exempt.',
+      severity: 'error',
+      from: {
+        path: '^apps/[^/]+/src/',
+        pathNot: ['\\.test\\.[^/]+$', '(^|/)__fixtures__/', '(^|/)__test-utils__/'],
+      },
+      to: {
+        // The root entry resolves to the workspace source; the subpaths stay
+        // unresolved specifiers. Both shapes are matched.
+        path: '^(?:@tryghost/test-data($|/)|packages/testing/test-data/)',
+        pathNot: ['^@tryghost/test-data/selectors/', '^packages/testing/test-data/src/selectors/'],
+      },
+    },
+    // ============================================================
+    // apps/admin — domains cross into each other only via api.ts
+    // ============================================================
+    {
+      name: 'admin-domains-cross-via-api-only',
+      comment:
+        "A domain folder in apps/admin/src may import a different domain only through that domain's public surface (its api.ts). Deep imports couple domains to each other's internals. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier; both that shape and resolved relative paths are matched. Test files are exempt.",
+      severity: 'error',
+      from: {
+        path: '^apps/admin/src/(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/',
+        pathNot: ['\\.test\\.(ts|tsx)$'],
+      },
+      to: {
+        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
+        pathNot: [
+          '^(?:@/|apps/admin/src/)$1($|/)',
+          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
+
+          // Shared-shaped modules that still live inside a domain.
+          // Goal: move them under src/shared and work this list down to empty.
+          '^(?:@/|apps/admin/src/)settings/components/(?:koenig-loader|error-boundary)$',
+          '^(?:@/|apps/admin/src/)posts/list/post-time$',
+        ],
+      },
+    },
+    // ============================================================
+    // apps/admin — the shell and layout import domains only via api.ts
+    // ============================================================
+    {
+      name: 'admin-shell-into-domains-via-api-only',
+      comment:
+        'The admin shell (top-level files in apps/admin/src plus its non-domain support folders) may import a domain only through its api.ts. Same matching notes as admin-domains-cross-via-api-only. Test files are exempt.',
+      severity: 'error',
+      from: {
+        path: '^apps/admin/src/(?:(?:layout|hooks|providers|ember-bridge|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
+        pathNot: ['\\.test\\.(ts|tsx)$'],
+      },
+      to: {
+        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
+        pathNot: [
+          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
+        ],
+      },
+    },
+    // ============================================================
     // apps/admin — shared/ must stay domain-free
     // ============================================================
     {
@@ -150,7 +213,7 @@ module.exports = {
       severity: 'error',
       from: { path: '^apps/admin/src/shared/' },
       to: {
-        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|layout)($|/)',
+        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor|layout)($|/)',
       },
     },
   ],

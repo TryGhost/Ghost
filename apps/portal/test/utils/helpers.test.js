@@ -7,6 +7,7 @@ import {
   getCurrencySymbol,
   getFreeProduct,
   getMemberName,
+  hasCustomFieldsEnabled,
   getMemberSubscription,
   getPriceFromSubscription,
   getPriceIdFromPageQuery,
@@ -1069,6 +1070,14 @@ describe('Helpers - ', () => {
     test('returns true when editor default email recipients is set to filter', () => {
       const site = { editor_default_email_recipients: 'filter' };
       expect(hasNewsletterSendingEnabled({ site })).toBe(true);
+    });
+  });
+
+  describe('hasCustomFieldsEnabled -', () => {
+    test('reads the labs flag', () => {
+      expect(hasCustomFieldsEnabled({ site: { labs: { membersCustomFields: true } } })).toBe(true);
+      expect(hasCustomFieldsEnabled({ site: { labs: {} } })).toBe(false);
+      expect(hasCustomFieldsEnabled({ site: {} })).toBe(false);
     });
   });
 });

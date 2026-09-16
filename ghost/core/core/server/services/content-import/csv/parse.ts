@@ -1,10 +1,22 @@
 import papaparse from 'papaparse';
 import fs from 'fs-extra';
+import { stripFormulaGuard } from './formula';
 
 const errors = require('@tryghost/errors');
 
 // A parsed CSV row: raw string cells, keyed by (renamed) column.
 export type Row = Record<string, string>;
+
+export interface ParsedRow {
+  data: Row;
+  source: Row;
+  line: number;
+}
+
+export interface ParsedCSV {
+  columns: string[];
+  rows: ParsedRow[];
+}
 
 // A column named after an Object.prototype member is unsafe as a key.
 function isSafeColumnName(name: string): boolean {
@@ -18,19 +30,38 @@ function isFatal(error: papaparse.ParseError): boolean {
   return error.type === 'Quotes';
 }
 
+function isEmptyRow(row: Record<string, string | string[]>): boolean {
+  return !Object.values(row).some((value) => {
+    if (Array.isArray(value)) {
+      return value.some((cell) => typeof cell === 'string' && cell.trim().length > 0);
+    }
+    return value.trim().length > 0;
+  });
+}
+
 // headerMapping renames headers to the columns they emit under; unmapped columns
 // carry through, and one mapped to an empty target is dropped.
 export default async function parse(
   path: string,
   headerMapping?: Record<string, string>,
 ): Promise<Row[]> {
+  const parsed = await parseWithSource(path, headerMapping);
+  return parsed.rows.map(({ data }) => data);
+}
+
+export async function parseWithSource(
+  path: string,
+  headerMapping?: Record<string, string>,
+): Promise<ParsedCSV> {
   // Buffered rather than streamed: files are bounded by the interim row cap, and
   // papaparse's stream mode drops results.errors, which is what catches a
   // malformed quoted field before it imports as garbage.
   const content = (await fs.readFile(path, 'utf8')).replace(/^\ufeff/, '');
-  const parsed = papaparse.parse<Record<string, unknown>>(content, {
+  const parsed = papaparse.parse<Record<string, string | string[]>>(content, {
     header: true,
-    skipEmptyLines: true,
+    // Empty records stay in the parser output long enough to contribute to the
+    // publisher-visible spreadsheet line number, then are dropped below.
+    skipEmptyLines: false,
   });
 
   const fatal = parsed.errors.find(isFatal);
@@ -38,10 +69,15 @@ export default async function parse(
     throw new errors.ValidationError({ message: `${fatal.code}: ${fatal.message}` });
   }
 
-  const rows: Row[] = [];
+  const rows: ParsedRow[] = [];
 
-  for (const parsedRow of parsed.data) {
+  for (const [index, parsedRow] of parsed.data.entries()) {
+    if (isEmptyRow(parsedRow)) {
+      continue;
+    }
+
     const row: Row = {};
+    const source: Row = Object.create(null) as Row;
 
     for (const [header, value] of Object.entries(parsedRow)) {
       // non-string values are papaparse's __parsed_extra overflow from ragged rows
@@ -49,14 +85,16 @@ export default async function parse(
         continue;
       }
 
+      source[header] = value;
+
       // hasOwn: a prototype-named header must not match an inherited method on the mapping
       if (headerMapping && Object.hasOwn(headerMapping, header)) {
         if (!headerMapping[header]) {
           continue;
         }
-        row[headerMapping[header]] = value;
+        row[headerMapping[header]] = stripFormulaGuard(value);
       } else if (isSafeColumnName(header)) {
-        row[header] = value;
+        row[header] = stripFormulaGuard(value);
       }
     }
 
@@ -64,8 +102,8 @@ export default async function parse(
       continue;
     }
 
-    rows.push(row);
+    rows.push({ data: row, source, line: index + 2 });
   }
 
-  return rows;
+  return { columns: parsed.meta.fields ?? [], rows };
 }

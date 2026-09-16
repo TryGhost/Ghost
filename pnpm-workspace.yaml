@@ -14,11 +14,6 @@ catalogMode: strict
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
 
-ignoredOptionalDependencies:
-  # sqlite3 was replaced by better-sqlite3 so it can be ignored
-  # TODO: remove once knex-migrator no longer depends on sqlite3
-  - sqlite3
-
 allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
@@ -34,7 +29,7 @@ allowBuilds:
   'esbuild@0.25.12 || 0.28.2': true
   'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
   'msw@2.14.6': true
-  'nx@23.1.1': true
+  'nx@23.2.0': true
   'protobufjs@7.6.4': true
   're2@1.26.1': true
   'sharp@0.35.3': true
@@ -61,6 +56,8 @@ catalog:
   '@radix-ui/react-avatar': 1.2.1
   '@radix-ui/react-checkbox': 1.3.6
   '@radix-ui/react-context-menu': 2.3.2
+  '@radix-ui/react-focus-guards': 1.1.4
+  '@radix-ui/react-focus-scope': 1.1.11
   '@radix-ui/react-form': 0.1.11
   '@radix-ui/react-popover': 1.1.18
   '@radix-ui/react-radio-group': 1.4.2
@@ -78,25 +75,25 @@ catalog:
   '@tanstack/react-virtual': 3.14.9
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
-  '@tryghost/api-framework': 3.3.9
   '@tryghost/brute-knex': 3.2.2
-  '@tryghost/color-utils': 0.2.20
-  '@tryghost/custom-fonts': 1.0.11
-  '@tryghost/debug': 2.3.9
-  '@tryghost/domain-events': 3.3.10
-  '@tryghost/errors': 3.3.9
-  '@tryghost/helpers': 1.1.106
-  '@tryghost/limit-service': 1.5.6
-  '@tryghost/logging': 5.4.0
+  '@tryghost/color-utils': 0.2.21
+  '@tryghost/custom-fonts': 1.0.12
+  '@tryghost/debug': 2.3.14
+  '@tryghost/domain-events': 3.3.15
+  '@tryghost/errors': 3.3.14
+  '@tryghost/helpers': 1.1.107
+  '@tryghost/logging': 5.4.5
   '@tryghost/mg-clean-html': 0.12.6
-  '@tryghost/metrics': 3.5.0
+  '@tryghost/metrics': 3.6.0
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
-  '@tryghost/request': 4.0.3
-  '@tryghost/string': 0.3.5
-  '@tryghost/timezone-data': 1.0.0
-  '@tryghost/tpl': 2.3.9
+  '@tryghost/promise': 2.3.14
+  '@tryghost/request': 4.0.7
+  '@tryghost/string': 0.3.6
+  '@tryghost/timezone-data': 1.0.1
+  '@tryghost/tpl': 2.3.14
+  '@tryghost/url-utils': 5.3.0
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/lodash': 4.17.25
@@ -121,9 +118,9 @@ catalog:
   ajv-formats: 3.0.1
   better-sqlite3: 12.11.1
   bson-objectid: 2.0.4
-  c8: 11.0.0
   chai: 4.5.0
   chalk: 4.1.2
+  cheerio: 1.2.0
   clsx: 2.1.1
   concurrently: 10.0.4
   country-flag-icons: 1.6.20
@@ -143,13 +140,18 @@ catalog:
   fs-extra: 11.3.6
   glob: 13.0.6
   globals: 17.7.0
-  got: 15.1.0
+  got: 16.0.0
+  jose: 6.2.12
   js-yaml: 4.3.0
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
-  knex-migrator: 5.4.1
+  juice: 11.1.1
+  knex: 2.4.2
+  knex-migrator: 6.2.1
   lodash: 4.18.1
+  luxon: 3.7.2
   lucide-react: 1.23.0
+  microdiff: 1.5.0
   mingo: 2.5.3
   moment: 2.30.1
   moment-timezone: 0.5.45
@@ -165,6 +167,7 @@ catalog:
   react-dom: 18.3.1
   react-router: 7.18.1
   semver: 7.8.5
+  should: 13.2.3
   sinon: 22.0.0
   sonner: 2.0.7
   storybook: 10.4.6
@@ -223,6 +226,8 @@ catalog:
   cron-validate: 1.4.5
   '@types/stoppable': 1.1.3
   '@types/express-brute': 1.0.6
+  '@tryghost/validator': 3.2.14
+  '@types/probability-distributions': 0.1.3
 
 catalogs:
   react17:
@@ -236,12 +241,7 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
-  # knex-migrator 5.4.x bundles knex 3.x, but ghost/core is pinned to knex 2.4.2.
-  # Ghost's migrations build queries with the 2.4.2 query builder and knex-migrator
-  # executes them, so its knex must match Ghost's major or the 3.x runner throws on
-  # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
   cron-validate: 1.4.5
-  'knex-migrator>knex': 2.4.2
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
   '@tryghost/nql': 'catalog:'
@@ -251,13 +251,23 @@ overrides:
   moment-timezone: 'catalog:'
   nwsapi: 2.2.24
   broccoli-persistent-filter: ^2.3.1
-  juice: 9.1.0
   ember-basic-dropdown: 6.0.2
   ember-in-viewport: 4.1.0
   'eslint-plugin-ghost>@typescript-eslint/eslint-plugin': 8.67.0
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.67.0
-  'ember-svg-jar>cheerio': 1.2.0
-  'juice>cheerio': 0.22.0
+  'ember-svg-jar>cheerio': 'catalog:'
+  # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
+  # and ghost/core share one copy instead of keeping two parsers resident - both
+  # only ever call `load`. See patchedDependencies for the matching slim import.
+  'juice>cheerio': 'catalog:'
+  # mg-utils depends on the npm release of kg-default-cards, so the published
+  # copy was installed alongside the workspace one that ghost/core links — and
+  # it dragged its own published kg-utils, kg-markdown-html-renderer and
+  # url-utils in with it. Point that edge at the workspace package instead, so
+  # content import renders cards with the same code Ghost itself renders them
+  # with. The override is global rather than scoped to mg-utils so the component
+  # tarball override that pack.mjs writes under the same key replaces it.
+  '@tryghost/kg-default-cards': 'workspace:*'
   '@babel/runtime@<7.26.10': ^7.26.10
   '@tootallnate/once@<3.0.1': ^3.0.1
   'ansi-html@<0.0.8': ^0.0.9
@@ -313,9 +323,6 @@ minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
   - '@tryghost/*'
   # TryGhost-published packages that live outside the @tryghost/ npm scope.
-  # Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
-  # (Mapbox-era) npm maintainer accounts can still publish, so the soak
-  # retains value there.
   - 'bookshelf-relations'
   - 'eslint-plugin-ghost'
   - 'express-hbs'
@@ -340,3 +347,24 @@ versioning:
     - '@tryghost/portal'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
+patchedDependencies:
+  # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL
+  # helpers Ghost never calls; the patch defers that require, as 9.x does. The
+  # dependency is dropped in .pnpmfile.mjs - patches apply after resolution.
+  '@elastic/elasticsearch@8.19.2': patches/@elastic__elasticsearch@8.19.2.patch
+  # The juice patch makes three changes:
+  # - lib/cheerio.js imports cheerio's main entry, which eagerly loads parse5,
+  #   undici and the whatwg encoding stack that juice never uses (~20MB RSS per
+  #   process). The patch redirects that one import to cheerio/slim; juice
+  #   already parses via htmlparser2, so output is unchanged.
+  # - juice 11 drops CSS rules with no declarations, so inlining throws on a
+  #   style attribute that has none (e.g. `style=";"`). The patch skips those
+  #   attributes, as juice 9 did.
+  # - mensch parses input like `a{b}` (or a `{placeholder}` in a style
+  #   attribute once replacement strings are wrapped) into a declaration with
+  #   no value, and inlining throws on it. This predates juice 11; the patch
+  #   skips those declarations.
+  # Re-create the patch with `pnpm patch juice@<version>` when juice is bumped -
+  # and note juice 12+ is ESM, so a major bump also needs the `require('juice')`
+  # call sites updated. The malformed CSS email tests cover all three crashes.
+  juice@11.1.1: patches/juice@11.1.1.patch

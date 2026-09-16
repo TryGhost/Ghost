@@ -31,6 +31,9 @@
   },
   "useMinFiles": true,
   "verifyRequestIntegrity": true,
+  "queryParameterFiltering": {
+    "enabled": false
+  },
   "paths": {
     "contentPath": "content/",
     "fixtures": "core/server/data/schema/fixtures/fixtures",
@@ -68,6 +71,10 @@
     "active": "LocalImagesStorage",
     "media": "LocalMediaStorage",
     "files": "LocalFilesStorage",
+    "imports": {
+      "adapter": "LocalStorageBase",
+      "staticFileURLPrefix": "content/imports"
+    },
     "LocalMediaStorage": {},
     "LocalFilesStorage": {}
   },
@@ -77,7 +84,7 @@
   "members": {
     "contentApiAccess": [],
     "paymentProcessors": [],
-    "customFields": {
+    "metafields": {
       "maxDefinitions": 100
     },
     "importer": {
@@ -302,8 +309,7 @@
         "enabled": false,
         "threshold": 500
       }
-    },
-    "openedJobLagWarningMinutes": 30
+    }
   },
   "linkClickTrackingCacheMemberUuid": false,
   "backgroundJobs": {
@@ -361,7 +367,8 @@
   },
   "bulkEmail": {
     "batchSize": 1000,
-    "captureLinkClickBadMemberUuid": false
+    "captureLinkClickBadMemberUuid": false,
+    "perRecipientMessageId": false
   },
   "disableJSBackups": false,
   "disableMigrationBackups": false,

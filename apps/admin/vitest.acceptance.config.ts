@@ -1,3 +1,5 @@
+import { availableParallelism } from 'node:os';
+
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import type { PluginOption } from 'vite';
@@ -7,10 +9,20 @@ import tailwindcss from '@tailwindcss/vite';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
 /**
- * Acceptance tier: full-app tests in real Chromium via Vitest Browser Mode,
- * against a fake Ghost Admin API (test-utils/acceptance/). Unit tests stay
- * in vite.config.ts (jsdom).
+ * Browser mode: real Chromium via Vitest Browser Mode against a fake Ghost
+ * Admin API (test-utils/acceptance/). `*.acceptance.test.tsx` boots the whole
+ * app; `*.component.test.tsx` mounts one component in the app's provider
+ * stack. Unit tests stay in vite.config.ts (jsdom).
  */
+
+/*
+ * Each worker drives its own Chromium page, so workers stay ~97% busy right up
+ * to the core count and then fall off a cliff (63% at 18 workers on an 18-core
+ * box, and worse wall-clock than 8). Leave a core for the Vite server and cap
+ * the top end; the floor keeps 2-core runners on their current two workers.
+ */
+const getWorkerCount = () => Math.min(8, Math.max(2, availableParallelism() - 1));
+
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, react()],
   // Serves the MSW service worker script; scoped to the test config so it
@@ -27,9 +39,12 @@ export default defineConfig({
   resolve: sharedResolve,
   test: {
     name: 'acceptance',
-    include: ['src/**/*.acceptance.test.tsx'],
-    maxWorkers: process.env.CI ? 2 : undefined,
+    include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
+    maxWorkers: getWorkerCount(),
     setupFiles: ['./test-utils/acceptance/setup.ts'],
+    // Most journeys finish well under a second, but a few that wait out a
+    // product-side hold reach ~6s; this leaves those headroom on slower CI.
+    testTimeout: 15_000,
     expect: {
       // Full-app renders are slower than unit renders; the harness's
       // toHaveCount matcher derives its polling from this too.

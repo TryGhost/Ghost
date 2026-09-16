@@ -50,6 +50,8 @@ export const settingsScreen = {
     page.getByRole('option', {
       name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s|$)`),
     }),
+  tierOption: (name: string) =>
+    page.getByRole('listbox').getByRole('option', { name, exact: true }),
   errorToast: toast,
   successToast: toast,
   inviteUserModal: () => page.getByTestId(sel.inviteUserModal),

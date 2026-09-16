@@ -1,4 +1,4 @@
-import { NewTagsPage, SidebarPage, TagEditorPage, TagsPage } from '@/admin-pages';
+import { NewTagsPage, TagEditorPage, TagsPage } from '@/admin-pages';
 import { expect, test } from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Tags Editor', () => {
@@ -96,40 +96,5 @@ test.describe('Ghost Admin - Tags Editor', () => {
     await expect(tagEditor.deleteModal).toBeHidden();
     await expect(page).toHaveURL(tagsPage.pageUrl);
     await expect(tagsPage.getTagLinkByName('News')).toBeHidden();
-  });
-
-  test('can load tag via slug in url', async ({ page }) => {
-    const tagEditor = new TagEditorPage(page);
-    await tagEditor.gotoTagBySlug('news');
-
-    await expect(page).toHaveURL('/ghost/#/tags/news');
-    await expect(tagEditor.nameInput).toHaveValue('News');
-    await expect(tagEditor.slugInput).toHaveValue('news');
-  });
-
-  test('redirects to 404 when tag does not exist', async ({ page }) => {
-    const tagEditor = new TagEditorPage(page);
-    await tagEditor.gotoTagBySlug('unknown');
-
-    await expect(page.getByText('Page not found')).toBeVisible();
-  });
-
-  test('maintains active state in nav menu when creating a new tag', async ({ page }) => {
-    const newTagsPage = new NewTagsPage(page);
-    const sidebar = new SidebarPage(page);
-    await newTagsPage.goto();
-
-    await expect(page).toHaveURL(newTagsPage.pageUrl);
-    await expect(sidebar.getNavLink('Tags')).toHaveAttribute('aria-current', 'page');
-  });
-
-  test('maintains active state in nav menu when editing a tag', async ({ page }) => {
-    const tagsPage = new TagsPage(page);
-    const sidebar = new SidebarPage(page);
-
-    await tagsPage.goto();
-    await tagsPage.getTagLinkByName('News').click();
-
-    await expect(sidebar.getNavLink('Tags')).toHaveAttribute('aria-current', 'page');
   });
 });

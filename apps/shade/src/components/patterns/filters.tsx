@@ -3,6 +3,7 @@
 import type React from 'react';
 import {
   createContext,
+  forwardRef,
   useCallback,
   useContext,
   useEffect,
@@ -10,7 +11,9 @@ import {
   useRef,
   useState,
 } from 'react';
+import { PageHeader } from '@/components/patterns/page-header';
 import { Calendar } from '@/components/ui/calendar';
+import { useFilterBarContext } from '@/components/patterns/filter-bar-context';
 import {
   Command,
   CommandEmpty,
@@ -29,8 +32,20 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useShade } from '@/providers/shade-provider';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { AlertCircle, Calendar as CalendarIcon, Check, Loader2, Plus, X } from 'lucide-react';
+import {
+  AlertCircle,
+  Calendar as CalendarIcon,
+  Check,
+  Funnel,
+  FunnelPlus,
+  ListFilter,
+  ListFilterPlus,
+  Loader2,
+  Plus,
+  X,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // i18n Configuration Interface
@@ -191,6 +206,9 @@ export const DEFAULT_I18N: FilterI18nConfig = {
 
 // Context for all Filter component props
 interface FilterContextValue {
+  hasFilters: boolean;
+  controlRadius: 'md' | 'full';
+  keyboardShortcut?: string;
   variant: 'solid' | 'outline';
   size: 'sm' | 'md' | 'lg';
   radius: 'md' | 'full';
@@ -201,6 +219,7 @@ interface FilterContextValue {
   addButtonText?: string;
   addButtonIcon?: React.ReactNode;
   addButtonClassName?: string;
+  addButtonVariant?: 'solid' | 'outline' | 'ghost' | 'secondary';
   addButton?: React.ReactNode;
   showSearchInput?: boolean;
   trigger?: React.ReactNode;
@@ -208,6 +227,8 @@ interface FilterContextValue {
 }
 
 const FilterContext = createContext<FilterContextValue>({
+  hasFilters: false,
+  controlRadius: 'md',
   variant: 'outline',
   size: 'md',
   radius: 'md',
@@ -218,6 +239,7 @@ const FilterContext = createContext<FilterContextValue>({
   addButtonText: undefined,
   addButtonIcon: undefined,
   addButtonClassName: undefined,
+  addButtonVariant: undefined,
   addButton: undefined,
   showSearchInput: true,
   trigger: undefined,
@@ -313,8 +335,10 @@ const filterAddButtonVariants = cva(
     variants: {
       variant: {
         solid: 'border border-input hover:bg-secondary/60',
-        outline:
-          'border border-control-border hover:bg-interactive-hover dark:hover:bg-interactive-hover',
+        outline: 'border border-control-border hover:bg-interactive-hover',
+        ghost: 'border border-transparent hover:bg-button-hover',
+        secondary:
+          'border border-transparent bg-tab-active text-secondary-foreground hover:bg-secondary',
       },
       size: {
         lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -524,11 +548,16 @@ function FilterInput<T = unknown>({
   onKeyDown,
   onInputChange,
   className,
+  inputRef,
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement> & {
   className?: string;
   field?: FilterFieldConfig<T>;
   onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  // Taken as a plain prop rather than through forwardRef: this is an internal
+  // helper, not an exported Shade component, and forwardRef composes badly with
+  // its generic parameter.
+  inputRef?: React.Ref<HTMLInputElement>;
 }) {
   const context = useFilterContext();
   const [isValid, setIsValid] = useState(true);
@@ -649,6 +678,7 @@ function FilterInput<T = unknown>({
 
       <div className="flex w-full items-stretch">
         <input
+          ref={inputRef}
           aria-describedby={
             !isValid && validationMessage ? `${field?.key || 'input'}-error` : undefined
           }
@@ -1349,12 +1379,12 @@ function FilterOperatorDropdown<T = unknown>({
     operators.find((op) => op.value === operator)?.label ||
     context.i18n.helpers.formatOperator(operator);
 
-  // Both `hideOperatorSelect` and a read-only field render the operator as static
-  // text through the shared chrome, rather than a live menu.
+  // A single operator has nothing to choose. Keep its label and chrome static,
+  // just like `hideOperatorSelect` and read-only fields.
   return (
     <SegmentDropdown
       options={operators}
-      readOnly={field.readOnly || field.hideOperatorSelect}
+      readOnly={field.readOnly || field.hideOperatorSelect || operators.length === 1}
       trigger={operatorLabel}
       value={operator}
       onChange={onChange}
@@ -1471,6 +1501,13 @@ export function FilterSegmentInput({
   );
 }
 
+// Types whose filter is created empty and answered by typing, so focus belongs
+// in the input as soon as it appears. Deliberately excludes the date-like types
+// and `numberrange`, which are created already carrying a usable value and so
+// aren't waiting on input; and the pickers, which open a menu that takes focus
+// on its own.
+const TYPED_VALUE_FIELD_TYPES = ['text', 'number', 'email', 'url', 'tel'];
+
 interface FilterValueSelectorProps<T = unknown> {
   field: FilterFieldConfig<T>;
   values: T[];
@@ -1478,6 +1515,8 @@ interface FilterValueSelectorProps<T = unknown> {
   operator: string;
   onOperatorChange?: (operator: string) => void;
   readOnly?: boolean;
+  /** Focus the value input on mount — set for a filter the user just added. */
+  autoFocus?: boolean;
 }
 
 interface SelectOptionsPopoverProps<T = unknown> {
@@ -1569,6 +1608,15 @@ interface SelectOptionsListProps<T = unknown> {
   onSelectUnselected: (option: FilterOption<T>) => void;
 }
 
+/**
+ * What a row's tooltip says. The detail is not rendered beside the label, so
+ * this is the only place it surfaces — enough to tell two same-named options
+ * apart when you need to, without spending row width on it always.
+ */
+function optionTitle<T>(option: FilterOption<T>): string {
+  return option.detail ? `${option.label} — ${option.detail}` : option.label;
+}
+
 function SelectOptionsList<T = unknown>({
   contextLabel,
   selectedOptions,
@@ -1602,17 +1650,13 @@ function SelectOptionsList<T = unknown>({
               onSelect={() => onSelectSelected(option)}
             >
               {option.icon && option.icon}
-              <div className="flex flex-col overflow-hidden">
-                <span className="truncate text-accent-foreground" title={option.label}>
-                  {option.label}
-                </span>
-                {option.detail && (
-                  <span className="truncate text-muted-foreground" title={option.detail}>
-                    {option.detail}
-                  </span>
-                )}
-              </div>
-              <Check className="ms-auto text-primary" />
+              <span
+                className="min-w-0 flex-1 truncate text-accent-foreground"
+                title={optionTitle(option)}
+              >
+                {option.label}
+              </span>
+              <Check className="shrink-0 text-primary" />
             </CommandItem>
           ))}
         </CommandGroup>
@@ -1626,21 +1670,30 @@ function SelectOptionsList<T = unknown>({
               <CommandItem
                 key={String(option.value)}
                 className="group flex items-center gap-2"
-                value={option.label + (option.detail ? ` - ${option.detail}` : '')}
+                // Identity comes from the value, never the
+                // label. Two options sharing a label were a
+                // single row to `cmdk`, so both highlighted
+                // together. `keywords` keeps client-side search
+                // matching what the row actually shows.
+                keywords={[option.label, ...(option.detail ? [option.detail] : [])]}
+                value={String(option.value)}
                 onSelect={() => onSelectUnselected(option)}
               >
                 {option.icon && option.icon}
-                <div className="flex flex-col overflow-hidden">
-                  <span className="truncate text-accent-foreground" title={option.label}>
-                    {option.label}
-                  </span>
-                  {option.detail && (
-                    <span className="truncate text-muted-foreground" title={option.detail}>
-                      {option.detail}
-                    </span>
-                  )}
-                </div>
-                <Check className="ms-auto text-primary opacity-0" />
+                {/* The detail is not drawn — it lives in the
+                                    title. Beside the label it crowded out the
+                                    name, which is the thing being chosen; a
+                                    duplicate name is rare enough not to spend
+                                    half the row on. No invisible checkmark
+                                    either: the selected rows sit in their own
+                                    group above, so an empty column here only
+                                    narrowed the names. */}
+                <span
+                  className="min-w-0 flex-1 truncate text-accent-foreground"
+                  title={optionTitle(option)}
+                >
+                  {option.label}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -1651,7 +1704,7 @@ function SelectOptionsList<T = unknown>({
           {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
           <div className="p-1.5">
             <button
-              className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
+              className="flex w-full items-center justify-center rounded-menu-item px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
               disabled={isLoadingMore}
               type="button"
               onClick={onLoadMore}
@@ -1846,6 +1899,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
           }),
           field.triggerClassName ?? 'max-w-60',
         )}
+        data-slot="filters-value"
       >
         <div className="flex min-w-0 items-center gap-1.5">
           {field.customValueRenderer ? (
@@ -2039,10 +2093,12 @@ function FilterValueSelector<T = unknown>({
   operator,
   onOperatorChange,
   readOnly,
+  autoFocus,
 }: FilterValueSelectorProps<T>) {
   const [open, setOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const context = useFilterContext();
+  const valueInputRef = useRef<HTMLInputElement>(null);
 
   // Focus the search input when the popover opens
   useEffect(() => {
@@ -2056,6 +2112,14 @@ function FilterValueSelector<T = unknown>({
       }, 0);
     }
   }, [open, field.searchable]);
+
+  // A filter the user just added lands with an empty value, so put the caret
+  // where the answer goes instead of leaving them to click into it.
+  useEffect(() => {
+    if (autoFocus) {
+      valueInputRef.current?.focus();
+    }
+  }, [autoFocus]);
 
   // Hide value input for empty/not empty operators
   if (operator === 'empty' || operator === 'not_empty') {
@@ -2083,6 +2147,7 @@ function FilterValueSelector<T = unknown>({
           cursorPointer: context.cursorPointer,
           readOnly,
         })}
+        data-slot="filters-value"
       >
         {field.customRenderer({ field, values, onChange, operator, onOperatorChange, readOnly })}
       </div>
@@ -2099,6 +2164,7 @@ function FilterValueSelector<T = unknown>({
           cursorPointer: context.cursorPointer,
           readOnly: true,
         })}
+        data-slot="filters-value"
       >
         {field.customValueRenderer
           ? field.customValueRenderer(values, field.options ?? [])
@@ -2129,6 +2195,7 @@ function FilterValueSelector<T = unknown>({
           size: context.size,
           cursorPointer: context.cursorPointer,
         })}
+        data-slot="filters-value"
       >
         <div className="flex items-center gap-2">
           <Switch
@@ -2265,6 +2332,7 @@ function FilterValueSelector<T = unknown>({
       <FilterInput
         className={field.className}
         field={field}
+        inputRef={valueInputRef}
         pattern={field.pattern || getPattern()}
         placeholder={
           field.placeholder || context.i18n.placeholders.enterField(field.type || 'text')
@@ -2288,6 +2356,7 @@ function FilterValueSelector<T = unknown>({
           size: context.size,
           cursorPointer: context.cursorPointer,
         })}
+        data-slot="filters-value"
       >
         <FilterDatePicker
           className={cn('max-w-full', field.className)}
@@ -2322,6 +2391,7 @@ function FilterValueSelector<T = unknown>({
           <FilterInput
             className={cn('w-16 max-w-full', field.className)}
             field={field}
+            inputRef={valueInputRef}
             max={field.max}
             min={field.min}
             pattern={field.pattern}
@@ -2360,6 +2430,7 @@ function FilterValueSelector<T = unknown>({
         <FilterInput
           className={cn('w-36', field.className)}
           field={field}
+          inputRef={valueInputRef}
           max={field.type === 'number' ? field.max : undefined}
           min={field.type === 'number' ? field.min : undefined}
           pattern={field.pattern}
@@ -2410,6 +2481,7 @@ function FilterValueSelector<T = unknown>({
           size: context.size,
           cursorPointer: context.cursorPointer,
         })}
+        data-slot="filters-value"
       >
         <div className="flex w-full min-w-0 items-center gap-1.5">
           {field.customValueRenderer ? (
@@ -2641,6 +2713,113 @@ export const FiltersContent = <T = unknown,>({
   );
 };
 
+// Both the default add button and the page-header trigger use this chrome.
+const FilterAddButton = forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { label?: string; icon?: React.ReactNode }
+>(({ className, label, icon, ...props }, ref) => {
+  const context = useFilterContext();
+  const { controlShape, isAdmin7 } = useShade();
+  const isInFilterBar = useFilterBarContext();
+  const isPillFilterBar = isInFilterBar && isAdmin7;
+  const iconOnly = isPillFilterBar && context.hasFilters;
+  const buttonLabel = label ?? context.addButtonText ?? context.i18n.addFilter;
+
+  return (
+    <button
+      ref={ref}
+      aria-label={iconOnly ? buttonLabel : undefined}
+      className={cn(
+        filterAddButtonVariants({
+          variant: context.addButtonVariant ?? context.variant,
+          size: context.size,
+          cursorPointer: context.cursorPointer,
+          radius: context.controlRadius,
+        }),
+        isPillFilterBar && 'h-7 text-sm! [&_svg]:size-3',
+        isAdmin7 && !isInFilterBar && 'font-medium',
+        isAdmin7 &&
+          (iconOnly
+            ? 'aspect-square border-0 !px-0 shadow-none'
+            : context.addButtonVariant === 'ghost' || context.addButtonVariant === 'secondary'
+              ? 'border-0 px-3 shadow-none active:shadow-none'
+              : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed'),
+        context.addButtonClassName,
+        className,
+      )}
+      data-control-shape={controlShape}
+      data-slot="filters-add"
+      title={context.i18n.addFilterTitle}
+      type="button"
+      {...props}
+    >
+      {iconOnly ? <Plus /> : (icon ?? context.addButtonIcon ?? <Plus />)}
+      {!iconOnly && buttonLabel}
+    </button>
+  );
+});
+FilterAddButton.displayName = 'FilterAddButton';
+
+type FiltersTriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  /** Collapse the previous header label below lg; the accessible name remains. */
+  collapseLabel?: boolean;
+  /** Temporary appearance choices for existing screens while Admin 7 is disabled. */
+  fallbackStyle?: 'list' | 'funnel' | 'funnel-plus';
+  fallbackClassName?: string;
+};
+
+const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
+  (
+    { collapseLabel = false, fallbackStyle = 'list', fallbackClassName, className, ...props },
+    ref,
+  ) => {
+    const { hasFilters, keyboardShortcut } = useFilterContext();
+    const { isAdmin7 } = useShade();
+
+    if (isAdmin7 && !hasFilters) {
+      return (
+        <PageHeader.FilterTrigger
+          ref={ref}
+          className={className}
+          shortcut={keyboardShortcut?.toUpperCase()}
+          {...props}
+        />
+      );
+    }
+
+    const iconStyle = isAdmin7 && fallbackStyle === 'funnel' ? 'list' : fallbackStyle;
+    const Icon =
+      iconStyle === 'list'
+        ? hasFilters
+          ? ListFilterPlus
+          : ListFilter
+        : hasFilters || fallbackStyle === 'funnel-plus'
+          ? FunnelPlus
+          : Funnel;
+
+    return (
+      <FilterAddButton
+        ref={ref}
+        className={cn(
+          !isAdmin7 &&
+            cn(
+              collapseLabel &&
+                !hasFilters &&
+                'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
+              hasFilters && (fallbackStyle === 'list' ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
+              fallbackClassName,
+            ),
+          className,
+        )}
+        icon={<Icon className={iconStyle === 'list' ? 'size-4' : undefined} />}
+        label={hasFilters ? 'Add filter' : 'Filter'}
+        {...props}
+      />
+    );
+  },
+);
+FiltersTrigger.displayName = 'Filters.Trigger';
+
 interface FiltersProps<T = unknown> {
   filters: Filter<T>[];
   fields: FilterFieldsConfig<T>;
@@ -2650,6 +2829,7 @@ interface FiltersProps<T = unknown> {
   addButtonText?: string;
   addButtonIcon?: React.ReactNode;
   addButtonClassName?: string;
+  addButtonVariant?: 'solid' | 'outline' | 'ghost' | 'secondary';
   addButton?: React.ReactNode;
   showClearButton?: boolean;
   clearButtonText?: string;
@@ -2680,6 +2860,7 @@ export function Filters<T = unknown>({
   addButtonText,
   addButtonIcon,
   addButtonClassName,
+  addButtonVariant,
   addButton,
   showClearButton = false,
   clearButtonText,
@@ -2689,7 +2870,7 @@ export function Filters<T = unknown>({
   onClear,
   variant = 'outline',
   size = 'md',
-  radius = 'md',
+  radius,
   i18n,
   showSearchInput = true,
   cursorPointer = true,
@@ -2700,14 +2881,21 @@ export function Filters<T = unknown>({
   keyboardShortcut,
   onActiveFieldChange,
 }: FiltersProps<T>) {
+  const { controlShape, isAdmin7 } = useShade();
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+  // The filter added most recently, so its input can take focus once it renders.
+  // Holding the id rather than a boolean keeps it pinned to that one row, which
+  // a positional guess would lose as soon as filters are added or removed.
+  const [autoFocusFilterId, setAutoFocusFilterId] = useState<string | null>(null);
   // The field-picker search, controlled so a `previewLimit` group can uncap while
   // the user is searching. `expandedGroups` holds the groups whose "Show more" was
   // clicked. Both reset when the picker closes.
   const [fieldSearch, setFieldSearch] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const filterRadius = radius ?? 'md';
+  const controlRadius = radius ?? (isAdmin7 ? 'full' : 'md');
 
   // Notify parent when active field changes
   useEffect(() => {
@@ -2860,6 +3048,13 @@ export function Filters<T = unknown>({
 
       const newFilter = createFilter<T>(fieldKey, defaultOperator, defaultValues as T[]);
       onChange([...filters, newFilter]);
+
+      // Picker types are excluded here because adding one opens its options
+      // popover, which already takes focus.
+      if (TYPED_VALUE_FIELD_TYPES.includes(field.type || '')) {
+        setAutoFocusFilterId(newFilter.id);
+      }
+
       closeFilterPopover();
     },
     [allowMultiple, closeFilterPopover, fieldsMap, filters, onChange],
@@ -2975,9 +3170,12 @@ export function Filters<T = unknown>({
   return (
     <FilterContext.Provider
       value={{
+        hasFilters: filters.length > 0,
+        controlRadius,
+        keyboardShortcut,
         variant,
         size,
-        radius,
+        radius: filterRadius,
         i18n: mergedI18n,
         cursorPointer,
         className,
@@ -2985,6 +3183,7 @@ export function Filters<T = unknown>({
         addButtonText,
         addButtonIcon,
         addButtonClassName,
+        addButtonVariant,
         addButton,
         showSearchInput,
         trigger,
@@ -3008,7 +3207,10 @@ export function Filters<T = unknown>({
           return (
             <div
               key={filter.id}
-              className={filterItemVariants({ variant })}
+              className={cn(
+                filterItemVariants({ variant }),
+                isAdmin7 && 'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
+              )}
               data-slot="filter-item"
             >
               {/* Field Label */}
@@ -3016,7 +3218,7 @@ export function Filters<T = unknown>({
                 className={filterFieldLabelVariants({
                   variant: variant,
                   size: size,
-                  radius: radius,
+                  radius: filterRadius,
                 })}
               >
                 {field.icon}
@@ -3038,6 +3240,7 @@ export function Filters<T = unknown>({
                                 static segments, so the filter stays legible while only
                                 the remove control acts. */}
               <FilterValueSelector<T>
+                autoFocus={filter.id === autoFocusFilterId}
                 field={field}
                 operator={filter.operator}
                 readOnly={field.readOnly}
@@ -3065,28 +3268,7 @@ export function Filters<T = unknown>({
               }
             }}
           >
-            <PopoverTrigger asChild>
-              {addButton ? (
-                addButton
-              ) : (
-                <button
-                  className={cn(
-                    filterAddButtonVariants({
-                      variant: variant,
-                      size: size,
-                      cursorPointer: cursorPointer,
-                      radius: radius,
-                    }),
-                    addButtonClassName,
-                  )}
-                  title={mergedI18n.addFilterTitle}
-                  type="button"
-                >
-                  {addButtonIcon || <Plus />}
-                  {addButtonText || mergedI18n.addFilter}
-                </button>
-              )}
-            </PopoverTrigger>
+            <PopoverTrigger asChild>{addButton ?? <FilterAddButton />}</PopoverTrigger>
             <PopoverContent
               align={popoverAlign}
               className={cn(
@@ -3208,12 +3390,15 @@ export function Filters<T = unknown>({
                   variant: variant,
                   size: size,
                   cursorPointer: cursorPointer,
-                  radius: radius,
+                  radius: controlRadius,
                 }),
+                isAdmin7 && 'h-7 text-sm! [&_svg]:size-3',
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
+                isAdmin7 && 'px-3 shadow-control-outline active:shadow-control-outline-pressed',
                 'sm:absolute sm:top-0 sm:right-0',
                 clearButtonClassName,
               )}
+              data-control-shape={controlShape}
               type="button"
               onClick={() => {
                 if (onClear) {
@@ -3231,6 +3416,8 @@ export function Filters<T = unknown>({
     </FilterContext.Provider>
   );
 }
+
+Filters.Trigger = FiltersTrigger;
 
 export const createFilter = <T = unknown,>(
   field: string,

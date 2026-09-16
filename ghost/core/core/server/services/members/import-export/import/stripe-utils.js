@@ -175,7 +175,12 @@ module.exports = class MembersCSVImporterStripeUtils {
           await this.archivePrice(newStripePrice.id);
         } catch (archiveErr) {
           logging.warn(
-            `Failed to archive orphaned Stripe price ${newStripePrice.id} after a failed subscription update: ${archiveErr.message}`,
+            {
+              event: { name: 'members.import.orphaned_price_archive_failed' },
+              err: archiveErr,
+              stripePriceId: newStripePrice.id,
+            },
+            'Failed to archive an orphaned Stripe price after a failed subscription update',
           );
         }
         throw err;

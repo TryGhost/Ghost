@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { parseArgs as baseParseArgs } from 'node:util';
 import semver from 'semver';
 import camelcaseKeys from 'camelcase-keys';
@@ -40,6 +40,13 @@ function parseArgs() {
     },
   });
 
+  // `branch` is a workflow_dispatch input and reaches git as an argument. Git
+  // accepts far more than this (`git check-ref-format` passes shell payloads),
+  // so hold it to a plain ref name that can't be read as an option either.
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(values.branch)) {
+    throw new Error(`Invalid branch name: ${values.branch}`);
+  }
+
   return camelcaseKeys(values);
 }
 
@@ -48,6 +55,11 @@ function parseArgs() {
 function run(cmd, opts = {}) {
   const result = execSync(cmd, { cwd: ROOT_DIR, encoding: 'utf8', ...opts });
   return result.trim();
+}
+
+// No shell, so refs reach git as literal argv entries rather than syntax.
+function git(...args) {
+  return execFileSync('git', args, { cwd: ROOT_DIR, encoding: 'utf8' }).trim();
 }
 
 // Single-quote a path for the shell.
@@ -186,7 +198,7 @@ async function fetchRequiredCheck(commit, token) {
 }
 
 function remoteHead(branch) {
-  const output = run(`git ls-remote origin refs/heads/${branch}`);
+  const output = git('ls-remote', 'origin', `refs/heads/${branch}`);
   return output.split(/\s/)[0] || null;
 }
 
@@ -194,13 +206,13 @@ function remoteHead(branch) {
 // means the branch was rewritten or we have local commits, and silently
 // resetting would drop work.
 function fastForwardTo(branch, sha) {
-  run(`git fetch origin ${branch}`);
+  git('fetch', 'origin', branch);
   try {
-    run(`git merge-base --is-ancestor HEAD ${sha}`);
+    git('merge-base', '--is-ancestor', 'HEAD', sha);
   } catch {
     return false;
   }
-  run(`git reset --hard ${sha}`);
+  git('reset', '--hard', sha);
   return true;
 }
 

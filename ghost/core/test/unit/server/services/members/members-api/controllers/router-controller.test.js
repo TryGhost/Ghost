@@ -84,7 +84,7 @@ describe('RouterController', function () {
       configured: true,
     };
     labsService = {
-      isSet: sinon.stub().callsFake((flag) => flag !== 'giftSubCustomization'),
+      isSet: sinon.stub().returns(true),
     };
     settingsCache = {
       get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz']),
@@ -191,6 +191,45 @@ describe('RouterController', function () {
       );
     });
 
+    it('keeps an explicit empty newsletter list in the checkout metadata', async function () {
+      const routerController = new RouterController({
+        tiersService,
+        paymentsService,
+        offersAPI,
+        stripeAPIService,
+        labsService,
+        settingsCache,
+        settingsHelpers,
+        urlUtils,
+        newslettersService: { getAll: sinon.stub() },
+        emailAddressService,
+      });
+      const req = {
+        body: {
+          tierId: 'tier_123',
+          cadence: 'month',
+          metadata: {
+            newsletters: JSON.stringify([]),
+          },
+        },
+      };
+
+      await routerController.createCheckoutSession(req, {
+        writeHead: () => {},
+        end: () => {},
+      });
+
+      sinon.assert.calledOnce(getPaymentLinkSpy);
+      sinon.assert.calledWith(
+        getPaymentLinkSpy,
+        sinon.match({
+          metadata: {
+            newsletters: '[]',
+          },
+        }),
+      );
+    });
+
     it('sets ghostSignupContext to has_precheckout_magic_link when checkout creates a signup magic link', async function () {
       const magicLinkService = {
         getMagicLink: sinon
@@ -289,6 +328,63 @@ describe('RouterController', function () {
             ghostSignupContext: 'already_authenticated',
           },
         }),
+      );
+    });
+
+    describe('existing member subscription restrictions', function () {
+      it.each([
+        ['paid', true],
+        ['paid', false],
+        ['free', false],
+        ['comped', false],
+        ['gift', false],
+      ])('blocks a %s member when authenticated is %s', async function (status, isAuthenticated) {
+        const sendEmailWithMagicLink = sinon.stub().resolves();
+        const routerController = new RouterController({ paymentsService, sendEmailWithMagicLink });
+
+        await assert.rejects(
+          routerController._createSubscriptionCheckoutSession({
+            tier: { id: 'tier_123' },
+            cadence: 'month',
+            member: { get: (key) => (key === 'status' ? status : undefined) },
+            email: 'member@example.com',
+            isAuthenticated,
+            metadata: {},
+          }),
+          { code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION' },
+        );
+
+        sinon.assert.notCalled(getPaymentLinkSpy);
+        if (isAuthenticated) {
+          sinon.assert.notCalled(sendEmailWithMagicLink);
+        } else {
+          sinon.assert.calledOnceWithExactly(sendEmailWithMagicLink, {
+            email: 'member@example.com',
+            requestedType: 'signin',
+          });
+        }
+      });
+
+      it.each(['free', 'comped', 'gift'])(
+        'allows an authenticated %s member to subscribe',
+        async function (status) {
+          const sendEmailWithMagicLink = sinon.stub().resolves();
+          const routerController = new RouterController({
+            paymentsService,
+            sendEmailWithMagicLink,
+          });
+
+          await routerController._createSubscriptionCheckoutSession({
+            tier: { id: 'tier_123' },
+            cadence: 'month',
+            member: { get: (key) => (key === 'status' ? status : undefined) },
+            isAuthenticated: true,
+            metadata: {},
+          });
+
+          sinon.assert.calledOnce(getPaymentLinkSpy);
+          sinon.assert.notCalled(sendEmailWithMagicLink);
+        },
       );
     });
 
@@ -2041,6 +2137,26 @@ describe('RouterController', function () {
           message: `Cannot subscribe to archived newsletters Newsletter 2`,
         });
       });
+
+      it('keeps an explicit empty newsletter list', async function () {
+        req.body.newsletters = [];
+
+        const controller = createRouterController();
+
+        await controller.sendMagicLink(req, res);
+
+        sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+        assert.deepEqual(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, []);
+      });
+
+      it('leaves newsletters unset when none are requested', async function () {
+        const controller = createRouterController();
+
+        await controller.sendMagicLink(req, res);
+
+        sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+        assert.equal(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, undefined);
+      });
     });
 
     describe('gift token forwarding', function () {
@@ -2324,14 +2440,22 @@ describe('RouterController', function () {
       assert.deepEqual(result, [{ id: 'abc123' }, { id: 'def456' }, { id: 'ghi789' }]);
     });
 
-    it('returns undefined if newsletters is an empty array', async function () {
+    it('returns an empty array if newsletters is an empty array', async function () {
       const requestedNewsletters = [];
       const result = await routerController._validateNewsletters(requestedNewsletters);
-      assert.equal(result, undefined);
+      assert.deepEqual(result, []);
     });
 
     it('returns undefined if newsletters is undefined', async function () {
       const requestedNewsletters = undefined;
+      const result = await routerController._validateNewsletters(requestedNewsletters);
+      assert.equal(result, undefined);
+    });
+
+    it('returns undefined if newsletters is not an array', async function () {
+      // A truthy, non-array object with a `length` of 0 must not be treated
+      // as an explicit empty list — only a real empty array means that.
+      const requestedNewsletters = { length: 0 };
       const result = await routerController._validateNewsletters(requestedNewsletters);
       assert.equal(result, undefined);
     });

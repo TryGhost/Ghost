@@ -329,7 +329,7 @@
                         <td colspan="2"><hr></td>
                     </tr>
                     <tr>
-                        <td>Analytics Latest running:</td>
+                        <td>Analytics Delivery/failures running:</td>
                         <td class="gh-email-debug-settings-icon">
                             {{#if (and this.analyticsStatus this.analyticsStatus.latest this.analyticsStatus.latest.running) }}
                                 <span class="check">{{svg-jar "check-2"}}</span>
@@ -349,6 +349,47 @@
                     <tr>
                         <td>Last event time:</td>
                         <td>{{ this.analyticsStatus.latest.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetched through:</td>
+                        <td>{{ this.analyticsStatus.latest.fetchedThrough }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ingestion lag:</td>
+                        <td>{{ this.analyticsStatus.latest.lag }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
+                        <td>Analytics Opens running:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if (and this.analyticsStatus this.analyticsStatus.latestOpened this.analyticsStatus.latestOpened.running) }}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Last started:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lastStarted }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetching from:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lastBegin }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last event time:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetched through:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.fetchedThrough }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ingestion lag:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lag }}</td>
                     </tr>
                     <tr>
                         <td colspan="2"><hr></td>
@@ -374,6 +415,14 @@
                     <tr>
                         <td>Last event time:</td>
                         <td>{{ this.analyticsStatus.missing.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetched through:</td>
+                        <td>{{ this.analyticsStatus.missing.fetchedThrough }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ingestion lag:</td>
+                        <td>{{ this.analyticsStatus.missing.lag }}</td>
                     </tr>
                     <tr>
                         <td colspan="2"><hr></td>
@@ -411,11 +460,11 @@
                     {{else}}
                         {{#if this.showCustomSchedule}}
                             <tr>
-                                <td><label for="custom-begin-date">Begin:</label></td>
+                                <td><label for="custom-begin-date">Begin (UTC):</label></td>
                                 <td><input id="custom-begin-date" type="datetime-local" value={{this.customBeginDate}} {{on "input" this.updateCustomBeginDate}} style="border: 1px solid #ccc; padding: 6px 10px; border-radius: 4px; background: #f9f9f9; cursor: pointer; font-size: 1.3rem;" /></td>
                             </tr>
                             <tr>
-                                <td><label for="custom-end-date">End:</label></td>
+                                <td><label for="custom-end-date">End (UTC):</label></td>
                                 <td><input id="custom-end-date" type="datetime-local" value={{this.customEndDate}} {{on "input" this.updateCustomEndDate}} style="border: 1px solid #ccc; padding: 6px 10px; border-radius: 4px; background: #f9f9f9; cursor: pointer; font-size: 1.3rem;" /></td>
                             </tr>
                             <tr>

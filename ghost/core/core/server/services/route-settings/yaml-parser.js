@@ -9,7 +9,7 @@ const messages = {
   },
   invalidYamlFormat: {
     message: 'YAML input cannot be a plain string. Check the format of your YAML file.',
-    help: 'https://ghost.org/docs/themes/routing/',
+    help: 'https://docs.ghost.org/themes/routing/',
   },
 };
 

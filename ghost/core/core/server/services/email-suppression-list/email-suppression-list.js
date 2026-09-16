@@ -54,38 +54,6 @@ class EmailSuppressionData {
   }
 }
 
-/**
- * @abstract
- * @implements {IEmailSuppressionList}
- */
-class AbstractEmailSuppressionList {
-  /**
-   * @param {string} email
-   * @returns {Promise<boolean>}
-   */
-  // eslint-disable-next-line
-  async removeEmail(email) {
-    return Promise.reject();
-  }
-
-  /**
-   * @param {string} email
-   * @returns {Promise<EmailSuppressionData>}
-   */
-  // eslint-disable-next-line
-  async getSuppressionData(email) {
-    return Promise.reject();
-  }
-
-  /**
-   * @param {string[]} emails
-   * @returns {Promise<EmailSuppressionData[]>}
-   */
-  async getBulkSuppressionData(emails) {
-    return Promise.all(emails.map((email) => this.getSuppressionData(email)));
-  }
-}
-
 class EmailSuppressedEvent {
   /**
    * @readonly
@@ -120,7 +88,6 @@ class EmailSuppressedEvent {
 }
 
 module.exports = {
-  AbstractEmailSuppressionList,
   EmailSuppressionData,
   EmailSuppressedEvent,
 };

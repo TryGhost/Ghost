@@ -1,5 +1,5 @@
 import APIKeys from './api-keys';
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationHeader from './integration-header';
 import ZapierLogo from '@/settings/assets/images/zapier-logo.svg';
 import {

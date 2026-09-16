@@ -1,6 +1,6 @@
 import APIKeys from './api-keys';
 import BookmarkThumb from '@/settings/assets/images/integrations/ghost-transistor.png';
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationHeader from './integration-header';
 import {
   Field,
@@ -166,14 +166,14 @@ function TransistorModal() {
         {enabled && (
           <div className="mt-5 flex flex-col items-center">
             <a
-              className="flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md bg-grey-50 transition-all hover:border-grey-400 hover:bg-grey-100 md:flex-row dark:bg-grey-900 dark:hover:bg-grey-950"
+              className="flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md bg-gray-50 transition-all hover:border-gray-400 hover:bg-gray-100 md:flex-row dark:bg-gray-900 dark:hover:bg-gray-950"
               href="https://ghost.org/integrations/transistor/"
               rel="noopener noreferrer"
               target="_blank"
             >
               <div className="order-2 px-7 py-5 md:order-1">
                 <div className="text-md font-semibold">How to use Transistor in Ghost</div>
-                <div className="mt-1 text-grey-800 dark:text-grey-500">
+                <div className="mt-1 text-gray-800 dark:text-gray-500">
                   Learn more about connecting Transistor with Ghost to offer members access to
                   private podcasts in Portal or as an embed in posts and pages with a custom
                   Transistor card.
