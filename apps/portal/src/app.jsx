@@ -98,6 +98,10 @@ export default class App extends React.Component {
       showPopup: false,
       action: 'init:running',
       actionErrorMessage: null,
+      // Inputs the site refused on the last save, keyed as the page names them, so the
+      // box that was refused carries the message rather than a notification floating
+      // above six that all look fine.
+      fieldErrors: {},
       initStatus: 'running',
       lastPage: null,
       notification: null,
@@ -1412,6 +1416,7 @@ export default class App extends React.Component {
       otcRef,
       inboxLinks,
       customFields,
+      fieldErrors,
     } = this.state;
     const contextPage = this.getContextPage({ site, page, member });
     const contextMember = this.getContextMember({
@@ -1434,6 +1439,7 @@ export default class App extends React.Component {
       pageData,
       member: contextMember,
       customFields,
+      fieldErrors,
       lastPage,
       showPopup,
       popupNotification,
