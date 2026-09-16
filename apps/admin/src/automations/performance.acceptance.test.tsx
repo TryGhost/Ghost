@@ -1034,6 +1034,7 @@ describe('Automation run list', () => {
     await expect(runsRegion().getByRole('button', { name: /^View run history for / })).toHaveCount(
       10,
     );
+    await expect(runsRegion().getByRole('button', { name: 'Retry' })).toHaveCount(0);
     expect(request.requests).toHaveLength(1);
     await expect
       .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
@@ -1122,7 +1123,7 @@ describe('Automation run list', () => {
       .element(runsRegion().getByRole('status'))
       .toHaveTextContent('The run list is unavailable on this version of Ghost.');
     await expect.element(runsRegion()).not.toHaveTextContent('No entries yet.');
-    await expect(runsRegion().getByRole('button')).toHaveCount(0);
+    await expect(runsRegion().getByRole('button', { name: 'Retry' })).toHaveCount(0);
   });
 
   it('shows a malformed response as an error', async () => {
@@ -1402,7 +1403,7 @@ describe('Automation run status filtering', () => {
     await expect
       .element(runsRegion().getByRole('status'))
       .toHaveTextContent('The run list is unavailable on this version of Ghost.');
-    await expect(runsRegion().getByRole('button')).toHaveCount(0);
+    await expect(runsRegion().getByRole('button', { name: 'Retry' })).toHaveCount(0);
     await expect.element(runsRegion()).not.toHaveTextContent('No matching entries.');
     await statusCard('Completed').click();
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet.');
@@ -1511,5 +1512,234 @@ describe('Automation run status filtering', () => {
     finish();
     await settleRequests();
     await expect.element(runsRegion()).not.toHaveTextContent('Previous visit');
+  });
+});
+
+describe('Automation run sorting', () => {
+  const enteredHeader = () => runsRegion().getByRole('columnheader', { name: 'Entered' });
+  const sortButton = () => runsRegion().getByRole('button', { name: 'Entered', exact: true });
+  const ascendingResponse = () => ({
+    automation_runs: [...runsResponse().automation_runs].reverse(),
+  });
+  const enteredTimes = () =>
+    Array.from(runsRegion().element().querySelectorAll('time')).map((time) => time.dateTime);
+
+  it('toggles between newest and oldest first, refetching only the list', async () => {
+    prepareStatuses();
+    const summary = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first'),
+    );
+    const chart = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url),
+    );
+    const newest = fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    const oldest = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?order=created_at+asc',
+      ascendingResponse(),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByRole('row')).toHaveCount(11);
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'descending');
+    await sortButton().click();
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+    await expect
+      .poll(enteredTimes)
+      .toEqual(ascendingResponse().automation_runs.map((run) => run.created_at));
+    await sortButton().click();
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'descending');
+    await expect
+      .poll(enteredTimes)
+      .toEqual(runsResponse().automation_runs.map((run) => run.created_at));
+    expect(newest.requests).toHaveLength(2);
+    expect(oldest.requests).toHaveLength(1);
+    expect(summary.requests).toHaveLength(1);
+    expect(chart.requests).toHaveLength(1);
+  });
+
+  it('keeps the direction across closing, reopening, focus and reconnect without refetching', async () => {
+    prepareStatuses();
+    const oldest = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?order=created_at+asc',
+      ascendingResponse(),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await sortButton().click();
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+    await expect.poll(() => oldest.requests.length).toBe(1);
+    await close();
+    await open();
+    window.dispatchEvent(new Event('focus'));
+    window.dispatchEvent(new Event('online'));
+    await settleRequests();
+    expect(oldest.requests).toHaveLength(1);
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+  });
+
+  it('resets to newest first on automation navigation', async () => {
+    prepareStatuses();
+    prepareStatuses('second');
+    const newest = fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    const oldest = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?order=created_at+asc',
+      ascendingResponse(),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await sortButton().click();
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+    await expect.poll(() => oldest.requests.length).toBe(1);
+    window.location.hash = '#/automations/second';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'descending');
+    window.location.hash = '#/automations/first';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'descending');
+    await expect.poll(() => newest.requests.length).toBe(2);
+    expect(oldest.requests).toHaveLength(1);
+  });
+
+  it('supports keyboard use and preserves the direction across status changes', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    fakeAdminEndpoint('GET', '/automations/first/runs/?order=created_at+asc', ascendingResponse());
+    const completedAsc = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed&order=created_at+asc',
+      filteredRunsResponse('completed', 'Oldest completed member'),
+    );
+    const exitedAsc = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=exited_early&order=created_at+asc',
+      filteredRunsResponse('exited_early', 'Oldest exited member'),
+    );
+    const completedDesc = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed',
+      filteredRunsResponse('completed', 'Newest completed member'),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByRole('row')).toHaveCount(11);
+    statusCard('Exited early').element().focus();
+    await userEvent.tab();
+    await expect.element(sortButton()).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+    await userEvent.keyboard(' ');
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'descending');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+    await statusCard('Completed').click();
+    await expect.element(runsRegion()).toHaveTextContent('Oldest completed member');
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+    await statusCard('Exited early').click();
+    await expect.element(runsRegion()).toHaveTextContent('Oldest exited member');
+    await statusCard('Exited early').click();
+    await statusCard('Completed').click();
+    await sortButton().click();
+    await expect.element(runsRegion()).toHaveTextContent('Newest completed member');
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'descending');
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+    expect(completedAsc.requests).toHaveLength(2);
+    expect(exitedAsc.requests).toHaveLength(1);
+    expect(completedDesc.requests).toHaveLength(1);
+  });
+
+  it('discards a late response after switching direction again', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const slow = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?order=created_at+asc',
+      async () => {
+        await pending;
+        const late = ascendingResponse();
+        late.automation_runs[0].member = { id: 'late', name: 'Late member', email: 'l@x.com' };
+        return late;
+      },
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByRole('row')).toHaveCount(11);
+    await sortButton().click();
+    await expect.poll(() => slow.requests.length).toBe(1);
+    await expect
+      .element(runsRegion().getByRole('status'))
+      .toHaveTextContent('Loading automation runs');
+    await sortButton().click();
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
+    finish();
+    await settleRequests();
+    await expect.element(runsRegion()).not.toHaveTextContent('Late member');
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'descending');
+  });
+
+  it('keeps a sorted request error until retried without losing the direction', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    const failed = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?order=created_at+asc',
+      {},
+      { status: 500 },
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByRole('row')).toHaveCount(11);
+    await sortButton().click();
+    await expect
+      .element(runsRegion().getByRole('alert'))
+      .toHaveTextContent('Could not load automation runs.');
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+    await expect(runsRegion().getByRole('row')).toHaveCount(1);
+    await close();
+    await open();
+    await expect.element(runsRegion().getByRole('alert')).toBeVisible();
+    expect(failed.requests).toHaveLength(1);
+    const recovered = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?order=created_at+asc',
+      ascendingResponse(),
+    );
+    await runsRegion().getByRole('button', { name: 'Retry' }).click();
+    await expect(runsRegion().getByRole('row')).toHaveCount(11);
+    await expect
+      .poll(enteredTimes)
+      .toEqual(ascendingResponse().automation_runs.map((run) => run.created_at));
+    expect(recovered.requests).toHaveLength(1);
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+  });
+
+  it('shows sorting as unavailable when an older Core ignores the direction', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    fakeAdminEndpoint('GET', '/automations/first/runs/?order=created_at+asc', runsResponse());
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByRole('row')).toHaveCount(11);
+    await sortButton().click();
+    await expect
+      .element(runsRegion().getByRole('status'))
+      .toHaveTextContent('Sorting is unavailable on this version of Ghost.');
+    await expect(runsRegion().getByRole('row')).toHaveCount(1);
+    await expect(runsRegion().getByRole('button', { name: 'Retry' })).toHaveCount(0);
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'ascending');
+    await sortButton().click();
+    await expect(runsRegion().getByRole('row')).toHaveCount(11);
+    await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'descending');
   });
 });
