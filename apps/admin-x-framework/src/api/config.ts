@@ -1,12 +1,5 @@
+import type { JsonObject, JsonValue } from 'type-fest';
 import { createQuery } from '../utils/api/hooks';
-
-export type JsonValue = string | number | boolean | null | Date | JsonObject | JsonArray;
-export interface JsonObject {
-  [key: string]: JsonValue;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface JsonArray extends Array<string | number | boolean | Date | JsonObject | JsonValue> {}
 
 export type Config = {
   version: string;

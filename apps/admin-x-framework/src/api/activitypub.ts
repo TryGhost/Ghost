@@ -1,4 +1,4 @@
-import { JsonObject } from './config';
+import type { JsonObject } from 'type-fest';
 
 export type ActivityPubContext = string | (string | JsonObject)[];
 

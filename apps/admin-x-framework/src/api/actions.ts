@@ -1,7 +1,7 @@
 import { InfiniteData } from '@tanstack/react-query';
+import type { JsonObject } from 'type-fest';
 import { ExternalLink, InternalLink } from '../providers/framework-provider';
 import { Meta, createInfiniteQuery } from '../utils/api/hooks';
-import { JsonObject } from './config';
 
 // Types
 
