@@ -1,11 +1,11 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import {
   useBrowseAutomationRuns,
   type AutomationRunStatusFilter,
 } from '@tryghost/admin-x-framework/api/automations';
 import { performanceQueryOptions } from './performance-query-options';
-import { isSortedRuns, mapAutomationRuns } from '@/automations/utils/automation-runs';
+import { isSortedRuns } from '@/automations/utils/automation-runs';
 import type { RunSort } from '@/automations/types';
 
 export const useAutomationRuns = (
@@ -21,29 +21,35 @@ export const useAutomationRuns = (
       ...(sort.direction !== 'desc' ? { order: `${sort.key} ${sort.direction}` } : {}),
     },
   });
-  const runs = query.data?.automation_runs;
+  const loaded = query.data;
   // An older Core ignores `order`; never present its rows under the wrong direction.
   const unsupportedSort = useMemo(
-    () =>
-      (!!runs && !isSortedRuns(runs, sort.direction)) ||
-      (query.error instanceof APIError && query.error.response?.status === 422),
-    [runs, sort.direction, query.error],
+    () => !!loaded && !isSortedRuns(loaded, sort.direction),
+    [loaded, sort.direction],
   );
-  const data = useMemo(
-    () => (runs && !unsupportedSort ? mapAutomationRuns(runs) : undefined),
-    [runs, unsupportedSort],
-  );
-  const failed = !query.isFetching && query.isError;
+  const runs = unsupportedSort ? undefined : loaded;
+  // A failed later page keeps the loaded rows and retries only itself.
+  const moreFailed = !query.isFetching && query.isFetchNextPageError;
+  const failed = !query.isFetching && query.isError && !query.isFetchNextPageError;
   const unavailable =
     failed && query.error instanceof APIError && query.error.response?.status === 404;
+  const { fetchNextPage } = query;
+  // Scrolling can ask repeatedly; never cancel and restart a page already in flight.
+  const loadMore = useCallback(() => {
+    void fetchNextPage({ cancelRefetch: false });
+  }, [fetchNextPage]);
   return {
-    data,
-    isLoading: !data && !failed && !unsupportedSort,
+    runs,
+    isLoading: !runs && !failed && !unsupportedSort,
     isError: failed && !unavailable && !unsupportedSort,
     unavailable,
     unsupportedSort,
     retry: () => {
       void query.refetch();
     },
+    canLoadMore: !!runs && query.hasNextPage && !moreFailed,
+    isLoadingMore: query.isFetchingNextPage,
+    isMoreError: moreFailed,
+    loadMore,
   };
 };

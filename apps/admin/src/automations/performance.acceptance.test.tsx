@@ -1743,3 +1743,329 @@ describe('Automation run sorting', () => {
     await expect.element(enteredHeader()).toHaveAttribute('aria-sort', 'descending');
   });
 });
+
+describe('Automation run pagination', () => {
+  const pageResponse = (pageNumber: number, nextCursor: string | null, count = 50) => ({
+    automation_runs: Array.from({ length: count }, (_, i) => ({
+      id: `page-${pageNumber}-run-${i}`,
+      failed: false,
+      created_at: new Date(Date.UTC(2026, 7, 28 - pageNumber, 12, 59 - i)).toISOString(),
+      status: 'completed' as const,
+      member: {
+        id: `page-${pageNumber}-member-${i}`,
+        name: `Page ${pageNumber} member ${i}`,
+        email: `page-${pageNumber}-member-${i}@example.com`,
+      },
+    })),
+    meta: { pagination: { limit: 50, next_cursor: nextCursor } },
+  });
+  const ascendingPage = (pageNumber: number, nextCursor: string | null) => {
+    const body = pageResponse(pageNumber, nextCursor);
+    body.automation_runs.reverse();
+    return body;
+  };
+  const row = (name: string) => runsRegion().getByText(name, { exact: true });
+  const renderedRows = () => runsRegion().element().querySelectorAll('tbody tr[data-index]').length;
+  const scrollRoot = () => runsRegion().element().firstElementChild as HTMLElement;
+  // Pages arriving grow the list under the current position; keep scrolling until the height settles.
+  const scrollToEnd = async () => {
+    let previousHeight = -1;
+    await expect
+      .poll(async () => {
+        const root = scrollRoot();
+        root.scrollTop = root.scrollHeight;
+        await settleRequests();
+        const settled = root.scrollHeight === previousHeight;
+        previousHeight = root.scrollHeight;
+        return settled;
+      })
+      .toBe(true);
+  };
+
+  it('does not request a second page until the list is scrolled', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
+    const second = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=c1',
+      pageResponse(2, null),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    await settleRequests();
+    expect(second.requests).toHaveLength(0);
+    await scrollToEnd();
+    await expect.element(row('Page 2 member 49')).toBeVisible();
+    expect(second.requests).toHaveLength(1);
+  });
+
+  it('loads every page on the way to the end, renders only a window of rows, and leaves counts and chart alone', async () => {
+    prepareStatuses();
+    const summary = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first', {
+        in_progress_run_count: 100,
+        completed_run_count: 20,
+        exited_early_run_count: 4,
+      }),
+    );
+    const chart = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url),
+    );
+    const first = fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
+    const second = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=c1',
+      pageResponse(2, 'c2'),
+    );
+    const third = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=c2',
+      pageResponse(3, null, 24),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    expect(scrollRoot().scrollHeight).toBeLessThan(60 * 72);
+    await scrollToEnd();
+    await expect.element(row('Page 3 member 23')).toBeVisible();
+    expect(renderedRows()).toBeLessThan(40);
+    await expect(runsRegion().getByRole('status')).toHaveCount(0);
+    expect(first.requests).toHaveLength(1);
+    expect(second.requests).toHaveLength(1);
+    expect(third.requests).toHaveLength(1);
+    expect(summary.requests).toHaveLength(1);
+    expect(chart.requests).toHaveLength(1);
+    await close();
+    await open();
+    window.dispatchEvent(new Event('focus'));
+    await settleRequests();
+    await expect.element(row('Page 3 member 23')).toBeVisible();
+    expect(first.requests).toHaveLength(1);
+  });
+
+  it('bounds a scrollbar jump to one additional page even with 200,000 total runs', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first', {
+        completed_run_count: 200000,
+        in_progress_run_count: 0,
+        exited_early_run_count: 0,
+      }),
+    );
+    fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
+    const second = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=c1',
+      pageResponse(2, 'c2'),
+    );
+    const third = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=c2',
+      pageResponse(3, 'c3'),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    expect(scrollRoot().scrollHeight).toBeLessThan(60 * 72);
+    scrollRoot().scrollTop = scrollRoot().scrollHeight;
+    await expect.element(row('Page 2 member 0')).toBeVisible();
+    await settleRequests();
+    expect(second.requests).toHaveLength(1);
+    expect(third.requests).toHaveLength(0);
+    expect(scrollRoot().scrollHeight).toBeLessThan(110 * 72);
+  });
+
+  it('still pages when the status counts request failed', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/status-stats/', {}, { status: 500 });
+    fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
+    const second = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=c1',
+      pageResponse(2, null, 20),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(statuses().getByRole('alert'))
+      .toHaveTextContent('Could not load status counts.');
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    await scrollToEnd();
+    await expect.element(row('Page 2 member 19')).toBeVisible();
+    expect(second.requests).toHaveLength(1);
+  });
+
+  it('keeps loaded rows when a later page fails and retries only that page', async () => {
+    prepareStatuses();
+    const first = fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
+    const failed = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=c1',
+      {},
+      { status: 500 },
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    await scrollToEnd();
+    await expect
+      .element(runsRegion().getByRole('alert'))
+      .toHaveTextContent('Could not load more runs.');
+    await expect.element(row('Page 1 member 49')).toBeVisible();
+    await expect.element(runsRegion()).not.toHaveTextContent('Could not load automation runs.');
+    await scrollToEnd();
+    expect(failed.requests).toHaveLength(1);
+    const recovered = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=c1',
+      pageResponse(2, null, 20),
+    );
+    await runsRegion().getByRole('button', { name: 'Retry' }).click();
+    await scrollToEnd();
+    await expect.element(row('Page 2 member 19')).toBeVisible();
+    await expect(runsRegion().getByRole('alert')).toHaveCount(0);
+    expect(recovered.requests).toHaveLength(1);
+    expect(first.requests).toHaveLength(1);
+  });
+
+  it('starts from the top on status and direction changes and scopes cursors to them', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
+    fakeAdminEndpoint('GET', '/automations/first/runs/?cursor=c1', pageResponse(2, null));
+    const completed = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed',
+      pageResponse(3, 'sc1'),
+    );
+    const completedMore = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed&cursor=sc1',
+      pageResponse(4, null),
+    );
+    // Oldest first: the later page holds newer runs, and rows ascend within each page.
+    const ascending = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed&order=created_at+asc',
+      ascendingPage(6, 'ac1'),
+    );
+    const ascendingMore = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?status=completed&order=created_at+asc&cursor=ac1',
+      ascendingPage(5, null),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    await scrollToEnd();
+    await expect.element(row('Page 2 member 49')).toBeVisible();
+    await statusCard('Completed').click();
+    await expect.element(row('Page 3 member 0')).toBeVisible();
+    expect(scrollRoot().scrollTop).toBe(0);
+    await expect.element(runsRegion()).not.toHaveTextContent('Page 2 member');
+    await scrollToEnd();
+    await expect.element(row('Page 4 member 49')).toBeVisible();
+    await runsRegion().getByRole('button', { name: 'Entered', exact: true }).click();
+    await expect.element(row('Page 6 member 49')).toBeVisible();
+    expect(scrollRoot().scrollTop).toBe(0);
+    await scrollToEnd();
+    await expect.element(row('Page 5 member 0')).toBeVisible();
+    await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
+    expect(completed.requests).toHaveLength(1);
+    expect(completedMore.requests).toHaveLength(1);
+    expect(ascending.requests).toHaveLength(1);
+    expect(ascendingMore.requests).toHaveLength(1);
+  });
+
+  it('discards a page that arrives after the query changed', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const slow = fakeAdminEndpoint('GET', '/automations/first/runs/?cursor=c1', async () => {
+      await pending;
+      return pageResponse(2, null);
+    });
+    fakeAdminEndpoint('GET', '/automations/first/runs/?status=completed', pageResponse(3, null));
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    scrollRoot().scrollTop = scrollRoot().scrollHeight;
+    await expect.poll(() => slow.requests.length).toBe(1);
+    await expect
+      .element(runsRegion().getByRole('status'))
+      .toHaveTextContent('Loading more entries');
+    await statusCard('Completed').click();
+    await expect.element(row('Page 3 member 0')).toBeVisible();
+    finish();
+    await settleRequests();
+    await scrollToEnd();
+    await expect.element(row('Page 3 member 49')).toBeVisible();
+    await expect.element(runsRegion()).not.toHaveTextContent('Page 2 member');
+    await expect(runsRegion().getByRole('alert')).toHaveCount(0);
+  });
+
+  it('shows a run once when a later live page repeats it', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
+    const repeated = pageResponse(2, null, 5);
+    repeated.automation_runs[0] = {
+      ...pageResponse(1, null).automation_runs[49],
+      member: { id: 'changed', name: 'Changed member', email: 'changed@example.com' },
+    };
+    fakeAdminEndpoint('GET', '/automations/first/runs/?cursor=c1', repeated);
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    await scrollToEnd();
+    await expect.element(row('Page 2 member 4')).toBeVisible();
+    await expect(row('Page 1 member 49')).toHaveCount(1);
+    await expect(row('Changed member')).toHaveCount(0);
+  });
+
+  it('starts from the first page after navigating away and back', async () => {
+    prepareStatuses();
+    prepareStatuses('second');
+    const first = fakeAdminEndpoint('GET', '/automations/first/runs/', pageResponse(1, 'c1'));
+    const more = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/runs/?cursor=c1',
+      pageResponse(2, null),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    await scrollToEnd();
+    await expect.element(row('Page 2 member 49')).toBeVisible();
+    window.location.hash = '#/automations/second';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    window.location.hash = '#/automations/first';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(row('Page 1 member 0')).toBeVisible();
+    await settleRequests();
+    expect(first.requests).toHaveLength(2);
+    expect(more.requests).toHaveLength(1);
+    await scrollToEnd();
+    await expect.element(row('Page 2 member 49')).toBeVisible();
+    expect(more.requests).toHaveLength(2);
+  });
+
+  it('offers no further pages on an older Core without pagination metadata', async () => {
+    prepareStatuses();
+    const first = fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByRole('row')).toHaveCount(11);
+    await scrollToEnd();
+    await expect(runsRegion().getByRole('status')).toHaveCount(0);
+    await expect(runsRegion().getByRole('alert')).toHaveCount(0);
+    expect(first.requests).toHaveLength(1);
+  });
+});
