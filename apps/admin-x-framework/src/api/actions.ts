@@ -1,7 +1,7 @@
 import { InfiniteData } from '@tanstack/react-query';
 import { ExternalLink, InternalLink } from '../providers/framework-provider';
 import { Meta, createInfiniteQuery } from '../utils/api/hooks';
-import { JSONObject } from './config';
+import { JsonObject } from './config';
 
 // Types
 
@@ -12,7 +12,7 @@ export type Action = {
   actor_id: string;
   actor_type: string;
   event: string;
-  context: JSONObject;
+  context: JsonObject;
   created_at: string;
   actor?: {
     id: string;
