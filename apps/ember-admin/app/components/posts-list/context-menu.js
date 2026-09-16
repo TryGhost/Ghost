@@ -544,8 +544,9 @@ export default class PostsContextMenu extends Component {
 
     // site navigation --------------------------------------------------------
 
-    // Published pages only (draft links 404). Requires the full selection in
-    // memory — there is no bulk nav API, so ⌘A on a multi-page list is hidden.
+    // Published only (draft/scheduled urls 404). Also needs every selected
+    // model loaded: there's no bulk nav endpoint, so cmd+A on a long list
+    // would only update the rows currently in memory.
     get canManageNavigation() {
         const models = this.selectionList.availableModels;
 

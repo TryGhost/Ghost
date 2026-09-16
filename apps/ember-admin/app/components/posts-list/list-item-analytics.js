@@ -29,7 +29,7 @@ export default class PostsListItemClicks extends Component {
         return '';
     }
 
-    // Placement for published pages only — draft links would 404.
+    // Only for published pages; a draft url would 404.
     get navigationPlacement() {
         if (!this.post.isPage || !this.post.isPublished) {
             return null;

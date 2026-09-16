@@ -254,8 +254,8 @@ export default class PublishManagement extends Component {
         // save with the required query params for emailing
         const result = yield this.publishOptions[taskName].perform();
 
-        // Publish succeeded; surface the nav failure without failing the publish.
-        // Not delayed — those only flush on route change, and the editor stays put.
+        // Page is published; show the nav error as a toast (not delayed:true,
+        // those only appear after a route change and we stay on this screen).
         if (taskName === 'saveTask' && this.publishOptions.navigationSaveFailed) {
             this.notifications.showNotification(
                 'Page published, but its navigation couldn\'t be updated. You can change it in Settings → Navigation.',

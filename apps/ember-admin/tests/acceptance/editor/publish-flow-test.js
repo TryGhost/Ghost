@@ -878,7 +878,7 @@ describe('Acceptance: Publish flow', function () {
         async function openPublishFlow(context, pageAttrs = {}) {
             const attrs = {status: 'draft', ...pageAttrs};
 
-            // Factory omits slug; publish flow always has one after autosave.
+            // mirage factory skips slug; real drafts always have one by publish time
             if (!attrs.slug && attrs.title) {
                 attrs.slug = attrs.title.toLowerCase().replace(/[^\w]+/g, '-').replace(/(^-|-$)/g, '');
             }
@@ -901,7 +901,7 @@ describe('Acceptance: Publish flow', function () {
                 find('[data-test-setting="navigation"] [data-test-setting-title]'), 'navigation title'
             ).to.contain.trimmed.text('Not in site navigation');
 
-            // Default is not in nav — publishing leaves settings unchanged.
+            // default is "not in nav", so publish should leave settings alone
             await click('[data-test-button="continue"]');
             expect(find('[data-test-text="confirm-details"]').textContent).to.not.contain('navigation');
             await click('[data-test-button="confirm-publish"]');
@@ -917,7 +917,7 @@ describe('Acceptance: Publish flow', function () {
 
             await openPublishFlow(this, {title: 'Partners'});
 
-            // Placement then schedule — option hides; confirm must not promise nav.
+            // pick primary, then schedule: option disappears and confirm must not mention nav
             await click('[data-test-setting="navigation"] [data-test-setting-title]');
             await click('[data-test-navigation-placement="primary"] + label');
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
@@ -978,14 +978,14 @@ describe('Acceptance: Publish flow', function () {
         it('pre-selects the current placement for an already-linked page', async function () {
             await loginAsRole('Administrator', this.server);
 
-            // Fixture already links /about in primary.
+            // /about is already in the default primary nav fixture
             await openPublishFlow(this, {title: 'About'});
 
             expect(
                 find('[data-test-setting="navigation"] [data-test-setting-title]'), 'navigation title'
             ).to.contain.trimmed.text('Primary navigation');
 
-            // Confirm describes end-state even when placement is unchanged.
+            // confirm still says where it will live even if we aren't changing it
             await click('[data-test-button="continue"]');
             expect(find('[data-test-text="confirm-details"]').textContent)
                 .to.contain('listed in your primary navigation');
@@ -1047,7 +1047,7 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-navigation-placement="none"] + label');
             await click('[data-test-button="continue"]');
 
-            // Choosing None — confirm stays silent; removal still applies.
+            // "None" means confirm says nothing about navigation, but we still remove it
             expect(find('[data-test-text="confirm-details"]').textContent).to.not.contain('navigation');
 
             await click('[data-test-button="confirm-publish"]');

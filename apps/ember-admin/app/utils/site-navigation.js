@@ -12,8 +12,8 @@ function siteOriginFor(blogUrl) {
     }
 }
 
-// pathname of blogUrl without trailing slash ('' on a root install).
-// Nav urls are stored without this prefix; themes re-prepend it on render.
+// blogUrl pathname without a trailing slash ('' for root installs).
+// Nav items store paths without this; the theme adds it back when rendering.
 function siteSubdirFor(blogUrl) {
     try {
         return new URL(blogUrl).pathname.replace(/\/+$/, '');
@@ -29,10 +29,12 @@ function siteContextFor(blogUrl) {
     };
 }
 
-// Normalize to the subdirectory-relative pathname Ghost stores.
-// External absolute urls return null. Strips a leading site subdir so
-// https://site.com/blog/about/ and /about/ both become /about — but only
-// when the path continues past the subdir, so slug "blog" on /blog stays /blog.
+// Pathname comparable to how Ghost stores nav urls (no site subdirectory).
+// External absolute urls return null. If the path starts with the site
+// subdirectory plus another segment, strip that prefix so
+// https://site.com/blog/about/ and /about/ both match /about.
+// Equality alone is not enough: a page with slug "blog" on a /blog install
+// is stored as /blog/ and must stay that way.
 function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
     if (!url) {
         return null;
@@ -59,7 +61,7 @@ function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
     return pathname;
 }
 
-// Subdirectory-relative path matching what Settings → Navigation stores.
+// Path form stored in Settings -> Navigation (no site subdirectory).
 export function pagePathForSlug(slug) {
     if (!slug) {
         return null;
@@ -107,9 +109,9 @@ function currentPlacementFor(primary, secondary, pathToMatch, siteContext) {
     return null;
 }
 
-// Place pages in one save. Leaves pages already in the destination alone so
-// bulk updates don't reorder them. Copies label/url/icon/visibility when
-// moving. On failure, reverts only the navigation attributes.
+// One settings save for all pages. Skip pages already in the destination so
+// bulk ops don't reshuffle the menu. Keep label/url/icon/visibility when
+// moving. On save failure, put navigation back the way it was.
 async function applyNavigationPlacement(settings, {pages, placement, siteContext}) {
     const desired = normalizePlacement(placement);
 
@@ -140,11 +142,10 @@ async function applyNavigationPlacement(settings, {pages, placement, siteContext
         changed = true;
 
         if (desired === 'primary' || desired === 'secondary') {
-            // Copy rather than mutate: on save failure we restore the previous
-            // arrays, and mutating would leave isSecondary dirty on revert.
+            // New object so a failed save can restore the old arrays without
+            // leaving isSecondary dirty on a shared EmberObject.
             const item = NavigationItem.create({
-                // Keep blank labels on icon-only items; fall back to the page
-                // title only when creating a new entry.
+                // '' is valid for icon-only items; only use the page title for new entries
                 label: existing ? existing.label : (page.label || 'Untitled'),
                 url: existing?.url || page.path,
                 icon: existing?.icon || '',
@@ -181,8 +182,8 @@ async function applyNavigationPlacement(settings, {pages, placement, siteContext
     }
 }
 
-// Add, move, or remove a page's nav link. Reloads settings first to avoid
-// clobbering concurrent edits. No-ops when already in the desired state.
+// Add/move/remove one page. Reload settings first so we don't overwrite
+// someone else's edit. Skip the save if nothing would change.
 export async function setPageNavigationPlacement(settings, {label, path, placement, blogUrl}) {
     await settings.reload();
 

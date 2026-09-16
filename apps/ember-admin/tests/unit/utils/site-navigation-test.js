@@ -9,7 +9,7 @@ import {
     setPagesNavigationPlacement
 } from 'ghost-admin/utils/site-navigation';
 
-// Minimal stubs for getPagePlacement / set*Placement.
+// stubs for getPagePlacement / set*Placement
 function settingsWith({navigation = [], secondaryNavigation = []} = {}) {
     return {
         navigation: {toArray: () => navigation},

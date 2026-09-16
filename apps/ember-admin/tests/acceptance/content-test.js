@@ -1348,7 +1348,7 @@ describe('Acceptance: Posts / Pages', function () {
                 });
 
                 it('hides navigation actions when select-all is not fully loaded', async function () {
-                    // No bulk nav API — ⌘A must not silently update only loaded rows.
+                    // No server bulk endpoint: cmd+A would only hit loaded rows.
                     this.server.createList('page', 31, {authors: [admin], status: 'published'});
 
                     await visit('/pages');

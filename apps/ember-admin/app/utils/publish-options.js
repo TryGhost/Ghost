@@ -105,9 +105,9 @@ export default class PublishOptions {
     }
 
     // navigation ----------------------------------------------------------
-    // Explicit picker choice, or undefined to mirror the page's live placement.
+    // undefined = follow whatever placement the page currently has
     @tracked navigationPlacementOverride = undefined;
-    // Set when saveTask's nav write fails; cleared at the start of each save.
+    // true after a failed nav write during saveTask; cleared on the next save
     @tracked navigationSaveFailed = false;
 
     get pageNavigationPath() {
@@ -130,7 +130,7 @@ export default class PublishOptions {
         return this.currentNavigationPlacement ?? 'none';
     }
 
-    // Admins only; hidden while scheduling (a scheduled page's URL would 404).
+    // Admin only. Hidden when scheduling because the page url isn't live yet.
     get showNavigationOption() {
         return this.post.isPage &&
             !!this.user.isAdmin &&
@@ -391,8 +391,8 @@ export default class PublishOptions {
         // willEmail can change after model changes are applied because the post
         // can leave draft status - grab it now before that happens
         const willEmail = this.willEmail;
-        // Capture before publish flips status. Skip the settings write when
-        // placement is unchanged so a plain republish leaves navigation alone.
+        // Grab this before status flips to published. Unchanged placement means
+        // we skip the settings write on a plain republish.
         const navigationPlacementChanged = this.showNavigationOption
             && this.desiredNavigationPlacement !== this.currentNavigationPlacement;
 
@@ -415,7 +415,7 @@ export default class PublishOptions {
             throw e;
         }
 
-        // Nav failure must not fail the publish — surfaced via navigationSaveFailed.
+        // Don't fail the publish if navigation save fails; flag it for the toast.
         if (navigationPlacementChanged && this.post.isPublished) {
             try {
                 yield setPageNavigationPlacement(this.settings, {
