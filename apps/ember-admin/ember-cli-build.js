@@ -224,6 +224,9 @@ module.exports = function (defaults) {
         },
         autoImport: {
             publicAssetURL,
+            // Workspace add-on host builds land in dist/ while Ember is running.
+            // Watch the linked package so editor manifest changes reach Koenig.
+            watchDependencies: ['@tryghost/addon-kit'],
             webpack: {
                 devtool: isProduction ? 'source-map' : 'eval-cheap-module-source-map',
                 resolve: {

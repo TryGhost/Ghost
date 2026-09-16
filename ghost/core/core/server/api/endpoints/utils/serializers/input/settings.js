@@ -75,7 +75,7 @@ const EDITABLE_SETTINGS = [
   'editor_default_email_recipients',
   'editor_default_email_recipients_filter',
   'labs',
-    'addons',
+  'addons',
   'comments_enabled',
   'outbound_link_tagging',
   'announcement_content',

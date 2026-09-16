@@ -141,15 +141,19 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     }
 
     const parsed = later.parse.cron(cron, hasSeconds(cron));
-    const timer = later.setInterval(() => {
-      // A throw inside a later timer callback would be an uncaughtException;
-      // a recurring tick must never take the process down.
-      try {
-        this.enqueue(envelope, routing);
-      } catch (err) {
-        logging.error(`Recurring job "${envelope.type}" tick failed to enqueue`, err);
-      }
-    }, parsed, 'UTC');
+    const timer = later.setInterval(
+      () => {
+        // A throw inside a later timer callback would be an uncaughtException;
+        // a recurring tick must never take the process down.
+        try {
+          this.enqueue(envelope, routing);
+        } catch (err) {
+          logging.error(`Recurring job "${envelope.type}" tick failed to enqueue`, err);
+        }
+      },
+      parsed,
+      'UTC',
+    );
     this._recurring.set(envelope.type, timer);
   }
 

@@ -1,51 +1,75 @@
-import {defineEditorBlockRenderer} from '@tryghost/addon-kit/editor';
-import {useMemo, useState} from 'preact/hooks';
-import type {AddonEditorBlockRequest} from '@tryghost/addon-kit/editor';
+import { defineEditorBlockRenderer } from '@tryghost/addon-kit/editor';
+import { useMemo, useState } from 'preact/hooks';
+import type { AddonEditorBlockRequest } from '@tryghost/addon-kit/editor';
 
-function SummaryDescription({description}: {description: string}) {
-    const normalizedDescription = useMemo(() => description.trim(), [description]);
+function SummaryDescription({ description }: { description: string }) {
+  const normalizedDescription = useMemo(() => description.trim(), [description]);
 
-    return <p>{normalizedDescription}</p>;
+  return <p>{normalizedDescription}</p>;
 }
 
-function SeoSummaryCard({title, description, showStatus}: {title: string; description: string; showStatus: boolean}) {
-    const [showTip, setShowTip] = useState(false);
+function SeoSummaryCard({
+  title,
+  description,
+  showStatus,
+}: {
+  title: string;
+  description: string;
+  showStatus: boolean;
+}) {
+  const [showTip, setShowTip] = useState(false);
 
-    return (
-        <article className="seo-summary">
-            <span className="seo-summary__eyebrow">SEO Assistant</span>
-            <h2>{title}</h2>
-            <SummaryDescription description={description} />
-            {showStatus && <span className="seo-summary__status">Looks good</span>}
-            <button className="seo-summary__tip-toggle" type="button" onClick={() => setShowTip(value => !value)}>
-                {showTip ? 'Hide SEO tip' : 'Show SEO tip'}
-            </button>
-            {showTip && <p className="seo-summary__tip">Hydration keeps this interaction current without changing the saved fallback.</p>}
-        </article>
-    );
+  return (
+    <article className="seo-summary">
+      <span className="seo-summary__eyebrow">SEO Assistant</span>
+      <h2>{title}</h2>
+      <SummaryDescription description={description} />
+      {showStatus && <span className="seo-summary__status">Looks good</span>}
+      <button
+        className="seo-summary__tip-toggle"
+        type="button"
+        onClick={() => setShowTip((value) => !value)}
+      >
+        {showTip ? 'Hide SEO tip' : 'Show SEO tip'}
+      </button>
+      {showTip && (
+        <p className="seo-summary__tip">
+          Hydration keeps this interaction current without changing the saved fallback.
+        </p>
+      )}
+    </article>
+  );
 }
 
-function renderEditorBlock({blockName, props}: AddonEditorBlockRequest) {
-    if (blockName !== 'seo-summary') {
-        throw new Error(`Unknown editor block: ${blockName}`);
-    }
+function renderEditorBlock({ blockName, props }: AddonEditorBlockRequest) {
+  if (blockName !== 'seo-summary') {
+    throw new Error(`Unknown editor block: ${blockName}`);
+  }
 
-    const title = props.mode === 'custom' && typeof props.title === 'string' ? props.title : 'Search preview ready';
-    const description = typeof props.description === 'string'
-        ? props.description
-        : 'This post has a title and description that are ready for search results.';
+  const title =
+    props.mode === 'custom' && typeof props.title === 'string'
+      ? props.title
+      : 'Search preview ready';
+  const description =
+    typeof props.description === 'string'
+      ? props.description
+      : 'This post has a title and description that are ready for search results.';
 
-    return {
-        content: (
-            <SeoSummaryCard description={description} showStatus={props.showStatus !== false} title={title} />
-        ),
-        portableContent: (
-            <div>
-                <h2>{title}</h2>
-                <p>{description}</p>
-            </div>
-        ),
-        css: `
+  return {
+    content: (
+      <SeoSummaryCard
+        description={description}
+        showStatus={props.showStatus !== false}
+        title={title}
+      />
+    ),
+    portableContent: (
+      <div>
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
+    ),
+    css: `
             .seo-summary {
                 box-sizing: border-box;
                 min-height: 220px;
@@ -88,8 +112,8 @@ function renderEditorBlock({blockName, props}: AddonEditorBlockRequest) {
             }
             .seo-summary .seo-summary__tip { margin-top: 10px; color: #28643c; }
         `,
-        initialHeight: 240
-    };
+    initialHeight: 240,
+  };
 }
 
-export default defineEditorBlockRenderer(renderEditorBlock, {hydrate: true});
+export default defineEditorBlockRenderer(renderEditorBlock, { hydrate: true });

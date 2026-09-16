@@ -333,43 +333,46 @@ describe('RSS: Generate Feed', function () {
       assert.doesNotMatch(content, /kg-bookmark-metadata/);
     });
 
-        it('uses an add-on portable snapshot instead of its web iframe', async function () {
-            const html = await renderCard('addon', {
-                id: 'episode-player-1',
-                addonHandle: 'transistor',
-                blockName: 'episode-player',
-                label: 'Transistor podcast player',
-                props: {episodeId: '1234'},
-                html: '<article>Interactive web player</article>',
-                portableHtml: '<p>Listen to <a href="https://example.com/episodes/12">Episode 12</a></p>'
-            });
-            data.posts = [Object.assign({}, posts[1], {html})];
+    it('uses an add-on portable snapshot instead of its web iframe', async function () {
+      const html = await renderCard('addon', {
+        id: 'episode-player-1',
+        addonHandle: 'transistor',
+        blockName: 'episode-player',
+        label: 'Transistor podcast player',
+        props: { episodeId: '1234' },
+        html: '<article>Interactive web player</article>',
+        portableHtml: '<p>Listen to <a href="https://example.com/episodes/12">Episode 12</a></p>',
+      });
+      data.posts = [Object.assign({}, posts[1], { html })];
 
-            const xmlData = await generateFeed(baseUrl, data);
-            const content = getEncodedContent(xmlData);
+      const xmlData = await generateFeed(baseUrl, data);
+      const content = getEncodedContent(xmlData);
 
-            assert.match(content, /Listen to <a href="https:\/\/example\.com\/episodes\/12">Episode 12<\/a>/);
-            assert.doesNotMatch(content, /Interactive web player/);
-            assert.doesNotMatch(content, /<iframe/);
-            assert.doesNotMatch(content, /<template/);
-        });
+      assert.match(
+        content,
+        /Listen to <a href="https:\/\/example\.com\/episodes\/12">Episode 12<\/a>/,
+      );
+      assert.doesNotMatch(content, /Interactive web player/);
+      assert.doesNotMatch(content, /<iframe/);
+      assert.doesNotMatch(content, /<template/);
+    });
 
-        it('omits an add-on block from RSS when it has no portable snapshot', async function () {
-            const html = await renderCard('addon', {
-                id: 'episode-player-1',
-                addonHandle: 'transistor',
-                blockName: 'episode-player',
-                label: 'Transistor podcast player',
-                html: '<article>Interactive web player</article>'
-            });
-            data.posts = [Object.assign({}, posts[1], {html})];
+    it('omits an add-on block from RSS when it has no portable snapshot', async function () {
+      const html = await renderCard('addon', {
+        id: 'episode-player-1',
+        addonHandle: 'transistor',
+        blockName: 'episode-player',
+        label: 'Transistor podcast player',
+        html: '<article>Interactive web player</article>',
+      });
+      data.posts = [Object.assign({}, posts[1], { html })];
 
-            const content = getEncodedContent(await generateFeed(baseUrl, data));
+      const content = getEncodedContent(await generateFeed(baseUrl, data));
 
-            assert.doesNotMatch(content, /kg-addon-card/);
-            assert.doesNotMatch(content, /Interactive web player/);
-            assert.doesNotMatch(content, /<iframe/);
-        });
+      assert.doesNotMatch(content, /kg-addon-card/);
+      assert.doesNotMatch(content, /Interactive web player/);
+      assert.doesNotMatch(content, /<iframe/);
+    });
 
     it('strips video player chrome and leaves a playable video with poster and controls', async function () {
       const html = await renderCard('video', {

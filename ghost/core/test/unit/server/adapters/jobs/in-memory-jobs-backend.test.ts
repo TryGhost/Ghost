@@ -403,18 +403,18 @@ describe('InMemoryJobsBackend', function () {
       );
     });
 
-        it('pins recurring schedules to UTC instead of inheriting Later global state', function () {
-            const setIntervalStub = sinon.stub(later, 'setInterval').returns({clear: sinon.stub()});
-            try {
-                const backend = new InMemoryJobsBackend();
-                backend.scheduleRecurring({type: 'weekly', payload: '{}'}, {cron: '0 0 * * 0'});
+    it('pins recurring schedules to UTC instead of inheriting Later global state', function () {
+      const setIntervalStub = sinon.stub(later, 'setInterval').returns({ clear: sinon.stub() });
+      try {
+        const backend = new InMemoryJobsBackend();
+        backend.scheduleRecurring({ type: 'weekly', payload: '{}' }, { cron: '0 0 * * 0' });
 
-                sinon.assert.calledOnce(setIntervalStub);
-                assert.equal(setIntervalStub.firstCall.args[2], 'UTC');
-            } finally {
-                setIntervalStub.restore();
-            }
-        });
+        sinon.assert.calledOnce(setIntervalStub);
+        assert.equal(setIntervalStub.firstCall.args[2], 'UTC');
+      } finally {
+        setIntervalStub.restore();
+      }
+    });
 
     it('stops firing after shutdown', async function () {
       clock = sinon.useFakeTimers({ now: Date.UTC(2020, 0, 1) });

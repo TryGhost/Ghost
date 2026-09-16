@@ -9,15 +9,17 @@
  * RemoteMutationObserver in the bootstrap observes body and must only ever
  * see gh-* elements rendered by the add-on.
  */
-import {STATIC_EXECUTION_CSP} from '../sandbox/static-execution-policy.ts';
+import { STATIC_EXECUTION_CSP } from '../sandbox/static-execution-policy.ts';
 
 interface SandboxSrcdocOptions {
-    staticExecution?: boolean;
+  staticExecution?: boolean;
 }
 
-export function createSandboxSrcdoc({staticExecution = false}: SandboxSrcdocOptions = {}): string {
-    if (staticExecution) {
-        return `<!doctype html>
+export function createSandboxSrcdoc({
+  staticExecution = false,
+}: SandboxSrcdocOptions = {}): string {
+  if (staticExecution) {
+    return `<!doctype html>
 <html>
 <head>
 <meta http-equiv="Content-Security-Policy" content="${STATIC_EXECUTION_CSP}">
@@ -54,9 +56,9 @@ window.addEventListener('message', function init(event) {
 </head>
 <body></body>
 </html>`;
-    }
+  }
 
-    return `<!doctype html>
+  return `<!doctype html>
 <html>
 <head>
 <script>

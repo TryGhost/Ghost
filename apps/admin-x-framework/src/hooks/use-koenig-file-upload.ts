@@ -53,7 +53,7 @@ export type KoenigFileUploadType = keyof typeof koenigFileUploadTypes;
 
 interface UploadOptions {
   formData?: Record<string, string | Blob>;
-    throwOnError?: boolean;
+  throwOnError?: boolean;
 }
 
 type UploadRequestOptions = Pick<RequestOptions, 'sessionExpiryRedirect'>;
@@ -76,7 +76,10 @@ interface FileUploadHook {
   isLoading: boolean;
   errors: UploadError[];
   filesNumber: number;
-    upload: (files: FileList | ReadonlyArray<File>, options?: UploadOptions) => Promise<UploadResult[] | null>;
+  upload: (
+    files: FileList | ReadonlyArray<File>,
+    options?: UploadOptions,
+  ) => Promise<UploadResult[] | null>;
 }
 
 const getStringAtPath = (maybeObj: unknown, path: Iterable<PropertyKey>): null | string => {
@@ -237,9 +240,9 @@ export const useKoenigFileUpload = (
       setLoading(false);
       setProgress(100);
 
-            if (options.throwOnError) {
-                throw validationResult[0];
-            }
+      if (options.throwOnError) {
+        throw validationResult[0];
+      }
       return null;
     }
 
@@ -268,9 +271,9 @@ export const useKoenigFileUpload = (
       setProgress(100);
       progressTracker.current.clear();
 
-            if (options.throwOnError) {
-                throw error;
-            }
+      if (options.throwOnError) {
+        throw error;
+      }
       return null;
     }
   };

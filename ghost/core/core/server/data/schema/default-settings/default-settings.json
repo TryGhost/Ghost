@@ -533,12 +533,12 @@
       "type": "object"
     }
   },
+  "addons": {
     "addons": {
-        "addons": {
-            "defaultValue": "[]",
-            "type": "array"
-        }
-    },
+      "defaultValue": "[]",
+      "type": "array"
+    }
+  },
   "slack": {
     "slack_url": {
       "defaultValue": "",

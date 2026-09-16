@@ -1,6 +1,6 @@
-import {useEffect, useMemo, useState} from 'react';
-import {fetchManifest} from './installs.ts';
-import type {AddonManifest} from '../types.ts';
+import { useEffect, useMemo, useState } from 'react';
+import { fetchManifest } from './installs.ts';
+import type { AddonManifest } from '../types.ts';
 
 /**
  * The marketplace catalog: a hardcoded list of manifest URLs (spike). Display
@@ -8,47 +8,49 @@ import type {AddonManifest} from '../types.ts';
  * just a different source for this list.
  */
 export const MARKETPLACE_CATALOG: string[] = [
-    'http://localhost:4650/manifest.json',
-    'http://localhost:4651/manifest.json',
-    'http://localhost:4652/manifest.json',
-    'http://localhost:4653/manifest.json'
+  'http://localhost:4650/manifest.json',
+  'http://localhost:4651/manifest.json',
+  'http://localhost:4652/manifest.json',
+  'http://localhost:4653/manifest.json',
 ];
 
 export interface MarketplaceCatalogItem {
-    manifestUrl: string;
-    manifest?: AddonManifest;
-    error?: string;
+  manifestUrl: string;
+  manifest?: AddonManifest;
+  error?: string;
 }
 
 export interface UseMarketplaceCatalogResult {
-    items: MarketplaceCatalogItem[];
-    isLoading: boolean;
+  items: MarketplaceCatalogItem[];
+  isLoading: boolean;
 }
 
 export function useMarketplaceCatalog(): UseMarketplaceCatalogResult {
-    const [items, setItems] = useState<MarketplaceCatalogItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+  const [items, setItems] = useState<MarketplaceCatalogItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-        Promise.all(MARKETPLACE_CATALOG.map(async (manifestUrl): Promise<MarketplaceCatalogItem> => {
-            try {
-                return {manifestUrl, manifest: await fetchManifest(manifestUrl)};
-            } catch (error) {
-                return {manifestUrl, error: String(error)};
-            }
-        })).then((resolved) => {
-            if (!cancelled) {
-                setItems(resolved);
-                setIsLoading(false);
-            }
-        });
+    Promise.all(
+      MARKETPLACE_CATALOG.map(async (manifestUrl): Promise<MarketplaceCatalogItem> => {
+        try {
+          return { manifestUrl, manifest: await fetchManifest(manifestUrl) };
+        } catch (error) {
+          return { manifestUrl, error: String(error) };
+        }
+      }),
+    ).then((resolved) => {
+      if (!cancelled) {
+        setItems(resolved);
+        setIsLoading(false);
+      }
+    });
 
-        return () => {
-            cancelled = true;
-        };
-    }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    return useMemo(() => ({items, isLoading}), [items, isLoading]);
+  return useMemo(() => ({ items, isLoading }), [items, isLoading]);
 }

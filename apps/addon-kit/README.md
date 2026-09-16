@@ -28,12 +28,12 @@ Third-party add-on code runs inside a hidden `<iframe sandbox="allow-scripts">` 
 
 ## Surfaces (extension targets)
 
-| Target | Surface |
-| --- | --- |
-| `admin.dashboard.card.render` | Card content inside a host-owned shell on the analytics Overview page |
-| `admin.dashboard.card.should-render` | Paired visibility check for the card |
-| `admin.page.render` | Full page at `#/apps/:handle/*` (wildcard path arrives as `ghost.data.context.path`) |
-| `admin.page.should-render` | Paired visibility check (contract-reserved) |
+| Target                               | Surface                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------ |
+| `admin.dashboard.card.render`        | Card content inside a host-owned shell on the analytics Overview page                |
+| `admin.dashboard.card.should-render` | Paired visibility check for the card                                                 |
+| `admin.page.render`                  | Full page at `#/apps/:handle/*` (wildcard path arrives as `ghost.data.context.path`) |
+| `admin.page.should-render`           | Paired visibility check (contract-reserved)                                          |
 
 Sidebar items are **not** a render target: they're static manifest metadata (`sidebar.label/icon/route`) rendered by the host with zero sandbox involvement.
 

@@ -5,50 +5,60 @@
  * with sha256 integrity hashes for every bundle — the provider-declared
  * hashes the host pins at install time.
  */
-import {build} from 'vite';
-import {createHash} from 'node:crypto';
-import {readFile, writeFile, rm, mkdir} from 'node:fs/promises';
-import {resolve} from 'node:path';
+import { build } from 'vite';
+import { createHash } from 'node:crypto';
+import { readFile, writeFile, rm, mkdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 const root = import.meta.dirname;
 const outDir = resolve(root, 'dist');
 
 const ENTRIES = [
-    {name: 'dashboard-card', entry: 'src/dashboard-card.tsx', target: 'admin.dashboard.card.render'},
-    {name: 'dashboard-card-visibility', entry: 'src/dashboard-card-visibility.ts', target: 'admin.dashboard.card.should-render'},
-    {name: 'report-page', entry: 'src/report-page.tsx', target: 'admin.page.render'}
+  {
+    name: 'dashboard-card',
+    entry: 'src/dashboard-card.tsx',
+    target: 'admin.dashboard.card.render',
+  },
+  {
+    name: 'dashboard-card-visibility',
+    entry: 'src/dashboard-card-visibility.ts',
+    target: 'admin.dashboard.card.should-render',
+  },
+  { name: 'report-page', entry: 'src/report-page.tsx', target: 'admin.page.render' },
 ];
 
-const EDITOR_ENTRY = {name: 'editor-content', entry: 'src/editor-content.tsx'};
-const EDITOR_SETTINGS_ENTRY = {name: 'editor-settings', entry: 'src/editor-settings.tsx'};
+const EDITOR_ENTRY = { name: 'editor-content', entry: 'src/editor-content.tsx' };
+const EDITOR_SETTINGS_ENTRY = { name: 'editor-settings', entry: 'src/editor-settings.tsx' };
 
-await rm(outDir, {recursive: true, force: true});
-await mkdir(outDir, {recursive: true});
+await rm(outDir, { recursive: true, force: true });
+await mkdir(outDir, { recursive: true });
 
-for (const {name, entry} of [...ENTRIES, EDITOR_ENTRY, EDITOR_SETTINGS_ENTRY]) {
-    await build({
-        root,
-        configFile: false,
-        logLevel: 'warn',
-        build: {
-            outDir,
-            emptyOutDir: false,
-            lib: {
-                entry: resolve(root, entry),
-                name: '__ghostAddonModule',
-                formats: ['iife'],
-                fileName: () => `${name}.js`
-            },
-            minify: true
-        }
-    });
+for (const { name, entry } of [...ENTRIES, EDITOR_ENTRY, EDITOR_SETTINGS_ENTRY]) {
+  await build({
+    root,
+    configFile: false,
+    logLevel: 'warn',
+    build: {
+      outDir,
+      emptyOutDir: false,
+      lib: {
+        entry: resolve(root, entry),
+        name: '__ghostAddonModule',
+        formats: ['iife'],
+        fileName: () => `${name}.js`,
+      },
+      minify: true,
+    },
+  });
 }
 
-const targeting = await Promise.all(ENTRIES.map(async ({name, target}) => {
+const targeting = await Promise.all(
+  ENTRIES.map(async ({ name, target }) => {
     const source = await readFile(resolve(outDir, `${name}.js`));
     const integrity = `sha256-${createHash('sha256').update(source).digest('base64')}`;
-    return {target, bundle: `./${name}.js`, integrity};
-}));
+    return { target, bundle: `./${name}.js`, integrity };
+  }),
+);
 
 const editorSource = await readFile(resolve(outDir, `${EDITOR_ENTRY.name}.js`));
 const editorIntegrity = `sha256-${createHash('sha256').update(editorSource).digest('base64')}`;
@@ -56,47 +66,50 @@ const editorSettingsSource = await readFile(resolve(outDir, `${EDITOR_SETTINGS_E
 const editorSettingsIntegrity = `sha256-${createHash('sha256').update(editorSettingsSource).digest('base64')}`;
 
 const manifest = {
-    name: 'SEO Assistant (demo)',
-    handle: 'seo-assistant-demo',
-    version: process.env.ADDON_DEMO_VERSION ?? '0.1.0-dev',
-    api_version: '2026-01',
-    publisher: 'Ghost Demo Co.',
-    description: 'Crawls your published posts for missing meta descriptions, feature images, and overlong titles or slugs, and tracks your SEO score over time.',
-    backend: process.env.ADDON_DEMO_ORIGIN ?? 'http://localhost:4650',
-    sidebar: {
-        label: 'SEO Assistant',
-        icon: 'sparkles',
-        route: '/'
-    },
-    editor: {
-        blocks: [{
-            name: 'seo-summary',
-            label: 'SEO summary card',
-            icon: 'search',
-            description: 'Add a durable SEO summary to the post',
-            keywords: ['search', 'preview', 'metadata'],
-            hydrate: true,
-            initialProperties: {
-                title: 'Search preview ready',
-                description: 'This post has a title and description that are ready for search results.',
-                mode: 'summary',
-                showStatus: true
-            }
-        }],
-        content: {
-            bundle: `./${EDITOR_ENTRY.name}.js`,
-            integrity: editorIntegrity
+  name: 'SEO Assistant (demo)',
+  handle: 'seo-assistant-demo',
+  version: process.env.ADDON_DEMO_VERSION ?? '0.1.0-dev',
+  api_version: '2026-01',
+  publisher: 'Ghost Demo Co.',
+  description:
+    'Crawls your published posts for missing meta descriptions, feature images, and overlong titles or slugs, and tracks your SEO score over time.',
+  backend: process.env.ADDON_DEMO_ORIGIN ?? 'http://localhost:4650',
+  sidebar: {
+    label: 'SEO Assistant',
+    icon: 'sparkles',
+    route: '/',
+  },
+  editor: {
+    blocks: [
+      {
+        name: 'seo-summary',
+        label: 'SEO summary card',
+        icon: 'search',
+        description: 'Add a durable SEO summary to the post',
+        keywords: ['search', 'preview', 'metadata'],
+        hydrate: true,
+        initialProperties: {
+          title: 'Search preview ready',
+          description: 'This post has a title and description that are ready for search results.',
+          mode: 'summary',
+          showStatus: true,
         },
-        settings: {
-            bundle: `./${EDITOR_SETTINGS_ENTRY.name}.js`,
-            integrity: editorSettingsIntegrity
-        }
+      },
+    ],
+    content: {
+      bundle: `./${EDITOR_ENTRY.name}.js`,
+      integrity: editorIntegrity,
     },
-    targeting
+    settings: {
+      bundle: `./${EDITOR_SETTINGS_ENTRY.name}.js`,
+      integrity: editorSettingsIntegrity,
+    },
+  },
+  targeting,
 };
 
 if (!process.env.ADDON_DEMO_VERSION) {
-    manifest.version = `0.1.0-dev.${createHash('sha256').update(JSON.stringify(manifest)).digest('hex').slice(0, 12)}`;
+  manifest.version = `0.1.0-dev.${createHash('sha256').update(JSON.stringify(manifest)).digest('hex').slice(0, 12)}`;
 }
 
 await writeFile(resolve(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 4)}\n`);

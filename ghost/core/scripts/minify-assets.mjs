@@ -45,13 +45,13 @@ function resolvePath(filePath) {
 // Define files to minify with their specific configuration
 const filesToMinify = [
   {
-        src: 'core/frontend/src/addon-blocks/addon-blocks.js',
-        dest: 'core/frontend/public/addon-blocks.min.js',
-        options: {
-            bundle: false
-        }
+    src: 'core/frontend/src/addon-blocks/addon-blocks.js',
+    dest: 'core/frontend/public/addon-blocks.min.js',
+    options: {
+      bundle: false,
     },
-    {
+  },
+  {
     src: 'core/frontend/src/comment-counts/comment-counts.js',
     dest: 'core/frontend/public/comment-counts.min.js',
     options: {

@@ -285,19 +285,21 @@ describe('useKoenigFileUpload', () => {
     );
   });
 
-    it('can reject with the actionable upload error for imperative callers', async () => {
-        uploadResponse = hostLimitUploadResponse;
+  it('can reject with the actionable upload error for imperative callers', async () => {
+    uploadResponse = hostLimitUploadResponse;
 
-        const {result} = renderHook(() => useKoenigFileUpload('image'));
-        const file = makeFile('chart.png', 'image/png');
+    const { result } = renderHook(() => useKoenigFileUpload('image'));
+    const file = makeFile('chart.png', 'image/png');
 
-        await act(async () => {
-            await expect(result.current.upload([file], {throwOnError: true})).rejects.toMatchObject({
-                message: 'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.',
-                context: 'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.'
-            });
-        });
+    await act(async () => {
+      await expect(result.current.upload([file], { throwOnError: true })).rejects.toMatchObject({
+        message:
+          'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.',
+        context:
+          'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.',
+      });
     });
+  });
 
   it('does not accumulate errors across repeated failed uploads', async () => {
     uploadResponse = hostLimitUploadResponse;

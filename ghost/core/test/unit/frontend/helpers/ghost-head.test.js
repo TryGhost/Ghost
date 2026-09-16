@@ -2222,35 +2222,50 @@ describe('{{ghost_head}} helper', function () {
       assert.doesNotMatch(rendered, /cards.min.js/);
       assert.doesNotMatch(rendered, /cards.min.css/);
     });
-        it('loads the add-on block lifecycle independently from theme card assets', async function () {
-            const rendered = (await ghost_head({hash: {exclude: 'card_assets'}, ...testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/post/',
-                    context: ['post'],
-                    safeVersion: '0.3'
-                },
-                renderObject: {
-                    post: Object.assign({}, posts[0], {html: '<figure class="kg-card kg-addon-card"></figure>'})
-                }
-            })})).toString();
+    it('loads the add-on block lifecycle independently from theme card assets', async function () {
+      const rendered = (
+        await ghost_head({
+          hash: { exclude: 'card_assets' },
+          ...testUtils.createHbsResponse({
+            locals: {
+              relativeUrl: '/post/',
+              context: ['post'],
+              safeVersion: '0.3',
+            },
+            renderObject: {
+              post: Object.assign({}, posts[0], {
+                html: '<figure class="kg-card kg-addon-card"></figure>',
+              }),
+            },
+          }),
+        })
+      ).toString();
 
-            assert.match(rendered, /addon-blocks\.min\.js/);
-            assert.doesNotMatch(rendered, /cards\.min\.js/);
-        });
-        it('loads the add-on block lifecycle for collection posts', async function () {
-            const rendered = (await ghost_head(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '0.3'
-                },
-                renderObject: {
-                    posts: [Object.assign({}, posts[0], {html: '<figure class="kg-card kg-addon-card"></figure>'})]
-                }
-            }))).toString();
+      assert.match(rendered, /addon-blocks\.min\.js/);
+      assert.doesNotMatch(rendered, /cards\.min\.js/);
+    });
+    it('loads the add-on block lifecycle for collection posts', async function () {
+      const rendered = (
+        await ghost_head(
+          testUtils.createHbsResponse({
+            locals: {
+              relativeUrl: '/',
+              context: ['home', 'index'],
+              safeVersion: '0.3',
+            },
+            renderObject: {
+              posts: [
+                Object.assign({}, posts[0], {
+                  html: '<figure class="kg-card kg-addon-card"></figure>',
+                }),
+              ],
+            },
+          }),
+        )
+      ).toString();
 
-            assert.match(rendered, /addon-blocks\.min\.js/);
-        });
+      assert.match(rendered, /addon-blocks\.min\.js/);
+    });
     it('does not load meta tags when excluded with metadata', async function () {
       let rendered = await testGhostHead({
         hash: { exclude: 'metadata' },

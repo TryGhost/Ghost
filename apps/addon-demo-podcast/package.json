@@ -1,35 +1,47 @@
 {
-    "name": "@tryghost/addon-demo-podcast",
-    "type": "module",
-    "version": "0.0.0",
-    "license": "MIT",
-    "private": true,
-    "scripts": {
-        "dev": "node build.mjs && tsx server.mts",
-        "build": "tsc && node build.mjs",
-        "serve": "tsx server.mts",
-        "test": "vitest run",
-        "lint": "eslint --cache src test server.mts",
-        "lint:fix": "eslint --cache --fix src test server.mts"
-    },
-    "dependencies": {
-        "@tryghost/addon-kit": "workspace:*",
-        "preact": "catalog:"
-    },
-    "devDependencies": {
-        "@internal/cfg-eslint-react": "workspace:*",
-        "@types/node": "catalog:",
-        "@typescript/native": "catalog:",
-        "eslint": "catalog:",
-        "tsx": "catalog:",
-        "typescript": "catalog:",
-        "vite": "catalog:",
-        "vitest": "catalog:"
-    },
-    "nx": {
-        "targets": {
-            "dev": {"continuous": true, "dependsOn": ["^build"]},
-            "build": {"outputs": ["{projectRoot}/dist"], "dependsOn": ["^build"]}
-        }
+  "name": "@tryghost/addon-demo-podcast",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node build.mjs && tsx server.mts",
+    "build": "tsc && node build.mjs",
+    "serve": "tsx server.mts",
+    "test": "vitest run",
+    "lint": "eslint --cache src test server.mts",
+    "lint:fix": "eslint --cache --fix src test server.mts"
+  },
+  "dependencies": {
+    "@tryghost/addon-kit": "workspace:*",
+    "preact": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "eslint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "build": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ],
+        "dependsOn": [
+          "^build"
+        ]
+      }
     }
+  }
 }

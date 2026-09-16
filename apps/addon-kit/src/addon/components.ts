@@ -1,18 +1,21 @@
-import {createRemoteComponent, type RemoteComponentTypeFromElementConstructor} from '@remote-dom/preact';
-import {registerGhostConnectionHook} from './connect.ts';
 import {
-    GhBadgeElement,
-    GhButtonElement,
-    GhHeadingElement,
-    GhInlineElement,
-    GhSeparatorElement,
-    GhSparklineElement,
-    GhStackElement,
-    GhStatElement,
-    GhTabElement,
-    GhTabsElement,
-    GhTextElement,
-    registerGhostElements
+  createRemoteComponent,
+  type RemoteComponentTypeFromElementConstructor,
+} from '@remote-dom/preact';
+import { registerGhostConnectionHook } from './connect.ts';
+import {
+  GhBadgeElement,
+  GhButtonElement,
+  GhHeadingElement,
+  GhInlineElement,
+  GhSeparatorElement,
+  GhSparklineElement,
+  GhStackElement,
+  GhStatElement,
+  GhTabElement,
+  GhTabsElement,
+  GhTextElement,
+  registerGhostElements,
 } from './elements.ts';
 
 registerGhostElements();
@@ -42,18 +45,21 @@ export const GhStat = createRemoteComponent('gh-stat', GhStatElement);
 export const GhSparkline = createRemoteComponent('gh-sparkline', GhSparklineElement);
 
 export const GhTabs = createRemoteComponent('gh-tabs', GhTabsElement, {
-    eventProps: {
-        onChange: {event: 'change'}
-    }
-    // See GhButton: eventProps are not threaded into the component type.
-}) as RemoteComponentTypeFromElementConstructor<typeof GhTabsElement, {onChange?: (event: CustomEvent<string>) => void}>;
+  eventProps: {
+    onChange: { event: 'change' },
+  },
+  // See GhButton: eventProps are not threaded into the component type.
+}) as RemoteComponentTypeFromElementConstructor<
+  typeof GhTabsElement,
+  { onChange?: (event: CustomEvent<string>) => void }
+>;
 
 export const GhTab = createRemoteComponent('gh-tab', GhTabElement);
 
 export const GhButton = createRemoteComponent('gh-button', GhButtonElement, {
-    eventProps: {
-        onPress: {event: 'press'}
-    }
-    // The library's return type does not thread eventProps into the component
-    // props, so the authoring-facing type is asserted here.
-}) as RemoteComponentTypeFromElementConstructor<typeof GhButtonElement, {onPress?: () => void}>;
+  eventProps: {
+    onPress: { event: 'press' },
+  },
+  // The library's return type does not thread eventProps into the component
+  // props, so the authoring-facing type is asserted here.
+}) as RemoteComponentTypeFromElementConstructor<typeof GhButtonElement, { onPress?: () => void }>;

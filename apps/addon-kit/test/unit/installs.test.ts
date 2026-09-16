@@ -1,271 +1,317 @@
-import {afterEach, describe, expect, it, vi} from 'vitest';
-import {getEditorBlockDefinitions, isApiVersionCompatible, parseInstallRecords, pinManifest, refreshInstallRecords, removeInstallRecord, upsertInstallRecord} from '../../src/host/installs.ts';
-import {derivePermissions} from '../../src/host/permissions.ts';
-import {ADDON_API_VERSION, type AddonManifest} from '../../src/types.ts';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  getEditorBlockDefinitions,
+  isApiVersionCompatible,
+  parseInstallRecords,
+  pinManifest,
+  refreshInstallRecords,
+  removeInstallRecord,
+  upsertInstallRecord,
+} from '../../src/host/installs.ts';
+import { derivePermissions } from '../../src/host/permissions.ts';
+import { ADDON_API_VERSION, type AddonManifest } from '../../src/types.ts';
 
 const manifest: AddonManifest = {
-    name: 'SEO Assistant (demo)',
-    handle: 'seo-assistant-demo',
-    version: '0.1.0',
-    api_version: '2026-01',
-    publisher: 'Ghost Demo Co.',
-    description: 'Crawls your posts for SEO problems.',
-    backend: 'http://localhost:4650',
-    sidebar: {label: 'SEO Assistant', icon: 'sparkles', route: '/'},
-    editor: {
-        blocks: [{
-            name: 'seo-score',
-            label: 'SEO score',
-            icon: 'search',
-            description: 'Show a durable SEO score card',
-            keywords: ['search', 'score'],
-            initialProperties: {postId: ''},
-            resourceOrigins: ['https://scores.example.com'],
-            resourcePolicy: {images: ['https:'], media: ['https:']},
-            hydrate: true
-        }],
-        content: {bundle: './editor-content.js', integrity: 'sha256-editor'},
-        settings: {bundle: './editor-settings.js', integrity: 'sha256-settings'}
+  name: 'SEO Assistant (demo)',
+  handle: 'seo-assistant-demo',
+  version: '0.1.0',
+  api_version: '2026-01',
+  publisher: 'Ghost Demo Co.',
+  description: 'Crawls your posts for SEO problems.',
+  backend: 'http://localhost:4650',
+  sidebar: { label: 'SEO Assistant', icon: 'sparkles', route: '/' },
+  editor: {
+    blocks: [
+      {
+        name: 'seo-score',
+        label: 'SEO score',
+        icon: 'search',
+        description: 'Show a durable SEO score card',
+        keywords: ['search', 'score'],
+        initialProperties: { postId: '' },
+        resourceOrigins: ['https://scores.example.com'],
+        resourcePolicy: { images: ['https:'], media: ['https:'] },
+        hydrate: true,
+      },
+    ],
+    content: { bundle: './editor-content.js', integrity: 'sha256-editor' },
+    settings: { bundle: './editor-settings.js', integrity: 'sha256-settings' },
+  },
+  targeting: [
+    {
+      target: 'admin.dashboard.card.render',
+      bundle: './dashboard-card.js',
+      integrity: 'sha256-abc',
     },
-    targeting: [
-        {target: 'admin.dashboard.card.render', bundle: './dashboard-card.js', integrity: 'sha256-abc'},
-        {target: 'admin.page.render', bundle: './report-page.js'}
-    ]
+    { target: 'admin.page.render', bundle: './report-page.js' },
+  ],
 };
 
 describe('isApiVersionCompatible', function () {
-    it('accepts the current and earlier calendar versions', function () {
-        expect(isApiVersionCompatible(ADDON_API_VERSION)).toBe(true);
-        expect(isApiVersionCompatible('2025-06')).toBe(true);
-    });
+  it('accepts the current and earlier calendar versions', function () {
+    expect(isApiVersionCompatible(ADDON_API_VERSION)).toBe(true);
+    expect(isApiVersionCompatible('2025-06')).toBe(true);
+  });
 
-    it('rejects newer versions and junk', function () {
-        expect(isApiVersionCompatible('2099-01')).toBe(false);
-        expect(isApiVersionCompatible(undefined as unknown as string)).toBe(false);
-    });
+  it('rejects newer versions and junk', function () {
+    expect(isApiVersionCompatible('2099-01')).toBe(false);
+    expect(isApiVersionCompatible(undefined as unknown as string)).toBe(false);
+  });
 });
 
 describe('pinManifest', function () {
-    it('resolves bundle URLs against the manifest URL and keeps integrity', function () {
-        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+  it('resolves bundle URLs against the manifest URL and keeps integrity', function () {
+    const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
 
-        expect(record.handle).toBe('seo-assistant-demo');
-        expect(record.enabled).toBe(true);
-        expect(record.version).toBe('0.1.0');
-        expect(record.backend).toBe('http://localhost:4650');
-        expect(record.targeting[0]).toEqual({
-            target: 'admin.dashboard.card.render',
-            bundleUrl: 'http://localhost:4650/dashboard-card.js',
-            integrity: 'sha256-abc'
-        });
-        expect(record.targeting[1].integrity).toBeUndefined();
-        expect(record.editor).toEqual({
-            blocks: manifest.editor?.blocks,
-            contentBundleUrl: 'http://localhost:4650/editor-content.js',
-            integrity: 'sha256-editor',
-            settingsBundleUrl: 'http://localhost:4650/editor-settings.js',
-            settingsIntegrity: 'sha256-settings'
-        });
+    expect(record.handle).toBe('seo-assistant-demo');
+    expect(record.enabled).toBe(true);
+    expect(record.version).toBe('0.1.0');
+    expect(record.backend).toBe('http://localhost:4650');
+    expect(record.targeting[0]).toEqual({
+      target: 'admin.dashboard.card.render',
+      bundleUrl: 'http://localhost:4650/dashboard-card.js',
+      integrity: 'sha256-abc',
     });
+    expect(record.targeting[1].integrity).toBeUndefined();
+    expect(record.editor).toEqual({
+      blocks: manifest.editor?.blocks,
+      contentBundleUrl: 'http://localhost:4650/editor-content.js',
+      integrity: 'sha256-editor',
+      settingsBundleUrl: 'http://localhost:4650/editor-settings.js',
+      settingsIntegrity: 'sha256-settings',
+    });
+  });
 
-    it('preserves the enabled flag when re-pinning an update', function () {
-        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json', false);
-        expect(record.enabled).toBe(false);
-    });
+  it('preserves the enabled flag when re-pinning an update', function () {
+    const record = pinManifest(manifest, 'http://localhost:4650/manifest.json', false);
+    expect(record.enabled).toBe(false);
+  });
 
-    it('pins publisher and description for detail screens', function () {
-        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
-        expect(record.publisher).toBe('Ghost Demo Co.');
-        expect(record.description).toBe('Crawls your posts for SEO problems.');
-    });
+  it('pins publisher and description for detail screens', function () {
+    const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+    expect(record.publisher).toBe('Ghost Demo Co.');
+    expect(record.description).toBe('Crawls your posts for SEO problems.');
+  });
 });
 
 describe('upsertInstallRecord / removeInstallRecord', function () {
-    const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
-    const other = pinManifest({...manifest, handle: 'other-addon', name: 'Other'}, 'http://localhost:9999/manifest.json');
+  const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+  const other = pinManifest(
+    { ...manifest, handle: 'other-addon', name: 'Other' },
+    'http://localhost:9999/manifest.json',
+  );
 
-    it('appends a new handle and replaces an existing one', function () {
-        const appended = upsertInstallRecord([other], record);
-        expect(appended.map(entry => entry.handle)).toEqual(['other-addon', 'seo-assistant-demo']);
+  it('appends a new handle and replaces an existing one', function () {
+    const appended = upsertInstallRecord([other], record);
+    expect(appended.map((entry) => entry.handle)).toEqual(['other-addon', 'seo-assistant-demo']);
 
-        const replaced = upsertInstallRecord(appended, {...record, version: '0.2.0'});
-        expect(replaced).toHaveLength(2);
-        expect(replaced.find(entry => entry.handle === 'seo-assistant-demo')?.version).toBe('0.2.0');
-    });
+    const replaced = upsertInstallRecord(appended, { ...record, version: '0.2.0' });
+    expect(replaced).toHaveLength(2);
+    expect(replaced.find((entry) => entry.handle === 'seo-assistant-demo')?.version).toBe('0.2.0');
+  });
 
-    it('removes by handle and leaves others untouched', function () {
-        const remaining = removeInstallRecord([other, record], 'seo-assistant-demo');
-        expect(remaining).toEqual([other]);
-        expect(removeInstallRecord(remaining, 'missing')).toEqual([other]);
-    });
+  it('removes by handle and leaves others untouched', function () {
+    const remaining = removeInstallRecord([other, record], 'seo-assistant-demo');
+    expect(remaining).toEqual([other]);
+    expect(removeInstallRecord(remaining, 'missing')).toEqual([other]);
+  });
 });
 
 describe('derivePermissions', function () {
-    it('derives surfaces, sidebar, backend, and the blanket Admin API line', function () {
-        const permissions = derivePermissions(manifest);
-        expect(permissions.map(permission => permission.key)).toEqual([
-            'dashboard-card', 'page', 'sidebar', 'admin-api', 'backend'
-        ]);
-        expect(permissions.find(permission => permission.key === 'backend')?.label).toContain('localhost:4650');
-        expect(permissions.find(permission => permission.key === 'page')?.label).toContain('/apps/seo-assistant-demo');
-    });
+  it('derives surfaces, sidebar, backend, and the blanket Admin API line', function () {
+    const permissions = derivePermissions(manifest);
+    expect(permissions.map((permission) => permission.key)).toEqual([
+      'dashboard-card',
+      'page',
+      'sidebar',
+      'admin-api',
+      'backend',
+    ]);
+    expect(permissions.find((permission) => permission.key === 'backend')?.label).toContain(
+      'localhost:4650',
+    );
+    expect(permissions.find((permission) => permission.key === 'page')?.label).toContain(
+      '/apps/seo-assistant-demo',
+    );
+  });
 
-    it('always includes the Admin API line, even for a minimal manifest', function () {
-        const permissions = derivePermissions({handle: 'minimal', targeting: []});
-        expect(permissions.map(permission => permission.key)).toEqual(['admin-api']);
-    });
+  it('always includes the Admin API line, even for a minimal manifest', function () {
+    const permissions = derivePermissions({ handle: 'minimal', targeting: [] });
+    expect(permissions.map((permission) => permission.key)).toEqual(['admin-api']);
+  });
 });
 
 describe('parseInstallRecords', function () {
-    it('parses a valid JSON array', function () {
-        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
-        expect(parseInstallRecords(JSON.stringify([record]))).toEqual([record]);
-    });
+  it('parses a valid JSON array', function () {
+    const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+    expect(parseInstallRecords(JSON.stringify([record]))).toEqual([record]);
+  });
 
-    it('returns an empty list for null, junk, and non-arrays', function () {
-        expect(parseInstallRecords(null)).toEqual([]);
-        expect(parseInstallRecords('not json')).toEqual([]);
-        expect(parseInstallRecords('{"a":1}')).toEqual([]);
-    });
+  it('returns an empty list for null, junk, and non-arrays', function () {
+    expect(parseInstallRecords(null)).toEqual([]);
+    expect(parseInstallRecords('not json')).toEqual([]);
+    expect(parseInstallRecords('{"a":1}')).toEqual([]);
+  });
 });
 
 describe('refreshInstallRecords', function () {
-    afterEach(function () {
-        vi.unstubAllGlobals();
-    });
+  afterEach(function () {
+    vi.unstubAllGlobals();
+  });
 
-    it('re-pins changed manifests before an editor uses their bundles', async function () {
-        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
-        const updatedManifest = {
-            ...manifest,
-            version: '0.2.0',
-            editor: {
-                ...manifest.editor!,
-                blocks: [{...manifest.editor!.blocks[0], label: 'Updated SEO score'}],
-                content: {bundle: './editor-content.js', integrity: 'sha256-updated'}
-            }
-        };
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => updatedManifest
-        }));
+  it('re-pins changed manifests before an editor uses their bundles', async function () {
+    const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+    const updatedManifest = {
+      ...manifest,
+      version: '0.2.0',
+      editor: {
+        ...manifest.editor!,
+        blocks: [{ ...manifest.editor!.blocks[0], label: 'Updated SEO score' }],
+        content: { bundle: './editor-content.js', integrity: 'sha256-updated' },
+      },
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => updatedManifest,
+      }),
+    );
 
-        const [updated] = await refreshInstallRecords([record]);
+    const [updated] = await refreshInstallRecords([record]);
 
-        expect(updated.version).toBe('0.2.0');
-        expect(updated.editor?.blocks[0].label).toBe('Updated SEO score');
-        expect(updated.editor?.integrity).toBe('sha256-updated');
-    });
+    expect(updated.version).toBe('0.2.0');
+    expect(updated.editor?.blocks[0].label).toBe('Updated SEO score');
+    expect(updated.editor?.integrity).toBe('sha256-updated');
+  });
 
-    it('retains the existing pin when its provider is unavailable', async function () {
-        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
-        vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
-        vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('retains the existing pin when its provider is unavailable', async function () {
+    const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-        await expect(refreshInstallRecords([record])).resolves.toEqual([record]);
-    });
+    await expect(refreshInstallRecords([record])).resolves.toEqual([record]);
+  });
 });
 
 describe('getEditorBlockDefinitions', function () {
-    it('flattens enabled installed manifests into provider-specific editor entries', function () {
-        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+  it('flattens enabled installed manifests into provider-specific editor entries', function () {
+    const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
 
-        expect(getEditorBlockDefinitions([record])).toEqual([{
-            addonHandle: 'seo-assistant-demo',
-            blockName: 'seo-score',
-            label: 'SEO score',
-            icon: 'search',
-            description: 'Show a durable SEO score card',
-            keywords: ['search', 'score'],
-            initialProperties: {postId: ''},
-            resourceOrigins: ['https://scores.example.com'],
-            resourcePolicy: {images: ['https:'], media: ['https:']},
-            hasSettings: true,
-            hasHydration: true
-        }]);
-        expect(getEditorBlockDefinitions([{...record, enabled: false}])).toEqual([]);
-    });
+    expect(getEditorBlockDefinitions([record])).toEqual([
+      {
+        addonHandle: 'seo-assistant-demo',
+        blockName: 'seo-score',
+        label: 'SEO score',
+        icon: 'search',
+        description: 'Show a durable SEO score card',
+        keywords: ['search', 'score'],
+        initialProperties: { postId: '' },
+        resourceOrigins: ['https://scores.example.com'],
+        resourcePolicy: { images: ['https:'], media: ['https:'] },
+        hasSettings: true,
+        hasHydration: true,
+      },
+    ]);
+    expect(getEditorBlockDefinitions([{ ...record, enabled: false }])).toEqual([]);
+  });
 
-    it('ignores malformed persisted editor metadata instead of crashing the editor', function () {
-        const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
-        const corrupted = {
-            ...record,
-            editor: {
-                ...record.editor!,
-                blocks: [{name: 'broken', label: 'Broken', keywords: [42]}]
-            }
-        } as unknown as typeof record;
+  it('ignores malformed persisted editor metadata instead of crashing the editor', function () {
+    const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
+    const corrupted = {
+      ...record,
+      editor: {
+        ...record.editor!,
+        blocks: [{ name: 'broken', label: 'Broken', keywords: [42] }],
+      },
+    } as unknown as typeof record;
 
-        expect(getEditorBlockDefinitions([corrupted])).toEqual([]);
-    });
+    expect(getEditorBlockDefinitions([corrupted])).toEqual([]);
+  });
 });
 
 describe('fetchManifest editor validation', function () {
-    afterEach(function () {
-        vi.unstubAllGlobals();
-    });
+  afterEach(function () {
+    vi.unstubAllGlobals();
+  });
 
-    it('rejects malformed optional block metadata at the manifest boundary', async function () {
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                ...manifest,
-                editor: {
-                    ...manifest.editor,
-                    blocks: [{name: 'broken', label: 'Broken', keywords: [42]}]
-                }
-            })
-        }));
+  it('rejects malformed optional block metadata at the manifest boundary', async function () {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...manifest,
+          editor: {
+            ...manifest.editor,
+            blocks: [{ name: 'broken', label: 'Broken', keywords: [42] }],
+          },
+        }),
+      }),
+    );
 
-        const {fetchManifest} = await import('../../src/host/installs.ts');
-        await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('keywords');
-    });
+    const { fetchManifest } = await import('../../src/host/installs.ts');
+    await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('keywords');
+  });
 
-    it('requires the hydration declaration to be boolean', async function () {
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                ...manifest,
-                editor: {
-                    ...manifest.editor,
-                    blocks: [{name: 'broken', label: 'Broken', hydrate: 'yes'}]
-                }
-            })
-        }));
+  it('requires the hydration declaration to be boolean', async function () {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...manifest,
+          editor: {
+            ...manifest.editor,
+            blocks: [{ name: 'broken', label: 'Broken', hydrate: 'yes' }],
+          },
+        }),
+      }),
+    );
 
-        const {fetchManifest} = await import('../../src/host/installs.ts');
-        await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('hydrate');
-    });
+    const { fetchManifest } = await import('../../src/host/installs.ts');
+    await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('hydrate');
+  });
 
-    it('requires editor block icons to be bounded strings', async function () {
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                ...manifest,
-                editor: {
-                    ...manifest.editor,
-                    blocks: [{name: 'broken', label: 'Broken', icon: {name: 'search'}}]
-                }
-            })
-        }));
+  it('requires editor block icons to be bounded strings', async function () {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...manifest,
+          editor: {
+            ...manifest.editor,
+            blocks: [{ name: 'broken', label: 'Broken', icon: { name: 'search' } }],
+          },
+        }),
+      }),
+    );
 
-        const {fetchManifest} = await import('../../src/host/installs.ts');
-        await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('icon');
-    });
+    const { fetchManifest } = await import('../../src/host/installs.ts');
+    await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('icon');
+  });
 
-    it('rejects deferred network capabilities in editor resource policies', async function () {
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                ...manifest,
-                editor: {
-                    ...manifest.editor,
-                    blocks: [{name: 'networked', label: 'Networked', resourcePolicy: {connect: ['https:']}}]
-                }
-            })
-        }));
+  it('rejects deferred network capabilities in editor resource policies', async function () {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...manifest,
+          editor: {
+            ...manifest.editor,
+            blocks: [
+              { name: 'networked', label: 'Networked', resourcePolicy: { connect: ['https:'] } },
+            ],
+          },
+        }),
+      }),
+    );
 
-        const {fetchManifest} = await import('../../src/host/installs.ts');
-        await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow('resourcePolicy');
-    });
+    const { fetchManifest } = await import('../../src/host/installs.ts');
+    await expect(fetchManifest('https://addons.example/manifest.json')).rejects.toThrow(
+      'resourcePolicy',
+    );
+  });
 });

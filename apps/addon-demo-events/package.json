@@ -1,40 +1,46 @@
 {
-    "name": "@tryghost/addon-demo-events",
-    "type": "module",
-    "version": "0.0.0",
-    "license": "MIT",
-    "private": true,
-    "scripts": {
-        "dev": "node build.mjs && node server.mjs",
-        "build": "tsc && node build.mjs",
-        "serve": "node server.mjs",
-        "test": "vitest run",
-        "lint": "eslint --cache src test",
-        "lint:fix": "eslint --cache --fix src test"
-    },
-    "dependencies": {
-        "@tryghost/addon-kit": "workspace:*",
-        "preact": "catalog:"
-    },
-    "devDependencies": {
-        "@internal/cfg-eslint-react": "workspace:*",
-        "@typescript/native": "catalog:",
-        "@types/node": "catalog:",
-        "eslint": "catalog:",
-        "typescript": "catalog:",
-        "vite": "catalog:",
-        "vitest": "catalog:"
-    },
-    "nx": {
-        "targets": {
-            "dev": {
-                "continuous": true,
-                "dependsOn": ["^build"]
-            },
-            "build": {
-                "outputs": ["{projectRoot}/dist"],
-                "dependsOn": ["^build"]
-            }
-        }
+  "name": "@tryghost/addon-demo-events",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node build.mjs && node server.mjs",
+    "build": "tsc && node build.mjs",
+    "serve": "node server.mjs",
+    "test": "vitest run",
+    "lint": "eslint --cache src test",
+    "lint:fix": "eslint --cache --fix src test"
+  },
+  "dependencies": {
+    "@tryghost/addon-kit": "workspace:*",
+    "preact": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "build": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ],
+        "dependsOn": [
+          "^build"
+        ]
+      }
     }
+  }
 }

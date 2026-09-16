@@ -291,7 +291,7 @@ const Overview: React.FC = () => {
             </div>
           </HelpCard>
         </div>
-                {addonsEnabled && <AddonDashboardCards context={{range}} />}
+        {addonsEnabled && <AddonDashboardCards context={{ range }} />}
       </StatsView>
     </StatsLayout>
   );

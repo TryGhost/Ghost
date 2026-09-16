@@ -351,7 +351,7 @@ describe('useUserPreferences', () => {
       await waitForQuerySettled(result);
 
       expect(result.current.data).toEqual({
-                expanded: {...DEFAULT_NAVIGATION_PREFERENCES.expanded, posts: false},
+        expanded: { ...DEFAULT_NAVIGATION_PREFERENCES.expanded, posts: false },
         menu: { visible: true },
       });
     });
@@ -537,7 +537,7 @@ describe('useEditUserPreferences', () => {
         await waitFor(() => {
           expect(query.current.data).toEqual({
             navigation: {
-                        expanded: {...DEFAULT_NAVIGATION_PREFERENCES.expanded, members: false},
+              expanded: { ...DEFAULT_NAVIGATION_PREFERENCES.expanded, members: false },
               menu: { visible: true }, // Preserved
             },
             onboarding: {
