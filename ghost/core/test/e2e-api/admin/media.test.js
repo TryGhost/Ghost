@@ -232,6 +232,91 @@ describe('Media API', function () {
       );
     });
 
+    it('Can upload a MP4 with a valid SVG thumbnail', async function () {
+      const res = await request
+        .post(localUtils.API.getApiQuery('media/upload'))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+        .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.svg'))
+        .expect(201);
+
+      media.push(new URL(res.body.media[0].url).pathname);
+      media.push(new URL(res.body.media[0].thumbnail_url).pathname);
+
+      assert.match(
+        new URL(res.body.media[0].thumbnail_url).pathname,
+        /\/content\/media\/\d+\/\d+\/sample_640x360_thumb\.svg/,
+      );
+    });
+
+    it('Sanitizes SVG thumbnails', async function () {
+      const res = await request
+        .post(localUtils.API.getApiQuery('media/upload'))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+        .attach(
+          'thumbnail',
+          path.join(__dirname, '/../../utils/fixtures/images/svg-with-unsafe-script.svg'),
+        )
+        .expect(201);
+
+      const thumbnailPath = new URL(res.body.media[0].thumbnail_url).pathname;
+      media.push(new URL(res.body.media[0].url).pathname);
+      media.push(thumbnailPath);
+
+      const storedThumbnail = await fs.readFile(
+        config.getContentPath('media') + thumbnailPath.replace('/content/media/', ''),
+        'utf8',
+      );
+      assert.ok(storedThumbnail.includes('<svg'), 'Stored thumbnail should still be an SVG');
+      assert.ok(
+        !storedThumbnail.includes('<script'),
+        'Stored thumbnail should not contain a <script> tag',
+      );
+    });
+
+    it('Sanitizes thumbnails sent with an SVG content type and a non-SVG extension', async function () {
+      const res = await request
+        .post(localUtils.API.getApiQuery('media/upload'))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+        .attach(
+          'thumbnail',
+          path.join(__dirname, '/../../utils/fixtures/images/svg-with-unsafe-script.svg'),
+          { filename: 'thumbnail.png', contentType: 'image/svg+xml' },
+        )
+        .expect(201);
+
+      const thumbnailPath = new URL(res.body.media[0].thumbnail_url).pathname;
+      media.push(new URL(res.body.media[0].url).pathname);
+      media.push(thumbnailPath);
+
+      const storedThumbnail = await fs.readFile(
+        config.getContentPath('media') + thumbnailPath.replace('/content/media/', ''),
+        'utf8',
+      );
+      assert.ok(
+        !storedThumbnail.includes('<script'),
+        'Stored thumbnail should not contain a <script> tag',
+      );
+    });
+
+    it('Rejects invalid SVG thumbnails', async function () {
+      sinon.stub(logging, 'warn');
+      const res = await request
+        .post(localUtils.API.getApiQuery('media/upload'))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+        .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/svg-malformed.svg'))
+        .expect(415);
+
+      assert.equal(res.body.errors[0].message, 'Please select a valid SVG image');
+    });
+
     it('Rejects non-media file type', async function () {
       const loggingStub = sinon.stub(logging, 'warn');
       const res = await request
