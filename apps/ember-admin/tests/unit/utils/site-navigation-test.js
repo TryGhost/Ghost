@@ -9,7 +9,7 @@ import {
     setPagesNavigationPlacement
 } from 'ghost-admin/utils/site-navigation';
 
-// getPagePlacement reads settings[key].toArray(); stub the minimum it needs
+// Minimal stubs for getPagePlacement / set*Placement.
 function settingsWith({navigation = [], secondaryNavigation = []} = {}) {
     return {
         navigation: {toArray: () => navigation},
@@ -38,8 +38,6 @@ function mutableSettings({navigation = [], secondaryNavigation = []} = {}) {
 describe('Unit: Util: site-navigation', function () {
     describe('pagePathForSlug', function () {
         it('returns /:slug/ regardless of install path', function () {
-            // nav URLs are stored subdirectory-relative; themes re-prepend the
-            // subdir at render time, so we must not bake it into the saved url
             expect(pagePathForSlug('about', 'https://example.com/')).to.equal('/about/');
             expect(pagePathForSlug('about', 'https://example.com')).to.equal('/about/');
             expect(pagePathForSlug('about', 'https://example.com/blog/')).to.equal('/about/');
@@ -72,8 +70,6 @@ describe('Unit: Util: site-navigation', function () {
         });
 
         it('does not collapse a page whose slug matches the subdir segment', function () {
-            // site at /blog, page slug "blog" is stored as /blog/ — must not
-            // be treated as the site root
             const settings = settingsWith({navigation: [{url: '/blog/'}]});
             expect(getPagePlacement(settings, pagePathForSlug('blog', blogUrl), blogUrl)).to.equal('primary');
             expect(getPagePlacement(settings, pagePathForSlug('about', blogUrl), blogUrl)).to.be.null;

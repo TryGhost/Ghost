@@ -29,10 +29,7 @@ export default class PostsListItemClicks extends Component {
         return '';
     }
 
-    // 'primary' / 'secondary' when this page is linked in the site navigation,
-    // otherwise null. A nav link points at the published URL, so placement is
-    // only surfaced for live pages - a draft's link would 404 and shouldn't
-    // read as "in navigation".
+    // Placement for published pages only — draft links would 404.
     get navigationPlacement() {
         if (!this.post.isPage || !this.post.isPublished) {
             return null;

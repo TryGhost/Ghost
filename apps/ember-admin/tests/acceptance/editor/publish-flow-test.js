@@ -878,8 +878,7 @@ describe('Acceptance: Publish flow', function () {
         async function openPublishFlow(context, pageAttrs = {}) {
             const attrs = {status: 'draft', ...pageAttrs};
 
-            // a draft page always has a slug by the time the publish flow can be
-            // opened (it's been auto-saved) - the factory doesn't set one
+            // Factory omits slug; publish flow always has one after autosave.
             if (!attrs.slug && attrs.title) {
                 attrs.slug = attrs.title.toLowerCase().replace(/[^\w]+/g, '-').replace(/(^-|-$)/g, '');
             }
@@ -902,7 +901,7 @@ describe('Acceptance: Publish flow', function () {
                 find('[data-test-setting="navigation"] [data-test-setting-title]'), 'navigation title'
             ).to.contain.trimmed.text('Not in site navigation');
 
-            // defaults to not-in-menu - publishing makes no navigation changes
+            // Default is not in nav — publishing leaves settings unchanged.
             await click('[data-test-button="continue"]');
             expect(find('[data-test-text="confirm-details"]').textContent).to.not.contain('navigation');
             await click('[data-test-button="confirm-publish"]');
@@ -918,8 +917,7 @@ describe('Acceptance: Publish flow', function () {
 
             await openPublishFlow(this, {title: 'Partners'});
 
-            // pick a placement, then switch to schedule - the option is hidden
-            // because a scheduled page's URL would 404 until it goes live
+            // Placement then schedule — option hides; confirm must not promise nav.
             await click('[data-test-setting="navigation"] [data-test-setting-title]');
             await click('[data-test-navigation-placement="primary"] + label');
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
@@ -980,22 +978,19 @@ describe('Acceptance: Publish flow', function () {
         it('pre-selects the current placement for an already-linked page', async function () {
             await loginAsRole('Administrator', this.server);
 
-            // default navigation fixture includes {label: 'About', url: '/about'}
+            // Fixture already links /about in primary.
             await openPublishFlow(this, {title: 'About'});
 
-            // the picker reflects where the page already lives, editable
             expect(
                 find('[data-test-setting="navigation"] [data-test-setting-title]'), 'navigation title'
             ).to.contain.trimmed.text('Primary navigation');
 
-            // confirm states where the page will live (declarative end-state),
-            // even though republishing without a change leaves the nav untouched
+            // Confirm describes end-state even when placement is unchanged.
             await click('[data-test-button="continue"]');
             expect(find('[data-test-text="confirm-details"]').textContent)
                 .to.contain('listed in your primary navigation');
             await click('[data-test-button="confirm-publish"]');
 
-            // nav fixture is unchanged
             const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
             expect(navigation.map(item => item.label)).to.include('About');
         });
@@ -1026,16 +1021,14 @@ describe('Acceptance: Publish flow', function () {
 
             await openPublishFlow(this, {title: 'Partners'});
 
-            // pick a placement but close the modal without publishing
             await click('[data-test-setting="navigation"] [data-test-setting-title]');
             await click('[data-test-navigation-placement="primary"] + label');
             expect(
                 find('[data-test-setting="navigation"] [data-test-setting-title]'), 'picked placement'
             ).to.contain.trimmed.text('Primary navigation');
 
-            await click('[data-test-button="publish-flow-publish"]'); // header "Close"
+            await click('[data-test-button="publish-flow-publish"]'); // header Close
 
-            // reopening shows the real current placement, not the discarded change
             await click('[data-test-button="publish-flow"]');
             expect(
                 find('[data-test-setting="navigation"] [data-test-setting-title]'), 'reset placement'
@@ -1054,8 +1047,7 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-navigation-placement="none"] + label');
             await click('[data-test-button="continue"]');
 
-            // removal lands the page in "None", so the confirm step stays silent
-            // on navigation - the removal still applies on publish
+            // Choosing None — confirm stays silent; removal still applies.
             expect(find('[data-test-text="confirm-details"]').textContent).to.not.contain('navigation');
 
             await click('[data-test-button="confirm-publish"]');
@@ -1105,7 +1097,6 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-button="continue"]');
             await click('[data-test-button="confirm-publish"]');
 
-            // the page still publishes; the nav failure is surfaced as a toast
             expect(page.status, 'page status after publish').to.equal('published');
             expect(find('[data-test-text="notification-content"]'), 'failure notification')
                 .to.contain.text('navigation couldn\'t be updated');

@@ -105,19 +105,9 @@ export default class PublishOptions {
     }
 
     // navigation ----------------------------------------------------------
-    // pages are not linked from anywhere on a site by default so when
-    // publishing a page we let the user place it in the site navigation. The
-    // picker reflects the page's current placement so it can be added, moved
-    // between menus, or removed - not just added.
-
-    // the user's explicit picker selection (none/primary/secondary), or
-    // undefined when they haven't touched it - in which case the picker
-    // reflects the page's live current placement so it always matches the
-    // settings menu / pages list, even if those changed it
+    // Explicit picker choice, or undefined to mirror the page's live placement.
     @tracked navigationPlacementOverride = undefined;
-    // true when the most recent saveTask attempted a navigation change that
-    // failed to save - reset at the start of every saveTask so it never leaks
-    // a stale failure into a later publish
+    // Set when saveTask's nav write fails; cleared at the start of each save.
     @tracked navigationSaveFailed = false;
 
     get pageNavigationPath() {
@@ -140,8 +130,7 @@ export default class PublishOptions {
         return this.currentNavigationPlacement ?? 'none';
     }
 
-    // only admins/owners can edit the navigation settings, and a link to a
-    // not-yet-published page would 404 so scheduling hides the option
+    // Admins only; hidden while scheduling (a scheduled page's URL would 404).
     get showNavigationOption() {
         return this.post.isPage &&
             !!this.user.isAdmin &&
@@ -156,8 +145,8 @@ export default class PublishOptions {
     get navigationOptions() {
         return [{
             value: 'none',
-            label: 'None', // shown in expanded options (pill)
-            display: 'Not in site navigation' // shown in collapsed option title
+            label: 'None',
+            display: 'Not in site navigation'
         }, {
             value: 'primary',
             label: 'Primary',
@@ -178,8 +167,6 @@ export default class PublishOptions {
         this.navigationPlacementOverride = placement;
     }
 
-    // discards an unsaved picker selection so the flow always reopens showing
-    // the page's real current placement, not a change that was never published
     @action
     resetNavigationPlacement() {
         this.navigationPlacementOverride = undefined;
@@ -404,13 +391,11 @@ export default class PublishOptions {
         // willEmail can change after model changes are applied because the post
         // can leave draft status - grab it now before that happens
         const willEmail = this.willEmail;
-        // capture before model changes flip the post to published. We only
-        // touch settings when the chosen placement actually differs, so a plain
-        // republish never re-saves navigation
+        // Capture before publish flips status. Skip the settings write when
+        // placement is unchanged so a plain republish leaves navigation alone.
         const navigationPlacementChanged = this.showNavigationOption
             && this.desiredNavigationPlacement !== this.currentNavigationPlacement;
 
-        // clear any failure from a previous save so it can't leak into this one
         this.navigationSaveFailed = false;
 
         this._applyModelChanges();
@@ -430,8 +415,7 @@ export default class PublishOptions {
             throw e;
         }
 
-        // the page is published at this point so a navigation failure should
-        // never fail the publish - the failure is surfaced separately
+        // Nav failure must not fail the publish — surfaced via navigationSaveFailed.
         if (navigationPlacementChanged && this.post.isPublished) {
             try {
                 yield setPageNavigationPlacement(this.settings, {

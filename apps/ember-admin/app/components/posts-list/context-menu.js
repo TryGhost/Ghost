@@ -544,14 +544,8 @@ export default class PostsContextMenu extends Component {
 
     // site navigation --------------------------------------------------------
 
-    // a nav link points at the page's published URL, so only published pages can
-    // be placed in navigation - linking a draft/scheduled page would 404. Draft
-    // pages set their placement at publish time via the publish flow instead.
-    //
-    // navigation has no server-side bulk endpoint (unlike tag/access/delete), so
-    // we can only act on models already in memory. Hide the actions when the
-    // selection isn't fully loaded (e.g. ⌘A on a multi-page list) to avoid
-    // silently updating a subset while the toast claims the full count.
+    // Published pages only (draft links 404). Requires the full selection in
+    // memory — there is no bulk nav API, so ⌘A on a multi-page list is hidden.
     get canManageNavigation() {
         const models = this.selectionList.availableModels;
 
@@ -571,12 +565,10 @@ export default class PostsContextMenu extends Component {
         return this.selectionList.availableModels.length === 1;
     }
 
-    // current placement when exactly one page is selected, otherwise null
     get singleNavigationPlacement() {
         return this.isSingleSelection ? this.selectedPagePlacements[0] : null;
     }
 
-    // only offer a destination the selection isn't already entirely in
     get canAddToPrimaryNavigation() {
         return this.selectedPagePlacements.some(placement => placement !== 'primary');
     }
@@ -589,7 +581,6 @@ export default class PostsContextMenu extends Component {
         return this.selectedPagePlacements.some(placement => placement !== null);
     }
 
-    // a single already-linked page is moved between menus rather than added
     get primaryNavigationActionLabel() {
         return this.singleNavigationPlacement === 'secondary' ? 'Move to primary navigation' : 'Add to primary navigation';
     }
@@ -618,7 +609,6 @@ export default class PostsContextMenu extends Component {
         const pages = this.selectionList.availableModels
             .map(model => ({label: model.title, path: pagePathForSlug(model.slug, this.config.blogUrl)}));
         const count = pages.length;
-        // a single already-linked page is moved rather than added
         const isMove = count === 1 && this.singleNavigationPlacement && this.singleNavigationPlacement !== placement;
 
         try {

@@ -4,9 +4,6 @@ import {A as emberA} from '@ember/array';
 const RELATIVE_URL_BASE = 'http://__ghost-relative__.invalid';
 const RELATIVE_URL_ORIGIN = new URL(RELATIVE_URL_BASE).origin;
 
-// the configured site's origin, used to recognise absolute nav links pointing
-// at this site. Returns null when blogUrl is missing/unparseable, in which
-// case only relative links are matched.
 function siteOriginFor(blogUrl) {
     try {
         return new URL(blogUrl).origin;
@@ -15,10 +12,8 @@ function siteOriginFor(blogUrl) {
     }
 }
 
-// the configured site's subdirectory (the pathname of blogUrl), without a
-// trailing slash - '' for a root install. Navigation item URLs are stored
-// *without* this prefix (Settings strips it on save); themes re-prepend it
-// via urlFor('nav') when rendering.
+// pathname of blogUrl without trailing slash ('' on a root install).
+// Nav urls are stored without this prefix; themes re-prepend it on render.
 function siteSubdirFor(blogUrl) {
     try {
         return new URL(blogUrl).pathname.replace(/\/+$/, '');
@@ -34,10 +29,10 @@ function siteContextFor(blogUrl) {
     };
 }
 
-// normalizes absolute and relative urls down to a comparable pathname in the
-// subdirectory-relative form Ghost stores, e.g. "https://site.com/blog/about/"
-// and "/about/" both become "/about". urls pointing at other sites return
-// null so they never match a local page.
+// Normalize to the subdirectory-relative pathname Ghost stores.
+// External absolute urls return null. Strips a leading site subdir so
+// https://site.com/blog/about/ and /about/ both become /about — but only
+// when the path continues past the subdir, so slug "blog" on /blog stays /blog.
 function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
     if (!url) {
         return null;
@@ -50,9 +45,6 @@ function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
         return null;
     }
 
-    // an absolute url only counts as local when we have a site origin to
-    // confirm it against - without one (missing/unparseable blogUrl) it can't
-    // be verified, so treat it as external rather than matching by pathname
     const isRelative = parsed.origin === RELATIVE_URL_ORIGIN;
     if (!isRelative && (!siteOrigin || parsed.origin !== siteOrigin)) {
         return null;
@@ -60,10 +52,6 @@ function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
 
     let pathname = (parsed.pathname.replace(/\/+$/, '') || '/').toLowerCase();
 
-    // strip a leading site subdirectory so absolute links and any legacy
-    // double-prefixed relative links compare equal to the stored form.
-    // require `${siteSubdir}/…` (not bare equality) so a page whose slug
-    // matches the subdir segment (e.g. slug "blog" on /blog) stays "/blog"
     if (siteSubdir && pathname.startsWith(`${siteSubdir}/`)) {
         pathname = pathname.slice(siteSubdir.length) || '/';
     }
@@ -71,9 +59,7 @@ function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
     return pathname;
 }
 
-// nav items store the page path subdirectory-relative, matching Ghost's
-// default settings and what Settings → Navigation saves. blogUrl is accepted
-// for call-site symmetry with getPagePlacement but does not affect the path.
+// Subdirectory-relative path matching what Settings → Navigation stores.
 export function pagePathForSlug(slug) {
     if (!slug) {
         return null;
@@ -101,8 +87,6 @@ function placementFor(settings, path, siteContext) {
     );
 }
 
-// returns 'primary', 'secondary', or null depending on where (if anywhere)
-// the page at `path` is linked in the site navigation
 export function getPagePlacement(settings, path, blogUrl) {
     return placementFor(settings, path, siteContextFor(blogUrl));
 }
@@ -123,11 +107,9 @@ function currentPlacementFor(primary, secondary, pathToMatch, siteContext) {
     return null;
 }
 
-// applies the desired placement for one or more pages against the already
-// loaded settings, saving once. Pages already in the destination are left
-// alone so bulk updates don't reorder them. Existing label/url/icon/visibility
-// are copied onto the moved item so navigation-editor customizations aren't
-// lost. On failure reverts only the navigation attributes before rethrowing.
+// Place pages in one save. Leaves pages already in the destination alone so
+// bulk updates don't reorder them. Copies label/url/icon/visibility when
+// moving. On failure, reverts only the navigation attributes.
 async function applyNavigationPlacement(settings, {pages, placement, siteContext}) {
     const desired = normalizePlacement(placement);
 
@@ -158,12 +140,11 @@ async function applyNavigationPlacement(settings, {pages, placement, siteContext
         changed = true;
 
         if (desired === 'primary' || desired === 'secondary') {
-            // copy rather than reuse/mutate: on save failure we restore the
-            // previous arrays, and mutating the shared EmberObject would leave
-            // isSecondary dirty on the reverted item
+            // Copy rather than mutate: on save failure we restore the previous
+            // arrays, and mutating would leave isSecondary dirty on revert.
             const item = NavigationItem.create({
-                // keep a blank label when moving an icon-only item; only fall
-                // back to the page title when creating a brand-new nav entry
+                // Keep blank labels on icon-only items; fall back to the page
+                // title only when creating a new entry.
                 label: existing ? existing.label : (page.label || 'Untitled'),
                 url: existing?.url || page.path,
                 icon: existing?.icon || '',
@@ -200,11 +181,8 @@ async function applyNavigationPlacement(settings, {pages, placement, siteContext
     }
 }
 
-// moves a page's navigation link to match the desired placement
-// ('primary' | 'secondary' | null/none), handling add, move between menus,
-// and removal in one operation. No-ops (without saving) when already in the
-// desired state. Reloads settings first to avoid clobbering a concurrent
-// change. Returns the resulting placement.
+// Add, move, or remove a page's nav link. Reloads settings first to avoid
+// clobbering concurrent edits. No-ops when already in the desired state.
 export async function setPageNavigationPlacement(settings, {label, path, placement, blogUrl}) {
     await settings.reload();
 
@@ -223,8 +201,6 @@ export async function setPageNavigationPlacement(settings, {label, path, placeme
     return applyNavigationPlacement(settings, {pages: [{label, path}], placement: desired, siteContext});
 }
 
-// bulk variant - places every given page ({label, path}) into the same
-// destination ('primary' | 'secondary' | null/none) in a single save
 export async function setPagesNavigationPlacement(settings, {pages, placement, blogUrl}) {
     await settings.reload();
 
