@@ -1514,6 +1514,29 @@ describe('Members API', function () {
         // Asked for on the page and kept by Stripe against the customer it invoices.
         // Ghost never copies one into a publisher's field, so there is nothing here for it.
         assert.equal(member.metafields.custom[fieldKeys.vat], undefined);
+
+        // Each value arrives through its own binding, so the member's activity feed has
+        // an entry per field stored, each saying it was collected at checkout.
+        const filter = encodeURIComponent(
+          `data.member_id:'${member.id}'+type:metafield_change_event`,
+        );
+        const { body } = await adminAgent
+          .get(`/members/events/?filter=${filter}`)
+          .expectStatus(200);
+        assert.deepEqual(
+          body.events
+            .map(({ data }) => ({
+              field: data.metafields[0].name,
+              source: data.source,
+              writer: data.written_by_type,
+            }))
+            .sort((a, b) => a.field.localeCompare(b.field)),
+          [
+            { field: 'Delivery address', source: 'checkout', writer: 'binding' },
+            { field: 'Recipient name', source: 'checkout', writer: 'binding' },
+            { field: 'T-shirt size', source: 'checkout', writer: 'binding' },
+          ],
+        );
       });
 
       // Turning collection off has to stop the collecting, and Stripe keeps returning
