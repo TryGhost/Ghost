@@ -57,7 +57,7 @@ function createMockStateBridge(sidebarVisible = true) {
     stateBridge,
     emit,
     onSpy: on,
-        offSpy: off,
+    offSpy: off,
   };
 }
 
@@ -78,63 +78,73 @@ let subscribeOpenArtifactBuilder: typeof import('./ember-bridge').subscribeOpenA
 beforeEach(async () => {
   vi.resetModules();
   vi.useRealTimers();
-    ({ useEmberDataSync, useEmberAuthSync, useEmberFeatureFlag, useSidebarVisibility, useEmberRouting, respondToArtifactBuilder, subscribeOpenArtifactBuilder } = await import('./ember-bridge'));
+  ({
+    useEmberDataSync,
+    useEmberAuthSync,
+    useEmberFeatureFlag,
+    useSidebarVisibility,
+    useEmberRouting,
+    respondToArtifactBuilder,
+    subscribeOpenArtifactBuilder,
+  } = await import('./ember-bridge'));
   delete window.EmberBridge;
 });
 
 describe('Artifact Builder bridge', () => {
-    const request = {
-        requestId: 'request-1',
-        cardId: 'card-1',
-        artifact: {
-            id: 'artifact-1',
-            artifactVersion: 1,
-            title: 'Calculator',
-            description: '',
-            html: '<!doctype html><html></html>'
-        }
-    } as const;
+  const request = {
+    requestId: 'request-1',
+    cardId: 'card-1',
+    artifact: {
+      id: 'artifact-1',
+      artifactVersion: 1,
+      title: 'Calculator',
+      description: '',
+      html: '<!doctype html><html></html>',
+    },
+  } as const;
 
-    baseTest('subscribes to correlated open requests from Ember', () => {
-        const mock = createMockStateBridge();
-        window.EmberBridge = {state: mock.stateBridge};
-        const handler = vi.fn();
+  baseTest('subscribes to correlated open requests from Ember', () => {
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+    const handler = vi.fn();
 
-        const unsubscribe = subscribeOpenArtifactBuilder(handler);
-        mock.emit('openArtifactBuilder', request);
+    const unsubscribe = subscribeOpenArtifactBuilder(handler);
+    mock.emit('openArtifactBuilder', request);
 
-        expect(handler).toHaveBeenCalledWith(request);
-        unsubscribe();
-        expect(mock.offSpy).toHaveBeenCalledWith('openArtifactBuilder', handler);
-    });
+    expect(handler).toHaveBeenCalledWith(request);
+    unsubscribe();
+    expect(mock.offSpy).toHaveBeenCalledWith('openArtifactBuilder', handler);
+  });
 
-    baseTest('replays a pending request when React subscribes after Ember emitted it', () => {
-        const mock = createMockStateBridge();
-        mock.stateBridge.getPendingArtifactBuilderRequests = vi.fn(() => [request]);
-        window.EmberBridge = {state: mock.stateBridge};
-        const handler = vi.fn();
+  baseTest('replays a pending request when React subscribes after Ember emitted it', () => {
+    const mock = createMockStateBridge();
+    mock.stateBridge.getPendingArtifactBuilderRequests = vi.fn(() => [request]);
+    window.EmberBridge = { state: mock.stateBridge };
+    const handler = vi.fn();
 
-        const unsubscribe = subscribeOpenArtifactBuilder(handler);
+    const unsubscribe = subscribeOpenArtifactBuilder(handler);
 
-        expect(handler).toHaveBeenCalledOnce();
-        expect(handler).toHaveBeenCalledWith(request);
-        unsubscribe();
-    });
+    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).toHaveBeenCalledWith(request);
+    unsubscribe();
+  });
 
-    baseTest('sends a correlated result back to Ember', () => {
-        const mock = createMockStateBridge();
-        const completeArtifactBuilder = vi.fn().mockReturnValue(true);
-        mock.stateBridge.completeArtifactBuilder = completeArtifactBuilder;
-        window.EmberBridge = {state: mock.stateBridge};
-        const result = {requestId: request.requestId, status: 'cancelled'} as const;
+  baseTest('sends a correlated result back to Ember', () => {
+    const mock = createMockStateBridge();
+    const completeArtifactBuilder = vi.fn().mockReturnValue(true);
+    mock.stateBridge.completeArtifactBuilder = completeArtifactBuilder;
+    window.EmberBridge = { state: mock.stateBridge };
+    const result = { requestId: request.requestId, status: 'cancelled' } as const;
 
-        expect(respondToArtifactBuilder(result)).toBe(true);
-        expect(completeArtifactBuilder).toHaveBeenCalledWith(result);
-    });
+    expect(respondToArtifactBuilder(result)).toBe(true);
+    expect(completeArtifactBuilder).toHaveBeenCalledWith(result);
+  });
 
-    baseTest('reports that no response channel is available without Ember', () => {
-        expect(respondToArtifactBuilder({requestId: request.requestId, status: 'cancelled'})).toBe(false);
-    });
+  baseTest('reports that no response channel is available without Ember', () => {
+    expect(respondToArtifactBuilder({ requestId: request.requestId, status: 'cancelled' })).toBe(
+      false,
+    );
+  });
 });
 
 afterEach(() => {
@@ -463,27 +473,30 @@ describe('useEmberAuthSync', () => {
     unmount();
   });
 
-    queryTest('clears Builder credentials but preserves unrelated session state on sign out', async ({wrapper}) => {
-        const mock = createMockStateBridge();
-        window.EmberBridge = {state: mock.stateBridge};
-        window.sessionStorage.setItem('ghost-builder.credential.openai', 'openai-secret');
-        window.sessionStorage.setItem('ghost-builder.credential.anthropic', 'anthropic-secret');
-        window.sessionStorage.setItem('unrelated', 'keep-me');
+  queryTest(
+    'clears Builder credentials but preserves unrelated session state on sign out',
+    async ({ wrapper }) => {
+      const mock = createMockStateBridge();
+      window.EmberBridge = { state: mock.stateBridge };
+      window.sessionStorage.setItem('ghost-builder.credential.openai', 'openai-secret');
+      window.sessionStorage.setItem('ghost-builder.credential.anthropic', 'anthropic-secret');
+      window.sessionStorage.setItem('unrelated', 'keep-me');
 
-        const {unmount} = renderHook(() => useEmberAuthSync(), {wrapper});
-        await waitFor(() => {
-            expect(mock.onSpy).toHaveBeenCalledWith('emberAuthChange', expect.any(Function));
-        });
+      const { unmount } = renderHook(() => useEmberAuthSync(), { wrapper });
+      await waitFor(() => {
+        expect(mock.onSpy).toHaveBeenCalledWith('emberAuthChange', expect.any(Function));
+      });
 
-        act(() => {
-            mock.emit('emberAuthChange', {isAuthenticated: false});
-        });
+      act(() => {
+        mock.emit('emberAuthChange', { isAuthenticated: false });
+      });
 
-        expect(window.sessionStorage.getItem('ghost-builder.credential.openai')).toBeNull();
-        expect(window.sessionStorage.getItem('ghost-builder.credential.anthropic')).toBeNull();
-        expect(window.sessionStorage.getItem('unrelated')).toBe('keep-me');
-        unmount();
-    });
+      expect(window.sessionStorage.getItem('ghost-builder.credential.openai')).toBeNull();
+      expect(window.sessionStorage.getItem('ghost-builder.credential.anthropic')).toBeNull();
+      expect(window.sessionStorage.getItem('unrelated')).toBe('keep-me');
+      unmount();
+    },
+  );
 });
 
 describe('useSidebarVisibility', () => {

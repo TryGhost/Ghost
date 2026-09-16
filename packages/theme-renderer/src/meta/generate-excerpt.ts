@@ -4,14 +4,14 @@
 import downsize from 'downsize-cjs';
 
 function generateExcerpt(excerpt: string, truncateOptions?: any) {
-    truncateOptions = truncateOptions || {};
+  truncateOptions = truncateOptions || {};
 
-    if (!truncateOptions.words && !truncateOptions.characters) {
-        truncateOptions.words = 50;
-    }
+  if (!truncateOptions.words && !truncateOptions.characters) {
+    truncateOptions.words = 50;
+  }
 
-    // Just uses downsize to truncate, not format
-    return downsize(excerpt, truncateOptions);
+  // Just uses downsize to truncate, not format
+  return downsize(excerpt, truncateOptions);
 }
 
 export default generateExcerpt;

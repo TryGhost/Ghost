@@ -38,47 +38,47 @@ export const RAWTEXT_TAGS: ReadonlySet<string> = new Set(['script', 'style', 'te
  * ordinary mustaches/`{{!}}` comments.
  */
 export function mustacheEnd(source: string, from: number): number {
-    if (source.startsWith('{{!--', from)) {
-        const close = source.indexOf('--}}', from + 5);
-        return close === -1 ? source.length : close + 4;
+  if (source.startsWith('{{!--', from)) {
+    const close = source.indexOf('--}}', from + 5);
+    return close === -1 ? source.length : close + 4;
+  }
+  if (source.startsWith('{{{{', from)) {
+    const openClose = source.indexOf('}}}}', from + 4);
+    if (openClose === -1) {
+      return source.length;
     }
-    if (source.startsWith('{{{{', from)) {
-        const openClose = source.indexOf('}}}}', from + 4);
-        if (openClose === -1) {
-            return source.length;
-        }
-        const name = /^\{\{\{\{\s*([^\s}(]+)/.exec(source.slice(from, openClose + 4))?.[1];
-        if (name) {
-            const closeTag = `{{{{/${name}}}}}`;
-            const closeIdx = source.indexOf(closeTag, openClose + 4);
-            if (closeIdx !== -1) {
-                return closeIdx + closeTag.length;
-            }
-        }
-        return openClose + 4;
+    const name = /^\{\{\{\{\s*([^\s}(]+)/.exec(source.slice(from, openClose + 4))?.[1];
+    if (name) {
+      const closeTag = `{{{{/${name}}}}}`;
+      const closeIdx = source.indexOf(closeTag, openClose + 4);
+      if (closeIdx !== -1) {
+        return closeIdx + closeTag.length;
+      }
     }
-    if (source.startsWith('{{{', from)) {
-        const close = source.indexOf('}}}', from + 3);
-        return close === -1 ? source.length : close + 3;
-    }
-    // `{{! comment }}` and every ordinary mustache end at the first '}}'
-    const close = source.indexOf('}}', from + 2);
-    return close === -1 ? source.length : close + 2;
+    return openClose + 4;
+  }
+  if (source.startsWith('{{{', from)) {
+    const close = source.indexOf('}}}', from + 3);
+    return close === -1 ? source.length : close + 3;
+  }
+  // `{{! comment }}` and every ordinary mustache end at the first '}}'
+  const close = source.indexOf('}}', from + 2);
+  return close === -1 ? source.length : close + 2;
 }
 
 export interface OpenTagName {
-    /** The static tag name right after the `<` */
-    tagName: string;
-    /** Offset just past the tag name */
-    nameEnd: number;
-    /**
-     * True when the character after the name is `/`, `>`, whitespace or EOF —
-     * i.e. the tag name is fully static and the marker transform can stamp an
-     * attribute after it. Dynamic tag names (`<h{{level}}>`) are not markable:
-     * an inserted attribute would land between the static prefix and the
-     * mustache and merge with its output.
-     */
-    markable: boolean;
+  /** The static tag name right after the `<` */
+  tagName: string;
+  /** Offset just past the tag name */
+  nameEnd: number;
+  /**
+   * True when the character after the name is `/`, `>`, whitespace or EOF —
+   * i.e. the tag name is fully static and the marker transform can stamp an
+   * attribute after it. Dynamic tag names (`<h{{level}}>`) are not markable:
+   * an inserted attribute would land between the static prefix and the
+   * mustache and merge with its output.
+   */
+  markable: boolean;
 }
 
 /**
@@ -87,26 +87,27 @@ export interface OpenTagName {
  * doctype, comment, …).
  */
 export function openTagNameAt(source: string, offset: number): OpenTagName | null {
-    if (source[offset] !== '<') {
-        return null;
-    }
-    const nameMatch = /^[a-zA-Z][a-zA-Z0-9-]*/.exec(source.slice(offset + 1, offset + 64));
-    if (!nameMatch) {
-        return null;
-    }
-    const tagName = nameMatch[0];
-    const nameEnd = offset + 1 + tagName.length;
-    const afterName = source[nameEnd];
-    const markable = afterName === undefined || afterName === '/' || afterName === '>' || /\s/.test(afterName);
-    return {tagName, nameEnd, markable};
+  if (source[offset] !== '<') {
+    return null;
+  }
+  const nameMatch = /^[a-zA-Z][a-zA-Z0-9-]*/.exec(source.slice(offset + 1, offset + 64));
+  if (!nameMatch) {
+    return null;
+  }
+  const tagName = nameMatch[0];
+  const nameEnd = offset + 1 + tagName.length;
+  const afterName = source[nameEnd];
+  const markable =
+    afterName === undefined || afterName === '/' || afterName === '>' || /\s/.test(afterName);
+  return { tagName, nameEnd, markable };
 }
 
 export interface OpenTagEnd {
-    /** Offset of the closing `>` when closed; `source.length` otherwise */
-    end: number;
-    /** False when the walk reached EOF without finding the tag's `>` */
-    closed: boolean;
-    selfClosing: boolean;
+  /** Offset of the closing `>` when closed; `source.length` otherwise */
+  end: number;
+  /** False when the walk reached EOF without finding the tag's `>` */
+  closed: boolean;
+  selfClosing: boolean;
 }
 
 /**
@@ -117,31 +118,31 @@ export interface OpenTagEnd {
  * callers recover rather than abandoning the rest of the source.
  */
 export function openTagEnd(source: string, nameEnd: number): OpenTagEnd {
-    const len = source.length;
-    let j = nameEnd;
-    while (j < len) {
-        const c = source[j];
-        if (c === '{' && source.startsWith('{{', j)) {
-            j = mustacheEnd(source, j);
-            continue;
-        }
-        if (c === '"' || c === '\'') {
-            j += 1;
-            while (j < len && source[j] !== c) {
-                j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
-            }
-            if (j >= len) {
-                break; // unbalanced quote — ran away to EOF
-            }
-            j += 1; // past the closing quote
-            continue;
-        }
-        if (c === '>') {
-            return {end: j, closed: true, selfClosing: source[j - 1] === '/'};
-        }
-        j += 1;
+  const len = source.length;
+  let j = nameEnd;
+  while (j < len) {
+    const c = source[j];
+    if (c === '{' && source.startsWith('{{', j)) {
+      j = mustacheEnd(source, j);
+      continue;
     }
-    return {end: len, closed: false, selfClosing: false};
+    if (c === '"' || c === "'") {
+      j += 1;
+      while (j < len && source[j] !== c) {
+        j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
+      }
+      if (j >= len) {
+        break; // unbalanced quote — ran away to EOF
+      }
+      j += 1; // past the closing quote
+      continue;
+    }
+    if (c === '>') {
+      return { end: j, closed: true, selfClosing: source[j - 1] === '/' };
+    }
+    j += 1;
+  }
+  return { end: len, closed: false, selfClosing: false };
 }
 
 /**
@@ -153,31 +154,31 @@ export function openTagEnd(source: string, nameEnd: number): OpenTagEnd {
  * after it.
  */
 function rawtextCloseIndex(source: string, tagNameLower: string, from: number): number {
-    const needle = `</${tagNameLower}`;
-    for (let i = source.indexOf('<', from); i !== -1; i = source.indexOf('<', i + 1)) {
-        if (source[i + 1] !== '/') {
-            continue;
-        }
-        if (source.slice(i, i + needle.length).toLowerCase() !== needle) {
-            continue;
-        }
-        const following = source[i + needle.length];
-        if (following === undefined || following === '>' || following === '/' || /\s/.test(following)) {
-            return i;
-        }
+  const needle = `</${tagNameLower}`;
+  for (let i = source.indexOf('<', from); i !== -1; i = source.indexOf('<', i + 1)) {
+    if (source[i + 1] !== '/') {
+      continue;
     }
-    return -1;
+    if (source.slice(i, i + needle.length).toLowerCase() !== needle) {
+      continue;
+    }
+    const following = source[i + needle.length];
+    if (following === undefined || following === '>' || following === '/' || /\s/.test(following)) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 export interface ScannedAttribute {
-    /** Lowercased attribute name */
-    name: string;
-    /** Offset of the name's first character */
-    start: number;
-    /** Offset just past the token (name, or the value when present) */
-    end: number;
-    /** Mustache-block depth at the attribute ({{#…}}/{{^…}}…{{/…}} nesting) */
-    blockDepth: number;
+  /** Lowercased attribute name */
+  name: string;
+  /** Offset of the name's first character */
+  start: number;
+  /** Offset just past the token (name, or the value when present) */
+  end: number;
+  /** Mustache-block depth at the attribute ({{#…}}/{{^…}}…{{/…}} nesting) */
+  blockDepth: number;
 }
 
 const BLOCK_OPEN = /^\{\{~?\s*(#|\^\s*[^\s}])/;
@@ -196,105 +197,109 @@ const BLOCK_CLOSE = /^\{\{~?\s*\//;
  * marker transform's existing-`data-edit` check (src/engine/markers.ts), so
  * both agree on what counts as a static attribute NAME on a tag.
  */
-export function* scanAttributes(source: string, from: number, to: number): Generator<ScannedAttribute, void, undefined> {
-    let i = from;
-    let blockDepth = 0;
+export function* scanAttributes(
+  source: string,
+  from: number,
+  to: number,
+): Generator<ScannedAttribute, void, undefined> {
+  let i = from;
+  let blockDepth = 0;
 
-    const skipValue = (at: number): number => {
-        let j = at;
-        const quote = source[j];
-        if (quote === '"' || quote === '\'') {
-            j += 1;
-            while (j < to && source[j] !== quote) {
-                j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
-            }
-            return Math.min(j + 1, to);
-        }
-        // unquoted value: up to whitespace (or the region end), mustache-aware
-        while (j < to && !/\s/.test(source[j]!)) {
-            j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
-        }
-        return j;
-    };
-
-    // The `= value` (whitespace-tolerant) following a name at `at`, or `at`
-    // itself when the name has no value.
-    const skipEqualsValue = (at: number): number => {
-        let k = at;
-        while (k < to && /\s/.test(source[k]!)) {
-            k += 1;
-        }
-        if (source[k] !== '=') {
-            return at;
-        }
-        k += 1;
-        while (k < to && /\s/.test(source[k]!)) {
-            k += 1;
-        }
-        return skipValue(k);
-    };
-
-    while (i < to) {
-        const c = source[i]!;
-        if (/\s/.test(c) || c === '/') {
-            i += 1;
-            continue;
-        }
-        if (source.startsWith('{{', i)) {
-            const rest = source.slice(i, i + 24);
-            if (BLOCK_OPEN.test(rest)) {
-                blockDepth += 1;
-            } else if (BLOCK_CLOSE.test(rest)) {
-                blockDepth = Math.max(0, blockDepth - 1);
-            }
-            // a mustache directly followed by `=value` is a fully-dynamic
-            // attribute name — its value must be skipped, never yielded
-            i = skipEqualsValue(Math.min(mustacheEnd(source, i), to));
-            continue;
-        }
-
-        const nameMatch = /^[^\s"'=/>{]+/.exec(source.slice(i, to));
-        if (!nameMatch) {
-            i += 1; // stray quote/equals — not an attribute start
-            continue;
-        }
-        const start = i;
-        const name = nameMatch[0];
-        let j = i + name.length;
-
-        if (source.startsWith('{{', j)) {
-            // dynamic attribute name (`data-{{x}}=…`) — never a static match;
-            // skip past the mustache AND its `=value` without yielding, so the
-            // value's content can never be mistaken for attribute names
-            i = skipEqualsValue(Math.min(mustacheEnd(source, j), to));
-            continue;
-        }
-
-        // optional `= value`, whitespace-tolerant around the equals
-        j = skipEqualsValue(j);
-
-        yield {name: name.toLowerCase(), start, end: j, blockDepth};
-        i = j;
+  const skipValue = (at: number): number => {
+    let j = at;
+    const quote = source[j];
+    if (quote === '"' || quote === "'") {
+      j += 1;
+      while (j < to && source[j] !== quote) {
+        j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
+      }
+      return Math.min(j + 1, to);
     }
+    // unquoted value: up to whitespace (or the region end), mustache-aware
+    while (j < to && !/\s/.test(source[j]!)) {
+      j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
+    }
+    return j;
+  };
+
+  // The `= value` (whitespace-tolerant) following a name at `at`, or `at`
+  // itself when the name has no value.
+  const skipEqualsValue = (at: number): number => {
+    let k = at;
+    while (k < to && /\s/.test(source[k]!)) {
+      k += 1;
+    }
+    if (source[k] !== '=') {
+      return at;
+    }
+    k += 1;
+    while (k < to && /\s/.test(source[k]!)) {
+      k += 1;
+    }
+    return skipValue(k);
+  };
+
+  while (i < to) {
+    const c = source[i]!;
+    if (/\s/.test(c) || c === '/') {
+      i += 1;
+      continue;
+    }
+    if (source.startsWith('{{', i)) {
+      const rest = source.slice(i, i + 24);
+      if (BLOCK_OPEN.test(rest)) {
+        blockDepth += 1;
+      } else if (BLOCK_CLOSE.test(rest)) {
+        blockDepth = Math.max(0, blockDepth - 1);
+      }
+      // a mustache directly followed by `=value` is a fully-dynamic
+      // attribute name — its value must be skipped, never yielded
+      i = skipEqualsValue(Math.min(mustacheEnd(source, i), to));
+      continue;
+    }
+
+    const nameMatch = /^[^\s"'=/>{]+/.exec(source.slice(i, to));
+    if (!nameMatch) {
+      i += 1; // stray quote/equals — not an attribute start
+      continue;
+    }
+    const start = i;
+    const name = nameMatch[0];
+    let j = i + name.length;
+
+    if (source.startsWith('{{', j)) {
+      // dynamic attribute name (`data-{{x}}=…`) — never a static match;
+      // skip past the mustache AND its `=value` without yielding, so the
+      // value's content can never be mistaken for attribute names
+      i = skipEqualsValue(Math.min(mustacheEnd(source, j), to));
+      continue;
+    }
+
+    // optional `= value`, whitespace-tolerant around the equals
+    j = skipEqualsValue(j);
+
+    yield { name: name.toLowerCase(), start, end: j, blockDepth };
+    i = j;
+  }
 }
 
 export interface ScannedTag {
-    /** Offset of the tag's `<` */
-    start: number;
-    /** 1-based line of the `<` */
-    line: number;
-    /** 1-based column of the `<` */
-    column: number;
-    tagName: string;
-    /** Offset just past the tag name */
-    nameEnd: number;
-    /** See {@link OpenTagName.markable} */
-    markable: boolean;
-    /** Offset of the closing `>` (`source.length` when `closed` is false) */
-    end: number;
-    /** False for malformed tags whose end walk ran away to EOF */
-    closed: boolean;
-    selfClosing: boolean;
+  /** Offset of the tag's `<` */
+  start: number;
+  /** 1-based line of the `<` */
+  line: number;
+  /** 1-based column of the `<` */
+  column: number;
+  tagName: string;
+  /** Offset just past the tag name */
+  nameEnd: number;
+  /** See {@link OpenTagName.markable} */
+  markable: boolean;
+  /** Offset of the closing `>` (`source.length` when `closed` is false) */
+  end: number;
+  /** False for malformed tags whose end walk ran away to EOF */
+  closed: boolean;
+  selfClosing: boolean;
 }
 
 /**
@@ -304,79 +309,79 @@ export interface ScannedTag {
  * is the shared definition of "a tag the marker transform can see".
  */
 export function* scanSourceTags(source: string): Generator<ScannedTag, void, undefined> {
-    const len = source.length;
-    let i = 0;
-    let line = 1;
-    let column = 1;
+  const len = source.length;
+  let i = 0;
+  let line = 1;
+  let column = 1;
 
-    const advanceTo = (target: number): void => {
-        const stop = Math.min(target, len);
-        while (i < stop) {
-            if (source.charCodeAt(i) === 10 /* \n */) {
-                line += 1;
-                column = 1;
-            } else {
-                column += 1;
-            }
-            i += 1;
-        }
+  const advanceTo = (target: number): void => {
+    const stop = Math.min(target, len);
+    while (i < stop) {
+      if (source.charCodeAt(i) === 10 /* \n */) {
+        line += 1;
+        column = 1;
+      } else {
+        column += 1;
+      }
+      i += 1;
+    }
+  };
+
+  while (i < len) {
+    const ch = source[i];
+
+    if (ch === '{' && source.startsWith('{{', i)) {
+      advanceTo(mustacheEnd(source, i));
+      continue;
+    }
+    if (ch !== '<') {
+      advanceTo(i + 1);
+      continue;
+    }
+    if (source.startsWith('<!--', i)) {
+      const close = source.indexOf('-->', i + 4);
+      advanceTo(close === -1 ? len : close + 3);
+      continue;
+    }
+    const next = source[i + 1];
+    if (next === '/' || next === '!' || next === '?') {
+      // closing tag, doctype/declaration, processing instruction
+      const close = source.indexOf('>', i + 1);
+      advanceTo(close === -1 ? len : close + 1);
+      continue;
+    }
+    const name = openTagNameAt(source, i);
+    if (!name) {
+      // literal '<' in text content
+      advanceTo(i + 1);
+      continue;
+    }
+
+    const tagEnd = openTagEnd(source, name.nameEnd);
+    yield {
+      start: i,
+      line,
+      column,
+      tagName: name.tagName,
+      nameEnd: name.nameEnd,
+      markable: name.markable,
+      ...tagEnd,
     };
 
-    while (i < len) {
-        const ch = source[i];
-
-        if (ch === '{' && source.startsWith('{{', i)) {
-            advanceTo(mustacheEnd(source, i));
-            continue;
-        }
-        if (ch !== '<') {
-            advanceTo(i + 1);
-            continue;
-        }
-        if (source.startsWith('<!--', i)) {
-            const close = source.indexOf('-->', i + 4);
-            advanceTo(close === -1 ? len : close + 3);
-            continue;
-        }
-        const next = source[i + 1];
-        if (next === '/' || next === '!' || next === '?') {
-            // closing tag, doctype/declaration, processing instruction
-            const close = source.indexOf('>', i + 1);
-            advanceTo(close === -1 ? len : close + 1);
-            continue;
-        }
-        const name = openTagNameAt(source, i);
-        if (!name) {
-            // literal '<' in text content
-            advanceTo(i + 1);
-            continue;
-        }
-
-        const tagEnd = openTagEnd(source, name.nameEnd);
-        yield {
-            start: i,
-            line,
-            column,
-            tagName: name.tagName,
-            nameEnd: name.nameEnd,
-            markable: name.markable,
-            ...tagEnd
-        };
-
-        if (!tagEnd.closed) {
-            // malformed tag — recover at the next '<' after its start instead
-            // of abandoning the rest of the source
-            const nextTag = source.indexOf('<', i + 1);
-            advanceTo(nextTag === -1 ? len : nextTag);
-            continue;
-        }
-        advanceTo(tagEnd.end + 1);
-
-        const lowerName = name.tagName.toLowerCase();
-        if (!tagEnd.selfClosing && RAWTEXT_TAGS.has(lowerName)) {
-            // skip the element's raw text up to its matching close tag
-            const closeIdx = rawtextCloseIndex(source, lowerName, i);
-            advanceTo(closeIdx === -1 ? len : closeIdx);
-        }
+    if (!tagEnd.closed) {
+      // malformed tag — recover at the next '<' after its start instead
+      // of abandoning the rest of the source
+      const nextTag = source.indexOf('<', i + 1);
+      advanceTo(nextTag === -1 ? len : nextTag);
+      continue;
     }
+    advanceTo(tagEnd.end + 1);
+
+    const lowerName = name.tagName.toLowerCase();
+    if (!tagEnd.selfClosing && RAWTEXT_TAGS.has(lowerName)) {
+      // skip the element's raw text up to its matching close tag
+      const closeIdx = rawtextCloseIndex(source, lowerName, i);
+      advanceTo(closeIdx === -1 ? len : closeIdx);
+    }
+  }
 }

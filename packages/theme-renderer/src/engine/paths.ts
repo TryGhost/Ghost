@@ -4,20 +4,20 @@
  */
 
 export function dirname(path: string): string {
-    const index = path.lastIndexOf('/');
-    if (index === -1) {
-        return '.';
-    }
-    return path.slice(0, index);
+  const index = path.lastIndexOf('/');
+  if (index === -1) {
+    return '.';
+  }
+  return path.slice(0, index);
 }
 
 export function extname(path: string): string {
-    const base = path.slice(path.lastIndexOf('/') + 1);
-    const dot = base.lastIndexOf('.');
-    if (dot > 0) {
-        return base.slice(dot);
-    }
-    return '';
+  const base = path.slice(path.lastIndexOf('/') + 1);
+  const dot = base.lastIndexOf('.');
+  if (dot > 0) {
+    return base.slice(dot);
+  }
+  return '';
 }
 
 /**
@@ -26,18 +26,18 @@ export function extname(path: string): string {
  * cannot escape the virtual root (mirrors path.resolve clamping at '/').
  */
 export function resolvePath(base: string, ...segments: string[]): string {
-    const parts: string[] = [];
-    for (const segment of [base, ...segments]) {
-        for (const part of segment.split('/')) {
-            if (part === '' || part === '.') {
-                continue;
-            }
-            if (part === '..') {
-                parts.pop();
-                continue;
-            }
-            parts.push(part);
-        }
+  const parts: string[] = [];
+  for (const segment of [base, ...segments]) {
+    for (const part of segment.split('/')) {
+      if (part === '' || part === '.') {
+        continue;
+      }
+      if (part === '..') {
+        parts.pop();
+        continue;
+      }
+      parts.push(part);
     }
-    return parts.join('/');
+  }
+  return parts.join('/');
 }

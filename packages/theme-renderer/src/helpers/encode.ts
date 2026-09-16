@@ -6,9 +6,9 @@
 //
 // Returns URI encoded string
 
-import {SafeString} from '../seam/handlebars-env.ts';
+import { SafeString } from '../seam/handlebars-env.ts';
 
 export default function encode(string: any, options: any) {
-    const uri = string || options;
-    return new SafeString(encodeURIComponent(uri));
+  const uri = string || options;
+  return new SafeString(encodeURIComponent(uri));
 }

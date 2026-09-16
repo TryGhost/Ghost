@@ -11,19 +11,19 @@ export type DataShortFormResource = 'tag' | 'author' | 'post' | 'page' | 'previe
 export type DataShortForm = string;
 
 export interface DataLongFormEntry {
-    type: 'read' | 'browse';
-    resource: string;
-    /** required for `read` entries, absent on `browse` */
-    slug?: string;
-    redirect?: boolean;
-    limit?: number | string;
-    order?: string;
-    filter?: string;
-    include?: string;
-    visibility?: string;
-    status?: string;
-    page?: number | string;
-    [key: string]: unknown;
+  type: 'read' | 'browse';
+  resource: string;
+  /** required for `read` entries, absent on `browse` */
+  slug?: string;
+  redirect?: boolean;
+  limit?: number | string;
+  order?: string;
+  filter?: string;
+  include?: string;
+  visibility?: string;
+  status?: string;
+  page?: number | string;
+  [key: string]: unknown;
 }
 
 export type DataEntry = DataShortForm | DataLongFormEntry;

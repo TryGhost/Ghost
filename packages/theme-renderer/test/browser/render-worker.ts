@@ -8,46 +8,51 @@
  * test posts the theme files, instance config and recorded Content API
  * fixtures in; the worker posts the rendered HTML back.
  */
-import {createRenderer} from '../../src/index.ts';
-import {createReplayFetch, type ApiFixtures} from './replay-fetch.ts';
+import { createRenderer } from '../../src/index.ts';
+import { createReplayFetch, type ApiFixtures } from './replay-fetch.ts';
 
 export interface WorkerRenderRequest {
-    siteUrl: string;
-    contentApiKey: string;
-    /** Theme files, path → content */
-    theme: Record<string, string>;
-    /** Instance config (asset hash, portal/sodo-search URLs) */
-    config: Record<string, unknown>;
-    /** Recorded Content API responses, replayed by URL */
-    apiFixtures: ApiFixtures;
-    /** Route path to render, e.g. '/' */
-    path: string;
-    /** Stamp data-edit source markers (slice 3 editor lane) */
-    markers?: boolean;
+  siteUrl: string;
+  contentApiKey: string;
+  /** Theme files, path → content */
+  theme: Record<string, string>;
+  /** Instance config (asset hash, portal/sodo-search URLs) */
+  config: Record<string, unknown>;
+  /** Recorded Content API responses, replayed by URL */
+  apiFixtures: ApiFixtures;
+  /** Route path to render, e.g. '/' */
+  path: string;
+  /** Stamp data-edit source markers (slice 3 editor lane) */
+  markers?: boolean;
 }
 
 export type WorkerRenderResult =
-    | {ok: true; status: number; html: string}
-    | {ok: false; error: string};
+  | { ok: true; status: number; html: string }
+  | { ok: false; error: string };
 
 function post(result: WorkerRenderResult): void {
-    self.postMessage(result);
+  self.postMessage(result);
 }
 
 self.onmessage = async (event: MessageEvent<WorkerRenderRequest>): Promise<void> => {
-    const {siteUrl, contentApiKey, theme, config, apiFixtures, path, markers} = event.data;
-    try {
-        const renderer = await createRenderer({
-            siteUrl,
-            contentApiKey,
-            theme,
-            config,
-            fetch: createReplayFetch(apiFixtures)
-        });
-        const response = await renderer.render(new Request(new URL(path, siteUrl).toString()), {markers});
-        const html = await response.text();
-        post({ok: true, status: response.status, html});
-    } catch (error) {
-        post({ok: false, error: error instanceof Error ? (error.stack ?? error.message) : String(error)});
-    }
+  const { siteUrl, contentApiKey, theme, config, apiFixtures, path, markers } = event.data;
+  try {
+    const renderer = await createRenderer({
+      siteUrl,
+      contentApiKey,
+      theme,
+      config,
+      fetch: createReplayFetch(apiFixtures),
+    });
+    const response = await renderer.render(new Request(new URL(path, siteUrl).toString()), {
+      markers,
+    });
+    const html = await response.text();
+    post({ ok: true, status: response.status, html });
+  } catch (error) {
+    post({
+      ok: false,
+      error: error instanceof Error ? (error.stack ?? error.message) : String(error),
+    });
+  }
 };

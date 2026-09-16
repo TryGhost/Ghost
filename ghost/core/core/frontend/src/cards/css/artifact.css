@@ -1,65 +1,65 @@
 .kg-artifact-card,
 .kg-artifact-card * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .kg-artifact-card {
-    width: 100%;
-    overflow: hidden;
-    border: 1px solid rgba(124, 139, 154, 0.28);
-    border-radius: 8px;
-    background: transparent;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(124, 139, 154, 0.28);
+  border-radius: 8px;
+  background: transparent;
 }
 
 .kg-artifact-card-frame {
-    display: block;
-    width: 100%;
-    height: 240px;
-    border: 0;
-    background: transparent;
+  display: block;
+  width: 100%;
+  height: 240px;
+  border: 0;
+  background: transparent;
 }
 
 .kg-artifact-card-fallback {
-    display: flex;
-    min-height: 180px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 32px;
-    text-align: center;
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
 }
 
 .kg-artifact-card-title {
-    font-size: 1.05em;
+  font-size: 1.05em;
 }
 
 .kg-artifact-card-description,
 .kg-artifact-card-loading,
 .kg-artifact-card-error {
-    margin: 8px 0 0;
-    font-size: 0.9em;
-    opacity: 0.72;
+  margin: 8px 0 0;
+  font-size: 0.9em;
+  opacity: 0.72;
 }
 
 .kg-artifact-card-retry {
-    margin-top: 16px;
-    padding: 7px 12px;
-    border: 1px solid currentcolor;
-    border-radius: 6px;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    font: inherit;
+  margin-top: 16px;
+  padding: 7px 12px;
+  border: 1px solid currentcolor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
 }
 
 .kg-artifact-card-loading,
-.kg-artifact-card[data-state="loading"] .kg-artifact-card-error,
-.kg-artifact-card[data-state="loading"] .kg-artifact-card-retry,
-.kg-artifact-card[data-state="ready"] .kg-artifact-card-fallback,
-.kg-artifact-card[data-state="failed"] .kg-artifact-card-loading {
-    display: none;
+.kg-artifact-card[data-state='loading'] .kg-artifact-card-error,
+.kg-artifact-card[data-state='loading'] .kg-artifact-card-retry,
+.kg-artifact-card[data-state='ready'] .kg-artifact-card-fallback,
+.kg-artifact-card[data-state='failed'] .kg-artifact-card-loading {
+  display: none;
 }
 
-.kg-artifact-card[data-state="loading"] .kg-artifact-card-loading {
-    display: block;
+.kg-artifact-card[data-state='loading'] .kg-artifact-card-loading {
+  display: block;
 }

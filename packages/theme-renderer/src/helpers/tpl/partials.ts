@@ -1,4 +1,3 @@
- 
 // Core helper partial templates, embedded as strings so no filesystem access
 // is needed. Sources copied verbatim from
 // ghost/core/core/frontend/helpers/tpl/*.hbs @ 407e032dc7.
@@ -350,12 +349,12 @@ const recommendationsHbs = `{{#if recommendations}}
 `;
 
 export const coreHelperPartials: Record<string, string> = {
-    'navigation': navigationHbs,
-    'pagination': paginationHbs,
-    'content-cta': contentCtaHbs,
-    'gift-toast': giftToastHbs,
-    'cancel_link': cancelLinkHbs,
-    'recommendations': recommendationsHbs
+  navigation: navigationHbs,
+  pagination: paginationHbs,
+  'content-cta': contentCtaHbs,
+  'gift-toast': giftToastHbs,
+  cancel_link: cancelLinkHbs,
+  recommendations: recommendationsHbs,
 };
 
 /**
@@ -364,8 +363,10 @@ export const coreHelperPartials: Record<string, string> = {
  * In Ghost these are loaded from config.paths.helperTemplates by express-hbs;
  * a theme partial of the same name may be registered afterwards to override.
  */
-export function registerCoreHelperPartials(hbsInstance: {registerPartial(name: string, source: string): void}): void {
-    for (const [name, source] of Object.entries(coreHelperPartials)) {
-        hbsInstance.registerPartial(name, source);
-    }
+export function registerCoreHelperPartials(hbsInstance: {
+  registerPartial(name: string, source: string): void;
+}): void {
+  for (const [name, source] of Object.entries(coreHelperPartials)) {
+    hbsInstance.registerPartial(name, source);
+  }
 }

@@ -250,10 +250,10 @@ describe('Labs Service - remote overrides', function () {
 });
 
 describe('Labs Service - Flag Integrity', function () {
-    it('exposes the design builder experiment instead of on-site edit mode', function () {
-        assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes('designBuilder'), true);
-        assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes('editModeOnSite'), false);
-    });
+  it('exposes the design builder experiment instead of on-site edit mode', function () {
+    assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes('designBuilder'), true);
+    assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes('editModeOnSite'), false);
+  });
 
   it('should have no duplicate flags across categories', function () {
     const allFlags = labs.getAllFlags();

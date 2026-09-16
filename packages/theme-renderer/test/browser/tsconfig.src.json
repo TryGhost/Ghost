@@ -1,18 +1,16 @@
 {
-    // The worker guard: src/ must type-check against a Web Worker's globals
-    // ONLY — no DOM, no Node types. A `document`/`window` reference (or a Node
-    // built-in leaking in) anywhere in src/ fails this project, and with it
-    // `pnpm test` (via test:types:browser). The browser TEST files get their
-    // DOM libs from the sibling tsconfig.json; keeping the two lanes separate
-    // is the whole point — DOM libs here would disable the guard.
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "rootDir": "../..",
-        "noEmit": true,
-        "lib": ["ES2022", "WebWorker"],
-        "types": []
-    },
-    "include": [
-        "../../src/**/*"
-    ]
+  // The worker guard: src/ must type-check against a Web Worker's globals
+  // ONLY — no DOM, no Node types. A `document`/`window` reference (or a Node
+  // built-in leaking in) anywhere in src/ fails this project, and with it
+  // `pnpm test` (via test:types:browser). The browser TEST files get their
+  // DOM libs from the sibling tsconfig.json; keeping the two lanes separate
+  // is the whole point — DOM libs here would disable the guard.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "noEmit": true,
+    "lib": ["ES2022", "WebWorker"],
+    "types": []
+  },
+  "include": ["../../src/**/*"]
 }

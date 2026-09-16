@@ -16,73 +16,74 @@
  * web_analytics_enabled, social_web_enabled, active_theme.
  */
 import errors from '@tryghost/errors';
-import type {LabsPort, SettingsPort} from './types.ts';
+import type { LabsPort, SettingsPort } from './types.ts';
 
 export interface SettingsSnapshot {
-    settings: SettingsPort;
-    labs: LabsPort;
-    /** The raw payload as returned by the Content API */
-    raw: Record<string, any>;
+  settings: SettingsPort;
+  labs: LabsPort;
+  /** The raw payload as returned by the Content API */
+  raw: Record<string, any>;
 }
 
 export function createSettingsCache(payload: Record<string, any>): SettingsSnapshot {
-    const snapshot: Record<string, any> = {...payload};
+  const snapshot: Record<string, any> = { ...payload };
 
-    // The Content API serializer rewrites `icon` to a resized
-    // /content/images/size/w256h256/ URL; internally `settingsCache.get('icon')`
-    // is the raw upload path and blogIcon applies the resize itself. Undo the
-    // rewrite so the copied blogIcon logic doesn't double-apply it.
-    if (typeof snapshot.icon === 'string') {
-        snapshot.icon = snapshot.icon.replace('/content/images/size/w256h256/', '/content/images/');
-    }
+  // The Content API serializer rewrites `icon` to a resized
+  // /content/images/size/w256h256/ URL; internally `settingsCache.get('icon')`
+  // is the raw upload path and blogIcon applies the resize itself. Undo the
+  // rewrite so the copied blogIcon logic doesn't double-apply it.
+  if (typeof snapshot.icon === 'string') {
+    snapshot.icon = snapshot.icon.replace('/content/images/size/w256h256/', '/content/images/');
+  }
 
-    // `settingsCache.get('icon')` (and friends) return site-relative paths in
-    // core; the Content API serves absolute URLs. Keep them as-is — urlFor's
-    // "already has a protocol" early-return makes absolute inputs pass through.
+  // `settingsCache.get('icon')` (and friends) return site-relative paths in
+  // core; the Content API serves absolute URLs. Keep them as-is — urlFor's
+  // "already has a protocol" early-return makes absolute inputs pass through.
 
-    const labsFlags: Record<string, boolean> = (snapshot.labs && typeof snapshot.labs === 'object') ? snapshot.labs : {};
+  const labsFlags: Record<string, boolean> =
+    snapshot.labs && typeof snapshot.labs === 'object' ? snapshot.labs : {};
 
-    return {
-        settings: {
-            get(key: string) {
-                return snapshot[key];
-            },
-            getPublic() {
-                return {...snapshot};
-            }
-        },
-        labs: {
-            getAll() {
-                return {...labsFlags};
-            },
-            isSet(flag: string) {
-                return Boolean(labsFlags[flag]);
-            }
-        },
-        raw: payload
-    };
+  return {
+    settings: {
+      get(key: string) {
+        return snapshot[key];
+      },
+      getPublic() {
+        return { ...snapshot };
+      },
+    },
+    labs: {
+      getAll() {
+        return { ...labsFlags };
+      },
+      isSet(flag: string) {
+        return Boolean(labsFlags[flag]);
+      },
+    },
+    raw: payload,
+  };
 }
 
 export interface LoadSettingsOptions {
-    siteUrl: string;
-    key: string;
-    fetch?: typeof globalThis.fetch;
+  siteUrl: string;
+  key: string;
+  fetch?: typeof globalThis.fetch;
 }
 
 export async function loadSettings(options: LoadSettingsOptions): Promise<SettingsSnapshot> {
-    const fetchImpl = options.fetch ?? globalThis.fetch;
-    const url = new URL('settings/', options.siteUrl.replace(/\/$/, '') + '/ghost/api/content/');
-    url.searchParams.set('key', options.key);
+  const fetchImpl = options.fetch ?? globalThis.fetch;
+  const url = new URL('settings/', options.siteUrl.replace(/\/$/, '') + '/ghost/api/content/');
+  url.searchParams.set('key', options.key);
 
-    const response = await fetchImpl(url.toString(), {headers: {accept: 'application/json'}});
+  const response = await fetchImpl(url.toString(), { headers: { accept: 'application/json' } });
 
-    if (!response.ok) {
-        throw new errors.InternalServerError({
-            message: `Failed to load settings from the Content API (status ${response.status})`,
-            statusCode: response.status
-        });
-    }
+  if (!response.ok) {
+    throw new errors.InternalServerError({
+      message: `Failed to load settings from the Content API (status ${response.status})`,
+      statusCode: response.status,
+    });
+  }
 
-    const body: any = await response.json();
-    return createSettingsCache(body?.settings ?? {});
+  const body: any = await response.json();
+  return createSettingsCache(body?.settings ?? {});
 }

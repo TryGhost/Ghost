@@ -12,52 +12,50 @@
 //
 // Dev flag feature: In case of restricted content access for member-only posts, shows CTA box
 
-import {SafeString, hbs, templates} from '../seam/handlebars-env.ts';
+import { SafeString, hbs, templates } from '../seam/handlebars-env.ts';
 import downsize from 'downsize-cjs';
 import _ from '../utils/lodash.ts';
 const createFrame = hbs.handlebars.createFrame;
 
 function restrictedCta(this: any, options: any) {
-    options = options || {};
-    options.data = options.data || {};
+  options = options || {};
+  options.data = options.data || {};
 
-    _.merge(this, {
-        // @deprecated in Ghost 5.16.1 - not documented & removed from core templates
-        accentColor: (options.data.site && options.data.site.accent_color)
-    });
+  _.merge(this, {
+    // @deprecated in Ghost 5.16.1 - not documented & removed from core templates
+    accentColor: options.data.site && options.data.site.accent_color,
+  });
 
-    const data = createFrame(options.data);
-    return templates.execute('content-cta', this, {data});
+  const data = createFrame(options.data);
+  return templates.execute('content-cta', this, { data });
 }
 
 export default function content(this: any, options: any = {}) {
-    const self = this;
-    const args = arguments;
+  const self = this;
+  const args = arguments;
 
-    const hash = options.hash || {};
-    const truncateOptions: any = {};
-    let runTruncate = false;
+  const hash = options.hash || {};
+  const truncateOptions: any = {};
+  let runTruncate = false;
 
-    for (const key of ['words', 'characters']) {
-        if (Object.prototype.hasOwnProperty.call(hash, key)) {
-            runTruncate = true;
-            truncateOptions[key] = parseInt(hash[key], 10);
-        }
+  for (const key of ['words', 'characters']) {
+    if (Object.prototype.hasOwnProperty.call(hash, key)) {
+      runTruncate = true;
+      truncateOptions[key] = parseInt(hash[key], 10);
     }
+  }
 
-    if (this.html === null) {
-        this.html = '';
-    }
+  if (this.html === null) {
+    this.html = '';
+  }
 
-    if (!_.isUndefined(this.access) && !this.access) {
-        return restrictedCta.apply(self, args as any);
-    }
+  if (!_.isUndefined(this.access) && !this.access) {
+    return restrictedCta.apply(self, args as any);
+  }
 
-    if (runTruncate) {
-        return new SafeString(
-            downsize(this.html, truncateOptions)
-        );
-    }
+  if (runTruncate) {
+    return new SafeString(downsize(this.html, truncateOptions));
+  }
 
-    return new SafeString(this.html);
+  return new SafeString(this.html);
 }

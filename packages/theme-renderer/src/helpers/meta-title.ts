@@ -5,9 +5,10 @@
 //
 // Page title used for sharing and SEO
 import * as metaData from '../meta/index.ts';
-const {getMetaDataTitle} = metaData;
+const { getMetaDataTitle } = metaData;
 
 // We use the name meta_title to match the helper for consistency:
-export default function meta_title(this: any, options: any) { // eslint-disable-line camelcase
-    return getMetaDataTitle(this, options.data.root, options);
+// eslint-disable-next-line camelcase
+export default function meta_title(this: any, options: any) {
+  return getMetaDataTitle(this, options.data.root, options);
 }

@@ -4,9 +4,9 @@
 export const ID_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_';
 
 export function generateId(length = 8): string {
-    let res = '';
-    for (let i = 0; i < length; i++) {
-        res += ID_ALPHABET[Math.floor(Math.random() * ID_ALPHABET.length)];
-    }
-    return res;
+  let res = '';
+  for (let i = 0; i < length; i++) {
+    res += ID_ALPHABET[Math.floor(Math.random() * ID_ALPHABET.length)];
+  }
+  return res;
 }

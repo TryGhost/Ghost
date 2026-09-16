@@ -1,12 +1,12 @@
 import { createElement as h } from 'preact';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 
-import {getToolbarActions} from './actions';
-import {DISPLAY_EXPANDED, DISPLAY_MINIMIZED, ROOT_ID} from './constants';
-import {Icon} from './icons';
-import {adminHref, hideToolbarHref} from './links';
-import {getStoredDisplayState, setStoredDisplayState} from './storage';
-import {getUserImage, getUserLabel} from './user';
+import { getToolbarActions } from './actions';
+import { DISPLAY_EXPANDED, DISPLAY_MINIMIZED, ROOT_ID } from './constants';
+import { Icon } from './icons';
+import { adminHref, hideToolbarHref } from './links';
+import { getStoredDisplayState, setStoredDisplayState } from './storage';
+import { getUserImage, getUserLabel } from './user';
 
 function ScreenReaderLabel({ children }) {
   return h('span', { className: 'gh-admin-toolbar-sr-only' }, children);
@@ -40,21 +40,22 @@ function ToolbarLink({ href, icon, label }) {
   return h(TooltipWrap, { label }, link);
 }
 
-function ToolbarButton({icon, label, onClick}) {
-    const button = h('button', {
-        type: 'button',
-        className: 'gh-admin-toolbar-link',
-        'aria-label': label,
-        onClick
-    }, [
-        h(Icon, {name: icon}),
-        h(ScreenReaderLabel, null, label)
-    ]);
+function ToolbarButton({ icon, label, onClick }) {
+  const button = h(
+    'button',
+    {
+      type: 'button',
+      className: 'gh-admin-toolbar-link',
+      'aria-label': label,
+      onClick,
+    },
+    [h(Icon, { name: icon }), h(ScreenReaderLabel, null, label)],
+  );
 
-    return h(TooltipWrap, {label}, button);
+  return h(TooltipWrap, { label }, button);
 }
 
-function ToolbarMenu({isMinimized, isOpen, onMaximize, onMinimize, setIsOpen}) {
+function ToolbarMenu({ isMinimized, isOpen, onMaximize, onMinimize, setIsOpen }) {
   const label = 'More';
   const button = h(
     'button',
@@ -261,14 +262,13 @@ export function Toolbar({ config, user }) {
           type: 'button',
           className: 'gh-admin-toolbar-minimized-pill',
           'aria-label': 'Show admin toolbar',
-            onClick: expandMinimizedToolbar
-        }, [
-            h(Icon, {name: 'moreHorizontal'}),
-            h(ScreenReaderLabel, null, 'Show admin toolbar')
-        ]),
-        h('div', {className: 'gh-admin-toolbar-section', ref: contentRef}, [
-            h(UserAvatar, {adminUrl: config.adminUrl, siteTitle: config.siteTitle, user}),
-            ...actions.map(action => h(ToolbarLink, action)),
+          onClick: expandMinimizedToolbar,
+        },
+        [h(Icon, { name: 'moreHorizontal' }), h(ScreenReaderLabel, null, 'Show admin toolbar')],
+      ),
+      h('div', { className: 'gh-admin-toolbar-section', ref: contentRef }, [
+        h(UserAvatar, { adminUrl: config.adminUrl, siteTitle: config.siteTitle, user }),
+        ...actions.map((action) => h(ToolbarLink, action)),
         h(ToolbarMenu, {
           isMinimized,
           isOpen: isMenuOpen,

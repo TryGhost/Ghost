@@ -4,15 +4,19 @@ import getContextObject from './context-object.ts';
 import _ from '../utils/lodash.ts';
 
 function getAuthorFacebookUrl(data: any) {
-    const context = data.context ? data.context : null;
-    const contextObject = getContextObject(data, context);
+  const context = data.context ? data.context : null;
+  const contextObject = getContextObject(data, context);
 
-    if ((_.includes(context, 'post') || _.includes(context, 'page')) && contextObject.primary_author && contextObject.primary_author.facebook) {
-        return contextObject.primary_author.facebook;
-    } else if (_.includes(context, 'author') && contextObject.facebook) {
-        return contextObject.facebook;
-    }
-    return null;
+  if (
+    (_.includes(context, 'post') || _.includes(context, 'page')) &&
+    contextObject.primary_author &&
+    contextObject.primary_author.facebook
+  ) {
+    return contextObject.primary_author.facebook;
+  } else if (_.includes(context, 'author') && contextObject.facebook) {
+    return contextObject.facebook;
+  }
+  return null;
 }
 
 export default getAuthorFacebookUrl;

@@ -12,8 +12,8 @@
 // Figure out which template should be used to render a request
 // based on the templates which are allowed, and what is available in the theme
 import _ from '../utils/lodash.ts';
-import {getRendererDeps} from '../seam/deps.ts';
-import type {PortRequest, PortResponse, RouterOptions} from '../ports.ts';
+import { getRendererDeps } from '../seam/deps.ts';
+import type { PortRequest, PortResponse, RouterOptions } from '../ports.ts';
 
 const templates: any = {};
 
@@ -27,17 +27,19 @@ const templates: any = {};
  * @param {number} statusCode
  * @returns {String[]}
  */
-templates.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(statusCode: number): string[] {
-    const errorCode = _.toString(statusCode);
-    const templateList = ['error'];
+templates.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(
+  statusCode: number,
+): string[] {
+  const errorCode = _.toString(statusCode);
+  const templateList = ['error'];
 
-    // Add error class template: E.g. error-4xx.hbs or error-5xx.hbs
-    templateList.unshift('error-' + errorCode[0] + 'xx');
+  // Add error class template: E.g. error-4xx.hbs or error-5xx.hbs
+  templateList.unshift('error-' + errorCode[0] + 'xx');
 
-    // Add statusCode specific template: E.g. error-404.hbs
-    templateList.unshift('error-' + errorCode);
+  // Add statusCode specific template: E.g. error-404.hbs
+  templateList.unshift('error-' + errorCode);
 
-    return templateList;
+  return templateList;
 };
 
 /**
@@ -52,30 +54,36 @@ templates.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(statusC
  * @param {Object} routerOptions
  * @returns {String[]}
  */
-templates.getEntriesTemplateHierarchy = function getEntriesTemplateHierarchy(routerOptions: RouterOptions, requestOptions: any): string[] {
-    const templateList = ['index'];
+templates.getEntriesTemplateHierarchy = function getEntriesTemplateHierarchy(
+  routerOptions: RouterOptions,
+  requestOptions: any,
+): string[] {
+  const templateList = ['index'];
 
-    // CASE: author, tag, custom collection name
-    if (routerOptions.name && routerOptions.name !== 'index') {
-        templateList.unshift(routerOptions.name);
+  // CASE: author, tag, custom collection name
+  if (routerOptions.name && routerOptions.name !== 'index') {
+    templateList.unshift(routerOptions.name);
 
-        if (routerOptions.slugTemplate && requestOptions.slugParam) {
-            templateList.unshift(routerOptions.name + '-' + requestOptions.slugParam);
-        }
+    if (routerOptions.slugTemplate && requestOptions.slugParam) {
+      templateList.unshift(routerOptions.name + '-' + requestOptions.slugParam);
     }
+  }
 
-    // CASE: collections/channels can define a template list
-    if (routerOptions.templates && routerOptions.templates.length) {
-        routerOptions.templates.forEach((template: string) => {
-            templateList.unshift(template);
-        });
-    }
+  // CASE: collections/channels can define a template list
+  if (routerOptions.templates && routerOptions.templates.length) {
+    routerOptions.templates.forEach((template: string) => {
+      templateList.unshift(template);
+    });
+  }
 
-    if (routerOptions.frontPageTemplate && (requestOptions.path === '/' || requestOptions.path === '/' && requestOptions.page === 1)) {
-        templateList.unshift(routerOptions.frontPageTemplate);
-    }
+  if (
+    routerOptions.frontPageTemplate &&
+    (requestOptions.path === '/' || (requestOptions.path === '/' && requestOptions.page === 1))
+  ) {
+    templateList.unshift(routerOptions.frontPageTemplate);
+  }
 
-    return templateList;
+  return templateList;
 };
 
 /**
@@ -89,22 +97,25 @@ templates.getEntriesTemplateHierarchy = function getEntriesTemplateHierarchy(rou
  * @param {Object} postObject
  * @returns {String[]}
  */
-templates.getEntryTemplateHierarchy = function getEntryTemplateHierarchy(postObject: any, context: string): string[] {
-    const templateList = ['post'];
-    let slugTemplate = 'post-' + postObject.slug;
+templates.getEntryTemplateHierarchy = function getEntryTemplateHierarchy(
+  postObject: any,
+  context: string,
+): string[] {
+  const templateList = ['post'];
+  let slugTemplate = 'post-' + postObject.slug;
 
-    if (context === 'page') {
-        templateList.unshift('page');
-        slugTemplate = 'page-' + postObject.slug;
-    }
+  if (context === 'page') {
+    templateList.unshift('page');
+    slugTemplate = 'page-' + postObject.slug;
+  }
 
-    if (postObject.custom_template) {
-        templateList.unshift(postObject.custom_template);
-    }
+  if (postObject.custom_template) {
+    templateList.unshift(postObject.custom_template);
+  }
 
-    templateList.unshift(slugTemplate);
+  templateList.unshift(slugTemplate);
 
-    return templateList;
+  return templateList;
 };
 
 /**
@@ -116,38 +127,41 @@ templates.getEntryTemplateHierarchy = function getEntryTemplateHierarchy(postObj
  * @param {Array|String} templateList
  * @param {string} fallback - a fallback template
  */
-templates.pickTemplate = function pickTemplate(templateList: string[] | string, fallback?: string | (() => void)): string | undefined {
-    let template;
+templates.pickTemplate = function pickTemplate(
+  templateList: string[] | string,
+  fallback?: string | (() => void),
+): string | undefined {
+  let template;
 
-    if (!_.isArray(templateList)) {
-        templateList = [templateList];
-    }
+  if (!_.isArray(templateList)) {
+    templateList = [templateList];
+  }
 
-    const activeTheme = getRendererDeps().activeTheme;
+  const activeTheme = getRendererDeps().activeTheme;
 
-    if (!activeTheme) {
-        template = fallback;
+  if (!activeTheme) {
+    template = fallback;
+  } else {
+    template = _.find(templateList, function (templateName) {
+      if (!templateName) {
+        return undefined;
+      }
+
+      return activeTheme.hasTemplate(templateName);
+    });
+  }
+
+  if (!template) {
+    if (!fallback) {
+      template = 'index';
+    } else if (_.isFunction(fallback)) {
+      fallback();
     } else {
-        template = _.find(templateList, function (templateName) {
-            if (!templateName) {
-                return undefined;
-            }
-
-            return activeTheme.hasTemplate(templateName);
-        });
+      template = fallback;
     }
+  }
 
-    if (!template) {
-        if (!fallback) {
-            template = 'index';
-        } else if (_.isFunction(fallback)) {
-            fallback();
-        } else {
-            template = fallback;
-        }
-    }
-
-    return template as string | undefined;
+  return template as string | undefined;
 };
 
 /**
@@ -157,23 +171,26 @@ templates.pickTemplate = function pickTemplate(templateList: string[] | string, 
  * @returns
  */
 templates.getTemplateForEntry = function getTemplateForEntry(entry: any, context: string) {
-    const templateList = templates.getEntryTemplateHierarchy(entry, context);
-    const fallback = templateList[templateList.length - 1];
-    return templates.pickTemplate(templateList, fallback);
+  const templateList = templates.getEntryTemplateHierarchy(entry, context);
+  const fallback = templateList[templateList.length - 1];
+  return templates.pickTemplate(templateList, fallback);
 };
 
-templates.getTemplateForEntries = function getTemplateForEntries(routerOptions: RouterOptions, requestOptions: any) {
-    const templateList = templates.getEntriesTemplateHierarchy(routerOptions, requestOptions);
-    const fallback = templateList[templateList.length - 1];
-    return templates.pickTemplate(templateList, fallback);
+templates.getTemplateForEntries = function getTemplateForEntries(
+  routerOptions: RouterOptions,
+  requestOptions: any,
+) {
+  const templateList = templates.getEntriesTemplateHierarchy(routerOptions, requestOptions);
+  const fallback = templateList[templateList.length - 1];
+  return templates.pickTemplate(templateList, fallback);
 };
 
 templates.getTemplateForError = function getTemplateForError(statusCode: number) {
-    const templateList = templates.getErrorTemplateHierarchy(statusCode);
-    // Transform: upstream falls back to config.paths.defaultViews/error.hbs on
-    // the filesystem; the package falls back to the theme-relative 'error'.
-    const fallback = 'error';
-    return templates.pickTemplate(templateList, fallback);
+  const templateList = templates.getErrorTemplateHierarchy(statusCode);
+  // Transform: upstream falls back to config.paths.defaultViews/error.hbs on
+  // the filesystem; the package falls back to the theme-relative 'error'.
+  const fallback = 'error';
+  return templates.pickTemplate(templateList, fallback);
 };
 
 /**
@@ -182,33 +199,43 @@ templates.getTemplateForError = function getTemplateForError(statusCode: number)
  * @param {Object} res
  * @param {Object} data
  */
-templates.setTemplate = function setTemplate(req: PortRequest & {err?: any}, res: PortResponse, data?: any): void {
-    if (res._template && !req.err) {
-        return;
-    }
+templates.setTemplate = function setTemplate(
+  req: PortRequest & { err?: any },
+  res: PortResponse,
+  data?: any,
+): void {
+  if (res._template && !req.err) {
+    return;
+  }
 
-    if (req.err) {
-        res._template = templates.getTemplateForError((res as any).statusCode);
-        return;
-    }
+  if (req.err) {
+    res._template = templates.getTemplateForError((res as any).statusCode);
+    return;
+  }
 
-    if (['channel', 'collection'].indexOf(res.routerOptions.type) !== -1) {
-        res._template = templates.getTemplateForEntries(res.routerOptions, {
-            path: req.path,
-            page: req.params.page,
-            slugParam: req.params.slug
-        });
-    } else if (res.routerOptions.type === 'custom') {
-        res._template = templates.pickTemplate(res.routerOptions.templates, res.routerOptions.defaultTemplate);
-    } else if (res.routerOptions.type === 'entry') {
-        if (res.routerOptions?.context?.includes('page') || (res.routerOptions?.context?.includes('preview') && data.page)) {
-            res._template = templates.getTemplateForEntry(data.page, 'page');
-        } else {
-            res._template = templates.getTemplateForEntry(data.post, 'post');
-        }
+  if (['channel', 'collection'].indexOf(res.routerOptions.type) !== -1) {
+    res._template = templates.getTemplateForEntries(res.routerOptions, {
+      path: req.path,
+      page: req.params.page,
+      slugParam: req.params.slug,
+    });
+  } else if (res.routerOptions.type === 'custom') {
+    res._template = templates.pickTemplate(
+      res.routerOptions.templates,
+      res.routerOptions.defaultTemplate,
+    );
+  } else if (res.routerOptions.type === 'entry') {
+    if (
+      res.routerOptions?.context?.includes('page') ||
+      (res.routerOptions?.context?.includes('preview') && data.page)
+    ) {
+      res._template = templates.getTemplateForEntry(data.page, 'page');
     } else {
-        res._template = 'index';
+      res._template = templates.getTemplateForEntry(data.post, 'post');
     }
+  } else {
+    res._template = 'index';
+  }
 };
 
 export default templates;

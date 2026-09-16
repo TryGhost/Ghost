@@ -1,19 +1,21 @@
 {
   "name": "@tryghost/theme-renderer",
   "version": "0.0.0",
-  "description": "Ghost's theme rendering pipeline as an Express-free, web-standard package",
   "private": true,
-  "ghostPackage": {
-    "goldenPath": "compliant"
-  },
-  "type": "module",
+  "description": "Ghost's theme rendering pipeline as an Express-free, web-standard package",
+  "license": "MIT",
+  "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/theme-renderer"
   },
-  "author": "Ghost Foundation",
-  "license": "MIT",
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -41,8 +43,6 @@
       "default": "./build/editor/instance-config.js"
     }
   },
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
@@ -53,24 +53,6 @@
     "lint:code": "eslint src/ --cache",
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
-  },
-  "files": [
-    "build"
-  ],
-  "devDependencies": {
-    "@internal/cfg-eslint": "workspace:*",
-    "@internal/cfg-typescript": "workspace:*",
-    "@internal/cfg-vitest": "workspace:*",
-    "@types/common-tags": "catalog:",
-    "@types/lodash": "catalog:",
-    "@types/node": "catalog:",
-    "@types/sanitize-html": "catalog:",
-    "@typescript/native": "catalog:",
-    "@vitest/browser-playwright": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
   },
   "dependencies": {
     "@tryghost/custom-fonts": "catalog:",
@@ -89,6 +71,24 @@
     "moment-timezone": "catalog:",
     "path-to-regexp": "catalog:",
     "sanitize-html": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@types/common-tags": "catalog:",
+    "@types/lodash": "catalog:",
+    "@types/node": "catalog:",
+    "@types/sanitize-html": "catalog:",
+    "@typescript/native": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "compliant"
   },
   "nx": {
     "targets": {

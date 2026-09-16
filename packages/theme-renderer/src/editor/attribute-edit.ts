@@ -56,51 +56,56 @@
  *   `optional: true` downgrades this refusal to a reported skip.
  */
 import errors from '@tryghost/errors';
-import {scanAttributes, type ScannedAttribute} from '../engine/source-scanner.ts';
-import {editThemeFile, resolveMarkedOpenTag, type EditAnchor, type SourcePosition} from './edit-common.ts';
-import type {EditMarker} from '../engine/markers.ts';
-import type {ThemeFiles} from '../theme/theme-source.ts';
+import { scanAttributes, type ScannedAttribute } from '../engine/source-scanner.ts';
+import {
+  editThemeFile,
+  resolveMarkedOpenTag,
+  type EditAnchor,
+  type SourcePosition,
+} from './edit-common.ts';
+import type { EditMarker } from '../engine/markers.ts';
+import type { ThemeFiles } from '../theme/theme-source.ts';
 
 export interface AttributeEdit {
-    /** Attribute name (plain HTML name; `data-edit` is reserved) */
-    name: string;
-    /** New value, or null to DELETE the attribute (no-op when absent) */
-    value: string | null;
-    /**
-     * Batch-only: when true, the handlebars-block refusal SKIPS this edit
-     * (reported via `skipped`) instead of throwing — for best-effort cleanup
-     * edits that must not discard the rest of the batch. Contract violations
-     * (bad name, non-plain-text value) always throw regardless.
-     */
-    optional?: boolean;
+  /** Attribute name (plain HTML name; `data-edit` is reserved) */
+  name: string;
+  /** New value, or null to DELETE the attribute (no-op when absent) */
+  value: string | null;
+  /**
+   * Batch-only: when true, the handlebars-block refusal SKIPS this edit
+   * (reported via `skipped`) instead of throwing — for best-effort cleanup
+   * edits that must not discard the rest of the batch. Contract violations
+   * (bad name, non-plain-text value) always throw regardless.
+   */
+  optional?: boolean;
 }
 
 /** An optional edit the batch skipped, and the refusal it would have hit. */
 export interface SkippedAttributeEdit {
-    name: string;
-    reason: string;
+  name: string;
+  reason: string;
 }
 
 export interface AttributeEditsResult {
-    source: string;
-    skipped: SkippedAttributeEdit[];
+  source: string;
+  skipped: SkippedAttributeEdit[];
 }
 
 /** Plain HTML attribute names only — no quotes/equals/slash/braces/space. */
 const ATTRIBUTE_NAME = /^[a-zA-Z][a-zA-Z0-9._:-]*$/;
 
 function validateName(name: string): string {
-    if (!ATTRIBUTE_NAME.test(name)) {
-        throw new errors.IncorrectUsageError({
-            message: `"${name}" is not a valid attribute name — names are letters, digits and "-._:" only`
-        });
-    }
-    if (name.toLowerCase() === 'data-edit') {
-        throw new errors.IncorrectUsageError({
-            message: 'the data-edit attribute name is reserved for source markers and cannot be edited'
-        });
-    }
-    return name;
+  if (!ATTRIBUTE_NAME.test(name)) {
+    throw new errors.IncorrectUsageError({
+      message: `"${name}" is not a valid attribute name — names are letters, digits and "-._:" only`,
+    });
+  }
+  if (name.toLowerCase() === 'data-edit') {
+    throw new errors.IncorrectUsageError({
+      message: 'the data-edit attribute name is reserved for source markers and cannot be edited',
+    });
+  }
+  return name;
 }
 
 /**
@@ -108,30 +113,32 @@ function validateName(name: string): string {
  * and returns the escaped text to place inside double quotes.
  */
 function escapeValue(value: string): string {
-    if (value.includes('{{') || value.includes('}}')) {
-        throw new errors.IncorrectUsageError({
-            message: 'attribute value must be plain text — handlebars syntax ("{{" or "}}") is rejected because splicing it into template source would be a template-injection risk'
-        });
-    }
-    if (/[\r\n]/.test(value)) {
-        throw new errors.IncorrectUsageError({
-            message: 'attribute value must be a single line — a newline would shift the line numbers of every later marker in the file'
-        });
-    }
-    return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  if (value.includes('{{') || value.includes('}}')) {
+    throw new errors.IncorrectUsageError({
+      message:
+        'attribute value must be plain text — handlebars syntax ("{{" or "}}") is rejected because splicing it into template source would be a template-injection risk',
+    });
+  }
+  if (/[\r\n]/.test(value)) {
+    throw new errors.IncorrectUsageError({
+      message:
+        'attribute value must be a single line — a newline would shift the line numbers of every later marker in the file',
+    });
+  }
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
 /** Newline-preserving replacement for a removed span (no-line-drift). */
 function preserveNewlines(removed: string): string {
-    const count = removed.split('\n').length - 1;
-    return '\n'.repeat(count);
+  const count = removed.split('\n').length - 1;
+  return '\n'.repeat(count);
 }
 
 interface Splice {
-    start: number;
-    end: number;
-    text: string;
-    index: number;
+  start: number;
+  end: number;
+  text: string;
+  index: number;
 }
 
 /**
@@ -144,90 +151,105 @@ interface Splice {
  * that violate the plain-text contract, duplicate names in one batch, and
  * (non-optional) block-refusals.
  */
-export function applyAttributeEdits(source: string, position: SourcePosition, edits: AttributeEdit[], anchor?: EditAnchor): AttributeEditsResult {
-    // Validate the whole batch up front — a contract violation anywhere
-    // rejects the batch before anything is resolved or spliced.
-    const prepared = edits.map(edit => ({
-        edit,
-        name: validateName(edit.name),
-        want: edit.name.toLowerCase(),
-        escaped: edit.value === null ? null : escapeValue(edit.value)
-    }));
+export function applyAttributeEdits(
+  source: string,
+  position: SourcePosition,
+  edits: AttributeEdit[],
+  anchor?: EditAnchor,
+): AttributeEditsResult {
+  // Validate the whole batch up front — a contract violation anywhere
+  // rejects the batch before anything is resolved or spliced.
+  const prepared = edits.map((edit) => ({
+    edit,
+    name: validateName(edit.name),
+    want: edit.name.toLowerCase(),
+    escaped: edit.value === null ? null : escapeValue(edit.value),
+  }));
 
-    const wanted = new Set<string>();
-    for (const {want} of prepared) {
-        if (wanted.has(want)) {
-            throw new errors.IncorrectUsageError({
-                message: `the ${want} attribute appears twice in one edit batch — each attribute can be edited once per batch`
-            });
-        }
-        wanted.add(want);
+  const wanted = new Set<string>();
+  for (const { want } of prepared) {
+    if (wanted.has(want)) {
+      throw new errors.IncorrectUsageError({
+        message: `the ${want} attribute appears twice in one edit batch — each attribute can be edited once per batch`,
+      });
+    }
+    wanted.add(want);
+  }
+
+  const { nameEnd, tagEnd } = resolveMarkedOpenTag(source, position, anchor);
+  const attributes = [...scanAttributes(source, nameEnd, tagEnd.end)];
+
+  const splices: Splice[] = [];
+  const skipped: SkippedAttributeEdit[] = [];
+
+  for (const [index, { edit, name, want, escaped }] of prepared.entries()) {
+    let found: ScannedAttribute | null = null;
+    let blocked = false;
+    for (const attribute of attributes) {
+      if (attribute.name !== want) {
+        continue;
+      }
+      if (attribute.blockDepth > 0) {
+        blocked = true;
+      } else if (!found) {
+        found = attribute; // first occurrence wins, matching the HTML parser
+      }
     }
 
-    const {nameEnd, tagEnd} = resolveMarkedOpenTag(source, position, anchor);
-    const attributes = [...scanAttributes(source, nameEnd, tagEnd.end)];
-
-    const splices: Splice[] = [];
-    const skipped: SkippedAttributeEdit[] = [];
-
-    for (const [index, {edit, name, want, escaped}] of prepared.entries()) {
-        let found: ScannedAttribute | null = null;
-        let blocked = false;
-        for (const attribute of attributes) {
-            if (attribute.name !== want) {
-                continue;
-            }
-            if (attribute.blockDepth > 0) {
-                blocked = true;
-            } else if (!found) {
-                found = attribute; // first occurrence wins, matching the HTML parser
-            }
-        }
-
-        if (blocked) {
-            const reason = `the ${name} attribute at ${position.line}:${position.column} sits inside a handlebars block on the tag — editing one branch of a conditional is refused`;
-            if (edit.optional) {
-                skipped.push({name, reason});
-                continue;
-            }
-            throw new errors.IncorrectUsageError({message: reason});
-        }
-
-        if (escaped === null) {
-            if (!found) {
-                continue; // deleting an absent attribute is a no-op
-            }
-            // remove the token plus its preceding whitespace run, keeping any
-            // newlines the removed span contained (no-line-drift)
-            let start = found.start;
-            while (start > nameEnd && /\s/.test(source[start - 1]!)) {
-                start -= 1;
-            }
-            splices.push({start, end: found.end, text: preserveNewlines(source.slice(start, found.end)), index});
-            continue;
-        }
-
-        const token = `${name}="${escaped}"`;
-        if (found) {
-            splices.push({start: found.start, end: found.end, text: token + preserveNewlines(source.slice(found.start, found.end)), index});
-        } else {
-            // missing attribute: insert immediately after the tag name — the
-            // same always-static position the marker transform uses
-            splices.push({start: nameEnd, end: nameEnd, text: ` ${token}`, index});
-        }
+    if (blocked) {
+      const reason = `the ${name} attribute at ${position.line}:${position.column} sits inside a handlebars block on the tag — editing one branch of a conditional is refused`;
+      if (edit.optional) {
+        skipped.push({ name, reason });
+        continue;
+      }
+      throw new errors.IncorrectUsageError({ message: reason });
     }
 
-    // Right-to-left: later splices first, so earlier offsets stay valid. Ties
-    // (a point-insert at nameEnd next to a deletion starting there, or two
-    // inserts) apply the later-listed edit first so the final attribute order
-    // follows the batch order.
-    splices.sort((a, b) => (b.start - a.start) || (b.end - a.end) || (b.index - a.index));
-
-    let result = source;
-    for (const splice of splices) {
-        result = result.slice(0, splice.start) + splice.text + result.slice(splice.end);
+    if (escaped === null) {
+      if (!found) {
+        continue; // deleting an absent attribute is a no-op
+      }
+      // remove the token plus its preceding whitespace run, keeping any
+      // newlines the removed span contained (no-line-drift)
+      let start = found.start;
+      while (start > nameEnd && /\s/.test(source[start - 1]!)) {
+        start -= 1;
+      }
+      splices.push({
+        start,
+        end: found.end,
+        text: preserveNewlines(source.slice(start, found.end)),
+        index,
+      });
+      continue;
     }
-    return {source: result, skipped};
+
+    const token = `${name}="${escaped}"`;
+    if (found) {
+      splices.push({
+        start: found.start,
+        end: found.end,
+        text: token + preserveNewlines(source.slice(found.start, found.end)),
+        index,
+      });
+    } else {
+      // missing attribute: insert immediately after the tag name — the
+      // same always-static position the marker transform uses
+      splices.push({ start: nameEnd, end: nameEnd, text: ` ${token}`, index });
+    }
+  }
+
+  // Right-to-left: later splices first, so earlier offsets stay valid. Ties
+  // (a point-insert at nameEnd next to a deletion starting there, or two
+  // inserts) apply the later-listed edit first so the final attribute order
+  // follows the batch order.
+  splices.sort((a, b) => b.start - a.start || b.end - a.end || b.index - a.index);
+
+  let result = source;
+  for (const splice of splices) {
+    result = result.slice(0, splice.start) + splice.text + result.slice(splice.end);
+  }
+  return { source: result, skipped };
 }
 
 /**
@@ -236,8 +258,13 @@ export function applyAttributeEdits(source: string, position: SourcePosition, ed
  * (the `optional` flag has no effect here: with nothing else in the batch, a
  * block-refusal always throws).
  */
-export function applyAttributeEdit(source: string, position: SourcePosition, edit: AttributeEdit, anchor?: EditAnchor): string {
-    return applyAttributeEdits(source, position, [{...edit, optional: false}], anchor).source;
+export function applyAttributeEdit(
+  source: string,
+  position: SourcePosition,
+  edit: AttributeEdit,
+  anchor?: EditAnchor,
+): string {
+  return applyAttributeEdits(source, position, [{ ...edit, optional: false }], anchor).source;
 }
 
 /**
@@ -246,8 +273,13 @@ export function applyAttributeEdit(source: string, position: SourcePosition, edi
  * is never mutated) — feed it to a fresh `createRenderer` and re-render
  * (docs/markers.md §editor loop).
  */
-export function applyThemeAttributeEdit<T extends ThemeFiles>(theme: T, marker: EditMarker, edit: AttributeEdit, anchor?: EditAnchor): T {
-    return editThemeFile(theme, marker, source => applyAttributeEdit(source, marker, edit, anchor));
+export function applyThemeAttributeEdit<T extends ThemeFiles>(
+  theme: T,
+  marker: EditMarker,
+  edit: AttributeEdit,
+  anchor?: EditAnchor,
+): T {
+  return editThemeFile(theme, marker, (source) => applyAttributeEdit(source, marker, edit, anchor));
 }
 
 /**
@@ -256,12 +288,17 @@ export function applyThemeAttributeEdit<T extends ThemeFiles>(theme: T, marker: 
  * batch skipped (handlebars-block refusals on `optional: true` edits — the
  * caller decides whether to warn).
  */
-export function applyThemeAttributeEdits<T extends ThemeFiles>(theme: T, marker: EditMarker, edits: AttributeEdit[], anchor?: EditAnchor): {theme: T; skipped: SkippedAttributeEdit[]} {
-    let skipped: SkippedAttributeEdit[] = [];
-    const next = editThemeFile(theme, marker, (source) => {
-        const result = applyAttributeEdits(source, marker, edits, anchor);
-        ({skipped} = result);
-        return result.source;
-    });
-    return {theme: next, skipped};
+export function applyThemeAttributeEdits<T extends ThemeFiles>(
+  theme: T,
+  marker: EditMarker,
+  edits: AttributeEdit[],
+  anchor?: EditAnchor,
+): { theme: T; skipped: SkippedAttributeEdit[] } {
+  let skipped: SkippedAttributeEdit[] = [];
+  const next = editThemeFile(theme, marker, (source) => {
+    const result = applyAttributeEdits(source, marker, edits, anchor);
+    ({ skipped } = result);
+    return result.source;
+  });
+  return { theme: next, skipped };
 }

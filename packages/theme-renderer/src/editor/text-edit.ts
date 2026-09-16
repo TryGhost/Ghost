@@ -56,22 +56,39 @@
  *   they genuinely have a single source position.
  */
 import errors from '@tryghost/errors';
-import {mustacheEnd, RAWTEXT_TAGS} from '../engine/source-scanner.ts';
-import {editThemeFile, resolveMarkedOpenTag, type EditAnchor, type SourcePosition} from './edit-common.ts';
-import type {EditMarker} from '../engine/markers.ts';
-import type {ThemeFiles} from '../theme/theme-source.ts';
+import { mustacheEnd, RAWTEXT_TAGS } from '../engine/source-scanner.ts';
+import {
+  editThemeFile,
+  resolveMarkedOpenTag,
+  type EditAnchor,
+  type SourcePosition,
+} from './edit-common.ts';
+import type { EditMarker } from '../engine/markers.ts';
+import type { ThemeFiles } from '../theme/theme-source.ts';
 
 /** HTML void elements — no text child to edit. */
 const VOID_TAGS = new Set([
-    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-    'link', 'meta', 'param', 'source', 'track', 'wbr'
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
 ]);
 
 /** True when the mustache at `at` opens/closes/continues a block section. */
 function isBlockBoundary(source: string, at: number): boolean {
-    // {{#…}} {{^…}} {{/…}} {{else}} and {{{{raw}}}} blocks, with or without
-    // whitespace-control tildes ({{~#if}}, {{~/if}}, {{~else}}, {{{{~raw}}}})
-    return /^\{\{\{\{|^\{\{~?\s*[#^/]|^\{\{~?\s*else\b/.test(source.slice(at, at + 16));
+  // {{#…}} {{^…}} {{/…}} {{else}} and {{{{raw}}}} blocks, with or without
+  // whitespace-control tildes ({{~#if}}, {{~/if}}, {{~else}}, {{{{~raw}}}})
+  return /^\{\{\{\{|^\{\{~?\s*[#^/]|^\{\{~?\s*else\b/.test(source.slice(at, at + 16));
 }
 
 /**
@@ -79,17 +96,19 @@ function isBlockBoundary(source: string, at: number): boolean {
  * returns the HTML-escaped replacement to splice into the source.
  */
 function escapeNewText(newText: string): string {
-    if (newText.includes('{{') || newText.includes('}}')) {
-        throw new errors.IncorrectUsageError({
-            message: 'newText must be plain text — handlebars syntax ("{{" or "}}") is rejected because splicing it into template source would be a template-injection risk'
-        });
-    }
-    if (/[\r\n]/.test(newText)) {
-        throw new errors.IncorrectUsageError({
-            message: 'newText must be a single line — a newline would shift the line numbers of every later marker in the file'
-        });
-    }
-    return newText.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  if (newText.includes('{{') || newText.includes('}}')) {
+    throw new errors.IncorrectUsageError({
+      message:
+        'newText must be plain text — handlebars syntax ("{{" or "}}") is rejected because splicing it into template source would be a template-injection risk',
+    });
+  }
+  if (/[\r\n]/.test(newText)) {
+    throw new errors.IncorrectUsageError({
+      message:
+        'newText must be a single line — a newline would shift the line numbers of every later marker in the file',
+    });
+  }
+  return newText.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 }
 
 /**
@@ -99,48 +118,63 @@ function escapeNewText(newText: string): string {
  * positions the editor must treat as not editable, for stale anchored
  * markers, and for newText that violates the contract.
  */
-export function applyTextEdit(source: string, position: SourcePosition, newText: string, anchor?: EditAnchor): string {
-    const replacement = escapeNewText(newText);
-    const at = `${position.line}:${position.column}`;
+export function applyTextEdit(
+  source: string,
+  position: SourcePosition,
+  newText: string,
+  anchor?: EditAnchor,
+): string {
+  const replacement = escapeNewText(newText);
+  const at = `${position.line}:${position.column}`;
 
-    const {tagName: lower, tagEnd} = resolveMarkedOpenTag(source, position, anchor);
-    if (tagEnd.selfClosing || VOID_TAGS.has(lower)) {
-        throw new errors.IncorrectUsageError({message: `<${lower}> at ${at} has no text child to edit`});
-    }
-    if (RAWTEXT_TAGS.has(lower)) {
-        throw new errors.IncorrectUsageError({message: `<${lower}> at ${at} is a rawtext element — its content is not editable text`});
-    }
+  const { tagName: lower, tagEnd } = resolveMarkedOpenTag(source, position, anchor);
+  if (tagEnd.selfClosing || VOID_TAGS.has(lower)) {
+    throw new errors.IncorrectUsageError({
+      message: `<${lower}> at ${at} has no text child to edit`,
+    });
+  }
+  if (RAWTEXT_TAGS.has(lower)) {
+    throw new errors.IncorrectUsageError({
+      message: `<${lower}> at ${at} is a rawtext element — its content is not editable text`,
+    });
+  }
 
-    // The immediate text run: plain text + inline mustaches, up to the first
-    // nested tag or block-helper boundary.
-    const contentStart = tagEnd.end + 1;
-    let k = contentStart;
-    while (k < source.length) {
-        const c = source[k];
-        if (c === '{' && source.startsWith('{{', k)) {
-            if (isBlockBoundary(source, k)) {
-                break;
-            }
-            k = mustacheEnd(source, k);
-            continue;
-        }
-        if (c === '<') {
-            break;
-        }
-        k += 1;
+  // The immediate text run: plain text + inline mustaches, up to the first
+  // nested tag or block-helper boundary.
+  const contentStart = tagEnd.end + 1;
+  let k = contentStart;
+  while (k < source.length) {
+    const c = source[k];
+    if (c === '{' && source.startsWith('{{', k)) {
+      if (isBlockBoundary(source, k)) {
+        break;
+      }
+      k = mustacheEnd(source, k);
+      continue;
     }
-
-    const run = source.slice(contentStart, k);
-    const leadLength = run.length - run.trimStart().length;
-    const trailLength = run.length - run.trimEnd().length;
-    const core = run.slice(leadLength, run.length - trailLength);
-    if (core === '') {
-        throw new errors.IncorrectUsageError({
-            message: `no editable text: <${lower}> at ${at} has no text or inline expression before its first child element or block`
-        });
+    if (c === '<') {
+      break;
     }
+    k += 1;
+  }
 
-    return source.slice(0, contentStart) + run.slice(0, leadLength) + replacement + run.slice(run.length - trailLength) + source.slice(k);
+  const run = source.slice(contentStart, k);
+  const leadLength = run.length - run.trimStart().length;
+  const trailLength = run.length - run.trimEnd().length;
+  const core = run.slice(leadLength, run.length - trailLength);
+  if (core === '') {
+    throw new errors.IncorrectUsageError({
+      message: `no editable text: <${lower}> at ${at} has no text or inline expression before its first child element or block`,
+    });
+  }
+
+  return (
+    source.slice(0, contentStart) +
+    run.slice(0, leadLength) +
+    replacement +
+    run.slice(run.length - trailLength) +
+    source.slice(k)
+  );
 }
 
 /**
@@ -148,6 +182,11 @@ export function applyTextEdit(source: string, position: SourcePosition, newText:
  * a NEW files object of the same shape (the input is never mutated) — feed it
  * to a fresh `createRenderer` and re-render (docs/markers.md §editor loop).
  */
-export function applyThemeTextEdit<T extends ThemeFiles>(theme: T, marker: EditMarker, newText: string, anchor?: EditAnchor): T {
-    return editThemeFile(theme, marker, source => applyTextEdit(source, marker, newText, anchor));
+export function applyThemeTextEdit<T extends ThemeFiles>(
+  theme: T,
+  marker: EditMarker,
+  newText: string,
+  anchor?: EditAnchor,
+): T {
+  return editThemeFile(theme, marker, (source) => applyTextEdit(source, marker, newText, anchor));
 }

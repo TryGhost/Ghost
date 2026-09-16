@@ -6,5 +6,5 @@
 // Returns raw contents unprocessed by handlebars.
 
 export default function raw(this: any, options: any) {
-    return options.fn(this);
+  return options.fn(this);
 }

@@ -34,40 +34,48 @@ const generateItem = function generateItem(post) {
   // before the item is built so the excerpt fallback below sees clean
   // content rather than raw player chrome (e.g. "Play video 0:00 1× Unmute").
   htmlContent('.kg-card').each(function (index, card) {
-        const cardElement = htmlContent(card);
+    const cardElement = htmlContent(card);
 
-        // Artifact card — RSS cannot run the sandbox, so keep only the
-        // reader-facing title/description and an absolute link to the post.
-        if (cardElement.hasClass('kg-artifact-card')) {
-            const artifactId = cardElement.attr('data-artifact-id');
-            cardElement.find('iframe, script, .kg-artifact-card-loading, .kg-artifact-card-error, .kg-artifact-card-retry').remove();
-            const open = htmlContent('<a></a>');
-            open.addClass('kg-artifact-card-open');
-            open.attr('href', `${itemUrl}${artifactId ? `#artifact-${encodeURIComponent(artifactId)}` : ''}`);
-            open.text('Open in browser');
-            cardElement.find('.kg-artifact-card-fallback').append(open);
-            cardElement.addClass('kg-artifact-card-fallback');
-        }
+    // Artifact card — RSS cannot run the sandbox, so keep only the
+    // reader-facing title/description and an absolute link to the post.
+    if (cardElement.hasClass('kg-artifact-card')) {
+      const artifactId = cardElement.attr('data-artifact-id');
+      cardElement
+        .find(
+          'iframe, script, .kg-artifact-card-loading, .kg-artifact-card-error, .kg-artifact-card-retry',
+        )
+        .remove();
+      const open = htmlContent('<a></a>');
+      open.addClass('kg-artifact-card-open');
+      open.attr(
+        'href',
+        `${itemUrl}${artifactId ? `#artifact-${encodeURIComponent(artifactId)}` : ''}`,
+      );
+      open.text('Open in browser');
+      cardElement.find('.kg-artifact-card-fallback').append(open);
+      cardElement.addClass('kg-artifact-card-fallback');
+    }
 
     // Bookmark card
-        cardElement.find('.kg-bookmark-thumbnail, .kg-bookmark-icon, .kg-bookmark-metadata').remove();
-        cardElement.find('.kg-bookmark-description').wrap('<small></small>');
+    cardElement.find('.kg-bookmark-thumbnail, .kg-bookmark-icon, .kg-bookmark-metadata').remove();
+    cardElement.find('.kg-bookmark-description').wrap('<small></small>');
 
-        // Video card — strip custom player chrome, fall back to a native playable <video>
-        htmlContent(card).find('.kg-video-overlay, .kg-video-player-container').remove();
-        const videoPoster = cardElement.attr('data-kg-custom-thumbnail') || cardElement.attr('data-kg-thumbnail');
-        const video = cardElement.find('.kg-video-card video');
+    // Video card — strip custom player chrome, fall back to a native playable <video>
+    htmlContent(card).find('.kg-video-overlay, .kg-video-player-container').remove();
+    const videoPoster =
+      cardElement.attr('data-kg-custom-thumbnail') || cardElement.attr('data-kg-thumbnail');
+    const video = cardElement.find('.kg-video-card video');
     video.attr('poster', videoPoster);
     video.attr('controls', '');
     // The inline style was the old CSS-thumbnail mechanism; the real poster replaces it
     video.removeAttr('style');
 
     // Audio card — strip chrome including the title; native playable <audio>
-        cardElement.find('.kg-audio-thumbnail, .kg-audio-player, .kg-audio-title').remove();
-        const audio = cardElement.find('.kg-audio-card audio');
+    cardElement.find('.kg-audio-thumbnail, .kg-audio-player, .kg-audio-title').remove();
+    const audio = cardElement.find('.kg-audio-card audio');
     audio.attr('controls', '');
     // Drop the now-purposeless player container, lifting its children into the card
-        const audioContainer = cardElement.find('.kg-audio-player-container');
+    const audioContainer = cardElement.find('.kg-audio-player-container');
     audioContainer.before(audioContainer.html());
     audioContainer.remove();
   });

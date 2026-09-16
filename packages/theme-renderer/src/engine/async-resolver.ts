@@ -1,4 +1,4 @@
-import {ID_ALPHABET, generateId} from './generate-id.ts';
+import { ID_ALPHABET, generateId } from './generate-id.ts';
 
 /**
  * Placeholder-token mechanism for async helpers, ported from
@@ -39,13 +39,13 @@ const ID_CHAR_CLASS = `[${ID_ALPHABET}]`;
  * every placeholder in a single scan instead of one scan per cache entry.
  */
 export const TOKEN_PATTERN = new RegExp(
-    `${ID_PREFIX}(?:${ID_ESCAPED_STRING}|${ID_ESCAPED_STRING_ESCAPED})${ID_CHAR_CLASS}{${ID_LENGTH}}${ID_SUFFIX}`,
-    'g'
+  `${ID_PREFIX}(?:${ID_ESCAPED_STRING}|${ID_ESCAPED_STRING_ESCAPED})${ID_CHAR_CLASS}{${ID_LENGTH}}${ID_SUFFIX}`,
+  'g',
 );
 
 /** Recovers the raw placeholder id from an escaped-form token match. */
 export function unescapeToken(token: string): string {
-    return token.replace(ID_ESCAPED_STRING_ESCAPED, ID_ESCAPED_STRING);
+  return token.replace(ID_ESCAPED_STRING_ESCAPED, ID_ESCAPED_STRING);
 }
 
 // from express-hbs lib/resolver.js:resolve
@@ -56,35 +56,35 @@ export function unescapeToken(token: string): string {
 // settles (rejecting the render cleanly) — belt-and-braces on top of the
 // wrapper's own never-reject hardening (helpers/services/handlebars.ts).
 export function resolve(
-    cache: ResolverCache,
-    fn: (context: unknown, cb: (result: unknown) => void) => unknown,
-    context: unknown
+  cache: ResolverCache,
+  fn: (context: unknown, cb: (result: unknown) => void) => unknown,
+  context: unknown,
 ): string {
-    const id = ID_PREFIX + ID_ESCAPED_STRING + generateId(ID_LENGTH) + ID_SUFFIX;
-    cache[id] = new Promise((passed, failed) => {
-        try {
-            const returned = fn(context, (res) => {
-                passed(res);
-            });
-            if (returned && typeof (returned as PromiseLike<unknown>).then === 'function') {
-                Promise.resolve(returned).catch(failed);
-            }
-        } catch (error) {
-            failed(error);
-        }
-    });
-    return id;
+  const id = ID_PREFIX + ID_ESCAPED_STRING + generateId(ID_LENGTH) + ID_SUFFIX;
+  cache[id] = new Promise((passed, failed) => {
+    try {
+      const returned = fn(context, (res) => {
+        passed(res);
+      });
+      if (returned && typeof (returned as PromiseLike<unknown>).then === 'function') {
+        Promise.resolve(returned).catch(failed);
+      }
+    } catch (error) {
+      failed(error);
+    }
+  });
+  return id;
 }
 
 // from express-hbs lib/resolver.js:done (callback shape replaced by a Promise)
 export async function done(cache: ResolverCache): Promise<Record<string, unknown>> {
-    const entries = Object.entries(cache);
-    const values = await Promise.all(entries.map(([, promise]) => promise));
-    const resolvedCache: Record<string, unknown> = {};
-    entries.forEach(([key], index) => {
-        resolvedCache[key] = values[index];
-    });
-    return resolvedCache;
+  const entries = Object.entries(cache);
+  const values = await Promise.all(entries.map(([, promise]) => promise));
+  const resolvedCache: Record<string, unknown> = {};
+  entries.forEach(([key], index) => {
+    resolvedCache[key] = values[index];
+  });
+  return resolvedCache;
 }
 
 // from express-hbs lib/resolver.js:hasResolvers
@@ -96,8 +96,8 @@ export async function done(cache: ResolverCache): Promise<Record<string, unknown
 // (`search(string)` upstream compiles the prefix into a RegExp on every call;
 // the prefix has no regex metacharacters, so `indexOf` is semantics-identical.)
 export function hasResolvers(text: string): boolean {
-    if (text.indexOf(ID_PREFIX) > 0) {
-        return true;
-    }
-    return false;
+  if (text.indexOf(ID_PREFIX) > 0) {
+    return true;
+  }
+  return false;
 }

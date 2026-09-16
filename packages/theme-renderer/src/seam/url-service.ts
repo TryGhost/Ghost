@@ -15,30 +15,33 @@
  * router-filter check always owns published posts; revisit alongside the
  * matcher port.
  */
-import type {UrlServicePort, UrlUtilsPort} from './types.ts';
+import type { UrlServicePort, UrlUtilsPort } from './types.ts';
 
 export function createUrlService(urlUtils: UrlUtilsPort): UrlServicePort {
-    return {
-        getUrlForResource(resource: any, options: {absolute?: boolean; withSubdirectory?: boolean} = {}) {
-            const attachedUrl = typeof resource?.url === 'string' ? resource.url : null;
+  return {
+    getUrlForResource(
+      resource: any,
+      options: { absolute?: boolean; withSubdirectory?: boolean } = {},
+    ) {
+      const attachedUrl = typeof resource?.url === 'string' ? resource.url : null;
 
-            if (!attachedUrl) {
-                // Mirrors LazyUrlService behavior for unroutable resources
-                return '/404/';
-            }
+      if (!attachedUrl) {
+        // Mirrors LazyUrlService behavior for unroutable resources
+        return '/404/';
+      }
 
-            if (options.absolute) {
-                return urlUtils.relativeToAbsolute(attachedUrl);
-            }
+      if (options.absolute) {
+        return urlUtils.relativeToAbsolute(attachedUrl);
+      }
 
-            // withSubdirectory: keep the subdir prefix; the real service
-            // returns the bare path unless withSubdirectory is passed.
-            return urlUtils.absoluteToRelative(attachedUrl, {
-                withoutSubdirectory: !options.withSubdirectory
-            });
-        },
-        ownsResource() {
-            return true;
-        }
-    };
+      // withSubdirectory: keep the subdir prefix; the real service
+      // returns the bare path unless withSubdirectory is passed.
+      return urlUtils.absoluteToRelative(attachedUrl, {
+        withoutSubdirectory: !options.withSubdirectory,
+      });
+    },
+    ownsResource() {
+      return true;
+    },
+  };
 }

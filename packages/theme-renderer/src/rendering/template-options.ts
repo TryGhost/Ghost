@@ -16,56 +16,59 @@
  *   masking kept.
  */
 import _ from '../utils/lodash.ts';
-import {settingsCache, customThemeSettingsCache, urlUtils} from '../seam/proxy.ts';
-import {labs} from '../seam/shared.ts';
-import {getRendererDeps} from '../seam/deps.ts';
-import type {RenderLocals} from '../ports.ts';
+import { settingsCache, customThemeSettingsCache, urlUtils } from '../seam/proxy.ts';
+import { labs } from '../seam/shared.ts';
+import { getRendererDeps } from '../seam/deps.ts';
+import type { RenderLocals } from '../ports.ts';
 
-import {getLocalTemplateOptions, updateLocalTemplateOptions} from '../engine/local-template-options.ts';
+import {
+  getLocalTemplateOptions,
+  updateLocalTemplateOptions,
+} from '../engine/local-template-options.ts';
 
-export {getLocalTemplateOptions, updateLocalTemplateOptions};
+export { getLocalTemplateOptions, updateLocalTemplateOptions };
 
 // from update-global-template-options.js:getSiteData
 function getSiteData() {
-    const siteData = settingsCache.getPublic();
+  const siteData = settingsCache.getPublic();
 
-    // theme-only computed property added to @site
-    if (settingsCache.get('members_signup_access') === 'none') {
-        const escapedUrl = encodeURIComponent(urlUtils.urlFor({relativeUrl: '/rss/'}, true));
-        siteData.signup_url = `https://feedly.com/i/subscription/feed/${escapedUrl}`;
-    } else {
-        siteData.signup_url = '#/portal';
-    }
+  // theme-only computed property added to @site
+  if (settingsCache.get('members_signup_access') === 'none') {
+    const escapedUrl = encodeURIComponent(urlUtils.urlFor({ relativeUrl: '/rss/' }, true));
+    siteData.signup_url = `https://feedly.com/i/subscription/feed/${escapedUrl}`;
+  } else {
+    siteData.signup_url = '#/portal';
+  }
 
-    return siteData;
+  return siteData;
 }
 
 // from update-global-template-options.js:updateGlobalTemplateOptions —
 // middleware → pure function; the caller passes the result to
 // engine.updateTemplateOptions()
-export function buildGlobalTemplateOptions(): {data: Record<string, any>} {
-    const activeTheme = getRendererDeps().activeTheme;
-    const siteData = getSiteData();
-    const labsData = labs.getAll();
+export function buildGlobalTemplateOptions(): { data: Record<string, any> } {
+  const activeTheme = getRendererDeps().activeTheme;
+  const siteData = getSiteData();
+  const labsData = labs.getAll();
 
-    const themeData = {
-        posts_per_page: activeTheme?.config('posts_per_page'),
-        image_sizes: activeTheme?.config('image_sizes')
-    };
-    const themeSettingsData = customThemeSettingsCache.getAll();
+  const themeData = {
+    posts_per_page: activeTheme?.config('posts_per_page'),
+    image_sizes: activeTheme?.config('image_sizes'),
+  };
+  const themeSettingsData = customThemeSettingsCache.getAll();
 
-    return {
-        data: {
-            site: {
-                ...siteData,
-                comments_enabled: siteData.comments_enabled !== 'off',
-                comments_access: siteData.comments_enabled
-            },
-            labs: labsData,
-            config: themeData,
-            custom: themeSettingsData
-        }
-    };
+  return {
+    data: {
+      site: {
+        ...siteData,
+        comments_enabled: siteData.comments_enabled !== 'off',
+        comments_access: siteData.comments_enabled,
+      },
+      labs: labsData,
+      config: themeData,
+      custom: themeSettingsData,
+    },
+  };
 }
 
 // from update-local-template-options.js:updateLocalTemplateOptions —
@@ -73,36 +76,43 @@ export function buildGlobalTemplateOptions(): {data: Record<string, any>} {
 // requests reach the package), member masking preserved for when member
 // context lands.
 export function applyLocalTemplateOptions(locals: RenderLocals, reqMember?: any): void {
-    const localTemplateOptions = getLocalTemplateOptions(locals);
+  const localTemplateOptions = getLocalTemplateOptions(locals);
 
-    // adjust @site.url for http/https based on the incoming request
-    const siteData = {
-        url: urlUtils.urlFor('home', {trailingSlash: false}, true),
-        admin_url: urlUtils.urlFor('admin', true)
-    };
+  // adjust @site.url for http/https based on the incoming request
+  const siteData = {
+    url: urlUtils.urlFor('home', { trailingSlash: false }, true),
+    admin_url: urlUtils.urlFor('admin', true),
+  };
 
-    const member = reqMember ? {
+  const member = reqMember
+    ? {
         uuid: reqMember.uuid,
         email: reqMember.email,
         name: reqMember.name,
         firstname: reqMember.name && reqMember.name.split(' ')[0],
         avatar_image: reqMember.avatar_image,
-        subscriptions: reqMember.subscriptions && reqMember.subscriptions.map((sub: any) => {
+        subscriptions:
+          reqMember.subscriptions &&
+          reqMember.subscriptions.map((sub: any) => {
             return Object.assign({}, sub, {
-                default_payment_card_last4: sub.default_payment_card_last4 || '****'
+              default_payment_card_last4: sub.default_payment_card_last4 || '****',
             });
-        }),
+          }),
         paid: reqMember.status !== 'free',
-        status: reqMember.status
-    } : null;
+        status: reqMember.status,
+      }
+    : null;
 
-    const enableDeduplication = labs.isSet('getHelperDeduplication');
+  const enableDeduplication = labs.isSet('getHelperDeduplication');
 
-    updateLocalTemplateOptions(locals, _.merge({}, localTemplateOptions, {
-        data: {
-            member: member,
-            site: siteData,
-            ...(enableDeduplication && {_queryCache: new Map()})
-        }
-    }));
+  updateLocalTemplateOptions(
+    locals,
+    _.merge({}, localTemplateOptions, {
+      data: {
+        member: member,
+        site: siteData,
+        ...(enableDeduplication && { _queryCache: new Map() }),
+      },
+    }),
+  );
 }

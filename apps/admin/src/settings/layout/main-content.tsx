@@ -15,16 +15,16 @@ const EMPTY_KEYWORDS: string[] = [];
 const OPEN_SHADE_MODAL_SELECTOR = ':is([role="dialog"], [role="alertdialog"])[data-state="open"]';
 
 const getSettingsNotice = (state: unknown): string | null => {
-    if (!state || typeof state !== 'object' || !('settingsNotice' in state)) {
-        return null;
-    }
+  if (!state || typeof state !== 'object' || !('settingsNotice' in state)) {
+    return null;
+  }
 
-    const notice = state.settingsNotice;
-    if (!notice || typeof notice !== 'object' || !('message' in notice) || !('type' in notice)) {
-        return null;
-    }
+  const notice = state.settingsNotice;
+  if (!notice || typeof notice !== 'object' || !('message' in notice) || !('type' in notice)) {
+    return null;
+  }
 
-    return notice.type === 'info' && typeof notice.message === 'string' ? notice.message : null;
+  return notice.type === 'info' && typeof notice.message === 'string' ? notice.message : null;
 };
 
 const Page: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -64,7 +64,9 @@ const MainContent: React.FC = () => {
   useEffect(() => {
     // Reset any toasts that may have been left open before entering Settings.
     toast.dismiss();
-    if (settingsNotice) { toast.info(settingsNotice, {id: 'settings-navigation-notice'}); }
+    if (settingsNotice) {
+      toast.info(settingsNotice, { id: 'settings-navigation-notice' });
+    }
   }, [settingsNotice]);
 
   useEffect(() => {

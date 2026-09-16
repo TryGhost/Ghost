@@ -13,7 +13,11 @@ type Feature = {
 };
 
 const features: Feature[] = [
-  {title: 'Design Builder', description: 'Enables the AI-assisted Design Builder spike', flag: 'designBuilder'},
+  {
+    title: 'Design Builder',
+    description: 'Enables the AI-assisted Design Builder spike',
+    flag: 'designBuilder',
+  },
   {
     title: 'Automations',
     description:

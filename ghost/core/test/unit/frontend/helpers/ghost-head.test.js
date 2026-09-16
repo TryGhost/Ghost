@@ -2173,61 +2173,79 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, new RegExp(`data-resource-id="${posts[0].id}"`));
     });
 
-        it('does not expose the superseded on-site editor for either builder flag', async function () {
-            getStub.withArgs('labs').returns({designBuilder: true, editModeOnSite: true});
+    it('does not expose the superseded on-site editor for either builder flag', async function () {
+      getStub.withArgs('labs').returns({ designBuilder: true, editModeOnSite: true });
 
-            const rendered = (await ghost_head(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '0.3',
-                    staffFrontendToolsEnabled: true
-                }
-            }))).toString();
+      const rendered = (
+        await ghost_head(
+          testUtils.createHbsResponse({
+            locals: {
+              relativeUrl: '/',
+              context: ['home', 'index'],
+              safeVersion: '0.3',
+              staffFrontendToolsEnabled: true,
+            },
+          }),
+        )
+      ).toString();
 
-            const toolbarTag = rendered.match(/<script defer src="[^"]*admin-toolbar\.min\.js"[^>]*><\/script>/)?.[0];
-            assertExists(toolbarTag);
-            assert.doesNotMatch(toolbarTag, /data-edit-mode-enabled/);
-            assert.match(toolbarTag, /data-key="xyz"/);
-        });
+      const toolbarTag = rendered.match(
+        /<script defer src="[^"]*admin-toolbar\.min\.js"[^>]*><\/script>/,
+      )?.[0];
+      assertExists(toolbarTag);
+      assert.doesNotMatch(toolbarTag, /data-edit-mode-enabled/);
+      assert.match(toolbarTag, /data-key="xyz"/);
+    });
 
-        it('does not mark the admin toolbar script for edit mode when the labs flag is disabled', async function () {
-            const rendered = (await ghost_head(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '0.3',
-                    staffFrontendToolsEnabled: true
-                }
-            }))).toString();
+    it('does not mark the admin toolbar script for edit mode when the labs flag is disabled', async function () {
+      const rendered = (
+        await ghost_head(
+          testUtils.createHbsResponse({
+            locals: {
+              relativeUrl: '/',
+              context: ['home', 'index'],
+              safeVersion: '0.3',
+              staffFrontendToolsEnabled: true,
+            },
+          }),
+        )
+      ).toString();
 
-            const toolbarTag = rendered.match(/<script defer src="[^"]*admin-toolbar\.min\.js"[^>]*><\/script>/)?.[0];
-            assertExists(toolbarTag);
-            assert.doesNotMatch(toolbarTag, /data-edit-mode-enabled/);
-            // The frontend key is always passed so the toolbar can use the Content API
-            assert.match(toolbarTag, /data-key="xyz"/);
-        });
+      const toolbarTag = rendered.match(
+        /<script defer src="[^"]*admin-toolbar\.min\.js"[^>]*><\/script>/,
+      )?.[0];
+      assertExists(toolbarTag);
+      assert.doesNotMatch(toolbarTag, /data-edit-mode-enabled/);
+      // The frontend key is always passed so the toolbar can use the Content API
+      assert.match(toolbarTag, /data-key="xyz"/);
+    });
 
-        it('omits the data-key attribute when the frontend key is unavailable', async function () {
-            // getFrontendKey() returns null when the internal frontend key
-            // cannot be loaded — the toolbar tag must drop the attribute
-            // rather than render data-key="null"
-            internalKeys.clear();
-            internalKeys.set('ghost-internal-frontend', Promise.resolve({id: 'k', secret: null}));
+    it('omits the data-key attribute when the frontend key is unavailable', async function () {
+      // getFrontendKey() returns null when the internal frontend key
+      // cannot be loaded — the toolbar tag must drop the attribute
+      // rather than render data-key="null"
+      internalKeys.clear();
+      internalKeys.set('ghost-internal-frontend', Promise.resolve({ id: 'k', secret: null }));
 
-            const rendered = (await ghost_head(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '0.3',
-                    staffFrontendToolsEnabled: true
-                }
-            }))).toString();
+      const rendered = (
+        await ghost_head(
+          testUtils.createHbsResponse({
+            locals: {
+              relativeUrl: '/',
+              context: ['home', 'index'],
+              safeVersion: '0.3',
+              staffFrontendToolsEnabled: true,
+            },
+          }),
+        )
+      ).toString();
 
-            const toolbarTag = rendered.match(/<script defer src="[^"]*admin-toolbar\.min\.js"[^>]*><\/script>/)?.[0];
-            assertExists(toolbarTag);
-            assert.doesNotMatch(toolbarTag, /data-key/);
-        });
+      const toolbarTag = rendered.match(
+        /<script defer src="[^"]*admin-toolbar\.min\.js"[^>]*><\/script>/,
+      )?.[0];
+      assertExists(toolbarTag);
+      assert.doesNotMatch(toolbarTag, /data-key/);
+    });
 
     it('can exclude the admin toolbar script', async function () {
       const rendered = (

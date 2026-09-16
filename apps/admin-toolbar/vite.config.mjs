@@ -9,5 +9,5 @@ export default publicAppViteConfig({
   svgr: false,
   libFormat: 'iife',
   libName: 'GhostAdminToolbar',
-    sourcemap: false
+  sourcemap: false,
 });

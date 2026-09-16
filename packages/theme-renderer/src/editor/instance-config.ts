@@ -12,61 +12,67 @@
  */
 
 export interface InstanceConfigScrape {
-    /** Per-boot asset hash from any `?v=<hash>` on a built asset URL */
-    assetHash?: string;
-    /** Portal script URL (data-i18n is portal-specific — see getMembersHelper) */
-    portalUrl?: string;
-    /** Sodo-search script URL + styles (data-sodo-search is search-specific) */
-    sodoSearch?: {url: string; styles: string};
-    /**
-     * Comments-ui script URL (data-ghost-comments is comments-specific). Only
-     * present when the scraped page carries the tag — i.e. a POST page with
-     * comments enabled; deliberately NOT in `missing`, since most pages
-     * legitimately lack it. Without it `{{comments}}` renders nothing
-     * (deltas.md row 13).
-     */
-    commentsUrl?: string;
-    /** Names of scrapes that found nothing — non-empty means degraded config */
-    missing: string[];
-    /** Ready-to-pass `createRenderer({config})` shape for whatever was found */
-    config: Record<string, unknown>;
+  /** Per-boot asset hash from any `?v=<hash>` on a built asset URL */
+  assetHash?: string;
+  /** Portal script URL (data-i18n is portal-specific — see getMembersHelper) */
+  portalUrl?: string;
+  /** Sodo-search script URL + styles (data-sodo-search is search-specific) */
+  sodoSearch?: { url: string; styles: string };
+  /**
+   * Comments-ui script URL (data-ghost-comments is comments-specific). Only
+   * present when the scraped page carries the tag — i.e. a POST page with
+   * comments enabled; deliberately NOT in `missing`, since most pages
+   * legitimately lack it. Without it `{{comments}}` renders nothing
+   * (deltas.md row 13).
+   */
+  commentsUrl?: string;
+  /** Names of scrapes that found nothing — non-empty means degraded config */
+  missing: string[];
+  /** Ready-to-pass `createRenderer({config})` shape for whatever was found */
+  config: Record<string, unknown>;
 }
 
 export function scrapeInstanceConfig(liveHomeHtml: string): InstanceConfigScrape {
-    const assetHash = liveHomeHtml.match(/\?v=([a-f0-9]+)"/)?.[1];
-    const portalUrl = liveHomeHtml.match(/<script defer src="([^"]+)" data-i18n=/)?.[1];
-    const sodoSearchMatch = liveHomeHtml.match(/<script defer src="([^"]+)" data-key="[^"]*" data-styles="([^"]*)" data-sodo-search=/);
-    const sodoSearch = sodoSearchMatch ? {url: sodoSearchMatch[1]!, styles: sodoSearchMatch[2]!} : undefined;
-    const commentsUrl = liveHomeHtml.match(/<script defer src="([^"]+)" data-locale="[^"]*" data-ghost-comments=/)?.[1];
+  const assetHash = liveHomeHtml.match(/\?v=([a-f0-9]+)"/)?.[1];
+  const portalUrl = liveHomeHtml.match(/<script defer src="([^"]+)" data-i18n=/)?.[1];
+  const sodoSearchMatch = liveHomeHtml.match(
+    /<script defer src="([^"]+)" data-key="[^"]*" data-styles="([^"]*)" data-sodo-search=/,
+  );
+  const sodoSearch = sodoSearchMatch
+    ? { url: sodoSearchMatch[1]!, styles: sodoSearchMatch[2]! }
+    : undefined;
+  const commentsUrl = liveHomeHtml.match(
+    /<script defer src="([^"]+)" data-locale="[^"]*" data-ghost-comments=/,
+  )?.[1];
 
-    const missing: string[] = [];
-    if (!assetHash) {
-        missing.push('assetHash (?v= on a built asset URL)');
-    }
-    if (!portalUrl) {
-        missing.push('portal script tag');
-    }
-    if (!sodoSearch) {
-        missing.push('sodo-search script tag');
-    }
+  const missing: string[] = [];
+  if (!assetHash) {
+    missing.push('assetHash (?v= on a built asset URL)');
+  }
+  if (!portalUrl) {
+    missing.push('portal script tag');
+  }
+  if (!sodoSearch) {
+    missing.push('sodo-search script tag');
+  }
 
-    return {
-        assetHash,
-        portalUrl,
-        sodoSearch,
-        commentsUrl,
-        missing,
-        config: {
-            // deltas.md #1 — the live per-boot hash (upstream: config assetHash
-            // wins over the boot-time md5 in getGlobalAssetHash)
-            ...(assetHash && {assetHash}),
-            // deltas.md #3 — frontend-app instance config (Ghost server
-            // config keys, extraction-map §6)
-            ...(portalUrl && {portal: {url: portalUrl}}),
-            ...(sodoSearch && {sodoSearch}),
-            ...(commentsUrl && {comments: {url: commentsUrl}})
-        }
-    };
+  return {
+    assetHash,
+    portalUrl,
+    sodoSearch,
+    commentsUrl,
+    missing,
+    config: {
+      // deltas.md #1 — the live per-boot hash (upstream: config assetHash
+      // wins over the boot-time md5 in getGlobalAssetHash)
+      ...(assetHash && { assetHash }),
+      // deltas.md #3 — frontend-app instance config (Ghost server
+      // config keys, extraction-map §6)
+      ...(portalUrl && { portal: { url: portalUrl } }),
+      ...(sodoSearch && { sodoSearch }),
+      ...(commentsUrl && { comments: { url: commentsUrl } }),
+    },
+  };
 }
 
 /**
@@ -76,5 +82,5 @@ export function scrapeInstanceConfig(liveHomeHtml: string): InstanceConfigScrape
  * when its own config doesn't carry the key.
  */
 export function scrapeContentApiKey(liveHtml: string): string | null {
-    return liveHtml.match(/data-key="([a-f0-9]+)"/)?.[1] ?? null;
+  return liveHtml.match(/data-key="([a-f0-9]+)"/)?.[1] ?? null;
 }

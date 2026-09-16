@@ -14,44 +14,50 @@ member session middleware `:142`, theme middleware `:146`, analytics header wrap
 `server/web/parent/middleware/ghost-locals.js:10-21`.
 
 ### Collection/home route
+
 1. Mount: `routing/collection-router.js:67-102` (`/` → `controllers.collection`, `/page/:page(\d+)`, `_prepareEntryContext` mutates `res.routerOptions` for later mounts).
 2. Controller: `routing/controllers/collection.js:22` — `pathOptions {page, slug, limit}`; `routerOptions.limit` wins else active theme `posts_per_page`, pushed into **global** template options (`:34-40`); `dataService.fetchData(pathOptions, res.routerOptions, res.locals)` (`:53`); 404 when page > pagination.pages; ownership filter re-adds `type` + `status:'published'` (serializer strips them) before `routerManager.ownsResource` (`:75-88`); `renderer.renderEntries(req,res)(result)`.
 3. Format: `rendering/render-entries.js:12` → `format-response.js:11` `formatPageResponse` — posts → `response.posts`, pagination, `result.data[name]` unwrapping, `prepareContextResource`, `@page.show_title_and_feature_image` for page data (`:32-43`).
 4. Render: `rendering/renderer.js:17` — `setContext` → `templates.setTemplate` → `res.render(res._template, data)`. Template hierarchy for home: `['home','index']` via `templates.js:48,112,156,174`.
 
 ### Post/entry route
+
 1. Mount: `collection-router.js:88-99` — `/:slug/:options(edit)?/` (+`.md` variant); pages via `static-pages-router.js:42-59` hardcoded `/:slug/`.
 2. Controller: `routing/controllers/entry.ts:54` — gift-link pre-checks (`entry/gift-links.ts`); `dataService.entryLookup(req.path, res.routerOptions, res.locals, {giftToken})`; edit-URL redirect to admin; markdown negotiation (`entry/markdown.ts`, uses `req.app.get('llmsService')` — hard Express coupling); permalink staleness → 301 to `buildCanonicalUrl` (`entry/canonical-url.ts:9`); `renderer.renderEntry(req,res)(entry)`.
 3. Format: `render-entry.js:11` → `formatResponse(post, context, locals)` → `{post}` (+`.page` alias when page context).
 4. Render: hierarchy `[post-<slug>|page-<slug>, custom_template?, 'page'?, 'post']` (`templates.js:85,192-197`).
 
 ### `res.routerOptions` shapes
+
 Collection index (`collection-router.js:108-122`):
 `{type:'collection', filter, limit, order, permalinks:'/:slug/:options(edit)?/', resourceType:'posts', query: QUERY.post, context:['index'|name], frontPageTemplate:'home', templates:[...], identifier, name, data}`.
 Entry in collection: same object mutated to `{context:['post'], type:'entry'}` (`:130-134`).
 Static page entry (`static-pages-router.js:69-75`): `{type:'entry', permalinks, resourceType:'pages', query: QUERY.page, context:['page']}` — no identifier/data/filter.
 
 ### `res.locals` / `_locals` at render
+
 `res.locals` keys: `version, safeVersion, relativeUrl, member, staffFrontendToolsEnabled, staffFrontendToolsCookieUpdated, _templateOptions, _giftLink, context, degradedRender, ghostAnalytics`.
 Express 4 `res.render` sets `opts._locals = res.locals` and merges `app.locals → opts._locals → opts` — so the handlebars **root** is `{...res.locals, ...data, _locals: res.locals}`. `ghost_head` reads `dataRoot._locals.context` and `._locals.safeVersion` specifically (`ghost_head.js:288-321`).
 `rendering/context.js:19` computes `res.locals.context`: `['paged'?, 'home'? (regex ^\/$ on relativeUrl), ...routerOptions.context, 'private'?, then 'page'|'post'|'tag' from data shape]`.
 
 ### Template options (the `@`-data frame)
+
 - **Global** (`theme-engine/middleware/update-global-template-options.js:37-49`): `data.site` = `settingsCache.getPublic()` + `signup_url` + `comments_enabled/comments_access`; `data.labs` = `labs.getAll()`; `data.config` = `{posts_per_page, image_sizes}` from active theme; `data.custom` = custom theme settings.
 - **Per-request** (`update-local-template-options.js:44-51`, stored on `res.locals._templateOptions`): `data.member` (masked shape at `:27-40`), `data.site` = `{url, admin_url}` + preview overrides, `data.custom` preview, `data._queryCache` when labs `getHelperDeduplication`.
 - Per-request **writes into global state**: `collection.js:34` / `channel.js:35` mutate `data.config.posts_per_page` from routerOptions.limit.
 - Merge at render (`express-hbs/lib/hbs.js:~499`): `_.merge({}, globalTemplateOptions, localTemplateOptions)` — local wins.
-So `@site @labs @config @custom @member @page @_queryCache` = data frame; `post/posts/pagination/context/_locals` = root.
+  So `@site @labs @config @custom @member @page @_queryCache` = data frame; `post/posts/pagination/context/_locals` = root.
 
 ## 2. The data seam
 
-`frontend/services/proxy.js` exports (115 lines): `getFrontendKey (:25)`, `socialUrls (:42)`, `blogIcon (:43)`, `cachedImageSizeFromUrl (:44)`, `isInternalImage (:46)`, `prepareContextResource (:48 — sanitize-html on feature_image_caption, deletes show_title_and_feature_image)`, `config {get, isPrivacyDisabled} (:71)`, `settingsCache (:77)`, `settingsHelpers {isWebAnalyticsEnabled, isStripeConnected, getMembersValidationKey} (:80)`, lazy `members (:90)`, `api = server/api endpoints (:95)`, `serverEvents.on` allow-listed to `site.changed` (:98)`, `labs (:111)`, `urlService = LazyUrlService singleton (:113)`, `urlUtils (:114)`.
+`frontend/services/proxy.js` exports (115 lines): `getFrontendKey (:25)`, `socialUrls (:42)`, `blogIcon (:43)`, `cachedImageSizeFromUrl (:44)`, `isInternalImage (:46)`, `prepareContextResource (:48 — sanitize-html on feature_image_caption, deletes show_title_and_feature_image)`, `config {get, isPrivacyDisabled} (:71)`, `settingsCache (:77)`, `settingsHelpers {isWebAnalyticsEnabled, isStripeConnected, getMembersValidationKey} (:80)`, lazy `members (:90)`, `api = server/api endpoints (:95)`, `serverEvents.on` allow-listed to `site.changed (:98)`, `labs (:111)`, `urlService = LazyUrlService singleton (:113)`, `urlUtils (:114)`.
 
-Bypasses (render-critical files requiring shared/* or server/* directly):
+Bypasses (render-critical files requiring `shared/*` or `server/*` directly):
+
 - `helpers/get.js:6` shared/max-limit-cap; `helpers/ghost_head.js:18,20` shared/labs + shared/machine-payments; `helpers/readable_url.js:7` shared/sentry; `helpers/t.js:15,16` shared/labs + shared/settings-cache.
 - `meta/*`: urlUtils (asset-url, author-image, canonical-url, cover-image, og-image, paginated-url, twitter-image, url), settingsCache (blog-logo, context-object, description, get-meta, og-image, title, twitter-image), config (image-dimensions, schema, asset-url).
 - `rendering/templates.js:9` config (paths.defaultViews); routing controllers + routers: config/urlUtils/settingsCache various; theme-engine: config, labs, settingsCache, custom-theme-settings-cache (NOT exported by proxy).
-Biggest un-proxied dep: `shared/url-utils` (36 sites), then config, settings-cache.
+  Biggest un-proxied dep: `shared/url-utils` (36 sites), then config, settings-cache.
 
 ## 3. Data access from controllers
 
@@ -82,15 +88,17 @@ Singleton `server/services/url/index.js:1-7` = `new LazyUrlService({findResource
 ## 6. ghost_head / ghost_foot
 
 `helpers/ghost_head.js` (526 lines, async):
+
 - settingsCache keys: `is_private, llms_enabled, members_enabled, donations_enabled, recommendations_enabled, locale, paid_members_enabled, announcement_content, announcement_visibility, title, web_analytics_enabled, social_web_enabled, comments_enabled, site_uuid, codeinjection_head, icon, members_track_sources, heading_font, body_font`.
 - config keys: `isPrivacyDisabled('useStructuredData'), referrerPolicy, env, tinybird:tracker(,:local), {portal,sodoSearch,announcementBar,adminToolbar}:{version,url,styles}` (via `utils/frontend-apps.js:3-18`).
 - Emission order: meta description/favicon (`blogIcon`)/canonical; markdown alternate link (llms_enabled gating + machine-payments `:36-65`); robots/referrer/prev-next/OG/Twitter/JSON-LD (`escapeJsonLd :87`); generator/RSS; Portal script + members styles + Stripe; sodo-search; announcement bar; admin-toolbar script (gated on `_locals.staffFrontendToolsEnabled`); webmention link; cardAssets (`hasFile('js'|'css')` → `public/cards.min.{js,css}`, flagged `// BAD REQUIRE` `:9-11`); comment-counts script; member-attribution script; analytics (`isWebAnalyticsEnabled` → self-hosted `public/ghost-stats.min.js` + tb_* params; sets `dataRoot._locals.ghostAnalytics = true` `:462` → `X-Ghost-Analytics` header in site.js); accent-color style; codeinjection_head (global/post/tag); custom fonts CSS (`@tryghost/custom-fonts`).
-`helpers/ghost_foot.js` (55 lines, sync): codeinjection_foot + gift toast (`_giftLink` → `templates.execute('gift-toast', ...)`, theme-overridable partial).
-`meta/get-meta.js:29` `getMetaData(data, root)` — async, composes 24 sub-modules (awaits image dimensions → structuredData → schema). `meta/asset-url.js:115` `getAssetUrl(assetPath, hasMinFile)` — depends on asset-hash service, active theme path, `config urls:assets`, `caching:assets:contentBasedHash:enabled`, `getContentPath('public')`.
+  `helpers/ghost_foot.js` (55 lines, sync): codeinjection_foot + gift toast (`_giftLink` → `templates.execute('gift-toast', ...)`, theme-overridable partial).
+  `meta/get-meta.js:29` `getMetaData(data, root)` — async, composes 24 sub-modules (awaits image dimensions → structuredData → schema). `meta/asset-url.js:115` `getAssetUrl(assetPath, hasMinFile)` — depends on asset-hash service, active theme path, `config urls:assets`, `caching:assets:contentBasedHash:enabled`, `getContentPath('public')`.
 
 ## 7. Helpers inventory (57 files)
 
 Registered in `services/helpers/register-ghost-helpers.js:4-56`.
+
 - **Async (9):** collection, comments, content_api_key, get, ghost_head, prev_post (+next_post alias), recommendations, total_members, total_paid_members.
 - **Pure:** color_to_rgba, comment_count, concat, contrast_text_color, date, encode, has, is, json, match, plural, post_class, price, raw, search, split, tiers, title, tpl/styles.
 - **proxy-only:** authors, body_class, cancel_link, content_api_url, facebook_url, twitter_url, social_url, social_accounts, img_url, link, link_class, tags, content_api_key.

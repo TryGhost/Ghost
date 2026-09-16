@@ -262,10 +262,13 @@ function getAdminToolbarHelper(dataRoot, siteTitle, excludeList, frontendKey) {
     'activitypub-enabled':
       isHome && settingsCache.get('social_web_enabled') === true ? 'true' : undefined,
     'members-enabled': isHome && settingsCache.get('members_enabled') === true ? 'true' : undefined,
-        'comments-enabled': resourceType === 'post' && settingsCache.get('comments_enabled') === 'off' ? 'false' : undefined,
-        // getFrontendKey() returns null when the internal key is unavailable —
-        // undefined drops the attribute instead of emitting data-key="null"
-        key: frontendKey || undefined
+    'comments-enabled':
+      resourceType === 'post' && settingsCache.get('comments_enabled') === 'off'
+        ? 'false'
+        : undefined,
+    // getFrontendKey() returns null when the internal key is unavailable —
+    // undefined drops the attribute instead of emitting data-key="null"
+    key: frontendKey || undefined,
   };
   const dataAttrs = getDataAttributes(attrs);
 
@@ -468,7 +471,12 @@ module.exports = async function ghost_head(options) {
     if (!excludeList.has('announcement')) {
       head.push(getAnnouncementBarHelper(options.data));
     }
-        const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList, frontendKey);
+    const adminToolbarHelper = getAdminToolbarHelper(
+      dataRoot,
+      meta.site.title,
+      excludeList,
+      frontendKey,
+    );
     if (adminToolbarHelper) {
       head.push(adminToolbarHelper);
     }

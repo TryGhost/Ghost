@@ -12,22 +12,23 @@
 //
 // Returns estimated reading time for post
 
-import {checks} from '../seam/data.ts';
-import {SafeString} from '../seam/handlebars-env.ts';
+import { checks } from '../seam/data.ts';
+import { SafeString } from '../seam/handlebars-env.ts';
 
 import * as helpers from '@tryghost/helpers';
-const {readingTime: calculateAndFormatReadingTime} = helpers;
+const { readingTime: calculateAndFormatReadingTime } = helpers;
 
-export default function reading_time(this: any, options: any) {// eslint-disable-line camelcase
-    options = options || {};
-    options.hash = options.hash || {};
-    const possiblyPost = this;
+// eslint-disable-next-line camelcase
+export default function reading_time(this: any, options: any) {
+  options = options || {};
+  options.hash = options.hash || {};
+  const possiblyPost = this;
 
-    // only calculate reading time for posts
-    if (!checks.isPost(possiblyPost)) {
-        return null;
-    }
+  // only calculate reading time for posts
+  if (!checks.isPost(possiblyPost)) {
+    return null;
+  }
 
-    const readingTime = calculateAndFormatReadingTime(possiblyPost, options.hash);
-    return new SafeString(readingTime);
+  const readingTime = calculateAndFormatReadingTime(possiblyPost, options.hash);
+  return new SafeString(readingTime);
 }

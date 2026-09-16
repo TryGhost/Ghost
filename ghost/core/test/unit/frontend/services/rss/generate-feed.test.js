@@ -333,45 +333,48 @@ describe('RSS: Generate Feed', function () {
       assert.doesNotMatch(content, /kg-bookmark-metadata/);
     });
 
-        it('replaces an interactive Artifact with a static browser fallback', async function () {
-            const html = await renderCard('artifact', {
-                id: 'sales-chart',
-                artifactVersion: 1,
-                title: 'Quarterly sales',
-                description: 'An interactive chart of quarterly sales.',
-                html: '<!doctype html><html><head><title>Quarterly sales</title></head><body><script>window.chart = true;</script></body></html>'
-            });
-            data.posts = [Object.assign({}, posts[1], {html})];
-            routerManagerGetUrlForResourceStub.returns('http://my-ghost-blog.com/quarterly-results/');
+    it('replaces an interactive Artifact with a static browser fallback', async function () {
+      const html = await renderCard('artifact', {
+        id: 'sales-chart',
+        artifactVersion: 1,
+        title: 'Quarterly sales',
+        description: 'An interactive chart of quarterly sales.',
+        html: '<!doctype html><html><head><title>Quarterly sales</title></head><body><script>window.chart = true;</script></body></html>',
+      });
+      data.posts = [Object.assign({}, posts[1], { html })];
+      routerManagerGetUrlForResourceStub.returns('http://my-ghost-blog.com/quarterly-results/');
 
-            const xmlData = await generateFeed(baseUrl, data);
-            const content = getEncodedContent(xmlData);
+      const xmlData = await generateFeed(baseUrl, data);
+      const content = getEncodedContent(xmlData);
 
-            assert.match(content, /Quarterly sales/);
-            assert.match(content, /An interactive chart of quarterly sales\./);
-            assert.match(content, /href="http:\/\/my-ghost-blog\.com\/quarterly-results\/#artifact-sales-chart"/);
-            assert.match(content, />Open in browser<\/a>/);
-            assert.doesNotMatch(content, /kg-artifact-card-data/);
-            assert.doesNotMatch(content, /<iframe/);
-            assert.doesNotMatch(content, /Try again/);
-        });
+      assert.match(content, /Quarterly sales/);
+      assert.match(content, /An interactive chart of quarterly sales\./);
+      assert.match(
+        content,
+        /href="http:\/\/my-ghost-blog\.com\/quarterly-results\/#artifact-sales-chart"/,
+      );
+      assert.match(content, />Open in browser<\/a>/);
+      assert.doesNotMatch(content, /kg-artifact-card-data/);
+      assert.doesNotMatch(content, /<iframe/);
+      assert.doesNotMatch(content, /Try again/);
+    });
 
-        it('encodes Artifact IDs when constructing the RSS fallback link', async function () {
-            const html = await renderCard('artifact', {
-                id: 'chart\"><img src=x onerror=alert(1)>',
-                artifactVersion: 1,
-                title: 'Quarterly sales',
-                description: '',
-                html: '<!doctype html><html><head><title>Quarterly sales</title></head><body></body></html>'
-            });
-            data.posts = [Object.assign({}, posts[1], {html})];
-            routerManagerGetUrlForResourceStub.returns('http://my-ghost-blog.com/quarterly-results/');
+    it('encodes Artifact IDs when constructing the RSS fallback link', async function () {
+      const html = await renderCard('artifact', {
+        id: 'chart\"><img src=x onerror=alert(1)>',
+        artifactVersion: 1,
+        title: 'Quarterly sales',
+        description: '',
+        html: '<!doctype html><html><head><title>Quarterly sales</title></head><body></body></html>',
+      });
+      data.posts = [Object.assign({}, posts[1], { html })];
+      routerManagerGetUrlForResourceStub.returns('http://my-ghost-blog.com/quarterly-results/');
 
-            const content = getEncodedContent(await generateFeed(baseUrl, data));
+      const content = getEncodedContent(await generateFeed(baseUrl, data));
 
-            assert.match(content, /#artifact-chart%22%3E%3Cimg%20src%3Dx%20onerror%3Dalert\(1\)%3E/);
-            assert.doesNotMatch(content, /<img src="x"/);
-        });
+      assert.match(content, /#artifact-chart%22%3E%3Cimg%20src%3Dx%20onerror%3Dalert\(1\)%3E/);
+      assert.doesNotMatch(content, /<img src="x"/);
+    });
 
     it('strips video player chrome and leaves a playable video with poster and controls', async function () {
       const html = await renderCard('video', {

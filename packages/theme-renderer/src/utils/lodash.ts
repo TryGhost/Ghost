@@ -54,56 +54,89 @@ import toString from 'lodash/toString.js';
 // Type-only root import (erased at build time — no bundle impact): the
 // explicit annotation keeps declaration emit from leaking the subpath d.ts'
 // private names (TS4082).
-import type {LoDashStatic} from 'lodash';
+import type { LoDashStatic } from 'lodash';
 
-const _: Pick<LoDashStatic,
-    'assign' | 'cloneDeep' | 'defaults' | 'each' | 'escape' | 'extend' |
-    'filter' | 'find' | 'findIndex' | 'findLastIndex' | 'forEach' | 'get' |
-    'has' | 'identity' | 'includes' | 'indexOf' | 'isArray' | 'isBoolean' |
-    'isDate' | 'isEmpty' | 'isFinite' | 'isFunction' | 'isNull' | 'isNumber' |
-    'isObject' | 'isString' | 'isUndefined' | 'keys' | 'map' | 'mapValues' |
-    'merge' | 'omit' | 'pick' | 'reduce' | 'reduceRight' | 'size' | 'some' |
-    'template' | 'toString'
+const _: Pick<
+  LoDashStatic,
+  | 'assign'
+  | 'cloneDeep'
+  | 'defaults'
+  | 'each'
+  | 'escape'
+  | 'extend'
+  | 'filter'
+  | 'find'
+  | 'findIndex'
+  | 'findLastIndex'
+  | 'forEach'
+  | 'get'
+  | 'has'
+  | 'identity'
+  | 'includes'
+  | 'indexOf'
+  | 'isArray'
+  | 'isBoolean'
+  | 'isDate'
+  | 'isEmpty'
+  | 'isFinite'
+  | 'isFunction'
+  | 'isNull'
+  | 'isNumber'
+  | 'isObject'
+  | 'isString'
+  | 'isUndefined'
+  | 'keys'
+  | 'map'
+  | 'mapValues'
+  | 'merge'
+  | 'omit'
+  | 'pick'
+  | 'reduce'
+  | 'reduceRight'
+  | 'size'
+  | 'some'
+  | 'template'
+  | 'toString'
 > = {
-    assign,
-    cloneDeep,
-    defaults,
-    each,
-    escape,
-    extend,
-    filter,
-    find,
-    findIndex,
-    findLastIndex,
-    forEach,
-    get,
-    has,
-    identity,
-    includes,
-    indexOf,
-    isArray,
-    isBoolean,
-    isDate,
-    isEmpty,
-    isFinite,
-    isFunction,
-    isNull,
-    isNumber,
-    isObject,
-    isString,
-    isUndefined,
-    keys,
-    map,
-    mapValues,
-    merge,
-    omit,
-    pick,
-    reduce,
-    reduceRight,
-    size,
-    some,
-    template,
-    toString
+  assign,
+  cloneDeep,
+  defaults,
+  each,
+  escape,
+  extend,
+  filter,
+  find,
+  findIndex,
+  findLastIndex,
+  forEach,
+  get,
+  has,
+  identity,
+  includes,
+  indexOf,
+  isArray,
+  isBoolean,
+  isDate,
+  isEmpty,
+  isFinite,
+  isFunction,
+  isNull,
+  isNumber,
+  isObject,
+  isString,
+  isUndefined,
+  keys,
+  map,
+  mapValues,
+  merge,
+  omit,
+  pick,
+  reduce,
+  reduceRight,
+  size,
+  some,
+  template,
+  toString,
 };
 
 export default _;

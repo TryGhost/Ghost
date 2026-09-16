@@ -88,7 +88,7 @@ live in [docs/provenance.md](docs/provenance.md).
   real editor surface; see `demo/README.md`.
 - **Host-realm `process` shim** (`src/utils/process-env-guard.ts`, imported
   first in `src/index.ts`) — `@tryghost/nql-lang` reads `process.env`
-  unguarded at import time *and* on every filter parse, so in browsers/workers
+  unguarded at import time _and_ on every filter parse, so in browsers/workers
   the package installs a minimal `process = {env: {}}` global when none
   exists. It is defined configurable/writable (hosts can delete or replace
   it), and it never touches realms that already have `process` (Node, Deno,

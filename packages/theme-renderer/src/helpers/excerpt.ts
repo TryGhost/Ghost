@@ -7,42 +7,44 @@
 //
 // Defaults to words="50"
 
-import {SafeString} from '../seam/handlebars-env.ts';
+import { SafeString } from '../seam/handlebars-env.ts';
 import * as metaData from '../meta/index.ts';
 import _ from '../utils/lodash.ts';
 const getMetaDataExcerpt = metaData.getMetaDataExcerpt;
 
 export default function excerpt(this: any, options: any) {
-    let truncateOptions = (options || {}).hash || {};
+  let truncateOptions = (options || {}).hash || {};
 
-    let excerptText;
+  let excerptText;
 
-    if (this.custom_excerpt) {
-        excerptText = String(this.custom_excerpt);
-    } else if (this.excerpt) {
-        excerptText = String(this.excerpt);
-    } else {
-        excerptText = '';
+  if (this.custom_excerpt) {
+    excerptText = String(this.custom_excerpt);
+  } else if (this.excerpt) {
+    excerptText = String(this.excerpt);
+  } else {
+    excerptText = '';
+  }
+
+  excerptText = _.escape(excerptText);
+
+  truncateOptions = _.reduce(
+    truncateOptions,
+    (_truncateOptions: any, value: any, key: string) => {
+      if (['words', 'characters'].includes(key)) {
+        _truncateOptions[key] = parseInt(value, 10);
+      }
+      return _truncateOptions;
+    },
+    {},
+  );
+
+  // For custom excerpts, make sure we truncate them only based on length
+  if (!_.isEmpty(this.custom_excerpt)) {
+    truncateOptions.characters = excerptText.length; // length is expanded by use of escaped characters
+    if (truncateOptions.words) {
+      delete truncateOptions.words;
     }
+  }
 
-    excerptText = _.escape(excerptText);
-
-    truncateOptions = _.reduce(truncateOptions, (_truncateOptions: any, value: any, key: string) => {
-        if (['words', 'characters'].includes(key)) {
-            _truncateOptions[key] = parseInt(value, 10);
-        }
-        return _truncateOptions;
-    }, {});
-
-    // For custom excerpts, make sure we truncate them only based on length
-    if (!_.isEmpty(this.custom_excerpt)) {
-        truncateOptions.characters = excerptText.length; // length is expanded by use of escaped characters
-        if (truncateOptions.words) {
-            delete truncateOptions.words;
-        }
-    }
-
-    return new SafeString(
-        getMetaDataExcerpt(excerptText, truncateOptions)
-    );
+  return new SafeString(getMetaDataExcerpt(excerptText, truncateOptions));
 }

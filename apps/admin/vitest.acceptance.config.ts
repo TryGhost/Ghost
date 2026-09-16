@@ -30,7 +30,13 @@ export default defineConfig({
   publicDir: './test-utils/acceptance/public',
   define: sharedDefine,
   optimizeDeps: {
-        include: ["@earendil-works/pi-agent-core", "@earendil-works/pi-ai", "@tryghost/theme-renderer", "html2canvas-pro", "jszip"],
+    include: [
+      '@earendil-works/pi-agent-core',
+      '@earendil-works/pi-ai',
+      '@tryghost/theme-renderer',
+      'html2canvas-pro',
+      'jszip',
+    ],
     // Scan every app module so deps behind lazy routes are pre-bundled up
     // front — mid-run discovery reloads the test page and flakes the
     // suite. Test files and screen helpers import test-lane modules the

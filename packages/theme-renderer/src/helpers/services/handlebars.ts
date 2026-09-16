@@ -6,62 +6,67 @@
 // `env` (no `process` in a Web Worker); @tryghost/logging → seam logging.
 import errors from '@tryghost/errors';
 import * as errorsNamespace from '@tryghost/errors';
-import {logging} from '../../seam/shared.ts';
+import { logging } from '../../seam/shared.ts';
 
 // @tryghost/errors ships `utils` on the CJS default export but as a NAMED
 // export in its ES build (es/index.js) — resolve whichever is present so the
 // copied body below works under both module systems.
-const errorsUtils: {isGhostError(err: Error): boolean} =
-    (errorsNamespace as any).utils ?? (errors as any).utils;
-import {getRendererDeps} from '../../seam/deps.ts';
-import {SafeString} from '../../seam/handlebars-env.ts';
-import type {HelperRegistrar} from '../../seam/types.ts';
+const errorsUtils: { isGhostError(err: Error): boolean } =
+  (errorsNamespace as any).utils ?? (errors as any).utils;
+import { getRendererDeps } from '../../seam/deps.ts';
+import { SafeString } from '../../seam/handlebars-env.ts';
+import type { HelperRegistrar } from '../../seam/types.ts';
 
 // Register an async handlebars helper for a given handlebars instance
 function asyncHelperWrapper(registrar: HelperRegistrar, name: string, fn: any) {
-    registrar.registerAsyncHelper(name, async function returnAsync(this: any, context: any, options: any, cb: any) {
-        // Handle the case where we only get context and cb
-        if (!cb) {
-            cb = options;
-            options = undefined;
-        }
+  registrar.registerAsyncHelper(
+    name,
+    async function returnAsync(this: any, context: any, options: any, cb: any) {
+      // Handle the case where we only get context and cb
+      if (!cb) {
+        cb = options;
+        options = undefined;
+      }
 
+      try {
+        const response = await fn.call(this, context, options);
+        cb(response);
+      } catch (error) {
+        // Transform: the error path itself must never prevent the callback
+        // — if the seam is unconfigured (getRendererDeps throws) or logging
+        // throws, an uncalled cb leaves the async placeholder pending and
+        // hangs the render. Fall back to empty output instead.
+        let response: any = '';
         try {
-            const response = await fn.call(this, context, options);
-            cb(response);
-        } catch (error) {
-            // Transform: the error path itself must never prevent the callback
-            // — if the seam is unconfigured (getRendererDeps throws) or logging
-            // throws, an uncalled cb leaves the async placeholder pending and
-            // hangs the render. Fall back to empty output instead.
-            let response: any = '';
-            try {
-                const wrappedErr = errorsUtils.isGhostError(error as Error) ? error : new errors.IncorrectUsageError({
-                    err: error as any,
-                    context: 'registerAsyncThemeHelper: ' + name,
-                    errorDetails: {
-                        originalError: error
-                    }
-                });
+          const wrappedErr = errorsUtils.isGhostError(error as Error)
+            ? error
+            : new errors.IncorrectUsageError({
+                err: error as any,
+                context: 'registerAsyncThemeHelper: ' + name,
+                errorDetails: {
+                  originalError: error,
+                },
+              });
 
-                response = getRendererDeps().config.get('env') === 'development' ? wrappedErr : '';
+          response = getRendererDeps().config.get('env') === 'development' ? wrappedErr : '';
 
-                logging.error(wrappedErr);
-            } catch {
-                response = '';
-            }
-
-            cb(new SafeString(response as any));
+          logging.error(wrappedErr);
+        } catch {
+          response = '';
         }
-    });
+
+        cb(new SafeString(response as any));
+      }
+    },
+  );
 }
 
 // Register a handlebars helper for themes
 export function registerThemeHelper(registrar: HelperRegistrar, name: string, fn: any): void {
-    registrar.registerHelper(name, fn);
+  registrar.registerHelper(name, fn);
 }
 
 // Register an async handlebars helper for themes
 export function registerAsyncThemeHelper(registrar: HelperRegistrar, name: string, fn: any): void {
-    asyncHelperWrapper(registrar, name, fn);
+  asyncHelperWrapper(registrar, name, fn);
 }

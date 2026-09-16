@@ -10,10 +10,11 @@ import * as metaData from '../meta/index.ts';
 const getPaginatedUrl = metaData.getPaginatedUrl;
 
 // We use the name page_url to match the helper for consistency:
-export default function page_url(page: any, options?: any) { // eslint-disable-line camelcase
-    if (!options) {
-        options = page;
-        page = 1;
-    }
-    return getPaginatedUrl(page, options.data.root);
+// eslint-disable-next-line camelcase
+export default function page_url(page: any, options?: any) {
+  if (!options) {
+    options = page;
+    page = 1;
+  }
+  return getPaginatedUrl(page, options.data.root);
 }

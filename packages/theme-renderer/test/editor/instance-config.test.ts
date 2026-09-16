@@ -5,8 +5,8 @@
 // these unit tests pin the contract on synthetic HTML so the suite runs
 // without a live instance.
 import * as assert from 'node:assert/strict';
-import {describe, it} from 'vitest';
-import {scrapeContentApiKey, scrapeInstanceConfig} from '../../src/editor/instance-config.ts';
+import { describe, it } from 'vitest';
+import { scrapeContentApiKey, scrapeInstanceConfig } from '../../src/editor/instance-config.ts';
 
 const FULL_HTML = `<!DOCTYPE html><html><head>
 <link rel="stylesheet" type="text/css" href="/assets/built/screen.css?v=aabbcc0011" />
@@ -15,38 +15,38 @@ const FULL_HTML = `<!DOCTYPE html><html><head>
 </head><body></body></html>`;
 
 describe('editor/instance-config', function () {
-    it('scrapes asset hash, portal, and sodo-search into renderer config shape', function () {
-        const scrape = scrapeInstanceConfig(FULL_HTML);
+  it('scrapes asset hash, portal, and sodo-search into renderer config shape', function () {
+    const scrape = scrapeInstanceConfig(FULL_HTML);
 
-        assert.equal(scrape.assetHash, 'aabbcc0011');
-        assert.equal(scrape.portalUrl, 'https://cdn.example.com/portal/portal.min.js');
-        assert.deepEqual(scrape.sodoSearch, {
-            url: 'https://cdn.example.com/sodo-search/sodo-search.min.js',
-            styles: 'https://cdn.example.com/sodo-search/main.css'
-        });
-        assert.deepEqual(scrape.missing, []);
-        assert.deepEqual(scrape.config, {
-            assetHash: 'aabbcc0011',
-            portal: {url: 'https://cdn.example.com/portal/portal.min.js'},
-            sodoSearch: {
-                url: 'https://cdn.example.com/sodo-search/sodo-search.min.js',
-                styles: 'https://cdn.example.com/sodo-search/main.css'
-            }
-        });
+    assert.equal(scrape.assetHash, 'aabbcc0011');
+    assert.equal(scrape.portalUrl, 'https://cdn.example.com/portal/portal.min.js');
+    assert.deepEqual(scrape.sodoSearch, {
+      url: 'https://cdn.example.com/sodo-search/sodo-search.min.js',
+      styles: 'https://cdn.example.com/sodo-search/main.css',
     });
-
-    it('reports every missing scrape and returns an empty config for bare HTML', function () {
-        const scrape = scrapeInstanceConfig('<html><body>no scripts here</body></html>');
-
-        assert.equal(scrape.assetHash, undefined);
-        assert.equal(scrape.portalUrl, undefined);
-        assert.equal(scrape.sodoSearch, undefined);
-        assert.equal(scrape.missing.length, 3);
-        assert.deepEqual(scrape.config, {});
+    assert.deepEqual(scrape.missing, []);
+    assert.deepEqual(scrape.config, {
+      assetHash: 'aabbcc0011',
+      portal: { url: 'https://cdn.example.com/portal/portal.min.js' },
+      sodoSearch: {
+        url: 'https://cdn.example.com/sodo-search/sodo-search.min.js',
+        styles: 'https://cdn.example.com/sodo-search/main.css',
+      },
     });
+  });
 
-    it('scrapes the content API key from any data-key attribute', function () {
-        assert.equal(scrapeContentApiKey(FULL_HTML), 'deadbeefdeadbeefdeadbeef1234');
-        assert.equal(scrapeContentApiKey('<html></html>'), null);
-    });
+  it('reports every missing scrape and returns an empty config for bare HTML', function () {
+    const scrape = scrapeInstanceConfig('<html><body>no scripts here</body></html>');
+
+    assert.equal(scrape.assetHash, undefined);
+    assert.equal(scrape.portalUrl, undefined);
+    assert.equal(scrape.sodoSearch, undefined);
+    assert.equal(scrape.missing.length, 3);
+    assert.deepEqual(scrape.config, {});
+  });
+
+  it('scrapes the content API key from any data-key attribute', function () {
+    assert.equal(scrapeContentApiKey(FULL_HTML), 'deadbeefdeadbeefdeadbeef1234');
+    assert.equal(scrapeContentApiKey('<html></html>'), null);
+  });
 });

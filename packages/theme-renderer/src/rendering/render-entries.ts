@@ -3,7 +3,7 @@
 // transforms: CJS → ESM; Express req/res → ports; @tryghost/debug → dropped.
 import formatResponse from './format-response.ts';
 import renderer from './renderer.ts';
-import type {PortRequest, PortResponse, RenderResult} from '../ports.ts';
+import type { PortRequest, PortResponse, RenderResult } from '../ports.ts';
 
 /**
  * @description Helper to handle rendering multiple resources.
@@ -13,9 +13,9 @@ import type {PortRequest, PortResponse, RenderResult} from '../ports.ts';
  * @returns {Function}
  */
 export default function renderEntries(req: PortRequest, res: PortResponse) {
-    return function renderEntriesClosure(result: any): RenderResult {
-        // Format data 2
-        // Render
-        return renderer(req, res, formatResponse.entries(result, false, res.locals));
-    };
+  return function renderEntriesClosure(result: any): RenderResult {
+    // Format data 2
+    // Render
+    return renderer(req, res, formatResponse.entries(result, false, res.locals));
+  };
 }

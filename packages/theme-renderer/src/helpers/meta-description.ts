@@ -5,11 +5,12 @@
 //
 // Page description used for sharing and SEO
 import * as metaData from '../meta/index.ts';
-const {getMetaDataDescription} = metaData;
+const { getMetaDataDescription } = metaData;
 
 // We use the name meta_description to match the helper for consistency:
-export default function meta_description(this: any, options: any) { // eslint-disable-line camelcase
-    options = options || {};
+// eslint-disable-next-line camelcase
+export default function meta_description(this: any, options: any) {
+  options = options || {};
 
-    return getMetaDataDescription(this, options.data.root) || '';
+  return getMetaDataDescription(this, options.data.root) || '';
 }

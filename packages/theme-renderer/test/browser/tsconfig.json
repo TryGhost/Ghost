@@ -1,20 +1,20 @@
 {
-    // Browser TEST files (Vitest browser mode runs them on the page, and the
-    // worker entry inside a real Worker), so they legitimately need DOM +
-    // WebWorker libs. The WebWorker-only guard for src/ is the sibling
-    // tsconfig.src.json — do NOT add src globs or DOM-dependent assumptions
-    // about src here; src is only pulled in transitively via imports.
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "rootDir": "../..",
-        "noEmit": true,
-        "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
-        "types": []
-    },
-    "include": [
-        "**/*",
-        // ambient declarations for untyped deps — src files are pulled in
-        // transitively via imports, but ambient .d.ts files are not
-        "../../src/types/*.d.ts"
-    ]
+  // Browser TEST files (Vitest browser mode runs them on the page, and the
+  // worker entry inside a real Worker), so they legitimately need DOM +
+  // WebWorker libs. The WebWorker-only guard for src/ is the sibling
+  // tsconfig.src.json — do NOT add src globs or DOM-dependent assumptions
+  // about src here; src is only pulled in transitively via imports.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    "types": []
+  },
+  "include": [
+    "**/*",
+    // ambient declarations for untyped deps — src files are pulled in
+    // transitively via imports, but ambient .d.ts files are not
+    "../../src/types/*.d.ts"
+  ]
 }

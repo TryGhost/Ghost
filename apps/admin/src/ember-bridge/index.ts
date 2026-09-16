@@ -7,6 +7,7 @@ export {
   useEmberAuthSync,
   useEmberDataSync,
   useEmberFeatureFlag,
+  readEmberFeatureFlag,
   useSidebarVisibility,
   useSubscriptionStatus,
   useEmberRouting,

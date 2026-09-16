@@ -186,3 +186,138 @@ export function isDefaultOrLegacyTheme(theme: { name: string }): boolean {
 export function isDeletableTheme(theme: Theme): boolean {
   return !isDefaultTheme(theme) && !isLegacyTheme(theme) && !isActiveTheme(theme);
 }
+
+// Imperative transport for the Builder publish pipeline.
+
+export type ThemeUpload = {
+  archive: Blob;
+  name: string;
+  copySettingsFrom?: string;
+};
+
+export type ThemeSettingUpdate = {
+  key: string;
+  value: string | boolean | null;
+};
+
+export type ThemePublishTransport = {
+  download?: (name: string, signal: AbortSignal) => Promise<ArrayBuffer>;
+  upload: (input: ThemeUpload, signal: AbortSignal) => Promise<void>;
+  activate: (name: string, signal: AbortSignal) => Promise<void>;
+  updateGlobalSettings: (settings: ThemeSettingUpdate[], signal: AbortSignal) => Promise<void>;
+  updateCustomSettings: (settings: ThemeSettingUpdate[], signal: AbortSignal) => Promise<void>;
+};
+
+type GhostApiErrorBody = {
+  errors?: Array<{ message?: string }>;
+};
+
+export class ThemePublishRequestError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ThemePublishRequestError';
+    this.status = status;
+  }
+}
+
+async function requestGhostApi(
+  apiRoot: string,
+  path: string,
+  init: RequestInit,
+  signal: AbortSignal,
+): Promise<void> {
+  const response = await fetch(`${apiRoot.replace(/\/$/, '')}${path}`, {
+    ...init,
+    credentials: 'include',
+    headers: {
+      Accept: 'application/json',
+      ...init.headers,
+    },
+    signal,
+  });
+  if (response.ok) {
+    return;
+  }
+  const body = (await response.json().catch(() => null)) as GhostApiErrorBody | null;
+  throw new ThemePublishRequestError(
+    response.status,
+    body?.errors?.[0]?.message || `Ghost Admin API request failed (${response.status}).`,
+  );
+}
+
+export function createAdminThemePublishTransport(apiRoot: string): ThemePublishTransport {
+  return {
+    download: async (name, signal) => {
+      const response = await fetch(
+        `${apiRoot.replace(/\/$/, '')}/themes/${encodeURIComponent(name)}/download/`,
+        {
+          credentials: 'include',
+          headers: { Accept: 'application/zip, application/octet-stream, */*' },
+          signal,
+        },
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Could not verify the installed theme before publishing (${response.status}).`,
+        );
+      }
+      return response.arrayBuffer();
+    },
+    upload: ({ archive, name, copySettingsFrom }, signal) => {
+      const formData = new FormData();
+      formData.append('file', archive, `${name}.zip`);
+      const query = copySettingsFrom
+        ? `?copy_settings_from=${encodeURIComponent(copySettingsFrom)}`
+        : '';
+      return requestGhostApi(
+        apiRoot,
+        `/themes/upload/${query}`,
+        { method: 'POST', body: formData },
+        signal,
+      );
+    },
+    activate: (name, signal) =>
+      requestGhostApi(
+        apiRoot,
+        `/themes/${encodeURIComponent(name)}/activate/`,
+        { method: 'PUT' },
+        signal,
+      ),
+    updateGlobalSettings: (settings, signal) =>
+      requestGhostApi(
+        apiRoot,
+        '/settings/',
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ settings }),
+        },
+        signal,
+      ),
+    updateCustomSettings: (settings, signal) =>
+      requestGhostApi(
+        apiRoot,
+        '/custom_theme_settings/',
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ custom_theme_settings: settings }),
+        },
+        signal,
+      ),
+  };
+}
+
+export function downloadThemeArchive(
+  apiRoot: string,
+  name: string,
+  signal: AbortSignal,
+): Promise<Response> {
+  return fetch(`${apiRoot.replace(/\/$/, '')}/themes/${encodeURIComponent(name)}/download/`, {
+    credentials: 'include',
+    headers: { Accept: 'application/zip, application/octet-stream, */*' },
+    signal,
+  });
+}

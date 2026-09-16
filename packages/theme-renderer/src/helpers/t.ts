@@ -13,47 +13,47 @@
 // because often other helpers need that (t) returns a string to be able to work as subexpression; e.g.:
 // {{tags prefix=(t " on ")}}
 
-import {themeI18n, themeI18next} from '../seam/handlebars-env.ts';
-import {debug as debugFactory, labs} from '../seam/shared.ts';
-import {settingsCache} from '../seam/proxy.ts';
+import { themeI18n, themeI18next } from '../seam/handlebars-env.ts';
+import { debug as debugFactory, labs } from '../seam/shared.ts';
+import { settingsCache } from '../seam/proxy.ts';
 
 const debug = debugFactory('i18n:t');
 
 export default function t(text: string, options: any = {}) {
-    if (!text || text.length === 0) {
-        // no-op: translation key is missing, return an empty string
-        return '';
-    }
+  if (!text || text.length === 0) {
+    // no-op: translation key is missing, return an empty string
+    return '';
+  }
 
-    const bindings: any = {};
-    let prop;
-    for (prop in options.hash) {
-        if (Object.prototype.hasOwnProperty.call(options.hash, prop)) {
-            bindings[prop] = options.hash[prop];
-        }
+  const bindings: any = {};
+  let prop;
+  for (prop in options.hash) {
+    if (Object.prototype.hasOwnProperty.call(options.hash, prop)) {
+      bindings[prop] = options.hash[prop];
     }
+  }
 
-    if (labs.isSet('themeTranslation')) {
-        // Use the new translation package when feature flag is enabled
-        debug('using new translation service');
-        if (!themeI18next._i18n) {
-            debug('themeI18next will be initialized');
-            themeI18next.init({
-                activeTheme: settingsCache.get('active_theme'),
-                locale: settingsCache.get('locale')
-            } as any);
-        }
-        return themeI18next.t(text, bindings);
-    } else {
-        debug('using old translation service');
-        // Use the existing translation package when feature flag is disabled
-        if (!themeI18n._strings) {
-            debug('themeI18n will be initialized');
-            themeI18n.init({
-                activeTheme: settingsCache.get('active_theme'),
-                locale: settingsCache.get('locale')
-            } as any);
-        }
-        return themeI18n.t(text, bindings);
+  if (labs.isSet('themeTranslation')) {
+    // Use the new translation package when feature flag is enabled
+    debug('using new translation service');
+    if (!themeI18next._i18n) {
+      debug('themeI18next will be initialized');
+      themeI18next.init({
+        activeTheme: settingsCache.get('active_theme'),
+        locale: settingsCache.get('locale'),
+      } as any);
     }
+    return themeI18next.t(text, bindings);
+  } else {
+    debug('using old translation service');
+    // Use the existing translation package when feature flag is disabled
+    if (!themeI18n._strings) {
+      debug('themeI18n will be initialized');
+      themeI18n.init({
+        activeTheme: settingsCache.get('active_theme'),
+        locale: settingsCache.get('locale'),
+      } as any);
+    }
+    return themeI18n.t(text, bindings);
+  }
 }

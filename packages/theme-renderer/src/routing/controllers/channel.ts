@@ -8,15 +8,15 @@
 // @tryghost/debug → dropped.
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
-import {slugify} from '@tryghost/string';
-import {getRendererDeps} from '../../seam/deps.ts';
+import { slugify } from '@tryghost/string';
+import { getRendererDeps } from '../../seam/deps.ts';
 import renderEntries from '../../rendering/render-entries.ts';
 import handleError from '../../rendering/error.ts';
 import fetchData from '../../data/fetch-data.ts';
-import type {PortRequest, PortResponse, RenderResult} from '../../ports.ts';
+import type { PortRequest, PortResponse, RenderResult } from '../../ports.ts';
 
 const messages = {
-    pageNotFound: 'Page not found.'
+  pageNotFound: 'Page not found.',
 };
 
 /**
@@ -28,44 +28,49 @@ const messages = {
  * @param {Object} res
  * @returns {Promise}
  */
-export default function channelController(req: PortRequest, res: PortResponse): Promise<RenderResult> {
-    const pathOptions: any = {
-        page: req.params.page !== undefined ? req.params.page : 1,
-        slug: req.params.slug ? slugify(req.params.slug) : undefined
-    };
+export default function channelController(
+  req: PortRequest,
+  res: PortResponse,
+): Promise<RenderResult> {
+  const pathOptions: any = {
+    page: req.params.page !== undefined ? req.params.page : 1,
+    slug: req.params.slug ? slugify(req.params.slug) : undefined,
+  };
 
-    if (pathOptions.page) {
-        // CASE 1: routes.yaml `limit` is stronger than theme definition
-        // CASE 2: use `posts_per_page` config from theme as `limit` value
-        if (res.routerOptions.limit) {
-            getRendererDeps().activeTheme?.updateTemplateOptions?.({
-                data: {
-                    config: {
-                        posts_per_page: res.routerOptions.limit
-                    }
-                }
-            });
+  if (pathOptions.page) {
+    // CASE 1: routes.yaml `limit` is stronger than theme definition
+    // CASE 2: use `posts_per_page` config from theme as `limit` value
+    if (res.routerOptions.limit) {
+      getRendererDeps().activeTheme?.updateTemplateOptions?.({
+        data: {
+          config: {
+            posts_per_page: res.routerOptions.limit,
+          },
+        },
+      });
 
-            pathOptions.limit = res.routerOptions.limit;
-        } else {
-            const postsPerPage = parseInt(getRendererDeps().activeTheme?.config('posts_per_page'));
+      pathOptions.limit = res.routerOptions.limit;
+    } else {
+      const postsPerPage = parseInt(getRendererDeps().activeTheme?.config('posts_per_page'));
 
-            if (!isNaN(postsPerPage) && postsPerPage > 0) {
-                pathOptions.limit = postsPerPage;
-            }
-        }
+      if (!isNaN(postsPerPage) && postsPerPage > 0) {
+        pathOptions.limit = postsPerPage;
+      }
     }
+  }
 
-    return fetchData(pathOptions, res.routerOptions, res.locals)
-        .then(function handleResult(result: any): RenderResult {
-            // CASE: requested page is greater than number of pages we have
-            if (pathOptions.page > result.meta.pagination.pages) {
-                return handleError(new errors.NotFoundError({
-                    message: tpl(messages.pageNotFound)
-                }));
-            }
+  return fetchData(pathOptions, res.routerOptions, res.locals)
+    .then(function handleResult(result: any): RenderResult {
+      // CASE: requested page is greater than number of pages we have
+      if (pathOptions.page > result.meta.pagination.pages) {
+        return handleError(
+          new errors.NotFoundError({
+            message: tpl(messages.pageNotFound),
+          }),
+        );
+      }
 
-            return renderEntries(req, res)(result);
-        })
-        .catch(handleError);
+      return renderEntries(req, res)(result);
+    })
+    .catch(handleError);
 }

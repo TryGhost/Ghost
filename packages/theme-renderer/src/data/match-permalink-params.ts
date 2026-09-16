@@ -10,41 +10,41 @@ import errors from '@tryghost/errors';
 
 // --- inlined path-match@1.2.4 (index.js) ---
 function decodeParam(param: string): string {
-    try {
-        return decodeURIComponent(param);
-    } catch {
-        throw new errors.ValidationError({message: 'failed to decode param "' + param + '"'});
-    }
+  try {
+    return decodeURIComponent(param);
+  } catch {
+    throw new errors.ValidationError({ message: 'failed to decode param "' + param + '"' });
+  }
 }
 
 function routeMatch(path: string) {
-    const keys: any[] = [];
-    const re = (pathToRegexp as any)(path, keys);
+  const keys: any[] = [];
+  const re = (pathToRegexp as any)(path, keys);
 
-    return function match(pathname: string, params?: Record<string, any>) {
-        const m = re.exec(pathname);
-        if (!m) {
-            return false;
-        }
+  return function match(pathname: string, params?: Record<string, any>) {
+    const m = re.exec(pathname);
+    if (!m) {
+      return false;
+    }
 
-        params = params || {};
+    params = params || {};
 
-        let key;
-        let param;
-        for (let i = 0; i < keys.length; i++) {
-            key = keys[i];
-            param = m[i + 1];
-            if (!param) {
-                continue;
-            }
-            params[key.name] = decodeParam(param);
-            if (key.repeat) {
-                params[key.name] = params[key.name].split(key.delimiter);
-            }
-        }
+    let key;
+    let param;
+    for (let i = 0; i < keys.length; i++) {
+      key = keys[i];
+      param = m[i + 1];
+      if (!param) {
+        continue;
+      }
+      params[key.name] = decodeParam(param);
+      if (key.repeat) {
+        params[key.name] = params[key.name].split(key.delimiter);
+      }
+    }
 
-        return params;
-    };
+    return params;
+  };
 }
 // --- end inlined path-match ---
 
@@ -52,27 +52,30 @@ const PARAM = /:([A-Za-z_]\w*)(?:\([^)]*\))?[+*?]?/g;
 const BARE_PARAM = /:([A-Za-z_]\w*)(?![\w(])/g;
 
 function constrainHyphenatedPermalinkParams(permalinks: string): string {
-    // Hyphen-separated params need explicit bounds so earlier params do not
-    // consume hyphenated values that belong to later params.
-    return permalinks.split('/').map((segment) => {
-        if (!segment.includes('-')) {
-            return segment;
-        }
+  // Hyphen-separated params need explicit bounds so earlier params do not
+  // consume hyphenated values that belong to later params.
+  return permalinks
+    .split('/')
+    .map((segment) => {
+      if (!segment.includes('-')) {
+        return segment;
+      }
 
-        const params = [...segment.matchAll(PARAM)];
+      const params = [...segment.matchAll(PARAM)];
 
-        if (params.length < 2) {
-            return segment;
-        }
+      if (params.length < 2) {
+        return segment;
+      }
 
-        return segment.replace(BARE_PARAM, (match, ...args) => {
-            const offset = args[args.length - 2];
-            const index = params.findIndex(param => param.index === offset);
-            const isLastParamInSegment = index === params.length - 1;
+      return segment.replace(BARE_PARAM, (match, ...args) => {
+        const offset = args[args.length - 2];
+        const index = params.findIndex((param) => param.index === offset);
+        const isLastParamInSegment = index === params.length - 1;
 
-            return `${match}${isLastParamInSegment ? '([^/]+)' : '([^-/]+)'}`;
-        });
-    }).join('/');
+        return `${match}${isLastParamInSegment ? '([^/]+)' : '([^-/]+)'}`;
+      });
+    })
+    .join('/');
 }
 
 // PERF (worker-readiness): path-to-regexp compilation was redone 3–4× per
@@ -90,22 +93,25 @@ export const MATCH_CACHE_MAX = 100;
 
 /** Called from resetRendererDeps() so renderer teardown drops the memo too. */
 export function clearMatchCache(): void {
-    matchFuncCache.clear();
+  matchFuncCache.clear();
 }
 
 /** Test seam — observability for the cap/clear behavior. */
 export function matchCacheSize(): number {
-    return matchFuncCache.size;
+  return matchFuncCache.size;
 }
 
-export default function matchPermalinkParams(permalinks: string, targetPath: string): Record<string, any> | false {
-    let matchFunc = matchFuncCache.get(permalinks);
-    if (!matchFunc) {
-        if (matchFuncCache.size >= MATCH_CACHE_MAX) {
-            matchFuncCache.clear();
-        }
-        matchFunc = routeMatch(constrainHyphenatedPermalinkParams(permalinks));
-        matchFuncCache.set(permalinks, matchFunc);
+export default function matchPermalinkParams(
+  permalinks: string,
+  targetPath: string,
+): Record<string, any> | false {
+  let matchFunc = matchFuncCache.get(permalinks);
+  if (!matchFunc) {
+    if (matchFuncCache.size >= MATCH_CACHE_MAX) {
+      matchFuncCache.clear();
     }
-    return matchFunc(targetPath);
+    matchFunc = routeMatch(constrainHyphenatedPermalinkParams(permalinks));
+    matchFuncCache.set(permalinks, matchFunc);
+  }
+  return matchFunc(targetPath);
 }

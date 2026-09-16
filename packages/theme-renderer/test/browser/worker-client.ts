@@ -9,20 +9,25 @@
  * full round trip: worker boot + bundle compile + createRenderer + render.
  */
 import errors from '@tryghost/errors';
-import type {WorkerRenderRequest, WorkerRenderResult} from './render-worker.ts';
+import type { WorkerRenderRequest, WorkerRenderResult } from './render-worker.ts';
 
-export type TimedWorkerRenderResult = WorkerRenderResult & {durationMs: number};
+export type TimedWorkerRenderResult = WorkerRenderResult & { durationMs: number };
 
 export function renderInWorker(request: WorkerRenderRequest): Promise<TimedWorkerRenderResult> {
-    const worker = new Worker(new URL('./render-worker.ts', import.meta.url), {type: 'module'});
-    const startedAt = performance.now();
-    return new Promise<TimedWorkerRenderResult>((resolve, reject) => {
-        worker.onmessage = (event: MessageEvent<WorkerRenderResult>) => {
-            resolve({...event.data, durationMs: performance.now() - startedAt});
-        };
-        // A bundling/import failure (e.g. a smuggled Node built-in) surfaces
-        // here as a worker-level error rather than a posted message.
-        worker.onerror = event => reject(new errors.InternalServerError({message: `worker failed to start or crashed: ${event.message}`}));
-        worker.postMessage(request);
-    }).finally(() => worker.terminate());
+  const worker = new Worker(new URL('./render-worker.ts', import.meta.url), { type: 'module' });
+  const startedAt = performance.now();
+  return new Promise<TimedWorkerRenderResult>((resolve, reject) => {
+    worker.onmessage = (event: MessageEvent<WorkerRenderResult>) => {
+      resolve({ ...event.data, durationMs: performance.now() - startedAt });
+    };
+    // A bundling/import failure (e.g. a smuggled Node built-in) surfaces
+    // here as a worker-level error rather than a posted message.
+    worker.onerror = (event) =>
+      reject(
+        new errors.InternalServerError({
+          message: `worker failed to start or crashed: ${event.message}`,
+        }),
+      );
+    worker.postMessage(request);
+  }).finally(() => worker.terminate());
 }

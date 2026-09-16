@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useState, useSyncExternalStore } fr
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { EmberContext } from './ember-context';
-import {clearBuilderSessionCredentials} from '@/builder/models/session-credential-store';
+import { clearBuilderSessionCredentials } from '@/builder/models/session-credential-store';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -15,7 +15,7 @@ export type StateBridgeEventMap = {
   sidebarVisibilityChange: SidebarVisibilityChangeEvent;
   routeChange: RouteChangeEvent;
   openGiftLinkModal: OpenGiftLinkModalEvent;
-    openArtifactBuilder: OpenArtifactBuilderEvent;
+  openArtifactBuilder: OpenArtifactBuilderEvent;
   featureFlagsChange: undefined;
 };
 
@@ -87,31 +87,34 @@ export interface OpenGiftLinkModalEvent {
 }
 
 export interface ArtifactBuilderPayload {
-    id: string;
-    artifactVersion: number;
-    title: string;
-    description: string;
-    html: string;
+  id: string;
+  artifactVersion: number;
+  title: string;
+  description: string;
+  html: string;
 }
 
 export interface OpenArtifactBuilderEvent {
-    requestId: string;
-    cardId: string;
-    artifact: ArtifactBuilderPayload;
+  requestId: string;
+  cardId: string;
+  artifact: ArtifactBuilderPayload;
 }
 
-export type ArtifactBuilderResult = {
-    requestId: string;
-    status: 'saved';
-    artifact: ArtifactBuilderPayload;
-} | {
-    requestId: string;
-    status: 'cancelled';
-} | {
-    requestId: string;
-    status: 'error';
-    message: string;
-};
+export type ArtifactBuilderResult =
+  | {
+      requestId: string;
+      status: 'saved';
+      artifact: ArtifactBuilderPayload;
+    }
+  | {
+      requestId: string;
+      status: 'cancelled';
+    }
+  | {
+      requestId: string;
+      status: 'error';
+      message: string;
+    };
 
 export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
 
@@ -182,7 +185,7 @@ function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
     }
     stateBridge.on(event, handler);
     unsubscribe = () => stateBridge.off(event, handler);
-        onReady?.(stateBridge);
+    onReady?.(stateBridge);
   });
 
   return () => {
@@ -255,8 +258,8 @@ export function useEmberAuthSync() {
     const handleEmberAuthChange = (event: EmberAuthChangeEvent) => {
       if (event.isAuthenticated) {
         void queryClient.invalidateQueries();
-            } else {
-                clearBuilderSessionCredentials();
+      } else {
+        clearBuilderSessionCredentials();
       }
     };
 
@@ -283,17 +286,19 @@ export function useSubscriptionStatus() {
  * `null` means Ember is present but its settings are still loading;
  * `undefined` means there is no Ember feature reader (standalone React).
  */
+export function readEmberFeatureFlag(flag: string): boolean | null | undefined {
+  const stateBridge = window.EmberBridge?.state;
+  if (!stateBridge?.isFeatureEnabled) {
+    return undefined;
+  }
+  return stateBridge.isFeatureEnabled(flag) ?? null;
+}
+
 export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
   const subscribe = useCallback((callback: () => void) => {
     return onEmberStateBridgeEvent('featureFlagsChange', callback, callback);
   }, []);
-  const getSnapshot = useCallback(() => {
-    const stateBridge = window.EmberBridge?.state;
-    if (!stateBridge?.isFeatureEnabled) {
-      return undefined;
-    }
-    return stateBridge.isFeatureEnabled(flag) ?? null;
-  }, [flag]);
+  const getSnapshot = useCallback(() => readEmberFeatureFlag(flag), [flag]);
 
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
@@ -369,14 +374,16 @@ export const emberMutationHandlers = {
   },
 };
 
-export function subscribeOpenArtifactBuilder(handler: (event: OpenArtifactBuilderEvent) => void): () => void {
-    return onEmberStateBridgeEvent('openArtifactBuilder', handler, (stateBridge) => {
-        stateBridge.getPendingArtifactBuilderRequests?.().forEach(request => handler(request));
-    });
+export function subscribeOpenArtifactBuilder(
+  handler: (event: OpenArtifactBuilderEvent) => void,
+): () => void {
+  return onEmberStateBridgeEvent('openArtifactBuilder', handler, (stateBridge) => {
+    stateBridge.getPendingArtifactBuilderRequests?.().forEach((request) => handler(request));
+  });
 }
 
 export function respondToArtifactBuilder(result: ArtifactBuilderResult): boolean {
-    return window.EmberBridge?.state.completeArtifactBuilder?.(result) ?? false;
+  return window.EmberBridge?.state.completeArtifactBuilder?.(result) ?? false;
 }
 
 // External store for sidebar visibility state

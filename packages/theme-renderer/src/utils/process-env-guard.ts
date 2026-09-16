@@ -23,19 +23,19 @@
  * README's exceptions section).
  */
 export interface ProcessGlobalScope {
-    process?: {env: Record<string, string | undefined>};
+  process?: { env: Record<string, string | undefined> };
 }
 
 /** Exported for unit tests — the module applies it to `globalThis` on import. */
 export function installProcessEnvGuard(globalScope: ProcessGlobalScope): void {
-    if (typeof globalScope.process === 'undefined') {
-        Object.defineProperty(globalScope, 'process', {
-            value: {env: {}},
-            configurable: true,
-            enumerable: true,
-            writable: true
-        });
-    }
+  if (typeof globalScope.process === 'undefined') {
+    Object.defineProperty(globalScope, 'process', {
+      value: { env: {} },
+      configurable: true,
+      enumerable: true,
+      writable: true,
+    });
+  }
 }
 
 installProcessEnvGuard(globalThis as ProcessGlobalScope);

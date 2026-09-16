@@ -36,27 +36,27 @@
  * (tag-end walk runs away to EOF) get no marker and cost nothing else — the
  * scanner recovers at the next `<` and the rest of the file is still marked.
  */
-import {scanAttributes, scanSourceTags} from './source-scanner.ts';
+import { scanAttributes, scanSourceTags } from './source-scanner.ts';
 
 /** The attribute name stamped onto marked elements. */
 export const EDIT_MARKER_ATTRIBUTE = 'data-edit';
 
 export interface EditMarker {
-    /** Theme-relative source file, e.g. 'partials/post-card.hbs' */
-    file: string;
-    /** 1-based line of the open tag's `<` in the original source */
-    line: number;
-    /** 1-based column of the open tag's `<` in the original source */
-    column: number;
+  /** Theme-relative source file, e.g. 'partials/post-card.hbs' */
+  file: string;
+  /** 1-based line of the open tag's `<` in the original source */
+  line: number;
+  /** 1-based column of the open tag's `<` in the original source */
+  column: number;
 }
 
 /** Parses a data-edit attribute value back into its source location. */
 export function parseEditMarker(value: string): EditMarker | null {
-    const match = /^(.*):(\d+):(\d+)$/.exec(value);
-    if (!match) {
-        return null;
-    }
-    return {file: match[1]!, line: Number(match[2]), column: Number(match[3])};
+  const match = /^(.*):(\d+):(\d+)$/.exec(value);
+  if (!match) {
+    return null;
+  }
+  return { file: match[1]!, line: Number(match[2]), column: Number(match[3]) };
 }
 
 /**
@@ -66,16 +66,16 @@ export function parseEditMarker(value: string): EditMarker | null {
  * `<div title="see data-edit=docs">`) must not suppress the marker.
  */
 function hasExistingMarker(source: string, nameEnd: number, end: number): boolean {
-    for (const attribute of scanAttributes(source, nameEnd, end)) {
-        if (attribute.name === EDIT_MARKER_ATTRIBUTE) {
-            return true;
-        }
+  for (const attribute of scanAttributes(source, nameEnd, end)) {
+    if (attribute.name === EDIT_MARKER_ATTRIBUTE) {
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
 function escapeAttributeValue(value: string): string {
-    return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
 /**
@@ -85,32 +85,32 @@ function escapeAttributeValue(value: string): string {
  * nothing to mark.
  */
 export function injectEditMarkers(source: string, filename: string): string {
-    const file = escapeAttributeValue(filename);
-    const insertions: {offset: number; text: string}[] = [];
+  const file = escapeAttributeValue(filename);
+  const insertions: { offset: number; text: string }[] = [];
 
-    for (const tag of scanSourceTags(source)) {
-        // dynamic tag names and malformed (unterminated) tags get no marker —
-        // an attribute inserted into either would corrupt the output
-        if (!tag.markable || !tag.closed) {
-            continue;
-        }
-        if (hasExistingMarker(source, tag.nameEnd, tag.end)) {
-            continue;
-        }
-        insertions.push({
-            offset: tag.nameEnd,
-            text: ` ${EDIT_MARKER_ATTRIBUTE}="${file}:${tag.line}:${tag.column}"`
-        });
+  for (const tag of scanSourceTags(source)) {
+    // dynamic tag names and malformed (unterminated) tags get no marker —
+    // an attribute inserted into either would corrupt the output
+    if (!tag.markable || !tag.closed) {
+      continue;
     }
+    if (hasExistingMarker(source, tag.nameEnd, tag.end)) {
+      continue;
+    }
+    insertions.push({
+      offset: tag.nameEnd,
+      text: ` ${EDIT_MARKER_ATTRIBUTE}="${file}:${tag.line}:${tag.column}"`,
+    });
+  }
 
-    if (insertions.length === 0) {
-        return source;
-    }
-    let result = '';
-    let last = 0;
-    for (const insertion of insertions) {
-        result += source.slice(last, insertion.offset) + insertion.text;
-        last = insertion.offset;
-    }
-    return result + source.slice(last);
+  if (insertions.length === 0) {
+    return source;
+  }
+  let result = '';
+  let last = 0;
+  for (const insertion of insertions) {
+    result += source.slice(last, insertion.offset) + insertion.text;
+    last = insertion.offset;
+  }
+  return result + source.slice(last);
 }

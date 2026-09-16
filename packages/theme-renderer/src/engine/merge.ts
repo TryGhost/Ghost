@@ -13,8 +13,8 @@
 import _ from '../utils/lodash.ts';
 
 export function mergeDeep(
-    target: Record<string, unknown>,
-    ...sources: Array<Record<string, unknown> | undefined>
+  target: Record<string, unknown>,
+  ...sources: Array<Record<string, unknown> | undefined>
 ): Record<string, unknown> {
-    return _.merge(target, ...sources);
+  return _.merge(target, ...sources);
 }

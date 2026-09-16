@@ -1,5 +1,5 @@
-import {playwright} from '@vitest/browser-playwright';
-import {defineConfig} from 'vitest/config';
+import { playwright } from '@vitest/browser-playwright';
+import { defineConfig } from 'vitest/config';
 
 /**
  * Browser-mode project for the slice-2 worker-parity suite
@@ -15,17 +15,17 @@ import {defineConfig} from 'vitest/config';
  * Requires a Playwright Chromium (pnpm exec playwright install chromium).
  */
 export default defineConfig({
-    test: {
-        name: 'browser',
-        include: ['test/browser/**/*.test.ts'],
-        // Cold start compiles the whole renderer bundle into the worker
-        testTimeout: 30000,
-        browser: {
-            enabled: true,
-            headless: true,
-            provider: playwright(),
-            instances: [{browser: 'chromium'}],
-            screenshotFailures: false
-        }
-    }
+  test: {
+    name: 'browser',
+    include: ['test/browser/**/*.test.ts'],
+    // Cold start compiles the whole renderer bundle into the worker
+    testTimeout: 30000,
+    browser: {
+      enabled: true,
+      headless: true,
+      provider: playwright(),
+      instances: [{ browser: 'chromium' }],
+      screenshotFailures: false,
+    },
+  },
 });

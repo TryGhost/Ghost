@@ -103,11 +103,14 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(lazyAutomationEditorScreen),
   },
   {
-        path: "/builder/theme",
-        handle: {hideAdminSidebar: true, requiresAccess: canAccessSettings} satisfies AdminRouteHandle & AccessRouteHandle,
-        lazy: lazyComponent(() => import("./builder/builder-route")),
-    },
-    {
+    path: '/builder/theme',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canAccessSettings,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(() => import('./builder/builder-route')),
+  },
+  {
     // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
     // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
     // tag with the literal slug "new" was already unreachable.

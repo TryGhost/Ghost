@@ -8,20 +8,20 @@
 // `res.locals.degradedRender` writes stay harmless).
 import setContext from './context.ts';
 import templates from './templates.ts';
-import type {PortRequest, PortResponse, RenderResult} from '../ports.ts';
+import type { PortRequest, PortResponse, RenderResult } from '../ports.ts';
 
 // Express `res.type(type)` resolves extension shorthands through the mime v1
 // table (ghost/core oracle: express@4.22.2 → send@0.19.2 → mime@1.6.0); this
 // carries only the entries plausible as routes.yaml content_type values —
 // each verified against mime 1.6.0's table (incl. rss → application/rss+xml).
 const EXTENSION_CONTENT_TYPES: Record<string, string> = {
-    html: 'text/html',
-    txt: 'text/plain',
-    text: 'text/plain',
-    json: 'application/json',
-    xml: 'application/xml',
-    rss: 'application/rss+xml',
-    md: 'text/markdown'
+  html: 'text/html',
+  txt: 'text/plain',
+  text: 'text/plain',
+  json: 'application/json',
+  xml: 'application/xml',
+  rss: 'application/rss+xml',
+  md: 'text/markdown',
 };
 
 // mime v1 Mime.prototype.lookup falls back to default_type for unknown
@@ -43,22 +43,22 @@ const UTF8_TYPES = /^text\/|^application\/(javascript|json)/;
  * test/rendering/pipeline.test.ts.
  */
 function toContentTypeHeader(type: string): string {
-    let resolved = type;
-    if (!type.includes('/')) {
-        // mime v1 lookup: strip through the last '.'/'/'/'\\' and lowercase
-        // (the '/' arm is unreachable here — res.type only calls lookup for
-        // values without one)
-        const ext = type.replace(/^.*[./\\]/, '').toLowerCase();
-        resolved = EXTENSION_CONTENT_TYPES[ext] ?? MIME_DEFAULT_TYPE;
-    }
-    if (CHARSET_PRESENT.test(resolved)) {
-        return resolved;
-    }
-    // charset is looked up against the bare type — before any ';' parameters
-    if (UTF8_TYPES.test(resolved.split(';')[0]!)) {
-        return `${resolved}; charset=utf-8`;
-    }
+  let resolved = type;
+  if (!type.includes('/')) {
+    // mime v1 lookup: strip through the last '.'/'/'/'\\' and lowercase
+    // (the '/' arm is unreachable here — res.type only calls lookup for
+    // values without one)
+    const ext = type.replace(/^.*[./\\]/, '').toLowerCase();
+    resolved = EXTENSION_CONTENT_TYPES[ext] ?? MIME_DEFAULT_TYPE;
+  }
+  if (CHARSET_PRESENT.test(resolved)) {
     return resolved;
+  }
+  // charset is looked up against the bare type — before any ';' parameters
+  if (UTF8_TYPES.test(resolved.split(';')[0]!)) {
+    return `${resolved}; charset=utf-8`;
+  }
+  return resolved;
 }
 
 /**
@@ -67,24 +67,28 @@ function toContentTypeHeader(type: string): string {
  * @param {Object} res
  * @param {Object} data
  */
-export default function renderer(req: PortRequest, res: PortResponse, data: Record<string, any>): RenderResult {
-    // Set response context
-    setContext(req, res, data);
+export default function renderer(
+  req: PortRequest,
+  res: PortResponse,
+  data: Record<string, any>,
+): RenderResult {
+  // Set response context
+  setContext(req, res, data);
 
-    // Set template
-    templates.setTemplate(req, res, data);
+  // Set template
+  templates.setTemplate(req, res, data);
 
-    let contentType: string | undefined;
+  let contentType: string | undefined;
 
-    // CASE: You can set the content type of the page in your routes.yaml file
-    // (routerOptions.templates defaults to [] upstream — StaticRoutesRouter
-    // always sets an array; entry candidates here may omit it)
-    if (res.routerOptions && res.routerOptions.contentType) {
-        if ((res.routerOptions.templates ?? []).indexOf(res._template!) !== -1) {
-            contentType = toContentTypeHeader(res.routerOptions.contentType);
-        }
+  // CASE: You can set the content type of the page in your routes.yaml file
+  // (routerOptions.templates defaults to [] upstream — StaticRoutesRouter
+  // always sets an array; entry candidates here may omit it)
+  if (res.routerOptions && res.routerOptions.contentType) {
+    if ((res.routerOptions.templates ?? []).indexOf(res._template!) !== -1) {
+      contentType = toContentTypeHeader(res.routerOptions.contentType);
     }
+  }
 
-    // Render Call — becomes a result value; the assembly runs the engine
-    return {render: {template: res._template!, data, contentType}};
+  // Render Call — becomes a result value; the assembly runs the engine
+  return { render: { template: res._template!, data, contentType } };
 }

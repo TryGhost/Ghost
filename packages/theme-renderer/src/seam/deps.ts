@@ -1,6 +1,6 @@
 import errors from '@tryghost/errors';
-import {clearMatchCache} from '../data/match-permalink-params.ts';
-import type {RendererDeps} from './types.ts';
+import { clearMatchCache } from '../data/match-permalink-params.ts';
+import type { RendererDeps } from './types.ts';
 
 /**
  * Module-level dependency holder.
@@ -15,21 +15,22 @@ import type {RendererDeps} from './types.ts';
 let deps: RendererDeps | null = null;
 
 export function configureRendererDeps(next: RendererDeps): void {
-    deps = next;
+  deps = next;
 }
 
 export function resetRendererDeps(): void {
-    deps = null;
-    // Module-singleton hygiene: the permalink matcher memo lives for the
-    // renderer's lifetime — drop it with the deps so teardown is complete.
-    clearMatchCache();
+  deps = null;
+  // Module-singleton hygiene: the permalink matcher memo lives for the
+  // renderer's lifetime — drop it with the deps so teardown is complete.
+  clearMatchCache();
 }
 
 export function getRendererDeps(): RendererDeps {
-    if (!deps) {
-        throw new errors.IncorrectUsageError({
-            message: '@tryghost/theme-renderer: renderer deps have not been configured — call configureRendererDeps() before rendering'
-        });
-    }
-    return deps;
+  if (!deps) {
+    throw new errors.IncorrectUsageError({
+      message:
+        '@tryghost/theme-renderer: renderer deps have not been configured — call configureRendererDeps() before rendering',
+    });
+  }
+  return deps;
 }

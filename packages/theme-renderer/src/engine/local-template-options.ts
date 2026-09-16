@@ -13,9 +13,12 @@
 type LocalTemplateOptions = Record<string, unknown>;
 
 export function getLocalTemplateOptions(locals: Record<string, any>): LocalTemplateOptions {
-    return (locals._templateOptions as LocalTemplateOptions | undefined) || {};
+  return (locals._templateOptions as LocalTemplateOptions | undefined) || {};
 }
 
-export function updateLocalTemplateOptions(locals: Record<string, any>, templateOptions: LocalTemplateOptions | undefined): void {
-    locals._templateOptions = templateOptions;
+export function updateLocalTemplateOptions(
+  locals: Record<string, any>,
+  templateOptions: LocalTemplateOptions | undefined,
+): void {
+  locals._templateOptions = templateOptions;
 }

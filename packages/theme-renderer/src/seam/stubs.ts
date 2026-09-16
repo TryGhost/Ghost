@@ -5,12 +5,12 @@
  * docs/provenance.md.
  */
 import type {
-    AssetHashPort,
-    BlogIconPort,
-    CardAssetsPort,
-    ImageSizeCachePort,
-    SettingsPort,
-    UrlUtilsPort
+  AssetHashPort,
+  BlogIconPort,
+  CardAssetsPort,
+  ImageSizeCachePort,
+  SettingsPort,
+  UrlUtilsPort,
 } from './types.ts';
 
 /**
@@ -20,15 +20,15 @@ import type {
  * per-boot md5-of-timestamp.
  */
 export function createAssetHash(globalHash = 'themerender'): AssetHashPort {
-    return {
-        getHashForFile() {
-            return null;
-        },
-        clearCache() {
-            // no cache to clear
-        },
-        globalHash
-    };
+  return {
+    getHashForFile() {
+      return null;
+    },
+    clearCache() {
+      // no cache to clear
+    },
+    globalHash,
+  };
 }
 
 /**
@@ -45,28 +45,32 @@ export function createAssetHash(globalHash = 'themerender'): AssetHashPort {
  *   documented false-positive.
  */
 export function createCardAssets(cardAssetConfig: any = true): CardAssetsPort {
-    function hasAnyFile(): boolean {
-        if (cardAssetConfig === false) {
-            return false;
-        }
-        if (cardAssetConfig && typeof cardAssetConfig === 'object' && Array.isArray(cardAssetConfig.include)) {
-            return cardAssetConfig.include.length > 0;
-        }
-        return true;
+  function hasAnyFile(): boolean {
+    if (cardAssetConfig === false) {
+      return false;
     }
+    if (
+      cardAssetConfig &&
+      typeof cardAssetConfig === 'object' &&
+      Array.isArray(cardAssetConfig.include)
+    ) {
+      return cardAssetConfig.include.length > 0;
+    }
+    return true;
+  }
 
-    return {
-        hasFile() {
-            return hasAnyFile();
-        }
-    };
+  return {
+    hasFile() {
+      return hasAnyFile();
+    },
+  };
 }
 
 // Minimal path.extname over URL-ish strings (replaces require('path') in blog-icon.js)
 function extname(p: string): string {
-    const base = p.split('/').pop() || '';
-    const idx = base.lastIndexOf('.');
-    return idx <= 0 ? '' : base.slice(idx);
+  const base = p.split('/').pop() || '';
+  const idx = base.lastIndexOf('.');
+  return idx <= 0 ? '' : base.slice(idx);
 }
 
 /**
@@ -78,68 +82,80 @@ function extname(p: string): string {
  * urlFor({relativeUrl}) passes absolute inputs through unchanged, so the
  * resize-path replaces still apply correctly.
  */
-export function createBlogIcon({settingsCache, urlUtils}: {settingsCache: SettingsPort; urlUtils: UrlUtilsPort}): BlogIconPort {
-    function getIconExt(icon?: string): string {
-        const blogIcon = icon || settingsCache.get('icon');
+export function createBlogIcon({
+  settingsCache,
+  urlUtils,
+}: {
+  settingsCache: SettingsPort;
+  urlUtils: UrlUtilsPort;
+}): BlogIconPort {
+  function getIconExt(icon?: string): string {
+    const blogIcon = icon || settingsCache.get('icon');
 
-        // If the native format is supported, return the native format
-        if (blogIcon.match(/.ico$/i)) {
-            return 'ico';
-        }
-
-        if (blogIcon.match(/.jpe?g$/i)) {
-            return 'jpeg';
-        }
-
-        if (blogIcon.match(/.png$/i)) {
-            return 'png';
-        }
-
-        // Default to png for all other types
-        return 'png';
+    // If the native format is supported, return the native format
+    if (blogIcon.match(/.ico$/i)) {
+      return 'ico';
     }
 
-    function getIconType(icon?: string): string {
-        const ext = getIconExt(icon);
-
-        return ext === 'ico' ? 'x-icon' : ext;
+    if (blogIcon.match(/.jpe?g$/i)) {
+      return 'jpeg';
     }
 
-    function getSourceIconExt(icon?: string): string {
-        const blogIcon = icon || settingsCache.get('icon');
-        return extname(blogIcon).toLowerCase().substring(1);
+    if (blogIcon.match(/.png$/i)) {
+      return 'png';
     }
 
-    function getIconUrl({absolute = false, fallbackToDefault = true}: {absolute?: boolean; fallbackToDefault?: boolean} = {}): string | null {
-        const blogIcon = settingsCache.get('icon');
+    // Default to png for all other types
+    return 'png';
+  }
 
-        if (blogIcon) {
-            // Resize + format icon to one of the supported file extensions
-            const sourceExt = getSourceIconExt(blogIcon);
-            const destintationExt = getIconExt(blogIcon);
+  function getIconType(icon?: string): string {
+    const ext = getIconExt(icon);
 
-            if (sourceExt === 'ico') {
-                // Resize not supported (prevent a redirect)
-                return urlUtils.urlFor({relativeUrl: blogIcon}, absolute ? true : undefined);
-            }
+    return ext === 'ico' ? 'x-icon' : ext;
+  }
 
-            if (sourceExt !== destintationExt) {
-                const formattedIcon = blogIcon.replace(/\/content\/images\//, `/content/images/size/w256h256/format/${getIconExt(blogIcon)}/`);
-                return urlUtils.urlFor({relativeUrl: formattedIcon}, absolute ? true : undefined);
-            }
+  function getSourceIconExt(icon?: string): string {
+    const blogIcon = icon || settingsCache.get('icon');
+    return extname(blogIcon).toLowerCase().substring(1);
+  }
 
-            const sizedIcon = blogIcon.replace(/\/content\/images\//, '/content/images/size/w256h256/');
-            return urlUtils.urlFor({relativeUrl: sizedIcon}, absolute ? true : undefined);
-        }
+  function getIconUrl({
+    absolute = false,
+    fallbackToDefault = true,
+  }: { absolute?: boolean; fallbackToDefault?: boolean } = {}): string | null {
+    const blogIcon = settingsCache.get('icon');
 
-        if (fallbackToDefault) {
-            return urlUtils.urlFor({relativeUrl: '/favicon.ico'}, absolute ? true : undefined);
-        }
+    if (blogIcon) {
+      // Resize + format icon to one of the supported file extensions
+      const sourceExt = getSourceIconExt(blogIcon);
+      const destintationExt = getIconExt(blogIcon);
 
-        return null;
+      if (sourceExt === 'ico') {
+        // Resize not supported (prevent a redirect)
+        return urlUtils.urlFor({ relativeUrl: blogIcon }, absolute ? true : undefined);
+      }
+
+      if (sourceExt !== destintationExt) {
+        const formattedIcon = blogIcon.replace(
+          /\/content\/images\//,
+          `/content/images/size/w256h256/format/${getIconExt(blogIcon)}/`,
+        );
+        return urlUtils.urlFor({ relativeUrl: formattedIcon }, absolute ? true : undefined);
+      }
+
+      const sizedIcon = blogIcon.replace(/\/content\/images\//, '/content/images/size/w256h256/');
+      return urlUtils.urlFor({ relativeUrl: sizedIcon }, absolute ? true : undefined);
     }
 
-    return {getIconUrl, getIconType, getIconExt};
+    if (fallbackToDefault) {
+      return urlUtils.urlFor({ relativeUrl: '/favicon.ico' }, absolute ? true : undefined);
+    }
+
+    return null;
+  }
+
+  return { getIconUrl, getIconType, getIconExt };
 }
 
 /**
@@ -149,11 +165,11 @@ export function createBlogIcon({settingsCache, urlUtils}: {settingsCache: Settin
  * dimension tags are absent from ghost_head output).
  */
 export function createImageSizeCache(): ImageSizeCachePort {
-    return {
-        getCachedImageSizeFromUrl() {
-            return Promise.resolve(null);
-        }
-    };
+  return {
+    getCachedImageSizeFromUrl() {
+      return Promise.resolve(null);
+    },
+  };
 }
 
 /**
@@ -162,17 +178,17 @@ export function createImageSizeCache(): ImageSizeCachePort {
  * is what the local storage adapter amounts to.
  */
 export function createIsInternalImage(urlUtils: UrlUtilsPort) {
-    return function isInternalImage(url: string): boolean {
-        if (typeof url !== 'string') {
-            return false;
-        }
-        const siteUrl = urlUtils.getSiteUrl();
-        const contentPathRe = /\/content\/(images|media|files)\//;
-        if (/^https?:\/\//.test(url)) {
-            return url.startsWith(siteUrl) && contentPathRe.test(url);
-        }
-        return contentPathRe.test(url);
-    };
+  return function isInternalImage(url: string): boolean {
+    if (typeof url !== 'string') {
+      return false;
+    }
+    const siteUrl = urlUtils.getSiteUrl();
+    const contentPathRe = /\/content\/(images|media|files)\//;
+    if (/^https?:\/\//.test(url)) {
+      return url.startsWith(siteUrl) && contentPathRe.test(url);
+    }
+    return contentPathRe.test(url);
+  };
 }
 
 /**
@@ -181,9 +197,9 @@ export function createIsInternalImage(urlUtils: UrlUtilsPort) {
  * RSS feed lives at /rss/. Documented delta for custom routes.yaml setups.
  */
 export function createGetRssUrl(urlUtils: UrlUtilsPort) {
-    return function getRssUrl(options: {absolute?: boolean} = {}): string {
-        return urlUtils.urlFor({relativeUrl: '/rss/'}, undefined, options.absolute);
-    };
+  return function getRssUrl(options: { absolute?: boolean } = {}): string {
+    return urlUtils.urlFor({ relativeUrl: '/rss/' }, undefined, options.absolute);
+  };
 }
 
 /**
@@ -191,7 +207,7 @@ export function createGetRssUrl(urlUtils: UrlUtilsPort) {
  * sharp). List mirrors image-transform's supported output formats.
  */
 export function canTransformToFormat(format: string): boolean {
-    return ['avif', 'gif', 'jpeg', 'jpg', 'png', 'webp'].includes(format);
+  return ['avif', 'gif', 'jpeg', 'jpg', 'png', 'webp'].includes(format);
 }
 
 /**
@@ -201,17 +217,19 @@ export function canTransformToFormat(format: string): boolean {
  * single-brace placeholders. Real theme locale loading is injectable.
  */
 export function createSimpleThemeI18n() {
-    return {
-        t(key: string, bindings?: Record<string, any>): string {
-            if (!key) {
-                return '';
-            }
-            if (!bindings) {
-                return key;
-            }
-            return key.replace(/\{(\w+)\}/g, function (match, name) {
-                return Object.prototype.hasOwnProperty.call(bindings, name) ? String(bindings[name]) : match;
-            });
-        }
-    };
+  return {
+    t(key: string, bindings?: Record<string, any>): string {
+      if (!key) {
+        return '';
+      }
+      if (!bindings) {
+        return key;
+      }
+      return key.replace(/\{(\w+)\}/g, function (match, name) {
+        return Object.prototype.hasOwnProperty.call(bindings, name)
+          ? String(bindings[name])
+          : match;
+      });
+    },
+  };
 }

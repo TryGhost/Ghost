@@ -8,7 +8,7 @@ const BUNDLE_PATH = path.join(import.meta.dirname, '../umd/admin-toolbar.min.js'
 const source = fs.readFileSync(BUNDLE_PATH, 'utf8');
 
 function createDom({
-    adminUrl = 'https://admin.example.com/ghost/',
+  adminUrl = 'https://admin.example.com/ghost/',
   pageContext = '',
   resourceType = '',
   resourceId = '',
@@ -16,7 +16,7 @@ function createDom({
   siteAnalyticsEnabled = false,
   activityPubEnabled = false,
   membersEnabled = false,
-    commentsEnabled = true
+  commentsEnabled = true,
 } = {}) {
   const dom = new JSDOM(
     `<!DOCTYPE html><html><body>
@@ -57,14 +57,15 @@ async function runToolbar(dom, response) {
   const frame = dom.window.document.querySelector('iframe[data-frame="admin-auth"]');
   assert.ok(frame, 'auth frame should be created');
 
-    const script = dom.window.document.querySelector('script[data-ghost-admin-toolbar]');
-    const adminOrigin = new dom.window.URL(script.dataset.ghostAdminToolbar).origin;
+  const script = dom.window.document.querySelector('script[data-ghost-admin-toolbar]');
+  const adminOrigin = new dom.window.URL(script.dataset.ghostAdminToolbar).origin;
 
   frame.contentWindow.postMessage = (payload) => {
     const message = JSON.parse(payload);
     const result = typeof response === 'function' ? response(message) : response;
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', {
-            origin: adminOrigin,
+    dom.window.dispatchEvent(
+      new dom.window.MessageEvent('message', {
+        origin: adminOrigin,
         data: JSON.stringify({
           uid: message.uid,
           error: result?.error || null,

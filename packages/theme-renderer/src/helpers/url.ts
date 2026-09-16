@@ -7,30 +7,30 @@
 // `absolute` flag outputs absolute URL, else URL is relative
 
 import * as metaData from '../meta/index.ts';
-import {SafeString} from '../seam/handlebars-env.ts';
-import {logging} from '../seam/shared.ts';
+import { SafeString } from '../seam/handlebars-env.ts';
+import { logging } from '../seam/shared.ts';
 import errors from '@tryghost/errors';
 
-const {getMetaDataUrl} = metaData;
+const { getMetaDataUrl } = metaData;
 
 export default function url(this: any, options: any) {
-    const absolute = options && options.hash.absolute && options.hash.absolute !== 'false';
-    let outputUrl = getMetaDataUrl(this, absolute);
+  const absolute = options && options.hash.absolute && options.hash.absolute !== 'false';
+  let outputUrl = getMetaDataUrl(this, absolute);
 
-    try {
-        outputUrl = encodeURI(decodeURI(outputUrl)).replace(/%5B/g, '[').replace(/%5D/g, ']');
-    } catch (err: any) {
-        // Happens when the outputURL contains an invalid URI character like "%%" or "%80"
+  try {
+    outputUrl = encodeURI(decodeURI(outputUrl)).replace(/%5B/g, '[').replace(/%5D/g, ']');
+  } catch (err: any) {
+    // Happens when the outputURL contains an invalid URI character like "%%" or "%80"
 
-        // Send the error not to be blind to these
-        const error = new errors.IncorrectUsageError({
-            message: `The url "${outputUrl}" couldn't be escaped correctly`,
-            err: err
-        });
-        logging.error(error);
+    // Send the error not to be blind to these
+    const error = new errors.IncorrectUsageError({
+      message: `The url "${outputUrl}" couldn't be escaped correctly`,
+      err: err,
+    });
+    logging.error(error);
 
-        return new SafeString('');
-    }
+    return new SafeString('');
+  }
 
-    return new SafeString(outputUrl);
+  return new SafeString(outputUrl);
 }

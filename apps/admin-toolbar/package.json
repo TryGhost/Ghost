@@ -26,7 +26,6 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@tryghost/theme-renderer": "workspace:*",
     "preact": "catalog:"
   },
   "devDependencies": {
