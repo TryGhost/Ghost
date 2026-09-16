@@ -4,6 +4,7 @@ import {
   FIELD_TYPES,
   FIELD_TYPE_IDS,
   MAX_LONG_TEXT_BYTES,
+  isMetafieldChangeSource,
   partTypesOf,
   subFieldsOf,
   type Address,
@@ -296,6 +297,15 @@ describe('metafield-types catalog', function () {
         // A whole sentence: a screen shows it unedited.
         assert.match(reason, /^[A-Z].*\.$/, `${type} ${JSON.stringify(value)}`);
       }
+    });
+  });
+
+  // A client built before a place existed must still render an entry from a newer server,
+  // so it asks whether it knows a place rather than assuming it does.
+  describe('which places a change can be made from', function () {
+    it('knows the places this build names, and no others', function () {
+      assert.equal(isMetafieldChangeSource('portal'), true);
+      assert.equal(isMetafieldChangeSource('somewhere_new'), false);
     });
   });
 });
