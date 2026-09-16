@@ -1,8 +1,6 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { ConfigInstance } from '../../../shared/config/loader';
-// @ts-expect-error This module lacks type definitions.
-import type DomainEvents from '@tryghost/domain-events';
 import type { GhostMetrics } from '@tryghost/metrics';
 import {
   EmailAnalyticsService,
@@ -40,14 +38,9 @@ export class EmailAnalyticsServiceWrapper {
     }
   }
 
-  constructor({ logName }: { logName: string }) {
-    this.#logName = logName;
-  }
-
-  init({
+  constructor({
+    logName,
     config,
-    domainEvents,
-    event,
     queries,
     mailgunTags,
     jobNames,
@@ -57,8 +50,7 @@ export class EmailAnalyticsServiceWrapper {
     settingsCache,
   }: Readonly<{
     config: Pick<ConfigInstance, 'get'>;
-    domainEvents: Pick<DomainEvents, 'subscribe'>;
-    event: Parameters<DomainEvents['subscribe']>[0];
+    logName: string;
     queries: Queries;
     mailgunTags: string[];
     jobNames: JobNames;
@@ -66,10 +58,8 @@ export class EmailAnalyticsServiceWrapper {
     createEventProcessor: () => BatchEventProcessor;
     metrics: Pick<GhostMetrics, 'metric'>;
     settingsCache: { get: (key: string) => unknown };
-  }>): void {
-    if (this.#service) {
-      return;
-    }
+  }>) {
+    this.#logName = logName;
 
     this.#config = config;
     this.#metrics = metrics;
@@ -89,12 +79,6 @@ export class EmailAnalyticsServiceWrapper {
     logging.info(
       `${this.#logPrefix} Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`,
     );
-
-    // We currently cannot trigger a non-offloaded job from the job manager
-    // So the email analytics jobs simply emits an event.
-    domainEvents.subscribe(event, async () => {
-      await this.startFetch();
-    });
   }
 
   get service(): EmailAnalyticsService {
