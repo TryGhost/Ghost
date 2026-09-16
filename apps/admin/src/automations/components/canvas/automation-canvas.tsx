@@ -700,7 +700,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     <Inline
       ref={layoutRef}
       align="stretch"
-      className="@container/automation relative min-h-0 flex-1 overflow-hidden bg-background"
+      className="@container/automation relative min-h-0 flex-1 overflow-clip bg-background"
       data-testid="automation-canvas"
       gap="none"
     >

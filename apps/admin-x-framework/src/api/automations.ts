@@ -153,7 +153,21 @@ export const useReadAutomationEntryStats = createQueryWithId<
   parseResponse: (data) => AutomationEntryStatsResponseSchema.parse(data),
 });
 
+const AutomationEntryWindowSchema = AutomationEntryStatsSchema.shape.window;
+
+// Bounded requests must be acknowledged by Core; older versions ignore these parameters.
+export const matchesAutomationEntryWindow = (
+  window: z.infer<typeof AutomationEntryWindowSchema> | undefined,
+  params: Record<string, string> = {},
+) =>
+  !params.date_from ||
+  (!!window &&
+    window.date_from === params.date_from &&
+    window.date_to === new Date(Date.parse(params.date_to) + 86400000).toISOString().slice(0, 10) &&
+    window.timezone === params.timezone);
+
 export const AutomationStatusStatsSchema = z.object({
+  entry_window: AutomationEntryWindowSchema.optional(),
   automation_id: z.string(),
   in_progress_run_count: z.number().int().nonnegative(),
   completed_run_count: z.number().int().nonnegative(),
@@ -161,26 +175,137 @@ export const AutomationStatusStatsSchema = z.object({
   unclassified_run_count: z.number().int().nonnegative(),
 });
 
-const AutomationStatusStatsResponseSchema = z.object({
-  automation_status_stats: z.array(AutomationStatusStatsSchema).length(1),
+const AutomationSearchSchema = z.object({
+  version: z.number(),
+  query: z.string(),
+  matching: z.string(),
 });
+export const matchesAutomationSearch = (
+  meta: { search?: z.infer<typeof AutomationSearchSchema> } | undefined,
+  search: string,
+) =>
+  meta?.search?.version === 1 &&
+  meta.search.query === search &&
+  meta.search.matching === 'contains';
+
+export const AutomationStatusStatsResponseSchema = z
+  .object({
+    automation_status_stats: z.array(AutomationStatusStatsSchema).max(1),
+    meta: z
+      .object({
+        entry_window: AutomationEntryWindowSchema.optional(),
+        entry_buckets: z
+          .object({
+            version: z.number(),
+            timezone: z.string(),
+            entries: z.array(
+              z.object({
+                date: z.iso.date(),
+                count: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+              }),
+            ),
+          })
+          .optional(),
+        search: AutomationSearchSchema.optional(),
+        pagination: z.object({
+          next_cursor: z.string().min(1).nullable(),
+          state: z.enum(['scanning', 'exhausted']),
+        }),
+      })
+      .optional(),
+  })
+  .refine((response) =>
+    response.meta?.pagination.state === 'scanning'
+      ? response.automation_status_stats.length === 0 &&
+        response.meta.pagination.next_cursor !== null
+      : response.automation_status_stats.length === 1 && !response.meta?.pagination.next_cursor,
+  );
 
 export type AutomationStatusStats = z.infer<typeof AutomationStatusStatsSchema>;
+type StatusResponse = z.infer<typeof AutomationStatusStatsResponseSchema>;
+type SearchEntryBuckets = NonNullable<NonNullable<StatusResponse['meta']>['entry_buckets']>;
+type StatusResult = StatusResponse & { pages: number; entryBuckets?: SearchEntryBuckets };
 
+// Each response contributes disjoint run batches. React Query replaces retried
+// pages; deriving from the page array avoids mutable accumulation/double counts.
+export function mergeAutomationSearchBuckets(
+  pages: StatusResponse[],
+  search: string,
+  params: Record<string, string>,
+): SearchEntryBuckets | undefined {
+  const last = pages.at(-1);
+  if (
+    !last ||
+    last.meta?.pagination.state !== 'exhausted' ||
+    !pages.every(
+      (page) =>
+        matchesAutomationSearch(page.meta, search) &&
+        matchesAutomationEntryWindow(page.meta?.entry_window, params) &&
+        page.meta?.entry_buckets?.version === 1 &&
+        page.meta.entry_buckets.timezone === params.timezone,
+    )
+  ) {
+    return undefined;
+  }
+  const buckets = new Map<string, number>();
+  for (const page of pages) {
+    for (const { date, count } of page.meta!.entry_buckets!.entries) {
+      if (params.date_from && (date < params.date_from || date > params.date_to)) {
+        return undefined;
+      }
+      buckets.set(date, (buckets.get(date) ?? 0) + count);
+    }
+  }
+  const stats = last.automation_status_stats[0];
+  const total = [...buckets.values()].reduce((a, b) => a + b, 0);
+  if (
+    !stats ||
+    !Number.isSafeInteger(total) ||
+    total !==
+      stats.in_progress_run_count +
+        stats.completed_run_count +
+        stats.exited_early_run_count +
+        stats.unclassified_run_count
+  ) {
+    return undefined;
+  }
+  return {
+    version: 1,
+    timezone: params.timezone,
+    entries: [...buckets]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, count]) => ({ date, count })),
+  };
+}
 export const useReadAutomationStatusStats = (
   id: string,
   requestId: string,
-  options: Parameters<
-    ReturnType<typeof createQueryWithId<z.infer<typeof AutomationStatusStatsResponseSchema>>>
-  >[1],
+  options: Parameters<ReturnType<typeof createInfiniteQuery<StatusResult, StatusResponse>>>[0],
 ) => {
-  // A new list interaction fetches fresh data even if an earlier request is still pending.
-  const useQuery = createQueryWithId<z.infer<typeof AutomationStatusStatsResponseSchema>>({
+  const search = options?.searchParams?.search ?? '';
+  const useQuery = createInfiniteQuery<StatusResult, StatusResponse>({
     dataType: `AutomationStatusStatsResponseType:${requestId}`,
-    path: (automationId) => `/automations/${automationId}/status-stats/`,
+    path: `/automations/${id}/status-stats/`,
     parseResponse: (data) => AutomationStatusStatsResponseSchema.parse(data),
+    returnData: (original) => {
+      const { pages } = original as InfiniteData<StatusResponse>;
+      return {
+        ...pages.at(-1)!,
+        pages: pages.length,
+        entryBuckets: mergeAutomationSearchBuckets(pages, search, options?.searchParams ?? {}),
+      };
+    },
+    defaultNextPageParams: (page, params) => {
+      const cursor = page.meta?.pagination.next_cursor;
+      return search &&
+        matchesAutomationSearch(page.meta, search) &&
+        matchesAutomationEntryWindow(page.meta?.entry_window, options?.searchParams) &&
+        cursor
+        ? { ...params, cursor }
+        : undefined;
+    },
   });
-  return useQuery(id, options);
+  return useQuery(options);
 };
 
 export const AutomationRunSchema = z
@@ -201,38 +326,60 @@ export const AutomationRunSchema = z
     message: 'Only exited-early runs can have a failure flag.',
   });
 
-export const AutomationRunsResponseSchema = z.object({
-  automation_runs: z
-    .array(AutomationRunSchema)
-    .max(50)
-    .refine(
-      (runs) => new Set(runs.map((run) => run.id)).size === runs.length,
-      'Run IDs must be unique',
-    ),
-  // Absent on an older Core, which then only ever serves the first page.
-  meta: z
-    .object({
-      pagination: z.object({
-        limit: z.number().int().positive(),
-        next_cursor: z.string().min(1).nullable(),
-      }),
-    })
-    .optional(),
-});
+export const AutomationRunsResponseSchema = z
+  .object({
+    automation_runs: z
+      .array(AutomationRunSchema)
+      .max(50)
+      .refine(
+        (runs) => new Set(runs.map((run) => run.id)).size === runs.length,
+        'Run IDs must be unique',
+      ),
+    // Absent on an older Core, which then only ever serves the first page.
+    meta: z
+      .object({
+        entry_window: AutomationEntryWindowSchema.optional(),
+        search: AutomationSearchSchema.optional(),
+        pagination: z.object({
+          state: z.enum(['scanning', 'more', 'exhausted']).optional(),
+          limit: z.number().int().positive(),
+          next_cursor: z.string().min(1).nullable(),
+        }),
+      })
+      .optional(),
+  })
+  .refine(
+    (response) =>
+      !response.meta?.search ||
+      (!!response.meta.pagination.state &&
+        (response.meta.pagination.state === 'exhausted'
+          ? response.meta.pagination.next_cursor === null
+          : response.meta.pagination.next_cursor !== null)),
+    'Search pagination must distinguish progress from exhaustion',
+  );
 
 export type AutomationRun = z.infer<typeof AutomationRunSchema>;
 export type AutomationRunStatusFilter = Exclude<AutomationRun['status'], 'unclassified'>;
 export type AutomationRunsResponseType = z.infer<typeof AutomationRunsResponseSchema>;
 
+type RunsResult = {
+  runs: AutomationRun[];
+  searchSupported: boolean;
+  dateSupported: boolean;
+  scanning: boolean;
+  pages: number;
+};
+
 export const useBrowseAutomationRuns = (
   id: string,
   requestId: string,
   options: Parameters<
-    ReturnType<typeof createInfiniteQuery<AutomationRun[], AutomationRunsResponseType>>
+    ReturnType<typeof createInfiniteQuery<RunsResult, AutomationRunsResponseType>>
   >[0],
 ) => {
-  // A new list interaction fetches fresh data even if an earlier request is still pending.
-  const useQuery = createInfiniteQuery<AutomationRun[], AutomationRunsResponseType>({
+  const search = options?.searchParams?.search ?? '';
+  // A new interaction gets fresh identity, including when an older response is pending.
+  const useQuery = createInfiniteQuery<RunsResult, AutomationRunsResponseType>({
     dataType: `AutomationRunsResponseType:${requestId}`,
     path: `/automations/${id}/runs/`,
     parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
@@ -240,13 +387,30 @@ export const useBrowseAutomationRuns = (
       const { pages } = originalData as InfiniteData<AutomationRunsResponseType>;
       // Pages are live reads, not a snapshot; show a run once if a later page repeats it.
       const seen = new Set<string>();
-      return pages
+      const runs = pages
         .flatMap((page) => page.automation_runs)
         .filter((run) => (seen.has(run.id) ? false : seen.add(run.id)));
+      return {
+        runs,
+        dateSupported: pages.every((page) =>
+          matchesAutomationEntryWindow(page.meta?.entry_window, options?.searchParams),
+        ),
+        pages: pages.length,
+        scanning: pages.at(-1)?.meta?.pagination.state === 'scanning',
+        searchSupported:
+          !search ||
+          pages.every(
+            (page) => matchesAutomationSearch(page.meta, search) && !!page.meta?.pagination.state,
+          ),
+      };
     },
     defaultNextPageParams: (page, params) => {
       const cursor = page.meta?.pagination.next_cursor;
-      return cursor ? { ...params, cursor } : undefined;
+      return cursor &&
+        matchesAutomationEntryWindow(page.meta?.entry_window, options?.searchParams) &&
+        (!search || matchesAutomationSearch(page.meta, search))
+        ? { ...params, cursor }
+        : undefined;
     },
   });
   return useQuery(options);

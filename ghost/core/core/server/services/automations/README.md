@@ -240,12 +240,14 @@ selecting a status does not change the chart or counts.
 
 The Entered heading toggles ascending/descending and exposes the active order
 through `aria-sort`. Member and Status headings are plain labels. Sorting refreshes only the list;
-status selection, switching, or clearing refreshes all-status counts and the
-matching list together. Both retain their current results across sidebar
+outside member search, status selection, switching, or clearing refreshes
+all-status counts and the matching list together. During member search, cards
+change only the list; counts retain the full search scope. Both retain their current results across sidebar
 close/reopen, entry-date changes, focus, and reconnect. Navigation starts fresh.
 Unsupported Entered sorting shows an unavailable state.
 
-The list remains its own scroll region below the cards, virtualized with Admin's
+The chart, cards, and list share one scroll region. Compact status controls stay
+available in the header after the summary scrolls away. The list uses Admin's
 shared infinite list. The scrollbar spans loaded rows plus one loading row,
 not the full count: jumping to the bottom can load the next page without draining
 thousands of pages. Scrolling onward loads further pages without refreshing counts
@@ -258,6 +260,9 @@ filtering, virtualization, or closing Performance leaves history open; the
 canvas's Back to editing control restores the preserved draft. Entry timestamps
 use Admin's browser-local formatting with full timestamps on hover. Failed exits
 retain the Exited early icon with a red dot and accessible failure label.
+
+Member search and counts continue independently, with explicit retries and
+resumable pauses for long scans.
 
 ## Availability
 

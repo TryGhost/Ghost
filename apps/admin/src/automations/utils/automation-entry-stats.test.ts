@@ -4,7 +4,7 @@ import {
   AutomationEntryStatsSchema,
   type AutomationEntryStats,
 } from '@tryghost/admin-x-framework/api/automations';
-import { mapAutomationEntryStats } from './automation-entry-stats';
+import { mapAutomationEntryStats, mapAutomationSearchEntries } from './automation-entry-stats';
 
 const history = (days: number): AutomationEntryStats => {
   const entries = Array.from({ length: days }, (_, i) => ({
@@ -96,5 +96,40 @@ describe('automation statistics response validation', () => {
     },
   ])('rejects an entry response with $name', ({ value }) => {
     expect(AutomationEntryStatsSchema.safeParse(value).success).toBe(false);
+  });
+});
+
+describe('searched entry chart', () => {
+  it('fills missing calendar days across daylight saving without changing the total', () => {
+    const chart = mapAutomationSearchEntries(
+      [
+        { date: '2024-03-09', count: 2 },
+        { date: '2024-03-11', count: 1 },
+      ],
+      {
+        value: 7,
+        searchParams: {
+          timezone: 'America/New_York',
+          date_from: '2024-03-09',
+          date_to: '2024-03-11',
+        },
+      },
+    );
+    expect(chart.points.map(({ date, value }) => [date, value])).toEqual([
+      ['2024-03-09', 2],
+      ['2024-03-10', 0],
+      ['2024-03-11', 1],
+    ]);
+    expect(chart.total).toBe('3');
+  });
+  it('uses the viewer’s calendar day for empty all-time results', () => {
+    const chart = mapAutomationSearchEntries(
+      [],
+      { value: 'all', searchParams: { timezone: 'America/New_York' } },
+      new Date('2026-09-22T01:00:00Z'),
+    );
+    expect(chart.startDate).toBe('2026-09-21');
+    expect(chart.endDate).toBe('2026-09-21');
+    expect(chart.empty).toBe(true);
   });
 });

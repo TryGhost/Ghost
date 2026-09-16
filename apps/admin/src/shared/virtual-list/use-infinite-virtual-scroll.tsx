@@ -26,6 +26,8 @@ export interface UseInfiniteVirtualScrollOptions<T> extends InfiniteQueryResultL
    * trailing rows render as placeholders and trigger `fetchNextPage`.
    */
   totalItems: number;
+  /** Offset of the first row within a shared scroll container. */
+  scrollMargin?: number;
   /** Ref to an element inside the scrollable container. */
   parentRef: RefObject<HTMLElement>;
   /** Estimated row height in pixels (default: 100). */
@@ -66,6 +68,7 @@ export interface VirtualScrollItem<T> {
 export function useInfiniteVirtualScroll<T>({
   items,
   totalItems,
+  scrollMargin = 0,
   parentRef,
   hasNextPage,
   isFetchingNextPage,
@@ -76,6 +79,8 @@ export function useInfiniteVirtualScroll<T>({
 }: UseInfiniteVirtualScrollOptions<T>) {
   const virtualizer = useVirtualizer({
     count: totalItems,
+    useAnimationFrameWithResizeObserver: true,
+    scrollMargin,
     getScrollElement: () => getScrollElement(parentRef.current),
     estimateSize,
     overscan,
@@ -88,7 +93,9 @@ export function useInfiniteVirtualScroll<T>({
       ? (virtualItems.at(0)?.start ?? 0) - virtualizer.options.scrollMargin
       : 0;
   const spaceAfter =
-    virtualItems.length > 0 ? virtualizer.getTotalSize() - (virtualItems.at(-1)?.end ?? 0) : 0;
+    virtualItems.length > 0
+      ? virtualizer.getTotalSize() - ((virtualItems.at(-1)?.end ?? 0) - scrollMargin)
+      : 0;
 
   const itemsToRender: VirtualScrollItem<T>[] = virtualItems.map((virtualItem) => ({
     virtualItem,

@@ -1,3 +1,4 @@
+import type { useAutomationStatusStats } from '@/automations/hooks/use-automation-status-stats';
 import React, { useId } from 'react';
 import { Button, Skeleton } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -6,15 +7,22 @@ import { useAutomationEntryStats } from '@/automations/hooks/use-automation-entr
 import { TotalEntriesChart } from './total-entries-chart';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 
-export const TotalEntries: React.FC<{ automationId: string; dateRange: PerformanceDateRange }> = ({
-  automationId,
-  dateRange,
-}) => {
-  const { chart, isLoading, isError, unavailable, retry } = useAutomationEntryStats(
-    automationId,
-    dateRange,
-  );
+export const TotalEntries: React.FC<{
+  automationId: string;
+  dateRange: PerformanceDateRange;
+  isUpdating?: boolean;
+  searchResult?: ReturnType<typeof useAutomationStatusStats>;
+}> = ({ automationId, dateRange, isUpdating = false, searchResult }) => {
+  const unsearched = useAutomationEntryStats(automationId, dateRange);
+  const { chart, isLoading, isError, unavailable, retry } = searchResult
+    ? {
+        ...searchResult,
+        unavailable: searchResult.chartUnavailable,
+        isLoading: searchResult.isLoading && !searchResult.chartUnavailable,
+      }
+    : unsearched;
   const headingId = useId();
+  const loading = isUpdating || isLoading;
 
   return (
     <Stack
@@ -29,7 +37,7 @@ export const TotalEntries: React.FC<{ automationId: string; dateRange: Performan
           Total entries
         </Text>
       </Inline>
-      {isLoading && (
+      {loading && (
         <Stack aria-label="Loading total entries" gap="xs" role="status">
           <Text as="div" size="2xl">
             <Skeleton className="h-[1em] w-20" />
@@ -40,15 +48,15 @@ export const TotalEntries: React.FC<{ automationId: string; dateRange: Performan
           />
         </Stack>
       )}
-      {chart && <TotalEntriesChart data={chart} />}
-      {unavailable && (
+      {!loading && chart && <TotalEntriesChart data={chart} />}
+      {!isUpdating && unavailable && (
         <Text className="py-6" role="status" size="sm" tone="secondary">
           {dateRange.value === 'all'
             ? 'Entry analytics are unavailable on this version of Ghost.'
             : 'Entry analytics are unavailable for this date range.'}
         </Text>
       )}
-      {isError && (
+      {!isUpdating && isError && (
         <Stack className="py-3" gap="sm" role="alert">
           <Text size="sm" tone="secondary">
             Could not load entries.
