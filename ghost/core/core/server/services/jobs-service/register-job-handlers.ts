@@ -4,6 +4,7 @@ import EmailAnalyticsFetchLatestJob from '../email-analytics/jobs/email-analytic
 import type { EmailAnalyticsServiceWrapper } from '../email-analytics/email-analytics-service-wrapper';
 import { JobsService } from './jobs-service';
 import type { JobHandlingOptions } from './jobs-service';
+import type { JobConstructor } from './job';
 import type { GiftService } from '../gifts/gift-service';
 import CleanTokensJob from '../members/jobs/clean-tokens-job';
 import CleanExpiredCompedJob from '../members/jobs/clean-expired-comped-job';
@@ -29,6 +30,15 @@ const updateCheck = require('../update-check');
 // this shared declaration so none can declare the queue with a different
 // concurrency.
 const WEBMENTIONS_QUEUE: JobHandlingOptions = { queue: 'webmentions', concurrency: 3 };
+
+// Each email analytics pipeline fetches on its own five-minute tick and the
+// wrapper skips a tick while its previous fetch is still running. The second
+// slot lets an overlapping tick reach that guard and be skipped straight away
+// instead of queueing behind the running fetch and firing late. Every
+// pipeline must register through this declaration so none can drift.
+function emailAnalyticsQueue(JobClass: Pick<JobConstructor, 'type'>): JobHandlingOptions {
+  return { queue: JobClass.type, concurrency: 2 };
+}
 
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
@@ -60,20 +70,23 @@ export default function registerJobHandlers({
   mentionsSendingService,
   membersService,
 }: RegisterJobHandlersDependencies): void {
-  jobsService.handle(EmailAnalyticsGiftFetchLatestJob, () => gifts.startFetch(), {
-    queue: EmailAnalyticsGiftFetchLatestJob.type,
-    concurrency: 2,
-  });
+  jobsService.handle(
+    EmailAnalyticsGiftFetchLatestJob,
+    () => gifts.startFetch(),
+    emailAnalyticsQueue(EmailAnalyticsGiftFetchLatestJob),
+  );
 
-  jobsService.handle(EmailAnalyticsAutomationFetchLatestJob, () => automations.startFetch(), {
-    queue: EmailAnalyticsAutomationFetchLatestJob.type,
-    concurrency: 2,
-  });
+  jobsService.handle(
+    EmailAnalyticsAutomationFetchLatestJob,
+    () => automations.startFetch(),
+    emailAnalyticsQueue(EmailAnalyticsAutomationFetchLatestJob),
+  );
 
-  jobsService.handle(EmailAnalyticsFetchLatestJob, () => newsletters.startFetch(), {
-    queue: EmailAnalyticsFetchLatestJob.type,
-    concurrency: 2,
-  });
+  jobsService.handle(
+    EmailAnalyticsFetchLatestJob,
+    () => newsletters.startFetch(),
+    emailAnalyticsQueue(EmailAnalyticsFetchLatestJob),
+  );
 
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
