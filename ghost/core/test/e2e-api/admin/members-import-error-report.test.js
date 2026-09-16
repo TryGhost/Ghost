@@ -5,7 +5,6 @@ const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
-const membersService = require('../../../core/server/services/members');
 const { mockManager } = require('../../utils/e2e-framework');
 
 // The error report a failed import emails back to the manager: one importable row (so
@@ -66,7 +65,7 @@ describe('Members import error report', function () {
 
     // The job reports by email and must finish inside the test: the mail mock is
     // torn down after it, and nothing else waits for it.
-    await membersService.allImportsSettled();
+    await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
 
     const email = mockManager.assert.sentEmail({ subject: 'Your member import is complete' });
     assert.ok(

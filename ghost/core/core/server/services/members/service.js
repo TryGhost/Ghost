@@ -21,7 +21,6 @@ const { verificationWebhookService } = require('../verification/verification-web
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
 const RequestIntegrityTokenProvider = require('./request-integrity-token-provider');
-const { InFlightImports } = require('./import-export/import/in-flight');
 
 const messages = {
   noLiveKeysInDevelopment:
@@ -45,10 +44,6 @@ const membersStats = new MembersStats({
   settingsCache: settingsCache,
   isSQLite: DatabaseInfo.isSQLite(db.knex),
 });
-
-// Outlives init(), which builds a new importer each time, so an import dispatched by
-// one importer is still waited on once another handles it.
-const inFlightImports = new InFlightImports();
 
 let membersApi;
 let verificationTrigger;
@@ -91,7 +86,6 @@ const buildImporterDeps = ({ stripeAPIService }) => {
     // Resolved per dispatch rather than here: init() also runs where nothing has
     // initialised the jobs service.
     dispatchJob: (job) => jobsService.getInstance().dispatch(job),
-    inFlight: inFlightImports,
     knex: db.knex,
     urlFor: urlUtils.urlFor.bind(urlUtils),
     stripeAPIService,
@@ -276,8 +270,6 @@ module.exports = {
   importCSV: null,
   importInline: null,
   handleImportJob: null,
-  // Test-facing: resolves once every deferred import has finished, email included.
-  allImportsSettled: () => inFlightImports.allSettled(),
 
   stats: membersStats,
   export: null,

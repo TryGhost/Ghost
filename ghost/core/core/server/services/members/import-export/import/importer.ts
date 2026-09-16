@@ -5,7 +5,6 @@ import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-types/
 import type { Knex } from 'knex';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 import type { RowSpool } from './spool';
-import type { InFlightImports } from './in-flight';
 import MembersImportJob from '../../jobs/members-import-job';
 
 const metrics = require('@tryghost/metrics');
@@ -132,7 +131,6 @@ interface ImporterDeps {
   email: EmailNotifications;
   report: FailureReporter;
   dispatchJob: (job: MembersImportJob) => Promise<void>;
-  inFlight: InFlightImports;
   getTimezone: () => string;
   getInlineThreshold: () => number;
 }
@@ -228,7 +226,6 @@ class MembersCSVImporter {
   private _email: EmailNotifications;
   private _report: FailureReporter;
   private _dispatchJob: (job: MembersImportJob) => Promise<void>;
-  private _inFlight: InFlightImports;
   private _getTimezone: () => string;
   private _getInlineThreshold: () => number;
 
@@ -244,7 +241,6 @@ class MembersCSVImporter {
     email,
     report,
     dispatchJob,
-    inFlight,
     getTimezone,
     getInlineThreshold,
   }: ImporterDeps) {
@@ -259,7 +255,6 @@ class MembersCSVImporter {
     this._email = email;
     this._report = report;
     this._dispatchJob = dispatchJob;
-    this._inFlight = inFlight;
     this._getTimezone = getTimezone;
     this._getInlineThreshold = getInlineThreshold;
   }
@@ -315,8 +310,6 @@ class MembersCSVImporter {
       { event: { name: 'members.import.queued' }, rows: rows.length },
       'Members import queued',
     );
-    // Tracked before dispatch: the jobs service can start the job before dispatch resolves.
-    this._inFlight.track(spoolKey);
     try {
       await this._dispatchJob(
         new MembersImportJob({ spoolKey, labelName, extraLabels, emailRecipient }),
@@ -324,7 +317,6 @@ class MembersCSVImporter {
     } catch (error) {
       // No job will ever read the rows, so they are not left behind for one.
       await this.settle(() => this._spool.remove(spoolKey));
-      this._inFlight.release(spoolKey);
       throw error;
     }
   }
@@ -332,15 +324,7 @@ class MembersCSVImporter {
   // The members-import job handler. Resolves in every case, as the legacy inline job did:
   // everything that can fail is already reported here, so a rejection would only make the
   // jobs service report it again, and there is no retry behind it.
-  async handle(job: MembersImportJob, verificationTrigger: VerificationTrigger): Promise<void> {
-    try {
-      await this.runImportJob(job, verificationTrigger);
-    } finally {
-      this._inFlight.release(job.spoolKey);
-    }
-  }
-
-  private async runImportJob(
+  async handle(
     { spoolKey, labelName, extraLabels, emailRecipient }: MembersImportJob,
     verificationTrigger: VerificationTrigger,
   ): Promise<void> {

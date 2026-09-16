@@ -7,7 +7,6 @@ const Papa = require('papaparse');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
-const membersService = require('../../../core/server/services/members');
 const { mockManager } = require('../../utils/e2e-framework');
 
 // A member exported to CSV should re-import cleanly: the export's CSV is a valid
@@ -150,7 +149,7 @@ describe('Members export -> import round-trip', function () {
         .expect('Content-Type', /json/)
         .expect(202);
       assert.equal(res.body.meta.stats, undefined);
-      await membersService.allImportsSettled();
+      await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
     } finally {
       fs.unlinkSync(csvPath);
     }

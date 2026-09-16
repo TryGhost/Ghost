@@ -11,7 +11,6 @@ import MembersCSVImporter, {
 } from './import/importer';
 import readMemberRows from './import/reader';
 import { createRowSpool } from './import/spool';
-import type { InFlightImports } from './import/in-flight';
 import type MembersImportJob from '../jobs/members-import-job';
 import MembersCSVExporter, {
   type ExportOptions,
@@ -42,7 +41,6 @@ interface ImporterServices {
   sendEmail: EmailNotifications['send'];
   urlFor(type: string, data: unknown, absolute: boolean): string;
   dispatchJob(job: MembersImportJob): Promise<void>;
-  inFlight: InFlightImports;
   getTimezone(): string;
   getInlineThreshold(): number;
   stripeAPIService: unknown;
@@ -155,9 +153,7 @@ export function makeImporter(deps: ImporterServices) {
   return new MembersCSVImporter({
     knex: deps.knex,
     readRows: readMemberRows,
-    spool: createRowSpool(() =>
-      require('../../adapter-manager').default.getAdapter('storage:imports'),
-    ),
+    spool: createRowSpool(require('../../adapter-manager').default.getAdapter('storage:imports')),
     members,
     tiers: {
       getDefault: deps.getDefaultTier,
@@ -172,7 +168,6 @@ export function makeImporter(deps: ImporterServices) {
     email,
     report,
     dispatchJob: deps.dispatchJob,
-    inFlight: deps.inFlight,
     getTimezone: deps.getTimezone,
     getInlineThreshold: deps.getInlineThreshold,
   });

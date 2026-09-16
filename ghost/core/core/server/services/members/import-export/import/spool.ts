@@ -16,18 +16,18 @@ export interface RowSpool {
 // import can hand them to a background job and read them back after the request has
 // already returned. The rows go in and come out as MemberImportRow, so nothing but
 // the import's own row shape crosses this boundary.
-export function createRowSpool(getStorage: () => StorageBase): RowSpool {
+export function createRowSpool(storage: StorageBase): RowSpool {
   return {
     async write(rows) {
       const key = `members-import-${crypto.randomUUID()}.json`;
-      await getStorage().saveRaw(Buffer.from(JSON.stringify(rows)), key);
+      await storage.saveRaw(Buffer.from(JSON.stringify(rows)), key);
       return key;
     },
     async read(key) {
-      return JSON.parse((await getStorage().read({ path: key })).toString('utf8'));
+      return JSON.parse((await storage.read({ path: key })).toString('utf8'));
     },
     async remove(key) {
-      await getStorage().delete(key);
+      await storage.delete(key);
     },
   };
 }

@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import MembersCSVImporter from '../../../../../../../core/server/services/members/import-export/import/importer';
-import { InFlightImports } from '../../../../../../../core/server/services/members/import-export/import/in-flight';
 import MembersImportJob from '../../../../../../../core/server/services/members/jobs/members-import-job';
 import type { MemberImportRow } from '../../../../../../../core/server/services/members/import-export/import/row';
 
@@ -12,21 +11,6 @@ const errors = require('@tryghost/errors');
 const COMPLETED = 'Your member import is complete';
 const UNSUCCESSFUL = 'Your member import was unsuccessful';
 const COULD_NOT_COMPLETE = 'Your member import could not be completed';
-
-// Whether a settle promise resolves within a few event-loop turns: a bounded check, so a
-// regression fails with a message rather than hanging until the test times out.
-async function settlesSoon(promise: Promise<void>): Promise<boolean> {
-  let settled = false;
-  void promise.then(() => {
-    settled = true;
-  });
-  for (let i = 0; i < 5; i += 1) {
-    await new Promise((resolve) => {
-      setImmediate(resolve);
-    });
-  }
-  return settled;
-}
 
 const expectedFailure = () => new errors.DataImportError({ message: 'Member already exists' });
 
@@ -78,7 +62,6 @@ function harness(
   let rollback: () => Promise<void> = async () => {};
   let removalFailure: Error | undefined;
   let dispatchFailure: Error | undefined;
-  let onDispatch: ((job: MembersImportJob) => Promise<void>) | undefined;
 
   const deps = {
     knex: {
@@ -167,11 +150,7 @@ function harness(
         throw dispatchFailure;
       }
       dispatched.push(job);
-      if (onDispatch) {
-        await onDispatch(job);
-      }
     },
-    inFlight: new InFlightImports(),
     getTimezone: () => 'Etc/UTC',
     getInlineThreshold: () => inlineThreshold,
   };
@@ -230,10 +209,6 @@ function harness(
       rollback = async () => {
         throw error;
       };
-    },
-    // The in-memory jobs backend starts a job inside dispatch when a worker is free.
-    runOnDispatch: (handle: (job: MembersImportJob) => Promise<void>) => {
-      onDispatch = handle;
     },
     failDispatchWith: (error: Error) => {
       dispatchFailure = error;
@@ -575,68 +550,6 @@ describe('members import error handling', function () {
 
       assert.deepEqual(h.removedKeys, ['members-import-1.json']);
       assert.deepEqual(h.sent, []);
-      assert.equal(await settlesSoon(h.deps.inFlight.allSettled()), true, 'left in flight');
-    });
-
-    it('is not settled until the job has sent its email', async function () {
-      const h = harness();
-      let releaseEmail!: () => void;
-      const emailHeld = new Promise<void>((resolve) => {
-        releaseEmail = resolve;
-      });
-      const originalSend = h.deps.email.send;
-      h.deps.email.send = async (payload: SentEmail) => {
-        await emailHeld;
-        await originalSend(payload);
-      };
-      let settled = false;
-
-      await h.defer();
-      const handled = h.importer.handle(h.revive(h.dispatched[0]), h.noopVerification);
-      const allSettled = h.deps.inFlight.allSettled().then(() => {
-        settled = true;
-      });
-
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
-      assert.equal(settled, false, 'settled while the email was still being sent');
-
-      releaseEmail();
-      await handled;
-      await allSettled;
-      assert.equal(h.onlyEmail().subject, COMPLETED);
-    });
-
-    it('settles an import whose job finished before dispatch returned', async function () {
-      const h = harness();
-      h.runOnDispatch((job) => h.importer.handle(h.revive(job), h.noopVerification));
-
-      await h.defer();
-
-      assert.equal(h.onlyEmail().subject, COMPLETED);
-      assert.equal(await settlesSoon(h.deps.inFlight.allSettled()), true, 'left in flight');
-    });
-
-    it('is not settled until every dispatched import has finished', async function () {
-      const h = harness();
-      let settled = false;
-
-      await h.defer();
-      await h.defer();
-      const allSettled = h.deps.inFlight.allSettled().then(() => {
-        settled = true;
-      });
-
-      await h.importer.handle(h.revive(h.dispatched[0]), h.noopVerification);
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
-      assert.equal(settled, false, 'settled with an import still waiting to run');
-
-      await h.importer.handle(h.revive(h.dispatched[1]), h.noopVerification);
-      await allSettled;
-      assert.equal(h.sent.length, 2);
     });
 
     it('runs a job this process did not dispatch', async function () {
@@ -656,7 +569,6 @@ describe('members import error handling', function () {
       assert.deepEqual(elsewhere.created, ['first@example.com', 'second@example.com']);
       assert.equal(elsewhere.onlyEmail().subject, COMPLETED);
       assert.deepEqual(elsewhere.removedKeys, [job.spoolKey]);
-      assert.equal(await settlesSoon(elsewhere.deps.inFlight.allSettled()), true, 'left in flight');
     });
   });
 

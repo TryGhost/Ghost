@@ -38,7 +38,7 @@ describe('members import row spool', function () {
   it('writes the rows as one JSON file at the root of the imports store and returns its key', async function () {
     const rows = [row('first@example.com'), row('second@example.com')];
 
-    const key = await createRowSpool(importsStore).write(rows);
+    const key = await createRowSpool(importsStore()).write(rows);
 
     assert.match(key, /^members-import-[0-9a-f-]{36}\.json$/);
     assert.deepEqual(await fs.readdir(storagePath), [key]);
@@ -47,7 +47,7 @@ describe('members import row spool', function () {
 
   it('reads the rows back by key and removes the file', async function () {
     const rows = [row('first@example.com')];
-    const spool = createRowSpool(importsStore);
+    const spool = createRowSpool(importsStore());
 
     const key = await spool.write(rows);
 
@@ -61,8 +61,8 @@ describe('members import row spool', function () {
   it('reads and removes rows written by another spool instance', async function () {
     const rows = [row('first@example.com')];
 
-    const key = await createRowSpool(importsStore).write(rows);
-    const later = createRowSpool(importsStore);
+    const key = await createRowSpool(importsStore()).write(rows);
+    const later = createRowSpool(importsStore());
 
     assert.deepEqual(await later.read(key), JSON.parse(JSON.stringify(rows)));
     await later.remove(key);

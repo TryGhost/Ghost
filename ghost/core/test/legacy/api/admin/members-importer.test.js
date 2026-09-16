@@ -4,7 +4,6 @@ const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
 const settingsCache = require('../../../../core/shared/settings-cache');
-const membersService = require('../../../../core/server/services/members');
 
 const { mockManager } = require('../../../utils/e2e-framework');
 const assert = require('node:assert/strict');
@@ -239,7 +238,7 @@ describe('Members Importer API', function () {
     assertExists(jsonResponse.meta);
     assert.equal(jsonResponse.meta.stats, undefined);
 
-    await membersService.allImportsSettled();
+    await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
   });
 
   it('Fails to import member with invalid values', function () {
@@ -307,7 +306,10 @@ describe('Members Importer API', function () {
       assertExists(jsonResponse.meta);
 
       // Wait for the job to finish
-      await membersService.allImportsSettled();
+      await mockManager.assert.sentEmailEventually(
+        { subject: /^Your member import/ },
+        { timeout: 30000 },
+      );
 
       assert.equal(
         settingsCache.get('email_verification_required'),
@@ -388,7 +390,10 @@ describe('Members Importer API', function () {
       assertExists(jsonResponse.meta);
 
       // Wait for the job to finish
-      await membersService.allImportsSettled();
+      await mockManager.assert.sentEmailEventually(
+        { subject: /^Your member import/ },
+        { timeout: 30000 },
+      );
 
       assert.equal(
         settingsCache.get('email_verification_required'),

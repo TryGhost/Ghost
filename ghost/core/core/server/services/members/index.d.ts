@@ -32,7 +32,6 @@ interface MembersService {
     tierSlug?: string,
   ): Promise<{ status: 'paid'; products: Array<{ slug: string }> }>;
   handleImportJob: ((job: MembersImportJob) => Promise<void>) | null;
-  allImportsSettled(): Promise<void>;
 }
 
 declare const membersService: MembersService;

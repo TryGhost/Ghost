@@ -5,7 +5,6 @@ const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
-const membersService = require('../../../core/server/services/members');
 const jobsService = require('../../../core/server/services/jobs-service');
 const logging = require('@tryghost/logging');
 const sinon = require('sinon');
@@ -67,7 +66,7 @@ describe('Members import path selection', function () {
 
       // the deferred job reports by email, so it has to finish inside the
       // test: the mail mock is torn down after it, and nothing else waits for it
-      await membersService.allImportsSettled();
+      await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
       mockManager.assert.sentEmailCount(1);
     });
   });
@@ -75,7 +74,7 @@ describe('Members import path selection', function () {
   describe('over the threshold', function () {
     it('defers to a background job and reports no stats yet', async function () {
       configUtils.set('members:importer:inlineThreshold', 1);
-      const getAdapter = sinon.spy(adapterManager, 'getAdapter');
+      const saveRaw = sinon.spy(adapterManager.getAdapter('storage:imports'), 'saveRaw');
       const dispatch = sinon.spy(jobsService.getInstance(), 'dispatch');
       const loggingInfo = sinon.spy(logging, 'info');
 
@@ -84,8 +83,8 @@ describe('Members import path selection', function () {
       assert.equal(res.status, 202);
       assert.equal(res.body.meta.stats, undefined);
 
-      await membersService.allImportsSettled();
-      sinon.assert.calledWith(getAdapter, 'storage:imports');
+      await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
+      sinon.assert.calledOnce(saveRaw);
       mockManager.assert.sentEmailCount(1);
       // Handed to the class-based jobs service as one serialisable members-import job,
       // and run by it rather than by the legacy job manager.
