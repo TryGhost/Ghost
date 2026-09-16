@@ -9,6 +9,7 @@ import ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
+import MembersImportJob from '../members/jobs/members-import-job';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
 import type MentionController from '../mentions/mention-controller';
 import type MentionSendingService from '../mentions/mention-sending-service';
@@ -35,6 +36,9 @@ interface RegisterJobHandlersDependencies {
   mediaInliner: ExternalMediaInliner;
   mentionsController: MentionController;
   mentionsSendingService: MentionSendingService;
+  membersService: {
+    handleImportJob(job: MembersImportJob): Promise<void>;
+  };
 }
 
 export default function registerJobHandlers({
@@ -44,6 +48,7 @@ export default function registerJobHandlers({
   mediaInliner,
   mentionsController,
   mentionsSendingService,
+  membersService,
 }: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
@@ -67,6 +72,10 @@ export default function registerJobHandlers({
 
   jobsService.handle(ContentCSVImportJob, async (job) => {
     await contentImport.handleJob(job);
+  });
+
+  jobsService.handle(MembersImportJob, async (job) => {
+    await membersService.handleImportJob(job);
   });
 
   jobsService.handle(UpdateCheckJob, async () => {

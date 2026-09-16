@@ -10,7 +10,8 @@ cannot be scheduled. Scheduled and offloaded jobs registered through the legacy
 Bree-based service run in worker threads, so they must initialize their own
 dependencies and cannot rely on the main Ghost process's memory. Jobs migrated
 to the class-based service (token cleanup, gift cleanup, gift reminders, update
-checks) run in-process and share the main process's initialized services.
+checks, members imports) run in-process and share the main process's initialized
+services.
 
 ## Adding a job
 
@@ -27,7 +28,8 @@ Existing examples include:
 
 - Gift reminders, which run in-process on a schedule through the class-based
   service.
-- Imports, which run as inline jobs.
+- The site content import (`ghost/core/core/server/data/importer/`), which runs
+  as an inline job.
 - Email analytics, which uses scheduled worker jobs.
 
 Prefer an existing job with similar lifecycle and failure requirements as the
