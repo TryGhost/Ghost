@@ -1,6 +1,6 @@
+import EmailAnalyticsGiftFetchLatestJob from './email-analytics-gift-fetch-latest-job';
 import EmailAnalyticsAutomationFetchLatestJob from './email-analytics-automation-fetch-latest-job';
 import EmailAnalyticsFetchLatestJob from './email-analytics-fetch-latest-job';
-import * as path from 'node:path';
 import moment from 'moment';
 import type { JobsService } from '../../jobs-service/jobs-service';
 
@@ -22,15 +22,11 @@ type Models = {
   AutomatedEmailRecipient: {
     query(): ExistingRecipientQuery;
   };
-  GiftDelivery?: {
+  GiftDelivery: {
     query(): ExistingRecipientQuery;
   };
 };
 type Config = { get(key: string): unknown };
-type JobManager = {
-  addJob(options: { job: string; name: string; at: string }): void;
-};
-
 function randomFiveMinuteCron(): string {
   // Use a random seconds value to avoid spikes to external APIs on the minute.
   const seconds = Math.floor(Math.random() * 60); // 0-59
@@ -46,23 +42,19 @@ export class EmailAnalyticsJobScheduler {
   #hasScheduledGiftDeliveriesJob = false;
   readonly #models: Models;
   readonly #config: Config;
-  readonly #jobManager: JobManager;
   readonly jobsService: Pick<JobsService, 'scheduleRecurring'>;
 
   constructor({
     models,
     config,
-    jobManager,
     jobsService,
   }: {
     models: Models;
     config: Config;
-    jobManager: JobManager;
     jobsService: Pick<JobsService, 'scheduleRecurring'>;
   }) {
     this.#models = models;
     this.#config = config;
-    this.#jobManager = jobManager;
     this.jobsService = jobsService;
   }
 
@@ -147,11 +139,10 @@ export class EmailAnalyticsJobScheduler {
     const hasGiftDelivery =
       skipGiftDeliveryCheck ||
       Boolean(
-        this.#models.GiftDelivery &&
-        (await this.#models.GiftDelivery.query()
+        await this.#models.GiftDelivery.query()
           .where('email_sent_at', '>', moment.utc().subtract(30, 'days').toDate())
           .whereNotNull('email_provider_message_id')
-          .first('id')),
+          .first('id'),
       );
 
     if (!hasGiftDelivery || this.#hasScheduledGiftDeliveriesJob) {
@@ -160,11 +151,7 @@ export class EmailAnalyticsJobScheduler {
 
     const at = randomFiveMinuteCron();
     logging.info(`[Background Job] email-analytics-gift-fetch-latest scheduled at ${at}`);
-    this.#jobManager.addJob({
-      at,
-      job: path.resolve(__dirname, 'gift-fetch-latest/index.js'),
-      name: 'email-analytics-gift-fetch-latest',
-    });
+    await this.jobsService.scheduleRecurring(new EmailAnalyticsGiftFetchLatestJob(), { cron: at });
     this.#hasScheduledGiftDeliveriesJob = true;
   }
 }

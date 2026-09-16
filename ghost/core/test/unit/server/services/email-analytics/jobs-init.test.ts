@@ -20,9 +20,12 @@ describe('email analytics scheduler initialization', function () {
 
   it('retains the concrete scheduler and its dependencies across initialization', function () {
     const dependencies = {
-      models: { Email: { where: sinon.stub() }, AutomatedEmailRecipient: { query: sinon.stub() } },
+      models: {
+        Email: { where: sinon.stub() },
+        AutomatedEmailRecipient: { query: sinon.stub() },
+        GiftDelivery: { query: sinon.stub() },
+      },
       config: { get: sinon.stub() },
-      jobManager: { addJob: sinon.stub() },
       jobsService: { scheduleRecurring: sinon.stub().resolves() },
     };
     const scheduler = init(dependencies);

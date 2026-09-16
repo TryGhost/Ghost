@@ -1,3 +1,4 @@
+import EmailAnalyticsGiftFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { vi } from 'vitest';
@@ -11,6 +12,12 @@ const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
 
 const pipelines = [
+  {
+    JobClass: EmailAnalyticsGiftFetchLatestJob,
+    type: 'email-analytics-gift-fetch-latest',
+    wrapperName: 'gifts',
+    schedule: 'scheduleRecurringGiftDeliveriesJob',
+  },
   {
     JobClass: EmailAnalyticsAutomationFetchLatestJob,
     type: 'email-analytics-automation-fetch-latest',
@@ -71,24 +78,58 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
     await assert.rejects(calls[0].args[1](new JobClass()), /restoration failed/);
   });
 
-  it('leaves registration retryable after rejection and never submits the legacy job', async function () {
+  it('admits an overlapping tick while a sibling queue progresses', async function () {
+    const backend = new InMemoryJobsBackend();
+    const jobsService = new JobsService({ backend, logging: { info() {}, error() {} } });
+    const siblingPipeline = pipelines.find((pipeline) => pipeline.wrapperName !== wrapperName)!;
+    let release!: () => void;
+    const wrapper = {
+      startFetch: sinon.stub().returns(
+        new Promise<void>((resolve) => {
+          release = resolve;
+        }),
+      ),
+    };
+    const sibling = { startFetch: sinon.stub().resolves() };
+    registerJobHandlers({
+      jobsService,
+      [wrapperName]: wrapper,
+      [siblingPipeline.wrapperName]: sibling,
+    });
+    await jobsService.start();
+    try {
+      await jobsService.dispatch(new JobClass());
+      await jobsService.dispatch(new JobClass());
+      await jobsService.dispatch(new siblingPipeline.JobClass());
+      await vi.waitFor(() => {
+        sinon.assert.calledTwice(wrapper.startFetch);
+        sinon.assert.calledOnce(sibling.startFetch);
+      });
+    } finally {
+      release();
+      await jobsService.shutdown();
+    }
+  });
+
+  it('leaves registration retryable after rejection', async function () {
     vi.stubEnv('NODE_ENV', 'production');
     const jobsService = {
       scheduleRecurring: sinon.stub().onFirstCall().rejects(new Error('unavailable')),
     };
     jobsService.scheduleRecurring.onSecondCall().resolves();
-    const jobManager = { addJob: sinon.stub() };
     const scheduler = new EmailAnalyticsJobScheduler({
       config: { get: () => true },
-      models: { Email: { where: sinon.stub() }, AutomatedEmailRecipient: { query: sinon.stub() } },
+      models: {
+        Email: { where: sinon.stub() },
+        AutomatedEmailRecipient: { query: sinon.stub() },
+        GiftDelivery: { query: sinon.stub() },
+      },
       jobsService,
-      jobManager,
     });
     await assert.rejects(scheduler[schedule](true), /unavailable/);
     await scheduler[schedule](true);
     await scheduler[schedule](true);
     sinon.assert.calledTwice(jobsService.scheduleRecurring);
-    sinon.assert.notCalled(jobManager.addJob);
   });
 
   it('lets the real backend deduplicate concurrent recurring registration without fetching immediately', async function () {
@@ -100,9 +141,12 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
     registerJobHandlers({ jobsService, [wrapperName]: newsletters });
     const scheduler = new EmailAnalyticsJobScheduler({
       config: { get: () => true },
-      models: { Email: { where: sinon.stub() }, AutomatedEmailRecipient: { query: sinon.stub() } },
+      models: {
+        Email: { where: sinon.stub() },
+        AutomatedEmailRecipient: { query: sinon.stub() },
+        GiftDelivery: { query: sinon.stub() },
+      },
       jobsService,
-      jobManager: { addJob: sinon.stub() },
     });
     const clock = sinon.useFakeTimers({ now: new Date('2026-01-01T00:00:00Z') });
     sinon.stub(Math, 'random').returns(0);

@@ -51,6 +51,7 @@ it('initializes dependencies and starts jobs before automation polling can sched
       sendingService: {},
     },
     './server/services/email-analytics': {
+      getGifts: () => ({}),
       getAutomations: () => ({}),
       getNewsletters: () => ({}),
       init: async () => {

@@ -452,6 +452,7 @@ async function initServices({
   assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
   assert(membersService.handleImportJob, 'Members service should be initialized');
   registerJobHandlers({
+    gifts: emailAnalytics.getGifts(),
     automations: emailAnalytics.getAutomations(),
     newsletters: emailAnalytics.getNewsletters(),
     jobsService,
@@ -726,7 +727,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const emailAnalyticsJobs = require('./server/services/email-analytics/jobs').init({
       models: require('./server/models'),
       config,
-      jobManager: require('./server/services/jobs'),
       jobsService,
     });
 
