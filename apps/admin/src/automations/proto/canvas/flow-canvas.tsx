@@ -294,9 +294,13 @@ const FlowStepNode: React.FC<NodeProps> = ({ data }) => {
         </div>
       )}
       {/* Trigger: what this automation listens for, and how many criteria
-                    end it. Read-only on this canvas. */}
+                    end it. Read-only on this canvas. text-control, matching the edit
+                    canvas's trigger caption and the email card's body excerpt — one
+                    caption size across both canvases. */}
       {d.kind === 'trigger' && !d.focused && d.summary && (
-        <div className={cn(NODE_BODY_PADDING, 'text-sm text-muted-foreground')}>{d.summary}</div>
+        <div className={cn(NODE_BODY_PADDING, 'text-control text-muted-foreground')}>
+          {d.summary}
+        </div>
       )}
     </NodeCard>
   );

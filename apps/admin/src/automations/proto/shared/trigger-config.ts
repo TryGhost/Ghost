@@ -274,10 +274,13 @@ export const exitSentence = (config: Pick<TriggerConfig, 'type'>): string => {
  */
 export const triggerConfigFor = (type: TriggerType): TriggerConfig => ({
   type,
-  // A trigger that has tiers starts with all of them — "any tier" — rather than with
-  // none, which is the field's error state rather than its default. One that doesn't
-  // holds an empty list, which nothing reads.
-  tierIds: hasTiers({ type }) ? [...ALL_TIER_IDS] : [],
+  // Starts EMPTY, which the tiers field renders as its "Choose tiers"
+  // placeholder. This reverses an earlier default of all-tiers ("any tier"):
+  // that read as pre-answered, and with the tiers now behind a field-and-
+  // popover, a question the publisher never opened shouldn't arrive answered.
+  // Empty means unanswered, not error — the error is publishing it that way,
+  // and validation speaks for the whole card, not this field.
+  tierIds: [],
 });
 
 export const DEFAULT_TRIGGER_CONFIG: TriggerConfig = triggerConfigFor('member_subscribes');

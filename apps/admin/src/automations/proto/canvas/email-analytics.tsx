@@ -19,13 +19,29 @@ import {
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { Recharts, cn, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import { type ProtoActionLink, actionLinks } from '@/automations/proto/shared/email-links';
-import { formatRate } from '@/automations/components/canvas/format-stats';
 import { OffValue } from '@/automations/components/canvas/off-value';
+
+// The proto's own copy of the editor's formatRate, one character different: an
+// EM DASH (—) where the editor prints "--".
+//
+// The em dash is the typographic convention for an empty data cell — Chicago
+// (table style) and APA both use it to mean "no data available", and it's what
+// statistical tables have used for a century. The alternatives each mean
+// something else: an en dash (–) marks a range (1–5); a hyphen (-) joins
+// words; "--" is the typewriter-era stand-in for a dash that real typography
+// replaced. So — is not a style preference here, it's the one mark whose
+// dictionary meaning IS "this cell has nothing to report".
+//
+// The editor's own "--" is pinned by editor.test assertions; if this sticks,
+// the fix belongs upstream in components/canvas/format-stats.ts — one
+// character there, plus its tests.
+const formatRate = (rate: number | null): string =>
+  rate === null ? '—' : `${formatNumber(rate)}%`;
 
 // Email analytics for the proto's canvas — hybrid with the real editor.
 //
-// Reuses the shipped editor's shared, presentational bits verbatim (OffValue,
-// formatRate) and the same Shade chart/recharts building blocks, but is
+// Reuses the shipped editor's shared, presentational bits verbatim (OffValue)
+// and the same Shade chart/recharts building blocks, but is
 // proto-owned and driven by each email's own `action.stats`, so numbers vary per
 // email and stay consistent between the node footer and the sidebar. Mirrors
 // apps/admin/src/automations/components/canvas (EmailStepStatsFooter +
@@ -41,7 +57,7 @@ interface StatsProps {
 // --- Node stats footer -----------------------------------------------------
 
 // Tracked → the value; not tracked → a muted, inert "Off" that keeps the column
-// in place (distinct from formatRate's "--" = no data yet).
+// in place (distinct from formatRate's "—" = no data yet).
 const FooterMetric: React.FC<{ label: string; tracked: boolean; children: React.ReactNode }> = ({
   label,
   tracked,
@@ -92,6 +108,15 @@ export const EmailStatsFooter: React.FC<StatsProps & { divider?: boolean }> = ({
 // email card was consolidated to one implementation across every lane. The
 // right-hand sheet is how analytics open now; if on-card analytics come back,
 // they come back as that one card growing the section, not as a second card.
+
+// A metrics-as-a-field experiment lived here briefly (EmailStatsField): the
+// footer's three numbers in input chrome, opening the top links in a
+// field-width popover — the tiers pattern applied to analytics, as a path to
+// retiring the sheet and the header's third icon. Pulled while it's thought
+// over: side by side with the footer it made the card busier, not cleaner.
+// Never committed, so this description is the spec if the idea returns —
+// FooterMetric, TopClickedLinksContent and useDismissOnPanePress (flow-utils)
+// are the pieces, and the tiers field is the pattern to copy.
 
 // --- Sidebar performance section -------------------------------------------
 

@@ -466,3 +466,37 @@ export const lexicalHasContent = (lexical: string): boolean => {
     return lexical.trim().length > 0;
   }
 };
+
+// Closes a popover opened from inside a node when the canvas BACKGROUND is pressed.
+//
+// Radix dismisses on a document-level `pointerdown` in the bubble phase, and on the
+// React Flow pane that press doesn't arrive: the pane is wired to d3-zoom, whose
+// handlers call d3's `nopropagation` (stopImmediatePropagation) so a drag can start
+// without the rest of the page reacting. The result is a dropdown you can only close
+// by pressing the field that opened it, which is the one thing nobody tries.
+//
+// Capture runs top-down from the document, ahead of anything on the pane, so it's the
+// one phase that still hears the press.
+//
+// Deliberately scoped to `.react-flow__pane` — the background itself, not "outside".
+// Radix already handles every other target correctly, and a broader listener would
+// race its trigger: our handler would close on pointerdown and the trigger's own
+// click would reopen it, so pressing the field would stop working.
+//
+// Lives here (rather than in trigger-config-form, where it grew up) because any
+// field-that-opens on a card needs it — every Radix surface raised over the
+// pane hits the same swallowed pointerdown.
+export const useDismissOnPanePress = (open: boolean, onDismiss: () => void): void => {
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const handle = (event: PointerEvent) => {
+      if ((event.target as HTMLElement | null)?.closest('.react-flow__pane')) {
+        onDismiss();
+      }
+    };
+    document.addEventListener('pointerdown', handle, true);
+    return () => document.removeEventListener('pointerdown', handle, true);
+  }, [open, onDismiss]);
+};

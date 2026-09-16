@@ -97,6 +97,31 @@ import { EmailPreview } from './email-preview';
 import { EMPTY_LEXICAL, SEEDED_LEXICAL } from '@/automations/proto/shared/mock';
 import { TriggerEmptyState, TriggerFieldsForm } from './trigger-config-form';
 
+// The trigger's node id — also its name in the grace system (graceStepId),
+// since choosing or configuring a trigger makes it the card being worked on
+// exactly the way inserting a step does.
+const TRIGGER_NODE_ID = '__trigger__';
+
+// What an email that hasn't sent yet has done: nothing, counted. Every email
+// card reports, from the moment it exists — a brand-new node included — so the
+// stats block is part of what an email IS here, not a reward for having run.
+// This stands in wherever there's no fixture (mock run data only covers the
+// seeded automations).
+//
+// Sent 0, rates null — which the proto's formatRate renders as an em dash
+// (see its note for why that glyph).
+// All-zeros was tried for looking cleaner and reverted: the two rates are
+// PERCENTAGES, and 0% claims a measurement ("everyone we sent to ignored it")
+// where the truth is that there's nothing to measure yet. A count can honestly
+// be zero; a rate over nobody can only decline to answer.
+const ZERO_EMAIL_STATS: AutomationEmailStats = {
+  email_sent_count: 0,
+  email_opened_count: 0,
+  email_clicked_count: 0,
+  opened_rate: null,
+  clicked_rate: null,
+};
+
 // The real editor's StepPicker speaks 'send_email' | 'wait'; the proto's graph
 // helpers here take 'email' | 'wait'.
 const toInsertKind = (type: StepPickerType): 'email' | 'wait' =>
@@ -646,7 +671,11 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                   />
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">{triggerSummary(triggerConfig)}</div>
+                // text-control — the same size every trigger caption takes,
+                // matched to the email card's body excerpt.
+                <div className="text-control text-muted-foreground">
+                  {triggerSummary(triggerConfig)}
+                </div>
               )}
             </div>
           </div>
@@ -814,11 +843,17 @@ const ExitNode: React.FC<NodeProps> = ({ data }) => {
 
 const nodeTypes = { step: StepNode, exit: ExitNode };
 
-type PlusEdgeData = { onPick: (type: StepPickerType) => void; intro?: boolean };
+type PlusEdgeData = {
+  onPick: (type: StepPickerType) => void;
+  intro?: boolean;
+  // Skip the hover reveal and keep the + on screen — see alwaysShowInserts.
+  alwaysVisible?: boolean;
+};
 
-// Connecting line with a hover-revealed circular "+" at its midpoint, matched to
-// the real add-step-edge: the button fades in while the cursor is near the edge
-// (or the picker is open) and opens the shared OptionPicker.
+// Connecting line with a circular "+" at its midpoint, matched to the real
+// add-step-edge. While the automation is being BUILT the + stays on screen;
+// once it's running, it reveals on hover (cursor near the edge, or the picker
+// open) the way the shipping canvas does — see alwaysShowInserts for why.
 const PlusEdge: React.FC<EdgeProps> = ({
   id,
   sourceX,
@@ -833,6 +868,7 @@ const PlusEdge: React.FC<EdgeProps> = ({
   const [edgeHovered, setEdgeHovered] = useState(false);
   const [labelHovered, setLabelHovered] = useState(false);
   const onPick = (data as PlusEdgeData | undefined)?.onPick;
+  const alwaysVisible = Boolean((data as PlusEdgeData | undefined)?.alwaysVisible);
 
   // Drawing the line from the trigger card downward. A dash the length of the whole
   // path, offset out of sight and then slid back in — the standard SVG stroke trick,
@@ -882,7 +918,7 @@ const PlusEdge: React.FC<EdgeProps> = ({
   }
 
   // No "+" until the line it hangs on exists.
-  const visible = drawn && (open || edgeHovered || labelHovered);
+  const visible = drawn && (alwaysVisible || open || edgeHovered || labelHovered);
   return (
     <g onMouseEnter={() => setEdgeHovered(true)} onMouseLeave={() => setEdgeHovered(false)}>
       <BaseEdge className={strokeClass} id={id} interactionWidth={30} path={path} style={stroke} />
@@ -938,6 +974,13 @@ interface EditCanvasProps {
   // whole hand — every warning, grace periods included. A counter rather than a
   // boolean so consecutive blocked presses each land; the canvas never resets it.
   revealWarningsSignal?: number;
+  // Keep every connector's + on screen instead of revealing on hover. The
+  // screen passes this while the automation is OFF: building is when adding
+  // steps is the point, and hover-only inserts made the moment after choosing
+  // a trigger read as a dead end — one card, one line, and no visible way to
+  // continue. Running, the flow is something being watched rather than built,
+  // so the inserts fall back to hover the way the shipping canvas does.
+  alwaysShowInserts?: boolean;
 }
 
 export const EditCanvas: React.FC<EditCanvasProps> = ({
@@ -949,6 +992,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   triggerLocked = false,
   simpleTriggerNames = false,
   revealWarningsSignal,
+  alwaysShowInserts = false,
 }) => {
   const { canvasRef, onInit, size, centerOn, contentHeightRef, recenter } = useCenteredColumn();
   // Which email the right-hand analytics sheet is reporting on.
@@ -1142,20 +1186,28 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // current lexical back off the draft, so the toggle can't drift from the data.
   const dialogAction = ordered.find((a) => a.id === emailDialogActionId);
   const dialogEmail = dialogAction?.type === 'send_email' ? dialogAction : undefined;
+  // Same zero fallback as the cards' footers: the sheet opens from a button the
+  // zeros put on screen, so it has to be able to report the same nothing.
   const sheetEmail: SheetEmail | null =
-    analyticsAction?.type === 'send_email' && analyticsAction.stats
+    analyticsAction?.type === 'send_email'
       ? {
           actionId: analyticsAction.id,
           subject: analyticsAction.data.email_subject || 'Untitled',
-          stats: analyticsAction.stats,
+          stats: analyticsAction.stats ?? ZERO_EMAIL_STATS,
         }
       : null;
 
-  // The trigger config changing is an action about the trigger, so it ends any
-  // step's grace on the way through.
+  // The trigger config changing is an action about the TRIGGER, so the grace
+  // moves there — which ends any step's grace (attention demonstrably moved)
+  // and grants the trigger its own. The trigger earns a grace period for the
+  // same reason a new email does: a just-picked paid trigger starts with no
+  // tiers chosen, and outlining it gold in the same breath as choosing it
+  // would be scolding someone mid-thought. Editing the tiers routes through
+  // here too, which correctly KEEPS the trigger's grace — an action about the
+  // card being worked on.
   const changeTriggerConfig = useCallback(
     (next: TriggerConfig) => {
-      setGraceStepId(null);
+      setGraceStepId(TRIGGER_NODE_ID);
       onTriggerConfigChange?.(next);
     },
     [onTriggerConfigChange],
@@ -1178,8 +1230,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     // measured, so an email card growing an analytics block or a links list
     // moves the cards below it without anything here being told.
     const columnIds = triggerOnly
-      ? ['__trigger__']
-      : ['__trigger__', ...ordered.map((action) => action.id), '__exit__'];
+      ? [TRIGGER_NODE_ID]
+      : [TRIGGER_NODE_ID, ...ordered.map((action) => action.id), '__exit__'];
     const { ys, bottom } = layout(columnIds);
 
     // The middle of whichever card the canvas has been asked to centre on. Heights
@@ -1197,7 +1249,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
 
     const built: Node[] = [];
     built.push({
-      id: '__trigger__',
+      id: TRIGGER_NODE_ID,
       type: 'step',
       position: { x: 0, y: ys[0] },
       data: {
@@ -1218,8 +1270,20 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         onTriggerConfigChange: onTriggerConfigChange ? changeTriggerConfig : undefined,
         // Not while the card is still asking its question — an unanswered
         // trigger can't be at fault yet, and the options list shouldn't open
-        // gold.
-        warning: showOptions ? undefined : triggerWarning,
+        // gold. Two possible faults, one at a time: the screen's (Stripe — a
+        // site-level prerequisite, so it goes first) over the canvas's own
+        // (tiers unanswered, grace-gated like the emails' blank warning; the
+        // screen validates the same fact separately, so grace never lets it
+        // publish).
+        warning: showOptions
+          ? undefined
+          : (triggerWarning ??
+            (triggerConfig &&
+            hasTiers(triggerConfig) &&
+            triggerConfig.tierIds.length === 0 &&
+            graceStepId !== TRIGGER_NODE_ID
+              ? { message: 'Choose tiers before this automation can be published.' }
+              : undefined)),
         triggerLocked,
         simpleTriggerNames,
         triggerUnset: showOptions,
@@ -1276,7 +1340,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
             action.id !== graceStepId
               ? { message: 'Add a subject line before this email can be sent.' }
               : undefined,
-          stats: action.type === 'send_email' ? action.stats : undefined,
+          stats: action.type === 'send_email' ? (action.stats ?? ZERO_EMAIL_STATS) : undefined,
           waitHours: action.type === 'wait' ? action.data.wait_hours : undefined,
           onSubjectChange: (subject: string) => {
             settleOthers(action.id);
@@ -1345,7 +1409,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           onPick: (type: StepPickerType) =>
             insert(
               {
-                previousActionId: source === '__trigger__' ? undefined : source,
+                previousActionId: source === TRIGGER_NODE_ID ? undefined : source,
                 nextActionId: toExit ? undefined : target,
               },
               toInsertKind(type),
@@ -1353,6 +1417,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           // Only the first automation's first connector draws itself. A step
           // inserted later gets its edge the way it always did.
           intro: introPhase === 'connecting',
+          alwaysVisible: alwaysShowInserts,
         },
       });
     }
@@ -1380,6 +1445,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     triggerOnly,
     introPhase,
     requestTriggerChange,
+    alwaysShowInserts,
   ]);
 
   // Follow whichever card was asked for, once the column has settled around it.

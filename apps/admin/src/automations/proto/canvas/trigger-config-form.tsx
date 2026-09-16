@@ -1,11 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxTrigger,
-  ComboboxValue,
-  Label,
-} from '@tryghost/shade/components';
+import React, { useState } from 'react';
+import { Popover, PopoverContent, PopoverTrigger, inputSurface } from '@tryghost/shade/components';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Stack } from '@tryghost/shade/primitives';
 import {
   ALL_TIER_IDS,
@@ -20,36 +15,7 @@ import {
 } from '@/automations/proto/shared/trigger-config';
 import { PickerRow } from '@/automations/proto/shared/option-picker';
 import { CheckboxList, CheckboxRow } from '@/automations/proto/shared/checkbox-list';
-
-// Closes a popover opened from inside a node when the canvas BACKGROUND is pressed.
-//
-// Radix dismisses on a document-level `pointerdown` in the bubble phase, and on the
-// React Flow pane that press doesn't arrive: the pane is wired to d3-zoom, whose
-// handlers call d3's `nopropagation` (stopImmediatePropagation) so a drag can start
-// without the rest of the page reacting. The result is a dropdown you can only close
-// by pressing the field that opened it, which is the one thing nobody tries.
-//
-// Capture runs top-down from the document, ahead of anything on the pane, so it's the
-// one phase that still hears the press.
-//
-// Deliberately scoped to `.react-flow__pane` — the background itself, not "outside".
-// Radix already handles every other target correctly, and a broader listener would
-// race its trigger: our handler would close on pointerdown and the trigger's own
-// click would reopen it, so pressing the field would stop working.
-const useDismissOnPanePress = (open: boolean, onDismiss: () => void) => {
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const handle = (event: PointerEvent) => {
-      if ((event.target as HTMLElement | null)?.closest('.react-flow__pane')) {
-        onDismiss();
-      }
-    };
-    document.addEventListener('pointerdown', handle, true);
-    return () => document.removeEventListener('pointerdown', handle, true);
-  }, [open, onDismiss]);
-};
+import { useDismissOnPanePress } from './flow-utils';
 
 // The trigger's settings, rendered inside the node card alongside every other
 // step's inline form: what starts the automation, which tiers it watches, and
@@ -175,18 +141,63 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 its own thing rather than per-field, so this reads as unanswered — see
                 `Select` in the trigger — and the objection is raised somewhere that can
                 speak for the whole card. */}
+      {/* A FIELD THAT OPENS, not a form on the card. The tiers were a labelled
+                combobox with the exit sentence loose underneath — the card carrying
+                its whole configuration on its face. Now the card shows one line: the
+                current answer in input chrome (inputSurface, the same recipe every
+                Shade control wears) with a pencil naming the interaction, and the
+                press opens a wider popover holding the checkboxes AND the exit
+                explanation together. The exits ride with the tiers because they're
+                consequences of this exact choice — reading them at the moment of
+                choosing is when they're worth reading.
+
+                No "Tiers" label above the field: the value ("Any paid tier") says
+                what the field holds, and the card's header already says what kind
+                of thing is being configured. A pencil rather than a chevron — this
+                opens an editing surface, not an option list dropping out of a
+                select. */}
       {showTiers && (
-        <Stack gap="sm">
-          <Label className="text-muted-foreground">Tiers</Label>
-          <Combobox open={tiersOpen} onOpenChange={setTiersOpen}>
-            <ComboboxTrigger aria-label="Tiers">
-              <ComboboxValue placeholder={noTier}>
-                {noTier ? 'Select' : anyTier ? 'Any paid tier' : tierNames(tierIds).join(', ')}
-              </ComboboxValue>
-            </ComboboxTrigger>
-            {/* "always" so the list tracks its card when the canvas pans — the
-                            same reason the node menus and the option picker set it. */}
-            <ComboboxContent className="p-1" updatePositionStrategy="always">
+        <Popover modal={false} open={tiersOpen} onOpenChange={setTiersOpen}>
+          <PopoverTrigger asChild>
+            <button
+              aria-label="Edit tiers"
+              // hover:bg-muted on top of the input chrome — an input doesn't
+              // hover, but this is a button wearing input clothes, and a field
+              // that opens something has to say so before the press.
+              className={cn(
+                inputSurface('self'),
+                'group/field flex h-9 w-full items-center justify-between gap-2 px-3 text-base',
+                'transition-colors hover:bg-muted',
+              )}
+              type="button"
+            >
+              <span className={cn('truncate', noTier && 'text-muted-foreground')}>
+                {noTier
+                  ? 'Choose tiers'
+                  : anyTier
+                    ? 'Any paid tier'
+                    : tierNames(tierIds).join(', ')}
+              </span>
+              {/* Revealed by hovering or focusing the field, like every
+                            field-that-opens (see the email content field): at rest the
+                            value is the point, and the pen is the interaction's label.
+                            The width stays reserved so nothing shifts. */}
+              <LucideIcon.Pen
+                className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none"
+                strokeWidth={2}
+              />
+            </button>
+          </PopoverTrigger>
+          {/* Sized to the FIELD, via the width Radix reports for the trigger —
+                    the popover reads as the field opened up, not a separate surface
+                    that happens to appear nearby (Shade's Combobox sizes its list the
+                    same way). "always" so it tracks its card when the canvas pans. */}
+          <PopoverContent
+            align="start"
+            className="w-(--radix-popover-trigger-width) p-0"
+            updatePositionStrategy="always"
+          >
+            <div className="p-2">
               <CheckboxList>
                 <CheckboxRow
                   checked={anyTier}
@@ -209,9 +220,18 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                   />
                 ))}
               </CheckboxList>
-            </ComboboxContent>
-          </Combobox>
-        </Stack>
+            </div>
+            {/* The exit sentence, footered under the choice it follows from —
+                        same voice and size as the card captions. Ruled off because the
+                        rows above are controls and this is a consequence, not another
+                        row to press. */}
+            {showExits && (
+              <div className="border-t border-border-default px-4 py-3">
+                <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
       )}
 
       {/* WHAT ENDS A RUN — stated, never chosen.
@@ -224,11 +244,18 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 rather than anything the configuration implies. A control whose every
                 answer is derivable isn't a control, it's a readout with extra steps.
 
-                So it's a sentence, and it moves on its own as the tiers above it change.
-                Muted and unlabelled: a Label would file it with the fields and invite a
-                press. See shared/trigger-config for what it costs to drop the one real
-                choice. Not in phase 1 — see showExits. */}
-      {showExits && <p className="text-sm text-muted-foreground">{exitSentence(config)}</p>}
+                So it's a sentence. Muted and unlabelled: a Label would file it with
+                the fields and invite a press. See shared/trigger-config for what it
+                costs to drop the one real choice. Not in phase 1 — see showExits.
+
+                Only on triggers WITHOUT tiers now. Where tiers exist the sentence
+                lives inside their popover (above), footered under the choice it
+                follows from — on the card as well would be the same line twice.
+                text-control, matching the email card's body excerpt: the cards'
+                muted caption text is one size. */}
+      {showExits && !showTiers && (
+        <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
+      )}
     </Stack>
   );
 };

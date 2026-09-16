@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { AUTOMATION_DESCRIPTIONS, mockAutomations } from './mock';
-import { type TriggerConfig, triggerConfigFor } from './trigger-config';
+import { ALL_TIER_IDS, type TriggerConfig, triggerConfigFor } from './trigger-config';
 
 // ---------------------------------------------------------------------------
 // The prototype's automation store.
@@ -109,11 +109,15 @@ const seed = (): StoreState => ({
     // By slug, because which member a production flow is for IS its slug (see
     // mock/automations). Both used to seed the free-signup default, which put
     // "Free member signs up" on the PAID welcome flow's trigger card.
-    trigger: triggerConfigFor(
+    //
+    // The paid fixture gets every tier spelled out: triggerConfigFor now seeds
+    // an EMPTY tier list (a new trigger starts unanswered, showing the field's
+    // placeholder), and an established automation showing "Choose tiers" would
+    // read as broken rather than as a fixture.
+    trigger:
       automation.slug === 'member-welcome-email-paid'
-        ? 'paid_subscription_starts'
-        : 'member_subscribes',
-    ),
+        ? { ...triggerConfigFor('paid_subscription_starts'), tierIds: [...ALL_TIER_IDS] }
+        : triggerConfigFor('member_subscribes'),
   })),
 });
 

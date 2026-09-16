@@ -34,7 +34,11 @@ import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar } from './header-bar';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { LeftPanel } from './left-panel';
-import { type TriggerConfig, needsStripe } from '@/automations/proto/shared/trigger-config';
+import {
+  type TriggerConfig,
+  hasTiers,
+  needsStripe,
+} from '@/automations/proto/shared/trigger-config';
 import {
   CANVAS_HUD_BUTTON,
   CANVAS_SLOT_FILL,
@@ -427,12 +431,19 @@ const AutomationFloat: React.FC = () => {
   const blankEmails = draftFlow.actions.some(
     (action) => action.type === 'send_email' && !action.data.email_subject.trim(),
   );
+  // A tiered trigger with no tiers chosen — the "Choose tiers" placeholder
+  // still showing. Same split as blankEmails: the canvas grace-gates the gold
+  // on the card, this validates the fact itself.
+  const tiersUnanswered =
+    triggerConfig !== null && hasTiers(triggerConfig) && triggerConfig.tierIds.length === 0;
 
   // Nothing can go live without something to start it, without the payments it
-  // depends on, or with an email that can't be sent. An automation with no
-  // trigger isn't half-configured, it's an automation that cannot run — and
-  // neither is one waiting on Stripe or carrying a blank email.
-  const canGoLive = triggerConfig !== null && !stripeMissing && !blankEmails;
+  // depends on, with an email that can't be sent, or with a trigger whose
+  // audience is unanswered. An automation with no trigger isn't
+  // half-configured, it's an automation that cannot run — and neither is one
+  // waiting on Stripe, carrying a blank email, or listening for tiers nobody
+  // has named.
+  const canGoLive = triggerConfig !== null && !stripeMissing && !blankEmails && !tiersUnanswered;
   const paneHidden = paneCollapsed;
   // What's running (read canvas) vs what's being edited (edit canvas).
 
@@ -895,6 +906,14 @@ const AutomationFloat: React.FC = () => {
             )}
           >
             <EditCanvas
+              // Building vs watching: while the automation is off the inserts
+              // stay on screen — choosing a trigger otherwise landed on one
+              // card, one line and no visible next move. Live, they go back to
+              // hover; the flow is being read then, not assembled. (Email
+              // analytics are NOT lifecycle-gated — every email card reports
+              // from the moment it exists, zeros included; see the canvas's
+              // ZERO_EMAIL_STATS.)
+              alwaysShowInserts={liveStatus === 'inactive'}
               draft={draftFlow}
               revealWarningsSignal={revealSignal}
               triggerConfig={triggerConfig}
