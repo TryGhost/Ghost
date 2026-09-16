@@ -119,6 +119,20 @@ describe('TinybirdService', function () {
   });
 
   describe('getToken', function () {
+    it('authorizes member search and counts with the current site fixed in both scopes', function () {
+      const decoded = jwt.verify(tinybirdService.getToken().token, tinybirdConfig.adminToken);
+      for (const resource of ['api_automation_run_search', 'api_automation_search_counts']) {
+        assert.deepEqual(
+          decoded.scopes.find((scope) => scope.resource === resource),
+          {
+            type: 'PIPES:READ',
+            resource,
+            fixed_params: { site_uuid: siteUuid },
+          },
+        );
+      }
+    });
+
     it('should exist', function () {
       assert.ok(tinybirdService.getToken);
     });
