@@ -14,6 +14,7 @@ import { fetchMailgunEvents } from './fetch-mailgun-events';
 
 export class EmailAnalyticsServiceWrapper {
   #logName: string;
+  readonly #completionEvent?: string;
   #config?: Pick<ConfigInstance, 'get'>;
   #metrics?: Pick<GhostMetrics, 'metric'>;
   #service?: EmailAnalyticsService;
@@ -40,6 +41,7 @@ export class EmailAnalyticsServiceWrapper {
 
   constructor({
     logName,
+    completionEvent,
     config,
     queries,
     mailgunTags,
@@ -51,6 +53,7 @@ export class EmailAnalyticsServiceWrapper {
   }: Readonly<{
     config: Pick<ConfigInstance, 'get'>;
     logName: string;
+    completionEvent?: string;
     queries: Queries;
     mailgunTags: string[];
     jobNames: JobNames;
@@ -60,6 +63,7 @@ export class EmailAnalyticsServiceWrapper {
     settingsCache: { get: (key: string) => unknown };
   }>) {
     this.#logName = logName;
+    this.#completionEvent = completionEvent;
 
     this.#config = config;
     this.#metrics = metrics;
@@ -283,9 +287,22 @@ export class EmailAnalyticsServiceWrapper {
         return;
       }
 
-      logging.info(
-        `[Background Job] ${this.#backgroundJobName} completed in ${Date.now() - startedAt}ms with ${c1 + c2 + c3 + c4} events | ${this.#logPrefix}`,
-      );
+      if (this.#completionEvent) {
+        logging.info(
+          {
+            system: {
+              event: this.#completionEvent,
+              event_count: c1 + c2 + c3 + c4,
+              duration_ms: Date.now() - startedAt,
+            },
+          },
+          `[Background Job] ${this.#backgroundJobName} completed`,
+        );
+      } else {
+        logging.info(
+          `[Background Job] ${this.#backgroundJobName} completed in ${Date.now() - startedAt}ms with ${c1 + c2 + c3 + c4} events | ${this.#logPrefix}`,
+        );
+      }
 
       this.#fetching = false;
     } catch (e) {

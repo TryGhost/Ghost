@@ -452,6 +452,7 @@ async function initServices({
   assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
   assert(membersService.handleImportJob, 'Members service should be initialized');
   registerJobHandlers({
+    newsletters: emailAnalytics.getNewsletters(),
     jobsService,
     memberJobs,
     giftService: giftService.service,
