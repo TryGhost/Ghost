@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { vi } from 'vitest';
+import EmailAnalyticsAutomationFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-automation-fetch-latest-job';
 import EmailAnalyticsFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-fetch-latest-job';
 import { EmailAnalyticsJobScheduler } from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
@@ -10,6 +11,12 @@ const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
 
 const pipelines = [
+  {
+    JobClass: EmailAnalyticsAutomationFetchLatestJob,
+    type: 'email-analytics-automation-fetch-latest',
+    wrapperName: 'automations',
+    schedule: 'scheduleRecurringAutomationsJob',
+  },
   {
     JobClass: EmailAnalyticsFetchLatestJob,
     type: 'email-analytics-fetch-latest',

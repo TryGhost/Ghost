@@ -1,3 +1,4 @@
+import EmailAnalyticsAutomationFetchLatestJob from './email-analytics-automation-fetch-latest-job';
 import EmailAnalyticsFetchLatestJob from './email-analytics-fetch-latest-job';
 import * as path from 'node:path';
 import moment from 'moment';
@@ -131,10 +132,8 @@ export class EmailAnalyticsJobScheduler {
 
     const at = randomFiveMinuteCron();
     logging.info(`[Background Job] email-analytics-automation-fetch-latest scheduled at ${at}`);
-    this.#jobManager.addJob({
-      at,
-      job: path.resolve(__dirname, 'automation-fetch-latest/index.js'),
-      name: 'email-analytics-automation-fetch-latest',
+    await this.jobsService.scheduleRecurring(new EmailAnalyticsAutomationFetchLatestJob(), {
+      cron: at,
     });
 
     this.#hasScheduledAutomationsJob = true;

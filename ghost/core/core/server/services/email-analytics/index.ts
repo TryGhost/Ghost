@@ -22,7 +22,6 @@ import type { EmailRecipientFailure, EmailSpamComplaintEvent, Email } from '../.
 // @ts-expect-error This module lacks type definitions.
 import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
-import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
 import { AUTOMATION_EMAIL_TAG } from '../member-welcome-emails/constants';
 import type * as AutomationsApi from '../automations/automations-api';
 import { AutomationEmailAnalyticsBatchProcessor } from './automation-email-analytics-batch-processor';
@@ -154,6 +153,7 @@ export const init = ({
 
   automations = new EmailAnalyticsServiceWrapper({
     logName: 'automations',
+    completionEvent: 'email_analytics_automation_fetch_latest.completed',
     config,
     queries,
     mailgunTags: automationMailgunTags,
@@ -200,8 +200,6 @@ export const init = ({
     settingsCache,
     createEventProcessor: () => new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService }),
   });
-
-  domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, () => automations!.startFetch());
 
   domainEvents.subscribe(StartGiftEmailAnalyticsJobEvent, () => gifts!.startFetch());
 };
