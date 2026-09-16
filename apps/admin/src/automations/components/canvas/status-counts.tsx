@@ -2,19 +2,15 @@ import React from 'react';
 import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
 import { Button } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { useAutomationStatusStats } from '@/automations/hooks/use-automation-status-stats';
+import type { useAutomationStatusStats } from '@/automations/hooks/use-automation-status-stats';
 import { StatusCards } from './status-cards';
 
 export const StatusCounts: React.FC<{
-  automationId: string;
-  requestId: string;
+  counts: ReturnType<typeof useAutomationStatusStats>;
   selectedStatus: AutomationRunStatusFilter | null;
   onStatusChange: (status: AutomationRunStatusFilter) => void;
-}> = ({ automationId, requestId, selectedStatus, onStatusChange }) => {
-  const { data, isLoading, isError, unavailable, retry } = useAutomationStatusStats(
-    automationId,
-    requestId,
-  );
+}> = ({ counts, selectedStatus, onStatusChange }) => {
+  const { data, isLoading, isError, unavailable, retry } = counts;
   return (
     <Stack aria-label="Automation status counts" className="@container" gap="sm" role="region">
       <StatusCards

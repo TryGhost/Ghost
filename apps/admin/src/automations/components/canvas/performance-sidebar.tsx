@@ -8,6 +8,7 @@ import { StatusCounts } from './status-counts';
 import { RunList } from './run-list';
 import { PerformanceDateFilter } from './performance-date-filter';
 import type { RunSort } from '@/automations/types';
+import { useAutomationStatusStats } from '@/automations/hooks/use-automation-status-stats';
 import {
   createPerformanceDateRange,
   PERFORMANCE_RANGES,
@@ -83,12 +84,14 @@ export const PerformanceSidebar: React.FC<{
         id={panelId}
       >
         {/* Size the content against the canvas, not the animated clipping panel. */}
-        <Box className={cn(
-            'h-full w-[480px] overflow-y-auto border-r border-border-default px-6 py-4',
+        <Box
+          className={cn(
+            'flex h-full w-[480px] flex-col overflow-hidden border-r border-border-default px-6 py-4',
             isHistoryOpen
               ? '@max-[640px]/automation:w-[100cqw]'
               : '@max-[960px]/automation:w-[100cqw]',
-          )}>
+          )}
+        >
           <Inline className="h-9 pl-10" gap="none" justify="between">
             <Text as="h2" id={headingId} size="md" weight="semibold">
               Performance
@@ -103,7 +106,7 @@ export const PerformanceSidebar: React.FC<{
             />
           </Inline>
           {hasOpened && (
-            <Stack className="mt-4" gap="md">
+            <Stack className="mt-4 min-h-0 flex-1" gap="md">
               {dateRange.value !== 'all' && (
                 <Button
                   aria-label="Clear date filter"
@@ -117,19 +120,11 @@ export const PerformanceSidebar: React.FC<{
                 </Button>
               )}
               <TotalEntries automationId={automationId} dateRange={dateRange} />
-              <StatusCounts
-                automationId={automationId}
-                requestId={requestId}
-                selectedStatus={status}
-                onStatusChange={(selected) => {
-                  setStatus(status === selected ? null : selected);
-                  setRequestRevision((revision) => revision + 1);
-                }}
-              />
-              <RunList
+              <PerformanceRuns
                 automationId={automationId}
                 isSelectionDisabled={isRunSelectionDisabled}
                 listRequestId={listRequestId}
+                requestId={requestId}
                 selectedRunId={selectedRunId}
                 sort={sort}
                 status={status}
@@ -138,11 +133,57 @@ export const PerformanceSidebar: React.FC<{
                   setSort(next);
                   setListRevision((revision) => revision + 1);
                 }}
+                onStatusChange={(selected) => {
+                  setStatus(status === selected ? null : selected);
+                  setRequestRevision((revision) => revision + 1);
+                }}
               />
             </Stack>
           )}
         </Box>
       </aside>
+    </>
+  );
+};
+
+// One counts request serves the cards and sizes the run list; both mount together.
+const PerformanceRuns: React.FC<{
+  automationId: string;
+  requestId: string;
+  listRequestId: string;
+  selectedRunId: string | null;
+  onSelectRun: (id: string) => void;
+  isSelectionDisabled: boolean;
+  status: AutomationRunStatusFilter | null;
+  sort: RunSort;
+  onStatusChange: (status: AutomationRunStatusFilter) => void;
+  onSortChange: (sort: RunSort) => void;
+}> = ({
+  automationId,
+  requestId,
+  listRequestId,
+  selectedRunId,
+  onSelectRun,
+  isSelectionDisabled,
+  status,
+  sort,
+  onStatusChange,
+  onSortChange,
+}) => {
+  const counts = useAutomationStatusStats(automationId, requestId);
+  return (
+    <>
+      <StatusCounts counts={counts} selectedStatus={status} onStatusChange={onStatusChange} />
+      <RunList
+        automationId={automationId}
+        isSelectionDisabled={isSelectionDisabled}
+        listRequestId={listRequestId}
+        selectedRunId={selectedRunId}
+        sort={sort}
+        status={status}
+        onSelectRun={onSelectRun}
+        onSortChange={onSortChange}
+      />
     </>
   );
 };

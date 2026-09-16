@@ -201,6 +201,33 @@ owned resources and credential file afterward. Tinybird CLI builds on this
 feature branch use a Git-named local workspace; obtain that workspace's token,
 not the default empty workspace's token.
 
+Admin displays the Member, Entered, and Status columns below the cards. Selecting a
+card filters the list; selecting it again clears the filter, and another card switches
+it. Cards expose their selection to assistive technology and support keyboard use,
+including when counts are zero. Entry dates and status selection are independent;
+selecting a status does not change the chart or counts.
+
+The Entered heading toggles ascending/descending and exposes the active order
+through `aria-sort`. Member and Status headings are plain labels. Sorting refreshes only the list;
+status selection, switching, or clearing refreshes all-status counts and the
+matching list together. Both retain their current results across sidebar
+close/reopen, entry-date changes, focus, and reconnect. Navigation starts fresh.
+Unsupported Entered sorting shows an unavailable state.
+
+The list remains its own scroll region below the cards, virtualized with Admin's
+shared infinite list. The scrollbar spans loaded rows plus one loading row,
+not the full count: jumping to the bottom can load the next page without draining
+thousands of pages. Scrolling onward loads further pages without refreshing counts
+or the chart. A failed later page preserves loaded rows and offers an explicit
+retry. Query changes reset pagination and discard inactive responses. Older Core
+versions without cursor metadata show only the first page.
+
+History selection is keyed by run ID independently of the loaded rows. Sorting,
+filtering, virtualization, or closing Performance leaves history open; the
+canvas's Back to editing control restores the preserved draft. Entry timestamps
+use Admin's browser-local formatting with full timestamps on hover. Failed exits
+retain the Exited early icon with a red dot and accessible failure label.
+
 ## Availability
 
 This spike deliberately requires `automationsTinybirdSync`. A disabled flag,
