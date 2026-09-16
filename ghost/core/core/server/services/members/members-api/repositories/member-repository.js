@@ -2594,30 +2594,46 @@ module.exports = class MemberRepository {
   }
 
   /**
+   * Removes all complimentary access for a member.
+   * Handles two types:
+   * 1. Stripe-backed: Subscriptions with plan_nickname 'Complimentary' — cancelled via Stripe, then synced via linkSubscription
+   * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription — removed directly
    *
    * @param {Object} data
    * @param {string} data.id - member ID
    * @param {Object} options
    * @param {Object} [options.transacting]
    */
-  /**
-   * Removes all complimentary access for a member.
-   * Handles two types:
-   * 1. Stripe-backed: Subscriptions with plan_nickname 'Complimentary' — cancelled via Stripe, then synced via linkSubscription
-   * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription — removed directly
-   *
-   * @param {{id: string}} data - member identifier
-   * @param {Object} options
-   */
-  async removeComplimentarySubscription({ id }, options) {
+  async removeComplimentarySubscription({ id }, options = {}) {
+    if (!options.transacting) {
+      return this._Member.transaction((transacting) => {
+        return this.removeComplimentarySubscription(
+          { id },
+          {
+            ...options,
+            transacting,
+          },
+        );
+      });
+    }
+
     if (!this._stripeAPIService.configured) {
       throw new errors.BadRequestError({
         message: tpl(messages.noStripeConnection, { action: 'cancel Complimentary Subscription' }),
       });
     }
 
-    const member = await this._Member.findOne({ id });
-    const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+    const sharedOptions = _.pick(options, ['context', 'transacting']);
+
+    // The member row is locked for the rest of the transaction so that reading its tiers
+    // and subscriptions below, and writing the result back, cannot interleave with a
+    // linkSubscription running for the same member — which takes the same lock. Without
+    // it, a subscription being linked concurrently is invisible to the read, every tier
+    // then looks complimentary, and the removal takes away the one an active subscription
+    // is paying for.
+    const member = await this._Member.findOne({ id }, { ...sharedOptions, forUpdate: true });
+    const memberStatus = member.get('status');
+    const subscriptions = await member.related('stripeSubscriptions').fetch(sharedOptions);
 
     // 1. Cancel Stripe-backed complimentary subscriptions
     for (const subscription of subscriptions.models) {
@@ -2634,7 +2650,7 @@ module.exports = class MemberRepository {
               id: id,
               subscription: updatedSubscription,
             },
-            options,
+            sharedOptions,
           );
         } catch (err) {
           logging.error(
@@ -2653,7 +2669,7 @@ module.exports = class MemberRepository {
         'stripeSubscriptions.stripePrice',
         'stripeSubscriptions.stripePrice.stripeProduct',
       ],
-      options,
+      sharedOptions,
     );
 
     const activeSubscriptionProductIds = new Set(
@@ -2669,8 +2685,20 @@ module.exports = class MemberRepository {
       activeSubscriptionProductIds.has(product.id),
     );
 
+    // A paid member holds their tier through a Stripe subscription, so a result that
+    // takes every tier away contradicts the status and means the subscription behind it
+    // did not resolve — an unmapped Stripe product leaves `activeSubscriptionProductIds`
+    // empty just as a missed read does. Removing nothing keeps a paying member on their
+    // tier; the stale comp tier is corrected by the next linkSubscription for them.
+    if (memberStatus === 'paid' && currentProducts.length > 0 && filteredProducts.length === 0) {
+      logging.warn(
+        `Skipping complimentary tier removal for paid member ${id}: no active subscription resolved to a tier`,
+      );
+      return true;
+    }
+
     if (filteredProducts.length !== currentProducts.length) {
-      await this._Member.edit({ products: filteredProducts }, { id });
+      await this._Member.edit({ products: filteredProducts }, { ...sharedOptions, id });
     }
 
     return true;
