@@ -12,7 +12,12 @@ import {
 } from './email-analytics-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import type { Queries } from './lib/queries';
-import { fetchMailgunEvents } from './fetch-mailgun-events';
+// @ts-expect-error This module lacks type definitions.
+import emailAdapter from '../../adapters/email';
+// @ts-expect-error This module lacks type definitions.
+import labs from '../../../shared/labs';
+// @ts-expect-error This module lacks type definitions.
+import sentry from '../../../shared/sentry';
 
 export class EmailAnalyticsServiceWrapper {
   #logName: string;
@@ -75,9 +80,51 @@ export class EmailAnalyticsServiceWrapper {
     this.#metrics = metrics;
     this.#fetchOpenedEvents = Boolean(cursorSeed.eventColumns.opened);
 
+    // Build the analytics provider(s) through the unified email adapter, so
+    // analytics uses the same adapter as email sending. A fresh instance is
+    // created here (the email-sending service keeps its own) and is given
+    // this wrapper's Mailgun tags to keep newsletter and automation event
+    // streams separate.
+    const emailAdapterConfig = config.get('adapters:email') as
+      | { active?: string; [key: string]: unknown }
+      | undefined;
+    const emailProvider = emailAdapterConfig?.active?.toLowerCase() || 'mailgun';
+    const providers = [];
+    try {
+      const adapterInstance = emailAdapter.getEmailAdapter();
+      const AdapterClass = adapterInstance.constructor;
+
+      const errorHandler = (error: Error): void => {
+        logging.info(
+          `${this.#logPrefix} Capturing error for ${emailProvider} email provider analytics`,
+        );
+        sentry.captureException(error);
+      };
+
+      const adapterConfig: Record<string, unknown> = {
+        configService: config,
+        settingsCache,
+        labs,
+        errorHandler,
+        tags: mailgunTags,
+      };
+
+      // Merge with provider-specific config from adapters.email[provider]
+      if (emailAdapterConfig?.[emailProvider]) {
+        Object.assign(adapterConfig, emailAdapterConfig[emailProvider]);
+      }
+
+      providers.push(new AdapterClass(adapterConfig));
+    } catch (error) {
+      logging.error(
+        `${this.#logPrefix} Failed to load ${emailProvider} adapter: ${(error as Error).message}`,
+      );
+      logging.error((error as Error).stack);
+      throw error;
+    }
+
     this.#service = new EmailAnalyticsService({
-      fetchEvents: (options) =>
-        fetchMailgunEvents({ ...options, config, settings: settingsCache, tags: mailgunTags }),
+      providers,
       queries,
       jobNames,
       cursorSeed,
