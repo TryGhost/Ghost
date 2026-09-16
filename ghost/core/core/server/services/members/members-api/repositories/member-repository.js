@@ -2645,12 +2645,14 @@ module.exports = class MemberRepository {
           const updatedSubscription = await this._stripeAPIService.cancelSubscription(
             subscription.get('subscription_id'),
           );
+          // Full options rather than sharedOptions: linkSubscription reads batch_id from
+          // them to correlate the events it dispatches with the caller's operation.
           await this.linkSubscription(
             {
               id: id,
               subscription: updatedSubscription,
             },
-            sharedOptions,
+            options,
           );
         } catch (err) {
           logging.error(

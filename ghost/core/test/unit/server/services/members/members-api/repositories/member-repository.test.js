@@ -521,6 +521,22 @@ describe('MemberRepository', function () {
       sinon.assert.notCalled(Member.edit);
     });
 
+    it('leaves a paid member on their tier when their subscription has no tier mapping', async function () {
+      // Same protection, reached a different way: the subscription is visible and active,
+      // but its Stripe product maps to no tier, so it contributes nothing to the set of
+      // tiers worth keeping.
+      const member = buildMember({
+        status: 'paid',
+        products: [{ id: 'tier_premium' }],
+        subscriptions: [{ status: 'active', tierId: null }],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.notCalled(Member.edit);
+    });
+
     it('removes a complimentary tier while keeping the one an active subscription pays for', async function () {
       const member = buildMember({
         status: 'paid',
