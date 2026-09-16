@@ -32,7 +32,6 @@ import {
   Search,
   Sprout,
   Users,
-  X,
 } from 'lucide-react';
 
 const meta = {
@@ -352,14 +351,19 @@ export const WithFilterBar: Story = {
           <FilterBar>
             <Filters
               addButtonText="Add filter"
-              clearButtonIcon={<X className="size-4" />}
-              clearButtonText="Clear"
+              clearButton={
+                <FilterBar.Actions>
+                  <FilterBar.Action variant="ghost" onClick={() => setFilters([])}>
+                    Clear
+                  </FilterBar.Action>
+                  <FilterBar.Action variant="outline">Save view</FilterBar.Action>
+                </FilterBar.Actions>
+              }
               fields={memberStatusFields}
               filters={filters}
               showClearButton={true}
               onChange={setFilters}
             />
-            <Button variant="ghost">Save view</Button>
           </FilterBar>
         </ListPage.Header>
         <ListPage.Body>
