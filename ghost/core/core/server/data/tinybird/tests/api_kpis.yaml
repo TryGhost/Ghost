@@ -333,3 +333,79 @@
     {"date":"2100-01-05","visits":2,"pageviews":3,"bounce_rate":0,"avg_session_sec":308}
     {"date":"2100-01-06","visits":1,"pageviews":1,"bounce_rate":1,"avg_session_sec":0}
     {"date":"2100-01-07","visits":2,"pageviews":2,"bounce_rate":1,"avg_session_sec":0}
+
+- name: Changing status retains every hit
+  description: A free hit qualifies the session; public and paid hits still contribute
+    to its metrics.
+  parameters: site_uuid=kpi_qualification_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC&member_status=free
+  expected_result: |
+    {"date":"2100-01-08","visits":1,"pageviews":3,"bounce_rate":0,"avg_session_sec":120}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: Paid includes gifted and complimentary sessions
+  description: The paid audience includes paid, gift and comped hits.
+  parameters: site_uuid=kpi_qualification_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC&member_status=paid
+  expected_result: |
+    {"date":"2100-01-08","visits":3,"pageviews":5,"bounce_rate":0.66,"avg_session_sec":40}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: Hit filters must match the same hit
+  description: The British hit is public, while the paid hit is French; their predicates
+    must not combine across hits.
+  parameters: site_uuid=kpi_qualification_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC&member_status=paid&location=GB
+  expected_result: |
+    {"date":"2100-01-08","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: Matching hit retains the complete session
+  description: The paid French hit qualifies all three in-range pageviews.
+  parameters: site_uuid=kpi_qualification_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC&member_status=paid&location=FR
+  expected_result: |
+    {"date":"2100-01-08","visits":1,"pageviews":3,"bounce_rate":0,"avg_session_sec":120}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: Attribution uses first hit before audience filtering
+  description: The public first hit supplies Google attribution even when the qualifying
+    paid hit has another source.
+  parameters: site_uuid=kpi_qualification_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC&member_status=paid&source=Google
+  expected_result: |
+    {"date":"2100-01-08","visits":1,"pageviews":3,"bounce_rate":0,"avg_session_sec":120}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: Later hit source does not change attribution
+  description: Twitter appears on later hits but is not the session source.
+  parameters: site_uuid=kpi_qualification_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC&member_status=paid&source=Twitter
+  expected_result: |
+    {"date":"2100-01-08","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: Explicit all audiences excludes empty status
+  description: An explicit all-audiences filter excludes empty-status-only sessions
+    but includes gift and comped.
+  parameters: site_uuid=kpi_qualification_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC&member_status=undefined,free,paid
+  expected_result: |
+    {"date":"2100-01-08","visits":3,"pageviews":5,"bounce_rate":0.66,"avg_session_sec":40}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: No audience filter includes empty status
+  description: Omitting the audience filter preserves unrestricted status qualification.
+  parameters: site_uuid=kpi_qualification_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC
+  expected_result: |
+    {"date":"2100-01-08","visits":4,"pageviews":6,"bounce_rate":0.75,"avg_session_sec":30}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: Range clips metrics and first-hit attribution
+  description: Only the middle hit is within the requested window, giving one pageview
+    and zero duration.
+  parameters: site_uuid=kpi_boundary_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC&member_status=paid&source=Inside
+  expected_result: |
+    {"date":"2100-01-08","visits":1,"pageviews":1,"bounce_rate":1,"avg_session_sec":0}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: Out-of-range hits cannot qualify a session
+  description: Free hits before and after the requested window must not qualify the
+    in-range paid hit.
+  parameters: site_uuid=kpi_boundary_site&date_from=2100-01-08&date_to=2100-01-09&timezone=Etc/UTC&member_status=free
+  expected_result: |
+    {"date":"2100-01-08","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+    {"date":"2100-01-09","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
