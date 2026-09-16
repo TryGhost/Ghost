@@ -13,6 +13,7 @@ export type TinybirdClient = {
       dateTo?: string;
       timezone?: string;
       runStatus?: string;
+      sortDirection?: string;
     },
   ): Promise<unknown>;
 };
@@ -143,37 +144,65 @@ export async function fetchAutomationStatusStats(
   }
 }
 
+export type AutomationRunSortDirection = 'asc' | 'desc';
+
+export type AutomationRunPosition = {
+  id: string;
+  created_at: string;
+};
+
+// Entry time then run ID; both sides must hold normalised ISO timestamps.
+export function compareRuns(a: AutomationRunPosition, b: AutomationRunPosition) {
+  if (a.created_at !== b.created_at) {
+    return a.created_at < b.created_at ? -1 : 1;
+  }
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+}
+
+const automationRunRowSchema = z
+  .object({
+    id: z.string().min(1),
+    created_at: z.iso.datetime().transform((value) => new Date(value).toISOString()),
+    status: z.enum(['in_progress', 'completed', 'exited_early', 'unclassified']),
+    failed: z.boolean(),
+  })
+  .refine((run) => !run.failed || run.status === 'exited_early', {
+    message: 'Only exited-early runs can have a failure flag.',
+  });
+
+type AutomationRunRow = z.infer<typeof automationRunRowSchema>;
+
+function isValidRunPage(
+  rows: AutomationRunRow[],
+  options: { status?: string; direction: AutomationRunSortDirection },
+) {
+  const expectedSign = options.direction === 'asc' ? -1 : 1;
+  const uniqueIds = new Set(rows.map((row) => row.id)).size === rows.length;
+  const matchesFilter = !options.status || rows.every((row) => row.status === options.status);
+  const inOrder = rows.every(
+    (row, index) => index === 0 || compareRuns(rows[index - 1], row) === expectedSign,
+  );
+  return uniqueIds && matchesFilter && inOrder;
+}
+
 export async function fetchAutomationRuns(
   client: TinybirdClient,
   automationId: string,
-  status?: 'in_progress' | 'completed' | 'exited_early',
+  options: {
+    status?: 'in_progress' | 'completed' | 'exited_early';
+    direction: AutomationRunSortDirection;
+  },
 ) {
+  const { status, direction } = options;
   try {
     const rows = await client.fetch('api_automation_runs', {
       version: '',
       automationId,
       runStatus: status,
+      sortDirection: direction,
     });
-    const parsed = z
-      .array(
-        z
-          .object({
-            id: z.string().min(1),
-            created_at: z.iso.datetime().transform((value) => new Date(value).toISOString()),
-            status: z.enum(['in_progress', 'completed', 'exited_early', 'unclassified']),
-            failed: z.boolean(),
-          })
-          .refine((run) => !run.failed || run.status === 'exited_early', {
-            message: 'Only exited-early runs can have a failure flag.',
-          }),
-      )
-      .max(10)
-      .safeParse(rows);
-    if (
-      !parsed.success ||
-      new Set(parsed.data.map((row) => row.id)).size !== parsed.data.length ||
-      (status && parsed.data.some((row) => row.status !== status))
-    ) {
+    const parsed = z.array(automationRunRowSchema).max(10).safeParse(rows);
+    if (!parsed.success || !isValidRunPage(parsed.data, { status, direction })) {
       logging.error('Unexpected response from the Tinybird automation runs pipe');
       return null;
     }

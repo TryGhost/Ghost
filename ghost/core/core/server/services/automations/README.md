@@ -118,7 +118,7 @@ either request. Navigation clears the entry-range cache and starts a new page vi
 
 ## Run list
 
-`GET /ghost/api/admin/automations/:id/runs/` returns the latest ten runs:
+`GET /ghost/api/admin/automations/:id/runs/` returns ten runs, newest first by default:
 
 ```json
 {
@@ -132,10 +132,13 @@ either request. Navigation clears the entry-range cache and starts a new page vi
 }
 ```
 
-Each row is a run, including repeat entries by the same member. Ordering is entry
-time (`created_at`) descending, then run ID descending for ties. Timestamps are UTC
-with millisecond precision. Status is `in_progress`, `completed`, `exited_early`,
-or `unclassified`, using the same recorded-step rules as the status counts.
+Each row is a run, including repeat entries by the same member. `order` accepts
+`created_at desc` (default) or `created_at asc`; anything else returns 422.
+Entry-time ties use run ID in the same direction. Core validates the returned
+order. Member and Status sorting are not supported.
+Timestamps are UTC with millisecond precision. Status is `in_progress`,
+`completed`, `exited_early`, or `unclassified`, using the same recorded-step rules
+as the status counts.
 `failed` is true only for an exited-early run with a latest step record marked
 `failed`. Pending runs, unclassified history, and superseded failures do not set
 this flag. It is a failure detail, not an additional run status.
@@ -150,11 +153,12 @@ The endpoint accepts an optional `status` parameter: `in_progress`, `completed`,
 `exited_early`.
 Omitting it includes every status, including unclassified history. Unsupported or
 empty values return 422. Filtering uses the complete recorded step history before
-ordering and limiting to ten matching runs; pending steps take precedence as they
-do in the summary counts. The list stays all-time, independent of entry dates and
-summary counts, with no search or pagination controls. An empty history or no matches
-returns `automation_runs: []`. It requires automation read permission, returns 404
-for unknown automations, and uses the same Tinybird availability checks as summaries.
+ordering and limiting to ten matching runs, so ascending order returns the ten
+oldest matches; pending steps take precedence as they do in the summary counts.
+The list stays all-time, independent of entry dates and summary counts, with no
+search or pagination controls. An empty history or no matches returns
+`automation_runs: []`. It requires automation read permission, returns 404 for
+unknown automations, and uses the same Tinybird availability checks as summaries.
 
 Admin displays the Member, Entered, and Status columns below the cards. Selecting a
 card filters the list; selecting it again clears the filter, and another card switches
