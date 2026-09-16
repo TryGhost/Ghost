@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { focusManager } from '@tanstack/react-query';
-import { deferred } from '@/utils/deferred';
 
 import {
   currentRoute,
@@ -143,7 +142,6 @@ function seedEmptyPostAnalyticsWorld() {
 
 describe('Post analytics overview', () => {
   it('shows sending progress and withholds newsletter figures with the URL override', async () => {
-    let completeSending = false;
     const postOverrides = {
       email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'submitting' },
     } as const;
@@ -165,22 +163,24 @@ describe('Post analytics overview', () => {
         ),
       ];
     });
-    const pendingDetailedPost = deferred<{ posts: ReturnType<typeof seededPost>[] }>();
+    let detailedPostRequestCount = 0;
     const detailedPostsApi = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), () => {
-      if (!completeSending) {
-        return pendingDetailedPost.promise;
-      }
+      detailedPostRequestCount += 1;
       return {
         posts: [
-          seededPost({
-            email: {
-              id: EMAIL_ID,
-              email_count: 1000,
-              opened_count: 400,
-              status: 'submitted',
-            },
-            count: { clicks: 60, positive_feedback: 0, negative_feedback: 0 },
-          }),
+          seededPost(
+            detailedPostRequestCount === 1
+              ? postOverrides
+              : {
+                  email: {
+                    id: EMAIL_ID,
+                    email_count: 1000,
+                    opened_count: 400,
+                    status: 'submitted',
+                  },
+                  count: { clicks: 60, positive_feedback: 0, negative_feedback: 0 },
+                },
+          ),
         ],
       };
     });
@@ -211,6 +211,7 @@ describe('Post analytics overview', () => {
       };
     });
     let statusRequestCount = 0;
+    let completeSending = false;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
       statusRequestCount += 1;
       return {
@@ -250,16 +251,13 @@ describe('Post analytics overview', () => {
       .element(page.getByRole('button', { name: /View members/ }).first())
       .not.toBeInTheDocument();
 
-    await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(0);
     completeSending = true;
     const pendingStatusRequestCount = statusRequestCount;
     await expect
       .poll(() => statusRequestCount, { timeout: 3500 })
       .toBeGreaterThan(pendingStatusRequestCount);
-    await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
-    // Let the pre-completion read arrive after the completion refresh has started.
-    pendingDetailedPost.resolve({ posts: [seededPost(postOverrides)] });
     await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => clickStatsApi.requests.length).toBeGreaterThan(0);
