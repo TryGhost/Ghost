@@ -908,7 +908,30 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-button="confirm-publish"]');
 
             expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-            expect(find('[data-test-publish-flow-navigation]'), 'navigation status').to.not.exist;
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation.map(item => item.label)).to.not.include('Partners');
+        });
+
+        it('does not promise or apply navigation placement when scheduling', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Partners'});
+
+            // pick a placement, then switch to schedule - the option is hidden
+            // because a scheduled page's URL would 404 until it goes live
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="primary"] + label');
+            await click('[data-test-setting="publish-at"] [data-test-setting-title]');
+            await click('[data-test-radio="schedule"]');
+
+            expect(find('[data-test-setting="navigation"]'), 'navigation setting while scheduled').to.not.exist;
+
+            await click('[data-test-button="continue"]');
+            expect(find('[data-test-text="confirm-details"]').textContent)
+                .to.not.contain('navigation');
+
+            await click('[data-test-button="confirm-publish"]');
 
             const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
             expect(navigation.map(item => item.label)).to.not.include('Partners');
@@ -1052,7 +1075,6 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-button="confirm-publish"]');
 
             expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-            expect(find('[data-test-publish-flow-navigation]'), 'navigation status').to.not.exist;
         });
 
         it('does not show the navigation option for posts', async function () {
