@@ -118,7 +118,8 @@ either request. Navigation clears the entry-range cache and starts a new page vi
 
 ## Run list
 
-`GET /ghost/api/admin/automations/:id/runs/` returns ten runs, newest first by default:
+`GET /ghost/api/admin/automations/:id/runs/` returns one page of up to fifty runs,
+newest first by default:
 
 ```json
 {
@@ -128,7 +129,8 @@ either request. Navigation clears the entry-range cache and starts a new page vi
     "status": "completed",
     "failed": false,
     "member": {"id": "…", "name": "Alex", "email": "alex@example.com"}
-  }]
+  }],
+  "meta": {"pagination": {"limit": 50, "next_cursor": "eyJ…"}}
 }
 ```
 
@@ -153,27 +155,51 @@ The endpoint accepts an optional `status` parameter: `in_progress`, `completed`,
 `exited_early`.
 Omitting it includes every status, including unclassified history. Unsupported or
 empty values return 422. Filtering uses the complete recorded step history before
-ordering and limiting to ten matching runs, so ascending order returns the ten
-oldest matches; pending steps take precedence as they do in the summary counts.
+ordering and limiting to fifty matching runs, so ascending order returns the
+oldest matches first; pending steps take precedence as they do in the summary counts.
 The list stays all-time, independent of entry dates and summary counts, with no
-search or pagination controls. An empty history or no matches returns
-`automation_runs: []`. It requires automation read permission, returns 404 for
-unknown automations, and uses the same Tinybird availability checks as summaries.
+search. An empty history or no matches returns `automation_runs: []`. It requires
+automation read permission, returns 404 for unknown automations, and uses the same
+Tinybird availability checks as summaries.
 
-Admin displays the Member, Entered, and Status columns below the cards. Selecting a
-card filters the list; selecting it again clears the filter, and another card switches
-it. Cards expose their selection to assistive technology and support keyboard use,
-including when counts are zero. Entry dates and status selection are independent;
-selecting a status does not change the chart or counts.
+### Cursor pagination
 
-The list fetches on first sidebar opening and caches each visited status result or
-error until navigation, with an explicit retry for errors. Closing the sidebar,
-changing entry dates, focus, and reconnect do not refetch the list. Leaving the page
-clears status selection and discards every visited filter, including pending requests,
-so a return visit starts fresh. Entry times use Admin's standard browser-local
-timestamp formatting, with the full timestamp available on hover. Rows and column
-headings label their respective columns. Failed exits retain the Exited early icon
-with a red corner dot and an accessible failure label.
+`meta.pagination.next_cursor` is an opaque keyset cursor, or `null` on the final
+page. Pass it back with the same `status` and `order`. Page size is fixed at fifty;
+Core fetches one extra row to detect continuation. Cursors carry automation,
+filter, entry-time direction, entry time, and run ID. Invalid or mismatched
+cursors return 422 before Tinybird.
+Tokens are unsigned: changing a boundary cannot bypass site/automation authorization.
+
+Pages are live reads, not a snapshot. Entry-time positions are immutable, so a
+status change can add or remove a later filtered match but cannot repeat a run.
+With newest first, new runs before the cursor require a fresh list; with oldest
+first, later entries can appear at the end. Admin keeps the first observed row
+for each run ID. Start a fresh list to see current membership; Core validates
+each page against its immutable entry-time position.
+
+### Live pagination regression tests
+
+`test/e2e-api/admin/automation-runs-live.test.js` checks entry-time pagination with status filters while runs are inserted or change status between requests. It calls
+real Core and Tinybird; the ordinary API suite still covers validation and errors
+with controlled responses. The live file is skipped unless explicitly configured.
+
+Build these Tinybird files in an isolated, disposable Tinybird Local container.
+Set `AUTOMATION_TINYBIRD_TEST_CONFIG` to a private JSON file containing its
+`endpoint` and build-workspace `token`, then run from `ghost/core`:
+
+```sh
+AUTOMATION_TINYBIRD_TEST_CONFIG=/path/to/private-local-config.json \
+database__connection__database=ghost_automation_runs_disposable \
+pnpm test:single test/e2e-api/admin/automation-runs-live.test.js
+```
+
+Verify that the database base and Tinybird container are disposable first. The
+fixture uses fresh site UUIDs and appends run events; it never truncates Tinybird.
+The endpoint must be HTTP on `127.0.0.1`, outside the shared port 7181. Remove the
+owned resources and credential file afterward. Tinybird CLI builds on this
+feature branch use a Git-named local workspace; obtain that workspace's token,
+not the default empty workspace's token.
 
 ## Availability
 
@@ -252,8 +278,3 @@ wait durations, independently of the editing draft. For overdue pending steps,
 estimates start at the current time. These are labeled Expected; a delayed step
 can shift later dates. Unknown wait durations suppress dates for the remaining
 path. Estimates are display-only and do not affect scheduling.
-
-Admin makes Entered a keyboard-operable sort control with aria-sort.
-Member and Status remain plain headings.
-Sorting refreshes only the list; filters refresh counts and the list. Selection
-is keyed by run ID and remains independent of sorting and filtering.

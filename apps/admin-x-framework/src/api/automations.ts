@@ -197,11 +197,19 @@ export const AutomationRunSchema = z
 export const AutomationRunsResponseSchema = z.object({
   automation_runs: z
     .array(AutomationRunSchema)
-    .max(10)
+    .max(50)
     .refine(
       (runs) => new Set(runs.map((run) => run.id)).size === runs.length,
       'Run IDs must be unique',
     ),
+  meta: z
+    .object({
+      pagination: z.object({
+        limit: z.number().int().positive(),
+        next_cursor: z.string().min(1).nullable(),
+      }),
+    })
+    .optional(),
 });
 
 export type AutomationRun = z.infer<typeof AutomationRunSchema>;

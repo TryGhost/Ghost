@@ -15,6 +15,9 @@ export type TinybirdClient = {
       timezone?: string;
       runStatus?: string;
       sortDirection?: string;
+      limit?: number;
+      afterCreatedAt?: string;
+      afterId?: string;
     },
   ): Promise<unknown>;
 };
@@ -180,15 +183,21 @@ type AutomationRunRow = z.infer<typeof automationRunRowSchema>;
 
 function isValidRunPage(
   rows: AutomationRunRow[],
-  options: { status?: string; direction: AutomationRunSortDirection },
+  options: {
+    status?: string;
+    direction: AutomationRunSortDirection;
+    after?: AutomationRunPosition;
+  },
 ) {
   const expectedSign = options.direction === 'asc' ? -1 : 1;
   const uniqueIds = new Set(rows.map((row) => row.id)).size === rows.length;
   const matchesFilter = !options.status || rows.every((row) => row.status === options.status);
+  const continuesCursor =
+    !options.after || rows.length === 0 || compareRuns(options.after, rows[0]) === expectedSign;
   const inOrder = rows.every(
     (row, index) => index === 0 || compareRuns(rows[index - 1], row) === expectedSign,
   );
-  return uniqueIds && matchesFilter && inOrder;
+  return uniqueIds && matchesFilter && continuesCursor && inOrder;
 }
 
 export async function fetchAutomationRuns(
@@ -197,18 +206,29 @@ export async function fetchAutomationRuns(
   options: {
     status?: 'in_progress' | 'completed' | 'exited_early';
     direction: AutomationRunSortDirection;
+    limit: number;
+    after?: AutomationRunPosition;
+    dates?: EntryDateScope;
   },
 ) {
-  const { status, direction } = options;
+  const { status, direction, limit, after } = options;
   try {
     const rows = await client.fetch('api_automation_runs', {
       version: '',
       automationId,
+      ...entryDateParams(options.dates ?? {}),
       runStatus: status,
       sortDirection: direction,
+      limit,
+      ...(after
+        ? {
+            afterCreatedAt: after.created_at,
+            afterId: after.id,
+          }
+        : {}),
     });
-    const parsed = z.array(automationRunRowSchema).max(10).safeParse(rows);
-    if (!parsed.success || !isValidRunPage(parsed.data, { status, direction })) {
+    const parsed = z.array(automationRunRowSchema).max(limit).safeParse(rows);
+    if (!parsed.success || !isValidRunPage(parsed.data, { status, direction, after })) {
       logging.error('Unexpected response from the Tinybird automation runs pipe');
       return null;
     }

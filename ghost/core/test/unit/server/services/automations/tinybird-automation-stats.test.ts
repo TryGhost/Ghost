@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { afterEach, describe, it } from 'vitest';
 import logging from '@tryghost/logging';
 import {
+  type AutomationRunPosition,
   compareRuns,
   fetchAutomationRuns,
   fetchAutomationStats,
@@ -188,7 +189,11 @@ describe('fetchAutomationRuns', function () {
     sinon.restore();
   });
 
-  const row = (id: string, created_at: string, status = 'completed') => ({
+  const row = (
+    id: string,
+    created_at: string,
+    status: AutomationRunPosition['status'] = 'completed',
+  ) => ({
     id,
     created_at,
     status,
@@ -200,13 +205,18 @@ describe('fetchAutomationRuns', function () {
 
   it('passes the status filter and direction to the pipe', async function () {
     const client = clientReturning([]);
-    await fetchAutomationRuns(client, 'automation-1', { status: 'completed', direction: 'asc' });
+    await fetchAutomationRuns(client, 'automation-1', {
+      status: 'completed',
+      direction: 'asc',
+      limit: 10,
+    });
     assert.ok(
       client.fetch.calledOnceWithExactly('api_automation_runs', {
         version: '',
         automationId: 'automation-1',
         runStatus: 'completed',
         sortDirection: 'asc',
+        limit: 10,
       }),
     );
   });
@@ -215,15 +225,36 @@ describe('fetchAutomationRuns', function () {
     assert.deepEqual(
       await fetchAutomationRuns(clientReturning([newest, tieHigh, tieLow]), 'a', {
         direction: 'desc',
+        limit: 10,
       }),
       [newest, tieHigh, tieLow],
     );
     assert.deepEqual(
       await fetchAutomationRuns(clientReturning([tieLow, tieHigh, newest]), 'a', {
         direction: 'asc',
+        limit: 10,
       }),
       [tieLow, tieHigh, newest],
     );
+  });
+
+  it('passes a cursor position and accepts rows strictly after it', async function () {
+    const client = clientReturning([tieLow]);
+    const rows = await fetchAutomationRuns(client, 'a', {
+      direction: 'desc',
+      limit: 10,
+      after: tieHigh,
+    });
+    assert.deepEqual(rows, [tieLow]);
+    assert.deepEqual(client.fetch.firstCall.args[1], {
+      version: '',
+      automationId: 'a',
+      runStatus: undefined,
+      sortDirection: 'desc',
+      limit: 10,
+      afterCreatedAt: tieHigh.created_at,
+      afterId: tieHigh.id,
+    });
   });
 
   it('normalises timestamps before comparing them', async function () {
@@ -233,7 +264,7 @@ describe('fetchAutomationRuns', function () {
         row('run-1', '2026-09-14T12:00:00.000Z'),
       ]),
       'a',
-      { direction: 'desc' },
+      { direction: 'desc', limit: 10 },
     );
     assert.deepEqual(
       rows?.map((run) => run.created_at),
@@ -247,12 +278,29 @@ describe('fetchAutomationRuns', function () {
     ['ties out of ID order ascending', 'asc', [tieHigh, tieLow]],
     ['a repeated run', 'desc', [newest, newest]],
     ['a row outside the status filter', 'desc', [row('run-9', newest.created_at, 'in_progress')]],
+    ['more rows than the limit', 'desc', [newest, tieHigh, tieLow]],
   ] as const) {
     it(`rejects ${label}`, async function () {
       sinon.stub(logging, 'error');
       const result = await fetchAutomationRuns(clientReturning(rows), 'a', {
         direction,
         status: 'completed',
+        limit: 2,
+      });
+      assert.equal(result, null);
+    });
+  }
+
+  for (const [label, rows] of [
+    ['repeats the cursor position', [tieHigh]],
+    ['precedes the cursor position', [newest]],
+  ] as const) {
+    it(`rejects a continuation that ${label}`, async function () {
+      sinon.stub(logging, 'error');
+      const result = await fetchAutomationRuns(clientReturning(rows), 'a', {
+        direction: 'desc',
+        limit: 10,
+        after: tieHigh,
       });
       assert.equal(result, null);
     });
