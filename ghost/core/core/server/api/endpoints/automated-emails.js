@@ -6,6 +6,7 @@ const memberWelcomeEmailService = require('../../services/member-welcome-emails/
 const emailAddressService = require('../../services/email-address');
 const {
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
+  MEMBER_WELCOME_EMAIL_SLUGS,
 } = require('../../services/member-welcome-emails/constants');
 const { validateEmailSenderFields } = require('./utils/validate-email-sender-fields');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
@@ -20,6 +21,10 @@ const messages = {
 // acts as a facade that joins/splits data between those two models while preserving the original
 // `automated_emails` API shape externally.
 const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
+const TRIGGER_TIER_SCOPE_BY_SLUG = {
+  [MEMBER_WELCOME_EMAIL_SLUGS.free]: 'free',
+  [MEMBER_WELCOME_EMAIL_SLUGS.paid]: 'all_paid',
+};
 const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
 const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
@@ -152,6 +157,7 @@ const controller = {
       const emailData = _.pick(data, EMAIL_FIELDS);
       const senderData = _.pick(data, SENDER_FIELDS);
       const automationData = _.pick(data, AUTOMATION_FIELDS);
+      automationData.trigger_tier_scope = TRIGGER_TIER_SCOPE_BY_SLUG[data.slug];
       emailAddressService.init();
       validateEmailSenderFields(emailAddressService.service, senderData);
 
@@ -197,6 +203,9 @@ const controller = {
       const emailData = _.pick(data, EMAIL_FIELDS);
       const senderData = _.pick(data, SENDER_FIELDS);
       const automationData = _.pick(data, AUTOMATION_FIELDS);
+      if (data.slug) {
+        automationData.trigger_tier_scope = TRIGGER_TIER_SCOPE_BY_SLUG[data.slug];
+      }
 
       return models.Base.transaction(async (transacting) => {
         let automation = await models.Automation.findOne(

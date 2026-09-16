@@ -462,6 +462,7 @@ describe('Importer', function () {
       table.string('status');
       table.string('name').unique();
       table.string('slug').unique();
+      table.string('trigger_tier_scope').notNullable();
       table.dateTime('created_at');
       table.dateTime('updated_at');
     });
@@ -503,7 +504,9 @@ describe('Importer', function () {
     await automationsImporter.import(3);
     await transaction.commit();
 
-    const automations = await db.select('id', 'status', 'name', 'slug').from('automations');
+    const automations = await db
+      .select('id', 'status', 'name', 'slug', 'trigger_tier_scope')
+      .from('automations');
 
     assert.equal(automations.length, 3);
     assert.deepEqual(
@@ -521,6 +524,10 @@ describe('Importer', function () {
     );
     assert.equal(new Set(automations.map((automation) => automation.name)).size, 3);
     assert.equal(new Set(automations.map((automation) => automation.slug)).size, 3);
+    assert.deepEqual(
+      automations.map((automation) => automation.trigger_tier_scope),
+      ['free', 'all_paid', 'all_paid'],
+    );
     assert.ok(
       automations.every((automation) => ['active', 'inactive'].includes(automation.status)),
     );
