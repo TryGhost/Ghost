@@ -37,6 +37,65 @@ const inputs = (
 const keys = (input: PostContextMenuInputs) =>
   getPostContextMenuItems(input).map((item) => item.key);
 
+describe('page navigation actions', () => {
+  const navigationInputs = (overrides: Partial<PostContextMenuInputs> = {}) =>
+    inputs([post({ status: 'published' })], {
+      resource: 'pages',
+      navigationPlacements: [null],
+      selectionCount: 1,
+      ...overrides,
+    });
+  const navigationItems = (overrides: Partial<PostContextMenuInputs> = {}) =>
+    getPostContextMenuItems(navigationInputs(overrides)).filter(({ key }) =>
+      key.startsWith('navigation-'),
+    );
+
+  it('offers add, move and remove according to placement', () => {
+    expect(navigationItems().map(({ label }) => label)).toEqual([
+      'Add to primary navigation',
+      'Add to secondary navigation',
+    ]);
+    expect(
+      navigationItems({ navigationPlacements: ['primary'] }).map(({ label }) => label),
+    ).toEqual(['Move to secondary navigation', 'Remove from navigation']);
+    expect(
+      navigationItems({ navigationPlacements: ['secondary'] }).map(({ label }) => label),
+    ).toEqual(['Move to primary navigation', 'Remove from navigation']);
+  });
+
+  it.each<Partial<PostContextMenuInputs>>([
+    { resource: 'posts' },
+    { isAdmin: false },
+    { posts: [post({ status: 'draft' })] },
+    { posts: [post({ status: 'scheduled' })] },
+    { selectionCount: 100 },
+    { navigationPlacements: undefined },
+    { navigationPlacements: [] },
+    {
+      posts: [post({ status: 'published' }), post({ status: 'draft' })],
+      selectionCount: 2,
+      navigationPlacements: [null, null],
+    },
+  ])('hides navigation actions for an ineligible selection: %j', (overrides) => {
+    expect(navigationItems(overrides)).toEqual([]);
+  });
+
+  it('describes the whole selection and disables actions during a write', () => {
+    const items = navigationItems({
+      posts: [post({ status: 'published' }), post({ id: 'p2', status: 'published' })],
+      selectionCount: 2,
+      navigationPlacements: ['primary', null],
+      navigationRunning: true,
+    });
+    expect(items.map(({ label }) => label)).toEqual([
+      'Add to primary navigation',
+      'Add to secondary navigation',
+      'Remove from navigation',
+    ]);
+    expect(items.every(({ disabled }) => disabled)).toBe(true);
+  });
+});
+
 describe('getPostContextMenuItems', () => {
   describe('for a single draft', () => {
     it('offers the preview link, not the public link', () => {
