@@ -66,6 +66,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
 
   // Get top links for this post
   const { data: linksResponse } = useTopLinks({
+    refetchIntervalInBackground: false,
     refetchInterval: () => getEmailStatsRefetchInterval(post.email?.submitted_at),
     searchParams: {
       filter: `post_id:'${postId}'`,
