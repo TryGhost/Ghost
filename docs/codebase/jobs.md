@@ -33,7 +33,9 @@ Current examples include:
 - [Email analytics](../../ghost/core/core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts),
   which schedules one recurring job per pipeline (newsletters, automations,
   gifts), each in its own queue. Overlapping ticks are skipped by the analytics
-  wrapper's own fetch guard rather than queued.
+  wrapper's own per-process fetch guard rather than queued. A tick is awaited
+  as one handler run, continuation passes included, so a shutdown during a
+  long fetch drains it up to `server:shutdownTimeout`.
 
 Prefer an existing job with similar lifecycle and failure requirements as the
 starting point for a new one.
