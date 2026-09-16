@@ -1285,6 +1285,26 @@ describe('Acceptance: Posts / Pages', function () {
                     expect(secondary.map(item => item.url)).to.not.include('/home/');
                 });
 
+                it('recognizes and removes a slug alias for a custom-routed page', async function () {
+                    this.server.db.configs.update(1, {pageRoutes: {home: '/'}});
+                    this.server.db.settings.update({key: 'navigation'}, {value: JSON.stringify([
+                        {label: 'Home', url: '/home/'},
+                        {label: 'About', url: '/about/'}
+                    ])});
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'Home', slug: 'home'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    expect(row.querySelector('[data-test-nav-indicator="primary"]')).to.exist;
+                    await triggerEvent(row, 'contextmenu');
+                    expect(find('[data-test-button="add-to-primary-navigation"]')).to.not.exist;
+                    await click('[data-test-button="remove-from-navigation"]');
+
+                    const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+                    expect(navigation).to.deep.equal([{label: 'About', url: '/about/'}]);
+                });
+
                 it('shows an in-menu indicator for linked pages only', async function () {
                     const linkedPage = this.server.create('page', {authors: [admin], status: 'published', title: 'About', slug: 'about'});
                     const unlinkedPage = this.server.create('page', {authors: [admin], status: 'published', title: 'Partners', slug: 'partners'});

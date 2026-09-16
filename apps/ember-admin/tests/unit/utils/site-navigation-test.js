@@ -67,9 +67,16 @@ describe('Unit: Util: site-navigation', function () {
             expect(getPagePlacement(settings, pagePathForSlug('about', blogUrl), blogUrl)).to.equal('secondary');
         });
 
-        it('matches a legacy double-prefixed relative url', function () {
+        it('keeps site-relative paths distinct even when they start with the install subdirectory', function () {
             const settings = settingsWith({navigation: [{url: '/blog/about/'}]});
-            expect(getPagePlacement(settings, pagePathForSlug('about', blogUrl), blogUrl)).to.equal('primary');
+            expect(getPagePlacement(settings, '/about/', blogUrl)).to.be.null;
+            expect(getPagePlacement(settings, '/blog/about/', blogUrl)).to.equal('primary');
+        });
+
+        it('strips the install subdirectory exactly once from absolute custom-route links', function () {
+            const settings = settingsWith({navigation: [{url: 'https://example.com/blog/blog/about/'}]});
+            expect(getPagePlacement(settings, '/blog/about/', blogUrl)).to.equal('primary');
+            expect(getPagePlacement(settings, '/about/', blogUrl)).to.be.null;
         });
 
         it('does not match absolute links outside the site subdirectory', function () {
@@ -106,6 +113,109 @@ describe('Unit: Util: site-navigation', function () {
 
     describe('setPagesNavigationPlacement', function () {
         const blogUrl = 'https://example.com/';
+
+        for (const placement of ['primary', 'secondary', null]) {
+            it(`preserves unrelated links when setting a nested custom route to ${placement}`, async function () {
+                const unrelated = {label: 'About', url: '/about/'};
+                const settings = mutableSettings({navigation: [unrelated, {label: 'Custom', url: '/blog/about/'}]});
+                const pageRoutes = {custom: '/blog/about/'};
+                const subdirBlogUrl = 'https://example.com/blog/';
+                const path = pagePathForSlug('custom', pageRoutes);
+
+                await setPageNavigationPlacement(settings, {label: 'Custom', path, placement, blogUrl: subdirBlogUrl, pageRoutes});
+
+                expect(settings.navigation.map(item => ({label: item.label, url: item.url}))).to.deep.include(unrelated);
+                expect(getPagePlacement(settings, path, subdirBlogUrl, pageRoutes)).to.equal(placement);
+            });
+        }
+
+        for (const siteUrl of [blogUrl, `${blogUrl}blog/`]) {
+            for (const url of ['/home/', `${siteUrl}home/`]) {
+                it(`recognizes, moves, and removes the slug alias ${url} on ${siteUrl}`, async function () {
+                    const settings = mutableSettings({navigation: [{label: 'Welcome', url}]});
+                    const pageRoutes = {home: '/'};
+                    const path = pagePathForSlug('home', pageRoutes);
+                    const options = {label: 'Home', path, blogUrl: siteUrl, pageRoutes};
+
+                    expect(getPagePlacement(settings, path, siteUrl, pageRoutes)).to.equal('primary');
+                    await setPageNavigationPlacement(settings, {...options, placement: 'primary'});
+                    expect(settings.saved).to.be.false;
+                    expect(settings.navigation).to.have.length(1);
+
+                    await setPageNavigationPlacement(settings, {...options, placement: 'secondary'});
+                    expect(settings.navigation).to.have.length(0);
+                    expect(settings.secondaryNavigation.map(item => ({label: item.label, url: item.url})))
+                        .to.deep.equal([{label: 'Welcome', url}]);
+
+                    await setPageNavigationPlacement(settings, {...options, placement: null});
+                    expect(settings.secondaryNavigation).to.have.length(0);
+                });
+            }
+        }
+
+        it('uses aliases in bulk moves while preserving unrelated pages', async function () {
+            const pageRoutes = {home: '/', custom: '/blog/about/'};
+            const settings = mutableSettings({navigation: [
+                {label: 'Home', url: '/home/'},
+                {label: 'Custom', url: '/blog/about/'},
+                {label: 'About', url: '/about/'}
+            ]});
+
+            await setPagesNavigationPlacement(settings, {
+                pages: [{label: 'Home', path: '/'}, {label: 'Custom', path: '/blog/about/'}],
+                placement: 'secondary',
+                blogUrl: 'https://example.com/blog/',
+                pageRoutes
+            });
+
+            expect(settings.navigation.map(item => item.url)).to.deep.equal(['/about/']);
+            expect(settings.secondaryNavigation.map(item => item.url)).to.deep.equal(['/home/', '/blog/about/']);
+        });
+
+        it('removes both the slug alias and the custom-route entry', async function () {
+            const settings = mutableSettings({
+                navigation: [{label: 'Home', url: '/home/'}],
+                secondaryNavigation: [{label: 'Home', url: '/'}]
+            });
+
+            await setPageNavigationPlacement(settings, {path: '/', placement: null, blogUrl, pageRoutes: {home: '/'}});
+
+            expect(settings.navigation).to.have.length(0);
+            expect(settings.secondaryNavigation).to.have.length(0);
+        });
+
+        it('restores both menus when moving an alias fails to save', async function () {
+            const settings = mutableSettings({
+                navigation: [{label: 'Home', url: '/home/'}],
+                secondaryNavigation: [{label: 'About', url: '/about/'}]
+            });
+            const primary = settings.navigation;
+            const secondary = settings.secondaryNavigation;
+            const failure = new Error('Save failed');
+            settings.save = async () => {
+                throw failure;
+            };
+
+            let error;
+            try {
+                await setPageNavigationPlacement(settings, {path: '/', placement: 'secondary', blogUrl, pageRoutes: {home: '/'}});
+            } catch (e) {
+                error = e;
+            }
+
+            expect(error).to.equal(failure);
+            expect(settings.navigation).to.equal(primary);
+            expect(settings.secondaryNavigation).to.equal(secondary);
+            expect(settings.navigation[0].url).to.equal('/home/');
+            expect(settings.navigation[0].isSecondary).to.be.false;
+        });
+
+        it('does not alias a slug URL that is itself claimed by another custom route', function () {
+            const pageRoutes = {home: '/', landing: '/home/'};
+            const settings = settingsWith({navigation: [{url: '/home/'}]});
+            expect(getPagePlacement(settings, '/', blogUrl, pageRoutes)).to.be.null;
+            expect(getPagePlacement(settings, '/home/', blogUrl, pageRoutes)).to.equal('primary');
+        });
 
         it('moves an existing homepage link without adding a slug-based duplicate', async function () {
             const settings = mutableSettings({navigation: [{label: 'Home', url: '/'}]});

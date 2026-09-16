@@ -119,7 +119,7 @@ export default class PublishOptions {
             return null;
         }
 
-        return getPagePlacement(this.settings, this.pageNavigationPath, this.config.blogUrl);
+        return getPagePlacement(this.settings, this.pageNavigationPath, this.config.blogUrl, this.config.pageRoutes);
     }
 
     get navigationPlacement() {
@@ -422,7 +422,8 @@ export default class PublishOptions {
                     label: this.post.title,
                     path: this.pageNavigationPath,
                     placement: this.desiredNavigationPlacement,
-                    blogUrl: this.config.blogUrl
+                    blogUrl: this.config.blogUrl,
+                    pageRoutes: this.config.pageRoutes
                 });
             } catch (e) {
                 this.navigationSaveFailed = true;

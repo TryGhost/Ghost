@@ -22,21 +22,30 @@ function siteSubdirFor(blogUrl) {
     }
 }
 
-function siteContextFor(blogUrl) {
-    return {
+function siteContextFor(blogUrl, pageRoutes = {}) {
+    const context = {
         siteOrigin: siteOriginFor(blogUrl),
         siteSubdir: siteSubdirFor(blogUrl).toLowerCase()
     };
+
+    const routes = Object.entries(pageRoutes).map(([slug, path]) => [
+        comparablePathname(pagePathForSlug(slug), context),
+        comparablePathname(path, context)
+    ]);
+    const destinations = new Set(routes.map(([, path]) => path));
+
+    // Slug URLs redirect to the custom route, unless another custom route
+    // occupies that URL. Compare aliases without rewriting stored links.
+    context.pageRedirects = new Map(routes.filter(([source, destination]) => source && destination && !destinations.has(source)));
+
+    return context;
 }
 
 // Pathname comparable to how Ghost stores nav urls (no site subdirectory).
 // Absolute urls outside the site origin or subdirectory return null.
-// If the path starts with the site
-// subdirectory plus another segment, strip that prefix so
-// https://site.com/blog/about/ and /about/ both match /about.
-// Equality alone is not enough: a page with slug "blog" on a /blog install
-// is stored as /blog/ and must stay that way.
-function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
+// Relative paths already exclude the install subdirectory. Only absolute
+// URLs need that prefix removed, and only once.
+function comparablePathname(url, {siteOrigin, siteSubdir, pageRedirects} = {}) {
     if (!url) {
         return null;
     }
@@ -63,13 +72,10 @@ function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
         if (!pathname.startsWith(`${siteSubdir}/`)) {
             return null;
         }
-    }
-
-    if (siteSubdir && pathname.startsWith(`${siteSubdir}/`)) {
         pathname = pathname.slice(siteSubdir.length) || '/';
     }
 
-    return pathname;
+    return pageRedirects?.get(pathname) ?? pathname;
 }
 
 // Path form stored in Settings -> Navigation (no site subdirectory).
@@ -101,8 +107,8 @@ function placementFor(settings, path, siteContext) {
     );
 }
 
-export function getPagePlacement(settings, path, blogUrl) {
-    return placementFor(settings, path, siteContextFor(blogUrl));
+export function getPagePlacement(settings, path, blogUrl, pageRoutes) {
+    return placementFor(settings, path, siteContextFor(blogUrl, pageRoutes));
 }
 
 function normalizePlacement(placement) {
@@ -196,10 +202,10 @@ async function applyNavigationPlacement(settings, {pages, placement, siteContext
 
 // Add/move/remove one page. Reload settings first so we don't overwrite
 // someone else's edit. Skip the save if nothing would change.
-export async function setPageNavigationPlacement(settings, {label, path, placement, blogUrl}) {
+export async function setPageNavigationPlacement(settings, {label, path, placement, blogUrl, pageRoutes}) {
     await settings.reload();
 
-    const siteContext = siteContextFor(blogUrl);
+    const siteContext = siteContextFor(blogUrl, pageRoutes);
 
     if (!comparablePathname(path, siteContext)) {
         return null;
@@ -214,12 +220,12 @@ export async function setPageNavigationPlacement(settings, {label, path, placeme
     return applyNavigationPlacement(settings, {pages: [{label, path}], placement: desired, siteContext});
 }
 
-export async function setPagesNavigationPlacement(settings, {pages, placement, blogUrl}) {
+export async function setPagesNavigationPlacement(settings, {pages, placement, blogUrl, pageRoutes}) {
     await settings.reload();
 
     return applyNavigationPlacement(settings, {
         pages,
         placement,
-        siteContext: siteContextFor(blogUrl)
+        siteContext: siteContextFor(blogUrl, pageRoutes)
     });
 }

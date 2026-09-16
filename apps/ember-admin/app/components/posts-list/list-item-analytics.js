@@ -35,7 +35,7 @@ export default class PostsListItemClicks extends Component {
             return null;
         }
 
-        return getPagePlacement(this.settings, pagePathForSlug(this.post.slug, this.config.pageRoutes), this.config.blogUrl);
+        return getPagePlacement(this.settings, pagePathForSlug(this.post.slug, this.config.pageRoutes), this.config.blogUrl, this.config.pageRoutes);
     }
 
     get scheduledText() {

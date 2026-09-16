@@ -875,6 +875,24 @@ describe('Acceptance: Publish flow', function () {
     });
 
     describe('pages', function () {
+        it('moves an existing slug link when publishing a custom-routed page', async function () {
+            this.server.db.configs.update(1, {pageRoutes: {home: '/'}});
+            this.server.db.settings.update({key: 'navigation'}, {value: JSON.stringify([{label: 'Welcome', url: '/home/'}])});
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Home', slug: 'home'});
+            expect(find('[data-test-setting="navigation"] [data-test-setting-title]')).to.contain.trimmed.text('Primary navigation');
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="secondary"] + label');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            const secondary = JSON.parse(this.server.db.settings.findBy({key: 'secondary_navigation'}).value);
+            expect(navigation).to.deep.equal([]);
+            expect(secondary).to.deep.equal([{label: 'Welcome', url: '/home/'}]);
+        });
+
         it('publishes a custom-routed homepage into navigation using its route', async function () {
             this.server.db.configs.update(1, {pageRoutes: {home: '/'}});
             this.server.db.settings.update({key: 'navigation'}, {value: '[]'});

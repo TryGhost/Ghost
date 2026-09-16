@@ -559,7 +559,7 @@ export default class PostsContextMenu extends Component {
 
     get selectedPagePlacements() {
         return this.selectionList.availableModels
-            .map(model => getPagePlacement(this.settings, pagePathForSlug(model.slug, this.config.pageRoutes), this.config.blogUrl));
+            .map(model => getPagePlacement(this.settings, pagePathForSlug(model.slug, this.config.pageRoutes), this.config.blogUrl, this.config.pageRoutes));
     }
 
     get isSingleSelection() {
@@ -616,7 +616,8 @@ export default class PostsContextMenu extends Component {
             yield setPagesNavigationPlacement(this.settings, {
                 pages,
                 placement: placement === 'none' ? null : placement,
-                blogUrl: this.config.blogUrl
+                blogUrl: this.config.blogUrl,
+                pageRoutes: this.config.pageRoutes
             });
 
             let message;
