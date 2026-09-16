@@ -1766,7 +1766,8 @@ describe('Automation run pagination', () => {
   };
   const row = (name: string) => runsRegion().getByText(name, { exact: true });
   const renderedRows = () => runsRegion().element().querySelectorAll('tbody tr[data-index]').length;
-  const scrollRoot = () => runsRegion().element().firstElementChild as HTMLElement;
+  const scrollRoot = () =>
+    document.querySelector('[aria-label="Performance details"]') as HTMLElement;
   // Pages arriving grow the list under the current position; keep scrolling until the height settles.
   const scrollToEnd = async () => {
     let previousHeight = -1;

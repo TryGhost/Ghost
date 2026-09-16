@@ -6,15 +6,19 @@ import { useAutomationEntryStats } from '@/automations/hooks/use-automation-entr
 import { TotalEntriesChart } from './total-entries-chart';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 
-export const TotalEntries: React.FC<{ automationId: string; dateRange: PerformanceDateRange }> = ({
-  automationId,
-  dateRange,
-}) => {
+export const TotalEntries: React.FC<{
+  automationId: string;
+  dateRange: PerformanceDateRange;
+  isHidden?: boolean;
+}> = ({ automationId, dateRange, isHidden }) => {
   const { chart, isLoading, isError, unavailable, retry } = useAutomationEntryStats(
     automationId,
     dateRange,
   );
   const headingId = useId();
+  if (isHidden) {
+    return null;
+  }
 
   return (
     <Stack

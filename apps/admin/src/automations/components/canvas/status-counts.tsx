@@ -6,23 +6,34 @@ import type { useAutomationStatusStats } from '@/automations/hooks/use-automatio
 import { StatusCards } from './status-cards';
 
 export const StatusCounts: React.FC<{
+  compact?: boolean;
   counts: ReturnType<typeof useAutomationStatusStats>;
   selectedStatus: AutomationRunStatusFilter | null;
   onStatusChange: (status: AutomationRunStatusFilter) => void;
-}> = ({ counts, selectedStatus, onStatusChange }) => {
-  const { data, isLoading, isError, unavailable, retry } = counts;
+}> = ({ counts, selectedStatus, onStatusChange, compact }) => {
+  const { data, isLoading, isError, unavailable, retry, scanning, paused, continueSearch } = counts;
   return (
     <Stack aria-label="Automation status counts" className="@container" gap="sm" role="region">
       <StatusCards
+        compact={compact}
         data={data}
         isLoading={isLoading}
         selectedStatus={selectedStatus}
         onStatusChange={onStatusChange}
       />
       {isLoading && (
-        <Text className="sr-only" role="status">
-          Loading automation statuses
+        <Text className={scanning ? undefined : 'sr-only'} role="status">
+          {paused
+            ? 'Counting paused. Continue to finish totals.'
+            : scanning
+              ? 'Counting matching entries…'
+              : 'Loading automation statuses'}
         </Text>
+      )}
+      {paused && !isError && (
+        <Button className="self-start" size="sm" variant="outline" onClick={continueSearch}>
+          Continue counting
+        </Button>
       )}
       {data?.incompleteMessage && (
         <Text role="status" size="sm" tone="secondary">

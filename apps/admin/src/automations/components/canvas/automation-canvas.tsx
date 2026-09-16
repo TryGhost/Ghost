@@ -695,7 +695,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   return (
     <Inline
       align="stretch"
-      className="@container relative min-h-0 flex-1 overflow-hidden bg-background"
+      className="@container relative min-h-0 flex-1 overflow-clip bg-background"
       data-testid="automation-canvas"
       gap="none"
     >

@@ -197,6 +197,14 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     }),
     useBrowseAutomationActionLinks: (...args: unknown[]) =>
       mockUseBrowseAutomationActionLinks(...args),
+    useReadAutomationStatusStats: () => ({
+      data: undefined,
+      isFetching: false,
+      isError: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+      refetch: vi.fn(),
+    }),
     useEditAutomation: () => mockEditMutation,
   };
 });
