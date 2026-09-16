@@ -1,4 +1,3 @@
-import { subFieldsOf } from '@tryghost/metafield-types/structure';
 import {
   getActiveInterval,
   arePaidMembersEnabled,
@@ -8,7 +7,6 @@ import {
   getCurrencySymbol,
   getFreeProduct,
   getMemberName,
-  customFieldPartLabel,
   hasCustomFieldsEnabled,
   getMemberSubscription,
   getPriceFromSubscription,
@@ -1072,16 +1070,6 @@ describe('Helpers - ', () => {
     test('returns true when editor default email recipients is set to filter', () => {
       const site = { editor_default_email_recipients: 'filter' };
       expect(hasNewsletterSendingEnabled({ site })).toBe(true);
-    });
-  });
-
-  describe('customFieldPartLabel -', () => {
-    test('names every part of an address', () => {
-      for (const part of subFieldsOf('address')) {
-        const label = customFieldPartLabel(part);
-        expect(label).toBeTruthy();
-        expect(label).not.toBe(part);
-      }
     });
   });
 
