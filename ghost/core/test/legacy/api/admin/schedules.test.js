@@ -231,8 +231,8 @@ describe('Schedules API', function () {
     it('two overlapping deliveries of the same job publish once', async function () {
       // A scheduler with a persistent queue can hold two jobs for one post
       // and fire both in the same tick. The first delivery publishes; the
-      // second must see the post is no longer scheduled and take the no-op
-      // path, so the post is not published (or emailed) twice.
+      // second must take the no-op path while publishing is in flight or
+      // after the post is published, so it is not published (or emailed) twice.
       const url = localUtils.API.getApiQuery(`schedules/posts/${resources[5].id}/?token=${token}`);
 
       const [first, second] = await Promise.all([

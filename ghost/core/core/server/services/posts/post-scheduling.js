@@ -32,7 +32,6 @@ const inFlight = new Set();
  */
 exports.publish = async (resourceType, id, force, options) => {
   const key = `${resourceType}:${id}`;
-
   if (inFlight.has(key)) {
     return NO_OP;
   }
