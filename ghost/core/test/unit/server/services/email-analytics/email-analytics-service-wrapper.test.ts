@@ -6,11 +6,6 @@ import type { EmailAnalyticsFetchResult } from '../../../../../core/server/servi
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 import { Queries } from '../../../../../core/server/services/email-analytics/lib/queries';
 
-class FakeEvent {
-  timestamp = new Date();
-  data = null;
-}
-
 describe('EmailAnalyticsServiceWrapper', function () {
   let metricStub: sinon.SinonStub;
 
@@ -23,15 +18,11 @@ describe('EmailAnalyticsServiceWrapper', function () {
   });
 
   function initWrapper(logName: string, configOverrides: Record<string, unknown> = {}) {
-    const wrapper = new EmailAnalyticsServiceWrapper({ logName });
-    wrapper.init({
+    const wrapper = new EmailAnalyticsServiceWrapper({
+      logName,
       config: {
         get: (key?: string) => (key ? configOverrides[key] : undefined),
       },
-      domainEvents: {
-        subscribe: sinon.stub(),
-      },
-      event: FakeEvent,
       queries: sinon.createStubInstance(Queries),
       mailgunTags: [],
       jobNames: {
@@ -83,6 +74,83 @@ describe('EmailAnalyticsServiceWrapper', function () {
 
     return wrapper;
   }
+
+  function stubFetch(wrapper: EmailAnalyticsServiceWrapper) {
+    sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+    return {
+      opened: sinon.stub(wrapper, 'fetchLatestOpenedEvents').resolves(0),
+      latest: sinon.stub(wrapper, 'fetchLatestNonOpenedEvents').resolves(0),
+      missing: sinon.stub(wrapper, 'fetchMissing').resolves(0),
+      scheduled: sinon.stub(wrapper, 'fetchScheduled').resolves(0),
+    };
+  }
+
+  it('skips overlapping fetches while a sibling wrapper makes progress', async function () {
+    const first = initWrapper('newsletters');
+    const sibling = initWrapper('automations');
+    const fetch = stubFetch(first);
+    const other = stubFetch(sibling);
+    let release!: () => void;
+    fetch.opened.returns(
+      new Promise<number>((resolve) => {
+        release = () => resolve(0);
+      }),
+    );
+    const active = first.startFetch();
+    await Promise.resolve();
+    await first.startFetch();
+    await sibling.startFetch();
+    sinon.assert.calledOnce(fetch.opened);
+    sinon.assert.calledOnce(other.scheduled);
+    sinon.assert.notCalled(fetch.latest);
+    release();
+    await active;
+  });
+
+  it('preserves fetch ordering and budgets', async function () {
+    const wrapper = initWrapper('newsletters');
+    const fetch = stubFetch(wrapper);
+    fetch.opened.resolves(10);
+    fetch.latest.resolves(20);
+    await wrapper.startFetch();
+    sinon.assert.callOrder(fetch.opened, fetch.latest, fetch.missing, fetch.scheduled);
+    sinon.assert.calledWithExactly(fetch.latest, { maxEvents: 9990 });
+    sinon.assert.calledWithExactly(fetch.missing, { maxEvents: 9970 });
+    sinon.assert.calledWithExactly(fetch.scheduled, { maxEvents: 10000 });
+  });
+
+  it('swallows ordinary fetch failures and permits the next tick', async function () {
+    const wrapper = initWrapper('newsletters');
+    const fetch = stubFetch(wrapper);
+    fetch.opened.onFirstCall().rejects(new Error('fetch failed'));
+    await wrapper.startFetch();
+    await wrapper.startFetch();
+    sinon.assert.calledTwice(fetch.opened);
+    sinon.assert.calledOnce(fetch.scheduled);
+  });
+
+  it('completes the returned invocation while its detached continuation is pending', async function () {
+    const wrapper = initWrapper('newsletters');
+    const fetch = stubFetch(wrapper);
+    let release!: () => void;
+    fetch.opened.onFirstCall().resolves(10000);
+    fetch.opened.onSecondCall().returns(
+      new Promise<number>((resolve) => {
+        release = () => resolve(0);
+      }),
+    );
+    const finished = new Promise<void>((resolve) => {
+      fetch.scheduled.callsFake(async () => {
+        resolve();
+        return 0;
+      });
+    });
+    await wrapper.startFetch();
+    sinon.assert.calledTwice(fetch.opened);
+    sinon.assert.notCalled(fetch.latest);
+    release();
+    await finished;
+  });
 
   it('uses existing open throughput metric name for newsletters', function () {
     logLatestOpenedJob('newsletters');
@@ -251,11 +319,9 @@ describe('EmailAnalyticsServiceWrapper', function () {
   });
 
   it('skips opened event polling when the cursor seed has no opened column', async function () {
-    const wrapper = new EmailAnalyticsServiceWrapper({ logName: 'gifts' });
-    wrapper.init({
+    const wrapper = new EmailAnalyticsServiceWrapper({
+      logName: 'gifts',
       config: { get: sinon.stub() },
-      domainEvents: { subscribe: sinon.stub() },
-      event: FakeEvent,
       queries: sinon.createStubInstance(Queries),
       mailgunTags: [],
       jobNames: {
