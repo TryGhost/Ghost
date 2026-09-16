@@ -401,14 +401,13 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   const triggerLocked = isTrigger && Boolean(d.triggerLocked);
   const triggerUnset = isTrigger && Boolean(d.triggerUnset);
   // A configured trigger with nothing to say renders header-only — no body, no
-  // second block of padding under the first. Locked (phase 1's saved state) has
-  // no fields and, simple, no exit sentence; unlocked-but-simple has fields only
-  // when the paid trigger discloses tiers. Everywhere else the exit sentence
-  // keeps the body occupied.
+  // second block of padding under the first. That's now every trigger except an
+  // unlocked one with tiers: the exit sentence left the card for the tiers
+  // popover, so a tiers-less trigger (the free signup, in any lane) has no
+  // fields and no caption, and a locked one (phase 1's saved state) never
+  // renders fields at all.
   const triggerBodyEmpty =
-    isTrigger &&
-    !triggerUnset &&
-    (triggerLocked || (Boolean(d.simpleTriggerNames) && !hasTiers(triggerConfig)));
+    isTrigger && !triggerUnset && (triggerLocked || !hasTiers(triggerConfig));
   // Captured at mount: a card that STARTED life asking the question is the one
   // being created, and it's the only one that fades in. Read live, this would also
   // fire on the card returning from a "Change trigger".
@@ -1307,6 +1306,23 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     }
     ordered.forEach((action, i) => {
       const isEmail = action.type === 'send_email';
+      // What this email is missing, as the sentence that fixes it. Subject and
+      // message are both required to send, so both are watched; the message
+      // check earned its way in when the content dialog's simulate switch made
+      // an empty body something this screen can actually resolve. "Message" is
+      // the field's own name on the card, so the warning points at a thing the
+      // reader can see.
+      const missingSubject = action.type === 'send_email' && !action.data.email_subject.trim();
+      const missingMessage =
+        action.type === 'send_email' && !lexicalHasContent(action.data.email_lexical);
+      const emailFault =
+        missingSubject && missingMessage
+          ? 'Add a subject line and a message before this email can be sent.'
+          : missingSubject
+            ? 'Add a subject line before this email can be sent.'
+            : missingMessage
+              ? 'Add a message before this email can be sent.'
+              : null;
       built.push({
         id: action.id,
         type: 'step',
@@ -1330,16 +1346,9 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           emailHasContent:
             action.type === 'send_email' ? lexicalHasContent(action.data.email_lexical) : undefined,
           // A blank email, once the user has moved on from it — same treatment as
-          // the trigger's Stripe warning, and the same register: the fix, not the
-          // failure. Blank means no subject; the body can't be written in the
-          // proto (the content dialog is a stub), so counting it would be a
-          // warning nothing on this screen can clear.
-          warning:
-            action.type === 'send_email' &&
-            !action.data.email_subject.trim() &&
-            action.id !== graceStepId
-              ? { message: 'Add a subject line before this email can be sent.' }
-              : undefined,
+          // the trigger's Stripe warning, and the same register: the fix, not
+          // the failure. See emailFault above for what counts as blank.
+          warning: emailFault && action.id !== graceStepId ? { message: emailFault } : undefined,
           stats: action.type === 'send_email' ? (action.stats ?? ZERO_EMAIL_STATS) : undefined,
           waitHours: action.type === 'wait' ? action.data.wait_hours : undefined,
           onSubjectChange: (subject: string) => {

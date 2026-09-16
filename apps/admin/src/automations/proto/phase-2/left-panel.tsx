@@ -429,6 +429,10 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
         </FilterBar>
       )}
 
+      {/* Scroll anchoring is disabled on this container — set by useStickyList
+                itself (in JS, so it can't be dropped by a build step), because
+                anchoring's compensation for the table's row swaps was what kept
+                unsticking the bar. See the hook for the full story. */}
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
         {/* Chart + counts. Scrolls away under the sticky bar below. No section
                 heading — the automation's own title already names what this is.

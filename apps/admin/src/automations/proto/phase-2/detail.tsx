@@ -43,6 +43,7 @@ import {
   CANVAS_HUD_BUTTON,
   CANVAS_SLOT_FILL,
   canvasTheme,
+  lexicalHasContent,
 } from '@/automations/proto/canvas/flow-utils';
 import { EditCanvas } from '@/automations/proto/canvas/edit-canvas';
 import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
@@ -424,12 +425,16 @@ const AutomationFloat: React.FC = () => {
 
   const stripeMissing = !stripeConnected && triggerConfig !== null && needsStripe(triggerConfig);
 
-  // A blank email in the draft that would be committed. Validated on the DRAFT,
-  // not on what the canvas is currently warning about: the canvas grants a
-  // just-added card a grace period before it wears its warning, and grace is a
-  // display nicety — it must never mean a blank email slips through a publish.
+  // A blank email in the draft that would be committed — no subject, or no
+  // message written (the same lexical test the card's empty state uses).
+  // Validated on the DRAFT, not on what the canvas is currently warning about:
+  // the canvas grants a just-added card a grace period before it wears its
+  // warning, and grace is a display nicety — it must never mean a blank email
+  // slips through a publish.
   const blankEmails = draftFlow.actions.some(
-    (action) => action.type === 'send_email' && !action.data.email_subject.trim(),
+    (action) =>
+      action.type === 'send_email' &&
+      (!action.data.email_subject.trim() || !lexicalHasContent(action.data.email_lexical)),
   );
   // A tiered trigger with no tiers chosen — the "Choose tiers" placeholder
   // still showing. Same split as blankEmails: the canvas grace-gates the gold

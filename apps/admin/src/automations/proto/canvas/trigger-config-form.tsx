@@ -244,18 +244,18 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 rather than anything the configuration implies. A control whose every
                 answer is derivable isn't a control, it's a readout with extra steps.
 
-                So it's a sentence. Muted and unlabelled: a Label would file it with
-                the fields and invite a press. See shared/trigger-config for what it
-                costs to drop the one real choice. Not in phase 1 — see showExits.
+                So it's a sentence. See shared/trigger-config for what it costs to
+                drop the one real choice.
 
-                Only on triggers WITHOUT tiers now. Where tiers exist the sentence
-                lives inside their popover (above), footered under the choice it
-                follows from — on the card as well would be the same line twice.
-                text-control, matching the email card's body excerpt: the cards'
-                muted caption text is one size. */}
-      {showExits && !showTiers && (
-        <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
-      )}
+                And it lives ONLY inside the tiers popover now (above), footered
+                under the choice it follows from. It used to render on the card for
+                triggers without tiers, which left the free trigger carrying one
+                muted caption as its whole body — a card explaining itself to
+                nobody in particular. Gone, the free trigger is header-only (the
+                canvas skips the body entirely — see triggerBodyEmpty), and the
+                cost is stated plainly: the free trigger's exits are no longer
+                written anywhere on screen. If that turns out to matter, they
+                belong behind an affordance, not loose on the card. */}
     </Stack>
   );
 };

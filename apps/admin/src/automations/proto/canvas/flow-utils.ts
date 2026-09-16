@@ -478,10 +478,17 @@ export const lexicalHasContent = (lexical: string): boolean => {
 // Capture runs top-down from the document, ahead of anything on the pane, so it's the
 // one phase that still hears the press.
 //
-// Deliberately scoped to `.react-flow__pane` — the background itself, not "outside".
-// Radix already handles every other target correctly, and a broader listener would
-// race its trigger: our handler would close on pointerdown and the trigger's own
-// click would reopen it, so pressing the field would stop working.
+// Deliberately scoped to the pane BACKGROUND, not "outside". Radix already
+// handles every other target correctly — including the trigger itself, whose
+// press is supposed to toggle — and a broader listener races it: close on
+// pointerdown, and the trigger's own click reopens what it meant to shut.
+//
+// Which is why the node check below exists. `.react-flow__pane` is not just
+// the background: in React Flow's DOM it CONTAINS the viewport and every node,
+// so matching on it alone caught presses on the cards too — reclicking the
+// field that opened a popover closed it here and reopened it a click later,
+// reading as a reload. A press inside any node is the cards' business; only a
+// press that reaches the pane with no node under it is the background.
 //
 // Lives here (rather than in trigger-config-form, where it grew up) because any
 // field-that-opens on a card needs it — every Radix surface raised over the
@@ -492,7 +499,11 @@ export const useDismissOnPanePress = (open: boolean, onDismiss: () => void): voi
       return;
     }
     const handle = (event: PointerEvent) => {
-      if ((event.target as HTMLElement | null)?.closest('.react-flow__pane')) {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('.react-flow__node')) {
+        return;
+      }
+      if (target?.closest('.react-flow__pane')) {
         onDismiss();
       }
     };
