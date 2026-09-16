@@ -1,5 +1,5 @@
 DESCRIPTION >
-    Ten runs ordered by entry time and run ID, optionally filtered by their current recorded status.
+    One page of runs ordered by entry time and run ID, optionally filtered and continued after a scoped keyset cursor.
 
 NODE selected_runs
 SQL >
@@ -10,10 +10,22 @@ SQL >
     {% if String(sort_by, 'created_at') != 'created_at' %}
         {{ error('sort_by must be created_at') }}
     {% end %}
+    {% if Int32(limit, 50) < 1 or Int32(limit, 50) > 51 %}
+        {{ error('limit must be between 1 and 51') }}
+    {% end %}
+    {% if defined(after_created_at) != defined(after_id) %}
+        {{ error('after_created_at and after_id must be supplied together') }}
+    {% end %}
     SELECT id, created_at
     FROM _mv_automation_runs FINAL
     WHERE site_uuid = {{ String(site_uuid, required=True) }}
         AND automation_id = {{ String(automation_id, required=True) }}
+    {% if defined(after_id) %}
+        -- Keyset continuation on immutable columns; status changes cannot move a run across pages.
+        AND (created_at, id)
+            {% if String(sort_direction, 'desc') == 'asc' %} > {% else %} < {% end %}
+            (parseDateTime64BestEffort({{ String(after_created_at, '') }}, 3, 'UTC'), {{ String(after_id, '') }})
+    {% end %}
     {% if not defined(run_status) %}
         -- Without a filter, only the page's runs need classification.
         {% if String(sort_direction, 'desc') == 'asc' %}
@@ -21,7 +33,7 @@ SQL >
         {% else %}
             ORDER BY created_at DESC, id DESC
         {% end %}
-        LIMIT 10
+        LIMIT {{ Int32(limit, 50) }}
     {% end %}
 
 NODE run_status_flags
@@ -71,6 +83,6 @@ SQL >
     {% else %}
         ORDER BY created_at DESC, id DESC
     {% end %}
-    LIMIT 10
+    LIMIT {{ Int32(limit, 50) }}
 
 TYPE ENDPOINT

@@ -134,14 +134,17 @@ finished-only is 2; known exits with or without finished steps are 6 or 4. Missi
 and unknown history is the selected run count minus the three classified counts.
 The automation list continues using its existing pending-run view.
 
-`api_automation_runs` returns ten runs for one automation, ordered by entry time
-then run ID. `sort_direction` is `desc` (default) or `asc` and applies to both
-columns; other values return a template error. Without a filter it limits run IDs
-before reading their step history. With `run_status`, it classifies all runs for
-the automation, then filters before ordering and limiting. Both paths use the same bit-mask
-classification, retaining missing history as `unclassified` in the unfiltered list.
-It reuses the existing materialized tables without a rebuild.
-Member details are joined in Core, not stored in these Tinybird tables.
+`api_automation_runs` returns a page ordered by entry time, then run ID.
+`sort_direction` is `desc` (default) or `asc`, applying to both keys.
+`limit` is 1–51 (default 50). Cursors use `after_created_at` and `after_id`.
+Invalid parameters and unsupported `sort_by` values return a template error.
+
+Unfiltered entry sorting limits run IDs before reading steps. Filtered entry
+sorting classifies runs after the immutable cursor before limiting. Both paths
+reuse the latest-step bit-mask classification, retaining missing history as
+Unclassified. Status changes can alter filter membership but cannot move a run
+across its entry-time position. Core hydrates member details after ordering.
+Existing materialized tables are reused without a rebuild.
 
 Do not turn these into incrementing materialized counters without a retraction
 or deduplication strategy: inserted versions include retries and status changes.

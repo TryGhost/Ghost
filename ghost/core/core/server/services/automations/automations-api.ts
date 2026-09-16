@@ -12,6 +12,7 @@ import {
   fetchAutomationStatusStats,
   fetchAutomationRuns,
 } from './tinybird-automation-stats';
+import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
 import {
   fillEntryStats,
   getEntryStatsWindow,
@@ -190,11 +191,17 @@ export async function readStatusStats(automationId: string) {
   return { automation_id: automationId, ...stats };
 }
 
-export async function browseRuns(automationId: string, status?: unknown, order?: unknown) {
-  const parsedStatus = z
-    .enum(['in_progress', 'completed', 'exited_early'])
-    .optional()
-    .safeParse(status);
+const RUN_PAGE_SIZE = 50;
+
+const runStatusFilterSchema = z.enum(['in_progress', 'completed', 'exited_early']);
+
+export async function browseRuns(
+  automationId: string,
+  status?: unknown,
+  order?: unknown,
+  cursor?: unknown,
+) {
+  const parsedStatus = runStatusFilterSchema.optional().safeParse(status);
   if (!parsedStatus.success) {
     throw new errors.ValidationError({
       message: 'Automation run status must be one of: in_progress, completed, exited_early.',
@@ -206,14 +213,26 @@ export async function browseRuns(automationId: string, status?: unknown, order?:
       message: 'Automation run order must be one of: created_at desc, created_at asc.',
     });
   }
-  await requireAutomation(automationId);
-  const runs = await fetchAutomationRuns(getTinybirdClient(), automationId, {
-    status: parsedStatus.data,
+  const scope: RunCursorScope = {
+    automation_id: automationId,
+    status: parsedStatus.data ?? null,
     direction: parsedOrder.data?.endsWith(' asc') ? 'asc' : 'desc',
+  };
+  const after = cursor === undefined ? undefined : decodeRunCursor(cursor, scope);
+  await requireAutomation(automationId);
+  // One extra row tells us whether a next page exists without a separate count.
+  const rows = await fetchAutomationRuns(getTinybirdClient(), automationId, {
+    status: parsedStatus.data,
+    direction: scope.direction,
+    limit: RUN_PAGE_SIZE + 1,
+    after,
   });
-  if (runs === null) {
+  if (rows === null) {
     throw new errors.InternalServerError({ message: 'Could not load Tinybird automation runs.' });
   }
+  const runs = rows.slice(0, RUN_PAGE_SIZE);
+  const nextCursor =
+    rows.length > RUN_PAGE_SIZE ? encodeRunCursor(scope, runs[runs.length - 1]) : null;
   // Keep member details in Core; a deleted member must not remove a run from this page.
   const members = await repository.getRunMembers(
     automationId,
@@ -221,6 +240,9 @@ export async function browseRuns(automationId: string, status?: unknown, order?:
   );
   return {
     data: runs.map((run) => ({ ...run, member: members.get(run.id) ?? null })),
+    meta: {
+      pagination: { limit: RUN_PAGE_SIZE, next_cursor: nextCursor },
+    },
   };
 }
 

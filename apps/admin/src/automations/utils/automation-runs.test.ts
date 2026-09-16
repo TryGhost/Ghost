@@ -80,8 +80,8 @@ describe('automation run response validation', () => {
     { name: 'missing member', body: { automation_runs: [{ ...run, member: undefined }] } },
     { name: 'duplicate run', body: { automation_runs: [run, run] } },
     {
-      name: 'more than ten runs',
-      body: { automation_runs: Array.from({ length: 11 }, (_, i) => ({ ...run, id: String(i) })) },
+      name: 'more than fifty runs',
+      body: { automation_runs: Array.from({ length: 51 }, (_, i) => ({ ...run, id: String(i) })) },
     },
   ])('rejects $name', ({ body }) => {
     expect(AutomationRunsResponseSchema.safeParse(body).success).toBe(false);
