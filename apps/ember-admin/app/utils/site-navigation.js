@@ -77,17 +77,12 @@ function placementFor(settings, path, siteOrigin) {
         return null;
     }
 
-    const matches = items => items.some(item => comparablePathname(item.url, siteOrigin) === pathToMatch);
-
-    if (matches(itemsFor(settings, 'navigation'))) {
-        return 'primary';
-    }
-
-    if (matches(itemsFor(settings, 'secondaryNavigation'))) {
-        return 'secondary';
-    }
-
-    return null;
+    return currentPlacementFor(
+        itemsFor(settings, 'navigation'),
+        itemsFor(settings, 'secondaryNavigation'),
+        pathToMatch,
+        siteOrigin
+    );
 }
 
 // returns 'primary', 'secondary', or null depending on where (if anywhere)
@@ -100,10 +95,23 @@ function normalizePlacement(placement) {
     return (placement === 'primary' || placement === 'secondary') ? placement : null;
 }
 
+function currentPlacementFor(primary, secondary, pathToMatch, siteOrigin) {
+    if (primary.some(item => comparablePathname(item.url, siteOrigin) === pathToMatch)) {
+        return 'primary';
+    }
+
+    if (secondary.some(item => comparablePathname(item.url, siteOrigin) === pathToMatch)) {
+        return 'secondary';
+    }
+
+    return null;
+}
+
 // applies the desired placement for one or more pages against the already
-// loaded settings, saving once. Existing label/url are preserved so any
-// customization made in the navigation editor isn't lost. On failure reverts
-// only the navigation attributes before rethrowing.
+// loaded settings, saving once. Pages already in the destination are left
+// alone so bulk updates don't reorder them. Existing label/url/icon/visibility
+// are copied onto the moved item so navigation-editor customizations aren't
+// lost. On failure reverts only the navigation attributes before rethrowing.
 async function applyNavigationPlacement(settings, {pages, placement, siteOrigin}) {
     const desired = normalizePlacement(placement);
 
@@ -112,6 +120,7 @@ async function applyNavigationPlacement(settings, {pages, placement, siteOrigin}
 
     let primary = itemsFor(settings, 'navigation');
     let secondary = itemsFor(settings, 'secondaryNavigation');
+    let changed = false;
 
     for (const page of pages) {
         const pathToMatch = comparablePathname(page.path, siteOrigin);
@@ -120,20 +129,40 @@ async function applyNavigationPlacement(settings, {pages, placement, siteOrigin}
             continue;
         }
 
+        if (currentPlacementFor(primary, secondary, pathToMatch, siteOrigin) === desired) {
+            continue;
+        }
+
         const existing = [...primary, ...secondary]
             .find(item => comparablePathname(item.url, siteOrigin) === pathToMatch);
-        const itemLabel = existing?.label || page.label || 'Untitled';
-        const itemUrl = existing?.url || page.path;
 
         const without = items => items.filter(item => comparablePathname(item.url, siteOrigin) !== pathToMatch);
         primary = without(primary);
         secondary = without(secondary);
+        changed = true;
 
-        if (desired === 'primary') {
-            primary = [...primary, NavigationItem.create({label: itemLabel, url: itemUrl, isSecondary: false})];
-        } else if (desired === 'secondary') {
-            secondary = [...secondary, NavigationItem.create({label: itemLabel, url: itemUrl, isSecondary: true})];
+        if (desired === 'primary' || desired === 'secondary') {
+            // copy rather than reuse/mutate: on save failure we restore the
+            // previous arrays, and mutating the shared EmberObject would leave
+            // isSecondary dirty on the reverted item
+            const item = NavigationItem.create({
+                label: existing?.label || page.label || 'Untitled',
+                url: existing?.url || page.path,
+                icon: existing?.icon || '',
+                visibility: existing?.visibility || 'public',
+                isSecondary: desired === 'secondary'
+            });
+
+            if (desired === 'primary') {
+                primary = [...primary, item];
+            } else {
+                secondary = [...secondary, item];
+            }
         }
+    }
+
+    if (!changed) {
+        return desired;
     }
 
     try {
