@@ -47,7 +47,7 @@ export class EmailAnalyticsJobScheduler {
   readonly #scheduledJobTypes = new Set<string>();
   readonly #models: Models;
   readonly #config: Config;
-  readonly jobsService: Pick<JobsService, 'scheduleRecurring'>;
+  readonly #jobsService: Pick<JobsService, 'scheduleRecurring'>;
 
   constructor({
     models,
@@ -60,7 +60,7 @@ export class EmailAnalyticsJobScheduler {
   }) {
     this.#models = models;
     this.#config = config;
-    this.jobsService = jobsService;
+    this.#jobsService = jobsService;
   }
 
   #isConfigured(): boolean {
@@ -130,7 +130,7 @@ export class EmailAnalyticsJobScheduler {
 
     const at = randomFiveMinuteCron();
     logging.info(`[Background Job] ${JobClass.type} scheduled at ${at}`);
-    await this.jobsService.scheduleRecurring(new JobClass(), { cron: at });
+    await this.#jobsService.scheduleRecurring(new JobClass(), { cron: at });
     this.#scheduledJobTypes.add(JobClass.type);
   }
 }
