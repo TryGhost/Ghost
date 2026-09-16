@@ -14,7 +14,7 @@ const OVER_LONG = 'x'.repeat(256);
 async function anAddressFieldMembersMayEdit(page: Page, fieldName: string): Promise<void> {
   const settingsPage = new SettingsPage(page);
   await settingsPage.goto();
-  await settingsPage.customFieldsSection.createField(fieldName, 'Address', 'Members can edit');
+  await settingsPage.customFieldsSection.createField(fieldName, 'Address', true);
 }
 
 /** Opens Portal account settings as the member, in a browser context of their own. */
