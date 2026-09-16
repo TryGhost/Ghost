@@ -206,7 +206,19 @@ class BatchSendingService {
    * @private
    * @param {{emailId: string}} data Data passed from the job service. We only need the emailId because we need to refetch the email anyway to make sure the status is right and 'locked'.
    */
-  async emailJob({ emailId }) {
+  async emailJob(data) {
+    // Tracked at the job boundary so onShutdown waits for the terminal status write,
+    // not just the send.
+    const work = this.#emailJobInner(data);
+    this.#inFlight.add(work);
+    try {
+      return await work;
+    } finally {
+      this.#inFlight.delete(work);
+    }
+  }
+
+  async #emailJobInner({ emailId }) {
     logging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
 
     const startTime = Date.now();
@@ -319,24 +331,6 @@ class BatchSendingService {
    * @throws {errors.EmailError} If one of the batches fails
    */
   async sendEmail(email) {
-    // Track the whole operation (batch creation + sending) so onShutdown awaits it
-    // before ghost-server schedules process.exit. Covers both creating batches and the
-    // Mailgun POST + EmailBatch status write, so neither is killed mid-flight.
-    const work = this.#sendEmailInner(email);
-    this.#inFlight.add(work);
-    try {
-      return await work;
-    } finally {
-      this.#inFlight.delete(work);
-    }
-  }
-
-  /**
-   * @private
-   * @param {Email} email
-   * @throws {errors.EmailError} If one of the batches fails
-   */
-  async #sendEmailInner(email) {
     logging.info(`Sending email ${email.id}`);
 
     // Load required relations

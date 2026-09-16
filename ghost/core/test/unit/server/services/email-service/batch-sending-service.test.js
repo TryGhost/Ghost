@@ -2448,7 +2448,7 @@ describe('Batch Sending Service', function () {
           },
         },
       });
-      // Reach the real send loop (with its worker fan-out) through sendEmail, the single
+      // Reach the real send loop (with its worker fan-out) through emailJob, the single
       // in-flight tracker. sendBatch is gated so a send stays in flight; `reachedSend`
       // lets us hold off calling onShutdown until a worker is already past the shutdown
       // check — otherwise the synchronous flag flip would make the workers bail before
@@ -2470,12 +2470,14 @@ describe('Batch Sending Service', function () {
 
       const email = createModel({
         status: 'submitting',
+        email_count: 2000,
         newsletter: createModel({}),
         post: createModel({}),
       });
+      sinon.stub(service, 'updateStatusLock').resolves(email);
 
-      // Kick off sendEmail; do NOT await — it must remain in flight.
-      const sendPromise = service.sendEmail(email);
+      // Kick off the job; do NOT await — it must remain in flight.
+      const sendPromise = service.emailJob({ emailId: email.id });
       let sendEmailDone = false;
       sendPromise
         .then(() => {
@@ -2509,6 +2511,48 @@ describe('Batch Sending Service', function () {
       sinon.assert.called(sendBatch);
     });
 
+    it('onShutdown does not resolve until the submitted status write settles', async function () {
+      const service = new BatchSendingService({ models: { Email: {} } });
+
+      // Gate the `submitted` write so the job stays in flight after the send settles.
+      let releaseSave;
+      const saveGate = new Promise((resolve) => {
+        releaseSave = resolve;
+      });
+      let markSaveReached;
+      const saveReached = new Promise((resolve) => {
+        markSaveReached = resolve;
+      });
+      const email = createModel({ status: 'submitting', email_count: 1000 });
+      const save = sinon.stub(email, 'save').callsFake(async (properties) => {
+        markSaveReached();
+        await saveGate;
+        Object.assign(email, properties);
+      });
+      sinon.stub(service, 'updateStatusLock').resolves(email);
+      sinon.stub(service, 'sendEmail').resolves();
+
+      const jobPromise = service.emailJob({ emailId: email.id });
+      await saveReached;
+
+      let onShutdownDone = false;
+      const onShutdownPromise = service.onShutdown().then(() => {
+        onShutdownDone = true;
+      });
+
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+      assert.equal(onShutdownDone, false, 'onShutdown must wait for the submitted write');
+
+      releaseSave();
+      await onShutdownPromise;
+      await jobPromise;
+      assert.equal(onShutdownDone, true);
+      sinon.assert.calledOnce(save);
+      assert.equal(save.firstCall.args[0].status, 'submitted');
+    });
+
     it('onShutdown does not resolve until in-flight batch creation settles', async function () {
       const EmailBatch = createModelClass({ findAll: [] });
       const service = new BatchSendingService({
@@ -2533,12 +2577,14 @@ describe('Batch Sending Service', function () {
 
       const email = createModel({
         status: 'submitting',
+        email_count: 2000,
         newsletter: createModel({}),
         post: createModel({}),
       });
+      sinon.stub(service, 'updateStatusLock').resolves(email);
 
-      // Kick off sendEmail; do NOT await — creation must remain in flight.
-      const sendPromise = service.sendEmail(email);
+      // Kick off the job; do NOT await — creation must remain in flight.
+      const sendPromise = service.emailJob({ emailId: email.id });
 
       let onShutdownDone = false;
       const onShutdownPromise = service.onShutdown().then(() => {
