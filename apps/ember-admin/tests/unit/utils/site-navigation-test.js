@@ -37,17 +37,13 @@ function mutableSettings({navigation = [], secondaryNavigation = []} = {}) {
 
 describe('Unit: Util: site-navigation', function () {
     describe('pagePathForSlug', function () {
-        it('returns /:slug/ on a root install', function () {
+        it('returns /:slug/ regardless of install path', function () {
+            // nav URLs are stored subdirectory-relative; themes re-prepend the
+            // subdir at render time, so we must not bake it into the saved url
             expect(pagePathForSlug('about', 'https://example.com/')).to.equal('/about/');
             expect(pagePathForSlug('about', 'https://example.com')).to.equal('/about/');
-        });
-
-        it('includes the subdirectory on a subdir install', function () {
-            expect(pagePathForSlug('about', 'https://example.com/blog/')).to.equal('/blog/about/');
-            expect(pagePathForSlug('about', 'https://example.com/blog')).to.equal('/blog/about/');
-        });
-
-        it('treats a missing/unparseable blogUrl as a root install', function () {
+            expect(pagePathForSlug('about', 'https://example.com/blog/')).to.equal('/about/');
+            expect(pagePathForSlug('about', 'https://example.com/blog')).to.equal('/about/');
             expect(pagePathForSlug('about')).to.equal('/about/');
             expect(pagePathForSlug('about', 'not a url')).to.equal('/about/');
         });
@@ -60,8 +56,8 @@ describe('Unit: Util: site-navigation', function () {
     describe('getPagePlacement on a subdirectory install', function () {
         const blogUrl = 'https://example.com/blog/';
 
-        it('matches a nav item stored with the subdirectory', function () {
-            const settings = settingsWith({navigation: [{url: '/blog/about/'}]});
+        it('matches a nav item stored subdirectory-relative', function () {
+            const settings = settingsWith({navigation: [{url: '/about/'}]});
             expect(getPagePlacement(settings, pagePathForSlug('about', blogUrl), blogUrl)).to.equal('primary');
         });
 
@@ -70,8 +66,16 @@ describe('Unit: Util: site-navigation', function () {
             expect(getPagePlacement(settings, pagePathForSlug('about', blogUrl), blogUrl)).to.equal('secondary');
         });
 
-        it('does not match a bare /about/ that would 404 under the subdirectory', function () {
-            const settings = settingsWith({navigation: [{url: '/about/'}]});
+        it('matches a legacy double-prefixed relative url', function () {
+            const settings = settingsWith({navigation: [{url: '/blog/about/'}]});
+            expect(getPagePlacement(settings, pagePathForSlug('about', blogUrl), blogUrl)).to.equal('primary');
+        });
+
+        it('does not collapse a page whose slug matches the subdir segment', function () {
+            // site at /blog, page slug "blog" is stored as /blog/ — must not
+            // be treated as the site root
+            const settings = settingsWith({navigation: [{url: '/blog/'}]});
+            expect(getPagePlacement(settings, pagePathForSlug('blog', blogUrl), blogUrl)).to.equal('primary');
             expect(getPagePlacement(settings, pagePathForSlug('about', blogUrl), blogUrl)).to.be.null;
         });
     });
@@ -180,6 +184,21 @@ describe('Unit: Util: site-navigation', function () {
             const moved = settings.secondaryNavigation[0];
             expect(moved.label).to.equal('');
             expect(moved.icon).to.equal('https://example.com/about.svg');
+        });
+
+        it('stores subdirectory-relative urls on a subdirectory install', async function () {
+            const settings = mutableSettings();
+            const subdirBlogUrl = 'https://example.com/blog/';
+
+            await setPageNavigationPlacement(settings, {
+                label: 'About',
+                path: pagePathForSlug('about', subdirBlogUrl),
+                placement: 'primary',
+                blogUrl: subdirBlogUrl
+            });
+
+            expect(settings.navigation).to.have.length(1);
+            expect(settings.navigation[0].url).to.equal('/about/');
         });
     });
 });

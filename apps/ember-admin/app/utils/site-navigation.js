@@ -16,9 +16,9 @@ function siteOriginFor(blogUrl) {
 }
 
 // the configured site's subdirectory (the pathname of blogUrl), without a
-// trailing slash - '' for a root install. Pages and their nav links live
-// under this, so e.g. on a site at example.com/blog the page /about/ is
-// served (and linked) at /blog/about/.
+// trailing slash - '' for a root install. Navigation item URLs are stored
+// *without* this prefix (Settings strips it on save); themes re-prepend it
+// via urlFor('nav') when rendering.
 function siteSubdirFor(blogUrl) {
     try {
         return new URL(blogUrl).pathname.replace(/\/+$/, '');
@@ -27,11 +27,18 @@ function siteSubdirFor(blogUrl) {
     }
 }
 
-// normalizes absolute and relative urls down to a comparable pathname,
-// e.g. "https://site.com/about/" -> "/about" and "about/" -> "/about".
-// urls pointing at other sites (external nav links) return null so they
-// never match a local page
-function comparablePathname(url, siteOrigin) {
+function siteContextFor(blogUrl) {
+    return {
+        siteOrigin: siteOriginFor(blogUrl),
+        siteSubdir: siteSubdirFor(blogUrl).toLowerCase()
+    };
+}
+
+// normalizes absolute and relative urls down to a comparable pathname in the
+// subdirectory-relative form Ghost stores, e.g. "https://site.com/blog/about/"
+// and "/about/" both become "/about". urls pointing at other sites return
+// null so they never match a local page.
+function comparablePathname(url, {siteOrigin, siteSubdir} = {}) {
     if (!url) {
         return null;
     }
@@ -51,27 +58,36 @@ function comparablePathname(url, siteOrigin) {
         return null;
     }
 
-    const pathname = parsed.pathname.replace(/\/+$/, '');
+    let pathname = (parsed.pathname.replace(/\/+$/, '') || '/').toLowerCase();
 
-    return (pathname || '/').toLowerCase();
+    // strip a leading site subdirectory so absolute links and any legacy
+    // double-prefixed relative links compare equal to the stored form.
+    // require `${siteSubdir}/…` (not bare equality) so a page whose slug
+    // matches the subdir segment (e.g. slug "blog" on /blog) stays "/blog"
+    if (siteSubdir && pathname.startsWith(`${siteSubdir}/`)) {
+        pathname = pathname.slice(siteSubdir.length) || '/';
+    }
+
+    return pathname;
 }
 
-// pages are served at <subdir>/:slug/ (subdir is empty on a root install),
-// matching the verbatim url stored for a nav item that points at the page
-export function pagePathForSlug(slug, blogUrl) {
+// nav items store the page path subdirectory-relative, matching Ghost's
+// default settings and what Settings → Navigation saves. blogUrl is accepted
+// for call-site symmetry with getPagePlacement but does not affect the path.
+export function pagePathForSlug(slug) {
     if (!slug) {
         return null;
     }
 
-    return `${siteSubdirFor(blogUrl)}/${slug}/`;
+    return `/${slug}/`;
 }
 
 function itemsFor(settings, key) {
     return settings[key]?.toArray() ?? [];
 }
 
-function placementFor(settings, path, siteOrigin) {
-    const pathToMatch = comparablePathname(path, siteOrigin);
+function placementFor(settings, path, siteContext) {
+    const pathToMatch = comparablePathname(path, siteContext);
 
     if (!pathToMatch) {
         return null;
@@ -81,26 +97,26 @@ function placementFor(settings, path, siteOrigin) {
         itemsFor(settings, 'navigation'),
         itemsFor(settings, 'secondaryNavigation'),
         pathToMatch,
-        siteOrigin
+        siteContext
     );
 }
 
 // returns 'primary', 'secondary', or null depending on where (if anywhere)
 // the page at `path` is linked in the site navigation
 export function getPagePlacement(settings, path, blogUrl) {
-    return placementFor(settings, path, siteOriginFor(blogUrl));
+    return placementFor(settings, path, siteContextFor(blogUrl));
 }
 
 function normalizePlacement(placement) {
     return (placement === 'primary' || placement === 'secondary') ? placement : null;
 }
 
-function currentPlacementFor(primary, secondary, pathToMatch, siteOrigin) {
-    if (primary.some(item => comparablePathname(item.url, siteOrigin) === pathToMatch)) {
+function currentPlacementFor(primary, secondary, pathToMatch, siteContext) {
+    if (primary.some(item => comparablePathname(item.url, siteContext) === pathToMatch)) {
         return 'primary';
     }
 
-    if (secondary.some(item => comparablePathname(item.url, siteOrigin) === pathToMatch)) {
+    if (secondary.some(item => comparablePathname(item.url, siteContext) === pathToMatch)) {
         return 'secondary';
     }
 
@@ -112,7 +128,7 @@ function currentPlacementFor(primary, secondary, pathToMatch, siteOrigin) {
 // alone so bulk updates don't reorder them. Existing label/url/icon/visibility
 // are copied onto the moved item so navigation-editor customizations aren't
 // lost. On failure reverts only the navigation attributes before rethrowing.
-async function applyNavigationPlacement(settings, {pages, placement, siteOrigin}) {
+async function applyNavigationPlacement(settings, {pages, placement, siteContext}) {
     const desired = normalizePlacement(placement);
 
     const previousPrimary = settings.navigation;
@@ -123,20 +139,20 @@ async function applyNavigationPlacement(settings, {pages, placement, siteOrigin}
     let changed = false;
 
     for (const page of pages) {
-        const pathToMatch = comparablePathname(page.path, siteOrigin);
+        const pathToMatch = comparablePathname(page.path, siteContext);
 
         if (!pathToMatch) {
             continue;
         }
 
-        if (currentPlacementFor(primary, secondary, pathToMatch, siteOrigin) === desired) {
+        if (currentPlacementFor(primary, secondary, pathToMatch, siteContext) === desired) {
             continue;
         }
 
         const existing = [...primary, ...secondary]
-            .find(item => comparablePathname(item.url, siteOrigin) === pathToMatch);
+            .find(item => comparablePathname(item.url, siteContext) === pathToMatch);
 
-        const without = items => items.filter(item => comparablePathname(item.url, siteOrigin) !== pathToMatch);
+        const without = items => items.filter(item => comparablePathname(item.url, siteContext) !== pathToMatch);
         primary = without(primary);
         secondary = without(secondary);
         changed = true;
@@ -192,19 +208,19 @@ async function applyNavigationPlacement(settings, {pages, placement, siteOrigin}
 export async function setPageNavigationPlacement(settings, {label, path, placement, blogUrl}) {
     await settings.reload();
 
-    const siteOrigin = siteOriginFor(blogUrl);
+    const siteContext = siteContextFor(blogUrl);
 
-    if (!comparablePathname(path, siteOrigin)) {
+    if (!comparablePathname(path, siteContext)) {
         return null;
     }
 
     const desired = normalizePlacement(placement);
 
-    if (placementFor(settings, path, siteOrigin) === desired) {
+    if (placementFor(settings, path, siteContext) === desired) {
         return desired;
     }
 
-    return applyNavigationPlacement(settings, {pages: [{label, path}], placement: desired, siteOrigin});
+    return applyNavigationPlacement(settings, {pages: [{label, path}], placement: desired, siteContext});
 }
 
 // bulk variant - places every given page ({label, path}) into the same
@@ -212,5 +228,9 @@ export async function setPageNavigationPlacement(settings, {label, path, placeme
 export async function setPagesNavigationPlacement(settings, {pages, placement, blogUrl}) {
     await settings.reload();
 
-    return applyNavigationPlacement(settings, {pages, placement, siteOrigin: siteOriginFor(blogUrl)});
+    return applyNavigationPlacement(settings, {
+        pages,
+        placement,
+        siteContext: siteContextFor(blogUrl)
+    });
 }
