@@ -439,18 +439,41 @@ async function initServices({
     statsService.init(),
     explorePingService.init(),
     machinePaymentsService.init(),
-    automationsService.init({
-      domainEvents,
-      apiUrl,
-      schedulerAdapter,
-      internalKeys,
-      siteUuid: settingsCache.get('site_uuid'),
-      scheduleAutomationEmailAnalyticsJob: emailAnalyticsJobs.scheduleRecurringAutomationsJob.bind(
-        emailAnalyticsJobs,
-        true,
-      ),
-    }),
   ]);
+
+  debug('Begin: Register job handlers');
+  const registerJobHandlers =
+    require('./server/services/jobs-service/register-job-handlers').default;
+  const memberJobs = require('./server/services/members/jobs');
+  const membersService = require('./server/services/members');
+  memberJobs.init();
+  assert(giftService.service, 'Gift service should be initialized');
+  assert(mentionsService.controller, 'Mentions controller should be initialized');
+  assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
+  assert(membersService.handleImportJob, 'Members service should be initialized');
+  registerJobHandlers({
+    jobsService,
+    memberJobs,
+    giftService: giftService.service,
+    mediaInliner: mediaInliner.getInstance(),
+    mentionsController: mentionsService.controller,
+    mentionsSendingService: mentionsService.sendingService,
+    membersService,
+  });
+  await jobsService.start();
+  debug('End: Register job handlers');
+
+  await automationsService.init({
+    domainEvents,
+    apiUrl,
+    schedulerAdapter,
+    internalKeys,
+    siteUuid: settingsCache.get('site_uuid'),
+    scheduleAutomationEmailAnalyticsJob: emailAnalyticsJobs.scheduleRecurringAutomationsJob.bind(
+      emailAnalyticsJobs,
+      true,
+    ),
+  });
 
   if (schedulerAdapter.rescheduleOnBoot) {
     await postScheduling.rescheduleAll();
@@ -707,31 +730,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     await initServices({ ghostServer, config, prometheusClient, jobsService, emailAnalyticsJobs });
 
-    debug('Begin: Register job handlers');
-    const assert = require('node:assert/strict');
-    const registerJobHandlers =
-      require('./server/services/jobs-service/register-job-handlers').default;
-    const mediaInliner = require('./server/services/media-inliner');
-    const gifts = require('./server/services/gifts');
-    const memberJobs = require('./server/services/members/jobs');
-    const mentionsService = require('./server/services/mentions');
-    const membersService = require('./server/services/members');
-    memberJobs.init();
-    assert(gifts.service, 'Gift service should be initialized');
-    assert(mentionsService.controller, 'Mentions controller should be initialized');
-    assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
-    assert(membersService.handleImportJob, 'Members service should be initialized');
-    registerJobHandlers({
-      jobsService,
-      memberJobs,
-      giftService: gifts.service,
-      mediaInliner: mediaInliner.getInstance(),
-      mentionsController: mentionsService.controller,
-      mentionsSendingService: mentionsService.sendingService,
-      membersService,
-    });
-    await jobsService.start();
-    debug('End: Register job handlers');
     debug('End: Load Ghost Services & Apps');
 
     // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
