@@ -54,7 +54,6 @@ export const buildTinybirdRequestUrl = (
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }
-  // Label the caller in Tinybird's pipe_stats_rt request logs.
   url.searchParams.set('ghost_client', 'admin');
   return url.toString();
 };
