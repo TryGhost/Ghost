@@ -395,6 +395,80 @@ class OEmbedService {
   }
 
   /**
+   * Requests a URL through this.externalRequest and resolves with the response
+   * and at most the first chunk of its body, aborting the rest of the download.
+   *
+   * @param {string} url
+   * @returns {Promise<{response: import('got').Response, chunk?: Buffer}>}
+   */
+  fetchFirstChunk(url) {
+    return new Promise((resolve, reject) => {
+      const stream = this.externalRequest.stream(url, {
+        headers: {
+          'user-agent': USER_AGENT,
+          range: 'bytes=0-0',
+        },
+        timeout: {
+          request: DEFAULT_REQUEST_TIMEOUT,
+        },
+        decompress: false,
+        throwHttpErrors: false,
+      });
+      let response;
+
+      stream.on('response', (res) => {
+        response = res;
+      });
+      stream.once('data', (chunk) => {
+        stream.destroy();
+        resolve({ response, chunk });
+      });
+      stream.once('end', () => resolve({ response }));
+      stream.on('error', reject);
+    });
+  }
+
+  /**
+   * Checks that a favicon candidate is reachable and looks like an image.
+   *
+   * Replaces metascraper-logo-favicon's default resolver, which probes via
+   * reachable-url. reachable-url bundles got 11, which ignores the `dnsLookup`
+   * externalRequest installs to validate the resolved IP at connection time,
+   * leaving those probes open to DNS rebinding. Mirrors the default resolver's
+   * checks otherwise.
+   *
+   * @param {string} faviconUrl
+   * @param {Array<string|string[]>} [contentTypes] - allowed content types for the icon's extension
+   * @returns {Promise<{url: string} | undefined>}
+   */
+  async resolveFaviconUrl(faviconUrl, contentTypes) {
+    let result;
+    try {
+      result = await this.fetchFirstChunk(faviconUrl);
+    } catch {
+      return undefined;
+    }
+
+    const { response, chunk } = result;
+    if (!response || response.statusCode < 200 || response.statusCode >= 300) {
+      return undefined;
+    }
+
+    if (contentTypes) {
+      const contentType = response.headers['content-type']?.split(';')[0].toLowerCase();
+      if (!contentType || !contentTypes.some((ct) => contentType.includes(ct))) {
+        return undefined;
+      }
+      // An empty body or one starting with '<' (60) is markup, not an image
+      if (!chunk?.length || chunk[0] === 60) {
+        return undefined;
+      }
+    }
+
+    return { url: response.url };
+  }
+
+  /**
    * @param {string} url
    * @param {string} html
    * @param {string} type
@@ -477,6 +551,8 @@ class OEmbedService {
       require('metascraper-logo-favicon')({
         gotOpts,
         pickFn,
+        resolveFaviconUrl: (faviconUrl, contentTypes) =>
+          this.resolveFaviconUrl(faviconUrl, contentTypes),
       }),
       require('metascraper-logo')(),
     ];
