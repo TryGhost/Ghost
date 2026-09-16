@@ -23,6 +23,8 @@ const FormInput = ({ field, onChange, onBlur = () => {}, onKeyDown = () => {} })
         onBlur={(e) => onBlur(e, field)}
         tabIndex={field.tabIndex}
         errorMessage={field.errorMessage}
+        invalid={field.invalid}
+        describedBy={field.describedBy}
         autoFocus={field.autoFocus}
       />
     </>

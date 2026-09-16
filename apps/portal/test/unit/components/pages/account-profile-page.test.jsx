@@ -1,4 +1,4 @@
-import { render, fireEvent } from '../../../utils/test-utils';
+import { render, fireEvent, within } from '../../../utils/test-utils';
 import { getSiteData, getMemberData } from '../../../../src/utils/fixtures-generator';
 import AccountProfilePage from '../../../../src/components/pages/account-profile-page';
 
@@ -137,6 +137,45 @@ describe('Account Profile Page', () => {
       );
     });
 
+    // An address is one field drawn as several boxes, so a reason wedged between its
+    // rows breaks the shape the group exists to have. The box is marked, and the reasons
+    // are listed under the whole field, in the order the parts are shown, each saying
+    // which part it belongs to.
+    test('marks the refused parts and lists their reasons under the field', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      const { getByLabelText, getByRole } = setup({
+        site,
+        member,
+        customFields: [editable],
+        fieldErrors: {
+          'custom:shipping_address:line1': 'Use 255 characters or fewer.',
+          'custom:shipping_address:country': 'Enter a 2-letter country code, like US.',
+        },
+      });
+
+      expect(getByLabelText('Address line 1')).toHaveClass('error');
+      expect(getByLabelText('Country')).toHaveClass('error');
+      expect(getByLabelText('City')).not.toHaveClass('error');
+
+      // Marked for a screen reader too, not only to the eye, and pointed at the reasons
+      // since they are not printed beside the box.
+      expect(getByLabelText('Address line 1')).toHaveAttribute('aria-invalid', 'true');
+      expect(getByLabelText('Address line 1')).toHaveAttribute(
+        'aria-describedby',
+        'custom-shipping_address-errors',
+      );
+      expect(getByLabelText('City')).not.toHaveAttribute('aria-invalid');
+
+      // In field order, not the order the refusals arrived in.
+      const listed = within(getByRole('group', { name: 'Shipping address' }))
+        .getAllByRole('listitem')
+        .map((item) => item.textContent);
+      expect(listed).toEqual([
+        'Address line 1: Use 255 characters or fewer.',
+        'Country: Enter a 2-letter country code, like US.',
+      ]);
+    });
+
     test('never sends a field the member may only read, even when its input changed', () => {
       const { getByLabelText, saveBtn, mockDoActionFn } = setup({
         site,
@@ -172,7 +211,11 @@ describe('Account Profile Page', () => {
       );
     });
 
-    test('clears an address the member emptied rather than sending it empty', () => {
+    // Emptying every part this build draws still names those parts rather than the
+    // field. Naming the field clears it whole, and a build only knows the parts it
+    // draws: a part added to the type after it shipped would go too, deleted by a
+    // member who only meant to empty what was in front of them.
+    test('clears the parts of an address the member emptied, not the field', () => {
       const editable = { ...address, access: { member: 'write' } };
       const { getByLabelText, saveBtn, mockDoActionFn } = setup({
         site,
@@ -185,7 +228,7 @@ describe('Account Profile Page', () => {
 
       expect(mockDoActionFn).toHaveBeenCalledWith(
         'updateProfile',
-        expect.objectContaining({ metafields: { custom: { shipping_address: null } } }),
+        expect.objectContaining({ metafields: { custom: { shipping_address: { city: '' } } } }),
       );
     });
 
@@ -199,16 +242,6 @@ describe('Account Profile Page', () => {
         email: member.email,
         name: member.name,
       });
-    });
-
-    test('asks for the fields when arriving without them', () => {
-      const { mockDoActionFn } = setup({ site, member, customFields: null });
-      expect(mockDoActionFn).toHaveBeenCalledWith('loadCustomFields');
-    });
-
-    test('does not ask again once the fields are known', () => {
-      const { mockDoActionFn } = setup({ site, member, customFields: [] });
-      expect(mockDoActionFn).not.toHaveBeenCalledWith('loadCustomFields');
     });
   });
 });

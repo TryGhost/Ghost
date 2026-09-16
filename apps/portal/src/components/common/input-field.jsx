@@ -166,12 +166,18 @@ function InputField({
   maxLength,
   autoFocus,
   errorMessage,
+  // Marked wrong without saying why here. A composite's inputs share one field, and its
+  // reasons are listed under the group rather than wedged between its rows.
+  invalid = false,
+  // What says why, when it is not printed beside the input: a composite's reasons are
+  // listed under the group, and an input has to point at them to be read out with it.
+  describedBy,
 }) {
   const fieldNode = useRef(null);
   id = id || `input-${name}`;
   const sectionClasses = hidden ? 'gh-portal-input-section hidden' : 'gh-portal-input-section';
   const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
-  const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
+  const inputClasses = errorMessage || invalid ? 'gh-portal-input error' : 'gh-portal-input';
   if (isCookiesDisabled()) {
     disabled = true;
   }
@@ -228,6 +234,8 @@ function InputField({
     tabIndex,
     maxLength,
     'aria-label': label,
+    'aria-invalid': errorMessage || invalid ? true : undefined,
+    'aria-describedby': describedBy,
   };
   return (
     <section className={sectionClasses}>
