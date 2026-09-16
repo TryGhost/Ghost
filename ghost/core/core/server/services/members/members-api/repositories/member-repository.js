@@ -195,8 +195,8 @@ module.exports = class MemberRepository {
    * @param {string} memberId
    * @param {string} memberEmail
    * @param {'free' | 'paid'} memberStatus
-   * @param {object} bookshelfOptions
    * @param {string | null} memberTierId
+   * @param {object} bookshelfOptions
    * @param {Knex.Transaction} [bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
@@ -204,8 +204,8 @@ module.exports = class MemberRepository {
     memberId,
     memberEmail,
     memberStatus,
-    bookshelfOptions,
     memberTierId,
+    bookshelfOptions,
   ) {
     const trigger = async () => {
       await this._automationsApi.trigger({
@@ -278,7 +278,7 @@ module.exports = class MemberRepository {
   }
 
   /**
-   * Trigger an automation for member signup.
+   * Trigger an automation for member signup or paid tier switch.
    *
    * Callers are responsible for any eligibility gating (member status, source, etc.)
    * before calling this.
@@ -286,26 +286,30 @@ module.exports = class MemberRepository {
    * @param {string} memberId
    * @param {string} memberEmail
    * @param {'free' | 'paid'} memberStatus
+   * @param {string | null} memberTierId
    * @param {object} bookshelfOptions
-   * @param {string | null} [memberTierId]
+   * @param {boolean} [includeLegacyWelcome]
    * @returns {Promise<void>}
    */
   async triggerMemberSignupAutomation(
     memberId,
     memberEmail,
     memberStatus,
+    memberTierId,
     bookshelfOptions,
-    memberTierId = null,
+    includeLegacyWelcome = true,
   ) {
     await Promise.all([
       this.#triggerMemberSignupAutomation(
         memberId,
         memberEmail,
         memberStatus,
-        bookshelfOptions,
         memberTierId,
+        bookshelfOptions,
       ),
-      this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions),
+      ...(includeLegacyWelcome
+        ? [this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions)]
+        : []),
     ]);
   }
 
@@ -552,9 +556,13 @@ module.exports = class MemberRepository {
           { ...memberAddOptions, transacting },
         );
 
-        await this.triggerMemberSignupAutomation(newMember.id, newMember.get('email'), 'free', {
-          transacting,
-        });
+        await this.triggerMemberSignupAutomation(
+          newMember.id,
+          newMember.get('email'),
+          'free',
+          null,
+          { transacting },
+        );
 
         return newMember;
       };
@@ -1928,44 +1936,32 @@ module.exports = class MemberRepository {
         },
         options,
       );
-
-      const context = options?.context || {};
-      const source = this._resolveContextSource(context);
-
-      // Enqueue automation if:
-      // 1. The source is allowed to trigger automations
-      // 2. The member status changed to 'paid'
-      // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
-      if (
-        WELCOME_EMAIL_SOURCES.includes(source) &&
-        updatedMember.get('status') === 'paid' &&
-        updatedMember._previousAttributes.status !== 'gift'
-      ) {
-        await this.triggerMemberSignupAutomation(
-          memberModel.id,
-          memberModel.get('email'),
-          'paid',
-          options,
-          ghostProduct?.id ?? null,
-        );
-      }
     }
 
-    // A paid member can enter a newly matching flow after switching tiers.
-    // The repository keeps members from entering the same automation twice.
-    if (
+    const wasPaid = updatedMember._previousAttributes.status === 'paid';
+    const isPaidSignup =
       updatedMember.attributes.status === 'paid' &&
-      updatedMember._previousAttributes.status === 'paid' &&
+      !wasPaid &&
+      updatedMember._previousAttributes.status !== 'gift';
+    const isPaidTierSwitch =
+      updatedMember.attributes.status === 'paid' &&
+      wasPaid &&
+      Boolean(ghostProduct?.id) &&
+      !oldMemberProducts.some((product) => product.id === ghostProduct.id);
+
+    // Paid signup starts modern and legacy welcome flows. A paid tier switch starts
+    // newly matching modern flows only; members never re-enter the same automation.
+    if (
       WELCOME_EMAIL_SOURCES.includes(this._resolveContextSource(options?.context || {})) &&
-      ghostProduct?.id &&
-      !oldMemberProducts.some((product) => product.id === ghostProduct.id)
+      (isPaidSignup || isPaidTierSwitch)
     ) {
-      await this.#triggerMemberSignupAutomation(
+      await this.triggerMemberSignupAutomation(
         memberModel.id,
         memberModel.get('email'),
         'paid',
+        ghostProduct?.id ?? null,
         options,
-        ghostProduct.id,
+        isPaidSignup,
       );
     }
 

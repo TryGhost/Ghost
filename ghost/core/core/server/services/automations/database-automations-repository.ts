@@ -120,7 +120,7 @@ type StepToRunRow = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  trigger_tier_scope: 'free' | 'all_paid' | 'selected_paid';
+  automation_trigger_tier_scope: 'free' | 'all_paid' | 'selected_paid';
   automation_status: 'inactive' | 'active';
   member_id: string | null;
   member_email: string;
@@ -591,39 +591,41 @@ async function trigger(
   const { memberEmail, memberId, memberStatus, memberTierId, fakeWaitHoursMultiplier } = options;
   const firstActions = await findFirstActionRevisions(trx, memberStatus, memberTierId);
 
-  const now = new Date();
-  const nowString = toDatabaseDate(now);
-  for (const firstAction of firstActions) {
-    const [{ hasAlreadyEntered }] = await trx.select<{ hasAlreadyEntered: number }[]>(
-      trx.raw('EXISTS ? AS hasAlreadyEntered', [
-        trx('automation_runs')
-          .select('id')
-          .where({ automation_id: firstAction.automation_id, member_id: memberId }),
-      ]),
-    );
-    if (hasAlreadyEntered) {
-      logging.info(
-        `Skipping automation ${firstAction.automation_id} for member ${memberId}: already ran/started this automation`,
+  await Promise.all(
+    firstActions.map(async (firstAction) => {
+      const [{ hasAlreadyEntered }] = await trx.select<{ hasAlreadyEntered: number }[]>(
+        trx.raw('EXISTS ? AS hasAlreadyEntered', [
+          trx('automation_runs')
+            .select('id')
+            .where({ automation_id: firstAction.automation_id, member_id: memberId }),
+        ]),
       );
-      continue;
-    }
+      if (hasAlreadyEntered) {
+        logging.info(
+          `Skipping automation ${firstAction.automation_id} for member ${memberId}: already ran/started this automation`,
+        );
+        return;
+      }
 
-    const run = {
-      id: ObjectId().toHexString(),
-      created_at: nowString,
-      updated_at: nowString,
-      automation_id: firstAction.automation_id,
-      member_id: memberId,
-      member_email: memberEmail,
-    };
-    await trx('automation_runs').insert(run);
-    await insertRunStep(trx, {
-      automationRunId: run.id,
-      automationActionRevisionId: firstAction.automation_action_revision_id,
-      now,
-      readyAt: getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier),
-    });
-  }
+      const now = new Date();
+      const nowString = toDatabaseDate(now);
+      const run = {
+        id: ObjectId().toHexString(),
+        created_at: nowString,
+        updated_at: nowString,
+        automation_id: firstAction.automation_id,
+        member_id: memberId,
+        member_email: memberEmail,
+      };
+      await trx('automation_runs').insert(run);
+      await insertRunStep(trx, {
+        automationRunId: run.id,
+        automationActionRevisionId: firstAction.automation_action_revision_id,
+        now,
+        readyAt: getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier),
+      });
+    }),
+  );
 }
 
 async function insertRunStep(
@@ -718,7 +720,7 @@ async function fetchAndLockSteps(
       'step.locked_by as locked_by',
       'step.automation_run_id as automation_run_id',
       'run.automation_id as automation_id',
-      'automation.trigger_tier_scope as trigger_tier_scope',
+      'automation.trigger_tier_scope as automation_trigger_tier_scope',
       'automation.status as automation_status',
       'run.member_id as member_id',
       'run.member_email as member_email',
@@ -790,7 +792,7 @@ function buildStepToRun(
     locked_by: row.locked_by,
     automation_run_id: row.automation_run_id,
     automation_id: row.automation_id,
-    trigger_tier_scope: row.trigger_tier_scope,
+    trigger_tier_scope: row.automation_trigger_tier_scope,
     trigger_tier_ids: triggerTierIds,
     automation_status: row.automation_status,
     member_id: row.member_id,
@@ -826,7 +828,7 @@ async function findFirstActionRevisions(
   memberStatus: 'free' | 'paid',
   memberTierId?: string | null,
 ): Promise<NextActionRevisionRow[]> {
-  const row = await trx('automations as automation')
+  const rows = await trx('automations as automation')
     .select(
       'automation.id as automation_id',
       'actions.id as action_id',
@@ -876,7 +878,7 @@ async function findFirstActionRevisions(
     )
     .orderBy(['actions.created_at', 'actions.id']);
 
-  return row;
+  return rows;
 }
 
 async function finishStepAndEnqueueNext(

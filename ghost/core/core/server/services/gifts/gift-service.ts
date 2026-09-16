@@ -70,8 +70,8 @@ interface MemberRepository {
     memberId: string,
     memberEmail: string,
     memberStatus: 'free' | 'paid',
+    memberTierId: string | null,
     options?: Record<string, unknown>,
-    memberTierId?: string | null,
   ): Promise<unknown>;
 }
 
@@ -950,8 +950,8 @@ export class GiftService {
       memberId,
       member.get('email'),
       'paid',
-      { transacting },
       redeemed.tierId,
+      { transacting },
     );
 
     return { redeemed, member };

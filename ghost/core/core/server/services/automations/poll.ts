@@ -74,6 +74,33 @@ const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
   return isSubscribedToAnyNewsletters;
 };
 
+const matchesTriggerTier = (member: MemberModel, step: AutomationStepToRun): boolean => {
+  const status = member.get('status');
+  if (step.trigger_tier_scope === 'free') {
+    return status === 'free';
+  }
+  if (status !== 'paid' && status !== 'gift') {
+    return false;
+  }
+  if (step.trigger_tier_scope === 'all_paid') {
+    return true;
+  }
+
+  const currentTierId = member
+    .related('currentSubscription')
+    .models[0]?.related('stripePrice')
+    ?.related('stripeProduct')
+    ?.get('product_id');
+  if (currentTierId && step.trigger_tier_ids.includes(currentTierId)) {
+    return true;
+  }
+
+  return (
+    status === 'gift' &&
+    member.related('products').models.some((product) => step.trigger_tier_ids.includes(product.id))
+  );
+};
+
 const markMaxAttemptsExceeded = async (
   automationsApi: PollOptions['automationsApi'],
   step: AutomationStepToRun,
@@ -179,29 +206,7 @@ const processStep = async ({
   }
 
   const memberStatus = step.trigger_tier_scope === 'free' ? 'free' : 'paid';
-  const status = member.get('status');
-  const currentTierId =
-    step.trigger_tier_scope === 'selected_paid'
-      ? member
-          .related('currentSubscription')
-          .models[0]?.related('stripePrice')
-          ?.related('stripeProduct')
-          ?.get('product_id')
-      : null;
-  const giftTierIds =
-    status === 'gift' && step.trigger_tier_scope === 'selected_paid'
-      ? member.related('products').models.map((product) => product.id)
-      : [];
-  const matchesTier =
-    step.trigger_tier_scope === 'free'
-      ? status === 'free'
-      : (status === 'paid' || status === 'gift') &&
-        (step.trigger_tier_scope === 'all_paid' ||
-          (currentTierId !== null &&
-            currentTierId !== undefined &&
-            step.trigger_tier_ids.includes(currentTierId)) ||
-          giftTierIds.some((id) => step.trigger_tier_ids.includes(id)));
-  if (!matchesTier) {
+  if (!matchesTriggerTier(member, step)) {
     await automationsApi.markStepTerminal(step, 'member changed status');
     return null;
   }
