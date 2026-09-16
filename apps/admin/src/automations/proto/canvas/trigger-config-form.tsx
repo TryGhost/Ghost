@@ -6,6 +6,7 @@ import {
   ALL_TIER_IDS,
   TIER_OPTIONS,
   type TriggerConfig,
+  availableTriggerOptions,
   hasTiers,
   tierNames,
   SIMPLE_TRIGGER_OPTIONS,
@@ -13,6 +14,7 @@ import {
   triggerConfigFor,
   exitSentence,
 } from '@/automations/proto/shared/trigger-config';
+import { useStripeConnected } from '@/automations/proto/shared/store';
 import { PickerRow } from '@/automations/proto/shared/option-picker';
 import { CheckboxList, CheckboxRow } from '@/automations/proto/shared/checkbox-list';
 import { useDismissOnPanePress } from './flow-utils';
@@ -55,18 +57,28 @@ export const TriggerEmptyState: React.FC<{
   onSelect: (config: TriggerConfig) => void;
   // Phase 1's shorter names, with no second line — see SIMPLE_TRIGGER_OPTIONS.
   simpleNames?: boolean;
-}> = ({ onSelect, simpleNames = false }) => (
-  <div className="-mx-4 -mb-4">
-    {(simpleNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS).map((option) => (
-      <PickerRow
-        key={option.value}
-        option={option}
-        selected={false}
-        onSelect={(type) => onSelect(triggerConfigFor(type))}
-      />
-    ))}
-  </div>
-);
+}> = ({ onSelect, simpleNames = false }) => {
+  // Without Stripe the paid trigger isn't offered at all — see
+  // availableTriggerOptions for the whole design. Read from the store here
+  // rather than threaded down as a prop: it's site-level state, and every
+  // surface that lists triggers has to agree on it.
+  const stripeConnected = useStripeConnected();
+  return (
+    <div className="-mx-4 -mb-4">
+      {availableTriggerOptions(
+        simpleNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS,
+        stripeConnected,
+      ).map((option) => (
+        <PickerRow
+          key={option.value}
+          option={option}
+          selected={false}
+          onSelect={(type) => onSelect(triggerConfigFor(type))}
+        />
+      ))}
+    </div>
+  );
+};
 
 interface TriggerConfigFormProps {
   config: TriggerConfig;
@@ -77,12 +89,18 @@ interface TriggerConfigFormProps {
   // and went when locked cards stopped rendering this form at all (the canvas
   // draws them header-only; see triggerBodyEmpty there).
   showExits?: boolean;
+  // Increments when the tiers popover should open itself — the canvas's nudge
+  // after the creation sequence settles on a paid trigger with no tiers chosen
+  // (see tiersRevealPending there). The canvas owns when; this form owns the
+  // popover, so the instruction crosses as a counter rather than shared state.
+  revealTiersSignal?: number;
 }
 
 export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   config,
   onChange,
   showExits = true,
+  revealTiersSignal,
 }) => {
   const tierIds = config.tierIds;
   // Every tier is "any tier"; none is the error state.
@@ -90,6 +108,17 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   const noTier = tierIds.length === 0;
   const [tiersOpen, setTiersOpen] = useState(false);
   const showTiers = hasTiers(config);
+  // Compared against the mount-time value rather than watched in an effect, so
+  // a form that MOUNTS with a signal already counted up (re-picking the paid
+  // trigger later, a remount mid-session) doesn't fire a stale nudge — only a
+  // signal that moves while the form is on screen opens the popover.
+  const [prevRevealSignal, setPrevRevealSignal] = useState(revealTiersSignal);
+  if (revealTiersSignal !== prevRevealSignal) {
+    setPrevRevealSignal(revealTiersSignal);
+    if (showTiers) {
+      setTiersOpen(true);
+    }
+  }
   useDismissOnPanePress(tiersOpen, () => setTiersOpen(false));
 
   const setTiers = (next: string[]) => onChange({ ...config, tierIds: next });

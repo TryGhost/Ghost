@@ -16,17 +16,25 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import { AutomationsTable } from '@/automations/proto/shared/automations-table';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
+import { needsStripe, triggerConfigFor } from '@/automations/proto/shared/trigger-config';
 import type { ProtoAutomation } from '@/automations/proto/shared/store';
 import {
   blankAutomation,
+  canPublishAutomation,
   duplicateAutomation,
   insertAutomation,
   setAutomationArchived,
+  setAutomationStatus,
   suggestCopyName,
   updateAutomationDetails,
   useProtoAutomations,
+  useStripeConnected,
 } from '@/automations/proto/shared/store';
 import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
+import {
+  TurnOffAutomationDialog,
+  TurnOnAutomationDialog,
+} from '@/automations/proto/shared/lifecycle-dialogs';
 import { DetailsDialog } from './details-dialog';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 
@@ -69,6 +77,12 @@ const AutomationsList: React.FC = () => {
   // The row being renamed, and the name and description offered for it.
   const [pendingRename, setPendingRename] = useState<ProtoAutomation | null>(null);
   const [renameDraft, setRenameDraft] = useState({ name: '', description: '' });
+  // The rows waiting on a lifecycle confirm — same one-dialog-per-list shape as
+  // pendingArchive. Two states rather than one with a direction in it, because
+  // each opens a different dialog.
+  const [pendingPublish, setPendingPublish] = useState<ProtoAutomation | null>(null);
+  const [pendingTurnOff, setPendingTurnOff] = useState<ProtoAutomation | null>(null);
+  const stripeConnected = useStripeConnected();
 
   // Makes the automation, then opens it. It used to do the opposite — navigate to a
   // `/new` sentinel id, hold the whole thing locally, and write the record on the
@@ -87,8 +101,16 @@ const AutomationsList: React.FC = () => {
   // No name-it-first dialog. The automation is named for you ("New automation",
   // then numbered), and the first real decision — what starts it — is the trigger
   // list waiting on the canvas.
+  //
+  // Unless the site has no Stripe. Then there's only one trigger worth offering,
+  // and a picker with one option is a question with one answer — so the canvas
+  // opens with "Member signs up" already in place and the first real decision
+  // becomes the flow itself. See availableTriggerOptions for the rest of the
+  // no-Stripe design.
   const handleCreate = () => {
-    const record = blankAutomation();
+    const record = stripeConnected
+      ? blankAutomation()
+      : { ...blankAutomation(), trigger: triggerConfigFor('member_subscribes') };
     // Held before the write, so the row never draws here.
     //
     // insertAutomation and navigate are both in this handler and React batches state
@@ -201,9 +223,48 @@ const AutomationsList: React.FC = () => {
     toast.success('Automation archived');
   };
 
+  // Publish / Turn off from the row menu — the same confirms the detail header
+  // raises, so the act costs the same wherever it's started. The writes are the
+  // detail screen's own (setAutomationStatus); the one difference is that
+  // publishing here has no draft to promote — the list only knows saved records,
+  // which is also why canPublishAutomation validates the record rather than a
+  // draft.
+  const handleToggleStatus = (entry: ProtoAutomation) => {
+    if (entry.automation.status === 'active') {
+      setPendingTurnOff(entry);
+      return;
+    }
+    setPendingPublish(entry);
+  };
+
+  const confirmPublish = () => {
+    if (!pendingPublish) {
+      return;
+    }
+    setPendingPublish(null);
+    setAutomationStatus(pendingPublish.automation.id, 'active');
+    // The same words the detail screen's publish uses — one act, one confirmation.
+    toast.success('Automation is live');
+  };
+
+  const confirmTurnOff = () => {
+    if (!pendingTurnOff) {
+      return;
+    }
+    setPendingTurnOff(null);
+    setAutomationStatus(pendingTurnOff.automation.id, 'inactive');
+    // No toast, matching the detail screen: the row's badge flips to Off in
+    // place, which is the confirmation.
+  };
+
   const visible = automations.filter(
     (entry) =>
       entry.automation.id !== creatingId.current &&
+      // No Stripe, no paid workflows — in ANY view, archived included: the list
+      // shows what the site can run, and a site that can't take payments can't
+      // run these. They aren't deleted; reconnecting Stripe brings every one of
+      // them straight back. See availableTriggerOptions for the whole design.
+      (stripeConnected || !entry.trigger || !needsStripe(entry.trigger)) &&
       (view === 'all' ? true : view === 'archived' ? entry.archived : !entry.archived),
   );
 
@@ -294,9 +355,11 @@ const AutomationsList: React.FC = () => {
               <AutomationsTable
                 automations={visible}
                 basePath={lanePath(LANE)}
+                publishBlocked={(entry) => !canPublishAutomation(entry, stripeConnected)}
                 onArchive={handleArchive}
                 onDuplicate={handleDuplicate}
                 onRename={openRename}
+                onToggleStatus={handleToggleStatus}
               />
             )}
           </ListPage.Body>
@@ -324,6 +387,21 @@ const AutomationsList: React.FC = () => {
         open={Boolean(pendingArchive)}
         onConfirm={confirmArchive}
         onOpenChange={() => setPendingArchive(null)}
+      />
+
+      {/* The lifecycle confirms, shared with the detail header's buttons. No
+                pending spinner here: the list's write is the store alone, with no
+                canvas repainting behind the dialog to wait for. */}
+      <TurnOnAutomationDialog
+        open={Boolean(pendingPublish)}
+        pending={false}
+        onConfirm={confirmPublish}
+        onOpenChange={() => setPendingPublish(null)}
+      />
+      <TurnOffAutomationDialog
+        open={Boolean(pendingTurnOff)}
+        onConfirm={confirmTurnOff}
+        onOpenChange={() => setPendingTurnOff(null)}
       />
 
       <LaneSwitcher lane={LANE} />

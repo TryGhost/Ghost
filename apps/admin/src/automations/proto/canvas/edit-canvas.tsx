@@ -61,6 +61,7 @@ import {
   Switch,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { Stack } from '@tryghost/shade/primitives';
 import { OptionPicker, type PickerOption } from '@/automations/proto/shared/option-picker';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import {
@@ -69,12 +70,15 @@ import {
   TRIGGER_PICKER_OPTIONS,
   type TriggerConfig,
   type TriggerType,
+  availableTriggerOptions,
   hasTiers,
   triggerConfigFor,
+  triggerExplanation,
   triggerIcon,
   triggerLabel,
   triggerSummary,
 } from '@/automations/proto/shared/trigger-config';
+import { useStripeConnected } from '@/automations/proto/shared/store';
 import {
   CANVAS_HUD_INSET,
   HIDDEN_HANDLE_STYLE,
@@ -239,6 +243,9 @@ type StepNodeData = {
   // itself: swapping the trigger discards the settings and exits configured under
   // the old one, which is a warning the canvas owns.
   onRequestTriggerChange?: (type: TriggerType) => void;
+  // Increments when the tiers popover should open itself — the canvas owns the
+  // clock (it knows when its sequence has settled), the form owns the popover.
+  tiersRevealSignal?: number;
   // Always-visible inline edit form (non-trigger nodes).
   subject?: string;
   // Whether the email has anything written yet — a new one hasn't, and its body
@@ -286,6 +293,13 @@ export const INTRO_LEAVING_MS = 120;
 export const INTRO_GROWING_MS = 260;
 // The line, and the exit card starting just before the line finishes reaching it.
 export const INTRO_CONNECTING_MS = 300;
+// After the sequence settles, one more beat before the tiers popover opens on a
+// paid trigger chosen fresh (see tiersRevealPending). A beat rather than
+// immediately: the popover is the nudge — "this is the question left to answer"
+// — and it lands as the sequence's closing move, after everything else has
+// stopped, which is what makes it the thing the eye ends on. Longer than a
+// reaction-shot pause would start to read as the canvas doing things on its own.
+const TIERS_REVEAL_DELAY_MS = 200;
 
 // The proto's one easing curve — see shared/motion.
 const INTRO_EASE = PROTO_EASE;
@@ -356,6 +370,9 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   const isEmail = d.kind === 'email';
   const triggerConfig = d.triggerConfig ?? DEFAULT_TRIGGER_CONFIG;
   const configurable = isTrigger && Boolean(d.onTriggerConfigChange);
+  // Site-level, read here for the Change-trigger picker's Stripe filter — see
+  // availableTriggerOptions.
+  const stripeConnected = useStripeConnected();
   const wait = splitWait(d.waitHours ?? 24);
   const changeWait = (amount: number, unit: 'days' | 'hours') => {
     const hours = waitToHours(amount, unit);
@@ -401,13 +418,12 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   const triggerLocked = isTrigger && Boolean(d.triggerLocked);
   const triggerUnset = isTrigger && Boolean(d.triggerUnset);
   // A configured trigger with nothing to say renders header-only — no body, no
-  // second block of padding under the first. That's now every trigger except an
-  // unlocked one with tiers: the exit sentence left the card for the tiers
-  // popover, so a tiers-less trigger (the free signup, in any lane) has no
-  // fields and no caption, and a locked one (phase 1's saved state) never
-  // renders fields at all.
-  const triggerBodyEmpty =
-    isTrigger && !triggerUnset && (triggerLocked || !hasTiers(triggerConfig));
+  // second block of padding under the first. That's only phase 1's locked cards
+  // now: an unlocked trigger always has its explanation sentence to carry (see
+  // triggerExplanation), so the tiers-less free signup got its body back — a
+  // card whose whole face was "Member signs up" was too bare to explain itself,
+  // which was the review's exact note.
+  const triggerBodyEmpty = isTrigger && !triggerUnset && triggerLocked;
   // Captured at mount: a card that STARTED life asking the question is the one
   // being created, and it's the only one that fades in. Read live, this would also
   // fire on the card returning from a "Change trigger".
@@ -468,7 +484,13 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
       <OptionPicker
         align="end"
         open={changeTriggerOpen}
-        options={d.simpleTriggerNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS}
+        // Same Stripe filter as the empty-state picker — the two lists offer the
+        // same choices or they aren't the same control. A paid trigger already
+        // ON the card still shows as the value; it just can't be re-chosen.
+        options={availableTriggerOptions(
+          d.simpleTriggerNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS,
+          stripeConnected,
+        )}
         value={triggerConfig.type}
         externalAnchor
         onOpenChange={setChangeTriggerOpen}
@@ -659,15 +681,32 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                 <div
                   className={`animate-in duration-240 ${INTRO_EASE} fade-in-0 motion-reduce:animate-none`}
                 >
-                  <TriggerFieldsForm
-                    config={triggerConfig}
-                    // Phase 1's triggers stay simple: the exit sentence belongs to
-                    // the general-model lanes, where exits are part of what's being
-                    // explored. Phase 1 shows what ships, and production has no
-                    // exit configuration to speak of.
-                    showExits={!d.simpleTriggerNames}
-                    onChange={d.onTriggerConfigChange}
-                  />
+                  {/* gap="xl" matching the form's own internal rhythm, so the
+                          sentence-then-field stack reads as one card rather than a
+                          caption bolted above a form. */}
+                  <Stack gap="xl">
+                    {/* What sets this flow off, stated on the card — the title
+                            names the trigger, this says what it means. Same dress as
+                            every trigger caption (text-control, muted). */}
+                    <p className="text-control text-muted-foreground">
+                      {triggerExplanation(triggerConfig)}
+                    </p>
+                    {/* Only when there's a field to show: the form is all tiers
+                            now, and an empty Stack child would spend the gap above
+                            on nothing. */}
+                    {hasTiers(triggerConfig) && (
+                      <TriggerFieldsForm
+                        config={triggerConfig}
+                        revealTiersSignal={d.tiersRevealSignal}
+                        // Phase 1's triggers stay simple: the exit sentence belongs to
+                        // the general-model lanes, where exits are part of what's being
+                        // explored. Phase 1 shows what ships, and production has no
+                        // exit configuration to speak of.
+                        showExits={!d.simpleTriggerNames}
+                        onChange={d.onTriggerConfigChange}
+                      />
+                    )}
+                  </Stack>
                 </div>
               ) : (
                 // text-control — the same size every trigger caption takes,
@@ -1123,9 +1162,23 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // conclusion. This is why React's own "adjust state on prop change" pattern uses
   // state for the previous value.
   const [prevUnset, setPrevUnset] = useState(unset);
+  // The nudge that follows the creation sequence: a paid trigger chosen fresh
+  // arrives with its tiers unanswered, and the tiers popover opens itself once
+  // the sequence has settled — the publisher's next question, asked for them.
+  // Armed here, alongside the sequence it trails, so it can only ever fire on
+  // the choose-a-trigger flow: changing tiers later, or swapping triggers on a
+  // built flow, never replays it.
+  const [tiersRevealPending, setTiersRevealPending] = useState(false);
+  // Incremented when the popover should open; the trigger card watches it. A
+  // counter rather than a boolean so a second creation flow in one mount (the
+  // canvas is keyed by automation, but cheap is cheap) reads as a new event.
+  const [tiersRevealSignal, setTiersRevealSignal] = useState(0);
   if (prevUnset !== unset) {
     setPrevUnset(unset);
     setIntroPhase(unset ? null : 'leaving');
+    if (!unset && triggerConfig && hasTiers(triggerConfig) && triggerConfig.tierIds.length === 0) {
+      setTiersRevealPending(true);
+    }
   }
   // Each beat schedules only the one after it, so the sequence is a chain rather
   // than three timers set at once — which would need the cleanup to know which of
@@ -1147,6 +1200,20 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     const timer = setTimeout(() => setIntroPhase(next[introPhase]), after[introPhase]);
     return () => clearTimeout(timer);
   }, [introPhase]);
+
+  // The sequence's true last beat, when one is owed: introPhase returning to
+  // null is "the canvas has stopped moving", and the popover opens one beat
+  // after that — see TIERS_REVEAL_DELAY_MS for why it trails.
+  useEffect(() => {
+    if (!tiersRevealPending || introPhase !== null) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      setTiersRevealPending(false);
+      setTiersRevealSignal((s) => s + 1);
+    }, TIERS_REVEAL_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [tiersRevealPending, introPhase]);
 
   // The card still asking its question: either nothing is chosen, or something just
   // was and the options haven't finished leaving.
@@ -1289,6 +1356,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),
         onRequestTriggerChange: requestTriggerChange,
+        tiersRevealSignal,
       },
       draggable: false,
       connectable: false,
@@ -1455,6 +1523,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     introPhase,
     requestTriggerChange,
     alwaysShowInserts,
+    tiersRevealSignal,
   ]);
 
   // Follow whichever card was asked for, once the column has settled around it.

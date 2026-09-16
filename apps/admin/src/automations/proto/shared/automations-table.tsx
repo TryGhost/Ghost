@@ -87,7 +87,9 @@ const AutomationRow: React.FC<{
   onArchive?: (entry: ProtoAutomation) => void;
   onDuplicate?: (entry: ProtoAutomation) => void;
   onRename?: (entry: ProtoAutomation) => void;
-}> = ({ entry, basePath, onArchive, onDuplicate, onRename }) => {
+  onToggleStatus?: (entry: ProtoAutomation) => void;
+  publishBlocked?: (entry: ProtoAutomation) => boolean;
+}> = ({ entry, basePath, onArchive, onDuplicate, onRename, onToggleStatus, publishBlocked }) => {
   const { automation, description, trigger } = entry;
   const toVersioned = useVersionLink();
   const { metrics } = getRunData(automation.id);
@@ -108,6 +110,30 @@ const AutomationRow: React.FC<{
   // and Space; onClick leaves a menu row that the keyboard can focus and not use.
   const actions = (Item: React.ElementType) => (
     <>
+      {/* First: it's the one action here that changes what the automation DOES
+                rather than how it's filed, and the label pair matches the detail
+                header's buttons — Publish takes it live, Turn off stops it. Not
+                offered on an archived row: archiving forces an automation off, and
+                publishing one that's out of the working list would mean it running
+                where nobody is looking. Unarchive first, which is the row's own
+                menu already.
+
+                Publish disables rather than hides when the automation can't run
+                (no trigger, unanswered tiers, missing Stripe, a blank email) — a
+                missing item reads as "this list can't do that", where a disabled
+                one says this AUTOMATION isn't ready. The canvas is where the why
+                lives; the row can't carry a popover the way the header does. */}
+      {onToggleStatus && !entry.archived && (
+        <Item
+          disabled={automation.status !== 'active' && publishBlocked?.(entry)}
+          onSelect={() => onToggleStatus(entry)}
+        >
+          {/* One icon for both directions — this is one control at two
+                    settings, and Power is the glyph for exactly that. The label is
+                    what says which way it flips. */}
+          <LucideIcon.Power /> {automation.status === 'active' ? 'Turn off' : 'Publish'}
+        </Item>
+      )}
       {onRename && (
         <Item onSelect={() => onRename(entry)}>
           <LucideIcon.Pen /> Edit details
@@ -146,7 +172,7 @@ const AutomationRow: React.FC<{
       )}
     </>
   );
-  const hasActions = Boolean(onArchive || onDuplicate || onRename);
+  const hasActions = Boolean(onArchive || onDuplicate || onRename || onToggleStatus);
 
   const row = (
     <TableRow
@@ -279,6 +305,12 @@ interface AutomationsTableProps {
   onArchive?: (entry: ProtoAutomation) => void;
   onDuplicate?: (entry: ProtoAutomation) => void;
   onRename?: (entry: ProtoAutomation) => void;
+  // Same both-directions shape as onArchive: the row reads the status and offers
+  // Publish or Turn off accordingly; the caller owns the confirms and the write.
+  onToggleStatus?: (entry: ProtoAutomation) => void;
+  // Whether Publish should be inert for this row — the caller knows about Stripe
+  // and validity; the table only knows how to grey the item.
+  publishBlocked?: (entry: ProtoAutomation) => boolean;
 }
 
 // Column headers + body. `data-testid` stays "automations-list" — callers
@@ -289,6 +321,8 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
   onArchive,
   onDuplicate,
   onRename,
+  onToggleStatus,
+  publishBlocked,
 }) => (
   <Table className="flex flex-col" data-testid="automations-list">
     <TableHeader className="hidden lg:flex lg:flex-col">
@@ -311,9 +345,11 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
           key={entry.automation.id}
           basePath={basePath}
           entry={entry}
+          publishBlocked={publishBlocked}
           onArchive={onArchive}
           onDuplicate={onDuplicate}
           onRename={onRename}
+          onToggleStatus={onToggleStatus}
         />
       ))}
     </TableBody>

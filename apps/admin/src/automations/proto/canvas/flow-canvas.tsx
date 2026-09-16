@@ -20,6 +20,8 @@ import type { AutomationRun, RunStepState } from '@/automations/proto/shared/moc
 import {
   DEFAULT_TRIGGER_CONFIG,
   type TriggerConfig,
+  hasTierFilter,
+  triggerExplanation,
   triggerIcon,
   triggerLabel,
   triggerReviewLabel,
@@ -91,6 +93,12 @@ type FlowNodeData = {
   // member got to is more use than one repeating what the card already says.
   icon?: React.ElementType;
   summary?: string;
+  // The "Triggered when…" sentence, matching the edit canvas's card — the two
+  // canvases crossfade, so the trigger card should say the same thing in both.
+  // Absent in the simple-names lanes (phase 1), where the trigger's own title
+  // already IS this sentence and repeating it would be the exact redundancy
+  // SIMPLE_TRIGGER_LABELS exists to avoid.
+  explanation?: string;
   reviewLabel?: string;
   // Email node: opens the right-hand analytics sheet, and goes blue while that
   // sheet is reporting on it.
@@ -293,13 +301,15 @@ const FlowStepNode: React.FC<NodeProps> = ({ data }) => {
           )}
         </div>
       )}
-      {/* Trigger: what this automation listens for, and how many criteria
-                    end it. Read-only on this canvas. text-control, matching the edit
-                    canvas's trigger caption and the email card's body excerpt — one
-                    caption size across both canvases. */}
-      {d.kind === 'trigger' && !d.focused && d.summary && (
+      {/* Trigger: what this automation listens for. Read-only on this canvas.
+                    text-control, matching the edit canvas's trigger caption and the
+                    email card's body excerpt — one caption size across both canvases.
+                    The explanation leads and the tier line follows it, mirroring the
+                    edit card's sentence-then-field order. */}
+      {d.kind === 'trigger' && !d.focused && (d.explanation || d.summary) && (
         <div className={cn(NODE_BODY_PADDING, 'text-control text-muted-foreground')}>
-          {d.summary}
+          {d.explanation && <p>{d.explanation}</p>}
+          {d.summary && <p className={cn(d.explanation && 'mt-1')}>{d.summary}</p>}
         </div>
       )}
     </NodeCard>
@@ -382,7 +392,16 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
         title: 'Trigger',
         icon: triggerIcon(triggerConfig),
         subtitle: triggerLabel(triggerConfig, simpleTriggerNames),
-        summary: triggerSummary(triggerConfig),
+        // Simple-names lanes (phase 1) keep the audience summary they've always
+        // had. The general lanes carry the explanation sentence instead, plus
+        // the audience line only when it adds something the sentence doesn't —
+        // a tier filter naming which tiers. "Any member" under "Triggered when
+        // someone signs up…" was the same fact twice.
+        summary:
+          simpleTriggerNames || hasTierFilter(triggerConfig)
+            ? triggerSummary(triggerConfig)
+            : undefined,
+        explanation: simpleTriggerNames ? undefined : triggerExplanation(triggerConfig),
         reviewLabel: triggerReviewLabel(triggerConfig ?? DEFAULT_TRIGGER_CONFIG),
         focused,
         state: focused ? 'done' : undefined,

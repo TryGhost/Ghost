@@ -1,7 +1,14 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { AUTOMATION_DESCRIPTIONS, mockAutomations } from './mock';
-import { ALL_TIER_IDS, type TriggerConfig, triggerConfigFor } from './trigger-config';
+import {
+  ALL_TIER_IDS,
+  type TriggerConfig,
+  hasTiers,
+  needsStripe,
+  triggerConfigFor,
+} from './trigger-config';
+import { lexicalHasContent } from '@/automations/proto/canvas/flow-utils';
 
 // ---------------------------------------------------------------------------
 // The prototype's automation store.
@@ -404,19 +411,26 @@ export const duplicateAutomation = (
   return id;
 };
 
-/** Commit a draft. This is what Save and Publish both come down to. */
+/**
+ * Commit a draft. This is what Save and Publish both come down to.
+ *
+ * `description` is optional because the lanes disagree about where details are
+ * edited: phase 2's detail screen holds them in the draft (one global Save, and
+ * details ride it), so it passes what to write; the others rename through
+ * updateAutomationDetails and leave this undefined, which preserves what's there.
+ */
 export const saveAutomation = (
   id: string,
   automation: AutomationDetail,
   trigger: TriggerConfig | null,
+  description?: string,
 ): void => {
   update((automations) =>
     automations.map((entry) =>
       entry.automation.id === id
-        ? // Spread the entry so the description survives — Save commits the FLOW,
-          // and the name and description are edited on their own path.
-          {
+        ? {
             ...entry,
+            ...(description === undefined ? {} : { description }),
             automation: { ...automation, updated_at: new Date().toISOString() },
             trigger,
           }
@@ -426,12 +440,14 @@ export const saveAutomation = (
 };
 
 /**
- * The automation's name and description.
+ * The automation's name and description, applied immediately.
  *
- * Applied immediately rather than through the draft that Save and Publish
- * commit. What the automation is CALLED isn't part of the flow you publish — a
- * rename that sat unpublished would mean the list and the screen you renamed it
- * on disagreed about its name until you got round to publishing something else.
+ * The LIST's rename path, and the older lanes'. Renaming from the list has no
+ * draft to ride — the dialog's Save is the only commit in sight, so it writes
+ * through. Phase 2's detail screen no longer calls this: there details join the
+ * draft and land with the global Save, so the screen only ever has one commit
+ * (the cost — a renamed-but-unsaved automation shows its old name on the list —
+ * is covered by the same leave guard as every other unsaved edit).
  */
 export const updateAutomationDetails = (id: string, name: string, description: string): void => {
   update((automations) =>
@@ -444,6 +460,37 @@ export const updateAutomationDetails = (id: string, name: string, description: s
           }
         : entry,
     ),
+  );
+};
+
+/**
+ * Whether a SAVED automation is fit to go live, for callers that only have the
+ * record — the list's row menu, which offers Publish without a canvas on screen.
+ *
+ * The same four checks as the detail screen's canGoLive, minus the draft: no
+ * trigger, missing Stripe, unanswered tiers, or an email with no subject or no
+ * written body all mean an automation that cannot run. The detail screen keeps
+ * its own copy because it validates the DRAFT (unsaved edits included), which a
+ * record-level check can't see — if the checks change, change both.
+ */
+export const canPublishAutomation = (
+  entry: Pick<ProtoAutomation, 'automation' | 'trigger'>,
+  stripeConnected: boolean,
+): boolean => {
+  const { trigger } = entry;
+  if (!trigger) {
+    return false;
+  }
+  if (!stripeConnected && needsStripe(trigger)) {
+    return false;
+  }
+  if (hasTiers(trigger) && trigger.tierIds.length === 0) {
+    return false;
+  }
+  return !entry.automation.actions.some(
+    (action) =>
+      action.type === 'send_email' &&
+      (!action.data.email_subject.trim() || !lexicalHasContent(action.data.email_lexical)),
   );
 };
 

@@ -10,7 +10,6 @@ import {
   AlertDialogTitle,
   Button,
   EmptyIndicator,
-  LoadingIndicator,
   Popover,
   PopoverAnchor,
   PopoverContent,
@@ -25,11 +24,15 @@ import {
   setAutomationArchived,
   saveAutomation,
   setAutomationStatus,
-  updateAutomationDetails,
   useProtoAutomation,
   useStripeConnected,
 } from '@/automations/proto/shared/store';
 import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
+import {
+  PublishChangesDialog,
+  TurnOffAutomationDialog,
+  TurnOnAutomationDialog,
+} from '@/automations/proto/shared/lifecycle-dialogs';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar } from './header-bar';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
@@ -64,113 +67,16 @@ const LANE = 'phase-2' as const;
 
 type LiveStatus = 'active' | 'inactive';
 
-// Turn-on / turn-off confirmations. Structure and weight come from the shipped
-// editor (plain AlertDialog, non-destructive confirm, same shape of sentence);
-// the vocabulary is the proto's, and deliberately narrower than what's shipped.
+// The turn-on / turn-off / publish-changes confirms live in
+// shared/lifecycle-dialogs now — the list's row menus raise the same acts, and
+// the same act asked from two screens has to ask with the same words.
 //
-// Publish is the word throughout, matching the shipping editor, where Publish is
-// what takes a stopped automation live — the button and the dialog it opens have
-// to say the same thing. (The exploration lane uses an on/off switch metaphor
-// instead, which is why this used to be a prop.)
 // How long the prototype pretends publishing takes. The real editor puts a spinner
 // in this button while the request is in flight (see automations/editor.tsx), and
 // the choreography around it is worth prototyping even though nothing here is
 // actually waiting on a server: it's the moment the screen changes underneath, so
 // it's the moment worth getting right.
 const PUBLISH_LATENCY_MS = 550;
-
-// The confirm button, with production's own in-flight treatment: the label is
-// replaced by a spinner and kept for screen readers, and both controls go inert so
-// the dialog can't be dismissed or double-fired mid-request.
-const ConfirmButton: React.FC<{
-  pending: boolean;
-  pendingLabel: string;
-  children: React.ReactNode;
-  onConfirm: () => void;
-}> = ({ pending, pendingLabel, children, onConfirm }) =>
-  pending ? (
-    <Button disabled>
-      <LoadingIndicator color="light" size="sm" />
-      <span className="sr-only">{pendingLabel}</span>
-    </Button>
-  ) : (
-    <Button onClick={onConfirm}>{children}</Button>
-  );
-
-const TurnOnAutomationDialog: React.FC<{
-  open: boolean;
-  pending: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-}> = ({ open, pending, onOpenChange, onConfirm }) => (
-  <AlertDialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Publish automation?</AlertDialogTitle>
-        <AlertDialogDescription>
-          Your automation will start running. Any member who meets the trigger will be enrolled
-          automatically.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
-        <ConfirmButton pending={pending} pendingLabel="Publishing..." onConfirm={onConfirm}>
-          Publish
-        </ConfirmButton>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
-
-const TurnOffAutomationDialog: React.FC<{
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-}> = ({ open, onOpenChange, onConfirm }) => (
-  <AlertDialog open={open} onOpenChange={onOpenChange}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Turn off automation?</AlertDialogTitle>
-        <AlertDialogDescription>
-          Your automation will no longer run, and any members currently in progress will be removed.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <Button onClick={onConfirm}>Turn off</Button>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
-
-// Publishing to an automation that's ON confirms — but only confirms. What happens to
-// members already mid-flow is a real question the team still has to settle, and
-// offering a choice here would imply we'd answered it. A plain "are you sure"
-// marks the moment as deliberate without encoding a decision that doesn't exist
-// yet; options go back in when there's something to encode.
-const PublishChangesDialog: React.FC<{
-  open: boolean;
-  pending: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-}> = ({ open, pending, onOpenChange, onConfirm }) => (
-  <AlertDialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Publish changes</AlertDialogTitle>
-        <AlertDialogDescription>
-          This automation is on — these changes will take effect immediately.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
-        <ConfirmButton pending={pending} pendingLabel="Publishing..." onConfirm={onConfirm}>
-          Publish
-        </ConfirmButton>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
 
 /**
  * Float concept. All chrome floats directly on the canvas, the way the post
@@ -241,9 +147,10 @@ const AutomationFloat: React.FC = () => {
   // what that reveals.
   const [revealSignal, setRevealSignal] = useState(0);
   const revealWarnings = () => setRevealSignal((s) => s + 1);
-  // The Update button's blocked popover — same message and dress as the
-  // switch's, because it's the same refusal from a second control.
-  const [updateBlockedOpen, setUpdateBlockedOpen] = useState(false);
+  // The Publish button's blocked popover — the answer to pressing Publish while
+  // the automation can't go live. One piece of state serves both lifecycle
+  // states' primaries; only one of them is ever rendered.
+  const [publishBlockedOpen, setPublishBlockedOpen] = useState(false);
   const stripeConnected = useStripeConnected();
   // Set when the screen is deliberately navigating away — Delete, and the first
   // Save of a new automation, which swaps /new for a real id.
@@ -258,11 +165,21 @@ const AutomationFloat: React.FC = () => {
   // A ref rather than state because both are read during the same render that
   // removes or replaces the automation, and a setState wouldn't have landed yet.
   const leaving = useRef(false);
-  // Name and description, edited in their own dialog. Held as draft fields while
-  // it's open and written on Save — nothing is committed by typing, so Cancel is a
-  // real cancel rather than an undo of writes that already landed.
+  // Name and description, edited in their own dialog. Two layers of held state:
+  // `settingsDraft` is the dialog's raw field text, and `detailsDraft` is what
+  // that text APPLIES as — the same values trimmed and blank-name-guarded,
+  // waiting on the global Save with the rest of the draft. Two layers because
+  // the name field must be free to read "" mid-edit while the applied name
+  // never goes blank. This screen has ONE commit: the dialog writes through to
+  // the draft as you type and carries a single Close — buttons that confirmed
+  // (Cancel/Done, and Save before that) read as the task being finished and
+  // written, when the real commit is the header's Save. `null` means untouched —
+  // the saved name and description are what's being shown.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsDraft, setSettingsDraft] = useState({ name: '', description: '' });
+  const [detailsDraft, setDetailsDraft] = useState<{ name: string; description: string } | null>(
+    null,
+  );
   // The copy's name and description, offered before it exists.
   // Edits are held here until Save commits them to the store, which is also why
   // they're the one piece of state that ISN'T persisted: an unsaved draft is
@@ -331,6 +248,15 @@ const AutomationFloat: React.FC = () => {
   // changeSummary is therefore the single definition of "something differs":
   // whatever becomes editable has to be represented there, or it won't register as a
   // change anywhere on this screen.
+  // What the details dialog last handed over, against what's saved. The draft's
+  // OWN name field is deliberately not the source here — it's a snapshot taken
+  // whenever the canvas last changed, so it can be stale; detailsDraft is the
+  // only place a rename lives until Save commits it.
+  const savedDetails = {
+    name: savedAutomation?.name ?? '',
+    description: record?.description ?? '',
+  };
+  const draftDetails = detailsDraft ?? savedDetails;
   const changes =
     publishedAutomation && activeDraft
       ? changeSummary({
@@ -338,14 +264,15 @@ const AutomationFloat: React.FC = () => {
           draft: activeDraft,
           publishedTrigger: savedTrigger,
           draftTrigger: triggerConfig,
+          details: { published: savedDetails, draft: draftDetails },
         })
       : [];
-  // Name and description are no longer part of "unsaved work". They used to be:
-  // while creating there was no store to apply them to, so they were held beside the
-  // blank record and had to be diffed against it, or naming a new automation and
-  // leaving lost the name with no prompt. The automation exists before this screen
-  // opens now, so Rename writes through immediately, the same as renaming any
-  // other automation — and hasChanges is back to meaning what the canvas holds.
+  // Name and description count as unsaved work again. They didn't for a while —
+  // Rename wrote through to the store the moment the dialog confirmed — but that
+  // gave this screen two commits under two buttons both called Save, and the
+  // dialog's was the one people pressed thinking they'd saved the automation.
+  // Now the dialog only hands its values to the draft, and the global Save is
+  // the single commit — so an unsaved rename warns on leave like any other edit.
   const hasChanges = changes.length > 0;
 
   // Edits are held, not written, so any difference is unsaved work that leaving
@@ -390,13 +317,13 @@ const AutomationFloat: React.FC = () => {
   // A draft is a snapshot of the whole AutomationDetail, taken whenever the canvas
   // last changed — so it carries whatever the automation was called at that moment.
   // The name isn't edited on the canvas though; it's edited in Settings, on its own
-  // path. Add a step, then rename, then publish, and the snapshot's stale name went
+  // path. Add a step, then rename, then save, and the snapshot's stale name went
   // straight over the rename.
   //
-  // The record is the authority on the name in both modes: while creating, it's the
-  // blank with the pending rename merged over it; afterwards, it's what Settings
-  // wrote to the store.
-  const flowToCommit: AutomationDetail = { ...draftFlow, name: automation.name };
+  // draftDetails is the authority on the name: the saved one until the dialog
+  // hands over a rename, and the pending rename after — which is also what the
+  // header shows, so what you read is what Save writes.
+  const flowToCommit: AutomationDetail = { ...draftFlow, name: draftDetails.name };
   const selectedRun = selectedMemberId
     ? (scenario.runs.find((r) => r.id === selectedMemberId) ?? null)
     : null;
@@ -408,15 +335,13 @@ const AutomationFloat: React.FC = () => {
   const showEditCanvas = !selectedRun;
   // This automation depends on payments the site can't take.
   //
-  // Nothing is hidden for it. The ticket's instinct was to remove the paid
-  // trigger and the paid exit conditions when Stripe isn't connected, and the
-  // cost of that is a publisher who never learns the feature exists — you can't
-  // evaluate something you can't see. Building it and being told why it won't
-  // publish is more informative than the option quietly not being there.
-  //
-  // It also answers a question hiding couldn't: what happens to an automation
-  // built while Stripe WAS connected, when it later isn't. That's this same
-  // state, so it gets this same banner rather than a second design.
+  // Reachable in one way only now: it was built while Stripe WAS connected, and
+  // Stripe has since gone. The no-Stripe design hides the paid trigger from
+  // both pickers and takes paid workflows off the list (see
+  // availableTriggerOptions for the reversal — an earlier version hid nothing
+  // and explained instead), so this warning can't be provoked by building
+  // something new. It stays because hiding can't answer the disconnect case:
+  // an automation that exists has to say why it won't publish.
   // The first decision, and the only thing on screen while it's open. Chrome that
   // acts on an automation — its name, its status, Save, Publish — is chrome for
   // something that doesn't exist yet, so the header stands down until there's an
@@ -472,11 +397,15 @@ const AutomationFloat: React.FC = () => {
   // which is what this function was mostly made of: an insert, a replace-navigate onto
   // the new id, and two pieces of creating-only state to clear afterwards.
   const promoteDraft = (status?: LiveStatus) => {
-    saveAutomation(id, flowToCommit, triggerConfig);
+    // The name rides flowToCommit; the description has no field on
+    // AutomationDetail, so it travels beside it. undefined when the dialog was
+    // never confirmed — the store keeps what it has.
+    saveAutomation(id, flowToCommit, triggerConfig, detailsDraft?.description);
     if (status) {
       setAutomationStatus(id, status);
     }
     setDraft(null);
+    setDetailsDraft(null);
   };
 
   // Publishing runs behind the dialog rather than after it.
@@ -550,20 +479,26 @@ const AutomationFloat: React.FC = () => {
     toast.success('Automation saved');
   };
 
-  // A stopped automation has nobody mid-flow, so there's nothing to confirm and
-  // it publishes straight away. A live one confirms first — and, live, the edits
-  // take effect the moment they land, so a draft that fails validation is
-  // blocked here the same way going live is blocked at the switch: popover, and
-  // the canvas showing every warning. (Save, while off, stays ungated — a draft
-  // is allowed to be unfinished; publishing is where it has to hold up.)
-  const handlePublishClick = () => {
+  // Publish, while off: take the automation live. It confirms first (the
+  // "Publish automation?" dialog), and a draft that fails validation is blocked
+  // at the press — popover, and the canvas showing every warning it holds.
+  const handlePublishAttempt = () => {
     if (!canGoLive) {
       revealWarnings();
-      setUpdateBlockedOpen(true);
+      setPublishBlockedOpen(true);
       return;
     }
-    if (liveStatus === 'inactive') {
-      publishChanges();
+    setStartOpen(true);
+  };
+
+  // Publish changes, while live: the edits take effect the moment they land, so
+  // the same validation gate applies before the confirm. (Save, while off,
+  // stays ungated — a draft is allowed to be unfinished; publishing is where it
+  // has to hold up.)
+  const handlePublishChangesClick = () => {
+    if (!canGoLive) {
+      revealWarnings();
+      setPublishBlockedOpen(true);
       return;
     }
     setPublishOpen(true);
@@ -588,23 +523,28 @@ const AutomationFloat: React.FC = () => {
   // Delete stays. Nothing ambiguous about removing the whole thing, draft and all.
 
   const openSettings = () => {
-    // Seeded from the record each time it opens, so an abandoned edit doesn't
-    // reappear the next time.
-    setSettingsDraft({
-      name: savedAutomation?.name ?? '',
-      description: record?.description ?? '',
-    });
+    // Seeded from what the screen is currently showing — the pending details if
+    // they've been edited this session, the saved ones otherwise. Seeding from
+    // the record alone would show a name the header no longer does, which reads
+    // as the rename having been lost. This is also what makes abandoning a
+    // blanked name safe: reopening shows the name that actually applied.
+    setSettingsDraft(draftDetails);
     setSettingsOpen(true);
   };
 
-  const saveSettings = () => {
-    const name = settingsDraft.name.trim();
-    if (!name) {
-      return;
-    }
-    setSettingsOpen(false);
-    updateAutomationDetails(id, name, settingsDraft.description.trim());
-    toast.success('Automation updated');
+  // Typing writes through: the field text lands on the details draft as it
+  // changes, the header retitles live, and the global Save is the one commit.
+  // No toast, no confirm — the dialog's Close just puts it away. The one value
+  // that doesn't write through is a blank name: an automation with no name is
+  // unfindable in a list, so the draft keeps the last real one while the field
+  // is free to be empty mid-edit — close it blank and the previous name stands.
+  const handleDetailsChange = (next: { name: string; description: string }) => {
+    setSettingsDraft(next);
+    const name = next.name.trim();
+    setDetailsDraft((prev) => ({
+      name: name || (prev ?? savedDetails).name,
+      description: next.description.trim(),
+    }));
   };
 
   // Archive, and leave. The automation is out of the working list, so staying on it
@@ -631,68 +571,61 @@ const AutomationFloat: React.FC = () => {
     setAutomationStatus(id, 'inactive');
   };
 
-  // The header's actions, mirroring the shipping editor exactly (see
-  // automations/components/automation-header.tsx): off, Save sits alongside
-  // Publish, so committing work and going live stay separate decisions; on,
-  // Publish changes reports its own clean state by becoming a disabled
-  // "Published" rather than handing that job to a second control. That last part
-  // answers the review feedback directly — the button announces the state by what
-  // it offers, so nothing has to stand next to it saying "unpublished changes".
+  // The header's actions — phase 1's per-state pair, restored after the
+  // single-ghost-button-plus-switch arrangement (see header-bar.tsx for the
+  // switch's story). Off: Save commits the draft without going live and Publish
+  // takes it live, so committing work and going live stay separate decisions —
+  // the shipping editor's split. Live: Turn off stops it, and Publish changes —
+  // one label in both states, disabled when there's nothing to push. Phase 1
+  // swaps the clean state's label to "Published"; here the disable alone says
+  // "nothing to do", and the word stays what pressing it would mean.
+  //
+  // One deviation from phase 1, kept from the switch era: Publish is never
+  // disabled for validity. Phase 2 has states phase 1 can't reach — no trigger
+  // chosen, tiers unanswered — and a greyed-out Publish is a dead end: it says
+  // no without saying why. Pressing it while blocked answers at the point of
+  // the press — the popover names the deal, and the canvas shows every warning
+  // it holds, grace periods included.
   //
   // No save indicator. Flickering "Saving…" on every keystroke draws the eye to
   // plumbing rather than to anything the publisher can act on.
-  // One borderless button, the way the post editor does it — and the way Exploration
-  // does it, which is where the rest of this header came from.
   //
-  // Publish and Turn off moved into the switch, and the ⋯ that held Edit details and
-  // Archive is gone, so what's left is the act of committing the draft. That also
-  // retires a responsive shuffle: three actions beside a title didn't fit below
-  // 1024px, so Save was duplicated into the menu with each copy carrying the inverse
-  // visibility class. One button fits everywhere.
-  //
-  // "Update" only once the automation is live — the word means "push these edits to
-  // the thing that's already running", which is a promise a stopped automation can't
-  // keep. Off, there's no live version for edits to diverge from, so the same press is
-  // just "Save".
-  //
-  // Ghost rather than outline or primary. Two bordered boxes beside a switch made
-  // three controls of equal weight, none of which was obviously the state; unbordered,
-  // the row reads as the post editor's — plain text for what you do, and the switch as
-  // the one object with a shape.
-  //
-  // Always there and disabled when there's nothing to commit, rather than swapping to
-  // a "Published" label. A control that changes its word to say "nothing to do" is
-  // still claiming to be pressable, and the disabled state already says it better.
-  //
-  // Two handlers, because in THIS lane they're genuinely different acts: Save writes
-  // the draft down with no ceremony, while committing to something live confirms
-  // first. Exploration routes both through one because publishing is its only write.
-  const chromeActions = (
-    <Popover open={updateBlockedOpen} onOpenChange={setUpdateBlockedOpen}>
-      <PopoverAnchor asChild>
-        <Button
-          disabled={!hasChanges}
-          variant="ghost"
-          onClick={liveStatus === 'active' ? handlePublishClick : handleSave}
-        >
-          {liveStatus === 'active' ? 'Update' : 'Save'}
-        </Button>
-      </PopoverAnchor>
+  // Same popover on both primaries: same refusal, same dress as the card
+  // warnings' popovers (w-72, one text-md sentence) — the same kind of answer,
+  // raised from a control instead of a card. Only one primary renders at a
+  // time, so they can share the one piece of open-state.
+  const blockedPopover = (button: React.ReactNode) => (
+    <Popover open={publishBlockedOpen} onOpenChange={setPublishBlockedOpen}>
+      <PopoverAnchor asChild>{button}</PopoverAnchor>
       <PopoverContent align="end" className="w-72">
         <p className="text-md">Fix all issues to publish this automation.</p>
       </PopoverContent>
     </Popover>
   );
 
-  // The switch never flips itself: both directions open their confirm, and the status
-  // only moves when that's answered.
-  const handleStatusToggle = (next: boolean) => {
-    if (next) {
-      setStartOpen(true);
-      return;
-    }
-    setStopOpen(true);
-  };
+  const chromeActions =
+    liveStatus === 'inactive' ? (
+      <>
+        {/* Nothing to save until something changes. Publish stays available
+                either way — an unedited draft is still publishable, which is how
+                the shipping editor behaves. */}
+        <Button disabled={!hasChanges} variant="outline" onClick={handleSave}>
+          Save
+        </Button>
+        {blockedPopover(<Button onClick={handlePublishAttempt}>Publish</Button>)}
+      </>
+    ) : (
+      <>
+        <Button variant="outline" onClick={() => setStopOpen(true)}>
+          Turn off
+        </Button>
+        {blockedPopover(
+          <Button disabled={!hasChanges} onClick={handlePublishChangesClick}>
+            Publish changes
+          </Button>,
+        )}
+      </>
+    );
 
   return (
     // flex-col in both variants: the docked header is a row above the pane and
@@ -704,21 +637,22 @@ const AutomationFloat: React.FC = () => {
       {/* The header never carries the pane control in either release — its left
                 is the back arrow, the title and its status, full stop. */}
       {/* No notice here any more. The Stripe warning was a Banner centred in this
-                header — the explanation on the same row as the Publish it disables —
+                header — the explanation on the same row as the Publish it blocks —
                 and it moved onto the trigger card itself (see triggerWarning on the
                 edit canvas): the card is where the cause lives, and a message at the
                 top of the screen was pointing at a card the reader hadn't found yet.
-                The switch still disables via canGoLive, so the header's half of the
-                story is the control refusing, and the card's half is why. */}
+                The Publish button still refuses via canGoLive (popover at the press),
+                so the header's half of the story is the control refusing, and the
+                card's half is why. */}
       <HeaderBar
         actions={chromeActions}
-        canGoLive={canGoLive}
         status={liveStatus}
-        title={automation.name}
+        // The pending name, not the saved one: a rename shows here the moment
+        // it's typed, the way a canvas edit shows on the canvas — on screen now,
+        // committed by Save.
+        title={draftDetails.name}
         onBack={goBack}
-        onBlockedGoLive={revealWarnings}
         onEditTitle={openSettings}
-        onStatusChange={handleStatusToggle}
       />
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* Left pane docked flush to the edge. On entering edit it slides off the
@@ -1001,16 +935,20 @@ const AutomationFloat: React.FC = () => {
       {/* Name and description. Two fields rather than an inline rename, because
                 the description has nowhere to be edited in place — it appears on the
                 list, not on this screen, so there's no text here to click into.
-                Reached two ways: the title, which is where people try first, and the
-                ⋯, which is what makes it findable for anyone who doesn't. */}
+
+                No confirmLabel, so the dialog is in its write-through mode: edits
+                land on the draft as they're typed and Close is the only button.
+                This screen has one Save, in the header, and it commits everything —
+                a second Save inside a dialog was two commits answering to one word,
+                and even Cancel/Done read as the edit being finished and written.
+                The LIST's copy of this dialog keeps Cancel/Save, because a rename
+                from the list has no draft to join. */}
       <DetailsDialog
         blurb="Shown on your automations list. Members never see either of these."
-        confirmLabel="Save"
         heading="Automation details"
         open={settingsOpen}
         values={settingsDraft}
-        onChange={setSettingsDraft}
-        onConfirm={saveSettings}
+        onChange={handleDetailsChange}
         onOpenChange={setSettingsOpen}
       />
 

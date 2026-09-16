@@ -25,8 +25,9 @@ export interface ChangeEntry {
   // Which part of the flow the change is about, so a reader can pick their
   // change out of the list by its icon before reading a word of it. Same
   // vocabulary the canvas labels its nodes with (stepKindIcon), so the entry
-  // and the card it refers to carry the same mark.
-  kind: StepKind;
+  // and the card it refers to carry the same mark. 'details' is the one entry
+  // with no card on the canvas — the automation's own name and description.
+  kind: StepKind | 'details';
 }
 
 interface ChangeSummaryInput {
@@ -38,6 +39,14 @@ interface ChangeSummaryInput {
   // on the one screen where picking a trigger is the whole job.
   publishedTrigger: TriggerConfig | null;
   draftTrigger: TriggerConfig | null;
+  // Name and description, for lanes that route them through the draft (phase 2's
+  // detail screen has one global Save, and details ride it like everything else).
+  // Optional because the other lanes write details straight through to the store,
+  // where a diff here would double-report an edit that already landed.
+  details?: {
+    published: { name: string; description: string };
+    draft: { name: string; description: string };
+  };
 }
 
 const emailLabel = (subject: string): string =>
@@ -60,13 +69,15 @@ export function changeSummary({
   draft,
   publishedTrigger,
   draftTrigger,
+  details,
 }: ChangeSummaryInput): ChangeEntry[] {
-  const changes: ChangeEntry[] = [];
+  // Details lead the list: what the automation is called comes before what it does.
+  const changes: ChangeEntry[] = detailChanges(details);
 
   if (!draftTrigger) {
     // Nothing chosen yet, and nothing can have been un-chosen — a saved trigger
     // can be changed but not cleared. Fall through to the action diff.
-    return actionChanges({ published, draft });
+    return [...changes, ...actionChanges({ published, draft })];
   }
 
   if (!publishedTrigger) {
@@ -103,6 +114,30 @@ export function changeSummary({
   // here would restate one of those in different words.
 
   return [...changes, ...actionChanges({ published, draft })];
+}
+
+// Name and description, when the lane hands them over. Trimmed before they get
+// here, so a rename that's all whitespace never counts.
+function detailChanges(details: ChangeSummaryInput['details']): ChangeEntry[] {
+  if (!details) {
+    return [];
+  }
+  const changes: ChangeEntry[] = [];
+  if (details.published.name !== details.draft.name) {
+    changes.push({
+      id: 'name',
+      kind: 'details',
+      label: `Renamed to “${details.draft.name}”`,
+    });
+  }
+  if (details.published.description !== details.draft.description) {
+    changes.push({
+      id: 'description',
+      kind: 'details',
+      label: 'Description updated',
+    });
+  }
+  return changes;
 }
 
 // The step-level half of the diff — added, removed and edited actions. Its own

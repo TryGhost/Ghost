@@ -18,8 +18,14 @@ import {
  * resemble each other — duplicating is naming a new automation, and it should ask
  * the way renaming asks.
  *
- * Values are held by the caller, so nothing is committed by typing and Cancel is
- * a real cancel rather than an undo of writes that already landed.
+ * Two footers, depending on what closing means where it's used. With a
+ * confirmLabel it's a form: values are held by the caller, nothing is committed
+ * by typing, and Cancel is a real cancel — the list's rename and the duplicate
+ * dialog work this way, because their confirm is the only commit in sight.
+ * WITHOUT one it's an editor over the caller's draft: typing writes through, and
+ * the single Close just puts the dialog away. That's the detail screen's mode —
+ * a Cancel/Done pair there read as the task being finished and saved, when the
+ * real commit is the screen's global Save.
  */
 interface DetailsDialogProps {
   open: boolean;
@@ -29,10 +35,12 @@ interface DetailsDialogProps {
   // which left the name unaccounted for and put the reassurance below the field it
   // was reassuring about. One line at the top covers both.
   blurb: string;
-  confirmLabel: string;
+  // Both or neither — a confirm button needs a handler and a handler needs a
+  // button. Omit both for the write-through mode.
+  confirmLabel?: string;
   values: { name: string; description: string };
   onChange: (next: { name: string; description: string }) => void;
-  onConfirm: () => void;
+  onConfirm?: () => void;
 }
 
 export const DetailsDialog: React.FC<DetailsDialogProps> = ({
@@ -73,15 +81,28 @@ export const DetailsDialog: React.FC<DetailsDialogProps> = ({
         </div>
       </div>
       <DialogFooter>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
-          Cancel
-        </Button>
-        {/* An automation with no name is unfindable in a list, so this holds
-                    rather than writing an empty one. Nothing else here can be invalid —
-                    a blank description is a legitimate answer. */}
-        <Button disabled={!values.name.trim()} onClick={onConfirm}>
-          {confirmLabel}
-        </Button>
+        {confirmLabel && onConfirm ? (
+          <>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            {/* An automation with no name is unfindable in a list, so this holds
+                        rather than writing an empty one. Nothing else here can be invalid —
+                        a blank description is a legitimate answer. */}
+            <Button disabled={!values.name.trim()} onClick={onConfirm}>
+              {confirmLabel}
+            </Button>
+          </>
+        ) : (
+          // One secondary button, not a primary — a primary at the end of a form
+          // says "finish the task", and there is no task to finish: the edits are
+          // already on the draft. Something visible has to close the dialog,
+          // though; Shade's DialogContent draws no corner X, and Esc-or-overlay
+          // are affordances you can't see.
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+        )}
       </DialogFooter>
     </DialogContent>
   </Dialog>

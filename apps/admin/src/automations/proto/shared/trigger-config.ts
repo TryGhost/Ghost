@@ -191,7 +191,31 @@ export const isPaidTrigger = (config: Pick<TriggerConfig, 'type'>): boolean =>
  */
 export const hasTiers = (config: Pick<TriggerConfig, 'type'>): boolean => isPaidTrigger(config);
 
-export const needsStripe = (config: TriggerConfig): boolean => isPaidTrigger(config);
+export const needsStripe = (config: Pick<TriggerConfig, 'type'>): boolean => isPaidTrigger(config);
+
+/**
+ * The trigger options a site can actually use — every one of them with Stripe,
+ * and only the free ones without it.
+ *
+ * This is the HIDE half of the Stripe design: a site that can't take payments
+ * doesn't see the paid trigger offered anywhere (the picker on a new canvas, the
+ * Change-trigger list), and its paid automations leave the list. The earlier
+ * treatment showed everything and explained why it couldn't publish, on the
+ * argument that you can't evaluate a feature you can't see — the team settled on
+ * hiding instead: someone without Stripe can't act on the pitch, so the picker
+ * was selling them something the product couldn't deliver yet.
+ *
+ * What hiding can't answer — an automation built while Stripe WAS connected,
+ * then disconnected — keeps the old treatment: the trigger card's warning and
+ * the publish gate (see stripeMissing in phase-2's detail).
+ *
+ * Generic over the option shape so one filter serves both pickers' lists
+ * (PickerOption and the simple-names variant).
+ */
+export const availableTriggerOptions = <T extends { value: TriggerType }>(
+  options: T[],
+  stripeConnected: boolean,
+): T[] => (stripeConnected ? options : options.filter((o) => !needsStripe({ type: o.value })));
 
 /** Specific tiers are being watched, rather than any tier. */
 // A tier list that actually NARROWS the audience — some of the tiers, not all of
@@ -302,6 +326,25 @@ export const triggerIcon = (config: Pick<TriggerConfig, 'type'>): ElementType =>
 export const triggerDescription = (config: Pick<TriggerConfig, 'type'>): string =>
   TRIGGER_OPTIONS.find((option) => option.value === config.type)?.description ??
   TRIGGER_OPTIONS[0].description;
+
+/**
+ * The configured card's own explanation — "Triggered when…", Beehiiv's register.
+ *
+ * Not the picker description reused: that line exists to tell two similar OPTIONS
+ * apart mid-choice, where this one tells a reader arriving at a built flow what
+ * sets it off. A chosen card answers a different question than a list of choices.
+ *
+ * "free member" is deliberate on the signup trigger, and it's the one place the
+ * word Free appears in that trigger's copy: its title ("Member signs up") reads
+ * as any arrival, and a publisher holding both flows needs this card to say which
+ * arrivals it means without opening anything. If the model settles on signup
+ * genuinely covering paid arrivals too, this sentence is where that decision
+ * shows first — change it knowingly.
+ */
+export const triggerExplanation = (config: Pick<TriggerConfig, 'type'>): string =>
+  isPaidTrigger(config)
+    ? 'Triggered when a member starts a paid subscription.'
+    : 'Triggered when someone signs up as a free member.';
 
 // Takes just the type, so it can label a bare choice as readily as a full config
 // — the trigger picker shows a label before there's a config to show it from.

@@ -1,32 +1,28 @@
-import React, { useState } from 'react';
-import {
-  Button,
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-  Separator,
-} from '@tryghost/shade/components';
+import React from 'react';
+import { Button } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { StatusBadge } from '@/automations/proto/shared/status-badge';
 
 // PHASE 2 — the screen's header, docked: its own elevated surface with a rule under
 // it. Two zones on one row: navigation and identity at the left — back arrow and
-// title — and the screen's actions at the right, ending in the on/off switch.
+// title — and the screen's actions at the right.
 //
-// The switch came from Exploration, along with the shape of the row. What it replaced
-// was a status BADGE beside the title plus Publish and Turn off buttons on the right:
-// three places saying one thing, none of which was the control. The switch is the
-// readout and the control at once, and it confirms itself — flipping it is visible
-// where you pressed it, so the lifecycle no longer depends on a toast to say what
-// happened. It's also closer to what the post editor does, which is the shape this
-// lane is meant to end up in.
+// The right side is back to phase 1's per-state button pair (Save/Publish while
+// off, Turn off/Publish changes while live). What stood here before was an on/off
+// SWITCH — the state as readout and control in one, "Live" written into it — and
+// the team's read was that it's the wrong pattern for a lifecycle: flipping a
+// switch is how you change a setting, not how you take something live, and it
+// made the change look saved the moment it flipped. Buttons name the act
+// (Publish, Turn off), which is what an act this consequential wants. The switch
+// experiment is in this file's history if it's ever worth re-reading.
 //
-// Phase 1 still has the original header, so the badge-and-buttons version is one lane
-// away if this doesn't hold up.
-//
-// No overflow menu. It held Edit details and Archive; the title opens details
-// directly now, and archiving belongs to the list, where the automation is a row
-// among others rather than the thing you're inside.
+// The buttons themselves live on the screen (see chromeActions in detail.tsx) —
+// the header only places them, so a header style can't change what the screen
+// lets you do. The LEFT side keeps everything the switch era added: the title
+// opens details directly (pencil on hover), and there's no overflow menu —
+// archiving belongs to the list, where the automation is a row among others
+// rather than the thing you're inside.
 //
 // A centred "Automations / <name>" breadcrumb has now been tried here twice and
 // rejected twice, on the same ground both times: it puts the automation's name at
@@ -36,109 +32,13 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 // thing it's genuinely better at — but it isn't worth splitting identity from
 // navigation, and a crumb that doubles as the way back still reads as a label
 // first. If it comes up a third time, this is the objection to answer.
-// The on/off control: a button with the state written in it and a switch beside it.
-//
-// Four earlier arrangements tried to say the state twice — a badge next to a switch,
-// a switch tinted like the badge, the badge's pill wrapped around a switch, then the
-// badge redrawn AS the switch. All of them were a readout and a control competing
-// for the same fact, and the last one solved that by inventing a control Ghost
-// doesn't otherwise have.
-//
-// This one is the word and the switch as a single control, so there is nothing on
-// the other side of the header doing the communicating and nothing new to learn.
-//
-// Ghost rather than outline. It was outlined, which made it a button sitting beside
-// other buttons — three bordered boxes in a row, none of which was obviously the
-// state. Unbordered it reads as what it is: the automation's status, which happens
-// to be operable. What separates it from the actions is a rule, not a box.
-//
-// "Live", not "On", because this control replaced the badge and inherited its job:
-// it's the list's word (and production's), and a control that said "On" beside a
-// list that said "Live" would be the same fact under two names. Live and Off aren't
-// a natural antonym pair, which is the cost — but Live says the automation is
-// enrolling members right now, and On doesn't say anything.
-//
-// A button with role="switch" rather than a real Switch inside a button: nesting two
-// interactive elements is a bug in waiting, and to a screen reader this is exactly
-// what a switch is.
-const StatusSwitch: React.FC<{
-  status: 'active' | 'inactive';
-  canGoLive: boolean;
-  onChange: (next: boolean) => void;
-  // A blocked turn-on, reported upward alongside the popover: pressing the
-  // switch is asking "can this run?", and the screen uses the moment to make
-  // the canvas show every warning it holds — grace periods included.
-  onBlockedAttempt?: () => void;
-}> = ({ status, canGoLive, onChange, onBlockedAttempt }) => {
-  const on = status === 'active';
-  // The switch is NEVER disabled. It used to grey out while the automation
-  // couldn't go live, and a disabled control is a dead end — it says no without
-  // saying why, and the why was a warning sitting somewhere else on the screen.
-  // Pressing it while blocked answers at the point of the press instead: a
-  // popover naming the deal — fix the issues, then this works. Turning OFF is
-  // never blocked; a running automation can always be stopped.
-  const [blockedOpen, setBlockedOpen] = useState(false);
-  return (
-    <Popover open={blockedOpen} onOpenChange={setBlockedOpen}>
-      <PopoverAnchor asChild>
-        <Button
-          aria-checked={on}
-          aria-label="Automation live"
-          // The only deviation from the component: gap-2 rather than its gap-1.5, which
-          // is sized for a 16px icon and reads tight against a 28px switch. Height,
-          // radius, padding and type are all the button's own.
-          className="gap-2"
-          role="switch"
-          type="button"
-          variant="ghost"
-          onClick={() => {
-            if (!on && !canGoLive) {
-              setBlockedOpen(true);
-              onBlockedAttempt?.();
-              return;
-            }
-            onChange(!on);
-          }}
-        >
-          {/* No type classes: the label inherits the button's text-control (13px) and
-                font-medium, so it matches every other button rather than being a size of
-                its own. */}
-          <span>{on ? 'Live' : 'Off'}</span>
-          {/* Decorative: the button is the control, and a second focusable thing inside
-                it would be one tab stop too many. Shade's unchecked fill, so it reads as
-                the same component even though it can't be one here.
-                
-                20x36 with a 16px thumb — one step up from Shade's own 16x28, which is
-                sized to sit in a settings list rather than to carry a header's primary
-                state. Travel is the width less the thumb and both insets: 36 - 16 - 4. */}
-          <span
-            className={cn(
-              'inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
-              on ? 'bg-green-500' : 'bg-input',
-            )}
-            aria-hidden
-          >
-            <span
-              className={cn(
-                'size-4 rounded-full bg-white transition-transform duration-200 ease-out motion-reduce:transition-none',
-                on ? 'translate-x-4.5' : 'translate-x-0.5',
-              )}
-            />
-          </span>
-        </Button>
-      </PopoverAnchor>
-      {/* Same voice and dress as the card warnings' popovers (w-72, one text-md
-                sentence): this is the same kind of answer, raised from a control
-                instead of a card. */}
-      <PopoverContent align="end" className="w-72">
-        <p className="text-md">Fix all issues to publish this automation.</p>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
 interface HeaderBarProps {
   title: string;
+  // Rendered as a badge at the head of the right-side group — the readout
+  // standing at the shoulder of the controls that change it. Phase 1 keeps it
+  // on the left beside the title; over here it reads as the subject of the
+  // buttons rather than part of the name, and the left side stays exactly the
+  // title and the way back.
   status: 'active' | 'inactive';
   onBack: () => void;
   // The screen's chrome actions, passed as a node rather than rebuilt here so
@@ -148,14 +48,6 @@ interface HeaderBarProps {
   // Opens the automation's settings. Without it the title is plain text, which is
   // what the other lanes want — nothing there is editable from the header.
   onEditTitle?: () => void;
-  // Asks for the status to change. The screen decides what that costs — both
-  // directions confirm first — so the switch renders `status` and never its own
-  // guess: one that flips before the answer is one that can be wrong.
-  onStatusChange: (next: boolean) => void;
-  // Nothing to turn on yet — no trigger, no Stripe, or a blank email.
-  canGoLive: boolean;
-  // Fired when the switch is pressed while blocked — see StatusSwitch.
-  onBlockedGoLive?: () => void;
   /**
    * A transient message about the automation as a whole. Currently unused: the
    * Stripe warning that lived here moved onto the trigger card (see triggerWarning
@@ -179,9 +71,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   onBack,
   actions,
   onEditTitle,
-  onStatusChange,
-  canGoLive,
-  onBlockedGoLive,
   notice,
 }) => (
   // A column, not a row: the bar is one 64px row wide enough for the notice to
@@ -286,20 +175,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       </Inline>
 
       <Inline align="center" className="shrink-0" gap="sm">
+        {/* The badge leads the group: state first, then what you can do about
+                    it. See the status prop for why it lives on this side. */}
+        <StatusBadge status={status} />
         {actions}
-        {/* A rule, not a border. The status isn't another action — it's what the
-                    actions are acting on — so it's set apart rather than lined up with
-                    them. h-5 rather than full height: a hairline the height of the row
-                    would divide the header, where this only divides the group. */}
-        <Separator className="h-5" orientation="vertical" />
-        {/* Ends the row. It's the only control here that changes what the automation
-                    DOES rather than what you're looking at, so it gets the far edge. */}
-        <StatusSwitch
-          canGoLive={canGoLive}
-          status={status}
-          onBlockedAttempt={onBlockedGoLive}
-          onChange={onStatusChange}
-        />
       </Inline>
     </div>
 
