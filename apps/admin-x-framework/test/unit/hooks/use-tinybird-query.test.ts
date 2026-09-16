@@ -85,7 +85,9 @@ describe('useTinybirdQuery', () => {
   });
 
   it('fetches the pipe with params and a bearer token and returns data and meta', async () => {
-    const { result } = renderQuery();
+    const { result } = renderQuery({
+      params: { site_uuid: 'site-1', ghost_client: 'server' },
+    });
 
     await waitFor(() => {
       expect(result.current.data).toEqual(rows);
@@ -96,7 +98,7 @@ describe('useTinybirdQuery', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe(`${PIPE_URL}?site_uuid=site-1`);
+    expect(url).toBe(`${PIPE_URL}?site_uuid=site-1&ghost_client=admin`);
     expect(init.headers).toEqual({ Authorization: 'Bearer token-a' });
     expect(init.credentials).toBe('omit');
   });
@@ -108,7 +110,7 @@ describe('useTinybirdQuery', () => {
       expect(result.current.data).toEqual(rows);
     });
     expect(fetchMock.mock.calls[0][0]).toBe(
-      'https://tinybird.example.com/v0/pipes/api_test_v2.json?site_uuid=site-1',
+      'https://tinybird.example.com/v0/pipes/api_test_v2.json?site_uuid=site-1&ghost_client=admin',
     );
   });
 

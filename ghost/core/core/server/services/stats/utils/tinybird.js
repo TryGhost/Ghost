@@ -82,6 +82,9 @@ const create = ({ config, request, settingsCache, tinybirdService }) => {
       }
     });
 
+    // Label the caller in Tinybird's pipe_stats_rt request logs.
+    searchParams.ghost_client = 'server';
+
     // Convert searchParams to query string and append to URL
     const queryString = new URLSearchParams(searchParams).toString();
     const fullUrl = `${tinybirdUrl}?${queryString}`;
