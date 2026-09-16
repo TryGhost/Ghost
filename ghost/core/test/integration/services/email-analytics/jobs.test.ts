@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
+import { AUTOMATION_EMAIL_TAG } from '../../../../core/server/services/member-welcome-emails/constants';
 import sinon from 'sinon';
 import { vi } from 'vitest';
 import type { Knex } from 'knex';
@@ -12,6 +13,9 @@ const MailgunClient = require('../../../../core/server/services/lib/mailgun-clie
 const logging = require('@tryghost/logging');
 const EmailAnalyticsFetchLatestJob =
   require('../../../../core/server/services/email-analytics/jobs/email-analytics-fetch-latest-job').default;
+
+const EmailAnalyticsAutomationFetchLatestJob =
+  require('../../../../core/server/services/email-analytics/jobs/email-analytics-automation-fetch-latest-job').default;
 
 type MailgunEvent = {
   id: string;
@@ -162,5 +166,67 @@ describe('email analytics JobsService delivery', function () {
     const email = await knex('emails').where('id', batch.email_id).first();
     assert.ok(email.delivered_count > 0);
     assert.ok(email.opened_count > 0);
+  });
+  it('persists automation delivery, opens, and its cursor through the booted backend', async function () {
+    const now = new Date();
+    const automationId = ObjectId().toHexString();
+    const actionId = ObjectId().toHexString();
+    const revisionId = ObjectId().toHexString();
+    const recipientId = ObjectId().toHexString();
+    const member = fixtureManager.get('members', 0);
+    const messageId = 'analytics-job-automation@example.com';
+    await knex('automations').insert({
+      id: automationId,
+      name: 'Analytics job',
+      slug: `analytics-${automationId}`,
+      status: 'inactive',
+      created_at: now,
+      updated_at: now,
+    });
+    await knex('automation_actions').insert({
+      id: actionId,
+      automation_id: automationId,
+      type: 'send_email',
+      created_at: now,
+      updated_at: now,
+    });
+    await knex('automation_action_revisions').insert({
+      id: revisionId,
+      action_id: actionId,
+      created_at: now,
+      email_sent_count: 1,
+      email_opened_count: 0,
+    });
+    await knex('automated_email_recipients').insert({
+      id: recipientId,
+      automation_action_revision_id: revisionId,
+      member_id: member.id,
+      member_uuid: member.uuid,
+      member_email: member.email,
+      mailgun_message_id: messageId,
+      track_opens: true,
+      track_clicks: true,
+      created_at: now,
+    });
+    try {
+      events = ['opened', 'delivered'].map((type) =>
+        mailgunEvent(type, messageId, member.email, AUTOMATION_EMAIL_TAG),
+      );
+      await dispatchAndWait(
+        new EmailAnalyticsAutomationFetchLatestJob(),
+        EmailAnalyticsAutomationFetchLatestJob.type,
+        'email-analytics-automation',
+      );
+      const updated = await knex('automated_email_recipients').where('id', recipientId).first();
+      assert.equal(new Date(updated.delivered_at).getTime(), eventDate.getTime());
+      assert.equal(new Date(updated.opened_at).getTime(), eventDate.getTime());
+      const revision = await knex('automation_action_revisions').where('id', revisionId).first();
+      assert.equal(revision.email_opened_count, 1);
+    } finally {
+      await knex('automated_email_recipients').where('id', recipientId).del();
+      await knex('automation_action_revisions').where('id', revisionId).del();
+      await knex('automation_actions').where('id', actionId).del();
+      await knex('automations').where('id', automationId).del();
+    }
   });
 });

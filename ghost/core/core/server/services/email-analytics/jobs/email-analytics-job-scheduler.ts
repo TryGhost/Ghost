@@ -1,3 +1,4 @@
+import EmailAnalyticsAutomationFetchLatestJob from './email-analytics-automation-fetch-latest-job';
 import EmailAnalyticsFetchLatestJob from './email-analytics-fetch-latest-job';
 import * as path from 'node:path';
 import moment from 'moment';
@@ -98,10 +99,13 @@ export class EmailAnalyticsJobScheduler {
 
   async scheduleRecurringAutomationsJob(skipAutomationEmailCheck: boolean = false): Promise<void> {
     await this.#scheduleOnce(
-      this.#legacyJob(
-        'email-analytics-automation-fetch-latest',
-        'automation-fetch-latest/index.js',
-      ),
+      {
+        name: EmailAnalyticsAutomationFetchLatestJob.type,
+        register: (at) =>
+          this.#jobsService.scheduleRecurring(new EmailAnalyticsAutomationFetchLatestJob(), {
+            cron: at,
+          }),
+      },
       skipAutomationEmailCheck,
       async () =>
         Boolean(
