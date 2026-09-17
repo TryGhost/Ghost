@@ -150,8 +150,6 @@ export function validateSchema(tableName: string, model: Model, options?: Option
   });
 
   if (validationErrors.length !== 0) {
-    return Promise.reject(validationErrors);
+    throw validationErrors;
   }
-
-  return Promise.resolve();
 }
