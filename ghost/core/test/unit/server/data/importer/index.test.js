@@ -167,16 +167,13 @@ describe('Importer', function () {
         __dirname,
         '../../../../utils/fixtures/import/zips/zip-with-base-dir',
       );
-      ImportManager.fileToDelete = file;
       const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.resolve());
 
-      await ImportManager.cleanUp();
+      await ImportManager.cleanUp(file);
       sinon.assert.calledOnce(removeStub);
-      assert.equal(ImportManager.fileToDelete, null);
     });
 
     it("doesn't clean up", async function () {
-      ImportManager.fileToDelete = null;
       const removeStub = sinon.stub(fs, 'remove').returns(Promise.resolve());
 
       await ImportManager.cleanUp();
@@ -189,16 +186,14 @@ describe('Importer', function () {
         __dirname,
         '../../../../utils/fixtures/import/zips/zip-with-base-dir',
       );
-      ImportManager.fileToDelete = file;
       const removeStub = sinon
         .stub(fs, 'remove')
         .withArgs(file)
         .returns(Promise.reject(new Error('Unknown file')));
 
-      await ImportManager.cleanUp();
+      await ImportManager.cleanUp(file);
       sinon.assert.calledOnce(removeStub);
       sinon.assert.calledOnce(loggingStub);
-      assert.equal(ImportManager.fileToDelete, null);
     });
 
     // Step 1 of importing is loadFile

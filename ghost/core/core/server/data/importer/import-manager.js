@@ -38,12 +38,6 @@ class ImportManager {
       extensions: this.getExtensions(),
       directories: this.getDirectories(),
     });
-
-    // Keep track of file to cleanup at the end
-    /**
-     * @type {?string}
-     */
-    this.fileToDelete = null;
   }
 
   /**
@@ -124,9 +118,7 @@ class ImportManager {
    * @returns {Promise<string>} full path to the extracted folder
    */
   async extractZip(filePath) {
-    const tmpDir = await this.archive.extract(filePath);
-    this.fileToDelete = tmpDir;
-    return tmpDir;
+    return this.archive.extract(filePath);
   }
 
   /**
@@ -158,8 +150,9 @@ class ImportManager {
    * @param {File} file
    * @returns {Promise<ImportData>}
    */
-  async processZip(file) {
+  async processZip(file, prepared = {}, validateOnly = false) {
     const zipDirectory = await this.extractZip(file.path);
+    prepared.cleanupDirectory = zipDirectory;
 
     /**
      * @type {ImportData}
@@ -182,7 +175,12 @@ class ImportManager {
           });
         }
 
-        const data = await handler.loadFile(files, baseDir);
+        // Asset destination preparation belongs to execution. Validation still
+        // extracts the archive and parses content to preserve request errors.
+        const data =
+          validateOnly && handler.directories.length
+            ? undefined
+            : await handler.loadFile(files, baseDir);
         importData[handler.type] = data;
       }
     }
@@ -237,10 +235,21 @@ class ImportManager {
    * @param {File} file
    * @returns {Promise<ImportData>}
    */
-  loadFile(file) {
+  loadFile(file, prepared, validateOnly = false) {
     const self = this;
     const ext = path.extname(file.name).toLowerCase();
-    return this.isZip(ext) ? self.processZip(file) : self.processFile(file, ext);
+    return this.isZip(ext)
+      ? self.processZip(file, prepared, validateOnly)
+      : self.processFile(file, ext);
+  }
+
+  async validateFile(file) {
+    const validation = {};
+    try {
+      await this.loadFile(file, validation, true);
+    } finally {
+      await this.cleanUp(validation.cleanupDirectory);
+    }
   }
 
   /**
@@ -300,13 +309,13 @@ class ImportManager {
    * Remove files after we're done (abstracted into a function for easier testing)
    * @returns {Promise<void>}
    */
-  async cleanUp() {
-    if (this.fileToDelete === null) {
+  async cleanUp(cleanupDirectory) {
+    if (!cleanupDirectory) {
       return;
     }
 
     try {
-      await fs.remove(this.fileToDelete);
+      await fs.remove(cleanupDirectory);
     } catch (err) {
       this.logging.error(
         new errors.InternalServerError({
@@ -316,8 +325,6 @@ class ImportManager {
         }),
       );
     }
-
-    this.fileToDelete = null;
   }
 
   /**
@@ -353,56 +360,56 @@ class ImportManager {
    * @returns {Promise<Object.<string, ImportResult>>}
    */
   async importFromFile(file, importOptions = {}) {
-    let importData;
-    if (importOptions.data) {
-      importData = importOptions.data;
-    } else {
-      // Step 1: Handle converting the file to usable data
-      // Has to be completed outside of job to ensure file is processed before being deleted
-      importData = await this.loadFile(file);
+    const prepared = {};
+    try {
+      prepared.data = importOptions.data || (await this.loadFile(file, prepared));
+    } catch (err) {
+      await this.cleanUp(prepared.cleanupDirectory);
+      throw err;
     }
 
-    debug('importFromFile completed file load', importData);
+    debug('importFromFile completed file load', prepared.data);
 
     const env = this.config.get('env');
     if (!env?.startsWith('testing') && !importOptions.runningInJob) {
       this.logging.info('[Background Job] site-content-import queued');
       return this.jobManager.addJob({
-        job: async () => {
-          const startedAt = Date.now();
-          this.logging.info('[Background Job] site-content-import started');
-          try {
-            const result = await this.importFromFile(
-              file,
-              Object.assign({}, importOptions, {
-                runningInJob: true,
-                data: importData,
-              }),
-            );
-            // importFromFile swallows its own failures and returns undefined,
-            // so an absent result is the only signal that the import failed.
-            if (result === undefined) {
-              this.logging.info(
-                `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-              );
-            } else {
-              this.logging.info(
-                `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
-              );
-            }
-            return result;
-          } catch (err) {
-            this.logging.error(
-              err,
-              `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-            );
-            throw err;
-          }
-        },
+        job: () => this.executeImport(prepared, { ...importOptions, runningInJob: true }),
         offloaded: false,
       });
     }
 
+    return this.executeImport(prepared, importOptions);
+  }
+
+  async executeImport(prepared, importOptions = {}) {
+    let importData = prepared.data;
+    const env = this.config.get('env');
+    const startedAt = Date.now();
+    if (!env?.startsWith('testing')) {
+      this.logging.info('[Background Job] site-content-import started');
+    }
+    let result;
+    try {
+      result = await this.processImport(prepared, importData, importOptions, env);
+      if (!env?.startsWith('testing')) {
+        this.logging.info(
+          result === undefined
+            ? `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`
+            : `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
+        );
+      }
+      return result;
+    } catch (err) {
+      this.logging.error(
+        err,
+        `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+      );
+      throw err;
+    }
+  }
+
+  async processImport(prepared, importData, importOptions, env) {
     let importResult;
     try {
       // Step 2: Let the importers pre-process the data
@@ -422,7 +429,7 @@ class ImportManager {
       importResult = { data: { errors: errorDetails } };
     } finally {
       // Step 5: Cleanup any files
-      await this.cleanUp();
+      await this.cleanUp(prepared.cleanupDirectory);
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
