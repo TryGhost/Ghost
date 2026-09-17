@@ -17,7 +17,9 @@ export type TinybirdClient = {
       limit?: number;
       afterCreatedAt?: string;
       afterId?: string;
+      runIds?: string;
     },
+    transport?: { method: 'POST'; timeoutMs: number },
   ): Promise<unknown>;
 };
 
@@ -162,7 +164,7 @@ export function compareRuns(a: AutomationRunPosition, b: AutomationRunPosition) 
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
-const automationRunRowSchema = z
+export const automationRunRowSchema = z
   .object({
     id: z.string().min(1),
     created_at: z.iso.datetime().transform((value) => new Date(value).toISOString()),
@@ -173,9 +175,9 @@ const automationRunRowSchema = z
     message: 'Only exited-early runs can have a failure flag.',
   });
 
-type AutomationRunRow = z.infer<typeof automationRunRowSchema>;
+export type AutomationRunRow = z.infer<typeof automationRunRowSchema>;
 
-function isValidRunPage(
+export function isValidRunPage(
   rows: AutomationRunRow[],
   options: {
     status?: string;

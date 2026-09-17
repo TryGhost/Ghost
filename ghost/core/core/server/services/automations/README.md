@@ -157,12 +157,16 @@ Omitting it includes every status, including unclassified history. Unsupported o
 empty values return 422. Filtering uses the complete recorded step history before
 ordering and limiting to fifty matching runs, so ascending order returns the
 oldest matches first; pending steps take precedence as they do in the summary counts.
-The list stays all-time, independent of entry dates and summary counts, with no
-search. An empty history or no matches returns `automation_runs: []`. It requires
+The list stays all-time, independent of entry dates and summary counts. An empty history or no matches returns `automation_runs: []`. It requires
 automation read permission, returns 404 for unknown automations, and uses the same
 Tinybird availability checks as summaries.
 
 ### Cursor pagination
+
+The optional `search` parameter matches literal text within current member names
+or emails after trimming outer whitespace. Results use search-scoped cursors;
+bounded scanning responses can require continuation before finding more matches.
+Blank search preserves the non-search behavior below.
 
 `meta.pagination.next_cursor` is an opaque keyset cursor, or `null` on the final
 page. Pass it back with the same `status` and `order`. Page size is fixed at fifty;
