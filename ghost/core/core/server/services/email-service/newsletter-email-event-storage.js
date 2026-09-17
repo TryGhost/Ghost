@@ -1,4 +1,5 @@
 const moment = require('moment-timezone');
+const { DbCount } = require('../../lib/db-types/count');
 const { getAffectedRows } = require('../../lib/db-types/affected-rows');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -57,13 +58,15 @@ class NewsletterEmailEventStorage {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
       // only set if delivered_at is null
-      const rowCount = await this.#db
-        .knex('email_recipients')
-        .where('id', '=', event.emailRecipientId)
-        .whereNull('delivered_at')
-        .update({
-          delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
-        });
+      const rowCount = DbCount.parse(
+        await this.#db
+          .knex('email_recipients')
+          .where('id', '=', event.emailRecipientId)
+          .whereNull('delivered_at')
+          .update({
+            delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+          }),
+      );
       this.recordEventStored('delivered', rowCount);
       return rowCount;
     }
@@ -90,13 +93,15 @@ class NewsletterEmailEventStorage {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
       // only set if opened_at is null
-      const rowCount = await this.#db
-        .knex('email_recipients')
-        .where('id', '=', event.emailRecipientId)
-        .whereNull('opened_at')
-        .update({
-          opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
-        });
+      const rowCount = DbCount.parse(
+        await this.#db
+          .knex('email_recipients')
+          .where('id', '=', event.emailRecipientId)
+          .whereNull('opened_at')
+          .update({
+            opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+          }),
+      );
       this.recordEventStored('opened', rowCount);
       return rowCount;
     }
@@ -124,13 +129,15 @@ class NewsletterEmailEventStorage {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
       // only set if failed_at is null
-      rowCount = await this.#db
-        .knex('email_recipients')
-        .where('id', '=', event.emailRecipientId)
-        .whereNull('failed_at')
-        .update({
-          failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
-        });
+      rowCount = DbCount.parse(
+        await this.#db
+          .knex('email_recipients')
+          .where('id', '=', event.emailRecipientId)
+          .whereNull('failed_at')
+          .update({
+            failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+          }),
+      );
     }
     await this.saveFailure('permanent', event);
     return rowCount;

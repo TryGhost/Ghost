@@ -139,6 +139,8 @@ export class EmailAnalyticsServiceWrapper {
       return;
     }
 
+    // These totals describe this successful run only. Writes committed by a failed
+    // run are not carried forward, and replayed timestamps do not count as new.
     const storedEventCounts =
       this.#logName === 'newsletters'
         ? {
