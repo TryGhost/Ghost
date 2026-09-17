@@ -679,9 +679,11 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       createContentFileImporters,
     } = require('./server/data/importer/content-files');
     const { GhostMailer } = require('./server/services/mail');
+    const adapterManager = require('./server/services/adapter-manager').default;
     require('./server/data/importer').init({
       jobsService,
       jobManager: require('./server/services/jobs'),
+      importsStorage: adapterManager.getAdapter('storage:imports'),
       handlers: [
         ...createContentFileHandlers(),
         require('./server/data/importer/handlers/revue'),

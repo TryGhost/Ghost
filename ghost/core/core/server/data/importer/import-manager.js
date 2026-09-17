@@ -1,10 +1,16 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
+const os = require('node:os');
+const { randomUUID } = require('node:crypto');
+const { pipeline } = require('node:stream/promises');
+const { ZipArchive } = require('archiver');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
 const errors = require('@tryghost/errors');
 const ImportArchive = require('./import-archive').default;
+
+const ContentImportJob = require('./jobs/content-import-job').default;
 
 const { emailTemplate } = require('./email-template');
 
@@ -24,8 +30,20 @@ let defaults = {
 };
 
 class ImportManager {
-  constructor({ jobsService, jobManager, handlers, importers, mailer, config, urlUtils, logging }) {
+  constructor({
+    jobsService,
+    importsStorage,
+    jobManager,
+    handlers,
+    importers,
+    mailer,
+    config,
+    urlUtils,
+    logging,
+  }) {
     this.jobsService = jobsService;
+    /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default | import('../../adapters/storage/S3Storage').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
+    this.importsStorage = importsStorage;
     this.jobManager = jobManager;
     this.handlers = handlers;
     this.importers = importers;
@@ -151,7 +169,7 @@ class ImportManager {
    * @returns {Promise<ImportData>}
    */
   async processZip(file, prepared = {}, validateOnly = false) {
-    const zipDirectory = await this.extractZip(file.path);
+    const zipDirectory = prepared.cleanupDirectory || (await this.extractZip(file.path));
     prepared.cleanupDirectory = zipDirectory;
 
     /**
@@ -360,6 +378,69 @@ class ImportManager {
    * @returns {Promise<Object.<string, ImportResult>>}
    */
   async importFromFile(file, importOptions = {}) {
+    const env = this.config.get('env');
+    if (!env?.startsWith('testing') && !importOptions.runningInJob) {
+      await this.validateFile(file);
+      // This capability deliberately belongs to the concrete adapters until the
+      // next major release can extend the third-party storage base contract.
+      if (typeof this.importsStorage?.readStream !== 'function') {
+        throw new errors.IncorrectUsageError({
+          message: 'The imports storage adapter must support streaming reads',
+        });
+      }
+      const attemptedKey = randomUUID();
+      let uploadKey = attemptedKey;
+      let normalizationDirectory;
+      try {
+        let uploadPath = file.path;
+        if (!this.isZip(path.extname(file.name).toLowerCase())) {
+          normalizationDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'site-import-upload-'));
+          uploadPath = path.join(normalizationDirectory, 'upload.zip');
+          const archive = new ZipArchive();
+          const source = fs.createReadStream(file.path);
+          // archiver does not forward errors from appended source streams.
+          source.on('error', (error) => archive.destroy(error));
+          const written = pipeline(archive, fs.createWriteStream(uploadPath));
+          archive.append(source, { name: `${attemptedKey}/${path.basename(file.name)}` });
+          try {
+            await Promise.all([archive.finalize(), written]);
+          } finally {
+            source.destroy();
+          }
+        }
+        const url = await this.importsStorage.save(
+          { name: attemptedKey, path: uploadPath },
+          this.importsStorage.storagePath,
+        );
+        uploadKey = this.importsStorage.urlToPath(url);
+        if (uploadKey !== attemptedKey) {
+          throw new errors.IncorrectUsageError({
+            message: 'The imports storage adapter must preserve the upload key',
+          });
+        }
+        const job = new ContentImportJob({
+          uploadKey,
+          emailRecipient: importOptions.user.email,
+          importTag: importOptions.importTag,
+          returnImportedData: importOptions.returnImportedData,
+          importPersistUser: importOptions.importPersistUser,
+        });
+        this.logging.info('[Background Job] site-content-import queued');
+        return await this.jobManager.addJob({
+          data: job,
+          job: (input) => this.executeImport(input),
+          offloaded: false,
+        });
+      } catch (err) {
+        for (const key of new Set([attemptedKey, uploadKey])) {
+          await this.cleanUpUpload(key);
+        }
+        throw err;
+      } finally {
+        await this.cleanUp(normalizationDirectory);
+      }
+    }
+
     const prepared = {};
     try {
       prepared.data = importOptions.data || (await this.loadFile(file, prepared));
@@ -367,23 +448,19 @@ class ImportManager {
       await this.cleanUp(prepared.cleanupDirectory);
       throw err;
     }
-
-    debug('importFromFile completed file load', prepared.data);
-
-    const env = this.config.get('env');
-    if (!env?.startsWith('testing') && !importOptions.runningInJob) {
-      this.logging.info('[Background Job] site-content-import queued');
-      return this.jobManager.addJob({
-        job: () => this.executeImport(prepared, { ...importOptions, runningInJob: true }),
-        offloaded: false,
-      });
-    }
-
     return this.executeImport(prepared, importOptions);
   }
 
   async executeImport(prepared, importOptions = {}) {
-    let importData = prepared.data;
+    if (prepared.uploadKey) {
+      importOptions = {
+        user: { email: prepared.emailRecipient },
+        importTag: prepared.importTag,
+        returnImportedData: prepared.returnImportedData,
+        importPersistUser: prepared.importPersistUser,
+        runningInJob: true,
+      };
+    }
     const env = this.config.get('env');
     const startedAt = Date.now();
     if (!env?.startsWith('testing')) {
@@ -391,7 +468,7 @@ class ImportManager {
     }
     let result;
     try {
-      result = await this.processImport(prepared, importData, importOptions, env);
+      result = await this.processImport(prepared, importOptions, env);
       if (!env?.startsWith('testing')) {
         this.logging.info(
           result === undefined
@@ -409,9 +486,43 @@ class ImportManager {
     }
   }
 
-  async processImport(prepared, importData, importOptions, env) {
+  async cleanUpUpload(uploadKey) {
+    try {
+      await this.importsStorage.delete(uploadKey);
+    } catch (err) {
+      this.logging.error(err, '[Background Job] site-content-import upload cleanup failed');
+    }
+  }
+
+  async processImport(prepared, importOptions, env) {
+    const uploadKey = prepared.uploadKey;
+    let downloadDirectory;
     let importResult;
     try {
+      if (uploadKey) {
+        prepared = {};
+        downloadDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'site-content-import-'));
+        const archivePath = path.join(downloadDirectory, 'upload.zip');
+        await pipeline(
+          await this.importsStorage.readStream({ path: uploadKey }),
+          fs.createWriteStream(archivePath),
+        );
+        prepared.cleanupDirectory = await this.extractZip(archivePath);
+        const entries = await fs.readdir(prepared.cleanupDirectory);
+        // A generated UUID directory marks our single-entry standalone wrapper.
+        // Ordinary uploaded ZIPs are stored unchanged and use archive semantics.
+        if (entries.length === 1 && entries[0] === uploadKey) {
+          const standaloneDirectory = path.join(prepared.cleanupDirectory, uploadKey);
+          const [name] = await fs.readdir(standaloneDirectory);
+          prepared.data = await this.processFile(
+            { name, path: path.join(standaloneDirectory, name) },
+            path.extname(name).toLowerCase(),
+          );
+        } else {
+          prepared.data = await this.loadFile({ name: 'upload.zip', path: archivePath }, prepared);
+        }
+      }
+      let importData = prepared.data;
       // Step 2: Let the importers pre-process the data
       importData = await this.preProcess(importData);
 
@@ -430,6 +541,12 @@ class ImportManager {
     } finally {
       // Step 5: Cleanup any files
       await this.cleanUp(prepared.cleanupDirectory);
+      if (downloadDirectory) {
+        await this.cleanUp(downloadDirectory);
+      }
+      if (uploadKey) {
+        await this.cleanUpUpload(uploadKey);
+      }
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
