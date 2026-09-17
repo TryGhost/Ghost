@@ -2,10 +2,6 @@ import type { AutomationStepToRun, AutomationsRepository } from './automations-r
 import { getMailgunMessageId } from '../lib/mailgun-message-id';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
-import {
-  MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES,
-  MEMBER_WELCOME_EMAIL_SLUGS,
-} from '../member-welcome-emails/constants';
 import { MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS } from './constants';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../models';
@@ -43,6 +39,14 @@ type MemberModel = {
   related(key: 'newsletters'): {
     models: unknown[];
   };
+  related(key: 'currentSubscription'): {
+    models: Array<{
+      related: (key: 'stripePrice') => {
+        related: (key: 'stripeProduct') => { get: (key: 'product_id') => string | null };
+      };
+    }>;
+  };
+  related(key: 'products'): { models: Array<{ id: string }> };
 };
 
 type PollOptions = {
@@ -59,13 +63,6 @@ type PollOptions = {
   memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
-const slugToMemberStatus = new Map<string, 'free' | 'paid'>(
-  Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(([status, slug]) => [
-    slug as string,
-    status as 'free' | 'paid',
-  ]),
-);
-
 const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
   const preference = member.get('enable_updates_and_announcements');
 
@@ -75,6 +72,33 @@ const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
 
   const isSubscribedToAnyNewsletters = member.related('newsletters').models.length > 0;
   return isSubscribedToAnyNewsletters;
+};
+
+const matchesTriggerTier = (member: MemberModel, step: AutomationStepToRun): boolean => {
+  const status = member.get('status');
+  if (step.trigger_tier_scope === 'free') {
+    return status === 'free';
+  }
+  if (status !== 'paid' && status !== 'gift') {
+    return false;
+  }
+  if (step.trigger_tier_scope === 'all_paid') {
+    return true;
+  }
+
+  const currentTierId = member
+    .related('currentSubscription')
+    .models[0]?.related('stripePrice')
+    ?.related('stripeProduct')
+    ?.get('product_id');
+  if (currentTierId && step.trigger_tier_ids.includes(currentTierId)) {
+    return true;
+  }
+
+  return (
+    status === 'gift' &&
+    member.related('products').models.some((product) => step.trigger_tier_ids.includes(product.id))
+  );
 };
 
 const markMaxAttemptsExceeded = async (
@@ -149,25 +173,6 @@ const processStep = async ({
     return null;
   }
 
-  // NOTE: This will change once we support additional automation triggers.
-  const memberStatus = step.automation_slug
-    ? slugToMemberStatus.get(step.automation_slug)
-    : undefined;
-  if (!memberStatus) {
-    logging.error(
-      {
-        system: {
-          event: 'automations.poll.unknown_slug',
-          slug: step.automation_slug,
-          step_id: step.id,
-        },
-      },
-      `[AUTOMATIONS] Unknown automation slug: ${step.automation_slug}`,
-    );
-    await automationsApi.markStepTerminal(step, 'failed');
-    return null;
-  }
-
   if (!step.member_id) {
     await automationsApi.markStepTerminal(step, 'member unsubscribed');
     return null;
@@ -175,7 +180,12 @@ const processStep = async ({
 
   const member = (await Member.findOne(
     { id: step.member_id },
-    { withRelated: ['newsletters'] },
+    {
+      withRelated:
+        step.trigger_tier_scope === 'selected_paid'
+          ? ['newsletters', 'currentSubscription.stripePrice.stripeProduct', 'products']
+          : ['newsletters'],
+    },
   )) as MemberModel | null;
 
   if (!member) {
@@ -195,10 +205,8 @@ const processStep = async ({
     return null;
   }
 
-  const eligibleStatuses = MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES[
-    memberStatus
-  ] as readonly string[];
-  if (!eligibleStatuses.includes(member.get('status') ?? '')) {
+  const memberStatus = step.trigger_tier_scope === 'free' ? 'free' : 'paid';
+  if (!matchesTriggerTier(member, step)) {
     await automationsApi.markStepTerminal(step, 'member changed status');
     return null;
   }

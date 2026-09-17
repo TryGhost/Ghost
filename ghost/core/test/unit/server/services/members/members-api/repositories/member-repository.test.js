@@ -1973,6 +1973,7 @@ describe('MemberRepository', function () {
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'free',
+        memberTierId: null,
       });
     });
 
@@ -2021,6 +2022,7 @@ describe('MemberRepository', function () {
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'free',
+          memberTierId: null,
         });
         sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         sinon.assert.notCalled(Automation.findOne);
@@ -2275,6 +2277,7 @@ describe('MemberRepository', function () {
 
       productRepository = {
         get: sinon.stub().resolves({
+          id: 'tier_123',
           get: sinon.stub().returns(),
           toJSON: sinon.stub().returns({}),
         }),
@@ -2337,7 +2340,32 @@ describe('MemberRepository', function () {
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'paid',
+        memberTierId: 'tier_123',
       });
+    });
+
+    it('triggers tier automation when paid member switches tiers', async function () {
+      Member.edit.resolves({
+        attributes: { status: 'paid' },
+        _previousAttributes: { status: 'paid' },
+        get: sinon.stub().withArgs('status').returns('paid'),
+      });
+      const repo = buildRepo();
+      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+      await repo.linkSubscription(
+        { id: 'member_id_123', subscription: subscriptionData },
+        { transacting: { executionPromise: Promise.resolve() }, context: {} },
+      );
+
+      sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+        event: 'member_sign_up',
+        memberId: 'member_id_123',
+        memberEmail: 'test@example.com',
+        memberStatus: 'paid',
+        memberTierId: 'tier_123',
+      });
+      sinon.assert.notCalled(Automation.findOne);
     });
 
     describe('legacy automations', function () {
@@ -2435,6 +2463,7 @@ describe('MemberRepository', function () {
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'paid',
+          memberTierId: 'tier_123',
         });
         sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         sinon.assert.notCalled(Automation.findOne);

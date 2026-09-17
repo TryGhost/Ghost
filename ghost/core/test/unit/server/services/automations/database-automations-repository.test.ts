@@ -71,6 +71,13 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('slug').notNullable().unique();
     table.text('name').notNullable();
     table.text('status').notNullable();
+    table.text('trigger_tier_scope').notNullable().defaultTo('free');
+  });
+
+  await database.schema.createTable('automation_trigger_tiers', (table) => {
+    table.text('automation_id').notNullable().references('id').inTable('automations');
+    table.text('product_id').notNullable();
+    table.unique(['automation_id', 'product_id']);
   });
 
   await database.schema.createTable('automation_actions', (table) => {
@@ -218,6 +225,7 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-free',
       name: 'Free member welcome flow',
       status: 'active',
+      trigger_tier_scope: 'free',
     },
     {
       id: paidAutomationId,
@@ -226,6 +234,7 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-paid',
       name: 'Paid member welcome flow',
       status: 'active',
+      trigger_tier_scope: 'all_paid',
     },
   ]);
 
@@ -1211,6 +1220,84 @@ describe('automations repository', function () {
   });
 
   describe('trigger', function () {
+    it('starts every matching selected-tier automation and never re-enters either', async function () {
+      const first = await getAutomationBySlug('member-welcome-email-paid');
+      const selectedId = ObjectId().toHexString();
+      const actionId = ObjectId().toHexString();
+      const revisionId = ObjectId().toHexString();
+      const now = toDatabaseDate(new Date());
+      await knex('automations').insert({
+        id: selectedId,
+        slug: 'bronze-flow',
+        name: 'Bronze flow',
+        status: 'active',
+        trigger_tier_scope: 'selected_paid',
+        created_at: now,
+        updated_at: now,
+      });
+      await knex('automation_trigger_tiers').insert({
+        automation_id: selectedId,
+        product_id: 'bronze',
+      });
+      await knex('automation_actions').insert({
+        id: actionId,
+        automation_id: selectedId,
+        type: 'wait',
+        created_at: now,
+        updated_at: now,
+      });
+      await knex('automation_action_revisions').insert({
+        id: revisionId,
+        action_id: actionId,
+        created_at: now,
+        wait_hours: 1,
+      });
+
+      const options = {
+        memberEmail: 'bronze@example.com',
+        memberId: 'bronze-member',
+        memberStatus: 'paid' as const,
+        memberTierId: 'bronze',
+      };
+      await repo.trigger(options);
+      await repo.trigger(options);
+      const runs = await knex('automation_runs').where('member_id', options.memberId);
+      assert.deepEqual(
+        new Set(runs.map((run) => run.automation_id)),
+        new Set([first.id, selectedId]),
+      );
+      assert.equal(runs.length, 2);
+      assert.equal(
+        await knex('automation_run_steps')
+          .whereIn(
+            'automation_run_id',
+            runs.map((run) => run.id),
+          )
+          .count('* as count')
+          .first()
+          .then((row) => Number(row?.count)),
+        2,
+      );
+      await knex('automation_run_steps')
+        .whereIn(
+          'automation_run_id',
+          runs.map((run) => run.id),
+        )
+        .update({ ready_at: toDatabaseDate(new Date(0)) });
+      const { steps } = await repo.fetchAndLockSteps(10);
+      const selectedStep = steps.find((step) => step.automation_id === selectedId);
+      assert(selectedStep);
+      assert.equal(selectedStep.trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(selectedStep.trigger_tier_ids, ['bronze']);
+
+      await repo.trigger({ ...options, memberId: 'silver-member', memberTierId: 'silver' });
+      const silverRuns = await knex('automation_runs').where('member_id', 'silver-member');
+      assert.deepEqual(
+        silverRuns.map((run) => run.automation_id),
+        [first.id],
+      );
+    });
+
     it('can trigger an automation for a free member', async function () {
       await repo.trigger({
         memberEmail: 'free@example.com',
