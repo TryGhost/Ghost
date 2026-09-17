@@ -26,6 +26,10 @@ export class EmailAnalyticsServiceWrapper {
     return `[EmailAnalytics:${this.#logName}]`;
   }
 
+  /**
+   * Creates an executor for one analytics pipeline. The registered job type
+   * also names its lifecycle logs and terminal completion event.
+   */
   constructor({
     logName,
     jobType,
@@ -200,6 +204,14 @@ export class EmailAnalyticsServiceWrapper {
     return this.#fetchAndLog('scheduled', () => this.service.fetchScheduled({ maxEvents }));
   }
 
+  /**
+   * Runs one analytics tick and awaits any immediate continuation required by
+   * event limits or a scheduled backfill. Overlapping ticks are skipped.
+   *
+   * The first invocation attempts scheduled-work restoration once. Restoration
+   * errors are rethrown to the jobs runtime; subsequent fetch errors are logged
+   * and swallowed so a later tick can try again.
+   */
   async startFetch(): Promise<void> {
     const startedAt = Date.now();
     if (!this.#restoredSchedule) {
@@ -272,9 +284,10 @@ export class EmailAnalyticsServiceWrapper {
     this.#fetching = false;
   }
 
-  // Returned so a job handler awaiting startFetch() spans the whole run,
-  // which keeps the jobs runtime's completion timing honest and lets its
-  // shutdown drain cover the continuation.
+  /**
+   * Clears the overlap guard and returns the continuation so the jobs runtime
+   * waits for the full run and includes it in the shutdown drain.
+   */
   _restartFetch(reason: string): Promise<void> {
     this.#fetching = false;
     logging.info(`[Background Job] ${this.#jobType} continuing due to ${reason}`);

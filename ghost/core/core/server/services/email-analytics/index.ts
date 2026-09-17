@@ -36,21 +36,40 @@ let newsletters: EmailAnalyticsServiceWrapper | undefined;
 let automations: EmailAnalyticsServiceWrapper | undefined;
 let gifts: EmailAnalyticsServiceWrapper | undefined;
 
+/**
+ * Returns the retained newsletter analytics executor.
+ *
+ * @throws {AssertionError} When email analytics has not been initialized.
+ */
 export function getNewsletters(): EmailAnalyticsServiceWrapper {
   assert(newsletters, 'Newsletter email analytics should be initialized');
   return newsletters;
 }
 
+/**
+ * Returns the retained automation analytics executor.
+ *
+ * @throws {AssertionError} When email analytics has not been initialized.
+ */
 export function getAutomations(): EmailAnalyticsServiceWrapper {
   assert(automations, 'Automation email analytics should be initialized');
   return automations;
 }
 
+/**
+ * Returns the retained gift analytics executor.
+ *
+ * @throws {AssertionError} When email analytics has not been initialized.
+ */
 export function getGifts(): EmailAnalyticsServiceWrapper {
   assert(gifts, 'Gift email analytics should be initialized');
   return gifts;
 }
 
+/**
+ * Constructs and retains the three analytics pipeline executors. Repeated
+ * calls preserve the original instances and their dependencies.
+ */
 export const init = ({
   automationsApi,
   config,

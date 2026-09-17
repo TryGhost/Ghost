@@ -494,6 +494,7 @@ async function initServices({
 
  * @param {object} options
  * @param {object} options.config
+ * @param {import('./server/services/email-analytics/jobs/email-analytics-job-scheduler').EmailAnalyticsJobScheduler} options.emailAnalyticsJobs
  */
 async function initBackgroundServices({ config, emailAnalyticsJobs }) {
   debug('Begin: initBackgroundServices');

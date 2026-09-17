@@ -15,6 +15,12 @@ class EmailServiceWrapper {
     return jsonModel.url;
   }
 
+  /**
+   * Initializes the email service once. The first call requires the analytics
+   * scheduler used to register collection after sends; later calls are no-ops.
+   *
+   * @throws {AssertionError} When the first call omits the analytics scheduler.
+   */
   init({ ghostServer, emailAnalyticsJobs } = {}) {
     if (this.service) {
       return;
