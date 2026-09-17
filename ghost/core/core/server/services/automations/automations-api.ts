@@ -11,7 +11,11 @@ import {
   fetchAutomationEntryStats,
   fetchAutomationStatusStats,
 } from './tinybird-automation-stats';
-import { fillEntryStats, getEntryStatsWindow } from './automation-entry-stats';
+import {
+  fillEntryStats,
+  getEntryStatsWindow,
+  parseEntryStatsOptions,
+} from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
 const { knex } = require('../../data/db');
@@ -146,16 +150,29 @@ async function requireAutomation(automationId: string) {
   }
 }
 
-export async function readEntryStats(automationId: string) {
+export async function readEntryStats(automationId: string, options: unknown = {}) {
+  const { timezone, window: requestedWindow } = parseEntryStatsOptions(options);
   await requireAutomation(automationId);
   const client = getTinybirdClient();
-  const stats = await fetchAutomationEntryStats(client, automationId);
+  const stats = await fetchAutomationEntryStats(client, automationId, {
+    timezone,
+    ...(requestedWindow
+      ? { dateFrom: requestedWindow.date_from, dateTo: requestedWindow.date_to }
+      : {}),
+  });
   if (stats === null) {
     throw new errors.InternalServerError({
       message: 'Could not load Tinybird automation entry stats.',
     });
   }
-  const window = getEntryStatsWindow(stats.entries);
+  const window = requestedWindow ?? getEntryStatsWindow(stats.entries, new Date(), timezone);
+  if (
+    stats.entries.some((entry) => entry.date < window.date_from || entry.date >= window.date_to)
+  ) {
+    throw new errors.InternalServerError({
+      message: 'Tinybird returned entries outside the requested range.',
+    });
+  }
   return { automation_id: automationId, ...fillEntryStats(stats, window), window };
 }
 

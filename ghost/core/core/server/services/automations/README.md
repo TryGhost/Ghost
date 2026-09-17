@@ -44,17 +44,43 @@ its actions, email contents, or email statistics.
 }
 ```
 
-One entry is one run, including repeat entries and deleted members. The endpoint
-reads the complete history in one Tinybird query and sums those daily counts for
-the total. There is no separately fetched total that can disagree with the series.
-Missing days are filled with zero from the first entry through today. An automation
-without entries returns a zero total and one zero bucket for today. `date_from` is
-inclusive and `date_to` is exclusive.
+One entry is one run, including repeat entries and deleted members. Inclusion uses
+`automation_runs.created_at`, not the member's signup date or the run's update time.
+The endpoint reads daily counts in one Tinybird query and sums them for the total,
+so the total and series always cover the same entries.
 
-Admin displays all-time data using the shared analytics grouping rules: daily for
-spans under 91 days, weekly for 91–270 days, and monthly for longer spans. Buckets
-sum entries; grouping does not limit the history to the web analytics 1,000-day
-fetch window. The API has no date-filter controls or parameters.
+### Date ranges
+
+`?date_from=2024-03-10&date_to=2024-03-10&timezone=America%2FNew_York` selects one
+calendar day in New York. Request dates use `YYYY-MM-DD` and **both are inclusive**,
+matching existing analytics requests. Supply both dates or neither. `timezone` is
+optional and defaults to UTC; recognized timezone names are normalized before being
+sent to Tinybird. Invalid dates, incomplete/reversed ranges, or unknown timezones
+return 422 before an analytics request is made.
+
+Tinybird filters from local midnight on the first day up to, but excluding, local
+midnight after the last day. These are calendar boundaries, so daylight-saving days
+can contain 23 or 25 hours. The response `window.date_from` is inclusive and
+`window.date_to` is exclusive, with the timezone and daily bucket size explicit.
+In the example above the window is `2024-03-10` through `2024-03-11`, and the UTC
+instants are `2024-03-10T05:00:00Z` through `2024-03-11T04:00:00Z`.
+
+Missing days throughout the selected range are filled with zero, including days
+before the first or after the last entry. A successful empty range returns a zero
+total and a zero bucket for every selected day. Fetch failures remain errors; a
+response containing days outside the requested window is rejected.
+
+With neither date supplied, the query reads the complete history. Missing days are
+filled from the first entry through today in the requested timezone. An automation
+without entries returns a zero total and one zero bucket for today. All-time history
+is not capped at the web analytics 1,000-day fetch window.
+
+Daily buckets remain the API contract. Admin's existing chart groups long histories
+by summing daily buckets: daily below 91 days, weekly for 91–270 days, and monthly
+for longer spans. Date-selector wiring belongs to NY-1590; this endpoint change does
+not alter the current all-time UI or status-count semantics. A future range consumer
+must key requests by automation, dates, and timezone and use the returned window
+rather than labelling a stale response with a newly selected range.
 
 ## Status counts
 
