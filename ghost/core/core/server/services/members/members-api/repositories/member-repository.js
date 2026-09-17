@@ -1433,6 +1433,10 @@ module.exports = class MemberRepository {
       return 'inactive';
     };
     let eventData = {};
+    const isIncomplete = ['incomplete', 'incomplete_expired'].includes(
+      stripeSubscriptionData.status,
+    );
+    let subscriptionToRecord = null;
 
     // A cancellation (or reactivation) changes no `members` column, so the member
     // model event would be suppressed by `wasChanged()`. Remember the pre-update
@@ -1482,10 +1486,34 @@ module.exports = class MemberRepository {
         },
       );
 
+      if (
+        stripeCustomerSubscriptionModel.get('status') === 'incomplete' &&
+        this.isActiveSubscriptionStatus(stripeSubscriptionData.status)
+      ) {
+        // Older Ghost versions recorded incomplete subscriptions as conversions. Avoid
+        // recording them twice when a checkout already in progress completes.
+        const createdEvent = await this._MemberPaidSubscriptionEvent.findOne(
+          {
+            member_id: memberModel.id,
+            subscription_id: stripeCustomerSubscriptionModel.id,
+            type: 'created',
+          },
+          options,
+        );
+        if (!createdEvent) {
+          subscriptionToRecord = updatedStripeCustomerSubscriptionModel;
+        }
+      }
+
       // CASE: Record offer redemption when offer_id changes to a new non-null value
       // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
       // The OfferRedemptionEvent handler has a dedup check for repeated webhook deliveries
-      if (previousOfferId !== subscriptionData.offer_id && subscriptionData.offer_id) {
+      if (
+        !isIncomplete &&
+        !subscriptionToRecord &&
+        previousOfferId !== subscriptionData.offer_id &&
+        subscriptionData.offer_id
+      ) {
         const redemptionTimestamp =
           subscriptionData.discount_start ||
           updatedStripeCustomerSubscriptionModel.get('created_at');
@@ -1508,14 +1536,16 @@ module.exports = class MemberRepository {
       }
 
       if (
-        stripeCustomerSubscriptionModel.get('mrr') !==
+        !isIncomplete &&
+        !subscriptionToRecord &&
+        (stripeCustomerSubscriptionModel.get('mrr') !==
           updatedStripeCustomerSubscriptionModel.get('mrr') ||
-        stripeCustomerSubscriptionModel.get('plan_id') !==
-          updatedStripeCustomerSubscriptionModel.get('plan_id') ||
-        stripeCustomerSubscriptionModel.get('status') !==
-          updatedStripeCustomerSubscriptionModel.get('status') ||
-        stripeCustomerSubscriptionModel.get('cancel_at_period_end') !==
-          updatedStripeCustomerSubscriptionModel.get('cancel_at_period_end')
+          stripeCustomerSubscriptionModel.get('plan_id') !==
+            updatedStripeCustomerSubscriptionModel.get('plan_id') ||
+          stripeCustomerSubscriptionModel.get('status') !==
+            updatedStripeCustomerSubscriptionModel.get('status') ||
+          stripeCustomerSubscriptionModel.get('cancel_at_period_end') !==
+            updatedStripeCustomerSubscriptionModel.get('cancel_at_period_end'))
       ) {
         const originalMrrDelta = stripeCustomerSubscriptionModel.get('mrr');
         const updatedMrrDelta = updatedStripeCustomerSubscriptionModel.get('mrr');
@@ -1607,16 +1637,24 @@ module.exports = class MemberRepository {
         subscriptionData,
         options,
       );
+      if (!isIncomplete) {
+        subscriptionToRecord = newStripeCustomerSubscriptionModel;
+      }
+    }
+
+    // A checkout attempt is not a paid conversion. Record the start only once
+    // the subscription leaves incomplete, retaining attribution from Stripe metadata.
+    if (subscriptionToRecord) {
       await this._MemberPaidSubscriptionEvent.add(
         {
           member_id: memberModel.id,
-          subscription_id: newStripeCustomerSubscriptionModel.id,
+          subscription_id: subscriptionToRecord.id,
           type: 'created',
           source: 'stripe',
           from_plan: null,
           to_plan: subscriptionPriceData.id,
           currency: subscriptionPriceData.currency,
-          mrr_delta: newStripeCustomerSubscriptionModel.get('mrr'),
+          mrr_delta: subscriptionToRecord.get('mrr'),
           ...eventData,
         },
         options,
@@ -1653,7 +1691,7 @@ module.exports = class MemberRepository {
         source,
         tierId: ghostProduct?.get('id'),
         memberId: memberModel.id,
-        subscriptionId: newStripeCustomerSubscriptionModel.get('id'),
+        subscriptionId: subscriptionToRecord.get('id'),
         offerId: offerId,
         attribution: attribution,
         batchId: options.batch_id,
@@ -1665,17 +1703,17 @@ module.exports = class MemberRepository {
         const offerRedemptionEvent = OfferRedemptionEvent.create({
           memberId: memberModel.id,
           offerId: offerId,
-          subscriptionId: newStripeCustomerSubscriptionModel.get('id'),
+          subscriptionId: subscriptionToRecord.get('id'),
         });
         this.dispatchEvent(offerRedemptionEvent, options);
       }
 
-      if (getStatus(newStripeCustomerSubscriptionModel) === 'active') {
+      if (getStatus(subscriptionToRecord) === 'active') {
         const subscriptionActivatedEvent = SubscriptionActivatedEvent.create({
           source,
           tierId: ghostProduct?.get('id'),
           memberId: memberModel.id,
-          subscriptionId: newStripeCustomerSubscriptionModel.get('id'),
+          subscriptionId: subscriptionToRecord.get('id'),
           offerId: offerId,
           attribution: attribution,
           batchId: options.batch_id,
