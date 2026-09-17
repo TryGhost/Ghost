@@ -4,11 +4,13 @@ const sitemapXml = require('./sitemap-xml');
 
 class BaseSiteMapGenerator {
   constructor() {
-    // id -> {loc, ts, imageLoc}: one flat record per resource, rather than
-    // the nested element tree the xml package used to take plus a parallel
-    // map of Moments. Both were held for the lifetime of the index, and at
-    // 10k posts they measured ~1.1 kB per resource against ~300 B for this.
-    this.nodeLookup = new Map();
+    // {loc, ts, imageLoc}: one flat record per resource, rather than the
+    // nested element tree the xml package used to take plus a parallel map
+    // of Moments. Both were held for the lifetime of the index, and at 10k
+    // posts they measured ~1.1 kB per resource against ~300 B for this.
+    // Not keyed by id: every build fills a fresh generator, so nothing
+    // overwrites a record.
+    this.nodeLookup = [];
     this.siteMapContent = new Map();
     this.lastModified = 0;
     this.maxPerPage = 50000;
@@ -20,7 +22,7 @@ class BaseSiteMapGenerator {
    * they are stored.
    */
   get size() {
-    return this.nodeLookup.size;
+    return this.nodeLookup.length;
   }
 
   hasCanonicalUrl(datum, url) {
@@ -49,7 +51,7 @@ class BaseSiteMapGenerator {
   generateXmlFromNodes(page) {
     // Sort newest to oldest. The records are sorted in place of a wrapper
     // object per resource, so a render allocates one array of references.
-    const records = [...this.nodeLookup.values()];
+    const records = this.nodeLookup.slice();
     records.sort((a, b) => b.ts - a.ts);
 
     // Get the page of nodes that was requested
@@ -159,11 +161,11 @@ class BaseSiteMapGenerator {
   }
 
   updateLookups(datum, record) {
-    this.nodeLookup.set(datum.id, record);
+    this.nodeLookup.push(record);
   }
 
   reset() {
-    this.nodeLookup.clear();
+    this.nodeLookup = [];
     this.siteMapContent.clear();
     this.lastModified = 0;
   }

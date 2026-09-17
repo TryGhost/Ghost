@@ -208,7 +208,9 @@ class SiteMapManager {
       for (let i = 0; i < rows.length; i++) {
         this._applyResource(next, type, rows[i]);
         // Release each row once applied, so rows and records are not both
-        // fully resident.
+        // fully resident. The rows must be owned by this build:
+        // getRoutableResources queries afresh on every call, and a shared or
+        // cached array would reach the next build emptied.
         rows[i] = undefined;
 
         if (performance.now() - sliceStart >= this._buildSliceMs) {
