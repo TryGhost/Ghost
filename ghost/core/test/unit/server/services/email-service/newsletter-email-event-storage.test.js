@@ -44,6 +44,7 @@ describe('Email Event Storage', function () {
   for (const batched of [false, true]) {
     it(`counts only newly stored recipient events with batching ${batched}`, async function () {
       const db = createDb();
+      db.update.resolves(1);
       const raw = sinon.stub(db.knex, 'raw');
       const storage = createEventStorage({
         db,
@@ -67,6 +68,21 @@ describe('Email Event Storage', function () {
           storedPermanentFailed: batched ? affectedRows : 0,
         });
       }
+    });
+  }
+
+  for (const handler of ['handleDelivered', 'handleOpened', 'handlePermanentFailed']) {
+    it(`validates sequential counts from ${handler}`, async function () {
+      const db = createDb();
+      db.update.resolves(1);
+      const storage = createEventStorage({ db, config: { get: () => false } });
+      sinon.stub(storage, 'saveFailure').resolves();
+      const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
+
+      db.update.resolves('1');
+      assert.equal(await storage[handler](event), 1);
+      db.update.resolves(-1);
+      await assert.rejects(storage[handler](event), { name: 'ZodError' });
     });
   }
 
@@ -153,6 +169,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const eventHandler = createEventStorage({ db });
     await eventHandler.handleDelivered(event);
     sinon.assert.calledOnce(db.update);
@@ -162,6 +179,7 @@ describe('Email Event Storage', function () {
   it('Records the event stored metric when handling email delivered events', async function () {
     const event = EmailDeliveredEvent.create({});
     const db = createDb();
+    db.update.resolves(1);
     const prometheusClient = createPrometheusClient();
     const eventHandler = createEventStorage({ db, prometheusClient });
     sinon.stub(eventHandler, 'recordEventStored').resolves();
@@ -179,6 +197,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const eventHandler = createEventStorage({ db });
     await eventHandler.handleOpened(event);
     sinon.assert.calledOnce(db.update);
@@ -188,6 +207,7 @@ describe('Email Event Storage', function () {
   it('Records the event stored metric when handling email opened events', async function () {
     const event = EmailOpenedEvent.create({});
     const db = createDb();
+    db.update.resolves(1);
     const prometheusClient = createPrometheusClient();
     const eventHandler = createEventStorage({ db, prometheusClient });
     sinon.stub(eventHandler, 'recordEventStored').resolves();
@@ -210,6 +230,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const existing = {
       id: 1,
       get: (key) => {
@@ -256,6 +277,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const existing = {
       id: 1,
       get: (key) => {
@@ -301,6 +323,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const existing = {
       id: 1,
       get: (key) => {
@@ -347,6 +370,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const EmailRecipientFailure = {
       transaction: async function (callback) {
         return await callback(1);
@@ -382,6 +406,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const EmailRecipientFailure = {
       transaction: async function (callback) {
         return await callback(1);
@@ -416,6 +441,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const EmailRecipientFailure = {
       transaction: async function (callback) {
         return await callback(1);
@@ -447,6 +473,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const eventHandler = createEventStorage({
       db,
       models: {},
@@ -470,6 +497,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const existing = {
       id: 1,
       get: (key) => {
