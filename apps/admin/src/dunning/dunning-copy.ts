@@ -1,4 +1,5 @@
 import type { DunningState } from './use-dunning-state';
+import { DATA_EXPORT_ROUTE } from './stand-down-routes';
 
 /**
  * Destination of the "Pay now" CTA: the billing app's payment page, on its
@@ -8,7 +9,7 @@ import type { DunningState } from './use-dunning-state';
 export const PAY_URL = '#/pro/update-card/return';
 
 /** Destination of the "Download my data" CTA: the export tools in settings. */
-export const EXPORT_URL = '#/settings/migration';
+export const EXPORT_URL = `#${DATA_EXPORT_ROUTE}`;
 
 export function formatDeadline(date: Date): string {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });

@@ -196,6 +196,16 @@ describe('dunning UI', () => {
       });
     });
 
+    test('labels the owner card by email when the owner has no name', () => {
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
+      mockUseCurrentUser.mockReturnValue({ data: editorUser });
+      mockUseBrowseUsers.mockReturnValue({ data: { users: [{ ...ownerUser, name: '' }] } });
+
+      render(<DunningOverlay />);
+
+      expect(screen.getByText('owner@example.com (Owner)')).toBeInTheDocument();
+    });
+
     test('degrades to copy only when staff cannot resolve the owner', () => {
       mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
       mockUseCurrentUser.mockReturnValue({ data: editorUser });
@@ -247,6 +257,38 @@ describe('dunning UI', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
       expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
       expect(screen.getByTestId('page-control')).toHaveFocus();
+    });
+
+    test('leaves focus alone when the previously focused control is gone', () => {
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
+      const view = render(
+        <>
+          <button data-testid="page-control" type="button">
+            page control
+          </button>
+          <DunningOverlay />
+        </>,
+      );
+      screen.getByTestId('page-control').focus();
+
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
+      view.rerender(
+        <>
+          <button data-testid="page-control" type="button">
+            page control
+          </button>
+          <DunningOverlay />
+        </>,
+      );
+      expect(screen.getByTestId('dunning-overlay')).toHaveFocus();
+
+      // The control disappears while the takeover is up (e.g. its screen
+      // re-rendered); dismissal must not try to focus a detached node
+      view.rerender(<DunningOverlay />);
+      fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+      expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
+      expect(document.body).toHaveFocus();
     });
 
     test('dismissing drops back to the urgent warning banner', () => {

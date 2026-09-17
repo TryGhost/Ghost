@@ -13,9 +13,15 @@ export function isBillingRoute(pathname: string): boolean {
 }
 
 /**
- * The settings section holding the content-export tools. The locked overlay
- * stands down here too, so its "Download my data" CTA leads somewhere usable.
+ * The settings section holding the content-export tools — also the target of
+ * the takeover's "Download my data" CTA, so the two stay in step.
+ */
+export const DATA_EXPORT_ROUTE = '/settings/migration';
+
+/**
+ * The locked overlay stands down on the export tools too, so its
+ * "Download my data" CTA leads somewhere usable.
  */
 export function isDataExportRoute(pathname: string): boolean {
-  return pathname === '/settings/migration' || pathname.startsWith('/settings/migration/');
+  return pathname === DATA_EXPORT_ROUTE || pathname.startsWith(`${DATA_EXPORT_ROUTE}/`);
 }

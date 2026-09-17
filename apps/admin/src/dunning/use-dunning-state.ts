@@ -32,6 +32,8 @@ const LOCK_AT_FRACTION = 0.75;
 /** The warning banner escalates its styling past this fraction of the window. */
 const URGENT_AT_FRACTION = 0.25;
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 const LOCK_DISMISSED_KEY = 'ghost-dunning-lock-dismissed-for';
 
 const dunningStoreListeners = new Set<() => void>();
@@ -187,7 +189,7 @@ export function useDunningState(): DunningState | null {
 
   const windowMs = suspendsAt.getTime() - paymentFailedAt.getTime();
   const elapsedFraction = (now - paymentFailedAt.getTime()) / windowMs;
-  const daysLeft = Math.max(0, Math.ceil((suspendsAt.getTime() - now) / (24 * 60 * 60 * 1000)));
+  const daysLeft = Math.max(0, Math.ceil((suspendsAt.getTime() - now) / DAY_MS));
 
   return {
     phase: elapsedFraction >= LOCK_AT_FRACTION ? 'locked' : 'warning',
