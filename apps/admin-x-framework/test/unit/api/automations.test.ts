@@ -23,6 +23,7 @@ const baseDetail = (
   id: 'a1',
   slug: 'welcome',
   name: 'Welcome',
+  description: 'Welcome new members.',
   status: 'active',
   created_at: '2026-05-05T00:00:00.000Z',
   updated_at: '2026-05-05T00:00:00.000Z',

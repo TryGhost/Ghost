@@ -20,6 +20,7 @@ const automations = [
   {
     id: 'automation-id-2',
     name: 'Paid member welcome flow',
+    description: 'Welcome new paid members after they start their subscription.',
     slug: 'member-welcome-email-paid',
     status: 'inactive' as const,
     stats: {
@@ -31,6 +32,7 @@ const automations = [
   {
     id: 'automation-id-3',
     name: 'Another automation',
+    description: '',
     status: 'inactive' as const,
     stats: {
       last_run_created_at: null,
@@ -68,15 +70,12 @@ describe('AutomationsList', () => {
     vi.useRealTimers();
   });
 
-  it('renders fetched automations with API and fallback descriptions and status labels', () => {
+  it('renders server descriptions and status labels', () => {
     renderWithRouter(<AutomationsList automations={automations} />);
 
     expect(screen.getAllByTestId('automation-list-row')).toHaveLength(3);
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
     expect(screen.getByText('Greet new free members.')).toBeInTheDocument();
-    expect(
-      screen.queryByText('Welcome new free members after they sign up.'),
-    ).not.toBeInTheDocument();
     expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
     expect(
       screen.getByText('Welcome new paid members after they start their subscription.'),
