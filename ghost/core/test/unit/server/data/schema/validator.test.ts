@@ -11,15 +11,12 @@ describe('Validate Schema', function () {
   describe('models.add', function () {
     it('blank model', function () {
       // NOTE: Fields with `defaultTo` are getting ignored. This is handled on the DB level.
-      return validateSchema('posts', models.Post.forge(), { method: 'insert' })
-        .then(function () {
-          throw new Error('Expected ValidationError.');
-        })
-        .catch(function (err: unknown) {
+      assert.throws(
+        () => validateSchema('posts', models.Post.forge(), { method: 'insert' }),
+        (err: unknown) => {
           if (!_.isArray(err)) {
-            throw err;
+            return false;
           }
-
           assert.equal(err.length, 5);
 
           const errorMessages = _.map(err, function (object) {
@@ -30,7 +27,9 @@ describe('Validate Schema', function () {
           ['id', 'uuid', 'slug', 'title', 'created_at'].forEach(function (attr) {
             assert.match(errorMessages, RegExp('posts.' + attr));
           });
-        });
+          return true;
+        },
+      );
     });
 
     it('blank id', function () {
@@ -41,29 +40,28 @@ describe('Validate Schema', function () {
         }),
       );
 
-      return validateSchema('posts', postModel, { method: 'insert' })
-        .then(function () {
-          throw new Error('Expected ValidationError.');
-        })
-        .catch(function (err: unknown) {
+      assert.throws(
+        () => validateSchema('posts', postModel, { method: 'insert' }),
+        (err: unknown) => {
           if (!_.isArray(err)) {
-            throw err;
+            return false;
           }
-
           assert.equal(err.length, 1);
           assert.match(err[0].message, /posts\.id/);
-        });
+          return true;
+        },
+      );
     });
 
     it('should pass', function () {
-      return validateSchema(
+      validateSchema(
         'posts',
         models.Post.forge(testUtils.DataGenerator.forKnex.createPost({ slug: 'title' })),
         { method: 'insert' },
       );
     });
 
-    it('transforms 0 and 1 (boolean)', async function () {
+    it('transforms 0 and 1 (boolean)', function () {
       const user = models.User.forge(
         testUtils.DataGenerator.forKnex.createUser({
           email: 'test@example.com',
@@ -72,7 +70,7 @@ describe('Validate Schema', function () {
       );
       assert.equal(user.get('comment_notifications'), 0);
 
-      await validateSchema('users', user, { method: 'insert' });
+      validateSchema('users', user, { method: 'insert' });
       assert.equal(user.get('comment_notifications'), false);
     });
 
@@ -82,9 +80,8 @@ describe('Validate Schema', function () {
       );
       assert.equal(post.get('featured'), true);
 
-      return validateSchema('posts', post, { method: 'insert' }).then(function () {
-        assert.equal(post.get('featured'), true);
-      });
+      validateSchema('posts', post, { method: 'insert' });
+      assert.equal(post.get('featured'), true);
     });
   });
 
@@ -98,19 +95,18 @@ describe('Validate Schema', function () {
       );
 
       // NOTE: Fields with `defaultTo` are getting ignored. This is handled on the DB level.
-      return validateSchema('webhooks', webhook, { method: 'insert' })
-        .then(function () {
-          throw new Error('Expected ValidationError.');
-        })
-        .catch(function (err: unknown) {
+      assert.throws(
+        () => validateSchema('webhooks', webhook, { method: 'insert' }),
+        (err: unknown) => {
           if (!_.isArray(err)) {
-            throw err;
+            return false;
           }
-
           assert.equal(err.length, 1);
           assert.equal(err[0].errorType, 'ValidationError');
           assert.match(err[0].message, /isLowercase/);
-        });
+          return true;
+        },
+      );
     });
   });
 
@@ -120,18 +116,17 @@ describe('Validate Schema', function () {
 
       postModel.changed = { uuid: postModel.get('uuid') };
 
-      return validateSchema('posts', postModel)
-        .then(function () {
-          throw new Error('Expected ValidationError.');
-        })
-        .catch(function (err: unknown) {
+      assert.throws(
+        () => validateSchema('posts', postModel),
+        (err: unknown) => {
           if (!_.isArray(err)) {
-            throw err;
+            return false;
           }
-
           assert.equal(err.length, 1);
           assert.match(err[0].message, /isUUID/);
-        });
+          return true;
+        },
+      );
     });
 
     it('date is null', function () {
@@ -139,18 +134,17 @@ describe('Validate Schema', function () {
 
       postModel.changed = { created_at: postModel.get('updated_at') };
 
-      return validateSchema('posts', postModel)
-        .then(function () {
-          throw new Error('Expected ValidationError.');
-        })
-        .catch(function (err: unknown) {
+      assert.throws(
+        () => validateSchema('posts', postModel),
+        (err: unknown) => {
           if (!_.isArray(err)) {
-            throw err;
+            return false;
           }
-
           assert.equal(err.length, 1);
           assert.match(err[0].message, /posts\.created_at/);
-        });
+          return true;
+        },
+      );
     });
   });
 });
