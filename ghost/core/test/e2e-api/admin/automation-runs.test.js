@@ -68,6 +68,18 @@ describe('Automation runs API', function () {
     assertNoRunLookup();
   });
 
+  it.each([
+    'unknown',
+    'unclassified',
+    '',
+    'Completed',
+    'completed,in_progress',
+    'completed&status=exited_early',
+  ])('rejects an unsupported status (%s)', async function (status) {
+    await readRuns(422, `?status=${status}`);
+    assertNoRunLookup();
+  });
+
   it('requires permission to read automations', async function () {
     await agent.loginAsAuthor();
     try {
@@ -97,10 +109,15 @@ describe('Automation runs API', function () {
       TinybirdServiceWrapper.instance = previousTinybirdInstance;
     });
 
-    function mockRuns(status, response) {
+    function mockRuns(status, response, runStatus) {
       return nock('https://api.tinybird.co')
         .get('/v0/pipes/api_automation_runs.json')
-        .query({ ghost_client: 'server', site_uuid: siteUuid, automation_id: automationId })
+        .query({
+          ghost_client: 'server',
+          site_uuid: siteUuid,
+          automation_id: automationId,
+          ...(runStatus ? { run_status: runStatus } : {}),
+        })
         .reply(status, response);
     }
 
@@ -184,6 +201,50 @@ describe('Automation runs API', function () {
       const request = mockRuns(200, { data: [] });
       assert.deepEqual(await readRuns(), []);
       assert.ok(request.isDone());
+      assertNoRunLookup();
+    });
+
+    it.each(['in_progress', 'completed', 'exited_early'])(
+      'passes the %s filter to Tinybird and preserves run identity and member details',
+      async function (status) {
+        const member = await addMember('Repeat member');
+        const rows = Array.from({ length: 3 }, () => ({
+          id: runId(),
+          created_at: timestamp,
+          status,
+          failed: status === 'exited_early',
+        })).sort((a, b) => b.id.localeCompare(a.id));
+        await addRun(rows[0].id, member);
+        await addRun(rows[1].id, member);
+        await addRun(rows[2].id, null);
+        const request = mockRuns(200, { data: rows }, status);
+        assert.deepEqual(
+          await readRuns(200, `?status=${status}`),
+          rows.map((row, i) => ({ ...row, member: i < 2 ? member : null })),
+        );
+        assert.ok(request.isDone());
+      },
+    );
+
+    it('rejects rows that do not match the requested status', async function () {
+      sinon.stub(require('@tryghost/logging'), 'error');
+      const request = mockRuns(
+        200,
+        { data: [{ id: runId(), created_at: timestamp, status: 'in_progress', failed: false }] },
+        'completed',
+      );
+      await readRuns(500, '?status=completed');
+      assert.ok(request.isDone());
+      assertNoRunLookup();
+    });
+
+    it('distinguishes no matching runs from a failed filtered request', async function () {
+      const empty = mockRuns(200, { data: [] }, 'completed');
+      assert.deepEqual(await readRuns(200, '?status=completed'), []);
+      assert.ok(empty.isDone());
+      const failed = mockRuns(503, 'Unavailable', 'completed');
+      await readRuns(500, '?status=completed');
+      assert.ok(failed.isDone());
       assertNoRunLookup();
     });
 
