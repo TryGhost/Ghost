@@ -9,7 +9,7 @@ import {
   buildCheckoutSessionCompletedEvent,
   buildCustomer,
   buildDiscount,
-  buildDonationCheckoutCompletedEvent,
+  buildDonationCheckoutEvent,
   buildGiftCheckoutCompletedEvent,
   buildInvoicePaymentSucceededEvent,
   buildPaymentMethod,
@@ -20,6 +20,7 @@ import {
   buildSubscriptionUpdatedEvent,
 } from './builders';
 import type {
+  DonationCheckoutEventType,
   RecordedStripeCheckoutSession,
   StripeCoupon,
   StripeCustomer,
@@ -103,6 +104,21 @@ export class StripeTestService {
       name?: string;
     } = {},
   ): Promise<void> {
+    await this.sendLatestDonationCheckoutEvent({
+      ...opts,
+      eventType: 'checkout.session.completed',
+      paymentStatus: 'paid',
+    });
+  }
+
+  async sendLatestDonationCheckoutEvent(opts: {
+    eventType: DonationCheckoutEventType;
+    paymentStatus: 'paid' | 'unpaid';
+    amount?: number;
+    donationMessage?: string;
+    email?: string;
+    name?: string;
+  }): Promise<void> {
     const session = this.getCheckoutSessions()
       .filter((item) => {
         return item.response.mode === 'payment' && item.response.metadata.ghost_donation === 'true';
@@ -113,7 +129,7 @@ export class StripeTestService {
       throw new Error('No recorded Stripe checkout session found');
     }
 
-    await this.completeDonationCheckout({
+    await this.sendDonationCheckoutEvent({
       sessionId: session.response.id,
       ...opts,
     });
@@ -357,7 +373,9 @@ export class StripeTestService {
     return { customer, subscription, price, paymentMethod };
   }
 
-  private async completeDonationCheckout(opts: {
+  private async sendDonationCheckoutEvent(opts: {
+    eventType: DonationCheckoutEventType;
+    paymentStatus: 'paid' | 'unpaid';
     amount?: number;
     donationMessage?: string;
     email?: string;
@@ -402,7 +420,9 @@ export class StripeTestService {
       );
     }
 
-    const donationEvent = buildDonationCheckoutCompletedEvent({
+    const donationEvent = buildDonationCheckoutEvent({
+      eventType: opts.eventType,
+      paymentStatus: opts.paymentStatus,
       amount: resolvedAmount,
       currency: price.currency,
       customerId: session.response.customer,
@@ -410,13 +430,14 @@ export class StripeTestService {
       donationMessage: opts.donationMessage ?? null,
       metadata: session.response.metadata,
       name,
+      sessionId: opts.sessionId,
     });
     const donationResponse = await this.webhookClient.sendWebhook(donationEvent);
-    debug('checkout.session.completed donation webhook response: %d', donationResponse.status);
+    debug('%s donation webhook response: %d', opts.eventType, donationResponse.status);
     if (!donationResponse.ok) {
       const body = await donationResponse.text();
       throw new Error(
-        `checkout.session.completed donation webhook failed (${donationResponse.status}): ${body}`,
+        `${opts.eventType} donation webhook failed (${donationResponse.status}): ${body}`,
       );
     }
   }

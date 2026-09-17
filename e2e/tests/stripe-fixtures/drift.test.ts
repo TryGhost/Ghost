@@ -4,6 +4,7 @@ import {
   buildCheckoutSession,
   buildCoupon,
   buildCustomer,
+  buildDonationCheckoutEvent,
   buildPaymentMethod,
   buildPrice,
   buildProduct,
@@ -208,4 +209,71 @@ test.describe('Stripe fixtures - completed checkout carries what we read', () =>
 
     expect(field?.text?.value).toEqual(expect.any(String));
   });
+});
+
+test.describe('Stripe fixtures - donation webhook payloads', () => {
+  const donation = fixture('checkout_session.donation');
+  const completed = fixture('checkout_session.completed');
+  const manifest = fixture('manifest');
+
+  test('capture version matches the API version Ghost uses for clients and webhooks', () => {
+    const source = fs.readFileSync(
+      path.resolve(
+        fixtureDir,
+        '../../../../../ghost/core/core/server/services/stripe/stripe-api.js',
+      ),
+      'utf8',
+    );
+    const pinnedVersion = source.match(/const STRIPE_API_VERSION = '([^']+)'/)?.[1];
+    expect(pinnedVersion).toBe('2020-08-27');
+    expect(manifest.api_version).toBe(pinnedVersion);
+  });
+
+  for (const eventType of [
+    'checkout.session.completed',
+    'checkout.session.async_payment_succeeded',
+    'checkout.session.async_payment_failed',
+    'checkout.session.expired',
+  ] as const) {
+    const expired = eventType === 'checkout.session.expired';
+    const paymentStatus =
+      eventType === 'checkout.session.async_payment_succeeded' ? 'paid' : 'unpaid';
+    const expectedDetails = expired
+      ? null
+      : {
+          ...(completed.customer_details as object),
+          address: null,
+          tax_ids: [],
+          email: 'donor@example.com',
+          name: 'Donor',
+        };
+
+    test(`${eventType} uses the pinned response shape`, () => {
+      const event = buildDonationCheckoutEvent({
+        eventType,
+        paymentStatus,
+        amount: 1250,
+        currency: 'usd',
+        customerEmail: 'donor@example.com',
+        donationMessage: 'Thank you',
+        name: 'Donor',
+        sessionId: 'cs_donation',
+      });
+      expect(event.api_version).toBe(manifest.api_version);
+      const session = event.data.object;
+      expect(Object.keys(session).filter((key) => !(key in donation))).toEqual([]);
+      expect(session.mode).toBe(donation.mode);
+      expect(session.status).toBe(
+        eventType === 'checkout.session.expired' ? 'expired' : 'complete',
+      );
+      expect(session.payment_status).toBe(paymentStatus);
+      expect(session.customer_details).toEqual(expectedDetails);
+      const fields = session.custom_fields as Array<{ text: object }>;
+      const capturedFields = donation.custom_fields as Array<{ text: object }>;
+      expect(Object.keys(fields[0]).sort()).toEqual(Object.keys(capturedFields[0]).sort());
+      expect(Object.keys(fields[0].text).sort()).toEqual(
+        Object.keys(capturedFields[0].text).sort(),
+      );
+    });
+  }
 });

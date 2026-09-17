@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import fs from 'node:fs';
 import type Stripe from 'stripe';
 
 // Keep fake Stripe HTTP responses close to Stripe's published shapes so Ghost interacts
@@ -148,6 +149,7 @@ export type StripeCustomer = Omit<
 };
 
 export type StripeEvent = Pick<Stripe.Event, 'id' | 'object' | 'type'> & {
+  api_version?: Stripe.Event['api_version'];
   data: {
     object: Record<string, unknown>;
     previous_attributes?: Record<string, unknown>;
@@ -406,7 +408,15 @@ export function buildCheckoutSessionCompletedEvent(opts: {
   };
 }
 
-export function buildDonationCheckoutCompletedEvent(opts: {
+export type DonationCheckoutEventType =
+  | 'checkout.session.completed'
+  | 'checkout.session.async_payment_succeeded'
+  | 'checkout.session.async_payment_failed'
+  | 'checkout.session.expired';
+
+export function buildDonationCheckoutEvent(opts: {
+  eventType?: DonationCheckoutEventType;
+  paymentStatus?: 'paid' | 'unpaid';
   amount: number;
   currency: string;
   customerEmail: string;
@@ -414,22 +424,45 @@ export function buildDonationCheckoutCompletedEvent(opts: {
   donationMessage?: string | null;
   metadata?: Record<string, string>;
   name: string;
+  sessionId: string;
 }): StripeEvent {
+  // These captures use Ghost's pinned API version. Lifecycle transitions below are
+  // simulated; the captures anchor the response fields and nested shapes.
+  const captured = JSON.parse(
+    fs.readFileSync(new URL('./fixtures/checkout_session.donation.json', import.meta.url), 'utf8'),
+  );
+  const completed = JSON.parse(
+    fs.readFileSync(new URL('./fixtures/checkout_session.completed.json', import.meta.url), 'utf8'),
+  );
+  const manifest = JSON.parse(
+    fs.readFileSync(new URL('./fixtures/manifest.json', import.meta.url), 'utf8'),
+  );
+  const expired = opts.eventType === 'checkout.session.expired';
+
   return {
     id: generateId('evt'),
     object: 'event',
-    type: 'checkout.session.completed',
+    api_version: manifest.api_version,
+    type: opts.eventType ?? 'checkout.session.completed',
     data: {
       object: {
+        id: opts.sessionId,
         object: 'checkout.session',
         mode: 'payment',
+        status: expired ? 'expired' : 'complete',
+        payment_status: opts.paymentStatus ?? 'paid',
         amount_total: opts.amount,
         currency: opts.currency,
         customer: opts.customerId ?? null,
-        customer_details: {
-          email: opts.customerEmail,
-          name: opts.name,
-        },
+        customer_details: expired
+          ? null
+          : {
+              ...completed.customer_details,
+              address: null,
+              tax_ids: [],
+              email: opts.customerEmail,
+              name: opts.name,
+            },
         metadata: {
           ...(opts.metadata ?? {}),
           ghost_donation: 'true',
@@ -437,9 +470,10 @@ export function buildDonationCheckoutCompletedEvent(opts: {
         custom_fields: opts.donationMessage
           ? [
               {
-                key: 'donation_message',
+                ...captured.custom_fields[0],
                 text: {
-                  value: opts.donationMessage,
+                  ...captured.custom_fields[0].text,
+                  value: expired ? null : opts.donationMessage,
                 },
               },
             ]
