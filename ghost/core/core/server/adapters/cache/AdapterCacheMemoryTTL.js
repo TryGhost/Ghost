@@ -1,5 +1,6 @@
 const TTLCache = require('@isaacs/ttlcache');
 const { CacheBase } = require('@tryghost/adapter-base-cache');
+const { createCopier, UNCOPYABLE } = require('./copy-on-access');
 
 /**
  * Cache adapter compatible wrapper around TTLCache
@@ -11,20 +12,29 @@ const { CacheBase } = require('@tryghost/adapter-base-cache');
 class AdapterCacheMemoryTTL extends CacheBase {
   #cache;
 
+  /** @type {(value: unknown) => unknown} */
+  #copy;
+
   /**
    *
    * @param {Object} [deps]
    * @param {number} [deps.max] - The max number of items to keep in the cache.
    * @param {number} [deps.ttl] - The max time in ms to store items
+   * @param {boolean} [deps.clone] - Hand out a private copy on every read and
+   *   write, so a caller that mutates what it was given cannot corrupt the
+   *   cache. Off by default; see copy-on-access.js.
    */
-  constructor({ max = Infinity, ttl = Infinity } = {}) {
+  constructor({ max = Infinity, ttl = Infinity, clone = false } = {}) {
     super();
 
     this.#cache = new TTLCache({ max, ttl });
+    this.#copy = createCopier(clone);
   }
 
   get(key) {
-    return this.#cache.get(key);
+    const value = this.#copy(this.#cache.get(key));
+
+    return value === UNCOPYABLE ? undefined : value;
   }
 
   /**
@@ -35,7 +45,15 @@ class AdapterCacheMemoryTTL extends CacheBase {
    * @param {number} [options.ttl]
    */
   set(key, value, { ttl } = {}) {
-    this.#cache.set(key, value, { ttl });
+    const stored = this.#copy(value);
+
+    // Uncopyable: leave the key alone rather than storing something a later
+    // read cannot safely hand out.
+    if (stored === UNCOPYABLE) {
+      return;
+    }
+
+    this.#cache.set(key, stored, { ttl });
   }
 
   reset() {

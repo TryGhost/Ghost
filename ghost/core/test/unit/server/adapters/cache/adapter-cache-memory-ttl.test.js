@@ -60,3 +60,52 @@ describe('Cache Adapter In Memory with Time To Live', function () {
     });
   });
 });
+
+describe('Cache Adapter In Memory with Time To Live - clone', function () {
+  it('shares the stored object by default', function () {
+    const cache = new MemoryTTLCache();
+    cache.set('post', { meta: { show: true } });
+
+    delete cache.get('post').meta.show;
+
+    assert.equal(cache.get('post').meta.show, undefined);
+  });
+
+  it('hands out a private copy on every read when clone is on', function () {
+    const cache = new MemoryTTLCache({ clone: true });
+    cache.set('post', { meta: { show: true } });
+
+    delete cache.get('post').meta.show;
+
+    assert.equal(cache.get('post').meta.show, true);
+  });
+
+  it('copies on write too', function () {
+    const cache = new MemoryTTLCache({ clone: true });
+    const response = { meta: { show: true } };
+
+    cache.set('post', response);
+    delete response.meta.show;
+
+    assert.equal(cache.get('post').meta.show, true);
+  });
+
+  it('declines to cache a value it cannot copy', function () {
+    const cache = new MemoryTTLCache({ clone: true });
+
+    assert.doesNotThrow(() => cache.set('fn', { render: () => 'nope' }));
+    assert.equal(cache.get('fn'), undefined);
+    assert.deepEqual(cache.keys(), []);
+  });
+
+  it('still honours max and ttl', async function () {
+    const cache = new MemoryTTLCache({ clone: true, max: 1, ttl: 20 });
+
+    cache.set('a', { v: 1 });
+    cache.set('b', { v: 2 });
+    assert.deepEqual(cache.keys(), ['b']);
+
+    await sleep(40);
+    assert.equal(cache.get('b'), undefined);
+  });
+});
