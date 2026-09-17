@@ -1,12 +1,14 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-
-const DatabaseInfo = require('@tryghost/database-info');
-const db = require('../../../../../core/server/data/db');
-
-const utils = require('../../../../../core/server/data/migrations/utils');
+import { utils as errorUtils } from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import ObjectId from 'bson-objectid';
+import Knex, { type Knex as KnexInstance } from 'knex';
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error database-info has no TypeScript declarations
+import DatabaseInfo from '@tryghost/database-info';
+import * as db from '../../../../../core/server/data/db';
+// @ts-expect-error migration utils has no TypeScript declarations
+import * as utils from '../../../../../core/server/data/migrations/utils';
 
 // Nullable migrations run in a transaction on MySQL but not on SQLite (SQLite
 // cannot toggle foreign_keys inside a transaction). Both expectations are derived
@@ -14,14 +16,22 @@ const utils = require('../../../../../core/server/data/migrations/utils');
 const expectsTransaction = !DatabaseInfo.isSQLite(db.knex);
 
 class Deferred {
+  promise: Promise<void>;
+  resolve: () => Promise<void> = async () => {
+    throw new Error('Deferred not initialized');
+  };
+  reject: (reason: Error) => Promise<void> = async () => {
+    throw new Error('Deferred not initialized');
+  };
+
   constructor() {
-    this.promise = new Promise((resolve, reject) => {
-      this.resolve = async (val) => {
-        resolve(val);
+    this.promise = new Promise<void>((resolve, reject) => {
+      this.resolve = async () => {
+        resolve();
         return this.promise;
       };
-      this.reject = async (val) => {
-        reject(val);
+      this.reject = async (reason: Error) => {
+        reject(reason);
         return this.promise;
       };
     });
@@ -212,9 +222,6 @@ describe('migrations/utils', function () {
   });
 });
 
-const Knex = require('knex');
-const ObjectId = require('bson-objectid').default;
-
 async function setupPermissionsDb() {
   const knex = Knex({
     client: 'better-sqlite3',
@@ -317,7 +324,19 @@ async function setupSettingsDb() {
   return knex;
 }
 
-async function runUpMigration(knex, migration) {
+type Migration = {
+  config?: { transaction?: boolean };
+  up: (config: {
+    connection?: KnexInstance;
+    transacting?: KnexInstance.Transaction;
+  }) => Promise<void>;
+  down: (config: {
+    connection?: KnexInstance;
+    transacting?: KnexInstance.Transaction;
+  }) => Promise<void>;
+};
+
+async function runUpMigration(knex: KnexInstance, migration: Migration) {
   // Non-transactional migrations receive a plain connection rather than a
   // transaction. Wrapping them in knex.transaction() here would also deadlock,
   // since the better-sqlite3 pool only has a single connection.
@@ -406,9 +425,11 @@ describe('migrations/utils/permissions', function () {
                     r.name = 'Role Name';
             `);
 
-      const attachedPermissionAfterUp = allPermissionsForRoleAfterUp.find((row) => {
-        return row.name === 'Permission Name';
-      });
+      const attachedPermissionAfterUp = allPermissionsForRoleAfterUp.find(
+        (row: { name: string }) => {
+          return row.name === 'Permission Name';
+        },
+      );
 
       assert(attachedPermissionAfterUp, 'The permission was attached to the role.');
 
@@ -431,9 +452,11 @@ describe('migrations/utils/permissions', function () {
                     r.name = 'Role Name';
             `);
 
-      const attachedPermissionAfterDown = allPermissionsForRoleAfterDown.find((row) => {
-        return row.name === 'Permission Name';
-      });
+      const attachedPermissionAfterDown = allPermissionsForRoleAfterDown.find(
+        (row: { name: string }) => {
+          return row.name === 'Permission Name';
+        },
+      );
 
       assert(!attachedPermissionAfterDown, 'The permission was removed from the role.');
     });
@@ -451,7 +474,8 @@ describe('migrations/utils/permissions', function () {
           await runUpMigration(knex, migration);
           assert.fail('addPermissionToRole up migration did not throw');
         } catch (err) {
-          assert.equal(errors.utils.isGhostError(err), true);
+          assert(err instanceof Error);
+          assert.equal(errorUtils.isGhostError(err), true);
           assert.equal(
             err.message,
             'Cannot add permission(Unimaginable) with role(Not there) - permission does not exist',
@@ -470,7 +494,7 @@ describe('migrations/utils/permissions', function () {
         const runDownMigration = await runUpMigration(knex, migration);
         await knex('permissions').where('name', '=', 'Permission Name').del();
 
-        await runDownMigration(knex, migration);
+        await runDownMigration();
       });
 
       it('Throws when role cannot be found', async function () {
@@ -485,7 +509,8 @@ describe('migrations/utils/permissions', function () {
           await runUpMigration(knex, migration);
           assert.fail('addPermissionToRole did not throw');
         } catch (err) {
-          assert.equal(errors.utils.isGhostError(err), true);
+          assert(err instanceof Error);
+          assert.equal(errorUtils.isGhostError(err), true);
           assert.equal(
             err.message,
             'Cannot add permission(Permission Name) with role(Not there) - role does not exist',
@@ -504,7 +529,7 @@ describe('migrations/utils/permissions', function () {
         const runDownMigration = await runUpMigration(knex, migration);
         await knex('roles').where('name', '=', 'Role Name').del();
 
-        await runDownMigration(knex, migration);
+        await runDownMigration();
       });
     });
   });
@@ -551,9 +576,11 @@ describe('migrations/utils/permissions', function () {
                     r.name = 'Role Name';
             `);
 
-      const permissionAttachedToRoleAfterUp = allPermissionsForRoleAfterUp.find((row) => {
-        return row.name === 'scarface';
-      });
+      const permissionAttachedToRoleAfterUp = allPermissionsForRoleAfterUp.find(
+        (row: { name: string }) => {
+          return row.name === 'scarface';
+        },
+      );
 
       assert(permissionAttachedToRoleAfterUp, 'The permission was attached to the role.');
 
@@ -574,9 +601,11 @@ describe('migrations/utils/permissions', function () {
                     r.name = 'Other Role Name';
             `);
 
-      const permissionAttachedToOtherRoleAfterUp = allPermissionsForRoleAfterUp.find((row) => {
-        return row.name === 'scarface';
-      });
+      const permissionAttachedToOtherRoleAfterUp = allPermissionsForRoleAfterUp.find(
+        (row: { name: string }) => {
+          return row.name === 'scarface';
+        },
+      );
 
       assert(
         permissionAttachedToOtherRoleAfterUp,
@@ -612,9 +641,11 @@ describe('migrations/utils/permissions', function () {
                     r.name = 'Role Name';
             `);
 
-      const permissionAttachedToRoleAfterDown = allPermissionsForRoleAfterDown.find((row) => {
-        return row.name === 'scarface';
-      });
+      const permissionAttachedToRoleAfterDown = allPermissionsForRoleAfterDown.find(
+        (row: { name: string }) => {
+          return row.name === 'scarface';
+        },
+      );
 
       assert(!permissionAttachedToRoleAfterDown, 'The permission was removed from the role.');
 
@@ -636,7 +667,7 @@ describe('migrations/utils/permissions', function () {
             `);
 
       const permissionAttachedToOtherRoleAfterDown = allPermissionsForOtherRoleAfterDown.find(
-        (row) => {
+        (row: { name: string }) => {
           return row.name === 'scarface';
         },
       );
@@ -809,8 +840,10 @@ async function setupNullableTestDb() {
 }
 
 // Helper function to check column nullable status for SQLite
-async function checkColumnNullable(table, column, knex) {
-  const response = await knex.raw(`PRAGMA table_info(??)`, [table]);
+async function checkColumnNullable(table: string, column: string, knex: KnexInstance) {
+  const response: { name: string; notnull: number }[] = await knex.raw(`PRAGMA table_info(??)`, [
+    table,
+  ]);
   const columnInfo = response.find((col) => col.name === column);
   return columnInfo ? columnInfo.notnull === 0 : null;
 }
@@ -965,7 +998,7 @@ describe('migrations/utils/schema nullable functions', function () {
       assert.equal(isNotNullableInitial, false, 'Column should initially be not nullable');
 
       // Spy on logging to verify skip message
-      const logSpy = sinon.spy(require('@tryghost/logging'), 'warn');
+      const logSpy = sinon.spy(logging, 'warn');
 
       try {
         const runDownMigration = await runUpMigration(knex, migration);
