@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../utils/assertions');
 const { waitForEmailStatus } = require('../../../utils/batch-email-utils');
-const _ = require('lodash');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment-timezone');
@@ -210,7 +209,7 @@ describe('Posts API', function () {
           },
         });
       } catch (err) {
-        if (_.isArray(err)) {
+        if (Array.isArray(err)) {
           throw err[0];
         }
         throw err;

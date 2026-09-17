@@ -126,7 +126,7 @@ function transformNavigationIconUrls(value, transformUrl) {
     return value;
   }
 
-  if (!_.isArray(navigationItems)) {
+  if (!Array.isArray(navigationItems)) {
     return value;
   }
 

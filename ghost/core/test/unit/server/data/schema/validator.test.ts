@@ -14,7 +14,7 @@ describe('Validate Schema', function () {
       assert.throws(
         () => validateSchema('posts', models.Post.forge(), { method: 'insert' }),
         (err: unknown) => {
-          if (!_.isArray(err)) {
+          if (!Array.isArray(err)) {
             return false;
           }
           assert.equal(err.length, 5);
@@ -43,7 +43,7 @@ describe('Validate Schema', function () {
       assert.throws(
         () => validateSchema('posts', postModel, { method: 'insert' }),
         (err: unknown) => {
-          if (!_.isArray(err)) {
+          if (!Array.isArray(err)) {
             return false;
           }
           assert.equal(err.length, 1);
@@ -98,7 +98,7 @@ describe('Validate Schema', function () {
       assert.throws(
         () => validateSchema('webhooks', webhook, { method: 'insert' }),
         (err: unknown) => {
-          if (!_.isArray(err)) {
+          if (!Array.isArray(err)) {
             return false;
           }
           assert.equal(err.length, 1);
@@ -119,7 +119,7 @@ describe('Validate Schema', function () {
       assert.throws(
         () => validateSchema('posts', postModel),
         (err: unknown) => {
-          if (!_.isArray(err)) {
+          if (!Array.isArray(err)) {
             return false;
           }
           assert.equal(err.length, 1);
@@ -137,7 +137,7 @@ describe('Validate Schema', function () {
       assert.throws(
         () => validateSchema('posts', postModel),
         (err: unknown) => {
-          if (!_.isArray(err)) {
+          if (!Array.isArray(err)) {
             return false;
           }
           assert.equal(err.length, 1);

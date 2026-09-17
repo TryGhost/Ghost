@@ -110,7 +110,7 @@ class PostsImporter extends BaseImporter {
           return;
         }
 
-        if (!postToImport[target] || !_.isArray(postToImport[target])) {
+        if (!postToImport[target] || !Array.isArray(postToImport[target])) {
           postToImport[target] = [];
         }
 
@@ -274,7 +274,7 @@ class PostsImporter extends BaseImporter {
         try {
           mobiledoc = JSON.parse(model.mobiledoc);
 
-          if (!mobiledoc.cards || !_.isArray(mobiledoc.cards)) {
+          if (!mobiledoc.cards || !Array.isArray(mobiledoc.cards)) {
             mobiledoc = mobiledocLib.blankDocument;
           }
         } catch (err) {

@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
@@ -27,7 +26,7 @@ module.exports = function (Bookshelf) {
       return Bookshelf.model('Action')
         .add(action, { autoRefresh: false })
         .catch((err) => {
-          if (_.isArray(err)) {
+          if (Array.isArray(err)) {
             err = err[0];
           }
 

@@ -28,17 +28,17 @@ module.exports = function foreach(items, options) {
     items = items.call(this);
   }
   let visibility = options.hash.visibility;
-  if (_.isArray(items) && items.length > 0 && checks.isPost(items[0])) {
+  if (Array.isArray(items) && items.length > 0 && checks.isPost(items[0])) {
     visibility = visibility || 'all';
-  } else if (_.isObject(items) && _.isArray(Object.values(items))) {
+  } else if (_.isObject(items) && Array.isArray(Object.values(items))) {
     if (Object.values(items).length > 0 && checks.isPost(Object.values(items)[0])) {
       visibility = visibility || 'all';
     }
   }
 
-  if (_.isArray(items) && items.length > 0 && checks.isNewsletter(items[0])) {
+  if (Array.isArray(items) && items.length > 0 && checks.isNewsletter(items[0])) {
     visibility = visibility || 'all';
-  } else if (_.isObject(items) && _.isArray(Object.values(items))) {
+  } else if (_.isObject(items) && Array.isArray(Object.values(items))) {
     if (Object.values(items).length > 0 && checks.isNewsletter(Object.values(items)[0])) {
       visibility = visibility || 'all';
     }
