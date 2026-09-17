@@ -150,3 +150,18 @@ Do not turn these into incrementing materialized counters without a retraction
 or deduplication strategy: inserted versions include retries and status changes.
 Run `tb test run` to check the entry and status pipes against the committed
 fixtures, including duplicates, old versions, missing history, and site isolation.
+
+### Automation member-search candidates
+
+`api_automation_run_search` is an internal companion to `api_automation_runs`.
+It preserves the same latest-step classification, status filter and Entered
+keysets, while allowing up to 5,000 candidates for Core's member intersection.
+Optional `run_ids` restricts a proven complete set of at most 2,000 IDs before
+ordering/classification. Core posts these IDs in the request body. The public
+Admin endpoint still returns at most 50 matches.
+
+The search pipe applies a two-second execution deadline. Failed/absent search
+capability is an error even when Core found zero member matches. Deploy this pipe
+before enabling the new Core consumer; the original pipe and non-search queries
+are unchanged. The [automation service README](../../services/automations/README.md#run-list)
+describes the run-list API and continuation behavior.
