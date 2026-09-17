@@ -121,61 +121,53 @@ server's slug endpoint for sanitizing and deduplication, and reports the outcome
 as proposals. It never persists anything; the caller owns the input UI and the
 save.
 
-### State model
+The machine is a pure reducer, `reduceSlug(state, event)`, returning the next
+state and a list of effects, plus a thin shell that turns the public calls into
+events, runs the effects in order after committing the state, and maps each
+submission's ticket to the promise its caller holds.
 
-Two modes and three statuses.
+### States
 
-| Mode      | Meaning                                                           |
-| --------- | ----------------------------------------------------------------- |
-| `derived` | The slug follows the title. Eligible title commits regenerate it. |
-| `custom`  | The slug belongs to the user. Title commits never touch it.       |
+```ts
+type SlugState =
+  | { kind: 'idle'; mode; slug; title }
+  | { kind: 'generating'; mode; slug; title; request; deferred };
+```
 
-Mode is `custom` while a manual edit that can still apply is in flight.
-Otherwise it is the settled mode, which changes only when a post loads or a
-manual edit applies. A manual edit that fails, returns nothing, or resolves back
-to the current slug leaves the settled mode as it was. Mode is never re-derived
-from the title while a post is open; only loading a post runs the custom
-detection described under Rules.
+- `mode` is the settled ownership: `derived` (the slug follows the title) or
+  `custom` (the slug belongs to the user). Only a load or an applied manual edit
+  moves it. Mode is never re-derived from the title while a post is open.
+- `slug` is the current slug; `title` is the title the slug was loaded with or
+  last generated from. Only a load, an applied generation or an acknowledgement
+  advances `title`, so a refused or failed commit can be retried with the same
+  title.
+- `request` is the one generator request on the wire: its `ticket` (the
+  submission it belongs to), `kind` (`title` or `manual`), the `text` sent, and
+  `slugAtRequest`, the slug when it was submitted.
+- `deferred` is the single submission waiting behind the request, or `null`:
+  its ticket, the submission, and `slugAtSubmission`.
 
-| Status    | Meaning                                                                                                          |
-| --------- | ---------------------------------------------------------------------------------------------------------------- |
-| `custom`  | Mode is `custom`.                                                                                                |
-| `derived` | Mode is `derived` and the last committed title would generate.                                                   |
-| `frozen`  | Mode is `derived` but the last committed title would not generate: it is blank, or `(Untitled)` with a slug set. |
+`getState()` returns the view `{mode, slug, title, pending}`. `pending` is true
+in `generating`. The view's `mode` reads `custom` while a manual request is on
+the wire, whatever the settled mode; a manual edit that fails, returns nothing
+or resolves back to the current slug leaves the settled mode as it was.
 
-Status follows the latest committed title regardless of what happened to that
-commit: a post whose blank title was just committed reads `frozen`, and a post
-whose commit failed reads `derived`.
+### Events, effects and proposals
 
-`getState()` returns `{status, mode, slug, title, lastCommittedTitle, pending}`.
+| Call                                        | Event                                                                                    |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `loaded({slug, title})`                     | `loaded`. Document boundary: the machine resets to the post and infers the settled mode. |
+| `saveAcknowledged(submitted, acknowledged)` | `acknowledged`. Compare-and-swaps server-normalized values without changing ownership.   |
+| `titleCommitted(title)`                     | `submitted` with a `title` submission and a fresh ticket. Resolves with a proposal.      |
+| `slugEdited(input)`                         | `submitted` with a `manual` submission and a fresh ticket. Resolves with a proposal.     |
+| generator answer                            | `settled` with the request's ticket and `{ok}` or `{error}`.                             |
 
-- `slug`: the current slug.
-- `title`: the title the slug was loaded with or last generated from. Only a
-  load or an applied generation advances it, so a refused or failed commit can
-  be retried with the same title.
-- `lastCommittedTitle`: the trimmed title of the most recent `titleCommitted`
-  call, whatever its outcome.
-- `pending`: true while a title or manual request that can still apply is in
-  flight. Withdrawn requests and requests from a previous post are not pending
-  even if their HTTP call has not returned. A submission waiting behind an
-  active request is not pending until it starts.
-
-### Inputs and proposals
-
-`createSlugMachine({generateSlug, onListenerError})` takes the generator port
-(`(text: string) => Promise<string>`) and an error sink for listener failures.
-
-| Call                                        | Effect                                                                                                                                                                   |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `loaded({slug, title})`                     | Document boundary. Resets the machine to the post, infers the settled mode, discards in-flight and waiting work from the previous post, notifies with a `null` proposal. |
-| `saveAcknowledged(submitted, acknowledged)` | Compare-and-swaps server-normalized values without changing ownership or newer work; notifies a change with a `null` proposal.                                           |
-| `titleCommitted(title)`                     | The title was committed (blur). Resolves with a proposal; never rejects.                                                                                                 |
-| `slugEdited(input)`                         | The slug input was committed. Resolves with a proposal; never rejects.                                                                                                   |
-| `getState()`                                | Snapshot of the state above.                                                                                                                                             |
-| `subscribe(listener)`                       | `listener(state, proposal)` on every state change; acknowledgements, pending changes and loads have no proposal. Returns an unsubscribe function.                        |
-
-A listener that throws is reported to `onListenerError` and affects neither the
-transition nor the other listeners.
+Effects: `request` sends `text` to the generator and reports the answer as a
+`settled` event; `resolve` settles the promise of the submission with that
+ticket; `notify` calls every subscriber with the committed view and a proposal
+or `null`; `resubmit` re-enters the reducer with the deferred submission after
+the effects before it ran. A listener that throws is reported to
+`onListenerError` and affects neither the transition nor the other listeners.
 
 Proposals are `{slug, source}`:
 
@@ -187,31 +179,80 @@ Proposals are `{slug, source}`:
 
 `unchanged` proposals carry a `reason`:
 
-| Reason         | When                                                                                                                                                                  | Caller action                                                |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `same-title`   | The committed title equals the title the slug came from and a slug exists. No request was made.                                                                       | None.                                                        |
-| `custom`       | The machine is in custom mode. No request was made.                                                                                                                   | None.                                                        |
-| `frozen`       | The committed title is blank, or is `(Untitled)` while a slug exists. No request was made.                                                                            | None.                                                        |
-| `stale`        | The call was superseded before it could apply: replaced by a newer submission, withdrawn, or a post loaded. `slug` is the slug at call time, not necessarily current. | Ignore it.                                                   |
-| `empty-result` | The server returned a blank slug.                                                                                                                                     | None.                                                        |
-| `reverted`     | A manual edit was blank or unchanged, or the server resolved it back to the current slug.                                                                             | Reset the slug input to `slug`.                              |
-| `error`        | The generator threw; `error` carries the thrown value.                                                                                                                | Surface the error; reset the slug input to `slug` if manual. |
+| Reason         | When                                                                                                                                                                     | Caller action                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| `same-title`   | The committed title equals the title the slug came from and a slug exists. No request was made.                                                                          | None.                                                        |
+| `custom`       | The settled mode is `custom`. No request was made.                                                                                                                       | None.                                                        |
+| `frozen`       | The committed title is blank, or is `(Untitled)` while a slug exists. No request was made.                                                                               | None.                                                        |
+| `stale`        | The submission was superseded: replaced in the deferred slot, withdrawn from the wire, or a post loaded. `slug` is the slug at submission time, not necessarily current. | Ignore it.                                                   |
+| `empty-result` | The server returned a blank slug.                                                                                                                                        | None.                                                        |
+| `reverted`     | A manual edit was blank or unchanged, or the server resolved it back to the current slug.                                                                                | Reset the slug input to `slug`.                              |
+| `error`        | The generator threw; `error` carries the thrown value.                                                                                                                   | Surface the error; reset the slug input to `slug` if manual. |
 
-Every proposal except `stale` is delivered to subscribers with the state it
+Every proposal except `stale` is delivered to subscribers with the view it
 produced. Subscribers are also notified with a `null` proposal when a request
-starts (`pending` becomes true), a post loads, or an acknowledgement resyncs a
-server-normalized value. A rejected manual edit is always reported (`reverted`,
-`empty-result`, or `error`) so the input can be reset to the kept slug instead
-of showing the rejected text.
+starts, a post loads, or an acknowledgement changes a value. A stale resolution
+never notifies, so superseded work cannot look like a current state change.
+
+### Transitions
+
+`t` is the trimmed title; `c` is `normalizeManualSlug(input, slug)` (`null` for
+a blank or unchanged input); "same title" is `t === title && slug`; "frozen" is
+`!shouldGenerateSlug({mode: 'derived', slug}, t)`; "drain" re-enters the reducer
+with the deferred submission against the new idle state, so it takes the idle
+rows below.
+
+| State              | Event                                          | Next state                                                           | Effects                                                                      |
+| ------------------ | ---------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| any                | `loaded`                                       | idle, mode from custom detection                                     | deferred and request resolve `stale`; notify `null`                          |
+| any                | `acknowledged`                                 | same kind; `slug`/`title` swapped where they still equal `submitted` | notify `null` only if a value changed                                        |
+| any                | `settled` for a ticket the state does not hold | unchanged                                                            | none                                                                         |
+| idle               | title, settled mode `custom`                   | idle                                                                 | resolve `custom`; notify                                                     |
+| idle               | title, same title                              | idle                                                                 | resolve `same-title`; notify                                                 |
+| idle               | title, frozen                                  | idle                                                                 | resolve `frozen`; notify                                                     |
+| idle               | title, otherwise                               | generating(title)                                                    | request `t`; notify `null`                                                   |
+| idle               | manual, `c` null                               | idle                                                                 | resolve `reverted`; notify                                                   |
+| idle               | manual, otherwise                              | generating(manual)                                                   | request `c`; notify `null`                                                   |
+| generating(title)  | title, same title or frozen                    | idle                                                                 | deferred and request resolve `stale`; resolve the reason; notify             |
+| generating(title)  | title, otherwise                               | generating, deferred replaced                                        | replaced deferred resolves `stale`                                           |
+| generating(manual) | title, any                                     | generating, deferred replaced                                        | replaced deferred resolves `stale`                                           |
+| generating(title)  | manual, `c` null                               | generating, a deferred manual edit dropped                           | dropped deferred resolves `stale`; resolve `reverted`; notify                |
+| generating(manual) | manual, `c` null                               | idle, then drain a deferred title                                    | deferred manual edit and request resolve `stale`; resolve `reverted`; notify |
+| generating         | manual, otherwise                              | generating, deferred replaced                                        | replaced deferred resolves `stale`                                           |
+| generating(title)  | `settled` `{ok}`, non-blank                    | idle with `slug = ok`, `title = t`, then drain                       | resolve `generated`; notify `generated`                                      |
+| generating(title)  | `settled` `{ok}` blank, or `{error}`           | idle, then drain                                                     | resolve `empty-result` or `error`; notify                                    |
+| generating(manual) | `settled` `{ok}`, dedup guard keeps `slug`     | idle, then drain                                                     | resolve `reverted`; notify                                                   |
+| generating(manual) | `settled` `{ok}`, otherwise                    | idle with `slug = resolved`, mode `custom`, then drain               | resolve `manual`; notify `manual`                                            |
+| generating(manual) | `settled` `{ok}` blank, or `{error}`           | idle, then drain                                                     | resolve `empty-result` or `error`; notify                                    |
+
+Consequences worth naming:
+
+- At most one request is on the wire, and a submission that reaches the reducer
+  while one is out waits in the single deferred slot. Only the newest waiting
+  submission is kept; each one it replaces resolves `stale` without reaching
+  the server.
+- A title commit behind a manual request is deferred, not refused. If the edit
+  applies, the deferred commit resolves `custom`; if the edit fails or reverts,
+  the commit generates as normal.
+- Withdrawing a request (a no-op blur over a manual request, or committing the
+  slug's source title or a frozen title over a title request) resolves it
+  `stale` at once and frees the wire. A deferred title commit behind a withdrawn
+  manual edit starts immediately; a deferred submission behind a withdrawn title
+  generation is dropped. The late generator answer for a withdrawn request is
+  ignored because its ticket is no longer held.
+- Withdrawing a deferred manual edit (a no-op blur while a title generation is
+  out) drops it and leaves the generation running.
+- `loaded()` resolves everything from the previous post `stale`; a late answer
+  for it is ignored and the new post reads not pending.
 
 ### Rules
 
 Generation
 
-- A title commit generates when mode is `derived`, the trimmed title is not
-  blank, and neither the `same-title` nor the `frozen` case applies. A blank
-  title never generates. `(Untitled)` generates `untitled` once, when no slug
-  exists, and is frozen after that.
+- A title commit generates when the settled mode is `derived`, the trimmed
+  title is not blank, and neither the same-title nor the frozen case applies. A
+  blank title never generates. `(Untitled)` generates `untitled` once, when no
+  slug exists, and is frozen after that.
 - The same-title check only applies when a slug exists; a post loaded with a
   title and no slug generates on its first commit.
 - The server result is applied as returned. A deduplicated result (`hello-2`)
@@ -245,33 +286,9 @@ Manual edits
   false positive: the guard decides by shape, so a candidate the server
   canonicalizes differently from `slugify` (protected slugs, the 185-character
   cap) is reverted when its result happens to take that shape.
-- An applied manual edit switches mode to `custom` for the rest of the session;
-  no later title commit regenerates the slug until the post is reloaded.
-  Reverted, empty, and failed edits leave the mode where it was.
-
-Ordering and staleness
-
-- At most one generator request is in flight. Further submissions wait behind
-  it; only the newest waiting submission is kept, and each one it replaces
-  resolves `stale` without reaching the server. The kept submission runs when
-  the active request settles and is evaluated against the state at that time.
-- A title commit behind an in-flight manual edit is deferred, not refused. If
-  the edit applies, the deferred commit resolves `custom`; if the edit fails or
-  reverts, the commit generates as normal.
-- A manual edit behind an in-flight title generation waits for it. Withdrawing
-  that waiting edit (blank or unchanged input) drops it and leaves the
-  generation running.
-- Withdrawing an in-flight manual edit makes its result `stale`, and mode and
-  `pending` fall back immediately; a title commit waiting behind it still runs
-  once the request physically settles.
-- Committing the slug's source title, or a frozen title, while a title
-  generation is in flight invalidates that generation immediately, drops any
-  waiting submission, and returns `same-title` or `frozen`.
-- `loaded()` invalidates everything from the previous post: in-flight results
-  resolve `stale` to their callers, are not delivered to subscribers, and the
-  new post reads not pending.
-- A failed or reverted manual edit never leaves the machine in custom mode and
-  never discards a title commit queued behind it.
+- An applied manual edit switches the settled mode to `custom` for the rest of
+  the session; no later title commit regenerates the slug until the post is
+  reloaded. Reverted, empty, and failed edits leave the mode where it was.
 
 ## Invariants
 

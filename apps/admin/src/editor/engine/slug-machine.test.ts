@@ -12,6 +12,11 @@ import {
   type SlugProposal,
 } from './slug-machine';
 
+const flushMicrotasks = () =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, 0);
+  });
+
 function createHarness(
   generateSlug = vi.fn((text: string) => Promise.resolve(slugify(text))),
   onListenerError = vi.fn(),
@@ -615,7 +620,36 @@ describe('createSlugMachine', () => {
       expect(proposals.filter((proposal) => proposal.source === 'manual')).toEqual([]);
     });
 
-    it('generates from the title after an invalidated manual request settles', async () => {
+    it('generates from the title without waiting for a withdrawn manual request', async () => {
+      const pending = deferred<string>();
+      const generateSlug = vi
+        .fn()
+        .mockReturnValueOnce(pending.promise)
+        .mockResolvedValueOnce('changed');
+      const { machine, proposals } = createHarness(generateSlug);
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+
+      const edit = machine.slugEdited('mine');
+      await machine.slugEdited('hello');
+      await expect(edit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
+
+      await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+        slug: 'changed',
+        source: 'generated',
+      });
+      expect(generateSlug).toHaveBeenCalledTimes(2);
+
+      pending.resolve('mine');
+      await flushMicrotasks();
+      expect(machine.getState()).toMatchObject({
+        slug: 'changed',
+        mode: 'derived',
+        pending: false,
+      });
+      expect(proposals.filter((proposal) => proposal.source === 'manual')).toEqual([]);
+    });
+
+    it('runs a deferred title commit at once when the manual edit ahead of it is withdrawn', async () => {
       const pending = deferred<string>();
       const generateSlug = vi
         .fn()
@@ -625,22 +659,13 @@ describe('createSlugMachine', () => {
       machine.loaded({ slug: 'hello', title: 'Hello' });
 
       const edit = machine.slugEdited('mine');
-      await machine.slugEdited('hello');
       const commit = machine.titleCommitted('Changed');
+      await expect(machine.slugEdited('')).resolves.toMatchObject({ reason: 'reverted' });
 
-      pending.resolve('mine');
-      await expect(edit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
-      await expect(commit).resolves.toEqual({
-        slug: 'changed',
-        source: 'generated',
-      });
-      expect(machine.getState()).toMatchObject({
-        slug: 'changed',
-        mode: 'derived',
-        pending: false,
-      });
-
-      expect(machine.getState()).toMatchObject({ slug: 'changed', pending: false });
+      await expect(edit).resolves.toMatchObject({ reason: 'stale' });
+      await expect(commit).resolves.toEqual({ slug: 'changed', source: 'generated' });
+      expect(generateSlug).toHaveBeenCalledTimes(2);
+      expect(machine.getState()).toMatchObject({ slug: 'changed', mode: 'derived' });
     });
 
     it('applies the server result and switches to custom', async () => {

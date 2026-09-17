@@ -126,8 +126,6 @@ export interface SlugRequest {
   readonly kind: Submission['kind'];
   readonly text: string;
   readonly slugAtRequest: string;
-  /** False once a newer submission invalidated it: the answer is dropped but the wire stays busy. */
-  readonly live: boolean;
 }
 
 export interface DeferredSubmission {
@@ -179,13 +177,14 @@ export interface SlugTransition {
 
 export const INITIAL_SLUG_STATE: SlugState = { kind: 'idle', mode: 'derived', slug: '', title: '' };
 
+// A manual request on the wire reads as custom until it settles.
 export function viewOf(state: SlugState): SlugMachineState {
-  const live = state.kind === 'generating' ? state.request : null;
+  const generating = state.kind === 'generating';
   return {
-    mode: live?.live && live.kind === 'manual' ? 'custom' : state.mode,
+    mode: generating && state.request.kind === 'manual' ? 'custom' : state.mode,
     slug: state.slug,
     title: state.title,
-    pending: live?.live ?? false,
+    pending: generating,
   };
 }
 
@@ -221,12 +220,12 @@ function refuse(state: SlugState, ticket: number, reason: UnchangedReason): Slug
   return { state, effects: [resolve(ticket, proposal), notify(proposal)] };
 }
 
-function start(core: Core, request: Omit<SlugRequest, 'live' | 'slugAtRequest'>): SlugTransition {
+function start(core: Core, request: Omit<SlugRequest, 'slugAtRequest'>): SlugTransition {
   return {
     state: {
       ...core,
       kind: 'generating',
-      request: { ...request, slugAtRequest: core.slug, live: true },
+      request: { ...request, slugAtRequest: core.slug },
       deferred: null,
     },
     effects: [{ type: 'request', ticket: request.ticket, text: request.text }, notify(null)],
@@ -268,6 +267,35 @@ function defer(
   };
 }
 
+const resubmit = (deferred: DeferredSubmission): SlugEffect => ({
+  type: 'resubmit',
+  ticket: deferred.ticket,
+  submission: deferred.submission,
+});
+
+// Dropping the request frees the wire: its late answer no longer matches a held ticket. The
+// deferred submission either resolves stale with it or runs at once against the idle state.
+function withdraw(
+  state: Extract<SlugState, { kind: 'generating' }>,
+  ticket: number,
+  reason: UnchangedReason,
+  keepDeferred: boolean,
+): SlugTransition {
+  const { request, deferred } = state;
+  const proposal = unchanged(state.slug, reason);
+  const kept = keepDeferred ? deferred : null;
+  return {
+    state: { kind: 'idle', mode: state.mode, slug: state.slug, title: state.title },
+    effects: [
+      ...(deferred && !kept ? [staleDeferred(deferred)] : []),
+      staleRequest(request),
+      resolve(ticket, proposal),
+      notify(proposal),
+      ...(kept ? [resubmit(kept)] : []),
+    ],
+  };
+}
+
 function submitGenerating(
   state: Extract<SlugState, { kind: 'generating' }>,
   ticket: number,
@@ -280,45 +308,33 @@ function submitGenerating(
     }
     // A no-op blur withdraws manual work only: a deferred manual edit, and a manual request on
     // the wire. Title generation keeps running.
-    const effects: SlugEffect[] = [];
-    let next = state;
-    if (deferred?.submission.kind === 'manual') {
-      effects.push(staleDeferred(deferred));
-      next = { ...next, deferred: null };
-    }
-    if (request.kind === 'manual' && request.live) {
-      effects.push(staleRequest(request));
-      next = { ...next, request: { ...request, live: false } };
+    if (request.kind === 'manual') {
+      return withdraw(state, ticket, 'reverted', deferred?.submission.kind === 'title');
     }
     const proposal = unchanged(state.slug, 'reverted');
-    return { state: next, effects: [...effects, resolve(ticket, proposal), notify(proposal)] };
+    const dropped = deferred?.submission.kind === 'manual' ? deferred : null;
+    return {
+      state: dropped ? { ...state, deferred: null } : state,
+      effects: [
+        ...(dropped ? [staleDeferred(dropped)] : []),
+        resolve(ticket, proposal),
+        notify(proposal),
+      ],
+    };
   }
   // A title behind a manual request waits for its outcome: applied means custom, failed means
-  // generate. A title that would not generate invalidates title generation on the wire at once.
+  // generate. A title that would not generate withdraws title generation on the wire at once.
   if (request.kind === 'manual') {
     return defer(state, ticket, submission);
   }
   const title = submission.value.trim();
-  const reason = isSameTitle(state, title)
-    ? 'same-title'
-    : isFrozen(state, title)
-      ? 'frozen'
-      : null;
-  if (reason === null) {
-    return defer(state, ticket, submission);
+  if (isSameTitle(state, title)) {
+    return withdraw(state, ticket, 'same-title', false);
   }
-  const effects: SlugEffect[] = [];
-  if (deferred) {
-    effects.push(staleDeferred(deferred));
+  if (isFrozen(state, title)) {
+    return withdraw(state, ticket, 'frozen', false);
   }
-  if (request.live) {
-    effects.push(staleRequest(request));
-  }
-  const proposal = unchanged(state.slug, reason);
-  return {
-    state: { ...state, request: { ...request, live: false }, deferred: null },
-    effects: [...effects, resolve(ticket, proposal), notify(proposal)],
-  };
+  return defer(state, ticket, submission);
 }
 
 function settle(
@@ -327,16 +343,14 @@ function settle(
 ): SlugTransition {
   const { request, deferred } = state;
   const core: Core = { mode: state.mode, slug: state.slug, title: state.title };
-  const drain: SlugEffect[] = deferred
-    ? [{ type: 'resubmit', ticket: deferred.ticket, submission: deferred.submission }]
-    : [];
-  const finish = (next: Core, proposal: SlugProposal | null): SlugTransition => ({
+  const finish = (next: Core, proposal: SlugProposal): SlugTransition => ({
     state: { ...next, kind: 'idle' },
-    effects: proposal ? [resolve(request.ticket, proposal), notify(proposal), ...drain] : drain,
+    effects: [
+      resolve(request.ticket, proposal),
+      notify(proposal),
+      ...(deferred ? [resubmit(deferred)] : []),
+    ],
   });
-  if (!request.live) {
-    return finish(core, null);
-  }
   if ('error' in outcome) {
     return finish(core, unchanged(core.slug, 'error', outcome.error));
   }
@@ -365,9 +379,7 @@ export function reduceSlug(state: SlugState, event: SlugEvent): SlugTransition {
         if (state.deferred) {
           effects.push(staleDeferred(state.deferred));
         }
-        if (state.request.live) {
-          effects.push(staleRequest(state.request));
-        }
+        effects.push(staleRequest(state.request));
       }
       return {
         state: {
