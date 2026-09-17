@@ -29,21 +29,24 @@ export type LaneId = 'phase-1' | 'phase-2' | 'exploration' | 'exploration-2';
 export interface Lane {
   id: LaneId;
   label: string;
-  // Shown under the label in the switcher. Says what the lane is FOR, because
-  // the thing an engineer needs to know first is whether they're looking at
-  // committed work or at someone thinking out loud.
-  note: string;
 }
 
+// The labels carry the lane's status AND its concept in a few words — "Ph"
+// lanes are scheduled work, "Sandbox" lanes are unscheduled thinking — which is
+// what let the switcher drop its per-lane sub-copy: one line that says both is
+// better than a title plus a caption saying them separately.
 export const LANES: Lane[] = [
-  { id: 'phase-1', label: 'Phase 1', note: 'Being built now' },
-  { id: 'phase-2', label: 'Phase 2', note: 'Per-tier automations — in design' },
-  { id: 'exploration', label: 'Exploration', note: 'Not scheduled' },
+  { id: 'phase-1', label: 'Ph 1: Run analytics' },
+  { id: 'phase-2', label: 'Ph 2: Per-tier' },
+  // "Full canvas": the disappearing-chrome concept — maximising takes the header
+  // with it and the flow is the only thing on screen.
+  { id: 'exploration', label: 'Sandbox: Full canvas' },
   // A second exploration rather than edits to the first. The lanes exist so work can
   // diverge without anything being lost, and that applies to two ideas about the same
   // screen as much as it does to two phases — the first exploration is a state worth
-  // being able to go back and look at, not a draft of this one.
-  { id: 'exploration-2', label: 'Exploration 2', note: 'Not scheduled' },
+  // being able to go back and look at, not a draft of this one. "Right panel": the
+  // post editor's shape, a fixed header and the pane on the canvas's right.
+  { id: 'exploration-2', label: 'Sandbox: Right panel' },
 ];
 
 export const lanePath = (lane: LaneId): string => `/automations-proto/${lane}`;

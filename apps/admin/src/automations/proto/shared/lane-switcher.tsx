@@ -5,13 +5,13 @@ import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuCheckboxItem,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Switch,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { ProtoVariantsContext, resolveVariantId } from './proto-variants';
@@ -60,38 +60,57 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
     <div className={cn('absolute right-4 bottom-4 z-30', className)}>
       <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
+          {/* Icon only. The pill carried the lane's name so nobody had to wonder
+                    which version they were looking at — but the labels grew concept
+                    names ("Ph 2: Per-tier") and the pill got louder than the product
+                    around it. The name is one click away on the checked row; the
+                    aria-label keeps it announced. */}
           <Button
             aria-label={`Prototype lane: ${laneLabel(lane)}`}
             className={cn('text-muted-foreground', open && 'bg-muted')}
+            size="icon"
             variant="ghost"
           >
             <LucideIcon.FlaskConical strokeWidth={2} />
-            {laneLabel(lane)}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64" side="top">
-          <DropdownMenuLabel>Lane</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            value={lane}
-            onValueChange={(next) => {
-              if (next === lane) {
-                return;
-              }
-              navigate(toVersioned(lanePath(next as LaneId)));
-            }}
-          >
-            {LANES.map((entry) => (
-              <DropdownMenuRadioItem key={entry.id} className="items-start" value={entry.id}>
-                <span className="flex flex-col">
-                  <span>{entry.label}</span>
-                  <span className="text-xs text-muted-foreground">{entry.note}</span>
-                </span>
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
+        {/* p-2 over the component's own p-1 — this menu is a settings panel more
+                than a command list, and the roomier inset is what says so. The
+                separators take -mx-2 to match, so the rules still run edge to edge. */}
+        <DropdownMenuContent align="end" className="w-64 p-2" side="top">
+          {/* The one header this menu kept: it names the whole surface, where the
+                    removed ones (Lane, Site) partitioned it. */}
+          <DropdownMenuLabel>Prototype settings</DropdownMenuLabel>
+          {/* No section headers and no per-lane sub-copy — each row's own words
+                    carry what the headers and captions used to (see the LANES comment
+                    for how the labels absorbed the notes).
+
+                    Plain items with a trailing check rather than Shade's radio rows:
+                    the radio dot sits in a leading gutter, and with it every lane name
+                    started 24px in — the same trailing-check treatment the list's view
+                    dropdown uses, opacity-toggled so rows keep a stable width. */}
+          {LANES.map((entry) => (
+            <DropdownMenuItem
+              key={entry.id}
+              onSelect={() => {
+                if (entry.id === lane) {
+                  return;
+                }
+                navigate(toVersioned(lanePath(entry.id)));
+              }}
+            >
+              {entry.label}
+              <LucideIcon.Check
+                className={cn(
+                  'ms-auto text-primary',
+                  entry.id === lane ? 'opacity-100' : 'opacity-0',
+                )}
+              />
+            </DropdownMenuItem>
+          ))}
           {slots.map((slot) => (
             <React.Fragment key={slot.id}>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="-mx-2" />
               <DropdownMenuLabel>{slot.label}</DropdownMenuLabel>
               <DropdownMenuRadioGroup
                 value={resolveVariantId(slot, ctx?.selections ?? {})}
@@ -105,21 +124,31 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
               </DropdownMenuRadioGroup>
             </React.Fragment>
           ))}
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="-mx-2" />
           {/* Site state, not lane state — but it belongs in the same menu for the
                     same reason resetting does: it exists because this is a prototype.
                     A reviewer on a preview URL can't disconnect Stripe to see what the
-                    automations screens do about it, so the toggle stands in for the
-                    site setting. */}
-          <DropdownMenuLabel>Site</DropdownMenuLabel>
-          <DropdownMenuCheckboxItem
-            checked={stripeConnected}
-            onCheckedChange={(checked) => setStripeConnected(checked)}
+                    automations screens do about it, so this stands in for the site
+                    setting.
+
+                    A switch rather than the menu's checkbox row: a check reads as
+                    picking an option, and this is a piece of site state at two
+                    settings. preventDefault keeps the menu open through the flip, so
+                    the list reshaping behind it (paid workflows leaving and
+                    returning) is watchable. The Switch is decorative — the row is
+                    the control, and a second focusable thing inside a menu item is
+                    one tab stop too many. */}
+          <DropdownMenuItem
+            onSelect={(event) => {
+              event.preventDefault();
+              setStripeConnected(!stripeConnected);
+            }}
           >
             Stripe connected
-          </DropdownMenuCheckboxItem>
+            <Switch checked={stripeConnected} className="pointer-events-none ml-auto" aria-hidden />
+          </DropdownMenuItem>
 
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="-mx-2" />
           {/* Resets every lane at once — they share one store. Last, and on its
                     own, because it's the only thing in here that destroys anything. */}
           <DropdownMenuItem
@@ -129,7 +158,7 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
               toast.success('Prototype data reset');
             }}
           >
-            <LucideIcon.RotateCcw /> Reset prototype data
+            <LucideIcon.RotateCcw /> Reset prototype
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
