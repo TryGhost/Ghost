@@ -4,7 +4,10 @@ const request = require('supertest');
 const express = require('express');
 const fs = require('fs-extra');
 const config = require('../../../../../core/shared/config');
-const { servePublicFile } = require('../../../../../core/frontend/web/routers/serve-public-file');
+const settingsCache = require('../../../../../core/shared/settings-cache');
+const themeEngine = require('../../../../../core/frontend/services/theme-engine');
+const servePublicFiles = require('../../../../../core/frontend/web/routers/serve-public-file');
+const { servePublicFile } = servePublicFiles;
 
 describe('servePublicFile', function () {
   afterEach(function () {
@@ -189,5 +192,86 @@ describe('servePublicFile', function () {
 
     assert.equal(text, body);
     assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/private.min.js'));
+  });
+});
+
+describe('servePublicFiles /robots.txt', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  function createSiteApp() {
+    const app = express();
+    servePublicFiles(app);
+    app.use((_req, res) => {
+      res.status(418).send('next');
+    });
+    return app;
+  }
+
+  function stubSettings(values) {
+    sinon.stub(settingsCache, 'get').callsFake((key) => values[key]);
+  }
+
+  it('serves the robots_txt setting with {{blog-url}} replaced and cache headers', async function () {
+    stubSettings({
+      is_private: false,
+      robots_txt: 'User-agent: *\nSitemap: {{blog-url}}/sitemap.xml\nDisallow: /secret/\n',
+    });
+    sinon.stub(themeEngine, 'getActive').returns(null);
+    const readFile = sinon.stub(fs, 'readFile').callsFake((file, cb) => cb(null, 'DEFAULT'));
+
+    const { headers, text } = await request(createSiteApp()).get('/robots.txt').expect(200);
+
+    sinon.assert.notCalled(readFile);
+    assert.equal(
+      text,
+      `User-agent: *\nSitemap: ${config.get('url')}/sitemap.xml\nDisallow: /secret/\n`,
+    );
+    assert.match(headers['content-type'], /^text\/plain/);
+    assert.equal(headers['content-length'], `${Buffer.byteLength(text)}`);
+    assert.match(headers.etag, /^".+"$/);
+    assert.equal(
+      headers['cache-control'],
+      `public, max-age=${config.get('caching:robotstxt:maxAge')}`,
+    );
+  });
+
+  it('prefers the robots_txt setting over a theme robots.txt', async function () {
+    stubSettings({ is_private: false, robots_txt: 'User-agent: *\nDisallow: /from-setting/' });
+    sinon.stub(themeEngine, 'getActive').returns({ hasRobotsTxt: () => true });
+
+    await request(createSiteApp())
+      .get('/robots.txt')
+      .expect(200)
+      .expect('User-agent: *\nDisallow: /from-setting/');
+  });
+
+  it('falls through to the theme robots.txt when robots_txt is blank', async function () {
+    stubSettings({ is_private: false, robots_txt: ' \n' });
+    sinon.stub(themeEngine, 'getActive').returns({ hasRobotsTxt: () => true });
+
+    await request(createSiteApp()).get('/robots.txt').expect(418).expect('next');
+  });
+
+  it('serves the default robots.txt when robots_txt is empty and the theme has none', async function () {
+    stubSettings({ is_private: false, robots_txt: '' });
+    sinon.stub(themeEngine, 'getActive').returns(null);
+    const readFile = sinon
+      .stub(fs, 'readFile')
+      .callsFake((file, cb) => cb(null, 'User-agent: *\nDisallow: /ghost/'));
+
+    await request(createSiteApp())
+      .get('/robots.txt')
+      .expect(200)
+      .expect('User-agent: *\nDisallow: /ghost/');
+    assert(readFile.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
+  });
+
+  it('leaves robots.txt to the private blogging middleware when the site is private', async function () {
+    stubSettings({ is_private: true, robots_txt: 'User-agent: *\nDisallow: /from-setting/' });
+    sinon.stub(themeEngine, 'getActive').returns(null);
+
+    await request(createSiteApp()).get('/robots.txt').expect(418).expect('next');
   });
 });

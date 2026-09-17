@@ -14,6 +14,35 @@ const messages = {
   fileNotFound: 'File not found',
 };
 
+const blogRegex = /(\{\{blog-url\}\})/g;
+
+/**
+ * Replace the {{blog-url}} placeholder with the site URL (without a trailing slash)
+ *
+ * @param {string} str
+ * @returns {string}
+ */
+function replaceBlogUrl(str) {
+  return str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
+}
+
+/**
+ * Build the response headers Ghost uses for small, cacheable text responses
+ *
+ * @param {string} body
+ * @param {string} mime
+ * @param {number} maxAge in seconds
+ * @returns {Object}
+ */
+function buildTextHeaders(body, mime, maxAge) {
+  return {
+    'Content-Type': mime,
+    'Content-Length': Buffer.byteLength(body),
+    ETag: `"${crypto.createHash('md5').update(body, 'utf8').digest('hex')}"`,
+    'Cache-Control': `public, max-age=${maxAge}`,
+  };
+}
+
 /**
  * If this request has a ?v= param, make sure the cache has the same key
  *
@@ -41,7 +70,6 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
   const filePath = file.match(/^public/)
     ? path.join(locationPath, file.replace(/^public/, ''))
     : path.join(locationPath, file);
-  const blogRegex = /(\{\{blog-url\}\})/g;
 
   return function servePublicFileMiddleware(req, res, next) {
     if (cache && matchCacheKey(req, cache)) {
@@ -86,16 +114,11 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
       let str = buf.toString();
 
       if (mime === 'text/xsl' || mime === 'text/plain' || mime === 'application/javascript') {
-        str = str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
+        str = replaceBlogUrl(str);
       }
 
       cache = {
-        headers: {
-          'Content-Type': mime,
-          'Content-Length': Buffer.from(str).length,
-          ETag: `"${crypto.createHash('md5').update(str, 'utf8').digest('hex')}"`,
-          'Cache-Control': `public, max-age=${maxAge}`,
-        },
+        headers: buildTextHeaders(str, mime, maxAge),
         body: str,
         key: req.query && req.query.v ? req.query.v : null,
       };
@@ -263,17 +286,26 @@ function servePublicFiles(siteApp) {
     ),
   );
 
-  // Serve robots.txt if not found in theme (and blog is not private)
+  // Serve robots.txt. Precedence: private site > robots_txt setting > theme file > Ghost default
+  const robotsTxtMaxAge = config.get('caching:robotstxt:maxAge');
   const defaultRobotsTxtMiddleware = createPublicFileMiddleware(
     'static',
     'robots.txt',
     'text/plain',
-    config.get('caching:robotstxt:maxAge'),
+    robotsTxtMaxAge,
   );
   siteApp.get('/robots.txt', function serveRobotsTxt(req, res, next) {
     // If private blogging is enabled, let filterPrivateRoutes handle it
     if (settingsCache.get('is_private')) {
       return next();
+    }
+
+    // A site-level robots.txt lives in settings so it survives theme updates
+    const customRobotsTxt = settingsCache.get('robots_txt');
+    if (typeof customRobotsTxt === 'string' && customRobotsTxt.trim() !== '') {
+      const body = replaceBlogUrl(customRobotsTxt);
+      res.writeHead(200, buildTextHeaders(body, 'text/plain', robotsTxtMaxAge));
+      return res.end(body);
     }
 
     const activeTheme = themeEngine.getActive();
