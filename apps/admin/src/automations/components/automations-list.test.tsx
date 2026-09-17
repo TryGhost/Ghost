@@ -8,6 +8,7 @@ const automations = [
   {
     id: 'automation-id-1',
     name: 'Free member welcome flow',
+    description: 'Greet new free members.',
     slug: 'member-welcome-email-free',
     status: 'active' as const,
     stats: {
@@ -67,12 +68,15 @@ describe('AutomationsList', () => {
     vi.useRealTimers();
   });
 
-  it('renders fetched automations with private beta copy and status labels', () => {
+  it('renders fetched automations with API and fallback descriptions and status labels', () => {
     renderWithRouter(<AutomationsList automations={automations} />);
 
     expect(screen.getAllByTestId('automation-list-row')).toHaveLength(3);
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
-    expect(screen.getByText('Welcome new free members after they sign up.')).toBeInTheDocument();
+    expect(screen.getByText('Greet new free members.')).toBeInTheDocument();
+    expect(
+      screen.queryByText('Welcome new free members after they sign up.'),
+    ).not.toBeInTheDocument();
     expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
     expect(
       screen.getByText('Welcome new paid members after they start their subscription.'),
