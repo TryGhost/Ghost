@@ -1,3 +1,4 @@
+import { entryDateParams, type EntryDateScope } from './automation-entry-stats';
 import logging from '@tryghost/logging';
 import { z } from 'zod';
 import type { AutomationBrowseResult, AutomationStatusStats } from './automations-repository';
@@ -9,6 +10,9 @@ export type TinybirdClient = {
     options: {
       version: string;
       automationId?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      timezone?: string;
     },
   ): Promise<unknown>;
 };
@@ -79,11 +83,13 @@ export async function fetchAutomationStats(
 export async function fetchAutomationEntryStats(
   client: TinybirdClient,
   automationId: string,
+  options: { dateFrom?: string; dateTo?: string; timezone?: string } = {},
 ): Promise<EntryStatsData | null> {
   try {
     const rows = await client.fetch('api_automation_entry_stats', {
       version: '',
       automationId,
+      ...options,
     });
     const parsed = z.array(z.object({ date: z.iso.date(), count: runCountSchema })).safeParse(rows);
     if (
@@ -112,9 +118,14 @@ export async function fetchAutomationEntryStats(
 export async function fetchAutomationStatusStats(
   client: TinybirdClient,
   automationId: string,
+  dates: EntryDateScope = {},
 ): Promise<AutomationStatusStats | null> {
   try {
-    const rows = await client.fetch('api_automation_status_stats', { version: '', automationId });
+    const rows = await client.fetch('api_automation_status_stats', {
+      version: '',
+      automationId,
+      ...entryDateParams(dates),
+    });
     const parsed = z
       .array(
         z.object({

@@ -54,3 +54,18 @@
   expected_http_status: 400
   expected_result: >-
     Template Syntax Error: Required parameter is not defined. Check the parameters site_uuid and automation_id. Please provide a value or set a default value in the pipe code.
+
+- name: entry_day_uses_full_step_history
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&date_from=2019-12-31&date_to=2020-01-01&timezone=Atlantic/Cape_Verde
+  expected_result: |
+    {"in_progress_run_count":2,"completed_run_count":2,"exited_early_run_count":4,"unclassified_run_count":2}
+
+- name: excludes_entries_on_exclusive_end
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&date_from=2019-12-31&date_to=2020-01-01&timezone=UTC
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: local_entry_date
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&date_from=2019-12-31&date_to=2020-01-01&timezone=America/New_York
+  expected_result: |
+    {"in_progress_run_count":2,"completed_run_count":2,"exited_early_run_count":4,"unclassified_run_count":2}

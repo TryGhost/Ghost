@@ -124,7 +124,10 @@ copies existing rows so the migration does not depend on retained raw events.
 Keep it through deployment of the new layout, then remove it after every target
 environment has migrated. Deploy the related datafiles together.
 
-The entry pipe returns the full daily history. Core derives the total from that
+The entry pipe returns daily counts in the requested timezone (UTC by default).
+Optional `date_from` and `date_to` pipe parameters are inclusive/exclusive calendar
+bounds; Core converts the inclusive API end date to the next calendar day before
+calling the pipe. Omit both for the full history. Core derives the total from that
 same result. The status pipe combines each run's latest step categories with a
 bit mask: pending=1, finished=2, known exit=4, unknown=8. Any pending bit wins;
 finished-only is 2; known exits with or without finished steps are 6 or 4. Missing

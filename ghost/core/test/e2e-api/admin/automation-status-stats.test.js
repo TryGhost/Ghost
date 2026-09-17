@@ -143,6 +143,41 @@ describe('Automation status stats API', function () {
       }
     }
 
+    it('selects the entry cohort using exclusive local-calendar bounds', async function () {
+      const requests = nock('https://api.tinybird.co')
+        .get('/v0/pipes/api_automation_status_stats.json')
+        .query({
+          ghost_client: 'server',
+          site_uuid: siteUuid,
+          automation_id: automationId,
+          date_from: '2024-03-10',
+          date_to: '2024-03-11',
+          timezone: 'America/New_York',
+        })
+        .reply(200, { data: [{ ...zeroCounts, completed_run_count: 2 }] });
+      const { body } = await agent
+        .get(
+          `automations/${automationId}/status-stats/?date_from=2024-03-10&date_to=2024-03-10&timezone=America%2FNew_York`,
+        )
+        .expectStatus(200);
+      assert.deepEqual(body.automation_status_stats[0].entry_window, {
+        date_from: '2024-03-10',
+        date_to: '2024-03-11',
+        timezone: 'America/New_York',
+        bucket: 'day',
+      });
+      assert.equal(body.automation_status_stats[0].completed_run_count, 2);
+      assert.ok(requests.isDone());
+    });
+
+    it.each([
+      'date_from=2024-03-10',
+      'date_from=2024-03-11&date_to=2024-03-10',
+      'timezone=invalid',
+    ])('rejects invalid date bounds: %s', async function (query) {
+      await agent.get(`automations/${automationId}/status-stats/?${query}`).expectStatus(422);
+    });
+
     it('uses single-automation Tinybird counts without SQL aggregation', async function () {
       const requests = mockStats(200, {
         data: [

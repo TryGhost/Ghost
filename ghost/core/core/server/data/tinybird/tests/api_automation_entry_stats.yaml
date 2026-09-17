@@ -27,3 +27,37 @@
   parameters: site_uuid=bd05ceed-1df9-4af7-832a-d3b5faa7ca1d
   expected_http_status: 400
   expected_result: ''
+
+- name: spring_forward_local_day
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=date-automation&date_from=2024-03-10&date_to=2024-03-11&timezone=America%2FNew_York
+  expected_result: |
+    {"date":"2024-03-10","count":4}
+
+- name: fall_back_local_day
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=date-automation&date_from=2024-11-03&date_to=2024-11-04&timezone=America%2FNew_York
+  expected_result: |
+    {"date":"2024-11-03","count":4}
+
+- name: utc_midnight_boundary
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=date-automation&date_from=2024-03-11&date_to=2024-03-12
+  expected_result: |
+    {"date":"2024-03-11","count":2}
+
+- name: all_time_local_calendar_days
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=date-automation&timezone=America%2FNew_York
+  expected_result: |
+    {"date":"2024-03-09","count":1}
+    {"date":"2024-03-10","count":4}
+    {"date":"2024-03-11","count":1}
+    {"date":"2024-11-02","count":1}
+    {"date":"2024-11-03","count":4}
+    {"date":"2024-11-04","count":1}
+
+- name: empty_selected_range
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=date-automation&date_from=2024-02-28&date_to=2024-03-01
+  expected_result: ''
+
+- name: filtered_other_automation
+  parameters: site_uuid=15890000-0000-4000-8000-000000000000&automation_id=other-automation&date_from=2024-03-10&date_to=2024-03-11&timezone=America%2FNew_York
+  expected_result: |
+    {"date":"2024-03-10","count":1}
