@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../utils/assertions');
+const { waitForEmailStatus } = require('../../utils/batch-email-utils');
 const supertest = require('supertest');
 const _ = require('lodash');
 const moment = require('moment-timezone');
@@ -1036,7 +1037,8 @@ describe('Posts API', function () {
 
     assertExists(email);
     assert.equal(email.get('newsletter_id'), newsletterId);
-    assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    const sentEmail = await waitForEmailStatus(email.id);
+    assert.equal(sentEmail.get('status'), 'submitted');
   });
 
   it('Interprets sent as published for a post with email', async function () {
@@ -1117,7 +1119,8 @@ describe('Posts API', function () {
 
     assertExists(email);
     assert.equal(email.get('newsletter_id'), newsletterId);
-    assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    const sentEmail = await waitForEmailStatus(email.id);
+    assert.equal(sentEmail.get('status'), 'submitted');
   });
 
   it('Can publish an email_only post by setting status to published', async function () {
@@ -1197,7 +1200,8 @@ describe('Posts API', function () {
 
     assert.equal(email.get('newsletter_id'), newsletterId);
     assert.equal(email.get('recipient_filter'), 'all');
-    assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    const sentEmail = await waitForEmailStatus(email.id);
+    assert.equal(sentEmail.get('status'), 'submitted');
   });
 
   it('Can publish an email_only post with free filter', async function () {
@@ -1280,7 +1284,8 @@ describe('Posts API', function () {
 
     assert.equal(email.get('newsletter_id'), newsletterId);
     assert.equal(email.get('recipient_filter'), 'status:free');
-    assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    const sentEmail = await waitForEmailStatus(email.id);
+    assert.equal(sentEmail.get('status'), 'submitted');
   });
 
   it('Can publish an email_only post by setting the status to sent', async function () {
@@ -1363,7 +1368,8 @@ describe('Posts API', function () {
 
     assert.equal(email.get('newsletter_id'), newsletterId);
     assert.equal(email.get('recipient_filter'), 'status:free');
-    assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    const sentEmail = await waitForEmailStatus(email.id);
+    assert.equal(sentEmail.get('status'), 'submitted');
   });
 
   it('Can publish a scheduled post', async function () {
@@ -1469,7 +1475,8 @@ describe('Posts API', function () {
 
     assert.equal(email.get('newsletter_id'), newsletterId);
     assert.equal(email.get('recipient_filter'), 'all');
-    assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    const sentEmail = await waitForEmailStatus(email.id);
+    assert.equal(sentEmail.get('status'), 'submitted');
   });
 
   it('Can publish a scheduled post with custom email segment', async function () {
@@ -1577,7 +1584,8 @@ describe('Posts API', function () {
 
     assert.equal(email.get('newsletter_id'), newsletterId);
     assert.equal(email.get('recipient_filter'), 'status:free');
-    assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    const sentEmail = await waitForEmailStatus(email.id);
+    assert.equal(sentEmail.get('status'), 'submitted');
   });
 
   it('Can publish a scheduled post without newsletter', async function () {
@@ -1786,7 +1794,8 @@ describe('Posts API', function () {
 
     assert.equal(email.get('newsletter_id'), newsletterId);
     assert.equal(email.get('recipient_filter'), 'all');
-    assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    const sentEmail = await waitForEmailStatus(email.id);
+    assert.equal(sentEmail.get('status'), 'submitted');
   });
 
   it('Cannot schedule an email only post without newsletter reference', async function () {
@@ -1899,7 +1908,8 @@ describe('Posts API', function () {
 
     assert.equal(email.get('newsletter_id'), newsletterId);
     assert.equal(email.get('recipient_filter'), 'status:-free');
-    assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    const sentEmail = await waitForEmailStatus(email.id);
+    assert.equal(sentEmail.get('status'), 'submitted');
 
     const unpublished = {
       status: 'draft',
@@ -2100,7 +2110,8 @@ describe('Posts API', function () {
 
       assertExists(email);
       assert.equal(email.get('newsletter_id'), newsletterId);
-      assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+      const sentEmail = await waitForEmailStatus(email.id);
+      assert.equal(sentEmail.get('status'), 'submitted');
     });
 
     it('Can publish an email_only post', async function () {
@@ -2171,7 +2182,8 @@ describe('Posts API', function () {
 
       assert.equal(email.get('newsletter_id'), newsletterId);
       assert.equal(email.get('recipient_filter'), 'all');
-      assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+      const sentEmail = await waitForEmailStatus(email.id);
+      assert.equal(sentEmail.get('status'), 'submitted');
     });
   });
 

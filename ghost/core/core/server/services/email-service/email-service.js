@@ -204,7 +204,7 @@ class EmailService {
     });
 
     try {
-      this.#batchSendingService.scheduleEmail(email);
+      await this.#batchSendingService.scheduleEmail(email);
     } catch (e) {
       await email.save(
         {
@@ -334,7 +334,7 @@ class EmailService {
     logging.warn(`Email resume: scheduling ${email.id} for re-send ${JSON.stringify(breadcrumb)}`);
 
     // Skip checkLimits — this email already passed limits when first sent.
-    this.#batchSendingService.scheduleEmail(email);
+    await this.#batchSendingService.scheduleEmail(email);
   }
 
   async #buildResumeBreadcrumb(email) {
@@ -392,8 +392,20 @@ class EmailService {
     // so we have a immediate response when retrying an email (schedule can take a while to kick off sometimes)
     await email.save({ status: 'pending' }, { patch: true });
 
-    this.#batchSendingService.scheduleEmail(email);
+    try {
+      await this.#batchSendingService.scheduleEmail(email);
+    } catch (e) {
+      await email.save({ status: 'failed' }, { patch: true });
+      throw e;
+    }
     return email;
+  }
+
+  /**
+   * @param {import('./jobs/send-email-job').default} job
+   */
+  async handleSendEmailJob(job) {
+    await this.#batchSendingService.emailJob({ emailId: job.emailId });
   }
 
   /**
