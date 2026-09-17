@@ -1,4 +1,7 @@
 const logging = require('@tryghost/logging');
+const { once } = require('@tryghost/memoize/once');
+
+const loadCheerio = once(() => require('cheerio/slim'));
 
 module.exports = class MentionDiscoveryService {
   #externalRequest;
@@ -63,7 +66,7 @@ module.exports = class MentionDiscoveryService {
       return null;
     }
 
-    const cheerio = require('cheerio/slim');
+    const cheerio = loadCheerio();
     const $ = cheerio.load(response.body);
 
     // must be first <link> OR <a> element with rel=webmention

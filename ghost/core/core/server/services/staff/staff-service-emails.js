@@ -3,6 +3,9 @@ const path = require('path');
 const moment = require('moment');
 const { globSync } = require('glob');
 const emailAddressParser = require('../email-address/email-address-parser');
+const { once } = require('@tryghost/memoize/once');
+
+const loadJuice = once(() => require('juice'));
 
 class StaffServiceEmails {
   constructor({
@@ -667,7 +670,7 @@ class StaffServiceEmails {
       ...sharedData,
     });
 
-    const juice = require('juice');
+    const juice = loadJuice();
 
     return juice(html, {
       inlinePseudoElements: true,
