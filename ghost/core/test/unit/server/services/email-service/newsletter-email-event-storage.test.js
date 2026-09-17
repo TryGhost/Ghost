@@ -1,6 +1,7 @@
 const NewsletterEmailEventStorage = require('../../../../../core/server/services/email-service/newsletter-email-event-storage');
 
 const sinon = require('sinon');
+const createKnex = require('knex');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const { createDb, createPrometheusClient } = require('./utils');
@@ -69,6 +70,69 @@ describe('Email Event Storage', function () {
       }
     });
   }
+
+  it('flushes SQLite batches, counts only new timestamps, and clears pending updates', async function () {
+    const knex = createKnex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+    try {
+      await knex.schema.createTable('email_recipients', (table) => {
+        table.string('id').primary();
+        table.datetime('delivered_at');
+        table.datetime('opened_at');
+        table.datetime('failed_at');
+      });
+      await knex('email_recipients').insert([
+        { id: 'new-recipient' },
+        {
+          id: 'seen-recipient',
+          delivered_at: '2026-01-01 00:00:00',
+          opened_at: '2026-01-01 00:00:00',
+          failed_at: '2026-01-01 00:00:00',
+        },
+      ]);
+      const storage = createEventStorage({ db: { knex }, config: { get: () => true } });
+      sinon.stub(storage, 'saveFailure').resolves();
+      const raw = sinon.spy(knex, 'raw');
+      const counts = { storedDelivered: 0, storedOpened: 0, storedPermanentFailed: 0 };
+
+      for (const emailRecipientId of ['new-recipient', 'seen-recipient']) {
+        const event = { emailRecipientId, timestamp: new Date('2026-01-02T00:00:00Z') };
+        await storage.handleDelivered(event, counts);
+        await storage.handleOpened(event, counts);
+        await storage.handlePermanentFailed(event, counts);
+      }
+      await storage.flushBatchedUpdates(counts);
+      assert.deepEqual(counts, { storedDelivered: 1, storedOpened: 1, storedPermanentFailed: 1 });
+      const recipient = await knex('email_recipients').where({ id: 'new-recipient' }).first();
+      assert.equal(recipient.delivered_at, '2026-01-02 00:00:00');
+      assert.equal(recipient.opened_at, '2026-01-02 00:00:00');
+      assert.equal(recipient.failed_at, '2026-01-02 00:00:00');
+
+      raw.resetHistory();
+      await storage.flushBatchedUpdates(counts);
+      sinon.assert.notCalled(raw);
+
+      const replayCounts = { storedDelivered: 0, storedOpened: 0, storedPermanentFailed: 0 };
+      const replay = {
+        emailRecipientId: 'new-recipient',
+        timestamp: new Date('2026-01-02T00:00:00Z'),
+      };
+      await storage.handleDelivered(replay, replayCounts);
+      await storage.handleOpened(replay, replayCounts);
+      await storage.handlePermanentFailed(replay, replayCounts);
+      await storage.flushBatchedUpdates(replayCounts);
+      assert.deepEqual(replayCounts, {
+        storedDelivered: 0,
+        storedOpened: 0,
+        storedPermanentFailed: 0,
+      });
+    } finally {
+      await knex.destroy();
+    }
+  });
 
   describe('Constructor', function () {
     it("doesn't throw", function () {
