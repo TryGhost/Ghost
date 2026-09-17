@@ -2,6 +2,8 @@ const assert = require('node:assert/strict');
 const path = require('path');
 
 const { globSync } = require('glob');
+const importer = require('../../../core/server/data/importer');
+importer.init(require('../server/data/importer/create-import-manager').dependencies());
 
 describe('API', function () {
   describe('Cache Invalidation', function () {

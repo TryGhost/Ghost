@@ -1,24 +1,12 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
-const config = require('../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const RevueHandler = require('./handlers/revue');
-const JSONHandler = require('./handlers/json');
-const MarkdownHandler = require('./handlers/markdown');
-const RevueImporter = require('./importers/importer-revue');
-const DataImporter = require('./importers/data');
-const urlUtils = require('../../../shared/url-utils').default;
-const { GhostMailer } = require('../../services/mail');
-const jobManager = require('../../services/jobs');
 const ImportArchive = require('./import-archive').default;
-const { createContentFileHandlers, createContentFileImporters } = require('./content-files');
 
 const { emailTemplate } = require('./email-template');
-const ghostMailer = new GhostMailer();
 
 const messages = {
   couldNotCleanUpFile: {
@@ -36,19 +24,15 @@ let defaults = {
 };
 
 class ImportManager {
-  constructor() {
-    const contentFileHandlers = createContentFileHandlers();
-    const contentFileImporters = createContentFileImporters();
-
-    /**
-     * @type {Importer[]} importers
-     */
-    this.importers = [...contentFileImporters, RevueImporter, DataImporter];
-
-    /**
-     * @type {Handler[]}
-     */
-    this.handlers = [...contentFileHandlers, RevueHandler, JSONHandler, MarkdownHandler];
+  constructor({ jobsService, jobManager, handlers, importers, mailer, config, urlUtils, logging }) {
+    this.jobsService = jobsService;
+    this.jobManager = jobManager;
+    this.handlers = handlers;
+    this.importers = importers;
+    this.mailer = mailer;
+    this.config = config;
+    this.urlUtils = urlUtils;
+    this.logging = logging;
 
     this.archive = new ImportArchive({
       extensions: this.getExtensions(),
@@ -324,7 +308,7 @@ class ImportManager {
     try {
       await fs.remove(this.fileToDelete);
     } catch (err) {
-      logging.error(
+      this.logging.error(
         new errors.InternalServerError({
           err: err,
           context: tpl(messages.couldNotCleanUpFile.error),
@@ -346,8 +330,8 @@ class ImportManager {
    * @returns {string}
    */
   generateCompletionEmail(result, { emailRecipient, importTag }) {
-    const siteUrl = new URL(urlUtils.urlFor('home', null, true));
-    const postsUrl = new URL('posts', urlUtils.urlFor('admin', null, true));
+    const siteUrl = new URL(this.urlUtils.urlFor('home', null, true));
+    const postsUrl = new URL('posts', this.urlUtils.urlFor('admin', null, true));
     if (importTag && result?.data?.tags) {
       const tag = result.data.tags.find((t) => t.name === importTag);
       postsUrl.searchParams.set('tag', tag.slug);
@@ -380,13 +364,13 @@ class ImportManager {
 
     debug('importFromFile completed file load', importData);
 
-    const env = config.get('env');
+    const env = this.config.get('env');
     if (!env?.startsWith('testing') && !importOptions.runningInJob) {
-      logging.info('[Background Job] site-content-import queued');
-      return jobManager.addJob({
+      this.logging.info('[Background Job] site-content-import queued');
+      return this.jobManager.addJob({
         job: async () => {
           const startedAt = Date.now();
-          logging.info('[Background Job] site-content-import started');
+          this.logging.info('[Background Job] site-content-import started');
           try {
             const result = await this.importFromFile(
               file,
@@ -398,17 +382,17 @@ class ImportManager {
             // importFromFile swallows its own failures and returns undefined,
             // so an absent result is the only signal that the import failed.
             if (result === undefined) {
-              logging.info(
+              this.logging.info(
                 `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
               );
             } else {
-              logging.info(
+              this.logging.info(
                 `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
               );
             }
             return result;
           } catch (err) {
-            logging.error(
+            this.logging.error(
               err,
               `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
             );
@@ -433,7 +417,7 @@ class ImportManager {
 
       return importResult;
     } catch (err) {
-      logging.error(err, '[Background Job] site-content-import error');
+      this.logging.error(err, '[Background Job] site-content-import error');
       const errorDetails = err.errorDetails || [err];
       importResult = { data: { errors: errorDetails } };
     } finally {
@@ -446,7 +430,7 @@ class ImportManager {
           emailRecipient: importOptions.user.email,
           importTag: importOptions.importTag,
         });
-        await ghostMailer.send({
+        await this.mailer.send({
           to: importOptions.user.email,
           subject: importResult?.data?.errors
             ? 'Your content import was unsuccessful'
@@ -521,4 +505,4 @@ class ImportManager {
 /**
  * @typedef {Object} ImportResult
  */
-module.exports = new ImportManager();
+module.exports = ImportManager;

@@ -673,6 +673,31 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     if (frontend) {
       initFrontend();
     }
+    const jobsService = require('./server/services/jobs-service').init();
+    const {
+      createContentFileHandlers,
+      createContentFileImporters,
+    } = require('./server/data/importer/content-files');
+    const { GhostMailer } = require('./server/services/mail');
+    require('./server/data/importer').init({
+      jobsService,
+      jobManager: require('./server/services/jobs'),
+      handlers: [
+        ...createContentFileHandlers(),
+        require('./server/data/importer/handlers/revue'),
+        require('./server/data/importer/handlers/json'),
+        require('./server/data/importer/handlers/markdown'),
+      ],
+      importers: [
+        ...createContentFileImporters(),
+        require('./server/data/importer/importers/importer-revue'),
+        require('./server/data/importer/importers/data'),
+      ],
+      mailer: new GhostMailer(),
+      config,
+      urlUtils: require('./shared/url-utils').default,
+      logging,
+    });
     const ghostApp = await initExpressApps({ frontend, backend, config });
 
     await initDynamicRouting({ frontend });
@@ -680,8 +705,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     if (frontend) {
       await initAppService();
     }
-
-    const jobsService = require('./server/services/jobs-service').init();
 
     await initServices({ ghostServer, config, prometheusClient, jobsService });
 

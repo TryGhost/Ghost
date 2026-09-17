@@ -3,6 +3,8 @@ const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const dbControllerPath = require.resolve('../../../../core/server/api/endpoints/db');
 const jobsServicePath = require.resolve('../../../../core/server/services/jobs-service');
+const importerWrapper = require('../../../../core/server/data/importer');
+importerWrapper.init(require('../../server/data/importer/create-import-manager').dependencies());
 const dbController = require(dbControllerPath);
 const jobsService = require(jobsServicePath);
 const ExternalMediaInlinerJob =
@@ -14,7 +16,7 @@ describe('DB controller', function () {
   beforeEach(function () {
     jobsServiceInitialised = false;
     settingsCache = require('../../../../core/shared/settings-cache');
-    importer = require('../../../../core/server/data/importer');
+    importer = importerWrapper.service;
 
     sinon.stub(settingsCache, 'get').withArgs('timezone').returns('UTC');
     sinon.stub(importer, 'importFromFile').resolves({

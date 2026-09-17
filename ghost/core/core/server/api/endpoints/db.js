@@ -2,7 +2,7 @@ const moment = require('moment-timezone');
 const path = require('path');
 const dbBackup = require('../../data/db/backup');
 const exporter = require('../../data/exporter');
-const importer = require('../../data/importer');
+const importer = require('../../data/importer').service;
 const jobsService = require('../../services/jobs-service');
 const ExternalMediaInlinerJob =
   require('../../services/media-inliner/external-media-inliner-job').default;

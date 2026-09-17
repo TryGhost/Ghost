@@ -12,7 +12,7 @@ const errors = require('@tryghost/errors');
 const db = require('../../../core/server/data/db');
 
 const models = require('../../../core/server/models');
-const importer = require('../../../core/server/data/importer');
+const importer = require('../../unit/server/data/importer/create-import-manager').default();
 const dataImporter = importer.importers.find((instance) => {
   return instance.type === 'data';
 });
