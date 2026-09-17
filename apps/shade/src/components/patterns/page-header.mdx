@@ -14,17 +14,18 @@ require a different overall layout.
 
 Place actions in reading and keyboard order:
 
-1. **Labelled secondary actions:** icon + label, ordered by importance or frequency.
-2. **Icon-only utilities:** ordered by importance or frequency, with **More actions
-   (•••) last** when present.
-3. **An optional single primary action:** icon + label, at the right edge.
+1. **Icon-only secondary actions:** ordered by importance or frequency, with the
+   overflow menu (•••) last when present.
+2. **Labelled secondary actions:** icon + label, ordered by importance or frequency.
+3. **A gap** separating secondary actions from the primary.
+4. **An optional single primary action:** icon + label, at the right edge.
 
-For example: Filter → Date range → Search → More actions → New member. Importance
+For example: Search → More actions → Filter → Date range → gap → New member. Importance
 is a product decision within each group. The component preserves the supplied DOM
 order; it does not infer importance or sort children. A page without a meaningful
 primary action should omit it.
 
-`PageHeader.ActionGroup` provides **4px** between secondary controls.
+`PageHeader.ActionGroup` provides **8px** between secondary controls.
 `PageHeader.ActionGroup.Primary` provides **20px** separation from the preceding
 secondary control. Put at most one primary action in that slot. A primary alone
 has no leading separation. Avoid additional margins or gaps on individual actions.
@@ -42,8 +43,8 @@ trigger must be constructed outside that slot, such as a modal trigger.
 ```tsx
 <PageHeader.Actions>
   <PageHeader.ActionGroup>
-    <PageHeader.Action label="Filter"><ListFilter />Filter</PageHeader.Action>
     <PageHeader.Action label="Search" iconOnly><Search /></PageHeader.Action>
+    <PageHeader.Action label="Filter"><ListFilter />Filter</PageHeader.Action>
     <PageHeader.ActionGroup.Primary>
       <PageHeader.Action label="New member"><Plus />New member</PageHeader.Action>
     </PageHeader.ActionGroup.Primary>
@@ -56,7 +57,9 @@ stroke width, ghost variant, tooltip styling, or page-specific CSS. Secondary
 controls use the ghost treatment and **2px icon strokes**. Dropdown text has the
 same medium weight as Filter; header dropdown triggers hide their down chevrons.
 
-Use `PageHeader.SelectTrigger` inside Select for labelled dropdowns. Compose
+Use `PageHeader.SelectTrigger` inside Select for labelled header dropdowns; it
+provides the pill shape. Ordinary `SelectTrigger` form fields keep standard rounded
+corners. Compose
 `PageHeader.Action` with `DropdownMenuTrigger asChild` for action menus. Refs,
 accessible state and event handlers reach the underlying control. Dropdown and
 popover triggers retain the inset pressed treatment while expanded.

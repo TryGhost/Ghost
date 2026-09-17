@@ -139,14 +139,19 @@ const PageHeaderSelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectTrigger>,
   React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string }
 >(({ label, className, ...props }, ref) => {
-  const { isAdmin7 } = useShade();
+  const { controlShape, isAdmin7 } = useShade();
   return (
     <PageHeaderTooltip label={label}>
       <PageHeaderTooltipTrigger asChild>
         <SelectTrigger
           ref={ref}
           aria-label={label}
-          className={cn('w-auto', isAdmin7 && 'font-medium [&_svg]:stroke-2!', className)}
+          className={cn(
+            'w-auto',
+            isAdmin7 && 'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2!',
+            className,
+          )}
+          shape={controlShape}
           showChevron={!isAdmin7}
           variant={isAdmin7 ? 'ghost' : 'default'}
           {...props}
@@ -283,7 +288,7 @@ function PageHeaderActionGroupPrimary({ children, className }: PageHeaderActionG
     <PrimaryActionContext.Provider value={true}>
       {isAdmin7 ? (
         <Inline
-          className={cn('ms-4 shrink-0 first:ms-0', className)}
+          className={cn('ms-3 shrink-0 first:ms-0', className)}
           data-page-header="primary"
           gap="none"
         >
@@ -388,7 +393,7 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
     mobileMenuBreakpoint = DEFAULT_MOBILE_MENU_BREAKPOINT,
   }: PageHeaderActionGroupProps) {
     const { isAdmin7 } = useShade();
-    const gap = isAdmin7 ? 'xs' : 'sm';
+    const gap = 'sm';
     const childNodes = React.Children.toArray(children);
     const desktopChildren: React.ReactNode[] = [];
     let mobileMenu: React.ReactElement | null = null;

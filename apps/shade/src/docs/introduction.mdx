@@ -36,7 +36,9 @@ See **[Contributing](?path=/docs/overview-contributing--docs)** for the implemen
 Shade previews use the new controls by default. New screens use ordinary
 `Button`, `SelectTrigger`, `InputGroup`, `Badge`, `FilterBar`, and `PageHeader`
 components; there is no need to add `shape="pill"` or copy milestone classes into
-pages. Explicit shapes remain available for a specific visual need.
+pages. Form selects and input groups retain standard rounded corners; their
+embedded action buttons inherit the button shape. PageHeader.SelectTrigger supplies
+the pill shape for header dropdowns. Explicit shapes remain available for a specific visual need.
 
 Admin reads the existing `admin7Pill` Labs flag at its application boundary,
 excludes unsupported routes, and passes a boolean to Shade's existing provider.

@@ -26,6 +26,7 @@ import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { exportMembers } from './members-actions-helpers';
 
 interface MembersActionsProps {
+  children?: React.ReactNode;
   hasFilterOrSearch: boolean;
   memberCount: number;
   nql?: string;
@@ -37,6 +38,7 @@ interface MembersActionsProps {
 }
 
 const MembersActions: React.FC<MembersActionsProps> = ({
+  children,
   hasFilterOrSearch,
   memberCount,
   nql,
@@ -303,6 +305,8 @@ const MembersActions: React.FC<MembersActionsProps> = ({
           </DropdownMenu>
         </>
       )}
+
+      {children}
 
       {showNewMember && (
         <PageHeader.ActionGroup.Primary>
