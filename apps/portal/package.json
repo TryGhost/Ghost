@@ -76,6 +76,16 @@
           "cwd": "apps/portal",
           "command": "vite build --watch --mode development"
         }
+      },
+      "lint": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/metafield-types"
+            ],
+            "target": "build"
+          }
+        ]
       }
     },
     "tags": [
