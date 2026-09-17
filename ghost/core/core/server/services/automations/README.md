@@ -98,8 +98,12 @@ by automation, dates, and timezone; response windows are checked before display.
 }
 ```
 
-All counts are all-time, with each run counted once using its latest recorded step
-outcomes:
+The optional `search` parameter scopes counts to every matching current member
+run across all statuses. Counts remain pending until their independent
+continuation reaches exhaustion; partial totals are never presented as complete.
+
+Counts currently retain the all-time date scope, with each run counted once using
+its latest recorded step outcomes:
 
 - **In progress:** any pending step; takes precedence over every other outcome.
 - **Completed:** at least one step, all finished.

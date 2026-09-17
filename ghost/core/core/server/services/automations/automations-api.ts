@@ -24,6 +24,11 @@ import {
   searchCursorScope,
   decodeSearchCursor,
 } from './automation-member-search';
+import {
+  readMemberSearchCounts,
+  decodeCountCursor,
+  countCursorScope,
+} from './automation-member-search-counts';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { readRunHistory as loadRunHistory } from './automation-run-history';
 
@@ -185,7 +190,28 @@ export async function readEntryStats(automationId: string, options: unknown = {}
   return { automation_id: automationId, ...fillEntryStats(stats, window), window };
 }
 
-export async function readStatusStats(automationId: string) {
+export async function readStatusStats(
+  automationId: string,
+  options: { search?: unknown; cursor?: unknown } = {},
+) {
+  const query = normalizeMemberSearch(options.search);
+  if (query) {
+    const scope = countCursorScope(
+      automationId,
+      config.get('tinybird:stats:id') || settingsCache.get('site_uuid'),
+      query,
+    );
+    const secret = settingsCache.get('admin_session_secret');
+    const continuation =
+      options.cursor === undefined ? undefined : decodeCountCursor(options.cursor, scope, secret);
+    await requireAutomation(automationId);
+    return readMemberSearchCounts(knex, getTinybirdClient(), scope, query, secret, continuation);
+  }
+  if (options.cursor !== undefined) {
+    throw new errors.ValidationError({
+      message: 'Count continuation requires a nonblank member search.',
+    });
+  }
   await requireAutomation(automationId);
   const client = getTinybirdClient();
   const stats = await fetchAutomationStatusStats(client, automationId);

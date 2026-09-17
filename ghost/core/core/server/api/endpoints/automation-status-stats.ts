@@ -6,9 +6,10 @@ const controller = {
   read: {
     headers: { cacheInvalidate: false },
     data: ['id'],
+    options: ['search', 'cursor'],
     permissions: { docName: 'automations', method: 'read' },
-    async query(frame: { data: { id: string } }) {
-      return await automationsApi.readStatusStats(frame.data.id);
+    async query(frame: { data: { id: string }; options: { search?: unknown; cursor?: unknown } }) {
+      return await automationsApi.readStatusStats(frame.data.id, frame.options);
     },
   },
 };
