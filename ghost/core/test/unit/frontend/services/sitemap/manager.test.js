@@ -229,6 +229,22 @@ describe('Unit: sitemap/manager', function () {
         sinon.assert.callCount(fetchStub, 8);
       });
 
+      it('drops the index generator cache whenever the index is invalidated', async function () {
+        const siteMapManager = makeManager();
+        await siteMapManager.getIndexXml();
+
+        // Stand in for a rendered index; the real getXml is stubbed here.
+        siteMapManager.index.siteMapContent = '<sitemapindex/>';
+
+        eventsToRemember['site.changed']();
+
+        assert.equal(
+          siteMapManager.index.siteMapContent,
+          null,
+          'a cached index would outlive the content it describes',
+        );
+      });
+
       it('resets the generators at the start of every apply so a rebuild holds no dropped resources', async function () {
         sandbox.stub(PostGenerator.prototype, 'reset');
         const siteMapManager = makeManager();

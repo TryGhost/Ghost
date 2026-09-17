@@ -2949,9 +2949,6 @@ importers:
       unidecode:
         specifier: 'catalog:'
         version: 1.1.0
-      xml:
-        specifier: 1.0.1
-        version: 1.0.1
       zod:
         specifier: 'catalog:'
         version: 4.4.3
