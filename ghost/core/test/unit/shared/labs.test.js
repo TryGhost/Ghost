@@ -249,6 +249,90 @@ describe('Labs Service - remote overrides', function () {
   });
 });
 
+describe('Labs Service - layer precedence', function () {
+  afterEach(async function () {
+    flagOverrides.clear();
+    sinon.restore();
+    await configUtils.restore();
+  });
+
+  itIfHasBothFlags('applies the full chain: config > remote > GA > DB', function () {
+    const gaKey = labs.GA_KEYS[0];
+    const writable = labs.WRITABLE_KEYS_ALLOWLIST[0];
+
+    const getStub = sinon.stub(settingsCache, 'get');
+    getStub.withArgs('labs').returns({ [gaKey]: false, [writable]: true });
+    getStub.withArgs('members_signup_access').returns('all');
+
+    // DB only: the stored value is what we get.
+    assert.equal(labs.isSet(writable), true);
+    assert.equal(labs.getAll()[writable], true);
+
+    // GA beats the DB's `false`.
+    assert.equal(labs.isSet(gaKey), true);
+    assert.equal(labs.getAll()[gaKey], true);
+
+    // Remote beats both GA and the DB.
+    flagOverrides.replace({ [gaKey]: false, [writable]: false });
+    assert.equal(labs.isSet(gaKey), false);
+    assert.equal(labs.isSet(writable), false);
+    assert.equal(labs.getAll()[gaKey], false);
+    assert.equal(labs.getAll()[writable], false);
+
+    // config.labs beats everything.
+    configUtils.set('labs', { [gaKey]: true, [writable]: true });
+    assert.equal(labs.isSet(gaKey), true);
+    assert.equal(labs.isSet(writable), true);
+    assert.equal(labs.getAll()[gaKey], true);
+    assert.equal(labs.getAll()[writable], true);
+  });
+
+  it('isSet agrees with getAll for every flag', function () {
+    const gaKey = labs.GA_KEYS[0];
+    const writable = labs.WRITABLE_KEYS_ALLOWLIST[0];
+    const keys = [...labs.getAllFlags(), 'members', 'notAFlag', 'subscribers'];
+
+    function assertAgreement(label) {
+      const all = labs.getAll();
+
+      for (const key of keys) {
+        assert.equal(labs.isSet(key), all[key] === true, `${label}: ${key}`);
+      }
+    }
+
+    assertAgreement('defaults');
+
+    const getStub = sinon.stub(settingsCache, 'get');
+    getStub.withArgs('labs').returns(writable ? { [writable]: true } : {});
+    getStub.withArgs('members_signup_access').returns('none');
+    assertAgreement('DB layer');
+
+    if (gaKey) {
+      flagOverrides.replace({ [gaKey]: false });
+      assertAgreement('remote layer');
+    }
+
+    if (writable) {
+      configUtils.set('labs', { [writable]: false });
+      assertAgreement('config layer');
+    }
+  });
+
+  it('getAll returns a fresh object every call', function () {
+    const first = labs.getAll();
+    const second = labs.getAll();
+
+    assert.notEqual(first, second);
+    assert.deepEqual(first, second);
+
+    first.members = 'mutated';
+    first.notAFlag = true;
+
+    assert.equal(labs.getAll().members, second.members);
+    assert.equal(labs.getAll().notAFlag, undefined);
+  });
+});
+
 describe('Labs Service - Flag Integrity', function () {
   it('should have no duplicate flags across categories', function () {
     const allFlags = labs.getAllFlags();
