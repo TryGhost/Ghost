@@ -197,6 +197,9 @@ class SiteMapManager {
   _invalidateIndex() {
     this._indexBuilt = false;
     this._indexEpoch += 1;
+    // The index generator's cached xml is valid exactly while _indexBuilt
+    // is, so the two are dropped together.
+    this.index.reset();
   }
 
   /**
