@@ -547,9 +547,8 @@ async function initBackgroundServices({ config }) {
     logging.error(err);
   }
 
-  const activitypub = require('./server/services/activitypub');
-  await activitypub.init();
-  // Load email analytics recurring jobs
+  // Load email analytics recurring jobs. Runs before activitypub.init for the
+  // same reason as the schedules above.
   if (config.get('backgroundJobs:emailAnalytics')) {
     const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
     await Promise.all([
@@ -559,6 +558,8 @@ async function initBackgroundServices({ config }) {
     ]);
   }
 
+  const activitypub = require('./server/services/activitypub');
+  await activitypub.init();
   const tinybirdSync = require('./server/services/tinybird-sync');
   tinybirdSync.start();
 
