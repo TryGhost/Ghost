@@ -2,15 +2,21 @@ const moment = require('moment');
 const urlUtils = require('../../../shared/url-utils').default;
 const sitemapXml = require('./sitemap-xml');
 
+const INITIAL_CAPACITY = 64;
+
 class BaseSiteMapGenerator {
   constructor() {
-    // {loc, ts, imageLoc}: one flat record per resource, rather than the
-    // nested element tree the xml package used to take plus a parallel map
-    // of Moments. Both were held for the lifetime of the index, and at 10k
-    // posts they measured ~1.1 kB per resource against ~300 B for this.
-    // Not keyed by id: every build fills a fresh generator, so nothing
-    // overwrites a record.
-    this.nodeLookup = [];
+    // One resource per index across parallel arrays rather than an object
+    // per resource: the lastmod timestamps sit unboxed in a typed array, and
+    // the heap holds little more than the url strings. Every build fills a
+    // fresh generator, so nothing is ever looked up or overwritten by id.
+    this.locs = [];
+    this.timestamps = new Float64Array(INITIAL_CAPACITY);
+    // Indexed like locs; null where the resource has no image.
+    this.imageLocs = [];
+    // Indexes into the arrays above, newest first. Dropped wherever
+    // siteMapContent is.
+    this.order = null;
     this.siteMapContent = new Map();
     this.lastModified = 0;
     this.maxPerPage = 50000;
@@ -22,7 +28,7 @@ class BaseSiteMapGenerator {
    * they are stored.
    */
   get size() {
-    return this.nodeLookup.length;
+    return this.locs.length;
   }
 
   hasCanonicalUrl(datum, url) {
@@ -49,20 +55,56 @@ class BaseSiteMapGenerator {
   }
 
   generateXmlFromNodes(page) {
-    // Sort newest to oldest. The records are sorted in place of a wrapper
-    // object per resource, so a render allocates one array of references.
-    const records = this.nodeLookup.slice();
-    records.sort((a, b) => b.ts - a.ts);
+    const order = this.getOrder();
 
     // Get the page of nodes that was requested
-    const pageRecords = records.slice((page - 1) * this.maxPerPage, page * this.maxPerPage);
+    const pageOrder = order.subarray((page - 1) * this.maxPerPage, page * this.maxPerPage);
 
     // Do not generate empty sitemaps
-    if (pageRecords.length === 0) {
+    if (pageOrder.length === 0) {
       return null;
     }
 
-    return sitemapXml.renderUrlSet(pageRecords);
+    const entries = new Array(pageOrder.length);
+    for (let i = 0; i < pageOrder.length; i++) {
+      const index = pageOrder[i];
+      entries[i] = {
+        loc: this.locs[index],
+        ts: this.timestamps[index],
+        imageLoc: this.imageLocs[index],
+      };
+    }
+
+    return sitemapXml.renderUrlSet(entries);
+  }
+
+  /**
+   * Resource indexes sorted newest to oldest, computed once for every page
+   * rather than once per page. Ties keep the order they were added in.
+   *
+   * @returns {Int32Array}
+   */
+  getOrder() {
+    if (this.order) {
+      return this.order;
+    }
+
+    const size = this.size;
+    // Nothing is added between a build and its first render, so the unused
+    // capacity is released here.
+    if (this.timestamps.length > size) {
+      this.timestamps = this.timestamps.slice(0, size);
+    }
+
+    const timestamps = this.timestamps;
+    const order = new Int32Array(size);
+    for (let i = 0; i < size; i++) {
+      order[i] = i;
+    }
+    order.sort((a, b) => timestamps[b] - timestamps[a] || a - b);
+
+    this.order = order;
+    return order;
   }
 
   addUrl(url, datum) {
@@ -76,8 +118,16 @@ class BaseSiteMapGenerator {
     const lastModified = this.getLastModifiedForDatum(datum);
 
     this.updateLastModified(datum, lastModified);
-    this.updateLookups(datum, this.createRecordFromDatum(url, datum, lastModified));
+    this.addRecord(
+      // Transformed here rather than over the finished document: the two
+      // urls are the only transform-ready values a sitemap carries, and a
+      // regex across several megabytes of xml both costs and leaves a rope.
+      urlUtils.transformReadyToAbsolute(url),
+      lastModified,
+      this.createImageLocFromDatum(datum),
+    );
     // force regeneration of xml
+    this.order = null;
     this.siteMapContent.clear();
   }
 
@@ -107,23 +157,6 @@ class BaseSiteMapGenerator {
     if (lastModified > this.lastModified) {
       this.lastModified = lastModified;
     }
-  }
-
-  /**
-   * @param {string} url
-   * @param {Object} datum
-   * @param {number} [lastModified] epoch milliseconds
-   * @returns {{loc: string, ts: number, imageLoc: string|null}}
-   */
-  createRecordFromDatum(url, datum, lastModified = this.getLastModifiedForDatum(datum)) {
-    return {
-      // Transformed here rather than over the finished document: the two
-      // urls are the only transform-ready values a sitemap carries, and a
-      // regex across several megabytes of xml both costs and leaves a rope.
-      loc: urlUtils.transformReadyToAbsolute(url),
-      ts: lastModified,
-      imageLoc: this.createImageLocFromDatum(datum),
-    };
   }
 
   createImageLocFromDatum(datum) {
@@ -160,12 +193,29 @@ class BaseSiteMapGenerator {
     return content;
   }
 
-  updateLookups(datum, record) {
-    this.nodeLookup.push(record);
+  /**
+   * @param {string} loc absolute url
+   * @param {number} ts epoch milliseconds
+   * @param {string|null} imageLoc absolute image url
+   */
+  addRecord(loc, ts, imageLoc) {
+    const index = this.locs.length;
+    if (index === this.timestamps.length) {
+      const grown = new Float64Array(Math.max(INITIAL_CAPACITY, index * 2));
+      grown.set(this.timestamps);
+      this.timestamps = grown;
+    }
+
+    this.locs.push(loc);
+    this.timestamps[index] = ts;
+    this.imageLocs.push(imageLoc);
   }
 
   reset() {
-    this.nodeLookup = [];
+    this.locs = [];
+    this.timestamps = new Float64Array(INITIAL_CAPACITY);
+    this.imageLocs = [];
+    this.order = null;
     this.siteMapContent.clear();
     this.lastModified = 0;
   }

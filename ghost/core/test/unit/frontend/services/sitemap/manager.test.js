@@ -268,10 +268,7 @@ describe('Unit: sitemap/manager', function () {
           await siteMapManager.getSiteMapXml('posts');
 
           assert.notEqual(siteMapManager.posts, firstPosts);
-          assert.deepEqual(
-            siteMapManager.posts.nodeLookup.map((record) => record.loc),
-            ['http://example.com/kept/'],
-          );
+          assert.deepEqual(siteMapManager.posts.locs, ['http://example.com/kept/']);
         } finally {
           PostGenerator.prototype.addUrl.resetBehavior();
         }
