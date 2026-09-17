@@ -1,6 +1,7 @@
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+/** @typedef {import('./email-event-processor').StoredEventCounts} StoredEventCounts */
 
 class NewsletterEmailEventStorage {
   #config;
@@ -35,7 +36,11 @@ class NewsletterEmailEventStorage {
     }
   }
 
-  async handleDelivered(event) {
+  /**
+   * @param {object} event
+   * @param {StoredEventCounts} [storedCounts] Counts only timestamps newly written by this call.
+   */
+  async handleDelivered(event, storedCounts) {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
@@ -59,10 +64,17 @@ class NewsletterEmailEventStorage {
           delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
         });
       this.recordEventStored('delivered', rowCount);
+      if (storedCounts) {
+        storedCounts.storedDelivered += rowCount;
+      }
     }
   }
 
-  async handleOpened(event) {
+  /**
+   * @param {object} event
+   * @param {StoredEventCounts} [storedCounts] Counts only timestamps newly written by this call.
+   */
+  async handleOpened(event, storedCounts) {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
@@ -86,10 +98,17 @@ class NewsletterEmailEventStorage {
           opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
         });
       this.recordEventStored('opened', rowCount);
+      if (storedCounts) {
+        storedCounts.storedOpened += rowCount;
+      }
     }
   }
 
-  async handlePermanentFailed(event) {
+  /**
+   * @param {object} event
+   * @param {StoredEventCounts} [storedCounts] Counts only timestamps newly written by this call.
+   */
+  async handlePermanentFailed(event, storedCounts) {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
@@ -105,13 +124,16 @@ class NewsletterEmailEventStorage {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
       // only set if failed_at is null
-      await this.#db
+      const rowCount = await this.#db
         .knex('email_recipients')
         .where('id', '=', event.emailRecipientId)
         .whereNull('failed_at')
         .update({
           failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
         });
+      if (storedCounts) {
+        storedCounts.storedPermanentFailed += rowCount;
+      }
     }
     await this.saveFailure('permanent', event);
   }
@@ -295,9 +317,10 @@ class NewsletterEmailEventStorage {
 
   /**
    * Flush all batched updates to the database
+   * @param {StoredEventCounts} [storedCounts]
    * @returns {Promise<void>}
    */
-  async flushBatchedUpdates() {
+  async flushBatchedUpdates(storedCounts) {
     const deliveredCount = this.#pendingUpdates.delivered.size;
     const openedCount = this.#pendingUpdates.opened.size;
     const failedCount = this.#pendingUpdates.failed.size;
@@ -308,17 +331,26 @@ class NewsletterEmailEventStorage {
 
     // Flush delivered events
     if (deliveredCount > 0) {
-      await this.#flushDeliveredUpdates();
+      const [result] = await this.#flushDeliveredUpdates();
+      if (storedCounts) {
+        storedCounts.storedDelivered += result.affectedRows;
+      }
     }
 
     // Flush opened events
     if (openedCount > 0) {
-      await this.#flushOpenedUpdates();
+      const [result] = await this.#flushOpenedUpdates();
+      if (storedCounts) {
+        storedCounts.storedOpened += result.affectedRows;
+      }
     }
 
     // Flush failed events
     if (failedCount > 0) {
-      await this.#flushFailedUpdates();
+      const [result] = await this.#flushFailedUpdates();
+      if (storedCounts) {
+        storedCounts.storedPermanentFailed += result.affectedRows;
+      }
     }
 
     // Clear the pending updates

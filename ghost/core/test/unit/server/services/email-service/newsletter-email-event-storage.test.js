@@ -40,6 +40,36 @@ describe('Email Event Storage', function () {
     sinon.restore();
   });
 
+  for (const batched of [false, true]) {
+    it(`counts only newly stored recipient events with batching ${batched}`, async function () {
+      const db = createDb();
+      const raw = sinon.stub(db.knex, 'raw');
+      const storage = createEventStorage({
+        db,
+        config: { get: () => batched },
+      });
+      sinon.stub(storage, 'saveFailure').resolves();
+      const counts = { storedDelivered: 0, storedOpened: 0, storedPermanentFailed: 0 };
+      const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
+      const handlers = ['handleDelivered', 'handleOpened', 'handlePermanentFailed'];
+
+      // A first pass stores the recipient timestamps; replaying it changes no rows.
+      for (const affectedRows of [1, 0]) {
+        db.update.resolves(affectedRows);
+        raw.resolves([{ affectedRows }]);
+        for (const handler of handlers) {
+          await storage[handler](event, counts);
+        }
+        await storage.flushBatchedUpdates(counts);
+        assert.deepEqual(counts, {
+          storedDelivered: 1,
+          storedOpened: 1,
+          storedPermanentFailed: 1,
+        });
+      }
+    });
+  }
+
   describe('Constructor', function () {
     it("doesn't throw", function () {
       createEventStorage({});
