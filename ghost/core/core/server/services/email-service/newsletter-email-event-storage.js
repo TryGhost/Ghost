@@ -2,7 +2,7 @@ const moment = require('moment-timezone');
 const { getAffectedRows } = require('../../lib/db-types/affected-rows');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-/** @typedef {import('./email-event-processor').StoredEventCounts} StoredEventCounts */
+/** @typedef {{storedDelivered: number, storedOpened: number, storedPermanentFailed: number}} StoredEventCounts */
 
 class NewsletterEmailEventStorage {
   #config;
@@ -39,9 +39,9 @@ class NewsletterEmailEventStorage {
 
   /**
    * @param {object} event
-   * @param {StoredEventCounts} [storedCounts] Counts only timestamps newly written by this call.
+   * @returns {Promise<number>} Number of newly written recipient timestamps; queued updates return zero.
    */
-  async handleDelivered(event, storedCounts) {
+  async handleDelivered(event) {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
@@ -65,17 +65,16 @@ class NewsletterEmailEventStorage {
           delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
         });
       this.recordEventStored('delivered', rowCount);
-      if (storedCounts) {
-        storedCounts.storedDelivered += rowCount;
-      }
+      return rowCount;
     }
+    return 0;
   }
 
   /**
    * @param {object} event
-   * @param {StoredEventCounts} [storedCounts] Counts only timestamps newly written by this call.
+   * @returns {Promise<number>} Number of newly written recipient timestamps; queued updates return zero.
    */
-  async handleOpened(event, storedCounts) {
+  async handleOpened(event) {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
@@ -99,17 +98,17 @@ class NewsletterEmailEventStorage {
           opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
         });
       this.recordEventStored('opened', rowCount);
-      if (storedCounts) {
-        storedCounts.storedOpened += rowCount;
-      }
+      return rowCount;
     }
+    return 0;
   }
 
   /**
    * @param {object} event
-   * @param {StoredEventCounts} [storedCounts] Counts only timestamps newly written by this call.
+   * @returns {Promise<number>} Number of newly written recipient timestamps; queued updates return zero.
    */
-  async handlePermanentFailed(event, storedCounts) {
+  async handlePermanentFailed(event) {
+    let rowCount = 0;
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
@@ -125,18 +124,16 @@ class NewsletterEmailEventStorage {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
       // only set if failed_at is null
-      const rowCount = await this.#db
+      rowCount = await this.#db
         .knex('email_recipients')
         .where('id', '=', event.emailRecipientId)
         .whereNull('failed_at')
         .update({
           failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
         });
-      if (storedCounts) {
-        storedCounts.storedPermanentFailed += rowCount;
-      }
     }
     await this.saveFailure('permanent', event);
+    return rowCount;
   }
 
   async handleTemporaryFailed(event) {
@@ -317,47 +314,20 @@ class NewsletterEmailEventStorage {
   }
 
   /**
-   * Flush all batched updates to the database
-   * @param {StoredEventCounts} [storedCounts]
-   * @returns {Promise<void>}
+   * Flush all batched updates to the database and return newly stored counts.
+   * @returns {Promise<StoredEventCounts>}
    */
-  async flushBatchedUpdates(storedCounts) {
-    const deliveredCount = this.#pendingUpdates.delivered.size;
-    const openedCount = this.#pendingUpdates.opened.size;
-    const failedCount = this.#pendingUpdates.failed.size;
+  async flushBatchedUpdates() {
+    const counts = {
+      storedDelivered: await this.#flushDeliveredUpdates(),
+      storedOpened: await this.#flushOpenedUpdates(),
+      storedPermanentFailed: await this.#flushFailedUpdates(),
+    };
 
-    if (deliveredCount === 0 && openedCount === 0 && failedCount === 0) {
-      return; // Nothing to flush
-    }
-
-    // Flush delivered events
-    if (deliveredCount > 0) {
-      const rowCount = await this.#flushDeliveredUpdates();
-      if (storedCounts) {
-        storedCounts.storedDelivered += rowCount;
-      }
-    }
-
-    // Flush opened events
-    if (openedCount > 0) {
-      const rowCount = await this.#flushOpenedUpdates();
-      if (storedCounts) {
-        storedCounts.storedOpened += rowCount;
-      }
-    }
-
-    // Flush failed events
-    if (failedCount > 0) {
-      const rowCount = await this.#flushFailedUpdates();
-      if (storedCounts) {
-        storedCounts.storedPermanentFailed += rowCount;
-      }
-    }
-
-    // Clear the pending updates
     this.#pendingUpdates.delivered.clear();
     this.#pendingUpdates.opened.clear();
     this.#pendingUpdates.failed.clear();
+    return counts;
   }
 
   /**

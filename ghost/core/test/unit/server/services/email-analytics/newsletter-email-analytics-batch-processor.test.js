@@ -647,6 +647,49 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
     });
   });
 
+  for (const batched of [false, true]) {
+    it(`merges returned stored counts with batching ${batched}`, async function () {
+      configUtils.set('emailAnalytics:batchProcessing', batched);
+      try {
+        const recipient = { emailId: 'e-1', memberId: 'm-1' };
+        const handler = () =>
+          sinon
+            .stub()
+            .onFirstCall()
+            .resolves({ ...recipient, storedCount: batched ? 0 : 1 })
+            .onSecondCall()
+            .resolves({ ...recipient, storedCount: 0 });
+        const processor = new NewsletterEmailAnalyticsBatchProcessor({
+          config: createMockConfig(),
+          emailEventProcessor: {
+            batchGetRecipients: sinon.stub().resolves(new Map()),
+            handleDelivered: handler(),
+            handleOpened: handler(),
+            handlePermanentFailed: handler(),
+            flushBatchedUpdates: sinon
+              .stub()
+              .resolves({ storedDelivered: 1, storedOpened: 1, storedPermanentFailed: 1 }),
+          },
+        });
+        const events = [
+          { type: 'delivered' },
+          { type: 'opened' },
+          { type: 'failed', severity: 'permanent' },
+        ];
+        const result = new EventProcessingResult();
+        await processor.processBatch([...events, ...events], result, {});
+        assert.equal(result.delivered, 2);
+        assert.equal(result.opened, 2);
+        assert.equal(result.permanentFailed, 2);
+        assert.equal(result.storedDelivered, 1);
+        assert.equal(result.storedOpened, 1);
+        assert.equal(result.storedPermanentFailed, 1);
+      } finally {
+        configUtils.restore();
+      }
+    });
+  }
+
   describe('aggregate', function () {
     let queries;
 

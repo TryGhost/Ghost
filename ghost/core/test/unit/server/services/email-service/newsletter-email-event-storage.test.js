@@ -50,7 +50,6 @@ describe('Email Event Storage', function () {
         config: { get: () => batched },
       });
       sinon.stub(storage, 'saveFailure').resolves();
-      const counts = { storedDelivered: 0, storedOpened: 0, storedPermanentFailed: 0 };
       const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
       const handlers = ['handleDelivered', 'handleOpened', 'handlePermanentFailed'];
 
@@ -59,13 +58,13 @@ describe('Email Event Storage', function () {
         db.update.resolves(affectedRows);
         raw.resolves([{ affectedRows }]);
         for (const handler of handlers) {
-          await storage[handler](event, counts);
+          assert.equal(await storage[handler](event), batched ? 0 : affectedRows);
         }
-        await storage.flushBatchedUpdates(counts);
+        const counts = await storage.flushBatchedUpdates();
         assert.deepEqual(counts, {
-          storedDelivered: 1,
-          storedOpened: 1,
-          storedPermanentFailed: 1,
+          storedDelivered: batched ? affectedRows : 0,
+          storedOpened: batched ? affectedRows : 0,
+          storedPermanentFailed: batched ? affectedRows : 0,
         });
       }
     });
@@ -96,15 +95,14 @@ describe('Email Event Storage', function () {
       const storage = createEventStorage({ db: { knex }, config: { get: () => true } });
       sinon.stub(storage, 'saveFailure').resolves();
       const raw = sinon.spy(knex, 'raw');
-      const counts = { storedDelivered: 0, storedOpened: 0, storedPermanentFailed: 0 };
 
       for (const emailRecipientId of ['new-recipient', 'seen-recipient']) {
         const event = { emailRecipientId, timestamp: new Date('2026-01-02T00:00:00Z') };
-        await storage.handleDelivered(event, counts);
-        await storage.handleOpened(event, counts);
-        await storage.handlePermanentFailed(event, counts);
+        await storage.handleDelivered(event);
+        await storage.handleOpened(event);
+        await storage.handlePermanentFailed(event);
       }
-      await storage.flushBatchedUpdates(counts);
+      const counts = await storage.flushBatchedUpdates();
       assert.deepEqual(counts, { storedDelivered: 1, storedOpened: 1, storedPermanentFailed: 1 });
       const recipient = await knex('email_recipients').where({ id: 'new-recipient' }).first();
       assert.equal(recipient.delivered_at, '2026-01-02 00:00:00');
@@ -112,18 +110,17 @@ describe('Email Event Storage', function () {
       assert.equal(recipient.failed_at, '2026-01-02 00:00:00');
 
       raw.resetHistory();
-      await storage.flushBatchedUpdates(counts);
+      await storage.flushBatchedUpdates();
       sinon.assert.notCalled(raw);
 
-      const replayCounts = { storedDelivered: 0, storedOpened: 0, storedPermanentFailed: 0 };
       const replay = {
         emailRecipientId: 'new-recipient',
         timestamp: new Date('2026-01-02T00:00:00Z'),
       };
-      await storage.handleDelivered(replay, replayCounts);
-      await storage.handleOpened(replay, replayCounts);
-      await storage.handlePermanentFailed(replay, replayCounts);
-      await storage.flushBatchedUpdates(replayCounts);
+      await storage.handleDelivered(replay);
+      await storage.handleOpened(replay);
+      await storage.handlePermanentFailed(replay);
+      const replayCounts = await storage.flushBatchedUpdates();
       assert.deepEqual(replayCounts, {
         storedDelivered: 0,
         storedOpened: 0,

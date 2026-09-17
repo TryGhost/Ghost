@@ -490,7 +490,8 @@ export class EmailAnalyticsService {
       const start = Date.now();
       const timings = await eventProcessor.aggregate({
         includeOpenedEvents,
-        skipUnchanged: fetchData === this.#fetchMissingData,
+        // A failed batch may have stored events before returning its counts.
+        skipUnchanged: fetchData === this.#fetchMissingData && !error,
         processingResult,
         isFinal,
       });

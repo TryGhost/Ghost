@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-/** @typedef {Pick<import('../email-analytics/event-processing-result').EventProcessingResult, 'storedDelivered' | 'storedOpened' | 'storedPermanentFailed'>} StoredEventCounts */
 
 const { EmailDeliveredEvent } = require('./events/email-delivered-event');
 const { EmailOpenedEvent } = require('./events/email-opened-event');
@@ -30,9 +29,9 @@ async function waitForEvent() {
 
 /**
  * @typedef NewsletterEmailEventStorage
- * @property {(event: EmailDeliveredEvent, storedCounts?: StoredEventCounts) => Promise<void>} handleDelivered
- * @property {(event: EmailOpenedEvent, storedCounts?: StoredEventCounts) => Promise<void>} handleOpened
- * @property {(event: EmailBouncedEvent, storedCounts?: StoredEventCounts) => Promise<void>} handlePermanentFailed
+ * @property {(event: EmailDeliveredEvent) => Promise<number>} handleDelivered
+ * @property {(event: EmailOpenedEvent) => Promise<number>} handleOpened
+ * @property {(event: EmailBouncedEvent) => Promise<number>} handlePermanentFailed
  * @property {(event: EmailTemporaryBouncedEvent) => Promise<void>} handleTemporaryFailed
  * @property {(event: EmailUnsubscribedEvent) => Promise<void>} handleUnsubscribed
  * @property {(event: SpamComplaintEvent) => Promise<void>} handleComplained
@@ -67,9 +66,8 @@ class EmailEventProcessor {
    * @param {EmailIdentification} emailIdentification
    * @param {Date} timestamp
    * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
-   * @param {StoredEventCounts} [storedCounts]
    */
-  async handleDelivered(emailIdentification, timestamp, recipientCache, storedCounts) {
+  async handleDelivered(emailIdentification, timestamp, recipientCache) {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailDeliveredEvent.create({
@@ -79,10 +77,11 @@ class EmailEventProcessor {
         emailId: recipient.emailId,
         timestamp,
       });
-      await this.#eventStorage.handleDelivered(event, storedCounts);
+      const storedCount = await this.#eventStorage.handleDelivered(event);
 
       this.#domainEvents.dispatch(event);
       this.recordEventProcessed('delivered');
+      return { ...recipient, storedCount };
     }
     return recipient;
   }
@@ -91,9 +90,8 @@ class EmailEventProcessor {
    * @param {EmailIdentification} emailIdentification
    * @param {Date} timestamp
    * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
-   * @param {StoredEventCounts} [storedCounts]
    */
-  async handleOpened(emailIdentification, timestamp, recipientCache, storedCounts) {
+  async handleOpened(emailIdentification, timestamp, recipientCache) {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailOpenedEvent.create({
@@ -104,8 +102,9 @@ class EmailEventProcessor {
         timestamp,
       });
       this.#domainEvents.dispatch(event);
-      await this.#eventStorage.handleOpened(event, storedCounts);
+      const storedCount = await this.#eventStorage.handleOpened(event);
       this.recordEventProcessed('opened');
+      return { ...recipient, storedCount };
     }
     return recipient;
   }
@@ -138,14 +137,8 @@ class EmailEventProcessor {
    * @param {EmailIdentification} emailIdentification
    * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
    * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
-   * @param {StoredEventCounts} [storedCounts]
    */
-  async handlePermanentFailed(
-    emailIdentification,
-    { timestamp, error, id },
-    recipientCache,
-    storedCounts,
-  ) {
+  async handlePermanentFailed(emailIdentification, { timestamp, error, id }, recipientCache) {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailBouncedEvent.create({
@@ -157,10 +150,11 @@ class EmailEventProcessor {
         emailRecipientId: recipient.emailRecipientId,
         timestamp,
       });
-      await this.#eventStorage.handlePermanentFailed(event, storedCounts);
+      const storedCount = await this.#eventStorage.handlePermanentFailed(event);
 
       this.#domainEvents.dispatch(event);
       await waitForEvent(); // Avoids knex connection pool to run dry
+      return { ...recipient, storedCount };
     }
     return recipient;
   }
@@ -373,11 +367,10 @@ class EmailEventProcessor {
 
   /**
    * Flush any batched updates to the database
-   * @param {StoredEventCounts} [storedCounts]
-   * @returns {Promise<void>}
+   * @returns {Promise<import('./newsletter-email-event-storage').StoredEventCounts>}
    */
-  async flushBatchedUpdates(storedCounts) {
-    return await this.#eventStorage.flushBatchedUpdates(storedCounts);
+  async flushBatchedUpdates() {
+    return await this.#eventStorage.flushBatchedUpdates();
   }
 }
 

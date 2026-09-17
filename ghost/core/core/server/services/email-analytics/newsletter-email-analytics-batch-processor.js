@@ -46,7 +46,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
         await this.#emailEventProcessor.batchGetRecipients(emailIdentifications);
 
       for (const event of events) {
-        const batchResult = await this.#processEvent(event, recipientCache, result);
+        const batchResult = await this.#processEvent(event, recipientCache);
 
         // Save last event timestamp
         if (
@@ -60,11 +60,11 @@ class NewsletterEmailAnalyticsBatchProcessor {
       }
 
       // Flush all batched updates to the database
-      await this.#emailEventProcessor.flushBatchedUpdates(result);
+      result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
-        const batchResult = await this.#processEvent(event, undefined, result);
+        const batchResult = await this.#processEvent(event);
 
         // Save last event timestamp
         if (
@@ -127,22 +127,21 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
   /**
    * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
-   * @param {Map<string, any> | undefined} recipientCache Optional cache for batched processing
-   * @param {EventProcessingResult} storedCounts Counts of newly populated recipient timestamps
+   * @param {Map<string, any>} [recipientCache] Optional cache for batched processing
    * @returns {Promise<EventProcessingResult>}
    */
-  async #processEvent(event, recipientCache, storedCounts) {
+  async #processEvent(event, recipientCache) {
     if (event.type === 'delivered') {
       const recipient = await this.#emailEventProcessor.handleDelivered(
         { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
         event.timestamp,
         recipientCache,
-        storedCounts,
       );
 
       if (recipient) {
         return new EventProcessingResult({
           delivered: 1,
+          storedDelivered: recipient.storedCount,
           emailIds: [recipient.emailId],
           memberIds: [recipient.memberId],
         });
@@ -156,12 +155,12 @@ class NewsletterEmailAnalyticsBatchProcessor {
         { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
         event.timestamp,
         recipientCache,
-        storedCounts,
       );
 
       if (recipient) {
         return new EventProcessingResult({
           opened: 1,
+          storedOpened: recipient.storedCount,
           emailIds: [recipient.emailId],
           memberIds: [recipient.memberId],
         });
@@ -176,12 +175,12 @@ class NewsletterEmailAnalyticsBatchProcessor {
           { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
           { id: event.id, timestamp: event.timestamp, error: event.error },
           recipientCache,
-          storedCounts,
         );
 
         if (recipient) {
           return new EventProcessingResult({
             permanentFailed: 1,
+            storedPermanentFailed: recipient.storedCount,
             emailIds: [recipient.emailId],
             memberIds: [recipient.memberId],
           });
