@@ -2,10 +2,9 @@ import { useCallback, useSyncExternalStore } from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { AUTOMATION_DESCRIPTIONS, mockAutomations } from './mock';
 import {
-  ALL_TIER_IDS,
   type TriggerConfig,
-  hasTiers,
   needsStripe,
+  tiersUnanswered,
   triggerConfigFor,
 } from './trigger-config';
 import { lexicalHasContent } from '@/automations/proto/canvas/flow-utils';
@@ -102,7 +101,9 @@ interface StoreState {
 // that are meant to read as established emails.
 // 18: the paid welcome flow seeds the paid trigger — both automations seeded the
 // free-signup default, so phase 1's paid flow was titled "Free member signs up".
-const VERSION = 18;
+// 19: TriggerConfig grew tierMode ('all' policy vs 'selected' list); stored
+// configs without it would read as selected-with-nothing, i.e. unanswered.
+const VERSION = 19;
 const STORAGE_KEY = 'ghost-automations-proto-store';
 
 const seed = (): StoreState => ({
@@ -119,13 +120,14 @@ const seed = (): StoreState => ({
     // mock/automations). Both used to seed the free-signup default, which put
     // "Free member signs up" on the PAID welcome flow's trigger card.
     //
-    // The paid fixture gets every tier spelled out: triggerConfigFor now seeds
-    // an EMPTY tier list (a new trigger starts unanswered, showing the field's
-    // placeholder), and an established automation showing "Choose tiers" would
-    // read as broken rather than as a fixture.
+    // The paid fixture takes triggerConfigFor's own default, which is the
+    // 'all' policy — a general paid welcome watching every tier, future ones
+    // included, is exactly what this fixture is meant to be. (It used to spell
+    // every tier out by hand, back when all-tiers-checked was how "any tier"
+    // was stored.)
     trigger:
       automation.slug === 'member-welcome-email-paid'
-        ? { ...triggerConfigFor('paid_subscription_starts'), tierIds: [...ALL_TIER_IDS] }
+        ? triggerConfigFor('paid_subscription_starts')
         : triggerConfigFor('member_subscribes'),
   })),
 });
@@ -484,7 +486,7 @@ export const canPublishAutomation = (
   if (!stripeConnected && needsStripe(trigger)) {
     return false;
   }
-  if (hasTiers(trigger) && trigger.tierIds.length === 0) {
+  if (tiersUnanswered(trigger)) {
     return false;
   }
   return !entry.automation.actions.some(

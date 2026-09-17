@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger, inputSurface } from '@tryghost/shade/components';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  RadioGroup,
+  RadioGroupItem,
+  inputSurface,
+} from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Stack } from '@tryghost/shade/primitives';
 import {
@@ -80,6 +87,27 @@ export const TriggerEmptyState: React.FC<{
   );
 };
 
+// A radio in a row, CheckboxRow's shape exactly — whole-row label target, the
+// same SelectItem metrics — so the two kinds of row in this popover read as one
+// list at two depths. The optional second line is the mode's consequence, in
+// the same dress as the exit sentence below: muted, smaller, part of the row's
+// click target.
+const RadioRow: React.FC<{
+  value: string;
+  label: string;
+  description?: string;
+}> = ({ value, label, description }) => (
+  <label className="flex cursor-pointer items-start gap-2.5 rounded-xs px-2 py-1.5 transition-colors hover:bg-interactive-hover">
+    {/* mt-0.5 seats the 16px control on the first line's cap height rather
+            than centring it against a row that may carry a second line. */}
+    <RadioGroupItem className="mt-0.5" value={value} />
+    <span className="flex min-w-0 flex-col gap-0.5">
+      <span className="text-control">{label}</span>
+      {description && <span className="text-xs text-muted-foreground">{description}</span>}
+    </span>
+  </label>
+);
+
 interface TriggerConfigFormProps {
   config: TriggerConfig;
   onChange: (next: TriggerConfig) => void;
@@ -103,9 +131,10 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   revealTiersSignal,
 }) => {
   const tierIds = config.tierIds;
-  // Every tier is "any tier"; none is the error state.
-  const anyTier = tierIds.length === ALL_TIER_IDS.length;
-  const noTier = tierIds.length === 0;
+  const allMode = config.tierMode === 'all';
+  // Selected mode with nothing named — the field's placeholder state, and the
+  // one the validators call unanswered (see tiersUnanswered).
+  const noTier = !allMode && tierIds.length === 0;
   const [tiersOpen, setTiersOpen] = useState(false);
   const showTiers = hasTiers(config);
   // Compared against the mount-time value rather than watched in an effect, so
@@ -186,81 +215,131 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 opens an editing surface, not an option list dropping out of a
                 select. */}
       {showTiers && (
-        <Popover modal={false} open={tiersOpen} onOpenChange={setTiersOpen}>
-          <PopoverTrigger asChild>
-            <button
-              aria-label="Edit tiers"
-              // hover:bg-muted on top of the input chrome — an input doesn't
-              // hover, but this is a button wearing input clothes, and a field
-              // that opens something has to say so before the press.
-              className={cn(
-                inputSurface('self'),
-                'group/field flex h-9 w-full items-center justify-between gap-2 px-3 text-base',
-                'transition-colors hover:bg-muted',
-              )}
-              type="button"
-            >
-              <span className={cn('truncate', noTier && 'text-muted-foreground')}>
-                {noTier
-                  ? 'Choose tiers'
-                  : anyTier
-                    ? 'Any paid tier'
-                    : tierNames(tierIds).join(', ')}
-              </span>
-              {/* Revealed by hovering or focusing the field, like every
+        <div className="flex flex-col gap-2">
+          {/* The explanation and the field, fused into label-and-answer: the
+                    sentence runs INTO the field ("…subscription to:" → "All paid
+                    tiers"), so the card says what the trigger does and who it
+                    watches as one thought instead of a description and a control
+                    circling the same fact. Full foreground, not the caption's
+                    muted — it's the field's label now, not commentary — and gap-2,
+                    the label-to-field distance every form uses. The colon is what
+                    keeps every field state grammatical, including the "Choose
+                    tiers" placeholder, which reads as an instruction after it.
+                    (The read canvas keeps the full written-out sentence — it has
+                    no field for a label to point at; see triggerExplanation.) */}
+          <span className="text-control">Triggered when a member starts a subscription to:</span>
+          <Popover modal={false} open={tiersOpen} onOpenChange={setTiersOpen}>
+            <PopoverTrigger asChild>
+              <button
+                aria-label="Edit tiers"
+                // hover:bg-muted on top of the input chrome — an input doesn't
+                // hover, but this is a button wearing input clothes, and a field
+                // that opens something has to say so before the press.
+                className={cn(
+                  inputSurface('self'),
+                  'group/field flex h-9 w-full items-center justify-between gap-2 px-3 text-base',
+                  'transition-colors hover:bg-muted',
+                )}
+                type="button"
+              >
+                <span className={cn('truncate', noTier && 'text-muted-foreground')}>
+                  {noTier
+                    ? 'Choose tiers'
+                    : allMode
+                      ? 'All paid tiers'
+                      : tierNames(tierIds).join(', ')}
+                </span>
+                {/* Revealed by hovering or focusing the field, like every
                             field-that-opens (see the email content field): at rest the
                             value is the point, and the pen is the interaction's label.
                             The width stays reserved so nothing shifts. */}
-              <LucideIcon.Pen
-                className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none"
-                strokeWidth={2}
-              />
-            </button>
-          </PopoverTrigger>
-          {/* Sized to the FIELD, via the width Radix reports for the trigger —
+                <LucideIcon.Pen
+                  className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none"
+                  strokeWidth={2}
+                />
+              </button>
+            </PopoverTrigger>
+            {/* Sized to the FIELD, via the width Radix reports for the trigger —
                     the popover reads as the field opened up, not a separate surface
                     that happens to appear nearby (Shade's Combobox sizes its list the
                     same way). "always" so it tracks its card when the canvas pans. */}
-          <PopoverContent
-            align="start"
-            className="w-(--radix-popover-trigger-width) p-0"
-            updatePositionStrategy="always"
-          >
-            <div className="p-2">
-              <CheckboxList>
-                <CheckboxRow
-                  checked={anyTier}
-                  label="Any paid tier"
-                  onCheckedChange={(checked) => setTiers(checked ? [...ALL_TIER_IDS] : [])}
-                />
-                {TIER_OPTIONS.map((tier) => (
-                  <CheckboxRow
-                    key={tier.id}
-                    checked={tierIds.includes(tier.id)}
-                    disabled={anyTier}
-                    label={tier.name}
-                    onCheckedChange={(checked) =>
-                      setTiers(
-                        checked
-                          ? ALL_TIER_IDS.filter((id) => id === tier.id || tierIds.includes(id))
-                          : tierIds.filter((id) => id !== tier.id),
-                      )
-                    }
+            <PopoverContent
+              align="start"
+              className="w-(--radix-popover-trigger-width) p-0"
+              updatePositionStrategy="always"
+            >
+              {/* Two modes as RADIOS, then the list — GitHub's install screen,
+                        which is where the review pointed. The old shape was one
+                        checkbox list with "Any paid tier" locking the rows beneath it
+                        checked-and-disabled, and it had two faults the radios fix:
+                        nothing said the "any" answer follows tiers created LATER
+                        (the sub-copy now says exactly that), and a mode pretending
+                        to be a list item gave this field the one interaction nobody
+                        could predict. A mode choice and an item choice are different
+                        kinds of question, and now they look like it. */}
+              <div className="p-2">
+                <RadioGroup
+                  className="flex flex-col gap-0"
+                  value={config.tierMode}
+                  // Flipping mode clears the list either way: an answer given under
+                  // one mode isn't an answer under the other, and Select starts
+                  // EMPTY on purpose — GitHub's "select at least one". Pre-checking
+                  // everything would recreate the exact ambiguity the split removes
+                  // (a full checklist that looks like "all" but won't follow future
+                  // tiers).
+                  onValueChange={(mode) =>
+                    onChange({ ...config, tierMode: mode as 'all' | 'selected', tierIds: [] })
+                  }
+                >
+                  <RadioRow
+                    description="Includes all current and future paid tiers you create."
+                    label="All paid tiers"
+                    value="all"
                   />
-                ))}
-              </CheckboxList>
-            </div>
-            {/* The exit sentence, footered under the choice it follows from —
+                  <RadioRow label="Select paid tiers" value="selected" />
+                </RadioGroup>
+                {/* Revealed by the second radio, indented under it the way
+                            GitHub's repository list sits under its option. ml-6 aligns
+                            the boxes with the radio labels above (16px control +
+                            10px gap). */}
+                {!allMode && (
+                  <div className="ml-6">
+                    <CheckboxList>
+                      {TIER_OPTIONS.map((tier) => (
+                        <CheckboxRow
+                          key={tier.id}
+                          checked={tierIds.includes(tier.id)}
+                          label={tier.name}
+                          onCheckedChange={(checked) =>
+                            setTiers(
+                              // Kept in ALL_TIER_IDS order however they're ticked, so
+                              // the field's summary always lists tiers the way the
+                              // site orders them.
+                              checked
+                                ? ALL_TIER_IDS.filter(
+                                    (id) => id === tier.id || tierIds.includes(id),
+                                  )
+                                : tierIds.filter((id) => id !== tier.id),
+                            )
+                          }
+                        />
+                      ))}
+                    </CheckboxList>
+                  </div>
+                )}
+              </div>
+              {/* The exit sentence, footered under the choice it follows from —
                         same voice and size as the card captions. Ruled off because the
                         rows above are controls and this is a consequence, not another
                         row to press. */}
-            {showExits && (
-              <div className="border-t border-border-default px-4 py-3">
-                <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
+              {showExits && (
+                <div className="border-t border-border-default px-4 py-3">
+                  <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
       )}
 
       {/* WHAT ENDS A RUN — stated, never chosen.

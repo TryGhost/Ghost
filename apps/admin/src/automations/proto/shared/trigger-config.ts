@@ -74,12 +74,26 @@ export type TriggerType = 'member_subscribes' | 'paid_subscription_starts';
 export interface TriggerConfig {
   type: TriggerType;
   /**
-   * Which tiers the paid trigger watches. Every tier means "any tier" — the absence
-   * of a narrowing rather than a separate value, so there's no state where the field
-   * and the filter disagree. Empty is the error state, not "any".
+   * How the paid trigger scopes its tiers. 'all' is a POLICY — every paid tier,
+   * including tiers created after this automation was configured — where
+   * 'selected' is a list of named ones.
    *
-   * Meaningless on `member_subscribes`, which has no settings; it's held as an empty
-   * list there rather than as an optional field, so nothing has to null-check it.
+   * This used to be inferred: every tier checked meant "any tier". That storage
+   * couldn't tell a snapshot of today's tiers apart from a rule that follows
+   * future ones, and the review's note was that the UI couldn't say it either —
+   * GitHub's install screen draws exactly this line ("all current and future
+   * repositories" vs "only select repositories"), and the field now asks the
+   * same way. The mode is the fact; it has to be stored, not derived.
+   *
+   * Meaningless on `member_subscribes`, which has no settings; held as 'all'
+   * there rather than as an optional field, so nothing has to null-check it.
+   */
+  tierMode: 'all' | 'selected';
+  /**
+   * The named tiers, when tierMode is 'selected'. Empty means unanswered — the
+   * field shows its placeholder and validation blocks publishing. Always empty
+   * under 'all', where the policy is the answer and a list would be a second
+   * copy of it that could drift.
    */
   tierIds: string[];
 }
@@ -217,17 +231,27 @@ export const availableTriggerOptions = <T extends { value: TriggerType }>(
   stripeConnected: boolean,
 ): T[] => (stripeConnected ? options : options.filter((o) => !needsStripe({ type: o.value })));
 
-/** Specific tiers are being watched, rather than any tier. */
-// A tier list that actually NARROWS the audience — some of the tiers, not all of
-// them. Every tier selected is "any tier", which is what a paid audience already
-// means, so it isn't a filter and shouldn't read as one.
-//
-// Empty is neither: it's the invalid state the field shows an error for. Tiers used
-// to be stored the other way round, with an empty list meaning "any", but that left
-// "any" and "none chosen yet" as the same value — and the moment the field offered
-// an Any TIER row of its own, the two had to be told apart.
-export const hasTierFilter = (config: Pick<TriggerConfig, 'type' | 'tierIds'>): boolean =>
-  hasTiers(config) && config.tierIds.length > 0 && config.tierIds.length < ALL_TIER_IDS.length;
+/** Specific tiers are being watched, rather than the all-tiers policy. */
+// Selected mode with at least one tier named. Note this is TRUE when someone
+// selects every current tier by hand — that used to read as "any tier", and it
+// deliberately doesn't any more: a hand-picked list of today's tiers is a
+// snapshot that won't follow future tiers, which is the whole distinction the
+// tierMode split exists to draw. Readers that name the audience should name
+// those tiers.
+export const hasTierFilter = (
+  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds'>,
+): boolean => hasTiers(config) && config.tierMode === 'selected' && config.tierIds.length > 0;
+
+/**
+ * The tiers question is open: selected mode with nothing named yet. The one
+ * invalid tier state, shared by every validator (the canvas card's warning, the
+ * detail screen's publish gate, the list's record-level check) so they can't
+ * disagree about what unanswered means. 'all' can never be unanswered — the
+ * policy is the answer.
+ */
+export const tiersUnanswered = (
+  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds'>,
+): boolean => hasTiers(config) && config.tierMode === 'selected' && config.tierIds.length === 0;
 
 /**
  * "a", "a or b", "a, b, or c" — with the serial comma, which is how the copy for this
@@ -298,12 +322,15 @@ export const exitSentence = (config: Pick<TriggerConfig, 'type'>): string => {
  */
 export const triggerConfigFor = (type: TriggerType): TriggerConfig => ({
   type,
-  // Starts EMPTY, which the tiers field renders as its "Choose tiers"
-  // placeholder. This reverses an earlier default of all-tiers ("any tier"):
-  // that read as pre-answered, and with the tiers now behind a field-and-
-  // popover, a question the publisher never opened shouldn't arrive answered.
-  // Empty means unanswered, not error — the error is publishing it that way,
-  // and validation speaks for the whole card, not this field.
+  // Starts on the 'all' policy, which is GitHub's default on the screen this
+  // field now mirrors — and a reversal of the empty-start this had before the
+  // tierMode split ("a question the publisher never opened shouldn't arrive
+  // answered"). What changed the calculus: the popover now OPENS itself on a
+  // fresh paid trigger (see tiersRevealPending on the edit canvas), so the
+  // question is put in front of them with its default answer showing rather
+  // than arriving answered in a field nobody looked at. Unanswered still
+  // exists — it's choosing 'selected' and naming nothing.
+  tierMode: 'all',
   tierIds: [],
 });
 
@@ -340,6 +367,12 @@ export const triggerDescription = (config: Pick<TriggerConfig, 'type'>): string 
  * arrivals it means without opening anything. If the model settles on signup
  * genuinely covering paid arrivals too, this sentence is where that decision
  * shows first — change it knowingly.
+ *
+ * The paid sentence renders on the READ canvas and nowhere else now: the edit
+ * card fused its explanation into the tiers field's label ("Triggered when a
+ * member starts a subscription to:" — see TriggerFieldsForm), so a written-out
+ * copy above the field would say the same fact twice. Keep the two phrasings
+ * in step when either moves.
  */
 export const triggerExplanation = (config: Pick<TriggerConfig, 'type'>): string =>
   isPaidTrigger(config)
@@ -368,7 +401,9 @@ export const triggerReviewLabel = (config: TriggerConfig): string =>
  * itself, which is why there are only three answers: signup is everyone, and the paid
  * trigger is either any tier or the tiers you named.
  */
-export const audienceLabel = (config: Pick<TriggerConfig, 'type' | 'tierIds'>): string => {
+export const audienceLabel = (
+  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds'>,
+): string => {
   const tiers = tierNames(config.tierIds);
   if (hasTierFilter(config) && tiers.length > 0) {
     return tiers.join(', ');

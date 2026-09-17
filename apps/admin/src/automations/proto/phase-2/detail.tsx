@@ -39,8 +39,8 @@ import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { LeftPanel } from './left-panel';
 import {
   type TriggerConfig,
-  hasTiers,
   needsStripe,
+  tiersUnanswered,
 } from '@/automations/proto/shared/trigger-config';
 import {
   CANVAS_HUD_BUTTON,
@@ -361,11 +361,12 @@ const AutomationFloat: React.FC = () => {
       action.type === 'send_email' &&
       (!action.data.email_subject.trim() || !lexicalHasContent(action.data.email_lexical)),
   );
-  // A tiered trigger with no tiers chosen — the "Choose tiers" placeholder
-  // still showing. Same split as blankEmails: the canvas grace-gates the gold
-  // on the card, this validates the fact itself.
-  const tiersUnanswered =
-    triggerConfig !== null && hasTiers(triggerConfig) && triggerConfig.tierIds.length === 0;
+  // A tiered trigger whose tiers question is open — "Select paid tiers" chosen
+  // with nothing named, the field showing its placeholder. Same split as
+  // blankEmails: the canvas grace-gates the gold on the card, this validates
+  // the fact itself (via the shared predicate, so every validator agrees on
+  // what unanswered means).
+  const tiersOpen = triggerConfig !== null && tiersUnanswered(triggerConfig);
 
   // Nothing can go live without something to start it, without the payments it
   // depends on, with an email that can't be sent, or with a trigger whose
@@ -373,7 +374,7 @@ const AutomationFloat: React.FC = () => {
   // half-configured, it's an automation that cannot run — and neither is one
   // waiting on Stripe, carrying a blank email, or listening for tiers nobody
   // has named.
-  const canGoLive = triggerConfig !== null && !stripeMissing && !blankEmails && !tiersUnanswered;
+  const canGoLive = triggerConfig !== null && !stripeMissing && !blankEmails && !tiersOpen;
   const paneHidden = paneCollapsed;
   // What's running (read canvas) vs what's being edited (edit canvas).
 

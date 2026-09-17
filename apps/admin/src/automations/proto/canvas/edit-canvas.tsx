@@ -61,7 +61,6 @@ import {
   Switch,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { Stack } from '@tryghost/shade/primitives';
 import { OptionPicker, type PickerOption } from '@/automations/proto/shared/option-picker';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import {
@@ -72,6 +71,7 @@ import {
   type TriggerType,
   availableTriggerOptions,
   hasTiers,
+  tiersUnanswered,
   triggerConfigFor,
   triggerExplanation,
   triggerIcon,
@@ -681,32 +681,28 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                 <div
                   className={`animate-in duration-240 ${INTRO_EASE} fade-in-0 motion-reduce:animate-none`}
                 >
-                  {/* gap="xl" matching the form's own internal rhythm, so the
-                          sentence-then-field stack reads as one card rather than a
-                          caption bolted above a form. */}
-                  <Stack gap="xl">
-                    {/* What sets this flow off, stated on the card — the title
-                            names the trigger, this says what it means. Same dress as
-                            every trigger caption (text-control, muted). */}
+                  {/* One body block per trigger kind. A tiered trigger's whole
+                          explanation is the form's own label-and-field sentence
+                          ("Triggered when a member starts a subscription to:" →
+                          the tiers) — a separate description above it was the same
+                          fact twice. A trigger with no field keeps the written-out
+                          sentence, or its card would be bare again. */}
+                  {hasTiers(triggerConfig) ? (
+                    <TriggerFieldsForm
+                      config={triggerConfig}
+                      revealTiersSignal={d.tiersRevealSignal}
+                      // Phase 1's triggers stay simple: the exit sentence belongs to
+                      // the general-model lanes, where exits are part of what's being
+                      // explored. Phase 1 shows what ships, and production has no
+                      // exit configuration to speak of.
+                      showExits={!d.simpleTriggerNames}
+                      onChange={d.onTriggerConfigChange}
+                    />
+                  ) : (
                     <p className="text-control text-muted-foreground">
                       {triggerExplanation(triggerConfig)}
                     </p>
-                    {/* Only when there's a field to show: the form is all tiers
-                            now, and an empty Stack child would spend the gap above
-                            on nothing. */}
-                    {hasTiers(triggerConfig) && (
-                      <TriggerFieldsForm
-                        config={triggerConfig}
-                        revealTiersSignal={d.tiersRevealSignal}
-                        // Phase 1's triggers stay simple: the exit sentence belongs to
-                        // the general-model lanes, where exits are part of what's being
-                        // explored. Phase 1 shows what ships, and production has no
-                        // exit configuration to speak of.
-                        showExits={!d.simpleTriggerNames}
-                        onChange={d.onTriggerConfigChange}
-                      />
-                    )}
-                  </Stack>
+                  )}
                 </div>
               ) : (
                 // text-control — the same size every trigger caption takes,
@@ -1176,7 +1172,11 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   if (prevUnset !== unset) {
     setPrevUnset(unset);
     setIntroPhase(unset ? null : 'leaving');
-    if (!unset && triggerConfig && hasTiers(triggerConfig) && triggerConfig.tierIds.length === 0) {
+    // Any fresh tiered trigger arms the nudge now, not just an unanswered one:
+    // the config arrives on the 'all' default, and the popover opening is what
+    // puts that default in front of the publisher instead of leaving it
+    // answered in a field nobody looked at (see triggerConfigFor).
+    if (!unset && triggerConfig && hasTiers(triggerConfig)) {
       setTiersRevealPending(true);
     }
   }
@@ -1344,10 +1344,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         warning: showOptions
           ? undefined
           : (triggerWarning ??
-            (triggerConfig &&
-            hasTiers(triggerConfig) &&
-            triggerConfig.tierIds.length === 0 &&
-            graceStepId !== TRIGGER_NODE_ID
+            (triggerConfig && tiersUnanswered(triggerConfig) && graceStepId !== TRIGGER_NODE_ID
               ? { message: 'Choose tiers before this automation can be published.' }
               : undefined)),
         triggerLocked,
