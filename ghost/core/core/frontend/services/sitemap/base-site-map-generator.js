@@ -4,11 +4,13 @@ const sitemapXml = require('./sitemap-xml');
 
 class BaseSiteMapGenerator {
   constructor() {
-    // id -> {loc, ts, imageLoc}: one flat record per resource, rather than
-    // the nested element tree the xml package used to take plus a parallel
-    // map of Moments. Both were held for the lifetime of the index, and at
-    // 10k posts they measured ~1.1 kB per resource against ~300 B for this.
-    this.nodeLookup = new Map();
+    // {loc, ts, imageLoc}: one flat record per resource, rather than the
+    // nested element tree the xml package used to take plus a parallel map
+    // of Moments. Both were held for the lifetime of the index, and at 10k
+    // posts they measured ~1.1 kB per resource against ~300 B for this.
+    // Not keyed by id: every build fills a fresh generator, so nothing
+    // overwrites a record.
+    this.records = [];
     this.siteMapContent = new Map();
     this.lastModified = 0;
     this.maxPerPage = 50000;
@@ -20,7 +22,7 @@ class BaseSiteMapGenerator {
    * they are stored.
    */
   get size() {
-    return this.nodeLookup.size;
+    return this.records.length;
   }
 
   hasCanonicalUrl(datum, url) {
@@ -49,11 +51,11 @@ class BaseSiteMapGenerator {
   generateXmlFromNodes(page) {
     // Sort newest to oldest. The records are sorted in place of a wrapper
     // object per resource, so a render allocates one array of references.
-    const records = [...this.nodeLookup.values()];
-    records.sort((a, b) => b.ts - a.ts);
+    const sorted = this.records.slice();
+    sorted.sort((a, b) => b.ts - a.ts);
 
     // Get the page of nodes that was requested
-    const pageRecords = records.slice((page - 1) * this.maxPerPage, page * this.maxPerPage);
+    const pageRecords = sorted.slice((page - 1) * this.maxPerPage, page * this.maxPerPage);
 
     // Do not generate empty sitemaps
     if (pageRecords.length === 0) {
@@ -74,7 +76,7 @@ class BaseSiteMapGenerator {
     const lastModified = this.getLastModifiedForDatum(datum);
 
     this.updateLastModified(datum, lastModified);
-    this.updateLookups(datum, this.createRecordFromDatum(url, datum, lastModified));
+    this.addRecord(this.createRecordFromDatum(url, datum, lastModified));
     // force regeneration of xml
     this.siteMapContent.clear();
   }
@@ -158,12 +160,12 @@ class BaseSiteMapGenerator {
     return content;
   }
 
-  updateLookups(datum, record) {
-    this.nodeLookup.set(datum.id, record);
+  addRecord(record) {
+    this.records.push(record);
   }
 
   reset() {
-    this.nodeLookup.clear();
+    this.records = [];
     this.siteMapContent.clear();
     this.lastModified = 0;
   }
