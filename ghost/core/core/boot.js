@@ -427,14 +427,37 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     statsService.init(),
     explorePingService.init(),
     machinePaymentsService.init(),
-    automationsService.init({
-      domainEvents,
-      apiUrl,
-      schedulerAdapter,
-      internalKeys,
-      siteUuid: settingsCache.get('site_uuid'),
-    }),
   ]);
+
+  debug('Begin: Register job handlers');
+  const registerJobHandlers =
+    require('./server/services/jobs-service/register-job-handlers').default;
+  const memberJobs = require('./server/services/members/jobs');
+  const membersService = require('./server/services/members');
+  memberJobs.init();
+  assert(giftService.service, 'Gift service should be initialized');
+  assert(mentionsService.controller, 'Mentions controller should be initialized');
+  assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
+  assert(membersService.handleImportJob, 'Members service should be initialized');
+  registerJobHandlers({
+    jobsService,
+    memberJobs,
+    giftService: giftService.service,
+    mediaInliner: mediaInliner.getInstance(),
+    mentionsController: mentionsService.controller,
+    mentionsSendingService: mentionsService.sendingService,
+    membersService,
+  });
+  await jobsService.start();
+  debug('End: Register job handlers');
+
+  await automationsService.init({
+    domainEvents,
+    apiUrl,
+    schedulerAdapter,
+    internalKeys,
+    siteUuid: settingsCache.get('site_uuid'),
+  });
 
   if (schedulerAdapter.rescheduleOnBoot) {
     await postScheduling.rescheduleAll();
@@ -524,9 +547,8 @@ async function initBackgroundServices({ config }) {
     logging.error(err);
   }
 
-  const activitypub = require('./server/services/activitypub');
-  await activitypub.init();
-  // Load email analytics recurring jobs
+  // Load email analytics recurring jobs. Runs before activitypub.init for the
+  // same reason as the schedules above.
   if (config.get('backgroundJobs:emailAnalytics')) {
     const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
     await Promise.all([
@@ -536,6 +558,8 @@ async function initBackgroundServices({ config }) {
     ]);
   }
 
+  const activitypub = require('./server/services/activitypub');
+  await activitypub.init();
   const tinybirdSync = require('./server/services/tinybird-sync');
   tinybirdSync.start();
 
@@ -685,31 +709,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     await initServices({ ghostServer, config, prometheusClient, jobsService });
 
-    debug('Begin: Register job handlers');
-    const assert = require('node:assert/strict');
-    const registerJobHandlers =
-      require('./server/services/jobs-service/register-job-handlers').default;
-    const mediaInliner = require('./server/services/media-inliner');
-    const gifts = require('./server/services/gifts');
-    const memberJobs = require('./server/services/members/jobs');
-    const mentionsService = require('./server/services/mentions');
-    const membersService = require('./server/services/members');
-    memberJobs.init();
-    assert(gifts.service, 'Gift service should be initialized');
-    assert(mentionsService.controller, 'Mentions controller should be initialized');
-    assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
-    assert(membersService.handleImportJob, 'Members service should be initialized');
-    registerJobHandlers({
-      jobsService,
-      memberJobs,
-      giftService: gifts.service,
-      mediaInliner: mediaInliner.getInstance(),
-      mentionsController: mentionsService.controller,
-      mentionsSendingService: mentionsService.sendingService,
-      membersService,
-    });
-    await jobsService.start();
-    debug('End: Register job handlers');
     debug('End: Load Ghost Services & Apps');
 
     // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
