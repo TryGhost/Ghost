@@ -222,6 +222,27 @@ describe('useDunningState', () => {
     expect(result.current).toMatchObject({ daysLeft: 25 });
   });
 
+  test('shares one tick across every consumer of the hook', () => {
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
+
+    const first = renderHook(() => useDunningState());
+    const second = renderHook(() => useDunningState());
+    expect(vi.getTimerCount()).toBe(1);
+
+    act(() => {
+      vi.advanceTimersByTime(DAY_MS + 60_000);
+    });
+
+    // Both instances read the same clock, so phase boundaries flip together.
+    expect(first.result.current?.daysLeft).toBe(25);
+    expect(second.result.current?.daysLeft).toBe(25);
+
+    first.unmount();
+    expect(vi.getTimerCount()).toBe(1);
+    second.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   test('installs no periodic tick when there is nothing to derive', () => {
     // The hook mounts in the admin layout on every page: without dunning in
     // effect a tick would re-render every session each minute for nothing.

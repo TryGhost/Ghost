@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import {
   DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
@@ -7,6 +7,7 @@ import {
 } from '@tryghost/admin-x-framework/api/dunning';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useSubscriptionStatus } from '@/ember-bridge';
+import { readSharedNow, retainMinuteTicker, subscribeSharedNow } from './minute-ticker';
 
 export type DunningPhase = 'warning' | 'locked';
 
@@ -154,16 +155,17 @@ export function useDunningState(): DunningState | null {
   const dunningInEffect = Boolean(dunning);
 
   // Re-derive the phase and countdown periodically; transitions land on date
-  // boundaries, so a coarse tick keeps them fresh without churn. Only while
-  // dunning is in effect — this hook mounts in the admin layout, so an
+  // boundaries, so a coarse tick keeps them fresh without churn. The tick is
+  // shared so every consumer of this hook reads the same `now` and phase
+  // boundaries flip all surfaces together — and it is only retained while
+  // dunning is in effect, since this hook mounts in the admin layout and an
   // unconditional interval would re-render every session each minute.
-  const [now, setNow] = useState(() => Date.now());
+  const now = useSyncExternalStore(subscribeSharedNow, readSharedNow);
   useEffect(() => {
     if (!dunningInEffect) {
       return;
     }
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
+    return retainMinuteTicker();
   }, [dunningInEffect]);
 
   const lockDismissedFor = useSyncExternalStore(subscribeDunningStore, readLockDismissedFor);
