@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { MEMBERS } from '../members-metafields';
+import type { MetafieldValuesService } from '../members-metafields/values-service';
 
 /**
  * A member's own account: what they are shown about themselves, and what they may
@@ -54,15 +55,7 @@ interface EmailSuppressionList {
   removeEmail(email: string): Promise<unknown>;
 }
 
-interface MetafieldValues {
-  unwrapWire(input: unknown): unknown;
-  planWrite(values: unknown, audience: unknown): Promise<unknown[]>;
-  applyWrite(
-    memberId: string,
-    writes: unknown[],
-    options: { writtenBy: { type: string; id: string } },
-  ): Promise<void>;
-}
+type MetafieldValues = Pick<MetafieldValuesService, 'unwrapWire' | 'planWrite' | 'applyWrite'>;
 
 export interface MemberAccountServiceDeps {
   memberBREADService: MemberBreadService;
@@ -116,11 +109,11 @@ export class MemberAccountService {
     });
 
     if (plannedMetafields) {
-      // A member is recorded as the author of their own answers, and is the one
-      // writer whose changes leave nothing in the staff action log: that log
-      // records what staff did.
+      // A member is recorded as the author of their own answers, made from their
+      // account, which is Portal's.
       await this.#metafieldValues.applyWrite(memberId, plannedMetafields, {
         writtenBy: { type: 'member', id: memberId },
+        source: 'portal',
       });
     }
 

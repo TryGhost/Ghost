@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { inputSurfaceClasses } from '@/components/ui/input-surface';
@@ -42,7 +41,7 @@ const inputGroupVariants = cva(
     },
     defaultVariants: {
       variant: 'default',
-      shape: 'pill',
+      shape: 'rounded',
     },
   },
 );
@@ -51,8 +50,7 @@ export interface InputGroupProps
   extends React.ComponentProps<'div'>, VariantProps<typeof inputGroupVariants> {}
 
 function InputGroup({ className, variant, shape, ...props }: InputGroupProps) {
-  const { controlShape } = useShade();
-  const resolvedShape = shape ?? controlShape;
+  const resolvedShape = shape ?? 'rounded';
   return (
     <div
       className={cn(inputGroupVariants({ variant, shape: resolvedShape }), className)}
@@ -112,9 +110,10 @@ function InputGroupAddon({
 const inputGroupButtonVariants = cva('flex items-center gap-2 text-control shadow-none', {
   variants: {
     size: {
-      xs: "h-6 gap-1 rounded-[calc(var(--input-group-radius)-5px)] px-2 has-[>svg]:px-2 [&>svg:not([class*='size-'])]:size-3.5",
-      sm: 'h-8 gap-1.5 rounded-control px-2.5 has-[>svg]:px-2.5',
-      'icon-xs': 'size-6 rounded-[calc(var(--input-group-radius)-5px)] p-0 has-[>svg]:p-0',
+      xs: "h-6 gap-1 px-2 has-[>svg]:px-2 data-[control-shape=rounded]:rounded-[calc(var(--input-group-radius)-5px)] [&>svg:not([class*='size-'])]:size-3.5",
+      sm: 'h-8 gap-1.5 px-2.5 has-[>svg]:px-2.5 data-[control-shape=rounded]:rounded-control',
+      'icon-xs':
+        'size-6 p-0 has-[>svg]:p-0 data-[control-shape=rounded]:rounded-[calc(var(--input-group-radius)-5px)]',
       'icon-sm': 'size-8 p-0 has-[>svg]:p-0',
     },
   },

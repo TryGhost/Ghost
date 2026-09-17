@@ -118,6 +118,27 @@ export const Destructive: Story = {
   },
 };
 
+export const DestructiveGhost: Story = {
+  args: {
+    variant: 'destructive-ghost',
+    children: 'Delete item',
+  },
+  render: (args) => (
+    <Inline gap="sm">
+      <Button {...args} />
+      <Button {...args} disabled />
+    </Inline>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use for low-emphasis destructive actions. Admin 7 adds a translucent red background on hover and while pressed. Tab to inspect keyboard focus; disabled buttons remain inactive.',
+      },
+    },
+  },
+};
+
 export const Outline: Story = {
   args: {
     variant: 'outline',
@@ -386,6 +407,7 @@ export const Admin7Disabled: Story = {
         <Button>Primary</Button>
         <Button variant="secondary">Secondary</Button>
         <Button variant="ghost">Ghost</Button>
+        <Button variant="destructive-ghost">Delete item</Button>
         <Button variant="subtle">Subtle</Button>
       </Inline>
     </ShadeApp>

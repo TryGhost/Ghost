@@ -75,6 +75,33 @@ test.describe('Portal - member custom fields', () => {
     }
   });
 
+  // Typed a key at a time, the way a member fills it in: each keystroke redraws the page,
+  // and an input rebuilt by that redraw loses focus, swallowing the rest of what is typed.
+  test('keeps an address part focused while the member types', async ({
+    page,
+    browser,
+    baseURL,
+  }) => {
+    const fieldName = `Shipping address ${Date.now()}`;
+    const member = await createMemberFactory(page.request).create({
+      name: 'Ada Lovelace',
+      email: `ada-types-${Date.now()}@ghost.org`,
+    });
+    await anAddressFieldMembersMayEdit(page, fieldName);
+
+    const { context, profile, key } = await accountSettingsAs(browser, baseURL!, member, fieldName);
+    try {
+      const line1 = profile.partInput(key, 'line1');
+      await line1.click();
+      await line1.page().keyboard.type('221B Baker Street');
+
+      await expect(line1).toBeFocused();
+      await expect(line1).toHaveValue('221B Baker Street');
+    } finally {
+      await context.close();
+    }
+  });
+
   // Leaving the page discards what was typed, so a refusal of it has to go too. The
   // refusal lives in app state, which outlives the page unless it is cleared, and a
   // value the member never sees again would otherwise come back marked as wrong.

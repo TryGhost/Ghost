@@ -50,7 +50,7 @@ const selectTriggerVariants = cva(
     ],
     defaultVariants: {
       variant: 'default',
-      shape: 'pill',
+      shape: 'rounded',
       isAdmin7: true,
     },
   },
@@ -72,8 +72,8 @@ const SelectTrigger = React.forwardRef<
     { className, children, shape, variant, showChevron = variant !== 'secondary', ...props },
     ref,
   ) => {
-    const { controlShape, isAdmin7 } = useShade();
-    const resolvedShape = shape ?? controlShape;
+    const { isAdmin7 } = useShade();
+    const resolvedShape = shape ?? 'rounded';
     return (
       <SelectPrimitive.Trigger
         ref={ref}

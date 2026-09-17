@@ -26,7 +26,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Display additional information or actions alongside an input or textarea. Use addons to provide context, actions, or keyboard shortcuts that enhance the input experience.',
+          'Display additional information or actions alongside an input or textarea. Input groups keep standard rounded corners; buttons inside inherit the action-button shape. Use addons to provide context, actions, or keyboard shortcuts that enhance the input experience.',
       },
     },
   },
@@ -81,7 +81,7 @@ export const Icon: Story = {
 export const GhostPill: Story = {
   render: () => (
     <div className="w-full max-w-sm">
-      <InputGroup variant="ghost">
+      <InputGroup shape="pill" variant="ghost">
         <InputGroupInput placeholder="Search..." />
         <InputGroupAddon>
           <SearchIcon />
@@ -101,7 +101,7 @@ export const GhostPill: Story = {
 export const SecondaryPill: Story = {
   render: () => (
     <div className="w-full max-w-sm">
-      <InputGroup variant="secondary">
+      <InputGroup shape="pill" variant="secondary">
         <InputGroupInput placeholder="Search..." />
         <InputGroupAddon>
           <SearchIcon />
@@ -244,7 +244,7 @@ export const Textarea: Story = {
     docs: {
       description: {
         story:
-          'Textarea and block-aligned addons keep rounded corners in both designs; pill shapes apply to single-line groups.',
+          'Input groups use standard rounded corners. Textareas and block-aligned addons retain those corners even when a pill shape is requested.',
       },
     },
   },

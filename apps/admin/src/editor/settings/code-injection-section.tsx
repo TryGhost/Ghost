@@ -1,7 +1,7 @@
 import { CodeEditor } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { PostType } from '@/editor/card-config';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSubview } from './settings-subview';
 
 // A binding that returns true prevents the event's default, which the pane
@@ -38,7 +38,7 @@ function EditorLabel({ text, helper }: { text: string; helper: string }) {
 }
 
 export interface CodeInjectionSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
 }
 

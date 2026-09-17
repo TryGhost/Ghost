@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.64.1-rc.0",
+  "version": "6.65.0-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -175,7 +175,6 @@
     "express-jwt": "8.5.1",
     "express-lazy-router": "1.0.6",
     "express-query-boolean": "2.0.0",
-    "express-queue": "0.0.13",
     "express-session": "1.19.0",
     "fastq": "catalog:",
     "file-type": "21.3.4",
@@ -246,7 +245,6 @@
     "type-fest": "catalog:",
     "ua-parser-js": "1.0.41",
     "unidecode": "catalog:",
-    "xml": "1.0.1",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -3,7 +3,9 @@
 `apps/admin/src/editor/settings/` holds the settings panel beside the post
 editor: the frame, its header toggle, and the sections that edit a post's
 non-body fields. Nothing here talks to the API. Every field goes through the
-editing session, which is the only writer.
+editing session, which is the only writer. A section is handed a narrow port
+onto that session — the settings fields, their writers, and the few other
+members the sections read — rather than the whole editing handle.
 
 ## Save policy
 
@@ -261,7 +263,9 @@ page editor as well as the post editor. Users are never created here, so the lis
 offers people the site already has. It is read once, when the list is first
 opened, rather than on every editor entry, and the chips are named from the
 post's own relations until then — including the chips an edit leaves behind, so
-removing one never leaves the rest reading as bare ids.
+removing one never leaves the rest reading as bare ids. The read continues until
+every page of staff has arrived, and the list reads as loading until it has, so
+a site with more staff than one page holds still offers all of them.
 
 A failed staff lookup shows an error and a Retry action in the list. Retrying
 keeps the selected authors and returns focus to the search field.

@@ -65,6 +65,13 @@ const publishNow = async (resourceType, id, force, options) => {
     throw err;
   }
 
+  // The read above is filtered to scheduled resources, so a resource that an
+  // earlier delivery has already published normally surfaces as NotFound.
+  // Keep an explicit check so the outcome doesn't depend on that filter.
+  if (preScheduledResource.status !== 'scheduled') {
+    return NO_OP;
+  }
+
   const publishedAtMoment = moment(preScheduledResource.published_at);
 
   if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {

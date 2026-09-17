@@ -2736,9 +2736,6 @@ importers:
       express-query-boolean:
         specifier: 2.0.0
         version: 2.0.0
-      express-queue:
-        specifier: 0.0.13
-        version: 0.0.13(supports-color@10.2.2)
       express-session:
         specifier: 1.19.0
         version: 1.19.0(supports-color@10.2.2)
@@ -2949,9 +2946,6 @@ importers:
       unidecode:
         specifier: 'catalog:'
         version: 1.1.0
-      xml:
-        specifier: 1.0.1
-        version: 1.0.1
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -14639,10 +14633,6 @@ packages:
     peerDependencies:
       express: 4.x
 
-  express-end@0.0.8:
-    resolution: {integrity: sha512-PPntzICAq006LBpXKBVJtmRUiCRqTMZ+OB8L2RFXgx+OmkMWU66IL4DTEPF/DOcxmsuC7Y0NdbT2R71lb+pBpg==}
-    engines: {node: '>=0.10'}
-
   express-hbs@2.5.0:
     resolution: {integrity: sha512-i2O1ZBwKO32KF0MePnkgYHsAAILr9H9Sp5GoGp9JWz/qhsBfTMSq9VF1pN109DHysPX6YO88y7B+f6xnEEF/mg==}
 
@@ -14657,10 +14647,6 @@ packages:
 
   express-query-boolean@2.0.0:
     resolution: {integrity: sha512-4dU/1HPm8lkTPR12+HFUXqCarcsC19OKOkb4otLOuADfPYrQMaugPJkSmxNsqwmWYjozvT6vdTiqkgeBHkzOow==}
-
-  express-queue@0.0.13:
-    resolution: {integrity: sha512-C4OEDasGDqpXLrZICSUxbY47p5c0bKqf/3/3hwauSCmI+jVVxKBWU2w39BuKLP6nF65z87uDFBbJMPAn2ZrG3g==}
-    engines: {node: '>=6'}
 
   express-session@1.19.0:
     resolution: {integrity: sha512-0csaMkGq+vaiZTmSMMGkfdCOabYv192VbytFypcvI0MANrp+4i/7yEkJ0sbAEhycQjntaKGzYfjfXQyVb7BHMA==}
@@ -17894,10 +17880,6 @@ packages:
     engines: {node: '>= 12.13.0'}
     peerDependencies:
       webpack: ^5.0.0
-
-  mini-queue@0.0.14:
-    resolution: {integrity: sha512-DNh9Wn8U1jrmn1yVfpviwClyER/Y4ltgGbG+LF/KIdKJ8BEo2Q9jDDPG7tEhz6F/DTZ/ohv5D7AAXFVSFyP05Q==}
-    engines: {node: '>=4'}
 
   minimalistic-assert@1.0.1:
     resolution: {integrity: sha512-UtJcAD4yEaGtjPezWuO9wC4nwUnVH/8/Im3yEHQP4b67cXlD/Qr9hdITCU1xDbSEXg2XKNaP8jsReV7vQd00/A==}
@@ -36786,12 +36768,6 @@ snapshots:
       long-timeout: 0.1.1
       underscore: 1.13.8
 
-  express-end@0.0.8(supports-color@10.2.2):
-    dependencies:
-      debug: 2.6.9(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - supports-color
-
   express-hbs@2.5.0:
     dependencies:
       handlebars: 4.7.9
@@ -36811,14 +36787,6 @@ snapshots:
       express: 4.22.2(supports-color@10.2.2)
 
   express-query-boolean@2.0.0: {}
-
-  express-queue@0.0.13(supports-color@10.2.2):
-    dependencies:
-      debug: 4.4.3(supports-color@10.2.2)
-      express-end: 0.0.8(supports-color@10.2.2)
-      mini-queue: 0.0.14(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - supports-color
 
   express-session@1.19.0(supports-color@10.2.2):
     dependencies:
@@ -41109,12 +41077,6 @@ snapshots:
       schema-utils: 4.3.3
       tapable: 2.3.3
       webpack: 5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@4.1.10)(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3)
-
-  mini-queue@0.0.14(supports-color@10.2.2):
-    dependencies:
-      debug: 3.2.7(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - supports-color
 
   minimalistic-assert@1.0.1: {}
 

@@ -1514,6 +1514,29 @@ describe('Members API', function () {
         // Asked for on the page and kept by Stripe against the customer it invoices.
         // Ghost never copies one into a publisher's field, so there is nothing here for it.
         assert.equal(member.metafields.custom[fieldKeys.vat], undefined);
+
+        // Each value arrives through its own binding, so the member's activity feed has
+        // an entry per field stored, each saying it was collected at checkout.
+        const filter = encodeURIComponent(
+          `data.member_id:'${member.id}'+type:metafield_change_event`,
+        );
+        const { body } = await adminAgent
+          .get(`/members/events/?filter=${filter}`)
+          .expectStatus(200);
+        assert.deepEqual(
+          body.events
+            .map(({ data }) => ({
+              field: data.metafields[0].name,
+              source: data.source,
+              writer: data.written_by_type,
+            }))
+            .sort((a, b) => a.field.localeCompare(b.field)),
+          [
+            { field: 'Delivery address', source: 'checkout', writer: 'binding' },
+            { field: 'Recipient name', source: 'checkout', writer: 'binding' },
+            { field: 'T-shirt size', source: 'checkout', writer: 'binding' },
+          ],
+        );
       });
 
       // Turning collection off has to stop the collecting, and Stripe keeps returning
@@ -4231,6 +4254,362 @@ describe('Members API', function () {
             subscriptionAttributions,
           );
         });
+    });
+
+    describe('incomplete subscription conversions', function () {
+      let memberId;
+      let postId;
+      let initialConversions;
+      let productId;
+
+      beforeEach(async function () {
+        productId = (await getPaidProduct()).id;
+        postId = fixtureManager.get('posts', 0).id;
+        const postResponse = await adminAgent
+          .get(`/posts/${postId}/?include=count.paid_conversions`)
+          .expectStatus(200);
+        initialConversions = postResponse.body.posts[0].count.paid_conversions;
+
+        const customerId = createStripeID('cus');
+        const response = await adminAgent
+          .post('/members/')
+          .body({
+            members: [{ email: `${customerId}@example.com`, subscribed: false }],
+          })
+          .expectStatus(201);
+        memberId = response.body.members[0].id;
+        await models.MemberStripeCustomer.add({
+          member_id: memberId,
+          customer_id: customerId,
+        });
+        set(customer, {
+          id: customerId,
+          email: response.body.members[0].email,
+          invoice_settings: {},
+          subscriptions: { data: [] },
+        });
+        set(subscription, {
+          id: createStripeID('sub'),
+          customer: customerId,
+          status: 'incomplete',
+          cancel_at_period_end: false,
+          start_date: beforeNow / 1000,
+          current_period_end: beforeNow / 1000 + 86400 * 31,
+          items: {
+            data: [
+              {
+                price: {
+                  id: 'price_123',
+                  product: 'product_123',
+                  active: true,
+                  nickname: 'month',
+                  currency: 'usd',
+                  recurring: { interval: 'month' },
+                  unit_amount: 150,
+                  type: 'recurring',
+                },
+              },
+            ],
+          },
+          metadata: {
+            attribution_id: postId,
+            attribution_type: 'post',
+            attribution_url: '/original-post/',
+            referrer_source: 'Google',
+            utm_campaign: 'summer',
+          },
+        });
+      });
+
+      async function deliver(type, object = subscription) {
+        const payload = JSON.stringify({ type, api_version: '2020-08-27', data: { object } });
+        const signature = stripe.webhooks.generateTestHeaderString({
+          payload,
+          secret: process.env.WEBHOOK_SECRET,
+        });
+        await membersAgent
+          .post('/webhooks/stripe/')
+          .body(payload)
+          .header('content-type', 'application/json')
+          .header('stripe-signature', signature)
+          .expectStatus(200);
+        await DomainEvents.allSettled();
+      }
+
+      async function assertSubscriptionState({ status, mrr, paid = false }) {
+        const member = await getMember(memberId);
+        await member.load(['products', 'stripeCustomers.subscriptions']);
+        assert.equal(member.get('status'), paid ? 'paid' : 'free');
+        assert.deepEqual(member.related('products').pluck('id'), paid ? [productId] : []);
+
+        const customers = member.related('stripeCustomers');
+        assert.equal(customers.length, 1);
+        assert.equal(customers.at(0).get('customer_id'), customer.id);
+        const subscriptions = customers.at(0).related('subscriptions');
+        assert.equal(subscriptions.length, 1);
+        const stored = subscriptions.at(0);
+        assertObjectMatches(models.Base.Model.prototype.serialize.call(stored), {
+          subscription_id: subscription.id,
+          customer_id: customer.id,
+          stripe_price_id: 'price_123',
+          plan_amount: 150,
+          plan_interval: 'month',
+          plan_currency: 'usd',
+          status,
+          mrr,
+        });
+        assert.equal(new Date(stored.get('start_date')).getTime(), subscription.start_date * 1000);
+        assert.equal(
+          new Date(stored.get('current_period_end')).getTime(),
+          subscription.current_period_end * 1000,
+        );
+        return stored.id;
+      }
+
+      async function assertConversions(expected) {
+        const response = await adminAgent
+          .get(`/posts/${postId}/?include=count.paid_conversions`)
+          .expectStatus(200);
+        assert.equal(response.body.posts[0].count.paid_conversions, initialConversions + expected);
+        const events = await models.SubscriptionCreatedEvent.where(
+          'member_id',
+          memberId,
+        ).fetchAll();
+        assert.equal(events.length, expected);
+        if (expected) {
+          assert.equal(events.at(0).get('attribution_id'), postId);
+          assert.equal(events.at(0).get('referrer_source'), 'Google');
+          assert.equal(events.at(0).get('utm_campaign'), 'summer');
+        }
+      }
+
+      it('keeps incomplete and expired attempts out of paid conversions and activity', async function () {
+        await deliver('customer.subscription.created');
+        const storedId = await assertSubscriptionState({ status: 'incomplete', mrr: 0 });
+        await assertConversions(0);
+        subscription.status = 'incomplete_expired';
+        await deliver('customer.subscription.updated');
+        await deliver('customer.subscription.updated');
+
+        await assertConversions(0);
+        assert.equal(
+          await assertSubscriptionState({ status: 'incomplete_expired', mrr: 0 }),
+          storedId,
+        );
+        await assertMemberEvents({
+          eventType: 'MemberPaidSubscriptionEvent',
+          memberId,
+          asserts: [],
+        });
+        const response = await adminAgent.get(`/members/${memberId}/`).expectStatus(200);
+        assert.equal(response.body.members[0].status, 'free');
+        assert.equal(response.body.members[0].subscriptions.length, 0);
+      });
+
+      it('groups signup with the subscription start when checkout creates a paid member', async function () {
+        // Use a new customer so checkout creates the member and its signup batch.
+        customer.id = createStripeID('cus');
+        customer.email = `${customer.id}@example.com`;
+        subscription.customer = customer.id;
+        subscription.status = 'active';
+        customer.subscriptions.data = [subscription];
+        const checkout = {
+          id: createStripeID('cs'),
+          object: 'checkout.session',
+          mode: 'subscription',
+          customer: customer.id,
+          subscription: subscription.id,
+          payment_status: 'paid',
+          metadata: subscription.metadata,
+        };
+        await deliver('checkout.session.completed', checkout);
+        memberId = (await models.Member.findOne({ email: customer.email })).id;
+        await assertConversions(1);
+        await assertSubscriptionState({ status: 'active', mrr: 150, paid: true });
+
+        const signup = await models.MemberCreatedEvent.findOne({ member_id: memberId });
+        const conversion = await models.SubscriptionCreatedEvent.findOne({ member_id: memberId });
+        assert.ok(signup.get('batch_id'));
+        assert.equal(conversion.get('batch_id'), signup.get('batch_id'));
+
+        const response = await adminAgent
+          .get(
+            `/members/events/?filter=${encodeURIComponent(
+              `type:[signup_event,subscription_event]+data.member_id:'${memberId}'`,
+            )}`,
+          )
+          .expectStatus(200);
+        assert.equal(response.body.events.length, 1);
+        assertObjectMatches(response.body.events[0], {
+          type: 'subscription_event',
+          data: { type: 'created', signup: true },
+        });
+      });
+
+      it('counts successful checkout once and retains it after cancellation', async function () {
+        const originalWebhook = structuredClone(subscription);
+        await deliver('customer.subscription.created');
+        const storedId = await assertSubscriptionState({ status: 'incomplete', mrr: 0 });
+        await assertConversions(0);
+        const signup = await models.MemberCreatedEvent.findOne({ member_id: memberId });
+        assert.ok(signup.get('batch_id'));
+        const eventsUrl = `/members/events/?filter=${encodeURIComponent(
+          `type:[signup_event,subscription_event]+data.member_id:'${memberId}'`,
+        )}`;
+        const beforeActivation = await adminAgent.get(eventsUrl).expectStatus(200);
+        assert.equal(beforeActivation.body.events.length, 1);
+        assert.equal(beforeActivation.body.events[0].type, 'signup_event');
+
+        subscription.status = 'active';
+        await deliver('customer.subscription.updated');
+        // A delayed creation webhook must use the current Stripe state and not duplicate the conversion.
+        await deliver('customer.subscription.created', originalWebhook);
+        await deliver('customer.subscription.updated');
+
+        assert.equal(
+          await assertSubscriptionState({ status: 'active', mrr: 150, paid: true }),
+          storedId,
+        );
+        await assertConversions(1);
+        await assertMemberEvents({
+          eventType: 'MemberPaidSubscriptionEvent',
+          memberId,
+          asserts: [{ type: 'created', from_plan: null, to_plan: 'price_123', mrr_delta: 150 }],
+        });
+        const response = await adminAgent.get(`/members/${memberId}/`).expectStatus(200);
+        assert.equal(response.body.members[0].status, 'paid');
+
+        const conversion = await models.SubscriptionCreatedEvent.findOne({ member_id: memberId });
+        assert.notEqual(conversion.get('batch_id'), signup.get('batch_id'));
+        const afterActivation = await adminAgent.get(eventsUrl).expectStatus(200);
+        const events = afterActivation.body.events;
+        assert.equal(events.length, 2);
+        assert.equal(events.filter((event) => event.type === 'signup_event').length, 1);
+        assertObjectMatches(
+          events.find((event) => event.type === 'subscription_event'),
+          {
+            data: { type: 'created', signup: false },
+          },
+        );
+
+        subscription.status = 'canceled';
+        subscription.canceled_at = Math.floor(Date.now() / 1000);
+        await deliver('customer.subscription.deleted');
+        assert.equal(await assertSubscriptionState({ status: 'canceled', mrr: 0 }), storedId);
+        await assertConversions(1);
+        await assertMemberEvents({
+          eventType: 'MemberPaidSubscriptionEvent',
+          memberId,
+          asserts: [
+            { type: 'created', mrr_delta: 150 },
+            { type: 'expired', mrr_delta: -150 },
+          ],
+        });
+      });
+
+      for (const status of ['active', 'incomplete_expired']) {
+        it(`records ${status === 'active' ? 'one' : 'no'} offer redemption when incomplete becomes ${status}`, async function () {
+          set(coupon, {
+            id: createStripeID('coupon').slice(0, 20),
+            object: 'coupon',
+            amount_off: null,
+            created: beforeNow / 1000,
+            currency: null,
+            duration: 'forever',
+            duration_in_months: null,
+            livemode: false,
+            max_redemptions: null,
+            metadata: {},
+            name: '20% off',
+            percent_off: 20,
+            redeem_by: null,
+            times_redeemed: 0,
+            valid: true,
+          });
+          subscription.discount = {
+            id: createStripeID('di'),
+            object: 'discount',
+            customer: customer.id,
+            subscription: subscription.id,
+            coupon,
+            start: beforeNow / 1000,
+            end: null,
+          };
+
+          await deliver('customer.subscription.created');
+          await deliver('customer.subscription.updated');
+          const offer = await getOfferByStripeCoupon(coupon.id);
+          assert.ok(offer);
+          const stored = await getSubscription(subscription.id);
+          assert.equal(stored.get('offer_id'), offer.id);
+          await assertMemberEvents({ eventType: 'OfferRedemption', memberId, asserts: [] });
+          await assertConversions(0);
+
+          subscription.status = status;
+          await deliver('customer.subscription.updated');
+          await deliver('customer.subscription.updated');
+
+          const activated = status === 'active';
+          assert.equal(
+            await assertSubscriptionState({ status, mrr: activated ? 120 : 0, paid: activated }),
+            stored.id,
+          );
+          await assertMemberEvents({
+            eventType: 'OfferRedemption',
+            memberId,
+            asserts: activated ? [{ offer_id: offer.id, subscription_id: stored.id }] : [],
+          });
+          await assertConversions(activated ? 1 : 0);
+        });
+      }
+
+      for (const statusAtCheckout of ['incomplete', 'active']) {
+        it(`syncs a ${statusAtCheckout} subscription when checkout links the customer after the first webhook`, async function () {
+          const customerLink = await models.MemberStripeCustomer.findOne({
+            customer_id: customer.id,
+          });
+          await customerLink.destroy();
+          await deliver('customer.subscription.created');
+          assert.equal(
+            await models.StripeCustomerSubscription.findOne({ subscription_id: subscription.id }),
+            null,
+          );
+          await assertConversions(0);
+
+          subscription.status = statusAtCheckout;
+          customer.subscriptions.data = [subscription];
+          const checkout = {
+            id: createStripeID('cs'),
+            object: 'checkout.session',
+            mode: 'subscription',
+            customer: customer.id,
+            subscription: subscription.id,
+            payment_status: statusAtCheckout === 'active' ? 'paid' : 'unpaid',
+            metadata: subscription.metadata,
+          };
+          await deliver('checkout.session.completed', checkout);
+          const storedId = await assertSubscriptionState({
+            status: statusAtCheckout,
+            mrr: statusAtCheckout === 'active' ? 150 : 0,
+            paid: statusAtCheckout === 'active',
+          });
+          await assertConversions(statusAtCheckout === 'active' ? 1 : 0);
+
+          subscription.status = 'active';
+          await deliver('customer.subscription.updated');
+          await deliver('checkout.session.completed', checkout);
+          assert.equal(
+            await assertSubscriptionState({ status: 'active', mrr: 150, paid: true }),
+            storedId,
+          );
+          await assertConversions(1);
+          await assertMemberEvents({
+            eventType: 'MemberPaidSubscriptionEvent',
+            memberId,
+            asserts: [{ type: 'created', subscription_id: storedId, mrr_delta: 150 }],
+          });
+        });
+      }
     });
   });
 });

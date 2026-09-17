@@ -1,9 +1,11 @@
-const _ = require('lodash');
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
-const validator = require('@tryghost/validator');
-
-const schema = require('./schema');
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import _ from 'lodash';
+import type { ReadonlyDeep } from 'type-fest';
+// @ts-expect-error This module lacks type definitions.
+import validator from '@tryghost/validator';
+// @ts-expect-error This module lacks type definitions.
+import schema from './schema';
 
 const messages = {
   valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
@@ -12,6 +14,17 @@ const messages = {
     'Value in [{tableName}.{columnKey}] exceeds maximum length of {maxlength} characters.',
   valueIsNotInteger: 'Value in [{tableName}.{columnKey}] is not an integer.',
 };
+
+type Model = {
+  get(key: string): unknown;
+  set(key: string, value: unknown): unknown;
+  changed: Record<string, unknown>;
+};
+
+type Options = ReadonlyDeep<{
+  method?: 'insert' | 'update';
+}>;
+
 /**
  * Validate model against schema.
  *
@@ -27,11 +40,11 @@ const messages = {
  * ## on model add
  * - validate everything to catch required fields
  */
-function validateSchema(tableName, model, options) {
+export function validateSchema(tableName: string, model: Model, options?: Options) {
   options = options || {};
 
   const columns = _.keys(schema[tableName]);
-  let validationErrors = [];
+  let validationErrors: errors.ValidationError[] = [];
 
   _.each(columns, function each(columnKey) {
     let message = ''; // KEEP: Validator.js only validates strings.
@@ -137,9 +150,6 @@ function validateSchema(tableName, model, options) {
   });
 
   if (validationErrors.length !== 0) {
-    return Promise.reject(validationErrors);
+    throw validationErrors;
   }
-
-  return Promise.resolve();
 }
-module.exports = validateSchema;
