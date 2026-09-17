@@ -252,6 +252,7 @@
     }
   },
   "optimization": {
+    "memoize": true,
     "maxLimit": 100,
     "allowLimitAll": false,
     "getHelper": {

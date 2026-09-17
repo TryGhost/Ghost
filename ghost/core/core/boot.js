@@ -594,6 +594,14 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     config = require('./shared/config');
     debug('End: Load config');
 
+    // Memoization is configured before anything that memoizes is required, so
+    // `optimization.memoize: false` is a working kill switch for every memo.
+    debug('Begin: Configure memoize');
+    require('@tryghost/memoize').configure({
+      enabled: config.get('optimization:memoize') !== false,
+    });
+    debug('End: Configure memoize');
+
     // Logging is also used absolutely everywhere
     debug('Begin: Load logging');
     logging = require('@tryghost/logging');

@@ -1,3 +1,8 @@
+const { once } = require('@tryghost/memoize');
+
+const loadHtml5Parser = once(() => require('html5parser'));
+const loadEntities = once(() => require('entities'));
+
 class LinkReplacer {
   /**
    * Replaces the links in the provided HTML
@@ -8,8 +13,8 @@ class LinkReplacer {
    * @returns {Promise<string>}
    */
   async replace(html, replaceLink, options = {}) {
-    const { tokenize } = require('html5parser');
-    const entities = require('entities');
+    const { tokenize } = loadHtml5Parser();
+    const entities = loadEntities();
 
     try {
       const tokens = tokenize(html); // IToken[]

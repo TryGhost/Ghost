@@ -117,6 +117,7 @@
     "@tryghost/kg-markdown-html-renderer": "workspace:*",
     "@tryghost/limit-service": "workspace:*",
     "@tryghost/logging": "catalog:",
+    "@tryghost/memoize": "workspace:*",
     "@tryghost/metafield-types": "workspace:*",
     "@tryghost/metrics": "catalog:",
     "@tryghost/mg-clean-html": "catalog:",

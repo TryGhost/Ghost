@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const net = require('net');
 const config = require('../../core/shared/config');
+const memoize = require('@tryghost/memoize');
 const configUtils = {};
 
 configUtils.config = config;
@@ -51,6 +52,13 @@ configUtils.restore = async function () {
   _.each(configUtils.defaultConfig, function (value, key) {
     config.set(key, _.cloneDeep(value));
   });
+
+  /**
+   * Memos are pure derivations of their inputs, but a test that rewrote config
+   * or swapped a module in the require cache has changed what "pure" means for
+   * the next test. Clearing them here keeps that contained to the test that did it.
+   */
+  memoize.resetAll();
 };
 
 configUtils.getServerUrl = function ({ protocol = 'http' } = {}) {

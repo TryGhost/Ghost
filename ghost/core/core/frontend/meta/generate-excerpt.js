@@ -1,3 +1,7 @@
+const { once } = require('@tryghost/memoize');
+
+const loadDownsize = once(() => require('downsize-cjs'));
+
 function generateExcerpt(excerpt, truncateOptions) {
   truncateOptions = truncateOptions || {};
 
@@ -6,7 +10,7 @@ function generateExcerpt(excerpt, truncateOptions) {
   }
 
   // Just uses downsize to truncate, not format
-  const downsize = require('downsize-cjs');
+  const downsize = loadDownsize();
   return downsize(excerpt, truncateOptions);
 }
 
