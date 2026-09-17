@@ -41,6 +41,59 @@ The shared parent application adds request IDs, request logging, compression,
 common response locals, and optional request queuing before requests reach the
 backend or frontend application.
 
+### Request queueing and load shedding
+
+Request queueing is off by default and is enabled by setting
+`optimization.requestQueue`:
+
+```json
+{
+  "optimization": {
+    "requestQueue": {
+      "concurrencyLimit": 20,
+      "maxQueueDepth": 500,
+      "maxQueueTime": 30000
+    }
+  }
+}
+```
+
+`concurrencyLimit` is the only required setting. It caps how many requests Ghost
+works on at once; anything over the limit waits in an in-memory queue. Requests
+for paths with a file extension are treated as static assets and skip the queue
+entirely.
+
+A queue with no limits protects the process from doing too much at once, but it
+cannot recover from sustained overload on its own. If requests keep arriving
+faster than Ghost can serve them, the queue grows without bound and every
+request ends up waiting longer than the proxy in front of Ghost is willing to
+wait. Ghost then spends the whole process rendering responses for clients that
+have already given up, so the queue never drains and the site stays down until
+it is restarted.
+
+The two optional limits shed load instead, so the queue can recover:
+
+- `maxQueueDepth` caps how many requests may wait at once. Once the queue is
+  full, further requests are rejected immediately rather than joining the back
+  of a queue they will never reach the front of. Omit it for an unlimited
+  queue.
+- `maxQueueTime` is how long, in milliseconds, a request may wait in the queue.
+  A request that passes its deadline is dropped, both while it is waiting and
+  again if it reaches the front of the queue late because the event loop was too
+  busy to run the timer on time. Omit it to never time requests out.
+
+Shed requests get a bare `503 Service Unavailable` with `Retry-After` and
+`Cache-Control: no-store`. The response deliberately skips theme rendering and
+error pages, because the point of shedding is to stop spending the resources
+that are keeping the queue from draining. When Prometheus metrics are enabled,
+each shed request increments `ghost_request_queue_shed_total`, labelled by
+`reason` (`depth` or `timeout`).
+
+Set `maxQueueTime` to match the upstream timeout of whatever proxies requests to
+Ghost. Anything longer means Ghost still serves requests the proxy has already
+abandoned. Note that this only bounds time spent waiting in the queue: once a
+request starts being served, Ghost runs it to completion.
+
 ## APIs and server logic
 
 The Content API and Admin API are mounted under `/ghost/api/`. Their HTTP
