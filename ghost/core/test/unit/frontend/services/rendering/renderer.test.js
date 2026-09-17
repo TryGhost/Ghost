@@ -3,7 +3,7 @@ const http = require('node:http');
 const express = require('express');
 const nock = require('nock');
 const sinon = require('sinon');
-const queueRequest = require('../../../../../core/server/web/parent/middleware/queue-request');
+const { queueRequest } = require('../../../../../core/server/web/parent/middleware/queue-request');
 const renderer = require('../../../../../core/frontend/services/rendering/renderer');
 
 describe('Renderer', function () {
