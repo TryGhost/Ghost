@@ -20,6 +20,7 @@ vi.mock('./minute-ticker', () => ({
 
 beforeEach(() => {
   clock.now = Date.now();
+  clock.listeners.clear();
 });
 
 it.each(['Dismiss', 'Pay now'])(
