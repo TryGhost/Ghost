@@ -7,10 +7,11 @@
  * @typedef {{checkVerificationRequired(): Promise<boolean>}} VerificationTrigger
  * @typedef {import ('./domain-warming-service').DomainWarmingService} DomainWarmingService
  *
- * @typedef {object} EmailPreflight - Validation result from a pre-save checkCanSendEmail call
+ * @typedef {object} EmailPreflight - Prepared audience from a pre-save prepareEmail call
  * @property {object} newsletter
  * @property {string} emailRecipientFilter
  * @property {number} emailCount
+ * @property {number|undefined} csdEmailCount
  */
 
 const BatchSendingService = require('./batch-sending-service');
@@ -27,6 +28,8 @@ const messages = {
   emailSendingDisabled: `Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`,
   retryEmailStatusError: 'Can only retry emails for published posts',
   retryEmailNotFailed: 'Only failed emails can be retried',
+  emailPreparationChanged:
+    'The newsletter or email audience changed while publishing. Please try again.',
 };
 
 // Resume scanner won't pick up `pending` or `submitting` rows older than this. Rows beyond
@@ -161,48 +164,91 @@ class EmailService {
   }
 
   /**
+   * Validate the audience and calculate the counts needed to create an email.
+   * @param {object} newsletter
+   * @param {string} emailRecipientFilter
+   * @param {object} [options]
+   * @param {number} [options.emailCount]
+   * @returns {Promise<EmailPreflight>}
+   */
+  async prepareEmail(newsletter, emailRecipientFilter, options) {
+    const { emailCount } = await this.checkCanSendEmail(newsletter, emailRecipientFilter, options);
+    const csdEmailCount = this.#domainWarmingService.isEnabled()
+      ? await this.#domainWarmingService.getWarmupLimit(emailCount)
+      : undefined; // Undefined means domain warming was not used, distinct from 0.
+
+    return { newsletter, emailRecipientFilter, emailCount, csdEmailCount };
+  }
+
+  /**
    *
    * @param {Post} post
    * @param {object} [options]
-   * @param {EmailPreflight} [options.preflight] - The emailCount is reused if the newsletter and filter still match the saved post
+   * @param {EmailPreflight} [options.preflight] - Prepared audience, required when using a transaction
+   * @param {object} [options.transacting]
    * @returns {Promise<Email>}
    */
-  async createEmail(post, { preflight } = {}) {
-    const newsletter = await post.getLazyRelation('newsletter');
+  async createEmail(post, { preflight, transacting } = {}) {
+    const newsletter = await post.getLazyRelation('newsletter', { transacting });
     const emailRecipientFilter = post.get('email_recipient_filter');
+
+    if (newsletter && newsletter.get('status') !== 'active') {
+      throw new errors.BadRequestError({ message: tpl(messages.archivedNewsletterError) });
+    }
 
     const preflightMatches =
       preflight?.newsletter?.id &&
       preflight.newsletter.id === newsletter?.id &&
       preflight.emailRecipientFilter === emailRecipientFilter;
-    const { emailCount } = preflightMatches
-      ? await this.checkCanSendEmail(newsletter, emailRecipientFilter, {
-          emailCount: preflight.emailCount,
-        })
-      : await this.checkCanSendEmail(newsletter, emailRecipientFilter);
+    // Never count a different audience while holding the post's write lock.
+    // A retry will prepare the current audience before starting a new transaction.
+    if ((preflight || transacting) && !preflightMatches) {
+      throw new errors.UpdateCollisionError({ message: tpl(messages.emailPreparationChanged) });
+    }
+    const { emailCount, csdEmailCount } =
+      preflight ?? (await this.prepareEmail(newsletter, emailRecipientFilter));
 
-    const csdEmailCount = this.#domainWarmingService.isEnabled()
-      ? await this.#domainWarmingService.getWarmupLimit(emailCount)
-      : undefined; // Undefined here means domain warming was not used -- distinct from 0
+    const email = await this.#models.Email.add(
+      {
+        post_id: post.id,
+        newsletter_id: newsletter.id,
+        status: 'pending',
+        submitted_at: new Date(),
+        track_opens: !!this.#settingsCache.get('email_track_opens'),
+        track_clicks: !!this.#settingsCache.get('email_track_clicks'),
+        feedback_enabled: !!newsletter.get('feedback_enabled'),
+        recipient_filter: emailRecipientFilter,
+        subject: this.#emailRenderer.getSubject(post),
+        from: this.#emailRenderer.getFromAddress(post, newsletter),
+        replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
+        email_count: emailCount,
+        csd_email_count: csdEmailCount,
+        source: post.get('lexical') || post.get('mobiledoc'),
+        source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
+      },
+      { transacting },
+    );
 
-    const email = await this.#models.Email.add({
-      post_id: post.id,
-      newsletter_id: newsletter.id,
-      status: 'pending',
-      submitted_at: new Date(),
-      track_opens: !!this.#settingsCache.get('email_track_opens'),
-      track_clicks: !!this.#settingsCache.get('email_track_clicks'),
-      feedback_enabled: !!newsletter.get('feedback_enabled'),
-      recipient_filter: emailRecipientFilter,
-      subject: this.#emailRenderer.getSubject(post),
-      from: this.#emailRenderer.getFromAddress(post, newsletter),
-      replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
-      email_count: emailCount,
-      csd_email_count: csdEmailCount,
-      source: post.get('lexical') || post.get('mobiledoc'),
-      source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
+    await this.#afterCommit(transacting, () => this.#scheduleEmail(email));
+    return email;
+  }
+
+  async #afterCommit(transacting, callback) {
+    if (!transacting) {
+      return callback();
+    }
+
+    transacting.once('committed', (committed) => {
+      if (committed) {
+        // Event listeners are not awaited by Bookshelf. Handle job failures here.
+        Promise.resolve()
+          .then(callback)
+          .catch((error) => logging.error(error));
+      }
     });
+  }
 
+  async #scheduleEmail(email) {
     try {
       this.#batchSendingService.scheduleEmail(email);
     } catch (e) {
@@ -371,9 +417,9 @@ class EmailService {
     };
   }
 
-  async retryEmail(email) {
+  async retryEmail(email, { transacting } = {}) {
     // Block accidentaly retrying non-published posts (can happen due to bugs in frontend)
-    const post = await email.getLazyRelation('post');
+    const post = await email.getLazyRelation('post', { transacting });
     if (post.get('status') !== 'published' && post.get('status') !== 'sent') {
       throw new errors.IncorrectUsageError({
         message: tpl(messages.retryEmailStatusError),
@@ -390,9 +436,9 @@ class EmailService {
 
     // Change email status back to 'pending' before scheduling
     // so we have a immediate response when retrying an email (schedule can take a while to kick off sometimes)
-    await email.save({ status: 'pending' }, { patch: true });
+    await email.save({ status: 'pending' }, { patch: true, transacting });
 
-    this.#batchSendingService.scheduleEmail(email);
+    await this.#afterCommit(transacting, () => this.#batchSendingService.scheduleEmail(email));
     return email;
   }
 
