@@ -121,6 +121,7 @@ describe('email analytics service', function () {
       newslettersInit,
       sinon.match({
         config,
+        jobType: 'email-analytics-fetch-latest',
         mailgunTags: ['bulk-email', 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-latest-others',
@@ -146,6 +147,7 @@ describe('email analytics service', function () {
       automationsInit,
       sinon.match({
         config,
+        jobType: 'email-analytics-automation-fetch-latest',
         mailgunTags: [AUTOMATION_EMAIL_TAG, 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-automation-latest-others',
@@ -170,6 +172,7 @@ describe('email analytics service', function () {
       giftsInit,
       sinon.match({
         config,
+        jobType: 'email-analytics-gift-fetch-latest',
         mailgunTags: [GIFT_DELIVERY_EMAIL_TAG, 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-gifts-latest-others',

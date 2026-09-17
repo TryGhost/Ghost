@@ -124,6 +124,7 @@ export const init = ({
 
   newsletters = new EmailAnalyticsServiceWrapper({
     logName: 'newsletters',
+    jobType: 'email-analytics-fetch-latest',
     config,
     queries,
     mailgunTags: newsletterMailgunTags,
@@ -154,6 +155,7 @@ export const init = ({
 
   automations = new EmailAnalyticsServiceWrapper({
     logName: 'automations',
+    jobType: 'email-analytics-automation-fetch-latest',
     config,
     queries,
     mailgunTags: automationMailgunTags,
@@ -180,6 +182,7 @@ export const init = ({
 
   gifts = new EmailAnalyticsServiceWrapper({
     logName: 'gifts',
+    jobType: 'email-analytics-gift-fetch-latest',
     config,
     queries,
     mailgunTags: giftMailgunTags,
