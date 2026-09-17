@@ -95,7 +95,7 @@ function normalise(sql) {
     })
     .trim();
 
-  return {normalised, placeholders};
+  return { normalised, placeholders };
 }
 
 // How many raw statements the normalisation memo holds before it is dropped and
@@ -122,7 +122,7 @@ class QueryStats {
    * @param {object} [options]
    * @param {number} [options.memoLimit] statements the normalisation memo holds
    */
-  constructor({memoLimit = MEMO_LIMIT} = {}) {
+  constructor({ memoLimit = MEMO_LIMIT } = {}) {
     this.#memoLimit = memoLimit;
   }
 
@@ -133,7 +133,7 @@ class QueryStats {
       return memoised;
     }
 
-    const {normalised, placeholders} = normalise(sql);
+    const { normalised, placeholders } = normalise(sql);
 
     let entry = this.#byShape.get(normalised);
 

@@ -203,7 +203,17 @@ const pipeline = (apiController, apiUtils, apiType) => {
   // CASE: api controllers are objects with configuration.
   //       We have to ensure that we expose a functional interface e.g. `api.posts.add` has to be available.
   const result = keys.reduce((obj, method) => {
-    const apiImpl = _.cloneDeep(apiController)[method];
+    // The clone keeps a controller's configuration private to the pipeline, but
+    // `cache` is not configuration: it is a shared adapter instance, and copying
+    // it breaks two things. lodash rebuilds a class instance as
+    // `Object.create(prototype)` plus own enumerable properties, so the copy
+    // keeps the methods but loses every private-field brand - an adapter holding
+    // its state in a `#field` (AdapterCacheMemoryTTL does) throws on first use.
+    // And a copy is a different object, so the `reset()` a service calls on
+    // `site.changed` would never reach the cache actually serving requests.
+    const apiImpl = _.cloneDeepWith(apiController, (value, key) =>
+      key === 'cache' ? value : undefined,
+    )[method];
 
     Object.freeze(apiImpl.headers);
 

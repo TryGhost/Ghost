@@ -62,9 +62,7 @@ function createCopier(enabled) {
       // because a value that fails once fails on every request.
       if (!warned) {
         warned = true;
-        logging.warn(
-          `Cache value could not be copied and will not be cached: ${err.message}`,
-        );
+        logging.warn(`Cache value could not be copied and will not be cached: ${err.message}`);
       }
 
       return UNCOPYABLE;

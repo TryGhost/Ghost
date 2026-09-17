@@ -1,9 +1,11 @@
 const assert = require('node:assert/strict');
-const {EventEmitter} = require('node:events');
+const { EventEmitter } = require('node:events');
 
-const {QueryStats, normalise, bindingBytes} = require(
-  '../../../../../core/server/data/db/query-stats',
-);
+const {
+  QueryStats,
+  normalise,
+  bindingBytes,
+} = require('../../../../../core/server/data/db/query-stats');
 
 // The class rather than enableQueryStats: the latter wires up process signal
 // handlers and a timer, which have no place in a unit test run.
@@ -13,13 +15,13 @@ function attached(options) {
 
   stats.attach(knex);
 
-  return {knex, stats};
+  return { knex, stats };
 }
 
 describe('query stats', function () {
   describe('normalise', function () {
     it('collapses a placeholder list to one key and records its width', function () {
-      const {normalised, placeholders} = normalise(
+      const { normalised, placeholders } = normalise(
         'select * from `posts` where `id` in (?, ?, ?, ?)',
       );
 
@@ -35,7 +37,7 @@ describe('query stats', function () {
     });
 
     it('leaves a single placeholder alone', function () {
-      const {normalised, placeholders} = normalise('select * from `settings` where `key` = ?');
+      const { normalised, placeholders } = normalise('select * from `settings` where `key` = ?');
 
       assert.equal(normalised, 'select * from `settings` where `key` = ?');
       assert.equal(placeholders, 0);
@@ -67,16 +69,23 @@ describe('query stats', function () {
 
   describe('accounting', function () {
     it('totals bytes, rows and columns per shape', function () {
-      const {knex, stats} = attached();
+      const { knex, stats } = attached();
       const sql = 'select * from `posts` where `id` in (?, ?)';
-      const query = {sql, bindings: ['aa', 'bb']};
+      const query = { sql, bindings: ['aa', 'bb'] };
 
       knex.emit('query', query);
-      knex.emit('query-response', [{id: 1, title: 'a'}, {id: 2, title: 'b'}], query);
+      knex.emit(
+        'query-response',
+        [
+          { id: 1, title: 'a' },
+          { id: 2, title: 'b' },
+        ],
+        query,
+      );
       knex.emit('query', query);
-      knex.emit('query-response', [{id: 3, title: 'c'}], query);
+      knex.emit('query-response', [{ id: 3, title: 'c' }], query);
 
-      const {queries, shapes} = stats.snapshot('test');
+      const { queries, shapes } = stats.snapshot('test');
 
       assert.equal(queries, 2);
       assert.equal(shapes.length, 1);
@@ -91,25 +100,25 @@ describe('query stats', function () {
     });
 
     it('sorts shapes by bytes', function () {
-      const {knex, stats} = attached();
+      const { knex, stats } = attached();
 
-      knex.emit('query', {sql: 'select `a` from `t`', bindings: []});
-      knex.emit('query', {sql: 'select `a`, `b`, `c`, `d`, `e` from `much_longer_table`'});
+      knex.emit('query', { sql: 'select `a` from `t`', bindings: [] });
+      knex.emit('query', { sql: 'select `a`, `b`, `c`, `d`, `e` from `much_longer_table`' });
 
-      const {shapes} = stats.snapshot('test');
+      const { shapes } = stats.snapshot('test');
 
       assert.equal(shapes.length, 2);
       assert.ok(shapes[0].bytes > shapes[1].bytes);
     });
 
     it('ignores a response that is not a row set', function () {
-      const {knex, stats} = attached();
-      const query = {sql: 'insert into `posts` (`id`) values (?)', bindings: ['x']};
+      const { knex, stats } = attached();
+      const query = { sql: 'insert into `posts` (`id`) values (?)', bindings: ['x'] };
 
       knex.emit('query', query);
       knex.emit('query-response', [42], query);
 
-      const {shapes} = stats.snapshot('test');
+      const { shapes } = stats.snapshot('test');
 
       assert.equal(shapes[0].count, 1);
       assert.equal(shapes[0].rows, 0);
@@ -117,7 +126,7 @@ describe('query stats', function () {
     });
 
     it('keeps totals right across a memo drop', function () {
-      const {knex, stats} = attached({memoLimit: 10});
+      const { knex, stats } = attached({ memoLimit: 10 });
 
       // More distinct statements than the memo holds, all one shape: an
       // `IN (...)` list is a different string at every width. Nothing may be
@@ -129,10 +138,10 @@ describe('query stats', function () {
         };
 
         knex.emit('query', query);
-        knex.emit('query-response', [{id: 1}], query);
+        knex.emit('query-response', [{ id: 1 }], query);
       }
 
-      const {queries, shapes} = stats.snapshot('test');
+      const { queries, shapes } = stats.snapshot('test');
 
       assert.equal(queries, 50);
       assert.equal(shapes.length, 1);
@@ -143,12 +152,12 @@ describe('query stats', function () {
     });
 
     it('resets the counters', function () {
-      const {knex, stats} = attached();
+      const { knex, stats } = attached();
 
-      knex.emit('query', {sql: 'select * from `t`', bindings: []});
+      knex.emit('query', { sql: 'select * from `t`', bindings: [] });
       stats.reset();
 
-      const {queries, shapes} = stats.snapshot('test');
+      const { queries, shapes } = stats.snapshot('test');
 
       assert.equal(queries, 0);
       assert.equal(shapes.length, 0);
