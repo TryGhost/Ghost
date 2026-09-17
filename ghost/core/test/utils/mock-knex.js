@@ -78,7 +78,7 @@ class Mocker {
   replace(obj, specs) {
     const replaced = {};
 
-    specs = _.isArray(specs) ? specs : [specs];
+    specs = Array.isArray(specs) ? specs : [specs];
 
     _.forEach(specs, (spec) => {
       const paths = _.partition(this.paths(spec), (path) => {
@@ -95,7 +95,7 @@ class Mocker {
   }
 
   undefine(obj, specs) {
-    specs = _.isArray(specs) ? specs : [specs];
+    specs = Array.isArray(specs) ? specs : [specs];
 
     _.forEach(specs, (spec) => {
       const paths = this.paths(spec);
@@ -119,7 +119,7 @@ class Mocker {
   define(obj, specs) {
     const defined = {};
 
-    specs = _.isArray(specs) ? specs : [specs];
+    specs = Array.isArray(specs) ? specs : [specs];
 
     _.forEach(specs, (spec) => {
       _.forEach(spec, (descriptors, path) => {

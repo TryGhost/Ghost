@@ -19,10 +19,10 @@ function normalizeNotifications(response) {
   if (!response) {
     return [];
   }
-  if (_.isArray(response.notifications)) {
+  if (Array.isArray(response.notifications)) {
     return response.notifications;
   }
-  if (_.isArray(response)) {
+  if (Array.isArray(response)) {
     return response;
   }
   if (response.messages) {

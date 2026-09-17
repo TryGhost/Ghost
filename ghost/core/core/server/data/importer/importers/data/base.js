@@ -113,7 +113,7 @@ class Base {
     let problems = [];
 
     // CASE: validation errors, see models/base/events.js onValidate
-    if (!_.isArray(errs)) {
+    if (!Array.isArray(errs)) {
       errs = [errs];
     }
 
