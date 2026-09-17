@@ -82,6 +82,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
   /**
    * @param {object} options
    * @param {boolean} options.includeOpenedEvents
+   * @param {boolean} [options.skipUnchanged] Skip replayed events during the missing sweep
    * @param {EventProcessingResult} options.processingResult
    * @param {boolean} options.isFinal
    * @returns {Promise<null | {
@@ -89,7 +90,17 @@ class NewsletterEmailAnalyticsBatchProcessor {
    *     memberAggregationTimeMs: number;
    * }>}
    */
-  async aggregate({ includeOpenedEvents, processingResult, isFinal }) {
+  async aggregate({ includeOpenedEvents, skipUnchanged = false, processingResult, isFinal }) {
+    if (
+      skipUnchanged &&
+      processingResult.storedDelivered === 0 &&
+      processingResult.storedOpened === 0 &&
+      processingResult.storedPermanentFailed === 0
+    ) {
+      processingResult.reset();
+      return null;
+    }
+
     /** @type {boolean} */ let shouldAggregate;
     if (isFinal) {
       shouldAggregate = Boolean(
