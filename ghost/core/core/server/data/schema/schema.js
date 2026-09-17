@@ -2144,7 +2144,7 @@ module.exports = {
       validations: { isIn: [['active', 'inactive']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
-    slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
