@@ -1840,6 +1840,33 @@ describe('Email renderer', function () {
       assert(response.html.includes('http://feedback-link.com/?score=0'));
     });
 
+    it('renders footer actions as table cells', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        ...baseNewsletter,
+        feedback_enabled: false,
+        show_comment_cta: true,
+        show_share_button: true,
+      });
+
+      const response = await emailRenderer.renderBody(post, newsletter, null, {});
+      const $ = cheerio.load(response.html);
+      const feedbackCells = $('table.feedback-buttons tr').first().children('td');
+
+      assert.equal(feedbackCells.length, 2, 'Expected comment and share actions in one table row');
+
+      feedbackCells.each((_index, cell) => {
+        const $cell = $(cell);
+
+        assert.equal($cell.attr('width'), '50%', 'Expected an explicit equal-width table cell');
+        assert.doesNotMatch(
+          $cell.attr('style'),
+          /(?:^|;)\s*display\s*:/i,
+          'Table cells must keep their native table-cell display value',
+        );
+      });
+    });
+
     for (const visibility of ['public', 'members', 'paid', 'tiers']) {
       it(`includes share links for posts with ${visibility} visibility`, async function () {
         const newsletter = createModel({
