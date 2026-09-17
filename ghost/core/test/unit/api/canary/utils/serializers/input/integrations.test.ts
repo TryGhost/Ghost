@@ -1,11 +1,19 @@
-const assert = require('node:assert/strict');
-const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import serializers from '../../../../../../../core/server/api/endpoints/utils/serializers';
+
+type Frame = {
+  options: {
+    filter?: string;
+    context: Record<string, never>;
+  };
+};
 
 describe('Unit: endpoints/utils/serializers/input/pages', function () {
   describe('browse', function () {
     it('default', function () {
       const apiConfig = {};
-      const frame = {
+      const frame: Frame = {
         options: {
           context: {},
         },
@@ -17,7 +25,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('combines filters', function () {
       const apiConfig = {};
-      const frame = {
+      const frame: Frame = {
         options: {
           filter: 'type:internal',
           context: {},
@@ -32,7 +40,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
   describe('read', function () {
     it('default', function () {
       const apiConfig = {};
-      const frame = {
+      const frame: Frame = {
         options: {
           context: {},
         },
@@ -44,7 +52,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('combines filters', function () {
       const apiConfig = {};
-      const frame = {
+      const frame: Frame = {
         options: {
           filter: 'type:internal',
           context: {},

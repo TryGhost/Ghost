@@ -5,6 +5,7 @@ import { JobsService } from '../../../../../core/server/services/jobs-service/jo
 import ExternalMediaInliner from '../../../../../core/server/services/media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../../../../../core/server/services/media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../../../../../core/server/services/content-import/jobs/content-csv-import-job';
+import MembersImportJob from '../../../../../core/server/services/members/jobs/members-import-job';
 import UpdateCheckJob from '../../../../../core/server/services/update-check/jobs/update-check-job';
 import ProcessWebmentionJob from '../../../../../core/server/services/mentions/process-webmention-job';
 import SendWebmentionsJob from '../../../../../core/server/services/mentions/send-webmentions-job';
@@ -19,6 +20,7 @@ describe('register-job-handlers', function () {
   let giftService: { cleanup: sinon.SinonStub; processReminders: sinon.SinonStub };
   let mentionsController: { processWebmention: sinon.SinonStub };
   let mentionsSendingService: { sendWebmentions: sinon.SinonStub };
+  let membersService: { handleImportJob: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -44,6 +46,7 @@ describe('register-job-handlers', function () {
     giftService = { cleanup: sinon.stub().resolves(), processReminders: sinon.stub().resolves() };
     mentionsController = { processWebmention: sinon.stub().resolves() };
     mentionsSendingService = { sendWebmentions: sinon.stub().resolves() };
+    membersService = { handleImportJob: sinon.stub().resolves() };
 
     registerJobHandlers({
       jobsService,
@@ -52,6 +55,7 @@ describe('register-job-handlers', function () {
       mediaInliner,
       mentionsController,
       mentionsSendingService,
+      membersService,
     });
   });
 
@@ -137,6 +141,28 @@ describe('register-job-handlers', function () {
       () => contentImportHandler(job),
       /Content import service used before init/,
     );
+  });
+
+  it('runs members-import with the injected members service', async function () {
+    const membersImportHandler = handlerFor('members-import');
+    const job = new MembersImportJob({
+      spoolKey: 'members-import-00000000-0000-0000-0000-000000000000.json',
+      labelName: 'Import 2026-09-16 10:30',
+      extraLabels: [{ name: 'VIP' }],
+      emailRecipient: 'owner@example.com',
+    });
+
+    await membersImportHandler(job);
+
+    assert.ok(membersService.handleImportJob.calledOnceWithExactly(job));
+  });
+
+  // The legacy inline queue ran members imports alongside the other one-off jobs, so
+  // it stays on the shared default lane rather than a lane of its own.
+  it('registers members-import on the shared default lane', function () {
+    const registration = registrationFor('members-import');
+
+    assert.equal(registration.args[2], undefined);
   });
 
   // Under the test env the update check executor exits at its environment

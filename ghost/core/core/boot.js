@@ -141,10 +141,6 @@ async function initCore({ ghostServer, config }) {
     debug('Begin: Job Service');
     const jobService = require('./server/services/jobs');
 
-    if (config.get('server:testmode')) {
-      jobService.initTestMode();
-    }
-
     ghostServer.registerCleanupTask(async () => {
       await jobService.shutdown();
     }, 'Job Service');
@@ -153,10 +149,6 @@ async function initCore({ ghostServer, config }) {
     // Mentions Job Service allows mentions to be processed in the background
     debug('Begin: Mentions Job Service');
     const mentionsJobService = require('./server/services/mentions-jobs');
-
-    if (config.get('server:testmode')) {
-      mentionsJobService.initTestMode();
-    }
 
     ghostServer.registerCleanupTask(async () => {
       await mentionsJobService.shutdown();
@@ -544,11 +536,8 @@ async function initBackgroundServices({ config }) {
     ]);
   }
 
-  const labs = require('./shared/labs');
-  if (labs.isSet('automationsTinybirdSync')) {
-    const tinybirdSync = require('./server/services/tinybird-sync');
-    tinybirdSync.start();
-  }
+  const tinybirdSync = require('./server/services/tinybird-sync');
+  tinybirdSync.start();
 
   try {
     const updateCheck = require('./server/services/update-check');
@@ -704,10 +693,12 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const gifts = require('./server/services/gifts');
     const memberJobs = require('./server/services/members/jobs');
     const mentionsService = require('./server/services/mentions');
+    const membersService = require('./server/services/members');
     memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
     assert(mentionsService.controller, 'Mentions controller should be initialized');
     assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
+    assert(membersService.handleImportJob, 'Members service should be initialized');
     registerJobHandlers({
       jobsService,
       memberJobs,
@@ -715,6 +706,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       mediaInliner: mediaInliner.getInstance(),
       mentionsController: mentionsService.controller,
       mentionsSendingService: mentionsService.sendingService,
+      membersService,
     });
     await jobsService.start();
     debug('End: Register job handlers');

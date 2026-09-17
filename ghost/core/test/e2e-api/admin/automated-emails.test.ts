@@ -1,13 +1,74 @@
-const { agentProvider, fixtureManager, matchers, dbUtils } = require('../../utils/e2e-framework');
+import ObjectId from 'bson-objectid';
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import {
+  agentProvider,
+  configUtils,
+  dbUtils,
+  fixtureManager,
+  matchers,
+} from '../../utils/e2e-framework';
+
+import logging from '@tryghost/logging';
+// @ts-expect-error Module has no type declarations.
+import mailService from '../../../core/server/services/mail';
+// @ts-expect-error Module has no type declarations.
+import SingleUseTokenProvider from '../../../core/server/services/members/single-use-token-provider';
+// @ts-expect-error Module has no type declarations.
+import models from '../../../core/server/models';
+
 const { anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor } =
   matchers;
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
-const mailService = require('../../../core/server/services/mail');
-const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
-const emailAddressService = require('../../../core/server/services/email-address');
-const models = require('../../../core/server/models');
+
+type AutomatedEmail = {
+  id: string;
+  status: 'active' | 'inactive';
+  name: string;
+  slug: string;
+  subject: string;
+  lexical: string | null;
+  sender_name: string | null;
+  sender_email: string | null;
+  sender_reply_to: string | null;
+  html: string;
+  plaintext: string;
+};
+
+type ApiError = {
+  id: string;
+  property: string;
+};
+
+type ApiResponse = {
+  body: {
+    automated_emails: AutomatedEmail[];
+    errors: ApiError[];
+    meta: { email_verified: string };
+    newsletters: Array<{ id: string }>;
+  };
+};
+
+type ApiRequest = Promise<ApiResponse> & {
+  body(payload: object): ApiRequest;
+  expect(callback: (response: ApiResponse) => void): ApiRequest;
+  expectEmptyBody(): ApiRequest;
+  expectStatus(status: number): ApiRequest;
+  matchBodySnapshot(match?: object): ApiRequest;
+  matchHeaderSnapshot(match?: object): ApiRequest;
+};
+
+type AdminAgent = {
+  get(url: string): ApiRequest;
+  post(url: string): ApiRequest;
+  put(url: string): ApiRequest;
+  loginAsAuthor(): Promise<void>;
+  loginAsContributor(): Promise<void>;
+  loginAsEditor(): Promise<void>;
+  loginAsOwner(): Promise<void>;
+  resetAuthentication(): void;
+};
+
+type SenderFields = Record<string, string | null>;
 
 const matchAutomatedEmail = {
   id: anyObjectId,
@@ -16,9 +77,11 @@ const matchAutomatedEmail = {
 };
 
 describe('Automated Emails API', function () {
-  let agent;
+  let agent: AdminAgent;
 
-  const createAutomatedEmail = async (overrides = {}) => {
+  const createAutomatedEmail = async (
+    overrides: Record<string, unknown> = {},
+  ): Promise<AutomatedEmail> => {
     const { body } = await agent
       .post('automated_emails')
       .body({
@@ -37,7 +100,7 @@ describe('Automated Emails API', function () {
     return body.automated_emails[0];
   };
 
-  const getSenderStorage = async (automatedEmailId) => {
+  const getSenderStorage = async (automatedEmailId: string) => {
     const email = await models.Base.knex('welcome_email_automated_emails')
       .where('welcome_email_automation_id', automatedEmailId)
       .first('sender_name', 'sender_email', 'sender_reply_to', 'email_design_setting_id');
@@ -50,8 +113,14 @@ describe('Automated Emails API', function () {
   };
 
   const updateSenderStorage = async (
-    automatedEmailId,
-    { email = {}, designSettings = {} } = {},
+    automatedEmailId: string,
+    {
+      email = {},
+      designSettings = {},
+    }: {
+      email?: SenderFields;
+      designSettings?: SenderFields;
+    } = {},
   ) => {
     const welcomeEmail = await models.Base.knex('welcome_email_automated_emails')
       .where('welcome_email_automation_id', automatedEmailId)
@@ -77,6 +146,8 @@ describe('Automated Emails API', function () {
   });
 
   beforeEach(async function () {
+    configUtils.set('hostSettings:managedEmail:enabled', false);
+    configUtils.set('hostSettings:managedEmail:sendingDomain', null);
     await dbUtils.truncate('brute');
     await dbUtils.truncate('welcome_email_automated_emails');
     await dbUtils.truncate('automations');
@@ -90,6 +161,8 @@ describe('Automated Emails API', function () {
   });
 
   afterEach(function () {
+    configUtils.set('hostSettings:managedEmail:enabled', false);
+    configUtils.set('hostSettings:managedEmail:sendingDomain', null);
     sinon.restore();
   });
 
@@ -167,6 +240,27 @@ describe('Automated Emails API', function () {
           assert.equal(body.automated_emails[0].sender_name, null);
           assert.equal(body.automated_emails[0].sender_email, null);
           assert.equal(body.automated_emails[0].sender_reply_to, null);
+        });
+    });
+
+    it('Does not list automations that are not member welcome emails', async function () {
+      const automatedEmail = await createAutomatedEmail();
+
+      await models.Base.knex('automations').insert({
+        id: ObjectId().toHexString(),
+        name: 'Some other automation',
+        slug: 'some-other-automation',
+        status: 'active',
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+
+      await agent
+        .get('automated_emails')
+        .expectStatus(200)
+        .expect(({ body }) => {
+          const ids = body.automated_emails.map((email) => email.id);
+          assert.deepEqual(ids, [automatedEmail.id]);
         });
     });
   });
@@ -295,10 +389,7 @@ describe('Automated Emails API', function () {
     });
 
     it('Rejects disallowed sender email on add', async function () {
-      emailAddressService.init();
-      const validateStub = sinon
-        .stub(emailAddressService.service, 'validate')
-        .returns({ allowed: false, verificationEmailRequired: false });
+      configUtils.set('hostSettings:managedEmail:enabled', true);
 
       await agent
         .post('automated_emails')
@@ -318,8 +409,6 @@ describe('Automated Emails API', function () {
         })
         .expectStatus(422);
 
-      sinon.assert.calledOnceWithExactly(validateStub, 'sender@example.com', 'from');
-
       const designSettings = await models.Base.knex('email_design_settings')
         .where('slug', 'default-automated-email')
         .first('sender_name', 'sender_email', 'sender_reply_to');
@@ -332,16 +421,7 @@ describe('Automated Emails API', function () {
     });
 
     it('Rejects sender reply-to that requires verification on add', async function () {
-      emailAddressService.init();
-      const validateStub = sinon
-        .stub(emailAddressService.service, 'validate')
-        .callsFake((email, type) => {
-          if (email === 'reply@example.com' && type === 'replyTo') {
-            return { allowed: true, verificationEmailRequired: true };
-          }
-
-          return { allowed: true, verificationEmailRequired: false };
-        });
+      configUtils.set('hostSettings:managedEmail:enabled', true);
 
       await agent
         .post('automated_emails')
@@ -359,8 +439,6 @@ describe('Automated Emails API', function () {
           ],
         })
         .expectStatus(422);
-
-      sinon.assert.calledOnceWithExactly(validateStub, 'reply@example.com', 'replyTo');
 
       const designSettings = await models.Base.knex('email_design_settings')
         .where('slug', 'default-automated-email')
@@ -508,7 +586,7 @@ describe('Automated Emails API', function () {
     });
 
     describe('Structured logging', function () {
-      let infoStub;
+      let infoStub: sinon.SinonStub;
 
       beforeEach(function () {
         infoStub = sinon.stub(logging, 'info');
@@ -650,10 +728,7 @@ describe('Automated Emails API', function () {
         },
       });
 
-      emailAddressService.init();
-      const validateStub = sinon
-        .stub(emailAddressService.service, 'validate')
-        .returns({ allowed: false, verificationEmailRequired: false });
+      configUtils.set('hostSettings:managedEmail:enabled', true);
 
       await agent
         .put(`automated_emails/${automatedEmail.id}`)
@@ -669,8 +744,6 @@ describe('Automated Emails API', function () {
         })
         .expectStatus(422);
 
-      sinon.assert.calledOnceWithExactly(validateStub, 'sender@example.com', 'from');
-
       const { designSettings } = await getSenderStorage(automatedEmail.id);
       assert.deepEqual(designSettings, {
         sender_name: 'Existing Sender',
@@ -682,10 +755,7 @@ describe('Automated Emails API', function () {
     it('Rejects sender reply-to that requires verification on edit', async function () {
       const automatedEmail = await createAutomatedEmail();
 
-      emailAddressService.init();
-      const validateStub = sinon
-        .stub(emailAddressService.service, 'validate')
-        .returns({ allowed: true, verificationEmailRequired: true });
+      configUtils.set('hostSettings:managedEmail:enabled', true);
 
       await agent
         .put(`automated_emails/${automatedEmail.id}`)
@@ -698,8 +768,6 @@ describe('Automated Emails API', function () {
           ],
         })
         .expectStatus(422);
-
-      sinon.assert.calledOnceWithExactly(validateStub, 'reply@example.com', 'replyTo');
 
       const { designSettings } = await getSenderStorage(automatedEmail.id);
       assert.deepEqual(designSettings, {
@@ -719,16 +787,7 @@ describe('Automated Emails API', function () {
         },
       });
 
-      emailAddressService.init();
-      const validateStub = sinon
-        .stub(emailAddressService.service, 'validate')
-        .callsFake((email, type) => {
-          if (email === 'reply@example.com' && type === 'replyTo') {
-            return { allowed: true, verificationEmailRequired: true };
-          }
-
-          return { allowed: true, verificationEmailRequired: false };
-        });
+      configUtils.set('hostSettings:managedEmail:enabled', true);
 
       await agent
         .put(`automated_emails/${automatedEmail.id}`)
@@ -745,8 +804,6 @@ describe('Automated Emails API', function () {
           ],
         })
         .expectStatus(200);
-
-      sinon.assert.notCalled(validateStub);
 
       const { designSettings } = await getSenderStorage(automatedEmail.id);
       assert.deepEqual(designSettings, {
@@ -939,7 +996,7 @@ describe('Automated Emails API', function () {
     });
 
     describe('Structured logging', function () {
-      let infoStub;
+      let infoStub: sinon.SinonStub;
 
       beforeEach(function () {
         infoStub = sinon.stub(logging, 'info');
@@ -1030,7 +1087,7 @@ describe('Automated Emails API', function () {
   });
 
   describe('Shared sender settings', function () {
-    const createSenderVerificationToken = async (property, value) => {
+    const createSenderVerificationToken = async (property: string, value: string) => {
       return new SingleUseTokenProvider({
         SingleUseTokenModel: models.SingleUseToken,
         validityPeriod: 24 * 60 * 60 * 1000,
@@ -1222,7 +1279,7 @@ describe('Automated Emails API', function () {
   });
 
   describe('Preview', function () {
-    let automatedEmailId;
+    let automatedEmailId: string;
 
     const validLexical = JSON.stringify({
       root: {
@@ -1446,7 +1503,7 @@ describe('Automated Emails API', function () {
   });
 
   describe('SendTestEmail', function () {
-    let automatedEmailId;
+    let automatedEmailId: string;
 
     const validLexical = JSON.stringify({
       root: {
@@ -1644,7 +1701,7 @@ describe('Automated Emails API', function () {
   });
 
   describe('Permissions', function () {
-    let automatedEmailId;
+    let automatedEmailId: string;
 
     beforeEach(async function () {
       await agent.loginAsOwner();

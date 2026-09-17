@@ -308,6 +308,10 @@ export function getRefDomain() {
   return referrerSource;
 }
 
+export function hasCustomFieldsEnabled({ site }) {
+  return !!site?.labs?.membersCustomFields;
+}
+
 export function hasCommentsEnabled({ site }) {
   return site?.comments_enabled && site?.comments_enabled !== 'off';
 }

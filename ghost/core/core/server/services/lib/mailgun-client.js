@@ -3,6 +3,11 @@ const debug = require('@tryghost/debug');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
+const {
+  addRecipientMessageIds,
+  isTemplatedRecipientMessageId,
+  RECIPIENT_MESSAGE_ID_VARIABLE,
+} = require('./mailgun-recipient-message-id');
 
 const DEFAULT_BATCH_SIZE = 1000;
 
@@ -19,6 +24,7 @@ module.exports = class MailgunClient {
    * Creates the data payload and sends to Mailgun
    *
    * @param {Object} message
+   * @param {boolean} [message.perRecipientMessageId] Give every recipient its own Message-Id header
    * @param {Object} recipientData
    * @param {Array<Object>} replacements
    *
@@ -118,6 +124,14 @@ module.exports = class MailgunClient {
       // Use overriden domain if specified in message
       const mailDomain = message.domainOverride ? message.domainOverride : mailgunConfig.domain;
 
+      if (message.perRecipientMessageId === true) {
+        // one Message-Id per recipient, referenced from a recipient variable like List-Unsubscribe above
+        messageData['recipient-variables'] = JSON.stringify(
+          addRecipientMessageIds(recipientData, { emailId: message.id, domain: mailDomain }),
+        );
+        messageData['h:Message-Id'] = `<%recipient.${RECIPIENT_MESSAGE_ID_VARIABLE}%>`;
+      }
+
       const response = await mailgunInstance.messages.create(mailDomain, messageData);
       metrics.metric('mailgun-send-mail', {
         value: Date.now() - startTime,
@@ -125,7 +139,8 @@ module.exports = class MailgunClient {
       });
 
       return {
-        id: response.id,
+        // a batch of per-recipient Message-Ids has no single provider id
+        id: isTemplatedRecipientMessageId(response.id) ? null : response.id,
       };
     } catch (error) {
       logging.error(error);

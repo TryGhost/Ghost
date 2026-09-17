@@ -3,6 +3,10 @@ import {
   Button,
   Card,
   CardContent,
+  Combobox,
+  ComboboxContent,
+  ComboboxTrigger,
+  ComboboxValue,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -11,9 +15,10 @@ import {
   Input,
   Label,
   LoadingIndicator,
+  MultiSelectCombobox,
   Textarea,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { dequal } from 'dequal';
 import {
   ADDRESS_PARTS,
@@ -28,6 +33,7 @@ import {
   userTypeForField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
+import { countryName, countryOptions } from '@tryghost/admin-x-framework/utils/countries';
 import { useEditMember } from '@tryghost/admin-x-framework/api/members';
 import type { EditableAddressValue, EditableCustomFieldValue } from './member-detail-edit';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -49,10 +55,49 @@ const ErrorMessage: React.FC<{ message?: string }> = ({ message }) => {
   ) : null;
 };
 
-// The address composite: one input per sub-field, paired into a two-column
-// sub-grid. Country is a plain two-letter code input for now; the shared
-// AddressValue schema only shape-checks it, and a proper country select is a
-// follow-up.
+// The country part of an address: picked from the countries an address may name, so what
+// staff record is a code the rest of Ghost recognises.
+const CountryInput: React.FC<{
+  id: string;
+  label: string;
+  value?: string;
+  invalid?: boolean;
+  disabled?: boolean;
+  onChange: (code: string) => void;
+}> = ({ id, label, value, invalid, disabled, onChange }) => {
+  const [open, setOpen] = React.useState(false);
+  return (
+    // Modal, as the import field picker is: inside a dialog, only a modal popover's
+    // list can be scrolled.
+    <Combobox open={open} modal onOpenChange={setOpen}>
+      <ComboboxTrigger
+        aria-invalid={invalid || undefined}
+        aria-label={label}
+        disabled={disabled}
+        id={id}
+      >
+        <ComboboxValue placeholder={!value}>
+          {value ? countryName(value) : 'Select...'}
+        </ComboboxValue>
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <MultiSelectCombobox
+          i18n={{ searchPlaceholder: 'Search countries...' }}
+          isMultiSelect={false}
+          options={countryOptions(value)}
+          values={value ? [value] : []}
+          autoCloseOnSelect
+          onChange={(values) => onChange(values[0] ?? '')}
+          onClose={() => setOpen(false)}
+        />
+      </ComboboxContent>
+    </Combobox>
+  );
+};
+
+// The address composite: one input per sub-field in a two-column sub-grid. The
+// street lines take a full row, since they are the long parts, and the short
+// parts pair up, the same way Portal's account settings lay an address out.
 const AddressInput: React.FC<{
   inputId: string;
   value: EditableAddressValue;
@@ -63,19 +108,36 @@ const AddressInput: React.FC<{
 }> = ({ inputId, value, errors, disabled, onChange }) => {
   return (
     <div className="grid gap-x-4 gap-y-3 md:grid-cols-2">
-      {ADDRESS_PARTS.map(({ key: subfield, label }) => {
+      {ADDRESS_PARTS.map(({ key: subfield, label, type }) => {
         const subfieldId = `${inputId}-${subfield}`;
         const error = errors?.[subfield];
         return (
-          <div key={subfield} className="flex flex-col gap-1.5">
+          <div
+            key={subfield}
+            className={cn(
+              'flex flex-col gap-1.5',
+              (subfield === 'line1' || subfield === 'line2') && 'md:col-span-2',
+            )}
+          >
             <Label htmlFor={subfieldId}>{label}</Label>
-            <Input
-              aria-invalid={error ? true : undefined}
-              disabled={disabled}
-              id={subfieldId}
-              value={value[subfield] ?? ''}
-              onChange={(e) => onChange({ ...value, [subfield]: e.target.value })}
-            />
+            {type === 'country_code' ? (
+              <CountryInput
+                disabled={disabled}
+                id={subfieldId}
+                invalid={Boolean(error)}
+                label={label}
+                value={value[subfield]}
+                onChange={(code) => onChange({ ...value, [subfield]: code })}
+              />
+            ) : (
+              <Input
+                aria-invalid={error ? true : undefined}
+                disabled={disabled}
+                id={subfieldId}
+                value={value[subfield] ?? ''}
+                onChange={(e) => onChange({ ...value, [subfield]: e.target.value })}
+              />
+            )}
             <ErrorMessage message={error} />
           </div>
         );
