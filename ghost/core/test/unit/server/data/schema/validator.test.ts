@@ -5,8 +5,7 @@ import ObjectId from 'bson-objectid';
 import testUtils from '../../../../utils';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../../../core/server/models';
-// @ts-expect-error This module lacks type definitions.
-import validateSchema from '../../../../../core/server/data/schema/validator';
+import { validateSchema } from '../../../../../core/server/data/schema/validator';
 
 describe('Validate Schema', function () {
   describe('models.add', function () {
