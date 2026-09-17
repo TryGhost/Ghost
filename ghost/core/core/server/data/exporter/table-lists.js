@@ -74,6 +74,7 @@ const BACKUP_TABLES = [
   'automation_action_revisions',
   'automation_run_steps',
   'automation_runs',
+  'automation_trigger_tiers',
   'welcome_email_automation_runs',
   'welcome_email_automated_emails',
   'tinybird_syncs',
