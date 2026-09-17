@@ -96,6 +96,7 @@ describe('Generators', function () {
 
     it('re-sorts a resource added after a render', function () {
       generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'oldest', '2023-06-01T00:00:00.000Z');
       addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
       addPostAt(generator, 'middle', '2024-03-01T00:00:00.000Z');
       generator.getXml(1);
@@ -106,7 +107,10 @@ describe('Generators', function () {
         'http://my-ghost-blog.com/newest/',
         'http://my-ghost-blog.com/middle/',
       ]);
-      assert.deepEqual(locs(generator.getXml(2)), ['http://my-ghost-blog.com/older/']);
+      assert.deepEqual(locs(generator.getXml(2)), [
+        'http://my-ghost-blog.com/older/',
+        'http://my-ghost-blog.com/oldest/',
+      ]);
     });
 
     it('keeps timestamps added after rendering an empty generator', function () {
@@ -116,6 +120,66 @@ describe('Generators', function () {
       addPostAt(generator, 'only', '2024-06-01T00:00:00.000Z');
 
       assert.match(generator.getXml(), /<lastmod>2024-06-01T00:00:00.000Z<\/lastmod>/);
+    });
+  });
+
+  describe('releasing records', function () {
+    const addPostAt = (gen, slug, updatedAt) =>
+      gen.addUrl(
+        `http://my-ghost-blog.com/${slug}/`,
+        testUtils.DataGenerator.forKnex.createPost({ slug, updated_at: updatedAt }),
+      );
+
+    beforeEach(function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'a', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'b', '2024-02-01T00:00:00.000Z');
+      addPostAt(generator, 'c', '2024-03-01T00:00:00.000Z');
+    });
+
+    it('keeps the records until every page is rendered', function () {
+      generator.getXml(1);
+      assert.equal(generator.released, false);
+
+      generator.getXml(2);
+      assert.equal(generator.released, true);
+      assert.equal(generator.locs, null);
+      assert.equal(generator.timestamps, null);
+    });
+
+    it('serves the same pages and index inputs after release', function () {
+      const pages = [generator.getXml(1), generator.getXml(2)];
+
+      assert.deepEqual([generator.getXml(1), generator.getXml(2)], pages);
+      assert.equal(generator.size, 3);
+      assert.equal(new Date(generator.lastModified).toISOString(), '2024-03-01T00:00:00.000Z');
+
+      const index = new IndexGenerator({ types: { posts: generator }, maxPerPage: 2 });
+      assert.match(index.getXml(), /sitemap-posts-2\.xml/);
+    });
+
+    it('returns null for pages out of range without caching them', function () {
+      assert.equal(generator.getXml(0), null);
+      assert.equal(generator.getXml(3), null);
+      assert.equal(generator.getXml(99999), null);
+      assert.equal(generator.siteMapContent.size, 0);
+
+      generator.getXml(1);
+      generator.getXml(2);
+      assert.equal(generator.getXml(3), null);
+    });
+
+    it('refuses new urls once released, until reset', function () {
+      generator.getXml(1);
+      generator.getXml(2);
+
+      assert.throws(() => addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z'), {
+        errorType: 'IncorrectUsageError',
+      });
+
+      generator.reset();
+      addPostAt(generator, 'd', '2024-04-01T00:00:00.000Z');
+      assert.match(generator.getXml(1), /<loc>http:\/\/my-ghost-blog.com\/d\/<\/loc>/);
     });
   });
 
