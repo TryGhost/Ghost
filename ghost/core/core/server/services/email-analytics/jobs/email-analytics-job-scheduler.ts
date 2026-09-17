@@ -70,6 +70,11 @@ export class EmailAnalyticsJobScheduler {
     );
   }
 
+  /**
+   * Registers the newsletter analytics job on a randomized five-minute cron
+   * when recent non-failed emails exist. The bypass skips only that data check;
+   * configuration and duplicate-registration guards still apply.
+   */
   async scheduleRecurringNewslettersJob(skipNewsletterEmailCheck: boolean = false): Promise<void> {
     // Don't register email analytics job if we have no emails,
     // processor usage from many sites spinning up threads can be high.
@@ -86,6 +91,12 @@ export class EmailAnalyticsJobScheduler {
     );
   }
 
+  /**
+   * Registers the automation analytics job on a randomized five-minute cron
+   * when a recent recipient has a provider message ID. The bypass skips only
+   * that data check; configuration and duplicate-registration guards still
+   * apply.
+   */
   async scheduleRecurringAutomationsJob(skipAutomationEmailCheck: boolean = false): Promise<void> {
     await this.#scheduleOnce(
       EmailAnalyticsAutomationFetchLatestJob,
@@ -100,6 +111,11 @@ export class EmailAnalyticsJobScheduler {
     );
   }
 
+  /**
+   * Registers the gift analytics job on a randomized five-minute cron when a
+   * recent delivery has a provider message ID. The bypass skips only that data
+   * check; configuration and duplicate-registration guards still apply.
+   */
   async scheduleRecurringGiftDeliveriesJob(skipGiftDeliveryCheck: boolean = false): Promise<void> {
     await this.#scheduleOnce(EmailAnalyticsGiftFetchLatestJob, skipGiftDeliveryCheck, async () =>
       Boolean(

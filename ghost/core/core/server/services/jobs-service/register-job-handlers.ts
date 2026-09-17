@@ -31,11 +31,10 @@ const updateCheck = require('../update-check');
 // concurrency.
 const WEBMENTIONS_QUEUE: JobHandlingOptions = { queue: 'webmentions', concurrency: 3 };
 
-// Each email analytics pipeline fetches on its own five-minute tick and the
-// wrapper skips a tick while its previous fetch is still running. The second
-// slot lets an overlapping tick reach that guard and be skipped straight away
-// instead of queueing behind the running fetch and firing late. Every
-// pipeline must register through this declaration so none can drift.
+/**
+ * Gives each analytics pipeline two delivery slots so an overlapping tick can
+ * reach the wrapper's skip guard instead of waiting behind the active fetch.
+ */
 function emailAnalyticsQueue(JobClass: Pick<JobConstructor, 'type'>): JobHandlingOptions {
   return { queue: JobClass.type, concurrency: 2 };
 }
