@@ -76,6 +76,8 @@ describe('Themes middleware', function () {
       .returns(fakeActiveThemeName);
 
     sandbox.stub(labs, 'getAll').returns(fakeLabsData);
+    // isSet reads the flag layers directly, so it needs its own fake.
+    sandbox.stub(labs, 'isSet').callsFake((flag) => fakeLabsData[flag] === true);
 
     sandbox.stub(settingsCache, 'getPublic').returns(fakeSiteData);
 
