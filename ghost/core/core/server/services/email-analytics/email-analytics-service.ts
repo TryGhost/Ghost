@@ -506,6 +506,9 @@ export class EmailAnalyticsService {
       const processingStart = Date.now();
       // Capture the state before processing to calculate delta
       const beforeCounts = {
+        storedDelivered: processingResult.storedDelivered,
+        storedOpened: processingResult.storedOpened,
+        storedPermanentFailed: processingResult.storedPermanentFailed,
         opened: processingResult.opened,
         delivered: processingResult.delivered,
         temporaryFailed: processingResult.temporaryFailed,
@@ -524,6 +527,10 @@ export class EmailAnalyticsService {
 
       // Calculate delta (only new counts from this batch) and accumulate for final reporting
       const batchDelta = new EventProcessingResult({
+        storedDelivered: processingResult.storedDelivered - beforeCounts.storedDelivered,
+        storedOpened: processingResult.storedOpened - beforeCounts.storedOpened,
+        storedPermanentFailed:
+          processingResult.storedPermanentFailed - beforeCounts.storedPermanentFailed,
         opened: processingResult.opened - beforeCounts.opened,
         delivered: processingResult.delivered - beforeCounts.delivered,
         temporaryFailed: processingResult.temporaryFailed - beforeCounts.temporaryFailed,

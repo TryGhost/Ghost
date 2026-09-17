@@ -46,7 +46,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
         await this.#emailEventProcessor.batchGetRecipients(emailIdentifications);
 
       for (const event of events) {
-        const batchResult = await this.#processEvent(event, recipientCache);
+        const batchResult = await this.#processEvent(event, recipientCache, result);
 
         // Save last event timestamp
         if (
@@ -60,11 +60,11 @@ class NewsletterEmailAnalyticsBatchProcessor {
       }
 
       // Flush all batched updates to the database
-      await this.#emailEventProcessor.flushBatchedUpdates();
+      await this.#emailEventProcessor.flushBatchedUpdates(result);
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
-        const batchResult = await this.#processEvent(event);
+        const batchResult = await this.#processEvent(event, undefined, result);
 
         // Save last event timestamp
         if (
@@ -116,15 +116,17 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
   /**
    * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
-   * @param {Map<string, any>} [recipientCache] Optional cache for batched processing
+   * @param {Map<string, any> | undefined} recipientCache Optional cache for batched processing
+   * @param {EventProcessingResult} storedCounts Counts of newly populated recipient timestamps
    * @returns {Promise<EventProcessingResult>}
    */
-  async #processEvent(event, recipientCache) {
+  async #processEvent(event, recipientCache, storedCounts) {
     if (event.type === 'delivered') {
       const recipient = await this.#emailEventProcessor.handleDelivered(
         { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
         event.timestamp,
         recipientCache,
+        storedCounts,
       );
 
       if (recipient) {
@@ -143,6 +145,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
         { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
         event.timestamp,
         recipientCache,
+        storedCounts,
       );
 
       if (recipient) {
@@ -162,6 +165,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
           { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
           { id: event.id, timestamp: event.timestamp, error: event.error },
           recipientCache,
+          storedCounts,
         );
 
         if (recipient) {
