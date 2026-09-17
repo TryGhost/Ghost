@@ -139,7 +139,7 @@ export class EmailAnalyticsServiceWrapper {
       return;
     }
 
-    const storedEvents =
+    const storedEventCounts =
       this.#logName === 'newsletters'
         ? {
             new_recipient_event_count:
@@ -163,9 +163,9 @@ export class EmailAnalyticsServiceWrapper {
       `[Background Job] ${this.#backgroundJobName} processed ${jobType} | ${this.#logPrefix}`,
       `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
       ...(lagSeconds === null ? [] : [`Lag: ${(lagSeconds / 60).toFixed(1)}m`]),
-      ...(storedEvents
+      ...(storedEventCounts
         ? [
-            `New recipient events: ${storedEvents.new_recipient_event_count} (opened=${result.storedOpened} delivered=${result.storedDelivered} failed=${result.storedPermanentFailed})`,
+            `New recipient events: ${storedEventCounts.new_recipient_event_count} (opened=${result.storedOpened} delivered=${result.storedDelivered} failed=${result.storedPermanentFailed})`,
           ]
         : []),
       `Mode: ${batchMode}`,
@@ -180,7 +180,7 @@ export class EmailAnalyticsServiceWrapper {
           job_type: this.#backgroundJobName,
           task: jobType,
           event_count: eventCount,
-          ...storedEvents,
+          ...storedEventCounts,
           duration_ms: totalDurationMs,
           ...(lagSeconds === null ? {} : { lag_seconds: lagSeconds }),
         },
