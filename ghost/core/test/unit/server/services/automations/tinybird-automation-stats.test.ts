@@ -110,6 +110,20 @@ describe('fetchAutomationEntryStats', function () {
     });
   });
 
+  it('passes exclusive range bounds and timezone to the same entry query', async function () {
+    const client = clientReturning([{ date: '2024-03-10', count: 2 }]);
+    const options = { dateFrom: '2024-03-10', dateTo: '2024-03-11', timezone: 'America/New_York' };
+    assert.equal(
+      (await fetchAutomationEntryStats(client, 'selected', options))?.total_run_count,
+      2,
+    );
+    sinon.assert.calledOnceWithExactly(client.fetch, 'api_automation_entry_stats', {
+      version: '',
+      automationId: 'selected',
+      ...options,
+    });
+  });
+
   it('returns zero for a successful empty history', async function () {
     assert.deepEqual(await fetchAutomationEntryStats(clientReturning([]), 'selected'), {
       total_run_count: 0,

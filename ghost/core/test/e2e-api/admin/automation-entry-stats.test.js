@@ -99,10 +99,16 @@ describe('Automation entry stats API', function () {
       assert.equal(requests.isDone(), false);
     });
 
-    function mockStats(status, response) {
+    function mockStats(status, response, options = {}) {
       return nock('https://api.tinybird.co')
         .get('/v0/pipes/api_automation_entry_stats.json')
-        .query({ ghost_client: 'server', site_uuid: siteUuid, automation_id: automationId })
+        .query({
+          ghost_client: 'server',
+          site_uuid: siteUuid,
+          automation_id: automationId,
+          timezone: 'UTC',
+          ...options,
+        })
         .reply(status, response);
     }
 
@@ -142,6 +148,103 @@ describe('Automation entry stats API', function () {
       );
       assert.deepEqual(stats.entries[0], { date: '2020-01-01', count: 1 });
       assert.deepEqual(stats.entries.at(-1), { date: '2026-09-14', count: 2 });
+    });
+
+    it('applies the selected calendar range to both total and series', async function () {
+      const request = mockStats(
+        200,
+        { data: [{ date: '2024-02-29', count: '2' }] },
+        {
+          date_from: '2024-02-28',
+          date_to: '2024-03-02',
+          timezone: 'America/New_York',
+        },
+      );
+      const { body } = await agent
+        .get(
+          `automations/${automationId}/entry-stats/?date_from=2024-02-28&date_to=2024-03-01&timezone=America%2FNew_York`,
+        )
+        .expectStatus(200);
+      assert.ok(request.isDone());
+      assert.deepEqual(body.automation_entry_stats[0], {
+        automation_id: automationId,
+        total_run_count: 2,
+        entries: [
+          { date: '2024-02-28', count: 0 },
+          { date: '2024-02-29', count: 2 },
+          { date: '2024-03-01', count: 0 },
+        ],
+        window: {
+          date_from: '2024-02-28',
+          date_to: '2024-03-02',
+          bucket: 'day',
+          timezone: 'America/New_York',
+        },
+      });
+    });
+
+    it('returns zero buckets for every day in an empty selected range', async function () {
+      const request = mockStats(
+        200,
+        { data: [] },
+        { date_from: '2024-03-10', date_to: '2024-03-12' },
+      );
+      const { body } = await agent
+        .get(`automations/${automationId}/entry-stats/?date_from=2024-03-10&date_to=2024-03-11`)
+        .expectStatus(200);
+      assert.ok(request.isDone());
+      assert.equal(body.automation_entry_stats[0].total_run_count, 0);
+      assert.deepEqual(body.automation_entry_stats[0].entries, [
+        { date: '2024-03-10', count: 0 },
+        { date: '2024-03-11', count: 0 },
+      ]);
+    });
+
+    it('keeps all-time requests unbounded while using the requested timezone for today', async function () {
+      const request = mockStats(200, { data: [] }, { timezone: 'Pacific/Auckland' });
+      const { body } = await agent
+        .get(`automations/${automationId}/entry-stats/?timezone=Pacific%2FAuckland`)
+        .expectStatus(200);
+      assert.ok(request.isDone());
+      assert.deepEqual(body.automation_entry_stats[0].entries, [{ date: '2026-09-15', count: 0 }]);
+    });
+
+    it('surfaces a failed filtered query as an error rather than an empty range', async function () {
+      sinon.stub(require('@tryghost/logging'), 'error');
+      const request = mockStats(503, 'Unavailable', {
+        date_from: '2024-03-10',
+        date_to: '2024-03-11',
+      });
+      const { body } = await agent
+        .get(`automations/${automationId}/entry-stats/?date_from=2024-03-10&date_to=2024-03-10`)
+        .expectStatus(500);
+      assert.ok(request.isDone());
+      assert.equal(body.automation_entry_stats, undefined);
+    });
+
+    it('rejects entries outside the requested range instead of returning an inconsistent total', async function () {
+      const request = mockStats(
+        200,
+        { data: [{ date: '2024-03-12', count: 1 }] },
+        { date_from: '2024-03-10', date_to: '2024-03-11' },
+      );
+      await agent
+        .get(`automations/${automationId}/entry-stats/?date_from=2024-03-10&date_to=2024-03-10`)
+        .expectStatus(500);
+      assert.ok(request.isDone());
+    });
+
+    it('returns validation errors before fetching Tinybird for invalid ranges or timezones', async function () {
+      const request = mockStats(200, { data: [] });
+      for (const query of [
+        'date_from=2024-01-01',
+        'date_from=2024-03-02&date_to=2024-03-01',
+        'date_from=2024-02-30&date_to=2024-03-01',
+        'timezone=invalid',
+      ]) {
+        await agent.get(`automations/${automationId}/entry-stats/?${query}`).expectStatus(422);
+      }
+      assert.equal(request.isDone(), false);
     });
 
     async function expectTinybirdFailure() {

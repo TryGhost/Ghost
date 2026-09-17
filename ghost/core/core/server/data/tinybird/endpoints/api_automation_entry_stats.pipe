@@ -1,16 +1,22 @@
 DESCRIPTION >
-    Daily automation entries in UTC. All-time requests include the complete run history.
+    Daily automation entries in the requested timezone; optional inclusive/exclusive date bounds.
 
 NODE entry_counts
 SQL >
     %
     SELECT
-        toString(toDate(runs.created_at, 'UTC')) AS date,
+        formatDateTime(runs.created_at, '%F', {{ String(timezone, 'UTC') }}) AS date,
         count() AS count
     FROM _mv_automation_runs AS runs FINAL
     WHERE
         runs.site_uuid = {{ String(site_uuid, '00000000-0000-0000-0000-000000000000', required=True) }}
         AND runs.automation_id = {{ String(automation_id, '', required=True) }}
+        {% if defined(date_from) %}
+        AND runs.created_at >= toDateTime64({{ String(date_from) }}, 3, {{ String(timezone, 'UTC') }})
+        {% end %}
+        {% if defined(date_to) %}
+        AND runs.created_at < toDateTime64({{ String(date_to) }}, 3, {{ String(timezone, 'UTC') }})
+        {% end %}
     GROUP BY date
     ORDER BY date ASC
 

@@ -1,5 +1,5 @@
 DESCRIPTION >
-    All-time run status counts for one automation, using recorded step outcomes.
+    Current run status counts for entries in an optional date range, using full recorded step history.
 
 NODE selected_status_runs
 SQL >
@@ -8,6 +8,12 @@ SQL >
     FROM _mv_automation_runs FINAL
     WHERE site_uuid = {{ String(site_uuid, required=True) }}
         AND automation_id = {{ String(automation_id, required=True) }}
+        {% if defined(date_from) %}
+        AND created_at >= toDateTime64({{ String(date_from) }}, 3, {{ String(timezone, 'UTC') }})
+        {% end %}
+        {% if defined(date_to) %}
+        AND created_at < toDateTime64({{ String(date_to) }}, 3, {{ String(timezone, 'UTC') }})
+        {% end %}
 
 NODE run_status_flags
 SQL >
