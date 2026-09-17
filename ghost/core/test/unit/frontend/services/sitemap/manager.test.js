@@ -358,7 +358,7 @@ describe('Unit: sitemap/manager', function () {
       });
 
       it('abandons a build invalidated mid-apply and serves the rebuild instead', async function () {
-        fetchStub.withArgs('posts').resolves([
+        fetchStub.withArgs('posts').callsFake(async () => [
           { id: 'p1', slug: 'a' },
           { id: 'p2', slug: 'b' },
         ]);
