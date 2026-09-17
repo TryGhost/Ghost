@@ -9,6 +9,7 @@ import ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
+import ContentImportJob from '../../data/importer/jobs/content-import-job';
 import MembersImportJob from '../members/jobs/members-import-job';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
 import type MentionController from '../mentions/mention-controller';
@@ -47,6 +48,9 @@ interface RegisterJobHandlersDependencies {
     handleImportJob(job: MembersImportJob): Promise<void>;
   };
   emailService: EmailService;
+  siteImporter: {
+    executeImport(job: ContentImportJob): Promise<unknown>;
+  };
 }
 
 export default function registerJobHandlers({
@@ -58,6 +62,7 @@ export default function registerJobHandlers({
   mentionsSendingService,
   membersService,
   emailService,
+  siteImporter,
 }: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
@@ -81,6 +86,10 @@ export default function registerJobHandlers({
 
   jobsService.handle(ContentCSVImportJob, async (job) => {
     await contentImport.handleJob(job);
+  });
+
+  jobsService.handle(ContentImportJob, async (job) => {
+    await siteImporter.executeImport(job);
   });
 
   jobsService.handle(MembersImportJob, async (job) => {

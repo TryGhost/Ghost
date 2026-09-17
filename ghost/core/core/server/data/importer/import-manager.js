@@ -33,7 +33,6 @@ class ImportManager {
   constructor({
     jobsService,
     importsStorage,
-    jobManager,
     handlers,
     importers,
     mailer,
@@ -44,7 +43,6 @@ class ImportManager {
     this.jobsService = jobsService;
     /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default | import('../../adapters/storage/S3Storage').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
     this.importsStorage = importsStorage;
-    this.jobManager = jobManager;
     this.handlers = handlers;
     this.importers = importers;
     this.mailer = mailer;
@@ -426,11 +424,7 @@ class ImportManager {
           importPersistUser: importOptions.importPersistUser,
         });
         this.logging.info('[Background Job] site-content-import queued');
-        return await this.jobManager.addJob({
-          data: job,
-          job: (input) => this.executeImport(input),
-          offloaded: false,
-        });
+        return await this.jobsService.dispatch(job);
       } catch (err) {
         for (const key of new Set([attemptedKey, uploadKey])) {
           await this.cleanUpUpload(key);
@@ -470,11 +464,22 @@ class ImportManager {
     try {
       result = await this.processImport(prepared, importOptions, env);
       if (!env?.startsWith('testing')) {
-        this.logging.info(
-          result === undefined
-            ? `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`
-            : `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
-        );
+        if (result === undefined) {
+          this.logging.info(
+            `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+          );
+        } else {
+          this.logging.info(
+            {
+              system: {
+                event: 'site_content_import.completed',
+                import_groups: Object.keys(result).length,
+                duration_ms: Date.now() - startedAt,
+              },
+            },
+            'Site content import completed',
+          );
+        }
       }
       return result;
     } catch (err) {

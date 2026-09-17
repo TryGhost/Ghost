@@ -11,7 +11,7 @@ function subject(env = 'production') {
   const deps = {
     handlers: [],
     importers: [],
-    jobsService: {},
+    jobsService: { dispatch: sinon.stub().resolves() },
     jobManager: { addJob: sinon.stub().resolves() },
     mailer: { send: sinon.stub().resolves() },
     config: { get: sinon.stub().returns(env) },
@@ -77,6 +77,17 @@ describe('Site import execution', function () {
     ]);
     sinon.assert.calledOnceWithExactly(cleanup, '/tmp/owned');
     sinon.assert.calledWith(
+      deps.logging.info,
+      sinon.match({
+        system: {
+          event: 'site_content_import.completed',
+          import_groups: 2,
+          duration_ms: sinon.match.number,
+        },
+      }),
+      'Site content import completed',
+    );
+    sinon.assert.calledWith(
       deps.mailer.send,
       sinon.match({ to: options.user.email, subject: 'Your content import has finished' }),
     );
@@ -87,6 +98,10 @@ describe('Site import execution', function () {
     const error = new Error('import failed');
     sinon.stub(manager, 'preProcess').rejects(error);
     assert.equal(await manager.executeImport({ data: {} }, options), undefined);
+    sinon.assert.neverCalledWith(
+      deps.logging.info,
+      sinon.match({ system: { event: 'site_content_import.completed' } }),
+    );
     sinon.assert.calledWith(
       deps.logging.error,
       error,
@@ -119,6 +134,7 @@ describe('Site import execution', function () {
       const direct = env === 'production' ? { runningInJob: true } : {};
       await manager.importFromFile(null, { ...options, ...direct, data: {} });
       sinon.assert.notCalled(deps.jobManager.addJob);
+      sinon.assert.notCalled(deps.jobsService.dispatch);
       assert.equal(deps.mailer.send.callCount, env === 'production' ? 1 : 0);
     }
   });
@@ -129,6 +145,7 @@ describe('Site import execution', function () {
     sinon.stub(manager, 'loadFile').rejects(error);
     await assert.rejects(manager.importFromFile({ name: 'bad.json' }, options), error);
     sinon.assert.notCalled(deps.jobManager.addJob);
+    sinon.assert.notCalled(deps.jobsService.dispatch);
     sinon.assert.notCalled(deps.mailer.send);
   });
 

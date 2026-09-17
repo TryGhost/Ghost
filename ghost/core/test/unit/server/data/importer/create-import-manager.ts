@@ -7,7 +7,6 @@ const {
 export function dependencies() {
   return {
     jobsService: {},
-    jobManager: require('../../../../../core/server/services/jobs'),
     handlers: [
       ...createContentFileHandlers(),
       require('../../../../../core/server/data/importer/handlers/revue'),

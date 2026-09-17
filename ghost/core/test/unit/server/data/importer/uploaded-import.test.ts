@@ -75,7 +75,7 @@ describe('Uploaded site imports', function () {
     const extract = sinon.spy(manager, 'extractZip');
     assert.equal(await manager.validateFile(file), undefined);
     sinon.assert.notCalled(unique);
-    sinon.assert.notCalled(deps.jobManager.addJob);
+    sinon.assert.notCalled(deps.jobsService.dispatch);
     sinon.assert.notCalled(deps.mailer.send);
     const extracted = await extract.firstCall.returnValue;
     assert.equal(await fs.pathExists(extracted), false);
@@ -99,7 +99,7 @@ describe('Uploaded site imports', function () {
         },
       );
       assert.equal(await fs.pathExists(await extract.firstCall.returnValue), false);
-      sinon.assert.notCalled(deps.jobManager.addJob);
+      sinon.assert.notCalled(deps.jobsService.dispatch);
       sinon.assert.notCalled(deps.mailer.send);
     });
   }
@@ -133,9 +133,11 @@ describe('Uploaded site imports', function () {
       importPersistUser: false,
     };
     await manager.importFromFile(file, options);
+    sinon.assert.calledOnce(deps.jobsService.dispatch);
+    sinon.assert.notCalled(deps.jobManager.addJob);
     sinon.assert.calledOnce(save);
     sinon.assert.notCalled(raw);
-    const job = JSON.parse(JSON.stringify(deps.jobManager.addJob.firstCall.args[0].data));
+    const job = JSON.parse(JSON.stringify(deps.jobsService.dispatch.firstCall.args[0]));
     assert.match(
       job.uploadKey,
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
@@ -151,11 +153,16 @@ describe('Uploaded site imports', function () {
         assert.deepEqual(passed, { ...options, importTag: undefined, runningInJob: true });
         return {};
       });
-    assert.deepEqual(
-      await later.manager.executeImport(job),
-      {},
-      later.deps.logging.error.firstCall?.args[0]?.stack,
-    );
+    const handle = sinon.stub();
+    const registerJobHandlers =
+      require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
+    const ContentImportJob =
+      require('../../../../../core/server/data/importer/jobs/content-import-job').default;
+    registerJobHandlers({ jobsService: { handle }, siteImporter: later.manager });
+    const registration = handle.getCalls().find((call) => call.args[0] === ContentImportJob);
+    assert.ok(registration);
+    assert.equal(registration.args[2], undefined);
+    await registration.args[1](new ContentImportJob(job));
     sinon.assert.calledOnce(imported);
     sinon.assert.calledOnce(later.deps.mailer.send);
     sinon.assert.notCalled(read);
@@ -176,7 +183,7 @@ describe('Uploaded site imports', function () {
       await fs.writeFile(source.path, content);
       const expected = await manager.loadFile(source);
       await manager.importFromFile(source, { user: { email: 'owner@example.com' } });
-      const job = JSON.parse(JSON.stringify(deps.jobManager.addJob.firstCall.args[0].data));
+      const job = JSON.parse(JSON.stringify(deps.jobsService.dispatch.firstCall.args[0]));
       assert.deepEqual(Object.keys(job).sort(), ['emailRecipient', 'uploadKey']);
       await fs.remove(source.path);
       const later = subject();
@@ -213,7 +220,7 @@ describe('Uploaded site imports', function () {
         return url;
       });
       if (stage === 'enqueue') {
-        deps.jobManager.addJob.rejects(failure);
+        deps.jobsService.dispatch.rejects(failure);
       }
       await assert.rejects(
         manager.importFromFile(file, { user: { email: 'owner@example.com' } }),
@@ -227,7 +234,7 @@ describe('Uploaded site imports', function () {
   it('preserves enqueue errors when deleting the saved upload also fails', async function () {
     const { manager, deps } = subject();
     const failure = new Error('enqueue failed');
-    deps.jobManager.addJob.rejects(failure);
+    deps.jobsService.dispatch.rejects(failure);
     sinon.stub(storage, 'delete').rejects(new Error('delete failed'));
     await assert.rejects(
       manager.importFromFile(await archive({ 'data.json': json }), {
@@ -259,11 +266,11 @@ describe('Uploaded site imports', function () {
       user: { email: 'owner@example.com' },
     });
     await started;
-    sinon.assert.notCalled(deps.jobManager.addJob);
+    sinon.assert.notCalled(deps.jobsService.dispatch);
     release();
     await pending;
-    sinon.assert.calledOnce(deps.jobManager.addJob);
-    await manager.executeImport(deps.jobManager.addJob.firstCall.args[0].data);
+    sinon.assert.calledOnce(deps.jobsService.dispatch);
+    await manager.executeImport(deps.jobsService.dispatch.firstCall.args[0]);
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
   });
   for (const stage of ['missing object', 'read', 'write', 'extraction', 'parsing', 'import']) {
@@ -272,7 +279,7 @@ describe('Uploaded site imports', function () {
       await manager.importFromFile(await archive({ 'data.json': json }), {
         user: { email: 'owner@example.com' },
       });
-      const job = JSON.parse(JSON.stringify(deps.jobManager.addJob.firstCall.args[0].data));
+      const job = JSON.parse(JSON.stringify(deps.jobsService.dispatch.firstCall.args[0]));
       const local = sinon.spy(fs, 'mkdtemp');
       const extract = sinon.spy(manager, 'extractZip');
       const failure = new Error(`${stage} failed`);
@@ -328,7 +335,7 @@ describe('Uploaded site imports', function () {
       await manager.importFromFile(await archive({ 'data.json': json }), {
         user: { email: 'owner@example.com' },
       });
-      const job = deps.jobManager.addJob.firstCall.args[0].data;
+      const job = deps.jobsService.dispatch.firstCall.args[0];
       const extract = sinon.spy(manager, 'extractZip');
       const downloads = sinon.spy(fs, 'mkdtemp');
       const remove = fs.remove.bind(fs);
@@ -369,7 +376,7 @@ describe('Uploaded site imports', function () {
     const failure = new Error('email failed');
     deps.mailer.send.rejects(failure);
     await assert.rejects(
-      manager.executeImport(deps.jobManager.addJob.firstCall.args[0].data),
+      manager.executeImport(deps.jobsService.dispatch.firstCall.args[0]),
       failure,
     );
     sinon.assert.calledOnce(deps.mailer.send);
@@ -400,7 +407,7 @@ describe('Uploaded site imports', function () {
       const raw = sinon.spy(storage, 'saveRaw');
       const buffered = sinon.spy(storage, 'read');
       await manager.importFromFile(file, { user: { email: 'owner@example.com' } });
-      const job = JSON.parse(JSON.stringify(deps.jobManager.addJob.firstCall.args[0].data));
+      const job = JSON.parse(JSON.stringify(deps.jobsService.dispatch.firstCall.args[0]));
       assert.equal(job.uploadKey.length, 36);
       assert.deepEqual(await fs.readdir(storage.storagePath), [job.uploadKey]);
       sinon.assert.calledOnce(save);
@@ -465,7 +472,7 @@ describe('Uploaded site imports', function () {
       await remove(target);
     });
     try {
-      await manager.executeImport(deps.jobManager.addJob.firstCall.args[0].data);
+      await manager.executeImport(deps.jobsService.dispatch.firstCall.args[0]);
       sinon.assert.calledWith(logged, cleanup, 'Import archive cleanup failed');
       sinon.assert.calledWith(
         deps.logging.error,
