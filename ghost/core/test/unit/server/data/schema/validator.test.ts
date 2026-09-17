@@ -1,10 +1,11 @@
-const assert = require('node:assert/strict');
-const _ = require('lodash');
-const ObjectId = require('bson-objectid').default;
-const testUtils = require('../../../../utils');
-const models = require('../../../../../core/server/models');
-
-const validateSchema = require('../../../../../core/server/data/schema/validator');
+import assert from 'node:assert/strict';
+import _ from 'lodash';
+import ObjectId from 'bson-objectid';
+// @ts-expect-error This module lacks type definitions.
+import testUtils from '../../../../utils';
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../../../core/server/models';
+import { validateSchema } from '../../../../../core/server/data/schema/validator';
 
 describe('Validate Schema', function () {
   describe('models.add', function () {
@@ -14,7 +15,7 @@ describe('Validate Schema', function () {
         .then(function () {
           throw new Error('Expected ValidationError.');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
           if (!_.isArray(err)) {
             throw err;
           }
@@ -44,7 +45,7 @@ describe('Validate Schema', function () {
         .then(function () {
           throw new Error('Expected ValidationError.');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
           if (!_.isArray(err)) {
             throw err;
           }
@@ -101,7 +102,7 @@ describe('Validate Schema', function () {
         .then(function () {
           throw new Error('Expected ValidationError.');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
           if (!_.isArray(err)) {
             throw err;
           }
@@ -123,7 +124,7 @@ describe('Validate Schema', function () {
         .then(function () {
           throw new Error('Expected ValidationError.');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
           if (!_.isArray(err)) {
             throw err;
           }
@@ -142,7 +143,7 @@ describe('Validate Schema', function () {
         .then(function () {
           throw new Error('Expected ValidationError.');
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
           if (!_.isArray(err)) {
             throw err;
           }
