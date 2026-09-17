@@ -243,14 +243,19 @@ describe('EmailAnalyticsServiceWrapper', function () {
     await wrapper.startFetch();
 
     const completions = infoLog.args.filter(
-      ([message]) =>
-        typeof message === 'string' &&
-        message.startsWith('[Background Job] email-analytics-fetch-latest completed'),
+      ([, message]) => message === '[Background Job] email-analytics-fetch-latest completed',
     );
     assert.equal(completions.length, 1);
-    assert.match(
-      completions[0][0] as string,
-      /^\[Background Job\] email-analytics-fetch-latest completed in \d+ms with 1 events /,
+    sinon.assert.calledWithExactly(
+      infoLog,
+      {
+        system: {
+          event: 'email_analytics_fetch_latest.completed',
+          event_count: 1,
+          duration_ms: sinon.match.number,
+        },
+      },
+      '[Background Job] email-analytics-fetch-latest completed',
     );
   });
 

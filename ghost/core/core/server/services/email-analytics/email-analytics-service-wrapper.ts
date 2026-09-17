@@ -14,6 +14,7 @@ import { fetchMailgunEvents } from './fetch-mailgun-events';
 export class EmailAnalyticsServiceWrapper {
   #logName: string;
   readonly #jobType: string;
+  readonly #completionEvent: string;
   readonly #config: Pick<ConfigInstance, 'get'>;
   readonly #metrics: Pick<GhostMetrics, 'metric'>;
   readonly #service: EmailAnalyticsService;
@@ -50,6 +51,7 @@ export class EmailAnalyticsServiceWrapper {
   }>) {
     this.#logName = logName;
     this.#jobType = jobType;
+    this.#completionEvent = `${jobType.replaceAll('-', '_')}.completed`;
 
     this.#config = config;
     this.#metrics = metrics;
@@ -250,7 +252,14 @@ export class EmailAnalyticsServiceWrapper {
       }
 
       logging.info(
-        `[Background Job] ${this.#jobType} completed in ${Date.now() - startedAt}ms with ${c1 + c2 + c3 + c4} events | ${this.#logPrefix}`,
+        {
+          system: {
+            event: this.#completionEvent,
+            event_count: c1 + c2 + c3 + c4,
+            duration_ms: Date.now() - startedAt,
+          },
+        },
+        `[Background Job] ${this.#jobType} completed`,
       );
 
       this.#fetching = false;
