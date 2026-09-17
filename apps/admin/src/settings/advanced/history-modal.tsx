@@ -32,7 +32,8 @@ import { useParams } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { type User } from '@tryghost/admin-x-framework/api/users';
-import { formatNumber } from '@tryghost/shade/utils';
+import { cn, formatNumber } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 import { keepPreviousData } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useFilterableApi } from '@tryghost/admin-x-framework/hooks';
@@ -96,6 +97,7 @@ const HistoryFilter: React.FC<{
   toggleEventType: (event: string, included: boolean) => void;
   toggleResourceType: (resource: string, included: boolean) => void;
 }> = ({ userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType }) => {
+  const { isAdmin7 } = useShade();
   const { updateRoute } = useSettingsNavigation();
   const usersApi = useFilterableApi<User, 'users', 'name'>({
     path: '/users/',
@@ -257,7 +259,11 @@ const HistoryFilter: React.FC<{
       </Popover>
       <div className="w-[200px]">
         <Inline
-          className={`${inputSurface('within')} relative h-(--control-height) overflow-hidden`}
+          className={cn(
+            inputSurface('within'),
+            'relative h-(--control-height) overflow-hidden',
+            isAdmin7 && 'rounded-full',
+          )}
           gap="none"
         >
           <Popover

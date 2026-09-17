@@ -139,14 +139,19 @@ const PageHeaderSelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectTrigger>,
   React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string }
 >(({ label, className, ...props }, ref) => {
-  const { isAdmin7 } = useShade();
+  const { controlShape, isAdmin7 } = useShade();
   return (
     <PageHeaderTooltip label={label}>
       <PageHeaderTooltipTrigger asChild>
         <SelectTrigger
           ref={ref}
           aria-label={label}
-          className={cn('w-auto', isAdmin7 && 'font-medium [&_svg]:stroke-2!', className)}
+          className={cn(
+            'w-auto',
+            isAdmin7 && 'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2!',
+            className,
+          )}
+          shape={controlShape}
           showChevron={!isAdmin7}
           variant={isAdmin7 ? 'ghost' : 'default'}
           {...props}

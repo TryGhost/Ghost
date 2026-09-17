@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
-import { ArrowUpDown, Calendar, Ellipsis, Plus, Save, Search } from 'lucide-react';
+import { ArrowUpDown, Ellipsis, Plus, Save, Search } from 'lucide-react';
 import { PageHeader } from '@/components/patterns/page-header';
 import { Filters, type Filter } from '@/components/patterns/filters';
 import {
@@ -13,6 +13,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Stack } from '@/components/primitives';
 import ShadeApp from '@/shade-app';
+import { useShade } from '@/providers/shade-provider';
 import { formatNumber } from '@/utils';
 import { FilterBar } from '@/components/patterns/filter-bar';
 
@@ -25,7 +26,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Page titles and action groups with shared ordering, spacing, control and tooltip conventions. See the attached Design contract for construction rules.',
+          'Page titles and action groups with shared ordering, spacing, control and tooltip conventions. See the [Page header design contract](?path=/docs/patterns-page-header--design-contract) for construction rules and the Structure story below for a live example.',
       },
     },
   },
@@ -51,6 +52,7 @@ function MoreActions() {
 }
 
 function SearchAction({ initialQuery = '' }: { initialQuery?: string }) {
+  const { controlShape } = useShade();
   const [query, setQuery] = React.useState(initialQuery);
   const [expanded, setExpanded] = React.useState(!!initialQuery);
   const restoreTriggerFocus = React.useRef(false);
@@ -72,7 +74,7 @@ function SearchAction({ initialQuery = '' }: { initialQuery?: string }) {
     );
   }
   return (
-    <InputGroup className="w-44" variant="secondary">
+    <InputGroup className="w-44" shape={controlShape} variant="secondary">
       <InputGroupAddon>
         <Search />
       </InputGroupAddon>
@@ -142,9 +144,9 @@ function MembersHeader({
         </PageHeader.Left>
         <PageHeader.Actions>
           <PageHeader.ActionGroup mobileMenuBreakpoint={mobile ? 10000 : 640}>
-            {filters.length === 0 && filterControls}
             <SearchAction initialQuery={expandedSearch ? 'Jamie' : ''} />
             <MoreActions />
+            {filters.length === 0 && filterControls}
             {mobile && (
               <PageHeader.ActionGroup.MobileMenu>
                 <PageHeader.ActionGroup.MobileMenuTrigger>
@@ -180,7 +182,7 @@ export const Structure: Story = {
     docs: {
       description: {
         story:
-          'Canonical list header: labelled filters, search, more actions, then the separated primary. Open menus and hover or Tab to inspect their states.',
+          'Canonical action order: icon-only secondary actions, icon + label secondary actions, a gap, then a single primary action. Open menus and hover or Tab to inspect their states.',
       },
     },
   },
@@ -222,25 +224,25 @@ export const Subview: Story = {
     docs: {
       description: {
         story:
-          'Analytics needs no invented primary action. Labelled controls retain their usage order.',
+          'A header can contain only secondary actions. Keep their usual order and omit the primary-action gap.',
       },
     },
   },
   render: () => (
     <PageHeader>
       <PageHeader.Left>
-        <PageHeader.Title>Analytics</PageHeader.Title>
+        <PageHeader.Title>Page title</PageHeader.Title>
       </PageHeader.Left>
       <PageHeader.Actions>
         <PageHeader.ActionGroup>
-          <Select defaultValue="30">
-            <PageHeader.SelectTrigger label="Date range">
-              <Calendar />
+          <Select defaultValue="newest">
+            <PageHeader.SelectTrigger label="Sort order">
+              <ArrowUpDown />
               <SelectValue />
             </PageHeader.SelectTrigger>
             <SelectContent>
-              <SelectItem value="7">Last 7 days</SelectItem>
-              <SelectItem value="30">Last 30 days</SelectItem>
+              <SelectItem value="newest">Newest first</SelectItem>
+              <SelectItem value="oldest">Oldest first</SelectItem>
             </SelectContent>
           </Select>
         </PageHeader.ActionGroup>
@@ -321,12 +323,12 @@ export const DisabledActions: Story = {
   },
   render: () => (
     <PageHeader.ActionGroup>
+      <PageHeader.Action label="Search" disabled iconOnly>
+        <Search />
+      </PageHeader.Action>
       <PageHeader.Action label="Filter" disabled>
         <ArrowUpDown />
         Filter
-      </PageHeader.Action>
-      <PageHeader.Action label="Search" disabled iconOnly>
-        <Search />
       </PageHeader.Action>
       <PageHeader.ActionGroup.Primary>
         <PageHeader.Action label="New member" disabled>
