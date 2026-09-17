@@ -19,6 +19,12 @@ import {
   getEntryStatsWindow,
   parseEntryStatsOptions,
 } from './automation-entry-stats';
+import {
+  browseMemberSearch,
+  normalizeMemberSearch,
+  searchCursorScope,
+  decodeSearchCursor,
+} from './automation-member-search';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { readRunHistory as loadRunHistory } from './automation-run-history';
 
@@ -207,7 +213,10 @@ export async function browseRuns(
   status?: unknown,
   order?: unknown,
   cursor?: unknown,
+  search?: unknown,
+  dates: unknown = {},
 ) {
+  const dateOptions = parseEntryStatsOptions(dates);
   const parsedStatus = runStatusFilterSchema.optional().safeParse(status);
   if (!parsedStatus.success) {
     throw new errors.ValidationError({
@@ -221,10 +230,22 @@ export async function browseRuns(
     });
   }
   const scope: RunCursorScope = {
+    ...entryDateScope(dateOptions),
     automation_id: automationId,
     status: parsedStatus.data ?? null,
     direction: parsedOrder.data?.endsWith(' asc') ? 'asc' : 'desc',
   };
+  const query = normalizeMemberSearch(search);
+  if (query) {
+    const searchScope = searchCursorScope(
+      scope,
+      config.get('tinybird:stats:id') || settingsCache.get('site_uuid'),
+      query,
+    );
+    const after = cursor === undefined ? undefined : decodeSearchCursor(cursor, searchScope);
+    await requireAutomation(automationId);
+    return browseMemberSearch(knex, getTinybirdClient(), searchScope, query, after);
+  }
   const after = cursor === undefined ? undefined : decodeRunCursor(cursor, scope);
   await requireAutomation(automationId);
   // One extra row tells us whether a next page exists without a separate count.
@@ -232,6 +253,7 @@ export async function browseRuns(
     status: parsedStatus.data,
     direction: scope.direction,
     limit: RUN_PAGE_SIZE + 1,
+    dates: scope,
     after,
   });
   if (rows === null) {
@@ -248,6 +270,7 @@ export async function browseRuns(
   return {
     data: runs.map((run) => ({ ...run, member: members.get(run.id) ?? null })),
     meta: {
+      ...(dateOptions.window ? { entry_window: dateOptions.window } : {}),
       pagination: { limit: RUN_PAGE_SIZE, next_cursor: nextCursor },
     },
   };

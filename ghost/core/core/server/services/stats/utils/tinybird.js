@@ -146,16 +146,26 @@ const create = ({ config, request, settingsCache, tinybirdService }) => {
    * Fetch data from a Tinybird pipe
    * @param {string} pipeName - The name of the Tinybird pipe to query
    * @param {Object} options - Request options
+   * @param {{method?: string, timeoutMs?: number}} [transport] HTTP transport overrides
    * @returns {Promise<Array|null>} Parsed data array or null on error
    */
-  const fetch = async (pipeName, options = {}) => {
+  const fetch = async (pipeName, options = {}, transport = {}) => {
     const { url, options: requestOptions } = buildRequest(pipeName, options);
 
     try {
-      const response = await request.get(url, requestOptions);
+      // Search ID sets belong in a POST body, not a URL/log line.
+      const target = new URL(url);
+      const response =
+        transport.method === 'POST'
+          ? await request.post(`${target.origin}${target.pathname}`, {
+              ...requestOptions,
+              form: Object.fromEntries(target.searchParams),
+              signal: AbortSignal.timeout(transport.timeoutMs ?? 35000),
+            })
+          : await request.get(url, requestOptions);
       return parseResponse(response);
     } catch (error) {
-      logging.error(`Error in Tinybird API request to ${url}:`, error);
+      logging.error(`Error in Tinybird API request to ${pipeName}:`, error);
       return null;
     }
   };
