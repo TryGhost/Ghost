@@ -1187,6 +1187,20 @@ describe('EmailAnalyticsService', function () {
         sinon.assert.calledOnce(fetchLatestSpy);
       });
 
+      it('allows skipping unchanged aggregation only for the missing sweep', async function () {
+        const processor = createStubEventProcessor();
+        const service = createService({ createEventProcessor: () => processor });
+
+        await service.fetchMissing();
+        sinon.assert.calledWith(processor.aggregate, sinon.match({ skipUnchanged: true }));
+
+        processor.aggregate.resetHistory();
+        await service.fetchLatestOpenedEvents();
+        await service.fetchLatestNonOpenedEvents();
+        assert.equal(processor.aggregate.callCount, 2);
+        assert.ok(processor.aggregate.args.every(([options]) => options.skipUnchanged === false));
+      });
+
       it('quits if the end is before the begin', async function () {
         const fetchEvents = sinon.spy();
         const service = createService({

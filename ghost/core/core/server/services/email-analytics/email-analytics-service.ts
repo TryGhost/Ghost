@@ -490,6 +490,7 @@ export class EmailAnalyticsService {
       const start = Date.now();
       const timings = await eventProcessor.aggregate({
         includeOpenedEvents,
+        skipUnchanged: fetchData === this.#fetchMissingData,
         processingResult,
         isFinal,
       });
