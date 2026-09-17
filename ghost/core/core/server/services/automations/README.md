@@ -146,8 +146,13 @@ missing name remains null so Admin can use the email. A deleted member or missin
 Core run returns `member: null`; it does not remove the Tinybird run or substitute
 the historical email. A failed lookup returns an error rather than null members.
 
-The list covers all time, independently of the Entries selector. This initial
-endpoint has no date/status/search filters or pagination controls. An empty history
+The endpoint accepts an optional `status` parameter: `in_progress`, `completed`, or
+`exited_early`.
+Omitting it includes every status, including unclassified history. Unsupported or
+empty values return 422. Filtering uses the complete recorded step history before
+ordering and limiting to ten matching runs; pending steps take precedence as they
+do in the summary counts. The list stays all-time, independent of entry dates and
+summary counts, with no search or pagination controls. An empty history or no matches
 returns `automation_runs: []`. It requires automation read permission, returns 404
 for unknown automations, and uses the same Tinybird availability checks as summaries.
 

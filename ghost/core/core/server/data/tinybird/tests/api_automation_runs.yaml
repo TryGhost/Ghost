@@ -24,7 +24,7 @@
 
 - name: empty_history
   parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=missing
-  expected_result: |
+  expected_result: ''
 
 - name: pending_unknown
   parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-pending_unknown
@@ -77,7 +77,7 @@
   parameters: automation_id=status-automation
   expected_http_status: 400
   expected_result: >-
-    Template Syntax Error: Required parameter is not defined. Check the parameters site_uuid and automation_id. Please provide a value or set a default value in the pipe code.
+    Template Syntax Error: Required parameter is not defined. Check the parameters site_uuid. Please provide a value or set a default value in the pipe code.
 
 - name: missing_automation
   parameters: site_uuid=15840000-0000-4000-8000-000000000000
@@ -89,3 +89,90 @@
   parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-recovered_step
   expected_result: |
     {"id":"case-recovered_step","created_at":"2020-01-01T00:00:00.000000Z","status":"completed","failed":false}
+
+- name: filtered_page_completed
+  parameters: site_uuid=15990000-0000-4000-8000-000000000000&automation_id=filtered-automation&run_status=completed
+  expected_result: |
+    {"id":"filtered-run-11","created_at":"2026-01-11T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"filtered-run-10","created_at":"2026-01-10T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"filtered-run-09","created_at":"2026-01-09T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"filtered-run-08","created_at":"2026-01-08T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"filtered-run-07","created_at":"2026-01-07T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"filtered-run-06","created_at":"2026-01-06T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"filtered-run-05","created_at":"2026-01-05T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"filtered-run-04","created_at":"2026-01-04T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"filtered-run-03","created_at":"2026-01-03T12:00:00.000000Z","status":"completed","failed":false}
+    {"id":"filtered-run-02","created_at":"2026-01-02T12:00:00.000000Z","status":"completed","failed":false}
+
+- name: filtered_page_exited_early
+  parameters: site_uuid=15990000-0000-4000-8000-000000000000&automation_id=filtered-automation&run_status=exited_early
+  expected_result: |
+    {"id":"filtered-run-12","created_at":"2026-01-12T12:00:00.000000Z","status":"exited_early","failed":true}
+
+- name: filtered_page_in_progress
+  parameters: site_uuid=15990000-0000-4000-8000-000000000000&automation_id=filtered-automation&run_status=in_progress
+  expected_result: |
+    {"id":"filtered-run-22","created_at":"2026-01-22T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-21","created_at":"2026-01-21T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-20","created_at":"2026-01-20T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-19","created_at":"2026-01-19T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-18","created_at":"2026-01-18T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-17","created_at":"2026-01-17T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-16","created_at":"2026-01-16T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-15","created_at":"2026-01-15T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-14","created_at":"2026-01-14T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-13","created_at":"2026-01-13T12:00:00.000000Z","status":"in_progress","failed":false}
+
+- name: unfiltered_page_remains_latest_ten
+  parameters: site_uuid=15990000-0000-4000-8000-000000000000&automation_id=filtered-automation
+  expected_result: |
+    {"id":"filtered-run-22","created_at":"2026-01-22T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-21","created_at":"2026-01-21T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-20","created_at":"2026-01-20T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-19","created_at":"2026-01-19T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-18","created_at":"2026-01-18T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-17","created_at":"2026-01-17T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-16","created_at":"2026-01-16T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-15","created_at":"2026-01-15T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-14","created_at":"2026-01-14T12:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"filtered-run-13","created_at":"2026-01-13T12:00:00.000000Z","status":"in_progress","failed":false}
+
+- name: filtered_pending_precedence
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_status=in_progress
+  expected_result: |
+    {"id":"status-run-2","created_at":"2020-01-01T00:00:00.000000Z","status":"in_progress","failed":false}
+    {"id":"status-run-1","created_at":"2020-01-01T00:00:00.000000Z","status":"in_progress","failed":false}
+
+- name: filtered_finished_latest_versions
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_status=completed
+  expected_result: |
+    {"id":"status-run-4","created_at":"2020-01-01T00:00:00.000000Z","status":"completed","failed":false}
+    {"id":"status-run-3","created_at":"2020-01-01T00:00:00.000000Z","status":"completed","failed":false}
+
+- name: filtered_mixed_terminal_histories
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_status=exited_early
+  expected_result: |
+    {"id":"status-run-8","created_at":"2020-01-01T00:00:00.000000Z","status":"exited_early","failed":false}
+    {"id":"status-run-7","created_at":"2020-01-01T00:00:00.000000Z","status":"exited_early","failed":false}
+    {"id":"status-run-6","created_at":"2020-01-01T00:00:00.000000Z","status":"exited_early","failed":false}
+    {"id":"status-run-5","created_at":"2020-01-01T00:00:00.000000Z","status":"exited_early","failed":true}
+
+- name: unknown_mixed_exit_does_not_match
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-unknown_exit&run_status=exited_early
+  expected_result: ''
+
+- name: missing_history_does_not_match
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-missing_steps&run_status=completed
+  expected_result: ''
+
+- name: superseded_failure_does_not_match
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-recovered_step&run_status=exited_early
+  expected_result: ''
+
+- name: filtered_other_automation
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=other-automation&run_status=completed
+  expected_result: ''
+
+- name: filtered_other_site
+  parameters: site_uuid=15840000-0000-4000-8000-000000000001&automation_id=status-automation&run_status=completed
+  expected_result: ''
