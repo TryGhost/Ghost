@@ -1,3 +1,7 @@
+import EmailAnalyticsGiftFetchLatestJob from '../email-analytics/jobs/email-analytics-gift-fetch-latest-job';
+import EmailAnalyticsAutomationFetchLatestJob from '../email-analytics/jobs/email-analytics-automation-fetch-latest-job';
+import EmailAnalyticsFetchLatestJob from '../email-analytics/jobs/email-analytics-fetch-latest-job';
+import type { EmailAnalyticsServiceWrapper } from '../email-analytics/email-analytics-service-wrapper';
 import { JobsService } from './jobs-service';
 import type { JobHandlingOptions } from './jobs-service';
 import type { GiftService } from '../gifts/gift-service';
@@ -28,6 +32,9 @@ const WEBMENTIONS_QUEUE: JobHandlingOptions = { queue: 'webmentions', concurrenc
 
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
+  gifts: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
+  automations: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
+  newsletters: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
   memberJobs: {
     cleanTokens(): Promise<number>;
     cleanExpiredComped(): Promise<unknown>;
@@ -43,6 +50,9 @@ interface RegisterJobHandlersDependencies {
 
 export default function registerJobHandlers({
   jobsService,
+  gifts,
+  automations,
+  newsletters,
   memberJobs,
   giftService,
   mediaInliner,
@@ -50,6 +60,21 @@ export default function registerJobHandlers({
   mentionsSendingService,
   membersService,
 }: RegisterJobHandlersDependencies): void {
+  // Each email analytics pipeline fetches on its own five-minute tick and the
+  // wrapper skips a tick while its previous fetch is still running. The second
+  // slot lets an overlapping tick reach that guard and be skipped straight away
+  // instead of queueing behind the running fetch and firing late.
+  for (const [JobClass, pipeline] of [
+    [EmailAnalyticsFetchLatestJob, newsletters],
+    [EmailAnalyticsAutomationFetchLatestJob, automations],
+    [EmailAnalyticsGiftFetchLatestJob, gifts],
+  ] as const) {
+    jobsService.handle(JobClass, () => pipeline.startFetch(), {
+      queue: JobClass.type,
+      concurrency: 2,
+    });
+  }
+
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
   });

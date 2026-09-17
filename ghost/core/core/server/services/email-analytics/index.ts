@@ -22,15 +22,15 @@ import type { EmailRecipientFailure, EmailSpamComplaintEvent, Email } from '../.
 // @ts-expect-error This module lacks type definitions.
 import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
-import { StartEmailAnalyticsJobEvent } from './events/start-email-analytics-job-event';
-import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
 import { AUTOMATION_EMAIL_TAG } from '../member-welcome-emails/constants';
 import type * as AutomationsApi from '../automations/automations-api';
 import { AutomationEmailAnalyticsBatchProcessor } from './automation-email-analytics-batch-processor';
 import { GiftEmailAnalyticsBatchProcessor } from './gift-email-analytics-batch-processor';
-import { StartGiftEmailAnalyticsJobEvent } from './events/start-gift-email-analytics-job-event';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import { GIFT_DELIVERY_EMAIL_TAG } from '../gifts/constants';
+import EmailAnalyticsFetchLatestJob from './jobs/email-analytics-fetch-latest-job';
+import EmailAnalyticsAutomationFetchLatestJob from './jobs/email-analytics-automation-fetch-latest-job';
+import EmailAnalyticsGiftFetchLatestJob from './jobs/email-analytics-gift-fetch-latest-job';
 
 let newsletters: EmailAnalyticsServiceWrapper | undefined;
 let automations: EmailAnalyticsServiceWrapper | undefined;
@@ -70,7 +70,7 @@ export const init = ({
   >;
   config: Pick<ConfigInstance, 'get'>;
   db: { knex: Knex };
-  domainEvents: Pick<DomainEvents, 'subscribe'>;
+  domainEvents: Pick<DomainEvents, 'dispatch'>;
   emailSuppressionList: Pick<typeof EmailSuppressionList, 'removeComplaint' | 'removeUnsubscribe'>;
   giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome'>;
   membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;
@@ -124,7 +124,7 @@ export const init = ({
 
   newsletters = new EmailAnalyticsServiceWrapper({
     logName: 'newsletters',
-    jobType: 'email-analytics-fetch-latest',
+    jobType: EmailAnalyticsFetchLatestJob.type,
     config,
     queries,
     mailgunTags: newsletterMailgunTags,
@@ -155,7 +155,7 @@ export const init = ({
 
   automations = new EmailAnalyticsServiceWrapper({
     logName: 'automations',
-    jobType: 'email-analytics-automation-fetch-latest',
+    jobType: EmailAnalyticsAutomationFetchLatestJob.type,
     config,
     queries,
     mailgunTags: automationMailgunTags,
@@ -182,7 +182,7 @@ export const init = ({
 
   gifts = new EmailAnalyticsServiceWrapper({
     logName: 'gifts',
-    jobType: 'email-analytics-gift-fetch-latest',
+    jobType: EmailAnalyticsGiftFetchLatestJob.type,
     config,
     queries,
     mailgunTags: giftMailgunTags,
@@ -203,10 +203,4 @@ export const init = ({
     settingsCache,
     createEventProcessor: () => new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService }),
   });
-
-  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => newsletters!.startFetch());
-
-  domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, () => automations!.startFetch());
-
-  domainEvents.subscribe(StartGiftEmailAnalyticsJobEvent, () => gifts!.startFetch());
 };

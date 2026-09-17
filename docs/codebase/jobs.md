@@ -10,8 +10,8 @@ cannot be scheduled. Scheduled and offloaded jobs registered through the legacy
 Bree-based service run in worker threads, so they must initialize their own
 dependencies and cannot rely on the main Ghost process's memory. Jobs migrated
 to the class-based service (token cleanup, gift cleanup, gift reminders, update
-checks, members imports) run in-process and share the main process's initialized
-services.
+checks, members imports, email analytics) run in-process and share the main
+process's initialized services.
 
 ## Adding a job
 
@@ -30,7 +30,12 @@ Existing examples include:
   service.
 - The site content import (`ghost/core/core/server/data/importer/`), which runs
   as an inline job.
-- Email analytics, which uses scheduled worker jobs.
+- Email analytics, which schedules one recurring class-based job per pipeline
+  (newsletters, automations, gifts), each in its own queue. Overlapping ticks
+  are skipped by the analytics wrapper's own per-process fetch guard rather
+  than queued.
+  A tick is awaited as one handler run, continuation passes included, so a
+  shutdown during a long fetch drains it up to `server:shutdownTimeout`.
 
 Prefer an existing job with similar lifecycle and failure requirements as the
 starting point for a new one.

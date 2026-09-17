@@ -49,6 +49,9 @@ describe('register-job-handlers', function () {
     membersService = { handleImportJob: sinon.stub().resolves() };
 
     registerJobHandlers({
+      gifts: { startFetch: sinon.stub().resolves() },
+      automations: { startFetch: sinon.stub().resolves() },
+      newsletters: { startFetch: sinon.stub().resolves() },
       jobsService,
       memberJobs,
       giftService,
