@@ -1,4 +1,5 @@
 const moment = require('moment-timezone');
+const { getAffectedRows } = require('../../lib/db-types/affected-rows');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 /** @typedef {import('./email-event-processor').StoredEventCounts} StoredEventCounts */
@@ -331,25 +332,25 @@ class NewsletterEmailEventStorage {
 
     // Flush delivered events
     if (deliveredCount > 0) {
-      const [result] = await this.#flushDeliveredUpdates();
+      const rowCount = await this.#flushDeliveredUpdates();
       if (storedCounts) {
-        storedCounts.storedDelivered += result.affectedRows;
+        storedCounts.storedDelivered += rowCount;
       }
     }
 
     // Flush opened events
     if (openedCount > 0) {
-      const [result] = await this.#flushOpenedUpdates();
+      const rowCount = await this.#flushOpenedUpdates();
       if (storedCounts) {
-        storedCounts.storedOpened += result.affectedRows;
+        storedCounts.storedOpened += rowCount;
       }
     }
 
     // Flush failed events
     if (failedCount > 0) {
-      const [result] = await this.#flushFailedUpdates();
+      const rowCount = await this.#flushFailedUpdates();
       if (storedCounts) {
-        storedCounts.storedPermanentFailed += result.affectedRows;
+        storedCounts.storedPermanentFailed += rowCount;
       }
     }
 
@@ -365,7 +366,7 @@ class NewsletterEmailEventStorage {
   async #flushDeliveredUpdates() {
     const updates = Array.from(this.#pendingUpdates.delivered.entries());
     if (updates.length === 0) {
-      return;
+      return 0;
     }
 
     // Build CASE statement for batched update
@@ -383,7 +384,7 @@ class NewsletterEmailEventStorage {
             AND delivered_at IS NULL
         `;
 
-    const rowCount = await this.#db.knex.raw(sql, recipientIds);
+    const rowCount = getAffectedRows(await this.#db.knex.raw(sql, recipientIds));
     this.recordEventStored('delivered', updates.length);
     return rowCount;
   }
@@ -394,7 +395,7 @@ class NewsletterEmailEventStorage {
   async #flushOpenedUpdates() {
     const updates = Array.from(this.#pendingUpdates.opened.entries());
     if (updates.length === 0) {
-      return;
+      return 0;
     }
 
     // Build CASE statement for batched update
@@ -412,7 +413,7 @@ class NewsletterEmailEventStorage {
             AND opened_at IS NULL
         `;
 
-    const rowCount = await this.#db.knex.raw(sql, recipientIds);
+    const rowCount = getAffectedRows(await this.#db.knex.raw(sql, recipientIds));
     this.recordEventStored('opened', updates.length);
     return rowCount;
   }
@@ -423,7 +424,7 @@ class NewsletterEmailEventStorage {
   async #flushFailedUpdates() {
     const updates = Array.from(this.#pendingUpdates.failed.entries());
     if (updates.length === 0) {
-      return;
+      return 0;
     }
 
     // Build CASE statement for batched update
@@ -441,7 +442,7 @@ class NewsletterEmailEventStorage {
             AND failed_at IS NULL
         `;
 
-    const rowCount = await this.#db.knex.raw(sql, recipientIds);
+    const rowCount = getAffectedRows(await this.#db.knex.raw(sql, recipientIds));
     return rowCount;
   }
 }
