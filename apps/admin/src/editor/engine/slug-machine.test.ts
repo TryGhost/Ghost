@@ -101,16 +101,16 @@ describe('resolveDedupedSlug', () => {
 describe('createSlugMachine', () => {
   describe('loaded', () => {
     it.each([
-      ['new blank post', { slug: '', title: '' }, 'derived', 'frozen'],
-      ['saved untitled post', { slug: 'untitled', title: DEFAULT_TITLE }, 'derived', 'frozen'],
-      ['derived slug', { slug: 'hello', title: 'Hello' }, 'derived', 'derived'],
-      ['custom slug', { slug: 'my-slug', title: 'Hello' }, 'custom', 'custom'],
-      ['deduped slug reads as custom', { slug: 'hello-2', title: 'Hello' }, 'custom', 'custom'],
-      ['duplicated post', { slug: 'foo-copy-2', title: 'Foo (Copy)' }, 'derived', 'derived'],
-    ] as const)('%s', (_label, post, mode, status) => {
+      ['new blank post', { slug: '', title: '' }, 'derived'],
+      ['saved untitled post', { slug: 'untitled', title: DEFAULT_TITLE }, 'derived'],
+      ['derived slug', { slug: 'hello', title: 'Hello' }, 'derived'],
+      ['custom slug', { slug: 'my-slug', title: 'Hello' }, 'custom'],
+      ['deduped slug reads as custom', { slug: 'hello-2', title: 'Hello' }, 'custom'],
+      ['duplicated post', { slug: 'foo-copy-2', title: 'Foo (Copy)' }, 'derived'],
+    ] as const)('%s', (_label, post, mode) => {
       const { machine, events } = createHarness();
       machine.loaded(post);
-      const expected = { ...post, lastCommittedTitle: post.title, mode, status, pending: false };
+      const expected = { ...post, mode, pending: false };
       expect(machine.getState()).toEqual(expected);
       expect(events).toEqual([{ state: expected, proposal: null }]);
     });
@@ -130,7 +130,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'my-slug-2',
         mode: 'custom',
-        lastCommittedTitle: 'Renamed',
       });
     });
 
@@ -153,7 +152,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'brand-new-name-2',
         title: 'Brand New Name',
-        lastCommittedTitle: 'Typed Later',
         pending: true,
       });
       later.resolve('typed-later');
@@ -183,7 +181,7 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'hello-world',
         title: 'Hello World',
-        status: 'derived',
+        mode: 'derived',
       });
     });
 
@@ -256,7 +254,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'hello',
         title: 'Hello',
-        lastCommittedTitle: 'Hello',
         pending: false,
       });
       expect(proposals.filter((proposal) => proposal.source === 'generated')).toEqual([]);
@@ -283,7 +280,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'hello',
         title: 'Hello',
-        lastCommittedTitle: '',
         pending: false,
       });
     });
@@ -311,23 +307,21 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'hello',
         title: 'Hello',
-        lastCommittedTitle: '',
-        status: 'frozen',
+        mode: 'derived',
       });
     });
 
-    it('reports derived after a failed commit on an untitled post', async () => {
+    it('keeps an untitled post derived after a failed commit', async () => {
       const { machine } = createHarness(vi.fn().mockRejectedValueOnce(new Error('boom')));
       machine.loaded({ slug: 'untitled', title: DEFAULT_TITLE });
-      expect(machine.getState().status).toBe('frozen');
 
       await expect(machine.titleCommitted('Hello')).resolves.toMatchObject({ reason: 'error' });
 
       expect(machine.getState()).toMatchObject({
-        status: 'derived',
+        mode: 'derived',
         title: DEFAULT_TITLE,
-        lastCommittedTitle: 'Hello',
         slug: 'untitled',
+        pending: false,
       });
     });
 
@@ -398,7 +392,7 @@ describe('createSlugMachine', () => {
       expect(generateSlug).not.toHaveBeenCalled();
       expect(machine.getState()).toMatchObject({
         slug: 'my-slug',
-        status: 'custom',
+        mode: 'custom',
         title: 'Hello',
       });
     });
@@ -661,7 +655,6 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'my-slug',
         mode: 'custom',
-        status: 'custom',
         title: 'Hello',
       });
     });
@@ -854,7 +847,7 @@ describe('createSlugMachine', () => {
 
     expect(listener).toHaveBeenCalledTimes(2);
     expect(listener).toHaveBeenLastCalledWith(
-      expect.objectContaining({ slug: 'one', status: 'derived', pending: false }),
+      expect.objectContaining({ slug: 'one', mode: 'derived', pending: false }),
       { slug: 'one', source: 'generated' },
     );
   });

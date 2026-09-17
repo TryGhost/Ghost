@@ -83,8 +83,17 @@ const flush = () =>
     setTimeout(resolve, 0);
   });
 
+// The legacy machine releases a synchronously refused submission's queue slot a microtask later;
+// generator settlements are left un-yielded so same-tick submissions behind a live request stay
+// covered.
+const settleMicrotasks = async () => {
+  for (let tick = 0; tick < 3; tick += 1) {
+    await Promise.resolve();
+  }
+};
+
 interface Trace {
-  checkpoints: string[];
+  checkpoints: unknown[];
   proposals: Record<number, SlugProposal>;
   unresolved: number;
 }
@@ -139,7 +148,7 @@ async function run(create: Factory, steps: Step[]): Promise<Trace> {
     request.resolve(result);
   };
 
-  const checkpoints: string[] = [];
+  const checkpoints: unknown[] = [];
   for (const step of steps) {
     switch (step.op) {
       case 'loaded':
@@ -158,9 +167,11 @@ async function run(create: Factory, steps: Step[]): Promise<Trace> {
       }
       case 'title':
         track(machine.titleCommitted(step.value));
+        await settleMicrotasks();
         break;
       case 'manual':
         track(machine.slugEdited(step.value));
+        await settleMicrotasks();
         break;
       case 'resolve':
       case 'reject':
@@ -168,7 +179,7 @@ async function run(create: Factory, steps: Step[]): Promise<Trace> {
         break;
       case 'flush':
         await flush();
-        checkpoints.push(JSON.stringify({ events, calls }));
+        checkpoints.push(structuredClone({ events, calls }));
         break;
     }
   }
@@ -181,7 +192,7 @@ async function run(create: Factory, steps: Step[]): Promise<Trace> {
     const { text, request } = outstanding.shift()!;
     request.resolve(slugify(text));
   }
-  checkpoints.push(JSON.stringify({ events, calls }));
+  checkpoints.push(structuredClone({ events, calls }));
   return { checkpoints, proposals, unresolved: submissions - Object.keys(proposals).length };
 }
 
