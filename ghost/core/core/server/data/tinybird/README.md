@@ -135,9 +135,11 @@ and unknown history is the selected run count minus the three classified counts.
 The automation list continues using its existing pending-run view.
 
 `api_automation_runs` returns the latest ten runs for one automation, ordered by
-entry time then run ID descending. It limits run IDs before reading their step
-history and applies the same bit-mask classification, retaining missing history
-as `unclassified`. It reuses the existing materialized tables without a rebuild.
+entry time then run ID descending. Without a filter it limits run IDs before reading
+their step history. With `run_status`, it classifies all runs for the automation,
+then filters before ordering and limiting. Both paths use the same bit-mask
+classification, retaining missing history as `unclassified` in the unfiltered list.
+It reuses the existing materialized tables without a rebuild.
 Member details are joined in Core, not stored in these Tinybird tables.
 
 Do not turn these into incrementing materialized counters without a retraction

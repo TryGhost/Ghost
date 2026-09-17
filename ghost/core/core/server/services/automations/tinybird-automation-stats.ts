@@ -13,6 +13,7 @@ export type TinybirdClient = {
       dateFrom?: string;
       dateTo?: string;
       timezone?: string;
+      runStatus?: string;
     },
   ): Promise<unknown>;
 };
@@ -148,9 +149,17 @@ export async function fetchAutomationStatusStats(
   }
 }
 
-export async function fetchAutomationRuns(client: TinybirdClient, automationId: string) {
+export async function fetchAutomationRuns(
+  client: TinybirdClient,
+  automationId: string,
+  status?: 'in_progress' | 'completed' | 'exited_early',
+) {
   try {
-    const rows = await client.fetch('api_automation_runs', { version: '', automationId });
+    const rows = await client.fetch('api_automation_runs', {
+      version: '',
+      automationId,
+      runStatus: status,
+    });
     const parsed = z
       .array(
         z
@@ -166,7 +175,11 @@ export async function fetchAutomationRuns(client: TinybirdClient, automationId: 
       )
       .max(10)
       .safeParse(rows);
-    if (!parsed.success || new Set(parsed.data.map((row) => row.id)).size !== parsed.data.length) {
+    if (
+      !parsed.success ||
+      new Set(parsed.data.map((row) => row.id)).size !== parsed.data.length ||
+      (status && parsed.data.some((row) => row.status !== status))
+    ) {
       logging.error('Unexpected response from the Tinybird automation runs pipe');
       return null;
     }

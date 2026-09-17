@@ -196,9 +196,18 @@ export async function readStatusStats(automationId: string, options: unknown = {
   };
 }
 
-export async function browseRuns(automationId: string) {
+export async function browseRuns(automationId: string, status?: unknown) {
+  const parsedStatus = z
+    .enum(['in_progress', 'completed', 'exited_early'])
+    .optional()
+    .safeParse(status);
+  if (!parsedStatus.success) {
+    throw new errors.ValidationError({
+      message: 'Automation run status must be one of: in_progress, completed, exited_early.',
+    });
+  }
   await requireAutomation(automationId);
-  const runs = await fetchAutomationRuns(getTinybirdClient(), automationId);
+  const runs = await fetchAutomationRuns(getTinybirdClient(), automationId, parsedStatus.data);
   if (runs === null) {
     throw new errors.InternalServerError({ message: 'Could not load Tinybird automation runs.' });
   }
