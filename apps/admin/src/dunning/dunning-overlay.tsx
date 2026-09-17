@@ -5,16 +5,11 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
-import { useLocation } from '@tryghost/admin-x-framework';
-import {
-  useDunningState,
-  dismissLock,
-  dismissLockQuietly,
-  markPayNowReturnRoute,
-} from './use-dunning-state';
+import { useDunningState, dismissLock } from './use-dunning-state';
 import { useDunningLockTakeover } from './use-dunning-lock-takeover';
 import { useOwnerUser } from './use-owner-user';
-import { EXPORT_URL, PAY_URL, lockedHeadline, lockedMessage } from './dunning-copy';
+import { PayNowButton } from './pay-now-button';
+import { EXPORT_URL, lockedHeadline, lockedMessage } from './dunning-copy';
 
 /**
  * Who to talk to about the payment. Staff realistically reach the owner
@@ -29,12 +24,14 @@ function OwnerCard({ owner }: { owner: User }) {
       <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-muted text-xl font-semibold text-foreground">
         {initial}
       </div>
-      <div className="text-left">
-        <div className="text-lg font-bold text-foreground">{displayName} (Owner)</div>
+      <Stack className="text-left" gap="none">
+        <Text size="lg" weight="bold">
+          {displayName} (Owner)
+        </Text>
         <Text size="md" tone="secondary">
           {owner.email}
         </Text>
-      </div>
+      </Stack>
     </Inline>
   );
 }
@@ -52,7 +49,6 @@ export function DunningOverlay() {
   const { data: currentUser } = useCurrentUser();
   const state = useDunningState();
   const takeover = useDunningLockTakeover();
-  const location = useLocation();
   const isOwner = Boolean(currentUser && isOwnerUser(currentUser));
   // This component mounts on every Admin page; only fetch the user list in
   // the one case that renders the owner card (staff seeing the takeover)
@@ -119,17 +115,7 @@ export function DunningOverlay() {
         </Text>
         {isOwner ? (
           <Inline align="center" className="mt-4" gap="md">
-            <Button size="lg" asChild>
-              <a
-                href={PAY_URL}
-                onClick={() => {
-                  dismissLockQuietly(state);
-                  markPayNowReturnRoute(location.pathname);
-                }}
-              >
-                Pay now
-              </a>
-            </Button>
+            <PayNowButton size="lg" state={state} />
             <Button size="lg" variant="outline" asChild>
               <a href={EXPORT_URL}>Download my data</a>
             </Button>

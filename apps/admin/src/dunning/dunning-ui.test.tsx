@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { browseConfigWithDunning, dunningWindow } from '@test-utils/fixtures/dunning';
 
 import { DunningBanner } from './dunning-banner';
 import { DunningOverlay } from './dunning-overlay';
@@ -44,7 +45,6 @@ vi.mock('@/ember-bridge', () => ({
   useSubscriptionStatus: mockUseSubscriptionStatus,
 }));
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const NOW = new Date('2026-09-10T12:00:00Z');
 
 const ownerUser = {
@@ -58,25 +58,6 @@ const editorUser = {
   email: 'editor@example.com',
   roles: [{ name: 'Editor' }],
 };
-
-const configWithDunning = (elapsedDays: number, windowDays = 28) => ({
-  data: {
-    config: {
-      labs: { dunningWarnings: true },
-      hostSettings: {
-        billing: {
-          enabled: true,
-          url: 'https://billing.example.com',
-          dunning: {
-            active: true,
-            paymentFailedAt: new Date(NOW.getTime() - elapsedDays * DAY_MS).toISOString(),
-            suspendsAt: new Date(NOW.getTime() + (windowDays - elapsedDays) * DAY_MS).toISOString(),
-          },
-        },
-      },
-    },
-  },
-});
 
 describe('dunning UI', () => {
   beforeEach(() => {
@@ -103,7 +84,7 @@ describe('dunning UI', () => {
     });
 
     test('shows the owner a Pay now link to the billing app', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(2));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
 
       render(<DunningBanner />);
 
@@ -116,7 +97,7 @@ describe('dunning UI', () => {
     });
 
     test('shows staff the remind-the-owner copy without any CTA', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(2));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
       mockUseCurrentUser.mockReturnValue({ data: editorUser });
 
       render(<DunningBanner />);
@@ -127,7 +108,7 @@ describe('dunning UI', () => {
     });
 
     test('renders nothing on the billing route', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(2));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
       mockUseLocation.mockReturnValue({ pathname: '/pro/billing' });
 
       render(<DunningBanner />);
@@ -135,18 +116,36 @@ describe('dunning UI', () => {
       expect(screen.queryByTestId('dunning-banner')).not.toBeInTheDocument();
     });
 
-    test('renders nothing once the locked phase starts', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+    test('hands over to the takeover once the locked phase starts', () => {
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
 
       render(<DunningBanner />);
 
       expect(screen.queryByTestId('dunning-banner')).not.toBeInTheDocument();
     });
+
+    test('carries the warning on the export route while the takeover stands down', () => {
+      // Undismissed locked phase on /settings/migration: the takeover stands
+      // down so the export tools stay usable — the banner must step in, or
+      // the user is left with no payment warning at all.
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
+      mockUseLocation.mockReturnValue({ pathname: '/settings/migration' });
+
+      render(
+        <>
+          <DunningOverlay />
+          <DunningBanner />
+        </>,
+      );
+
+      expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
+      expect(screen.getByTestId('dunning-banner')).toBeInTheDocument();
+    });
   });
 
   describe('DunningOverlay', () => {
     test('renders nothing during the warning phase', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(2));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
 
       render(<DunningOverlay />);
 
@@ -157,7 +156,7 @@ describe('dunning UI', () => {
     });
 
     test('takes over for the owner in the locked phase', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
 
       render(<DunningOverlay />);
 
@@ -174,7 +173,7 @@ describe('dunning UI', () => {
     });
 
     test('stands down on the export route so the data download stays reachable', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
       mockUseLocation.mockReturnValue({ pathname: '/settings/migration' });
 
       render(<DunningOverlay />);
@@ -183,7 +182,7 @@ describe('dunning UI', () => {
     });
 
     test('shows staff the owner card instead of a payment link', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
       mockUseCurrentUser.mockReturnValue({ data: editorUser });
 
       render(<DunningOverlay />);
@@ -198,7 +197,7 @@ describe('dunning UI', () => {
     });
 
     test('degrades to copy only when staff cannot resolve the owner', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
       mockUseCurrentUser.mockReturnValue({ data: editorUser });
       mockUseBrowseUsers.mockReturnValue({ data: undefined });
 
@@ -210,7 +209,7 @@ describe('dunning UI', () => {
     });
 
     test('stands down on the billing route so the user can pay', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
       mockUseLocation.mockReturnValue({ pathname: '/pro' });
 
       render(<DunningOverlay />);
@@ -220,7 +219,7 @@ describe('dunning UI', () => {
 
     test('moves focus into the dialog and hands it back on dismissal', () => {
       // Start outside the locked phase with focus on a page control
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(2));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
       const view = render(
         <>
           <button data-testid="page-control" type="button">
@@ -233,7 +232,7 @@ describe('dunning UI', () => {
 
       // The window crosses into the locked phase: the takeover appears and
       // takes keyboard focus so Tab starts inside the dialog
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
       view.rerender(
         <>
           <button data-testid="page-control" type="button">
@@ -251,7 +250,7 @@ describe('dunning UI', () => {
     });
 
     test('dismissing drops back to the urgent warning banner', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
 
       render(
         <>
@@ -271,7 +270,7 @@ describe('dunning UI', () => {
     });
 
     test('following Pay now suppresses the takeover without a pre-navigation flash', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
 
       const view = render(
         <>
@@ -315,7 +314,7 @@ describe('dunning UI', () => {
     });
 
     test('shows the imminent headline when the suspension date has passed', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(30));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(30)));
 
       render(<DunningOverlay />);
 

@@ -1,7 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { DAY_MS, browseConfigWithDunning, dunningWindow } from '@test-utils/fixtures/dunning';
 
-import { dismissLock, useDunningState } from './use-dunning-state';
+import { dismissLock, markPayNowReturnRoute, useDunningState } from './use-dunning-state';
 
 const { mockUseBrowseConfig, mockUseSubscriptionStatus } = vi.hoisted(() => ({
   mockUseBrowseConfig: vi.fn(),
@@ -16,29 +17,7 @@ vi.mock('@/ember-bridge', () => ({
   useSubscriptionStatus: mockUseSubscriptionStatus,
 }));
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const NOW = new Date('2026-09-10T12:00:00Z');
-
-const withDunning = (
-  dunning?: Record<string, unknown>,
-  labs: Record<string, boolean> = { dunningWarnings: true },
-) => ({
-  data: {
-    config: {
-      labs,
-      hostSettings: {
-        billing: { enabled: true, url: 'https://billing.example.com', dunning },
-      },
-    },
-  },
-});
-
-// A 28-day window; NOW sits `elapsedDays` in.
-const dunningWindow = (elapsedDays: number, windowDays = 28) => ({
-  active: true,
-  paymentFailedAt: new Date(NOW.getTime() - elapsedDays * DAY_MS).toISOString(),
-  suspendsAt: new Date(NOW.getTime() + (windowDays - elapsedDays) * DAY_MS).toISOString(),
-});
 
 describe('useDunningState', () => {
   beforeEach(() => {
@@ -46,7 +25,7 @@ describe('useDunningState', () => {
     vi.setSystemTime(NOW);
     window.sessionStorage.clear();
     mockUseSubscriptionStatus.mockReturnValue(null);
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(2)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
   });
 
   afterEach(() => {
@@ -54,7 +33,7 @@ describe('useDunningState', () => {
   });
 
   test('returns null without a dunning block', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(undefined));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(undefined));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -62,7 +41,7 @@ describe('useDunningState', () => {
   });
 
   test('returns null while the dunningWarnings flag is off', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(2), {}));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2), {}));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -70,7 +49,9 @@ describe('useDunningState', () => {
   });
 
   test('returns null when the block is inactive', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning({ ...dunningWindow(2), active: false }));
+    mockUseBrowseConfig.mockReturnValue(
+      browseConfigWithDunning({ ...dunningWindow(2), active: false }),
+    );
 
     const { result } = renderHook(() => useDunningState());
 
@@ -91,7 +72,7 @@ describe('useDunningState', () => {
       },
     ],
   ])('returns null for %s', (_label, dunning) => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunning));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunning));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -99,7 +80,7 @@ describe('useDunningState', () => {
   });
 
   test('reports the warning phase early in the window', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(2)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -107,7 +88,7 @@ describe('useDunningState', () => {
   });
 
   test('escalates to urgent styling past a quarter of the window', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(8)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(8)));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -115,7 +96,7 @@ describe('useDunningState', () => {
   });
 
   test('stays in the urgent warning phase through the middle of the window', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(14)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(14)));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -123,7 +104,7 @@ describe('useDunningState', () => {
   });
 
   test('locks for the last quarter of the window', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -131,7 +112,7 @@ describe('useDunningState', () => {
   });
 
   test('stays locked with zero days left when suspendsAt has passed', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(30)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(30)));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -157,9 +138,9 @@ describe('useDunningState', () => {
   test.each([-60, 60])(
     'clears the settled failure with the client clock skewed by %i days',
     (skewDays) => {
-      const dunning = dunningWindow(8);
+      const dunning = dunningWindow(8, { now: NOW.getTime() });
       vi.setSystemTime(new Date(NOW.getTime() + skewDays * DAY_MS));
-      mockUseBrowseConfig.mockReturnValue(withDunning(dunning));
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunning));
       mockUseSubscriptionStatus.mockReturnValue({ subscription: { status: 'past_due' } });
       // Written by the Ember billing service on the post-payment return.
       window.sessionStorage.setItem('ghost-dunning-payment-settled-for', dunning.paymentFailedAt);
@@ -168,7 +149,9 @@ describe('useDunningState', () => {
       expect(result.current).toBeNull();
 
       // A subsequent failure re-arms even when the browser clock is far ahead.
-      mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(2)));
+      mockUseBrowseConfig.mockReturnValue(
+        browseConfigWithDunning(dunningWindow(2, { now: NOW.getTime() })),
+      );
       rerender();
       expect(result.current).not.toBeNull();
     },
@@ -179,7 +162,7 @@ describe('useDunningState', () => {
       'ghost-dunning-payment-settled-for',
       dunningWindow(2).paymentFailedAt,
     );
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
 
     const { result } = renderHook(() => useDunningState());
 
@@ -198,7 +181,7 @@ describe('useDunningState', () => {
   });
 
   test('records a lock dismissal for the current episode', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
 
     const { result } = renderHook(() => useDunningState());
     expect(result.current).toMatchObject({ phase: 'locked', lockDismissed: false });
@@ -211,7 +194,7 @@ describe('useDunningState', () => {
   });
 
   test('a new payment failure resets the lock dismissal', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
 
     const { result, rerender } = renderHook(() => useDunningState());
     act(() => {
@@ -220,14 +203,79 @@ describe('useDunningState', () => {
     expect(result.current).toMatchObject({ lockDismissed: true });
 
     // A later episode carries a different paymentFailedAt.
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(23)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(23)));
     rerender();
 
     expect(result.current).toMatchObject({ lockDismissed: false });
   });
 
+  test('ticks the countdown down while dunning is in effect', () => {
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2)));
+
+    const { result } = renderHook(() => useDunningState());
+    expect(result.current).toMatchObject({ daysLeft: 26 });
+
+    act(() => {
+      vi.advanceTimersByTime(DAY_MS + 60_000);
+    });
+
+    expect(result.current).toMatchObject({ daysLeft: 25 });
+  });
+
+  test('installs no periodic tick when there is nothing to derive', () => {
+    // The hook mounts in the admin layout on every page: without dunning in
+    // effect a tick would re-render every session each minute for nothing.
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(2), {}));
+
+    renderHook(() => useDunningState());
+
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  describe('when sessionStorage is unavailable', () => {
+    beforeEach(() => {
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('storage disabled');
+      });
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('storage disabled');
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    test('still reports state, with nothing read as settled or dismissed', () => {
+      // A window no other test dismisses, so the module-level in-memory
+      // fallback from earlier dismissals cannot match this episode.
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(24)));
+
+      const { result } = renderHook(() => useDunningState());
+
+      expect(result.current).toMatchObject({ phase: 'locked', lockDismissed: false });
+    });
+
+    test('dismissing the lock still works for the lifetime of the page', () => {
+      mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(21)));
+
+      const { result } = renderHook(() => useDunningState());
+      act(() => {
+        dismissLock(result.current!);
+      });
+
+      // The in-memory fallback carries the dismissal.
+      expect(result.current).toMatchObject({ phase: 'locked', lockDismissed: true });
+    });
+
+    test('recording the Pay now return route swallows the failure', () => {
+      // Without storage the post-payment return falls back to the overview.
+      expect(() => markPayNowReturnRoute('/analytics')).not.toThrow();
+    });
+  });
+
   test('keeps reporting state after a dismissal so the warning banner stays up', () => {
-    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
+    mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunningWindow(22)));
 
     const { result } = renderHook(() => useDunningState());
     act(() => {

@@ -1,7 +1,11 @@
 import * as Sentry from '@sentry/ember';
 import Service, {inject as service} from '@ember/service';
+import {
+    DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
+    DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
+    parseDunningConfig
+} from '@tryghost/admin-x-framework/api/dunning';
 import {inject} from 'ghost-admin/decorators/inject';
-import {parseDunningConfig} from '@tryghost/admin-x-framework/api/dunning';
 import {tracked} from '@glimmer/tracking';
 
 const BILLING_APP_LOAD_TIMEOUT_MS = 10_000;
@@ -19,16 +23,6 @@ const NEWSLETTERS_ROUTE = '/settings/newsletters';
 // billing screen. Sent by the payment page's return flow after a successful
 // payment, so a "Pay now" click from e.g. the editor lands back in the editor.
 const PREVIOUS_PAGE_DESTINATION = 'previousPage';
-
-// Written by the React admin's dunning "Pay now" CTAs (apps/admin/src/dunning)
-// with the route the CTA was clicked on; consumed once per payment return.
-const PAY_RETURN_ROUTE_STORAGE_KEY = 'ghost-dunning-pay-return-route';
-
-// Written when the billing app reports a completed payment (its previousPage
-// request only follows one); read by the React admin's dunning UI so the
-// warnings stand down immediately instead of lingering until the
-// webhook-settled subscription state arrives seconds later.
-const DUNNING_PAYMENT_SETTLED_STORAGE_KEY = 'ghost-dunning-payment-settled-for';
 
 // Approved destinations the Billing app may request Ghost Admin to navigate to,
 // mapped to the Admin route that owns them. Ghost Admin owns this mapping — the
@@ -159,10 +153,19 @@ export default class BillingService extends Service {
             const returnRoute = this._takePayNowReturnRoute();
 
             if (returnRoute) {
-                this.router.transitionTo(returnRoute);
-            } else {
-                this.router.transitionTo('pro');
+                // The recorded route is same-origin Admin data, but it may no
+                // longer resolve (e.g. a page behind a since-disabled flag) —
+                // transitionTo throws on an unrecognized URL rather than
+                // navigating, so fall back to the overview instead of dying
+                try {
+                    this.router.transitionTo(returnRoute);
+                    return;
+                } catch (e) {
+                    // fall through to the billing overview
+                }
             }
+
+            this.router.transitionTo('pro');
             return;
         }
 
@@ -198,11 +201,15 @@ export default class BillingService extends Service {
         }
     }
 
+    // Consumes the route recorded by a dunning "Pay now" CTA (written by
+    // apps/admin/src/dunning) — once per payment return.
     _takePayNowReturnRoute() {
         try {
-            const route = window.sessionStorage.getItem(PAY_RETURN_ROUTE_STORAGE_KEY);
-            window.sessionStorage.removeItem(PAY_RETURN_ROUTE_STORAGE_KEY);
-            return route && route.startsWith('/') ? route : null;
+            const route = window.sessionStorage.getItem(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY);
+            window.sessionStorage.removeItem(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY);
+            // Absolute Admin paths only: exactly one leading slash — '//host'
+            // is a protocol-relative URL, not a route
+            return route && route.startsWith('/') && !route.startsWith('//') ? route : null;
         } catch (e) {
             // Storage can be unavailable; fall back to the billing overview
             return null;

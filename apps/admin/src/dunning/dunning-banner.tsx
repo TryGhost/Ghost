@@ -1,42 +1,44 @@
-import { Button } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
 import { useLocation } from '@tryghost/admin-x-framework';
-import { useDunningState, dismissLockQuietly, markPayNowReturnRoute } from './use-dunning-state';
-import { PAY_URL, bannerMessage, bannerTitle } from './dunning-copy';
-import { isBillingRoute } from './is-billing-route';
+import { useDunningState } from './use-dunning-state';
+import { useDunningLockTakeover } from './use-dunning-lock-takeover';
+import { PayNowButton } from './pay-now-button';
+import { bannerMessage, bannerTitle } from './dunning-copy';
+import { isBillingRoute } from './stand-down-routes';
 
 /**
- * Top-of-content warning strip for the dunning warning phase — and for the
- * locked phase once the user has dismissed the full-page takeover, so the
- * urgent warning stays in view. Renders nothing otherwise, on the billing
- * route itself, or for hosts that don't inject a dunning state.
+ * Top-of-content warning strip. Carries the dunning message whenever the
+ * full-page takeover isn't doing so: through the warning phase, and in the
+ * locked phase once the takeover was dismissed or stood down for the current
+ * route (e.g. the export tools). Renders nothing on the billing route itself,
+ * or for hosts that don't inject a dunning state.
  */
 export function DunningBanner() {
   const { data: currentUser } = useCurrentUser();
   const state = useDunningState();
+  const takeover = useDunningLockTakeover();
   const location = useLocation();
 
-  const visible =
-    state && (state.phase === 'warning' || (state.phase === 'locked' && state.lockDismissed));
-
-  if (!visible || !currentUser || isBillingRoute(location.pathname)) {
+  if (!state || takeover || !currentUser || isBillingRoute(location.pathname)) {
     return null;
   }
 
   const isOwner = isOwnerUser(currentUser);
 
   return (
-    <div
+    <Inline
       className={cn(
-        'flex flex-none items-center justify-between gap-4 border-b px-6 py-2.5',
+        'flex-none border-b px-6 py-2.5',
         state.urgent
           ? 'border-state-danger/40 bg-state-danger/10'
           : 'border-state-warning/40 bg-state-warning/10',
       )}
       data-testid="dunning-banner"
+      gap="md"
+      justify="between"
       role="alert"
     >
       <Inline align="center" className="text-sm" gap="sm">
@@ -51,21 +53,7 @@ export function DunningBanner() {
           {bannerMessage(state, isOwner)}
         </span>
       </Inline>
-      {isOwner && (
-        <Button size="sm" asChild>
-          {/* Following the CTA counts as seeing the message: the locked
-              takeover stays suppressed for the session, the banner stays. */}
-          <a
-            href={PAY_URL}
-            onClick={() => {
-              dismissLockQuietly(state);
-              markPayNowReturnRoute(location.pathname);
-            }}
-          >
-            Pay now
-          </a>
-        </Button>
-      )}
-    </div>
+      {isOwner && <PayNowButton size="sm" state={state} />}
+    </Inline>
   );
 }

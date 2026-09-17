@@ -10,16 +10,7 @@ import {
   staffUser,
 } from '@test-utils/acceptance';
 import { tagsScreen } from '@/tags/tags.screen';
-
-function dunningConfig(elapsedDays: number) {
-  const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
-  return {
-    active: true,
-    paymentFailedAt: new Date(now - elapsedDays * day).toISOString(),
-    suspendsAt: new Date(now + (28 - elapsedDays) * day).toISOString(),
-  };
-}
+import { dunningWindow } from '@test-utils/fixtures/dunning';
 
 function configWithDunning(dunning?: unknown) {
   const response = configResponse();
@@ -37,7 +28,7 @@ describe('Dunning in the Admin layout', () => {
   it.each([
     { label: 'an older backend without dunning config', enabled: true, dunning: undefined },
     { label: 'malformed dunning config', enabled: true, dunning: { active: true } },
-    { label: 'the feature flag disabled', enabled: false, dunning: dunningConfig(22) },
+    { label: 'the feature flag disabled', enabled: false, dunning: dunningWindow(22) },
   ])('keeps normal navigation usable with $label', async ({ enabled, dunning }) => {
     fakeTags([]);
     await renderAdminApp('/tags', {
@@ -56,7 +47,7 @@ describe('Dunning in the Admin layout', () => {
     fakeTags([]);
     await renderAdminApp('/tags', {
       labs: { dunningWarnings: true },
-      boot: { browseConfig: { response: configWithDunning(dunningConfig(2)) } },
+      boot: { browseConfig: { response: configWithDunning(dunningWindow(2)) } },
     });
 
     await expect.element(page.getByTestId('dunning-banner')).toBeVisible();
@@ -81,7 +72,7 @@ describe('Dunning in the Admin layout', () => {
     await renderAdminApp('/tags', {
       labs: { dunningWarnings: true },
       boot: {
-        browseConfig: { response: configWithDunning(dunningConfig(22)) },
+        browseConfig: { response: configWithDunning(dunningWindow(22)) },
         browseMe: { response: me },
       },
     });

@@ -1,4 +1,9 @@
 /**
+ * Routes where the dunning surfaces stand down so their own content stays
+ * usable — the takeover on both, the banner on the billing routes only.
+ */
+
+/**
  * The billing app's own routes: the dunning UI stands down there so the user
  * can actually reach the payment form (and the billing app shows its own
  * outstanding-invoice state).

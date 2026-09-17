@@ -512,6 +512,32 @@ describe('Unit: Service: billing', function () {
         expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
     });
 
+    it('ignores a protocol-relative recorded return route', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        // '//host' passes a bare startsWith('/') check but is a URL, not a route
+        window.sessionStorage.setItem('ghost-dunning-pay-return-route', '//evil.example');
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(transitionTo.calledOnceWithExactly('pro')).to.be.true;
+        expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
+    });
+
+    it('falls back to the billing overview when the recorded route does not resolve', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        transitionTo.withArgs('/behind-a-flag').throws(new Error('UnrecognizedURLError: /behind-a-flag'));
+        window.sessionStorage.setItem('ghost-dunning-pay-return-route', '/behind-a-flag');
+
+        expect(() => service.navigateToAdminDestination('previousPage')).to.not.throw();
+
+        expect(transitionTo.calledWithExactly('pro')).to.be.true;
+        expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
+    });
+
     it('ignores destinations that are not approved keys', function () {
         const service = this.owner.lookup('service:billing');
         billingService = service;

@@ -1,7 +1,7 @@
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useDunningState } from './use-dunning-state';
-import { isBillingRoute, isDataExportRoute } from './is-billing-route';
+import { isBillingRoute, isDataExportRoute } from './stand-down-routes';
 
 /**
  * Whether the dunning locked takeover is in effect for the current route:

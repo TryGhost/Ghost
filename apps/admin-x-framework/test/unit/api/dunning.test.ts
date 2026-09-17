@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { parseDunningConfig } from '../../../src/api/dunning';
+import {
+  DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
+  DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
+  parseDunningConfig,
+} from '../../../src/api/dunning';
 
 const validConfig = {
   active: true,
@@ -21,6 +25,13 @@ describe('parseDunningConfig', () => {
     { ...validConfig, suspendsAt: '2026-08-01' },
   ])('rejects unusable host config: %j', (config) => {
     expect(parseDunningConfig(config)).toBeNull();
+  });
+
+  it('pins the storage keys both apps handshake through', () => {
+    // These literals are the on-the-wire contract between the React admin and
+    // the Ember billing service; renaming the constants must not change them.
+    expect(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY).toBe('ghost-dunning-pay-return-route');
+    expect(DUNNING_PAYMENT_SETTLED_STORAGE_KEY).toBe('ghost-dunning-payment-settled-for');
   });
 
   it('parses valid dates, including host timezone offsets', () => {

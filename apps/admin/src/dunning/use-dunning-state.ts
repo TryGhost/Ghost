@@ -1,6 +1,10 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { parseDunningConfig } from '@tryghost/admin-x-framework/api/dunning';
+import {
+  DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
+  DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
+  parseDunningConfig,
+} from '@tryghost/admin-x-framework/api/dunning';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useSubscriptionStatus } from '@/ember-bridge';
 
@@ -30,7 +34,7 @@ const URGENT_AT_FRACTION = 0.25;
 
 const LOCK_DISMISSED_KEY = 'ghost-dunning-lock-dismissed-for';
 
-const lockDismissListeners = new Set<() => void>();
+const dunningStoreListeners = new Set<() => void>();
 
 // Fallback when sessionStorage is unavailable, so dismissing still works for
 // the lifetime of the page.
@@ -44,10 +48,17 @@ function readLockDismissedFor(): string | null {
   }
 }
 
-function subscribeLockDismissed(listener: () => void): () => void {
-  lockDismissListeners.add(listener);
+/**
+ * One subscription serves every dunning snapshot: `dismissLock` is the only
+ * writer that notifies. The payment-settled snapshot is written by the Ember
+ * billing service without a notification on purpose — the return navigation
+ * triggers the render that picks it up (useSyncExternalStore re-reads its
+ * snapshot on every render).
+ */
+function subscribeDunningStore(listener: () => void): () => void {
+  dunningStoreListeners.add(listener);
   return () => {
-    lockDismissListeners.delete(listener);
+    dunningStoreListeners.delete(listener);
   };
 }
 
@@ -68,7 +79,7 @@ function writeLockDismissedFor(state: DunningState): void {
  */
 export function dismissLock(state: DunningState): void {
   writeLockDismissedFor(state);
-  lockDismissListeners.forEach((listener) => listener());
+  dunningStoreListeners.forEach((listener) => listener());
 }
 
 /**
@@ -90,11 +101,9 @@ export function dismissLockQuietly(state: DunningState): void {
  * tab whose history points outside Admin) falls back to the billing overview
  * instead of leaving Ghost.
  */
-const PAY_RETURN_ROUTE_KEY = 'ghost-dunning-pay-return-route';
-
 export function markPayNowReturnRoute(route: string): void {
   try {
-    window.sessionStorage.setItem(PAY_RETURN_ROUTE_KEY, route);
+    window.sessionStorage.setItem(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY, route);
   } catch {
     // Without storage the post-payment return falls back to the overview.
   }
@@ -108,11 +117,9 @@ export function markPayNowReturnRoute(route: string): void {
  * arrives seconds later. The return navigation triggers the render that
  * picks the value up — no notification needed.
  */
-const PAYMENT_SETTLED_KEY = 'ghost-dunning-payment-settled-for';
-
 function readPaymentSettledFor(): string | null {
   try {
-    return window.sessionStorage.getItem(PAYMENT_SETTLED_KEY);
+    return window.sessionStorage.getItem(DUNNING_PAYMENT_SETTLED_STORAGE_KEY);
   } catch {
     return null;
   }
@@ -139,22 +146,27 @@ export function useDunningState(): DunningState | null {
   // pipeline without end users seeing any dunning UI.
   const dunningWarningsEnabled = useFeatureFlag('dunningWarnings');
 
+  const dunning = dunningWarningsEnabled
+    ? parseDunningConfig(config?.config.hostSettings?.billing?.dunning)
+    : null;
+  const dunningInEffect = Boolean(dunning);
+
   // Re-derive the phase and countdown periodically; transitions land on date
-  // boundaries, so a coarse tick keeps them fresh without churn.
+  // boundaries, so a coarse tick keeps them fresh without churn. Only while
+  // dunning is in effect — this hook mounts in the admin layout, so an
+  // unconditional interval would re-render every session each minute.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
+    if (!dunningInEffect) {
+      return;
+    }
     const interval = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(interval);
-  }, []);
+  }, [dunningInEffect]);
 
-  const lockDismissedFor = useSyncExternalStore(subscribeLockDismissed, readLockDismissedFor);
-  const paymentSettledFor = useSyncExternalStore(subscribeLockDismissed, readPaymentSettledFor);
+  const lockDismissedFor = useSyncExternalStore(subscribeDunningStore, readLockDismissedFor);
+  const paymentSettledFor = useSyncExternalStore(subscribeDunningStore, readPaymentSettledFor);
 
-  if (!dunningWarningsEnabled) {
-    return null;
-  }
-
-  const dunning = parseDunningConfig(config?.config.hostSettings?.billing?.dunning);
   if (!dunning) {
     return null;
   }
