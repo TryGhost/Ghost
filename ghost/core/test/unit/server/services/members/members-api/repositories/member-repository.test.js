@@ -481,7 +481,8 @@ describe('MemberRepository', function () {
         load: sinon.stub().resolves(),
         related: sinon.stub().callsFake((relation) => {
           if (relation === 'products') {
-            return { toJSON: () => products };
+            // `models` for update(), `toJSON()` for removeComplimentaryProducts
+            return { models: products.map(({ id }) => ({ id })), toJSON: () => products };
           }
           return {
             models: subscriptionModels,
@@ -495,7 +496,13 @@ describe('MemberRepository', function () {
       Member = {
         transaction: sinon.stub().callsFake((callback) => callback('txn')),
         findOne: sinon.stub().resolves(member),
-        edit: sinon.stub().resolves(),
+        // update() reads these off the edited model to decide which events to record
+        edit: sinon.stub().resolves({
+          id: 'member_id_123',
+          attributes: { email: 'member@example.com', status: 'free' },
+          _previousAttributes: { email: 'member@example.com', status: 'free' },
+          _changed: {},
+        }),
       };
 
       return buildRepo({
@@ -566,7 +573,25 @@ describe('MemberRepository', function () {
       await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
 
       sinon.assert.calledOnce(Member.edit);
-      assert.deepEqual(Member.edit.firstCall.args[0], { products: [] });
+      assert.deepEqual(Member.edit.firstCall.args[0], { products: [], status: 'free' });
+    });
+
+    it('records the removal as a member product event', async function () {
+      const member = buildMember({
+        status: 'paid',
+        products: [{ id: 'tier_comped' }, { id: 'tier_premium' }],
+        subscriptions: [{ status: 'active', tierId: 'tier_premium' }],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.calledOnce(MemberProductEvent.add);
+      assert.deepEqual(MemberProductEvent.add.firstCall.args[0], {
+        member_id: 'member_id_123',
+        product_id: 'tier_comped',
+        action: 'removed',
+      });
     });
 
     it('locks the member row and writes in the caller transaction', async function () {
@@ -582,7 +607,7 @@ describe('MemberRepository', function () {
       sinon.assert.calledWith(
         Member.findOne,
         { id: 'member_id_123' },
-        { transacting: 'txn', forUpdate: true },
+        sinon.match({ transacting: 'txn', forUpdate: true }),
       );
       assert.equal(Member.edit.firstCall.args[1].transacting, 'txn');
     });
