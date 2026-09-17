@@ -1,12 +1,15 @@
-const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../../utils/assertions');
-const sinon = require('sinon');
-const _ = require('lodash');
+import assert from 'node:assert/strict';
+import {assertExists} from '../../../../../utils/assertions';
+import sinon from 'sinon';
+import _ from 'lodash';
 
-const models = require('../../../../../../core/server/models');
-const baseUtils = require('../../../../../../core/server/models/base/utils');
-const {FixtureManager} = require('../../../../../../core/server/data/schema/fixtures');
-const fixtures = require('../../../../../utils/fixtures/fixtures.json');
+// @ts-expect-error This module lacks type definitions.
+import {FixtureManager} from '../../../../../../core/server/data/schema/fixtures';
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../../../../core/server/models';
+// @ts-expect-error This module lacks type definitions.
+import baseUtils from '../../../../../../core/server/models/base/utils';
+import fixtures from '../../../../../utils/fixtures/fixtures.json';
 
 const fixtureManager = new FixtureManager(fixtures);
 
@@ -165,10 +168,10 @@ describe('Migration Fixture Utils', function () {
                 ]
             };
 
-            let receivedModels = null;
+            let receivedModels: unknown = null;
 
             const placeholderMap = {
-                __USER_ID__: (providedModels) => {
+                __USER_ID__: (providedModels: unknown) => {
                     receivedModels = providedModels;
 
                     return 'user123';
@@ -235,7 +238,7 @@ describe('Migration Fixture Utils', function () {
 
     describe('Match Func', function () {
         const matchFunc = FixtureManager.matchFunc;
-        let getStub;
+        let getStub: sinon.SinonStub;
 
         beforeEach(function () {
             getStub = sinon.stub();
@@ -383,7 +386,7 @@ describe('Migration Fixture Utils', function () {
         it('should call attach for permissions-roles', async function () {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
-                find: sinon.stub().returns()
+                find: sinon.stub().returns(undefined)
             };
 
             const toItem = [{get: sinon.stub()}];
@@ -418,7 +421,7 @@ describe('Migration Fixture Utils', function () {
         it('should call attach for posts-tags', async function () {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
-                find: sinon.stub().returns()
+                find: sinon.stub().returns(undefined)
             };
 
             const toItem = [{get: sinon.stub()}];
