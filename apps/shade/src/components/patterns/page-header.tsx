@@ -288,7 +288,7 @@ function PageHeaderActionGroupPrimary({ children, className }: PageHeaderActionG
     <PrimaryActionContext.Provider value={true}>
       {isAdmin7 ? (
         <Inline
-          className={cn('ms-4 shrink-0 first:ms-0', className)}
+          className={cn('ms-3 shrink-0 first:ms-0', className)}
           data-page-header="primary"
           gap="none"
         >
@@ -393,7 +393,7 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
     mobileMenuBreakpoint = DEFAULT_MOBILE_MENU_BREAKPOINT,
   }: PageHeaderActionGroupProps) {
     const { isAdmin7 } = useShade();
-    const gap = isAdmin7 ? 'xs' : 'sm';
+    const gap = 'sm';
     const childNodes = React.Children.toArray(children);
     const desktopChildren: React.ReactNode[] = [];
     let mobileMenu: React.ReactElement | null = null;
