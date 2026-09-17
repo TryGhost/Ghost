@@ -4,8 +4,8 @@ import { Stack, Text } from '@tryghost/shade/primitives';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 import type { PostCardConfig } from '@/editor/card-config';
 import { ImageField } from '@/editor/image-field';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { useImageFieldUpload } from '@/editor/use-image-field-upload';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { truncate } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
 import {
@@ -23,7 +23,7 @@ import { useSettingsField } from './use-settings-field';
 export interface SocialCardSectionProps {
   /** Which network's card this pane edits (see `social-card-networks.ts`). */
   network: SocialCardNetwork;
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   /** The site's homepage URL, which the card previews the post under. */
   siteUrl: string;
   /** The feature image the writer is looking at, which the card falls back to. */

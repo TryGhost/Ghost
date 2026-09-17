@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-types/csv';
-import { INTERNAL, type Audience, type WrittenBy } from '../../members-metafields';
+import { INTERNAL, type Audience, type WriteOrigin } from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -11,6 +11,7 @@ import MembersCSVImporter, {
 } from './import/importer';
 import readMemberRows from './import/reader';
 import { createRowSpool } from './import/spool';
+import type MembersImportJob from '../jobs/members-import-job';
 import MembersCSVExporter, {
   type ExportOptions,
   type MetafieldDefinition,
@@ -39,7 +40,7 @@ interface ImporterServices {
   };
   sendEmail: EmailNotifications['send'];
   urlFor(type: string, data: unknown, absolute: boolean): string;
-  addJob(job: { job: () => Promise<void>; offloaded: boolean; name: string }): void;
+  dispatchJob(job: MembersImportJob): Promise<void>;
   getTimezone(): string;
   getInlineThreshold(): number;
   stripeAPIService: unknown;
@@ -54,7 +55,7 @@ interface ImporterServices {
       applyWrite(
         memberId: string,
         plan: unknown[],
-        options: { writtenBy: WrittenBy; executor?: Knex },
+        options: WriteOrigin & { executor?: Knex },
       ): Promise<void>;
     };
   };
@@ -130,12 +131,14 @@ export function makeImporter(deps: ImporterServices) {
     applyWrite: (memberId, plan, executor) =>
       deps.metafields.values.applyWrite(memberId, plan, {
         writtenBy: { type: 'import', id: null },
+        source: 'import',
         executor,
       }),
   };
 
-  // Inline jobs never reach the job manager's Sentry handler, which is wired to the
-  // offloaded worker path only, so a throw here would be seen by nobody.
+  // The import job never rejects, so the jobs service never sees its failures, and the
+  // inline path's bookkeeping failures never reach the request: a throw here would be
+  // seen by nobody.
   const report: FailureReporter = (error) => {
     try {
       logging.error(
@@ -151,9 +154,7 @@ export function makeImporter(deps: ImporterServices) {
   return new MembersCSVImporter({
     knex: deps.knex,
     readRows: readMemberRows,
-    spool: createRowSpool(() =>
-      require('../../adapter-manager').default.getAdapter('storage:imports'),
-    ),
+    spool: createRowSpool(require('../../adapter-manager').default.getAdapter('storage:imports')),
     members,
     tiers: {
       getDefault: deps.getDefaultTier,
@@ -167,7 +168,7 @@ export function makeImporter(deps: ImporterServices) {
     metafields,
     email,
     report,
-    addJob: deps.addJob,
+    dispatchJob: deps.dispatchJob,
     getTimezone: deps.getTimezone,
     getInlineThreshold: deps.getInlineThreshold,
   });

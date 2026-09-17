@@ -244,11 +244,10 @@ const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
   return (
     <div className="flex gap-2">
       <Button
-        className="text-destructive hover:text-destructive"
         disabled={revokeState === 'progress'}
         size="sm"
         type="button"
-        variant="ghost"
+        variant="destructive-ghost"
         onClick={() => void revokeInvite()}
       >
         {revokeActionLabel}

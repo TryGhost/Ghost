@@ -55,6 +55,12 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
+    title: 'Admin 7 · Milestone 2 · Pill controls',
+    description:
+      'Preview Admin 7 controls and page headers on React pages. The editor is excluded.',
+    flag: 'admin7Pill',
+  },
+  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
@@ -138,6 +144,12 @@ const features: Feature[] = [
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
+  },
+  {
+    title: 'Dunning warnings',
+    description:
+      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
+    flag: 'dunningWarnings',
   },
 ];
 

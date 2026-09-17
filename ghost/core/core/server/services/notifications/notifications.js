@@ -67,7 +67,7 @@ class Notifications {
    * @returns {boolean}
    */
   areNotificationsValid(notifications) {
-    if (!_.isArray(notifications)) {
+    if (!Array.isArray(notifications)) {
       return false;
     }
 

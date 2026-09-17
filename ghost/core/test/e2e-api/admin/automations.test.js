@@ -365,7 +365,7 @@ describe('Automations API', function () {
         const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
         const tinybird = nock(TINYBIRD_ENDPOINT)
           .get('/v0/pipes/api_automation_browse_stats.json')
-          .query({ site_uuid: siteUuid })
+          .query({ site_uuid: siteUuid, ghost_client: 'server' })
           .reply(200, {
             data: [
               {
@@ -446,7 +446,7 @@ describe('Automations API', function () {
           const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
           const tinybird = nock(TINYBIRD_ENDPOINT)
             .get('/v0/pipes/api_automation_browse_stats.json')
-            .query({ site_uuid: siteUuid })
+            .query({ site_uuid: siteUuid, ghost_client: 'server' })
             .reply(200, { data: [] });
 
           const { body } = await agent.get('automations').expectStatus(200);
@@ -495,7 +495,7 @@ describe('Automations API', function () {
         const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
         const tinybird = nock(TINYBIRD_ENDPOINT)
           .get('/v0/pipes/api_automation_browse_stats.json')
-          .query({ site_uuid: siteUuid })
+          .query({ site_uuid: siteUuid, ghost_client: 'server' })
           .reply(status, response);
 
         const { body } = await agent.get('automations').expectStatus(200);
@@ -522,11 +522,11 @@ describe('Automations API', function () {
         const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
         const firstAttempt = nock(TINYBIRD_ENDPOINT)
           .get('/v0/pipes/api_automation_browse_stats.json')
-          .query({ site_uuid: siteUuid })
+          .query({ site_uuid: siteUuid, ghost_client: 'server' })
           .reply(503, 'unavailable');
         const retry = nock(TINYBIRD_ENDPOINT)
           .get('/v0/pipes/api_automation_browse_stats.json')
-          .query({ site_uuid: siteUuid })
+          .query({ site_uuid: siteUuid, ghost_client: 'server' })
           .reply(200, { data: [] });
 
         const { body } = await agent.get('automations').expectStatus(200);
@@ -546,7 +546,7 @@ describe('Automations API', function () {
         const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
         const tinybird = nock(TINYBIRD_ENDPOINT)
           .get('/v0/pipes/api_automation_browse_stats.json')
-          .query({ site_uuid: siteUuid })
+          .query({ site_uuid: siteUuid, ghost_client: 'server' })
           .reply(200, { data: [] });
 
         const { body } = await agent.get('automations').expectStatus(200);

@@ -20,6 +20,8 @@ module.exports = function renderer(req, res, data) {
   if (res.destroyed && !res.writableEnded) {
     debug('Client gone before render, skipping: ' + req.originalUrl);
     res.statusCode = 499;
+    // end() anyway: the request queue only frees a slot on res.end()
+    res.end();
     return;
   }
 
@@ -60,6 +62,7 @@ module.exports = function renderer(req, res, data) {
     if (res.destroyed && !res.writableEnded) {
       debug('Client gone during render, discarding: ' + req.originalUrl);
       res.statusCode = 499;
+      res.end();
       return;
     }
 

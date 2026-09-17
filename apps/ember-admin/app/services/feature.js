@@ -102,8 +102,10 @@ export default class FeatureService extends Service {
     @feature('csvContentImporter') csvContentImporter;
     @feature('postsListReact') postsListReact;
     @feature('membersActivityReact') membersActivityReact;
+    @feature('membersCustomFields') membersCustomFields;
     @feature('editorReact') editorReact;
     @feature('improveSendingUI') improveSendingUI;
+    @feature('dunningWarnings') dunningWarnings;
     _user = null;
     _featureFlagOverridesRevision = 0;
 

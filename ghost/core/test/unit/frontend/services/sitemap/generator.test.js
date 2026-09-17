@@ -1,6 +1,5 @@
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
-const _ = require('lodash');
 const assert = require('node:assert/strict');
 const testUtils = require('../../../../utils');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
@@ -35,7 +34,7 @@ describe('Generators', function () {
     generator.getXml();
 
     // We end up with 10 nodes
-    assert.equal(Object.keys(generator.nodeLookup).length, 10);
+    assert.equal(generator.size, 10);
 
     // But only 5 are output in the xml
     assert.equal(generator.siteMapContent.get(1).match(/<loc>/g).length, 5);
@@ -63,7 +62,7 @@ describe('Generators', function () {
 
       addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
       addPostAt(generator, 'newer', '2024-06-01T00:00:00.000Z');
-      assert.equal(generator.lastModified.toISOString(), '2024-06-01T00:00:00.000Z');
+      assert.equal(new Date(generator.lastModified).toISOString(), '2024-06-01T00:00:00.000Z');
 
       // The index rebuild resets every generator and replays only the
       // resources that are still routable — here "newer" was deleted.
@@ -71,7 +70,7 @@ describe('Generators', function () {
       addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
 
       assert.equal(
-        generator.lastModified.toISOString(),
+        new Date(generator.lastModified).toISOString(),
         '2024-01-01T00:00:00.000Z',
         'lastModified must fall back to the newest surviving resource',
       );
@@ -159,8 +158,28 @@ describe('Generators', function () {
 
         generator.types.posts.reset();
         addPostAt('older', '2024-01-01T00:00:00.000Z');
+        // The index caches its xml; the manager drops that cache with the
+        // rest of the index whenever anything invalidates it.
+        generator.reset();
 
         assert.match(generator.getXml(), /<lastmod>2024-01-01T00:00:00.000Z<\/lastmod>/);
+      });
+
+      it('renders once and serves the cache until it is reset', function () {
+        generator.types.posts.addUrl('http://my-ghost-blog.com/episode-1/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+
+        const first = generator.getXml();
+        sinon.spy(generator, 'generateSiteMapUrlElements');
+
+        assert.equal(generator.getXml(), first);
+        sinon.assert.notCalled(generator.generateSiteMapUrlElements);
+
+        generator.reset();
+        generator.getXml();
+        sinon.assert.calledOnce(generator.generateSiteMapUrlElements);
       });
 
       it('creates multiple pages when there are too many posts', function () {
@@ -188,9 +207,9 @@ describe('Generators', function () {
       generator = new PostGenerator();
     });
 
-    describe('fn: createNodeFromDatum', function () {
+    describe('url elements', function () {
       it('adds an image:image element if post has a cover image', function () {
-        const urlNode = generator.createUrlNodeFromDatum(
+        generator.addUrl(
           'https://myblog.com/test/',
           testUtils.DataGenerator.forKnex.createPost({
             feature_image: 'post-100.jpg',
@@ -199,24 +218,91 @@ describe('Generators', function () {
           }),
         );
 
-        assert(Array.isArray(urlNode.url));
-        assert.equal(urlNode.url.length, 3);
+        const xml = generator.getXml();
 
-        /**
-         * A urlNode looks something like:
-         * { url:
-         *   [ { loc: 'http://127.0.0.1:2369/author/' },
-         *     { lastmod: '2014-12-22T11:54:00.100Z' },
-         *     { 'image:image': [
-         *       { 'image:loc': 'post-100.jpg' },
-         *       { 'image:caption': 'post-100.jpg' }
-         *     ] }
-         *  ] }
-         */
-        const flatNode = _.extend.apply(_, urlNode.url);
-        assert('loc' in flatNode);
-        assert('lastmod' in flatNode);
-        assert('image:image' in flatNode);
+        assert.match(xml, /<loc>https:\/\/myblog\.com\/test\/<\/loc>/);
+        assert.match(xml, /<lastmod>\d{4}-\d{2}-\d{2}T[\d:.]+Z<\/lastmod>/);
+        assert.match(
+          xml,
+          /<image:image><image:loc>[^<]+<\/image:loc><image:caption>post-100\.jpg<\/image:caption><\/image:image>/,
+        );
+      });
+
+      it('omits the image:image element when there is no image', function () {
+        generator.addUrl(
+          'https://myblog.com/test/',
+          testUtils.DataGenerator.forKnex.createPost({
+            feature_image: null,
+            page: false,
+            slug: 'test',
+          }),
+        );
+
+        const xml = generator.getXml();
+
+        assert.match(xml, /<loc>https:\/\/myblog\.com\/test\/<\/loc>/);
+        assert.doesNotMatch(xml, /image:image/);
+      });
+
+      it('falls back to now when the datum carries no date at all', function () {
+        const before = Date.now();
+
+        generator.addUrl('https://myblog.com/test/', {
+          id: 'identifier1',
+          staticRoute: true,
+        });
+
+        const lastmod = Date.parse(generator.getXml().match(/<lastmod>([^<]+)<\/lastmod>/)[1]);
+        assert(lastmod >= before && lastmod <= Date.now());
+      });
+
+      it('falls back to now rather than throwing on a date it cannot parse', function () {
+        const before = Date.now();
+
+        generator.addUrl('https://myblog.com/test/', {
+          id: 'identifier1',
+          // An Invalid Date, which `new Date(...).toISOString()` throws on
+          updated_at: new Date(NaN),
+        });
+
+        const lastmod = Date.parse(generator.getXml().match(/<lastmod>([^<]+)<\/lastmod>/)[1]);
+        assert(lastmod >= before && lastmod <= Date.now());
+      });
+
+      it('omits the image:image element when the url does not validate', function () {
+        const userGenerator = new UserGenerator();
+
+        // A path without a host: rejected by the author generator's stricter
+        // check, so the entry keeps its <loc> and loses only the image.
+        sinon.stub(urlUtils, 'urlFor').returns('/content/images/1.jpg');
+
+        userGenerator.addUrl('https://myblog.com/author/jo/', {
+          id: 'identifier1',
+          profile_image: '1.jpg',
+          updated_at: '2024-01-01T00:00:00.000Z',
+        });
+
+        const record = userGenerator.nodeLookup.get('identifier1');
+        assert.equal(record.imageLoc, null);
+        assert.equal(record.loc, 'https://myblog.com/author/jo/');
+      });
+
+      it('escapes xml special characters in urls and captions', function () {
+        generator.addUrl(
+          'https://myblog.com/a&b/',
+          testUtils.DataGenerator.forKnex.createPost({
+            feature_image: 'me & you.jpg',
+            page: false,
+            slug: 'a&b',
+          }),
+        );
+
+        const xml = generator.getXml();
+
+        assert.match(xml, /<loc>https:\/\/myblog\.com\/a&amp;b\/<\/loc>/);
+        assert.match(xml, /<image:caption>me &amp; you\.jpg<\/image:caption>/);
+        // The raw ampersand must not survive anywhere in the document
+        assert.doesNotMatch(xml, /&(?!amp;|quot;|apos;|lt;|gt;)/);
       });
     });
 

@@ -63,12 +63,15 @@ describe('Tinybird Client', function () {
       assert(url.includes('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16'));
       assert(url.includes('date_from=2023-01-01'));
       assert(url.includes('date_to=2023-01-31'));
+      assert.equal(new URL(url).searchParams.get('ghost_client'), 'server');
       // assert(url.includes('timezone=UTC'));
       // assert(url.includes('member_status=all'));
 
       assertExists(options);
       assertExists(options.headers);
       assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
+      assert.equal(options.timeout.request, 35000);
+      assert.equal(options.retry.limit, 0);
     });
 
     it('uses version from config if provided', function () {
@@ -93,11 +96,13 @@ describe('Tinybird Client', function () {
         dateTo: '2023-01-31',
         timezone: 'America/New_York',
         memberStatus: 'paid',
+        ghost_client: 'admin',
       });
 
       assert(url.includes('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16'));
       assert(url.includes('timezone=America%2FNew_York'));
       assert(url.includes('member_status=paid'));
+      assert.deepEqual(new URL(url).searchParams.getAll('ghost_client'), ['server']);
     });
 
     it('uses local endpoint and token when local is enabled', function () {
@@ -224,6 +229,7 @@ describe('Tinybird Client', function () {
       const [url, options] = mockRequest.get.firstCall.args;
       assert(url.startsWith('https://api.tinybird.co/v0/pipes/test_pipe.json?'));
       assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
+      assert.equal(new URL(url).searchParams.get('ghost_client'), 'server');
     });
 
     it('returns null when request fails', async function () {

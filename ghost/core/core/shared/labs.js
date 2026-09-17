@@ -48,6 +48,7 @@ const PRIVATE_FEATURES = [
   'importMemberTier',
   'csvContentImporter',
   'adminUIRefresh',
+  'admin7Pill',
   'tagsX',
   'emailUniqueid',
   'improveSendingUI',
@@ -63,6 +64,7 @@ const PRIVATE_FEATURES = [
   'postsListReact',
   'membersActivityReact',
   'editorReact',
+  'dunningWarnings',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

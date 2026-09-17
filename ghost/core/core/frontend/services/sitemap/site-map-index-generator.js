@@ -1,37 +1,31 @@
 const _ = require('lodash');
-const xml = require('xml');
-const moment = require('moment');
 const urlUtils = require('../../../shared/url-utils').default;
-const localUtils = require('./utils');
-
-const XMLNS_DECLS = {
-  _attr: {
-    xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9',
-  },
-};
+const sitemapXml = require('./sitemap-xml');
 
 class SiteMapIndexGenerator {
   constructor(options) {
     options = options || {};
     this.types = options.types;
     this.maxPerPage = options.maxPerPage;
+    // The index is the one sitemap crawlers fetch repeatedly, and rendering
+    // it counts every resource of every type. Cached until something
+    // invalidates the index; the manager resets this when it does.
+    this.siteMapContent = null;
   }
 
   getXml() {
-    const urlElements = this.generateSiteMapUrlElements();
+    if (this.siteMapContent !== null) {
+      return this.siteMapContent;
+    }
 
-    const data = {
-      // Concat the elements to the _attr declaration
-      sitemapindex: [XMLNS_DECLS].concat(urlElements),
-    };
+    this.siteMapContent = sitemapXml.renderSiteMapIndex(this.generateSiteMapUrlElements());
 
-    // Return the xml
-    return localUtils.getDeclarations() + xml(data);
+    return this.siteMapContent;
   }
 
   generateSiteMapUrlElements() {
     return _.map(this.types, (resourceType) => {
-      const noOfPages = Math.ceil(Object.keys(resourceType.nodeLookup).length / this.maxPerPage);
+      const noOfPages = Math.ceil(resourceType.size / this.maxPerPage);
       const pages = [];
       for (let i = 0; i < noOfPages; i++) {
         const page = i === 0 ? '' : `-${i + 1}`;
@@ -39,15 +33,16 @@ class SiteMapIndexGenerator {
           { relativeUrl: '/sitemap-' + resourceType.name + page + '.xml' },
           true,
         );
-        const lastModified = resourceType.lastModified;
 
-        pages.push({
-          sitemap: [{ loc: url }, { lastmod: moment(lastModified).toISOString() }],
-        });
+        pages.push({ loc: url, ts: resourceType.lastModified });
       }
 
       return pages;
     }).flat();
+  }
+
+  reset() {
+    this.siteMapContent = null;
   }
 }
 

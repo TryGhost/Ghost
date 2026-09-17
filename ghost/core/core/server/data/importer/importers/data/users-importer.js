@@ -70,7 +70,7 @@ class UsersImporter extends BaseImporter {
 
       _.each(this.dataToImport, (obj) => {
         if (attachedRole.user_id === obj.id) {
-          if (!_.isArray(obj.roles)) {
+          if (!Array.isArray(obj.roles)) {
             obj.roles = [];
           }
 

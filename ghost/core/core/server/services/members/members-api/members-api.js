@@ -7,7 +7,6 @@ const PaymentsService = require('./services/payments-service');
 const TokenService = require('./services/token-service');
 const GeolocationService = require('./services/geolocation-service');
 const MemberBREADService = require('./services/member-bread-service');
-const metafields = require('../../members-metafields');
 const { MemberAccountService } = require('../account-service');
 const MemberRepository = require('./repositories/member-repository');
 const NextPaymentCalculator = require('./services/next-payment-calculator');
@@ -128,6 +127,7 @@ module.exports = function MembersAPI({
     labsService,
     memberAttributionService,
     MemberEmailChangeEvent,
+    metafieldValues,
     AutomatedEmailRecipient,
     giftSubscriptions: giftService,
   });
@@ -365,7 +365,7 @@ module.exports = function MembersAPI({
     memberBREADService,
     members: users,
     emailSuppressionList,
-    metafieldValues: metafields.values,
+    metafieldValues,
   });
 
   async function getMemberIdentity(transientId) {

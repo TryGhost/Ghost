@@ -34,6 +34,7 @@ import {
   ImageUploadPreview,
 } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -118,6 +119,7 @@ const UserDetailModalContent: React.FC<{
   user: User;
   onDeletingUserChange: (isDeleting: boolean) => void;
 }> = ({ user, onDeletingUserChange }) => {
+  const { isAdmin7 } = useShade();
   const { updateRoute } = useSettingsNavigation();
   const navigate = useNavigate();
   const upgradeRoute = useUpgradeRoute();
@@ -531,20 +533,34 @@ const UserDetailModalContent: React.FC<{
                     <div className="z-10">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button
-                            className={clsx(
-                              'flex h-8 cursor-pointer items-center justify-center rounded px-3',
-                              formState.cover_image
-                                ? 'bg-[rgba(0,0,0,0.75)] opacity-80 hover:opacity-100'
-                                : 'border border-gray-300 bg-transparent text-black dark:border-gray-800 dark:text-white',
-                            )}
-                            type="button"
-                          >
-                            <span className="sr-only">Actions</span>
-                            <LucideIcon.Ellipsis
-                              className={clsx('size-5', formState.cover_image && 'text-white')}
-                            />
-                          </button>
+                          {isAdmin7 ? (
+                            <Button
+                              aria-label="Actions"
+                              className={
+                                formState.cover_image ? clsx(coverButtonClasses, 'p-0') : undefined
+                              }
+                              size="icon"
+                              type="button"
+                              variant="outline"
+                            >
+                              <LucideIcon.Ellipsis />
+                            </Button>
+                          ) : (
+                            <button
+                              className={clsx(
+                                'flex h-8 cursor-pointer items-center justify-center rounded px-3',
+                                formState.cover_image
+                                  ? 'bg-[rgba(0,0,0,0.75)] opacity-80 hover:opacity-100'
+                                  : 'border border-gray-300 bg-transparent text-black dark:border-gray-800 dark:text-white',
+                              )}
+                              type="button"
+                            >
+                              <span className="sr-only">Actions</span>
+                              <LucideIcon.Ellipsis
+                                className={clsx('size-5', formState.cover_image && 'text-white')}
+                              />
+                            </button>
+                          )}
                         </DropdownMenuTrigger>
                         {/* legacy SettingsModal overlay is z-[1000]; keep the portalled menu above it */}
                         <DropdownMenuContent align="end" className="z-[9999]">

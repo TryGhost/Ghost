@@ -20,54 +20,44 @@ const messages = {
   tokenRequired: 'Token is required',
 };
 
-const validateAutomatedEmail = async function (frame) {
+const validateAutomatedEmail = function (frame, isSlugRequired) {
   if (!frame.data.automated_emails || !frame.data.automated_emails[0]) {
-    return Promise.resolve();
+    return;
   }
 
   const data = frame.data.automated_emails[0];
 
   if (!data.name || !ALLOWED_NAMES.includes(data.name)) {
-    return Promise.reject(
-      new ValidationError({
-        message: tpl(messages.invalidName),
-        property: 'name',
-      }),
-    );
+    throw new ValidationError({
+      message: tpl(messages.invalidName),
+      property: 'name',
+    });
   }
 
   if (data.status && !ALLOWED_STATUSES.includes(data.status)) {
-    return Promise.reject(
-      new ValidationError({
-        message: tpl(messages.invalidStatus),
-        property: 'status',
-      }),
-    );
+    throw new ValidationError({
+      message: tpl(messages.invalidStatus),
+      property: 'status',
+    });
   }
 
-  if (data.slug && !ALLOWED_SLUGS.includes(data.slug)) {
-    return Promise.reject(
-      new ValidationError({
-        message: tpl(messages.invalidSlug),
-        property: 'slug',
-      }),
-    );
+  if ((isSlugRequired && !data.slug) || (data.slug && !ALLOWED_SLUGS.includes(data.slug))) {
+    throw new ValidationError({
+      message: tpl(messages.invalidSlug),
+      property: 'slug',
+    });
   }
 
   if (data.lexical) {
     try {
       JSON.parse(data.lexical);
     } catch (e) {
-      return Promise.reject(
-        new ValidationError({
-          message: tpl(messages.invalidLexical),
-          property: 'lexical',
-        }),
-      );
+      throw new ValidationError({
+        message: tpl(messages.invalidLexical),
+        property: 'lexical',
+      });
     }
   }
-
-  return Promise.resolve();
 };
 
 const validateOptionalStringField = (value, errorMessage) => {
@@ -107,11 +97,11 @@ const validatePreviewData = (frame) => {
 };
 
 module.exports = {
-  async add(apiConfig, frame) {
-    await validateAutomatedEmail(frame);
+  add(apiConfig, frame) {
+    validateAutomatedEmail(frame, true);
   },
-  async edit(apiConfig, frame) {
-    await validateAutomatedEmail(frame);
+  edit(apiConfig, frame) {
+    validateAutomatedEmail(frame, false);
   },
   editSenders(apiConfig, frame) {
     const senderName = frame.data.sender_name;

@@ -103,11 +103,11 @@ module.exports = function (Bookshelf) {
 
       /**
        * Do not call `toJSON`. This can remove properties e.g. password.
-       * @returns {*}
+       * @returns {Promise<void>}
        */
-      onValidate: function onValidate(model, columns, options) {
+      onValidate: async function onValidate(model, columns, options) {
         this.setEmptyValuesToNull();
-        return schema.validate(this.tableName, this, options);
+        schema.validate(this.tableName, this, options);
       },
 
       onFetched() {},

@@ -36,6 +36,11 @@
       "import": "./dist/api/*.js",
       "require": "./dist/api/*.cjs"
     },
+    "./utils/countries": {
+      "types": "./types/utils/countries.d.ts",
+      "import": "./dist/utils/countries.js",
+      "require": "./dist/utils/countries.cjs"
+    },
     "./utils/post-utils": {
       "types": "./types/utils/post-utils.d.ts",
       "import": "./dist/utils/post-utils.js",

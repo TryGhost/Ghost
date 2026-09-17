@@ -265,6 +265,131 @@ describe('Member Custom Fields Members API', function () {
     assert.equal(after.metafields.custom[fieldKey], '9', 'the defined field kept its value');
   });
 
+  describe('the member activity feed', function () {
+    /** The entries staff see for this member's own field changes, newest first. */
+    async function fieldChangesInActivityFeed() {
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      // Every test here starts with a staff write, so the entries outgrow the default page.
+      const { body } = await adminAgent
+        .get(`members/events/?filter=${filter}&limit=1000`)
+        .expectStatus(200);
+      return body.events;
+    }
+
+    it('shows staff which fields a member changed, and nothing of what they hold', async function () {
+      const addressKey = await defineField('Home address', { type: 'address' });
+      const before = await fieldChangesInActivityFeed();
+
+      await membersAgent
+        .put('/api/member/')
+        .body({
+          metafields: {
+            custom: { [fieldKey]: '12', [addressKey]: { line1: '1 Secret Lane' } },
+          },
+        })
+        .expectStatus(200);
+
+      const events = await fieldChangesInActivityFeed();
+      assert.equal(events.length, before.length + 1, 'one entry for one write');
+
+      const [event] = events;
+      assert.equal(event.data.member.id, memberId);
+      // The member as the feed shows them: who they are and their avatar, nothing more.
+      assert.deepEqual(Object.keys(event.data.member).sort(), [
+        'avatar_image',
+        'email',
+        'id',
+        'name',
+        'uuid',
+      ]);
+      assert.equal(event.data.member.email, MEMBER_EMAIL);
+      assert.equal(event.data.written_by_type, 'member', 'the member made the change themselves');
+      assert.equal(event.data.source, 'portal', 'from their own account');
+      assert.deepEqual(
+        event.data.metafields.map((field: { name: string }) => field.name),
+        [SHOE_SIZE, 'Home address'],
+      );
+
+      const entry = JSON.stringify(event);
+      assert.ok(!entry.includes('1 Secret Lane'), 'the value is not repeated in the feed');
+      assert.ok(!entry.includes('"12"'), 'for any field');
+    });
+
+    it('places an entry in time like every other event', async function () {
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: '11' } } })
+        .expectStatus(200);
+
+      const [event] = await fieldChangesInActivityFeed();
+      const createdAt = Date.parse(event.data.created_at);
+      assert.ok(Math.abs(Date.now() - createdAt) < 60_000, 'stamped with when it happened');
+
+      // The feed pages through time with these filters, so an entry that sorts wrongly
+      // against them turns up on the wrong page, or on every page.
+      const since = async (operator: string) => {
+        const filter = encodeURIComponent(
+          `data.member_id:'${memberId}'+type:metafield_change_event+data.created_at:${operator}'2020-01-01 00:00:00'`,
+        );
+        const { body } = await adminAgent.get(`members/events/?filter=${filter}`).expectStatus(200);
+        return body.events.map((entry: { data: { id: string } }) => entry.data.id);
+      };
+      assert.ok((await since('>')).includes(event.data.id), 'after a date long past');
+      assert.ok(!(await since('<')).includes(event.data.id), 'and not before it');
+    });
+
+    it('keeps naming a field after the publisher deletes it', async function () {
+      const retiredKey = await defineField('Former employer');
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [retiredKey]: 'Acme' } } })
+        .expectStatus(200);
+
+      await archiveField(retiredKey);
+      await adminAgent.delete(`members/metafields/custom/${retiredKey}/`).expectStatus(204);
+      defined.delete(retiredKey);
+
+      const [event] = await fieldChangesInActivityFeed();
+      assert.deepEqual(event.data.metafields, [
+        { namespace: 'custom', key: retiredKey, name: 'Former employer' },
+      ]);
+    });
+
+    it('shows staff a change staff made, and that it was made in Admin', async function () {
+      const before = await fieldChangesInActivityFeed();
+
+      await setValuesAsStaff({ [fieldKey]: '10' });
+
+      const events = await fieldChangesInActivityFeed();
+      assert.equal(events.length, before.length + 1, 'one entry for one write');
+      const [event] = events;
+      assert.equal(event.data.written_by_type, 'user', 'a member of staff made the change');
+      assert.equal(event.data.source, 'admin');
+      assert.deepEqual(
+        event.data.metafields.map((field: { name: string }) => field.name),
+        [SHOE_SIZE],
+      );
+    });
+
+    it('records nothing for a change that names no fields, or one that is refused', async function () {
+      const before = await fieldChangesInActivityFeed();
+
+      await membersAgent.put('/api/member/').body({ name: 'Only renamed' }).expectStatus(200);
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: {} } })
+        .expectStatus(200);
+      // Refused, so nothing changed and nothing is reported as having changed.
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: 'x'.repeat(256) } } })
+        .expectStatus(422);
+
+      const after = await fieldChangesInActivityFeed();
+      assert.equal(after.length, before.length);
+    });
+  });
+
   describe('what a publisher has kept to themselves', function () {
     it('says nothing at all about a field the member may not see', async function () {
       const privateKey = await defineField('Internal note', { access: 'none' });
@@ -346,6 +471,56 @@ describe('Member Custom Fields Members API', function () {
         undefined,
         'and nothing leaked onto Object',
       );
+    });
+
+    // A write names several values, and a composite is several again. Refusing at the
+    // first would have someone correcting one part per round trip to find out what was
+    // wrong with the rest, so every refusal is reported from one attempt.
+    it('reports every value it refuses, not only the first', async function () {
+      const addressKey = await defineField('Shipping address', { type: 'address' });
+      const tooLong = 'x'.repeat(256);
+
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({
+          metafields: {
+            custom: {
+              [addressKey]: { line1: tooLong, line2: tooLong, country: 'nope' },
+              [fieldKey]: tooLong,
+            },
+          },
+        })
+        .expectStatus(422);
+
+      // The first still fills the error itself, so a client reading only that sees
+      // exactly what it saw before.
+      const [error] = body.errors;
+      assert.equal(error.property, `metafields.custom.${addressKey}.line1`);
+
+      // And the whole set rides alongside, each naming the value it belongs to.
+      const refused = (error.details as Array<{ property: string }>).map(
+        (detail) => detail.property,
+      );
+      assert.deepEqual(refused.sort(), [
+        `metafields.custom.${addressKey}.country`,
+        `metafields.custom.${addressKey}.line1`,
+        `metafields.custom.${addressKey}.line2`,
+        `metafields.custom.${fieldKey}`,
+      ]);
+
+      const stored = await readMemberAsStaff();
+      assert.deepEqual(stored.metafields.custom, { [fieldKey]: '9' }, 'and nothing was written');
+    });
+
+    // One refusal keeps the shape it has always had, rather than growing a list of one.
+    it('leaves details empty when only one value is refused', async function () {
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: 'x'.repeat(256) } } })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].property, `metafields.custom.${fieldKey}`);
+      assert.equal(body.errors[0].details, null);
     });
 
     it('will not let a member change a field they may only read', async function () {
