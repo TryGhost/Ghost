@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const { roughSize } = require('../../../../../core/server/adapters/cache/rough-size');
+import { roughSize } from '../../../../../core/server/adapters/cache/rough-size';
 
 describe('roughSize', function () {
   it('grows with the payload', function () {
@@ -24,7 +24,7 @@ describe('roughSize', function () {
   });
 
   it('terminates on a cycle', function () {
-    const cyclic = { name: 'loop' };
+    const cyclic: Record<string, unknown> = { name: 'loop' };
     cyclic.self = cyclic;
 
     assert.ok(roughSize(cyclic) >= 1);

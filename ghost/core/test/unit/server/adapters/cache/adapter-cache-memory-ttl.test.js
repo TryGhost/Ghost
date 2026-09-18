@@ -93,12 +93,18 @@ describe('Cache Adapter In Memory with Time To Live - bounds', function () {
 
   it('is bounded even when nothing is configured', function () {
     // The old default was no bound at all, which for a per-member response
-    // cache is a leak rather than a cache.
+    // cache is a leak rather than a cache. Asserted by filling past the
+    // default rather than by trusting the constant: an unbounded cache would
+    // keep all 10,001.
     const cache = new MemoryTTLCache();
 
-    cache.set('a', 1);
+    for (let i = 0; i < 10001; i += 1) {
+      cache.set(`k${i}`, i);
+    }
 
-    assert.equal(cache.get('a'), 1);
+    assert.equal(cache.keys().length, 10000, 'should evict down to the default bound');
+    assert.equal(cache.get('k0'), undefined, 'the oldest entry should be gone');
+    assert.equal(cache.get('k10000'), 10000, 'the newest entry should be held');
   });
 
   it('still applies a per-call ttl', async function () {

@@ -30,15 +30,17 @@ const VALUE_OVERHEAD = 16;
 const POINTER = 8;
 
 /**
- * @param {unknown} value
- * @returns {number} approximate bytes, always at least 1
+ * Approximate the bytes `value` occupies.
+ *
+ * @returns approximate bytes, always at least 1 - `lru-cache` rejects a size of
+ *   zero, and every value occupies something.
  */
-function roughSize(value) {
+export function roughSize(value: unknown): number {
   // Cycles do not occur in an API response, but a cache is generic and an
   // unbounded walk would be a denial of service rather than a wrong number.
-  const seen = new Set();
+  const seen = new Set<object>();
 
-  function walk(node) {
+  function walk(node: unknown): number {
     if (node === null || node === undefined) {
       return POINTER;
     }
@@ -58,38 +60,38 @@ function roughSize(value) {
         break;
     }
 
-    if (seen.has(node)) {
+    const object = node as object;
+
+    if (seen.has(object)) {
       return POINTER;
     }
-    seen.add(node);
+    seen.add(object);
 
-    if (Buffer.isBuffer(node)) {
-      return VALUE_OVERHEAD + node.length;
+    if (Buffer.isBuffer(object)) {
+      return VALUE_OVERHEAD + object.length;
     }
 
-    if (node instanceof Date) {
+    if (object instanceof Date) {
       return VALUE_OVERHEAD + POINTER;
     }
 
-    if (Array.isArray(node)) {
-      let total = VALUE_OVERHEAD;
-      for (const item of node) {
+    if (Array.isArray(object)) {
+      let total: number = VALUE_OVERHEAD;
+      for (const item of object) {
         total += POINTER + walk(item);
       }
       return total;
     }
 
-    let total = VALUE_OVERHEAD;
-    for (const key of Object.keys(node)) {
+    const record = object as Record<string, unknown>;
+    let total: number = VALUE_OVERHEAD;
+    for (const key of Object.keys(record)) {
       // The key is a string in the heap too, and for a wide row of short
       // values the keys are a real share of the entry.
-      total += VALUE_OVERHEAD + key.length * 2 + walk(node[key]);
+      total += VALUE_OVERHEAD + key.length * 2 + walk(record[key]);
     }
     return total;
   }
 
-  // lru-cache rejects a size of 0, and every value occupies something.
   return Math.max(1, walk(value));
 }
-
-module.exports = { roughSize };
