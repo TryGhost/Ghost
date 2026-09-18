@@ -26,16 +26,35 @@ needs real invalidation, which this deliberately does not have. There is no TTL
 for the same reason — an entry is never stale, only evicted to stay inside the
 bound.
 
+## Entry points
+
+| Entry point              | Exports                         | Pulls in                        |
+| ------------------------ | ------------------------------- | ------------------------------- |
+| `@tryghost/memoize/once` | `once`, `configure`, `resetAll` | nothing                         |
+| `@tryghost/memoize`      | the above plus `memoize`        | `lru-cache`, `@tryghost/errors` |
+
+Import from `/once` unless you need the keyed `memoize`. `memoize` statically
+imports `lru-cache`, and `once` has no use for it — Ghost Core reaches
+`configure` from `boot.js` before it has loaded anything else, so keeping
+`lru-cache` off that path keeps it off the boot path. Splitting the modules
+rather than lazily importing inside `memoize` keeps both entry points free of
+top-level `await`.
+
+Both entry points share one enabled flag and one registry, so `configure` and
+`resetAll` cover every memo in the process no matter which entry point created
+it. A test enforces that `/once` stays dependency-free.
+
 ## Usage
 
 ```ts
-import { memoize, once } from '@tryghost/memoize';
+import { once } from '@tryghost/memoize/once';
+import { memoize } from '@tryghost/memoize';
 ```
 
-Ghost Core is CommonJS and loads this through `require(esm)`:
+Ghost Core is CommonJS and loads these through `require(esm)`:
 
 ```js
-const { once } = require('@tryghost/memoize');
+const { once } = require('@tryghost/memoize/once');
 ```
 
 That works only while the whole imported module graph is free of top-level

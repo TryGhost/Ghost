@@ -1,4 +1,4 @@
-const { once } = require('@tryghost/memoize');
+const { once } = require('@tryghost/memoize/once');
 
 const loadDownsize = once(() => require('downsize-cjs'));
 

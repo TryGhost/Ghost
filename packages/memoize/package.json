@@ -21,6 +21,11 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./once": {
+      "source": "./src/once.ts",
+      "types": "./build/once.d.ts",
+      "default": "./build/once.js"
     }
   },
   "scripts": {

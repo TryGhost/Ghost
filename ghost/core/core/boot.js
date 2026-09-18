@@ -597,7 +597,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     // Memoization is configured before anything that memoizes is required, so
     // `optimization.memoize: false` is a working kill switch for every memo.
     debug('Begin: Configure memoize');
-    require('@tryghost/memoize').configure({
+    require('@tryghost/memoize/once').configure({
       enabled: config.get('optimization:memoize') !== false,
     });
     debug('End: Configure memoize');

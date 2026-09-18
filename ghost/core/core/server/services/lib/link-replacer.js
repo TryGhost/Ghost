@@ -1,4 +1,4 @@
-const { once } = require('@tryghost/memoize');
+const { once } = require('@tryghost/memoize/once');
 
 const loadHtml5Parser = once(() => require('html5parser'));
 const loadEntities = once(() => require('entities'));

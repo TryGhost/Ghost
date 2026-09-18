@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const net = require('net');
 const config = require('../../core/shared/config');
-const memoize = require('@tryghost/memoize');
+const memoize = require('@tryghost/memoize/once');
 const configUtils = {};
 
 configUtils.config = config;
