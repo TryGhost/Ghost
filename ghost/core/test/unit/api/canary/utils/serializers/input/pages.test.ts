@@ -1,10 +1,33 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
-const urlService = require('../../../../../../../core/server/services/url');
-const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import serializers from '../../../../../../../core/server/api/endpoints/utils/serializers';
+// @ts-expect-error This module lacks type definitions.
+import urlService from '../../../../../../../core/server/services/url';
+// @ts-expect-error This module lacks type definitions.
+import schema from '../../../../../../../core/server/data/schema';
+const postsSchema = schema.tables.posts;
 
-const lexicalLib = require('../../../../../../../core/server/lib/lexical');
+type FrameOutput = {
+  filter?: string;
+  order?: string;
+  selectRaw?: string;
+  formats?: string | string[];
+  columns?: string[];
+  withRelated?: string[];
+};
+
+type UrlColumns = { routerType: string; columns: string[] };
+
+function testFrame<T extends { options: object }>(
+  value: T,
+): T & {
+  options: T['options'] & FrameOutput;
+  forcedUrlRelations?: string[];
+  forcedUrlColumns?: UrlColumns;
+} {
+  return value;
+}
 
 describe('Unit: endpoints/utils/serializers/input/pages', function () {
   afterEach(function () {
@@ -13,30 +36,32 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
   describe('browse', function () {
     it('forces required relations on a Content API browse without fields narrowing', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags']);
+      sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns(['tags']);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: { api_key: { id: 1, type: 'content' } },
         },
-      };
+      });
 
       serializers.input.pages.browse({}, frame);
 
-      assert.ok(frame.options.withRelated.includes('tags'));
+      assert.ok(frame.options.withRelated?.includes('tags'));
       assert.deepEqual(frame.forcedUrlRelations, ['tags']);
     });
 
     it('keeps the full admin default relations when forcing fires on a plain admin browse', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredRelations')
+        .returns(['tags', 'authors']);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: { user: 1 },
         },
-      };
+      });
 
       serializers.input.pages.browse({}, frame);
 
@@ -53,12 +78,12 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('default', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: {},
         },
-      };
+      });
 
       serializers.input.pages.browse(apiConfig, frame);
       assert.equal(frame.options.filter, 'type:page');
@@ -66,13 +91,13 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('combine status+tag filters', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           filter: 'status:published+tag:eins',
           context: {},
         },
-      };
+      });
 
       serializers.input.pages.browse(apiConfig, frame);
       assert.equal(frame.options.filter, '(status:published+tag:eins)+type:page');
@@ -80,13 +105,13 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('only tag filters', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           filter: 'tag:eins',
           context: {},
         },
-      };
+      });
 
       serializers.input.pages.browse(apiConfig, frame);
       assert.equal(frame.options.filter, '(tag:eins)+type:page');
@@ -94,13 +119,13 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('remove mobiledoc and lexical option from formats', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           formats: ['html', 'mobiledoc', 'lexical', 'plaintext'],
           context: {},
         },
-      };
+      });
 
       serializers.input.pages.browse(apiConfig, frame);
       assert(!frame.options.formats.includes('mobiledoc'));
@@ -112,16 +137,16 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
     describe('Content API', function () {
       it('selects all columns from the posts schema but mobiledoc and lexical when no columns are specified', function () {
         const apiConfig = {};
-        const frame = {
+        const frame = testFrame({
           apiType: 'content',
           options: {
             context: {},
           },
-        };
+        });
 
         serializers.input.pages.browse(apiConfig, frame);
         const columns = Object.keys(postsSchema);
-        const parsedSelectRaw = frame.options.selectRaw.split(',').map((column) => column.trim());
+        const parsedSelectRaw = frame.options.selectRaw?.split(',').map((column) => column.trim());
         assert.deepEqual(
           parsedSelectRaw,
           columns.filter(
@@ -133,13 +158,13 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
       it('strips mobiledoc and lexical columns from a specified columns option', function () {
         const apiConfig = {};
-        const frame = {
+        const frame = testFrame({
           apiType: 'content',
           options: {
             context: {},
             columns: ['id', 'mobiledoc', 'lexical', 'visibility'],
           },
-        };
+        });
 
         serializers.input.pages.browse(apiConfig, frame);
         assert.deepEqual(frame.options.columns, ['id', 'visibility']);
@@ -147,13 +172,13 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
       it('forces visibility column if columns are specified', function () {
         const apiConfig = {};
-        const frame = {
+        const frame = testFrame({
           apiType: 'content',
           options: {
             context: {},
             columns: ['id'],
           },
-        };
+        });
 
         serializers.input.pages.browse(apiConfig, frame);
         assert.deepEqual(frame.options.columns, ['id', 'visibility']);
@@ -161,13 +186,13 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
       it('strips mobiledoc and lexical columns from a specified selectRaw option', function () {
         const apiConfig = {};
-        const frame = {
+        const frame = testFrame({
           apiType: 'content',
           options: {
             context: {},
             selectRaw: 'id, mobiledoc, lexical',
           },
-        };
+        });
 
         serializers.input.posts.browse(apiConfig, frame);
         assert.equal(frame.options.selectRaw, 'id');
@@ -178,13 +203,13 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
   describe('read', function () {
     it('content api default', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: {},
         },
         data: {},
-      };
+      });
 
       serializers.input.pages.read(apiConfig, frame);
       assert.equal(frame.options.filter, 'type:page');
@@ -192,7 +217,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('content api default (with context)', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: {
@@ -204,7 +229,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
           },
         },
         data: {},
-      };
+      });
 
       serializers.input.pages.read(apiConfig, frame);
       assert.equal(frame.options.filter, 'type:page');
@@ -212,7 +237,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('admin api default', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: {
@@ -224,7 +249,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
           },
         },
         data: {},
-      };
+      });
 
       serializers.input.pages.read(apiConfig, frame);
       assert.equal(frame.options.filter, '(type:page)+status:[draft,published,scheduled]');
@@ -232,7 +257,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('custom status filter', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           filter: 'status:draft',
@@ -245,7 +270,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
           },
         },
         data: {},
-      };
+      });
 
       serializers.input.pages.read(apiConfig, frame);
       assert.equal(frame.options.filter, '(status:draft)+type:page');
@@ -253,7 +278,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     it('remove mobiledoc option from formats', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           formats: ['html', 'mobiledoc', 'lexical', 'plaintext'],
@@ -263,7 +288,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
           status: 'all',
           page: false,
         },
-      };
+      });
 
       serializers.input.pages.read(apiConfig, frame);
       assert(!frame.options.formats.includes('mobiledoc'));
@@ -276,7 +301,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
   it('tags relation is stripped of unknown properties', function () {
     const apiConfig = {};
 
-    const frame = {
+    const frame = testFrame({
       options: {},
       data: {
         pages: [
@@ -286,7 +311,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
           },
         ],
       },
-    };
+    });
 
     serializers.input.pages.edit(apiConfig, frame);
     assert.deepEqual(frame.data.pages[0].tags, [{ slug: 'slug1', name: 'hey' }, { slug: 'slug2' }]);
@@ -294,7 +319,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
   // JSDOM require is sometimes very slow on CI causing random timeouts
   it('throws error if HTML conversion fails', { timeout: 4000 }, function () {
-    const frame = {
+    const frame = testFrame({
       options: {
         source: 'html',
       },
@@ -302,14 +327,14 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
         pages: [
           {
             id: 'id1',
-            html: '<bananarama>',
+            html: {
+              toString() {
+                throw new Error('Some error');
+              },
+            },
           },
         ],
       },
-    };
-
-    sinon.stub(lexicalLib, 'htmlToLexicalConverter').get(() => () => {
-      throw new Error('Some error');
     });
 
     assert.throws(() => {
@@ -321,7 +346,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
     it('relations is array of objects', function () {
       const apiConfig = {};
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {},
         data: {
@@ -333,7 +358,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             },
           ],
         },
-      };
+      });
 
       serializers.input.pages.edit(apiConfig, frame);
 
@@ -347,7 +372,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
     it('authors is array of strings', function () {
       const apiConfig = {};
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {},
         data: {
@@ -359,7 +384,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             },
           ],
         },
-      };
+      });
 
       serializers.input.pages.edit(apiConfig, frame);
 
@@ -370,9 +395,9 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
   describe('copy', function () {
     it('adds default formats if no formats are specified', function () {
-      const frame = {
+      const frame = testFrame({
         options: {},
-      };
+      });
 
       serializers.input.pages.copy({}, frame);
 
@@ -380,9 +405,9 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
     });
 
     it('adds default relations if no relations are specified', function () {
-      const frame = {
+      const frame = testFrame({
         options: {},
-      };
+      });
 
       serializers.input.pages.copy({}, frame);
 
