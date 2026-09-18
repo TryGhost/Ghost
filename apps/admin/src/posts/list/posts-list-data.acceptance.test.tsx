@@ -71,9 +71,9 @@ describe('Posts list data', () => {
     await expect.element(postsListScreen.listItems().nth(2)).toBeVisible();
     await expect(postsListScreen.listItems()).toHaveCount(3);
 
-    await expect.element(postsListScreen.listItems().nth(0)).toHaveTextContent('Scheduled one');
-    await expect.element(postsListScreen.listItems().nth(1)).toHaveTextContent('Draft one');
-    await expect.element(postsListScreen.listItems().nth(2)).toHaveTextContent('Published one');
+    await expect.element(postsListScreen.listItems().nth(0)).toMatchTextContent('Scheduled one');
+    await expect.element(postsListScreen.listItems().nth(1)).toMatchTextContent('Draft one');
+    await expect.element(postsListScreen.listItems().nth(2)).toMatchTextContent('Published one');
   });
 
   it('sorts drafts by recently updated and the rest by publish date', async () => {

@@ -91,12 +91,12 @@ describe('Post settings template', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openTemplate();
 
-    await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Default');
+    await expect.element(editorScreen.settingsTemplate()).toMatchTextContent('Default');
 
     await chooseTemplate('Longread');
 
     await expect(saveApi).toHaveSavedFields({ custom_template: 'custom-longread' });
-    await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Longread');
+    await expect.element(editorScreen.settingsTemplate()).toMatchTextContent('Longread');
   });
 
   it('clears the template when the default is chosen again', async () => {
@@ -105,12 +105,12 @@ describe('Post settings template', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openTemplate();
 
-    await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Longread');
+    await expect.element(editorScreen.settingsTemplate()).toMatchTextContent('Longread');
 
     await chooseTemplate('Default');
 
     await expect(saveApi).toHaveSavedFields({ custom_template: null });
-    await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Default');
+    await expect.element(editorScreen.settingsTemplate()).toMatchTextContent('Default');
   });
 
   it('reports a failed theme lookup and lets the writer retry', async () => {
@@ -128,7 +128,7 @@ describe('Post settings template', () => {
 
     await expect
       .element(editorScreen.settingsLoadError())
-      .toHaveTextContent('Couldn’t load templates.');
+      .toMatchTextContent('Couldn’t load templates.');
     await expect(editorScreen.settingsTemplate()).toHaveCount(0);
     expect(themesApi.requests).toHaveLength(1);
 
@@ -136,7 +136,7 @@ describe('Post settings template', () => {
     fakeSiteThemes([SHARED_TEMPLATE, LONGREAD_TEMPLATE]);
     await editorScreen.settingsLoadErrorRetry().click();
 
-    await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Default');
+    await expect.element(editorScreen.settingsTemplate()).toMatchTextContent('Default');
     await expect(editorScreen.settingsLoadError()).toHaveCount(0);
     expect(themesApi.requests).toHaveLength(1);
   });
@@ -161,7 +161,7 @@ describe('Post settings template', () => {
 
     await expect
       .element(editorScreen.settingsTemplateSlugMatch())
-      .toHaveTextContent('Post URL matches post-hello-from-react');
+      .toMatchTextContent('Post URL matches post-hello-from-react');
     await expect.element(editorScreen.settingsTemplate()).toBeDisabled();
   });
 

@@ -42,7 +42,7 @@ describe('Staff passwords', () => {
 
     await confirmPassword.fill('this-is-sufficiently-secure');
     await save.click();
-    await expect.element(save).toHaveTextContent('Saved');
+    await expect.element(save).toMatchTextContent('Saved');
     expect(passwordApi.lastRequest?.body).toEqual({
       password: [
         {
@@ -80,7 +80,7 @@ describe('Staff passwords', () => {
 
     await oldPassword.fill('current-password');
     await save.click();
-    await expect.element(save).toHaveTextContent('Saved');
+    await expect.element(save).toMatchTextContent('Saved');
     expect(passwordApi.lastRequest?.body).toMatchObject({
       password: [{ oldPassword: 'current-password', user_id: owner.id }],
     });

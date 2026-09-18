@@ -229,16 +229,16 @@ describe('Post settings Facebook card', () => {
       .toHaveAttribute('placeholder', 'The excerpt this post already has');
 
     const preview = editorScreen.settingsFacebookPreview();
-    await expect.element(preview).toHaveTextContent('test.com');
-    await expect.element(preview).toHaveTextContent('Hello from React');
-    await expect.element(preview).toHaveTextContent('The excerpt this post already has');
+    await expect.element(preview).toMatchTextContent('test.com');
+    await expect.element(preview).toMatchTextContent('Hello from React');
+    await expect.element(preview).toMatchTextContent('The excerpt this post already has');
 
     await editorScreen.settingsFacebookTitle().fill('A better title for Facebook');
     await editorScreen.settingsFacebookDescription().fill('What this post is about');
 
-    await expect.element(preview).toHaveTextContent('A better title for Facebook');
-    await expect.element(preview).toHaveTextContent('What this post is about');
-    await expect.element(preview).not.toHaveTextContent('The excerpt this post already has');
+    await expect.element(preview).toMatchTextContent('A better title for Facebook');
+    await expect.element(preview).toMatchTextContent('What this post is about');
+    await expect.element(preview).not.toMatchTextContent('The excerpt this post already has');
   });
 
   it('previews the feature image the writer is looking at, and follows it as it changes', async () => {
@@ -281,7 +281,7 @@ describe('Post settings Facebook card', () => {
       .toHaveAttribute('placeholder', SITE_DESCRIPTION);
     await expect
       .element(editorScreen.settingsFacebookPreview())
-      .toHaveTextContent(SITE_DESCRIPTION);
+      .toMatchTextContent(SITE_DESCRIPTION);
   });
 
   it('refuses to save a Facebook title longer than the field holds', async () => {
@@ -294,7 +294,7 @@ describe('Post settings Facebook card', () => {
 
     await expect
       .element(editorScreen.settingsSubviewPane().getByRole('alert'))
-      .toHaveTextContent('Facebook title cannot be longer than 300 characters.');
+      .toMatchTextContent('Facebook title cannot be longer than 300 characters.');
     await expect
       .element(editorScreen.settingsFacebookTitle())
       .toHaveAttribute('aria-invalid', 'true');
@@ -307,7 +307,7 @@ describe('Post settings Facebook card', () => {
 
     await expect
       .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent('Facebook title cannot be longer than 300 characters.');
+      .toMatchTextContent('Facebook title cannot be longer than 300 characters.');
     expect(saveApi.requests).toHaveLength(0);
   });
 

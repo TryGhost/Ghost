@@ -41,7 +41,7 @@ describe('Settings navigation history', () => {
 
     window.history.back();
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Stay').click();
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     await expect.element(modal).toBeVisible();
@@ -74,7 +74,7 @@ describe('Settings navigation history', () => {
 
     window.history.forward();
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Stay').click();
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}`);
@@ -100,7 +100,7 @@ describe('Settings navigation history', () => {
 
     window.history.back();
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Leave').click();
     await expect.poll(currentRoute).toBe('/settings');
     await expect.element(modal).not.toBeInTheDocument();

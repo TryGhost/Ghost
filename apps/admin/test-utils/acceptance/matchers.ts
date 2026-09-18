@@ -214,8 +214,9 @@ expect.extend({
 });
 
 declare module 'vitest' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-  interface Matchers<T = any> {
+  // Type parameters must match vitest's own `Matchers` declaration exactly.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface Matchers<R extends void | Promise<void> = void | Promise<void>, T = unknown> {
     toHaveCount(expected: number): Promise<void>;
     toHaveSentFilter(expected: string | RegExp): Promise<void>;
     toHaveSentSearch(expected: string | RegExp): Promise<void>;

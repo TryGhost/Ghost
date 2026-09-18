@@ -88,10 +88,10 @@ describe('Email settings', () => {
 
     await expect
       .element(settingsScreen.confirmationModal())
-      .toHaveTextContent('Newsletter email verified');
+      .toMatchTextContent('Newsletter email verified');
     await expect
       .element(settingsScreen.confirmationModal())
-      .toHaveTextContent(verifiedNewsletter.sender_email!);
+      .toMatchTextContent(verifiedNewsletter.sender_email!);
     expect(verifyApi.lastRequest?.body).toEqual({ token: 'fake-token' });
   });
 
@@ -107,7 +107,7 @@ describe('Email settings', () => {
 
     await expect
       .element(settingsScreen.confirmationModal())
-      .toHaveTextContent('Reply-to address verified');
+      .toMatchTextContent('Reply-to address verified');
     expect(verifyApi.lastRequest?.body).toEqual({ token: 'fake-token' });
   });
 
@@ -121,7 +121,7 @@ describe('Email settings', () => {
 
     await expect
       .element(settingsScreen.confirmationModal())
-      .toHaveTextContent('Reply-to address verified');
+      .toMatchTextContent('Reply-to address verified');
     expect(verifyApi.lastRequest?.body).toEqual({ token: 'fake-token' });
     await expect.poll(currentRoute).toBe('/settings/memberemails');
   });

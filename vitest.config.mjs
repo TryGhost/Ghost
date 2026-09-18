@@ -11,7 +11,13 @@ import { defineConfig } from 'vitest/config';
 // test:unit is a build; test/unit holds only an empty placeholder).
 export default defineConfig({
   test: {
-    projects: ['ghost/core', 'packages/**', '!packages/_template', 'apps/*', '!apps/signup-form'],
+    projects: [
+      'ghost/core',
+      'packages/**/vitest.config.ts',
+      '!packages/_template/**',
+      'apps/*',
+      '!apps/signup-form',
+    ],
     // ghost/core's snapshot tests use @tryghost/jest-snapshot, which
     // manages its own __snapshots__/*.snap files. Vitest's native
     // snapshot system would otherwise adopt and rewrite them (down to the

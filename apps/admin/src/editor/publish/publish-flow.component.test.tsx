@@ -161,7 +161,7 @@ describe('Publish flow', () => {
     await expect.element(publishScreen.confirm()).toBeInTheDocument();
     await expect
       .element(publishScreen.confirmButton())
-      .toHaveTextContent('Publish & send, right now');
+      .toMatchTextContent('Publish & send, right now');
 
     await publishScreen.confirmButton().click();
 
@@ -174,10 +174,10 @@ describe('Publish flow', () => {
       id: POST_ID,
       type: 'post',
     });
-    await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
+    await expect.element(publishScreen.complete()).toMatchTextContent('Boom. It’s out there.');
     await expect
       .element(publishScreen.complete())
-      .toHaveTextContent('That’s 42 posts published, keep going!');
+      .toMatchTextContent('That’s 42 posts published, keep going!');
     expect(onCompleted).toHaveBeenCalledTimes(1);
     expect(onCompleted).toHaveBeenCalledWith({
       postId: POST_ID,
@@ -293,7 +293,7 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.confirmButton())
-      .toHaveTextContent('Publish post, right now');
+      .toMatchTextContent('Publish post, right now');
     await publishScreen.confirmButton().click();
 
     await expect.element(publishScreen.complete()).toBeInTheDocument();
@@ -336,7 +336,7 @@ describe('Publish flow', () => {
       const labels = document.querySelectorAll(`label[for="${id}"]`);
 
       expect(labels).toHaveLength(1);
-      expect(labels[0]).toHaveTextContent(name);
+      expect(labels[0]).toMatchTextContent(name);
 
       return id;
     };
@@ -364,7 +364,7 @@ describe('Publish flow', () => {
       await publishScreen.scheduleDate().click();
 
       const selected = page.getByRole('gridcell', { selected: true });
-      await expect.element(selected).toHaveTextContent(day);
+      await expect.element(selected).toMatchTextContent(day);
 
       // Committing the day the calendar highlights must not move the date.
       await selected.click();
@@ -382,7 +382,7 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.confirm())
-      .toHaveTextContent('and will not be published on your site.');
+      .toMatchTextContent('and will not be published on your site.');
     await publishScreen.confirmButton().click();
 
     await expect.element(publishScreen.complete()).toBeInTheDocument();
@@ -459,7 +459,7 @@ describe('Publish flow', () => {
   it('gates the flow behind the TK reminder', async () => {
     await renderPublishFlow({ tkCount: 2 });
 
-    await expect.element(publishScreen.tkReminder()).toHaveTextContent('2 TK reminders');
+    await expect.element(publishScreen.tkReminder()).toMatchTextContent('2 TK reminders');
     await page.getByRole('button', { name: 'Continue to publish' }).click();
 
     await expect.element(publishScreen.options()).toBeInTheDocument();
@@ -484,7 +484,7 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.publicPreviewWarning())
-      .toHaveTextContent('Public preview has no effect');
+      .toMatchTextContent('Public preview has no effect');
   });
 
   it('keeps the user on confirm when re-auth interrupts the publish', async () => {
@@ -494,7 +494,7 @@ describe('Publish flow', () => {
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
-    await expect.element(publishScreen.confirmError()).toHaveTextContent('Your session expired');
+    await expect.element(publishScreen.confirmError()).toMatchTextContent('Your session expired');
     await expect.element(publishScreen.confirm()).toBeInTheDocument();
   });
 
@@ -507,7 +507,7 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.confirmError())
-      .toHaveTextContent('Someone else has edited this post');
+      .toMatchTextContent('Someone else has edited this post');
   });
 
   it('recovers when the publish dispatcher rejects unexpectedly', async () => {
@@ -517,7 +517,9 @@ describe('Publish flow', () => {
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
-    await expect.element(publishScreen.confirmError()).toHaveTextContent('The save engine stopped');
+    await expect
+      .element(publishScreen.confirmError())
+      .toMatchTextContent('The save engine stopped');
     await expect
       .poll(() => publishScreen.confirmButton().element().hasAttribute('disabled'))
       .toBe(false);
@@ -532,7 +534,7 @@ describe('Publish flow', () => {
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
-    await expect.element(publishScreen.confirmError()).toHaveTextContent('Your plan is full');
+    await expect.element(publishScreen.confirmError()).toMatchTextContent('Your plan is full');
     await expect
       .element(publishScreen.confirmError().getByRole('link', { name: 'please upgrade' }))
       .toBeInTheDocument();
@@ -551,7 +553,7 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.options())
-      .toHaveTextContent('You have reached your member limit');
+      .toMatchTextContent('You have reached your member limit');
     await expect
       .element(publishScreen.options().getByRole('link', { name: 'please upgrade' }))
       .toBeInTheDocument();
@@ -598,7 +600,7 @@ describe('Publish flow', () => {
       limits: { refreshSettings },
     });
 
-    await expect.element(publishScreen.limitsError()).toHaveTextContent('Settings are offline');
+    await expect.element(publishScreen.limitsError()).toMatchTextContent('Settings are offline');
     await expect.element(publishScreen.continueButton()).toBeDisabled();
     await publishScreen.limitsError().getByRole('button', { name: 'Try again' }).click();
     await expect
@@ -667,8 +669,8 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.completeNote())
-      .toHaveTextContent('couldn’t confirm the newsletter was sent');
-    await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
+      .toMatchTextContent('couldn’t confirm the newsletter was sent');
+    await expect.element(publishScreen.complete()).toMatchTextContent('Boom. It’s out there.');
     expect(dispatch).toHaveBeenCalledTimes(1);
     expect(onCompleted).toHaveBeenCalledTimes(1);
   });
@@ -689,12 +691,12 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.completeNote())
-      .toHaveTextContent('couldn’t confirm the newsletter was sent');
+      .toMatchTextContent('couldn’t confirm the newsletter was sent');
     // Nothing on the step may assert a send, or celebrate one.
-    await expect.element(publishScreen.complete()).toHaveTextContent('Your post has been created');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('has been sent');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('was sent to');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('Boom');
+    await expect.element(publishScreen.complete()).toMatchTextContent('Your post has been created');
+    await expect.element(publishScreen.complete()).not.toMatchTextContent('has been sent');
+    await expect.element(publishScreen.complete()).not.toMatchTextContent('was sent to');
+    await expect.element(publishScreen.complete()).not.toMatchTextContent('Boom');
   });
 
   it('never claims an email-only send landed when the reload has no email', async () => {
@@ -710,9 +712,9 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.completeNote())
-      .toHaveTextContent('couldn’t confirm the newsletter was sent');
-    await expect.element(publishScreen.complete()).toHaveTextContent('Your post has been created');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('email has been sent');
+      .toMatchTextContent('couldn’t confirm the newsletter was sent');
+    await expect.element(publishScreen.complete()).toMatchTextContent('Your post has been created');
+    await expect.element(publishScreen.complete()).not.toMatchTextContent('email has been sent');
     expect(onCompleted).toHaveBeenCalledWith({
       postId: POST_ID,
       isScheduled: false,
@@ -729,7 +731,7 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.confirmError())
-      .toHaveTextContent('Validation failed: Title cannot be longer than 255');
+      .toMatchTextContent('Validation failed: Title cannot be longer than 255');
     await expect.element(publishScreen.confirm()).toBeInTheDocument();
   });
 
@@ -742,7 +744,7 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.confirmError())
-      .toHaveTextContent('can no longer be published from here');
+      .toMatchTextContent('can no longer be published from here');
   });
 
   it('says a superseded command is no longer publishable', async () => {
@@ -754,7 +756,7 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.confirmError())
-      .toHaveTextContent('can no longer be published from here');
+      .toMatchTextContent('can no longer be published from here');
   });
 
   it('offers a retry when the email fails after a successful publish', async () => {
@@ -765,7 +767,7 @@ describe('Publish flow', () => {
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
-    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await expect.element(publishScreen.emailError()).toMatchTextContent('Sending failed');
     await publishScreen.retryEmailButton().click();
 
     await expect.element(publishScreen.complete()).toBeInTheDocument();
@@ -791,12 +793,12 @@ describe('Publish flow', () => {
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
-    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await expect.element(publishScreen.emailError()).toMatchTextContent('Sending failed');
     await publishScreen.retryEmailButton().click();
 
     await expect
       .element(publishScreen.emailError().getByRole('alert'))
-      .toHaveTextContent('You are not authorised to make this request.');
+      .toMatchTextContent('You are not authorised to make this request.');
     expect(retryApi.requests).toHaveLength(1);
     expect(window.location.pathname).toBe(pathname);
   });
@@ -820,7 +822,7 @@ describe('Publish flow', () => {
     // resolved - off the cached user, without a second read.
     await expect
       .element(publishScreen.confirmButton())
-      .toHaveTextContent('Publish & send, right now');
+      .toMatchTextContent('Publish & send, right now');
     expect(signedIn.requests).toHaveLength(1);
     expect(expired.requests).toHaveLength(0);
   });
@@ -835,8 +837,10 @@ describe('Publish flow', () => {
     await publishScreen.confirmButton().click();
 
     // An unreadable count is not a count of zero.
-    await expect.element(publishScreen.complete()).toHaveTextContent('was sent to all subscribers');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('0 subscribers');
+    await expect
+      .element(publishScreen.complete())
+      .toMatchTextContent('was sent to all subscribers');
+    await expect.element(publishScreen.complete()).not.toMatchTextContent('0 subscribers');
     expect(onCompleted).toHaveBeenCalledTimes(1);
   });
 
@@ -868,7 +872,7 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.emailError().getByRole('alert'))
-      .toHaveTextContent('Unknown Error occurred when attempting to resend');
+      .toMatchTextContent('Unknown Error occurred when attempting to resend');
   });
 
   it('describes an at-open failed email-only post as created, not published', async () => {
@@ -887,8 +891,8 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.emailError())
-      .toHaveTextContent('Your post has been created but the email failed to send.');
-    await expect.element(publishScreen.emailError()).not.toHaveTextContent('has been published');
+      .toMatchTextContent('Your post has been created but the email failed to send.');
+    await expect.element(publishScreen.emailError()).not.toMatchTextContent('has been published');
   });
 
   it('takes a draft with a failed historic email through the normal publish dispatch', async () => {
@@ -932,10 +936,10 @@ describe('Publish flow', () => {
 
       await expect
         .element(publishScreen.alreadySent())
-        .toHaveTextContent('Already sent to 12 subscribers');
-      await expect.element(publishScreen.alreadySent()).not.toHaveTextContent('free');
-      await expect.element(publishScreen.alreadySent()).not.toHaveTextContent('specific');
-      await expect.element(publishScreen.alreadySent()).not.toHaveTextContent('none');
+        .toMatchTextContent('Already sent to 12 subscribers');
+      await expect.element(publishScreen.alreadySent()).not.toMatchTextContent('free');
+      await expect.element(publishScreen.alreadySent()).not.toMatchTextContent('specific');
+      await expect.element(publishScreen.alreadySent()).not.toMatchTextContent('none');
     },
   );
 });
@@ -974,8 +978,8 @@ describe('Update flow', () => {
     await expect.poll(() => countApi.requests.length).toBeGreaterThan(0);
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .toHaveTextContent('published and sent to subscribers');
-    await expect.element(publishScreen.updateFlow()).not.toHaveTextContent('0 subscribers');
+      .toMatchTextContent('published and sent to subscribers');
+    await expect.element(publishScreen.updateFlow()).not.toMatchTextContent('0 subscribers');
     expect(window.location.pathname).toBe(pathname);
   });
 
@@ -996,7 +1000,7 @@ describe('Update flow', () => {
       </InAppProviders>,
     );
 
-    await expect.element(publishScreen.updateFlowTitle()).toHaveTextContent('has been published');
+    await expect.element(publishScreen.updateFlowTitle()).toMatchTextContent('has been published');
     await publishScreen.revertToDraft().click();
 
     expect(dispatch).toHaveBeenCalledWith({ kind: 'revert' });
@@ -1050,7 +1054,7 @@ describe('Update flow', () => {
 
     await expect
       .element(publishScreen.updateFlow().getByRole('alert'))
-      .toHaveTextContent('The revert stopped');
+      .toMatchTextContent('The revert stopped');
     await expect
       .poll(() => publishScreen.revertToDraft().element().hasAttribute('disabled'))
       .toBe(false);
@@ -1134,7 +1138,7 @@ describe('Update flow', () => {
         }),
       ),
     );
-    await expect.element(publishScreen.updateFlowTitle()).toHaveTextContent('scheduled');
+    await expect.element(publishScreen.updateFlowTitle()).toMatchTextContent('scheduled');
 
     finishDispatch(saved('draft'));
     await new Promise<void>((resolve) => {
@@ -1170,13 +1174,13 @@ describe('Update flow', () => {
 
     await expect
       .element(publishScreen.updateFlowPreviousEmail())
-      .toHaveTextContent('previously emailed to 12 subscribers of Retired Weekly');
+      .toMatchTextContent('previously emailed to 12 subscribers of Retired Weekly');
     await expect
       .element(publishScreen.updateFlowPreviousEmail())
-      .toHaveTextContent('on 1 Sep 2026 at 09:00');
+      .toMatchTextContent('on 1 Sep 2026 at 09:00');
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .toHaveTextContent('published on your site');
+      .toMatchTextContent('published on your site');
   });
 
   it('describes the audience for a scheduled email that has not been sent yet', async () => {
@@ -1201,7 +1205,7 @@ describe('Update flow', () => {
 
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .toHaveTextContent('published and sent to 20 subscribers');
+      .toMatchTextContent('published and sent to 20 subscribers');
   });
 
   it('does not claim a scheduled email-only post will be published', async () => {
@@ -1227,10 +1231,10 @@ describe('Update flow', () => {
 
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .toHaveTextContent('will be sent to 20 subscribers');
+      .toMatchTextContent('will be sent to 20 subscribers');
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .not.toHaveTextContent('published and sent');
+      .not.toMatchTextContent('published and sent');
   });
 
   it('does not count the current default newsletter for a missing persisted newsletter', async () => {
@@ -1256,10 +1260,10 @@ describe('Update flow', () => {
 
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .toHaveTextContent('published and sent to subscribers of Retired Weekly');
+      .toMatchTextContent('published and sent to subscribers of Retired Weekly');
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .not.toHaveTextContent('20 subscribers');
+      .not.toMatchTextContent('20 subscribers');
   });
 
   it('does not replace a missing persisted segment with the current site default', async () => {
@@ -1284,10 +1288,10 @@ describe('Update flow', () => {
 
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .toHaveTextContent('published and sent to subscribers');
+      .toMatchTextContent('published and sent to subscribers');
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .not.toHaveTextContent('20 subscribers');
+      .not.toMatchTextContent('20 subscribers');
   });
 
   it('does not claim that a failed published email was sent', async () => {
@@ -1317,6 +1321,6 @@ describe('Update flow', () => {
 
     await expect
       .element(publishScreen.updateFlowConfirmation())
-      .toHaveTextContent('published on your site');
+      .toMatchTextContent('published on your site');
   });
 });

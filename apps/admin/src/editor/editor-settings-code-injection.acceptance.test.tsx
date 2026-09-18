@@ -282,7 +282,7 @@ describe('Post settings code injection', () => {
     });
 
     await editorScreen.settingsSubviewRow(ROW_LABEL).click();
-    await expect.element(headEditor()).toHaveTextContent('<script>onClose();</script>');
+    await expect.element(headEditor()).toMatchTextContent('<script>onClose();</script>');
   });
 
   it.each(['codeinjection_head', 'codeinjection_foot'] as const)(

@@ -239,7 +239,7 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     await expect.element(page.getByText(/500 of 1,000/)).toBeVisible();
     await expect.element(page.getByText('Your newsletter is being sent')).toBeVisible();
-    await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
+    await expect.element(postAnalyticsScreen.uniqueVisitors()).toMatchTextContent('250');
 
     await postAnalyticsScreen.newsletterTab().click();
     await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/newsletter`);
@@ -291,17 +291,17 @@ describe('Post analytics overview', () => {
 
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+      .toMatchTextContent(/Sending emails\s*250 of 1,000/);
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .not.toHaveTextContent('minute');
+      .not.toMatchTextContent('minute');
     estimate = 30;
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+      .toMatchTextContent(/Sending emails\s*250 of 1,000/);
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Less than 1 minute left');
+      .toMatchTextContent('Less than 1 minute left');
   });
 
   it('moves a failed send and its retry action into the banner', async () => {
@@ -469,10 +469,10 @@ describe('Post analytics overview', () => {
 
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent(/Preparing emails\s*10% complete · 1,000 total/);
+      .toMatchTextContent(/Preparing emails\s*10% complete · 1,000 total/);
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .not.toHaveTextContent('minute');
+      .not.toMatchTextContent('minute');
     // Advance the fake server only after the initial state is visible: extra
     // mount-time requests must not race the assertion straight into failure.
     const initialStatusRequests = statusRequestCount;
@@ -590,11 +590,11 @@ describe('Post analytics overview', () => {
 
     // Web performance: visitors summed from the Tinybird rows.
     await expect.element(postAnalyticsScreen.webPerformanceCard()).toBeVisible();
-    await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
+    await expect.element(postAnalyticsScreen.uniqueVisitors()).toMatchTextContent('250');
 
     // Growth: totals from the post growth stats.
-    await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('Free members');
-    await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('100');
+    await expect.element(postAnalyticsScreen.growthCard()).toMatchTextContent('Free members');
+    await expect.element(postAnalyticsScreen.growthCard()).toMatchTextContent('100');
   });
 
   it('keeps the post context when switching to the web tab', async () => {
@@ -605,7 +605,7 @@ describe('Post analytics overview', () => {
     });
 
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
-    await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
+    await expect.element(postAnalyticsScreen.uniqueVisitors()).toMatchTextContent('250');
     const overviewKpiRequestCount = kpisApi.requests.length;
 
     await postAnalyticsScreen.webTrafficTab().click();
@@ -626,8 +626,8 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.webTrafficTab()).toBeVisible();
     await expect.element(postAnalyticsScreen.growthTab()).toBeVisible();
 
-    await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('Free members');
-    await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('0');
+    await expect.element(postAnalyticsScreen.growthCard()).toMatchTextContent('Free members');
+    await expect.element(postAnalyticsScreen.growthCard()).toMatchTextContent('0');
   });
 
   it('reaches the empty web traffic view through web performance view more', async () => {
@@ -650,7 +650,7 @@ describe('Post analytics overview', () => {
     await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/growth`);
     await expect
       .element(postAnalyticsScreen.topSourcesCard())
-      .toHaveTextContent('No sources data available');
+      .toMatchTextContent('No sources data available');
   });
 
   it('hides the growth tab and section when member source tracking is off', async () => {
@@ -678,9 +678,9 @@ describe('Post analytics web', () => {
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
     await expect
       .element(page.getByRole('tab', { name: 'Unique visitors' }))
-      .toHaveTextContent('250');
-    await expect.element(postAnalyticsScreen.locationRow('US')).toHaveTextContent('United States');
-    await expect.element(postAnalyticsScreen.sourceRow('google.com')).toHaveTextContent('170');
+      .toMatchTextContent('250');
+    await expect.element(postAnalyticsScreen.locationRow('US')).toMatchTextContent('United States');
+    await expect.element(postAnalyticsScreen.sourceRow('google.com')).toMatchTextContent('170');
     await expect.poll(() => topLocationsApi.lastRequest?.params.get('post_uuid')).toBe(POST_UUID);
     await expect.poll(() => topSourcesApi.lastRequest?.params.get('post_uuid')).toBe(POST_UUID);
   });
@@ -689,7 +689,7 @@ describe('Post analytics web', () => {
     const { kpisApi, topLocationsApi, topSourcesApi } = seedPostAnalyticsWorld();
     await renderAdminApp(`/posts/analytics/${POST_ID}/web`, { boot: webAnalyticsBootOverrides() });
 
-    await expect.element(postAnalyticsScreen.locationRow('US')).toHaveTextContent('United States');
+    await expect.element(postAnalyticsScreen.locationRow('US')).toMatchTextContent('United States');
     const initialKpiRequestCount = kpisApi.requests.length;
     const initialLocationsRequestCount = topLocationsApi.requests.length;
     const initialSourcesRequestCount = topSourcesApi.requests.length;
@@ -697,7 +697,7 @@ describe('Post analytics web', () => {
     await postAnalyticsScreen.locationRow('US').click();
 
     await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/web?location=US`);
-    await expect.element(postAnalyticsScreen.filterContainer()).toHaveTextContent('Location');
+    await expect.element(postAnalyticsScreen.filterContainer()).toMatchTextContent('Location');
     await expect.poll(() => kpisApi.requests.length).toBeGreaterThan(initialKpiRequestCount);
     await expect
       .poll(() => topLocationsApi.requests.length)
@@ -718,8 +718,8 @@ describe('Post analytics growth', () => {
       boot: webAnalyticsBootOverrides(),
     });
 
-    await expect.element(postAnalyticsScreen.membersCard()).toHaveTextContent('Free members');
-    await expect.element(postAnalyticsScreen.membersCard()).toHaveTextContent('100');
+    await expect.element(postAnalyticsScreen.membersCard()).toMatchTextContent('Free members');
+    await expect.element(postAnalyticsScreen.membersCard()).toMatchTextContent('100');
     await expect.element(page.getByText('Top sources')).toBeVisible();
     await expect.element(page.getByText('Google')).toBeVisible();
   });
@@ -730,11 +730,11 @@ describe('Post analytics growth', () => {
       boot: webAnalyticsBootOverrides(),
     });
 
-    await expect.element(postAnalyticsScreen.membersCard()).toHaveTextContent('Free members');
-    await expect.element(postAnalyticsScreen.membersCard()).toHaveTextContent('0');
+    await expect.element(postAnalyticsScreen.membersCard()).toMatchTextContent('Free members');
+    await expect.element(postAnalyticsScreen.membersCard()).toMatchTextContent('0');
     await expect
       .element(postAnalyticsScreen.topSourcesCard())
-      .toHaveTextContent('No sources data available');
+      .toMatchTextContent('No sources data available');
   });
 
   it('links the members KPI to the members list filtered to this post', async () => {
@@ -749,7 +749,7 @@ describe('Post analytics growth', () => {
       boot: webAnalyticsBootOverrides(),
     });
 
-    await expect.element(postAnalyticsScreen.membersCard()).toHaveTextContent('Free members');
+    await expect.element(postAnalyticsScreen.membersCard()).toMatchTextContent('Free members');
     await postAnalyticsScreen.freeMembersViewMembersButton().click();
 
     // The members screen re-serializes the handed-over filter clauses.

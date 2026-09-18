@@ -178,15 +178,15 @@ describe('Post settings delete', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openSidebar();
 
-    await expect.element(editorScreen.settingsDelete()).toHaveTextContent('Delete post');
+    await expect.element(editorScreen.settingsDelete()).toMatchTextContent('Delete post');
 
     await editorScreen.settingsDelete().click();
 
     const dialog = editorScreen.settingsDeleteDialog();
-    await expect.element(dialog).toHaveTextContent('Are you sure you want to delete this post?');
+    await expect.element(dialog).toMatchTextContent('Are you sure you want to delete this post?');
     await expect
       .element(dialog)
-      .toHaveTextContent(
+      .toMatchTextContent(
         'You’re about to delete "Hello from React". This is permanent! We warned you, k?',
       );
     await expect.element(editorScreen.confirmSettingsDelete()).toBeVisible();
@@ -211,13 +211,13 @@ describe('Post settings delete', () => {
     await expect.element(editorScreen.settingsDelete()).toHaveFocus();
     expect(deleteApi.requests.length).toBe(0);
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
   });
 
   it('deletes a dirty draft and leaves for the list without saving it on the way out', async () => {
     const { calls, deleteApi } = fakeDeletablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await openSidebar();
     // Unsaved work is what the leave guard would otherwise save on the way out.
     await typeIntoBody(' and more');
@@ -245,13 +245,13 @@ describe('Post settings delete', () => {
     // The sentence that explains the refusal, not the serializer's summary.
     await expect
       .element(editorScreen.settingsDeleteError(), POLL)
-      .toHaveTextContent('You do not have permission to delete this post.');
+      .toMatchTextContent('You do not have permission to delete this post.');
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     await expect.element(editorScreen.settingsDeleteDialog()).toBeVisible();
 
     await editorScreen.cancelSettingsDelete().click();
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
   });
 
   it('keeps unsaved work editable when the delete is refused by an expired session', async () => {
@@ -270,12 +270,12 @@ describe('Post settings delete', () => {
 
     await expect
       .element(editorScreen.settingsDeleteError())
-      .toHaveTextContent(
+      .toMatchTextContent(
         'Your session expired. Sign in again in a new tab, then try deleting again.',
       );
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     await editorScreen.cancelSettingsDelete().click();
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
 
     await typeIntoBody(' after refusal');
     await userEvent.keyboard('{Meta>}s{/Meta}');
@@ -292,11 +292,13 @@ describe('Post settings delete', () => {
     const listApi = fakePosts(() => (deleteApi.requests.length ? [] : [row]));
 
     await renderAdminApp('/posts', FLAG_ON);
-    await expect.element(postsListScreen.listItems().first()).toHaveTextContent('Hello from React');
+    await expect
+      .element(postsListScreen.listItems().first())
+      .toMatchTextContent('Hello from React');
     const browsesBefore = listApi.requests.length;
 
     await postsListScreen.rowLink().first().click();
-    await expect.element(editorScreen.body(), POLL).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body(), POLL).toMatchTextContent('Hello from React');
     await openSidebar();
     await editorScreen.settingsDelete().click();
     await editorScreen.confirmSettingsDelete().click();
@@ -341,12 +343,12 @@ describe('Post settings delete', () => {
     await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
     await openSidebar();
 
-    await expect.element(editorScreen.settingsDelete()).toHaveTextContent('Delete page');
+    await expect.element(editorScreen.settingsDelete()).toMatchTextContent('Delete page');
 
     await editorScreen.settingsDelete().click();
     await expect
       .element(editorScreen.settingsDeleteDialog())
-      .toHaveTextContent('Are you sure you want to delete this page?');
+      .toMatchTextContent('Are you sure you want to delete this page?');
     await editorScreen.confirmSettingsDelete().click();
 
     await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);

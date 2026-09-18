@@ -54,7 +54,7 @@ it.each(['Dismiss', 'Pay now'])(
 
     // The existing dialog keeps its controls until the user closes it. The
     // warning remains in the page; the takeover must not cover the dialog.
-    await expect.element(page.getByTestId('dunning-banner')).toHaveTextContent(/6 days left/);
+    await expect.element(page.getByTestId('dunning-banner')).toMatchTextContent(/6 days left/);
     await expect(page.getByTestId('dunning-overlay')).toHaveCount(0);
     await tagDetailScreen
       .deleteModal()

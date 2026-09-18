@@ -110,7 +110,7 @@ describe('Post editor saving', () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await appendToBody(' and more');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
@@ -134,7 +134,7 @@ describe('Post editor saving', () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await appendToBody(' and more');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
@@ -194,7 +194,7 @@ describe('Post editor saving', () => {
 
     await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
     expect(bodyElement()).toBe(mountedBody);
-    await expect.element(editorScreen.body()).toHaveTextContent('First words');
+    await expect.element(editorScreen.body()).toMatchTextContent('First words');
   });
 
   // Core refuses an Author's or Contributor's create unless the payload names
@@ -265,14 +265,14 @@ describe('Post editor saving', () => {
       id: NEW_POST_ID,
       updated_at: CREATED_AT,
     });
-    await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
+    await expect.element(editorScreen.body()).toMatchTextContent('First words and then some');
   });
 
   it('saves on Cmd-S and asks the server for a revision', async () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await appendToBody(' and more');
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
@@ -292,7 +292,7 @@ describe('Post editor saving', () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await editorScreen.titleInput().fill('Brand New Name');
     await editorScreen.body().click();
 
@@ -312,18 +312,18 @@ describe('Post editor saving', () => {
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.element(editorScreen.status()).toMatchTextContent('Draft - Saved');
     await appendToBody(' and more');
 
-    await expect.element(editorScreen.status()).toHaveTextContent('Saving');
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.element(editorScreen.status()).toMatchTextContent('Saving');
+    await expect.element(editorScreen.status()).toMatchTextContent('Draft - Saved');
   });
 
   it('reports a status the post reached elsewhere once a save refetches it', async () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.element(editorScreen.status()).toMatchTextContent('Draft - Saved');
 
     // A later handler for the same route wins: from here the read answers
     // with the post as someone else has just published it.
@@ -344,14 +344,14 @@ describe('Post editor saving', () => {
     await appendToBody(' and more');
     await expect.poll(() => saveApi.requests.length).toBe(1);
 
-    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+    await expect.element(editorScreen.status()).toMatchTextContent('Published');
   });
 
   it('leaves tags alone when it saves', async () => {
     const saveApi = fakeSavablePost({ tags: [tag({ id: 'tag1', name: 'News', slug: 'news' })] });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await appendToBody(' and more');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
@@ -389,18 +389,18 @@ describe('Post editor saving', () => {
     );
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await appendToBody(' and more');
 
     await expect
       .element(editorScreen.conflictBanner())
-      .toHaveTextContent('Someone else is editing this post');
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+      .toMatchTextContent('Someone else is editing this post');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
 
     await appendToBody(' again');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
-    await expect.element(editorScreen.body()).toHaveTextContent('and more again');
+    await expect.element(editorScreen.body()).toMatchTextContent('and more again');
   });
 
   it('offers a retry in place when the session expired', async () => {
@@ -426,11 +426,11 @@ describe('Post editor saving', () => {
     );
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await appendToBody(' and more');
 
-    await expect.element(editorScreen.reauthBanner()).toHaveTextContent('Your session expired');
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.reauthBanner()).toMatchTextContent('Your session expired');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
 
     await editorScreen.retryReauth().click();
@@ -461,14 +461,14 @@ describe('Post editor saving', () => {
     );
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await appendToBody(' and more');
 
     await expect.element(editorScreen.reauthBanner()).toBeVisible();
     await editorScreen.dismissReauth().click();
 
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent('session expired');
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.saveErrorBanner()).toMatchTextContent('session expired');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
   });
 
   it('does not leave the editor when the slug request finds no session', async () => {
@@ -500,7 +500,7 @@ describe('Post editor saving', () => {
     );
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await editorScreen.titleInput().fill('Brand New Name');
     await editorScreen.body().click();
 

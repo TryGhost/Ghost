@@ -102,12 +102,12 @@ describe('Post settings access', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openAccess();
 
-    await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Public');
+    await expect.element(editorScreen.settingsVisibility()).toMatchTextContent('Public');
 
     await chooseVisibility('Members only');
 
     await expect(saveApi).toHaveSavedFields({ visibility: 'members' });
-    await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Members only');
+    await expect.element(editorScreen.settingsVisibility()).toMatchTextContent('Members only');
   });
 
   it('sends the tier IDs a paid post already carries when its visibility changes', async () => {
@@ -122,7 +122,7 @@ describe('Post settings access', () => {
       visibility: 'tiers',
       tiers: [{ id: GOLD.id }, { id: SILVER.id }, { id: BRONZE.id }],
     });
-    await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
+    await expect.element(editorScreen.settingsVisibility()).toMatchTextContent('Specific tier(s)');
   });
 
   it('grants a public post’s paid tiers but not the free one it carries', async () => {
@@ -153,9 +153,9 @@ describe('Post settings access', () => {
 
     await expect
       .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent('Please select at least one tier.');
+      .toMatchTextContent('Please select at least one tier.');
     expect(createApi.requests).toHaveLength(0);
-    await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
+    await expect.element(editorScreen.settingsVisibility()).toMatchTextContent('Specific tier(s)');
     await expect.poll(unsavedChangesGuarded).toBe(true);
   });
 
@@ -169,7 +169,7 @@ describe('Post settings access', () => {
     // Nothing is selected yet, so the choice is held back rather than stripped.
     await expect
       .element(editorScreen.settingsTiersError())
-      .toHaveTextContent('Please select at least one tier.');
+      .toMatchTextContent('Please select at least one tier.');
     await expect.element(editorScreen.settingsTiers()).toHaveAttribute('aria-invalid', 'true');
     await expect
       .element(editorScreen.settingsTiers())
@@ -179,7 +179,7 @@ describe('Post settings access', () => {
     await expect.element(editorScreen.settingsTier('Bronze')).toBeVisible();
     await expect(editorScreen.settingsTier('Free')).toHaveCount(0);
     // Staged rather than refused, so the writer sees no save error for it.
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft');
+    await expect.element(editorScreen.status()).toMatchTextContent('Draft');
     await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
 
     await editorScreen.settingsTier('Gold').click();
@@ -242,7 +242,7 @@ describe('Post settings access', () => {
     await renderAdminApp('/editor/post', withDefaultVisibility('paid'));
     await openAccess();
 
-    await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Paid-members only');
+    await expect.element(editorScreen.settingsVisibility()).toMatchTextContent('Paid-members only');
     await expect(editorScreen.settingsTiers()).toHaveCount(0);
 
     await typeIntoBody('First words');
@@ -285,7 +285,7 @@ describe('Post settings access', () => {
 
     await expect
       .element(editorScreen.settingsLoadError())
-      .toHaveTextContent('Couldn’t load tiers.');
+      .toMatchTextContent('Couldn’t load tiers.');
     await expect(editorScreen.settingsTier('Gold')).toHaveCount(0);
     await expect(editorScreen.settingsTiersError()).toHaveCount(0);
     expect(tiersApi.requests).toHaveLength(1);
@@ -340,7 +340,7 @@ describe('Post settings access', () => {
 
     await expect
       .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent('Please select at least one tier.');
+      .toMatchTextContent('Please select at least one tier.');
     expect(saveApi.requests).toHaveLength(0);
     await expect.element(editorScreen.updateButton()).toBeEnabled();
   });

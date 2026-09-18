@@ -147,7 +147,7 @@ describe('Post settings post history', () => {
 
       await expect
         .element(editorScreen.postHistoryPreview())
-        .toHaveTextContent('This post has no saved versions yet.');
+        .toMatchTextContent('This post has no saved versions yet.');
       await userEvent.keyboard('{Escape}');
       await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     },
@@ -201,29 +201,29 @@ describe('Post settings post history', () => {
     // The newest is selected on open and cannot be restored onto itself.
     await expect
       .element(editorScreen.postHistoryRevision(0))
-      .toHaveTextContent('3 Feb 2026, 09:00');
+      .toMatchTextContent('3 Feb 2026, 09:00');
     await expect
       .element(editorScreen.postHistoryRevision(0))
-      .toHaveTextContent(postHistoryLatestText);
+      .toMatchTextContent(postHistoryLatestText);
     // The newest version was written by an unpublish, so it carries both labels.
     await expect
       .element(editorScreen.postHistoryRevision(0))
-      .toHaveTextContent(postHistoryUnpublishedText);
+      .toMatchTextContent(postHistoryUnpublishedText);
     await expect
       .element(editorScreen.postHistoryRevision(0))
-      .toHaveTextContent('Deleted staff user');
+      .toMatchTextContent('Deleted staff user');
     await expect(editorScreen.postHistoryRevision(0).restore()).toHaveCount(0);
 
     // The version that first took the post to published carries that label.
     await expect
       .element(editorScreen.postHistoryRevision(1))
-      .toHaveTextContent(postHistoryPublishedText);
-    await expect.element(editorScreen.postHistoryRevision(1)).toHaveTextContent('Grace Hopper');
+      .toMatchTextContent(postHistoryPublishedText);
+    await expect.element(editorScreen.postHistoryRevision(1)).toMatchTextContent('Grace Hopper');
 
-    await expect.element(editorScreen.postHistoryRevision(2)).toHaveTextContent('Ada Lovelace');
+    await expect.element(editorScreen.postHistoryRevision(2)).toMatchTextContent('Ada Lovelace');
     await expect
       .element(editorScreen.postHistoryRevision(2))
-      .toHaveTextContent('1 Feb 2026, 09:00');
+      .toMatchTextContent('1 Feb 2026, 09:00');
   });
 
   it('previews the version the writer selects', async () => {
@@ -233,19 +233,19 @@ describe('Post settings post history', () => {
 
     await expect
       .element(editorScreen.postHistoryPreviewTitle())
-      .toHaveTextContent('Hello from React');
+      .toMatchTextContent('Hello from React');
     await expect
       .element(editorScreen.postHistoryPreviewBody(), POLL)
-      .toHaveTextContent('Hello from React');
+      .toMatchTextContent('Hello from React');
 
     await editorScreen.postHistoryRevision(2).select().click();
 
     await expect
       .element(editorScreen.postHistoryPreviewTitle())
-      .toHaveTextContent('The first draft');
+      .toMatchTextContent('The first draft');
     await expect
       .element(editorScreen.postHistoryPreviewBody(), POLL)
-      .toHaveTextContent('The very first words');
+      .toMatchTextContent('The very first words');
     // Selecting is a preview, not an edit: the post is untouched.
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
   });
@@ -272,7 +272,7 @@ describe('Post settings post history', () => {
     await editorScreen.postHistoryRevision(1).select().click();
     await editorScreen.postHistoryRevision(1).restore().click();
 
-    await expect.element(editorScreen.restoreConfirm()).toHaveTextContent('Restore this version?');
+    await expect.element(editorScreen.restoreConfirm()).toMatchTextContent('Restore this version?');
     await editorScreen.confirmRestore().click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
@@ -287,7 +287,7 @@ describe('Post settings post history', () => {
 
     // The editor surface shows the restored version, and the modal closes.
     await expect.element(editorScreen.titleInput()).toHaveValue('Published at last');
-    await expect.element(editorScreen.body(), POLL).toHaveTextContent('The published words');
+    await expect.element(editorScreen.body(), POLL).toMatchTextContent('The published words');
     await expect(editorScreen.postHistoryModal()).toHaveCount(0);
     await expect.element(editorScreen.featureImage()).toBeVisible();
     await expect.element(page.getByText('Revision restored.')).toBeVisible();
@@ -303,13 +303,13 @@ describe('Post settings post history', () => {
     await editorScreen.postHistoryRevision(1).select().click();
     await expect
       .element(editorScreen.postHistoryPreviewBody(), POLL)
-      .toHaveTextContent('The bare words');
+      .toMatchTextContent('The bare words');
     await expect
       .element(editorScreen.postHistoryPreviewTitle())
-      .toHaveTextContent('Hello from React');
+      .toMatchTextContent('Hello from React');
     await expect
       .element(editorScreen.postHistoryPreviewExcerpt())
-      .toHaveTextContent('The summary as it stands');
+      .toMatchTextContent('The summary as it stands');
 
     await editorScreen.postHistoryRevision(1).restore().click();
     await editorScreen.confirmRestore().click();
@@ -330,7 +330,7 @@ describe('Post settings post history', () => {
 
     await expect
       .element(editorScreen.postHistoryPreview())
-      .toHaveTextContent('This version has no body content to restore.');
+      .toMatchTextContent('This version has no body content to restore.');
     await expect(editorScreen.postHistoryRevision(1).restore()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
@@ -360,7 +360,7 @@ describe('Post settings post history', () => {
       response.resolve();
     }
     await expect(editorScreen.postHistoryModal()).toHaveCount(0);
-    await expect.element(editorScreen.body(), POLL).toHaveTextContent('The published words');
+    await expect.element(editorScreen.body(), POLL).toMatchTextContent('The published words');
   });
 
   it('leaves the post’s slug alone when the restored title differs', async () => {
@@ -440,13 +440,13 @@ describe('Post settings post history', () => {
 
     await expect
       .element(editorScreen.postHistoryModal().getByRole('alert'))
-      .toHaveTextContent(
+      .toMatchTextContent(
         'Your session expired. Sign in again in a new tab, then try restoring again.',
       );
     await expect(editorScreen.restoreConfirm()).toHaveCount(0);
     await userEvent.keyboard('{Escape}');
     await expect(editorScreen.postHistoryModal()).toHaveCount(0);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
   });
 
@@ -460,7 +460,7 @@ describe('Post settings post history', () => {
     await editorScreen.postHistoryRevision(2).select().click();
     await expect
       .element(editorScreen.postHistoryPreviewExcerpt())
-      .toHaveTextContent('The first summary');
+      .toMatchTextContent('The first summary');
 
     await editorScreen.postHistoryRevision(2).restore().click();
     await editorScreen.confirmRestore().click();
@@ -480,7 +480,7 @@ describe('Post settings post history', () => {
 
     await expect
       .element(editorScreen.restoreConfirm())
-      .toHaveTextContent('Restore version for published post?');
+      .toMatchTextContent('Restore version for published post?');
   });
 
   it('leaves the post alone when the restore is cancelled', async () => {

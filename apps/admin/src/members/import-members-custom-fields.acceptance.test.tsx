@@ -119,7 +119,7 @@ describe('Import members custom fields', () => {
     await openMappingStep();
 
     await importToggle('nickname').click();
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Select field');
 
     await fieldSelect('nickname').click();
     await importMembersScreen.addCustomFieldOption().click();
@@ -142,7 +142,7 @@ describe('Import members custom fields', () => {
     // The row carries the new field immediately, from the create response: the browse query
     // is invalidated but not awaited, so waiting for the refetch would leave the picker
     // blank in between.
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Nickname');
   });
 
   it('marks a custom field a membership field already has the name of', async () => {
@@ -157,10 +157,10 @@ describe('Import members custom fields', () => {
     // Two rows read "Name" now, and the mark on the custom one is the whole of what tells
     // them apart once the list is closed. The membership field carries nothing: it is the
     // rule rather than the exception, and marking both is what this replaced.
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Name');
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Custom');
-    await expect.element(fieldSelect('name')).toHaveTextContent('Name');
-    await expect.element(fieldSelect('name')).not.toHaveTextContent('Custom');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Name');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Custom');
+    await expect.element(fieldSelect('name')).toMatchTextContent('Name');
+    await expect.element(fieldSelect('name')).not.toMatchTextContent('Custom');
   });
 
   it('leaves a custom field no membership field is named like unmarked', async () => {
@@ -171,8 +171,8 @@ describe('Import members custom fields', () => {
     await openCreateForm('nickname');
     await createForm().getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
-    await expect.element(fieldSelect('nickname')).not.toHaveTextContent('Custom');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Nickname');
+    await expect.element(fieldSelect('nickname')).not.toMatchTextContent('Custom');
   });
 
   it('selects the second of two fields sharing a name from the keyboard', async () => {
@@ -183,7 +183,7 @@ describe('Import members custom fields', () => {
     await openCreateForm('nickname');
     await userEvent.fill(createForm().getByLabelText('Name'), 'Name');
     await createForm().getByRole('button', { name: 'Save' }).click();
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Name');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Name');
 
     await importToggle('city').click();
     await fieldSelect('city').click();
@@ -193,9 +193,9 @@ describe('Import members custom fields', () => {
     // Highlighting and selecting have to agree about which of the two this is.
     await userEvent.keyboard('{ArrowDown}{Enter}');
 
-    await expect.element(fieldSelect('city')).toHaveTextContent('Custom');
+    await expect.element(fieldSelect('city')).toMatchTextContent('Custom');
     // A target belongs to one column at a time, so this is the custom field changing hands.
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Select field');
 
     await importToggle('nickname').click();
     await importMembersScreen.importButton(1).click();
@@ -255,14 +255,14 @@ describe('Import members custom fields', () => {
 
     await openCreateForm('nickname');
     await importMembersScreen.createFieldForm().getByRole('button', { name: 'Save' }).click();
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Nickname');
 
     // Excluding a column from this import and choosing what it holds are different answers,
     // so switching it back on must not make the publisher pick again.
     await importToggle('nickname').click();
     await importToggle('nickname').click();
 
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Nickname');
   });
 
   // A composite spans several columns, so the form has nothing to say about which one this
@@ -302,7 +302,7 @@ describe('Import members custom fields', () => {
     await importMembersScreen.option('Shipping address (City)').click();
 
     // Mapped onto the part chosen, not the field's first column.
-    await expect.element(fieldSelect('city')).toHaveTextContent('Shipping address (City)');
+    await expect.element(fieldSelect('city')).toMatchTextContent('Shipping address (City)');
   });
 
   it('pins a name the site already uses to the name input', async () => {
@@ -332,7 +332,7 @@ describe('Import members custom fields', () => {
     await expect
       .element(createForm().getByText('A custom field with this name already exists.'))
       .toBeVisible();
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Select field');
   });
 
   it('shows why the site cannot take another field, and stops offering to retry', async () => {
@@ -383,7 +383,7 @@ describe('Import members custom fields', () => {
     await expect
       .element(createForm().getByText(/was created, but this column could not be mapped/))
       .toBeVisible();
-    await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
+    await expect.element(fieldSelect('nickname')).toMatchTextContent('Select field');
   });
 
   // The importer treats a column the mapping never mentions as "carry it through under its
@@ -461,8 +461,8 @@ describe('Import members custom fields', () => {
 
     // Detected too, not merely displayed: a column the publisher has to map by hand because
     // an earlier row was short is barely better than one they never saw.
-    await expect.element(fieldSelect('name')).toHaveTextContent('Name');
-    await expect.element(fieldSelect('note')).toHaveTextContent('Note');
+    await expect.element(fieldSelect('name')).toMatchTextContent('Name');
+    await expect.element(fieldSelect('note')).toMatchTextContent('Note');
 
     await importToggle('note').click();
     await importMembersScreen.importButton(2).click();
@@ -575,7 +575,7 @@ describe('Import members custom fields', () => {
     await openMappingStep();
 
     // The table is reached at all — waiting on a failed query would leave it on a spinner.
-    await expect.element(fieldSelect('email')).toHaveTextContent('Email');
+    await expect.element(fieldSelect('email')).toMatchTextContent('Email');
     await importMembersScreen.importButton(1).click();
 
     await expect
@@ -663,7 +663,7 @@ describe('Import members custom fields', () => {
     await importToggle('metafields.custom.nickname').click();
     await expect
       .element(fieldSelect('metafields.custom.nickname'))
-      .toHaveTextContent('Select field');
+      .toMatchTextContent('Select field');
     await fieldSelect('metafields.custom.nickname').click();
 
     // Both kinds are reachable from the one list, without choosing between them first.

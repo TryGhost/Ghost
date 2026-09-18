@@ -23,16 +23,16 @@ describe('Staff roles', () => {
       .toBeVisible();
     await expect
       .element(section.getByRole('tab', { name: 'Administrators' }))
-      .toHaveTextContent('Administrators1');
+      .toMatchTextContent('Administrators1');
     await expect
       .element(section.getByRole('tab', { name: 'Editors' }))
-      .toHaveTextContent('Editors1');
+      .toMatchTextContent('Editors1');
     await expect
       .element(section.getByRole('tab', { name: 'Authors' }))
-      .toHaveTextContent('Authors2');
+      .toMatchTextContent('Authors2');
     await expect
       .element(section.getByRole('tab', { name: 'Contributors' }))
-      .toHaveTextContent('Contributors1');
+      .toMatchTextContent('Contributors1');
 
     await section.getByRole('tab', { name: 'Authors' }).click();
     await expect(section.getByTestId('user-list-item')).toHaveCount(2);

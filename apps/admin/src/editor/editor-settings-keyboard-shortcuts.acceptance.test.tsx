@@ -95,10 +95,10 @@ describe('Post settings keyboard shortcuts', () => {
     await openShortcuts();
 
     const pane = editorScreen.settingsSubviewPane();
-    await expect.element(pane).toHaveTextContent('Formatting');
-    await expect.element(pane).toHaveTextContent('Editing');
-    await expect.element(pane).toHaveTextContent('Application');
-    await expect.element(pane).toHaveTextContent('Inserting');
+    await expect.element(pane).toMatchTextContent('Formatting');
+    await expect.element(pane).toMatchTextContent('Editing');
+    await expect.element(pane).toMatchTextContent('Application');
+    await expect.element(pane).toMatchTextContent('Inserting');
 
     expect(editorScreen.settingsShortcutRows()).toHaveLength(50);
     expect(editorScreen.settingsSidebar().element().getBoundingClientRect().width).toBe(350);

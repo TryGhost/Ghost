@@ -284,7 +284,7 @@ describe('Staff profiles', () => {
     const modal = settingsScreen.userDetailModal();
     await modal.getByLabelText('Full name').fill('Unsaved name');
     await modal.getByRole('button', { name: 'Close' }).click();
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent('leave');
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent('leave');
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Leave' }).click();
 
     await expect(settingsScreen.userDetailModal()).toHaveCount(0);
@@ -313,7 +313,7 @@ describe('Staff profiles', () => {
     await renderAdminApp(`/settings/staff/${owner.slug}`, { boot });
 
     const keys = settingsScreen.userDetailModal().getByTestId('api-keys');
-    await expect.element(keys).toHaveTextContent('token-id:secret');
+    await expect.element(keys).toMatchTextContent('token-id:secret');
     await keys.hover();
     await keys.getByRole('button', { name: 'Regenerate' }).click({ force: true });
     await settingsScreen
@@ -321,7 +321,7 @@ describe('Staff profiles', () => {
       .getByRole('button', { name: 'Regenerate your Staff Access Token' })
       .click();
 
-    await expect.element(keys).toHaveTextContent('token-id:new-secret');
+    await expect.element(keys).toMatchTextContent('token-id:new-secret');
     expect(regenerateApi.requests).toHaveLength(1);
   });
 
@@ -368,7 +368,7 @@ describe('Staff profiles', () => {
     );
     await renderAdminApp('/settings/staff/unknown-user', { boot });
 
-    await expect.element(settingsScreen.errorToast()).toHaveTextContent('User not found');
+    await expect.element(settingsScreen.errorToast()).toMatchTextContent('User not found');
     await expect(settingsScreen.userDetailModal()).toHaveCount(0);
     expect(currentRoute()).toBe('/settings/staff');
   });

@@ -63,8 +63,8 @@ describe('Disable member commenting', () => {
 
     const { dialog } = await openDisableDialog();
 
-    await expect.element(dialog).toHaveTextContent('Test Member');
-    await expect.element(dialog).toHaveTextContent("won't be able to comment");
+    await expect.element(dialog).toMatchTextContent('Test Member');
+    await expect.element(dialog).toMatchTextContent("won't be able to comment");
     await expect
       .element(dialog.getByRole('checkbox', { name: 'Hide all previous comments' }))
       .toBeVisible();
@@ -98,7 +98,7 @@ describe('Disable member commenting', () => {
         hide_comments: false,
       });
     await expect.element(row.commentingDisabledIndicator()).toBeVisible();
-    await expect.element(row).not.toHaveTextContent('Hidden');
+    await expect.element(row).not.toMatchTextContent('Hidden');
     await row.moreMenuButton().click();
     await expect.element(commentsScreen.enableCommentingMenuItem()).toBeVisible();
     await expect.element(commentsScreen.disableCommentingMenuItem()).not.toBeInTheDocument();
@@ -119,7 +119,7 @@ describe('Disable member commenting', () => {
         hide_comments: true,
       });
     await expect.element(row.commentingDisabledIndicator()).toBeVisible();
-    await expect.element(row).toHaveTextContent('Hidden');
+    await expect.element(row).toMatchTextContent('Hidden');
   });
 
   it('shows the enable action for members with commenting disabled', async () => {

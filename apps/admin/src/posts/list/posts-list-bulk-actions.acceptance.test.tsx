@@ -118,7 +118,7 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.confirmButton('Unpublish').click();
 
       await expect(postsListScreen.listItems()).toHaveCount(1);
-      await expect.element(postsListScreen.listItems().first()).toHaveTextContent('Live two');
+      await expect.element(postsListScreen.listItems().first()).toMatchTextContent('Live two');
     });
 
     /**
@@ -146,7 +146,9 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.confirmButton('Unpublish').click();
 
       await expect(postsListScreen.listItems()).toHaveCount(1);
-      await expect.element(postsListScreen.listItems().first()).toHaveTextContent('Existing draft');
+      await expect
+        .element(postsListScreen.listItems().first())
+        .toMatchTextContent('Existing draft');
     });
 
     // The rule with the worst failure mode: an edit must never remove rows
@@ -167,7 +169,7 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.confirmButton('Unpublish').click();
 
       await expect(postsListScreen.listItems()).toHaveCount(1);
-      await expect.element(postsListScreen.listItems().first()).toHaveTextContent('Untouched');
+      await expect.element(postsListScreen.listItems().first()).toMatchTextContent('Untouched');
     });
   });
 

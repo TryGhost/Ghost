@@ -66,10 +66,10 @@ describe('Tips and donations settings', () => {
     await expect.element(settingsScreen.suggestedAmount()).toHaveValue('5');
     await expect
       .element(section.getByRole('combobox', { name: 'Currency' }))
-      .toHaveTextContent('USD');
+      .toMatchTextContent('USD');
     await expect
       .element(settingsScreen.donateUrl())
-      .toHaveTextContent('http://test.com/#/portal/support');
+      .toMatchTextContent('http://test.com/#/portal/support');
     await userEvent.hover(settingsScreen.donateUrl().element());
 
     await expect.element(settingsScreen.previewShareableLink()).toBeVisible();
@@ -98,7 +98,7 @@ describe('Tips and donations settings', () => {
 
     await expect
       .element(page.getByRole('alert'))
-      .toHaveTextContent(
+      .toMatchTextContent(
         'An error occurred loading Tips & donations. Please refresh and try again.',
       );
     await expect(settingsScreen.tipsAndDonations()).toHaveCount(0);
@@ -130,7 +130,9 @@ describe('Tips and donations settings', () => {
     await userEvent.tab();
     await section.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(section).toHaveTextContent('Suggested amount cannot be more than $10000.');
+    await expect
+      .element(section)
+      .toMatchTextContent('Suggested amount cannot be more than $10000.');
     expect(settingsApi.requests).toHaveLength(0);
 
     await section.getByRole('button', { name: 'Cancel' }).click();

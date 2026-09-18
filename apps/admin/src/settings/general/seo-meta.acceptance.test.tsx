@@ -131,7 +131,7 @@ describe('SEO meta settings', () => {
     await section.getByRole('tab', { name: 'Facebook card' }).click();
     await section.getByLabelText('Upload Facebook image').upload(imageFile());
 
-    await expect.element(settingsScreen.errorToast()).toHaveTextContent('Unsupported file type');
+    await expect.element(settingsScreen.errorToast()).toMatchTextContent('Unsupported file type');
     expect(uploadApi.requests).toHaveLength(1);
     expect(settingsApi.requests).toHaveLength(0);
     await expect(section.getByTestId('image-upload-container')).toHaveCount(0);

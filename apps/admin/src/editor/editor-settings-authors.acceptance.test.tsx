@@ -105,7 +105,7 @@ describe('Post settings authors', () => {
     await openAuthors();
     await editorScreen.settingsAuthorsInput().click();
 
-    await expect.element(page.getByRole('alert')).toHaveTextContent('Couldn’t load authors.');
+    await expect.element(page.getByRole('alert')).toMatchTextContent('Couldn’t load authors.');
     expect(editorScreen.settingsAuthorNames()).toEqual(['Owner User']);
     expect(saveApi.requests).toHaveLength(0);
 
@@ -197,7 +197,7 @@ describe('Post settings authors', () => {
 
     await expect
       .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent('At least one author is required.');
+      .toMatchTextContent('At least one author is required.');
     expect(saveApi.requests).toHaveLength(0);
 
     // Crediting someone again recovers from the refusal.
@@ -362,7 +362,7 @@ describe('Post settings authors', () => {
 
     await expect
       .element(publishScreen.confirmError())
-      .toHaveTextContent('At least one author is required.');
+      .toMatchTextContent('At least one author is required.');
     await expect(publishScreen.complete()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });

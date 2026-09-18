@@ -292,7 +292,7 @@ describe('Sidebar user menu', () => {
     await expect.poll(() => api.requests.length).toBe(1);
     await expect
       .element(sidebarScreen.errorToast())
-      .toHaveTextContent("Couldn't sign out. Please try again.");
+      .toMatchTextContent("Couldn't sign out. Please try again.");
   });
 
   it('switches the appearance and shows the current choice', async () => {
@@ -304,19 +304,19 @@ describe('Sidebar user menu', () => {
     await expect.poll(isDarkMode).toBe(true);
 
     await sidebarScreen.userMenuTrigger().click();
-    await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent('Dark');
+    await expect.element(sidebarScreen.appearanceMenuItem()).toMatchTextContent('Dark');
     await sidebarScreen.appearanceMenuItem().click();
     await sidebarScreen.appearanceOption('light').click();
     await expect.poll(isDarkMode).toBe(false);
 
     await sidebarScreen.userMenuTrigger().click();
-    await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent('Light');
+    await expect.element(sidebarScreen.appearanceMenuItem()).toMatchTextContent('Light');
     await sidebarScreen.appearanceMenuItem().click();
     await sidebarScreen.appearanceOption('system').click();
     await expect.poll(isDarkMode).toBe(false);
 
     await sidebarScreen.userMenuTrigger().click();
-    await expect.element(sidebarScreen.appearanceMenuItem()).toHaveTextContent('System');
+    await expect.element(sidebarScreen.appearanceMenuItem()).toMatchTextContent('System');
   });
 });
 
@@ -326,7 +326,7 @@ describe('Network notification badge', () => {
     await renderAdminApp('/site', socialWebEnabled());
 
     await expect.element(sidebarScreen.navLink('Network')).toBeVisible();
-    await expect.element(sidebarScreen.networkBadge()).toHaveTextContent('5');
+    await expect.element(sidebarScreen.networkBadge()).toMatchTextContent('5');
   });
 
   it('does not show a badge when there are no unread notifications', async () => {
@@ -411,9 +411,9 @@ describe('Theme error notification', () => {
 
     const dialog = sidebarScreen.themeErrorsDialog();
     await expect.element(dialog).toBeVisible();
-    await expect.element(dialog).toHaveTextContent('1 error, 1 warning');
-    await expect.element(dialog).toHaveTextContent('Replace deprecated {{pageUrl}} helper');
-    await expect.element(dialog).not.toHaveTextContent('<code>');
+    await expect.element(dialog).toMatchTextContent('1 error, 1 warning');
+    await expect.element(dialog).toMatchTextContent('Replace deprecated {{pageUrl}} helper');
+    await expect.element(dialog).not.toMatchTextContent('<code>');
 
     const error = dialog.getByRole('button', { name: /GS001-DEPR-PURL/ });
     const warning = dialog.getByRole('button', { name: /GS001-DEPR-TWITTER-URL/ });
@@ -422,11 +422,11 @@ describe('Theme error notification', () => {
     expect(error.element().querySelector('code')?.textContent).toBe('{{pageUrl}}');
 
     await error.click();
-    await expect.element(dialog).toHaveTextContent('The {{pageUrl}} helper has been deprecated.');
-    await expect.element(dialog).toHaveTextContent('Affected files');
-    await expect.element(dialog).toHaveTextContent('default.hbs: deprecated usage');
+    await expect.element(dialog).toMatchTextContent('The {{pageUrl}} helper has been deprecated.');
+    await expect.element(dialog).toMatchTextContent('Affected files');
+    await expect.element(dialog).toMatchTextContent('default.hbs: deprecated usage');
     await warning.click();
-    await expect.element(dialog).toHaveTextContent('Use the social_url helper.');
+    await expect.element(dialog).toMatchTextContent('Use the social_url helper.');
     await expect.element(error).toHaveAttribute('aria-expanded', 'true');
 
     await dialog.getByRole('button', { name: 'OK', exact: true }).click();

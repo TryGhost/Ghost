@@ -61,7 +61,7 @@ describe('Staff actions', () => {
       .toBeVisible();
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Delete user' }).click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('User deleted');
+    await expect.element(settingsScreen.successToast()).toMatchTextContent('User deleted');
     await expect(settingsScreen.notification('User not found')).toHaveCount(0);
     await expect(settingsScreen.userDetailModal()).toHaveCount(0);
     await expect(settingsScreen.users().getByText(author.email, { exact: true })).toHaveCount(0);
@@ -86,11 +86,11 @@ describe('Staff actions', () => {
       .getByRole('button', { name: "Yep — I'm sure" })
       .click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('Ownership transferred');
+    await expect.element(settingsScreen.successToast()).toMatchTextContent('Ownership transferred');
     await settingsScreen.userDetailModal().getByRole('button', { name: 'Close' }).click();
     await expect
       .element(settingsScreen.users().getByTestId('owner-user'))
-      .toHaveTextContent(administrator.email);
+      .toMatchTextContent(administrator.email);
     expect(makeOwnerApi.lastRequest?.body).toEqual({ owner: [{ id: administrator.id }] });
   });
 
@@ -121,6 +121,6 @@ describe('Staff actions', () => {
 
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent('Your plan does not support more staff');
+      .toMatchTextContent('Your plan does not support more staff');
   });
 });

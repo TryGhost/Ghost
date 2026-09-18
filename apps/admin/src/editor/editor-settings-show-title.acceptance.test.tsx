@@ -279,7 +279,7 @@ describe('Post settings show title and feature image', () => {
 
     await expect
       .element(editorScreen.settingsShowTitleWarning())
-      .toHaveTextContent("Uh-oh. Looks like your theme doesn't support this feature.");
+      .toMatchTextContent("Uh-oh. Looks like your theme doesn't support this feature.");
     await expect
       .element(editorScreen.settingsShowTitleLearnMore())
       .toHaveAttribute('href', 'https://docs.ghost.org/themes/helpers/');

@@ -119,7 +119,7 @@ describe('Advanced integrations', () => {
     await section.getByRole('button', { name: 'Add custom integration' }).click();
     const createModal = settingsScreen.section('add-integration-modal');
     await createModal.getByRole('button', { name: 'Add' }).click();
-    await expect.element(createModal).toHaveTextContent(/Name is required/);
+    await expect.element(createModal).toMatchTextContent(/Name is required/);
     await createModal.getByLabelText('Name').fill('My integration');
     await createModal.getByRole('button', { name: 'Add' }).click();
     await expect.poll(() => createApi.requests.length).toBe(1);
@@ -127,12 +127,12 @@ describe('Advanced integrations', () => {
     const modal = settingsScreen.section('custom-integration-modal');
     await modal.getByLabelText('Description').fill('Test description');
     await modal.getByRole('button', { name: 'Close' }).click();
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Stay').click();
 
     await modal.getByLabelText('Description').fill('Test description');
     await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(section).toHaveTextContent(/Test description/);
+    await expect.element(section).toMatchTextContent(/Test description/);
     expect(editApi.requests).toHaveLength(1);
     // The modal closes itself once the saved state resets — clicking Close races that.
     await expect.element(modal).not.toBeInTheDocument();
@@ -158,15 +158,15 @@ describe('Advanced integrations', () => {
 
     const modal = await openCustomIntegration();
     const adminApiKey = modal.getByTestId('admin-api-key');
-    await expect.element(modal).toHaveTextContent(/admin-api-secret/);
+    await expect.element(modal).toMatchTextContent(/admin-api-secret/);
     await adminApiKey.getByText('admin-api-secret').hover();
     await adminApiKey.getByRole('button', { name: 'Regenerate' }).click();
     await settingsScreen
       .confirmationModal()
       .getByRole('button', { name: 'Regenerate Admin API Key' })
       .click();
-    await expect.element(modal).toHaveTextContent(/Admin API Key was successfully regenerated/);
-    await expect.element(modal).toHaveTextContent(/new-api-key/);
+    await expect.element(modal).toMatchTextContent(/Admin API Key was successfully regenerated/);
+    await expect.element(modal).toMatchTextContent(/new-api-key/);
     await expect(adminApiKey.getByRole('button', { name: 'Copy' })).toHaveCount(1);
     expect(refreshApi.requests).toHaveLength(1);
   });
@@ -191,7 +191,7 @@ describe('Advanced integrations', () => {
     await webhookModal.getByTestId('event-select').click();
     await settingsScreen.selectOption('Post created').click();
     await webhookModal.getByRole('button', { name: 'Add' }).click();
-    await expect.element(modal).toHaveTextContent(/My webhook/);
+    await expect.element(modal).toMatchTextContent(/My webhook/);
     expect(createWebhookApi.requests).toHaveLength(1);
 
     await modal.getByText('My webhook').click();
@@ -220,7 +220,7 @@ describe('Advanced integrations', () => {
       .click();
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent(/Your plan does not support custom integrations/);
+      .toMatchTextContent(/Your plan does not support custom integrations/);
   });
 
   it('shows only Unsplash as active in the initial integration list', async () => {
@@ -272,8 +272,8 @@ describe('Advanced integrations', () => {
     await openIntegration('Pintura', 'pintura-integration');
     const modal = settingsScreen.section('pintura-modal');
     await modal.getByRole('switch').click();
-    await expect.element(modal).toHaveTextContent(/Upload Pintura script/);
-    await expect.element(modal).toHaveTextContent(/Upload Pintura styles/);
+    await expect.element(modal).toMatchTextContent(/Upload Pintura script/);
+    await expect.element(modal).toMatchTextContent(/Upload Pintura styles/);
 
     await modal.getByRole('switch').click();
     await expect(modal.getByText('Upload Pintura script')).toHaveCount(0);
@@ -397,7 +397,7 @@ describe('Advanced integrations', () => {
 
     await modal.getByRole('switch').click();
     await modal.getByRole('button', { name: 'Close' }).click();
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Leave').click();
     await expect(modal).toHaveCount(0);
     expect(settingsApi.requests).toHaveLength(1);
@@ -412,7 +412,7 @@ describe('Advanced integrations', () => {
     const modal = settingsScreen.section('slack-modal');
     await modal.getByLabelText('Webhook URL').fill('badurl');
     await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal).toHaveTextContent(/The URL must be in a format like/);
+    await expect.element(modal).toMatchTextContent(/The URL must be in a format like/);
     expect(settingsApi.requests).toHaveLength(0);
 
     const url = 'https://hooks.slack.com/services/123456789/123456789/123456789';
@@ -439,7 +439,7 @@ describe('Advanced integrations', () => {
     await modal.getByLabelText('Webhook URL').fill(url);
     await modal.getByLabelText('Username').fill('My site');
     await modal.getByRole('button', { name: 'Send test notification' }).click();
-    await expect.element(settingsScreen.infoToast()).toHaveTextContent(/Check your Slack channel/);
+    await expect.element(settingsScreen.infoToast()).toMatchTextContent(/Check your Slack channel/);
     expect(testApi.requests).toHaveLength(1);
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'slack_url', value: url },
@@ -456,7 +456,7 @@ describe('Advanced integrations', () => {
     const modal = settingsScreen.section('slack-modal');
     await modal.getByLabelText('Webhook URL').fill('https://hooks.slack.com/services/1/2/3');
     await modal.getByRole('button', { name: 'Close' }).click();
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Leave').click();
     await expect(modal).toHaveCount(0);
     expect(settingsApi.requests).toHaveLength(0);
@@ -477,8 +477,8 @@ describe('Advanced integrations', () => {
     await openIntegration('Pintura', 'pintura-integration');
     const modal = settingsScreen.section('pintura-modal');
     await modal.getByRole('switch').click();
-    await expect.element(modal).toHaveTextContent(/Upload Pintura script/);
-    await expect.element(modal).toHaveTextContent(/Upload Pintura styles/);
+    await expect.element(modal).toMatchTextContent(/Upload Pintura script/);
+    await expect.element(modal).toMatchTextContent(/Upload Pintura styles/);
     const inputs = modal.element().querySelectorAll<HTMLInputElement>('input[type="file"]');
     const uploadButtons = modal.getByRole('button', { name: 'Upload' });
 
@@ -519,7 +519,7 @@ describe('Advanced integrations', () => {
     await openIntegration('Zapier', 'zapier-integration');
     const modal = settingsScreen.section('zapier-modal');
     const adminApiKey = modal.getByTestId('admin-api-key');
-    await expect.element(modal).toHaveTextContent(/zapier-api-secret/);
+    await expect.element(modal).toMatchTextContent(/zapier-api-secret/);
     await adminApiKey.getByText('zapier-api-secret').hover();
     await adminApiKey.getByRole('button', { name: 'Copy' }).click();
     await expect(adminApiKey.getByRole('button', { name: 'Copied' })).toHaveCount(1);
@@ -529,8 +529,8 @@ describe('Advanced integrations', () => {
       .confirmationModal()
       .getByRole('button', { name: 'Regenerate Admin API Key' })
       .click();
-    await expect.element(modal).toHaveTextContent(/Admin API Key was successfully regenerated/);
-    await expect.element(modal).toHaveTextContent(/new-api-key/);
+    await expect.element(modal).toMatchTextContent(/Admin API Key was successfully regenerated/);
+    await expect.element(modal).toMatchTextContent(/new-api-key/);
     await expect(adminApiKey.getByRole('button', { name: 'Copy' })).toHaveCount(1);
     expect(refreshApi.requests).toHaveLength(1);
     writeText.mockRestore();

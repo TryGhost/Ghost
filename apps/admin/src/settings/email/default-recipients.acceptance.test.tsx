@@ -37,7 +37,7 @@ describe('Default recipient settings', () => {
       .toBeVisible();
 
     await selectDefaultRecipients(choice);
-    await expect.element(settingsScreen.defaultRecipientsSelect()).toHaveTextContent(choice);
+    await expect.element(settingsScreen.defaultRecipientsSelect()).toMatchTextContent(choice);
     await section.getByRole('button', { name: 'Save' }).click();
 
     await expect(settingsApi).toHaveEditedSettings([
@@ -70,7 +70,7 @@ describe('Default recipient settings', () => {
     await expect.element(section.getByRole('button', { name: 'Saved' })).toBeVisible();
     await expect
       .element(settingsScreen.defaultRecipientsSelect())
-      .toHaveTextContent('Specific people');
+      .toMatchTextContent('Specific people');
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'editor_default_email_recipients', value: 'filter' },
       {
@@ -124,14 +124,14 @@ describe('Default recipient settings', () => {
 
     const section = settingsScreen.defaultRecipients();
     const filter = section.getByLabelText('Filter');
-    await expect.element(filter).toHaveTextContent(savedTier.name);
+    await expect.element(filter).toMatchTextContent(savedTier.name);
     await filter.click();
     await settingsScreen.selectOption(addedTier.name).click();
-    await expect.element(filter).toHaveTextContent(addedTier.name);
+    await expect.element(filter).toMatchTextContent(addedTier.name);
     await section.getByRole('button', { name: 'Cancel' }).click();
 
-    await expect.element(filter).toHaveTextContent(savedTier.name);
-    await expect.element(filter).not.toHaveTextContent(addedTier.name);
+    await expect.element(filter).toMatchTextContent(savedTier.name);
+    await expect.element(filter).not.toMatchTextContent(addedTier.name);
   });
 
   it('retries failed segment hydration without dropping the saved filter', async () => {
@@ -159,11 +159,11 @@ describe('Default recipient settings', () => {
 
     const section = settingsScreen.defaultRecipients();
     const filter = section.getByLabelText('Filter');
-    await expect.element(filter).toHaveTextContent('Retry loading saved filter');
+    await expect.element(filter).toMatchTextContent('Retry loading saved filter');
 
     fakeTiers([savedTier, addedTier]);
     await filter.click();
-    await expect.element(filter).toHaveTextContent(savedTier.name);
+    await expect.element(filter).toMatchTextContent(savedTier.name);
     await filter.click();
     await settingsScreen.selectOption(addedTier.name).click();
     await section.getByRole('button', { name: 'Save' }).click();

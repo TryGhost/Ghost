@@ -65,8 +65,8 @@ describe('Navigation settings', () => {
     await userEvent.keyboard('{Backspace}google.com');
     await userEvent.tab();
     await settingsScreen.navigationModal().getByRole('button', { name: 'Save' }).click();
-    await expect.element(item).toHaveTextContent(/You must specify a label/);
-    await expect.element(item).toHaveTextContent(/You must specify a valid URL or relative path/);
+    await expect.element(item).toMatchTextContent(/You must specify a label/);
+    await expect.element(item).toMatchTextContent(/You must specify a valid URL or relative path/);
 
     await item.getByLabelText('Label').click();
     await userEvent.keyboard('A');
@@ -87,8 +87,8 @@ describe('Navigation settings', () => {
     await userEvent.keyboard('{Backspace}google.com');
     await userEvent.tab();
     await item.addButton().click();
-    await expect.element(item).toHaveTextContent(/You must specify a label/);
-    await expect.element(item).toHaveTextContent(/You must specify a valid URL or relative path/);
+    await expect.element(item).toMatchTextContent(/You must specify a label/);
+    await expect.element(item).toMatchTextContent(/You must specify a valid URL or relative path/);
 
     await item.getByLabelText('Label').fill('Label');
     await item.getByLabelText('URL').click();
@@ -115,7 +115,7 @@ describe('Navigation settings', () => {
     await newItem().addButton().click();
     await settingsScreen.navigationModal().getByRole('button', { name: 'Close' }).click();
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Leave').click();
     await expect(settingsScreen.navigationModal()).toHaveCount(0);
     expect(settingsApi.requests).toHaveLength(0);

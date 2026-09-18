@@ -174,7 +174,7 @@ describe('Post settings X card', () => {
     await editorScreen.removeSettingsXImage().click();
 
     await expect(saveApi).toHaveSavedFields({ twitter_image: null });
-    await expect.element(editorScreen.settingsXImage()).toHaveTextContent('Add X image');
+    await expect.element(editorScreen.settingsXImage()).toMatchTextContent('Add X image');
   });
 
   it('persists a draft’s X title and description on the blur that ends each edit', async () => {
@@ -232,16 +232,16 @@ describe('Post settings X card', () => {
       .toHaveAttribute('placeholder', 'The excerpt this post already has');
 
     const preview = editorScreen.settingsXPreview();
-    await expect.element(preview).toHaveTextContent('test.com');
-    await expect.element(preview).toHaveTextContent('Hello from React');
-    await expect.element(preview).toHaveTextContent('The excerpt this post already has');
+    await expect.element(preview).toMatchTextContent('test.com');
+    await expect.element(preview).toMatchTextContent('Hello from React');
+    await expect.element(preview).toMatchTextContent('The excerpt this post already has');
 
     await editorScreen.settingsXTitle().fill('A better title for X');
     await editorScreen.settingsXDescription().fill('What this post is about on X');
 
-    await expect.element(preview).toHaveTextContent('A better title for X');
-    await expect.element(preview).toHaveTextContent('What this post is about on X');
-    await expect.element(preview).not.toHaveTextContent('The excerpt this post already has');
+    await expect.element(preview).toMatchTextContent('A better title for X');
+    await expect.element(preview).toMatchTextContent('What this post is about on X');
+    await expect.element(preview).not.toMatchTextContent('The excerpt this post already has');
   });
 
   it('falls back to the excerpt the server generated for the post', async () => {
@@ -254,7 +254,7 @@ describe('Post settings X card', () => {
       .toHaveAttribute('placeholder', 'The first words of the post itself');
     await expect
       .element(editorScreen.settingsXPreview())
-      .toHaveTextContent('The first words of the post itself');
+      .toMatchTextContent('The first words of the post itself');
   });
 
   it('falls back to the site’s own description for a post that has none', async () => {
@@ -265,7 +265,7 @@ describe('Post settings X card', () => {
     await expect
       .element(editorScreen.settingsXDescription())
       .toHaveAttribute('placeholder', SITE_DESCRIPTION);
-    await expect.element(editorScreen.settingsXPreview()).toHaveTextContent(SITE_DESCRIPTION);
+    await expect.element(editorScreen.settingsXPreview()).toMatchTextContent(SITE_DESCRIPTION);
   });
 
   it('previews the feature image the writer is looking at, and follows it as it changes', async () => {
@@ -334,7 +334,7 @@ describe('Post settings X card', () => {
     await expect
       .element(page.getByText('The image type you uploaded is not supported.', { exact: false }))
       .toBeVisible();
-    await expect.element(editorScreen.settingsXImage()).toHaveTextContent('Add X image');
+    await expect.element(editorScreen.settingsXImage()).toMatchTextContent('Add X image');
     expect(saveApi.requests).toHaveLength(0);
   });
 
@@ -350,7 +350,7 @@ describe('Post settings X card', () => {
     );
 
     await expect.element(page.getByText('Couldn’t upload the X image.')).toBeVisible();
-    await expect.element(editorScreen.settingsXImage()).toHaveTextContent('Add X image');
+    await expect.element(editorScreen.settingsXImage()).toMatchTextContent('Add X image');
     expect(saveApi.requests).toHaveLength(0);
   });
 
@@ -381,7 +381,7 @@ describe('Post settings X card', () => {
 
     await expect
       .element(editorScreen.settingsSubviewPane().getByRole('alert'))
-      .toHaveTextContent('X title cannot be longer than 300 characters.');
+      .toMatchTextContent('X title cannot be longer than 300 characters.');
     await expect.element(editorScreen.settingsXTitle()).toHaveAttribute('aria-invalid', 'true');
     // Refused where the writer is typing rather than as a save they did not ask for.
     await expect.poll(unsavedChangesGuarded).toBe(true);
@@ -392,7 +392,7 @@ describe('Post settings X card', () => {
 
     await expect
       .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent('X title cannot be longer than 300 characters.');
+      .toMatchTextContent('X title cannot be longer than 300 characters.');
     expect(saveApi.requests).toHaveLength(0);
   });
 
@@ -406,7 +406,7 @@ describe('Post settings X card', () => {
 
     await expect
       .element(editorScreen.settingsSubviewPane().getByRole('alert'))
-      .toHaveTextContent('X description cannot be longer than 500 characters.');
+      .toMatchTextContent('X description cannot be longer than 500 characters.');
     await expect
       .element(editorScreen.settingsXDescription())
       .toHaveAttribute('aria-invalid', 'true');
@@ -417,7 +417,7 @@ describe('Post settings X card', () => {
 
     await expect
       .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent('X description cannot be longer than 500 characters.');
+      .toMatchTextContent('X description cannot be longer than 500 characters.');
     expect(saveApi.requests).toHaveLength(0);
   });
 

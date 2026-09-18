@@ -190,7 +190,7 @@ describe('Analytics settings', () => {
 
     expect(exportApi.requests).toHaveLength(1);
     await expect.element(button).toBeDisabled();
-    await expect.element(button).toHaveTextContent('Loading...');
+    await expect.element(button).toMatchTextContent('Loading...');
 
     finishExport();
 

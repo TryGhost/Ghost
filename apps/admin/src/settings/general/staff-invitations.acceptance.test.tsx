@@ -57,7 +57,7 @@ describe('Staff invitations', () => {
     await modal.getByRole('radio', { name: /^Author\b/ }).click();
     await modal.getByRole('button', { name: 'Retry' }).click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('Invitation sent');
+    await expect.element(settingsScreen.successToast()).toMatchTextContent('Invitation sent');
     expect(addApi.lastRequest?.body).toEqual({
       invites: [
         {
@@ -122,7 +122,7 @@ describe('Staff invitations', () => {
     await item.hover();
     await item.getByRole('button', { name: 'Resend' }).click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('Invitation resent');
+    await expect.element(settingsScreen.successToast()).toMatchTextContent('Invitation resent');
     expect(deleteApi.requests).toHaveLength(1);
     expect(addApi.lastRequest?.body).toMatchObject({
       invites: [{ email: existing.email, role_id: existing.role_id }],
@@ -139,7 +139,7 @@ describe('Staff invitations', () => {
     await item.hover();
     await item.getByRole('button', { name: 'Revoke' }).click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('Invitation revoked');
+    await expect.element(settingsScreen.successToast()).toMatchTextContent('Invitation revoked');
     await expect(settingsScreen.users().getByTestId('user-invite')).toHaveCount(0);
     expect(deleteApi.requests).toHaveLength(1);
   });
@@ -163,7 +163,7 @@ describe('Staff invitations', () => {
       await expect(section.getByText('invitee100@test.com', { exact: true })).toHaveCount(0);
       await expect
         .element(section.getByRole('tab', { name: 'Invited' }))
-        .toHaveTextContent('Invited101');
+        .toMatchTextContent('Invited101');
       await section.getByRole('button', { name: 'Load more (showing 100/101 invites)' }).click();
 
       await expect.element(section.getByText('invitee100@test.com', { exact: true })).toBeVisible();
@@ -183,7 +183,7 @@ describe('Staff invitations', () => {
 
     const modal = await openInviteModal();
     await modal.getByRole('radio', { name: /^Author\b/ }).click();
-    await expect.element(modal).toHaveTextContent('Your plan does not support more staff');
+    await expect.element(modal).toMatchTextContent('Your plan does not support more staff');
 
     await modal.getByRole('radio', { name: /^Contributor\b/ }).click();
     await expect(modal.getByText('Your plan does not support more staff')).toHaveCount(0);

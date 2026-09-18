@@ -97,7 +97,7 @@ describe('Design settings', () => {
     await expect(homepagePreview).toHaveRequestedPreview({ c: '#cd5786' });
     await modal.getByRole('button', { name: 'Close' }).click();
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Leave').click();
     await expect(settingsScreen.designModal()).toHaveCount(0);
     expect(settingsApi.requests).toHaveLength(0);
@@ -136,7 +136,7 @@ describe('Design settings', () => {
     await modal.getByLabelText('Email signup text').fill('test');
     await modal.getByRole('button', { name: 'Close' }).click();
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Leave').click();
     await expect(settingsScreen.designModal()).toHaveCount(0);
     expect(settingsApi.requests).toHaveLength(0);
@@ -289,8 +289,8 @@ describe('Design settings', () => {
       },
     });
 
-    await expect.element(settingsScreen.headingFontSelect()).toHaveTextContent(/Cardo/);
-    await expect.element(settingsScreen.bodyFontSelect()).toHaveTextContent(/Inter/);
+    await expect.element(settingsScreen.headingFontSelect()).toMatchTextContent(/Cardo/);
+    await expect.element(settingsScreen.bodyFontSelect()).toMatchTextContent(/Inter/);
     await settingsScreen.headingFontSelect().click();
     await settingsScreen.selectOption('Theme default').click();
     await settingsScreen.bodyFontSelect().click();

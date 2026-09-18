@@ -101,7 +101,7 @@ describe('Advanced settings', () => {
 
     await expect
       .element(settingsScreen.successToast())
-      .toHaveTextContent('All content deleted from database.');
+      .toMatchTextContent('All content deleted from database.');
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     await expect.poll(() => api.requests.length).toBe(1);
   });
@@ -145,7 +145,7 @@ describe('Advanced settings', () => {
       .getByRole('button', { name: 'Reset all gift links' })
       .click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent(/Reset 3 gift links/);
+    await expect.element(settingsScreen.successToast()).toMatchTextContent(/Reset 3 gift links/);
     await expect.poll(() => api.requests.length).toBe(1);
   });
 
@@ -235,7 +235,7 @@ describe('Advanced settings', () => {
     await expect(modal).toHaveCount(0);
     await expect
       .element(settingsScreen.confirmationModal())
-      .toHaveTextContent('Import in progress');
+      .toMatchTextContent('Import in progress');
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Got it' }).click();
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
   });
@@ -330,7 +330,7 @@ describe('Advanced settings', () => {
         .upload(new File([`${kind}: test`], filename, { type: 'text/yaml' }));
       await expect
         .element(settingsScreen.successToast())
-        .toHaveTextContent(new RegExp(`${kind} uploaded`, 'i'));
+        .toMatchTextContent(new RegExp(`${kind} uploaded`, 'i'));
       expect(uploadApi.requests).toHaveLength(1);
 
       await section.getByRole('button', { name: `Download current ${kind}` }).click();
@@ -382,7 +382,7 @@ describe('Advanced settings', () => {
       await editor.fill(`${yaml}# edited\n`);
       await modal.getByRole('button', { name: 'Save' }).click();
 
-      await expect.element(settingsScreen.successToast()).toHaveTextContent(successText);
+      await expect.element(settingsScreen.successToast()).toMatchTextContent(successText);
       await expect.poll(() => uploadApi.requests.length).toBe(1);
       await expect(modal).toHaveCount(0);
     },
@@ -416,7 +416,7 @@ describe('Advanced settings', () => {
     await expect.element(editor).toBeVisible();
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByTestId('yaml-editor-error')).toHaveTextContent(errorMessage);
+    await expect.element(modal.getByTestId('yaml-editor-error')).toMatchTextContent(errorMessage);
     await expect.element(modal).toBeVisible();
     await expect(settingsScreen.successToast()).toHaveCount(0);
   });
@@ -483,13 +483,13 @@ describe('Advanced settings', () => {
 
     await settingsScreen.section('history').getByRole('button', { name: 'View history' }).click();
     const modal = settingsScreen.section('history-modal');
-    await expect.element(modal).toHaveTextContent(/Settings edited: Site \(navigation\) 2 times/);
+    await expect.element(modal).toMatchTextContent(/Settings edited: Site \(navigation\) 2 times/);
     await expect
       .element(modal)
-      .toHaveTextContent(/Page edited: The Clunkers Hall of Shame 2 times/);
+      .toMatchTextContent(/Page edited: The Clunkers Hall of Shame 2 times/);
     await expect
       .element(modal)
-      .toHaveTextContent(
+      .toMatchTextContent(
         /Security action reset authentication: 4 API keys rotated, 3 users locked/,
       );
     await modal.getByText('Useful tag').click();
@@ -530,7 +530,7 @@ describe('Advanced settings', () => {
       clearIndicator.getBoundingClientRect().right;
     expect(indicatorGap).toBeGreaterThanOrEqual(8);
     await clearButton.click();
-    await expect.element(staffFilter).toHaveTextContent('Search staff');
+    await expect.element(staffFilter).toMatchTextContent('Search staff');
     await expect.poll(currentRoute).toBe('/settings/history/view');
 
     await modal.getByRole('button', { name: 'Close' }).click();
@@ -547,7 +547,7 @@ describe('Advanced settings', () => {
 
     const modal = settingsScreen.section('history-modal');
     const staffFilter = modal.getByTestId('history-staff-filter');
-    await expect.element(staffFilter).toHaveTextContent(user.name);
+    await expect.element(staffFilter).toMatchTextContent(user.name);
     await expect.element(modal.getByRole('button', { name: 'Clear selection' })).toBeVisible();
   });
 });

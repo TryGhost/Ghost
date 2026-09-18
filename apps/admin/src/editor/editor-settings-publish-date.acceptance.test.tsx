@@ -137,7 +137,9 @@ describe('Post settings publish date', () => {
     // 10:00 UTC is 21:00 the same day in Sydney, not 10:00.
     await expect.element(editorScreen.settingsPublishDate()).toHaveValue('2025-12-01');
     await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
-    await expect.element(editorScreen.settingsPublishDateLabel()).toHaveTextContent('Publish date');
+    await expect
+      .element(editorScreen.settingsPublishDateLabel())
+      .toMatchTextContent('Publish date');
     expect(new URL(settingsRequestUrl ?? '', 'http://localhost').searchParams.get('group')).toBe(
       SETTINGS_GROUPS,
     );
@@ -225,7 +227,7 @@ describe('Post settings publish date', () => {
 
     await expect
       .element(editorScreen.settingsPublishDateError())
-      .toHaveTextContent('Please choose a past date and time.');
+      .toMatchTextContent('Please choose a past date and time.');
     await expect.element(editorScreen.settingsPublishTime()).toHaveAttribute('aria-invalid');
     expect(saveApi.requests).toHaveLength(0);
 
@@ -233,7 +235,7 @@ describe('Post settings publish date', () => {
 
     await expect
       .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent('Please choose a past date and time.');
+      .toMatchTextContent('Please choose a past date and time.');
     expect(saveApi.requests).toHaveLength(0);
 
     // The banner outlives the panel: closing it does not hide the reason.
@@ -241,7 +243,7 @@ describe('Post settings publish date', () => {
     await expect(editorScreen.settingsPublishDateError()).toHaveCount(0);
     await expect
       .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent('Please choose a past date and time.');
+      .toMatchTextContent('Please choose a past date and time.');
   });
 
   it('sends a scheduled post to the publish menu to be re-timed', async () => {
@@ -252,12 +254,12 @@ describe('Post settings publish date', () => {
 
     await expect
       .element(editorScreen.settingsPublishDateLabel())
-      .toHaveTextContent('Scheduled date');
+      .toMatchTextContent('Scheduled date');
     await expect.element(editorScreen.settingsPublishDate()).toBeDisabled();
     await expect.element(editorScreen.settingsPublishTime()).toBeDisabled();
     await expect
       .element(editorScreen.settingsPublishDateNote())
-      .toHaveTextContent('Use the publish menu to re-schedule');
+      .toMatchTextContent('Use the publish menu to re-schedule');
   });
 
   it('lets a sent post be re-timed, as every other published one is', async () => {

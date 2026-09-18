@@ -54,10 +54,10 @@ describe('Posts list rows', () => {
 
     const row = postsListScreen.listItems().first();
     await expect.element(row).toBeVisible();
-    await expect.element(row).toHaveTextContent('A published post');
-    await expect.element(row).toHaveTextContent('By Ada Lovelace');
-    await expect.element(row).toHaveTextContent('Engineering');
-    await expect.element(row).toHaveTextContent('Published');
+    await expect.element(row).toMatchTextContent('A published post');
+    await expect.element(row).toMatchTextContent('By Ada Lovelace');
+    await expect.element(row).toMatchTextContent('Engineering');
+    await expect.element(row).toMatchTextContent('Published');
   });
 
   // Scoped to one bucket: the fake doesn't implement NQL, so an unfiltered
@@ -86,7 +86,7 @@ describe('Posts list rows', () => {
 
     await expect
       .element(postsListScreen.listItems().first())
-      .toHaveTextContent('Published but failed to send newsletter');
+      .toMatchTextContent('Published but failed to send newsletter');
   });
 
   it("does not say 'Sent' for an email-only post that failed", async () => {
@@ -100,9 +100,9 @@ describe('Posts list rows', () => {
     await renderAdminApp('/posts?type=sent', FLAG_ON);
 
     const row = postsListScreen.listItems().first();
-    await expect.element(row).toHaveTextContent('Failed to send newsletter');
+    await expect.element(row).toMatchTextContent('Failed to send newsletter');
     // A substring check alone would pass against "Sent - Failed to ...".
-    await expect.element(row).not.toHaveTextContent(/(^|[^-])\bSent\b/);
+    await expect.element(row).not.toMatchTextContent(/(^|[^-])\bSent\b/);
   });
 
   it('links a row to the editor', async () => {
@@ -227,9 +227,9 @@ describe('Posts list email sending status', () => {
     });
 
     const row = postsListScreen.listItems().first();
-    await expect.element(row).toHaveTextContent('Preparing emails · 250 of 1,000');
-    await expect.element(row).not.toHaveTextContent('minute');
-    await expect.element(row).not.toHaveTextContent('Published and sent');
+    await expect.element(row).toMatchTextContent('Preparing emails · 250 of 1,000');
+    await expect.element(row).not.toMatchTextContent('minute');
+    await expect.element(row).not.toMatchTextContent('Published and sent');
     await expect.element(row.getByLabelText(/Visitors/)).toBeVisible();
     await expect.element(row.getByLabelText(/Sent/)).not.toBeInTheDocument();
     await expect.element(row.getByLabelText(/Opens/)).not.toBeInTheDocument();
@@ -256,8 +256,8 @@ describe('Posts list email sending status', () => {
     await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
 
     const row = postsListScreen.listItems().first();
-    await expect.element(row).toHaveTextContent('Sending emails');
-    await expect.element(row).not.toHaveTextContent('Published and sent');
+    await expect.element(row).toMatchTextContent('Sending emails');
+    await expect.element(row).not.toMatchTextContent('Published and sent');
     await expect.poll(() => failedStatusApi.requests.length).toBe(1);
 
     const recoveredStatusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
@@ -275,7 +275,7 @@ describe('Posts list email sending status', () => {
     focusManager.setFocused(true);
 
     await expect.poll(() => recoveredStatusApi.requests.length).toBeGreaterThan(0);
-    await expect.element(row).toHaveTextContent('Sending emails · 500 of 1,000');
+    await expect.element(row).toMatchTextContent('Sending emails · 500 of 1,000');
     focusManager.setFocused(undefined);
   });
 
@@ -333,7 +333,7 @@ describe('Posts list email sending status', () => {
     });
 
     const row = postsListScreen.listItems().first();
-    await expect.element(row).toHaveTextContent('Sending emails · 500 of 1,000');
+    await expect.element(row).toMatchTextContent('Sending emails · 500 of 1,000');
     await expect.element(row.getByLabelText(/Sent/)).not.toBeInTheDocument();
 
     sendingComplete = true;
@@ -342,10 +342,10 @@ describe('Posts list email sending status', () => {
       .poll(() => statusRequestCount, { timeout: 3500 })
       .toBeGreaterThan(pendingStatusRequestCount);
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
-    await expect.element(row).toHaveTextContent('Published and sent');
-    await expect.element(row).not.toHaveTextContent('Sending emails');
-    await expect.element(row.getByLabelText(/Opens/)).toHaveTextContent('40%');
-    await expect.element(row.getByLabelText(/Clicks/)).toHaveTextContent('6%');
+    await expect.element(row).toMatchTextContent('Published and sent');
+    await expect.element(row).not.toMatchTextContent('Sending emails');
+    await expect.element(row.getByLabelText(/Opens/)).toMatchTextContent('40%');
+    await expect.element(row.getByLabelText(/Clicks/)).toMatchTextContent('6%');
   });
 
   it('uses the existing failure state when polling reports a failure', async () => {
@@ -388,15 +388,15 @@ describe('Posts list email sending status', () => {
 
     await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
     const row = postsListScreen.listItems().first();
-    await expect.element(row).toHaveTextContent('Sending emails');
+    await expect.element(row).toMatchTextContent('Sending emails');
 
     sendingFailed = true;
     const pendingStatusRequestCount = statusRequestCount;
     await expect
       .poll(() => statusRequestCount, { timeout: 3500 })
       .toBeGreaterThan(pendingStatusRequestCount);
-    await expect.element(row).toHaveTextContent('Published but failed to send newsletter');
-    await expect.element(row).not.toHaveTextContent('Emails failed to send');
+    await expect.element(row).toMatchTextContent('Published but failed to send newsletter');
+    await expect.element(row).not.toMatchTextContent('Emails failed to send');
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
   });
 
@@ -419,8 +419,8 @@ describe('Posts list email sending status', () => {
     const app = await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
 
     const row = postsListScreen.listItems().first();
-    await expect.element(row).toHaveTextContent('Published and sent');
-    await expect.element(row).not.toHaveTextContent('Sending emails');
+    await expect.element(row).toMatchTextContent('Published and sent');
+    await expect.element(row).not.toMatchTextContent('Sending emails');
     await expect.poll(() => statusApi.requests.length).toBe(1);
     await app.unmount();
   });
@@ -468,8 +468,8 @@ describe('Posts list email sending status', () => {
 
     await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
 
-    await expect.element(postsListScreen.listItems().nth(0)).toHaveTextContent('100 of 1,000');
-    await expect.element(postsListScreen.listItems().nth(1)).toHaveTextContent('200 of 2,000');
+    await expect.element(postsListScreen.listItems().nth(0)).toMatchTextContent('100 of 1,000');
+    await expect.element(postsListScreen.listItems().nth(1)).toMatchTextContent('200 of 2,000');
     await expect.poll(() => firstStatusApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => secondStatusApi.requests.length).toBeGreaterThan(0);
   });
@@ -486,8 +486,8 @@ describe('Posts list email sending status', () => {
     await renderAdminApp('/posts?type=published', FLAG_ON);
 
     const row = postsListScreen.listItems().first();
-    await expect.element(row).toHaveTextContent('Published and sent');
-    await expect.element(row).not.toHaveTextContent('Sending emails');
+    await expect.element(row).toMatchTextContent('Published and sent');
+    await expect.element(row).not.toMatchTextContent('Sending emails');
   });
 });
 
@@ -503,7 +503,7 @@ describe('Posts list empty states', () => {
     await renderAdminApp('/posts', FLAG_ON);
 
     await expect.element(postsListScreen.emptyCold()).toBeVisible();
-    await expect.element(postsListScreen.emptyCold()).toHaveTextContent('Start creating content');
+    await expect.element(postsListScreen.emptyCold()).toMatchTextContent('Start creating content');
   });
 
   it('uses the page wording on the pages screen', async () => {
@@ -512,7 +512,7 @@ describe('Posts list empty states', () => {
 
     await expect
       .element(postsListScreen.emptyCold())
-      .toHaveTextContent('Tell the world about yourself');
+      .toMatchTextContent('Tell the world about yourself');
   });
 
   it('offers a way back when a filter matched nothing', async () => {
@@ -522,7 +522,7 @@ describe('Posts list empty states', () => {
     await expect.element(postsListScreen.emptyFiltered()).toBeVisible();
     await expect
       .element(postsListScreen.emptyFiltered())
-      .toHaveTextContent('No posts match the current filter');
+      .toMatchTextContent('No posts match the current filter');
   });
 
   // Ember's "Show all posts" resets the filters but deliberately not the
@@ -653,14 +653,14 @@ describe('Posts list metric hover panels', () => {
     await renderAdminApp('/posts?type=published', FLAG_ON);
 
     // The column shows the rate; the panel underneath shows raw counts.
-    await expect.element(postsListScreen.metricCell('Opens')).toHaveTextContent('30%');
+    await expect.element(postsListScreen.metricCell('Opens')).toMatchTextContent('30%');
     await postsListScreen.metricCell('Opens').hover();
 
     const panel = postsListScreen.metricPanel();
     await expect.element(panel).toBeVisible();
-    await expect.element(panel).toHaveTextContent('Newsletter performance');
-    await expect.element(panel).toHaveTextContent('Sent');
-    await expect.element(panel).toHaveTextContent('200');
-    await expect.element(panel).toHaveTextContent('60');
+    await expect.element(panel).toMatchTextContent('Newsletter performance');
+    await expect.element(panel).toMatchTextContent('Sent');
+    await expect.element(panel).toMatchTextContent('200');
+    await expect.element(panel).toMatchTextContent('60');
   });
 });

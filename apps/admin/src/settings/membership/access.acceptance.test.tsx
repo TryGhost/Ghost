@@ -62,11 +62,11 @@ describe('Access settings', () => {
 
     await expect
       .element(section.getByTestId('subscription-access-select'))
-      .toHaveTextContent('Public');
+      .toMatchTextContent('Public');
     await expect
       .element(section.getByTestId('default-post-access-select'))
-      .toHaveTextContent('Public');
-    await expect.element(section.getByTestId('commenting-select')).toHaveTextContent('Nobody');
+      .toMatchTextContent('Public');
+    await expect.element(section.getByTestId('commenting-select')).toMatchTextContent('Nobody');
 
     await choose('subscription-access-select', 'Invite-only');
     await choose('default-post-access-select', 'Members only');
@@ -87,7 +87,9 @@ describe('Access settings', () => {
     await renderAdminApp('/settings');
     const section = settingsScreen.access();
 
-    await expect.element(section.getByTestId('site-visibility-select')).toHaveTextContent('Public');
+    await expect
+      .element(section.getByTestId('site-visibility-select'))
+      .toMatchTextContent('Public');
     await choose('site-visibility-select', 'Private');
     await section.getByTestId('site-access-code').fill('secret-access-code');
     await expect(section.getByText(/A private RSS feed is available/)).toHaveCount(0);
@@ -223,7 +225,7 @@ describe('Access settings', () => {
       .toBeDisabled();
     await expect
       .element(settingsScreen.enableNewsletters())
-      .toHaveTextContent('which disables all newsletter sending');
+      .toMatchTextContent('which disables all newsletter sending');
   });
 
   it('selects specific active and archived tiers for new-post access', async () => {

@@ -268,7 +268,7 @@ describe('Post preview modal', () => {
 
     await previewScreen.previewAs('Specific tier');
 
-    await expect.element(previewScreen.tierSelect()).toHaveTextContent('Gold');
+    await expect.element(previewScreen.tierSelect()).toMatchTextContent('Gold');
     await expect
       .element(previewScreen.browserFrame())
       .toHaveAttribute('src', `${PREVIEW_URL}?member_status=paid&member_tier=gold`);
@@ -328,8 +328,8 @@ describe('Post preview modal', () => {
 
     await previewScreen.emailTab().click();
 
-    await expect.element(previewScreen.emailSubject()).toHaveTextContent('Hello subject');
-    await expect.element(previewScreen.emailFrom()).toHaveTextContent('Weekly digest');
+    await expect.element(previewScreen.emailSubject()).toMatchTextContent('Hello subject');
+    await expect.element(previewScreen.emailFrom()).toMatchTextContent('Weekly digest');
     await expect.poll(() => previewApi.lastRequest?.url).toContain('member_status=free');
     await expect.poll(() => previewApi.lastRequest?.url).toContain('newsletter=weekly-digest');
 
@@ -393,7 +393,7 @@ describe('Post preview modal', () => {
 
     await previewScreen.emailTab().click();
 
-    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect.element(previewScreen.newsletterSelect()).toMatchTextContent('Monthly roundup');
     await expect.poll(() => newslettersApi.requests.length).toBe(2);
     expect(new URL(newslettersApi.requests[1].url).searchParams.get('page')).toBe('2');
     // A newsletter past the first page must not be taken for one that has been archived.
@@ -415,7 +415,7 @@ describe('Post preview modal', () => {
 
     await previewScreen.emailTab().click();
 
-    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect.element(previewScreen.newsletterSelect()).toMatchTextContent('Monthly roundup');
     await expect.poll(() => previewApi.lastRequest?.url).toContain('newsletter=monthly-roundup');
   });
 
@@ -438,7 +438,7 @@ describe('Post preview modal', () => {
 
     await previewScreen.emailTab().click();
 
-    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Retired letter');
+    await expect.element(previewScreen.newsletterSelect()).toMatchTextContent('Retired letter');
     await expect.poll(() => previewApi.lastRequest?.url).toContain('newsletter=retired-letter');
 
     await previewScreen.testEmailButton().click();
@@ -582,14 +582,14 @@ describe('Post preview modal', () => {
 
     await page.getByRole('button', { name: 'Open preview' }).click();
     await previewScreen.emailTab().click();
-    await expect.element(previewScreen.emailSubject()).toHaveTextContent('Original subject');
+    await expect.element(previewScreen.emailSubject()).toMatchTextContent('Original subject');
     expect(previewApi.requests).toHaveLength(1);
 
     await previewScreen.closeButton().click();
     subject = 'Updated subject';
     await page.getByRole('button', { name: 'Open preview' }).click();
 
-    await expect.element(previewScreen.emailSubject()).toHaveTextContent('Updated subject');
+    await expect.element(previewScreen.emailSubject()).toMatchTextContent('Updated subject');
     expect(previewApi.requests).toHaveLength(2);
     expect(onBeforeOpen).toHaveBeenCalledTimes(2);
   });

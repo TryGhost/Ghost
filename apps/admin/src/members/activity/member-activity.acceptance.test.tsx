@@ -114,7 +114,7 @@ describe('Member activity', () => {
     }));
     await renderAdminApp('/members-activity?member=ada', { labs });
     await expect.element(screen.text('Signed up')).toBeVisible();
-    await expect.element(screen.filterButton()).toHaveTextContent('All events');
+    await expect.element(screen.filterButton()).toMatchTextContent('All events');
     await screen.filterButton().click();
     await expect.element(screen.eventType('Email opened')).toBeVisible();
     const eventNames = () =>
@@ -129,7 +129,7 @@ describe('Member activity', () => {
     await userEvent.keyboard('{Escape}');
     await expect
       .element(screen.filterButton())
-      .toHaveTextContent(`${originalOrder.length - 1} events`);
+      .toMatchTextContent(`${originalOrder.length - 1} events`);
     await expect.element(screen.heading('No activities match the current filter')).toBeVisible();
     await expect
       .poll(currentRoute)
@@ -323,7 +323,7 @@ describe('Member activity', () => {
     );
     screen.scrollToEnd();
     await expect.element(screen.heading('Couldn’t load more activity')).toBeVisible();
-    await expect.element(page.getByRole('alert')).toHaveTextContent('Couldn’t load more activity');
+    await expect.element(page.getByRole('alert')).toMatchTextContent('Couldn’t load more activity');
     await expect(screen.rows()).toHaveCount(50);
     fakeAdminEndpoint('GET', EVENTS, ({ url }) => ({
       events: new URL(url).searchParams.get('filter')?.includes('data.created_at:<')

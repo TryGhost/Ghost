@@ -73,7 +73,7 @@ describe('Post editor feature image', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.featureImage()).toBeVisible();
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
 
     const dropzone = editorScreen
       .featureImage()
@@ -123,7 +123,7 @@ describe('Post editor feature image', () => {
     await userEvent.keyboard('Photo by me');
 
     // The caption has reached the editor, so a save would have been sent by now.
-    await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Photo by me');
+    await expect.element(editorScreen.featureImageCaption()).toMatchTextContent('Photo by me');
     await expect.poll(() => saveApi.requests.length).toBe(0);
 
     await editorScreen.titleInput().click();
@@ -143,11 +143,11 @@ describe('Post editor feature image', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     // The caption editor has loaded and re-serialized what it was given.
-    await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Photo by Jane');
+    await expect.element(editorScreen.featureImageCaption()).toMatchTextContent('Photo by Jane');
     await editorScreen.titleInput().click();
 
     await expect.poll(() => saveApi.requests.length).toBe(0);
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.element(editorScreen.status()).toMatchTextContent('Draft - Saved');
   });
 
   it('stages a feature image edit on a published post until it is saved explicitly', async () => {

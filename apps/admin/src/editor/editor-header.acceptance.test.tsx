@@ -222,7 +222,7 @@ describe('Editor header actions', () => {
     expect(saveApi.requests).toHaveLength(1);
 
     await expect.element(editorScreen.root()).toBeVisible();
-    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+    await expect.element(editorScreen.status()).toMatchTextContent('Published');
     // The header's controls follow the acknowledged status through the session view.
     await expect.element(editorScreen.updateButton()).toBeVisible();
     await expect(editorScreen.previewButton()).toHaveCount(0);
@@ -267,7 +267,7 @@ describe('Editor header actions', () => {
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     // A published post has nothing to update until it is edited.
     await expect.element(editorScreen.updateButton()).toBeDisabled();
 
@@ -330,7 +330,7 @@ describe('Editor header actions', () => {
     const saveApi = fakeSavablePost({}, { holdFirstSave: held.promise });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await typeIntoBody(' and more');
     await editorScreen.previewButton().click();
 
@@ -370,7 +370,7 @@ describe('Editor header actions', () => {
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
 
-    await expect.element(publishScreen.confirmError()).toHaveTextContent('Validation failed');
+    await expect.element(publishScreen.confirmError()).toMatchTextContent('Validation failed');
     await expect(publishScreen.complete()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(1);
   });
@@ -472,7 +472,7 @@ describe('Editor header actions', () => {
     );
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
+    await expect.element(editorScreen.publishInputsError()).toMatchTextContent('went wrong');
     await expect.element(editorScreen.publishInputsError()).toHaveAttribute('role', 'alert');
     await expect.element(editorScreen.publishButton()).toBeDisabled();
 
@@ -510,7 +510,7 @@ describe('Editor header actions', () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await typeIntoBody(' and more');
     await publishThroughFlow();
 
@@ -529,7 +529,7 @@ describe('Editor header actions', () => {
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
 
-    await expect.element(editorScreen.reauthBanner()).toHaveTextContent('Your session expired');
+    await expect.element(editorScreen.reauthBanner()).toMatchTextContent('Your session expired');
     // The engine holds the publish until the session is restored, so the flow waits with it.
     await expect.element(publishScreen.confirm()).toBeVisible();
     await expect(publishScreen.complete()).toHaveCount(0);
@@ -546,7 +546,7 @@ describe('Editor header actions', () => {
 
     await expect
       .element(publishScreen.confirmError())
-      .toHaveTextContent('Someone else has edited this post');
+      .toMatchTextContent('Someone else has edited this post');
     await expect(publishScreen.complete()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(1);
   });

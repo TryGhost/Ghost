@@ -46,10 +46,10 @@ describe('Automations list', () => {
     await expect.element(automationsScreen.columnHeader('Total entries')).toBeVisible();
     await expect.element(automationsScreen.columnHeader('In progress')).toBeVisible();
     const row = automationsScreen.rows();
-    await expect.element(row).toHaveTextContent('Greet new free members.');
-    await expect.element(row).toHaveTextContent('1,432');
-    await expect.element(row).toHaveTextContent('118');
-    await expect.element(row).toHaveTextContent('Live');
+    await expect.element(row).toMatchTextContent('Greet new free members.');
+    await expect.element(row).toMatchTextContent('1,432');
+    await expect.element(row).toMatchTextContent('118');
+    await expect.element(row).toMatchTextContent('Live');
     // Stripe is disconnected in the default boot, which hides the paid welcome flow.
     await expect(automationsScreen.rows()).toHaveCount(1);
   });

@@ -12,7 +12,7 @@ Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.ts
 
 | Asserting         | Idiom                                                                                                                                                                |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Element state     | `await expect.element(locator).toBeVisible() / toHaveTextContent() / toHaveAttribute()`                                                                              |
+| Element state     | `await expect.element(locator).toBeVisible() / toMatchTextContent() / toHaveAttribute()`                                                                             |
 | Element counts    | `await expect(locator).toHaveCount(n)`                                                                                                                               |
 | Captured requests | `await expect(membersApi).toHaveSentFilter("label:[VIP]")` / `toHaveSentSearch(...)` — string for an exact match against the decoded param, RegExp for a partial one |
 | Edited settings   | `await expect(settingsApi).toHaveEditedSettings([{key: "title", value: "New title"}])` — exact settings in the latest `PUT /settings/` payload; order-independent    |
@@ -119,7 +119,7 @@ pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the bro
 
 ## Debugging
 
-- **Failure screenshots** land in `__screenshots__/` (gitignored) — the fastest way to see what actually rendered.
+- **Failure screenshots** land in `.vitest/attachments/failure-screenshots/` (gitignored) — the fastest way to see what actually rendered.
 - **418 bodies** name the unhandled request and list what is faked.
 - There are **no Playwright traces** in this tier — a spec that needs trace-level debugging belongs in `e2e/`.
 

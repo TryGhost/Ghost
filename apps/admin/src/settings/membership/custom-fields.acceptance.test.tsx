@@ -116,9 +116,9 @@ describe('Custom fields', () => {
 
     const row = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(row).toHaveCount(1);
-    await expect.element(row).toHaveTextContent('Company');
-    await expect.element(row).toHaveTextContent('Short text');
-    await expect.element(row).not.toHaveTextContent('Visible to members');
+    await expect.element(row).toMatchTextContent('Company');
+    await expect.element(row).toMatchTextContent('Short text');
+    await expect.element(row).not.toMatchTextContent('Visible to members');
   });
 
   it('validates and creates a short-text field without sending a key', async () => {
@@ -250,10 +250,10 @@ describe('Custom fields', () => {
     await renderAdminApp('/settings', flagOn);
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
-    await expect.element(rows).toHaveTextContent('Visible to members');
+    await expect.element(rows).toMatchTextContent('Visible to members');
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
-    await expect.element(rows).not.toHaveTextContent('Visible to members');
+    await expect.element(rows).not.toMatchTextContent('Visible to members');
   });
 
   it('closes a field to members with the same switch', async () => {
@@ -408,15 +408,15 @@ describe('Custom fields', () => {
     const confirmation = settingsScreen.confirmationModal();
     await expect
       .element(confirmation)
-      .toHaveTextContent(
+      .toMatchTextContent(
         'will no longer show up on your members, collect new information, or appear in filters',
       );
     await expect
       .element(confirmation)
-      .toHaveTextContent('Values already collected for this field will remain unchanged');
+      .toMatchTextContent('Values already collected for this field will remain unchanged');
     await confirmation.getByRole('button', { name: 'Archive' }).click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('Custom field archived');
+    await expect.element(settingsScreen.successToast()).toMatchTextContent('Custom field archived');
     // Archiving is a status edit, not a DELETE — DELETE is permanent removal.
     expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ status: 'archived' }] });
   });
@@ -429,11 +429,11 @@ describe('Custom fields', () => {
     // Active tab is the default and shows only active fields.
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(1);
-    await expect.element(rows).toHaveTextContent('Company');
+    await expect.element(rows).toMatchTextContent('Company');
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
     await expect(rows).toHaveCount(1);
-    await expect.element(rows).toHaveTextContent('Old hobby');
+    await expect.element(rows).toMatchTextContent('Old hobby');
   });
 
   it('collapses long lists behind Show all, five at a time like recommendations', async () => {
@@ -483,7 +483,7 @@ describe('Custom fields', () => {
     await modal.getByRole('button', { name: 'Save' }).click();
 
     await expect(rows).toHaveCount(7);
-    await expect.element(rows.last()).toHaveTextContent('Newest');
+    await expect.element(rows.last()).toMatchTextContent('Newest');
 
     // Save holds the modal open for its ~500ms saving state. Verify the
     // async save has completed and the parent-controlled modal unmounts.
@@ -526,7 +526,7 @@ describe('Custom fields', () => {
 
     // The row stays where it was dropped rather than snapping back and jumping when
     // the response lands.
-    await expect.element(rows.first()).toHaveTextContent('Nickname');
+    await expect.element(rows.first()).toMatchTextContent('Nickname');
 
     // And the response settles it, so the list is never re-read. A reorder only
     // succeeds when it named exactly the fields the site has, so its response says
@@ -563,7 +563,7 @@ describe('Custom fields', () => {
       rows.first(),
     );
 
-    await expect.element(rows.first()).toHaveTextContent('Nickname');
+    await expect.element(rows.first()).toMatchTextContent('Nickname');
 
     // Let the request finish so it isn't left hanging. Whether the row survives the
     // settled response is the drag test's job — repeating the assertion here would
@@ -615,7 +615,7 @@ describe('Custom fields', () => {
     // the field and say what to do about it. And the list goes back to the order the
     // server holds rather than keeping an arrangement that was refused.
     await expect.element(page.getByText(/is missing from the order/)).toBeVisible();
-    await expect.element(rows.first()).toHaveTextContent('Company');
+    await expect.element(rows.first()).toMatchTextContent('Company');
   });
 
   it('sends the archived fields too, keeping their places in the order', async () => {
@@ -720,13 +720,13 @@ describe('Custom fields', () => {
     const confirmation = settingsScreen.confirmationModal();
     await expect
       .element(confirmation)
-      .toHaveTextContent(
+      .toMatchTextContent(
         'Old hobby and every value collected from your members will be permanently deleted from the database. This can’t be undone.',
       );
     const fetchesBeforeConfirm = customFieldsApi.requests.length;
     await confirmation.getByRole('button', { name: 'Delete' }).click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('Custom field deleted');
+    await expect.element(settingsScreen.successToast()).toMatchTextContent('Custom field deleted');
     expect(deleteApi.requests).toHaveLength(1);
 
     // The list refetches after the delete; the refreshed outcome (the
@@ -769,13 +769,13 @@ describe('Custom fields', () => {
     const confirmation = settingsScreen.confirmationModal();
     await expect
       .element(confirmation)
-      .toHaveTextContent('Values already collected for this field will remain unchanged');
+      .toMatchTextContent('Values already collected for this field will remain unchanged');
     const fetchesBeforeConfirm = customFieldsApi.requests.length;
     await confirmation.getByRole('button', { name: 'Reactivate' }).click();
 
     await expect
       .element(settingsScreen.successToast())
-      .toHaveTextContent('Custom field reactivated');
+      .toMatchTextContent('Custom field reactivated');
     expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ status: 'active' }] });
 
     // The list refetches after the edit; the refreshed outcome (the field

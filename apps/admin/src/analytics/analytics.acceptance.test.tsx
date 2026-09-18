@@ -128,8 +128,8 @@ describe('Analytics overview', () => {
     fakeAnalyticsOverview();
     await renderAdminApp('/analytics');
 
-    await expect.element(analyticsScreen.membersValue()).toHaveTextContent(/^0$/);
-    await expect.element(analyticsScreen.mrrValue()).toHaveTextContent(/^\$0$/);
+    await expect.element(analyticsScreen.membersValue()).toMatchTextContent(/^0$/);
+    await expect.element(analyticsScreen.mrrValue()).toMatchTextContent(/^\$0$/);
   });
 
   it('renders the seeded KPIs, latest post and top posts', async () => {
@@ -139,22 +139,22 @@ describe('Analytics overview', () => {
 
     // Headline KPIs: visitors summed from the Tinybird rows, members from
     // the member-count totals, MRR from the mrr history.
-    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
-    await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
-    await expect.element(analyticsScreen.mrrValue()).toHaveTextContent('$500');
+    await expect.element(analyticsScreen.uniqueVisitorsValue()).toMatchTextContent('250');
+    await expect.element(analyticsScreen.membersValue()).toMatchTextContent('175');
+    await expect.element(analyticsScreen.mrrValue()).toMatchTextContent('$500');
 
     // Chart region inside the visitors KPI card.
     await expect
       .poll(() => analyticsScreen.uniqueVisitorsCard().element().querySelector('svg'))
       .not.toBeNull();
 
-    await expect.element(analyticsScreen.latestPost()).toHaveTextContent('Attack of the Clones');
+    await expect.element(analyticsScreen.latestPost()).toMatchTextContent('Attack of the Clones');
     await expect(postsApi).toHaveSentFilter('status:[published,sent]');
     expect(postsApi.lastRequest).toMatchObject({ order: 'published_at DESC', limit: 1 });
-    await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent('A Popular Post');
+    await expect.element(analyticsScreen.topPostsCard()).toMatchTextContent('A Popular Post');
 
     // The header's active-visitors probe (Tinybird) resolved.
-    await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
+    await expect.element(analyticsScreen.activeVisitors()).toMatchTextContent('12 online');
   });
 
   it('re-queries Tinybird when the date range changes', async () => {
@@ -162,7 +162,7 @@ describe('Analytics overview', () => {
     seedTopPostsViews();
     await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
 
-    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+    await expect.element(analyticsScreen.uniqueVisitorsValue()).toMatchTextContent('250');
     const initialDateFrom = kpisApi.lastRequest?.params.get('date_from');
     expect(initialDateFrom).toBeTruthy();
     expect(kpisApi.lastRequest?.params.get('site_uuid')).toBe(TINYBIRD_SITE_UUID);
@@ -170,7 +170,7 @@ describe('Analytics overview', () => {
     await analyticsScreen.dateRangeSelect().click();
     await analyticsScreen.rangeOption('Last 7 days').click();
 
-    await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
+    await expect.element(analyticsScreen.dateRangeSelect()).toMatchTextContent('Last 7 days');
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).not.toBe(initialDateFrom);
   });
 
@@ -197,18 +197,18 @@ describe('Analytics overview', () => {
     ]);
     await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
 
-    await expect.element(analyticsScreen.latestPost()).toHaveTextContent('Attack of the Clones');
-    await expect.element(analyticsScreen.latestPostVisitors()).toHaveTextContent('0');
-    await expect.element(analyticsScreen.latestPostMembers()).toHaveTextContent('0');
+    await expect.element(analyticsScreen.latestPost()).toMatchTextContent('Attack of the Clones');
+    await expect.element(analyticsScreen.latestPostVisitors()).toMatchTextContent('0');
+    await expect.element(analyticsScreen.latestPostMembers()).toMatchTextContent('0');
 
-    await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent('Attack of the Clones');
+    await expect.element(analyticsScreen.topPostsCard()).toMatchTextContent('Attack of the Clones');
     const visitorsStatistics = analyticsScreen.topPostsVisitorsStatistics();
-    await expect.element(visitorsStatistics).toHaveTextContent('Unique visitors');
-    await expect.element(visitorsStatistics).toHaveTextContent('0');
+    await expect.element(visitorsStatistics).toMatchTextContent('Unique visitors');
+    await expect.element(visitorsStatistics).toMatchTextContent('0');
     const membersStatistics = analyticsScreen.topPostsMembersStatistics();
-    await expect.element(membersStatistics).toHaveTextContent('New members');
-    await expect.element(membersStatistics).toHaveTextContent('Free');
-    await expect.element(membersStatistics).toHaveTextContent('0');
+    await expect.element(membersStatistics).toMatchTextContent('New members');
+    await expect.element(membersStatistics).toMatchTextContent('Free');
+    await expect.element(membersStatistics).toMatchTextContent('0');
   });
 
   it('navigates to the web traffic view from the visitors KPI', async () => {
@@ -271,13 +271,13 @@ describe('Analytics web traffic', () => {
 
     await expect
       .element(analyticsScreen.webGraph().getByRole('tab', { name: 'Unique visitors' }))
-      .toHaveTextContent('250');
+      .toMatchTextContent('250');
 
     await expect
       .element(analyticsScreen.topContentCard())
-      .toHaveTextContent('Attack of the Clones');
-    await expect.element(analyticsScreen.sourceRow('google.com')).toHaveTextContent('170');
-    await expect.element(analyticsScreen.locationRow('US')).toHaveTextContent('United States');
+      .toMatchTextContent('Attack of the Clones');
+    await expect.element(analyticsScreen.sourceRow('google.com')).toMatchTextContent('170');
+    await expect.element(analyticsScreen.locationRow('US')).toMatchTextContent('United States');
   });
 
   it('renders zeroed KPIs and empty cards when there are no visits', async () => {
@@ -285,11 +285,11 @@ describe('Analytics web traffic', () => {
     seedEmptyWebTraffic();
     await renderAdminApp('/analytics/web', { boot: webAnalyticsBootOverrides() });
 
-    await expect.element(analyticsScreen.uniqueVisitorsTab()).toHaveTextContent('0');
-    await expect.element(analyticsScreen.totalViewsTab()).toHaveTextContent('0');
-    await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('No visitors');
-    await expect.element(analyticsScreen.topSourcesCard()).toHaveTextContent('No visitors');
-    await expect.element(analyticsScreen.locationsCard()).toHaveTextContent('No visitors');
+    await expect.element(analyticsScreen.uniqueVisitorsTab()).toMatchTextContent('0');
+    await expect.element(analyticsScreen.totalViewsTab()).toMatchTextContent('0');
+    await expect.element(analyticsScreen.topContentCard()).toMatchTextContent('No visitors');
+    await expect.element(analyticsScreen.topSourcesCard()).toMatchTextContent('No visitors');
+    await expect.element(analyticsScreen.locationsCard()).toMatchTextContent('No visitors');
   });
 
   it('keeps the empty state across the top content tabs', async () => {
@@ -298,10 +298,10 @@ describe('Analytics web traffic', () => {
     await renderAdminApp('/analytics/web', { boot: webAnalyticsBootOverrides() });
 
     await analyticsScreen.topContentTab('Posts').click();
-    await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('No visitors');
+    await expect.element(analyticsScreen.topContentCard()).toMatchTextContent('No visitors');
 
     await analyticsScreen.topContentTab('Pages').click();
-    await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('No visitors');
+    await expect.element(analyticsScreen.topContentCard()).toMatchTextContent('No visitors');
   });
 });
 
@@ -325,11 +325,11 @@ describe('Analytics growth', () => {
 
     await expect
       .element(analyticsScreen.totalMembersCard().getByRole('tab', { name: 'Total members' }))
-      .toHaveTextContent('175');
+      .toMatchTextContent('175');
     await expect
       .element(analyticsScreen.topContentCard())
-      .toHaveTextContent('Attack of the Clones');
-    await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('+30');
+      .toMatchTextContent('Attack of the Clones');
+    await expect.element(analyticsScreen.topContentCard()).toMatchTextContent('+30');
   });
 
   it('shows No conversions across the top content tabs when nothing converted', async () => {
@@ -342,26 +342,26 @@ describe('Analytics growth', () => {
     const contentCard = analyticsScreen.topContentCard();
     await expect
       .element(contentCard)
-      .toHaveTextContent('Which posts or pages drove the most growth in the last 30 days');
-    await expect.element(contentCard).toHaveTextContent('No conversions');
+      .toMatchTextContent('Which posts or pages drove the most growth in the last 30 days');
+    await expect.element(contentCard).toMatchTextContent('No conversions');
 
     await analyticsScreen.topContentTab('Posts').click();
     await expect
       .element(contentCard)
-      .toHaveTextContent('Which posts drove the most growth in the last 30 days');
-    await expect.element(contentCard).toHaveTextContent('No conversions');
+      .toMatchTextContent('Which posts drove the most growth in the last 30 days');
+    await expect.element(contentCard).toMatchTextContent('No conversions');
 
     await analyticsScreen.topContentTab('Pages').click();
     await expect
       .element(contentCard)
-      .toHaveTextContent('Which pages drove the most growth in the last 30 days');
-    await expect.element(contentCard).toHaveTextContent('No conversions');
+      .toMatchTextContent('Which pages drove the most growth in the last 30 days');
+    await expect.element(contentCard).toMatchTextContent('No conversions');
 
     await analyticsScreen.topContentTab('Sources').click();
     await expect
       .element(contentCard)
-      .toHaveTextContent('Which sources drove the most growth in the last 30 days');
-    await expect.element(contentCard).toHaveTextContent('No conversions');
+      .toMatchTextContent('Which sources drove the most growth in the last 30 days');
+    await expect.element(contentCard).toMatchTextContent('No conversions');
   });
 });
 
@@ -401,10 +401,10 @@ describe('Analytics newsletters', () => {
     await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
 
     await expect.element(analyticsScreen.newslettersCard()).toBeVisible();
-    await expect.element(analyticsScreen.totalSubscribersValue()).toHaveTextContent('543');
+    await expect.element(analyticsScreen.totalSubscribersValue()).toMatchTextContent('543');
     await expect
       .element(analyticsScreen.topNewslettersCard())
-      .toHaveTextContent('Weekly Digest Issue #1');
+      .toMatchTextContent('Weekly Digest Issue #1');
   });
 
   it('shows the empty state on every newsletter card when none were sent', async () => {
@@ -418,16 +418,16 @@ describe('Analytics newsletters', () => {
     await expect.element(analyticsScreen.newslettersCard()).toBeVisible();
     await expect
       .element(analyticsScreen.topNewslettersCard())
-      .toHaveTextContent('newsletters in the last 30 days');
+      .toMatchTextContent('newsletters in the last 30 days');
 
     await analyticsScreen.newslettersCardTab('Avg. open rate').click();
     await expect
       .element(analyticsScreen.newslettersCard())
-      .toHaveTextContent('No newsletters in the last 30 days');
+      .toMatchTextContent('No newsletters in the last 30 days');
 
     await analyticsScreen.newslettersCardTab('Avg. click rate').click();
     await expect
       .element(analyticsScreen.newslettersCard())
-      .toHaveTextContent('No newsletters in the last 30 days');
+      .toMatchTextContent('No newsletters in the last 30 days');
   });
 });

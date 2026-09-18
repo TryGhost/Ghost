@@ -229,7 +229,7 @@ describe('Member welcome emails', () => {
       .toHaveAttribute('sandbox', 'allow-same-origin allow-popups allow-popups-to-escape-sandbox');
 
     await settingsScreen.welcomeEmailModeEdit().click();
-    await expect.element(editor).toHaveTextContent('Draft note');
+    await expect.element(editor).toMatchTextContent('Draft note');
   });
 
   it('keeps a raw subject template editable and saves it without rendered replacements', async () => {
@@ -285,7 +285,7 @@ describe('Member welcome emails', () => {
 
     await expect
       .element(settingsScreen.welcomeEmailPreviewError())
-      .toHaveTextContent('A subject is required');
+      .toMatchTextContent('A subject is required');
     expect(previewApi.requests).toHaveLength(1);
   });
 
@@ -414,7 +414,7 @@ describe('Member welcome emails', () => {
 
     await expect
       .element(settingsScreen.bookmarkTitle())
-      .toHaveTextContent('Ghost: The Creator Economy Platform');
+      .toMatchTextContent('Ghost: The Creator Economy Platform');
     expect(oembedApi.lastRequest?.url).toContain('type=bookmark');
   });
 
@@ -472,9 +472,9 @@ describe('Member welcome emails', () => {
     const modal = settingsScreen.welcomeEmailModal();
     await settingsScreen.welcomeEmailModePreview().click();
 
-    await expect.element(modal).toHaveTextContent('Automated Sender');
-    await expect.element(modal).toHaveTextContent('automated@example.com');
-    await expect.element(modal).toHaveTextContent('reply-automated@example.com');
+    await expect.element(modal).toMatchTextContent('Automated Sender');
+    await expect.element(modal).toMatchTextContent('automated@example.com');
+    await expect.element(modal).toMatchTextContent('reply-automated@example.com');
     await expect(modal.getByText('newsletter@example.com')).toHaveCount(0);
   });
 
@@ -498,14 +498,14 @@ describe('Member welcome emails', () => {
 
     await expect
       .element(settingsScreen.freeWelcomeEmailTitle())
-      .toHaveTextContent('Free members welcome email');
+      .toMatchTextContent('Free members welcome email');
     await settingsScreen.freeWelcomeEmailPreview().click();
     const modal = settingsScreen.welcomeEmailModal();
     await settingsScreen.welcomeEmailModePreview().click();
 
-    await expect.element(modal).toHaveTextContent('Newsletter Sender');
-    await expect.element(modal).toHaveTextContent('newsletter@example.com');
-    await expect.element(modal).toHaveTextContent('support@example.com');
+    await expect.element(modal).toMatchTextContent('Newsletter Sender');
+    await expect.element(modal).toMatchTextContent('newsletter@example.com');
+    await expect.element(modal).toMatchTextContent('support@example.com');
   });
 
   it('creates an inactive row before editing a welcome email that does not exist', async () => {
@@ -518,7 +518,7 @@ describe('Member welcome emails', () => {
     });
     await renderAdminApp('/settings/memberemails');
 
-    await expect.element(settingsScreen.freeWelcomeEmailPreview()).toHaveTextContent('Welcome to');
+    await expect.element(settingsScreen.freeWelcomeEmailPreview()).toMatchTextContent('Welcome to');
     await settingsScreen.freeWelcomeEmailPreview().click();
 
     await expect.element(settingsScreen.welcomeEmailModal()).toBeVisible();
@@ -619,7 +619,7 @@ describe('Member welcome emails', () => {
 
     const paidRow = settingsScreen.paidWelcomeEmailRow();
     await expect.element(paidRow).toBeVisible();
-    await expect.element(paidRow).toHaveTextContent('Paid members welcome email');
+    await expect.element(paidRow).toMatchTextContent('Paid members welcome email');
     await expect.element(paidRow.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
 
     await paidRow.getByRole('switch').click();

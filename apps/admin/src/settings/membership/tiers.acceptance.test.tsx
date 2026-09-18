@@ -109,8 +109,8 @@ describe('Tier settings', () => {
     await settingsScreen.tiers().getByText(supporterTier.name, { exact: true }).click();
     const modal = settingsScreen.tierDetailModal();
     const preview = modal.getByTestId('tier-preview');
-    await expect.element(preview).toHaveTextContent('$5/month');
-    await expect.element(preview).toHaveTextContent('Simple benefit');
+    await expect.element(preview).toMatchTextContent('$5/month');
+    await expect.element(preview).toMatchTextContent('Simple benefit');
 
     await modal.getByLabelText('Name').fill('');
     await modal.getByRole('button', { name: 'Save' }).click();
@@ -123,11 +123,11 @@ describe('Tier settings', () => {
     await modal.getByLabelText('Trial days').fill('7');
     await modal.getByLabelText('New benefit').fill('New benefit');
     await modal.getByRole('button', { name: 'Add' }).click();
-    await expect.element(preview).toHaveTextContent('$10.01/month');
-    await expect.element(preview).toHaveTextContent('New benefit');
+    await expect.element(preview).toMatchTextContent('$10.01/month');
+    await expect.element(preview).toMatchTextContent('New benefit');
     await preview.getByRole('button', { name: 'Yearly' }).click();
-    await expect.element(preview).toHaveTextContent('$100/year');
-    await expect.element(preview).toHaveTextContent('17% discount');
+    await expect.element(preview).toMatchTextContent('$100/year');
+    await expect.element(preview).toMatchTextContent('17% discount');
 
     await modal.getByRole('button', { name: 'Save' }).click();
     await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
@@ -309,7 +309,7 @@ describe('Tier settings', () => {
     await settingsScreen.tiers().getByRole('button', { name: 'Connect with Stripe' }).click();
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent("Your current plan doesn't support Stripe Connect");
+      .toMatchTextContent("Your current plan doesn't support Stripe Connect");
     await expect(settingsScreen.stripeModal()).toHaveCount(0);
     await settingsScreen.limitModal().getByRole('button', { name: 'Upgrade' }).click();
     expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({ route: '/pro' });
@@ -371,7 +371,7 @@ describe('Tier settings', () => {
 
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent("Your current plan doesn't support Stripe Connect");
+      .toMatchTextContent("Your current plan doesn't support Stripe Connect");
     await expect(settingsScreen.stripeModal()).toHaveCount(0);
     await settingsScreen.limitModal().getByRole('button', { name: 'Upgrade' }).click();
     expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({ route: '/pro' });

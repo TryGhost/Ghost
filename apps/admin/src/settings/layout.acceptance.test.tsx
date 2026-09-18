@@ -32,7 +32,7 @@ describe('Settings layout', () => {
     await settingsScreen.editTitle('New Site Title');
     await settingsScreen.exitButton().click();
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await settingsScreen.confirmationAction('Stay').click();
     await expect.poll(currentRoute).toBe('/settings');
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
@@ -54,7 +54,7 @@ describe('Settings layout', () => {
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     await userEvent.keyboard('{Escape}');
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/leave/i);
     await expect.poll(currentRoute).toBe('/settings');
   });
 

@@ -141,7 +141,7 @@ async function appendToBody(text: string) {
 }
 
 async function collide(saveApi: EndpointCapture) {
-  await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+  await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
   await appendToBody(' and more');
   await expect.poll(() => saveApi.requests.length).toBe(1);
   await expect.element(editorScreen.conflictBanner()).toBeVisible();
@@ -174,7 +174,7 @@ describe('Post editor update collision', () => {
 
     await expect(editorScreen.conflictReloadConfirm()).toHaveCount(0);
     expect(readApi.requests.length).toBe(readsBefore);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
     await expect.element(editorScreen.conflictBanner()).toBeVisible();
   });
 
@@ -191,11 +191,11 @@ describe('Post editor update collision', () => {
     await expect.element(editorScreen.leaveDialog()).toBeVisible();
     await editorScreen.stayInEditor().click();
     await expect(editorScreen.leaveDialog()).toHaveCount(0);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
 
     await editorScreen.reloadAfterConflict().click();
     await editorScreen.confirmConflictReload().click();
-    await expect.element(editorScreen.body()).toHaveTextContent('Their version of the body');
+    await expect.element(editorScreen.body()).toMatchTextContent('Their version of the body');
     await expect.poll(unsavedChangesGuarded).toBe(false);
     await editorScreen.backLink('post').click();
 
@@ -208,7 +208,7 @@ describe('Post editor update collision', () => {
     const { readApi, saveApi } = fakeCollidingPost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await editorScreen.titleInput().fill('Renamed by me');
     await editorScreen.body().click();
     await expect.poll(() => saveApi.requests.length).toBe(1);
@@ -240,7 +240,7 @@ describe('Post editor update collision', () => {
     await expect.poll(() => readApi.requests.length).toBe(readsBefore + 1);
     expect(readApi.lastRequest?.url ?? '').toContain('formats=mobiledoc%2Clexical');
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Their version of the body');
+    await expect.element(editorScreen.body()).toMatchTextContent('Their version of the body');
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
     await expect.poll(featureImageSrc).toBe(THEIR_IMAGE);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
@@ -416,7 +416,7 @@ describe('Post editor update collision', () => {
 
     await expect.poll(() => failedRead.requests.length).toBe(1);
     await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
     await expect.element(editorScreen.conflictBanner()).toBeVisible();
     await expect(editorScreen.loadError()).toHaveCount(0);
 
@@ -425,7 +425,7 @@ describe('Post editor update collision', () => {
     await editorScreen.confirmConflictReload().click();
 
     await expect.poll(() => servingRead.requests.length).toBe(1);
-    await expect.element(editorScreen.body()).toHaveTextContent('Their version of the body');
+    await expect.element(editorScreen.body()).toMatchTextContent('Their version of the body');
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
   });
 
@@ -447,7 +447,7 @@ describe('Post editor update collision', () => {
     await expect.poll(() => invalidRead.requests.length).toBe(1);
     await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
     await expect.element(editorScreen.conflictBanner()).toBeVisible();
   });
 
@@ -473,7 +473,7 @@ describe('Post editor update collision', () => {
 
     await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
 
     pendingSave.resolve({
       errors: [
@@ -485,7 +485,7 @@ describe('Post editor update collision', () => {
       ],
     });
     await expect.element(editorScreen.conflictBanner()).toBeVisible();
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
   });
 
   it('follows the status the other writer left the post in', async () => {
@@ -493,7 +493,7 @@ describe('Post editor update collision', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await collide(saveApi);
 
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft');
+    await expect.element(editorScreen.status()).toMatchTextContent('Draft');
     readAnswers(200, {
       posts: [theirs({ status: 'published', published_at: THEIR_SAVE_AT })],
     });
@@ -502,7 +502,7 @@ describe('Post editor update collision', () => {
     await editorScreen.confirmConflictReload().click();
 
     // A stale chip would offer Draft for a post the next save publishes.
-    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+    await expect.element(editorScreen.status()).toMatchTextContent('Published');
   });
 
   it.each([
@@ -530,7 +530,7 @@ describe('Post editor update collision', () => {
       await editorScreen.confirmConflictReload().click();
 
       await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
-      await expect.element(editorScreen.body()).toHaveTextContent(expectedLabel);
+      await expect.element(editorScreen.body()).toMatchTextContent(expectedLabel);
       await expect(editorScreen.conflictBanner()).toHaveCount(0);
     },
   );
@@ -545,7 +545,7 @@ describe('Post editor update collision', () => {
     });
     await editorScreen.reloadAfterConflict().click();
     await editorScreen.confirmConflictReload().click();
-    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+    await expect.element(editorScreen.status()).toMatchTextContent('Published');
 
     // The save lands and invalidates the screen's query, whose refetch answers
     // with the draft the reload replaced. A read older than what the editor
@@ -566,7 +566,7 @@ describe('Post editor update collision', () => {
 
     await expect.poll(() => acceptedSave.requests.length).toBe(1);
     await expect.poll(() => staleRead.requests.length).toBeGreaterThan(0);
-    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+    await expect.element(editorScreen.status()).toMatchTextContent('Published');
   });
 
   it.each<[string, () => EndpointCapture]>([
@@ -587,8 +587,8 @@ describe('Post editor update collision', () => {
       await expect.poll(() => missingRead.requests.length).toBe(1);
       await expect
         .element(editorScreen.conflictBanner())
-        .toHaveTextContent('This post has been deleted');
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+        .toMatchTextContent('This post has been deleted');
+      await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
       await expect(editorScreen.notFound()).toHaveCount(0);
 
       // The way out of a deleted post is the copy, so it has to still be there.
@@ -603,7 +603,7 @@ describe('Post editor update collision', () => {
       await expect.poll(() => missingSave.requests.length).toBe(1);
       await expect
         .element(editorScreen.conflictBanner())
-        .toHaveTextContent('This post has been deleted');
+        .toMatchTextContent('This post has been deleted');
       await expect.element(editorScreen.copyConflictedContent()).toBeVisible();
     },
   );

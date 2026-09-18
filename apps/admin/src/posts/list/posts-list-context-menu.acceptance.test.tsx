@@ -202,7 +202,7 @@ describe('Posts list context menu', () => {
     await postsListScreen.contextMenuItem('Duplicate').click();
 
     await expect(postsListScreen.listItems()).toHaveCount(2);
-    await expect.element(postsListScreen.listItems().first()).toHaveTextContent('Original (Copy)');
+    await expect.element(postsListScreen.listItems().first()).toMatchTextContent('Original (Copy)');
     // Also pins the key-to-message mapping: swapping two `notify` calls in
     // the actions hook would otherwise go unnoticed.
     await expect.element(postsListScreen.toastWithText('Post duplicated')).toBeVisible();

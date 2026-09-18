@@ -175,9 +175,9 @@ function watchLeaveDialog(): () => number {
 /** Opens the editor and leaves it with an edit the server has not seen. */
 async function openDirtyEditor(options: RenderAdminAppOptions) {
   await renderAdminApp(`/editor/post/${POST_ID}`, options);
-  await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+  await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
   await appendToBody(' and more');
-  await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+  await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
   await expect.poll(unsavedChangesGuarded).toBe(true);
 }
 
@@ -205,7 +205,7 @@ describe('Post editor leave guard', () => {
   it('leaves a clean post silently and saves nothing', async () => {
     const saveApi = fakeEditablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave(FLAG_ON));
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
 
     await editorScreen.backLink('post').click();
 
@@ -230,7 +230,7 @@ describe('Post editor leave guard', () => {
 
     await expect(editorScreen.leaveDialog()).toHaveCount(0);
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
     expect(saveApi.requests.length).toBe(0);
   });
 
@@ -283,7 +283,7 @@ describe('Post editor leave guard', () => {
 
     await editorScreen.stayInEditor().click();
     await expect(editorScreen.leaveDialog()).toHaveCount(0);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
   });
 
   it('guards a native hash anchor out of the editor', async () => {
@@ -306,7 +306,7 @@ describe('Post editor leave guard', () => {
     await editorScreen.stayInEditor().click();
     await expect(editorScreen.leaveDialog()).toHaveCount(0);
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React and more');
 
     await editorScreen.backLink('post').click();
     await expect.element(editorScreen.leaveDialog()).toBeVisible();
@@ -327,7 +327,7 @@ describe('Post editor leave guard', () => {
 
     await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
     await expect(editorScreen.leaveDialog()).toHaveCount(0);
-    await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
+    await expect.element(editorScreen.body()).toMatchTextContent('First words and then some');
     // Nothing treated the swap as a leave, so no revision was cut for it.
     expect(updateApi.requests.every((r) => !r.url.includes('save_revision=true'))).toBe(true);
   });
@@ -367,14 +367,14 @@ describe('Post editor leave guard', () => {
     await editorScreen.stayInEditor().click();
 
     await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
-    await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
+    await expect.element(editorScreen.body()).toMatchTextContent('First words and then some');
   });
 
   it('arms the browser unload prompt while unsaved work exists', async () => {
     const { saveApi, resolveSave } = fakeDeferredSave();
     await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave(FLAG_ON));
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     expect(unsavedChangesGuarded()).toBe(false);
 
     await appendToBody(' and more');
@@ -393,7 +393,7 @@ describe('Post editor leave guard', () => {
     const { saveApi, resolveSave } = fakeDeferredSave();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     expect(unsavedChangesGuarded()).toBe(false);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');

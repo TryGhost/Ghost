@@ -114,7 +114,7 @@ describe('Post settings URL', () => {
     await expect.element(page.getByLabelText('Post URL')).toBeVisible();
     await expect
       .element(editorScreen.settingsUrlPreview())
-      .toHaveTextContent('test.com/hello-from-react/');
+      .toMatchTextContent('test.com/hello-from-react/');
 
     await editorScreen.settingsSlug().fill('new-slug');
     await editorScreen.titleInput().click();
@@ -126,8 +126,8 @@ describe('Post settings URL', () => {
     await expect.element(editorScreen.settingsSlug()).toHaveValue('new-slug-2');
     await expect
       .element(editorScreen.settingsUrlPreview())
-      .toHaveTextContent('test.com/new-slug-2/');
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+      .toMatchTextContent('test.com/new-slug-2/');
+    await expect.element(editorScreen.status()).toMatchTextContent('Draft - Saved');
   });
 
   it('stages a published post’s slug until Update', async () => {
@@ -190,7 +190,7 @@ describe('Post settings URL', () => {
 
     await expect
       .element(editorScreen.settingsSlugError())
-      .toHaveTextContent('Couldn’t update the URL.');
+      .toMatchTextContent('Couldn’t update the URL.');
     // The message is the input's own error, not loose text beside it.
     const input = editorScreen.settingsSlug().element();
     expect(input).toHaveAttribute('aria-invalid', 'true');
@@ -200,7 +200,7 @@ describe('Post settings URL', () => {
     await expect.element(editorScreen.settingsSlug()).toHaveValue('hello-from-react');
     await expect
       .element(editorScreen.settingsUrlPreview())
-      .toHaveTextContent('test.com/hello-from-react/');
+      .toMatchTextContent('test.com/hello-from-react/');
     expect(saveApi.requests).toHaveLength(0);
   });
 

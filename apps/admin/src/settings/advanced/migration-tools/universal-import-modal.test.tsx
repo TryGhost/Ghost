@@ -108,7 +108,7 @@ describe('UniversalImportModal', () => {
     mockUseFeatureFlag.mockReturnValue(false);
     showModal();
 
-    expect(await description()).toHaveTextContent(/Select any JSON or zip file/);
+    expect(await description()).toHaveTextContent('Select any JSON or zip file');
 
     const file = new File(['{}'], 'export.json', { type: 'application/json' });
     await dropFile(file);
@@ -136,7 +136,7 @@ describe('UniversalImportModal', () => {
     mockUseFeatureFlag.mockReturnValue(true);
     showModal();
 
-    expect(await description()).toHaveTextContent(/Select any JSON, zip or CSV file/);
+    expect(await description()).toHaveTextContent('Select any JSON, zip or CSV file');
 
     const input = await fileInput();
     expect(input).toHaveAttribute('accept', expect.stringContaining('.csv'));

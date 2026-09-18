@@ -176,14 +176,14 @@ describe('Theme settings', () => {
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Activate' }).click();
     await expect
       .element(settingsScreen.successToast())
-      .toHaveTextContent(/casper is now your active theme/i);
+      .toMatchTextContent(/casper is now your active theme/i);
     expect(activateApi.requests).toHaveLength(1);
 
     await settingsScreen.theme().getByRole('button', { name: 'Change theme' }).click();
     const reopenedModal = settingsScreen.themeModal();
     await reopenedModal.getByRole('button', { name: /Edition/ }).click();
     await reopenedModal.getByRole('button', { name: 'Update Edition' }).click();
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/overwrite/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/overwrite/i);
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Overwrite' }).click();
     await expect.poll(() => installApi.lastRequest?.url).toContain('ref=TryGhost%2FEdition');
   });
@@ -201,7 +201,7 @@ describe('Theme settings', () => {
     await modal.getByRole('tab', { name: 'Installed' }).click();
     await expect(settingsScreen.themeListItems()).toHaveCount(2);
     await installedTheme('casper').getByRole('button', { name: 'Activate' }).click();
-    await expect.element(installedTheme('casper')).toHaveTextContent(/Active/);
+    await expect.element(installedTheme('casper')).toMatchTextContent(/Active/);
     expect(activateApi.requests).toHaveLength(1);
 
     await installedTheme('casper').getByRole('button', { name: 'Menu' }).click();
@@ -245,7 +245,7 @@ describe('Theme settings', () => {
 
     await expect
       .element(settingsScreen.confirmationModal())
-      .toHaveTextContent('mytheme was uploaded successfully. Do you want to activate it?');
+      .toMatchTextContent('mytheme was uploaded successfully. Do you want to activate it?');
     expect(uploadApi.requests).toHaveLength(1);
   });
 
@@ -277,15 +277,15 @@ describe('Theme settings', () => {
     // "issues" rather than contradicting the "1 error" in the heading.
     await expect
       .element(installedModal)
-      .toHaveTextContent(
+      .toMatchTextContent(
         'mytheme was uploaded, but it has some issues. Do you want to activate it?',
       );
-    await expect.element(installedModal).toHaveTextContent('1 error, 2 warnings');
+    await expect.element(installedModal).toMatchTextContent('1 error, 2 warnings');
     // Errors are the only severity that restricts anything, so only they are
     // explained — and the button says what activating now would accept.
     await expect
       .element(installedModal)
-      .toHaveTextContent('Highly recommended to fix, functionality could be restricted');
+      .toMatchTextContent('Highly recommended to fix, functionality could be restricted');
     await expect
       .element(installedModal.getByRole('button', { name: 'Activate with errors' }))
       .toBeVisible();
@@ -308,7 +308,7 @@ describe('Theme settings', () => {
     await expect(installedModal.getByText(/deprecated/)).toHaveCount(0);
     await installedModal.getByRole('button', { name: /GS001-DEPR-PURL/ }).click();
     await expect.element(installedModal.getByText(/deprecated/)).toBeVisible();
-    await expect.element(installedModal).toHaveTextContent('Affected files');
+    await expect.element(installedModal).toMatchTextContent('Affected files');
   });
 
   it("flips an expanding issue row's chevron a single half turn", async () => {
@@ -425,7 +425,7 @@ describe('Theme settings', () => {
     await installedModal.getByRole('button', { name: 'Activate theme' }).click();
 
     await expect.element(installedModal).toBeVisible();
-    await expect.element(settingsScreen.errorToast()).toHaveTextContent('Theme activation failed');
+    await expect.element(settingsScreen.errorToast()).toMatchTextContent('Theme activation failed');
     await expect.poll(currentRoute).toBe('/settings/design/change-theme');
     expect(activateApi.requests).toHaveLength(1);
   });
@@ -457,7 +457,7 @@ describe('Theme settings', () => {
     stageLegacyGhostCss(LEGACY_CODE_CSS);
 
     const dialog = settingsScreen.confirmationModal();
-    await expect.element(dialog).toHaveTextContent('1 error, 8 warnings');
+    await expect.element(dialog).toMatchTextContent('1 error, 8 warnings');
 
     const scroller = dialog.element() as HTMLElement;
     const [list] = problemLists();
@@ -523,11 +523,11 @@ describe('Theme settings', () => {
     await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
 
     const errorModal = settingsScreen.confirmationModal();
-    await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
+    await expect.element(errorModal).toMatchTextContent('Theme not uploaded');
     await expect
       .element(errorModal)
-      .toHaveTextContent("mytheme couldn't be uploaded. Fix the errors below and try again.");
-    await expect.element(errorModal).toHaveTextContent('Missing index.hbs');
+      .toMatchTextContent("mytheme couldn't be uploaded. Fix the errors below and try again.");
+    await expect.element(errorModal).toMatchTextContent('Missing index.hbs');
     expect(uploadApi.requests).toHaveLength(1);
 
     await errorModal.getByRole('button', { name: 'Re-upload' }).click();
@@ -574,7 +574,7 @@ describe('Theme settings', () => {
     stageLegacyGhostCss(LEGACY_CODE_CSS);
 
     const errorModal = settingsScreen.confirmationModal();
-    await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
+    await expect.element(errorModal).toMatchTextContent('Theme not uploaded');
 
     // Both groups are errors; only one stopped the upload.
     const lists = problemLists();
@@ -616,8 +616,8 @@ describe('Theme settings', () => {
     await installedTheme('casper').getByRole('button', { name: 'Activate' }).click();
 
     const errorModal = settingsScreen.confirmationModal();
-    await expect.element(errorModal).toHaveTextContent('Theme not activated');
-    await expect.element(errorModal).toHaveTextContent('Missing post.hbs');
+    await expect.element(errorModal).toMatchTextContent('Theme not activated');
+    await expect.element(errorModal).toMatchTextContent('Missing post.hbs');
     expect(activateApi.requests).toHaveLength(1);
 
     await errorModal.getByRole('button', { name: 'Cancel' }).click();
@@ -634,10 +634,10 @@ describe('Theme settings', () => {
     await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
     await uploadThemeFile(new File([buffer], 'source.zip', { type: 'application/zip' }));
 
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/Upload failed/i);
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/Upload failed/i);
     await expect
       .element(settingsScreen.confirmationModal())
-      .toHaveTextContent(/cannot be overwritten/i);
+      .toMatchTextContent(/cannot be overwritten/i);
     expect(uploadApi.requests).toHaveLength(0);
   });
 
@@ -648,18 +648,18 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/theme/edit/edition');
 
     const modal = settingsScreen.themeCodeEditorModal();
-    await expect.element(modal).toHaveTextContent(/Edit theme/);
-    await expect.element(modal).toHaveTextContent(/json/i);
+    await expect.element(modal).toMatchTextContent(/Edit theme/);
+    await expect.element(modal).toMatchTextContent(/json/i);
     const editor = await editorTextbox();
     editor.setContent('{"name":"edition","version":"1.0.0"}\n');
-    await expect.element(modal).toHaveTextContent(/1 file modified/);
+    await expect.element(modal).toMatchTextContent(/1 file modified/);
     await modal.getByRole('button', { name: 'Save' }).click();
     await settingsScreen
       .themeEditorConfirmModal()
       .getByRole('button', { name: 'Replace theme' })
       .click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent(/Theme saved/i);
+    await expect.element(settingsScreen.successToast()).toMatchTextContent(/Theme saved/i);
     expect(uploadApi.requests).toHaveLength(1);
   });
 
@@ -676,7 +676,7 @@ describe('Theme settings', () => {
     editor.setContent('{"name":"edition","version":"1.0.0"}\n');
     await expect
       .element(settingsScreen.themeCodeEditorModal())
-      .toHaveTextContent(/1 file modified/);
+      .toMatchTextContent(/1 file modified/);
     window.dispatchEvent(
       new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true }),
     );
@@ -690,7 +690,7 @@ describe('Theme settings', () => {
       .getByRole('button', { name: 'Replace theme' })
       .click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent(/Theme saved/i);
+    await expect.element(settingsScreen.successToast()).toMatchTextContent(/Theme saved/i);
     expect(uploadApi.requests).toHaveLength(1);
   });
 
@@ -726,8 +726,8 @@ describe('Theme settings', () => {
       .getByRole('button', { name: 'Replace theme' })
       .click();
 
-    await expect.element(settingsScreen.errorToast()).toHaveTextContent(/partials\/huge\.hbs/);
-    await expect.element(settingsScreen.errorToast()).toHaveTextContent(/1\.0 MB/);
+    await expect.element(settingsScreen.errorToast()).toMatchTextContent(/partials\/huge\.hbs/);
+    await expect.element(settingsScreen.errorToast()).toMatchTextContent(/1\.0 MB/);
   });
 
   it('falls back to the generic API error for malformed archive limit details', async () => {
@@ -760,8 +760,8 @@ describe('Theme settings', () => {
 
     await expect
       .element(settingsScreen.errorToast())
-      .toHaveTextContent('Request contains an unknown or unsupported file type.');
-    await expect.element(settingsScreen.errorToast()).not.toHaveTextContent('NaN');
+      .toMatchTextContent('Request contains an unknown or unsupported file type.');
+    await expect.element(settingsScreen.errorToast()).not.toMatchTextContent('NaN');
   });
 
   it('keeps the code editor open and reports blocking validation errors on save', async () => {
@@ -791,8 +791,8 @@ describe('Theme settings', () => {
       .click();
 
     const errorModal = settingsScreen.confirmationModal();
-    await expect.element(errorModal).toHaveTextContent('Theme not saved');
-    await expect.element(errorModal).toHaveTextContent('Missing default.hbs');
+    await expect.element(errorModal).toMatchTextContent('Theme not saved');
+    await expect.element(errorModal).toMatchTextContent('Missing default.hbs');
     await expect(errorModal.getByRole('button', { name: 'Retry' })).toHaveCount(0);
     await userEvent.keyboard('{Escape}');
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
@@ -813,7 +813,7 @@ describe('Theme settings', () => {
       .getByRole('button', { name: 'Replace theme' })
       .click();
 
-    await expect.element(settingsScreen.errorToast()).toHaveTextContent(/Something went wrong/i);
+    await expect.element(settingsScreen.errorToast()).toMatchTextContent(/Something went wrong/i);
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     await expect.element(settingsScreen.themeCodeEditorModal()).toBeVisible();
   });
@@ -859,7 +859,7 @@ describe('Theme settings', () => {
 
     await expect.poll(() => uploadApi.requests.length).toBe(1);
     await expect.poll(currentRoute).toBe('/settings/theme/edit/casper-edited');
-    await expect.element(settingsScreen.themeCodeEditorModal()).toHaveTextContent('casper-edited');
+    await expect.element(settingsScreen.themeCodeEditorModal()).toMatchTextContent('casper-edited');
   });
 
   it.each([
@@ -876,7 +876,7 @@ describe('Theme settings', () => {
     } else {
       await expect
         .element(settingsScreen.limitModal())
-        .toHaveTextContent(/Upgrade to use custom themes/);
+        .toMatchTextContent(/Upgrade to use custom themes/);
       await expect(settingsScreen.themeModal()).toHaveCount(0);
     }
   });
@@ -890,7 +890,7 @@ describe('Theme settings', () => {
 
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent(/Upgrade to use custom themes/);
+      .toMatchTextContent(/Upgrade to use custom themes/);
     await expect(settingsScreen.themeModal()).toHaveCount(0);
   });
 
@@ -904,7 +904,7 @@ describe('Theme settings', () => {
 
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent(/Upgrade to use custom themes/);
+      .toMatchTextContent(/Upgrade to use custom themes/);
     await expect(settingsScreen.themeCodeEditorModal()).toHaveCount(0);
     await expect.poll(currentRoute).toBe('/settings/theme');
   });
@@ -919,7 +919,7 @@ describe('Theme settings', () => {
     await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent(/Upgrade to use more themes/);
+      .toMatchTextContent(/Upgrade to use more themes/);
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
   });
 
@@ -940,7 +940,7 @@ describe('Theme settings', () => {
       await modal.getByRole('button', { name: action }).click();
       await expect
         .element(settingsScreen.limitModal())
-        .toHaveTextContent(/Upgrade to use more themes/);
+        .toMatchTextContent(/Upgrade to use more themes/);
       await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     },
   );
@@ -962,16 +962,16 @@ describe('Theme settings', () => {
     );
 
     if (canInstall) {
-      await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/Install Theme/);
+      await expect.element(settingsScreen.confirmationModal()).toMatchTextContent(/Install Theme/);
       await settingsScreen.confirmationModal().getByRole('button', { name: 'Install' }).click();
       await expect
         .element(settingsScreen.successToast())
-        .toHaveTextContent(/taste is now your active theme/i);
+        .toMatchTextContent(/taste is now your active theme/i);
       expect(installApi.requests).toHaveLength(1);
     } else {
       await expect
         .element(settingsScreen.limitModal())
-        .toHaveTextContent(/Upgrade to use more themes/);
+        .toMatchTextContent(/Upgrade to use more themes/);
       expect(installApi.requests).toHaveLength(0);
     }
   });
@@ -987,7 +987,7 @@ describe('Theme settings', () => {
 
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent(/Upgrade to use custom themes/);
+      .toMatchTextContent(/Upgrade to use custom themes/);
     await expect.poll(currentRoute).toBe('/settings/theme');
 
     expect(
@@ -1006,7 +1006,7 @@ describe('Theme settings', () => {
     await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Close' }).click();
     await expect
       .element(settingsScreen.themeEditorConfirmModal())
-      .toHaveTextContent(/unsaved theme changes/i);
+      .toMatchTextContent(/unsaved theme changes/i);
     await userEvent.keyboard('{Escape}');
     await expect(settingsScreen.themeEditorConfirmModal()).toHaveCount(0);
     await expect.element(settingsScreen.themeCodeEditorModal()).toBeVisible();
@@ -1062,7 +1062,7 @@ describe('Theme settings', () => {
 
     const modal = settingsScreen.themeCodeEditorModal();
     await modal.getByRole('button', { name: '.DS_Store' }).click();
-    await expect.element(modal).toHaveTextContent(/cannot be edited in the browser/i);
+    await expect.element(modal).toMatchTextContent(/cannot be edited in the browser/i);
     await expect(modal.getByRole('textbox')).toHaveCount(0);
   });
 });

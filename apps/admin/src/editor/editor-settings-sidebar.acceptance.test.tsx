@@ -156,7 +156,7 @@ describe('Post settings sidebar', () => {
     await editorScreen.settingsFeatured().click();
 
     await expect(saveApi).toHaveSavedFields({ featured: true });
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect.element(editorScreen.status()).toMatchTextContent('Draft - Saved');
   });
 
   it('stages a published post’s Featured toggle until Update', async () => {

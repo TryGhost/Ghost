@@ -141,13 +141,13 @@ describe('Offers', () => {
     await offersScreen.publishButton().click();
 
     const sidebar = offersScreen.addSidebar();
-    await expect.element(sidebar).toHaveTextContent(/Name is required/);
-    await expect.element(sidebar).toHaveTextContent(/Code is required/);
-    await expect.element(sidebar).toHaveTextContent(/Enter an amount between 1 and 100%./);
-    await expect.element(sidebar).toHaveTextContent(/Display title is required/);
+    await expect.element(sidebar).toMatchTextContent(/Name is required/);
+    await expect.element(sidebar).toMatchTextContent(/Code is required/);
+    await expect.element(sidebar).toMatchTextContent(/Enter an amount between 1 and 100%./);
+    await expect.element(sidebar).toMatchTextContent(/Display title is required/);
     await expect
       .element(sidebar)
-      .toHaveTextContent(/Enter a whole number of months \(1 or more\)./);
+      .toMatchTextContent(/Enter a whole number of months \(1 or more\)./);
   });
 
   it('errors if the offer code is already taken', async () => {
@@ -178,7 +178,7 @@ describe('Offers', () => {
 
     await expect
       .element(offersScreen.errorToast())
-      .toHaveTextContent(/Offer `code` must be unique. Please change and try again./);
+      .toMatchTextContent(/Offer `code` must be unique. Please change and try again./);
   });
 
   it('shows validation errors when publishing an empty offer', async () => {
@@ -191,10 +191,10 @@ describe('Offers', () => {
     await offersScreen.publishButton().click();
 
     const sidebar = offersScreen.addSidebar();
-    await expect.element(sidebar).toHaveTextContent(/Name is required/);
-    await expect.element(sidebar).toHaveTextContent(/Code is required/);
-    await expect.element(sidebar).toHaveTextContent(/Enter an amount between 1 and 100%./);
-    await expect.element(sidebar).toHaveTextContent(/Display title is required/);
+    await expect.element(sidebar).toMatchTextContent(/Name is required/);
+    await expect.element(sidebar).toMatchTextContent(/Code is required/);
+    await expect.element(sidebar).toMatchTextContent(/Enter an amount between 1 and 100%./);
+    await expect.element(sidebar).toMatchTextContent(/Display title is required/);
   });
 
   it('can view active offers', async () => {
@@ -205,9 +205,9 @@ describe('Offers', () => {
     await renderAdminApp('/settings/offers/edit', withStripe());
 
     const modal = offersScreen.listModal();
-    await expect.element(modal).toHaveTextContent('First offer');
-    await expect.element(modal).toHaveTextContent('Second offer');
-    await expect.element(modal).not.toHaveTextContent('Third offer');
+    await expect.element(modal).toMatchTextContent('First offer');
+    await expect.element(modal).toMatchTextContent('Second offer');
+    await expect.element(modal).not.toMatchTextContent('Third offer');
   });
 
   it('can view archived offers', async () => {
@@ -217,9 +217,9 @@ describe('Offers', () => {
     fakeOffers(signupOffers(supporter));
     await renderAdminApp('/settings/offers/edit', withStripe());
 
-    await expect.element(offersScreen.listModal()).toHaveTextContent('First offer');
+    await expect.element(offersScreen.listModal()).toMatchTextContent('First offer');
     await offersScreen.showArchivedOffers();
-    await expect.element(offersScreen.listModal()).toHaveTextContent('Third offer');
+    await expect.element(offersScreen.listModal()).toMatchTextContent('Third offer');
   });
 
   it('sorts signup and retention offers by date, name and redemptions', async () => {
@@ -259,7 +259,7 @@ describe('Offers', () => {
 
     const expectOrder = async (names: string[]) => {
       for (const [index, name] of names.entries()) {
-        await expect.element(rows.nth(index)).toHaveTextContent(name);
+        await expect.element(rows.nth(index)).toMatchTextContent(name);
       }
     };
 
@@ -302,7 +302,7 @@ describe('Offers', () => {
     await expect.element(codeInput).toHaveValue(firstOffer.code);
     await codeInput.fill('');
     await updateModal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(updateModal).toHaveTextContent(/Please enter a code/);
+    await expect.element(updateModal).toMatchTextContent(/Please enter a code/);
 
     await codeInput.fill('black-friday-offer');
     await updateModal.getByRole('button', { name: 'Save' }).click();
@@ -369,11 +369,11 @@ describe('Offers', () => {
       await expect(rows).toHaveCount(2);
 
       const monthlyRow = rows.filter({ hasText: 'Monthly retention' });
-      await expect.element(monthlyRow).toHaveTextContent('Monthly retention');
-      await expect.element(monthlyRow).toHaveTextContent('25% OFF');
-      await expect.element(monthlyRow).toHaveTextContent('First payment');
-      await expect.element(monthlyRow).toHaveTextContent('10');
-      await expect.element(monthlyRow).toHaveTextContent('Active');
+      await expect.element(monthlyRow).toMatchTextContent('Monthly retention');
+      await expect.element(monthlyRow).toMatchTextContent('25% OFF');
+      await expect.element(monthlyRow).toMatchTextContent('First payment');
+      await expect.element(monthlyRow).toMatchTextContent('10');
+      await expect.element(monthlyRow).toMatchTextContent('Active');
       await expect
         .element(offersScreen.retentionRedemptionsLink('monthly'))
         .toHaveAttribute(
@@ -382,16 +382,16 @@ describe('Offers', () => {
         );
 
       const yearlyRow = rows.filter({ hasText: 'Yearly retention' });
-      await expect.element(yearlyRow).toHaveTextContent('Yearly retention');
-      await expect.element(yearlyRow).toHaveTextContent('Inactive');
-      await expect.element(yearlyRow).toHaveTextContent('9');
+      await expect.element(yearlyRow).toMatchTextContent('Yearly retention');
+      await expect.element(yearlyRow).toMatchTextContent('Inactive');
+      await expect.element(yearlyRow).toMatchTextContent('9');
       await expect
         .element(offersScreen.retentionRedemptionsLink('yearly'))
         .toHaveAttribute(
           'href',
           '/ghost/#/members?filter=offer_redemptions%3A%5Bretention-year-archived%5D',
         );
-      await expect.element(yearlyRow).not.toHaveTextContent(/months free/i);
+      await expect.element(yearlyRow).not.toMatchTextContent(/months free/i);
     });
 
     it('renders existing retention offers in edit mode', async () => {
@@ -454,11 +454,11 @@ describe('Offers', () => {
       await offersScreen.listModal().getByText('Monthly retention', { exact: true }).click();
       const monthlyModal = offersScreen.retentionModal();
       await expect.element(monthlyModal).toBeVisible();
-      await expect.element(monthlyModal).toHaveTextContent('11 redemptions');
-      await expect.element(monthlyModal).toHaveTextContent('Last redemption');
+      await expect.element(monthlyModal).toMatchTextContent('11 redemptions');
+      await expect.element(monthlyModal).toMatchTextContent('Last redemption');
       await expect
         .element(monthlyModal)
-        .toHaveTextContent(formatOfferDate('2026-02-19T12:00:00.000Z'));
+        .toMatchTextContent(formatOfferDate('2026-02-19T12:00:00.000Z'));
       await expect
         .element(monthlyModal.getByRole('link', { name: 'See members →' }))
         .toHaveAttribute(
@@ -481,11 +481,11 @@ describe('Offers', () => {
 
       const yearlyModal = offersScreen.retentionModal();
       await expect.element(yearlyModal).toBeVisible();
-      await expect.element(yearlyModal).toHaveTextContent('9 redemptions');
-      await expect.element(yearlyModal).toHaveTextContent('Last redemption');
+      await expect.element(yearlyModal).toMatchTextContent('9 redemptions');
+      await expect.element(yearlyModal).toMatchTextContent('Last redemption');
       await expect
         .element(yearlyModal)
-        .toHaveTextContent(formatOfferDate('2026-02-18T12:00:00.000Z'));
+        .toMatchTextContent(formatOfferDate('2026-02-18T12:00:00.000Z'));
       await expect
         .element(yearlyModal.getByRole('link', { name: 'See members →' }))
         .toHaveAttribute(
@@ -583,7 +583,7 @@ describe('Offers', () => {
 
       await expect
         .element(offersScreen.errorToast())
-        .toHaveTextContent(/Offer `code` must be unique. Please change and try again./);
+        .toMatchTextContent(/Offer `code` must be unique. Please change and try again./);
     });
 
     it('hides the repeating duration option for yearly retention offers', async () => {

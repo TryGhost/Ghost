@@ -40,7 +40,7 @@ describe('Posts list filters', () => {
     await renderAdminApp('/posts?type=draft', FLAG_ON);
 
     await expect.element(postsListScreen.filterBar()).toBeVisible();
-    await expect.element(postsListScreen.filterBar()).toHaveTextContent('Draft posts');
+    await expect.element(postsListScreen.filterBar()).toMatchTextContent('Draft posts');
   });
 
   // The slug-to-name lookup is its own request, and `fakeTags` only declares
@@ -54,7 +54,7 @@ describe('Posts list filters', () => {
     await renderAdminApp('/posts?tag=engineering', FLAG_ON);
 
     // The URL carries a slug; the chip has to read as the tag's name.
-    await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');
+    await expect.element(postsListScreen.filterBar()).toMatchTextContent('Engineering');
   });
 
   // Isolated behind a slug-matching endpoint like the tag case: `fakeUsers`
@@ -67,7 +67,7 @@ describe('Posts list filters', () => {
     });
     await renderAdminApp('/posts?author=ada', FLAG_ON);
 
-    await expect.element(postsListScreen.filterBar()).toHaveTextContent('Ada Lovelace');
+    await expect.element(postsListScreen.filterBar()).toMatchTextContent('Ada Lovelace');
   });
 
   // A saved view can point at a tag that was later renamed or deleted.
@@ -79,8 +79,8 @@ describe('Posts list filters', () => {
     fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, { tags: [] });
     await renderAdminApp('/posts?tag=deleted-tag', FLAG_ON);
 
-    await expect.element(postsListScreen.filterBar()).toHaveTextContent('Unknown tag');
-    await expect.element(postsListScreen.filterBar()).not.toHaveTextContent('Select');
+    await expect.element(postsListScreen.filterBar()).toMatchTextContent('Unknown tag');
+    await expect.element(postsListScreen.filterBar()).not.toMatchTextContent('Select');
     await expect.poll(currentRoute).toBe('/posts?tag=deleted-tag');
   });
 
@@ -88,7 +88,7 @@ describe('Posts list filters', () => {
     fakePosts([]);
     await renderAdminApp('/posts?type=bogus', FLAG_ON);
 
-    await expect.element(postsListScreen.filterBar()).toHaveTextContent('Unknown type');
+    await expect.element(postsListScreen.filterBar()).toMatchTextContent('Unknown type');
     await expect.poll(currentRoute).toBe('/posts?type=bogus');
   });
 
@@ -111,14 +111,14 @@ describe('Posts list filters', () => {
       fakePosts([post({ title: 'One', status: 'published' })]);
       await renderAdminApp('/posts', FLAG_ON);
 
-      await expect.element(postsListScreen.sortButton()).toHaveTextContent('Newest first');
+      await expect.element(postsListScreen.sortButton()).toMatchTextContent('Newest first');
     });
 
     it('names the order from the URL', async () => {
       fakePosts([post({ title: 'One', status: 'published' })]);
       await renderAdminApp('/posts?order=updated_at+desc', FLAG_ON);
 
-      await expect.element(postsListScreen.sortButton()).toHaveTextContent('Recently updated');
+      await expect.element(postsListScreen.sortButton()).toMatchTextContent('Recently updated');
     });
 
     it('writes the chosen order to the URL', async () => {

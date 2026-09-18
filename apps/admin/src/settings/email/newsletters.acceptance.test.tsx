@@ -145,7 +145,7 @@ describe('Newsletter settings', () => {
 
       await expect
         .element(settingsScreen.infoToast())
-        .toHaveTextContent('sent a confirmation email to the new address');
+        .toMatchTextContent('sent a confirmation email to the new address');
       expect(editApi.lastRequest?.body).toMatchObject({
         newsletters: [{ sender_email: updated.sender_email }],
       });
@@ -181,7 +181,7 @@ describe('Newsletter settings', () => {
 
       await expect
         .element(settingsScreen.infoToast())
-        .toHaveTextContent('sent a confirmation email to the new address');
+        .toMatchTextContent('sent a confirmation email to the new address');
       expect(editApi.lastRequest?.body).toMatchObject({
         newsletters: [{ sender_reply_to: updated.sender_reply_to }],
       });
@@ -232,7 +232,7 @@ describe('Newsletter settings', () => {
 
       await expect
         .element(settingsScreen.infoToast())
-        .toHaveTextContent('sent a confirmation email to the new address');
+        .toMatchTextContent('sent a confirmation email to the new address');
       expect(editApi.lastRequest?.body).toMatchObject({
         newsletters: [{ sender_reply_to: updated.sender_reply_to }],
       });
@@ -249,7 +249,9 @@ describe('Newsletter settings', () => {
     let modal = await openNewsletter(archivedNewsletter.name);
     await modal.getByRole('button', { name: 'Reactivate newsletter' }).click();
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Reactivate' }).click();
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('Newsletter reactivated');
+    await expect
+      .element(settingsScreen.successToast())
+      .toMatchTextContent('Newsletter reactivated');
     await modal.getByRole('button', { name: 'Close' }).click();
     await section.getByRole('tab', { name: 'Active' }).click();
     await expect.element(section.getByText(archivedNewsletter.name, { exact: true })).toBeVisible();
@@ -261,7 +263,7 @@ describe('Newsletter settings', () => {
     modal = await openNewsletter(activeNewsletter.name);
     await modal.getByRole('button', { name: 'Archive newsletter' }).click();
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Archive' }).click();
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('Newsletter archived');
+    await expect.element(settingsScreen.successToast()).toMatchTextContent('Newsletter archived');
     await modal.getByRole('button', { name: 'Close' }).click();
     await section.getByRole('tab', { name: 'Archived' }).click();
     await expect.element(section.getByText(activeNewsletter.name, { exact: true })).toBeVisible();
@@ -295,7 +297,7 @@ describe('Newsletter settings', () => {
     await section.getByRole('button', { name: 'Add newsletter' }).click();
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent('Your plan supports up to 1 newsletters');
+      .toMatchTextContent('Your plan supports up to 1 newsletters');
     expect(newslettersApi.requests).toContainEqual(
       expect.objectContaining({ filter: 'status:active', limit: 1 }),
     );
@@ -306,7 +308,7 @@ describe('Newsletter settings', () => {
     await modal.getByRole('button', { name: 'Reactivate newsletter' }).click();
     await expect
       .element(settingsScreen.limitModal())
-      .toHaveTextContent('Your plan supports up to 1 newsletters');
+      .toMatchTextContent('Your plan supports up to 1 newsletters');
   });
 
   it('warns before discarding unsaved changes without sending an update', async () => {
@@ -317,7 +319,7 @@ describe('Newsletter settings', () => {
     const modal = await openNewsletter(activeNewsletter.name);
     await modal.getByPlaceholder('Weekly Roundup').fill('New title');
     await modal.getByRole('button', { name: 'Close' }).click();
-    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent('leave');
+    await expect.element(settingsScreen.confirmationModal()).toMatchTextContent('leave');
     await settingsScreen.confirmationAction('Leave').click();
 
     await expect.element(modal).not.toBeInTheDocument();

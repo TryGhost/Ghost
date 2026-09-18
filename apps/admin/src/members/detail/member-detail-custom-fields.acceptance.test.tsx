@@ -234,7 +234,7 @@ describe('Member detail custom fields', () => {
     await memberDetailScreen.editFieldButton('Home address').click();
     await expect
       .element(modal().getByRole('combobox', { name: 'Country' }))
-      .toHaveTextContent('Unknown Region');
+      .toMatchTextContent('Unknown Region');
 
     await modal().getByRole('combobox', { name: 'Country' }).click();
     await page.getByPlaceholder('Search countries...').fill('Germ');
@@ -262,7 +262,7 @@ describe('Member detail custom fields', () => {
     await page.getByRole('option', { name: 'Germany' }).click();
     await expect
       .element(modal().getByRole('combobox', { name: 'Country' }))
-      .toHaveTextContent('Germany');
+      .toMatchTextContent('Germany');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     await expect
@@ -284,7 +284,7 @@ describe('Member detail custom fields', () => {
     await page.getByRole('option', { name: 'Germany' }).click();
     await expect
       .element(modal().getByRole('combobox', { name: 'Country' }))
-      .toHaveTextContent('Select...');
+      .toMatchTextContent('Select...');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     // The emptied part is named in the write, since leaving it out would read as
@@ -308,7 +308,7 @@ describe('Member detail custom fields', () => {
     await memberDetailScreen.editFieldButton('Home address').click();
     await expect
       .element(modal().getByRole('combobox', { name: 'Country' }))
-      .toHaveTextContent('DEU');
+      .toMatchTextContent('DEU');
     await modal().getByLabelText('City').fill('Berlin');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 

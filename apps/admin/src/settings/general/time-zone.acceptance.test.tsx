@@ -21,7 +21,7 @@ describe('Time zone settings', () => {
     await settingsScreen.selectOption('Alaska').click();
     await settingsScreen.timezone().getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(select).toHaveTextContent('Alaska');
+    await expect.element(select).toMatchTextContent('Alaska');
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'timezone', value: 'America/Anchorage' },
     ]);

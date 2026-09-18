@@ -36,7 +36,7 @@ describe('Posts list publish celebration', () => {
     await renderAdminApp('/posts?type=published', FLAG_ON);
 
     await expect.element(postsListScreen.celebrationModal()).toBeVisible();
-    await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('Just published');
+    await expect.element(postsListScreen.celebrationModal()).toMatchTextContent('Just published');
   });
 
   /**
@@ -56,7 +56,7 @@ describe('Posts list publish celebration', () => {
     await renderAdminApp('/pages?type=published', FLAG_ON);
 
     await expect.element(postsListScreen.celebrationModal()).toBeVisible();
-    await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('A published page');
+    await expect.element(postsListScreen.celebrationModal()).toMatchTextContent('A published page');
   });
 
   it('says All set! for a scheduled post rather than celebrating a publish', async () => {
@@ -69,7 +69,7 @@ describe('Posts list publish celebration', () => {
 
     await renderAdminApp('/posts?type=scheduled', FLAG_ON);
 
-    await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('All set!');
+    await expect.element(postsListScreen.celebrationModal()).toMatchTextContent('All set!');
   });
 
   /**

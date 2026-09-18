@@ -12,8 +12,8 @@ dist
 dist-ssr
 *.local
 
-# Vitest Browser Mode artifacts (failure screenshots, attachments)
-.vitest-attachments
+# Vitest artifacts (failure screenshots, attachments, blob reports)
+.vitest
 __screenshots__
 
 # Editor directories and files

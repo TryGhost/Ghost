@@ -40,13 +40,13 @@ describe('Tag detail (tagDetailsReact on)', () => {
     fakeTagWorld(t);
     await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
-    await expect.element(tagDetailScreen.title()).toHaveTextContent('News');
+    await expect.element(tagDetailScreen.title()).toMatchTextContent('News');
     await expect.element(tagDetailScreen.internalBadge()).not.toBeInTheDocument();
     await expect.element(tagDetailScreen.nameInput()).toHaveValue('News');
     await expect.element(tagDetailScreen.slugInput()).toHaveValue('news');
     // The host comes from the site endpoint's `url` (config has no
     // blogUrl), scheme-stripped — never a bare `/tag/news/` path.
-    await expect.element(tagDetailScreen.slugPreview()).toHaveTextContent('test.com/tag/news/');
+    await expect.element(tagDetailScreen.slugPreview()).toMatchTextContent('test.com/tag/news/');
     await expect.element(tagDetailScreen.descriptionInput()).toHaveValue('All the news');
     const coreDataCard = tagDetailScreen.coreDataCard();
     await expect.element(coreDataCard.getByLabelText('Name', { exact: true })).toBeVisible();
@@ -66,8 +66,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
     fakeTagWorld(t);
     await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
-    await expect.element(tagDetailScreen.title()).toHaveTextContent('#News');
-    await expect.element(tagDetailScreen.internalBadge()).toHaveTextContent('INTERNAL');
+    await expect.element(tagDetailScreen.title()).toMatchTextContent('#News');
+    await expect.element(tagDetailScreen.internalBadge()).toMatchTextContent('INTERNAL');
   });
 
   it('shows metadata in Search, X card, and Facebook card tabs', async () => {
@@ -324,7 +324,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     fakeTagWorld(created);
     await renderAdminApp('/tags/new', FLAGS);
 
-    await expect.element(tagDetailScreen.title()).toHaveTextContent('New tag');
+    await expect.element(tagDetailScreen.title()).toMatchTextContent('New tag');
     const nameInput = tagDetailScreen.nameInput();
     await expect.element(nameInput).toBeVisible();
     await userEvent.type(nameInput.element(), 'Weekly News');
@@ -350,7 +350,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
 
     const nameInput = tagDetailScreen.nameInput();
     const fieldError = tagDetailScreen.nameFieldError();
-    await expect.element(fieldError).toHaveTextContent('You must specify a name for the tag.');
+    await expect.element(fieldError).toMatchTextContent('You must specify a name for the tag.');
     await expect.element(nameInput).toHaveAttribute('aria-describedby', 'tag-name-error');
     expect(saveApi.requests.length).toBe(0);
   });
@@ -430,7 +430,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     await tagDetailScreen.backLink().click();
     await tagsScreen.link('Second').click();
 
-    await expect.element(tagDetailScreen.title()).toHaveTextContent('Second');
+    await expect.element(tagDetailScreen.title()).toMatchTextContent('Second');
     await expect.element(tagDetailScreen.saveButton()).toBeVisible();
     await expect.element(tagDetailScreen.savedButton()).not.toBeInTheDocument();
   });
@@ -599,7 +599,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     await tagDetailScreen.deleteTagMenuItem().click();
 
     await expect.element(tagDetailScreen.deleteConfirmationText()).toBeVisible();
-    await expect.element(tagDetailScreen.deletePostsCount()).toHaveTextContent('3 posts');
+    await expect.element(tagDetailScreen.deletePostsCount()).toMatchTextContent('3 posts');
 
     await tagDetailScreen.confirmDeleteButton().click();
 
@@ -637,7 +637,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     fakeTags([]);
     await renderAdminApp('/tags/new', FLAGS);
 
-    await expect.element(tagDetailScreen.title()).toHaveTextContent('New tag');
+    await expect.element(tagDetailScreen.title()).toMatchTextContent('New tag');
     await expect.element(sidebarScreen.navLink('Tags')).toHaveAttribute('aria-current', 'page');
   });
 

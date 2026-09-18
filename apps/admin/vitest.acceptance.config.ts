@@ -55,7 +55,11 @@ export default defineConfig({
       headless: true,
       provider: playwright(),
       instances: [{ browser: 'chromium' }],
-      // Failure screenshots land in __screenshots__/ (gitignored).
+      // Vitest 5 made locators match text exactly by default; the screens
+      // rely on substring matches (e.g. a tab named "Unique visitors 250").
+      locators: { exact: false },
+      // Failure screenshots land in .vitest/attachments/failure-screenshots/
+      // (gitignored).
       screenshotFailures: true,
       // Match the e2e suite's desktop viewport — the admin chrome
       // collapses into mobile menus at the vitest default (414px).

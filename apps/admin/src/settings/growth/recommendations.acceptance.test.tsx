@@ -74,10 +74,10 @@ describe('Recommendations settings', () => {
 
     const rows = section.getByTestId('recommendation-list-item');
     await expect(rows).toHaveCount(2);
-    await expect.element(rows.first()).toHaveTextContent('Recommendation 1 title');
-    await expect.element(rows.first()).toHaveTextContent(/3\s*signups/);
-    await expect.element(rows.last()).toHaveTextContent('Recommendation 2 title');
-    await expect.element(rows.last()).toHaveTextContent(/10\s*clicks/);
+    await expect.element(rows.first()).toMatchTextContent('Recommendation 1 title');
+    await expect.element(rows.first()).toMatchTextContent(/3\s*signups/);
+    await expect.element(rows.last()).toMatchTextContent('Recommendation 2 title');
+    await expect.element(rows.last()).toMatchTextContent(/10\s*clicks/);
   });
 
   it('validates and adds a recommendation with the checked site metadata', async () => {
@@ -115,7 +115,7 @@ describe('Recommendations settings', () => {
     await modal.getByLabelText('Short description').fill('This is a description');
     await modal.getByRole('button', { name: 'Add' }).click();
 
-    await expect.element(settingsScreen.successToast()).toHaveTextContent('Recommendation added');
+    await expect.element(settingsScreen.successToast()).toMatchTextContent('Recommendation added');
     expect(checkApi.lastRequest?.body).toEqual({
       recommendations: [{ url: 'https://example.com/a-cool-website' }],
     });
@@ -150,7 +150,7 @@ describe('Recommendations settings', () => {
 
     await expect
       .element(settingsScreen.errorToast())
-      .toHaveTextContent('A recommendation with this URL already exists');
+      .toMatchTextContent('A recommendation with this URL already exists');
   });
 
   it('validates and edits a recommendation', async () => {
@@ -196,7 +196,7 @@ describe('Recommendations settings', () => {
     const confirmation = settingsScreen.confirmationModal();
     await expect
       .element(confirmation)
-      .toHaveTextContent(
+      .toMatchTextContent(
         'Your recommendation Recommendation 1 title will no longer be visible to your audience.',
       );
     await confirmation.getByRole('button', { name: 'Delete' }).click();
@@ -220,10 +220,10 @@ describe('Recommendations settings', () => {
     await section.getByRole('tab', { name: 'Recommending you' }).click();
     const rows = section.getByTestId('incoming-recommendation-list-item');
     await expect(rows).toHaveCount(2);
-    await expect.element(rows.first()).toHaveTextContent('Incoming recommendation 1 title');
-    await expect.element(rows.first()).toHaveTextContent('Recommend back');
-    await expect.element(rows.last()).toHaveTextContent('Incoming recommendation 2 title');
-    await expect.element(rows.last()).toHaveTextContent('Recommending');
+    await expect.element(rows.first()).toMatchTextContent('Incoming recommendation 1 title');
+    await expect.element(rows.first()).toMatchTextContent('Recommend back');
+    await expect.element(rows.last()).toMatchTextContent('Incoming recommendation 2 title');
+    await expect.element(rows.last()).toMatchTextContent('Recommending');
 
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
     await rows.first().getByText('Incoming recommendation 1 title').click();

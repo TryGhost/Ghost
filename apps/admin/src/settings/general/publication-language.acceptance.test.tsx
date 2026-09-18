@@ -15,12 +15,12 @@ describe('Publication language settings', () => {
     await renderAdminApp('/settings');
 
     const select = settingsScreen.localeSelect();
-    await expect.element(select).toHaveTextContent('English (en)');
+    await expect.element(select).toMatchTextContent('English (en)');
     await select.click();
     await settingsScreen.selectOption('French (fr)').click();
     await settingsScreen.publicationLanguage().getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(select).toHaveTextContent('French (fr)');
+    await expect.element(select).toMatchTextContent('French (fr)');
     await expect(settingsApi).toHaveEditedSettings([{ key: 'locale', value: 'fr' }]);
   });
 
@@ -68,7 +68,7 @@ describe('Publication language settings', () => {
       .click();
 
     await expect.element(settingsScreen.localeSelect()).toBeVisible();
-    await expect.element(settingsScreen.localeSelect()).toHaveTextContent('English (en)');
+    await expect.element(settingsScreen.localeSelect()).toMatchTextContent('English (en)');
   });
 
   it('restores the language dropdown when cancelling Other', async () => {
@@ -80,7 +80,7 @@ describe('Publication language settings', () => {
     await settingsScreen.publicationLanguage().getByRole('button', { name: 'Cancel' }).click();
 
     await expect.element(settingsScreen.localeSelect()).toBeVisible();
-    await expect.element(settingsScreen.localeSelect()).toHaveTextContent('English (en)');
+    await expect.element(settingsScreen.localeSelect()).toMatchTextContent('English (en)');
   });
 
   it('displays a stored custom locale', async () => {

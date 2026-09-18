@@ -15,8 +15,8 @@ describe('Members list', () => {
     await expect(membersScreen.memberRows()).toHaveCount(3);
     await expect
       .element(membersScreen.memberRow('Alice Anderson'))
-      .toHaveTextContent('alice@example.com');
-    await expect.element(membersScreen.memberRow('Alice Anderson')).toHaveTextContent('Free');
+      .toMatchTextContent('alice@example.com');
+    await expect.element(membersScreen.memberRow('Alice Anderson')).toMatchTextContent('Free');
   });
 
   it('shows the empty state', async () => {

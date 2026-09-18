@@ -12,9 +12,9 @@ describe('Tags list', () => {
 
     const row = tagsScreen.tagRows();
     await expect.element(row).toBeVisible();
-    await expect.element(row).toHaveTextContent('News');
-    await expect.element(row).toHaveTextContent('News description');
-    await expect.element(row).toHaveTextContent('1 post');
+    await expect.element(row).toMatchTextContent('News');
+    await expect.element(row).toMatchTextContent('News description');
+    await expect.element(row).toMatchTextContent('1 post');
     await expect.element(tagsScreen.link('News')).toHaveAttribute('href', '#/tags/news');
 
     // The tabs are a single-select toggle group: role="radio" + aria-checked.

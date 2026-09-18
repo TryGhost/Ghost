@@ -155,16 +155,16 @@ describe('Tier checkout collection', () => {
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
-    await expect.element(modal.getByLabelText('Ships to')).toHaveTextContent('Specific countries');
+    await expect.element(modal.getByLabelText('Ships to')).toMatchTextContent('Specific countries');
     await expect
       .element(modal.getByLabelText('Select specific countries'))
-      .toHaveTextContent('Finland, Sweden');
+      .toMatchTextContent('Finland, Sweden');
     await expect
       .element(modal.getByLabelText('Save address as'))
-      .toHaveTextContent(addressField.name);
+      .toMatchTextContent(addressField.name);
     await expect
       .element(modal.getByLabelText('Save recipient name as'))
-      .toHaveTextContent(nameField.name);
+      .toMatchTextContent(nameField.name);
     await expect.element(modal.getByLabelText('Collect business tax ID')).toBeChecked();
     await expect.element(modal.getByLabelText('Collect phone number')).not.toBeChecked();
 
@@ -187,7 +187,7 @@ describe('Tier checkout collection', () => {
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
-    await expect.element(modal.getByLabelText('Ships to')).toHaveTextContent('All countries');
+    await expect.element(modal.getByLabelText('Ships to')).toMatchTextContent('All countries');
     await expect(modal.getByLabelText('Select specific countries')).toHaveCount(0);
   });
 
@@ -301,7 +301,7 @@ describe('Tier checkout collection', () => {
 
     await expect
       .element(modal.getByLabelText('Save recipient name as'))
-      .toHaveTextContent(created.name);
+      .toMatchTextContent(created.name);
     // Closed, like any other field a publisher makes by hand. The picker only appears
     // when the setting for opening one to members does too.
     expect(createApi.lastRequest?.body).toEqual({

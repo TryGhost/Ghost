@@ -49,10 +49,10 @@ describe("What's new banner", () => {
     });
 
     await expect.element(whatsNewScreen.banner()).toBeVisible();
-    await expect.element(whatsNewScreen.bannerTitle()).toHaveTextContent('New Update');
+    await expect.element(whatsNewScreen.bannerTitle()).toMatchTextContent('New Update');
     await expect
       .element(whatsNewScreen.bannerExcerpt())
-      .toHaveTextContent('This is an exciting new feature');
+      .toMatchTextContent('This is an exciting new feature');
   });
 
   it("dismissing the banner persists the entry's date as last seen", async () => {
@@ -112,11 +112,11 @@ describe("What's new menu", () => {
 
     await expect.element(whatsNewScreen.dialog()).toBeVisible();
     await expect(whatsNewScreen.entries()).toHaveCount(2);
-    await expect.element(whatsNewScreen.entry(0)).toHaveTextContent('Latest Update');
-    await expect.element(whatsNewScreen.entry(0)).toHaveTextContent('Latest feature');
+    await expect.element(whatsNewScreen.entry(0)).toMatchTextContent('Latest Update');
+    await expect.element(whatsNewScreen.entry(0)).toMatchTextContent('Latest feature');
     await expect.element(whatsNewScreen.entryImage(0)).toBeVisible();
-    await expect.element(whatsNewScreen.entry(1)).toHaveTextContent('Previous Update');
-    await expect.element(whatsNewScreen.entry(1)).toHaveTextContent('Previous feature');
+    await expect.element(whatsNewScreen.entry(1)).toMatchTextContent('Previous Update');
+    await expect.element(whatsNewScreen.entry(1)).toMatchTextContent('Previous feature');
   });
 
   it("shows badges when an entry is newer than the user's last seen date", async () => {

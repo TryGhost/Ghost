@@ -73,8 +73,8 @@ describe('Post editor', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await expect.element(editorScreen.wordCount()).toHaveTextContent('3 words');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
+    await expect.element(editorScreen.wordCount()).toMatchTextContent('3 words');
     expect(postsApi.lastRequest?.url).toContain('formats=mobiledoc%2Clexical');
     expect(postsApi.lastRequest?.url).toContain('include=tags%2Cauthors');
   });
@@ -100,12 +100,12 @@ describe('Post editor', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     const body = editorScreen.body();
-    await expect.element(editorScreen.wordCount()).toHaveTextContent('3 words');
+    await expect.element(editorScreen.wordCount()).toMatchTextContent('3 words');
     await body.click();
     await userEvent.keyboard('{End} and more');
 
-    await expect.element(body).toHaveTextContent('Hello from React and more');
-    await expect.element(editorScreen.wordCount()).toHaveTextContent('5 words');
+    await expect.element(body).toMatchTextContent('Hello from React and more');
+    await expect.element(editorScreen.wordCount()).toMatchTextContent('5 words');
   });
 
   it('keeps title edits in memory', async () => {
@@ -125,7 +125,7 @@ describe('Post editor', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     const title = editorScreen.titleInput();
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.body()).toMatchTextContent('Hello from React');
     await title.click();
     await userEvent.keyboard('{Enter}');
 
@@ -182,7 +182,7 @@ describe('Post editor', () => {
       });
       await renderAdminApp(`/editor/${type}/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Converted from mobiledoc');
+      await expect.element(editorScreen.body()).toMatchTextContent('Converted from mobiledoc');
       expect(convertApi.requests).toHaveLength(1);
       expect(convertApi.lastRequest?.url).toContain('convert_to_lexical=true');
       expect(convertApi.lastRequest?.url).toContain('formats=mobiledoc%2Clexical');
@@ -198,7 +198,7 @@ describe('Post editor', () => {
 
     await expect
       .element(editorScreen.loadError())
-      .toHaveTextContent('Couldn’t convert this post for editing.');
+      .toMatchTextContent('Couldn’t convert this post for editing.');
     await expect(editorScreen.body()).toHaveCount(0);
   });
 
@@ -214,7 +214,7 @@ describe('Post editor', () => {
 
     await expect
       .element(editorScreen.loadError())
-      .toHaveTextContent('Couldn’t convert this post for editing.');
+      .toMatchTextContent('Couldn’t convert this post for editing.');
     await expect(editorScreen.body()).toHaveCount(0);
   });
 
@@ -286,7 +286,7 @@ describe('Post editor', () => {
     await expect.element(editorScreen.titleInput()).toHaveValue('');
     await expect.element(editorScreen.titleInput()).toHaveAttribute('placeholder', 'Post title');
     await expect.element(editorScreen.body()).toBeVisible();
-    await expect.element(editorScreen.wordCount()).toHaveTextContent('0 words');
+    await expect.element(editorScreen.wordCount()).toMatchTextContent('0 words');
   });
 
   it('labels a new page as a page', async () => {

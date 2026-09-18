@@ -224,7 +224,7 @@ describe('Social account settings', () => {
       await userEvent.tab();
       await expect.element(field).toHaveValue(expected);
       if (error) {
-        await expect.element(section).toHaveTextContent(error);
+        await expect.element(section).toMatchTextContent(error);
       }
     }
   });
@@ -243,7 +243,7 @@ describe('Social account settings', () => {
     await expect.element(instagram).toHaveValue('https://www.instagram.com/ghostteam.');
     await expect
       .element(section)
-      .toHaveTextContent('Your Username is not a valid Instagram Username');
+      .toMatchTextContent('Your Username is not a valid Instagram Username');
   });
 
   it('does not rewrite a Mastodon handle while typing', async () => {
@@ -269,7 +269,7 @@ describe('Social account settings', () => {
     await expect.element(mastodon).toHaveValue('https://mastodon.social/@ghost@example.com');
     await userEvent.tab();
     await expect.element(mastodon).toHaveValue('https://mastodon.social/@ghost@example.com');
-    await expect.element(section).not.toHaveTextContent('The URL must be in a format');
+    await expect.element(section).not.toMatchTextContent('The URL must be in a format');
   });
 
   it('does not block unrelated saves on a stale stored value', async () => {
@@ -285,7 +285,7 @@ describe('Social account settings', () => {
     await expect.element(section.getByLabelText('Threads')).toHaveValue('@ghost.tld.');
     await expect
       .element(section)
-      .not.toHaveTextContent(
+      .not.toMatchTextContent(
         'The URL must be in a format like https://www.threads.net/@yourUsername',
       );
     await section.getByLabelText('Facebook').fill('fb');
@@ -306,7 +306,7 @@ describe('Social account settings', () => {
 
     await expect
       .element(section)
-      .toHaveTextContent('Your Username is not a valid Instagram Username');
+      .toMatchTextContent('Your Username is not a valid Instagram Username');
     expect(settingsApi.requests).toHaveLength(0);
   });
 });

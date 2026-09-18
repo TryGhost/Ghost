@@ -224,17 +224,17 @@ describe('Post settings meta data', () => {
 
     await expect
       .element(editorScreen.settingsSubviewPane())
-      .toHaveTextContent("Recommended: 60 characters. You've used 0");
+      .toMatchTextContent("Recommended: 60 characters. You've used 0");
     await expect
       .element(editorScreen.settingsSubviewPane())
-      .toHaveTextContent("Recommended: 145 characters. You've used 0");
+      .toMatchTextContent("Recommended: 145 characters. You've used 0");
     expect(countdownIsOver()).toBe(false);
 
     await editorScreen.settingsMetaTitle().fill('a'.repeat(61));
 
     await expect
       .element(editorScreen.settingsSubviewPane())
-      .toHaveTextContent("Recommended: 60 characters. You've used 61");
+      .toMatchTextContent("Recommended: 60 characters. You've used 61");
     expect(countdownIsOver()).toBe(true);
   });
 
@@ -248,7 +248,7 @@ describe('Post settings meta data', () => {
 
     await expect
       .element(editorScreen.settingsSubviewPane().getByRole('alert'))
-      .toHaveTextContent('Meta title cannot be longer than 300 characters.');
+      .toMatchTextContent('Meta title cannot be longer than 300 characters.');
     await expect.element(editorScreen.settingsMetaTitle()).toHaveAttribute('aria-invalid', 'true');
     // Refused where the writer is typing rather than as a save they did not ask for.
     await expect.poll(unsavedChangesGuarded).toBe(true);
@@ -259,7 +259,7 @@ describe('Post settings meta data', () => {
 
     await expect
       .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent('Meta title cannot be longer than 300 characters.');
+      .toMatchTextContent('Meta title cannot be longer than 300 characters.');
     expect(saveApi.requests).toHaveLength(0);
   });
 
@@ -269,16 +269,16 @@ describe('Post settings meta data', () => {
     await openMetaData();
 
     const preview = editorScreen.settingsSerpPreview();
-    await expect.element(preview).toHaveTextContent('hello-from-react');
-    await expect.element(preview).toHaveTextContent('Hello from React');
-    await expect.element(preview).toHaveTextContent('The excerpt this post already has');
+    await expect.element(preview).toMatchTextContent('hello-from-react');
+    await expect.element(preview).toMatchTextContent('Hello from React');
+    await expect.element(preview).toMatchTextContent('The excerpt this post already has');
 
     await editorScreen.settingsMetaTitle().fill('A better title for search');
     await editorScreen.settingsMetaDescription().fill('What this post is about');
 
-    await expect.element(preview).toHaveTextContent('A better title for search');
-    await expect.element(preview).toHaveTextContent('What this post is about');
-    await expect.element(preview).not.toHaveTextContent('The excerpt this post already has');
+    await expect.element(preview).toMatchTextContent('A better title for search');
+    await expect.element(preview).toMatchTextContent('What this post is about');
+    await expect.element(preview).not.toMatchTextContent('The excerpt this post already has');
   });
 
   it('keeps the preview in sync with the inline excerpt while published edits are staged', async () => {
@@ -291,12 +291,12 @@ describe('Post settings meta data', () => {
     await editorScreen.excerptInput().fill('First unsaved summary');
     await expect
       .element(editorScreen.settingsSerpPreview())
-      .toHaveTextContent('First unsaved summary');
+      .toMatchTextContent('First unsaved summary');
     // Already dirty: another edit must update the preview without a save or dirty-state transition.
     await editorScreen.excerptInput().fill('The latest unsaved summary');
     await expect
       .element(editorScreen.settingsSerpPreview())
-      .toHaveTextContent('The latest unsaved summary');
+      .toMatchTextContent('The latest unsaved summary');
     await expect
       .element(editorScreen.settingsMetaDescription())
       .toHaveAttribute('placeholder', 'The latest unsaved summary');
@@ -309,7 +309,7 @@ describe('Post settings meta data', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openMetaData();
 
-    await expect.element(editorScreen.settingsSerpPreview()).toHaveTextContent(PLACEHOLDER);
+    await expect.element(editorScreen.settingsSerpPreview()).toMatchTextContent(PLACEHOLDER);
   });
 
   it('gives a contributor the pane their role can write', async () => {

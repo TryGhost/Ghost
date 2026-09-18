@@ -150,7 +150,7 @@ describe('Post settings tags', () => {
     await expect(saveApi).toHaveSavedFields({ tags: expect.arrayContaining([{ id: 'tag2' }]) });
     // Identity only: a name here is written onto the tag row, reverting the rename.
     expect(submittedTags(saveApi)[0]).toEqual({ id: 'tag1' });
-    await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Breaking News');
+    await expect.element(editorScreen.settingsTagsField()).toMatchTextContent('Breaking News');
   });
 
   it('reads a tag swapped for a same-named one as a change', async () => {
@@ -191,7 +191,7 @@ describe('Post settings tags', () => {
     // Named, not created first: an abandoned edit leaves no stray tag behind.
     expect(submittedTags(saveApi)).toEqual([{ name: 'Culture' }]);
     expect(tagsApi.requests).toHaveLength(0);
-    await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Culture');
+    await expect.element(editorScreen.settingsTagsField()).toMatchTextContent('Culture');
   });
 
   it('drops an uncommitted term when the list closes', async () => {
@@ -344,7 +344,7 @@ describe('Post settings tags', () => {
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     // Untouched, so it was never in the payload — and the server's copy wins.
     expect(submittedPost(saveApi)).not.toHaveProperty('tags');
-    await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Notice');
+    await expect.element(editorScreen.settingsTagsField()).toMatchTextContent('Notice');
   });
 
   it('leaves the Tags section out for a contributor', async () => {
