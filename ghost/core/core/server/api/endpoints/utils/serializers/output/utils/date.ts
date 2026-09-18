@@ -7,10 +7,14 @@ const format = (date: Parameters<typeof moment>[0]): string => {
 };
 
 export const forPost = <
-  T extends { created_at?: string; published_at?: string; updated_at?: string },
+  T extends {
+    created_at?: null | string;
+    published_at?: null | string;
+    updated_at?: null | string;
+  },
 >(
   attrs: T,
-) => {
+): T => {
   const fields = ['created_at', 'updated_at', 'published_at'] as const;
   for (const field of fields) {
     if (attrs[field]) {
