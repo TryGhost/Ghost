@@ -12,7 +12,7 @@ class MembersStatusEventsImporter extends TableImporter {
 
   async import(quantity) {
     let offset = 0;
-    let limit = 100000;
+    const limit = 100000;
 
     while (true) {
       const members = await this.transaction

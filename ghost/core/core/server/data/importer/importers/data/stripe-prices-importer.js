@@ -23,7 +23,7 @@ class StripePricesImporter extends BaseImporter {
 
   validateStripeProduct() {
     // ensure we have a valid stripe_product_id in the stripe_products table
-    let invalidPrices = [];
+    const invalidPrices = [];
     _.each(this.dataToImport, (objectInFile) => {
       const importedObject = _.find(this.requiredImportedData.stripe_products, {
         stripe_product_id: objectInFile.stripe_product_id,

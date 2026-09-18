@@ -57,9 +57,9 @@ class PostsImporter extends BaseImporter {
    * Sanitizes post metadata, picking data from sepearate table(for >= v3) or post itself(for < v3)
    */
   sanitizePostsMeta(model) {
-    let postsMetaFromFile =
+    const postsMetaFromFile =
       _.find(this.requiredFromFile.posts_meta, { post_id: model.id }) || _.pick(model, metaAttrs);
-    let postsMetaData = Object.assign(
+    const postsMetaData = Object.assign(
       {},
       _.mapValues(postsMetaSchema, (value) => {
         return Reflect.has(value, 'defaultTo') ? value.defaultTo : null;
@@ -103,7 +103,7 @@ class PostsImporter extends BaseImporter {
           return;
         }
 
-        let postToImport = _.find(this.dataToImport, { id: relation.post_id });
+        const postToImport = _.find(this.dataToImport, { id: relation.post_id });
 
         // CASE: we won't import a relation when the target post does not exist
         if (!postToImport) {
@@ -143,13 +143,13 @@ class PostsImporter extends BaseImporter {
         return;
       }
 
-      let indexesToRemove = [];
+      const indexesToRemove = [];
       _.each(postToImport[targetProperty], (object, index) => {
         // this is the original relational object (old id)
-        let objectInFile = _.find(this.requiredFromFile[tableName], { id: object.id });
+        const objectInFile = _.find(this.requiredFromFile[tableName], { id: object.id });
 
         if (!objectInFile) {
-          let existingObject = _.find(this.requiredExistingData[tableName], { id: object.id });
+          const existingObject = _.find(this.requiredExistingData[tableName], { id: object.id });
 
           // CASE: is not in file, is not in db
           if (!existingObject) {
@@ -177,7 +177,7 @@ class PostsImporter extends BaseImporter {
         }
 
         // CASE: search through existing data by unique attribute
-        let existingObject = _.find(this.requiredExistingData[tableName], {
+        const existingObject = _.find(this.requiredExistingData[tableName], {
           slug: objectInFile.slug,
         });
 
@@ -317,7 +317,7 @@ class PostsImporter extends BaseImporter {
 
     // NOTE: We only support removing duplicate posts within the file to import.
     // For any further future duplication detection, see https://github.com/TryGhost/Ghost/issues/8717.
-    let slugs = [];
+    const slugs = [];
     this.dataToImport = _.filter(this.dataToImport, (post) => {
       if (!!post.slug && slugs.indexOf(post.slug) !== -1) {
         this.problems.push({

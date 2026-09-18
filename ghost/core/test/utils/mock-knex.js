@@ -58,7 +58,7 @@ class Mocker {
   }
 
   _replace(obj, spec, replaced, path) {
-    let replacement = _.get(spec, path);
+    const replacement = _.get(spec, path);
 
     path = path.replace('._constructor.', '.constructor.').replace('._prototype.', '.prototype.');
 

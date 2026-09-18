@@ -18,15 +18,10 @@ describe('Unit: sitemap/manager', function () {
   let eventsToRemember;
 
   const makeStubManager = function () {
-    let posts;
-    let pages;
-    let tags;
-    let authors;
-
-    posts = new PostGenerator();
-    pages = new PageGenerator();
-    tags = new TagGenerator();
-    authors = new UserGenerator();
+    const posts = new PostGenerator();
+    const pages = new PageGenerator();
+    const tags = new TagGenerator();
+    const authors = new UserGenerator();
 
     // The index is built from the url service on first read, so even the
     // legacy render tests need one injected.

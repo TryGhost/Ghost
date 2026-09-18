@@ -7,7 +7,7 @@
  * URLs are allowed if they start with http://, https://, or /.
  * NOTE: # urls are not allowed as clicking them will break the editor when clicked
  */
-let allowedUrl = function (url) {
+const allowedUrl = function (url) {
     url = url.toString().replace(/['"]+/g, '');
     if (/^https?:\/\//.test(url) || /^\//.test(url)) {
         return url;
@@ -18,7 +18,7 @@ let allowedUrl = function (url) {
  * Check if ID is allowed
  * All ids are allowed at the moment.
  */
-let allowedId = function (id) {
+const allowedId = function (id) {
     return id;
 };
 

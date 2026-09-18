@@ -1080,7 +1080,7 @@ describe('Comments API', function () {
           .expectStatus(200);
 
         // get the LAST comment from data2
-        let lastComment = data2.body.comments[data2.body.comments.length - 1];
+        const lastComment = data2.body.comments[data2.body.comments.length - 1];
 
         assert.equal(lastComment.id, oldestComment.id);
       });

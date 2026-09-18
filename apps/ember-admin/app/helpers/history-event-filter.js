@@ -19,7 +19,7 @@ export default class HistoryEventFilter extends Helper {
             excludedResources.forEach(type => excludedResourcesSet.add(type));
         }
 
-        let filterParts = [];
+        const filterParts = [];
 
         const excludedEventsArray = Array.from(excludedEventsSet).reject(isBlank);
         if (excludedEventsArray.length > 0) {

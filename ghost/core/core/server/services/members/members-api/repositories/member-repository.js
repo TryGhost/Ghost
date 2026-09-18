@@ -717,7 +717,7 @@ module.exports = class MemberRepository {
     }
 
     // Fetch the member
-    let initialMember = await this._Member.findOne(
+    const initialMember = await this._Member.findOne(
       {
         id: options.id,
       },
@@ -1335,7 +1335,7 @@ module.exports = class MemberRepository {
       logging.error(e);
     }
 
-    let stripeCouponId = stripeSubscriptionData.discount?.coupon?.id;
+    const stripeCouponId = stripeSubscriptionData.discount?.coupon?.id;
 
     // For trial offers, offer id is passed from metadata as there is no stripe coupon
     let offerId = data.offerId || null;
@@ -1432,7 +1432,7 @@ module.exports = class MemberRepository {
 
       return 'inactive';
     };
-    let eventData = {};
+    const eventData = {};
     const isIncomplete = ['incomplete', 'incomplete_expired'].includes(
       stripeSubscriptionData.status,
     );

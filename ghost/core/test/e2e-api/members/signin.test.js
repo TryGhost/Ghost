@@ -233,7 +233,7 @@ describe('Members Signin', function () {
 
   describe('Validity Period', function () {
     let clock;
-    let startDate = new Date();
+    const startDate = new Date();
     const email = 'validity-period-member1@test.com';
 
     beforeEach(async function () {

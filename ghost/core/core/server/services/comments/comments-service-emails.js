@@ -277,7 +277,7 @@ class CommentsServiceEmails {
       this.logging.warn(message.text);
     }
 
-    let msg = Object.assign(
+    const msg = Object.assign(
       {
         from: this.notificationFromAddress,
         forceTextContent: true,

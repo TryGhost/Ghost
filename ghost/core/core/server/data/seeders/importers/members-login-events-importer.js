@@ -17,7 +17,7 @@ class MembersLoginEventsImporter extends TableImporter {
     }
 
     let offset = 0;
-    let limit = 100000;
+    const limit = 100000;
 
     while (true) {
       const members = await this.transaction

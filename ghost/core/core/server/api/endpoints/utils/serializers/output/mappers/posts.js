@@ -121,7 +121,7 @@ module.exports = async (model, frame, options = {}) => {
   }
 
   // Transforms post/page metadata to flat structure
-  let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+  const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
   _(metaAttrs)
     .filter((k) => {
       return !frame.options.columns || (frame.options.columns && frame.options.columns.includes(k));

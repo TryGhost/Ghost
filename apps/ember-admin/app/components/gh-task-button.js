@@ -66,8 +66,8 @@ const GhTaskButton = Component.extend({
     }),
 
     isRunning: computed('task.last.isRunning', 'hasRun', 'showSuccess', function () {
-        let taskName = this.get('task.name');
-        let lastTaskName = this.get('task.last.task.name');
+        const taskName = this.get('task.name');
+        const lastTaskName = this.get('task.last.task.name');
 
         let isRunning = (taskName === lastTaskName) && this.get('task.last.isRunning');
         if (this.hasRun && (taskName === lastTaskName) && this.get('task.last.value') && !this.showSuccess) {
@@ -82,14 +82,14 @@ const GhTaskButton = Component.extend({
     }),
 
     isSuccess: computed('hasRun', 'isRunning', 'task.last.value', function () {
-        let taskName = this.get('task.name');
-        let lastTaskName = this.get('task.last.task.name');
+        const taskName = this.get('task.name');
+        const lastTaskName = this.get('task.last.task.name');
 
         if (!this.hasRun || this.isRunning || !this.showSuccess) {
             return false;
         }
 
-        let value = this.get('task.last.value');
+        const value = this.get('task.last.value');
         return (taskName === lastTaskName) && !isBlank(value) && value !== false && value !== 'canceled';
     }),
 
@@ -98,8 +98,8 @@ const GhTaskButton = Component.extend({
     }),
 
     isFailure: computed('hasRun', 'isRunning', 'isSuccess', 'task.last.{value,error}', function () {
-        let taskName = this.get('task.name');
-        let lastTaskName = this.get('task.last.task.name');
+        const taskName = this.get('task.name');
+        const lastTaskName = this.get('task.last.task.name');
         const lastTaskValue = this.task?.last?.value;
 
         if (!this.hasRun || this.isRunning || this.isSuccess) {
@@ -148,8 +148,8 @@ const GhTaskButton = Component.extend({
             return false;
         }
 
-        let taskName = this.get('task.name');
-        let lastTaskName = this.get('task.last.task.name');
+        const taskName = this.get('task.name');
+        const lastTaskName = this.get('task.last.task.name');
 
         // task-buttons are never disabled whilst running so that clicks when a
         // taskGroup is running don't get dropped BUT that means we need to check
@@ -185,7 +185,7 @@ const GhTaskButton = Component.extend({
     // so we want to restart the retry spinner animation to show something
     // has happened when the button is clicked
     _restartAnimation: task(function* () {
-        let elem = this.element.querySelector('.retry-animated');
+        const elem = this.element.querySelector('.retry-animated');
         if (elem) {
             elem.classList.remove('retry-animated');
             yield timeout(10);

@@ -136,7 +136,7 @@ describe('Unit: endpoints/utils/validators/input/pages', function () {
           },
         };
 
-        let result = validators.input.pages.add(apiConfig, frame);
+        const result = validators.input.pages.add(apiConfig, frame);
 
         assert(frame.data.pages[0].title);
         assert(frame.data.pages[0].authors);

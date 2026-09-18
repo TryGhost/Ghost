@@ -11,7 +11,7 @@ describe('StripeAPI', function () {
   const mockCustomerEmail = 'foo@example.com';
   const mockCustomerId = 'cust_mock_123456';
   const mockCustomerName = 'Example Customer';
-  let mockLabs = {
+  const mockLabs = {
     isSet() {
       return false;
     },

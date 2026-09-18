@@ -36,7 +36,7 @@ function setupGhostApi({ apiUrl }) {
   };
 
   api.init = async () => {
-    let { announcement } = await api.announcementSettings.browse();
+    const { announcement } = await api.announcementSettings.browse();
     return announcement[0];
   };
 

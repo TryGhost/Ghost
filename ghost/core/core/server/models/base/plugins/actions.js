@@ -98,7 +98,7 @@ module.exports = function (Bookshelf) {
           return;
         }
 
-        let context = {
+        const context = {
           action_name: options.actionName,
         };
 

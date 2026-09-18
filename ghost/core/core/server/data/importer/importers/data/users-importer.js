@@ -33,7 +33,7 @@ class UsersImporter extends BaseImporter {
     debug('beforeImport');
 
     let role;
-    let lookup = {};
+    const lookup = {};
 
     // NOTE: sort out duplicated roles based on incremental id
     _.each(this.requiredFromFile.roles_users, (attachedRole) => {

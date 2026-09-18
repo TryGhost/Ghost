@@ -17,7 +17,7 @@ describe('Integration: Component: gh-member-avatar', function () {
         });
 
         await render(hbs`<GhMemberAvatar @member={{member}} />`);
-        let avatar = this.element;
+        const avatar = this.element;
         expect(avatar).to.exist;
     });
 });

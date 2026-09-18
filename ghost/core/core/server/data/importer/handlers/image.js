@@ -3,9 +3,8 @@ const path = require('path');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils').default;
 const adapterManager = require('../../../services/adapter-manager').default;
-let ImageHandler;
 
-ImageHandler = {
+const ImageHandler = {
   type: 'images',
   extensions: config.get('uploads').images.extensions,
   contentTypes: config.get('uploads').images.contentTypes,

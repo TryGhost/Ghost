@@ -26,13 +26,12 @@ describe('RSS: Cache', function () {
       posts: [],
       meta: { pagination: { pages: 1 } },
     };
-    let xmlData1;
 
     const baseUrl = `/rss-${crypto.randomUUID()}/`;
 
     const _xmlData = await rssCache.getXML(baseUrl, data);
 
-    xmlData1 = _xmlData;
+    const xmlData1 = _xmlData;
 
     sinon.assert.notCalled(loggingInfoSpy);
 

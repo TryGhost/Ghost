@@ -8,7 +8,7 @@ export default class TagSerializer extends ApplicationSerializer {
     };
 
     serialize(/*snapshot, options*/) {
-        let json = super.serialize(...arguments);
+        const json = super.serialize(...arguments);
 
         // Properties that exist on the model but we don't want sent in the payload
         delete json.count;
@@ -21,8 +21,8 @@ export default class TagSerializer extends ApplicationSerializer {
     // DS.SERIALIZER.REST.QUERYRECORD-ARRAY-RESPONSE deprecations
     normalizeResponse(store, primaryModelClass, payload, id, requestType) {
         if (requestType === 'queryRecord') {
-            let singular = primaryModelClass.modelName;
-            let plural = pluralize(singular);
+            const singular = primaryModelClass.modelName;
+            const plural = pluralize(singular);
 
             if (payload[plural]) {
                 payload[singular] = payload[plural][0];
