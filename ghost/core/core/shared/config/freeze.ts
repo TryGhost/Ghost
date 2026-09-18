@@ -26,6 +26,22 @@ const MUTATORS = [
 ] as const;
 
 /**
+ * How a value handed back by `get()` is protected.
+ *
+ * - `freeze` deep-freezes it. Zero cost to read, but a write only throws in
+ *   strict-mode code. A plain CommonJS module body or a non-class function
+ *   silently no-ops instead, so the config quietly is not applied. Every bug
+ *   found auditing this was of that shape.
+ * - `proxy` wraps it so the write trap throws explicitly. A trap that throws
+ *   propagates regardless of the caller's strictness, so the failure is loud
+ *   everywhere. Costs a little on each property read of a config object.
+ *
+ * Selected with GHOST_CONFIG_GUARD while the two are being compared.
+ */
+const GUARD_MODE: 'freeze' | 'proxy' =
+  process.env.GHOST_CONFIG_GUARD === 'freeze' ? 'freeze' : 'proxy';
+
+/**
  * Recursively freeze a value so that a caller mutating what `get()` handed back
  * fails loudly instead of silently corrupting the cache for everyone.
  *
@@ -51,6 +67,81 @@ function deepFreeze<T>(value: T, seen = new WeakSet<object>()): T {
   }
 
   return Object.freeze(value);
+}
+
+/**
+ * Only plain objects and arrays are wrapped. A class instance or anything with
+ * an exotic prototype is handed back untouched rather than risking a proxy
+ * around something that cares about its own identity or internal slots.
+ */
+function isPlainContainer(value: unknown): value is object {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  if (Array.isArray(value)) {
+    return true;
+  }
+
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
+function rejectWrite(operation: string, property: PropertyKey): never {
+  // new TypeError is allowed here, as we do not want config to depend on
+  // @tryghost/errors, and TypeError is what the engine itself raises for a
+  // write to a frozen object in strict mode.
+  // eslint-disable-next-line ghost/ghost-custom/ghost-error-usage
+  throw new TypeError(
+    `Config is read-only: cannot ${operation} '${String(property)}' on a value returned by config.get(). Copy it first if you need to change it - config is read-only once loaded.`,
+  );
+}
+
+/**
+ * Wrap a value so that any attempt to write to it throws.
+ *
+ * Children are wrapped lazily from the `get` trap rather than up front: that
+ * keeps the target object untouched (nconf's stores are shared by reference and
+ * must not be rewritten) and means only the parts actually read pay for it.
+ * Wrappers are memoised per underlying object, which also handles cycles.
+ */
+const guardCache = new WeakMap<object, object>();
+
+function deepGuard<T>(value: T): T {
+  if (!isPlainContainer(value)) {
+    return value;
+  }
+
+  const existing = guardCache.get(value);
+  if (existing) {
+    return existing as T;
+  }
+
+  const proxy = new Proxy(value, {
+    get(target, property, receiver) {
+      return deepGuard(Reflect.get(target, property, receiver));
+    },
+    set(_target, property) {
+      rejectWrite('set', property);
+    },
+    deleteProperty(_target, property) {
+      rejectWrite('delete', property);
+    },
+    defineProperty(_target, property) {
+      rejectWrite('define', property);
+    },
+    setPrototypeOf() {
+      rejectWrite('set the prototype of', '[[Prototype]]');
+    },
+  });
+
+  guardCache.set(value, proxy);
+
+  return proxy as T;
+}
+
+function protect<T>(value: T): T {
+  return GUARD_MODE === 'freeze' ? deepFreeze(value) : deepGuard(value);
 }
 
 /**
@@ -99,10 +190,10 @@ export function bindFreeze(nconf: Provider): asserts nconf is Provider & ConfigF
       return cache.get(key);
     }
 
-    // Frozen, so that a caller which mutates the object it was handed gets a
+    // Protected, so that a caller which mutates the object it was handed gets a
     // loud TypeError rather than quietly rewriting the cache for every
     // subsequent reader
-    const value = deepFreeze(originalGet(key));
+    const value = protect(originalGet(key));
     cache.set(key, value);
 
     return value;
