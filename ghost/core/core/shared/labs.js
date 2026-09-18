@@ -70,27 +70,26 @@ const PRIVATE_FEATURES = [
 module.exports.GA_KEYS = [...GA_FEATURES];
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 
-module.exports.getAll = () => {
-  const labs = _.cloneDeep(settingsCache.get('labs')) || {};
+const hasOwn = (obj, key) => Boolean(obj) && Object.prototype.hasOwnProperty.call(obj, key);
 
-  GA_FEATURES.forEach((gaKey) => {
+const membersEnabled = () => settingsCache.get('members_signup_access') !== 'none';
+
+// Called from theme helpers on every render, so keep it allocation-light: the labs
+// setting is a flat map of booleans and the settings cache parses it fresh on each
+// get, so a shallow copy is enough to stop callers mutating shared state.
+module.exports.getAll = () => {
+  const labs = Object.assign({}, settingsCache.get('labs'));
+
+  for (const gaKey of GA_FEATURES) {
     labs[gaKey] = true;
-  });
+  }
 
   // Remote overrides sit above GA (so a remote entry can kill a GA flag) but below
   // config.labs (so an explicit local pin wins): config.labs > remote > GA > DB.
   // Empty on self-hosted, so this overlay is a no-op there.
-  const remoteOverrides = flagOverrides.getAll();
-  Object.keys(remoteOverrides).forEach((key) => {
-    labs[key] = remoteOverrides[key];
-  });
+  Object.assign(labs, flagOverrides.getAll(), config.get('labs') || {});
 
-  const labsConfig = config.get('labs') || {};
-  Object.keys(labsConfig).forEach((key) => {
-    labs[key] = labsConfig[key];
-  });
-
-  labs.members = settingsCache.get('members_signup_access') !== 'none';
+  labs.members = membersEnabled();
 
   return labs;
 };
@@ -104,9 +103,29 @@ module.exports.getAllFlags = function () {
  * @returns {boolean}
  */
 module.exports.isSet = function isSet(flag) {
-  const labsConfig = module.exports.getAll();
+  // Checks the layers in precedence order for one key rather than building the
+  // whole object, because this is the hot path for theme helpers.
+  if (flag === 'members') {
+    // Derived last in getAll(), so no override layer can change it.
+    return membersEnabled();
+  }
 
-  return !!(labsConfig && labsConfig[flag] && labsConfig[flag] === true);
+  const labsConfig = config.get('labs');
+  if (hasOwn(labsConfig, flag)) {
+    return labsConfig[flag] === true;
+  }
+
+  const override = flagOverrides.get(flag);
+  if (override !== undefined) {
+    return override === true;
+  }
+
+  if (GA_FEATURES.includes(flag)) {
+    return true;
+  }
+
+  const labs = settingsCache.get('labs');
+  return hasOwn(labs, flag) && labs[flag] === true;
 };
 
 /**
