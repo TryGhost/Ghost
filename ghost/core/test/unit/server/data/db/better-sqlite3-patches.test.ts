@@ -1,14 +1,17 @@
-const assert = require('node:assert/strict');
-
-const patches = require('../../../../../core/server/data/db/better-sqlite3-patches');
-const {
+import assert from 'node:assert/strict';
+import {
   SQLITE_PRIMARY_RESULT_CODES,
-  getPrimarySqliteCode,
-  normalizeSqliteError,
+  applyBetterSqlite3Patches,
   expandArrayBindings,
   formatBindings,
-  applyBetterSqlite3Patches,
-} = patches;
+  getPrimarySqliteCode,
+  normalizeSqliteError,
+  // @ts-expect-error This module lacks type definitions.
+} from '../../../../../core/server/data/db/better-sqlite3-patches';
+// @ts-expect-error This module lacks type definitions.
+import BetterSqlite3Client from 'knex/lib/dialects/better-sqlite3/index.js';
+
+type SqliteError = Error & { code?: string; errno?: number };
 
 describe('better-sqlite3 patches', function () {
   describe('getPrimarySqliteCode', function () {
@@ -36,7 +39,7 @@ describe('better-sqlite3 patches', function () {
 
   describe('normalizeSqliteError', function () {
     it('adds a numeric errno and primary code to a better-sqlite3 error', function () {
-      const err = new Error('UNIQUE constraint failed');
+      const err: SqliteError = new Error('UNIQUE constraint failed');
       err.code = 'SQLITE_CONSTRAINT_UNIQUE';
 
       const result = normalizeSqliteError(err);
@@ -48,7 +51,7 @@ describe('better-sqlite3 patches', function () {
     });
 
     it('normalizes a primary code error', function () {
-      const err = new Error('no such column');
+      const err: SqliteError = new Error('no such column');
       err.code = 'SQLITE_ERROR';
 
       normalizeSqliteError(err);
@@ -58,7 +61,7 @@ describe('better-sqlite3 patches', function () {
     });
 
     it('leaves an error that already has an errno untouched', function () {
-      const err = new Error('already normalized');
+      const err: SqliteError = new Error('already normalized');
       err.code = 'SQLITE_CONSTRAINT';
       err.errno = 19;
 
@@ -69,7 +72,7 @@ describe('better-sqlite3 patches', function () {
     });
 
     it('leaves a non-SQLITE error untouched', function () {
-      const err = new Error('some other error');
+      const err: SqliteError = new Error('some other error');
       err.code = 'ECONNREFUSED';
 
       normalizeSqliteError(err);
@@ -79,7 +82,7 @@ describe('better-sqlite3 patches', function () {
     });
 
     it('leaves an unknown SQLITE code untouched (no errno set)', function () {
-      const err = new Error('mystery');
+      const err: SqliteError = new Error('mystery');
       err.code = 'SQLITE_MYSTERY';
 
       normalizeSqliteError(err);
@@ -94,7 +97,7 @@ describe('better-sqlite3 patches', function () {
     });
 
     it('ignores an error without a string code', function () {
-      const err = new Error('no code');
+      const err: SqliteError = new Error('no code');
 
       normalizeSqliteError(err);
 
@@ -216,14 +219,12 @@ describe('better-sqlite3 patches', function () {
   });
 
   describe('applyBetterSqlite3Patches', function () {
-    let BetterSqlite3Client;
-    let originalQuery;
-    let originalFormatBindings;
+    let originalQuery: unknown;
+    let originalFormatBindings: unknown;
 
     beforeAll(function () {
       // Capture the unpatched dialect methods so we can restore them after,
       // since the patch mutates the shared prototype.
-      BetterSqlite3Client = require('knex/lib/dialects/better-sqlite3/index.js');
       originalQuery = BetterSqlite3Client.prototype._query;
       originalFormatBindings = BetterSqlite3Client.prototype._formatBindings;
     });
@@ -251,10 +252,10 @@ describe('better-sqlite3 patches', function () {
     });
 
     it('patched _query expands array bindings before delegating to the original', async function () {
-      let seen;
+      let seen: unknown;
       // Install a stub as the "original" _query that records what it receives,
       // then patch on top of it.
-      BetterSqlite3Client.prototype._query = function (connection, queryObj) {
+      BetterSqlite3Client.prototype._query = function (_connection: unknown, queryObj: unknown) {
         seen = queryObj;
         return Promise.resolve();
       };
@@ -263,6 +264,9 @@ describe('better-sqlite3 patches', function () {
       const obj = { sql: 'select * from posts where id in (?)', bindings: [[1, 2, 3]] };
       await BetterSqlite3Client.prototype._query.call({}, {}, obj);
 
+      assert(seen && typeof seen === 'object');
+      assert('sql' in seen);
+      assert('bindings' in seen);
       assert.equal(seen.sql, 'select * from posts where id in (?, ?, ?)');
       assert.deepEqual(seen.bindings, [1, 2, 3]);
     });
@@ -271,7 +275,7 @@ describe('better-sqlite3 patches', function () {
       // Re-establish a clean baseline original that rejects with a raw
       // better-sqlite3-style error.
       BetterSqlite3Client.prototype._query = function () {
-        const err = new Error('UNIQUE constraint failed');
+        const err: SqliteError = new Error('UNIQUE constraint failed');
         err.code = 'SQLITE_CONSTRAINT_PRIMARYKEY';
         return Promise.reject(err);
       };
@@ -279,7 +283,7 @@ describe('better-sqlite3 patches', function () {
 
       await assert.rejects(
         BetterSqlite3Client.prototype._query.call({}, {}, { sql: 'insert', bindings: [] }),
-        (err) => {
+        (err: SqliteError) => {
           assert.equal(err.code, 'SQLITE_CONSTRAINT');
           assert.equal(err.errno, 19);
           return true;
