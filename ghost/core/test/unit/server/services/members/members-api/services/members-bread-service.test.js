@@ -1397,6 +1397,33 @@ describe('MemberBreadService', function () {
       assert.equal(memberModelStub.load.called, false);
     });
 
+    it('attaches where each subscription came from, which a theme is shown', async function () {
+      // `attribution` on a subscription is part of `@member.subscriptions`, which is a
+      // versioned part of the theme API — unlike the member's own created attribution,
+      // which no page render reads.
+      const subscriptionsJSON = [
+        { id: 'sub_123', subscription_id: 'sub_123', price: { product: { product_id: 'prod_1' } } },
+      ];
+      const subscriptionModels = [{ id: 'row_1', get: sinon.stub() }];
+      subscriptionModels[0].get.withArgs('subscription_id').returns('sub_123');
+      subscriptionModels[0].get.withArgs('offer_id').returns(undefined);
+
+      memberModelStub = buildMemberModel({}, { subscriptions: subscriptionsJSON });
+      memberModelStub.related.withArgs('stripeSubscriptions').returns(subscriptionModels);
+      memberRepositoryStub.get
+        .withArgs({ transient_id: 'tid' }, { withRelated: SESSION_RELATIONS })
+        .resolves(memberModelStub);
+      memberAttributionServiceStub.getSubscriptionCreatedAttribution
+        .withArgs('row_1')
+        .resolves({ id: 'post_1', type: 'post' });
+
+      const member = await getService().readForSession({ transient_id: 'tid' });
+
+      assert.deepEqual(member.subscriptions[0].attribution, { id: 'post_1', type: 'post' });
+      // The member's own, which the page never renders, still costs nothing.
+      assert.equal(memberAttributionServiceStub.getMemberCreatedAttribution.called, false);
+    });
+
     it('fetches product events for a complimentary member, who needs them dated', async function () {
       const productAddedAt = '2024-01-01T00:00:00.000Z';
       memberModelStub = buildMemberModel(

@@ -18,6 +18,20 @@ const messages = {
 const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
 
 /**
+ * A member's subscriptions by their Stripe id, which is what a serialized
+ * subscription carries, to the row id an attribution is recorded against.
+ * @param {import('bookshelf').Model} model
+ * @returns {Map<string, string>}
+ */
+function subscriptionIdMapOf(model) {
+  const subscriptionIdMap = new Map();
+  for (const subscription of model.related('stripeSubscriptions')) {
+    subscriptionIdMap.set(subscription.get('subscription_id'), subscription.id);
+  }
+  return subscriptionIdMap;
+}
+
+/**
  * @typedef {object} IEmailService
  * @prop {(data: {email: string, requestedType: string}) => Promise<any>} sendEmailWithMagicLink
  */
@@ -345,7 +359,20 @@ module.exports = class MemberBREADService {
     // Created attribution
     member.attribution = await this.memberAttributionService.getMemberCreatedAttribution(member.id);
 
-    // Subscriptions attributions
+    await this.attachAttributionsToSubscriptions(member, subscriptionIdMap);
+  }
+
+  /**
+   * @private
+   * Where each of a member's subscriptions came from.
+   *
+   * Separate from the member's own created attribution because the two have
+   * different audiences: `attribution` on a subscription is part of what a theme is
+   * shown through `@member.subscriptions`, while the member's is not, so the session
+   * read attaches these and not that one. It is also a query per subscription rather
+   * than a query per member, which most readers of a page do not have.
+   */
+  async attachAttributionsToSubscriptions(member, subscriptionIdMap) {
     for (const subscription of member.subscriptions) {
       if (!subscription.id) {
         continue;
@@ -458,15 +485,9 @@ module.exports = class MemberBREADService {
       return null;
     }
 
-    // We need to know the real IDs for each subscription to fetch the member attribution
-    const subscriptionIdMap = new Map();
-    for (const subscription of model.related('stripeSubscriptions')) {
-      subscriptionIdMap.set(subscription.get('subscription_id'), subscription.id);
-    }
-
     const member = await this.composeMember(model, options);
 
-    await this.attachAttributionsToMember(member, subscriptionIdMap);
+    await this.attachAttributionsToMember(member, subscriptionIdMapOf(model));
 
     const suppressionData = await this.emailSuppressionList.getSuppressionData(member.email);
     member.email_suppression = {
@@ -518,7 +539,15 @@ module.exports = class MemberBREADService {
       await model.load(['productEvents']);
     }
 
-    return this.composeMember(model);
+    const member = await this.composeMember(model);
+
+    // Where a subscription came from is part of what a theme is shown through
+    // `@member.subscriptions`, so it is attached here even though the member's own
+    // created attribution is not. It costs a query per subscription, which the
+    // majority of readers — everybody free — do not have.
+    await this.attachAttributionsToSubscriptions(member, subscriptionIdMapOf(model));
+
+    return member;
   }
 
   /**
