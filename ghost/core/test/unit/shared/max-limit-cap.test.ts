@@ -1,7 +1,9 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const configUtils = require('../../utils/config-utils');
-const maxLimitCap = require('../../../core/shared/max-limit-cap');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import configUtils from '../../utils/config-utils';
+// @ts-expect-error This module lacks type definitions.
+import maxLimitCap from '../../../core/shared/max-limit-cap';
 
 describe('Shared Max Limit Cap', function () {
   afterEach(function () {
