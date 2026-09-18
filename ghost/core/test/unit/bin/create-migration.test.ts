@@ -1,13 +1,13 @@
-const assert = require('assert/strict');
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
-
-const {
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
+import {
   isValidSlug,
   getTargetMigrationFolder,
   createMigration,
-} = require('../../../bin/create-migration');
+  // @ts-expect-error This module lacks type definitions.
+} from '../../../bin/create-migration';
 
 describe('bin/create-migration', function () {
   describe('isValidSlug', function () {
@@ -58,8 +58,8 @@ describe('bin/create-migration', function () {
   });
 
   describe('createMigration', function () {
-    let tmpDir;
-    let coreDir;
+    let tmpDir: string;
+    let coreDir: string;
 
     beforeEach(function () {
       tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-migration-test-'));
@@ -74,15 +74,26 @@ describe('bin/create-migration', function () {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     });
 
-    function writePackageJson(dir, version) {
+    function writePackageJson(dir: string, version: string) {
       fs.writeFileSync(
         path.join(dir, 'package.json'),
         JSON.stringify({ name: 'ghost', version }, null, 2) + '\n',
       );
     }
 
-    function readVersion(dir) {
-      return JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).version;
+    function readVersion(dir: string): string {
+      const packageJson: unknown = JSON.parse(
+        fs.readFileSync(path.join(dir, 'package.json'), 'utf8'),
+      );
+      if (
+        typeof packageJson !== 'object' ||
+        packageJson === null ||
+        !('version' in packageJson) ||
+        typeof packageJson.version !== 'string'
+      ) {
+        throw new Error('Invalid package version');
+      }
+      return packageJson.version;
     }
 
     it('creates a migration file in the next-minor folder when on a patch RC', function () {
