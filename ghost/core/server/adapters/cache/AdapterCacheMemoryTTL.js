@@ -77,7 +77,7 @@ class AdapterCacheMemoryTTL extends CacheBase {
    * @param {number} [deps.max] - The max number of items to keep in the cache.
    * @param {number} [deps.ttl] - The max time in ms to store items
    * @param {number} [deps.maxSize] - Approximate bytes the cache may hold. Sizes
-   *   are estimated (see rough-size.js), so treat this as a budget rather than a
+   *   are estimated (see rough-size.ts), so treat this as a budget rather than a
    *   guarantee.
    * @param {(value: unknown, key: string) => number} [deps.sizeCalculation] -
    *   Override the estimator. Only settable in code; config carries numbers.

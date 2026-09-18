@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const { roughSize } = require('../../../../../core/server/adapters/cache/rough-size');
+import { roughSize } from '../../../../../core/server/adapters/cache/rough-size';
 
 describe('roughSize', function () {
   it('grows with the payload', function () {
@@ -24,10 +24,34 @@ describe('roughSize', function () {
   });
 
   it('terminates on a cycle', function () {
-    const cyclic = { name: 'loop' };
+    const cyclic: Record<string, unknown> = { name: 'loop' };
     cyclic.self = cyclic;
 
     assert.ok(roughSize(cyclic) >= 1);
+  });
+
+  it('counts binary data by byte length', function () {
+    const bytes = 1024 * 1024;
+
+    for (const value of [
+      Buffer.alloc(bytes),
+      new Uint8Array(bytes),
+      new Float64Array(bytes / 8),
+      new DataView(new ArrayBuffer(bytes)),
+      new ArrayBuffer(bytes),
+    ]) {
+      const size = roughSize(value);
+      assert.ok(size >= bytes && size < bytes + 1024, `${value.constructor.name}: got ${size}`);
+    }
+  });
+
+  it('counts the contents of Map and Set', function () {
+    const large = 'x'.repeat(100000);
+
+    assert.ok(roughSize(new Map([['k', large]])) > 200000);
+    assert.ok(roughSize(new Map([[large, 1]])) > 200000);
+    assert.ok(roughSize(new Set([large])) > 200000);
+    assert.ok(roughSize({ nested: new Map([['buf', Buffer.alloc(100000)]]) }) > 100000);
   });
 
   it('lands in the right order of magnitude for a response-shaped object', function () {

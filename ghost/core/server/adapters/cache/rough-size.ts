@@ -8,7 +8,7 @@
  * get one - `JSON.stringify(value).length` - costs about as much as the
  * serialisation an in-process cache exists to avoid (~1.2 ms on a 290 KiB
  * response). So this walks the structure instead and adds up what it finds,
- * allocating nothing.
+ * without building a copy of the value.
  *
  * It is an estimate, and only has to be a consistent one: what matters for a
  * limit is that a response twice the size counts about twice as much, not that
@@ -30,15 +30,17 @@ const VALUE_OVERHEAD = 16;
 const POINTER = 8;
 
 /**
- * @param {unknown} value
- * @returns {number} approximate bytes, always at least 1
+ * Approximate the bytes `value` occupies.
+ *
+ * @returns approximate bytes, always at least 1 - `lru-cache` rejects a size of
+ *   zero, and every value occupies something.
  */
-function roughSize(value) {
+export function roughSize(value: unknown): number {
   // Cycles do not occur in an API response, but a cache is generic and an
   // unbounded walk would be a denial of service rather than a wrong number.
-  const seen = new Set();
+  const seen = new Set<object>();
 
-  function walk(node) {
+  function walk(node: unknown): number {
     if (node === null || node === undefined) {
       return POINTER;
     }
@@ -58,38 +60,53 @@ function roughSize(value) {
         break;
     }
 
-    if (seen.has(node)) {
+    const object = node as object;
+
+    if (seen.has(object)) {
       return POINTER;
     }
-    seen.add(node);
+    seen.add(object);
 
-    if (Buffer.isBuffer(node)) {
-      return VALUE_OVERHEAD + node.length;
+    // Buffers, typed arrays and DataViews: walking their indices would cost a
+    // step per byte.
+    if (ArrayBuffer.isView(object)) {
+      return VALUE_OVERHEAD + object.byteLength;
     }
 
-    if (node instanceof Date) {
+    if (object instanceof ArrayBuffer || object instanceof SharedArrayBuffer) {
+      return VALUE_OVERHEAD + object.byteLength;
+    }
+
+    if (object instanceof Date) {
       return VALUE_OVERHEAD + POINTER;
     }
 
-    if (Array.isArray(node)) {
-      let total = VALUE_OVERHEAD;
-      for (const item of node) {
+    // Map and Set hide their contents from Object.keys.
+    if (object instanceof Map) {
+      let total: number = VALUE_OVERHEAD;
+      for (const [key, item] of object) {
+        total += POINTER * 2 + walk(key) + walk(item);
+      }
+      return total;
+    }
+
+    if (Array.isArray(object) || object instanceof Set) {
+      let total: number = VALUE_OVERHEAD;
+      for (const item of object) {
         total += POINTER + walk(item);
       }
       return total;
     }
 
-    let total = VALUE_OVERHEAD;
-    for (const key of Object.keys(node)) {
+    const record = object as Record<string, unknown>;
+    let total: number = VALUE_OVERHEAD;
+    for (const key of Object.keys(record)) {
       // The key is a string in the heap too, and for a wide row of short
       // values the keys are a real share of the entry.
-      total += VALUE_OVERHEAD + key.length * 2 + walk(node[key]);
+      total += VALUE_OVERHEAD + key.length * 2 + walk(record[key]);
     }
     return total;
   }
 
-  // lru-cache rejects a size of 0, and every value occupies something.
   return Math.max(1, walk(value));
 }
-
-module.exports = { roughSize };
