@@ -18,6 +18,20 @@ const messages = {
 const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
 
 /**
+ * A member's subscriptions by their Stripe id, which is what a serialized
+ * subscription carries, to the row id an attribution is recorded against.
+ * @param {import('bookshelf').Model} model
+ * @returns {Map<string, string>}
+ */
+function subscriptionIdMapOf(model) {
+  const subscriptionIdMap = new Map();
+  for (const subscription of model.related('stripeSubscriptions')) {
+    subscriptionIdMap.set(subscription.get('subscription_id'), subscription.id);
+  }
+  return subscriptionIdMap;
+}
+
+/**
  * @typedef {object} IEmailService
  * @prop {(data: {email: string, requestedType: string}) => Promise<any>} sendEmailWithMagicLink
  */
@@ -345,7 +359,20 @@ module.exports = class MemberBREADService {
     // Created attribution
     member.attribution = await this.memberAttributionService.getMemberCreatedAttribution(member.id);
 
-    // Subscriptions attributions
+    await this.attachAttributionsToSubscriptions(member, subscriptionIdMap);
+  }
+
+  /**
+   * @private
+   * Where each of a member's subscriptions came from.
+   *
+   * Separate from the member's own created attribution because the two have
+   * different audiences: `attribution` on a subscription is part of what a theme is
+   * shown through `@member.subscriptions`, while the member's is not, so the session
+   * read attaches these and not that one. It is also a query per subscription rather
+   * than a query per member, which most readers of a page do not have.
+   */
+  async attachAttributionsToSubscriptions(member, subscriptionIdMap) {
     for (const subscription of member.subscriptions) {
       if (!subscription.id) {
         continue;
@@ -384,35 +411,66 @@ module.exports = class MemberBREADService {
   }
 
   /**
+   * The relations `read` loads unless a caller adds to them.
+   *
+   * Everything a member's own account and the Admin API render, which is a superset
+   * of what any one caller needs — `readForSession` below is the exception that says
+   * so explicitly.
+   */
+  static READ_RELATIONS = [
+    'labels',
+    'stripeSubscriptions',
+    'stripeSubscriptions.customer',
+    'stripeSubscriptions.stripePrice',
+    'stripeSubscriptions.stripePrice.stripeProduct',
+    'stripeSubscriptions.stripePrice.stripeProduct.product',
+    // The resolved subscription itself — no nested loads, since the
+    // FE finds price/product details in the already-loaded
+    // `subscriptions` array via the matching id.
+    'currentSubscription',
+    'products',
+    'newsletters',
+  ];
+
+  /**
+   * The relations a member resolved from a session cookie is loaded with.
+   *
+   * What a themed page does with the member it renders: decide whether they may read
+   * the post (their status and the slugs of their tiers), put them in the template
+   * (`@member`, which is name, email, avatar and their subscriptions), and stamp the
+   * cache headers that say what they are entitled to. The tiers are `products`, and
+   * everything about a subscription the theme shows comes off the Stripe chain.
+   *
+   * Left out, against the full set: `newsletters` and `labels`, which nothing on a
+   * page render reads; `currentSubscription`, which only the Admin API serializes;
+   * and `productEvents`, which dates a complimentary or gift member's synthetic
+   * subscription and so is loaded in `readForSession` only for the members who have
+   * one. Four queries saved on every view a signed-in reader makes.
+   */
+  static SESSION_RELATIONS = [
+    'products',
+    'stripeSubscriptions',
+    'stripeSubscriptions.customer',
+    'stripeSubscriptions.stripePrice',
+    'stripeSubscriptions.stripePrice.stripeProduct',
+    'stripeSubscriptions.stripePrice.stripeProduct.product',
+  ];
+
+  /**
    * @param {object} data
    * @param {object} [options]
    * @param {import('../../../members-metafields').Audience | null} options.metafieldsFor
    *   Who the extra fields a publisher defined are being read for, or null to leave them
    *   off entirely. Null is not the same as "nobody may see them": it means this caller
    *   never shows them, so fetching them is two database queries whose results are thrown
-   *   away. Ghost identifies a signed-in reader on every page view of a themed site
-   *   through this method, and that caller renders a member through a fixed list of
-   *   fields which has never included these.
+   *   away.
    *
    *   Defaults to null, so a caller that does not ask gets none of them.
    */
   async read(data, { metafieldsFor = null, ...options } = {}) {
-    const defaultWithRelated = [
-      'labels',
-      'stripeSubscriptions',
-      'stripeSubscriptions.customer',
-      'stripeSubscriptions.stripePrice',
-      'stripeSubscriptions.stripePrice.stripeProduct',
-      'stripeSubscriptions.stripePrice.stripeProduct.product',
-      // The resolved subscription itself — no nested loads, since the
-      // FE finds price/product details in the already-loaded
-      // `subscriptions` array via the matching id.
-      'currentSubscription',
-      'products',
-      'newsletters',
-    ];
-
-    const withRelated = new Set((options.withRelated || []).concat(defaultWithRelated));
+    const withRelated = new Set(
+      (options.withRelated || []).concat(MemberBREADService.READ_RELATIONS),
+    );
 
     if (!withRelated.has('productEvents')) {
       withRelated.add('productEvents');
@@ -427,12 +485,82 @@ module.exports = class MemberBREADService {
       return null;
     }
 
-    // We need to know the real IDs for each subscription to fetch the member attribution
-    const subscriptionIdMap = new Map();
-    for (const subscription of model.related('stripeSubscriptions')) {
-      subscriptionIdMap.set(subscription.get('subscription_id'), subscription.id);
+    const member = await this.composeMember(model, options);
+
+    await this.attachAttributionsToMember(member, subscriptionIdMapOf(model));
+
+    const suppressionData = await this.emailSuppressionList.getSuppressionData(member.email);
+    member.email_suppression = {
+      suppressed: suppressionData.suppressed || !!model.get('email_disabled'),
+      info: suppressionData.info,
+    };
+
+    if (metafieldsFor) {
+      const metafields = await this.fetchMetafieldValues([member.id], metafieldsFor);
+      if (metafields) {
+        member.metafields = metafields.get(member.id) ?? {};
+      }
     }
 
+    return member;
+  }
+
+  /**
+   * The member a session cookie names, loaded for rendering a page as them.
+   *
+   * Separate from `read` because the two answer different questions. `read`
+   * describes a member to themselves or to staff, and loads everything either is
+   * shown. This one is asked on every page view of a themed site — Ghost's most
+   * frequent member query by a wide margin — and the page it serves only needs to
+   * know who is reading and what they may read. Loading the rest costs six queries
+   * per view whose results are then thrown away.
+   *
+   * What it leaves out is therefore a statement about page rendering, not about
+   * members: a caller that needs a member's newsletters, labels, mail suppression or
+   * how they came to sign up wants `read`, whether or not it holds a session.
+   *
+   * @param {object} data — what identifies the member, e.g. `{transient_id}`
+   * @returns {Promise<object | null>}
+   */
+  async readForSession(data) {
+    const model = await this.memberRepository.get(data, {
+      withRelated: MemberBREADService.SESSION_RELATIONS,
+    });
+
+    if (!model) {
+      return null;
+    }
+
+    // Only a complimentary or gift member gets a subscription built for them here,
+    // and only that one needs the event that says when their tier was added. Fetched
+    // after the member rather than alongside, so the members who will never use it —
+    // everybody free or paying — do not pay for the query.
+    if (model.get('status') === 'comped' || model.get('status') === 'gift') {
+      await model.load(['productEvents']);
+    }
+
+    const member = await this.composeMember(model);
+
+    // Where a subscription came from is part of what a theme is shown through
+    // `@member.subscriptions`, so it is attached here even though the member's own
+    // created attribution is not. It costs a query per subscription, which the
+    // majority of readers — everybody free — do not have.
+    await this.attachAttributionsToSubscriptions(member, subscriptionIdMapOf(model));
+
+    return member;
+  }
+
+  /**
+   * @private
+   * A loaded member as JSON, with their subscriptions resolved.
+   *
+   * Everything both reads above share: the relations become a `subscriptions` array
+   * carrying its tier, offer and next payment, whether the subscription is Stripe's
+   * or one Ghost synthesises for a complimentary or gifted tier.
+   * @param {import('bookshelf').Model} model
+   * @param {object} [options] — serialization options passed through to `toJSON`
+   */
+  async composeMember(model, options = {}) {
     const member = model.toJSON(options);
     const stripeSubscriptions = model.related('stripeSubscriptions');
 
@@ -446,23 +574,8 @@ module.exports = class MemberBREADService {
     this.attachSubscriptionsToMember(member, giftMap);
     this.attachOffersToSubscriptions(member, offerMap, offerRedemptionsMap);
     this.attachNextPaymentToSubscriptions(member);
-    await this.attachAttributionsToMember(member, subscriptionIdMap);
 
-    const suppressionData = await this.emailSuppressionList.getSuppressionData(member.email);
-    member.email_suppression = {
-      suppressed: suppressionData.suppressed || !!model.get('email_disabled'),
-      info: suppressionData.info,
-    };
-
-    const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
-    member.unsubscribe_url = unsubscribeUrl;
-
-    if (metafieldsFor) {
-      const metafields = await this.fetchMetafieldValues([member.id], metafieldsFor);
-      if (metafields) {
-        member.metafields = metafields.get(member.id) ?? {};
-      }
-    }
+    member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
 
     return member;
   }

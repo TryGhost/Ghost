@@ -378,7 +378,7 @@ module.exports = function MembersAPI({
   }
 
   async function getMemberIdentityDataFromTransientId(transientId) {
-    return memberBREADService.read({ transient_id: transientId }, { metafieldsFor: null });
+    return memberBREADService.readForSession({ transient_id: transientId });
   }
 
   async function cycleTransientId(memberId) {

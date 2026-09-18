@@ -1298,4 +1298,152 @@ describe('MemberBreadService', function () {
       assert.deepEqual(member.subscriptions[0].offer_redemptions, []);
     });
   });
+
+  describe('readForSession', function () {
+    const MEMBER_ID = 123;
+    const MEMBER_UUID = 'abcd-efgh';
+    const SESSION_RELATIONS = [
+      'products',
+      'stripeSubscriptions',
+      'stripeSubscriptions.customer',
+      'stripeSubscriptions.stripePrice',
+      'stripeSubscriptions.stripePrice.stripeProduct',
+      'stripeSubscriptions.stripePrice.stripeProduct.product',
+    ];
+
+    let memberModelStub,
+      memberRepositoryStub,
+      memberAttributionServiceStub,
+      emailSuppressionListStub;
+
+    const getService = () =>
+      new MemberBreadService({
+        settingsHelpers: {
+          createUnsubscribeUrl: sinon
+            .stub()
+            .callsFake((uuid) => `https://example.com/unsubscribe/?uuid=${uuid}&key=456`),
+        },
+        memberRepository: memberRepositoryStub,
+        memberAttributionService: memberAttributionServiceStub,
+        emailSuppressionList: emailSuppressionListStub,
+        nextPaymentCalculator: new NextPaymentCalculator(),
+        offersAPI: {
+          getOffer: sinon.stub().resolves(null),
+          getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([]),
+        },
+        giftService: { service: { getMemberPresentations: sinon.stub().resolves(new Map()) } },
+        metafieldValues: createMetafieldValuesStub(),
+        metafieldDefinitions: createMetafieldDefinitionsStub(true),
+      });
+
+    const buildMemberModel = (attrs = {}, json = {}) => ({
+      id: MEMBER_ID,
+      related: sinon.stub().returns([]),
+      load: sinon.stub().resolvesThis(),
+      get: sinon.stub().callsFake((key) => ({ status: 'free', ...attrs })[key]),
+      toJSON: sinon.stub().returns({
+        id: MEMBER_ID,
+        uuid: MEMBER_UUID,
+        name: 'foo bar',
+        email: 'foo@bar.baz',
+        status: 'free',
+        products: [],
+        subscriptions: [],
+        ...json,
+      }),
+    });
+
+    beforeEach(function () {
+      memberModelStub = buildMemberModel();
+      memberRepositoryStub = {
+        get: sinon.stub().resolves(null),
+        isActiveSubscriptionStatus: sinon.stub().returns(true),
+      };
+      memberAttributionServiceStub = {
+        getMemberCreatedAttribution: sinon.stub().resolves(null),
+        getSubscriptionCreatedAttribution: sinon.stub().resolves(null),
+      };
+      emailSuppressionListStub = { getSuppressionData: sinon.stub().resolves({}) };
+
+      memberRepositoryStub.get
+        .withArgs({ transient_id: 'tid' }, { withRelated: SESSION_RELATIONS })
+        .resolves(memberModelStub);
+    });
+
+    it('loads only the relations a page render reads', async function () {
+      const member = await getService().readForSession({ transient_id: 'tid' });
+
+      assert.equal(member.id, MEMBER_ID);
+      assert.deepEqual(memberRepositoryStub.get.firstCall.args[1].withRelated, SESSION_RELATIONS);
+    });
+
+    it('does not ask for the member attribution or their mail suppression', async function () {
+      const member = await getService().readForSession({ transient_id: 'tid' });
+
+      assert.equal(memberAttributionServiceStub.getMemberCreatedAttribution.called, false);
+      assert.equal(emailSuppressionListStub.getSuppressionData.called, false);
+      assert.equal(Object.hasOwn(member, 'email_suppression'), false);
+    });
+
+    it('returns null when nobody holds that session', async function () {
+      const member = await getService().readForSession({ transient_id: 'unknown' });
+
+      assert.equal(member, null);
+    });
+
+    it('leaves product events unfetched for a member who has no synthetic subscription', async function () {
+      await getService().readForSession({ transient_id: 'tid' });
+
+      assert.equal(memberModelStub.load.called, false);
+    });
+
+    it('attaches where each subscription came from, which a theme is shown', async function () {
+      // `attribution` on a subscription is part of `@member.subscriptions`, which is a
+      // versioned part of the theme API — unlike the member's own created attribution,
+      // which no page render reads.
+      const subscriptionsJSON = [
+        { id: 'sub_123', subscription_id: 'sub_123', price: { product: { product_id: 'prod_1' } } },
+      ];
+      const subscriptionModels = [{ id: 'row_1', get: sinon.stub() }];
+      subscriptionModels[0].get.withArgs('subscription_id').returns('sub_123');
+      subscriptionModels[0].get.withArgs('offer_id').returns(undefined);
+
+      memberModelStub = buildMemberModel({}, { subscriptions: subscriptionsJSON });
+      memberModelStub.related.withArgs('stripeSubscriptions').returns(subscriptionModels);
+      memberRepositoryStub.get
+        .withArgs({ transient_id: 'tid' }, { withRelated: SESSION_RELATIONS })
+        .resolves(memberModelStub);
+      memberAttributionServiceStub.getSubscriptionCreatedAttribution
+        .withArgs('row_1')
+        .resolves({ id: 'post_1', type: 'post' });
+
+      const member = await getService().readForSession({ transient_id: 'tid' });
+
+      assert.deepEqual(member.subscriptions[0].attribution, { id: 'post_1', type: 'post' });
+      // The member's own, which the page never renders, still costs nothing.
+      assert.equal(memberAttributionServiceStub.getMemberCreatedAttribution.called, false);
+    });
+
+    it('fetches product events for a complimentary member, who needs them dated', async function () {
+      const productAddedAt = '2024-01-01T00:00:00.000Z';
+      memberModelStub = buildMemberModel(
+        { status: 'comped' },
+        {
+          status: 'comped',
+          products: [{ id: 'prod_123', slug: 'gold' }],
+          productEvents: [{ product_id: 'prod_123', action: 'added', created_at: productAddedAt }],
+        },
+      );
+      memberRepositoryStub.get
+        .withArgs({ transient_id: 'tid' }, { withRelated: SESSION_RELATIONS })
+        .resolves(memberModelStub);
+
+      const member = await getService().readForSession({ transient_id: 'tid' });
+
+      assert.deepEqual(memberModelStub.load.firstCall.args[0], ['productEvents']);
+      assert.equal(member.subscriptions.length, 1);
+      assert.equal(member.subscriptions[0].tier.id, 'prod_123');
+      assert.equal(member.subscriptions[0].start_date.toISOString(), productAddedAt);
+    });
+  });
 });
