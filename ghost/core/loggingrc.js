@@ -1,8 +1,11 @@
 const config = require('./core/shared/config');
 const ghostVersion = require('@tryghost/version');
 
-// Config for logging
-const loggingConfig = config.get('logging') || {};
+// Built as a new object rather than by mutating what config handed back. Config
+// is frozen once loaded, and this file is a plain CommonJS module body — sloppy
+// mode — so writes to a frozen object here fail *silently* rather than throwing.
+// Mutating in place left logging with none of its configuration and no error.
+const loggingConfig = { ...(config.get('logging') || {}) };
 
 if (!loggingConfig.path) {
   loggingConfig.path = config.getContentPath('logs');
@@ -16,12 +19,14 @@ loggingConfig.metadata = {
 };
 
 // Config for metrics
-loggingConfig.metrics = config.get('logging:metrics') || {};
-loggingConfig.metrics.metadata = {
-  // Undefined if unavailable
-  siteId: config.get('hostSettings:siteId'),
-  domain: config.get('url'),
-  version: ghostVersion.original,
+loggingConfig.metrics = {
+  ...(config.get('logging:metrics') || {}),
+  metadata: {
+    // Undefined if unavailable
+    siteId: config.get('hostSettings:siteId'),
+    domain: config.get('url'),
+    version: ghostVersion.original,
+  },
 };
 
 module.exports = loggingConfig;
