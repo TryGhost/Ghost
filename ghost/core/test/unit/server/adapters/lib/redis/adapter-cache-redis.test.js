@@ -74,6 +74,53 @@ describe('Adapter Cache Redis', function () {
     assert.equal(cache.redisClient.options.retryStrategy, false);
   });
 
+  describe('cluster ttl', function () {
+    // The adapter is handed its slice of the config object itself, and config
+    // is deep-frozen once loaded, so folding `ttl` into clusterConfig.options
+    // must not write back into what it was given. Freezing is skipped under
+    // NODE_ENV=testing, so these freeze the input themselves — without that the
+    // mutation passes here and only fails on a Pro boot with Redis configured.
+    it('applies ttl to clusterConfig options without mutating the config it was given', function () {
+      const clusterOptions = { slotsRefreshInterval: 3600000 };
+      const config = Object.freeze({
+        ttl: 600,
+        reuseConnection: false,
+        clusterConfig: Object.freeze({
+          nodes: Object.freeze([]),
+          options: Object.freeze(clusterOptions),
+        }),
+      });
+
+      const cache = new RedisCache(config);
+
+      assert.ok(cache);
+      assert.equal(
+        config.clusterConfig.options.ttl,
+        undefined,
+        'must not write into the given config',
+      );
+      assert.deepEqual(clusterOptions, { slotsRefreshInterval: 3600000 });
+    });
+
+    it('applies ttl when clusterConfig carries no options', function () {
+      const config = Object.freeze({
+        ttl: 600,
+        reuseConnection: false,
+        clusterConfig: Object.freeze({ nodes: Object.freeze([]) }),
+      });
+
+      assert.doesNotThrow(() => new RedisCache(config));
+      assert.equal(config.clusterConfig.options, undefined);
+    });
+
+    it('leaves clusterConfig alone when no ttl is configured', function () {
+      const clusterConfig = Object.freeze({ nodes: Object.freeze([]) });
+      const config = Object.freeze({ reuseConnection: false, clusterConfig });
+
+      assert.doesNotThrow(() => new RedisCache(config));
+    });
+  });
+
   describe('retryStrategy', function () {
     it('does not throw and defaults to 10 seconds when storeConfig is not provided', function () {
       const cache = new RedisCache({
