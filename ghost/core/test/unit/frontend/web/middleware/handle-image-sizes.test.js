@@ -6,7 +6,6 @@ const handleImageSizes = require('../../../../../core/frontend/web/middleware/ha
 const { imageSize } = require('../../../../../core/server/lib/image');
 const errors = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
-const { deferred } = require('../../../../utils/deferred');
 
 const fakeResBase = {
   setHeader() {},
@@ -19,56 +18,56 @@ describe('handleImageSizes middleware', function () {
   });
 
   it('calls next immediately if the url does not match /size/something/', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers();
     const fakeReq = {
       url: '/size/something',
     };
     handleImageSizes(fakeReq, fakeResBase, function next() {
-      done();
+      resolve();
     });
     return promise;
   });
 
   it('calls next immediately if the url does not match /size/whatever/', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers();
     const fakeReq = {
       url: '/url/whatever/',
     };
     handleImageSizes(fakeReq, fakeResBase, function next() {
-      done();
+      resolve();
     });
     return promise;
   });
 
   it('calls next immediately if the file extension is missing', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers();
     const fakeReq = {
       url: '/size/something/file',
     };
     handleImageSizes(fakeReq, fakeResBase, function next() {
-      done();
+      resolve();
     });
     return promise;
   });
 
   it('calls next immediately if the file has a trailing slash', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers();
     const fakeReq = {
       url: '/size/something/file.jpg/',
     };
     handleImageSizes(fakeReq, fakeResBase, function next() {
-      done();
+      resolve();
     });
     return promise;
   });
 
   it('calls next immediately if the url does not match /size//', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers();
     const fakeReq = {
       url: '/size//',
     };
     handleImageSizes(fakeReq, fakeResBase, function next() {
-      done();
+      resolve();
     });
     return promise;
   });
@@ -129,7 +128,7 @@ describe('handleImageSizes middleware', function () {
     });
 
     it('redirects for invalid format extension', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       const fakeReq = {
         url: '/size/w1000/format/test/image.jpg',
         originalUrl: '/blog/content/images/size/w1000/format/test/image.jpg',
@@ -139,23 +138,23 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/image.jpg');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('redirects for invalid sizes', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       const fakeReq = {
         url: '/size/w123/image.jpg',
         originalUrl: '/blog/content/images/size/w123/image.jpg',
@@ -165,23 +164,23 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/image.jpg');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('strips multiple leading slashes when redirecting to the original URL', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       const fakeReq = {
         url: '/size/w123/image.jpg',
         originalUrl: '////example.com/content/images/size/w123/image.jpg',
@@ -191,23 +190,23 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/example.com/content/images/image.jpg');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('redirects for invalid configured size', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       const fakeReq = {
         url: '/size/missing/image.jpg',
         originalUrl: '/blog/content/images/size/missing/image.jpg',
@@ -217,23 +216,23 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/image.jpg');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('returns original URL if file is empty', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function (path) {
         if (path === '/blank_o.png') {
           return true;
@@ -255,24 +254,24 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/blank.png');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('returns original URL if unsupported storage adapter', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.saveRaw = undefined;
 
       const fakeReq = {
@@ -284,24 +283,24 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/blank.png');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('redirects if sharp is not installed', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       sinon.stub(imageTransform, 'canTransformFiles').returns(false);
 
       const fakeReq = {
@@ -313,24 +312,24 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/blank.png');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('redirects if timeout is exceeded', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       sinon.stub(imageTransform, 'canTransformFiles').returns(true);
 
       dummyStorage.exists = async function () {
@@ -356,24 +355,24 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/blank.png');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('continues if file exists', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function (path) {
         if (path === '/size/w1000/blank.png') {
           return true;
@@ -386,22 +385,22 @@ describe('handleImageSizes middleware', function () {
       };
       const fakeRes = {
         redirect() {
-          done(new Error('Should not have called redirect'));
+          reject(new Error('Should not have called redirect'));
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('uses unoptimizedImageExists if it exists', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function (path) {
         if (path === '/blank_o.png') {
           return true;
@@ -415,27 +414,27 @@ describe('handleImageSizes middleware', function () {
       };
       const fakeRes = {
         redirect() {
-          done(new Error('Should not have called redirect'));
+          reject(new Error('Should not have called redirect'));
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
         try {
           sinon.assert.calledOnceWithExactly(spy, { path: '/blank_o.png' });
         } catch (e) {
-          return done(e);
+          return reject(e);
         }
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('uses unoptimizedImageExists if it exists with formatting', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function (path) {
         if (path === '/blank_o.png') {
           return true;
@@ -449,7 +448,7 @@ describe('handleImageSizes middleware', function () {
       };
       const fakeRes = {
         redirect() {
-          done(new Error('Should not have called redirect'));
+          reject(new Error('Should not have called redirect'));
         },
         type: function () {},
         setHeader() {},
@@ -458,21 +457,21 @@ describe('handleImageSizes middleware', function () {
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
         try {
           sinon.assert.calledOnceWithExactly(spy, { path: '/blank_o.png' });
           sinon.assert.calledOnceWithExactly(typeStub, 'webp');
         } catch (e) {
-          return done(e);
+          return reject(e);
         }
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('skips SVG if not formatted', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -486,24 +485,24 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/blank.svg');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('skips formatting to ico', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -517,24 +516,24 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/blank.png');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('skips formatting from ico', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -548,24 +547,24 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/blank.ico');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it('skips formatting to svg', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -579,24 +578,24 @@ describe('handleImageSizes middleware', function () {
           try {
             assert.equal(url, '/blog/content/images/blank.png');
           } catch (e) {
-            return done(e);
+            return reject(e);
           }
-          done();
+          resolve();
         },
         setHeader() {},
       };
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done(new Error('Should not have called next'));
+        reject(new Error('Should not have called next'));
       });
       return promise;
     });
 
     it("doesn't skip SVGs if formatted to PNG", function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -607,7 +606,7 @@ describe('handleImageSizes middleware', function () {
       };
       const fakeRes = {
         redirect() {
-          done(new Error('Should not have called redirect'));
+          reject(new Error('Should not have called redirect'));
         },
         setHeader() {},
         type: function () {},
@@ -616,7 +615,7 @@ describe('handleImageSizes middleware', function () {
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
         try {
           sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
@@ -627,15 +626,15 @@ describe('handleImageSizes middleware', function () {
           });
           sinon.assert.calledOnceWithExactly(typeStub, 'png');
         } catch (e) {
-          return done(e);
+          return reject(e);
         }
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('can format PNG to WEBP', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -649,7 +648,7 @@ describe('handleImageSizes middleware', function () {
       };
       const fakeRes = {
         redirect() {
-          done(new Error('Should not have called redirect'));
+          reject(new Error('Should not have called redirect'));
         },
         setHeader() {},
         type: function () {},
@@ -658,7 +657,7 @@ describe('handleImageSizes middleware', function () {
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
         try {
           sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
@@ -669,15 +668,15 @@ describe('handleImageSizes middleware', function () {
           });
           sinon.assert.calledOnceWithExactly(typeStub, 'webp');
         } catch (e) {
-          return done(e);
+          return reject(e);
         }
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('can format PNG to AVIF', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -691,7 +690,7 @@ describe('handleImageSizes middleware', function () {
       };
       const fakeRes = {
         redirect() {
-          done(new Error('Should not have called redirect'));
+          reject(new Error('Should not have called redirect'));
         },
         setHeader() {},
         type: function () {},
@@ -700,7 +699,7 @@ describe('handleImageSizes middleware', function () {
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
         try {
           sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
@@ -711,15 +710,15 @@ describe('handleImageSizes middleware', function () {
           });
           sinon.assert.calledOnceWithExactly(typeStub, 'image/avif');
         } catch (e) {
-          return done(e);
+          return reject(e);
         }
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('can format GIF to WEBP', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -733,7 +732,7 @@ describe('handleImageSizes middleware', function () {
       };
       const fakeRes = {
         redirect() {
-          done(new Error('Should not have called redirect'));
+          reject(new Error('Should not have called redirect'));
         },
         setHeader() {},
         type: function () {},
@@ -742,7 +741,7 @@ describe('handleImageSizes middleware', function () {
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
         try {
           sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
@@ -753,15 +752,15 @@ describe('handleImageSizes middleware', function () {
           });
           sinon.assert.calledOnceWithExactly(typeStub, 'webp');
         } catch (e) {
-          return done(e);
+          return reject(e);
         }
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('can format WEBP to GIF', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -775,7 +774,7 @@ describe('handleImageSizes middleware', function () {
       };
       const fakeRes = {
         redirect() {
-          done(new Error('Should not have called redirect'));
+          reject(new Error('Should not have called redirect'));
         },
         setHeader() {},
         type: function () {},
@@ -784,7 +783,7 @@ describe('handleImageSizes middleware', function () {
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
         try {
           sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
@@ -795,15 +794,15 @@ describe('handleImageSizes middleware', function () {
           });
           sinon.assert.calledOnceWithExactly(typeStub, 'gif');
         } catch (e) {
-          return done(e);
+          return reject(e);
         }
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('goes to next middleware with no error if source and resized image 404', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve, reject } = Promise.withResolvers();
       dummyStorage.exists = async function () {
         return false;
       };
@@ -820,7 +819,7 @@ describe('handleImageSizes middleware', function () {
 
       const fakeRes = {
         redirect() {
-          done(new Error('Should not have called redirect'));
+          reject(new Error('Should not have called redirect'));
         },
         setHeader() {},
         type: function () {},
@@ -828,9 +827,9 @@ describe('handleImageSizes middleware', function () {
 
       handleImageSizes(fakeReq, fakeRes, function next(err) {
         if (err) {
-          return done(err);
+          return reject(err);
         }
-        done();
+        resolve();
       });
       return promise;
     });

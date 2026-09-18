@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const { deferred } = require('../../../../../utils/deferred');
 const { assertExists } = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const {
@@ -32,7 +31,7 @@ describe('Content API Key Auth', function () {
   });
 
   it('should authenticate with known+valid key', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers();
     const req = {
       query: {
         key: fakeApiKey.secret,
@@ -43,13 +42,13 @@ describe('Content API Key Auth', function () {
     authenticateContentApiKey(req, res, (arg) => {
       assert.equal(arg, undefined);
       assert.equal(req.api_key, fakeApiKey);
-      done();
+      resolve();
     });
     return promise;
   });
 
   it("shouldn't authenticate with invalid/unknown key", function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers();
     const req = {
       query: {
         key: 'unknown',
@@ -62,13 +61,13 @@ describe('Content API Key Auth', function () {
       assert.equal(err instanceof errors.UnauthorizedError, true);
       assert.equal(err.code, 'UNKNOWN_CONTENT_API_KEY');
       assert.equal(req.api_key, undefined);
-      done();
+      resolve();
     });
     return promise;
   });
 
   it("shouldn't authenticate with a non-content-api key", function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers();
     const req = {
       query: {
         key: fakeApiKey.secret,
@@ -83,13 +82,13 @@ describe('Content API Key Auth', function () {
       assert.equal(err instanceof errors.UnauthorizedError, true);
       assert.equal(err.code, 'INVALID_API_KEY_TYPE');
       assert.equal(req.api_key, undefined);
-      done();
+      resolve();
     });
     return promise;
   });
 
   it("shouldn't authenticate with invalid request", function () {
-    const { promise, done } = deferred();
+    const { promise, resolve } = Promise.withResolvers();
     const req = {
       query: {
         key: [fakeApiKey.secret, ''],
@@ -102,7 +101,7 @@ describe('Content API Key Auth', function () {
       assert.equal(err instanceof errors.BadRequestError, true);
       assert.equal(err.code, 'INVALID_REQUEST');
       assert.equal(req.api_key, undefined);
-      done();
+      resolve();
     });
     return promise;
   });
