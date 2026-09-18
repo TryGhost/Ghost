@@ -557,6 +557,9 @@ catalogs:
     lodash:
       specifier: 4.18.1
       version: 4.18.1
+    lru-cache:
+      specifier: 11.5.2
+      version: 11.5.2
     lucide-react:
       specifier: 1.23.0
       version: 1.23.0
@@ -2454,9 +2457,6 @@ importers:
       '@faker-js/faker':
         specifier: 'catalog:'
         version: 10.5.0
-      '@isaacs/ttlcache':
-        specifier: 1.4.1
-        version: 1.4.1
       '@sentry/node':
         specifier: 7.120.4
         version: 7.120.4
@@ -2820,6 +2820,9 @@ importers:
       lodash:
         specifier: 'catalog:'
         version: 4.18.1
+      lru-cache:
+        specifier: 'catalog:'
+        version: 11.5.2
       luxon:
         specifier: 3.7.2
         version: 3.7.2
@@ -6696,9 +6699,6 @@ packages:
     resolution: {integrity: sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w==}
     engines: {node: '>=18.0.0'}
 
-  '@isaacs/ttlcache@1.4.1':
-    resolution: {integrity: sha512-RQgQ4uQ+pLbqXfOmieB91ejmLwvSgv9nLx6sT6sD83s7umBypgg+OIBOBbEUiJXrfpnp9j0mRhYYdzp9uqq3lA==}
-    engines: {node: '>=12'}
 
   '@istanbuljs/load-nyc-config@1.1.0':
     resolution: {integrity: sha512-VjeHSlIzpv/NyD3N0YuHfXOPDIixcA1q2ZV98wsMqcYlPmv2n3Yb2lYP9XMElnaFVXg5A7YLTeLu6V84uQDjmQ==}
@@ -25638,7 +25638,6 @@ snapshots:
     dependencies:
       minipass: 7.1.3
 
-  '@isaacs/ttlcache@1.4.1': {}
 
   '@istanbuljs/load-nyc-config@1.1.0':
     dependencies:
