@@ -5,6 +5,9 @@ const config = require('../../shared/config');
 const labs = require('../../shared/labs');
 const settingsCache = require('../../shared/settings-cache');
 const adapterManager = require('../services/adapter-manager').default;
+const { once } = require('@tryghost/memoize/once');
+
+const loadImageTransform = once(() => require('@tryghost/image-transform'));
 
 let nodes;
 let lexicalHtmlRenderer;
@@ -45,7 +48,7 @@ function buildRenderOptions(userOptions) {
       imageBaseUrl: config.get('urls:image') || '',
       imageOptimization: config.get('imageOptimization'),
       canTransformImage(storagePath) {
-        const imageTransform = require('@tryghost/image-transform');
+        const imageTransform = loadImageTransform();
         const { ext } = path.parse(storagePath);
 
         // NOTE: the "saveRaw" check is smelly
@@ -56,7 +59,7 @@ function buildRenderOptions(userOptions) {
         );
       },
       canTransformImageToFormat(format) {
-        const imageTransform = require('@tryghost/image-transform');
+        const imageTransform = loadImageTransform();
 
         return imageTransform.canTransformFiles() && imageTransform.canTransformToFormat(format);
       },
