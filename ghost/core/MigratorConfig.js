@@ -17,6 +17,7 @@ try {
   }
 }
 
+const cloneDeep = require('lodash/cloneDeep');
 const config = require('./core/shared/config');
 const ghostVersion = require('@tryghost/version');
 
@@ -28,6 +29,12 @@ require('./core/server/overrides');
 
 module.exports = {
   currentVersion: ghostVersion.safe,
-  database: config.get('database'),
+  // Cloned because knex-migrator mutates the database config it is handed
+  // (lib/database.js sets connection.timezone/charset/decimalNumbers and deletes
+  // connection.filename). Config is frozen once loaded, and knex-migrator's
+  // module body is sloppy-mode CommonJS, so those writes would silently do
+  // nothing rather than throw - leaving its knex connection without the UTC
+  // timezone it means to force.
+  database: cloneDeep(config.get('database')),
   migrationPath: config.get('paths:migrationPath'),
 };
