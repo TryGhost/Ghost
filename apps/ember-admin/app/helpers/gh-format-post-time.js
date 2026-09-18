@@ -9,13 +9,13 @@ export function formatPostTime(timeago, {timezone = 'etc/UTC', format, relative,
         return moment(timeago).from(moment.utc());
     }
 
-    let time = moment.tz(timeago, timezone);
+    const time = moment.tz(timeago, timezone);
 
     if (format) {
         return time.format(format);
     }
 
-    let now = moment.tz(moment.utc(), timezone);
+    const now = moment.tz(moment.utc(), timezone);
 
     let utcOffset;
     if (time.utcOffset() === 0) {
@@ -33,7 +33,7 @@ export function formatPostTime(timeago, {timezone = 'etc/UTC', format, relative,
 
     // If scheduled for or published on the same day, render the time + Today
     if (time.isSame(now, 'day')) {
-        let formatted = time.format(`HH:mm [${utcOffset}] [Today]`);
+        const formatted = time.format(`HH:mm [${utcOffset}] [Today]`);
         return scheduled ? `at ${formatted}` : formatted;
     }
 
@@ -55,7 +55,7 @@ export function formatPostTime(timeago, {timezone = 'etc/UTC', format, relative,
     }
 
     // Else, render just the date if edited or published, or the time & date if scheduled
-    let f = scheduled ? `[at] HH:mm [${utcOffset}] [on] DD MMM YYYY` : (short ? `DD MMM YYYY` : `HH:mm [${utcOffset}] DD MMM YYYY`);
+    const f = scheduled ? `[at] HH:mm [${utcOffset}] [on] DD MMM YYYY` : (short ? `DD MMM YYYY` : `HH:mm [${utcOffset}] DD MMM YYYY`);
     return time.format(f);
 }
 

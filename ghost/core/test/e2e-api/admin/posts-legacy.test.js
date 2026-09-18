@@ -1177,7 +1177,7 @@ describe('Posts API', function () {
     assert.equal(publishedPost.status, 'sent');
     assert.equal(publishedPost.newsletter_id, undefined);
 
-    let model = await models.Post.findOne(
+    const model = await models.Post.findOne(
       {
         id,
         status: 'all',
@@ -1261,7 +1261,7 @@ describe('Posts API', function () {
     assert.equal(publishedPost.status, 'sent');
     assert.equal(publishedPost.newsletter_id, undefined);
 
-    let model = await models.Post.findOne(
+    const model = await models.Post.findOne(
       {
         id,
         status: 'all',
@@ -1345,7 +1345,7 @@ describe('Posts API', function () {
     assert.equal(publishedPost.status, 'sent');
     assert.equal(publishedPost.newsletter_id, undefined);
 
-    let model = await models.Post.findOne(
+    const model = await models.Post.findOne(
       {
         id,
         status: 'all',
@@ -2160,7 +2160,7 @@ describe('Posts API', function () {
       assert.equal(publishedPost.status, 'sent');
       assert.equal(publishedPost.newsletter_id, undefined);
 
-      let model = await models.Post.findOne(
+      const model = await models.Post.findOne(
         {
           id,
           status: 'all',

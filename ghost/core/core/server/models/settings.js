@@ -16,7 +16,7 @@ const messages = {
 };
 
 const internalContext = { context: { internal: true } };
-let Settings;
+
 let defaultSettings;
 const imageSettingKeys = [
   'cover_image',
@@ -146,7 +146,7 @@ function transformNavigationIconUrls(value, transformUrl) {
 
 // Each setting is saved as a separate row in the database,
 // but the overlying API treats them as a single key:value mapping
-Settings = ghostBookshelf.Model.extend(
+const Settings = ghostBookshelf.Model.extend(
   {
     tableName: 'settings',
 

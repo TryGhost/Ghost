@@ -70,7 +70,7 @@ class Base {
   sanitizeValues() {
     _.each(this.dataToImport, (obj) => {
       _.each(_.pick(obj, ['updated_at', 'created_at', 'published_at']), (value, key) => {
-        let temporaryDate = new Date(value);
+        const temporaryDate = new Date(value);
 
         if (isNaN(temporaryDate)) {
           this.problems.push({
@@ -109,8 +109,8 @@ class Base {
   }
 
   handleError(errs, obj) {
-    let errorsToReject = [];
-    let problems = [];
+    const errorsToReject = [];
+    const problems = [];
 
     // CASE: validation errors, see models/base/events.js onValidate
     if (!Array.isArray(errs)) {
@@ -190,7 +190,7 @@ class Base {
       }
     }).id;
 
-    let userReferenceProblems = {};
+    const userReferenceProblems = {};
 
     const handleObject = (obj, key) => {
       if (!Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -214,11 +214,11 @@ class Base {
       }
 
       // CASE: first match the user reference with in the imported file
-      let userFromFile = _.find(this.requiredFromFile.users, { id: obj[key] });
+      const userFromFile = _.find(this.requiredFromFile.users, { id: obj[key] });
 
       if (!userFromFile) {
         // CASE: if user does not exist in file, try to lookup the existing db users
-        let existingUser = _.find(this.requiredExistingData.users, { id: obj[key].toString() });
+        const existingUser = _.find(this.requiredExistingData.users, { id: obj[key].toString() });
 
         // CASE: fallback to owner
         if (!existingUser) {
@@ -240,7 +240,7 @@ class Base {
       // Result: `this.requiredImportedData.users` will be empty.
       // We already generate identifiers for each object in the importer layer. Accessible via `dataToImport`.
       if (this.modelName === 'User' && !this.requiredImportedData.users.length) {
-        let userToImport = _.find(this.dataToImport, { slug: userFromFile.slug });
+        const userToImport = _.find(this.dataToImport, { slug: userFromFile.slug });
 
         if (userToImport) {
           obj[key] = userToImport.id;
@@ -253,7 +253,7 @@ class Base {
 
       // CASE: user exists in the file, let's find his db id
       // NOTE: lookup by email, because slug can change on insert
-      let importedUser = _.find(this.requiredImportedData.users, { email: userFromFile.email });
+      const importedUser = _.find(this.requiredImportedData.users, { email: userFromFile.email });
 
       // CASE: found. let's assign the new ID
       if (importedUser) {
@@ -320,7 +320,7 @@ class Base {
   async doImport(options, importOptions) {
     debug('doImport', this.modelName, this.dataToImport.length);
 
-    let ops = [];
+    const ops = [];
 
     _.each(this.dataToImport, (obj, index) => {
       ops.push(async () => {

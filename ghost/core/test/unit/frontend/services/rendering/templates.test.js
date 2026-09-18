@@ -7,7 +7,7 @@ const themeEngine = require('../../../../../core/frontend/services/theme-engine'
 describe('templates', function () {
   let getActiveThemeStub;
   let hasTemplateStub;
-  let templateHelpers = templates;
+  const templateHelpers = templates;
 
   afterEach(function () {
     sinon.restore();

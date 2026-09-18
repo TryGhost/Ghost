@@ -11,7 +11,7 @@ import {setupRenderingTest} from 'ember-mocha';
 
 const {Errors} = DS;
 
-let configStub = Service.extend({
+const configStub = Service.extend({
     blogUrl: 'http://localhost:2368'
 });
 
@@ -19,7 +19,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
     setupRenderingTest();
 
     beforeEach(function () {
-        let tag = EmberObject.create({
+        const tag = EmberObject.create({
             id: 1,
             name: 'Test',
             slug: 'test',
@@ -113,7 +113,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
             lastSeenValue = value;
         });
 
-        let testSetProperty = async (selector, expectedProperty, expectedValue) => {
+        const testSetProperty = async (selector, expectedProperty, expectedValue) => {
             await click(selector);
             await fillIn(selector, expectedValue);
             await blur(selector);
@@ -133,8 +133,8 @@ describe.skip('Integration: Component: tags/tag-form', function () {
     });
 
     it('displays error messages for validated fields', async function () {
-        let errors = this.get('tag.errors');
-        let hasValidated = this.get('tag.hasValidated');
+        const errors = this.get('tag.errors');
+        const hasValidated = this.get('tag.hasValidated');
 
         errors.add('name', 'must be present');
         hasValidated.push('name');
@@ -155,22 +155,22 @@ describe.skip('Integration: Component: tags/tag-form', function () {
             <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
 
-        let nameFormGroup = find('input[name="name"]').closest('.form-group');
+        const nameFormGroup = find('input[name="name"]').closest('.form-group');
         expect(nameFormGroup, 'name form group has error state').to.have.class('error');
         expect(nameFormGroup.querySelector('.response'), 'name form group has error message').to.exist;
 
-        let slugFormGroup = find('input[name="slug"]').closest('.form-group');
+        const slugFormGroup = find('input[name="slug"]').closest('.form-group');
         expect(slugFormGroup, 'slug form group has error state').to.have.class('error');
         expect(slugFormGroup.querySelector('.response'), 'slug form group has error message').to.exist;
 
-        let descriptionFormGroup = find('textarea[name="description"]').closest('.form-group');
+        const descriptionFormGroup = find('textarea[name="description"]').closest('.form-group');
         expect(descriptionFormGroup, 'description form group has error state').to.have.class('error');
 
-        let metaTitleFormGroup = find('input[name="metaTitle"]').closest('.form-group');
+        const metaTitleFormGroup = find('input[name="metaTitle"]').closest('.form-group');
         expect(metaTitleFormGroup, 'metaTitle form group has error state').to.have.class('error');
         expect(metaTitleFormGroup.querySelector('.response'), 'metaTitle form group has error message').to.exist;
 
-        let metaDescriptionFormGroup = find('textarea[name="metaDescription"]').closest('.form-group');
+        const metaDescriptionFormGroup = find('textarea[name="metaDescription"]').closest('.form-group');
         expect(metaDescriptionFormGroup, 'metaDescription form group has error state').to.have.class('error');
         expect(metaDescriptionFormGroup.querySelector('.response'), 'metaDescription form group has error message').to.exist;
     });
@@ -180,10 +180,10 @@ describe.skip('Integration: Component: tags/tag-form', function () {
             <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
         `);
 
-        let descriptionFormGroup = find('textarea[name="description"]').closest('.form-group');
+        const descriptionFormGroup = find('textarea[name="description"]').closest('.form-group');
         expect(descriptionFormGroup.querySelector('.word-count'), 'description char count').to.have.trimmed.text('12');
 
-        let metaDescriptionFormGroup = find('textarea[name="metaDescription"]').closest('.form-group');
+        const metaDescriptionFormGroup = find('textarea[name="metaDescription"]').closest('.form-group');
         expect(metaDescriptionFormGroup.querySelector('.word-count'), 'description char count').to.have.trimmed.text('16');
     });
 
@@ -197,7 +197,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         expect(find('.seo-preview-title').textContent, 'falls back to tag name without metaTitle').to.equal('Test');
 
         this.set('tag.name', (new Array(151).join('x')));
-        let expectedLength = 70 + '…'.length;
+        const expectedLength = 70 + '…'.length;
         expect(find('.seo-preview-title').textContent.length, 'cuts title to max 70 chars').to.equal(expectedLength);
     });
 
@@ -208,7 +208,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         expect(find('.seo-preview-link').textContent, 'adds url and tag prefix').to.equal('http://localhost:2368/tag/test/');
 
         this.set('tag.slug', (new Array(151).join('x')));
-        let expectedLength = 70 + '…'.length;
+        const expectedLength = 70 + '…'.length;
         expect(find('.seo-preview-link').textContent.length, 'cuts slug to max 70 chars').to.equal(expectedLength);
     });
 
@@ -222,7 +222,7 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         expect(find('.seo-preview-description').textContent, 'falls back to tag description without metaDescription').to.equal('Description.');
 
         this.set('tag.description', (new Array(500).join('x')));
-        let expectedLength = 156 + '…'.length;
+        const expectedLength = 156 + '…'.length;
         expect(find('.seo-preview-description').textContent.length, 'cuts description to max 156 chars').to.equal(expectedLength);
     });
 

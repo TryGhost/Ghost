@@ -18,7 +18,7 @@ module.exports = function tiers(options = {}) {
 
   let output = '';
 
-  let accessProductsList = this.tiers;
+  const accessProductsList = this.tiers;
 
   if (accessProductsList && accessProductsList.length > 0) {
     const tierNames = accessProductsList.map((tier) => {

@@ -112,10 +112,10 @@ describe('search index', function () {
     expect(searchResults.posts.length).toEqual(0);
 
     // confirms that search works in the forward direction for ltr languages:
-    let searchWithStartResults = searchIndex.search('Barce');
+    const searchWithStartResults = searchIndex.search('Barce');
     expect(searchWithStartResults.posts.length).toEqual(1);
 
-    let searchWithEndResults = searchIndex.search('celona');
+    const searchWithEndResults = searchIndex.search('celona');
     expect(searchWithEndResults.posts.length).toEqual(0);
   });
 
@@ -198,11 +198,11 @@ describe('search index', function () {
 
     // reverse tokenisation is what rtl languages get: a word matches from either
     // end, where the ltr index above only matches from the start.
-    let searchWithStartResults = searchIndex.search('المثا');
+    const searchWithStartResults = searchIndex.search('المثا');
     expect(searchWithStartResults.posts.length).toEqual(1);
     expect(searchWithStartResults.posts[0].title).toEqual('أُظهر المثابرة كل يوم');
 
-    let searchWithEndResults = searchIndex.search('ثابرة');
+    const searchWithEndResults = searchIndex.search('ثابرة');
     expect(searchWithEndResults.posts.length).toEqual(1);
     expect(searchWithEndResults.posts[0].title).toEqual('أُظهر المثابرة كل يوم');
   });

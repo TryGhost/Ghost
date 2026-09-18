@@ -57,7 +57,7 @@ module.exports = class MemberController {
       });
     }
 
-    let tokenData = {};
+    const tokenData = {};
     try {
       const member = await this._memberRepository.getByToken(identity);
       tokenData.oldEmail = member.get('email');
@@ -88,7 +88,7 @@ module.exports = class MemberController {
       const cancelAtPeriodEnd = req.body.cancel_at_period_end;
       const smartCancel = req.body.smart_cancel;
       const cancellationReason = req.body.cancellation_reason;
-      let ghostPriceId = req.body.priceId;
+      const ghostPriceId = req.body.priceId;
       const tierId = req.body.tierId;
       const cadence = req.body.cadence;
 

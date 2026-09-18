@@ -39,7 +39,7 @@ export default class TagController extends Controller {
 
     @task({drop: true})
     *saveTask() {
-        let {tag} = this;
+        const {tag} = this;
 
         try {
             if (tag.get('errors').length !== 0) {

@@ -36,15 +36,15 @@ export default ModalComponent.extend({
     },
 
     saveTask: task(function* () {
-        let label = this.model && this.model.label;
-        let availableLabels = (this.model && this.model.labels) || [];
+        const label = this.model && this.model.label;
+        const availableLabels = (this.model && this.model.labels) || [];
         if (!label) {
             return false;
         }
         try {
             yield label.validate();
 
-            let duplicateLabel = availableLabels.find((existingLabel) => {
+            const duplicateLabel = availableLabels.find((existingLabel) => {
                 return existingLabel.name.trim().toLowerCase() === label.name.trim().toLowerCase()
                     && existingLabel.slug !== label.slug;
             });
@@ -57,7 +57,7 @@ export default ModalComponent.extend({
                 return false;
             }
 
-            let savedLabel = yield label.save();
+            const savedLabel = yield label.save();
             this.notifications.showNotification('Label saved');
             this.send('closeModal');
             return savedLabel;
@@ -69,14 +69,14 @@ export default ModalComponent.extend({
     }),
 
     deleteLabel: task(function * () {
-        let label = this.model && this.model.label;
+        const label = this.model && this.model.label;
         if (!label) {
             return false;
         }
         try {
             yield label.destroyRecord();
             this.labelsManager.removeLabel(label);
-            let routeName = this.router.currentRouteName;
+            const routeName = this.router.currentRouteName;
             this.notifications.showNotification('Label deleted');
             this.send('closeModal');
             this.router.transitionTo(routeName, {queryParams: resetQueryParams(routeName)});

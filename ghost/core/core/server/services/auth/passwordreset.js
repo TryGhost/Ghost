@@ -115,7 +115,7 @@ function doReset(options, tokenParts, settingsAPI) {
         require: true,
       });
 
-      let compareResult = security.tokens.resetToken.compare({
+      const compareResult = security.tokens.resetToken.compare({
         token: resetToken,
         dbHash: dbHash,
         password: user.get('password'),

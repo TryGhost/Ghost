@@ -7,7 +7,7 @@ import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
 describe('Acceptance: Signup', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     // Helper function to setup signup flow
@@ -19,7 +19,7 @@ describe('Acceptance: Signup', function () {
         });
 
         server.post('/authentication/invitation/', function ({users}, {requestBody}) {
-            let params = JSON.parse(requestBody);
+            const params = JSON.parse(requestBody);
             expect(params.invitation[0].name).to.equal('Test User');
             expect(params.invitation[0].email, 'token email is sent for older Core versions').to.equal('kevin+test2@ghost.org');
             expect(params.invitation[0].password).to.equal('thisissupersafe');
@@ -171,7 +171,7 @@ describe('Acceptance: Signup', function () {
             };
         });
 
-        let role = this.server.create('role', {name: 'Author'});
+        const role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();

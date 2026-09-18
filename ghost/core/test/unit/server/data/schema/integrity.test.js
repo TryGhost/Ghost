@@ -56,10 +56,6 @@ describe('DB version integrity', function () {
     );
 
     const tablesNoValidation = _.cloneDeep(schema);
-    let schemaHash;
-    let fixturesHash;
-    let settingsHash;
-    let routesHash;
 
     _.each(tablesNoValidation, function (table) {
       return _.each(table, function (column, name) {
@@ -67,19 +63,19 @@ describe('DB version integrity', function () {
       });
     });
 
-    schemaHash = crypto
+    const schemaHash = crypto
       .createHash('md5')
       .update(JSON.stringify(tablesNoValidation), 'binary')
       .digest('hex');
-    fixturesHash = crypto
+    const fixturesHash = crypto
       .createHash('md5')
       .update(JSON.stringify(fixtures), 'binary')
       .digest('hex');
-    settingsHash = crypto
+    const settingsHash = crypto
       .createHash('md5')
       .update(JSON.stringify(defaultSettings), 'binary')
       .digest('hex');
-    routesHash = crypto
+    const routesHash = crypto
       .createHash('md5')
       .update(JSON.stringify(defaultRoutes), 'binary')
       .digest('hex');

@@ -19,7 +19,6 @@ describe('lib/image: image size cache', function () {
 
   it('should read from cache, if dimensions for image are fetched already', async function () {
     const url = 'http://mysite.com/content/image/mypostcoverimage.jpg';
-    let imageSizeSpy;
 
     sizeOfStub.resolves({
       width: 50,
@@ -33,7 +32,7 @@ describe('lib/image: image size cache', function () {
       cache: cacheStore,
     });
 
-    imageSizeSpy = sizeOfStub;
+    const imageSizeSpy = sizeOfStub;
 
     await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
@@ -176,9 +175,8 @@ describe('lib/image: image size cache', function () {
       cache: new InMemoryCache(),
     });
     const url = null;
-    let result;
 
-    result = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
+    const result = await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
     assert.equal(result, null);
   });

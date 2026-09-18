@@ -509,7 +509,7 @@ class EmailService {
     const exampleMember = await this.getExampleMember(null, audience.status);
 
     const subject = this.#emailRenderer.getSubject(post);
-    let { html, plaintext, replacements } = await this.#emailRenderer.renderBody(
+    const { html, plaintext, replacements } = await this.#emailRenderer.renderBody(
       post,
       newsletter,
       renderSegment,
