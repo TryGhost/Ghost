@@ -1,6 +1,9 @@
 const moment = require('moment-timezone');
+const { DbCount } = require('../../lib/db-types/count');
+const { getAffectedRows } = require('../../lib/db-types/affected-rows');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+/** @typedef {{storedDelivered: number, storedOpened: number, storedPermanentFailed: number}} StoredEventCounts */
 
 class NewsletterEmailEventStorage {
   #config;
@@ -35,6 +38,10 @@ class NewsletterEmailEventStorage {
     }
   }
 
+  /**
+   * @param {object} event
+   * @returns {Promise<number>} Number of newly written recipient timestamps; queued updates return zero.
+   */
   async handleDelivered(event) {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
@@ -51,17 +58,25 @@ class NewsletterEmailEventStorage {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
       // only set if delivered_at is null
-      const rowCount = await this.#db
-        .knex('email_recipients')
-        .where('id', '=', event.emailRecipientId)
-        .whereNull('delivered_at')
-        .update({
-          delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
-        });
+      const rowCount = DbCount.parse(
+        await this.#db
+          .knex('email_recipients')
+          .where('id', '=', event.emailRecipientId)
+          .whereNull('delivered_at')
+          .update({
+            delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+          }),
+      );
       this.recordEventStored('delivered', rowCount);
+      return rowCount;
     }
+    return 0;
   }
 
+  /**
+   * @param {object} event
+   * @returns {Promise<number>} Number of newly written recipient timestamps; queued updates return zero.
+   */
   async handleOpened(event) {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
@@ -78,18 +93,27 @@ class NewsletterEmailEventStorage {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
       // only set if opened_at is null
-      const rowCount = await this.#db
-        .knex('email_recipients')
-        .where('id', '=', event.emailRecipientId)
-        .whereNull('opened_at')
-        .update({
-          opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
-        });
+      const rowCount = DbCount.parse(
+        await this.#db
+          .knex('email_recipients')
+          .where('id', '=', event.emailRecipientId)
+          .whereNull('opened_at')
+          .update({
+            opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+          }),
+      );
       this.recordEventStored('opened', rowCount);
+      return rowCount;
     }
+    return 0;
   }
 
+  /**
+   * @param {object} event
+   * @returns {Promise<number>} Number of newly written recipient timestamps; queued updates return zero.
+   */
   async handlePermanentFailed(event) {
+    let rowCount = 0;
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
@@ -105,15 +129,18 @@ class NewsletterEmailEventStorage {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
       // only set if failed_at is null
-      await this.#db
-        .knex('email_recipients')
-        .where('id', '=', event.emailRecipientId)
-        .whereNull('failed_at')
-        .update({
-          failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
-        });
+      rowCount = DbCount.parse(
+        await this.#db
+          .knex('email_recipients')
+          .where('id', '=', event.emailRecipientId)
+          .whereNull('failed_at')
+          .update({
+            failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+          }),
+      );
     }
     await this.saveFailure('permanent', event);
+    return rowCount;
   }
 
   async handleTemporaryFailed(event) {
@@ -294,37 +321,20 @@ class NewsletterEmailEventStorage {
   }
 
   /**
-   * Flush all batched updates to the database
-   * @returns {Promise<void>}
+   * Flush all batched updates to the database and return newly stored counts.
+   * @returns {Promise<StoredEventCounts>}
    */
   async flushBatchedUpdates() {
-    const deliveredCount = this.#pendingUpdates.delivered.size;
-    const openedCount = this.#pendingUpdates.opened.size;
-    const failedCount = this.#pendingUpdates.failed.size;
+    const counts = {
+      storedDelivered: await this.#flushDeliveredUpdates(),
+      storedOpened: await this.#flushOpenedUpdates(),
+      storedPermanentFailed: await this.#flushFailedUpdates(),
+    };
 
-    if (deliveredCount === 0 && openedCount === 0 && failedCount === 0) {
-      return; // Nothing to flush
-    }
-
-    // Flush delivered events
-    if (deliveredCount > 0) {
-      await this.#flushDeliveredUpdates();
-    }
-
-    // Flush opened events
-    if (openedCount > 0) {
-      await this.#flushOpenedUpdates();
-    }
-
-    // Flush failed events
-    if (failedCount > 0) {
-      await this.#flushFailedUpdates();
-    }
-
-    // Clear the pending updates
     this.#pendingUpdates.delivered.clear();
     this.#pendingUpdates.opened.clear();
     this.#pendingUpdates.failed.clear();
+    return counts;
   }
 
   /**
@@ -333,7 +343,7 @@ class NewsletterEmailEventStorage {
   async #flushDeliveredUpdates() {
     const updates = Array.from(this.#pendingUpdates.delivered.entries());
     if (updates.length === 0) {
-      return;
+      return 0;
     }
 
     // Build CASE statement for batched update
@@ -351,7 +361,7 @@ class NewsletterEmailEventStorage {
             AND delivered_at IS NULL
         `;
 
-    const rowCount = await this.#db.knex.raw(sql, recipientIds);
+    const rowCount = getAffectedRows(await this.#db.knex.raw(sql, recipientIds));
     this.recordEventStored('delivered', updates.length);
     return rowCount;
   }
@@ -362,7 +372,7 @@ class NewsletterEmailEventStorage {
   async #flushOpenedUpdates() {
     const updates = Array.from(this.#pendingUpdates.opened.entries());
     if (updates.length === 0) {
-      return;
+      return 0;
     }
 
     // Build CASE statement for batched update
@@ -380,7 +390,7 @@ class NewsletterEmailEventStorage {
             AND opened_at IS NULL
         `;
 
-    const rowCount = await this.#db.knex.raw(sql, recipientIds);
+    const rowCount = getAffectedRows(await this.#db.knex.raw(sql, recipientIds));
     this.recordEventStored('opened', updates.length);
     return rowCount;
   }
@@ -391,7 +401,7 @@ class NewsletterEmailEventStorage {
   async #flushFailedUpdates() {
     const updates = Array.from(this.#pendingUpdates.failed.entries());
     if (updates.length === 0) {
-      return;
+      return 0;
     }
 
     // Build CASE statement for batched update
@@ -409,7 +419,7 @@ class NewsletterEmailEventStorage {
             AND failed_at IS NULL
         `;
 
-    const rowCount = await this.#db.knex.raw(sql, recipientIds);
+    const rowCount = getAffectedRows(await this.#db.knex.raw(sql, recipientIds));
     return rowCount;
   }
 }

@@ -29,9 +29,9 @@ async function waitForEvent() {
 
 /**
  * @typedef NewsletterEmailEventStorage
- * @property {(event: EmailDeliveredEvent) => Promise<void>} handleDelivered
- * @property {(event: EmailOpenedEvent) => Promise<void>} handleOpened
- * @property {(event: EmailBouncedEvent) => Promise<void>} handlePermanentFailed
+ * @property {(event: EmailDeliveredEvent) => Promise<number>} handleDelivered
+ * @property {(event: EmailOpenedEvent) => Promise<number>} handleOpened
+ * @property {(event: EmailBouncedEvent) => Promise<number>} handlePermanentFailed
  * @property {(event: EmailTemporaryBouncedEvent) => Promise<void>} handleTemporaryFailed
  * @property {(event: EmailUnsubscribedEvent) => Promise<void>} handleUnsubscribed
  * @property {(event: SpamComplaintEvent) => Promise<void>} handleComplained
@@ -77,10 +77,11 @@ class EmailEventProcessor {
         emailId: recipient.emailId,
         timestamp,
       });
-      await this.#eventStorage.handleDelivered(event);
+      const storedCount = await this.#eventStorage.handleDelivered(event);
 
       this.#domainEvents.dispatch(event);
       this.recordEventProcessed('delivered');
+      return { ...recipient, storedCount };
     }
     return recipient;
   }
@@ -101,8 +102,9 @@ class EmailEventProcessor {
         timestamp,
       });
       this.#domainEvents.dispatch(event);
-      await this.#eventStorage.handleOpened(event);
+      const storedCount = await this.#eventStorage.handleOpened(event);
       this.recordEventProcessed('opened');
+      return { ...recipient, storedCount };
     }
     return recipient;
   }
@@ -148,10 +150,11 @@ class EmailEventProcessor {
         emailRecipientId: recipient.emailRecipientId,
         timestamp,
       });
-      await this.#eventStorage.handlePermanentFailed(event);
+      const storedCount = await this.#eventStorage.handlePermanentFailed(event);
 
       this.#domainEvents.dispatch(event);
       await waitForEvent(); // Avoids knex connection pool to run dry
+      return { ...recipient, storedCount };
     }
     return recipient;
   }
@@ -364,7 +367,7 @@ class EmailEventProcessor {
 
   /**
    * Flush any batched updates to the database
-   * @returns {Promise<void>}
+   * @returns {Promise<import('./newsletter-email-event-storage').StoredEventCounts>}
    */
   async flushBatchedUpdates() {
     return await this.#eventStorage.flushBatchedUpdates();
