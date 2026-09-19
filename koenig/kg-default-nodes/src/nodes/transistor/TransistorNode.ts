@@ -48,6 +48,10 @@ export class TransistorNode extends generateDecoratorNode({
     hasEditMode() {
         return true;
     }
+
+    hasVisibilitySettingsInEditMode() {
+        return true;
+    }
 }
 
 export const $createTransistorNode = (dataset?: TransistorData) => {

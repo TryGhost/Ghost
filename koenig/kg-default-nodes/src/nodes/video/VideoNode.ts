@@ -19,16 +19,17 @@ const videoProperties = {
     loop: {default: false}
 } satisfies DecoratorNodePropertyMap;
 
-export type VideoData = DecoratorNodeData<typeof videoProperties>;
+export type VideoData = DecoratorNodeData<typeof videoProperties, true>;
 
 export class VideoNode extends generateDecoratorNode({
     nodeType: 'video',
+    hasVisibility: true,
     properties: videoProperties,
     defaultRenderFn: renderVideoNode
 }) {
     /* override */
     exportJSON() {
-        const {src, caption, fileName, mimeType, width, height, duration, thumbnailSrc, customThumbnailSrc, thumbnailWidth, thumbnailHeight, cardWidth, loop} = this;
+        const {src, caption, fileName, mimeType, width, height, duration, thumbnailSrc, customThumbnailSrc, thumbnailWidth, thumbnailHeight, cardWidth, loop, visibility} = this;
         // checks if src is a data string
         const isBlob = src && src.startsWith('data:');
 
@@ -47,7 +48,8 @@ export class VideoNode extends generateDecoratorNode({
             thumbnailWidth,
             thumbnailHeight,
             cardWidth,
-            loop
+            loop,
+            visibility
         };
         return dataset;
     }
