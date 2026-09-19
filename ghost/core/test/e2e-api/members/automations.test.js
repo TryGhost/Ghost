@@ -224,6 +224,23 @@ describe('Members Automations', function () {
     await cleanupAutomationsFixture();
   });
 
+  it('returns descriptions when browsing and reading automations', async function () {
+    const description = 'Welcome new free members with a short email sequence';
+    await db.knex('automations')
+      .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+      .update({ description });
+
+    const { body: browseBody } = await agent.get('automations').expectStatus(200);
+    const summary = browseBody.automations.find(
+      (automation) => automation.slug === MEMBER_WELCOME_EMAIL_SLUGS.free,
+    );
+    assert(summary);
+    assert.equal(summary.description, description);
+
+    const { body: readBody } = await agent.get(`automations/${summary.id}`).expectStatus(200);
+    assert.equal(readBody.automations[0].description, description);
+  });
+
   it('runs every step in the free member signup automation', async function () {
     let automation = await getFreeMemberSignupAutomation();
     assert.equal(automation.actions.length, 4);
