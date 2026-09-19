@@ -400,6 +400,60 @@ test.describe('Content Visibility', async () => {
         });
     }
 
+    test.describe('Settings panel positioning', async function () {
+        // wide cards (e.g. gallery) carry a CSS transform, which makes the
+        // fixed-position panel resolve against the card rather than the viewport
+        const wideGalleryContent = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'gallery',
+                    version: 1,
+                    images: [{
+                        row: 0,
+                        fileName: 'retreat-1.jpg',
+                        src: '/content/images/2023/04/retreat-1.jpg',
+                        width: 3840,
+                        height: 2160,
+                        title: 'Title 1',
+                        alt: 'Alt 1',
+                        caption: ''
+                    }],
+                    caption: ''
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        test.beforeEach(async () => {
+            await initialize({page, uri: `/#/?content=${wideGalleryContent}`});
+        });
+
+        test('keeps the visibility panel inside the viewport for a wide card', async function () {
+            await focusEditor(page);
+            await page.click('[data-kg-card="gallery"]');
+            const card = page.locator('[data-kg-card="gallery"]');
+            await expect(card).toHaveAttribute('data-kg-card-selected', 'true');
+
+            await card.getByTestId('show-visibility').click();
+
+            const panel = card.getByTestId('settings-panel');
+            await expect(panel).toBeVisible();
+
+            const box = await panel.boundingBox();
+            const viewport = page.viewportSize();
+
+            expect(box).not.toBeNull();
+            expect(box.x).toBeGreaterThanOrEqual(0);
+            expect(box.y).toBeGreaterThanOrEqual(0);
+            expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+            expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+        });
+    });
+
     test.describe('Edge cases', async function () {
         test.beforeEach(async () => {
             await initialize({page, uri: '/#/?content=false'});
