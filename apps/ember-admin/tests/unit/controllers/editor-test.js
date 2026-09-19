@@ -228,6 +228,71 @@ describe('Unit: Controller: lexical-editor', function () {
         });
     });
 
+    describe('invalid first_name count in lexical body', function () {
+        it('counts first_name helpers outside email cards', function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        children: [{
+                            detail: 0,
+                            format: 0,
+                            mode: 'normal',
+                            style: '',
+                            text: 'Hello {first_name}, {first_name, "there"} and {first_name "friend"}',
+                            type: 'extended-text',
+                            version: 1
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            controller.set('post', createPost({lexicalScratch: lexical}));
+
+            expect(controller.get('invalidFirstNameCount')).to.equal(3);
+        });
+
+        it('does not count first_name helpers inside email cards', function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'email',
+                        version: 1,
+                        html: '<p>Hello {first_name} {first_name, "there"} {first_name "friend"}</p>'
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            controller.set('post', createPost({lexicalScratch: lexical}));
+
+            expect(controller.get('invalidFirstNameCount')).to.equal(0);
+        });
+
+        it('returns 0 for malformed lexical data', function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            controller.set('post', createPost({lexicalScratch: '{invalid json'}));
+
+            expect(controller.get('invalidFirstNameCount')).to.equal(0);
+        });
+    });
+
     describe('hasDirtyAttributes', function () {
         it('detects new post with changed attributes as dirty (autosave)', async function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
