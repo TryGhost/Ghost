@@ -152,6 +152,7 @@ catalog:
   luxon: 3.7.2
   lucide-react: 1.23.0
   microdiff: 1.5.0
+  lru-cache: 11.5.2
   mingo: 2.5.3
   moment: 2.30.1
   moment-timezone: 0.5.45
