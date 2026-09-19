@@ -2,6 +2,7 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
+import logging from '@tryghost/logging';
 import { dequal } from 'dequal';
 import { type Knex } from 'knex';
 // @ts-expect-error This module currently lacks type definitions.
@@ -586,6 +587,20 @@ async function trigger(
 
   const firstAction = await findFirstActionRevision(trx, memberStatus);
   if (!firstAction) {
+    return;
+  }
+
+  const [{ hasAlreadyEntered }] = await trx.select<{ hasAlreadyEntered: number }[]>(
+    trx.raw('EXISTS ? AS hasAlreadyEntered', [
+      trx('automation_runs')
+        .select('id')
+        .where({ automation_id: firstAction.automation_id, member_id: memberId }),
+    ]),
+  );
+  if (hasAlreadyEntered) {
+    logging.info(
+      `Skipping automation ${firstAction.automation_id} for member ${memberId}: already ran/started this automation`,
+    );
     return;
   }
 
