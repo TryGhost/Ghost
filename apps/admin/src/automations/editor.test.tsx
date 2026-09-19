@@ -376,6 +376,7 @@ const automationDetail: AutomationDetail = {
   id: 'automation-id-1',
   slug: 'member-welcome-email-free',
   name: 'Free member welcome flow',
+  description: 'Welcome new free members.',
   status: 'active',
   created_at: '2026-05-05T00:00:00.000Z',
   updated_at: '2026-05-05T00:00:00.000Z',
