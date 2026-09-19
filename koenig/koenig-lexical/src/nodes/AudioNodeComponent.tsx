@@ -5,18 +5,36 @@ import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {AudioCard} from '../components/ui/cards/AudioCard';
+import {SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
+import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
+import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
 import {audioUploadHandler} from '../utils/audioUploadHandler';
 import {openFileSelection} from '../utils/openFileSelection';
 import {thumbnailUploadHandler} from '../utils/thumbnailUploadHandler';
+import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {useVisibilityToggle} from '../hooks/useVisibilityToggle.jsx';
 
 export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbnailSrc, title, triggerFileDialog}) {
     const [editor] = useLexicalComposerContext();
-    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
+    const {fileUploader, cardConfig, darkMode} = React.useContext(KoenigComposerContext);
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const audioFileInputRef = React.useRef();
+    const {showVisibilitySettings} = useKoenigSelectedCardContext();
+    const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
+
+    const visibilitySettingsTabs = [
+        {id: 'visibility', label: 'Visibility'}
+    ];
+
+    const handleVisibilityToggle = React.useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
+    }, [editor, nodeKey]);
+
     const thumbnailFileInputRef = React.useRef();
     const cardContext = React.useContext(CardContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -135,6 +153,18 @@ export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbna
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
+                    {isVisibilityEnabled && (
+                        <>
+                            <ToolbarMenuSeparator />
+                            <ToolbarMenuItem
+                                dataTestId="show-visibility"
+                                icon="visibility"
+                                isActive={showVisibilitySettings}
+                                label="Visibility"
+                                onClick={handleVisibilityToggle}
+                            />
+                        </>
+                    )}
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
@@ -146,6 +176,27 @@ export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbna
                     />
                 </ToolbarMenu>
             </ActionToolbar>
+
+            {isVisibilityEnabled && showVisibilitySettings && isSelected && (
+                <SettingsPanel
+                    darkMode={darkMode}
+                    defaultTab="visibility"
+                    tabs={visibilitySettingsTabs}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                >
+                    {{
+                        visibility: (
+                            <VisibilitySettings
+                                toggleVisibility={toggleVisibility}
+                                visibilityOptions={visibilityOptions}
+                            />
+                        )
+                    }}
+                </SettingsPanel>
+            )}
         </>
     );
 }

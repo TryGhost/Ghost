@@ -49,7 +49,6 @@ import {
     $selectDecoratorNode,
     getTopLevelNativeElement
 } from '../utils/';
-import {$isHtmlNode} from '../nodes/HtmlNode';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND} from '@lexical/list';
 import {$setBlocksType} from '@lexical/selection';
@@ -1465,13 +1464,16 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     editor.update(() => {
                         const cardNode = $getNodeByKey(cardKey);
 
-                        // If the card is an html card, we toggle the visibility settings differently
-                        // because we want to show the visibility settings panel while in selected mode
-                        // instead of entering edit mode
-                        if ($isHtmlNode(cardNode)) {
-                            setShowVisibilitySettings(true);
-                            if (!selectedCardKey) {
+                        // Cards that keep visibility settings inside their own
+                        // settings panel (e.g. call to action) need edit mode. Every
+                        // other card gets a standalone panel while it's selected, so
+                        // the card's toolbar stays available to toggle it back off.
+                        if (cardNode?.hasVisibilitySettingsInEditMode?.() !== true) {
+                            if (selectedCardKey === cardKey) {
+                                setShowVisibilitySettings(current => !current);
+                            } else {
                                 editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey, focusEditor: true});
+                                setShowVisibilitySettings(true);
                             }
                         } else {
                             if (cardNode?.hasEditMode?.() && !isEditingCard) {
