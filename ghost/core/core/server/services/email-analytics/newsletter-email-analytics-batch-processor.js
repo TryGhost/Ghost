@@ -115,14 +115,18 @@ class NewsletterEmailAnalyticsBatchProcessor {
   }
 
   /**
-   * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
+   * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; timestamp: Date; bot?: string | null; error: {code: number; message: string; enhandedCode: string|number} | null}} event
    * @param {Map<string, any>} [recipientCache] Optional cache for batched processing
    * @returns {Promise<EventProcessingResult>}
    */
   async #processEvent(event, recipientCache) {
     if (event.type === 'delivered') {
       const recipient = await this.#emailEventProcessor.handleDelivered(
-        { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
+        {
+          emailId: event.emailId,
+          providerId: event.providerId,
+          email: event.recipientEmail,
+        },
         event.timestamp,
         recipientCache,
       );
@@ -139,8 +143,15 @@ class NewsletterEmailAnalyticsBatchProcessor {
     }
 
     if (event.type === 'opened') {
+      if (event.bot) {
+        return new EventProcessingResult({ unprocessable: 1 });
+      }
       const recipient = await this.#emailEventProcessor.handleOpened(
-        { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
+        {
+          emailId: event.emailId,
+          providerId: event.providerId,
+          email: event.recipientEmail,
+        },
         event.timestamp,
         recipientCache,
       );
@@ -159,7 +170,11 @@ class NewsletterEmailAnalyticsBatchProcessor {
     if (event.type === 'failed') {
       if (event.severity === 'permanent') {
         const recipient = await this.#emailEventProcessor.handlePermanentFailed(
-          { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
+          {
+            emailId: event.emailId,
+            providerId: event.providerId,
+            email: event.recipientEmail,
+          },
           { id: event.id, timestamp: event.timestamp, error: event.error },
           recipientCache,
         );
@@ -175,7 +190,11 @@ class NewsletterEmailAnalyticsBatchProcessor {
         return new EventProcessingResult({ unprocessable: 1 });
       } else {
         const recipient = await this.#emailEventProcessor.handleTemporaryFailed(
-          { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
+          {
+            emailId: event.emailId,
+            providerId: event.providerId,
+            email: event.recipientEmail,
+          },
           { id: event.id, timestamp: event.timestamp, error: event.error },
           recipientCache,
         );
@@ -194,7 +213,11 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
     if (event.type === 'unsubscribed') {
       const recipient = await this.#emailEventProcessor.handleUnsubscribed(
-        { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
+        {
+          emailId: event.emailId,
+          providerId: event.providerId,
+          email: event.recipientEmail,
+        },
         event.timestamp,
         recipientCache,
       );
@@ -212,7 +235,11 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
     if (event.type === 'complained') {
       const recipient = await this.#emailEventProcessor.handleComplained(
-        { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
+        {
+          emailId: event.emailId,
+          providerId: event.providerId,
+          email: event.recipientEmail,
+        },
         event.timestamp,
         recipientCache,
       );
