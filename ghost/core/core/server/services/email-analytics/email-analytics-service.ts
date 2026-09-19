@@ -69,13 +69,21 @@ export type EmailAnalyticsFetchResult = {
   result: EventProcessingResult;
 };
 
-type FetchEvents = (options: {
-  batchHandler: (events: any[]) => Promise<void>;
-  begin: Date;
-  end: Date;
-  maxEvents: number;
-  events?: EmailAnalyticsEvent[];
-}) => Promise<FetchEventsResult | void>;
+/**
+ * An email provider adapter (e.g. Mailgun, SendGrid) capable of fetching its
+ * own analytics events. Every configured provider is polled during a fetch.
+ */
+export type EmailAnalyticsProvider = {
+  fetchLatest: (
+    batchHandler: (events: any[]) => Promise<void>,
+    options: {
+      begin: Date;
+      end: Date;
+      maxEvents: number;
+      events?: EmailAnalyticsEvent[];
+    },
+  ) => Promise<FetchEventsResult | void>;
+};
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const FETCH_LATEST_END_MARGIN_MS = 1 * 60 * 1000; // Do not fetch events newer than 1 minute (yet). Reduces the chance of having missed events in fetchLatest.
@@ -98,7 +106,7 @@ function createEmptyResult(): EmailAnalyticsFetchResult {
 
 export class EmailAnalyticsService {
   queries: Queries;
-  #fetchEvents: FetchEvents;
+  providers: EmailAnalyticsProvider[];
   #createEventProcessor: () => BatchEventProcessor;
 
   #jobNames: JobNames;
@@ -111,19 +119,20 @@ export class EmailAnalyticsService {
 
   constructor({
     queries,
-    fetchEvents,
+    providers,
     createEventProcessor,
     jobNames,
     cursorSeed,
   }: {
     queries: Queries;
-    fetchEvents: FetchEvents;
+    /** Email analytics providers to fetch events from. Every provider is polled on each fetch. */
+    providers: EmailAnalyticsProvider[];
     createEventProcessor: () => BatchEventProcessor;
     jobNames: JobNames;
     cursorSeed: CursorSeed;
   }) {
     this.queries = queries;
-    this.#fetchEvents = fetchEvents;
+    this.providers = providers;
     this.#createEventProcessor = createEventProcessor;
     this.#jobNames = jobNames;
     this.#cursorSeed = cursorSeed;
@@ -556,25 +565,35 @@ export class EmailAnalyticsService {
 
     let fetchedThrough: Date | undefined;
     try {
-      const fetchResult = await this.#fetchEvents({
-        batchHandler: processBatch,
-        begin,
-        end,
-        maxEvents,
-        events: eventTypes,
-      });
+      // Fetch from every configured provider, feeding the same batch
+      // handler so all events flow through one processing pipeline. Track
+      // the earliest safeCursor across providers so a domain that hit its
+      // event limit doesn't let the cursor advance past events another
+      // provider hasn't fetched yet.
+      for (const provider of this.providers) {
+        const fetchResult = await provider.fetchLatest(processBatch, {
+          begin,
+          end,
+          maxEvents,
+          events: eventTypes,
+        });
 
-      // A void result means fetching was skipped (for example, Mailgun is not configured).
-      // Empty successful windows still establish progress through their requested end.
-      if (fetchResult) {
-        fetchedThrough = fetchResult.safeCursor ?? end;
-      }
+        // A void result means fetching was skipped (for example, Mailgun is not configured).
+        // Empty successful windows still establish progress through their requested end.
+        // Track the earliest one across providers, consistent with lastEventTimestamp below.
+        if (fetchResult) {
+          const providerFetchedThrough = fetchResult.safeCursor ?? end;
+          if (!fetchedThrough || providerFetchedThrough < fetchedThrough) {
+            fetchedThrough = providerFetchedThrough;
+          }
+        }
 
-      if (
-        fetchResult?.safeCursor &&
-        (!fetchData.lastEventTimestamp || fetchResult.safeCursor < fetchData.lastEventTimestamp)
-      ) {
-        fetchData.lastEventTimestamp = fetchResult.safeCursor;
+        if (
+          fetchResult?.safeCursor &&
+          (!fetchData.lastEventTimestamp || fetchResult.safeCursor < fetchData.lastEventTimestamp)
+        ) {
+          fetchData.lastEventTimestamp = fetchResult.safeCursor;
+        }
       }
     } catch (err) {
       // A fetch can process events from one domain before another domain fails. Keep the
