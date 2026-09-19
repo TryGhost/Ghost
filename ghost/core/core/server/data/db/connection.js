@@ -84,6 +84,13 @@ function configure(dbConfig) {
 
 if (!knexInstance && config.get('database') && config.get('database').client) {
   knexInstance = knex(configure(config.get('database')));
+
+  // Off unless asked for. Accounts for every query by shape - bytes of query
+  // text out, rows and columns back - and prints the totals to stdout. For
+  // performance investigations; see query-stats.js.
+  if (process.env.GHOST_QUERY_STATS) {
+    require('./query-stats').enableQueryStats(knexInstance);
+  }
 }
 
 module.exports = knexInstance;
