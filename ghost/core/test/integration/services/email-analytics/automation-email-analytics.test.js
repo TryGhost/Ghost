@@ -149,6 +149,7 @@ describe('Automation email analytics', function () {
       id: ObjectId().toHexString(),
       status: 'active',
       name: `Automation ${uniqueSuffix}`,
+      description: '',
       slug: `automation-${uniqueSuffix}`,
       created_at: now,
       updated_at: now,

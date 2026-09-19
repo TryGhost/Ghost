@@ -16,6 +16,7 @@ const VALID_KEYS = {
     'primary',
     'unique',
     'validations',
+    'allowEmpty',
     'defaultTo',
     'references',
     'constraintName',
