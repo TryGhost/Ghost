@@ -8,6 +8,8 @@ import { type Post, usePost } from '@tryghost/admin-x-framework/api/posts';
 import { processAndGroupTopLinks } from '@/posts/analytics/utils/link-helpers';
 import { useMemo } from 'react';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
+import { getEmailStatsRefetchInterval } from '@/posts/analytics/utils/email-stats-polling';
+import { usePostStatsPolling } from '@/posts/analytics/hooks/use-post-stats-polling';
 
 // Extend the Post type to include newsletter property
 type PostWithNewsletter = Post & {
@@ -18,7 +20,7 @@ type PostWithNewsletter = Post & {
 
 export const usePostNewsletterStats = (postId: string) => {
   // Fetch the post with main stats (email, clicks)
-  const { data: postResponse, isLoading: isPostLoading } = usePost(postId);
+  const { data: postResponse, isLoading: isPostLoading } = usePostStatsPolling(postId);
 
   // Fetch the post with feedback count relations
   const { data: feedbackPostResponse, isLoading: isFeedbackPostLoading } = usePost(postId, {
@@ -150,6 +152,11 @@ export const usePostNewsletterStats = (postId: string) => {
     isLoading: isClicksLoading,
     refetch: refetchTopLinks,
   } = useTopLinks({
+    refetchIntervalInBackground: false,
+    refetchInterval: (query) =>
+      query.state.status === 'error'
+        ? false
+        : getEmailStatsRefetchInterval(post?.email?.submitted_at),
     searchParams: {
       filter: `post_id:'${postId}'`,
     },

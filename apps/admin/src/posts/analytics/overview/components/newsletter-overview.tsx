@@ -31,6 +31,8 @@ import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 import { useShade } from '@tryghost/shade/app';
+import { getEmailStatsRefetchInterval } from '@/posts/analytics/utils/email-stats-polling';
+import { usePostStatsPolling } from '@/posts/analytics/hooks/use-post-stats-polling';
 
 interface NewsletterOverviewProps {
   post: Post;
@@ -45,6 +47,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
 }) => {
   const { isAdmin7 } = useShade();
   const { postId } = useParams();
+  usePostStatsPolling(post.id);
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
 
@@ -65,6 +68,11 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
 
   // Get top links for this post
   const { data: linksResponse } = useTopLinks({
+    refetchIntervalInBackground: false,
+    refetchInterval: (query) =>
+      query.state.status === 'error'
+        ? false
+        : getEmailStatsRefetchInterval(post.email?.submitted_at),
     searchParams: {
       filter: `post_id:'${postId}'`,
     },
