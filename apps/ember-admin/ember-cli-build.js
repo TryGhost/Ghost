@@ -269,8 +269,8 @@ module.exports = function (defaults) {
     app.import('node_modules/codemirror/theme/xq-light.css');
 
     // 'dem Scripts
-    app.import('node_modules/google-caja-bower/html-css-sanitizer-bundle.js');
-    app.import('node_modules/keymaster/keymaster.js');
+    // keymaster is vendored - see vendor/keymaster/README.md
+    app.import('vendor/keymaster/keymaster.js');
     app.import('node_modules/reframe.js/dist/noframe.js');
 
     // pull things we rely on via lazy-loading into the test-support.js file so
