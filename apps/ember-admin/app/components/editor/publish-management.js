@@ -74,6 +74,7 @@ export default class PublishManagement extends Component {
 
         if (isValid && (!this.publishFlowModal || this.publishFlowModal?.isClosing)) {
             this.publishOptions.resetPastScheduledAt();
+            this.publishOptions.resetNavigationPlacement();
 
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
                 publishOptions: this.publishOptions,
@@ -252,6 +253,15 @@ export default class PublishManagement extends Component {
         // apply publish options (with undo on failure)
         // save with the required query params for emailing
         const result = yield this.publishOptions[taskName].perform();
+
+        // Page is published; show the nav error as a toast (not delayed:true,
+        // those only appear after a route change and we stay on this screen).
+        if (taskName === 'saveTask' && this.publishOptions.navigationSaveFailed) {
+            this.notifications.showNotification(
+                'Page published, but its navigation couldn\'t be updated. You can change it in Settings → Navigation.',
+                {type: 'error'}
+            );
+        }
 
         // perform any post-save cleanup for the editor
         yield this.args.afterPublish(result);

@@ -1,0 +1,17 @@
+<fieldset class="gh-publish-types">
+    {{#each @publishOptions.navigationOptions as |option|}}
+        <span>
+            <input
+                type="radio"
+                name="navigation-placement"
+                id="navigation-placement-{{option.value}}"
+                class="gh-radio-button"
+                value={{option.value}}
+                checked={{eq option.value @publishOptions.selectedNavigationOption.value}}
+                {{on "change" this.onChange}}
+                data-test-navigation-placement={{option.value}}
+            >
+            <label for="navigation-placement-{{option.value}}">{{option.label}}</label>
+        </span>
+    {{/each}}
+</fieldset>

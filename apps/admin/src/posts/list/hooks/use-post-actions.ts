@@ -33,6 +33,9 @@ export const IMPLEMENTED_POST_ACTIONS: ReadonlySet<PostContextMenuKey> = new Set
   'unfeature',
   'add-tag',
   'change-access',
+  'navigation-primary',
+  'navigation-secondary',
+  'navigation-remove',
 ]);
 
 interface UsePostActionsOptions {

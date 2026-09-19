@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {formatPostTime} from 'ghost-admin/helpers/gh-format-post-time';
+import {getPagePlacement, pagePathForSlug} from 'ghost-admin/utils/site-navigation';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
@@ -26,6 +27,15 @@ export default class PostsListItemClicks extends Component {
             return 'error';
         }
         return '';
+    }
+
+    // Only for published pages; a draft url would 404.
+    get navigationPlacement() {
+        if (!this.post.isPage || !this.post.isPublished) {
+            return null;
+        }
+
+        return getPagePlacement(this.settings, pagePathForSlug(this.post.slug, this.config.pageRoutes), this.config.blogUrl, this.config.pageRoutes);
     }
 
     get scheduledText() {

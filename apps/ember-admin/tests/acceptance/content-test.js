@@ -1265,6 +1265,145 @@ describe('Acceptance: Posts / Pages', function () {
                 const filter = find('[data-test-tag-select]');
                 expect(filter.textContent.trim(), 'filter text').to.contain('B - Second');
             });
+
+            describe('site navigation', function () {
+                it('recognizes and moves a homepage link for a custom-routed page', async function () {
+                    this.server.db.configs.update(1, {pageRoutes: {home: '/'}});
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'Home', slug: 'home'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    expect(row.querySelector('[data-test-nav-indicator="primary"]')).to.exist;
+                    await triggerEvent(row, 'contextmenu');
+                    await click('[data-test-button="add-to-secondary-navigation"]');
+
+                    const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+                    const secondary = JSON.parse(this.server.db.settings.findBy({key: 'secondary_navigation'}).value);
+                    expect(navigation.map(item => item.url)).to.not.include('/');
+                    expect(secondary).to.deep.include({label: 'Home', url: '/'});
+                    expect(secondary.map(item => item.url)).to.not.include('/home/');
+                });
+
+                it('recognizes and removes a slug alias for a custom-routed page', async function () {
+                    this.server.db.configs.update(1, {pageRoutes: {home: '/'}});
+                    this.server.db.settings.update({key: 'navigation'}, {value: JSON.stringify([
+                        {label: 'Home', url: '/home/'},
+                        {label: 'About', url: '/about/'}
+                    ])});
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'Home', slug: 'home'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    expect(row.querySelector('[data-test-nav-indicator="primary"]')).to.exist;
+                    await triggerEvent(row, 'contextmenu');
+                    expect(find('[data-test-button="add-to-primary-navigation"]')).to.not.exist;
+                    await click('[data-test-button="remove-from-navigation"]');
+
+                    const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+                    expect(navigation).to.deep.equal([{label: 'About', url: '/about/'}]);
+                });
+
+                it('shows an in-menu indicator for linked pages only', async function () {
+                    const linkedPage = this.server.create('page', {authors: [admin], status: 'published', title: 'About', slug: 'about'});
+                    const unlinkedPage = this.server.create('page', {authors: [admin], status: 'published', title: 'Partners', slug: 'partners'});
+
+                    await visit('/pages');
+
+                    const linkedRow = find(`[data-test-post-id="${linkedPage.id}"]`);
+                    expect(linkedRow.querySelector('[data-test-nav-indicator="primary"]'), 'linked indicator').to.exist;
+
+                    const unlinkedRow = find(`[data-test-post-id="${unlinkedPage.id}"]`);
+                    expect(unlinkedRow.querySelector('[data-test-nav-indicator]'), 'unlinked indicator').to.not.exist;
+                });
+
+                it('does not show an indicator for a draft page even when linked', async function () {
+                    const draftLinked = this.server.create('page', {authors: [admin], status: 'draft', title: 'About', slug: 'about'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${draftLinked.id}"]`);
+                    expect(row.querySelector('[data-test-nav-indicator]'), 'draft indicator').to.not.exist;
+                });
+
+                it('can add a page to primary navigation from the context menu', async function () {
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'Partners', slug: 'partners'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    await triggerEvent(row, 'contextmenu');
+
+                    expect(find('[data-test-button="add-to-primary-navigation"]'), 'add to primary option').to.exist;
+                    await click('[data-test-button="add-to-primary-navigation"]');
+
+                    const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+                    expect(navigation).to.deep.include({label: 'Partners', url: '/partners/'});
+                });
+
+                it('offers contextual actions for an already-linked page', async function () {
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'About', slug: 'about'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    await triggerEvent(row, 'contextmenu');
+
+                    expect(find('[data-test-button="add-to-primary-navigation"]'), 'add to primary option').to.not.exist;
+                    expect(find('[data-test-button="add-to-secondary-navigation"]'), 'move to secondary option').to.exist;
+                    expect(find('[data-test-button="add-to-secondary-navigation"]').textContent.trim(), 'move label')
+                        .to.contain('Move to secondary navigation');
+                    expect(find('[data-test-button="remove-from-navigation"]'), 'remove option').to.exist;
+                });
+
+                it('can remove a linked page from navigation via the context menu', async function () {
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'About', slug: 'about'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    await triggerEvent(row, 'contextmenu');
+
+                    expect(find('[data-test-button="remove-from-navigation"]'), 'remove option').to.exist;
+                    await click('[data-test-button="remove-from-navigation"]');
+
+                    const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+                    expect(navigation.map(item => item.label)).to.not.include('About');
+                });
+
+                it('does not offer navigation actions for a draft page', async function () {
+                    const page = this.server.create('page', {authors: [admin], status: 'draft', title: 'Partners', slug: 'partners'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    await triggerEvent(row, 'contextmenu');
+
+                    expect(find('[data-test-button="add-to-primary-navigation"]'), 'add to primary option').to.not.exist;
+                    expect(find('[data-test-button="add-to-secondary-navigation"]'), 'add to secondary option').to.not.exist;
+                    expect(find('[data-test-button="remove-from-navigation"]'), 'remove option').to.not.exist;
+                });
+
+                it('hides navigation actions when select-all is not fully loaded', async function () {
+                    // No server bulk endpoint: cmd+A would only hit loaded rows.
+                    this.server.createList('page', 31, {authors: [admin], status: 'published'});
+
+                    await visit('/pages');
+
+                    await triggerKeyEvent(document, 'keydown', 'A', {
+                        metaKey: ctrlOrCmd === 'command',
+                        ctrlKey: ctrlOrCmd === 'ctrl'
+                    });
+
+                    const row = find('[data-test-post-id]');
+                    await triggerEvent(row, 'contextmenu');
+
+                    expect(find('[data-test-button="add-to-primary-navigation"]'), 'add to primary option').to.not.exist;
+                    expect(find('[data-test-button="add-to-secondary-navigation"]'), 'add to secondary option').to.not.exist;
+                    expect(find('[data-test-button="remove-from-navigation"]'), 'remove option').to.not.exist;
+                });
+            });
         });
     });
 });

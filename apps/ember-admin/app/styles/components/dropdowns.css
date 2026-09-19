@@ -315,7 +315,9 @@ Post context menu
 }
 
 .gh-posts-context-menu {
-    max-width: 160px !important;
+    width: max-content !important;
+    min-width: 160px !important;
+    max-width: 260px !important;
     border-radius: var(--border-radius);
     box-shadow:
     0 0 2.3px rgba(0, 0, 0, 0.028),
@@ -339,6 +341,7 @@ Post context menu
 .gh-posts-context-menu li > button span {
     display: flex;
     align-items: center;
+    white-space: nowrap;
 }
 
 .gh-posts-context-menu li > button span svg,
