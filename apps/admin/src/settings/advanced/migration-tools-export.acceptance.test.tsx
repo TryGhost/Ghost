@@ -52,6 +52,21 @@ describe('Migration tools export', () => {
       .not.toBeInTheDocument();
   });
 
+  it('keeps the post analytics export button alongside the export dialog', async () => {
+    fakeSettingsScreens();
+    const csv = new TextEncoder().encode('id,title\n').buffer;
+    const postsExport = fakeAdminEndpoint('GET', /^\/posts\/export\//, csv, {
+      contentType: 'text/csv',
+    });
+    await renderAdminApp('/settings/advanced', { labs: { selfServeArchives: true } });
+
+    const section = await openExportTab();
+    await expect.element(section.getByRole('button', { name: 'Export data' })).toBeVisible();
+    await section.getByRole('button', { name: 'Post analytics' }).click();
+
+    await expect.poll(() => postsExport.lastRequest?.url).toContain('/posts/export/?limit=1000');
+  });
+
   it('offers the sync export dialog without media and downloads the zip', async () => {
     fakeSettingsScreens();
     const download = fakeExportDownload();
