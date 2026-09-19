@@ -89,7 +89,7 @@ export default function NotificationParser({ billingOnly = false } = {}) {
   const successStatus = getURLParam({ searchParams, hashParams }, 'success');
   const stripeStatus = getURLParam({ searchParams, hashParams }, 'stripe');
   const giftRedemption = getURLParam({ searchParams, hashParams }, 'giftRedemption') === 'true';
-  let notificationData = null;
+  const notificationData = null;
 
   if (!action && !successStatus && !stripeStatus && !giftRedemption) {
     return null;

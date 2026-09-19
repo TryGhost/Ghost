@@ -128,7 +128,7 @@ class SettingsBREADService {
    * @returns
    */
   browse(context) {
-    let settings = this.settingsCache.getAll();
+    const settings = this.settingsCache.getAll();
 
     return this._formatBrowse(settings, context);
   }
@@ -199,7 +199,7 @@ class SettingsBREADService {
    * @returns
    */
   async edit(settings, options, stripeConnectData) {
-    let filteredSettings = settings.filter((setting) => {
+    const filteredSettings = settings.filter((setting) => {
       // The `stripe_connect_integration_token` "setting" is only used to set the `stripe_connect_*` settings.
       return (
         ![
@@ -488,7 +488,7 @@ class SettingsBREADService {
         if (process.env.NODE_ENV !== 'production') {
           logging.warn(message.text);
         }
-        let msg = Object.assign(
+        const msg = Object.assign(
           {
             from: fromEmail,
             subject: 'Verify email address',

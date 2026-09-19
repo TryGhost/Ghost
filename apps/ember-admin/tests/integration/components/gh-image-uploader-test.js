@@ -24,7 +24,7 @@ const sessionStub = Service.extend({
 
     init() {
         this._super(...arguments);
-        let authenticated = {access_token: 'AccessMe123'};
+        const authenticated = {access_token: 'AccessMe123'};
         this.authenticated = authenticated;
         this.data = {authenticated};
     }
@@ -85,7 +85,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('fires update action on successful upload', async function () {
-        let update = sinon.spy();
+        const update = sinon.spy();
         this.set('update', update);
 
         stubSuccessfulUpload(server);
@@ -98,7 +98,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('doesn\'t fire update action on failed upload', async function () {
-        let update = sinon.spy();
+        const update = sinon.spy();
         this.set('update', update);
 
         stubFailedUpload(server, 500);
@@ -110,7 +110,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('fires fileSelected action on file selection', async function () {
-        let fileSelected = sinon.spy();
+        const fileSelected = sinon.spy();
         this.set('fileSelected', fileSelected);
 
         stubSuccessfulUpload(server);
@@ -123,7 +123,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('fires uploadStarted action on upload start', async function () {
-        let uploadStarted = sinon.spy();
+        const uploadStarted = sinon.spy();
         this.set('uploadStarted', uploadStarted);
 
         stubSuccessfulUpload(server);
@@ -135,7 +135,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('fires uploadFinished action on successful upload', async function () {
-        let uploadFinished = sinon.spy();
+        const uploadFinished = sinon.spy();
         this.set('uploadFinished', uploadFinished);
 
         stubSuccessfulUpload(server);
@@ -147,7 +147,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('fires uploadFinished action on failed upload', async function () {
-        let uploadFinished = sinon.spy();
+        const uploadFinished = sinon.spy();
         this.set('uploadFinished', uploadFinished);
 
         stubFailedUpload(server);
@@ -210,8 +210,8 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('triggers notifications.showAPIError for VersionMismatchError', async function () {
-        let showAPIError = sinon.spy();
-        let notifications = this.owner.lookup('service:notifications');
+        const showAPIError = sinon.spy();
+        const notifications = this.owner.lookup('service:notifications');
         notifications.set('showAPIError', showAPIError);
 
         stubFailedUpload(server, 400, 'VersionMismatchError');
@@ -223,8 +223,8 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('doesn\'t trigger notifications.showAPIError for other errors', async function () {
-        let showAPIError = sinon.spy();
-        let notifications = this.owner.lookup('service:notifications');
+        const showAPIError = sinon.spy();
+        const notifications = this.owner.lookup('service:notifications');
         notifications.set('showAPIError', showAPIError);
 
         stubFailedUpload(server, 400, 'UnknownError');
@@ -249,7 +249,7 @@ describe('Integration: Component: gh-image-uploader', function () {
         await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
 
         run(() => {
-            let dragover = $.Event('dragover', {
+            const dragover = $.Event('dragover', {
                 dataTransfer: {
                     files: []
                 }
@@ -266,8 +266,8 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('triggers file upload on file drop', async function () {
-        let uploadSuccess = sinon.spy();
-        let drop = $.Event('drop', {
+        const uploadSuccess = sinon.spy();
+        const drop = $.Event('drop', {
             dataTransfer: {
                 files: [createFile(['test'], {name: 'test.png'})]
             }
@@ -288,8 +288,8 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('validates extension by default', async function () {
-        let uploadSuccess = sinon.spy();
-        let uploadFailed = sinon.spy();
+        const uploadSuccess = sinon.spy();
+        const uploadFailed = sinon.spy();
 
         this.set('uploadSuccess', uploadSuccess);
         this.set('uploadFailed', uploadFailed);
@@ -309,8 +309,8 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('uploads if validate action supplied and returns true', async function () {
-        let validate = sinon.stub().returns(true);
-        let uploadSuccess = sinon.spy();
+        const validate = sinon.stub().returns(true);
+        const uploadSuccess = sinon.spy();
 
         this.set('validate', validate);
         this.set('uploadSuccess', uploadSuccess);
@@ -328,9 +328,9 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('skips upload and displays error if validate action supplied and doesn\'t return true', async function () {
-        let validate = sinon.stub().returns(new UnsupportedMediaTypeError());
-        let uploadSuccess = sinon.spy();
-        let uploadFailed = sinon.spy();
+        const validate = sinon.stub().returns(new UnsupportedMediaTypeError());
+        const uploadSuccess = sinon.spy();
+        const uploadFailed = sinon.spy();
 
         this.set('validate', validate);
         this.set('uploadSuccess', uploadSuccess);

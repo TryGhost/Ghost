@@ -29,8 +29,8 @@ function restrictedCta(options) {
 }
 
 module.exports = function content(options = {}) {
-  let self = this;
-  let args = arguments;
+  const self = this;
+  const args = arguments;
 
   const hash = options.hash || {};
   const truncateOptions = {};

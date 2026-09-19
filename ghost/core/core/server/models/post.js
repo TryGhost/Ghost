@@ -40,7 +40,6 @@ const POST_REVISIONS_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
 
 let Post;
-let Posts;
 
 Post = ghostBookshelf.Model.extend(
   {
@@ -253,7 +252,10 @@ Post = ghostBookshelf.Model.extend(
      * has no access to the nested relations, which should be updated.
      */
     permittedAttributes: function permittedAttributes() {
-      let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
+      const filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(
+        this,
+        arguments,
+      );
 
       this.relationships.forEach((key) => {
         filteredKeys.push(key);
@@ -263,10 +265,10 @@ Post = ghostBookshelf.Model.extend(
     },
 
     orderAttributes: function orderAttributes() {
-      let keys = ghostBookshelf.Model.prototype.orderAttributes.apply(this, arguments);
+      const keys = ghostBookshelf.Model.prototype.orderAttributes.apply(this, arguments);
 
       // extend ordered keys with post_meta keys
-      let postsMetaKeys = _.without(
+      const postsMetaKeys = _.without(
         ghostBookshelf.model('PostsMeta').prototype.orderAttributes(),
         'posts_meta.id',
         'posts_meta.post_id',
@@ -379,14 +381,13 @@ Post = ghostBookshelf.Model.extend(
     },
 
     emitChange: function emitChange(event, options = {}) {
-      let eventToTrigger;
       let resourceType = this.get('type');
 
       if (options.usePreviousAttribute) {
         resourceType = this.previous('type');
       }
 
-      eventToTrigger = resourceType + '.' + event;
+      const eventToTrigger = resourceType + '.' + event;
 
       ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
@@ -694,9 +695,9 @@ Post = ghostBookshelf.Model.extend(
        * CASE: Don't create new posts_meta entry if post meta is empty
        */
       if (!_.isUndefined(this.get('posts_meta')) && !_.isNull(this.get('posts_meta'))) {
-        let postsMetaData = this.get('posts_meta');
-        let relatedModelId = model.related('posts_meta').get('id');
-        let hasNoData = !_.values(postsMetaData).some((x) => !!x);
+        const postsMetaData = this.get('posts_meta');
+        const relatedModelId = model.related('posts_meta').get('id');
+        const hasNoData = !_.values(postsMetaData).some((x) => !!x);
         if (relatedModelId && !_.isEmpty(postsMetaData)) {
           postsMetaData.id = relatedModelId;
           this.set('posts_meta', postsMetaData);
@@ -1163,7 +1164,7 @@ Post = ghostBookshelf.Model.extend(
 
     toJSON: function toJSON(unfilteredOptions) {
       const options = Post.filterOptions(unfilteredOptions, 'toJSON');
-      let attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+      const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
       // CASE: never expose the mobiledoc revisions
       delete attrs.mobiledoc_revisions;
@@ -1402,7 +1403,7 @@ Post = ghostBookshelf.Model.extend(
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
     edit: function edit(data, unfilteredOptions) {
-      let options = this.filterOptions(unfilteredOptions, 'edit', {
+      const options = this.filterOptions(unfilteredOptions, 'edit', {
         extraAllowedProperties: ['id'],
       });
 
@@ -1458,7 +1459,7 @@ Post = ghostBookshelf.Model.extend(
      * **See:** [ghostBookshelf.Model.add](base.js.html#add)
      */
     add: function add(data, unfilteredOptions) {
-      let options = this.filterOptions(unfilteredOptions, 'add', {
+      const options = this.filterOptions(unfilteredOptions, 'add', {
         extraAllowedProperties: ['id'],
       });
 
@@ -1486,7 +1487,7 @@ Post = ghostBookshelf.Model.extend(
     },
 
     destroy: function destroy(unfilteredOptions) {
-      let options = this.filterOptions(unfilteredOptions, 'destroy', {
+      const options = this.filterOptions(unfilteredOptions, 'destroy', {
         extraAllowedProperties: ['id'],
       });
 
@@ -1528,11 +1529,7 @@ Post = ghostBookshelf.Model.extend(
       hasUserPermission,
       hasApiKeyPermission,
     ) {
-      let { isContributor, isOwner, isAdmin, isEitherEditor } = setIsRoles(loadedPermissions);
-      let isIntegration;
-      let isEdit;
-      let isAdd;
-      let isDestroy;
+      const { isContributor, isOwner, isAdmin, isEitherEditor } = setIsRoles(loadedPermissions);
 
       function isChanging(attr) {
         return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
@@ -1546,13 +1543,13 @@ Post = ghostBookshelf.Model.extend(
         return postModel.get('status') === 'draft';
       }
 
-      isIntegration =
+      const isIntegration =
         loadedPermissions.apiKey &&
         _.some(loadedPermissions.apiKey.roles, { name: 'Admin Integration' });
 
-      isEdit = action === 'edit';
-      isAdd = action === 'add';
-      isDestroy = action === 'destroy';
+      const isEdit = action === 'edit';
+      const isAdd = action === 'add';
+      const isDestroy = action === 'destroy';
 
       if (limitService.isLimited('members')) {
         // You can't publish a post if you're over your member limit
@@ -1671,7 +1668,7 @@ Post = ghostBookshelf.Model.extend(
   },
 );
 
-Posts = ghostBookshelf.Collection.extend({
+const Posts = ghostBookshelf.Collection.extend({
   model: Post,
 });
 

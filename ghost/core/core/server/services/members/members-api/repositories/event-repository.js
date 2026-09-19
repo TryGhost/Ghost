@@ -656,7 +656,7 @@ module.exports = class EventRepository {
 
     filter = this.removePostIdFilter(otherFilter); //Remove post_id filter as we don't need it in the query
 
-    let postClicksQuery = postId
+    const postClicksQuery = postId
       ? `SELECT
                     mce.id,
                     mce.member_id,

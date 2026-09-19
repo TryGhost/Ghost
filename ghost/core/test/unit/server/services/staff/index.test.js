@@ -80,7 +80,7 @@ describe('Staff Service:', function () {
   });
 
   describe('free member created event:', function () {
-    let eventData = {
+    const eventData = {
       memberId: '1',
     };
 
@@ -136,7 +136,7 @@ describe('Staff Service:', function () {
   });
 
   describe('paid subscription start event:', function () {
-    let eventData = {
+    const eventData = {
       memberId: '1',
       tierId: 'tier-1',
       subscriptionId: 'sub-1',
@@ -199,7 +199,7 @@ describe('Staff Service:', function () {
   });
 
   describe('paid subscription cancel event:', function () {
-    let eventData = {
+    const eventData = {
       memberId: '1',
       tierId: 'tier-1',
       subscriptionId: 'sub-1',

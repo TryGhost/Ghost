@@ -6,7 +6,7 @@ export default BaseValidator.create({
     properties: ['email'],
 
     email(model) {
-        let email = model.email;
+        const email = model.email;
 
         if (isBlank(email)) {
             model.errors.add('email', 'Please enter an email.');

@@ -34,7 +34,7 @@ class StripeProductsImporter extends BaseImporter {
     debug('replaceIdentifiers');
 
     // map product_id -> product.id
-    let invalidProducts = [];
+    const invalidProducts = [];
     _.each(this.dataToImport, (objectInFile) => {
       const importedObject = _.find(this.requiredImportedData.products, {
         originalId: objectInFile.product_id,

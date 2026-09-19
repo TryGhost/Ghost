@@ -90,15 +90,15 @@ const findUrlWithProvider = (url) => {
 
   // build up a list of URL variations to test against because the oembed
   // providers list is not always up to date with scheme or www vs non-www
-  let baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
-  let testUrls = [
+  const baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
+  const testUrls = [
     `https://${baseUrl}`,
     `https://www.${baseUrl}`,
     `http://${baseUrl}`,
     `http://www.${baseUrl}`,
   ];
 
-  for (let testUrl of testUrls) {
+  for (const testUrl of testUrls) {
     provider = hasProvider(testUrl);
     if (provider) {
       url = testUrl;

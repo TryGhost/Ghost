@@ -32,7 +32,7 @@ export default class GhDropdown extends Component.extend(DropdownMixin) {
     didInsertElement() {
         super.didInsertElement(...arguments);
 
-        let dropdownService = this.dropdown;
+        const dropdownService = this.dropdown;
         dropdownService.on('close', this, this.close);
         dropdownService.on('toggle', this, this.toggle);
 
@@ -50,7 +50,7 @@ export default class GhDropdown extends Component.extend(DropdownMixin) {
     willDestroyElement() {
         super.willDestroyElement(...arguments);
 
-        let dropdownService = this.dropdown;
+        const dropdownService = this.dropdown;
         dropdownService.off('close', this, this.close);
         dropdownService.off('toggle', this, this.toggle);
 
@@ -72,10 +72,10 @@ export default class GhDropdown extends Component.extend(DropdownMixin) {
 
     // Called by the dropdown service when any dropdown button is clicked.
     toggle(options) {
-        let isClosing = this.closing;
-        let isOpen = this.isOpen;
-        let name = this.name;
-        let targetDropdownName = options.target;
+        const isClosing = this.closing;
+        const isOpen = this.isOpen;
+        const name = this.name;
+        const targetDropdownName = options.target;
         let button = this.button;
 
         if (name === targetDropdownName && (!isOpen || isClosing)) {

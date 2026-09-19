@@ -1,6 +1,7 @@
-const assert = require('node:assert/strict');
-const { assertExists } = require('../../../../utils/assertions');
-const Gravatar = require('../../../../../core/server/lib/image/gravatar');
+import assert from 'node:assert/strict';
+import { assertExists } from '../../../../utils/assertions';
+// @ts-expect-error This module lacks type definitions.
+import Gravatar from '../../../../../core/server/lib/image/gravatar';
 
 describe('lib/image: gravatar', function () {
   const gravatarUrl = 'https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}';
@@ -9,7 +10,7 @@ describe('lib/image: gravatar', function () {
     const gravatar = new Gravatar({
       config: {
         isPrivacyDisabled: () => false,
-        get: (config) => {
+        get: (config: string) => {
           return config === 'gravatar'
             ? {
                 url: gravatarUrl,
@@ -33,7 +34,7 @@ describe('lib/image: gravatar', function () {
     const gravatar = new Gravatar({
       config: {
         isPrivacyDisabled: () => false,
-        get: (config) => {
+        get: (config: string) => {
           return config === 'gravatar'
             ? {
                 url: gravatarUrl,
@@ -57,7 +58,7 @@ describe('lib/image: gravatar', function () {
     const gravatar = new Gravatar({
       config: {
         isPrivacyDisabled: () => false,
-        get: (config) => {
+        get: (config: string) => {
           return config === 'gravatar'
             ? {
                 url: gravatarUrl,
@@ -80,7 +81,7 @@ describe('lib/image: gravatar', function () {
     const gravatar = new Gravatar({
       config: {
         isPrivacyDisabled: () => false,
-        get: (config) => {
+        get: (config: string) => {
           return config === 'gravatar'
             ? {
                 url: gravatarUrl,
@@ -88,7 +89,7 @@ describe('lib/image: gravatar', function () {
             : null;
         },
       },
-      request: (url, options) => {
+      request: (_url: string, options: { timeout: { request: number } }) => {
         assert.equal(options.timeout.request, delay);
       },
     });

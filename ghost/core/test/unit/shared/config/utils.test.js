@@ -3,7 +3,7 @@ const _ = require('lodash');
 const configUtils = require('../../../../core/shared/config/utils');
 
 let fakeConfig = {};
-let fakeNconf = {};
+const fakeNconf = {};
 let changedKey = [];
 
 describe('Config Utils', function () {

@@ -3,7 +3,7 @@ import SlugUrl from 'ghost-admin/utils/slug-url';
 
 export default class User extends ApplicationAdapter {
     buildURL(_modelName, _id, _snapshot, _requestType, query) {
-        let url = super.buildURL(...arguments);
+        const url = super.buildURL(...arguments);
 
         return SlugUrl(url, query);
     }
@@ -13,7 +13,7 @@ export default class User extends ApplicationAdapter {
             return super.queryRecord(...arguments);
         }
 
-        let url = this.buildURL(type.modelName, 'me', null, 'findRecord');
+        const url = this.buildURL(type.modelName, 'me', null, 'findRecord');
 
         return this.ajax(url, 'GET', {data: {include: 'roles'}});
     }

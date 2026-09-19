@@ -43,9 +43,9 @@ export default BaseValidator.create({
     },
 
     canonicalUrl(model) {
-        let validatorOptions = {require_protocol: true};
-        let urlRegex = new RegExp(/^(\/|[a-zA-Z0-9-]+:)/);
-        let url = model.canonicalUrl;
+        const validatorOptions = {require_protocol: true};
+        const urlRegex = new RegExp(/^(\/|[a-zA-Z0-9-]+:)/);
+        const url = model.canonicalUrl;
 
         if (isBlank(url)) {
             return;
@@ -162,7 +162,7 @@ export default BaseValidator.create({
     },
 
     publishedAtBlogTime(model) {
-        let timeRegex = /^(([0-1]?[0-9])|([2][0-3])):([0-5][0-9])$/;
+        const timeRegex = /^(([0-1]?[0-9])|([2][0-3])):([0-5][0-9])$/;
 
         if (!timeRegex.test(model.publishedAtBlogTime) && this._shouldValidatePublishedAtBlog(model)) {
             model.errors.add('publishedAtBlogTime', 'Must be in format: "15:00"');
@@ -171,8 +171,8 @@ export default BaseValidator.create({
     },
 
     publishedAtBlogDate(model) {
-        let publishedAtBlogDate = model.publishedAtBlogDate;
-        let publishedAtBlogTime = model.publishedAtBlogTime;
+        const publishedAtBlogDate = model.publishedAtBlogDate;
+        const publishedAtBlogTime = model.publishedAtBlogTime;
 
         if (!this._shouldValidatePublishedAtBlog(model)) {
             return;
@@ -186,10 +186,10 @@ export default BaseValidator.create({
 
         // don't validate the date if the time format is incorrect
         if (isEmpty(model.errors.errorsFor('publishedAtBlogTime'))) {
-            let status = model.status;
-            let now = moment();
-            let publishedAtBlogTZ = model.publishedAtBlogTZ;
-            let isInFuture = publishedAtBlogTZ.isSameOrAfter(now);
+            const status = model.status;
+            const now = moment();
+            const publishedAtBlogTZ = model.publishedAtBlogTZ;
+            const isInFuture = publishedAtBlogTZ.isSameOrAfter(now);
 
             // draft/published must be in past
             if ((status === 'draft' || status === 'published') && publishedAtBlogTZ.isSameOrAfter(now)) {

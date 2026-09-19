@@ -156,7 +156,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
           },
         };
 
-        let result = validators.input.tags.add(apiConfig, frame);
+        const result = validators.input.tags.add(apiConfig, frame);
 
         assert(frame.data.tags[0].name);
         assert.equal(frame.data.tags[0].parent, undefined);

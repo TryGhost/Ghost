@@ -2,8 +2,8 @@ const http = require('http');
 
 module.exports = {
   invoke: function (app, reqParams) {
-    let req = new http.IncomingMessage();
-    let res = new http.ServerResponse({
+    const req = new http.IncomingMessage();
+    const res = new http.ServerResponse({
       method: reqParams.method,
     });
 

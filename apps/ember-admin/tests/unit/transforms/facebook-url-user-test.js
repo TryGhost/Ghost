@@ -6,17 +6,17 @@ describe('Unit: Transform: facebook-url-user', function () {
     setupTest();
 
     it('deserializes facebook url', function () {
-        let transform = this.owner.lookup('transform:facebook-url-user');
-        let serialized = 'testuser';
-        let result = transform.deserialize(serialized);
+        const transform = this.owner.lookup('transform:facebook-url-user');
+        const serialized = 'testuser';
+        const result = transform.deserialize(serialized);
 
         expect(result).to.equal('https://www.facebook.com/testuser');
     });
 
     it('serializes url to facebook username', function () {
-        let transform = this.owner.lookup('transform:facebook-url-user');
-        let deserialized = 'https://www.facebook.com/testuser';
-        let result = transform.serialize(deserialized);
+        const transform = this.owner.lookup('transform:facebook-url-user');
+        const deserialized = 'https://www.facebook.com/testuser';
+        const result = transform.serialize(deserialized);
 
         expect(result).to.equal('testuser');
     });

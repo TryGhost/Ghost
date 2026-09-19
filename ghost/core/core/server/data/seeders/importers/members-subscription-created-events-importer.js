@@ -18,7 +18,7 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
 
   async import(quantity) {
     let offset = 0;
-    let limit = 1000;
+    const limit = 1000;
     this.posts = await this.transaction
       .select('id', 'published_at', 'visibility', 'type', 'slug')
       .from('posts')

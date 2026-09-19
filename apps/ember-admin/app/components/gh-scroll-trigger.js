@@ -21,13 +21,13 @@ export default class GhScrollTrigger extends Component {
             };
         }
 
-        let options = {
+        const options = {
             viewportSpy: true,
             viewportTolerance,
             scrollableArea: this.args.scrollable || getScrollParent(element)
         };
 
-        let {onEnter, onExit} = this.inViewport.watchElement(element, options);
+        const {onEnter, onExit} = this.inViewport.watchElement(element, options);
 
         onEnter(this.didEnterViewport.bind(this));
         onExit(this.didExitViewport.bind(this));

@@ -5,7 +5,7 @@ import {ghUserCanAdmin} from 'ghost-admin/helpers/gh-user-can-admin';
 describe('Unit: Helper: gh-user-can-admin', function () {
     // Mock up roles and test for truthy
     describe('Owner or admin roles', function () {
-        let user = {
+        const user = {
             get(role) {
                 if (role === 'isAdmin') {
                     return true;
@@ -15,13 +15,13 @@ describe('Unit: Helper: gh-user-can-admin', function () {
         };
 
         it(' - can be Admin', function () {
-            let result = ghUserCanAdmin([user]);
+            const result = ghUserCanAdmin([user]);
             expect(result).to.equal(true);
         });
     });
 
     describe('Editor, Author & Contributor roles', function () {
-        let user = {
+        const user = {
             get(role) {
                 if (role === 'isAdmin') {
                     return false;
@@ -31,7 +31,7 @@ describe('Unit: Helper: gh-user-can-admin', function () {
         };
 
         it(' - cannot be Admin', function () {
-            let result = ghUserCanAdmin([user]);
+            const result = ghUserCanAdmin([user]);
             expect(result).to.equal(false);
         });
     });

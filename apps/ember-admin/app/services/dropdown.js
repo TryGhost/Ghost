@@ -9,7 +9,7 @@ import {action} from '@ember/object';
 @classic
 export default class DropdownService extends Service.extend(Evented, BodyEventListener) {
     bodyClick(event) {
-        let dropdownSelector = '.ember-basic-dropdown-trigger, .ember-basic-dropdown-content';
+        const dropdownSelector = '.ember-basic-dropdown-trigger, .ember-basic-dropdown-content';
 
         if ($(event.target).closest(dropdownSelector).length <= 0) {
             this.closeDropdowns();

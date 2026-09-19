@@ -1,10 +1,33 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
-const urlService = require('../../../../../../../core/server/services/url');
-const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import serializers from '../../../../../../../core/server/api/endpoints/utils/serializers';
+// @ts-expect-error This module lacks type definitions.
+import urlService from '../../../../../../../core/server/services/url';
+// @ts-expect-error This module lacks type definitions.
+import schema from '../../../../../../../core/server/data/schema';
+const postsSchema = schema.tables.posts;
 
-const lexicalLib = require('../../../../../../../core/server/lib/lexical');
+type FrameOutput = {
+  filter?: string;
+  order?: string;
+  selectRaw?: string;
+  formats?: string | string[];
+  columns?: string[];
+  withRelated?: string[];
+};
+
+type UrlColumns = { routerType: string; columns: string[] };
+
+function testFrame<T extends { options: object }>(
+  value: T,
+): T & {
+  options: T['options'] & FrameOutput;
+  forcedUrlRelations?: string[];
+  forcedUrlColumns?: UrlColumns;
+} {
+  return value;
+}
 
 describe('Unit: endpoints/utils/serializers/input/posts', function () {
   afterEach(function () {
@@ -14,7 +37,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
   describe('browse', function () {
     it('default', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: {
@@ -25,7 +48,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             },
           },
         },
-      };
+      });
 
       serializers.input.posts.browse(apiConfig, frame);
       assert.equal(frame.options.filter, 'type:post');
@@ -33,14 +56,14 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('should not work for non public context', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: {
             user: 1,
           },
         },
-      };
+      });
 
       serializers.input.posts.browse(apiConfig, frame);
       assert.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
@@ -48,7 +71,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('combine status+tag filters', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: {
@@ -60,7 +83,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
           },
           filter: 'status:published+tag:eins',
         },
-      };
+      });
 
       serializers.input.posts.browse(apiConfig, frame);
       assert.equal(frame.options.filter, '(status:published+tag:eins)+type:post');
@@ -68,7 +91,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('only tag filters', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: {
@@ -80,7 +103,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
           },
           filter: 'tag:eins',
         },
-      };
+      });
 
       serializers.input.posts.browse(apiConfig, frame);
       assert.equal(frame.options.filter, '(tag:eins)+type:post');
@@ -88,13 +111,13 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('remove mobiledoc and lexical options from formats', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           formats: ['html', 'mobiledoc', 'lexical', 'plaintext'],
           context: {},
         },
-      };
+      });
 
       serializers.input.posts.browse(apiConfig, frame);
       assert(!frame.options.formats.includes('mobiledoc'));
@@ -105,12 +128,12 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('adds default order when no order is specified', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: {},
         },
-      };
+      });
 
       serializers.input.posts.browse(apiConfig, frame);
       assert.equal(frame.options.order, 'published_at desc, id desc');
@@ -118,13 +141,13 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('keeps order when it is specified', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           order: 'updated_at desc',
           context: {},
         },
-      };
+      });
 
       serializers.input.posts.browse(apiConfig, frame);
       assert.equal(frame.options.order, 'updated_at desc');
@@ -136,26 +159,28 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
     // not skip the force-load — otherwise the URL still 404s for
     // tag/author-filtered routes.
     it('merges the required relations into withRelated when caller passes both ?fields=url and ?include=email', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredRelations')
+        .returns(['tags', 'authors']);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: { user: 1 },
           columns: ['id', 'url', 'title'],
           withRelated: ['email'],
         },
-      };
+      });
 
       serializers.input.posts.browse({}, frame);
 
       assert.ok(
-        frame.options.withRelated.includes('email'),
+        frame.options.withRelated?.includes('email'),
         'caller-requested email must be preserved',
       );
-      assert.ok(frame.options.withRelated.includes('tags'), 'tags must be force-loaded for URL');
+      assert.ok(frame.options.withRelated?.includes('tags'), 'tags must be force-loaded for URL');
       assert.ok(
-        frame.options.withRelated.includes('authors'),
+        frame.options.withRelated?.includes('authors'),
         'authors must be force-loaded for URL',
       );
     });
@@ -163,39 +188,41 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
     it('forces the required relations on the Content API path', function () {
       // Content API uses mapWithRelated rather than defaultRelations;
       // both branches must invoke the helper.
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredRelations')
+        .returns(['tags', 'authors']);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: { api_key: { id: 1, type: 'content' } },
           columns: ['id', 'url'],
         },
-      };
+      });
 
       serializers.input.posts.browse({}, frame);
 
       assert.ok(frame.options.withRelated);
-      assert.ok(frame.options.withRelated.includes('tags'));
-      assert.ok(frame.options.withRelated.includes('authors'));
+      assert.ok(frame.options.withRelated?.includes('tags'));
+      assert.ok(frame.options.withRelated?.includes('authors'));
     });
 
     it('loads only the relations the live routes reference', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags']);
+      sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns(['tags']);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: { user: 1 },
           columns: ['id', 'url'],
         },
-      };
+      });
 
       serializers.input.posts.browse({}, frame);
 
-      assert.ok(frame.options.withRelated.includes('tags'));
+      assert.ok(frame.options.withRelated?.includes('tags'));
       assert.ok(
-        !frame.options.withRelated.includes('authors'),
+        !frame.options.withRelated?.includes('authors'),
         'authors must not be loaded when no route references it',
       );
     });
@@ -205,34 +232,38 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
     // force-load the relations the URL service needs — and record them
     // so the output serializer can strip what the caller didn't ask for.
     it('forces required relations on a Content API browse without fields narrowing', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredRelations')
+        .returns(['tags', 'authors']);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: { api_key: { id: 1, type: 'content' } },
           withRelated: ['authors'],
         },
-      };
+      });
 
       serializers.input.posts.browse({}, frame);
 
-      assert.ok(frame.options.withRelated.includes('tags'));
-      assert.ok(frame.options.withRelated.includes('authors'));
+      assert.ok(frame.options.withRelated?.includes('tags'));
+      assert.ok(frame.options.withRelated?.includes('authors'));
       // only the relation the caller did NOT request is recorded for stripping
       assert.deepEqual(frame.forcedUrlRelations, ['tags']);
     });
 
     it('does not force relations when ?fields excludes url', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredRelations')
+        .returns(['tags', 'authors']);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: { api_key: { id: 1, type: 'content' } },
           columns: ['id', 'title'],
         },
-      };
+      });
 
       serializers.input.posts.browse({}, frame);
 
@@ -244,40 +275,44 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
     });
 
     it('treats a nested include as covering its parent relation', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredRelations')
+        .returns(['tags', 'authors']);
 
       // `authors.roles` eager-loads authors with roles nested, so the
       // resource is not thin — forcing (and then stripping) `authors`
       // would delete the very data the caller asked for.
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: { user: 1 },
           withRelated: ['authors.roles'],
           columns: ['id', 'url'],
         },
-      };
+      });
 
       serializers.input.posts.browse({}, frame);
 
-      assert.ok(frame.options.withRelated.includes('authors.roles'));
+      assert.ok(frame.options.withRelated?.includes('authors.roles'));
       assert.ok(
-        !frame.options.withRelated.includes('authors'),
+        !frame.options.withRelated?.includes('authors'),
         'authors is already covered by authors.roles',
       );
       assert.deepEqual(frame.forcedUrlRelations, ['tags']);
     });
 
     it('records nothing for stripping when the caller already requested the relations', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredRelations')
+        .returns(['tags', 'authors']);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           context: { api_key: { id: 1, type: 'content' } },
           withRelated: ['tags', 'authors'],
         },
-      };
+      });
 
       serializers.input.posts.browse({}, frame);
 
@@ -286,14 +321,16 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
     });
 
     it('keeps the full admin default relations when forcing fires on a plain admin browse', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredRelations')
+        .returns(['tags', 'authors']);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: { user: 1 },
         },
-      };
+      });
 
       serializers.input.posts.browse({}, frame);
 
@@ -311,15 +348,15 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
     });
 
     it('does not force any relations when no route references tags or authors', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns([]);
+      sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns([]);
 
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: { user: 1 },
           columns: ['id', 'url'],
         },
-      };
+      });
 
       serializers.input.posts.browse({}, frame);
 
@@ -329,16 +366,16 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
     describe('Content API', function () {
       it('selects all columns from the posts schema but mobiledoc and lexical when no columns are specified', function () {
         const apiConfig = {};
-        const frame = {
+        const frame = testFrame({
           apiType: 'content',
           options: {
             context: {},
           },
-        };
+        });
 
         serializers.input.posts.browse(apiConfig, frame);
         const columns = Object.keys(postsSchema);
-        const parsedSelectRaw = frame.options.selectRaw.split(',').map((column) => column.trim());
+        const parsedSelectRaw = frame.options.selectRaw?.split(',').map((column) => column.trim());
         assert.deepEqual(
           parsedSelectRaw,
           columns.filter(
@@ -350,13 +387,13 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
       it('strips mobiledoc and lexical columns from a specified columns option', function () {
         const apiConfig = {};
-        const frame = {
+        const frame = testFrame({
           apiType: 'content',
           options: {
             context: {},
             columns: ['id', 'mobiledoc', 'lexical', 'visibility'],
           },
-        };
+        });
 
         serializers.input.posts.browse(apiConfig, frame);
         assert.deepEqual(frame.options.columns, ['id', 'visibility']);
@@ -364,13 +401,13 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
       it('forces visibility column if columns are specified', function () {
         const apiConfig = {};
-        const frame = {
+        const frame = testFrame({
           apiType: 'content',
           options: {
             context: {},
             columns: ['id'],
           },
-        };
+        });
 
         serializers.input.posts.browse(apiConfig, frame);
         assert.deepEqual(frame.options.columns, ['id', 'visibility']);
@@ -378,13 +415,13 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
       it('strips mobiledoc and lexical columns from a specified selectRaw option', function () {
         const apiConfig = {};
-        const frame = {
+        const frame = testFrame({
           apiType: 'content',
           options: {
             context: {},
             selectRaw: 'id, mobiledoc, lexical',
           },
-        };
+        });
 
         serializers.input.posts.browse(apiConfig, frame);
         assert.equal(frame.options.selectRaw, 'id');
@@ -395,11 +432,11 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
   describe('read', function () {
     it('with apiType of "content" it forces type filter', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {},
         data: {},
-      };
+      });
 
       serializers.input.posts.read(apiConfig, frame);
       assert.equal(frame.options.filter, 'type:post');
@@ -407,13 +444,13 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('with apiType of "content" it forces type:post filter', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           filter: 'type:page',
         },
         data: {},
-      };
+      });
 
       serializers.input.posts.read(apiConfig, frame);
       assert.equal(frame.options.filter, '(type:page)+type:post');
@@ -421,7 +458,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('with apiType of "admin" it forces type & status false filter', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: {
@@ -432,7 +469,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
           },
         },
         data: {},
-      };
+      });
 
       serializers.input.posts.read(apiConfig, frame);
       assert.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
@@ -440,7 +477,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('with apiType of "admin" it forces type:post filter & respects custom status filter', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'admin',
         options: {
           context: {
@@ -452,7 +489,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
           filter: 'status:draft',
         },
         data: {},
-      };
+      });
 
       serializers.input.posts.read(apiConfig, frame);
       assert.equal(frame.options.filter, '(status:draft)+type:post');
@@ -460,14 +497,14 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
     it('remove mobiledoc and lexical options from formats', function () {
       const apiConfig = {};
-      const frame = {
+      const frame = testFrame({
         apiType: 'content',
         options: {
           formats: ['html', 'mobiledoc', 'lexical', 'plaintext'],
           context: {},
         },
         data: {},
-      };
+      });
 
       serializers.input.posts.read(apiConfig, frame);
       assert(!frame.options.formats.includes('mobiledoc'));
@@ -483,7 +520,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         const apiConfig = {};
         const lexical =
           '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
-        const frame = {
+        const frame = testFrame({
           options: {},
           data: {
             posts: [
@@ -495,11 +532,11 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
               },
             ],
           },
-        };
+        });
 
         serializers.input.posts.edit(apiConfig, frame);
 
-        let postData = frame.data.posts[0];
+        const postData = frame.data.posts[0];
         assert.equal(postData.lexical, lexical);
         assert.equal(postData.mobiledoc, null);
       });
@@ -508,7 +545,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         const apiConfig = {};
         const lexical =
           '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
-        const frame = {
+        const frame = testFrame({
           options: {
             source: 'html',
           },
@@ -522,11 +559,11 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
               },
             ],
           },
-        };
+        });
 
         serializers.input.posts.edit(apiConfig, frame);
 
-        let postData = frame.data.posts[0];
+        const postData = frame.data.posts[0];
         assert.equal(postData.lexical, lexical);
         assert.equal(postData.mobiledoc, null);
       });
@@ -539,7 +576,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
           const apiConfig = {};
           const lexical =
             '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
-          const frame = {
+          const frame = testFrame({
             options: {
               source: 'html',
             },
@@ -552,25 +589,25 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 },
               ],
             },
-          };
+          });
 
           serializers.input.posts.edit(apiConfig, frame);
 
-          let postData = frame.data.posts[0];
+          const postData = frame.data.posts[0];
           assert.notEqual(postData.lexical, lexical);
           assert.equal(
             postData.lexical,
             '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}',
           );
           // `?source=html` only ever produces lexical now
-          assert.equal(postData.mobiledoc, undefined);
+          assert.equal('mobiledoc' in postData, false);
         },
       );
 
       // JSDOM require is sometimes very slow on CI causing random timeouts
       it('preserves html cards in transformed html', { timeout: 10000 }, function () {
         const apiConfig = {};
-        const frame = {
+        const frame = testFrame({
           options: {
             source: 'html',
           },
@@ -582,20 +619,20 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
               },
             ],
           },
-        };
+        });
 
         serializers.input.posts.edit(apiConfig, frame);
 
-        let postData = frame.data.posts[0];
+        const postData = frame.data.posts[0];
         assert.equal(
-          postData.lexical,
+          'lexical' in postData ? postData.lexical : undefined,
           '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1},{"type":"html","version":1,"html":"<div class=\\"custom\\">My Custom HTML</div>","visibility":{"web":{"nonMember":true,"memberSegment":"status:free,status:-free"},"email":{"memberSegment":"status:free,status:-free"}}},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"custom html preserved!","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}',
         );
       });
 
       // JSDOM require is sometimes very slow on CI causing random timeouts
       it('throws error when HTML conversion fails', { timeout: 10000 }, function () {
-        const frame = {
+        const frame = testFrame({
           options: {
             source: 'html',
           },
@@ -603,14 +640,14 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             posts: [
               {
                 id: 'id1',
-                html: '<bananarama>',
+                html: {
+                  toString() {
+                    throw new Error('Some error');
+                  },
+                },
               },
             ],
           },
-        };
-
-        sinon.stub(lexicalLib, 'htmlToLexicalConverter').get(() => () => {
-          throw new Error('Some error');
         });
 
         assert.throws(() => {
@@ -622,7 +659,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
     it('tags relation is stripped of unknown properties', function () {
       const apiConfig = {};
 
-      const frame = {
+      const frame = testFrame({
         options: {},
         data: {
           posts: [
@@ -632,7 +669,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             },
           ],
         },
-      };
+      });
 
       serializers.input.posts.edit(apiConfig, frame);
       assert.deepEqual(frame.data.posts[0].tags, [
@@ -645,7 +682,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
       it('relations is array of objects', function () {
         const apiConfig = {};
 
-        const frame = {
+        const frame = testFrame({
           options: {},
           data: {
             posts: [
@@ -656,7 +693,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
               },
             ],
           },
-        };
+        });
 
         serializers.input.posts.edit(apiConfig, frame);
 
@@ -670,7 +707,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
       it('authors is array of strings', function () {
         const apiConfig = {};
 
-        const frame = {
+        const frame = testFrame({
           options: {},
           data: {
             posts: [
@@ -681,7 +718,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
               },
             ],
           },
-        };
+        });
 
         serializers.input.posts.edit(apiConfig, frame);
 
@@ -693,9 +730,9 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
   describe('copy', function () {
     it('adds default formats if no formats are specified', function () {
-      const frame = {
+      const frame = testFrame({
         options: {},
-      };
+      });
 
       serializers.input.posts.copy({}, frame);
 
@@ -703,9 +740,9 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
     });
 
     it('adds default relations if no relations are specified', function () {
-      const frame = {
+      const frame = testFrame({
         options: {},
-      };
+      });
 
       serializers.input.posts.copy({}, frame);
 
