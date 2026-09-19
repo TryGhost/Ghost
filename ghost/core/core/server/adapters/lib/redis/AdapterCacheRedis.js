@@ -36,13 +36,19 @@ class AdapterCacheRedis extends CacheBase {
       // @NOTE: this condition can be avoided if we add merging of nested options
       //        to adapter configuration. Than adding adapter-specific {clusterConfig: {options: {ttl: XXX}}}
       //        will be enough to set ttl for redis cluster.
-      if (config.ttl && config.clusterConfig) {
-        if (!config.clusterConfig.options) {
-          config.clusterConfig.options = {};
-        }
-
-        config.clusterConfig.options.ttl = config.ttl;
-      }
+      //
+      // Derived rather than assigned into `config`. The adapter is handed its
+      // slice of the config object itself, so writing to it throws once config
+      // is frozen — and even unfrozen it wrote through into the subtree every
+      // later reader of `adapters:...` sees, including the key the adapter
+      // manager builds by stringifying this config.
+      const clusterConfig =
+        config.ttl && config.clusterConfig
+          ? {
+              ...config.clusterConfig,
+              options: { ...config.clusterConfig.options, ttl: config.ttl },
+            }
+          : config.clusterConfig;
 
       const storeOptions = {
         ttl: config.ttl,
@@ -54,7 +60,7 @@ class AdapterCacheRedis extends CacheBase {
           return (config.storeConfig?.retryConnectSeconds || 10) * 1000;
         },
         ...config.storeConfig,
-        clusterConfig: config.clusterConfig,
+        clusterConfig,
       };
       const store = redisStoreFactory.getRedisStore(storeOptions, config.reuseConnection);
 

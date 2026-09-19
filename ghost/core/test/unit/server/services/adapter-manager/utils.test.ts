@@ -7,6 +7,7 @@ import {
 } from '../../../../../core/server/services/adapter-manager/utils';
 import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
 import { bindAll as bindHelpers } from '../../../../../core/shared/config/helpers';
+import { bindFreeze } from '../../../../../core/shared/config/freeze';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 
 describe('Adapter Manager: utils', function () {
@@ -19,6 +20,7 @@ describe('Adapter Manager: utils', function () {
 
       bindUrlHelpers(nconf);
       bindHelpers(nconf);
+      bindFreeze(nconf);
 
       return nconf;
     }
