@@ -25,7 +25,18 @@ import { MemberActivityGate } from './member-activity-gate';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
-import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
+import {
+  lazyAutomationEditorScreen,
+  lazyAutomationsScreen,
+  lazyProtoExploration2Detail,
+  lazyProtoExploration2List,
+  lazyProtoExplorationDetail,
+  lazyProtoExplorationList,
+  lazyProtoPhase1Detail,
+  lazyProtoPhase1List,
+  lazyProtoPhase2Detail,
+  lazyProtoPhase2List,
+} from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { membersRouteChildren } from './members/api';
 import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
@@ -100,6 +111,73 @@ const appRoutes: RouteObject[] = [
       requiresAccess: canManageAutomations,
     } satisfies AdminRouteHandle & AccessRouteHandle,
     lazy: lazyComponent(lazyAutomationEditorScreen),
+  },
+  // Automations prototype — one route per LANE (see automations/proto/shared/
+  // lanes). Each lane owns its own copy of the screens, so an engineer can be
+  // sent a URL that is theirs and does not move when another lane changes.
+  // Same access rule as the real automations routes.
+  //
+  // The detail routes hide the admin sidebar: the canvas wants the full screen.
+  //
+  // '/automations-proto/float' was the single route these replaced; it redirects
+  // so links already shared out — preview environments, Linear, Slack — still
+  // land somewhere. (A second concept, "surface", lived here until its variants
+  // were decided; it's in the branch history if it's ever wanted back.)
+  {
+    path: '/automations-proto/float/*',
+    loader: () => redirect('/automations-proto/phase-1'),
+  },
+  {
+    path: '/automations-proto/phase-1',
+    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoPhase1List()),
+  },
+  {
+    path: '/automations-proto/phase-1/:id',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canManageAutomations,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoPhase1Detail()),
+  },
+  {
+    path: '/automations-proto/phase-2',
+    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoPhase2List()),
+  },
+  {
+    path: '/automations-proto/phase-2/:id',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canManageAutomations,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoPhase2Detail()),
+  },
+  {
+    path: '/automations-proto/exploration',
+    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoExplorationList()),
+  },
+  {
+    path: '/automations-proto/exploration/:id',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canManageAutomations,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoExplorationDetail()),
+  },
+  {
+    path: '/automations-proto/exploration-2',
+    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoExploration2List()),
+  },
+  {
+    path: '/automations-proto/exploration-2/:id',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canManageAutomations,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoExploration2Detail()),
   },
   {
     // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
