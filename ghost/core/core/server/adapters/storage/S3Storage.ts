@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { Readable } from 'node:stream';
 import path from 'node:path';
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import { z } from 'zod';
@@ -477,6 +478,43 @@ export default class S3Storage extends StorageBase {
 
       const bytes = await response.Body?.transformToByteArray();
       return Buffer.from(bytes ?? []);
+    } catch (error) {
+      if (this.isNotFound(error)) {
+        throw new errors.NotFoundError({
+          err: error,
+          message: tpl(messages.readNotFound, { path: relativePath }),
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async readStream(options: { path?: string } = {}): Promise<Readable> {
+    const relativePath = options.path;
+
+    if (!relativePath?.trim()) {
+      throw new errors.IncorrectUsageError({
+        message: tpl(messages.emptyReadPath),
+      });
+    }
+
+    const key = this.buildKey(relativePath);
+
+    try {
+      const response = await this.client.send(
+        new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        }),
+      );
+
+      if (!(response.Body instanceof Readable)) {
+        throw new errors.InternalServerError({
+          message: 'S3 response did not contain a readable stream',
+        });
+      }
+      return response.Body;
     } catch (error) {
       if (this.isNotFound(error)) {
         throw new errors.NotFoundError({

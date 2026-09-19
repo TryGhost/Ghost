@@ -1,24 +1,18 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
-const config = require('../../../shared/config');
+const os = require('node:os');
+const { randomUUID } = require('node:crypto');
+const { pipeline } = require('node:stream/promises');
+const { ZipArchive } = require('archiver');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const RevueHandler = require('./handlers/revue');
-const JSONHandler = require('./handlers/json');
-const MarkdownHandler = require('./handlers/markdown');
-const RevueImporter = require('./importers/importer-revue');
-const DataImporter = require('./importers/data');
-const urlUtils = require('../../../shared/url-utils').default;
-const { GhostMailer } = require('../../services/mail');
-const jobManager = require('../../services/jobs');
 const ImportArchive = require('./import-archive').default;
-const { createContentFileHandlers, createContentFileImporters } = require('./content-files');
+
+const ContentImportJob = require('./jobs/content-import-job').default;
 
 const { emailTemplate } = require('./email-template');
-const ghostMailer = new GhostMailer();
 
 const messages = {
   couldNotCleanUpFile: {
@@ -36,30 +30,30 @@ const defaults = {
 };
 
 class ImportManager {
-  constructor() {
-    const contentFileHandlers = createContentFileHandlers();
-    const contentFileImporters = createContentFileImporters();
-
-    /**
-     * @type {Importer[]} importers
-     */
-    this.importers = [...contentFileImporters, RevueImporter, DataImporter];
-
-    /**
-     * @type {Handler[]}
-     */
-    this.handlers = [...contentFileHandlers, RevueHandler, JSONHandler, MarkdownHandler];
+  constructor({
+    jobsService,
+    importsStorage,
+    handlers,
+    importers,
+    mailer,
+    config,
+    urlUtils,
+    logging,
+  }) {
+    this.jobsService = jobsService;
+    /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default | import('../../adapters/storage/S3Storage').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
+    this.importsStorage = importsStorage;
+    this.handlers = handlers;
+    this.importers = importers;
+    this.mailer = mailer;
+    this.config = config;
+    this.urlUtils = urlUtils;
+    this.logging = logging;
 
     this.archive = new ImportArchive({
       extensions: this.getExtensions(),
       directories: this.getDirectories(),
     });
-
-    // Keep track of file to cleanup at the end
-    /**
-     * @type {?string}
-     */
-    this.fileToDelete = null;
   }
 
   /**
@@ -140,9 +134,7 @@ class ImportManager {
    * @returns {Promise<string>} full path to the extracted folder
    */
   async extractZip(filePath) {
-    const tmpDir = await this.archive.extract(filePath);
-    this.fileToDelete = tmpDir;
-    return tmpDir;
+    return this.archive.extract(filePath);
   }
 
   /**
@@ -174,8 +166,9 @@ class ImportManager {
    * @param {File} file
    * @returns {Promise<ImportData>}
    */
-  async processZip(file) {
-    const zipDirectory = await this.extractZip(file.path);
+  async processZip(file, prepared = {}, validateOnly = false) {
+    const zipDirectory = prepared.cleanupDirectory || (await this.extractZip(file.path));
+    prepared.cleanupDirectory = zipDirectory;
 
     /**
      * @type {ImportData}
@@ -198,7 +191,12 @@ class ImportManager {
           });
         }
 
-        const data = await handler.loadFile(files, baseDir);
+        // Asset destination preparation belongs to execution. Validation still
+        // extracts the archive and parses content to preserve request errors.
+        const data =
+          validateOnly && handler.directories.length
+            ? undefined
+            : await handler.loadFile(files, baseDir);
         importData[handler.type] = data;
       }
     }
@@ -253,10 +251,21 @@ class ImportManager {
    * @param {File} file
    * @returns {Promise<ImportData>}
    */
-  loadFile(file) {
+  loadFile(file, prepared, validateOnly = false) {
     const self = this;
     const ext = path.extname(file.name).toLowerCase();
-    return this.isZip(ext) ? self.processZip(file) : self.processFile(file, ext);
+    return this.isZip(ext)
+      ? self.processZip(file, prepared, validateOnly)
+      : self.processFile(file, ext);
+  }
+
+  async validateFile(file) {
+    const validation = {};
+    try {
+      await this.loadFile(file, validation, true);
+    } finally {
+      await this.cleanUp(validation.cleanupDirectory);
+    }
   }
 
   /**
@@ -316,15 +325,15 @@ class ImportManager {
    * Remove files after we're done (abstracted into a function for easier testing)
    * @returns {Promise<void>}
    */
-  async cleanUp() {
-    if (this.fileToDelete === null) {
+  async cleanUp(cleanupDirectory) {
+    if (!cleanupDirectory) {
       return;
     }
 
     try {
-      await fs.remove(this.fileToDelete);
+      await fs.remove(cleanupDirectory);
     } catch (err) {
-      logging.error(
+      this.logging.error(
         new errors.InternalServerError({
           err: err,
           context: tpl(messages.couldNotCleanUpFile.error),
@@ -332,8 +341,6 @@ class ImportManager {
         }),
       );
     }
-
-    this.fileToDelete = null;
   }
 
   /**
@@ -346,8 +353,8 @@ class ImportManager {
    * @returns {string}
    */
   generateCompletionEmail(result, { emailRecipient, importTag }) {
-    const siteUrl = new URL(urlUtils.urlFor('home', null, true));
-    const postsUrl = new URL('posts', urlUtils.urlFor('admin', null, true));
+    const siteUrl = new URL(this.urlUtils.urlFor('home', null, true));
+    const postsUrl = new URL('posts', this.urlUtils.urlFor('admin', null, true));
     if (importTag && result?.data?.tags) {
       const tag = result.data.tags.find((t) => t.name === importTag);
       postsUrl.searchParams.set('tag', tag.slug);
@@ -369,58 +376,158 @@ class ImportManager {
    * @returns {Promise<Object.<string, ImportResult>>}
    */
   async importFromFile(file, importOptions = {}) {
-    let importData;
-    if (importOptions.data) {
-      importData = importOptions.data;
-    } else {
-      // Step 1: Handle converting the file to usable data
-      // Has to be completed outside of job to ensure file is processed before being deleted
-      importData = await this.loadFile(file);
-    }
-
-    debug('importFromFile completed file load', importData);
-
-    const env = config.get('env');
+    const env = this.config.get('env');
     if (!env?.startsWith('testing') && !importOptions.runningInJob) {
-      logging.info('[Background Job] site-content-import queued');
-      return jobManager.addJob({
-        job: async () => {
-          const startedAt = Date.now();
-          logging.info('[Background Job] site-content-import started');
+      await this.validateFile(file);
+      // This capability deliberately belongs to the concrete adapters until the
+      // next major release can extend the third-party storage base contract.
+      if (typeof this.importsStorage?.readStream !== 'function') {
+        throw new errors.IncorrectUsageError({
+          message: 'The imports storage adapter must support streaming reads',
+        });
+      }
+      const attemptedKey = randomUUID();
+      let uploadKey = attemptedKey;
+      let normalizationDirectory;
+      try {
+        let uploadPath = file.path;
+        if (!this.isZip(path.extname(file.name).toLowerCase())) {
+          normalizationDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'site-import-upload-'));
+          uploadPath = path.join(normalizationDirectory, 'upload.zip');
+          const archive = new ZipArchive();
+          const source = fs.createReadStream(file.path);
+          // archiver does not forward errors from appended source streams.
+          source.on('error', (error) => archive.destroy(error));
+          const written = pipeline(archive, fs.createWriteStream(uploadPath));
+          archive.append(source, { name: `${attemptedKey}/${path.basename(file.name)}` });
           try {
-            const result = await this.importFromFile(
-              file,
-              Object.assign({}, importOptions, {
-                runningInJob: true,
-                data: importData,
-              }),
-            );
-            // importFromFile swallows its own failures and returns undefined,
-            // so an absent result is the only signal that the import failed.
-            if (result === undefined) {
-              logging.info(
-                `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-              );
-            } else {
-              logging.info(
-                `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
-              );
-            }
-            return result;
-          } catch (err) {
-            logging.error(
-              err,
-              `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-            );
-            throw err;
+            await Promise.all([archive.finalize(), written]);
+          } finally {
+            source.destroy();
           }
-        },
-        offloaded: false,
-      });
+        }
+        const url = await this.importsStorage.save(
+          { name: attemptedKey, path: uploadPath },
+          this.importsStorage.storagePath,
+        );
+        uploadKey = this.importsStorage.urlToPath(url);
+        if (uploadKey !== attemptedKey) {
+          throw new errors.IncorrectUsageError({
+            message: 'The imports storage adapter must preserve the upload key',
+          });
+        }
+        const job = new ContentImportJob({
+          uploadKey,
+          emailRecipient: importOptions.user.email,
+          importTag: importOptions.importTag,
+          returnImportedData: importOptions.returnImportedData,
+          importPersistUser: importOptions.importPersistUser,
+        });
+        this.logging.info('[Background Job] site-content-import queued');
+        return await this.jobsService.dispatch(job);
+      } catch (err) {
+        for (const key of new Set([attemptedKey, uploadKey])) {
+          await this.cleanUpUpload(key);
+        }
+        throw err;
+      } finally {
+        await this.cleanUp(normalizationDirectory);
+      }
     }
 
+    const prepared = {};
+    try {
+      prepared.data = importOptions.data || (await this.loadFile(file, prepared));
+    } catch (err) {
+      await this.cleanUp(prepared.cleanupDirectory);
+      throw err;
+    }
+    return this.executeImport(prepared, importOptions);
+  }
+
+  async executeImport(prepared, importOptions = {}) {
+    if (prepared.uploadKey) {
+      importOptions = {
+        user: { email: prepared.emailRecipient },
+        importTag: prepared.importTag,
+        returnImportedData: prepared.returnImportedData,
+        importPersistUser: prepared.importPersistUser,
+        runningInJob: true,
+      };
+    }
+    const env = this.config.get('env');
+    const startedAt = Date.now();
+    if (!env?.startsWith('testing')) {
+      this.logging.info('[Background Job] site-content-import started');
+    }
+    let result;
+    try {
+      result = await this.processImport(prepared, importOptions, env);
+      if (!env?.startsWith('testing')) {
+        if (result === undefined) {
+          this.logging.info(
+            `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+          );
+        } else {
+          this.logging.info(
+            {
+              system: {
+                event: 'site_content_import.completed',
+                import_groups: Object.keys(result).length,
+                duration_ms: Date.now() - startedAt,
+              },
+            },
+            'Site content import completed',
+          );
+        }
+      }
+      return result;
+    } catch (err) {
+      this.logging.error(
+        err,
+        `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+      );
+      throw err;
+    }
+  }
+
+  async cleanUpUpload(uploadKey) {
+    try {
+      await this.importsStorage.delete(uploadKey);
+    } catch (err) {
+      this.logging.error(err, '[Background Job] site-content-import upload cleanup failed');
+    }
+  }
+
+  async processImport(prepared, importOptions, env) {
+    const uploadKey = prepared.uploadKey;
+    let downloadDirectory;
     let importResult;
     try {
+      if (uploadKey) {
+        prepared = {};
+        downloadDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'site-content-import-'));
+        const archivePath = path.join(downloadDirectory, 'upload.zip');
+        await pipeline(
+          await this.importsStorage.readStream({ path: uploadKey }),
+          fs.createWriteStream(archivePath),
+        );
+        prepared.cleanupDirectory = await this.extractZip(archivePath);
+        const entries = await fs.readdir(prepared.cleanupDirectory);
+        // A generated UUID directory marks our single-entry standalone wrapper.
+        // Ordinary uploaded ZIPs are stored unchanged and use archive semantics.
+        if (entries.length === 1 && entries[0] === uploadKey) {
+          const standaloneDirectory = path.join(prepared.cleanupDirectory, uploadKey);
+          const [name] = await fs.readdir(standaloneDirectory);
+          prepared.data = await this.processFile(
+            { name, path: path.join(standaloneDirectory, name) },
+            path.extname(name).toLowerCase(),
+          );
+        } else {
+          prepared.data = await this.loadFile({ name: 'upload.zip', path: archivePath }, prepared);
+        }
+      }
+      let importData = prepared.data;
       // Step 2: Let the importers pre-process the data
       importData = await this.preProcess(importData);
 
@@ -433,12 +540,18 @@ class ImportManager {
 
       return importResult;
     } catch (err) {
-      logging.error(err, '[Background Job] site-content-import error');
+      this.logging.error(err, '[Background Job] site-content-import error');
       const errorDetails = err.errorDetails || [err];
       importResult = { data: { errors: errorDetails } };
     } finally {
       // Step 5: Cleanup any files
-      await this.cleanUp();
+      await this.cleanUp(prepared.cleanupDirectory);
+      if (downloadDirectory) {
+        await this.cleanUp(downloadDirectory);
+      }
+      if (uploadKey) {
+        await this.cleanUpUpload(uploadKey);
+      }
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
@@ -446,7 +559,7 @@ class ImportManager {
           emailRecipient: importOptions.user.email,
           importTag: importOptions.importTag,
         });
-        await ghostMailer.send({
+        await this.mailer.send({
           to: importOptions.user.email,
           subject: importResult?.data?.errors
             ? 'Your content import was unsuccessful'
@@ -521,4 +634,4 @@ class ImportManager {
 /**
  * @typedef {Object} ImportResult
  */
-module.exports = new ImportManager();
+module.exports = ImportManager;

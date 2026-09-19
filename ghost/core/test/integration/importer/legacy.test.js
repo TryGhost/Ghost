@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const testUtils = require('../../utils');
-const importer = require('../../../core/server/data/importer');
+const importer = require('../../unit/server/data/importer/create-import-manager').default();
 const dataImporter = importer.importers.find((instance) => {
   return instance.type === 'data';
 });

@@ -28,6 +28,18 @@ Current examples include:
 
 - [Gift reminders](../../ghost/core/core/server/services/gifts/jobs/send-gift-reminders-job.ts),
   dispatched on a recurring schedule.
+- [Site content imports](../../ghost/core/core/server/data/importer/jobs/content-import-job.ts),
+  dispatched once in the shared default lane. The imports adapter stores one
+  uploaded archive under a UUID; the job carries only its key and request scalars.
+  The handler streams it to a temporary file, then extracts, parses and imports it.
+  Request validation still extracts the archive and parses content to preserve
+  existing synchronous errors, but discards its results and skips asset destination
+  preparation. Standalone files use a single-entry ZIP with a UUID directory so
+  execution preserves their original filename and standalone handler selection.
+  Boot constructs the importer before loading the API and injects the same instance
+  into its handler. Testing and explicit direct calls still execute inline. Import
+  failures resolve after reporting; completion-email failures reject. Temporary
+  files and the stored upload are cleaned up before email.
 - [Newsletter sending](../../ghost/core/core/server/services/email-service/jobs/send-email-job.ts),
   dispatched once with an email ID.
 
@@ -46,8 +58,6 @@ The legacy service in `ghost/core/core/server/services/jobs/` wraps
 `@tryghost/job-manager` and remains for unmigrated jobs. Do not add new jobs to
 it. Existing legacy examples include:
 
-- The site content import (`ghost/core/core/server/data/importer/`), which runs
-  as an inline job.
 - Email analytics, which uses scheduled worker jobs.
 
 ## Queues
@@ -78,6 +88,11 @@ Awaiting `dispatch()` only waits for the backend's enqueue call. Tests which
 need the work to finish should wait for its observable result. Newsletter
 tests should follow the [email service testing guidance](../../ghost/core/core/server/services/email-service/README.md#testing);
 the legacy job manager's `allSettled` event does not cover class-based jobs.
+Site import tests wait for completion email and upload deletion. The importer's
+`site_content_import.completed` event records successful imports; generic job
+completion only records handler settlement, which includes reported import failures.
+Enqueue acceptance does not guarantee execution during shutdown. There are no
+automatic retries or orphan-upload collection.
 
 ## Scheduling
 

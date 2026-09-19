@@ -2,7 +2,8 @@ import assert from 'assert/strict';
 import sinon from 'sinon';
 import fs from 'fs';
 import path from 'path';
-import { Readable } from 'stream';
+import { Readable, Writable } from 'stream';
+import { pipeline } from 'node:stream/promises';
 import {
   DeleteObjectCommand,
   NotFound,
@@ -60,6 +61,39 @@ describe('S3Storage', function () {
 
     return { storage, sendStub };
   }
+
+  describe('readStream errors', function () {
+    it('propagates a response stream failure through pipeline and closes it', async function () {
+      const { storage, sendStub } = createStorage();
+      const failure = new Error('connection interrupted');
+      const body = new Readable({
+        read() {
+          this.destroy(failure);
+        },
+      });
+      sendStub.resolves({ Body: body });
+      const stream = await storage.readStream({ path: 'opaque' });
+      assert.equal(stream, body);
+      await assert.rejects(
+        pipeline(
+          stream,
+          new Writable({
+            write(_chunk, _encoding, callback) {
+              callback();
+            },
+          }),
+        ),
+        failure,
+      );
+      assert.equal(body.destroyed, true);
+    });
+    it('preserves non-404 SDK errors', async function () {
+      const { storage, sendStub } = createStorage();
+      const failure = new Error('access denied');
+      sendStub.rejects(failure);
+      await assert.rejects(storage.readStream({ path: 'opaque' }), failure);
+    });
+  });
 
   it('throws when required constructor options are missing', function () {
     assert.throws(() => {

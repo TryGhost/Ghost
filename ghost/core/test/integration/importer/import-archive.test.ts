@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import sinon from 'sinon';
 
 const ImportArchive = require('../../../core/server/data/importer/import-archive').default;
-const importManager = require('../../../core/server/data/importer/import-manager');
+const importManager = require('../../unit/server/data/importer/create-import-manager').default();
 
 describe('ImportArchive', function () {
   let directory: string;
