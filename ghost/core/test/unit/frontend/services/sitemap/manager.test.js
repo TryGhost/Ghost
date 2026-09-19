@@ -254,6 +254,7 @@ describe('Unit: sitemap/manager', function () {
             ])
             .onSecondCall()
             .resolves([{ id: 'p1', slug: 'kept' }]);
+          getUrlForResource.callsFake((resource) => `http://example.com/${resource.slug}/`);
           const siteMapManager = makeManager();
           await siteMapManager.getSiteMapXml('posts');
           const firstPosts = siteMapManager.posts;
@@ -262,7 +263,10 @@ describe('Unit: sitemap/manager', function () {
           await siteMapManager.getSiteMapXml('posts');
 
           assert.notEqual(siteMapManager.posts, firstPosts);
-          assert.deepEqual([...siteMapManager.posts.nodeLookup.keys()], ['p1']);
+          assert.deepEqual(
+            siteMapManager.posts.nodeLookup.map((record) => record.loc),
+            ['http://example.com/kept/'],
+          );
         } finally {
           PostGenerator.prototype.addUrl.resetBehavior();
         }
