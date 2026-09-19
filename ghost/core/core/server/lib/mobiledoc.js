@@ -1,6 +1,9 @@
 const path = require('path');
 const config = require('../../shared/config');
 const adapterManager = require('../services/adapter-manager').default;
+const { once } = require('@tryghost/memoize/once');
+
+const loadImageTransform = once(() => require('@tryghost/image-transform'));
 
 let cardFactory;
 let cards;
@@ -27,7 +30,7 @@ module.exports = {
         imageBaseUrl: config.get('urls:image') || '',
         imageOptimization: config.get('imageOptimization'),
         canTransformImage(storagePath) {
-          const imageTransform = require('@tryghost/image-transform');
+          const imageTransform = loadImageTransform();
           const { ext } = path.parse(storagePath);
 
           // NOTE: the "saveRaw" check is smelly
