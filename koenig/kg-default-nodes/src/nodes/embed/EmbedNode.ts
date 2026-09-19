@@ -14,10 +14,11 @@ const embedProperties = {
     caption: {default: '', wordCount: true}
 } satisfies DecoratorNodePropertyMap;
 
-export type EmbedData = DecoratorNodeData<typeof embedProperties>;
+export type EmbedData = DecoratorNodeData<typeof embedProperties, true>;
 
 export class EmbedNode extends generateDecoratorNode({
     nodeType: 'embed',
+    hasVisibility: true,
     properties: embedProperties,
     defaultRenderFn: renderEmbedNode
 }) {

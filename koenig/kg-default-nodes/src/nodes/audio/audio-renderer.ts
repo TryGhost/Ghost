@@ -1,12 +1,14 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 
 interface AudioNodeData {
     src: string;
     title: string;
     thumbnailSrc: string;
     duration: number;
+    visibility?: Visibility;
 }
 
 interface RenderOptions extends ExportDOMOptions {}
@@ -27,11 +29,11 @@ export function renderAudioNode(node: AudioNodeData, options: AudioRenderOptions
     const thumbnailCls = getThumbnailCls(node);
     const emptyThumbnailCls = getEmptyThumbnailCls(node);
 
-    if (options.target === 'email') {
-        return emailTemplate(node, document, options, thumbnailCls, emptyThumbnailCls);
-    } else {
-        return frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls);
-    }
+    const output = options.target === 'email'
+        ? emailTemplate(node, document, options, thumbnailCls, emptyThumbnailCls)
+        : frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls);
+
+    return renderWithVisibility(output, node.visibility, options);
 }
 
 function frontendTemplate(node: AudioNodeData, document: Document, thumbnailCls: string, emptyThumbnailCls: string) {
