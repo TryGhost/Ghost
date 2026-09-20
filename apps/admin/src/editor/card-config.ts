@@ -66,6 +66,9 @@ export interface PostCardConfig extends PostCardConfigPorts {
   membersEnabled: boolean;
   siteTitle: string;
   siteDescription: string;
+  siteOgImage: string | null;
+  siteTwitterImage: string | null;
+  siteCoverImage: string | null;
   siteUrl: string;
   siteUuid: string;
   stripeEnabled: boolean;
@@ -99,6 +102,11 @@ export function getCardVisibilitySettings(
   return isPage ? 'web only' : 'web and email';
 }
 
+function imageSetting(settings: Setting[], key: string): string | null {
+  const value = getSettingValue(settings, key);
+  return typeof value === 'string' ? value : null;
+}
+
 export function buildPostCardConfig(
   sources: PostCardConfigSources,
   ports: PostCardConfigPorts,
@@ -124,6 +132,9 @@ export function buildPostCardConfig(
     searchLinks: ports.searchLinks,
     siteTitle: getSettingValue<string>(settings, 'title') ?? '',
     siteDescription: getSettingValue<string>(settings, 'description') ?? '',
+    siteOgImage: imageSetting(settings, 'og_image'),
+    siteTwitterImage: imageSetting(settings, 'twitter_image'),
+    siteCoverImage: imageSetting(settings, 'cover_image'),
     siteUrl: getHomepageUrl(site),
     siteUuid: site.site_uuid,
     stripeEnabled: checkStripeEnabled(settings, config),
@@ -132,5 +143,30 @@ export function buildPostCardConfig(
     createSnippet: ports.createSnippet,
     deleteSnippet: ports.deleteSnippet,
     visibilitySettings: getCardVisibilitySettings(sources.post),
+  };
+}
+
+export interface LiveCardConfigSettings {
+  visibility?: string | null;
+  showTitleAndFeatureImage?: boolean | null;
+}
+
+// The live settings fields, not the saved record: a visibility or a hidden
+// title the writer has only staged still decides what the cards describe.
+export function withLiveSettings(
+  cardConfig: PostCardConfig,
+  live: LiveCardConfigSettings,
+): PostCardConfig {
+  if (!cardConfig.post) {
+    return cardConfig;
+  }
+
+  return {
+    ...cardConfig,
+    post: {
+      ...cardConfig.post,
+      visibility: live.visibility || cardConfig.post.visibility,
+      showTitleAndFeatureImage: live.showTitleAndFeatureImage ?? true,
+    },
   };
 }

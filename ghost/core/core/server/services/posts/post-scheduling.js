@@ -16,6 +16,10 @@ const messages = {
 // retrying a publish that will never happen.
 const NO_OP = { scheduledResource: null, preScheduledResource: null };
 
+// Ignore overlapping deliveries for the same resource. The scheduler owns
+// retries if the active publish fails; always release the guard when it settles.
+const inFlight = new Set();
+
 /**
  * Publishes scheduled resource (a post or a page at the moment of writing)
  *
@@ -27,6 +31,22 @@ const NO_OP = { scheduledResource: null, preScheduledResource: null };
  *   `scheduledResource: null` when there was nothing to publish yet
  */
 exports.publish = async (resourceType, id, force, options) => {
+  const key = `${resourceType}:${id}`;
+
+  if (inFlight.has(key)) {
+    return NO_OP;
+  }
+
+  inFlight.add(key);
+
+  try {
+    return await publishNow(resourceType, id, force, options);
+  } finally {
+    inFlight.delete(key);
+  }
+};
+
+const publishNow = async (resourceType, id, force, options) => {
   const publishAPostBySchedulerToleranceInMinutes =
     config.get('times').publishAPostBySchedulerToleranceInMinutes;
 
@@ -43,6 +63,13 @@ exports.publish = async (resourceType, id, force, options) => {
     }
 
     throw err;
+  }
+
+  // The read above is filtered to scheduled resources, so a resource that an
+  // earlier delivery has already published normally surfaces as NotFound.
+  // Keep an explicit check so the outcome doesn't depend on that filter.
+  if (preScheduledResource.status !== 'scheduled') {
+    return NO_OP;
   }
 
   const publishedAtMoment = moment(preScheduledResource.published_at);

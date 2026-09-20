@@ -1,10 +1,10 @@
 import net from 'node:net';
 
 // Vitest globalSetup for the integration suite — probes the optional Docker
-// services (Redis, MinIO) ONCE in the vitest main process before any fork is
+// services (Redis, VersityGW) ONCE in the vitest main process before any fork is
 // spawned, and exports the result as process.env flags that the forks inherit.
 //
-// The adapter integration tests (Redis cache, MinIO helper, S3 redirects store)
+// The adapter integration tests (Redis cache, VersityGW helper, S3 redirects store)
 // connect to their backing service in beforeAll, so they hard-fail locally when
 // the service isn't running. Gating each suite on these flags lets them SKIP
 // cleanly when the service is down and RUN when it's up — CI starts both
@@ -23,7 +23,7 @@ const PROBE_TIMEOUT_MS = 1000;
 //   - Redis: nconf maps `adapters:Redis:{host,port}` from these `__`-separated
 //     env vars (core/shared/config/loader.ts uses `separator: '__'`); defaults
 //     match AdapterCacheRedis' 127.0.0.1:6379.
-//   - MinIO: test/utils/minio.ts reads MINIO_TEST_ENDPOINT (default
+//   - VersityGW: test/utils/s3.ts reads S3_TEST_ENDPOINT (default
 //     http://127.0.0.1:9000); parse it for the host + port to probe.
 function getRedisTarget(): { host: string; port: number } {
   return {
@@ -32,18 +32,24 @@ function getRedisTarget(): { host: string; port: number } {
   };
 }
 
-function getMinioTarget(): { host: string; port: number } {
+function getS3Target(): { host: string; port: number } {
   let url: URL;
   try {
-    url = new URL(process.env.MINIO_TEST_ENDPOINT || 'http://127.0.0.1:9000');
+    url = new URL(process.env.S3_TEST_ENDPOINT || 'http://127.0.0.1:9000');
   } catch (e) {
-    // A malformed endpoint can't be probed; fall back to the default target so
-    // a bad env var skips the suite rather than crashing globalSetup.
-    url = new URL('http://127.0.0.1:9000');
+    // A malformed configured endpoint can't be probed. Mark it unavailable so
+    // an unrelated service on the default port can't falsely enable the suite.
+    return { host: '', port: 0 };
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    // Only http/https default ports are meaningful here. Anything else (e.g. a
+    // typo'd scheme) can't be probed as an S3 endpoint, so mark it unavailable
+    // rather than guessing a port that may belong to an unrelated service.
+    return { host: '', port: 0 };
   }
   return {
     host: url.hostname,
-    port: parseInt(url.port || '9000'),
+    port: parseInt(url.port || (url.protocol === 'https:' ? '443' : '80')),
   };
 }
 
@@ -72,16 +78,16 @@ function isReachable(host: string, port: number): Promise<boolean> {
 
 export async function setup(): Promise<void> {
   const redis = getRedisTarget();
-  const minio = getMinioTarget();
+  const s3 = getS3Target();
 
-  const [redisUp, minioUp] = await Promise.all([
+  const [redisUp, s3Up] = await Promise.all([
     isReachable(redis.host, redis.port),
-    isReachable(minio.host, minio.port),
+    s3.host ? isReachable(s3.host, s3.port) : Promise.resolve(false),
   ]);
 
   // Set both flags to reflect THIS run's probe unconditionally, so a stale value
   // inherited from the parent environment can't leave a suite enabled against a
   // service that is actually down.
   process.env.GHOST_TEST_REDIS_AVAILABLE = redisUp ? '1' : '0';
-  process.env.GHOST_TEST_MINIO_AVAILABLE = minioUp ? '1' : '0';
+  process.env.GHOST_TEST_S3_AVAILABLE = s3Up ? '1' : '0';
 }

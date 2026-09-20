@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
+import {parseDunningConfig} from '@tryghost/admin-x-framework/api/dunning';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -9,6 +10,7 @@ export default class GhBillingIframe extends Component {
     @service ajax;
     @service billing;
     @service configManager;
+    @service feature;
     @service ghostPaths;
     @service limit;
     @service notifications;
@@ -131,7 +133,10 @@ export default class GhBillingIframe extends Component {
             response: {
                 forceUpgrade: this.config.hostSettings?.forceUpgrade,
                 isOwner: this.isOwner,
-                ownerUser
+                ownerUser,
+                // The flag accessor ships with the dunning return handler.
+                // Until then it is undefined, so Billing stays on its overview.
+                dunningReturnEnabled: this.feature.dunningWarnings === true
             }
         });
     }
@@ -165,10 +170,19 @@ export default class GhBillingIframe extends Component {
             this.config.hostSettings.forceUpgrade = false;
         }
 
-        // Detect if the current subscription is in a grace state and render a notification
-        if (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid') {
+        // Detect if the current subscription is in a grace state and render a notification.
+        // The dunningWarnings flag replaces this alert with the React admin's own
+        // payment-failure warning states, so it stands down while the flag is on —
+        // but only when React can use the host's dunning block. Missing or
+        // malformed config must leave the existing overdue alert available.
+        const dunningWarningsActive = this.feature.dunningWarnings
+            && parseDunningConfig(this.config.hostSettings?.billing?.dunning) !== null;
+        if (
+            (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid')
+            && !dunningWarningsActive
+        ) {
             // This notification needs to be shown to every user regardless their permissions to see billing
-            this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
+            this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}/update-card">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
         } else {
             this.notifications.closeAlerts('billing.overdue');
         }

@@ -70,6 +70,9 @@ const field = (overrides: Partial<MemberCustomField>): MemberCustomField => ({
   name: 'Nickname',
   type: 'short_text',
   status: 'active',
+  // The server reads a field with no access set as closed to members, so a case that says
+  // nothing about access gets the field the API would return for one.
+  access: { member: 'none' },
   created_at: '2026-07-01T00:00:00.000Z',
   updated_at: null,
   ...overrides,
@@ -215,7 +218,13 @@ describe('member custom fields api helpers', () => {
           postal_code: '00001',
           country: 'US',
         }),
-      ).toBe('1 Main St, 12 apt B, New York, NY 00001, US');
+      ).toBe('1 Main St, 12 apt B, New York, NY 00001, United States');
+    });
+
+    it('leaves a country code it cannot name in the line as it stands', () => {
+      expect(formatMemberCustomFieldValue('address', { city: 'Berlin', country: 'XX' })).toBe(
+        'Berlin, XX',
+      );
     });
 
     // The property this is built for. A part added to a type upstream has to appear in
@@ -244,7 +253,7 @@ describe('member custom fields api helpers', () => {
           postal_code: '10115',
           country: 'DE',
         }),
-      ).toBe('1 Main St, Berlin, 10115, DE');
+      ).toBe('1 Main St, Berlin, 10115, Germany');
       expect(formatMemberCustomFieldValue('address', { city: 'Berlin' })).toBe('Berlin');
     });
 

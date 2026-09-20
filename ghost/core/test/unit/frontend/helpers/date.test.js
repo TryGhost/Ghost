@@ -206,7 +206,7 @@ describe('{{date}} helper', function () {
       },
     };
 
-    let invalidDate = 'Fred';
+    const invalidDate = 'Fred';
     let rendered;
 
     rendered = date.call({ published_at: invalidDate }, context);

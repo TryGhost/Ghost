@@ -42,13 +42,13 @@ export default class Debug extends Component {
 
     get emailError() {
         // get failed batches count
-        let failedBatches = this.emailBatchesData?.filter((batch) => {
+        const failedBatches = this.emailBatchesData?.filter((batch) => {
             return batch.statusClass === 'failed';
         }).length || 0;
         // get total batch count
-        let totalBatches = this.emailBatchesData?.length || 0;
+        const totalBatches = this.emailBatchesData?.length || 0;
 
-        let details = (this.loading || !totalBatches) ? '' : `${failedBatches} of ${ghPluralize(totalBatches, 'batch')} failed to send, check below for more details.`;
+        const details = (this.loading || !totalBatches) ? '' : `${failedBatches} of ${ghPluralize(totalBatches, 'batch')} failed to send, check below for more details.`;
         return {
             message: this.post.email?.error || 'Failed to send email.',
             details
@@ -60,8 +60,8 @@ export default class Debug extends Component {
             statusClass: this.email?.status,
             status: this.getStatusLabel(this.email?.status),
             recipientFilter: this.email?.recipientFilter,
-            createdAt: this.email?.createdAtUTC ? moment(this.email.createdAtUTC).format('DD MMM, YYYY, HH:mm:ss') : '',
-            submittedAt: this.email?.submittedAtUTC ? moment(this.email.submittedAtUTC).format('DD MMM, YYYY, HH:mm:ss') : '',
+            createdAt: this.email?.createdAtUTC ? moment.utc(this.email.createdAtUTC).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
+            submittedAt: this.email?.submittedAtUTC ? moment.utc(this.email.submittedAtUTC).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
             emailsSent: this.email?.emailCount,
             emailsDelivered: this.email?.deliveredCount,
             emailsOpened: this.email?.openedCount,
@@ -88,7 +88,7 @@ export default class Debug extends Component {
                 id: batch.id,
                 status: this.getStatusLabel(batch.status),
                 statusClass: batch.status,
-                createdAt: batch.created_at ? moment(batch.created_at).format('DD MMM, YYYY, HH:mm:ss') : '',
+                createdAt: batch.created_at ? moment.utc(batch.created_at).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
                 segment: batch.member_segment || '',
                 mailgunMessageId: batch.mailgun_message_id || null,
                 errorMessage: batch.error_message || '',
@@ -105,8 +105,8 @@ export default class Debug extends Component {
             return {
                 id: failure.id,
                 code: failure.code,
-                failedAt: failure.failed_at ? moment(failure.failed_at).format('DD MMM, YYYY, HH:mm:ss') : '',
-                processedAt: failure.email_recipient.processed_at ? moment(failure.email_recipient.processed_at).format('DD MMM, YYYY, HH:mm:ss') : '',
+                failedAt: failure.failed_at ? moment.utc(failure.failed_at).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
+                processedAt: failure.email_recipient.processed_at ? moment.utc(failure.email_recipient.processed_at).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
                 batchId: failure.email_recipient.batch_id,
                 enhancedCode: failure.enhanced_code,
                 message: failure.message,
@@ -155,8 +155,8 @@ export default class Debug extends Component {
         if (!name) {
             return 'U';
         }
-        let names = name.split(' ');
-        let intials = names.length > 1 ? [names[0][0], names[names.length - 1][0]] : [names[0][0]];
+        const names = name.split(' ');
+        const intials = names.length > 1 ? [names[0][0], names[names.length - 1][0]] : [names[0][0]];
         return intials.join('').toUpperCase();
     }
 
@@ -205,8 +205,8 @@ export default class Debug extends Component {
             order: 'status asc, created_at desc'
         };
 
-        let statsUrl = this.ghostPaths.url.api(`emails/${this.post.email.id}/batches`);
-        let result = yield this.ajax.request(statsUrl, {data});
+        const statsUrl = this.ghostPaths.url.api(`emails/${this.post.email.id}/batches`);
+        const result = yield this.ajax.request(statsUrl, {data});
         this.emailBatches = result.batches;
         this.loading = false;
     }
@@ -244,9 +244,9 @@ export default class Debug extends Component {
     async fetchAnalyticsStatus() {
         try {
             if (this._fetchAnalyticsStatus.isRunning) {
-                return this._fetchAnalyticsStatus.last;
+                return await this._fetchAnalyticsStatus.last;
             }
-            return this._fetchAnalyticsStatus.perform();
+            return await this._fetchAnalyticsStatus.perform();
         } catch (e) {
             // Skip
         }
@@ -258,36 +258,38 @@ export default class Debug extends Component {
             include: 'member,email_recipient',
             limit: 'all'
         };
-        let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/recipient-failures`);
-        let result = yield this.ajax.request(statsUrl, {data});
+        const statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/recipient-failures`);
+        const result = yield this.ajax.request(statsUrl, {data});
         this.recipientFailures = result.failures;
     }
 
     @task
     *_fetchAnalyticsStatus() {
-        let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`);
-        let result = yield this.ajax.request(statsUrl);
+        const statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`);
+        const result = yield this.ajax.request(statsUrl);
         this.analyticsStatus = result;
 
         // Parse dates
-        for (const type of Object.keys(result)) {
+        for (const type of ['latest', 'latestOpened', 'missing', 'scheduled']) {
             if (!result[type]) {
                 result[type] = {};
             }
             let object = result[type];
-            for (const key of ['lastStarted', 'lastBegin', 'lastEventTimestamp']) {
+            for (const key of ['lastStarted', 'lastBegin', 'lastEventTimestamp', 'fetchedThrough']) {
                 if (object[key]) {
-                    object[key] = moment(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS');
+                    object[key] = moment.utc(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS [UTC]');
                 } else {
                     object[key] = 'N/A';
                 }
             }
 
+            object.lag = this.formatIngestionLag(object.lagSeconds);
+
             if (object.schedule) {
                 object = object.schedule;
                 for (const key of ['begin', 'end']) {
                     if (object[key]) {
-                        object[key] = moment(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS');
+                        object[key] = moment.utc(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS [UTC]');
                     } else {
                         object[key] = 'N/A';
                     }
@@ -296,13 +298,27 @@ export default class Debug extends Component {
         }
     }
 
+    formatIngestionLag(seconds) {
+        if (!Number.isFinite(seconds) || seconds < 0) {
+            return 'N/A';
+        }
+        const duration = moment.duration(seconds, 'seconds');
+        return [
+            [Math.floor(duration.asDays()), 'd'],
+            [duration.hours(), 'h'],
+            [duration.minutes(), 'm'],
+            [duration.seconds(), 's']
+        ].filter(([value]) => value > 0)
+            .map(([value, unit]) => `${value}${unit}`).join(' ') || '0s';
+    }
+
     @action
     toggleCustomSchedule() {
         this.showCustomSchedule = !this.showCustomSchedule;
         if (this.showCustomSchedule) {
-            this.customBeginDate = moment(this.email?.createdAtUTC).format('YYYY-MM-DDTHH:mm');
-            const createdAt = moment(this.email?.createdAtUTC);
-            const maxEnd = moment.min(moment().subtract(1, 'hour'), createdAt.clone().add(7, 'days'));
+            this.customBeginDate = moment.utc(this.email?.createdAtUTC).format('YYYY-MM-DDTHH:mm');
+            const createdAt = moment.utc(this.email?.createdAtUTC);
+            const maxEnd = moment.min(moment.utc().subtract(1, 'hour'), createdAt.clone().add(7, 'days'));
             this.customEndDate = maxEnd.format('YYYY-MM-DDTHH:mm');
         } else {
             this.customBeginDate = null;
@@ -339,10 +355,10 @@ export default class Debug extends Component {
     *_scheduleAnalytics() {
         const url = new URL(this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`), window.location.origin);
         if (this.customBeginDate) {
-            url.searchParams.set('begin', new Date(this.customBeginDate).toISOString());
+            url.searchParams.set('begin', moment.utc(this.customBeginDate).toISOString());
         }
         if (this.customEndDate) {
-            url.searchParams.set('end', new Date(this.customEndDate).toISOString());
+            url.searchParams.set('end', moment.utc(this.customEndDate).toISOString());
         }
         yield this.ajax.put(url.pathname + url.search, {});
         yield this.fetchAnalyticsStatus();
@@ -366,7 +382,7 @@ export default class Debug extends Component {
 
     @task
     *_cancelScheduleAnalytics() {
-        let statsUrl = this.ghostPaths.url.api(`/emails/analytics`);
+        const statsUrl = this.ghostPaths.url.api(`/emails/analytics`);
         yield this.ajax.delete(statsUrl, {});
         yield this.fetchAnalyticsStatus();
     }

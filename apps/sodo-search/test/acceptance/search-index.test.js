@@ -112,17 +112,17 @@ describe('search index', function () {
     expect(searchResults.posts.length).toEqual(0);
 
     // confirms that search works in the forward direction for ltr languages:
-    let searchWithStartResults = searchIndex.search('Barce');
+    const searchWithStartResults = searchIndex.search('Barce');
     expect(searchWithStartResults.posts.length).toEqual(1);
 
-    let searchWithEndResults = searchIndex.search('celona');
+    const searchWithEndResults = searchIndex.search('celona');
     expect(searchWithEndResults.posts.length).toEqual(0);
   });
 
   test('searching works when dir = rtl also', async () => {
     const adminUrl = 'http://localhost:3000';
     const apiKey = '69010382388f9de5869ad6e558';
-    const searchIndex = new SearchIndex({ adminUrl, apiKey, dir: 'ltr', storage: localStorage });
+    const searchIndex = new SearchIndex({ adminUrl, apiKey, dir: 'rtl', storage: localStorage });
 
     nock('http://localhost:3000/ghost/api/content')
       .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
@@ -196,12 +196,15 @@ describe('search index', function () {
     expect(searchResults.authors.length).toEqual(0);
     expect(searchResults.tags.length).toEqual(0);
 
-    let searchWithStartResults = searchIndex.search('المثا');
+    // reverse tokenisation is what rtl languages get: a word matches from either
+    // end, where the ltr index above only matches from the start.
+    const searchWithStartResults = searchIndex.search('المثا');
     expect(searchWithStartResults.posts.length).toEqual(1);
     expect(searchWithStartResults.posts[0].title).toEqual('أُظهر المثابرة كل يوم');
 
-    let searchWithEndResults = searchIndex.search('ثابرة');
-    expect(searchWithEndResults.posts.length).toEqual(0);
+    const searchWithEndResults = searchIndex.search('ثابرة');
+    expect(searchWithEndResults.posts.length).toEqual(1);
+    expect(searchWithEndResults.posts[0].title).toEqual('أُظهر المثابرة كل يوم');
   });
 
   test('searching handles CJK characters correctly', async () => {

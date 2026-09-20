@@ -4,6 +4,41 @@ Renders newsletter emails, splits them into recipient batches, and submits the
 batches to the configured email provider. Domain terms live in
 [CONTEXT.md](CONTEXT.md).
 
+## Job lifecycle
+
+New sends, retries, and boot recovery dispatch a data-only `SendEmailJob`
+containing the email ID through the class-based jobs service. Boot injects
+that service and registers `EmailService.handleSendEmailJob`, which delegates
+to `BatchSendingService.emailJob`. The batch sender refetches the email and
+acquires its status lock before preparing or submitting batches. See the
+[jobs guide](../../../../../../docs/codebase/jobs.md#queues) for queue isolation
+and concurrency limits.
+
+`scheduleEmail()` waits for dispatch to complete, not for submission. The
+current in-memory backend provides no durable acceptance guarantee and drops
+dispatches after shutdown starts without rejecting them. Email status records
+the sending outcome; a job handler returning does not imply submission, since
+it may have skipped the send, recorded a failure, or stopped for shutdown.
+
+Shutdown first stops workers from claiming new batches. The batch sender's
+separate cleanup task waits for active batch preparation and submission even
+if the jobs backend's shutdown wait times out. This tracking currently ends
+before the final email status write. On boot, recovery reschedules eligible
+interrupted sends within `bulkEmail:resumeMaxAgeMs` and skips batches already
+submitted.
+
+## Testing
+
+Tests that publish or retry a newsletter should mock the email provider and
+await `waitForEmailStatus(emailId)` from
+[`test/utils/batch-email-utils.js`](../../../../test/utils/batch-email-utils.js)
+before restoring mocks or deleting fixtures. The helper returns on either
+`submitted` or `failed`, so assert the expected status explicitly.
+
+A terminal email status describes the send's outcome; it does not prove that
+every competing retry or job attempting the status lock has finished. Tests
+which create competing attempts must also wait for those attempts to settle.
+
 ## Sending status
 
 The sending status served by the Admin API's `emails/:id/status` endpoint is
@@ -25,6 +60,9 @@ failed email.
 The rough ETA measures recent recipient throughput, including work completed by
 concurrent workers. It stays `null` until enough timing samples are available in
 the current phase and attempt, so short sends may finish without showing an ETA.
+The rate uses the last minute of completions, including the interval crossing
+the window boundary. Early estimates use the available history. Sparse sends
+retain at least two measured intervals.
 Progress counts update independently of the estimate.
 
 The ETA is always `null` for failed emails and `0` once no work remains in the

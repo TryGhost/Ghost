@@ -179,7 +179,7 @@ export default class GhContextMenu extends Component {
     @task
     *confirmWrapperTask(...args) {
         this.setState('loading');
-        let result = yield this.#originalConfirm.perform(...args);
+        const result = yield this.#originalConfirm.perform(...args);
         this.#originalConfirm = null;
         this.setState('default');
         return result;

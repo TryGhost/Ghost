@@ -102,7 +102,7 @@ describe('Unit: models/user', function () {
       });
 
       it('email cannot be blank', function () {
-        let data = { name: 'name' };
+        const data = { name: 'name' };
         sinon.stub(models.User, 'findOne').resolves(null);
 
         return models.User.add(data)
@@ -115,6 +115,22 @@ describe('Unit: models/user', function () {
             assert.match(err[0].message, /users\.email/);
           });
       });
+    });
+
+    it('retries until the generated default password is secure', function () {
+      const insecurePassword = 'password';
+      const securePassword = 'reOakhgmofLBGy5H';
+      sinon
+        .stub(security.identifier, 'uid')
+        .withArgs(50)
+        .onFirstCall()
+        .returns(insecurePassword)
+        .onSecondCall()
+        .returns(securePassword);
+
+      const defaults = models.User.prototype.defaults();
+
+      assert.equal(defaults.password, securePassword);
     });
   });
 
@@ -635,6 +651,125 @@ describe('Unit: models/user', function () {
           .catch((err) => {
             assert(err instanceof errors.NoPermissionError);
           });
+      });
+
+      it("editor can't assign their own editor role to an author", async function () {
+        const mockUser = getUserToEdit(testUtils.context.author.context.user, 'Author');
+        const context = testUtils.context.editor.context;
+        const unsafeAttrs = testUtils.permissions.editor.user;
+
+        const assignRole = sinon
+          .stub()
+          .rejects(new errors.NoPermissionError({ message: 'not allowed' }));
+        permissions.canThis.returns({ assign: { role: assignRole } });
+
+        await assert.rejects(async () => {
+          await models.User.permissible(
+            mockUser,
+            'edit',
+            context,
+            unsafeAttrs,
+            testUtils.permissions.editor,
+            false,
+            true,
+          );
+        }, errors.NoPermissionError);
+
+        sinon.assert.calledOnce(permissions.canThis);
+        sinon.assert.calledOnce(assignRole);
+      });
+
+      it("editor can't assign their own editor role to a contributor", async function () {
+        const mockUser = getUserToEdit(testUtils.context.contributor.context.user, 'Contributor');
+        const context = testUtils.context.editor.context;
+        const unsafeAttrs = testUtils.permissions.editor.user;
+
+        const assignRole = sinon
+          .stub()
+          .rejects(new errors.NoPermissionError({ message: 'not allowed' }));
+        permissions.canThis.returns({ assign: { role: assignRole } });
+
+        await assert.rejects(async () => {
+          await models.User.permissible(
+            mockUser,
+            'edit',
+            context,
+            unsafeAttrs,
+            testUtils.permissions.editor,
+            false,
+            true,
+          );
+        }, errors.NoPermissionError);
+
+        sinon.assert.calledOnce(permissions.canThis);
+        sinon.assert.calledOnce(assignRole);
+      });
+
+      it("super editor can't assign their own super editor role to an author", async function () {
+        const mockUser = getUserToEdit(testUtils.context.author.context.user, 'Author');
+        const context = testUtils.context.super_editor.context;
+        const unsafeAttrs = testUtils.permissions.super_editor.user;
+
+        const assignRole = sinon
+          .stub()
+          .rejects(new errors.NoPermissionError({ message: 'not allowed' }));
+        permissions.canThis.returns({ assign: { role: assignRole } });
+
+        await assert.rejects(async () => {
+          await models.User.permissible(
+            mockUser,
+            'edit',
+            context,
+            unsafeAttrs,
+            testUtils.permissions.super_editor,
+            false,
+            true,
+          );
+        }, errors.NoPermissionError);
+
+        sinon.assert.calledOnce(permissions.canThis);
+        sinon.assert.calledOnce(assignRole);
+      });
+
+      it('editor can assign the author role to a contributor', async function () {
+        const mockUser = getUserToEdit(testUtils.context.contributor.context.user, 'Contributor');
+        const context = testUtils.context.editor.context;
+        const unsafeAttrs = testUtils.permissions.author.user;
+
+        const assignRole = sinon.stub().resolves();
+        permissions.canThis.returns({ assign: { role: assignRole } });
+
+        await models.User.permissible(
+          mockUser,
+          'edit',
+          context,
+          unsafeAttrs,
+          testUtils.permissions.editor,
+          false,
+          true,
+        );
+
+        sinon.assert.calledOnce(assignRole);
+      });
+
+      it('editor can edit themselves when their own role is unchanged', async function () {
+        const mockUser = getUserToEdit(testUtils.context.editor.context.user, 'Editor');
+        const context = testUtils.context.editor.context;
+        const unsafeAttrs = testUtils.permissions.editor.user;
+
+        await models.User.permissible(
+          mockUser,
+          'edit',
+          context,
+          unsafeAttrs,
+          testUtils.permissions.editor,
+          false,
+          true,
+        );
+
+        // A self-edit that echoes back the caller's unchanged role must not be
+        // routed through assign.role — an Editor cannot assign the Editor role.
+        sinon.assert.notCalled(permissions.canThis);
       });
     });
 

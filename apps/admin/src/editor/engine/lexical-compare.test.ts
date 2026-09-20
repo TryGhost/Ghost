@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   humanizeLexicalDiff,
   lexicalEquals,
@@ -95,6 +95,34 @@ describe('normalizeLexicalForCompare', () => {
     expect(normalizeLexicalForCompare(undefined)).toBe('[]');
     expect(normalizeLexicalForCompare('')).toBe('[]');
     expect(normalizeLexicalForCompare(doc([]))).toBe('[]');
+  });
+
+  it('parses a repeated document once', () => {
+    // The cache outlives one test, so the text below belongs to this test alone.
+    const input = JSON.stringify(doc([paragraph('repeated document')]));
+    const parse = vi.spyOn(JSON, 'parse');
+
+    try {
+      const first = normalizeLexicalForCompare(input);
+      const parsesForFirst = parse.mock.calls.length;
+      const second = normalizeLexicalForCompare(input);
+
+      expect(parsesForFirst).toBeGreaterThan(0);
+      expect(parse.mock.calls.length).toBe(parsesForFirst);
+      expect(second).toBe(first);
+    } finally {
+      parse.mockRestore();
+    }
+  });
+
+  it('normalises an object input again after it is mutated in place', () => {
+    const node = paragraph('mutable document');
+    const input = doc([node]);
+
+    const before = normalizeLexicalForCompare(input);
+    node.children[0].text = 'mutated document';
+
+    expect(normalizeLexicalForCompare(input)).not.toBe(before);
   });
 });
 

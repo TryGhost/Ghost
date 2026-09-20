@@ -97,18 +97,18 @@ export default class KoenigImageEditor extends Component {
     }
 
     loadImageEditorCSS() {
-        let cssUrl = this.getImageEditorCSSUrl();
+        const cssUrl = this.getImageEditorCSSUrl();
         if (!cssUrl) {
             return;
         }
 
         try {
             // Check if the CSS file is already present in the document's head
-            let cssLink = document.querySelector(`link[href="${cssUrl}"]`);
+            const cssLink = document.querySelector(`link[href="${cssUrl}"]`);
             if (cssLink) {
                 this.cssLoaded = true;
             } else {
-                let link = document.createElement('link');
+                const link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
                 link.href = cssUrl;

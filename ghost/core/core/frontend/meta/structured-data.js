@@ -1,14 +1,13 @@
 const socialUrls = require('@tryghost/social-urls');
 
 function getStructuredData(metaData) {
-  let structuredData;
   let card = 'summary';
 
   if (metaData.twitterImage || metaData.coverImage.url) {
     card = 'summary_large_image';
   }
 
-  structuredData = {
+  const structuredData = {
     'og:site_name': metaData.site.title,
     'og:type': metaData.ogType,
     'og:title': metaData.ogTitle,

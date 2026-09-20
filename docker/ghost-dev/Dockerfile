@@ -4,7 +4,7 @@
 
 ARG NODE_VERSION=22.23.1
 
-FROM node:$NODE_VERSION-bullseye-slim
+FROM node:$NODE_VERSION-bookworm-slim
 
 # Install system dependencies needed for building native modules.
 # watchman: ember-cli (ghost/admin's dev server) auto-detects and prefers it
@@ -32,6 +32,12 @@ WORKDIR /home/ghost
 # the file is absent — even though its only hook (beforePacking) never runs
 # during install.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
+
+# patchedDependencies in pnpm-workspace.yaml names every patch by path, and pnpm
+# hashes those files during install: a missing patch fails the install outright
+# with ENOENT rather than resolving unpatched. This COPY must therefore list the
+# whole dir, so adding a patch needs no change here.
+COPY patches patches
 
 # Copy the manifests of the top-level dirs that hold ghost/core's dependency
 # closure — ghost/* (core, i18n, parse-email-address), koenig/* (the kg-*

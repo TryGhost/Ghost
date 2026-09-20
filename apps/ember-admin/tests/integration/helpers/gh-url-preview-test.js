@@ -8,7 +8,7 @@ describe('Unit: Component: gh-url-preview', function () {
     setupRenderingTest();
 
     beforeEach(function () {
-        let configStub = {
+        const configStub = {
             blogUrl: 'http://my-ghost-blog.com'
         };
         this.owner.register('config:main', configStub, {instantiate: false});

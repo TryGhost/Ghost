@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:members');
 const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
+const { chainTransformers } = require('@tryghost/mongo-utils');
+const { validateAdminApiBulkFilterTransformer } = require('../../api-filter-utils');
 
 function defaultRelations(frame) {
   if (frame.options.withRelated) {
@@ -16,7 +18,7 @@ function defaultRelations(frame) {
 
 // @TODO: move this into the member repository in members-api
 function mapSubscribedFlagToNewsletterRelation(frame) {
-  frame.options.mongoTransformer = mapNQLKeyValues({
+  const transformer = mapNQLKeyValues({
     key: {
       from: 'subscribed',
       to: 'newsletters.status',
@@ -32,6 +34,16 @@ function mapSubscribedFlagToNewsletterRelation(frame) {
       },
     ],
   });
+
+  frame.options.mongoTransformer = frame.options.mongoTransformer
+    ? chainTransformers(frame.options.mongoTransformer, transformer)
+    : transformer;
+}
+
+function validateBulkFilter(frame) {
+  frame.options.mongoTransformer = frame.options.mongoTransformer
+    ? chainTransformers(validateAdminApiBulkFilterTransformer, frame.options.mongoTransformer)
+    : validateAdminApiBulkFilterTransformer;
 }
 
 function liftMetafieldsInclude(frame) {
@@ -125,11 +137,13 @@ module.exports = {
 
   bulkEdit(apiConfig, frame) {
     debug('bulkEdit');
+    validateBulkFilter(frame);
     mapSubscribedFlagToNewsletterRelation(frame);
   },
 
   bulkDestroy(apiConfig, frame) {
     debug('bulkDestroy');
+    validateBulkFilter(frame);
     mapSubscribedFlagToNewsletterRelation(frame);
   },
 };

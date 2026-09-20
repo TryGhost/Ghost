@@ -5,6 +5,7 @@ import { Color } from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
 import { getMailgunMessageId } from '../lib/mailgun-message-id';
 import { GIFT_DELIVERY_EMAIL_TAG } from './constants';
+import type { ConfigInstance } from '../../../shared/config/loader';
 import { formatGiftDate } from './gift-date';
 
 const DEFAULT_ACCENT_COLOR = '#15212A';
@@ -99,6 +100,7 @@ type GiftSentConfirmationData = GiftDeliveryNoticeData;
 
 export class GiftEmailService {
   private readonly transactionalMailer: TransactionalMailer;
+  private readonly config: Pick<ConfigInstance, 'get'>;
   private readonly bulkMailer: BulkMailer;
   private readonly settingsCache: SettingsCache;
   private readonly urlUtils: UrlUtils;
@@ -109,6 +111,7 @@ export class GiftEmailService {
   private readonly t: Translate;
 
   constructor({
+    config,
     transactionalMailer,
     bulkMailer,
     settingsCache,
@@ -118,6 +121,7 @@ export class GiftEmailService {
     blogIcon,
     t,
   }: {
+    config: Pick<ConfigInstance, 'get'>;
     transactionalMailer: TransactionalMailer;
     bulkMailer: BulkMailer;
     settingsCache: SettingsCache;
@@ -127,6 +131,7 @@ export class GiftEmailService {
     blogIcon: BlogIcon;
     t: Translate;
   }) {
+    this.config = config;
     this.transactionalMailer = transactionalMailer;
     this.bulkMailer = bulkMailer;
     this.settingsCache = settingsCache;
@@ -363,6 +368,12 @@ export class GiftEmailService {
       interpolation: { escapeValue: false },
     });
 
+    const tags = [GIFT_DELIVERY_EMAIL_TAG];
+    const mailgunTagFromConfig = this.config.get('bulkEmail:mailgun:tag');
+    if (typeof mailgunTagFromConfig === 'string' && mailgunTagFromConfig.length > 0) {
+      tags.push(mailgunTagFromConfig);
+    }
+
     if (!this.bulkMailer.isConfigured()) {
       await this.transactionalMailer.send({
         to: recipientEmail,
@@ -372,7 +383,7 @@ export class GiftEmailService {
         from: this.getFromAddress(),
         replyTo: this.getReplyToAddress(),
         forceTextContent: true,
-        tags: [GIFT_DELIVERY_EMAIL_TAG],
+        tags,
         disableTracking: true,
       });
 
@@ -386,7 +397,7 @@ export class GiftEmailService {
         plaintext: text,
         from: this.getFromAddress(),
         replyTo: this.getReplyToAddress(),
-        tags: [GIFT_DELIVERY_EMAIL_TAG],
+        tags,
         disable_tracking: true,
       },
       { [recipientEmail]: {} },

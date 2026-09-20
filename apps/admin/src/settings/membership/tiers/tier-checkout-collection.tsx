@@ -1,6 +1,5 @@
-import countries from 'i18n-iso-countries';
-import enLocale from 'i18n-iso-countries/langs/en.json';
 import { CustomFieldPicker } from '@/shared/member-custom-fields/custom-field-picker';
+import { countryName } from '@tryghost/admin-x-framework/utils/countries';
 import {
   Combobox,
   ComboboxContent,
@@ -30,11 +29,8 @@ import {
   type StripePort,
 } from '@tryghost/checkout';
 import { JSONError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
-import {
-  type ErrorMessages,
-  useFeatureFlag,
-  useHandleError,
-} from '@tryghost/admin-x-framework/hooks';
+import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
+import { type ErrorMessages, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { Text } from '@tryghost/shade/primitives';
 import {
   type MemberCustomField,
@@ -53,18 +49,7 @@ import {
   useState,
 } from 'react';
 
-countries.registerLocale(enLocale);
-
-// Names for codes ISO 3166-1 does not carry as standalone entries but Stripe ships to.
-const EXTRA_COUNTRY_NAMES: Record<string, string> = {
-  AC: 'Ascension Island',
-  TA: 'Tristan da Cunha',
-  ZZ: 'Unknown region',
-};
-
-const countryName = (code: string) =>
-  EXTRA_COUNTRY_NAMES[code] ?? countries.getName(code, 'en', { select: 'alias' }) ?? code;
-
+// Where Stripe will ship, which is narrower than where an address may be.
 const countryOptions = STRIPE_ALLOWED_COUNTRIES.map((code) => ({
   value: code,
   label: countryName(code),
@@ -297,7 +282,7 @@ const TierCheckoutCollection = forwardRef<
   const { mutateAsync: editCheckoutConfig } = useEditTierCheckoutConfig();
   const handleError = useHandleError();
 
-  const canManageFields = useFeatureFlag('membersCustomFields');
+  const canManageFields = useCustomFieldsAvailable();
   const { data: fieldsData } = useBrowseMemberCustomFields({ enabled: canManageFields });
   const allFields = fieldsData ?? [];
   // What each collected value may be kept in is the server's rule, so it is read from the

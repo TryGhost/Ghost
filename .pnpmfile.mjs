@@ -77,12 +77,15 @@ function readPackage(pkg) {
     delete pkg.peerDependenciesMeta;
   }
 
-  // knex declares sqlite3 as an optional peer dep, and we don't use it/don't
-  // want to install it in production, so we'll remove it from the knex peer
-  // deps
-  if (pkg.name === 'knex') {
-    delete pkg.peerDependencies?.sqlite3;
-    delete pkg.peerDependenciesMeta?.sqlite3;
+  // The 8.x Elasticsearch client hard-depends on apache-arrow for two ES|QL
+  // helpers nothing in Ghost calls - @tryghost/logging and @tryghost/metrics only
+  // index documents. Worth 15 packages / ~15MB installed, and 145 modules /
+  // ~3.3MB RSS per process using the log transport. The matching patch defers the
+  // require, 9.x-style. Delete rather than re-declare as an optional peer:
+  // autoInstallPeers installs those anyway, and it peer-forks @tryghost/logging
+  // and everything above it. Drop both when the client reaches 9.x.
+  if (pkg.name === '@elastic/elasticsearch') {
+    delete pkg.dependencies?.['apache-arrow'];
   }
 
   // these deps pull in typescript as an optional peer dep, which ends up

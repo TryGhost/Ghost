@@ -120,7 +120,13 @@ const ArticleBody: React.FC<{
       return;
     }
 
-    iframeDocument.documentElement.classList.toggle(SENSITIVE_MEDIA_HIDDEN_CLASS, hideMedia);
+    const root = iframeDocument.documentElement;
+    const isMediaHidden = root.classList.contains(SENSITIVE_MEDIA_HIDDEN_CLASS);
+    if (isMediaHidden === hideMedia) {
+      return;
+    }
+
+    root.classList.toggle(SENSITIVE_MEDIA_HIDDEN_CLASS, hideMedia);
 
     const iframeWindow = iframe.contentWindow as IframeWindow | null;
     if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
@@ -309,7 +315,6 @@ const ArticleBody: React.FC<{
         iframe.style.height = newHeight;
 
         if (event.data.isLoaded) {
-          updateSensitiveMediaVisibility();
           setIsLoading(false);
         }
       }

@@ -4,6 +4,8 @@ import type { RequestOptions } from '../utils/api/fetch-api';
 
 export interface FeatureFlagOptions {
   requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
+  /** Off when the caller renders a config failure itself. */
+  defaultErrorHandler?: boolean;
 }
 
 /**
@@ -13,9 +15,13 @@ export interface FeatureFlagOptions {
  */
 export const useFeatureFlag = (
   flag: string,
-  { requestOptions }: FeatureFlagOptions = {},
+  { requestOptions, defaultErrorHandler }: FeatureFlagOptions = {},
 ): boolean => {
-  const { data: config } = useBrowseConfig({ refetchOnMount: false, requestOptions });
+  const { data: config } = useBrowseConfig({
+    defaultErrorHandler,
+    refetchOnMount: false,
+    requestOptions,
+  });
   const { enabledFlags } = useFeatureFlagOverrides();
 
   return config?.config.labs?.[flag] === true || enabledFlags.includes(flag);

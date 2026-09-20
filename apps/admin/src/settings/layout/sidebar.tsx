@@ -31,6 +31,7 @@ import { searchKeywords as growthSearchKeywords } from '@/settings/growth/search
 import { searchKeywords as membershipSearchKeywords } from '@/settings/membership/search-keywords';
 import { searchKeywords as siteSearchKeywords } from '@/settings/site/search-keywords';
 
+import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -124,7 +125,7 @@ const Sidebar: React.FC = () => {
   const paidMembersEnabled = usePaidMembersEnabled();
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
   const hasAutomations = useFeatureFlag('automations');
-  const hasCustomFields = useFeatureFlag('membersCustomFields');
+  const hasCustomFields = useCustomFieldsAvailable();
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const mailgunIsConfigured = Boolean(config.mailgunIsConfigured);
   const hasMailgun = hasNewslettersEnabled && !mailgunIsConfigured;

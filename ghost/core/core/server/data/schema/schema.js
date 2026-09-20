@@ -184,6 +184,12 @@ module.exports = {
       nullable: true,
       validations: { isLength: { max: 300 } },
     },
+    auto_excerpt: {
+      type: 'string',
+      maxlength: 500,
+      nullable: true,
+    },
+    reading_time: { type: 'integer', unsigned: true, nullable: true },
     codeinjection_head: { type: 'text', maxlength: 65535, nullable: true },
     codeinjection_foot: { type: 'text', maxlength: 65535, nullable: true },
     custom_template: { type: 'string', maxlength: 100, nullable: true },
@@ -927,6 +933,32 @@ module.exports = {
     },
     created_at: { type: 'dateTime', nullable: false },
   },
+  // A member's metafields changing, as an entry in their activity feed. Which fields,
+  // not what they now hold: the values are on the member already, and an old address
+  // has no business outliving the member's change of it in a history table.
+  members_metafield_change_events: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    member_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'members.id',
+      cascadeDelete: true,
+    },
+    // Who made the change, in the vocabulary `members_metafield_values` uses for who
+    // wrote a value, so an entry can name any writer that table can.
+    written_by_type: { type: 'string', maxlength: 50, nullable: false },
+    written_by_id: { type: 'string', maxlength: 24, nullable: true },
+    // Where the change was made, such as `portal`. Separate from who made it: a member
+    // can supply their own values somewhere other than their account.
+    source: { type: 'string', maxlength: 50, nullable: false },
+    // The fields changed, as a JSON list of each field's namespace, key and the name it had at the
+    // time. Names are copied rather than joined so an entry still reads after a field is
+    // renamed or deleted. MEDIUMTEXT because a write can name every field a site
+    // defines, and that many names can outgrow TEXT's 65,535 bytes.
+    metafields: { type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+  },
   members_status_events: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     member_id: {
@@ -1053,6 +1085,18 @@ module.exports = {
       nullable: false,
       defaultTo: 'active',
       validations: { isIn: [['active', 'archived']] },
+    },
+    // These validations never run: they are applied by Bookshelf's onValidate hook,
+    // and this table has no Bookshelf model — the metafields service writes it through
+    // knex, validating with MEMBER_ACCESS in that service instead. Recorded here to
+    // describe the column, and duplicated because this static schema cannot import
+    // TypeScript.
+    member_access: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      defaultTo: 'none',
+      validations: { isIn: [['none', 'read', 'write']] },
     },
     // The publisher's order for the list, rewritten across every row whenever the
     // list is reordered. Only the relative order carries meaning: creates append past
@@ -2258,7 +2302,7 @@ module.exports = {
       nullable: false,
       validations: { isEmail: true },
     },
-    '@@INDEXES@@': [['automation_id', 'created_at']],
+    '@@INDEXES@@': [['automation_id', 'created_at'], ['updated_at']],
   },
   automation_run_steps: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2302,7 +2346,7 @@ module.exports = {
     },
     locked_by: { type: 'string', maxlength: 191, nullable: true },
     locked_at: { type: 'dateTime', nullable: true },
-    '@@INDEXES@@': [['status', 'ready_at', 'created_at', 'id']],
+    '@@INDEXES@@': [['status', 'ready_at', 'created_at', 'id'], ['updated_at']],
   },
   welcome_email_automated_emails: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2564,5 +2608,13 @@ module.exports = {
       ['status', 'scheduled_at'],
       { columns: ['email_provider_message_id'], length: 31 },
     ],
+  },
+  tinybird_syncs: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    table_name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    last_synced_updated_at: { type: 'dateTime', nullable: false },
+    last_synced_id: { type: 'string', maxlength: 24, nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
   },
 };

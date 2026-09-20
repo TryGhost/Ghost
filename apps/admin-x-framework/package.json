@@ -36,6 +36,11 @@
       "import": "./dist/api/*.js",
       "require": "./dist/api/*.cjs"
     },
+    "./utils/countries": {
+      "types": "./types/utils/countries.d.ts",
+      "import": "./dist/utils/countries.js",
+      "require": "./dist/utils/countries.cjs"
+    },
     "./utils/post-utils": {
       "types": "./types/utils/post-utils.d.ts",
       "import": "./dist/utils/post-utils.js",
@@ -80,7 +85,7 @@
   "dependencies": {
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
-    "@tryghost/limit-service": "catalog:",
+    "@tryghost/limit-service": "workspace:*",
     "@tryghost/metafield-types": "workspace:*",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/shade": "workspace:*",

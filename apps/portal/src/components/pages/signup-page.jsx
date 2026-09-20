@@ -949,7 +949,7 @@ class SignupPage extends React.Component {
   }
 
   render() {
-    let { sectionClass } = this.getClassNames();
+    const { sectionClass } = this.getClassNames();
     return (
       <>
         <div className="gh-portal-back-sitetitle">

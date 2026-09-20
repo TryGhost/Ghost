@@ -13,13 +13,13 @@ export default EmberObject.extend(ValidationEngine, {
     validationType: 'navItem',
 
     isComplete: computed('label', 'url', 'icon', function () {
-        let {label, url, icon} = this;
+        const {label, url, icon} = this;
 
         return (!isBlank(label) || !isBlank(icon)) && !isBlank(url);
     }),
 
     isBlank: computed('label', 'url', 'icon', function () {
-        let {label, url, icon} = this;
+        const {label, url, icon} = this;
 
         return isBlank(label) && isBlank(url) && isBlank(icon);
     })

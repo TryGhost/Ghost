@@ -4,7 +4,6 @@ const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const assert = require('node:assert/strict');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
 const { settingsCache } = require('../../../../core/server/services/settings-helpers');
@@ -17,6 +16,8 @@ const {
   matchEmailSnapshot,
   getDefaultNewsletter,
   retryEmail,
+  waitForEmailStatus,
+  waitForNoActiveSends,
 } = require('../../../utils/batch-email-utils');
 const {
   setupEmailVerificationUtils,
@@ -145,8 +146,9 @@ describe('Batch sending tests', function () {
       ],
       { context: { internal: true } },
     );
+    // Wait before restoring: a send still in flight needs the Mailgun mock alive.
+    await waitForNoActiveSends();
     mockManager.restore();
-    await jobManager.allSettled();
 
     // Drop any members a test created so they don't leak into later tests —
     // a leaked subscriber shifts recipient counts and cascades failures.
@@ -242,8 +244,9 @@ describe('Batch sending tests', function () {
     // Retry sending a couple of times concurrently
     await Promise.all(emailModels.map((model) => emailService.service.retryEmail(model)));
 
-    // Await sending job
-    await jobManager.allSettled();
+    // Wait for the winning job to land. `allSettled` releases while up to three
+    // inline jobs are still running, which can leave the email short of `submitted`.
+    await waitForEmailStatus(emailModel.id);
 
     // Despite 50 concurrent retries each scheduling a job, the emailJob status lock
     // (pending/failed -> submitting) ensures only one job actually sends. The already
@@ -614,7 +617,7 @@ describe('Batch sending tests', function () {
     const infoLog = sinon.stub(logging, 'info');
 
     await retryEmail(agent, emailModel.id);
-    await jobManager.allSettled();
+    await waitForEmailStatus(emailModel.id);
 
     const skipLogs = infoLog
       .getCalls()
@@ -788,6 +791,63 @@ describe('Batch sending tests', function () {
         assert.ok(Date.parse(deliveryTimeString) <= deadline.getTime());
       }
       configUtils.restore();
+    });
+  });
+
+  describe('Per-recipient Message-Id', function () {
+    it('sends a Message-Id header and a unique message_id variable per recipient when enabled', async function () {
+      configUtils.set('bulkEmail:perRecipientMessageId', true);
+      const { emailModel } = await sendEmail(agent);
+
+      // batchSize is 100 (see beforeEach), so all recipients go out in a single Mailgun call
+      sinon.assert.callCount(stubbedSend, 1);
+      const [, messageData] = stubbedSend.firstCall.args;
+      assert.equal(messageData['h:Message-Id'], '<%recipient.message_id%>');
+
+      const recipientVariables = JSON.parse(messageData['recipient-variables']);
+      const recipients = Object.keys(recipientVariables);
+      assert.equal(recipients.length, 4);
+
+      const messageIds = recipients.map((email) => recipientVariables[email].message_id);
+      for (const messageId of messageIds) {
+        assert.ok(messageId.startsWith(`${emailModel.id}.`), `unexpected prefix in ${messageId}`);
+        assert.match(messageId.slice(emailModel.id.length + 1), /^[a-f0-9]{32}@example\.com$/);
+      }
+      assert.equal(_.uniq(messageIds).length, recipients.length);
+
+      for (const email of recipients) {
+        assert.ok(recipientVariables[email].list_unsubscribe);
+      }
+    });
+
+    it('does not send a Message-Id header or message_id variable by default', async function () {
+      await sendEmail(agent);
+
+      sinon.assert.callCount(stubbedSend, 1);
+      const [, messageData] = stubbedSend.firstCall.args;
+      assert.equal('h:Message-Id' in messageData, false);
+
+      const recipientVariables = JSON.parse(messageData['recipient-variables']);
+      assert.equal(Object.keys(recipientVariables).length, 4);
+      for (const variables of Object.values(recipientVariables)) {
+        assert.equal('message_id' in variables, false);
+      }
+    });
+
+    it('stores no provider id when Mailgun echoes the header template', async function () {
+      configUtils.set('bulkEmail:perRecipientMessageId', true);
+      // Mailgun returns the Message-Id it was given, so the batch has no single provider id
+      stubbedSend = sinon.fake.resolves({ id: '<%recipient.message_id%>' });
+
+      const { emailModel } = await sendEmail(agent);
+
+      assert.equal(emailModel.get('status'), 'submitted');
+      const batches = await models.EmailBatch.findAll({ filter: `email_id:'${emailModel.id}'` });
+      assert.equal(batches.models.length, 1);
+      for (const batch of batches.models) {
+        assert.equal(batch.get('status'), 'submitted');
+        assert.equal(batch.get('mailgun_message_id'), null);
+      }
     });
   });
 

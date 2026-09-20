@@ -100,7 +100,7 @@ const putCommands = (sent: S3Command[]): PutObjectCommand[] =>
 const copyCommands = (sent: S3Command[]): CopyObjectCommand[] =>
   sent.filter((c): c is CopyObjectCommand => c instanceof CopyObjectCommand);
 
-describe('UNIT: S3RouteSettingsStore', function () {
+describe('S3RouteSettingsStore', function () {
   afterEach(function () {
     sinon.restore();
   });
@@ -197,8 +197,8 @@ describe('UNIT: S3RouteSettingsStore', function () {
   });
 
   // Behavioural coverage with an injected in-memory S3 double, so the store's
-  // read/write/backup logic is exercised without a live MinIO bucket (the
-  // integration suite covers the same guarantees end-to-end against MinIO).
+  // read/write/backup logic is exercised without a live S3-compatible bucket (the
+  // integration suite covers the same guarantees end-to-end against VersityGW).
   describe('behaviour (stubbed S3 client)', function () {
     const createStore = (client: S3Client, overrides: Record<string, unknown> = {}) =>
       new S3RouteSettingsStore({

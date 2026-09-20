@@ -3,6 +3,7 @@ import { page } from 'vitest/browser';
 
 import {
   fakeAdminEndpoint,
+  fakeNewsletters,
   fakePosts,
   fakeSnippets,
   post,
@@ -51,6 +52,8 @@ describe('Editor chrome', () => {
   it('hides it with editorReact on', async () => {
     fakeSnippets([]);
     fakePosts([]);
+    // The header's publish inputs read the newsletter list.
+    fakeNewsletters([]);
     fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, { posts: [post({ id: 'abc123' })] });
     await renderAdminApp('/editor/post/abc123', { labs: { editorReact: true } });
 

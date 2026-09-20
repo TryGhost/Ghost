@@ -1,6 +1,6 @@
-import LimitService from '@tryghost/limit-service';
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
+import {LimitService} from '@tryghost/limit-service';
 import {bind} from '@ember/runloop';
 import {inject} from 'ghost-admin/decorators/inject';
 
@@ -43,7 +43,7 @@ export default class LimitsService extends Service {
     }
 
     loadLimits() {
-        let limits = this.config.hostSettings?.limits;
+        const limits = this.config.hostSettings?.limits;
 
         if (!limits) {
             return;

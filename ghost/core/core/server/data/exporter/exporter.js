@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const db = require('../../data/db');
 const commands = require('../schema').commands;
 const ghostVersion = require('@tryghost/version');
@@ -14,7 +13,7 @@ const { TABLES_ALLOWLIST, SETTING_KEYS_BLOCKLIST } = require('./table-lists');
 const exportTable = function exportTable(tableName, options) {
   if (
     TABLES_ALLOWLIST.includes(tableName) ||
-    (options.include && _.isArray(options.include) && options.include.indexOf(tableName) !== -1)
+    (options.include && Array.isArray(options.include) && options.include.indexOf(tableName) !== -1)
   ) {
     const query = (options.transacting || db.knex)(tableName);
 
@@ -26,7 +25,8 @@ const getSettingsTableData = function getSettingsTableData(settingsData) {
   return (
     settingsData &&
     settingsData.filter((setting) => {
-      return !SETTING_KEYS_BLOCKLIST.includes(setting.key);
+      // core settings hold instance secrets and are never imported, so never export them
+      return setting.group !== 'core' && !SETTING_KEYS_BLOCKLIST.includes(setting.key);
     })
   );
 };

@@ -7,11 +7,14 @@ import {
   createQuery,
   createQueryWithId,
 } from '../utils/api/hooks';
+import { escapeNqlString } from '@tryghost/nql-string';
 import { apiUrl, type RequestOptions } from '../utils/api/fetch-api';
 import type { FieldValue } from '@tryghost/metafield-types';
 import { useCurrentUser } from './current-user';
 import { canManageMembers } from './users';
 import { FREE_SEGMENT, PAID_SEGMENT } from '../utils/recipient-filter';
+
+export { useBrowseMemberActivityFeed, type BrowseMemberActivityOptions } from './member-activity';
 
 export type MemberLabel = {
   id: string;
@@ -857,11 +860,11 @@ const MEMBER_ACTIVITY_LIMIT = '20';
 // last event of the previous page (events are ordered created_at desc).
 //
 // KNOWN LIMITATION: the cursor is `created_at`-only, without the id tie-breaker
-// Ember's version added (`+id:<'<lastId>'`). Two events emitted in the same
+// required for reliable pagination. Two events emitted in the same
 // second on a page boundary can be skipped from the paginated list. The current
 // consumer (`MemberActivityFeed` in `apps/admin`) only fetches 5 events and
-// never calls `fetchNextPage`, so this is not exploitable today; add an id
-// secondary cursor before another screen starts paginating.
+// never calls `fetchNextPage`. Paginated consumers must use
+// useBrowseMemberActivityFeed, which drains timestamp boundaries by event type.
 function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
   const createdAt = events[events.length - 1]?.data?.created_at;
   if (!createdAt) {
@@ -870,8 +873,15 @@ function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
   return new Date(createdAt).toISOString().slice(0, 19).replace('T', ' ');
 }
 
-function buildMemberEventsFilter(memberId: string): string {
-  return `data.member_id:'${memberId}'`;
+// The same exclusion the full activity page sends, so the preview and the page leave out
+// the same events.
+function buildMemberEventsFilter(memberId: string, excludedEvents: string[]): string {
+  return [
+    excludedEvents.length > 0 && `type:-[${excludedEvents.map(escapeNqlString).join(',')}]`,
+    `data.member_id:'${memberId}'`,
+  ]
+    .filter(Boolean)
+    .join('+');
 }
 
 const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfiniteResponseType>({
@@ -912,12 +922,12 @@ const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfinit
 
 export function useMemberActivityFeed(
   memberId: string,
-  options: { enabled?: boolean; limit?: string } = {},
+  options: { enabled?: boolean; limit?: string; excludedEvents?: string[] } = {},
 ) {
-  const { limit = MEMBER_ACTIVITY_LIMIT, enabled } = options;
+  const { limit = MEMBER_ACTIVITY_LIMIT, enabled, excludedEvents = [] } = options;
   return useMemberActivityFeedQuery({
     searchParams: {
-      filter: buildMemberEventsFilter(memberId),
+      filter: buildMemberEventsFilter(memberId, excludedEvents),
       limit,
     },
     ...(enabled !== undefined ? { enabled } : {}),

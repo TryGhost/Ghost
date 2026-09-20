@@ -9,9 +9,7 @@ const messages = {
   checkImportJsonIsValid: 'check that the import file is valid JSON.',
 };
 
-let JSONHandler;
-
-JSONHandler = {
+const JSONHandler = {
   type: 'data',
   extensions: ['.json'],
   contentTypes: ['application/octet-stream', 'application/json'],

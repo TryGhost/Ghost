@@ -1,5 +1,4 @@
 import sinon from 'sinon';
-import { deferred } from '../../../../utils/deferred';
 import { EmailAnalyticsJobScheduler } from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
 
 function buildNewsletterQuery(emailCount: string | number = 1) {
@@ -128,14 +127,14 @@ describe('EmailAnalyticsJobScheduler', function () {
 
   it('does not add another newsletter job when called concurrently', async function () {
     const { scheduler, jobManager, newsletterQuery } = buildScheduler();
-    const emailCount = deferred();
+    const emailCount = Promise.withResolvers<void>();
     newsletterQuery.count.returns(emailCount.promise.then(() => 1));
 
     const firstSchedule = scheduler.scheduleRecurringNewslettersJob();
     sinon.assert.calledOnce(newsletterQuery.count);
 
     const secondSchedule = scheduler.scheduleRecurringNewslettersJob(true);
-    emailCount.done();
+    emailCount.resolve();
 
     await Promise.all([firstSchedule, secondSchedule]);
 
@@ -160,7 +159,7 @@ describe('EmailAnalyticsJobScheduler', function () {
     const { scheduler, jobManager, automationsQuery } = buildScheduler({
       emailCount: 0,
     });
-    const automatedEmailRecipient = deferred();
+    const automatedEmailRecipient = Promise.withResolvers<void>();
     automationsQuery.first.returns(
       automatedEmailRecipient.promise.then(() => ({ id: 'recipient-id' })),
     );
@@ -169,7 +168,7 @@ describe('EmailAnalyticsJobScheduler', function () {
     const secondSchedule = scheduler.scheduleRecurringAutomationsJob();
 
     sinon.assert.calledTwice(automationsQuery.first);
-    automatedEmailRecipient.done();
+    automatedEmailRecipient.resolve();
 
     await Promise.all([firstSchedule, secondSchedule]);
 

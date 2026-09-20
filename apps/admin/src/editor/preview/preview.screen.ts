@@ -2,6 +2,7 @@ import { page } from 'vitest/browser';
 import {
   closePreviewButton,
   copyPreviewLinkButton,
+  editorPublishButton,
   desktopPreviewToggle,
   emailPreviewTab,
   mobilePreviewToggle,
@@ -39,7 +40,10 @@ export const previewScreen = {
   option: (name: string) => page.getByRole('option', { name }),
   copyLinkButton: () => page.getByRole('button', { name: copyPreviewLinkButton }),
   openInNewTabLink: () => page.getByRole('link', { name: openPreviewInNewTabLink }),
-  closeButton: () => page.getByRole('button', { name: closePreviewButton }),
+  closeButton: () =>
+    page.getByTestId(postPreviewModal).getByRole('button', { name: closePreviewButton }),
+  publishButton: () =>
+    page.getByTestId(postPreviewModal).getByRole('button', { name: editorPublishButton }),
   browserFrame: () => page.getByTestId(postPreviewBrowserFrame),
   browserChrome: () => page.getByTestId(postPreviewBrowser),
   emailFrame: () => page.getByTestId(postPreviewEmailFrame),

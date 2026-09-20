@@ -184,25 +184,18 @@ describe('Post analytics overview', () => {
         ],
       };
     });
-    let basicStatsRequestCount = 0;
-    const basicStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, () => {
-      basicStatsRequestCount += 1;
-      return {
-        stats:
-          basicStatsRequestCount === 1
-            ? []
-            : [
-                {
-                  post_id: POST_ID,
-                  post_title: 'Attack of the Clones',
-                  send_date: `${daysAgo(10)}T10:00:00.000Z`,
-                  sent_to: 1000,
-                  total_opens: 400,
-                  open_rate: 0.4,
-                },
-              ],
-        meta: {},
-      };
+    const basicStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, {
+      stats: [
+        {
+          post_id: POST_ID,
+          post_title: 'Attack of the Clones',
+          send_date: `${daysAgo(10)}T10:00:00.000Z`,
+          sent_to: 1000,
+          total_opens: 400,
+          open_rate: 0.4,
+        },
+      ],
+      meta: {},
     });
     const clickStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, () => {
       return {
@@ -245,7 +238,7 @@ describe('Post analytics overview', () => {
 
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     await expect.element(page.getByText(/500 of 1,000/)).toBeVisible();
-    await expect.element(page.getByText('This newsletter is still sending')).toBeVisible();
+    await expect.element(page.getByText('Your newsletter is being sent')).toBeVisible();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
 
     await postAnalyticsScreen.newsletterTab().click();
@@ -266,7 +259,7 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
-    await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(1);
+    await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => clickStatsApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => linksApi.requests.length).toBeGreaterThan(1);
     await expect.element(page.getByText('1,000').first()).toBeVisible();
@@ -298,11 +291,17 @@ describe('Post analytics overview', () => {
 
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Sending emails · 250 of 1,000');
+      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .not.toHaveTextContent('minute');
     estimate = 30;
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Sending emails · 250 of 1,000 · Less than 1 minute left');
+      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .toHaveTextContent('Less than 1 minute left');
   });
 
   it('moves a failed send and its retry action into the banner', async () => {
@@ -418,12 +417,11 @@ describe('Post analytics overview', () => {
     const postOverrides = {
       email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'submitting' },
     } as const;
-    let postRequestCount = 0;
+    let preparationFailed = false;
     const { postsApi } = seedPostAnalyticsWorld(postOverrides, () => {
-      postRequestCount += 1;
       return [
         seededPost(
-          postRequestCount === 1
+          !preparationFailed
             ? postOverrides
             : {
                 email: {
@@ -445,21 +443,20 @@ describe('Post analytics overview', () => {
         email_statuses: [
           {
             id: EMAIL_ID,
-            sending:
-              statusRequestCount === 1
-                ? {
-                    status: 'preparing',
-                    progress: { completed: 100, total: 1000, estimated_seconds_remaining: 30 },
-                  }
-                : {
-                    status: 'failed',
-                    failed_during: 'preparing',
-                    progress: {
-                      completed: 250,
-                      total: 1000,
-                      estimated_seconds_remaining: null,
-                    },
+            sending: !preparationFailed
+              ? {
+                  status: 'preparing',
+                  progress: { completed: 100, total: 1000, estimated_seconds_remaining: 30 },
+                }
+              : {
+                  status: 'failed',
+                  failed_during: 'preparing',
+                  progress: {
+                    completed: 250,
+                    total: 1000,
+                    estimated_seconds_remaining: null,
                   },
+                },
           },
         ],
       };
@@ -470,9 +467,21 @@ describe('Post analytics overview', () => {
       boot: webAnalyticsBootOverrides(),
     });
 
-    await expect.element(page.getByText('Preparing emails')).toBeVisible();
-    await expect.poll(() => statusRequestCount, { timeout: 3500 }).toBeGreaterThan(1);
-    await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .toHaveTextContent(/Preparing emails\s*10% complete · 1,000 total/);
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .not.toHaveTextContent('minute');
+    // Advance the fake server only after the initial state is visible: extra
+    // mount-time requests must not race the assertion straight into failure.
+    const initialStatusRequests = statusRequestCount;
+    const initialPostRequests = postsApi.requests.length;
+    preparationFailed = true;
+    await expect
+      .poll(() => statusRequestCount, { timeout: 3500 })
+      .toBeGreaterThan(initialStatusRequests);
+    await expect.poll(() => postsApi.requests.length).toBeGreaterThan(initialPostRequests);
     await expect.element(page.getByText('Emails failed to send')).toBeVisible();
     await expect
       .element(page.getByText(/None of the 1,000 emails were sent\. Preparation failed\./))
@@ -497,9 +506,7 @@ describe('Post analytics overview', () => {
     });
 
     await expect.element(page.getByText('Newsletter performance')).toBeVisible();
-    await expect
-      .element(page.getByText('This newsletter is still sending'))
-      .not.toBeInTheDocument();
+    await expect.element(page.getByText('Your newsletter is being sent')).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
     await expect.poll(() => statusApi.requests.length).toBe(1);
     await app.unmount();

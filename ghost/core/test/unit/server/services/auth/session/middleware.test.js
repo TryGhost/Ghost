@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const { deferred } = require('../../../../../utils/deferred');
 const sessionMiddleware = require('../../../../../../core/server/services/auth').session;
 const SessionMiddlware = require('../../../../../../core/server/services/auth/session/middleware');
 const models = require('../../../../../../core/server/models');
@@ -37,7 +36,7 @@ describe('Session Service', function () {
 
   describe('createSession', function () {
     it('sets req.session.origin from the Referer header', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve } = Promise.withResolvers();
       const req = fakeReq();
       const res = fakeRes();
 
@@ -55,7 +54,7 @@ describe('Session Service', function () {
 
       sinon.stub(res, 'sendStatus').callsFake(function () {
         assert.equal(req.session.origin, 'http://ghost.org');
-        done();
+        resolve();
       });
 
       sessionMiddleware.createSession(req, res);
@@ -63,7 +62,7 @@ describe('Session Service', function () {
     });
 
     it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve } = Promise.withResolvers();
       const req = fakeReq();
       const res = fakeRes();
 
@@ -83,7 +82,7 @@ describe('Session Service', function () {
         assert.equal(req.session.user_agent, 'bububang');
         assert.equal(req.session.ip, '127.0.0.1');
         assert.equal(statusCode, 201);
-        done();
+        resolve();
       });
 
       sessionMiddleware.createSession(req, res);
@@ -170,7 +169,7 @@ describe('Session Service', function () {
 
   describe('logout', function () {
     it('calls next with InternalServerError if removeSessionForUser errors', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve } = Promise.withResolvers();
       const req = fakeReq();
       const res = fakeRes();
       const middleware = SessionMiddlware({
@@ -183,18 +182,18 @@ describe('Session Service', function () {
 
       middleware.logout(req, res, function next(err) {
         assert.equal(err.errorType, 'InternalServerError');
-        done();
+        resolve();
       });
       return promise;
     });
 
     it('calls sendStatus with 204 if removeUserForSession does not error', function () {
-      const { promise, done } = deferred();
+      const { promise, resolve } = Promise.withResolvers();
       const req = fakeReq();
       const res = fakeRes();
       sinon.stub(res, 'sendStatus').callsFake(function (status) {
         assert.equal(status, 204);
-        done();
+        resolve();
       });
 
       const middleware = SessionMiddlware({

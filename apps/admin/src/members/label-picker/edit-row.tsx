@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
+import { Stack } from '@tryghost/shade/primitives';
+import { Button, Input } from '@tryghost/shade/components';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 
@@ -11,6 +13,8 @@ interface EditRowProps {
 }
 
 export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDelete }) => {
+  const { isAdmin7 } = useShade();
+  const EditInput = isAdmin7 ? Input : 'input';
   const [name, setName] = useState(label.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState('');
@@ -62,10 +66,14 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
   };
 
   return (
-    <div className="flex flex-col gap-2 py-1.5" data-edit-row>
-      <input
+    <Stack className={isAdmin7 ? 'pt-1 pb-2' : 'py-1.5'} gap="sm" data-edit-row>
+      <EditInput
         ref={inputRef}
-        className="h-7 w-full rounded border border-border bg-background px-2 text-sm outline-hidden focus:ring-1 focus:ring-ring disabled:opacity-50"
+        className={
+          isAdmin7
+            ? 'h-7 rounded-control-sm! px-2 text-sm'
+            : 'h-7 w-full rounded border border-border bg-background px-2 text-sm outline-hidden focus:ring-1 focus:ring-ring disabled:opacity-50'
+        }
         disabled={isBusy}
         type="text"
         value={name}
@@ -130,6 +138,6 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
           </div>
         </div>
       )}
-    </div>
+    </Stack>
   );
 };

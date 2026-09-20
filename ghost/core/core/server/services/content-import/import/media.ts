@@ -1,7 +1,7 @@
 import type { PostData } from './post-data';
 import type { ExternalMediaImporter, ExternalMediaImportResult } from '../../media-inliner/types';
 
-const cheerio = require('cheerio');
+const cheerio = require('cheerio/slim');
 
 export interface MediaFailure {
   sourceUrl: string;

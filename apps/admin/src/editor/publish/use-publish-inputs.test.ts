@@ -49,10 +49,23 @@ describe('assemblePublishInputs', () => {
         ],
       },
       user: { isAdmin: true, isAuthorOrContributor: false },
-      timezone: 'Europe/Amsterdam',
       isValid: true,
     });
   });
+
+  it.each([[[]], [['spam.xyz']]])(
+    'accepts the array-valued settings Core calculates (%j)',
+    (blockedDomains) => {
+      const data = boundary();
+      const settingsData = data.settingsData as {
+        settings: Array<{ key: string; value: unknown }>;
+      };
+      // Core always serves `all_blocked_email_domains` (members group) as a string array.
+      settingsData.settings.push({ key: 'all_blocked_email_domains', value: blockedDomains });
+
+      expect(assemblePublishInputs(data).isValid).toBe(true);
+    },
+  );
 
   it('fails closed on an unknown default-recipient setting', () => {
     const data = boundary();

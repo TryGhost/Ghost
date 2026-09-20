@@ -134,7 +134,7 @@ module.exports = function (Bookshelf) {
             let relations = data[property];
 
             // CASE: 1:1 relation will have single data point
-            if (!_.isArray(data[property])) {
+            if (!Array.isArray(data[property])) {
               relations = [data[property]];
             }
             _.each(relations, (relation, indexInArr) => {

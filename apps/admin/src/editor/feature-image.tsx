@@ -1,55 +1,20 @@
 import { useCallback, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { toast } from 'sonner';
-import { UnsplashSearchModal } from '@tryghost/kg-unsplash-selector';
-import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
+import { cn } from '@tryghost/shade/utils';
 import {
-  ImageUpload,
-  ImageUploadAction,
-  ImageUploadActions,
-  ImageUploadDropzone,
-  ImageUploadImage,
-  ImageUploadPreview,
-} from '@tryghost/shade/patterns';
-import { Inline, Stack } from '@tryghost/shade/primitives';
-import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
-import { useFramework } from '@tryghost/admin-x-framework';
-import {
-  JSONError,
-  RequestEntityTooLargeError,
-  UnsupportedMediaTypeError,
-} from '@tryghost/admin-x-framework/errors';
-import BrandIcon from '@/shared/brand-icon/brand-icon';
+  editorFeatureImage,
+  editorFeatureImageCaption,
+  featureImageTkIndicator,
+} from '@tryghost/test-data/selectors/editor';
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { FeatureImageCaption } from './feature-image-caption';
-
-const ACCEPTED_IMAGE_TYPES = {
-  'image/gif': ['.gif'],
-  'image/jpeg': ['.jpg', '.jpeg'],
-  'image/png': ['.png'],
-  'image/svg+xml': ['.svg', '.svgz'],
-  'image/webp': ['.webp'],
-};
-
-const UNSUPPORTED_IMAGE_MESSAGE =
-  'The image type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP';
+import { ImageField } from './image-field';
+import type { UnsplashSelection } from './unsplash-picker';
+import { useImageFieldUpload } from './use-image-field-upload';
 
 const ALT_MAX_LENGTH = 191;
-
-function uploadErrorMessage(error: unknown): string {
-  if (error instanceof UnsupportedMediaTypeError) {
-    return UNSUPPORTED_IMAGE_MESSAGE;
-  }
-  if (error instanceof RequestEntityTooLargeError) {
-    return 'The image you uploaded was larger than the maximum file size your server allows.';
-  }
-  if (error instanceof JSONError && error.data?.errors[0]?.message) {
-    return error.data.errors[0].message;
-  }
-  return 'Couldn’t upload the feature image.';
-}
+const IMAGE_SUBJECT = 'feature image';
 
 export interface FeatureImageProps {
   image: string | null;
@@ -83,24 +48,10 @@ export function FeatureImage({
   onCaptionBlur,
   onTkCountChange,
 }: FeatureImageProps) {
-  const { mutateAsync: uploadImage, isPending } = useUploadImage();
-  const { unsplashConfig } = useFramework();
-  const [showUnsplash, setShowUnsplash] = useState(false);
   const [isEditingAlt, setIsEditingAlt] = useState(false);
   const [captionFocused, setCaptionFocused] = useState(false);
   const [captionTkCount, setCaptionTkCount] = useState(0);
   const captionApi = useRef<KoenigInstance | null>(null);
-
-  const handleUpload = useCallback(
-    async (file: File) => {
-      try {
-        onImageChange(getImageUrl(await uploadImage({ file })));
-      } catch (error) {
-        toast.error(uploadErrorMessage(error));
-      }
-    },
-    [uploadImage, onImageChange],
-  );
 
   const relayTkCount = useCallback(
     (count: number) => {
@@ -126,87 +77,42 @@ export function FeatureImage({
     onCaptionBlur();
   }, [onCaptionBlur]);
 
-  const clearImage = () => {
-    setIsEditingAlt(false);
-    relayTkCount(0);
-    onImageClear();
-  };
+  const changeImage = useCallback(
+    (src: string | null) => {
+      if (src === null) {
+        setIsEditingAlt(false);
+        relayTkCount(0);
+        onImageClear();
+        return;
+      }
+      onImageChange(src);
+    },
+    [onImageChange, onImageClear, relayTkCount],
+  );
 
-  if (!image) {
-    return (
-      <ImageUpload className="mb-4 h-14" data-testid="editor-feature-image">
-        <ImageUploadDropzone
-          accept={ACCEPTED_IMAGE_TYPES}
-          className="group/dropzone border-transparent bg-transparent transition-colors hover:bg-interactive-hover"
-          disabled={isPending}
-          inputAriaLabel="Add feature image"
-          noDragEventsBubbling
-          onDropAccepted={(files) => files[0] && void handleUpload(files[0])}
-          onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
-        >
-          {isPending ? (
-            <LoadingIndicator size="sm" />
-          ) : (
-            <Inline gap="sm">
-              <LucideIcon.Plus
-                aria-hidden="true"
-                className="size-4 text-muted-foreground transition-colors group-hover/dropzone:text-foreground"
-              />
-              <span className="text-sm text-muted-foreground transition-colors group-hover/dropzone:text-foreground">
-                Add feature image
-              </span>
-            </Inline>
-          )}
-        </ImageUploadDropzone>
-        {cardConfig.unsplash && (
-          <ImageUploadActions className="top-1/2 right-2 -translate-y-1/2 opacity-100">
-            <Button
-              aria-label="Select feature image from Unsplash"
-              className="group/unsplash hover:bg-button-hover"
-              disabled={isPending}
-              size="icon"
-              type="button"
-              variant="ghost"
-              onClick={() => setShowUnsplash(true)}
-            >
-              <BrandIcon
-                className="size-4 text-muted-foreground transition-colors group-hover/unsplash:text-foreground"
-                name="unsplash"
-              />
-            </Button>
-          </ImageUploadActions>
-        )}
-        {showUnsplash &&
-          createPortal(
-            <UnsplashSearchModal
-              unsplashProviderConfig={unsplashConfig}
-              onClose={() => setShowUnsplash(false)}
-              onImageInsert={(inserted) => {
-                if (inserted.src) {
-                  onImageChange(inserted.src);
-                  onCaptionChange(inserted.caption ?? '');
-                }
-                setShowUnsplash(false);
-              }}
-            />,
-            document.body,
-          )}
-      </ImageUpload>
-    );
-  }
+  const upload = useImageFieldUpload(IMAGE_SUBJECT, changeImage);
+
+  const pickFromUnsplash = useCallback(
+    (picked: UnsplashSelection) => {
+      onImageChange(picked.src);
+      onCaptionChange(picked.caption);
+    },
+    [onCaptionChange, onImageChange],
+  );
 
   return (
-    <Stack className="mb-4" data-testid="editor-feature-image" gap="sm">
-      <ImageUpload className="max-h-[480px]">
-        <ImageUploadPreview>
-          <ImageUploadImage alt={alt ?? ''} role={alt ? 'img' : 'presentation'} src={image} />
-          <ImageUploadActions>
-            <ImageUploadAction aria-label="Remove feature image" onClick={clearImage}>
-              <LucideIcon.Trash2 />
-            </ImageUploadAction>
-          </ImageUploadActions>
-        </ImageUploadPreview>
-      </ImageUpload>
+    <ImageField
+      alt={alt}
+      className="mb-4"
+      src={image}
+      subject={IMAGE_SUBJECT}
+      testId={editorFeatureImage}
+      unsplashEnabled={!!cardConfig.unsplash}
+      upload={upload}
+      variant="bar"
+      onChange={changeImage}
+      onUnsplashSelect={pickFromUnsplash}
+    >
       <Inline align="center" className="relative" gap="sm">
         {isEditingAlt ? (
           <input
@@ -221,7 +127,7 @@ export function FeatureImage({
             onChange={(event) => onAltChange(event.target.value)}
           />
         ) : (
-          <div className="flex-1 text-sm" data-testid="editor-feature-image-caption">
+          <div className="flex-1 text-sm" data-testid={editorFeatureImageCaption}>
             <FeatureImageCaption
               darkMode={darkMode}
               html={caption}
@@ -238,7 +144,7 @@ export function FeatureImage({
         {captionTkCount > 0 && !isEditingAlt && (
           <button
             className="rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground"
-            data-testid="feature-image-tk-indicator"
+            data-testid={featureImageTkIndicator}
             type="button"
             onClick={focusCaption}
           >
@@ -259,6 +165,6 @@ export function FeatureImage({
           Alt
         </button>
       </Inline>
-    </Stack>
+    </ImageField>
   );
 }

@@ -6,6 +6,7 @@ import { generateId, generateSlug } from '../utils';
 export interface Automation {
   id: string;
   name: string;
+  description: string;
   slug: string;
   status: 'active' | 'inactive';
   stats?: {
@@ -21,6 +22,7 @@ export const automation = createBuilder<Automation>(() => {
   return {
     id: generateId(),
     name,
+    description: faker.lorem.sentence(),
     slug: `${generateSlug(name)}-${faker.string.alphanumeric(6).toLowerCase()}`,
     status: 'inactive',
     stats: {

@@ -1,13 +1,27 @@
 import { FrameLocator, Locator, Page } from '@playwright/test';
+import {
+  postPreviewBrowserFrame,
+  postPreviewEmailFrame,
+} from '@tryghost/test-data/selectors/editor';
+
+/** Which implementation renders the preview — decided by the `editorReact` flag. */
+export type PostPreviewImplementation = 'ember' | 'react';
 
 class PreviewFrame {
   protected readonly page: Page;
+  private readonly implementation: PostPreviewImplementation;
 
-  constructor(page: Page) {
+  constructor(page: Page, implementation: PostPreviewImplementation) {
     this.page = page;
+    this.implementation = implementation;
   }
 
   protected async waitForEscapeScriptToBeReady(): Promise<void> {
+    // Only Ember injects the Escape handler into the preview document.
+    if (this.implementation === 'react') {
+      return;
+    }
+
     await this.page.waitForFunction(
       () => {
         const iframe = document.querySelector('iframe[title*="preview"]') as HTMLIFrameElement;
@@ -24,6 +38,7 @@ class PreviewFrame {
           return false;
         }
       },
+      undefined,
       { timeout: 5000 },
     );
   }
@@ -34,10 +49,18 @@ export class EmailPreviewFrame extends PreviewFrame {
   readonly previewBody: Locator;
   readonly frameBody: Locator;
 
-  constructor(page: Page) {
-    super(page);
-    this.frame = this.page.frameLocator('iframe[title="Email preview"]');
+  constructor(
+    page: Page,
+    { implementation = 'ember' }: { implementation?: PostPreviewImplementation } = {},
+  ) {
+    super(page, implementation);
+    // Both implementations title the iframe "Email preview"; React also marks it.
+    const selector =
+      implementation === 'react'
+        ? `iframe[data-testid="${postPreviewEmailFrame}"]`
+        : 'iframe[title="Email preview"]';
 
+    this.frame = this.page.frameLocator(selector);
     this.previewBody = this.frame.getByTestId('email-preview-body');
     this.frameBody = this.frame.locator('body');
   }
@@ -50,10 +73,23 @@ export class EmailPreviewFrame extends PreviewFrame {
 
 export class DesktopPreviewFrame extends PreviewFrame {
   readonly desktopPreviewFrame: FrameLocator;
+  /** The iframe element itself, for reading the URL the preview was pointed at. */
+  readonly frameElement: Locator;
 
-  constructor(page: Page) {
-    super(page);
-    this.desktopPreviewFrame = page.frameLocator('iframe[title="Desktop browser post preview"]');
+  constructor(
+    page: Page,
+    { implementation = 'ember' }: { implementation?: PostPreviewImplementation } = {},
+  ) {
+    super(page, implementation);
+    // React renders one preview iframe and changes the chrome around it; Ember
+    // titles a separate iframe per device.
+    const selector =
+      implementation === 'react'
+        ? `iframe[data-testid="${postPreviewBrowserFrame}"]`
+        : 'iframe[title="Desktop browser post preview"]';
+
+    this.desktopPreviewFrame = page.frameLocator(selector);
+    this.frameElement = page.locator(selector);
   }
 
   async focus(): Promise<void> {

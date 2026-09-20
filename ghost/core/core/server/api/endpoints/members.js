@@ -8,6 +8,8 @@ const membersService = require('../../services/members');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
+const { ADMIN } = require('../../services/members-metafields');
 
 // Shape the import service's outcome into the API response envelope: an inline import
 // reports its stats and label, a deferred one only how much it accepted.
@@ -67,7 +69,9 @@ const controller = {
       },
     },
     async query(frame) {
-      const page = await membersService.api.memberBREADService.browse(frame.options);
+      const page = await membersService.api.memberBREADService.browse(
+        restrictAdminApiQueryOptions(frame.options),
+      );
 
       return page;
     },
@@ -88,7 +92,10 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      const member = await membersService.api.memberBREADService.read(frame.data, frame.options);
+      const member = await membersService.api.memberBREADService.read(frame.data, {
+        ...frame.options,
+        metafieldsFor: ADMIN,
+      });
 
       if (!member) {
         throw new errors.NotFoundError({
@@ -223,7 +230,10 @@ const controller = {
           },
         });
       }
-      let model = await membersService.api.memberBREADService.read({ id: frame.options.id });
+      const model = await membersService.api.memberBREADService.read(
+        { id: frame.options.id },
+        { metafieldsFor: ADMIN },
+      );
       if (!model) {
         throw new errors.NotFoundError({
           message: tpl(messages.memberNotFound),
@@ -263,7 +273,10 @@ const controller = {
           stripe_price_id: frame.data.stripe_price_id,
         },
       });
-      let model = await membersService.api.memberBREADService.read({ id: frame.options.id });
+      const model = await membersService.api.memberBREADService.read(
+        { id: frame.options.id },
+        { metafieldsFor: ADMIN },
+      );
       if (!model) {
         throw new errors.NotFoundError({
           message: tpl(messages.memberNotFound),
@@ -373,7 +386,7 @@ const controller = {
     validation: {},
     async query(frame) {
       return {
-        data: await membersService.export(frame.options),
+        data: await membersService.export(restrictAdminApiQueryOptions(frame.options)),
         filename: getCSVExportFileName('members'),
       };
     },
@@ -418,7 +431,7 @@ const controller = {
     async query() {
       const memberStats = await membersService.api.events.getStatuses();
       const last = _.last(memberStats);
-      let totalMembers = last ? last.paid + last.free + last.comped + last.gift : 0;
+      const totalMembers = last ? last.paid + last.free + last.comped + last.gift : 0;
 
       return {
         resource: 'members',
@@ -500,7 +513,10 @@ const controller = {
       const emailSuppressionList = require('../../services/email-suppression-list');
 
       // Get the member first to retrieve their email
-      const member = await membersService.api.memberBREADService.read({ id: frame.options.id }, {});
+      const member = await membersService.api.memberBREADService.read(
+        { id: frame.options.id },
+        { metafieldsFor: ADMIN },
+      );
 
       if (!member) {
         throw new errors.NotFoundError({

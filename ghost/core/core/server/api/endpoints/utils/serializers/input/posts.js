@@ -9,6 +9,7 @@ const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
+const { rejectPostsContentApiRestrictedOrderFields } = require('../../api-filter-utils');
 
 const messages = {
   failedHtmlToLexical: 'Failed to convert HTML to Lexical',
@@ -126,8 +127,8 @@ function defaultFormat(frame) {
 }
 
 function handlePostsMeta(frame) {
-  let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
-  let meta = _.pick(frame.data.posts[0], metaAttrs);
+  const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+  const meta = _.pick(frame.data.posts[0], metaAttrs);
   frame.data.posts[0].posts_meta = meta;
 }
 
@@ -172,6 +173,7 @@ module.exports = {
       removeSourceFormats(frame); // remove from the format field
       selectAllAllowedColumns(frame); // remove from any specified column or selectRaw options
 
+      frame.options.order = rejectPostsContentApiRestrictedOrderFields(frame.options.order);
       setDefaultOrder(frame);
       forceVisibilityColumn(frame);
       mapWithRelated(frame);

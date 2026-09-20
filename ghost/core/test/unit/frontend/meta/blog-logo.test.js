@@ -11,8 +11,6 @@ describe('getBlogLogo', function () {
   });
 
   it('should return logo if uploaded', function () {
-    let blogLogo;
-
     sinon.stub(settingsCache, 'get').callsFake(function (key) {
       return {
         logo: '/content/images/logo.png',
@@ -20,14 +18,12 @@ describe('getBlogLogo', function () {
       }[key];
     });
 
-    blogLogo = getBlogLogo();
+    const blogLogo = getBlogLogo();
     assertExists(blogLogo);
     assert.equal(blogLogo.url, `${config.get('url')}/content/images/logo.png`);
   });
 
   it('should return custom uploaded png icon if no logo given', function () {
-    let blogLogo;
-
     sinon.stub(settingsCache, 'get').callsFake(function (key) {
       return {
         logo: null,
@@ -35,7 +31,7 @@ describe('getBlogLogo', function () {
       }[key];
     });
 
-    blogLogo = getBlogLogo();
+    const blogLogo = getBlogLogo();
     assertExists(blogLogo);
     assert.equal(blogLogo.url, `${config.get('url')}/content/images/size/w256h256/favicon.png`);
   });

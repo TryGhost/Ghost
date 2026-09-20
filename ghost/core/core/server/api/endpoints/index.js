@@ -8,7 +8,7 @@ const localUtils = require('./utils');
 
 module.exports = {
   get automations() {
-    return apiFramework.pipeline(require('./automations'), localUtils);
+    return apiFramework.pipeline(require('./automations').controller, localUtils);
   },
 
   get automationActionLinks() {

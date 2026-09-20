@@ -28,14 +28,14 @@ describe('MentionDiscoveryService', function () {
   it('Returns null from a bad URL', async function () {
     const url = new URL('http://www.notarealsite.com/');
     nock(url.href).get('/').reply(404);
-    let endpoint = await service.getEndpoint(url);
+    const endpoint = await service.getEndpoint(url);
 
     assert.equal(endpoint, null);
   });
 
   it('Follows redirects', async function () {
-    let url = new URL('http://redirector.io/');
-    let nextUrl = new URL('http://testpage.com/');
+    const url = new URL('http://redirector.io/');
+    const nextUrl = new URL('http://testpage.com/');
 
     nock(url.href)
       .intercept('/', 'HEAD')
@@ -45,7 +45,7 @@ describe('MentionDiscoveryService', function () {
         'content-type': 'text/html',
       });
 
-    let endpoint = await service.getEndpoint(url);
+    const endpoint = await service.getEndpoint(url);
 
     assert(endpoint instanceof URL);
   });

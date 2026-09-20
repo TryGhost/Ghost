@@ -16,7 +16,6 @@ const join = require('path').join;
 
 const _ = require('lodash');
 const themeConfig = require('./config');
-const config = require('../../../shared/config');
 const engine = require('./engine');
 const themeI18n = require('./i18n');
 const themeI18next = require('./i18next');
@@ -120,9 +119,8 @@ class ActiveTheme {
   }
 
   mount(siteApp) {
-    // Reset the global asset hash (used as fallback for non-theme assets)
-    config.set('assetHash', null);
-    // Clear the file-based asset hash cache (for theme assets)
+    // Clear the asset hash caches: the file-based cache for theme assets, and
+    // the global hash used as a fallback for everything else
     assetHash.clearCache();
     // clear the view cache
     siteApp.cache = {};

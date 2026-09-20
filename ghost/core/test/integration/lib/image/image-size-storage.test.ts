@@ -11,9 +11,9 @@ import {
   createTestBucket,
   emptyTestBucket,
   deleteTestBucket,
-  getMinioConfig,
+  getS3Config,
   putObject,
-} from '../../../utils/minio';
+} from '../../../utils/s3';
 
 // CJS Ghost libs
 const ImageSize = require('../../../../core/server/lib/image/image-size');
@@ -23,7 +23,7 @@ const request = require('@tryghost/request');
 const { probe } = require('../../../../core/server/lib/image/image-utils');
 
 const STATIC_PREFIX = 'content/images';
-const minioConfig = getMinioConfig();
+const s3Config = getS3Config();
 
 // 100x100 png fixture — the same one Ghost ships for favicon tests.
 const FIXTURE = fs.readFileSync(path.join(process.cwd(), 'test/utils/fixtures/images/favicon.png'));
@@ -35,7 +35,7 @@ const FIXTURE_HEIGHT = 100;
 // lookup reads it from the images storage adapter. With S3 configured as that
 // adapter, S3Storage.read() must return the bytes so dimensions resolve instead
 // of throwing.
-describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
+describe.skipIf(process.env.GHOST_TEST_S3_AVAILABLE !== '1')(
   'Integration: image dimensions via S3 storage',
   function () {
     let adminClient: ReturnType<typeof createTestS3Client>;
@@ -43,9 +43,9 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 
     const createImageSize = (overrides = {}) => {
       const s3 = new S3Storage({
-        ...minioConfig,
+        ...s3Config,
         bucket,
-        cdnUrl: `${minioConfig.endpoint}/${bucket}`,
+        cdnUrl: `${s3Config.endpoint}/${bucket}`,
         staticFileURLPrefix: STATIC_PREFIX,
         multipartUploadThresholdBytes: 10 * 1024 * 1024,
         multipartChunkSizeBytes: 10 * 1024 * 1024,

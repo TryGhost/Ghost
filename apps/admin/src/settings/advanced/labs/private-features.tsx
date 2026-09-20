@@ -20,9 +20,19 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
+    title: 'Automations per tier',
+    description: 'Allow automations to be configured for individual tiers.',
+    flag: 'automationsPerTier',
+  },
+  {
     title: 'Automation run analytics',
     description: 'Track run-level analytics for automations.',
     flag: 'automationRunAnalytics',
+  },
+  {
+    title: 'Automations Tinybird sync',
+    description: 'Sync automations data to Tinybird.',
+    flag: 'automationsTinybirdSync',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',
@@ -43,6 +53,12 @@ const features: Feature[] = [
     title: 'Admin UI Refresh',
     description: 'Enable Admin UI refresh (exploration)',
     flag: 'adminUIRefresh',
+  },
+  {
+    title: 'Admin 7 · Milestone 2 · Pill controls',
+    description:
+      'Preview Admin 7 controls and page headers on React pages. The editor is excluded.',
+    flag: 'admin7Pill',
   },
   {
     title: 'Tags X',
@@ -113,6 +129,11 @@ const features: Feature[] = [
     flag: 'editorReact',
   },
   {
+    title: 'React member activity',
+    description: 'Preview the new member activity screen.',
+    flag: 'membersActivityReact',
+  },
+  {
     title: 'Self-serve archives',
     description:
       'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
@@ -123,6 +144,12 @@ const features: Feature[] = [
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
+  },
+  {
+    title: 'Dunning warnings',
+    description:
+      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
+    flag: 'dunningWarnings',
   },
 ];
 

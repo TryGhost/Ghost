@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const { ADMIN } = require('../../../members-metafields');
+const { ADMIN, adminWriteOrigin } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -95,16 +95,17 @@ module.exports = class MemberBREADService {
    * size or a delivery address. Their values live in their own table, so they are fetched
    * here rather than loaded alongside the member.
    *
-   * Returns null when the site has defined no fields, which tells the caller to leave the
-   * `metafields` key off the member payload rather than send an empty object: a key added to
-   * an API response cannot be withdrawn without breaking whoever started reading it, and
-   * most sites have never defined a field, so those sites keep the payload they had before
-   * this feature existed.
+   * Returns null when this audience has no field to be told about, which tells the caller to
+   * leave the `metafields` key off the member payload rather than send an empty object: a key
+   * added to an API response cannot be withdrawn without breaking whoever started reading it,
+   * and most sites have never defined a field, so those sites keep the payload they had
+   * before this feature existed.
    * @param {string[]} memberIds
+   * @param {import('../../../members-metafields').Audience} audience
    * @returns {Promise<Map<string, Record<string, unknown>> | null>}
    */
   async fetchMetafieldValues(memberIds, audience) {
-    if (!(await this.metafieldDefinitions.hasAnyActive())) {
+    if (!(await this.metafieldDefinitions.hasAnyReadable(audience))) {
       return null;
     }
 
@@ -385,15 +386,17 @@ module.exports = class MemberBREADService {
   /**
    * @param {object} data
    * @param {object} [options]
-   * @param {import('../../../members-metafields').Audience | null} [options.metafieldsFor]
+   * @param {import('../../../members-metafields').Audience | null} options.metafieldsFor
    *   Who the extra fields a publisher defined are being read for, or null to leave them
    *   off entirely. Null is not the same as "nobody may see them": it means this caller
    *   never shows them, so fetching them is two database queries whose results are thrown
    *   away. Ghost identifies a signed-in reader on every page view of a themed site
    *   through this method, and that caller renders a member through a fixed list of
    *   fields which has never included these.
+   *
+   *   Defaults to null, so a caller that does not ask gets none of them.
    */
-  async read(data, { metafieldsFor = ADMIN, ...options } = {}) {
+  async read(data, { metafieldsFor = null, ...options } = {}) {
     const defaultWithRelated = [
       'labels',
       'stripeSubscriptions',
@@ -562,7 +565,7 @@ module.exports = class MemberBREADService {
       await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
     }
 
-    return this.read({ id: model.id }, options);
+    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
   }
 
   async edit(data, options) {
@@ -638,16 +641,13 @@ module.exports = class MemberBREADService {
       // The only route to this branch is the authenticated Admin API, so an anonymous
       // request is a mistake somewhere upstream rather than a writer to invent a name
       // for. Refusing keeps every stored writer resolvable.
-      const context = options.context || {};
-      if (!context.integration && !context.user) {
+      const origin = adminWriteOrigin(options.context);
+      if (!origin) {
         throw new errors.IncorrectUsageError({
           message: tpl(messages.metafieldsWithoutWriter),
         });
       }
-      const writtenBy = context.integration
-        ? { type: 'integration', id: context.integration.id }
-        : { type: 'user', id: context.user };
-      await this.metafieldValues.applyWrite(model.id, plannedMetafields, { writtenBy });
+      await this.metafieldValues.applyWrite(model.id, plannedMetafields, origin);
 
       // Metafields aren't a member column or relation, so an edit touching
       // only them leaves `model._changed` empty and the save fires nothing.
@@ -678,7 +678,7 @@ module.exports = class MemberBREADService {
       }
     }
 
-    return this.read({ id: model.id }, options);
+    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
   }
 
   /**
@@ -710,7 +710,7 @@ module.exports = class MemberBREADService {
       );
     }
 
-    return this.read({ id: memberId });
+    return this.read({ id: memberId }, { metafieldsFor: ADMIN });
   }
 
   /**
@@ -732,7 +732,7 @@ module.exports = class MemberBREADService {
 
     await this.memberRepository.saveCommenting(memberId, updated, 'commenting_enabled', context);
 
-    return this.read({ id: memberId });
+    return this.read({ id: memberId }, { metafieldsFor: ADMIN });
   }
 
   async logout(options) {

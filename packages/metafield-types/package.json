@@ -27,10 +27,20 @@
       "types": "./build/csv.d.ts",
       "default": "./build/csv.js"
     },
+    "./structure": {
+      "source": "./src/structure.ts",
+      "types": "./build/structure.d.ts",
+      "default": "./build/structure.js"
+    },
     "./identity": {
       "source": "./src/identity.ts",
       "types": "./build/identity.d.ts",
       "default": "./build/identity.js"
+    },
+    "./countries": {
+      "source": "./src/countries.ts",
+      "types": "./build/countries.d.ts",
+      "default": "./build/countries.js"
     }
   },
   "scripts": {

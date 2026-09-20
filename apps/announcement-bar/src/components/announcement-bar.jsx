@@ -29,7 +29,7 @@ export function AnnouncementBar({ settings = {} }) {
     return null;
   }
 
-  let className = 'gh-announcement-bar ' + settings.announcement_background;
+  const className = 'gh-announcement-bar ' + settings.announcement_background;
   return (
     <div className={className}>
       <div

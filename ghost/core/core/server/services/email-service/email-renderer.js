@@ -192,7 +192,7 @@ function escapeRegExp(string) {
  * @return {ReturnType<typeof cheerio.load>}
  */
 function cheerioLoad(html) {
-  const cheerio = require('cheerio');
+  const cheerio = require('cheerio/slim');
   return cheerio.load(html);
 }
 
@@ -709,7 +709,12 @@ class EmailRenderer {
 
     // Juice HTML (inline CSS)
     const juice = require('juice');
-    html = juice(html, { inlinePseudoElements: true, removeStyleTags: true });
+    // resolveCSSVariables crashes on nameless declarations in user-authored style attributes
+    html = juice(html, {
+      inlinePseudoElements: true,
+      removeStyleTags: true,
+      resolveCSSVariables: false,
+    });
 
     // happens after inlining of CSS so we can change element types without worrying about styling
     $ = cheerioLoad(html);
@@ -808,7 +813,7 @@ class EmailRenderer {
   isMemberTrialing(member) {
     // Do we have an active subscription?
     if (member.status === 'paid') {
-      let activeSubscription = member.subscriptions.find((subscription) => {
+      const activeSubscription = member.subscriptions.find((subscription) => {
         return subscription.status === 'trialing';
       });
 
@@ -1178,7 +1183,7 @@ class EmailRenderer {
    */
   #getEmailPreheader(postModel, audience, html) {
     let plaintext = postModel.get('plaintext');
-    let customExcerpt = postModel.get('custom_excerpt');
+    const customExcerpt = postModel.get('custom_excerpt');
     if (customExcerpt) {
       return customExcerpt;
     } else {

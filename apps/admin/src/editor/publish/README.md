@@ -108,6 +108,7 @@ Times are ISO 8601 strings with milliseconds zeroed, because the API stores seco
 - `scheduledAt` starts at that floor.
 - `setIsScheduled(true)` snaps a time that is earlier than ten minutes ahead of now forward to exactly that default; calling it with no argument toggles.
 - `setScheduledAt()` zeroes milliseconds and clamps anything before the floor up to it. An unparseable date is ignored.
+- The date and time fields commit at minute granularity, so a time the writer chooses carries no seconds of its own; an untouched default still carries the floor's.
 - `resetPastScheduledAt()` turns scheduling off when the chosen time has fallen into the past. It leaves the stale time in place: re-enabling scheduling snaps it forward to the default, so the stale value is never offered.
 
 ## Producing a save command
@@ -197,7 +198,9 @@ Every request the flow makes opts out of the transport's session-expiry redirect
 
 The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
 
-The opt-out belongs to whichever component starts a fetch, not to the cache entry: a query key shared with a screen outside the flow is refetched with the options of whoever triggered that fetch. Every editor component reading a shared key therefore opts out too — the status line's count and settings reads, the card config's boot reads, and the preview modal's — so that a refetch one of them initiates cannot navigate away mid-edit. Most of those reads keep the global error handler, while the flow-owned and status reads disable it; either way a session-expiry error is silent because the handler deliberately swallows it. The editor reports the expiry from the save engine instead.
+Uploads carry the same opt-out: the feature image, the Facebook and X card images, and the files Koenig cards accept. An upload runs over an editor holding unsaved work, so a 401 mid-upload surfaces as the generic upload error in place rather than a navigation away from the post; the save engine reports the expired session on the next save. The one-time Mobiledoc conversion of an older post opts out the same way.
+
+The opt-out belongs to whichever component starts a fetch, not to the cache entry: a query key shared with a screen outside the flow is refetched with the options of whoever triggered that fetch. Every editor component reading a shared key therefore opts out too — the status line's count and settings reads, the card config's boot reads, and the preview modal's — so that a refetch one of them initiates cannot navigate away mid-edit. The editor's own settings reads all run through one hook that also disables the global error handler, so no observer of that key can toast for another; a session-expiry error is silent either way because the handler deliberately swallows it. The editor reports the expiry from the save engine instead.
 
 The same options reach the less-visible reads behind those hooks too. `createQuery` and `createInfiniteQuery` forward them through `usePermission` to its current-user observer; the editor's feature-flag, settings-selector and Pintura hooks accept them; and the editor screen's direct current-user reads opt out. That matters because an opted-out outer query cannot protect a second observer of the same cache key when that observer initiates its own refetch.
 
@@ -215,7 +218,7 @@ It reads the newsletter from the post rather than from the options machine, beca
 
 Its email copy also follows the persisted post rather than the draft-only machine. A scheduled post will email when it has a newsletter and no email record yet; a published or sent post counts as emailed only when it is a post with a non-failed email. A scheduled post with an existing email describes that record separately as a previous send.
 
-That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the flow's own reads ask only for `include: 'email'`, and the framework's `Email` type carries no created date yet. Without those fields the copy degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
+That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the editor's read carries both. A caller whose read omits them gets copy that degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
 
 ## Not yet ported
 

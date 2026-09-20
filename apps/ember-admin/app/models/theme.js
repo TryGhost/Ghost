@@ -11,7 +11,7 @@ export default Model.extend({
     warnings: attr('raw', {defaultValue: () => []}),
 
     customTemplates: computed('templates.[]', function () {
-        let templates = this.templates || [];
+        const templates = this.templates || [];
 
         return templates.filter(function (template) {
             return isBlank(template.slug);
@@ -19,7 +19,7 @@ export default Model.extend({
     }),
 
     slugTemplates: computed('templates.[]', function () {
-        let templates = this.templates || [];
+        const templates = this.templates || [];
 
         return templates.filter(function (template) {
             return !isBlank(template.slug);

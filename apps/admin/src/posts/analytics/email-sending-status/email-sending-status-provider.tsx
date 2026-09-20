@@ -1,5 +1,4 @@
 import { EmailSendingStatusContext } from './email-sending-status-context';
-import { APIError } from '@tryghost/admin-x-framework/errors';
 import { feedbackDataType } from '@tryghost/admin-x-framework/api/feedback';
 import { hasBeenEmailed } from '@tryghost/admin-x-framework';
 import { linksDataType } from '@tryghost/admin-x-framework/api/links';
@@ -8,17 +7,13 @@ import {
   newsletterBasicStatsDataType,
   newsletterClickStatsDataType,
 } from '@tryghost/admin-x-framework/api/stats';
-import {
-  useBrowseEmailBatches,
-  useEmailSendingStatus,
-  useRetryEmail,
-} from '@tryghost/admin-x-framework/api/emails';
+import { useBrowseEmailBatches, useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
+import { useEmailSendingStatusPolling } from '@/posts/email-sending-status/use-email-sending-status';
 import { useQueryClient } from '@tanstack/react-query';
 
-const STATUS_POLL_INTERVAL = import.meta.env.MODE === 'test' ? 50 : 2000;
 const NEWSLETTER_DATA_TYPES = new Set([
   postsDataType,
   linksDataType,
@@ -37,36 +32,17 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
     Boolean(emailId) && (post?.status === 'published' || post?.status === 'sent');
   const shouldQuery = enabled && hasPublishedEmail && Boolean(emailStatus);
 
-  const statusQuery = useEmailSendingStatus(emailId ?? '', {
-    enabled: (query) => {
-      const queriedStatus = query.state.data?.email_statuses[0]?.sending.status;
-      const missingBackend =
-        !query.state.data &&
-        query.state.error instanceof APIError &&
-        query.state.error.response?.status === 404;
-      const submittedBeforeStatusLoaded = !query.state.data && emailStatus === 'submitted';
-      return (
-        shouldQuery &&
-        !missingBackend &&
-        !submittedBeforeStatusLoaded &&
-        queriedStatus !== 'submitted'
-      );
-    },
-    defaultErrorHandler: false,
-    refetchInterval: (query) => {
-      const status = query.state.data?.email_statuses[0]?.sending.status;
-      return status === 'preparing' || status === 'submitting' ? STATUS_POLL_INTERVAL : false;
-    },
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: true,
-    retry: false,
+  const statusQuery = useEmailSendingStatusPolling({
+    emailId,
+    emailStatus,
+    enabled: shouldQuery,
   });
   const { mutateAsync: retryEmail, isPending: isRetryMutationPending } = useRetryEmail();
   const { refetch: refetchStatus } = statusQuery;
   const handleError = useHandleError();
   const [isRetryRefreshPending, setIsRetryRefreshPending] = useState(false);
 
-  const status = statusQuery.data?.email_statuses[0];
+  const status = statusQuery.status;
   const sendingStatus = status?.sending.status;
   const shouldQueryBatches = Boolean(enabled && emailId && sendingStatus === 'failed');
   const batchesQuery = useBrowseEmailBatches(emailId ?? '', {
