@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -14,6 +15,7 @@ import {
   PAID_TIERS_FIELD_LABEL,
   TIER_OPTIONS,
   type TriggerConfig,
+  type TriggerType,
   availableTriggerOptions,
   hasTiers,
   tierDisplayName,
@@ -65,25 +67,54 @@ export const TriggerEmptyState: React.FC<{
   onSelect: (config: TriggerConfig) => void;
   // Phase 1's shorter names, with no second line — see SIMPLE_TRIGGER_OPTIONS.
   simpleNames?: boolean;
-}> = ({ onSelect, simpleNames = false }) => {
+  // The create-button variant (see CREATION_SLOT): when present, the rows
+  // become SELECTIONS — highlighted, applying nothing — and a "Create
+  // automation" button beneath them is the commit, handing the chosen config
+  // up. Without it a row's click IS the answer, as ever.
+  onCreate?: (config: TriggerConfig) => void;
+}> = ({ onSelect, simpleNames = false, onCreate }) => {
   // Without Stripe the paid trigger isn't offered at all — see
   // availableTriggerOptions for the whole design. Read from the store here
   // rather than threaded down as a prop: it's site-level state, and every
   // surface that lists triggers has to agree on it.
   const stripeConnected = useStripeConnected();
+  const options = availableTriggerOptions(
+    simpleNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS,
+    stripeConnected,
+  );
+  // Create-button mode's held choice. Pre-answered when there's only one
+  // option (a Stripe-less site): a one-option question with nothing selected
+  // would make Create a two-press act for people with no decision to make —
+  // the explicit create moment is the point, not the extra click.
+  const [selectedType, setSelectedType] = useState<TriggerType | null>(() =>
+    onCreate && options.length === 1 ? options[0].value : null,
+  );
   return (
     <div className="-mx-4 -mb-4">
-      {availableTriggerOptions(
-        simpleNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS,
-        stripeConnected,
-      ).map((option) => (
+      {options.map((option) => (
         <PickerRow
           key={option.value}
           option={option}
-          selected={false}
-          onSelect={(type) => onSelect(triggerConfigFor(type))}
+          selected={option.value === selectedType}
+          onSelect={(type) => (onCreate ? setSelectedType(type) : onSelect(triggerConfigFor(type)))}
         />
       ))}
+      {onCreate && (
+        // Ruled off like the tiers popover's exit footer: the rows are the
+        // question, this is the commit. Full width and disabled until a
+        // trigger is chosen — an automation with nothing to start it isn't
+        // half-made, it's unmakeable.
+        <div className="border-t border-border-default p-4">
+          <Button
+            className="w-full"
+            disabled={selectedType === null}
+            type="button"
+            onClick={() => selectedType && onCreate(triggerConfigFor(selectedType))}
+          >
+            Create automation
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

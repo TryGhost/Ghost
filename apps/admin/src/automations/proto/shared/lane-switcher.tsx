@@ -7,9 +7,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
   Switch,
 } from '@tryghost/shade/components';
@@ -116,22 +117,43 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
               />
             </DropdownMenuItem>
           ))}
-          {slots.map((slot) => (
-            <React.Fragment key={slot.id}>
-              <DropdownMenuSeparator className="-mx-2" />
-              <DropdownMenuLabel>{slot.label}</DropdownMenuLabel>
-              <DropdownMenuRadioGroup
-                value={resolveVariantId(slot, ctx?.selections ?? {})}
-                onValueChange={(variantId) => ctx?.select(slot.id, variantId)}
-              >
-                {slot.variants.map((variant) => (
-                  <DropdownMenuRadioItem key={variant.id} value={variant.id}>
-                    {variant.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </React.Fragment>
-          ))}
+          {/* A lane's variant slots, one SUBMENU row each rather than inline
+                    radio sections — the row names the slot and shows its current
+                    answer, the flyout holds the options, and a slot growing a
+                    fourth variant costs a row in the flyout instead of menu
+                    height here. Same trailing-check convention as the lanes. */}
+          {slots.map((slot) => {
+            const active = resolveVariantId(slot, ctx?.selections ?? {});
+            return (
+              <React.Fragment key={slot.id}>
+                <DropdownMenuSeparator className="-mx-2" />
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    {slot.label}
+                    <span className="ml-auto pl-4 text-muted-foreground">
+                      {slot.variants.find((variant) => variant.id === active)?.label}
+                    </span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {slot.variants.map((variant) => (
+                      <DropdownMenuItem
+                        key={variant.id}
+                        onSelect={() => ctx?.select(slot.id, variant.id)}
+                      >
+                        {variant.label}
+                        <LucideIcon.Check
+                          className={cn(
+                            'ms-auto text-primary',
+                            variant.id === active ? 'opacity-100' : 'opacity-0',
+                          )}
+                        />
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              </React.Fragment>
+            );
+          })}
           <DropdownMenuSeparator className="-mx-2" />
           {/* Site state, not lane state — but it belongs in the same menu for the
                     same reason resetting does: it exists because this is a prototype.

@@ -248,6 +248,8 @@ type StepNodeData = {
   tiersRevealSignal?: number;
   // The saved config's tiers — see the EditCanvas prop of the same name.
   savedTierIds?: string[];
+  // The create-button variant's handler — see the EditCanvas prop.
+  onCreateAutomation?: (config: TriggerConfig) => void;
   // Always-visible inline edit form (non-trigger nodes).
   subject?: string;
   // Whether the email has anything written yet — a new one hasn't, and its body
@@ -669,6 +671,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                 >
                   <TriggerEmptyState
                     simpleNames={d.simpleTriggerNames}
+                    onCreate={d.onCreateAutomation}
                     onSelect={d.onTriggerConfigChange}
                   />
                 </div>
@@ -1025,6 +1028,15 @@ interface EditCanvasProps {
   // continue. Running, the flow is something being watched rather than built,
   // so the inserts fall back to hover the way the shipping canvas does.
   alwaysShowInserts?: boolean;
+  // The create-button variant's pre-create state (see CREATION_SLOT): the
+  // empty trigger card's options become SELECTIONS with a Create button
+  // beneath, and pressing it hands the chosen config up instead of applying
+  // it — the screen owns what creating means. Present only before the
+  // automation exists.
+  onCreateAutomation?: (config: TriggerConfig) => void;
+  // Same variant, same moment: no zoom controls while the screen is one card
+  // and a question — HUD is chrome for a flow, and there isn't one yet.
+  hideControls?: boolean;
 }
 
 export const EditCanvas: React.FC<EditCanvasProps> = ({
@@ -1038,6 +1050,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   simpleTriggerNames = false,
   revealWarningsSignal,
   alwaysShowInserts = false,
+  onCreateAutomation,
+  hideControls = false,
 }) => {
   const { canvasRef, onInit, size, centerOn, contentHeightRef, recenter } = useCenteredColumn();
   // Which email the right-hand analytics sheet is reporting on.
@@ -1366,6 +1380,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         onRequestTriggerChange: requestTriggerChange,
         tiersRevealSignal,
         savedTierIds,
+        onCreateAutomation,
       },
       draggable: false,
       connectable: false,
@@ -1534,6 +1549,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     alwaysShowInserts,
     tiersRevealSignal,
     savedTierIds,
+    onCreateAutomation,
   ]);
 
   // Follow whichever card was asked for, once the column has settled around it.
@@ -1620,7 +1636,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
                         and it disables its buttons against CANVAS_ZOOM_CONFIG,
                         which is why the bounds above come from there too rather
                         than staying hardcoded to the same numbers. */}
-          <AutomationCanvasControls style={CANVAS_HUD_INSET} />
+          {!hideControls && <AutomationCanvasControls style={CANVAS_HUD_INSET} />}
         </ReactFlow>
       </div>
 

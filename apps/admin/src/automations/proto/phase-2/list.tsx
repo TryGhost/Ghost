@@ -36,6 +36,9 @@ import {
   TurnOffAutomationDialog,
   TurnOnAutomationDialog,
 } from '@/automations/proto/shared/lifecycle-dialogs';
+import { useProtoVariant } from '@/automations/proto/shared/proto-variants';
+import { ProtoVariantsProvider } from '@/automations/proto/shared/proto-variants-provider';
+import { CREATION_SLOT, NEW_AUTOMATION_ID } from './creation-variant';
 import { DetailsDialog } from './details-dialog';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 
@@ -78,6 +81,8 @@ const AutomationsList: React.FC = () => {
   // The row being renamed, and the name and description offered for it.
   const [pendingRename, setPendingRename] = useState<ProtoAutomation | null>(null);
   const [renameDraft, setRenameDraft] = useState({ name: '', description: '' });
+  // Which creation model is being demoed — see CREATION_SLOT.
+  const creationVariant = useProtoVariant(CREATION_SLOT);
   // The rows waiting on a lifecycle confirm — same one-dialog-per-list shape as
   // pendingArchive. Two states rather than one with a direction in it, because
   // each opens a different dialog.
@@ -109,6 +114,15 @@ const AutomationsList: React.FC = () => {
   // becomes the flow itself. See availableTriggerOptions for the rest of the
   // no-Stripe design.
   const handleCreate = () => {
+    // The deferred variants (see CREATION_SLOT) write NOTHING here: they
+    // navigate to the /new sentinel and the detail screen synthesizes a local
+    // baseline — the record exists from the first commit over there, not from
+    // this click. No toast either; "Automation created" has to be true when it
+    // fires. Everything below is the arrival variant's create-then-open.
+    if (creationVariant !== 'arrival') {
+      navigate(toVersioned(`${lanePath(LANE)}/${NEW_AUTOMATION_ID}`));
+      return;
+    }
     const record = stripeConnected
       ? blankAutomation()
       : { ...blankAutomation(), trigger: triggerConfigFor('member_subscribes') };
@@ -422,5 +436,14 @@ const AutomationsList: React.FC = () => {
   );
 };
 
-export default AutomationsList;
-export const Component = AutomationsList;
+// Wrapped in the variants provider so the creation slot is switchable from
+// this screen's lane menu too — the selection itself lives in localStorage,
+// which is how this screen and the detail screen agree on it.
+const AutomationsListScreen: React.FC = () => (
+  <ProtoVariantsProvider slots={[CREATION_SLOT]}>
+    <AutomationsList />
+  </ProtoVariantsProvider>
+);
+
+export default AutomationsListScreen;
+export const Component = AutomationsListScreen;
