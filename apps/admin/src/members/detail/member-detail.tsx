@@ -82,10 +82,10 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   const member = data?.members?.[0];
   const requestedVariant = new URLSearchParams(location.search).get('variant');
   const mapVariant =
-    import.meta.env.DEV &&
-    member &&
-    (requestedVariant === 'A' || requestedVariant === 'B' || requestedVariant === 'C')
-      ? requestedVariant
+    import.meta.env.DEV && member && requestedVariant !== 'off'
+      ? requestedVariant === 'B' || requestedVariant === 'C'
+        ? requestedVariant
+        : 'A'
       : null;
   // 4xx from the members endpoint on a real id means "gone" (deleted mid-flow
   // is the realistic case). 5xx/network is a different story — we don't want

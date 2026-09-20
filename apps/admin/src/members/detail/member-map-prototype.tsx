@@ -74,7 +74,21 @@ export default function MemberMapPrototype({
   const navigate = useNavigate();
   const geo = parseMemberGeolocation(geolocation);
   const countryCode = typeof geo?.country_code === 'string' ? geo.country_code.toLowerCase() : '';
-  const country = world.locations.find((item) => item.id === countryCode);
+  const memberCountry = world.locations.find((item) => item.id === countryCode);
+  // Explicit, URL-only fixture for reviewing the real page when this member has no location.
+  const isSample =
+    !memberCountry && new URLSearchParams(location.search).get('mapCountry') === 'GB';
+  const country =
+    memberCountry ?? (isSample ? world.locations.find((item) => item.id === 'gb') : undefined);
+  const toggleSample = () => {
+    const params = new URLSearchParams(location.search);
+    if (isSample) {
+      params.delete('mapCountry');
+    } else {
+      params.set('mapCountry', 'GB');
+    }
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+  };
 
   const changeVariant = React.useCallback(
     (direction: number) => {
@@ -151,7 +165,11 @@ export default function MemberMapPrototype({
         <Inline className="mt-2 text-xs text-muted-foreground" gap="xs">
           <LucideIcon.MapPin className="size-3.5" />
           <span>
-            {country ? `${country.name} · Approximate country location` : 'Location unavailable'}
+            {isSample
+              ? 'Sample map · United Kingdom · Member location unknown'
+              : country
+                ? `${country.name} · Approximate country location`
+                : 'Location unavailable'}
           </span>
         </Inline>
         {country && (
@@ -184,8 +202,15 @@ export default function MemberMapPrototype({
             {variant} · {names[variant]}
           </span>
           <span className="truncate text-xs text-muted-foreground">
-            Spike · {country?.name ?? 'Unknown location'} · country data only
+            {isSample
+              ? 'Sample location · not member data'
+              : `Spike · ${country?.name ?? 'Unknown location'} · country data only`}
           </span>
+          {!memberCountry && (
+            <Button className="mt-1 h-7" size="sm" variant="ghost" onClick={toggleSample}>
+              {isSample ? 'Clear sample map' : 'Preview sample map'}
+            </Button>
+          )}
         </Stack>
         <Button
           aria-label="Next map layout"

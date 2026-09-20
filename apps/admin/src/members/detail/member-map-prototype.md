@@ -8,17 +8,23 @@ been selected for production. A (the wide backdrop) is the closest to the refere
 
 ## Try it
 
-With the usual `pnpm dev` running, append `&variant=A` to an existing member URL
-that already has a query string, or `?variant=A` otherwise. The parameter belongs
-inside the hash route, for example `/ghost/#/members/<id>?variant=A`.
+With the usual `pnpm dev` running on this spike branch, existing member pages
+default to variant A. Select another layout with `variant=B` or `variant=C`.
+The parameter belongs inside the hash route, for example
+`/ghost/#/members/<id>?variant=B`.
 
 - A: wide map backdrop with the name and actions below the geography.
 - B: split header with the map to the right.
 - C: compact strip with a small map backdrop.
 
 The floating arrows switch variants and preserve other query parameters. Keyboard
-left/right arrows also switch when focus is outside controls. Removing `variant`
+left/right arrows also switch when focus is outside controls. `variant=off`
 restores the existing header. The experiment only activates in development.
+
+When a member has no recognized country, **Preview sample map** shows the UK
+outline with an explicit sample-data label. This adds `mapCountry=GB` to the URL
+only; **Clear sample map** removes it. It never changes the member record and
+never overrides a recognized member country.
 
 A standalone sample-data preview is available when the site's configured origin
 cannot be reached. Run from the repository root:
@@ -66,8 +72,11 @@ when rerun on their own.
 
 The requested Tailscale URL was unreachable (Tailscale had no serve config).
 The local Ghost instance rejected localhost API calls because its configured
-origin was the Tailscale host. The real member route integration is implemented,
-but checking this particular member in the authenticated app remains outstanding.
+origin was the Tailscale host.
+
+The URL became reachable during the follow-up. The selected member has no saved
+location, which explains the empty map even with a variant selected. The
+authenticated page now supports the explicitly labelled sample-map preview.
 
 ## Map attribution
 
