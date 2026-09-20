@@ -1,226 +1,145 @@
-// Throwaway spike: three country-map headers on /members/:id?variant=A|B|C.
-// Uses the existing country outline dataset; no member data leaves this app.
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import World from '@svg-maps/world';
-import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
-import { Button } from '@tryghost/shade/components';
-import { Box, Inline, Stack } from '@tryghost/shade/primitives';
+// Development spike: country-map backdrop on member detail pages.
+// Countries and US states share one Natural Earth projection; no member data leaves this app.
+import React, { useId, useLayoutEffect, useRef, useState } from 'react';
+import atlas from './map-data/world-states.json';
+import { Box } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { parseMemberGeolocation } from './member-detail-format';
 
-const world = (World as { default?: typeof World }).default ?? World;
-const variants = ['A', 'B', 'C'] as const;
-type Variant = (typeof variants)[number];
-const names = { A: 'Map backdrop', B: 'Split header', C: 'Compact strip' };
+type MapLocation = (typeof atlas.countries)[number];
 
-function CountryMap({ countryId }: { countryId: string }) {
+function LocationMap({ country, region }: { country: MapLocation; region?: string }) {
+  const isUS = country.id === 'us';
+  const normalizedRegion =
+    typeof region === 'string' ? region.trim().toLowerCase().replace(/^us-/, '') : '';
+  const state = isUS
+    ? atlas.states.find(
+        (location) =>
+          location.id === `us-${normalizedRegion}` ||
+          location.name.toLowerCase() === normalizedRegion ||
+          (location.id === 'us-dc' &&
+            ['washington, dc', 'washington dc', 'washington, d.c.', 'd.c.'].includes(
+              normalizedRegion,
+            )),
+      )
+    : undefined;
+  const selected = state ?? country;
+  const showPin = !isUS || !!state;
+  const pinLabel = state
+    ? `${state.name}, US — approximate state location`
+    : `${country.name} — approximate country location`;
+  const geometryId = useId();
   const svgRef = useRef<SVGSVGElement>(null);
-  const countryRef = useRef<SVGPathElement>(null);
-  const [viewBox, setViewBox] = useState(world.viewBox);
+  const [viewBox, setViewBox] = useState('0 0 360 360');
+  const [viewX, , viewWidth] = viewBox.split(' ').map(Number);
 
   useLayoutEffect(() => {
     const svg = svgRef.current;
-    const path = countryRef.current;
-    if (!svg || !path) {
+    if (!svg) {
       return;
     }
     const fit = () => {
-      const bounds = path.getBBox();
-      const aspect = svg.clientWidth / Math.max(svg.clientHeight, 1);
-      const height = Math.max(bounds.height * 1.8, (bounds.width * 1.8) / aspect, 12);
+      const [, , boundsWidth, boundsHeight] = selected.bounds;
+      const aspect = Math.max(svg.clientWidth, 1) / Math.max(svg.clientHeight, 1);
+      const [centerX, centerY] = selected.anchor;
+      const padding = isUS && !state ? 1.2 : 3;
+      const height = Math.max(boundsHeight * padding, (boundsWidth * padding) / aspect, 18);
       const width = height * aspect;
-      setViewBox(
-        `${bounds.x + bounds.width / 2 - width / 2} ${bounds.y + bounds.height / 2 - height / 2} ${width} ${height}`,
-      );
+      setViewBox(`${centerX - width / 2} ${centerY - height / 2} ${width} ${height}`);
     };
     fit();
     const observer = new ResizeObserver(fit);
     observer.observe(svg);
     return () => observer.disconnect();
-  }, [countryId]);
+  }, [selected, isUS, state]);
 
   return (
-    <svg
-      ref={svgRef}
-      aria-hidden="true"
-      className="size-full bg-muted"
-      preserveAspectRatio="xMidYMid slice"
-      viewBox={viewBox}
-    >
-      {world.locations.map((country) => (
-        <path
-          key={country.id}
-          ref={country.id === countryId ? countryRef : undefined}
-          className={
-            country.id === countryId
-              ? 'fill-chart-green/25 stroke-chart-green/60'
-              : 'fill-background stroke-border-default'
-          }
-          d={country.path}
-          strokeWidth={0.7}
-          vectorEffect="non-scaling-stroke"
-        />
-      ))}
-    </svg>
+    <>
+      <svg
+        ref={svgRef}
+        aria-hidden="true"
+        className="size-full bg-muted"
+        data-map-kind="world"
+        data-testid="member-location-map"
+        preserveAspectRatio="xMidYMid slice"
+        viewBox={viewBox}
+      >
+        <g id={geometryId}>
+          {atlas.countries.map((location) => (
+            <path
+              key={location.id}
+              className="fill-background stroke-border-default"
+              d={location.path}
+              data-location={location.id}
+              strokeWidth={0.7}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          {isUS &&
+            atlas.states.map((location) => (
+              <path
+                key={location.id}
+                className="fill-none stroke-border-default"
+                d={location.path}
+                data-location={location.id}
+                strokeWidth={0.7}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+        </g>
+        {/* Reuse geometry only when the viewport crosses the date line. */}
+        {viewX < 0 && <use href={`#${geometryId}`} transform="translate(-360 0)" />}
+        {viewX + viewWidth > 360 && <use href={`#${geometryId}`} transform="translate(360 0)" />}
+      </svg>
+      {showPin && (
+        <Box
+          aria-label={pinLabel}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full"
+          role="img"
+        >
+          <LucideIcon.MapPin
+            className="size-8 fill-foreground text-background drop-shadow-sm"
+            strokeWidth={1.5}
+          />
+        </Box>
+      )}
+    </>
   );
 }
 
 export default function MemberMapPrototype({
-  variant,
+  enabled,
   geolocation,
   children,
-}: React.PropsWithChildren<{ variant: Variant | null; geolocation?: string | null }>) {
-  const location = useLocation();
-  const navigate = useNavigate();
+}: React.PropsWithChildren<{ enabled: boolean; geolocation?: string | null }>) {
   const geo = parseMemberGeolocation(geolocation);
-  const countryCode = typeof geo?.country_code === 'string' ? geo.country_code.toLowerCase() : '';
-  const memberCountry = world.locations.find((item) => item.id === countryCode);
-  // Explicit, URL-only fixture for reviewing the real page when this member has no location.
-  const isSample =
-    !memberCountry && new URLSearchParams(location.search).get('mapCountry') === 'GB';
-  const country =
-    memberCountry ?? (isSample ? world.locations.find((item) => item.id === 'gb') : undefined);
-  const toggleSample = () => {
-    const params = new URLSearchParams(location.search);
-    if (isSample) {
-      params.delete('mapCountry');
-    } else {
-      params.set('mapCountry', 'GB');
-    }
-    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-  };
+  const countryCode =
+    typeof geo?.country_code === 'string' ? geo.country_code.trim().toLowerCase() : '';
+  const country = atlas.countries.find((item) => item.id === countryCode);
 
-  const changeVariant = React.useCallback(
-    (direction: number) => {
-      if (!variant) {
-        return;
-      }
-      const params = new URLSearchParams(location.search);
-      params.set(
-        'variant',
-        variants[(variants.indexOf(variant) + direction + variants.length) % variants.length],
-      );
-      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-    },
-    [location.pathname, location.search, navigate, variant],
-  );
-
-  useEffect(() => {
-    if (!variant) {
-      return;
-    }
-    const onKey = (event: KeyboardEvent) => {
-      if (
-        event.target instanceof Element &&
-        event.target.closest(
-          'input, textarea, select, button, a, [contenteditable], [role="menu"], [role="dialog"], [role="combobox"]',
-        )
-      ) {
-        return;
-      }
-      if (
-        !event.altKey &&
-        !event.metaKey &&
-        !event.ctrlKey &&
-        (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
-      ) {
-        event.preventDefault();
-        changeVariant(event.key === 'ArrowRight' ? 1 : -1);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [variant, changeVariant]);
-
-  if (!variant) {
+  if (!enabled) {
     return children;
   }
 
   return (
-    <>
-      <Box
-        className={cn(
-          'relative isolate overflow-hidden rounded-xl',
-          country && variant === 'A' && '-mx-4 -mt-5 rounded-none px-4 pt-40 pb-5 lg:-mx-6 lg:px-6',
-          country && variant === 'B' && 'min-h-44 border border-border-default p-5 sm:pr-[42%]',
-          country && variant === 'C' && 'border border-border-default p-5',
-        )}
-        data-testid="member-map-prototype"
-      >
-        {country && (
-          <Box
-            className={cn(
-              'pointer-events-none absolute inset-0 -z-10 overflow-hidden',
-              variant === 'A' && '[mask-image:linear-gradient(to_bottom,black_35%,transparent)]',
-              variant === 'B' &&
-                'left-1/2 [mask-image:linear-gradient(to_right,transparent,black_35%)] sm:left-[58%]',
-              variant === 'C' &&
-                'left-1/2 [mask-image:linear-gradient(to_right,transparent,black)] opacity-65 sm:left-2/3',
-            )}
-          >
-            <CountryMap countryId={country.id} />
-          </Box>
-        )}
-        {children}
-        <Inline className="mt-2 text-xs text-muted-foreground" gap="xs">
-          <LucideIcon.MapPin className="size-3.5" />
-          <span>
-            {isSample
-              ? 'Sample map · United Kingdom · Member location unknown'
-              : country
-                ? `${country.name} · Approximate country location`
-                : 'Location unavailable'}
-          </span>
-        </Inline>
-        {country && (
-          <a
-            className="absolute top-2 right-2 text-[10px] text-muted-foreground hover:underline"
-            href="https://mapsvg.com/maps/world"
-            rel="noreferrer"
-            target="_blank"
-            title="MapSVG via @svg-maps/world · CC BY 4.0 · colors and crop modified"
-          >
-            MapSVG · CC BY 4.0
-          </a>
-        )}
-      </Box>
-      <Inline
-        aria-label="Map prototype controls"
-        className="fixed bottom-5 left-1/2 z-50 max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-full border border-border-default bg-surface-elevated-2 p-2 shadow-lg"
-        gap="sm"
-      >
-        <Button
-          aria-label="Previous map layout"
-          size="icon"
-          variant="ghost"
-          onClick={() => changeVariant(-1)}
-        >
-          <LucideIcon.ChevronLeft />
-        </Button>
-        <Stack className="min-w-0 text-center" gap="none">
-          <span className="text-sm font-medium">
-            {variant} · {names[variant]}
-          </span>
-          <span className="truncate text-xs text-muted-foreground">
-            {isSample
-              ? 'Sample location · not member data'
-              : `Spike · ${country?.name ?? 'Unknown location'} · country data only`}
-          </span>
-          {!memberCountry && (
-            <Button className="mt-1 h-7" size="sm" variant="ghost" onClick={toggleSample}>
-              {isSample ? 'Clear sample map' : 'Preview sample map'}
-            </Button>
-          )}
-        </Stack>
-        <Button
-          aria-label="Next map layout"
-          size="icon"
-          variant="ghost"
-          onClick={() => changeVariant(1)}
-        >
-          <LucideIcon.ChevronRight />
-        </Button>
-      </Inline>
-    </>
+    <Box
+      className={cn(
+        'relative isolate overflow-hidden rounded-xl',
+        country
+          ? '[&_[data-page-header=main]]:items-end'
+          : '[&_[data-page-header=main]]:items-start',
+        country &&
+          '-mt-5 -mr-[calc((100cqw-100%)/2-8px)] -ml-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))] rounded-t-xl rounded-b-none pt-40 pr-[calc((100cqw-100%)/2-8px)] pb-5 pl-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))]',
+      )}
+      data-member-map-location={country ? 'known' : 'unknown'}
+      data-testid="member-map-prototype"
+    >
+      {country && (
+        <Box className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
+          <LocationMap country={country} region={geo?.region} />
+        </Box>
+      )}
+      {children}
+    </Box>
   );
 }

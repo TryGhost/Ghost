@@ -1,19 +1,15 @@
 // Throwaway local preview with sample data; the real integration lives in member-detail.tsx.
 import React from 'react';
-import { useLocation } from '@tryghost/admin-x-framework';
 import { ShadeApp } from '@tryghost/shade/app';
 import { Box, Stack, Inline, Container } from '@tryghost/shade/primitives';
-import { Button, Input } from '@tryghost/shade/components';
+import { Avatar, Button, Input } from '@tryghost/shade/components';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { DetailPage } from '@tryghost/shade/page-templates';
 import MemberMapPrototype from './member-map-prototype';
 import '@/index.css';
 export default function Preview() {
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const requested = params.get('variant');
-  const variant = requested === 'B' || requested === 'C' ? requested : 'A';
   const [country, setCountry] = React.useState('GB');
+  const [region, setRegion] = React.useState('South Carolina');
   const [dark, setDark] = React.useState(false);
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -22,28 +18,34 @@ export default function Preview() {
     <ShadeApp
       className={
         dark
-          ? 'shade-admin dark min-h-screen bg-background text-foreground'
-          : 'shade-admin min-h-screen bg-background text-foreground'
+          ? 'shade-admin dark [container-type:inline-size] min-h-screen bg-background text-foreground'
+          : 'shade-admin [container-type:inline-size] min-h-screen bg-background text-foreground'
       }
       darkMode={dark}
     >
       <Container className="h-screen" size="page">
         <DetailPage>
-          <DetailPage.Header>
+          <DetailPage.Header className="has-[[data-member-map-location=unknown]]:py-7">
             <MemberMapPrototype
-              geolocation={JSON.stringify({ country_code: country })}
-              variant={variant}
+              geolocation={JSON.stringify({
+                country_code: country,
+                region: country === 'US' ? region : undefined,
+              })}
+              enabled
             >
-              <PageHeader
-                blurredBackground={false}
-                className="[&_[data-page-header=main]]:items-end"
-                sticky={false}
-              >
+              <PageHeader blurredBackground={false} sticky={false}>
                 <PageHeader.Left>
                   <span className="text-sm text-muted-foreground">Members › Member</span>
-                  <PageHeader.Title className="mt-2 truncate text-2xl sm:text-3xl">
-                    Alex Morgan
-                  </PageHeader.Title>
+                  <Inline className="mt-3 max-w-full min-w-0" gap="md">
+                    <Avatar
+                      className="size-10 min-w-10 [&_span]:text-lg"
+                      colorSeed="Alex Morgan"
+                      initials="AM"
+                    />
+                    <PageHeader.Title className="min-w-0 truncate text-2xl sm:text-3xl">
+                      Alex Morgan
+                    </PageHeader.Title>
+                  </Inline>
                 </PageHeader.Left>
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup>
@@ -64,6 +66,9 @@ export default function Preview() {
                 <Button variant="outline" onClick={() => setCountry('GB')}>
                   United Kingdom
                 </Button>
+                <Button variant="outline" onClick={() => setCountry('CZ')}>
+                  Czech Republic
+                </Button>
                 <Button variant="outline" onClick={() => setCountry('US')}>
                   United States
                 </Button>
@@ -77,12 +82,32 @@ export default function Preview() {
                   Toggle theme
                 </Button>
               </Inline>
+              {country === 'US' && (
+                <Inline wrap>
+                  {[
+                    'South Carolina',
+                    'California',
+                    'Alaska',
+                    'Hawaii',
+                    'District of Columbia',
+                    '',
+                  ].map((state) => (
+                    <Button
+                      key={state}
+                      variant={region === state ? 'default' : 'outline'}
+                      onClick={() => setRegion(state)}
+                    >
+                      {state || 'State unknown'}
+                    </Button>
+                  ))}
+                </Inline>
+              )}
               <Box className="rounded-lg border border-border-default p-6">
                 <Stack gap="lg">
                   <h2 className="text-lg font-semibold">Sample member — visual verification</h2>
                   <p className="text-muted-foreground">
                     This preview uses sample country data. The same header is mounted on the real
-                    member page with ?variant=A, B or C.
+                    member page in development.
                   </p>
                   <label>
                     Name

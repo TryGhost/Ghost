@@ -89,6 +89,7 @@
     "@typescript/native": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/browser-playwright": "catalog:",
+    "d3-geo": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "ghost-admin": "workspace:*",
