@@ -246,6 +246,8 @@ type StepNodeData = {
   // Increments when the tiers popover should open itself — the canvas owns the
   // clock (it knows when its sequence has settled), the form owns the popover.
   tiersRevealSignal?: number;
+  // The saved config's tiers — see the EditCanvas prop of the same name.
+  savedTierIds?: string[];
   // Always-visible inline edit form (non-trigger nodes).
   subject?: string;
   // Whether the email has anything written yet — a new one hasn't, and its body
@@ -691,6 +693,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                     <TriggerFieldsForm
                       config={triggerConfig}
                       revealTiersSignal={d.tiersRevealSignal}
+                      savedTierIds={d.savedTierIds}
                       // Phase 1's triggers stay simple: the exit sentence belongs to
                       // the general-model lanes, where exits are part of what's being
                       // explored. Phase 1 shows what ships, and production has no
@@ -997,6 +1000,13 @@ interface EditCanvasProps {
   // to the trigger card alone until it's answered.
   triggerConfig?: TriggerConfig | null;
   onTriggerConfigChange?: (next: TriggerConfig) => void;
+  // The SAVED config's tiers, for the tiers list's archived rule: an archived
+  // tier stays offered while it's in the current selection OR this list, so
+  // unticking one is reversible for exactly as long as the removal is unsaved
+  // — the undo horizon matching the draft horizon, like every other edit on
+  // the screen. The screen passes [] when the saved trigger is a different
+  // type (its tiers answer a question this trigger isn't asking).
+  savedTierIds?: string[];
   // The screen's verdict on the trigger — see NodeWarning. The canvas just
   // wears it; whether Stripe is connected is the screen's business.
   triggerWarning?: NodeWarning;
@@ -1022,6 +1032,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   onChange,
   triggerConfig,
   onTriggerConfigChange,
+  savedTierIds,
   triggerWarning,
   triggerLocked = false,
   simpleTriggerNames = false,
@@ -1354,6 +1365,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         enterDelay: enterDelay(0),
         onRequestTriggerChange: requestTriggerChange,
         tiersRevealSignal,
+        savedTierIds,
       },
       draggable: false,
       connectable: false,
@@ -1521,6 +1533,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     requestTriggerChange,
     alwaysShowInserts,
     tiersRevealSignal,
+    savedTierIds,
   ]);
 
   // Follow whichever card was asked for, once the column has settled around it.

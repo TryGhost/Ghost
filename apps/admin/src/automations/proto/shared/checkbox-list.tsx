@@ -28,8 +28,13 @@ export const CheckboxRow: React.FC<{
   // choice. Those are a sentence now, and the reason the label's treatment changed
   // with them — see below.
   disabled?: boolean;
+  // Dimmed but still yours to untick — an archived tier that's in the
+  // selection. Different fact from disabled: disabled says another control owns
+  // this row; muted says the row's subject has gone quiet. The label dims the
+  // same amount either way so the two read as one visual language.
+  muted?: boolean;
   onCheckedChange: (checked: boolean) => void;
-}> = ({ checked, label, disabled = false, onCheckedChange }) => (
+}> = ({ checked, label, disabled = false, muted = false, onCheckedChange }) => (
   // A label, so the whole row is the target rather than the 16px box.
   <label
     // Row metrics from Shade's SelectItem — rounded-xs, py-1.5 px-2 — so a row here
@@ -55,6 +60,6 @@ export const CheckboxRow: React.FC<{
             already applies to the box beside it, so the two halves dim by the same
             amount. On the span rather than the row for that reason: on the row it would
             compound with the box's own and take it to 25%. */}
-    <span className={cn('text-control', disabled && 'opacity-50')}>{label}</span>
+    <span className={cn('text-control', (disabled || muted) && 'opacity-50')}>{label}</span>
   </label>
 );

@@ -21,12 +21,14 @@ import {
   DEFAULT_TRIGGER_CONFIG,
   type TriggerConfig,
   hasTierFilter,
+  tierDisplayNames,
   triggerExplanation,
   triggerIcon,
   triggerLabel,
   triggerReviewLabel,
   triggerSummary,
 } from '@/automations/proto/shared/trigger-config';
+import { useArchivedTierIds } from '@/automations/proto/shared/store';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import {
@@ -368,6 +370,10 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
   // Card heights are read back from the render — see useMeasuredColumn.
   const { onNodesChange, layout } = useMeasuredColumn();
 
+  // Site state, for the tier line's "(archived)" marking — see the summary
+  // note in the trigger descriptor.
+  const archivedTierIds = useArchivedTierIds();
+
   const { nodes, edges, contentBottom } = useMemo(() => {
     const ordered = orderActions(automation);
     const stepByAction = new Map((selectedRun?.steps ?? []).map((s) => [s.action_id, s]));
@@ -395,11 +401,14 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
         // Simple-names lanes (phase 1) keep the audience summary they've always
         // had. The general lanes carry the explanation sentence instead, plus
         // the audience line only when it adds something the sentence doesn't —
-        // a tier filter naming which tiers. "Any member" under "Triggered when
-        // someone signs up…" was the same fact twice.
-        summary:
-          simpleTriggerNames || hasTierFilter(triggerConfig)
-            ? triggerSummary(triggerConfig)
+        // a tier filter naming which tiers, archived ones marked (the line is
+        // already muted as a whole, so the suffix is the entire marking here).
+        // "Any member" under "Triggered when someone signs up…" was the same
+        // fact twice.
+        summary: simpleTriggerNames
+          ? triggerSummary(triggerConfig)
+          : hasTierFilter(triggerConfig)
+            ? tierDisplayNames(triggerConfig.tierIds, archivedTierIds).join(', ')
             : undefined,
         explanation: simpleTriggerNames ? undefined : triggerExplanation(triggerConfig),
         reviewLabel: triggerReviewLabel(triggerConfig ?? DEFAULT_TRIGGER_CONFIG),
@@ -552,7 +561,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
     }
 
     return { nodes: built, edges: builtEdges, contentBottom: bottom };
-  }, [automation, selectedRun, focused, triggerConfig, analyticsActionId, layout]);
+  }, [automation, selectedRun, focused, triggerConfig, analyticsActionId, layout, archivedTierIds]);
 
   const translateExtent = useMemo(
     () => panTranslateExtent(contentBottom, size, leftInset),

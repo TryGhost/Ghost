@@ -200,6 +200,27 @@ export const tierNames = (tierIds: string[]): string[] =>
   TIER_OPTIONS.filter((tier) => tierIds.includes(tier.id)).map((tier) => tier.name);
 
 /**
+ * A tier's display name, with its archived state worn as a suffix — "Bronze
+ * (archived)". One spelling for every surface that names tiers alongside
+ * their state (the tiers field, its checkbox rows, the read canvas's tier
+ * line), so the marking can't drift into variants.
+ *
+ * Deliberately NOT applied in change summaries or toasts — there it's noise
+ * about the site attached to a message about the automation.
+ */
+export const tierDisplayName = (name: string, archived: boolean): string =>
+  archived ? `${name} (archived)` : name;
+
+/** The selected tiers as display names, for surfaces that render one string
+ * (the read canvas's tier line — already muted as a whole, so the suffix is
+ * the entire marking). The edit field renders per-tier spans instead, so an
+ * archived tier can dim on its own. */
+export const tierDisplayNames = (tierIds: string[], archivedTierIds: string[]): string[] =>
+  TIER_OPTIONS.filter((tier) => tierIds.includes(tier.id)).map((tier) =>
+    tierDisplayName(tier.name, archivedTierIds.includes(tier.id)),
+  );
+
+/**
  * Members who are PAYING, which is now the same question as "is this the paid
  * trigger" — it used to also be true of a paid AUDIENCE on any trigger.
  *

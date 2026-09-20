@@ -889,6 +889,14 @@ const AutomationFloat: React.FC = () => {
               alwaysShowInserts={liveStatus === 'inactive'}
               draft={draftFlow}
               revealWarningsSignal={revealSignal}
+              // Type-gated: a saved trigger of a different type answered a
+              // different question, so its tiers don't keep archived rows
+              // offered here.
+              savedTierIds={
+                savedTrigger && savedTrigger.type === triggerConfig?.type
+                  ? savedTrigger.tierIds
+                  : []
+              }
               triggerConfig={triggerConfig}
               // The Stripe problem, worn by the card that has it. The message
               // states the fix rather than the failure — one sentence, the same

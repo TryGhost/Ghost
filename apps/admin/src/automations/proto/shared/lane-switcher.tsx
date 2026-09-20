@@ -16,7 +16,13 @@ import {
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { ProtoVariantsContext, resolveVariantId } from './proto-variants';
 import { useVersionLink } from './use-version-link';
-import { resetProtoStore, setStripeConnected, useStripeConnected } from './store';
+import {
+  resetProtoStore,
+  setStripeConnected,
+  setTierArchived,
+  useArchivedTierIds,
+  useStripeConnected,
+} from './store';
 import { LANES, type LaneId, laneLabel, lanePath } from './lanes';
 
 // The lane switcher. Split from lanes.ts, which holds the registry and the
@@ -55,6 +61,8 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
   const ctx = useContext(ProtoVariantsContext);
   const slots = ctx?.slots ?? [];
   const stripeConnected = useStripeConnected();
+  const archivedTierIds = useArchivedTierIds();
+  const bronzeArchived = archivedTierIds.includes('bronze');
 
   return (
     <div className={cn('absolute right-4 bottom-4 z-30', className)}>
@@ -146,6 +154,21 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
           >
             Stripe connected
             <Switch checked={stripeConnected} className="pointer-events-none ml-auto" aria-hidden />
+          </DropdownMenuItem>
+          {/* One tier's archive state, standing in for the tier settings screen —
+                    a single Bronze toggle reaches every display state the archived-tier
+                    design has (marked-in-selection, hidden-from-offer, mixed field).
+                    Same switch row and same stay-open behaviour as Stripe above, and
+                    for the same reason: the "(archived)" markings appearing on the
+                    canvas behind the menu are the thing being demoed. */}
+          <DropdownMenuItem
+            onSelect={(event) => {
+              event.preventDefault();
+              setTierArchived('bronze', !bronzeArchived);
+            }}
+          >
+            Bronze tier archived
+            <Switch checked={bronzeArchived} className="pointer-events-none ml-auto" aria-hidden />
           </DropdownMenuItem>
 
           <DropdownMenuSeparator className="-mx-2" />

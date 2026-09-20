@@ -90,6 +90,19 @@ interface StoreState {
    * disconnect Stripe to see what happens.
    */
   stripeConnected: boolean;
+  /**
+   * Which of the site's tiers are archived — site state, same reasoning as
+   * stripeConnected, flipped from the lane switcher (a single Bronze toggle
+   * demos every display state).
+   *
+   * Archiving a tier does NOT touch any automation: an archived tier keeps its
+   * existing subscribers and stops being offered, so a trigger watching it
+   * simply stops firing for it — runs drain out, nothing is disabled, and
+   * unarchiving reopens the tap. Configs keep their tierIds untouched; the
+   * screens DERIVE the "(archived)" marking at render, so reactivation needs
+   * no reconciliation and nothing can go stale.
+   */
+  archivedTierIds: string[];
 }
 
 // Bumping the version discards whatever is in localStorage rather than trying to
@@ -103,12 +116,14 @@ interface StoreState {
 // free-signup default, so phase 1's paid flow was titled "Free member signs up".
 // 19: TriggerConfig grew tierMode ('all' policy vs 'selected' list); stored
 // configs without it would read as selected-with-nothing, i.e. unanswered.
-const VERSION = 19;
+// 20: the store grew archivedTierIds (site state, like stripeConnected).
+const VERSION = 20;
 const STORAGE_KEY = 'ghost-automations-proto-store';
 
 const seed = (): StoreState => ({
   version: VERSION,
   stripeConnected: true,
+  archivedTierIds: [],
   automations: mockAutomations.map((automation) => ({
     automation,
     // The fixture map is the seed now, not the lookup — once a description can be
@@ -194,6 +209,25 @@ export const useStripeConnected = (): boolean =>
 
 export const setStripeConnected = (stripeConnected: boolean): void =>
   commit({ ...snapshot(), stripeConnected });
+
+export const useArchivedTierIds = (): string[] =>
+  useSyncExternalStore(
+    subscribe,
+    () => snapshot().archivedTierIds,
+    () => snapshot().archivedTierIds,
+  );
+
+export const setTierArchived = (tierId: string, archived: boolean): void => {
+  const current = snapshot().archivedTierIds;
+  commit({
+    ...snapshot(),
+    archivedTierIds: archived
+      ? current.includes(tierId)
+        ? current
+        : [...current, tierId]
+      : current.filter((id) => id !== tierId),
+  });
+};
 
 // ---------------------------------------------------------------------------
 // Naming

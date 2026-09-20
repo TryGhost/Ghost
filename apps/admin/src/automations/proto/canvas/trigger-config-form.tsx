@@ -16,13 +16,13 @@ import {
   type TriggerConfig,
   availableTriggerOptions,
   hasTiers,
-  tierNames,
+  tierDisplayName,
   SIMPLE_TRIGGER_OPTIONS,
   TRIGGER_PICKER_OPTIONS,
   triggerConfigFor,
   exitSentence,
 } from '@/automations/proto/shared/trigger-config';
-import { useStripeConnected } from '@/automations/proto/shared/store';
+import { useArchivedTierIds, useStripeConnected } from '@/automations/proto/shared/store';
 import { PickerRow } from '@/automations/proto/shared/option-picker';
 import { CheckboxList, CheckboxRow } from '@/automations/proto/shared/checkbox-list';
 import { useDismissOnPanePress } from './flow-utils';
@@ -123,6 +123,12 @@ interface TriggerConfigFormProps {
   // (see tiersRevealPending there). The canvas owns when; this form owns the
   // popover, so the instruction crosses as a counter rather than shared state.
   revealTiersSignal?: number;
+  // The SAVED config's tiers. An archived tier is offered while it's in the
+  // current selection OR here — so unticking one stays reversible for exactly
+  // as long as the removal is unsaved, the same undo horizon as every other
+  // edit on the screen. Without it (older lanes), unticking an archived tier
+  // removes its row at once.
+  savedTierIds?: string[];
 }
 
 export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
@@ -130,12 +136,17 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   onChange,
   showExits = true,
   revealTiersSignal,
+  savedTierIds = [],
 }) => {
   const tierIds = config.tierIds;
   const allMode = config.tierMode === 'all';
   // Selected mode with nothing named — the field's placeholder state, and the
   // one the validators call unanswered (see tiersUnanswered).
   const noTier = !allMode && tierIds.length === 0;
+  // Site state, read here like Stripe is in the empty-state picker: which
+  // tiers have gone quiet decides what the field and its rows say.
+  const archivedTierIds = useArchivedTierIds();
+  const selectedTiers = TIER_OPTIONS.filter((tier) => tierIds.includes(tier.id));
   const [tiersOpen, setTiersOpen] = useState(false);
   const showTiers = hasTiers(config);
   // Compared against the mount-time value rather than watched in an effect, so
@@ -244,12 +255,27 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 )}
                 type="button"
               >
+                {/* Named tiers render as per-tier spans so an archived one can
+                            dim on its own — "Bronze (archived)" muted beside a
+                            full-colour "Gold" says which half of the answer has gone
+                            quiet without dimming the whole value. */}
                 <span className={cn('truncate', noTier && 'text-muted-foreground')}>
                   {noTier
                     ? 'Choose tiers'
                     : allMode
                       ? 'Any paid tier'
-                      : tierNames(tierIds).join(', ')}
+                      : selectedTiers.map((tier, index) => (
+                          <React.Fragment key={tier.id}>
+                            {index > 0 && ', '}
+                            <span
+                              className={cn(
+                                archivedTierIds.includes(tier.id) && 'text-muted-foreground',
+                              )}
+                            >
+                              {tierDisplayName(tier.name, archivedTierIds.includes(tier.id))}
+                            </span>
+                          </React.Fragment>
+                        ))}
                 </span>
                 {/* Revealed by hovering or focusing the field, like every
                             field-that-opens (see the email content field): at rest the
@@ -306,12 +332,30 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                             10px gap). */}
                 {!allMode && (
                   <div className="ml-6">
+                    {/* An archived tier is offered only while it's in the CURRENT
+                                selection or the SAVED one: marked "(archived)", muted,
+                                and yours to untick — and to re-tick, because until the
+                                removal is saved the saved config still holds it, and an
+                                unsaved edit has to stay reversible in place (the only
+                                other road back is leaving the screen and discarding
+                                everything). Once the removal is committed the row is
+                                gone: picking a tier nobody can join is configuring
+                                against nothing (Ghost's other tier pickers offer active
+                                tiers only). Under "Any paid tier" nothing marks at all —
+                                that's a policy over whatever is joinable, and an
+                                archived tier just exits the set. */}
                     <CheckboxList>
-                      {TIER_OPTIONS.map((tier) => (
+                      {TIER_OPTIONS.filter(
+                        (tier) =>
+                          !archivedTierIds.includes(tier.id) ||
+                          tierIds.includes(tier.id) ||
+                          savedTierIds.includes(tier.id),
+                      ).map((tier) => (
                         <CheckboxRow
                           key={tier.id}
                           checked={tierIds.includes(tier.id)}
-                          label={tier.name}
+                          label={tierDisplayName(tier.name, archivedTierIds.includes(tier.id))}
+                          muted={archivedTierIds.includes(tier.id)}
                           onCheckedChange={(checked) =>
                             setTiers(
                               // Kept in ALL_TIER_IDS order however they're ticked, so
