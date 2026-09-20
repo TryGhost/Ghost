@@ -269,6 +269,29 @@ export const suggestCopyName = (sourceName: string): string =>
     snapshot().automations.map((entry) => entry.automation.name),
   );
 
+/**
+ * Whether a name is already carried by another automation.
+ *
+ * One rule for every surface that takes a typed name (the detail header's
+ * popover, the list's rename dialog), so they can't disagree about what
+ * "taken" means: trimmed, case-insensitive, archived included — an archived
+ * automation can come back, and two rows one view apart with one name is the
+ * exact confusion this prevents. `excludeId` is the automation being renamed;
+ * keeping your own name is a no-op, never an error.
+ *
+ * Client-side against the loaded store, deliberately: sites hold a handful of
+ * automations and the client already has all of them, so the check is free.
+ * In production this is the courtesy layer — the API's uniqueness constraint
+ * at save is the enforcement, covering two editors racing.
+ */
+export const isNameTaken = (name: string, excludeId?: string): boolean => {
+  const needle = name.trim().toLowerCase();
+  return snapshot().automations.some(
+    (entry) =>
+      entry.automation.id !== excludeId && entry.automation.name.trim().toLowerCase() === needle,
+  );
+};
+
 // Real ids are 24-char ObjectIds. The fixtures use readable ones ('auto_welcome')
 // for design clarity and created ones follow suit — they end up in the URL, and
 // an opaque id there makes a prototype harder to talk about, not more realistic.

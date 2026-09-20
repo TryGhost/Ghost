@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { getRunData } from '@/automations/proto/shared/mock';
 import {
+  isNameTaken,
   setAutomationArchived,
   saveAutomation,
   setAutomationStatus,
@@ -53,7 +54,7 @@ import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
-import { DetailsDialog } from './details-dialog';
+import { DetailsPopoverContent } from './details-popover';
 
 // PHASE 2 — per-tier automations. See shared/lanes for why each lane owns its
 // own copy of this screen.
@@ -528,22 +529,46 @@ const AutomationFloat: React.FC = () => {
     // they've been edited this session, the saved ones otherwise. Seeding from
     // the record alone would show a name the header no longer does, which reads
     // as the rename having been lost. This is also what makes abandoning a
-    // blanked name safe: reopening shows the name that actually applied.
+    // blanked or colliding name safe: reopening shows the name that actually
+    // applied.
     setSettingsDraft(draftDetails);
     setSettingsOpen(true);
   };
 
+  // Whether the field text names another automation. Live per keystroke: the
+  // guard below reads it to keep a colliding name off the draft, and the
+  // popover debounces what it SAYS about it (see details-popover).
+  const nameCollides = isNameTaken(settingsDraft.name, id);
+
+  // Closing the popover is just putting it away — never blocked, nothing
+  // committed. The one exit worth a word is leaving a name in the field that
+  // never applied: the guard kept the previous name, and a toast says so,
+  // because a silently reverted rename reads as a rename that vanished. Blank
+  // names stay silent — an emptied field reverting is expected; a typed name
+  // being refused isn't.
+  const handleDetailsOpenChange = (open: boolean) => {
+    if (open) {
+      openSettings();
+      return;
+    }
+    setSettingsOpen(false);
+    if (settingsDraft.name.trim() && nameCollides) {
+      toast(`That name's already in use — kept “${draftDetails.name}”`);
+    }
+  };
+
   // Typing writes through: the field text lands on the details draft as it
   // changes, the header retitles live, and the global Save is the one commit.
-  // No toast, no confirm — the dialog's Close just puts it away. The one value
-  // that doesn't write through is a blank name: an automation with no name is
-  // unfindable in a list, so the draft keeps the last real one while the field
-  // is free to be empty mid-edit — close it blank and the previous name stands.
+  // Two values don't write through — a blank name (an automation with no name
+  // is unfindable in a list) and one that names another automation (two rows
+  // with one name is the confusion isNameTaken exists to prevent). In both the
+  // draft keeps the last real name while the field is free to hold the bad
+  // value mid-edit; close it that way and the previous name stands.
   const handleDetailsChange = (next: { name: string; description: string }) => {
     setSettingsDraft(next);
     const name = next.name.trim();
     setDetailsDraft((prev) => ({
-      name: name || (prev ?? savedDetails).name,
+      name: name && !isNameTaken(name, id) ? name : (prev ?? savedDetails).name,
       description: next.description.trim(),
     }));
   };
@@ -647,13 +672,21 @@ const AutomationFloat: React.FC = () => {
                 card's half is why. */}
       <HeaderBar
         actions={chromeActions}
+        detailsContent={
+          <DetailsPopoverContent
+            nameTaken={nameCollides}
+            values={settingsDraft}
+            onChange={handleDetailsChange}
+          />
+        }
+        detailsOpen={settingsOpen}
         status={liveStatus}
         // The pending name, not the saved one: a rename shows here the moment
         // it's typed, the way a canvas edit shows on the canvas — on screen now,
         // committed by Save.
         title={draftDetails.name}
         onBack={goBack}
-        onEditTitle={openSettings}
+        onDetailsOpenChange={handleDetailsOpenChange}
       />
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* Left pane docked flush to the edge. On entering edit it slides off the
@@ -933,25 +966,9 @@ const AutomationFloat: React.FC = () => {
       />
       <TurnOffAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
 
-      {/* Name and description. Two fields rather than an inline rename, because
-                the description has nowhere to be edited in place — it appears on the
-                list, not on this screen, so there's no text here to click into.
-
-                No confirmLabel, so the dialog is in its write-through mode: edits
-                land on the draft as they're typed and Close is the only button.
-                This screen has one Save, in the header, and it commits everything —
-                a second Save inside a dialog was two commits answering to one word,
-                and even Cancel/Done read as the edit being finished and written.
-                The LIST's copy of this dialog keeps Cancel/Save, because a rename
-                from the list has no draft to join. */}
-      <DetailsDialog
-        blurb="Shown on your automations list. Members never see either of these."
-        heading="Automation details"
-        open={settingsOpen}
-        values={settingsDraft}
-        onChange={handleDetailsChange}
-        onOpenChange={setSettingsOpen}
-      />
+      {/* The details editor renders inside the HeaderBar now — a popover hung
+                from the title itself (see DetailsPopoverContent for why the dialog
+                and its three generations of footer buttons retired). */}
 
       {/* Where the delete confirm used to be. If Delete ever returns to the UI, its
                 dialog is worth writing again rather than reaching for "this can't be

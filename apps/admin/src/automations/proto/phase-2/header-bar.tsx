@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@tryghost/shade/components';
+import { Button, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { StatusBadge } from '@/automations/proto/shared/status-badge';
@@ -45,9 +45,16 @@ interface HeaderBarProps {
   // both header variants raise identical controls — a header style shouldn't
   // change what the screen lets you do.
   actions: React.ReactNode;
-  // Opens the automation's settings. Without it the title is plain text, which is
-  // what the other lanes want — nothing there is editable from the header.
-  onEditTitle?: () => void;
+  // The details editor, raised FROM the title as a popover — the title is the
+  // trigger, the editor lands just under it, and the retitling happens live
+  // right above the fields changing it. All three come together or not at all;
+  // without them the title is plain text, which is what the other lanes want —
+  // nothing there is editable from the header. The header owns where the
+  // popover sits; the screen owns what's in it and when it's open (it seeds
+  // the fields on open, and runs the name check on close).
+  detailsOpen?: boolean;
+  onDetailsOpenChange?: (open: boolean) => void;
+  detailsContent?: React.ReactNode;
   /**
    * A transient message about the automation as a whole. Currently unused: the
    * Stripe warning that lived here moved onto the trigger card (see triggerWarning
@@ -70,7 +77,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   status,
   onBack,
   actions,
-  onEditTitle,
+  detailsOpen,
+  onDetailsOpenChange,
+  detailsContent,
   notice,
 }) => (
   // A column, not a row: the bar is one 64px row wide enough for the notice to
@@ -156,19 +165,34 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 size="icon" is 36, and matching the number directly is more honest than
                 arriving at it through padding that would drift the moment the title's
                 type scale moved. */}
-        {onEditTitle ? (
-          <button
-            className="group/title -ml-2 flex h-9 min-w-0 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-            title="Edit details"
-            type="button"
-            onClick={onEditTitle}
-          >
-            <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
-            <LucideIcon.Pen
-              className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/header:opacity-100 group-focus-visible/title:opacity-100 motion-reduce:transition-none"
-              strokeWidth={2}
-            />
-          </button>
+        {detailsContent && onDetailsOpenChange ? (
+          // The title as a popover TRIGGER rather than a button opening a
+          // dialog. Radix owns the toggle, so clicking the title while the
+          // editor is open closes it instead of racing the outside-click.
+          // modal={false}: the popover is an inline editor, and the screen
+          // behind it stays live the way it does for every canvas field.
+          <Popover modal={false} open={detailsOpen} onOpenChange={onDetailsOpenChange}>
+            <PopoverTrigger asChild>
+              <button
+                className="group/title -ml-2 flex h-9 min-w-0 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
+                title="Edit details"
+                type="button"
+              >
+                <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
+                <LucideIcon.Pen
+                  className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/header:opacity-100 group-focus-visible/title:opacity-100 motion-reduce:transition-none"
+                  strokeWidth={2}
+                />
+              </button>
+            </PopoverTrigger>
+            {/* align="start" so the editor hangs from the title's left edge —
+                        under the words being edited, not centred on the button's
+                        hover fill. w-80: room for the description textarea without
+                        approaching dialog width. */}
+            <PopoverContent align="start" className="w-80" sideOffset={4}>
+              {detailsContent}
+            </PopoverContent>
+          </Popover>
         ) : (
           <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
         )}

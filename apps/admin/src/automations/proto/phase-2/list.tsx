@@ -23,6 +23,7 @@ import {
   canPublishAutomation,
   duplicateAutomation,
   insertAutomation,
+  isNameTaken,
   setAutomationArchived,
   setAutomationStatus,
   suggestCopyName,
@@ -177,9 +178,20 @@ const AutomationsList: React.FC = () => {
     setPendingRename(entry);
   };
 
+  // A typed name another automation carries. Same rule as the detail screen's
+  // popover (isNameTaken: trimmed, case-insensitive, archived included), shown
+  // under the field and holding Save — this dialog HAS a commit button, so the
+  // refusal lives on it rather than in a write-through guard.
+  const renameNameError =
+    pendingRename &&
+    renameDraft.name.trim() &&
+    isNameTaken(renameDraft.name, pendingRename.automation.id)
+      ? 'An automation with this name already exists.'
+      : undefined;
+
   const confirmRename = () => {
     const name = renameDraft.name.trim();
-    if (!pendingRename || !name) {
+    if (!pendingRename || !name || renameNameError) {
       return;
     }
     updateAutomationDetails(pendingRename.automation.id, name, renameDraft.description.trim());
@@ -372,6 +384,7 @@ const AutomationsList: React.FC = () => {
         blurb="Only you and your team can see this — members never do."
         confirmLabel="Save"
         heading="Automation details"
+        nameError={renameNameError}
         open={Boolean(pendingRename)}
         values={renameDraft}
         onChange={setRenameDraft}
