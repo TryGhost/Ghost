@@ -11,6 +11,7 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Stack } from '@tryghost/shade/primitives';
 import {
   ALL_TIER_IDS,
+  PAID_TIERS_FIELD_LABEL,
   TIER_OPTIONS,
   type TriggerConfig,
   availableTriggerOptions,
@@ -217,17 +218,18 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
       {showTiers && (
         <div className="flex flex-col gap-2">
           {/* The explanation and the field, fused into label-and-answer: the
-                    sentence runs INTO the field ("…subscription to:" → "All paid
-                    tiers"), so the card says what the trigger does and who it
-                    watches as one thought instead of a description and a control
-                    circling the same fact. Full foreground, not the caption's
-                    muted — it's the field's label now, not commentary — and gap-2,
-                    the label-to-field distance every form uses. The colon is what
-                    keeps every field state grammatical, including the "Choose
-                    tiers" placeholder, which reads as an instruction after it.
-                    (The read canvas keeps the full written-out sentence — it has
-                    no field for a label to point at; see triggerExplanation.) */}
-          <span className="text-control">Triggered when a member starts a subscription to:</span>
+                    sentence runs INTO the field ("…upgrades or signs up to:" →
+                    "Any paid tier"), so the card says what the trigger does and
+                    who it watches as one thought instead of a description and a
+                    control circling the same fact. Full foreground, not the
+                    caption's muted — it's the field's label now, not commentary —
+                    and gap-2, the label-to-field distance every form uses. The
+                    colon is what keeps every field state grammatical, including
+                    the "Choose tiers" placeholder, which reads as an instruction
+                    after it. (The read canvas keeps the full written-out sentence
+                    — it has no field for a label to point at; the copy itself
+                    lives with the stems in trigger-config.) */}
+          <span className="text-control">{PAID_TIERS_FIELD_LABEL}</span>
           <Popover modal={false} open={tiersOpen} onOpenChange={setTiersOpen}>
             <PopoverTrigger asChild>
               <button
@@ -246,7 +248,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                   {noTier
                     ? 'Choose tiers'
                     : allMode
-                      ? 'All paid tiers'
+                      ? 'Any paid tier'
                       : tierNames(tierIds).join(', ')}
                 </span>
                 {/* Revealed by hovering or focusing the field, like every
@@ -293,7 +295,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 >
                   <RadioRow
                     description="Includes all current and future paid tiers you create."
-                    label="All paid tiers"
+                    label="Any paid tier"
                     value="all"
                   />
                   <RadioRow label="Select paid tiers" value="selected" />

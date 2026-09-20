@@ -98,8 +98,27 @@ export interface TriggerConfig {
   tierIds: string[];
 }
 
+// ONE sentence stem per trigger, and every surface derives its copy from it —
+// the picker says "When ⟨stem⟩", the configured card and the read canvas say
+// "Triggered when ⟨stem⟩." — so the option someone chose and the card they get
+// carry the same words in the same order (design/product feedback: the two
+// states had drifted into different sentences for one fact). The picker drops
+// "Triggered" because its rows are answers to a question the card is already
+// asking; the configured card keeps it because it stands alone.
+//
+// "someone", not "a member", in both: the free stem is about a person who
+// ISN'T a member yet, and one subject across the pair keeps them parallel.
+// The stems are deliberately MIRRORED — "signs up as a free member" / "signs
+// up as a paid member or upgrades" — so the two options read as one sentence
+// with one word swapped, plus the road only paid has. "free"/"paid" is the
+// load-bearing pair: the titles alone don't say which arrivals each means.
+const TRIGGER_SENTENCE_STEMS: Record<TriggerType, string> = {
+  member_subscribes: 'someone signs up as a free member',
+  paid_subscription_starts: 'someone signs up as a paid member or upgrades',
+};
+
 // Narrow list for now — the two triggers the team's proto covers. Adding a third
-// (custom event, leaves audience…) is one entry here plus its criteria below.
+// (custom event, leaves audience…) is one entry here plus its stem above.
 //
 // Icon and description ride along with the label because the trigger is chosen
 // from the same icon/title/description picker the steps are — the two labels are
@@ -114,17 +133,13 @@ export const TRIGGER_OPTIONS: {
   {
     value: 'member_subscribes',
     label: 'Member signs up',
-    // The two labels are close enough that the description is what tells them
-    // apart — and the confusion the project doc names is exactly this: you can
-    // sign up today and become paid next week, so signing up is a first arrival
-    // rather than anything to do with money.
-    description: 'The first time someone becomes a member',
+    description: `When ${TRIGGER_SENTENCE_STEMS.member_subscribes}`,
     icon: LucideIcon.UserPlus,
   },
   {
     value: 'paid_subscription_starts',
     label: 'Paid subscription starts',
-    description: 'Someone starts a paid subscription',
+    description: `When ${TRIGGER_SENTENCE_STEMS.paid_subscription_starts}`,
     icon: LucideIcon.CreditCard,
   },
 ];
@@ -356,28 +371,26 @@ export const triggerDescription = (config: Pick<TriggerConfig, 'type'>): string 
 
 /**
  * The configured card's own explanation — "Triggered when…", Beehiiv's register.
+ * The same stem the picker showed, with "Triggered" restored: what you chose
+ * and what the card now says are one sentence at two moments.
  *
- * Not the picker description reused: that line exists to tell two similar OPTIONS
- * apart mid-choice, where this one tells a reader arriving at a built flow what
- * sets it off. A chosen card answers a different question than a list of choices.
- *
- * "free member" is deliberate on the signup trigger, and it's the one place the
- * word Free appears in that trigger's copy: its title ("Member signs up") reads
- * as any arrival, and a publisher holding both flows needs this card to say which
- * arrivals it means without opening anything. If the model settles on signup
- * genuinely covering paid arrivals too, this sentence is where that decision
- * shows first — change it knowingly.
- *
- * The paid sentence renders on the READ canvas and nowhere else now: the edit
- * card fused its explanation into the tiers field's label ("Triggered when a
- * member starts a subscription to:" — see TriggerFieldsForm), so a written-out
- * copy above the field would say the same fact twice. Keep the two phrasings
- * in step when either moves.
+ * The paid sentence renders on the READ canvas and nowhere else: the edit card
+ * fused its explanation into the tiers field's label (PAID_TIERS_FIELD_LABEL,
+ * below), so a written-out copy above the field would say the same fact twice.
  */
 export const triggerExplanation = (config: Pick<TriggerConfig, 'type'>): string =>
-  isPaidTrigger(config)
-    ? 'Triggered when a member starts a paid subscription.'
-    : 'Triggered when someone signs up as a free member.';
+  `Triggered when ${TRIGGER_SENTENCE_STEMS[config.type]}.`;
+
+/**
+ * The paid EDIT card's label, run into the tiers field: "…signs up or upgrades
+ * to:" completed by "Any paid tier" or the named tiers. The stem's shape with
+ * "as a paid member" handed to the field — its value says "paid tiers", so the
+ * sentence doesn't have to, and both verbs take the same "to" ("signs up to
+ * Bronze", "upgrades to Bronze"), which the full stem's ordering can't. Lives
+ * here beside the stems so a copy change touches one file; keep the tail
+ * readable against every field state, the "Choose tiers" placeholder included.
+ */
+export const PAID_TIERS_FIELD_LABEL = 'Triggered when someone signs up or upgrades to:';
 
 // Takes just the type, so it can label a bare choice as readily as a full config
 // — the trigger picker shows a label before there's a config to show it from.
