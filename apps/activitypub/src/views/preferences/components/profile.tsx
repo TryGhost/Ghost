@@ -248,6 +248,11 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const [backgroundColor, setBackgroundColor] = useState<'light' | 'dark' | 'accent'>('light');
   const [cardFormat, setCardFormat] = useState<'vertical' | 'square'>('vertical');
   const [isProcessing, setIsProcessing] = useState(false);
+  // The card renders the converted data URLs, so a copy that races the
+  // conversion would hand html2canvas the raw cross-origin URLs instead —
+  // which it drops, exactly the silent failure this screen reports on.
+  // Starts true: the mount effect converts immediately.
+  const [isConvertingImages, setIsConvertingImages] = useState(true);
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
   // Which of the card's images could not be embedded because their host
@@ -257,6 +262,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
 
   const convertImagesToDataUrls = useCallback(async () => {
+    setIsConvertingImages(true);
     const unembeddable: string[] = [];
 
     if (account?.bannerImageUrl || coverImage) {
@@ -282,6 +288,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
     }
 
     setUnembeddableImages(unembeddable);
+    setIsConvertingImages(false);
   }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
 
   useEffect(() => {
@@ -327,7 +334,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   };
 
   const handleCopy = async () => {
-    if (!profileCardRef.current || isProcessing) {
+    if (!profileCardRef.current || isProcessing || isConvertingImages) {
       return;
     }
 
@@ -566,6 +573,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
             </div>
             <Button
               className={`min-w-[160px] dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`}
+              disabled={isConvertingImages}
               onClick={handleCopy}
             >
               {isProcessing ? (
