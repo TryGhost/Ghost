@@ -860,6 +860,90 @@ describe('createSlugMachine', () => {
     });
   });
 
+  it('reads a generator answer that is not a string as blank and stays usable', async () => {
+    const generateSlug = vi.fn().mockResolvedValueOnce(undefined).mockResolvedValueOnce('changed');
+    const { machine } = createHarness(generateSlug);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+
+    await expect(machine.titleCommitted('Changed')).resolves.toMatchObject({
+      reason: 'empty-result',
+    });
+    expect(machine.getState()).toMatchObject({ slug: 'hello', pending: false });
+    await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+      slug: 'changed',
+      source: 'generated',
+    });
+  });
+
+  it('drops a late answer for a withdrawn request while a newer request is out', async () => {
+    const withdrawn = deferred<string>();
+    const current = deferred<string>();
+    const generateSlug = vi
+      .fn()
+      .mockReturnValueOnce(withdrawn.promise)
+      .mockReturnValueOnce(current.promise);
+    const { machine, proposals } = createHarness(generateSlug);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+
+    void machine.slugEdited('mine');
+    await machine.slugEdited('hello');
+    const commit = machine.titleCommitted('Changed');
+
+    withdrawn.resolve('mine');
+    await flushMicrotasks();
+    expect(machine.getState()).toMatchObject({ slug: 'hello', mode: 'derived', pending: true });
+
+    current.resolve('changed');
+    await expect(commit).resolves.toEqual({ slug: 'changed', source: 'generated' });
+    expect(proposals.filter((proposal) => proposal.source === 'manual')).toEqual([]);
+  });
+
+  it('resolves a drained submission stale when a listener loads another post', async () => {
+    const first = deferred<string>();
+    const generateSlug = vi.fn().mockReturnValueOnce(first.promise).mockResolvedValue('late');
+    const { machine } = createHarness(generateSlug);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+    machine.subscribe((_state, proposal) => {
+      if (proposal?.source === 'generated') {
+        machine.loaded({ slug: 'other', title: 'Other' });
+      }
+    });
+
+    const commit = machine.titleCommitted('Changed');
+    const queued = machine.titleCommitted('Old Post Later');
+    first.resolve('changed');
+
+    await expect(commit).resolves.toEqual({ slug: 'changed', source: 'generated' });
+    await expect(queued).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
+    await flushMicrotasks();
+    expect(machine.getState()).toMatchObject({ slug: 'other', title: 'Other', pending: false });
+  });
+
+  it('runs the deferred submission before one a listener makes while it drains', async () => {
+    const first = deferred<string>();
+    const generateSlug = vi
+      .fn<(text: string) => Promise<string>>()
+      .mockReturnValueOnce(first.promise)
+      .mockImplementation((text) => Promise.resolve(slugify(text)));
+    const { machine } = createHarness(generateSlug);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+    let fromListener: Promise<SlugProposal> | null = null;
+    machine.subscribe((_state, proposal) => {
+      if (proposal?.source === 'generated' && proposal.slug === 'first') {
+        fromListener = machine.titleCommitted('Newest');
+      }
+    });
+
+    void machine.titleCommitted('First');
+    const queued = machine.titleCommitted('Queued');
+    first.resolve('first');
+
+    await expect(queued).resolves.toEqual({ slug: 'queued', source: 'generated' });
+    await expect(fromListener).resolves.toEqual({ slug: 'newest', source: 'generated' });
+    expect(generateSlug.mock.calls.map(([text]) => text)).toEqual(['First', 'Queued', 'Newest']);
+    expect(machine.getState()).toMatchObject({ slug: 'newest', title: 'Newest' });
+  });
+
   it('stops notifying after unsubscribe', async () => {
     const { machine } = createHarness();
     machine.loaded({ slug: '', title: '' });
