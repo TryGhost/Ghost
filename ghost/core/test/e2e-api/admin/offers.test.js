@@ -508,7 +508,7 @@ describe('Offers API', function () {
 
   it('Can edit an offer', async function () {
     // We can change all fields except discount related fields
-    let updatedOffer = {
+    const updatedOffer = {
       name: 'Cyber Monday',
       code: 'cyber monday',
       display_title: 'Cyber Monday Sale!',
@@ -542,7 +542,7 @@ describe('Offers API', function () {
     sinon.stub(logging, 'warn');
 
     // We can change all fields except discount related fields
-    let updatedOffer = {
+    const updatedOffer = {
       code: '4th',
     };
 
@@ -565,7 +565,7 @@ describe('Offers API', function () {
     sinon.stub(logging, 'warn');
 
     // We can change all fields except discount related fields
-    let updatedOffer = {
+    const updatedOffer = {
       code: 'Summer sale',
     };
 
@@ -588,7 +588,7 @@ describe('Offers API', function () {
     sinon.stub(logging, 'warn');
 
     // We can change all fields except discount related fields
-    let updatedOffer = {
+    const updatedOffer = {
       name: 'Easter Sales',
     };
 
@@ -609,7 +609,7 @@ describe('Offers API', function () {
 
   it('Can archive an offer', async function () {
     // We can change all fields except discount related fields
-    let updatedOffer = {
+    const updatedOffer = {
       status: 'archived',
     };
 
@@ -711,7 +711,7 @@ describe('Offers API', function () {
 
   it('Cannot update offer cadence', async function () {
     // We can change all fields except discount related fields
-    let updatedOffer = {
+    const updatedOffer = {
       cadence: 'month',
     };
 
@@ -739,7 +739,7 @@ describe('Offers API', function () {
 
   it('Cannot update offer amount', async function () {
     // We can change all fields except discount related fields
-    let updatedOffer = {
+    const updatedOffer = {
       amount: 20,
     };
 
@@ -769,7 +769,7 @@ describe('Offers API', function () {
   it('Cannot update offer tier', async function () {
     // We can change all fields except discount related fields
     const freeTier = await getFreeProduct();
-    let updatedOffer = {
+    const updatedOffer = {
       tier: {
         id: freeTier.id,
       },

@@ -167,14 +167,12 @@ module.exports = function has(options) {
     },
   };
 
-  let result;
-
   if (_.isEmpty(attrs)) {
     logging.warn(tpl(messages.invalidAttribute));
     return;
   }
 
-  result = _.some(attrs, function (value, attr) {
+  const result = _.some(attrs, function (value, attr) {
     return checks[attr]();
   });
 

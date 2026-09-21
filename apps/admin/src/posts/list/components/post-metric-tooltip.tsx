@@ -1,4 +1,9 @@
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@tryghost/shade/components';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+  Separator,
+} from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { POST_METRIC_ICONS } from '@/posts/list/post-metric-icons';
@@ -44,6 +49,7 @@ export function PostMetricTooltip({ title, rows, children }: PostMetricTooltipPr
           <Text size="sm" weight="semibold">
             {title}
           </Text>
+          <Separator className="my-1 bg-border-default" />
           {rows.map((row) => {
             const Icon = POST_METRIC_ICONS[row.icon];
 

@@ -1028,7 +1028,7 @@ describe('Email renderer', function () {
         title: 'Sample Post',
         loaded: ['posts_meta'],
       });
-      let response = emailRenderer.getSubject(post);
+      const response = emailRenderer.getSubject(post);
       assert.equal(response, 'Test Newsletter');
     });
 
@@ -1040,7 +1040,7 @@ describe('Email renderer', function () {
         title: 'Sample Post',
         loaded: ['posts_meta'],
       });
-      let response = emailRenderer.getSubject(post);
+      const response = emailRenderer.getSubject(post);
       assert.equal(response, 'Sample Post');
     });
 
@@ -1052,14 +1052,14 @@ describe('Email renderer', function () {
         title: 'Sample Post',
         loaded: ['posts_meta'],
       });
-      let response = emailRenderer.getSubject(post, true);
+      const response = emailRenderer.getSubject(post, true);
       assert.equal(response, '[TEST] Sample Post');
     });
   });
 
   describe('getFromAddress', function () {
     let siteTitle = 'Test Blog';
-    let emailRenderer = new EmailRenderer({
+    const emailRenderer = new EmailRenderer({
       settingsCache: {
         get: (key) => {
           if (key === 'title') {
@@ -1121,13 +1121,13 @@ describe('Email renderer', function () {
   });
 
   describe('getReplyToAddress', function () {
-    let emailAddressService = {
+    const emailAddressService = {
       getAddress(addresses) {
         return addresses;
       },
       managedEmailEnabled: true,
     };
-    let emailRenderer = new EmailRenderer({
+    const emailRenderer = new EmailRenderer({
       settingsCache: {
         get: (key) => {
           if (key === 'title') {
@@ -1306,14 +1306,14 @@ describe('Email renderer', function () {
         },
       });
 
-      let post = {
+      const post = {
         get: (key) => {
           if (key === 'lexical') {
             return '{}';
           }
         },
       };
-      let response = await emailRenderer.getSegments(post);
+      const response = await emailRenderer.getSegments(post);
       assert.deepEqual(response, ['status:free', 'status:-free']);
     });
 
@@ -1334,14 +1334,14 @@ describe('Email renderer', function () {
         },
       });
 
-      let post = {
+      const post = {
         get: (key) => {
           if (key === 'lexical') {
             return '{}';
           }
         },
       };
-      let response = await emailRenderer.getSegments(post);
+      const response = await emailRenderer.getSegments(post);
       assert.deepEqual(response, ['status:free', 'status:-free']);
     });
 
@@ -1892,7 +1892,7 @@ describe('Email renderer', function () {
       const segment = null;
       const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       const $ = cheerio.load(response.html);
 
@@ -1917,6 +1917,33 @@ describe('Email renderer', function () {
       // Test feedback buttons included
       assert(response.html.includes('http://feedback-link.com/?score=1'));
       assert(response.html.includes('http://feedback-link.com/?score=0'));
+    });
+
+    it('renders footer actions as table cells', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        ...baseNewsletter,
+        feedback_enabled: false,
+        show_comment_cta: true,
+        show_share_button: true,
+      });
+
+      const response = await emailRenderer.renderBody(post, newsletter, null, {});
+      const $ = cheerio.load(response.html);
+      const feedbackCells = $('table.feedback-buttons tr').first().children('td');
+
+      assert.equal(feedbackCells.length, 2, 'Expected comment and share actions in one table row');
+
+      feedbackCells.each((_index, cell) => {
+        const $cell = $(cell);
+
+        assert.equal($cell.attr('width'), '50%', 'Expected an explicit equal-width table cell');
+        assert.doesNotMatch(
+          $cell.attr('style'),
+          /(?:^|;)\s*display\s*:/i,
+          'Table cells must keep their native table-cell display value',
+        );
+      });
     });
 
     for (const visibility of ['public', 'members', 'paid', 'tiers']) {
@@ -2005,7 +2032,7 @@ describe('Email renderer', function () {
       const segment = null;
       const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       const $ = cheerio.load(response.html);
       assert.equal($('.preheader').text(), 'Custom excerpt');
@@ -2014,7 +2041,7 @@ describe('Email renderer', function () {
     it('does not include members-only content in preheader for non-members', async function () {
       renderedPost =
         '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
-      let post = {
+      const post = {
         related: sinon.stub(),
         get: (key) => {
           if (key === 'lexical') {
@@ -2031,11 +2058,11 @@ describe('Email renderer', function () {
         },
         getLazyRelation: sinon.stub(),
       };
-      let newsletter = {
+      const newsletter = {
         get: sinon.stub(),
       };
 
-      let response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+      const response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
 
       const $ = cheerio.load(response.html);
       assert.equal($('.preheader').text(), 'Lexical Test some text for both');
@@ -2044,7 +2071,7 @@ describe('Email renderer', function () {
     it('does not include paid segmented content in preheader for non-paying members', async function () {
       renderedPost =
         '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both';
-      let post = {
+      const post = {
         related: sinon.stub(),
         get: (key) => {
           if (key === 'lexical') {
@@ -2061,11 +2088,11 @@ describe('Email renderer', function () {
         },
         getLazyRelation: sinon.stub(),
       };
-      let newsletter = {
+      const newsletter = {
         get: sinon.stub(),
       };
 
-      let response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+      const response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
 
       const $ = cheerio.load(response.html);
       assert.equal($('.preheader').text(), 'Lexical Test some text for both');
@@ -2121,7 +2148,7 @@ describe('Email renderer', function () {
       const segment = null;
       const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
       assert.match(response.html, /By A &amp; 2 others/);
       assert.match(response.plaintext, /By A & 2 others/);
     });
@@ -2142,7 +2169,7 @@ describe('Email renderer', function () {
       const segment = null;
       const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       assert(response.html.includes('http://icon.example.com'));
       assert.match(response.html, /class="site-title"[^>]*?>Test Blog/);
@@ -2165,7 +2192,7 @@ describe('Email renderer', function () {
       const segment = null;
       const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       assert(response.html.includes('http://icon.example.com'));
       assert.match(response.html, /class="site-title"[^>]*?>Test Newsletter/);
@@ -2182,7 +2209,7 @@ describe('Email renderer', function () {
       const segment = null;
       const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       // Does include include Ghost badge
       assert.match(response.html, /https:\/\/ghost.org\//);
@@ -2204,7 +2231,7 @@ describe('Email renderer', function () {
       const segment = null;
       const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       // Test footer
       assert(response.html.includes('Test footer</p>')); // begin tag skipped because style is inlined in that tag
@@ -2224,7 +2251,7 @@ describe('Email renderer', function () {
       const segment = null;
       const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       assert.doesNotMatch(response.html, /is-light-background/);
     });
@@ -2242,7 +2269,7 @@ describe('Email renderer', function () {
       const segment = null;
       const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       assert.doesNotMatch(response.html, /is-dark-background/);
     });
@@ -2265,7 +2292,7 @@ describe('Email renderer', function () {
       renderedPost =
         '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://encoded-link.com?code&#x3D;test">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a><a href="#">Ignore me</a></p>';
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       // Check all links have domain tracked-link.com
       const $ = cheerio.load(response.html);
@@ -2334,7 +2361,7 @@ describe('Email renderer', function () {
       renderedPost =
         '<p>Lexical Test</p><p><a href="#relative-test">Hello</a><a href="#">Ignore me</a></p>';
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       // Check all links have domain tracked-link.com
       const $ = cheerio.load(response.html);
@@ -2377,7 +2404,7 @@ describe('Email renderer', function () {
       renderedPost =
         '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a></p>';
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       // Check all links have domain tracked-link.com
       const $ = cheerio.load(response.html);
@@ -2439,7 +2466,7 @@ describe('Email renderer', function () {
       renderedPost =
         '<p>Lexical Test</p><p><a href="https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%">Listen to episode</a></p>';
 
-      let response = await emailRenderer.renderBody(post, newsletter, segment, options);
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
 
       // Verify tracking was called for the Transistor link
       sinon.assert.called(addTrackingToUrlStub);
@@ -2470,7 +2497,7 @@ describe('Email renderer', function () {
     it('removes data-gh-segment and renders paywall', async function () {
       renderedPost =
         '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both <!--members-only--> finishing part only for members';
-      let post = {
+      const post = {
         related: () => {
           return null;
         },
@@ -2501,7 +2528,7 @@ describe('Email renderer', function () {
           };
         },
       };
-      let newsletter = {
+      const newsletter = {
         get: (key) => {
           if (key === 'header_image') {
             return null;
@@ -2526,9 +2553,9 @@ describe('Email renderer', function () {
           return false;
         },
       };
-      let options = {};
+      const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, 'status:free', options);
+      const response = await emailRenderer.renderBody(post, newsletter, 'status:free', options);
 
       assert(response.plaintext.includes('Test Post'));
       assert(response.plaintext.includes('Unsubscribe [%%{unsubscribe_url}%%]'));
@@ -2552,7 +2579,12 @@ describe('Email renderer', function () {
       assert(!response.html.includes('finishing part only for members'));
       assert(response.html.includes('Become a paid member of Test Blog to get access to all'));
 
-      let responsePaid = await emailRenderer.renderBody(post, newsletter, 'status:-free', options);
+      const responsePaid = await emailRenderer.renderBody(
+        post,
+        newsletter,
+        'status:-free',
+        options,
+      );
       assert(responsePaid.html.includes('members only section'));
       assert(responsePaid.html.includes('some text for both'));
       assert(responsePaid.html.includes('finishing part only for members'));
@@ -4573,7 +4605,7 @@ describe('Email renderer', function () {
     it('correctly include the site name in the paywall (in French)', async function () {
       renderedPost =
         '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both <!--members-only--> finishing part only for members';
-      let post = {
+      const post = {
         related: () => {
           return null;
         },
@@ -4604,7 +4636,7 @@ describe('Email renderer', function () {
           };
         },
       };
-      let newsletter = {
+      const newsletter = {
         get: (key) => {
           if (key === 'header_image') {
             return null;
@@ -4629,9 +4661,9 @@ describe('Email renderer', function () {
           return false;
         },
       };
-      let options = {};
+      const options = {};
 
-      let response = await emailRenderer.renderBody(post, newsletter, 'status:free', options);
+      const response = await emailRenderer.renderBody(post, newsletter, 'status:free', options);
 
       assert(!response.html.includes('members only section'));
       assert(response.html.includes('some text for both'));

@@ -2,6 +2,7 @@ export interface ActivitySettings {
   editorDefaultEmailRecipients?: string;
   commentsEnabled?: string;
   emailTrackClicks?: boolean;
+  customFieldsAvailable?: boolean;
 }
 
 const EMAIL_EVENTS = [
@@ -64,6 +65,12 @@ const EVENT_TYPES = [
     group: 'emails',
     icon: 'event-sent-email',
   },
+  {
+    event: 'metafield_change_event',
+    name: 'Custom fields updated',
+    group: 'others',
+    icon: 'event-metafields-changed',
+  },
   { event: 'feedback_event', name: 'Feedback', group: 'others', icon: 'event-more-like-this' },
 ];
 
@@ -80,6 +87,9 @@ function hiddenActivityEvents(settings: ActivitySettings, memberId?: string): st
   }
   if (settings.editorDefaultEmailRecipients === 'disabled') {
     hidden.push('newsletter_event');
+  }
+  if (!settings.customFieldsAvailable) {
+    hidden.push('metafield_change_event');
   }
   return hidden;
 }

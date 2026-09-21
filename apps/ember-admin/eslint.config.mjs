@@ -113,6 +113,7 @@ export default [
             'tmp/**',
             'public/**',
             'config/**',
+            'vendor/**',
             'node_modules/**'
         ]
     },

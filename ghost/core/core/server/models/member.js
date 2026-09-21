@@ -2,7 +2,7 @@ const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');
 const { chainTransformers } = require('@tryghost/mongo-utils');
-const config = require('../../shared/config');
+const { memberAvatarImage } = require('../services/members/member-avatar');
 const { MemberCommentingCodec } = require('../services/members/commenting');
 const {
   METAFIELDS_RELATION,
@@ -588,7 +588,10 @@ const Member = ghostBookshelf.Model.extend(
      * has no access to the nested relations, which should be updated.
      */
     permittedAttributes: function permittedAttributes() {
-      let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
+      const filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(
+        this,
+        arguments,
+      );
 
       this.relationships.forEach((key) => {
         filteredKeys.push(key);
@@ -632,14 +635,8 @@ const Member = ghostBookshelf.Model.extend(
     toJSON(unfilteredOptions) {
       const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
-      // Inject a computed avatar url. Uses gravatar's default ?d= query param
-      // to serve a blank image if there is no gravatar for the member's email.
-      // Will not use gravatar if privacy.useGravatar is false in config
-      attrs.avatar_image = null;
-      if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
-        const { gravatar } = require('../lib/image');
-        attrs.avatar_image = gravatar.url(attrs.email, { size: 250, default: 'blank' });
-      }
+      // Inject a computed avatar url, by the rule every place that shows a member shares.
+      attrs.avatar_image = memberAvatarImage(attrs.email);
 
       // Serialize commenting domain object to API format
       if (attrs.commenting) {

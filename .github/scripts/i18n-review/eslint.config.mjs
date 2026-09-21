@@ -27,6 +27,7 @@ export default defineConfig([
       // ESLint 9 flipped the caughtErrors default to 'all'; keep unused
       // catch bindings tolerated, as the rest of the repo does.
       'no-unused-vars': ['error', { caughtErrors: 'none' }],
+      'prefer-const': ['error', { destructuring: 'all' }],
     },
   },
 ]);

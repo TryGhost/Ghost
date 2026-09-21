@@ -855,7 +855,7 @@ class EmailRenderer {
   isMemberTrialing(member) {
     // Do we have an active subscription?
     if (member.status === 'paid') {
-      let activeSubscription = member.subscriptions.find((subscription) => {
+      const activeSubscription = member.subscriptions.find((subscription) => {
         return subscription.status === 'trialing';
       });
 
@@ -1219,7 +1219,7 @@ class EmailRenderer {
    */
   #getEmailPreheader(postModel, audience, html) {
     let plaintext = postModel.get('plaintext');
-    let customExcerpt = postModel.get('custom_excerpt');
+    const customExcerpt = postModel.get('custom_excerpt');
     if (customExcerpt) {
       return customExcerpt;
     } else {

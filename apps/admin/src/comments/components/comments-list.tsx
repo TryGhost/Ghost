@@ -21,6 +21,7 @@ import {
 } from '@/shared/virtual-list';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { forwardRef, useEffect, useRef, useState } from 'react';
+import { useShade } from '@tryghost/shade/app';
 
 const SpacerRow = ({ height }: { height: number }) => (
   <div aria-hidden="true" className="flex">
@@ -60,6 +61,7 @@ function CommentsList({
   isLoading?: boolean;
   dislikesEnabled: boolean;
 }) {
+  const { isAdmin7 } = useShade();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems, {
     resetKey,
@@ -133,7 +135,7 @@ function CommentsList({
                 <div
                   key={key}
                   {...props}
-                  className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-table-row-hover md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                  className="group/comment grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-table-row-hover md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
                   data-testid="comment-list-row"
                   onClick={() => {
                     // Close sidebar when clicking on a comment in the main list
@@ -202,7 +204,10 @@ function CommentsList({
                       <div className="flex flex-row flex-nowrap items-center gap-3">
                         {item.status === 'published' && (
                           <Button
-                            className="text-foreground"
+                            className={cn(
+                              'text-foreground',
+                              isAdmin7 && 'group-hover/comment:bg-background',
+                            )}
                             size="sm"
                             variant="outline"
                             onClick={() => hideComment({ id: item.id })}
@@ -213,7 +218,10 @@ function CommentsList({
                         )}
                         {item.status === 'hidden' && (
                           <Button
-                            className="text-foreground"
+                            className={cn(
+                              'text-foreground',
+                              isAdmin7 && 'group-hover/comment:bg-background',
+                            )}
                             size="sm"
                             variant="outline"
                             onClick={() => showComment({ id: item.id })}

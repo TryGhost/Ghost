@@ -13,7 +13,7 @@ export default class UpgradeStatusService extends Service {
     // called when notifications are fetched during app boot for notifications
     // where the `location` is not 'top' and `custom` is false
     handleUpgradeNotification(notification) {
-        let message = get(notification, 'message');
+        const message = get(notification, 'message');
         set(this, 'message', htmlSafe(message));
     }
 

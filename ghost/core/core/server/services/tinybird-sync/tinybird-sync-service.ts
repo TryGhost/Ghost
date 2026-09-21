@@ -19,7 +19,12 @@ type Logger = {
   info(...args: unknown[]): void;
 };
 
+type Labs = {
+  isSet(feature: string): boolean;
+};
+
 type TinybirdSyncDependencies = GetIngestConfigDependencies & {
+  labs: Labs;
   knex: Knex;
   logging: Logger;
   sleep: (ms: number) => Promise<void>;
@@ -32,6 +37,7 @@ type TinybirdSyncDependencies = GetIngestConfigDependencies & {
 export function createTinybirdSyncService({
   config,
   settingsCache,
+  labs,
   knex,
   logging,
   sleep,
@@ -71,10 +77,13 @@ export function createTinybirdSyncService({
   };
 
   const runLoop = async (ingest: IngestConfig): Promise<never> => {
+    // Randomize the first wait to avoid all instances syncing at the same time.
     await sleep(Math.floor(random() * INTERVAL_MS));
 
     while (true) {
-      await syncAll(ingest);
+      if (labs.isSet('automationsTinybirdSync')) {
+        await syncAll(ingest);
+      }
       await sleep(INTERVAL_MS);
     }
   };
@@ -92,7 +101,11 @@ export function createTinybirdSyncService({
 
     started = true;
 
-    logging.info({ system: { event: 'tinybird.sync.started' } }, '[Tinybird sync] Started');
+    const isSyncEnabled = labs.isSet('automationsTinybirdSync');
+    logging.info(
+      { system: { event: 'tinybird.sync.started' } },
+      `[Tinybird sync] Started: sync ${isSyncEnabled ? 'enabled' : 'disabled'} by labs flag (but may change)`,
+    );
 
     void runLoop(ingest)
       .then(() => {

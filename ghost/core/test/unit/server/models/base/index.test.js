@@ -12,7 +12,7 @@ describe('Models: base', function () {
 
   describe('generateSlug', function () {
     let Model;
-    let options = {};
+    const options = {};
     let securityStringSafeStub;
     beforeEach(function () {
       securityStringSafeStub = sinon.stub(security.string, 'safe');

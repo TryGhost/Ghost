@@ -8,6 +8,7 @@ import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
+import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
 
 const networkPageChrome = {
   contentClassName: 'max-w-(--content-width)',
@@ -52,18 +53,54 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
   const sidebarVisible = useAdminSidebarVisibility();
+  const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
+
+  // The dunning takeover is positioned against the scrollable inset, so the
+  // inset must not scroll (and must sit at the top) while the takeover is up —
+  // otherwise the covered page scrolls back into view from underneath it
+  const insetRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (dunningLocked) {
+      insetRef.current?.scrollTo?.(0, 0);
+    }
+  }, [dunningLocked]);
+
+  // The covered regions become `inert` while the takeover is up: aria-modal is
+  // only a semantic hint, so without this the covered page stays reachable by
+  // keyboard and assistive technology. Applied through refs because React 18
+  // has no first-class inert prop. Whichever refs the active layout branch
+  // doesn't render stay null and are skipped.
+  //
+  // A layout effect on purpose: layout effects run before passive-effect
+  // cleanups, so on dismissal inert is cleared before the overlay's cleanup
+  // restores focus — focus() on a still-inert element is a silent no-op.
+  const sidebarRef = React.useRef<HTMLDivElement>(null);
+  const mainRef = React.useRef<HTMLElement>(null);
+  const contributorMenuRef = React.useRef<HTMLDivElement>(null);
+  React.useLayoutEffect(() => {
+    for (const region of [sidebarRef.current, mainRef.current, contributorMenuRef.current]) {
+      if (region) {
+        region.inert = dunningLocked;
+      }
+    }
+  }, [dunningLocked]);
 
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
     return (
       <div className="relative h-full bg-background">
-        <main className="flex h-full flex-col overflow-y-auto">
+        <main ref={mainRef} className="flex h-full flex-col overflow-y-auto">
+          <DunningBanner />
           <div className="flex-1">{children}</div>
         </main>
-        <div className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8">
+        <div
+          ref={contributorMenuRef}
+          className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8"
+        >
           <ContributorUserMenu />
         </div>
+        <DunningOverlay />
       </div>
     );
   }
@@ -77,16 +114,32 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       open={!!currentUser && sidebarVisible}
       style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
     >
-      {sidebarVisible && <AppSidebar variant="floating" />}
+      {sidebarVisible && (
+        <AppSidebar
+          ref={sidebarRef}
+          className={cn(dunningLocked && 'opacity-40')}
+          variant="floating"
+        />
+      )}
       <SidebarInset
-        className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
+        ref={insetRef}
+        className={cn(
+          'relative bg-background sidebar:max-h-full',
+          dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
+          sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+        )}
       >
-        <main className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
+        <DunningBanner />
+        <main ref={mainRef} className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
           <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
             {children}
           </ActivityPubHostLayoutProvider>
         </main>
-        <MobileNavBar />
+        {/* The mobile nav sits outside the takeover's cover (fixed, above the
+            inset) and its sheet opens in a portal, so it unmounts entirely
+            rather than relying on inert */}
+        {!dunningLocked && <MobileNavBar />}
+        <DunningOverlay />
       </SidebarInset>
     </SidebarProvider>
   );

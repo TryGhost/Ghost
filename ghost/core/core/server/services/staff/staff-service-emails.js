@@ -44,7 +44,7 @@ class StaffServiceEmails {
         attributionTitle = 'Homepage';
       }
 
-      let staffUrl = this.urlUtils.urlJoin(
+      const staffUrl = this.urlUtils.urlJoin(
         this.urlUtils.urlFor('admin', true),
         '#',
         `/settings/staff/${user.slug}/email-notifications`,
@@ -101,7 +101,7 @@ class StaffServiceEmails {
         startedOn: this.getFormattedDate(subscription.startDate),
       };
 
-      let offerData = this.getOfferData(offer);
+      const offerData = this.getOfferData(offer);
 
       if (!offerData && subscription?.trialEnd) {
         const trialEnd = moment(subscription.trialEnd);
@@ -118,7 +118,7 @@ class StaffServiceEmails {
         attributionTitle = 'Homepage';
       }
 
-      let staffUrl = this.urlUtils.urlJoin(
+      const staffUrl = this.urlUtils.urlJoin(
         this.urlUtils.urlFor('admin', true),
         '#',
         `/settings/staff/${user.slug}/email-notifications`,
@@ -180,7 +180,7 @@ class StaffServiceEmails {
         cancellationReason: subscription.cancellationReason || '',
       };
 
-      let staffUrl = this.urlUtils.urlJoin(
+      const staffUrl = this.urlUtils.urlJoin(
         this.urlUtils.urlFor('admin', true),
         '#',
         `/settings/staff/${user.slug}/email-notifications`,
@@ -217,7 +217,7 @@ class StaffServiceEmails {
    * @param {string} recipient.slug
    */
   async getSharedData(recipient) {
-    let staffUrl = this.urlUtils.urlJoin(
+    const staffUrl = this.urlUtils.urlJoin(
       this.urlUtils.urlFor('admin', true),
       '#',
       `/settings/staff/${recipient.slug}/email-notifications`,
@@ -273,7 +273,7 @@ class StaffServiceEmails {
     for (const user of users) {
       const to = user.email;
 
-      let staffUrl = this.urlUtils.urlJoin(
+      const staffUrl = this.urlUtils.urlJoin(
         this.urlUtils.urlFor('admin', true),
         '#',
         `/settings/staff/${user.slug}/email-notifications`,
@@ -442,7 +442,7 @@ class StaffServiceEmails {
     for (const user of users) {
       const to = user.email;
 
-      let staffUrl = this.urlUtils.urlJoin(
+      const staffUrl = this.urlUtils.urlJoin(
         this.urlUtils.urlFor('admin', true),
         '#',
         `/settings/staff/${user.slug}/email-notifications`,
@@ -485,7 +485,7 @@ class StaffServiceEmails {
 
   /** @private */
   getMemberData(member) {
-    let name = member?.name || member?.email;
+    const name = member?.name || member?.email;
     return {
       name,
       email: member?.email,
@@ -607,7 +607,7 @@ class StaffServiceEmails {
       this.logging.warn(message.text);
     }
 
-    let msg = Object.assign(
+    const msg = Object.assign(
       {
         from: this.fromEmailAddress,
         forceTextContent: true,

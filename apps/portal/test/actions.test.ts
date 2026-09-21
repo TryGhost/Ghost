@@ -1,4 +1,5 @@
 import ActionHandler from '../src/actions';
+import { HumanReadableError } from '../src/utils/errors';
 import { vi, type MockInstance } from 'vitest';
 import { GIFT_FORM_STATE_KEY, createGiftFormState } from '../src/components/pages/gift/form-state';
 import { ensureGiftPlanRoute, setGiftRoute } from '../src/components/pages/gift/navigation';
@@ -86,6 +87,281 @@ describe('updateProfile action', () => {
     });
 
     expect(mockApi.member.update).toHaveBeenCalledWith({ name: 'John Doe' });
+  });
+
+  test('marks the custom field the site refused', async () => {
+    const nickname = { key: 'nickname', name: 'Nickname', type: 'short_text' };
+    const refusal = new HumanReadableError('Keep it under 255 characters.', {
+      property: 'metafields.custom.nickname',
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [nickname],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { nickname: 'x' } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('updateProfile:failed');
+    expect(result.fieldErrors).toEqual({ 'custom:nickname': 'Keep it under 255 characters.' });
+  });
+
+  // An address is drawn as several inputs under one name, so a refusal that named only
+  // the field would leave a member looking at six boxes with no idea which one to fix.
+  // The refusal is keyed by the input so the box itself carries it.
+  test('marks the part of a composite the site refused', async () => {
+    const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
+    const refusal = new HumanReadableError('Use 255 characters or fewer.', {
+      property: 'metafields.custom.shipping_address.line1',
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [address],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { shipping_address: { line1: 'x' } } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('updateProfile:failed');
+    expect(result.fieldErrors).toEqual({
+      'custom:shipping_address:line1': 'Use 255 characters or fewer.',
+    });
+    // No notification at all: the boxes are marked, each carries its reason, and the
+    // button offers to try again, so one over the top would only repeat the page.
+    expect(result.popupNotification).toBeNull();
+  });
+
+  // A verification mail going out says nothing about whether the values saved. Reporting
+  // success here lost what the member typed and left the page before they could see why.
+  test('does not call a save successful when the email sent but the values were refused', async () => {
+    const nickname = { key: 'nickname', name: 'Nickname', type: 'short_text' };
+    const refusal = new HumanReadableError('Keep it under 255 characters.', {
+      property: 'metafields.custom.nickname',
+    });
+    const mockApi = {
+      member: {
+        update: vi.fn(() => Promise.reject(refusal)),
+        updateEmailAddress: vi.fn(() => Promise.resolve({ success: true })),
+      },
+    };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [nickname],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'new@example.com',
+        metafields: { custom: { nickname: 'x' } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('updateProfile:failed');
+    expect(result.fieldErrors).toEqual({ 'custom:nickname': 'Keep it under 255 characters.' });
+    // Still on the page, so the marked input is there to be seen and fixed.
+    expect(result.page).toBeUndefined();
+  });
+
+  // The whole of a composite can be refused — archived, or closed to members, while the
+  // page was open — and no one box is named for the field, so the notification keeps it.
+  test('names the field when the whole of a composite is refused', async () => {
+    const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
+    const refusal = new HumanReadableError('Cannot set custom field: custom.shipping_address', {
+      property: 'metafields.custom.shipping_address',
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [address],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { shipping_address: { line1: 'x' } } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.fieldErrors).toEqual({});
+    expect(result.popupNotification.message).toBe(
+      'Shipping address: Cannot set custom field: custom.shipping_address',
+    );
+  });
+
+  // A refusal naming a part the field does not have would mark a box that is not on the
+  // page, and the notification is held back whenever a box is marked - so the save would
+  // have failed without saying anything at all.
+  test('says so when a refusal names a part that is not drawn', async () => {
+    const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
+    const refusal = new HumanReadableError('Unrecognized key: "line3"', {
+      property: 'metafields.custom.shipping_address.line3',
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [address],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { shipping_address: { line1: 'x' } } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.fieldErrors).toEqual({});
+    expect(result.popupNotification.message).toBe('Shipping address: Unrecognized key: "line3"');
+  });
+
+  // The site refuses every value it objects to in one answer, so a member fixes an
+  // address in one pass rather than learning about the next line each time they save.
+  test('marks every part the site refused, not only the first', async () => {
+    const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
+    const refusal = new HumanReadableError('Use 255 characters or fewer.', {
+      property: 'metafields.custom.shipping_address.line1',
+      details: [
+        {
+          property: 'metafields.custom.shipping_address.line1',
+          message: 'Use 255 characters or fewer.',
+        },
+        {
+          property: 'metafields.custom.shipping_address.line2',
+          message: 'Use 255 characters or fewer.',
+        },
+        {
+          property: 'metafields.custom.shipping_address.country',
+          message: 'Enter a 2-letter country code, like US.',
+        },
+      ],
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [address],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { shipping_address: { line1: 'x' } } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.fieldErrors).toEqual({
+      'custom:shipping_address:line1': 'Use 255 characters or fewer.',
+      'custom:shipping_address:line2': 'Use 255 characters or fewer.',
+      'custom:shipping_address:country': 'Enter a 2-letter country code, like US.',
+    });
+    // Every one of them is on a box, so nothing is left for a notification to add.
+    expect(result.popupNotification).toBeNull();
+  });
+
+  // A site answering in a shape this build does not know is read as one refusal, not as
+  // a reason to take the page down: what reads these asks them for a translation, and
+  // that does not survive being handed something which is not text.
+  test('reads a refusal list it cannot make sense of as a single refusal', async () => {
+    const nickname = { key: 'nickname', name: 'Nickname', type: 'short_text' };
+    const refusal = new HumanReadableError('Keep it under 255 characters.', {
+      property: 'metafields.custom.nickname',
+      details: [{ property: 42, message: { nope: true } }, 'not even an object', null] as never,
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [nickname],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { nickname: 'x' } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('updateProfile:failed');
+    expect(result.fieldErrors).toEqual({ 'custom:nickname': 'Keep it under 255 characters.' });
+  });
+
+  // Leaving the page discards what was typed, so a refusal of it must not come back to
+  // mark a value the member never sees again.
+  test('forgets a refusal when the member leaves the page', async () => {
+    const result = await ActionHandler({
+      action: 'switchPage',
+      data: { page: 'accountHome' },
+      state: { fieldErrors: { 'custom:nickname': 'Keep it under 255 characters.' } },
+      api: {},
+    });
+
+    expect(result.fieldErrors).toEqual({});
+  });
+
+  // The suppression is about not repeating the page, not about going quiet: a failure no
+  // input can show has nowhere else to be said.
+  test('still says something when nothing on the page can', async () => {
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(new Error('offline'))) } };
+    const state = { member: { name: 'Jamie', email: 'jamie@example.com' }, customFields: [] };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: { name: 'Renamed', email: 'jamie@example.com' },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.fieldErrors).toEqual({});
+    expect(result.popupNotification.message).toBe('Failed to update account details');
+  });
+
+  test('keeps the usual message when a failure names no field', async () => {
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(new Error('offline'))) } };
+    const state = { member: { name: 'Jamie', email: 'jamie@example.com' }, customFields: [] };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: { name: 'Renamed', email: 'jamie@example.com' },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.popupNotification.message).toBe('Failed to update account details');
   });
 });
 

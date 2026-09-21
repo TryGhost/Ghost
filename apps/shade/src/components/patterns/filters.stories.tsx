@@ -1,9 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { Inline, Stack, Text } from '@/components/primitives';
+import { FilterBar } from '@/components/patterns/filter-bar';
+import { PageHeader } from '@/components/patterns/page-header';
+import { useShade } from '@/providers/shade-provider';
+import ShadeApp from '@/shade-app';
 import {
   Filters,
   FilterSegmentSelect,
   FilterSegmentInput,
+  FilterSegmentMultiSelect,
   type CustomRendererProps,
   type Filter,
   type FilterFieldConfig,
@@ -441,6 +447,31 @@ export const FullRadius: Story = {
     docs: {
       description: {
         story: 'Filters with fully rounded corners.',
+      },
+    },
+  },
+};
+
+export const PillControls: Story = {
+  render: () => (
+    <ShadeApp darkMode={false}>
+      <Inline align="start" gap="lg">
+        <FilterDemo addButtonText="Filter" addButtonVariant="secondary" fields={basicFields} />
+        <FilterDemo
+          addButtonClassName="aspect-square gap-0 !px-0 text-[0px]"
+          addButtonText="Add filter"
+          fields={prePopulatedFields}
+          initialFilters={initialFilters}
+          showClearButton={true}
+        />
+      </Inline>
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use inherited pill controls for filter actions while keeping joined filter segments unchanged.',
       },
     },
   },
@@ -885,7 +916,8 @@ const CascadeRenderer = ({
   onOperatorChange,
   readOnly,
 }: CustomRendererProps<string>) => {
-  const [part = '', value = ''] = values;
+  const [part = '', value = '', ...more] = values;
+  const countries = value ? [value, ...more] : [];
 
   return (
     <>
@@ -898,7 +930,7 @@ const CascadeRenderer = ({
         ]}
         readOnly={readOnly}
         value={part}
-        onChange={(next) => onChange([next, value])}
+        onChange={(next) => onChange([next])}
       />
       {onOperatorChange && (
         <FilterSegmentSelect
@@ -912,13 +944,28 @@ const CascadeRenderer = ({
           onChange={onOperatorChange}
         />
       )}
-      <FilterSegmentInput
-        ariaLabel="Value"
-        placeholder="Enter value..."
-        readOnly={readOnly}
-        value={value}
-        onChange={(next) => onChange([part, next])}
-      />
+      {part === 'country' ? (
+        <FilterSegmentMultiSelect
+          ariaLabel="Value"
+          options={[
+            { value: 'DE', label: 'Germany' },
+            { value: 'GB', label: 'United Kingdom' },
+            { value: 'US', label: 'United States' },
+          ]}
+          readOnly={readOnly}
+          searchPlaceholder="Search countries..."
+          values={countries}
+          onChange={(next) => onChange([part, ...next])}
+        />
+      ) : (
+        <FilterSegmentInput
+          ariaLabel="Value"
+          placeholder="Enter value..."
+          readOnly={readOnly}
+          value={value}
+          onChange={(next) => onChange([part, next])}
+        />
+      )}
     </>
   );
 };
@@ -949,7 +996,7 @@ export const ComposedSegments: Story = {
     docs: {
       description: {
         story:
-          'FilterSegmentSelect and FilterSegmentInput composed by a customRenderer (with `renderOperatorInValue`) into a cascade that reads as native filter segments rather than standalone selects.',
+          'FilterSegmentSelect and FilterSegmentInput composed by a customRenderer (with `renderOperatorInValue`) into a cascade that reads as native filter segments rather than standalone selects. Pick the Country part for a FilterSegmentMultiSelect, the "is any of" segment.',
       },
     },
   },
@@ -971,6 +1018,38 @@ const readOnlyFields: FilterFieldConfig[] = [
     icon: <User className="size-4" />,
   },
 ];
+
+export const SingleOperator: Story = {
+  render: () => (
+    <FilterDemo
+      fields={[
+        {
+          key: 'status',
+          label: 'Status',
+          type: 'select',
+          operators: [{ value: 'is', label: 'is' }],
+          options: [
+            { value: 'published', label: 'Published' },
+            { value: 'draft', label: 'Draft' },
+          ],
+        },
+        { key: 'name', label: 'Name', type: 'text' },
+      ]}
+      initialFilters={[
+        createFilter('status', 'is', ['published']),
+        createFilter('name', 'contains', ['Alex']),
+      ]}
+    />
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A field with one operator automatically shows it as static text without changing the pill appearance. Its value stays editable; fields with multiple operators keep their dropdown.',
+      },
+    },
+  },
+};
 
 export const ReadOnlyFilter: Story = {
   render: () => (
@@ -1016,4 +1095,73 @@ export const GroupPreviewLimit: Story = {
       },
     },
   },
+};
+
+function HeaderTriggerExample({
+  isAdmin7 = true,
+  fallbackStyle = 'list',
+  disabled = false,
+}: {
+  isAdmin7?: boolean;
+  fallbackStyle?: 'list' | 'funnel' | 'funnel-plus';
+  disabled?: boolean;
+}) {
+  const { darkMode } = useShade();
+  const [filters, setFilters] = useState<Filter[]>([]);
+  const control = (
+    <Filters
+      addButton={
+        <Filters.Trigger disabled={disabled} fallbackStyle={fallbackStyle} collapseLabel />
+      }
+      fields={basicFields}
+      filters={filters}
+      keyboardShortcut={disabled ? undefined : 'f'}
+      onChange={setFilters}
+    />
+  );
+  return (
+    <ShadeApp className="h-auto!" darkMode={darkMode} isAdmin7={isAdmin7}>
+      <PageHeader.ActionGroup>
+        {filters.length ? <FilterBar>{control}</FilterBar> : control}
+      </PageHeader.ActionGroup>
+    </ShadeApp>
+  );
+}
+
+export const HeaderTrigger: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Shared header trigger: hover for its shortcut, tab for focus, and choose a filter to see the compact add button. The disabled control stays inert.',
+      },
+    },
+  },
+  render: () => (
+    <Stack gap="md">
+      <HeaderTriggerExample />
+      <HeaderTriggerExample disabled />
+    </Stack>
+  ),
+};
+
+export const HeaderTriggerCompatibility: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Previous list, funnel and analytics triggers while Admin 7 is off. Resize below lg to check collapsed labels; add a filter to check each previous add-button treatment.',
+      },
+    },
+  },
+  render: () => (
+    <Stack gap="md">
+      {(['list', 'funnel', 'funnel-plus'] as const).map((fallbackStyle) => (
+        <Stack key={fallbackStyle} gap="sm">
+          <Text>{fallbackStyle}</Text>
+          <HeaderTriggerExample fallbackStyle={fallbackStyle} isAdmin7={false} />
+        </Stack>
+      ))}
+    </Stack>
+  ),
 };

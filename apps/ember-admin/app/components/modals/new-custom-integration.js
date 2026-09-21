@@ -40,8 +40,8 @@ export default class NewCustomIntegrationModal extends Component {
             // TODO: server-side validation errors should be serialized
             // properly so that errors are added to model.errors automatically
             if (error && isInvalidError(error)) {
-                let [firstError] = error.payload.errors;
-                let {message} = firstError;
+                const [firstError] = error.payload.errors;
+                const {message} = firstError;
 
                 if (message && message.match(/name/i)) {
                     this.integration.errors.add('name', message);

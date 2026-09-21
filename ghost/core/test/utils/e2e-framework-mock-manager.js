@@ -288,7 +288,7 @@ const sentEmail = (matchers) => {
     });
   }
 
-  let spyCall = mocks.mail.getCall(emailCount);
+  const spyCall = mocks.mail.getCall(emailCount);
 
   assert.notEqual(spyCall, null, 'Expected at least ' + (emailCount + 1) + ' emails sent.');
 
@@ -298,7 +298,7 @@ const sentEmail = (matchers) => {
   sinon.assert.called(mocks.mail);
 
   Object.keys(matchers).forEach((key) => {
-    let value = matchers[key];
+    const value = matchers[key];
 
     // We use assert, rather than sinon.assert.calledWith, as we end up with much better error messaging
     assert.notEqual(spyCall.args[0][key], undefined, `Expected email to have property ${key}`);

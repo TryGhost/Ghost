@@ -391,7 +391,7 @@ class NewslettersService {
         if (process.env.NODE_ENV !== 'production') {
           logging.warn(message.text);
         }
-        let msg = Object.assign(
+        const msg = Object.assign(
           {
             from: fromEmail,
             subject: 'Verify email address',

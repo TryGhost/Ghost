@@ -40,7 +40,7 @@ async function notify(type, error = null) {
   // Build our message
   // - if there's an error then the server is not ready, include the errors
   // - if there's no error then the server has started
-  let message = {};
+  const message = {};
   if (error) {
     message[type] = false;
     message.error = error;
@@ -56,7 +56,7 @@ async function notify(type, error = null) {
   }
 
   // CASE: use bootstrap socket to communicate with CLI for systemd
-  let socketAddress = config.get('bootstrap-socket');
+  const socketAddress = config.get('bootstrap-socket');
   if (socketAddress) {
     const bootstrapSocket = require('./lib/bootstrap-socket');
     return bootstrapSocket.connectAndSend(socketAddress, message);

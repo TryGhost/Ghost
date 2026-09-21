@@ -66,7 +66,7 @@ describe('Public-config Service', function () {
     });
 
     it('should return null for klipy apikey when unset', function () {
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.equal(configProperties.klipy.apiKey, null);
     });
@@ -74,7 +74,7 @@ describe('Public-config Service', function () {
     it('should return klipy apikey when set', function () {
       configUtils.set('klipy:apiKey', 'KLIPY_KEY');
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.equal(configProperties.klipy.apiKey, 'KLIPY_KEY');
     });
@@ -84,7 +84,7 @@ describe('Public-config Service', function () {
         mailgun: 'exists',
       });
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.equal(configProperties.mailgunIsConfigured, true);
     });
@@ -92,13 +92,13 @@ describe('Public-config Service', function () {
     it('should return false for mailgunIsConfigured when mailgun is not configured', function () {
       configUtils.set('bulkEmail', {});
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.equal(configProperties.mailgunIsConfigured, false);
     });
 
     it('should NOT return stats by default', function () {
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.equal(configProperties.stats, undefined);
     });
@@ -113,7 +113,7 @@ describe('Public-config Service', function () {
         },
       });
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.deepEqual(configProperties.stats, {
         endpoint: 'xxx',
@@ -131,7 +131,7 @@ describe('Public-config Service', function () {
         },
       });
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.deepEqual(configProperties.stats.id, '1234567890');
     });
@@ -144,7 +144,7 @@ describe('Public-config Service', function () {
         },
       });
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.deepEqual(configProperties.stats, {
         endpoint: 'xxx',
@@ -166,7 +166,7 @@ describe('Public-config Service', function () {
         },
       });
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.deepEqual(configProperties.stats, {
         endpoint: 'xxx',
@@ -185,14 +185,14 @@ describe('Public-config Service', function () {
         url: 'xxx',
       });
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.equal(configProperties.stats, undefined);
     });
 
     it('should return emailAnalytics as boolean from nested config structure', function () {
       // Default config has emailAnalytics.enabled = true
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.equal(configProperties.emailAnalytics, true);
       assert.equal(typeof configProperties.emailAnalytics, 'boolean');
@@ -201,13 +201,13 @@ describe('Public-config Service', function () {
     it('should return false for emailAnalytics when disabled', function () {
       configUtils.set('emailAnalytics:enabled', false);
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.equal(configProperties.emailAnalytics, false);
     });
 
     it('should NOT return featurebase config by default', function () {
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
       assert.equal(configProperties.featurebase, undefined);
     });
 
@@ -218,7 +218,7 @@ describe('Public-config Service', function () {
         jwtSecret: 'super-secret-key',
       });
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       assert.equal(configProperties.featurebase.enabled, false);
       assert.equal(configProperties.featurebase.organization, 'test-org');
@@ -232,7 +232,7 @@ describe('Public-config Service', function () {
         apiKey: 'secret-api-key',
       });
 
-      let configProperties = getConfigProperties();
+      const configProperties = getConfigProperties();
 
       // Only enabled and organization should be exposed, not jwtSecret/apiKey
       assert.deepEqual(configProperties.featurebase, { enabled: true, organization: 'test-org' });

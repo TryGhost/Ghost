@@ -92,6 +92,27 @@ Keep the decision at the boundary that owns the behavior. Hiding a button does
 not protect a server endpoint, and rejecting an endpoint does not give Admin a
 usable disabled state.
 
+## Admin 7 milestones
+
+Admin 7 milestones use ordinary private Labs flags with stable, descriptive
+`admin7`-prefixed keys and labels that identify their milestone and purpose.
+Follow the same registration and lifecycle as any other private flag.
+
+Read the current milestone's flag with `useFeatureFlag` at the boundary that
+owns the change, keeping any availability checks beside it. For shared design
+changes, pass the result to ShadeApp's `isAdmin7` prop. Components read
+`useShade().isAdmin7`; reuse this switch as milestones progress instead of
+adding a Shade prop for each milestone.
+
+Keep shared appearance in Shade and page-specific structure in the page. Build
+the enabled design as the intended default so retiring a flag means removing
+compatibility branches, without changing ordinary component calls. Document
+milestone-specific scope and exclusions alongside the affected design.
+
+Test the flag boundary and preserve existing behavioral coverage. Styling-only
+changes need visual review, not tests that assert appearance. Keep permanent
+permission and backend capability checks independent of the temporary flag.
+
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:

@@ -61,7 +61,7 @@ export default class GhDateTimePicker extends Component {
 
     @computed('blogTimezone')
     get timezone() {
-        let blogTimezone = this.blogTimezone;
+        const blogTimezone = this.blogTimezone;
         return moment.utc().tz(blogTimezone).format('z');
     }
 
@@ -71,8 +71,8 @@ export default class GhDateTimePicker extends Component {
             return this._scratchDateError;
         }
 
-        let errors = this.errors;
-        let property = this.dateErrorProperty;
+        const errors = this.errors;
+        const property = this.dateErrorProperty;
 
         if (errors && !isEmpty(errors.errorsFor(property))) {
             return errors.errorsFor(property).get('firstObject').message;
@@ -83,8 +83,8 @@ export default class GhDateTimePicker extends Component {
 
     @computed('errors.[]', 'timeErrorProperty')
     get timeError() {
-        let errors = this.errors;
-        let property = this.timeErrorProperty;
+        const errors = this.errors;
+        const property = this.timeErrorProperty;
 
         if (errors && !isEmpty(errors.errorsFor(property))) {
             return errors.errorsFor(property).get('firstObject').message;
@@ -96,11 +96,11 @@ export default class GhDateTimePicker extends Component {
     didReceiveAttrs() {
         super.didReceiveAttrs(...arguments);
 
-        let date = this.date;
-        let time = this.time;
-        let minDate = this.minDate;
-        let maxDate = this.maxDate;
-        let blogTimezone = this.blogTimezone;
+        const date = this.date;
+        const time = this.time;
+        const minDate = this.minDate;
+        const maxDate = this.maxDate;
+        const blogTimezone = this.blogTimezone;
 
         if (!isBlank(date)) {
             // Note: input date as a string is expected to be in the blog's timezone
@@ -206,7 +206,7 @@ export default class GhDateTimePicker extends Component {
 
     @action
     onDateInput(datepicker, event) {
-        let skipFocus = true;
+        const skipFocus = true;
         datepicker.actions.close(event, skipFocus);
         this.set('_scratchDate', event.target.value);
     }
@@ -260,7 +260,7 @@ export default class GhDateTimePicker extends Component {
         // capture a Ctrl/Cmd+S combo to make sure that the model value is updated
         // before the save occurs or we abort the save if the value is invalid
         if (event.key === 's' && (event.ctrlKey || event.metaKey)) {
-            let wasValid = this._setDate(event.target.value);
+            const wasValid = this._setDate(event.target.value);
             if (!wasValid) {
                 event.stopImmediatePropagation();
                 event.preventDefault();
@@ -281,7 +281,7 @@ export default class GhDateTimePicker extends Component {
             return false;
         }
 
-        let date = moment.tz(dateStr, DATE_FORMAT, this.blogTimezone);
+        const date = moment.tz(dateStr, DATE_FORMAT, this.blogTimezone);
         if (!date.isValid()) {
             this._setScratchDateError('Invalid date');
             return false;

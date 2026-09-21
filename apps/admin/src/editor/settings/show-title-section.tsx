@@ -8,7 +8,7 @@ import {
   settingsShowTitleWarning,
 } from '@tryghost/test-data/selectors/editor';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';
 
 const PAGE_BUILDER_ATTRIBUTE = 'show_title_and_feature_image';
@@ -16,7 +16,7 @@ const THEME_WARNING = "Uh-oh. Looks like your theme doesn't support this feature
 const THEME_DOCS_URL = 'https://docs.ghost.org/themes/helpers/';
 
 export interface ShowTitleSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   currentUser?: User;
 }
 

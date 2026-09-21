@@ -42,13 +42,13 @@ export default class Debug extends Component {
 
     get emailError() {
         // get failed batches count
-        let failedBatches = this.emailBatchesData?.filter((batch) => {
+        const failedBatches = this.emailBatchesData?.filter((batch) => {
             return batch.statusClass === 'failed';
         }).length || 0;
         // get total batch count
-        let totalBatches = this.emailBatchesData?.length || 0;
+        const totalBatches = this.emailBatchesData?.length || 0;
 
-        let details = (this.loading || !totalBatches) ? '' : `${failedBatches} of ${ghPluralize(totalBatches, 'batch')} failed to send, check below for more details.`;
+        const details = (this.loading || !totalBatches) ? '' : `${failedBatches} of ${ghPluralize(totalBatches, 'batch')} failed to send, check below for more details.`;
         return {
             message: this.post.email?.error || 'Failed to send email.',
             details
@@ -155,8 +155,8 @@ export default class Debug extends Component {
         if (!name) {
             return 'U';
         }
-        let names = name.split(' ');
-        let intials = names.length > 1 ? [names[0][0], names[names.length - 1][0]] : [names[0][0]];
+        const names = name.split(' ');
+        const intials = names.length > 1 ? [names[0][0], names[names.length - 1][0]] : [names[0][0]];
         return intials.join('').toUpperCase();
     }
 
@@ -205,8 +205,8 @@ export default class Debug extends Component {
             order: 'status asc, created_at desc'
         };
 
-        let statsUrl = this.ghostPaths.url.api(`emails/${this.post.email.id}/batches`);
-        let result = yield this.ajax.request(statsUrl, {data});
+        const statsUrl = this.ghostPaths.url.api(`emails/${this.post.email.id}/batches`);
+        const result = yield this.ajax.request(statsUrl, {data});
         this.emailBatches = result.batches;
         this.loading = false;
     }
@@ -258,15 +258,15 @@ export default class Debug extends Component {
             include: 'member,email_recipient',
             limit: 'all'
         };
-        let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/recipient-failures`);
-        let result = yield this.ajax.request(statsUrl, {data});
+        const statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/recipient-failures`);
+        const result = yield this.ajax.request(statsUrl, {data});
         this.recipientFailures = result.failures;
     }
 
     @task
     *_fetchAnalyticsStatus() {
-        let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`);
-        let result = yield this.ajax.request(statsUrl);
+        const statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`);
+        const result = yield this.ajax.request(statsUrl);
         this.analyticsStatus = result;
 
         // Parse dates
@@ -382,7 +382,7 @@ export default class Debug extends Component {
 
     @task
     *_cancelScheduleAnalytics() {
-        let statsUrl = this.ghostPaths.url.api(`/emails/analytics`);
+        const statsUrl = this.ghostPaths.url.api(`/emails/analytics`);
         yield this.ajax.delete(statsUrl, {});
         yield this.fetchAnalyticsStatus();
     }

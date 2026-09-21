@@ -33,6 +33,8 @@ The Email tab is offered for posts only, when members are on, newsletters are no
 
 The rendered email arrives as a complete HTML document and is shown in a `srcdoc` iframe sandboxed without `allow-scripts` and without `allow-same-origin`, so it can neither run its own scripts nor reach the admin page. Scrollbar styling is concatenated into that document because the admin stylesheet does not apply inside it.
 
+The newsletters offered are the site's active ones, read from the same full browse the publish flow reads and narrowed here, every page of it. The post's own newsletter stays selectable even once it has been archived, which is looked up by slug; a newsletter the site has deleted leaves the email unsendable.
+
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
 
 ## Not here yet

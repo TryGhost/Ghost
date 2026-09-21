@@ -74,7 +74,7 @@ function SearchBox() {
       inputRef?.current?.focus();
     }, 150);
 
-    let keyUphandler = (event) => {
+    const keyUphandler = (event) => {
       if (event.key === 'Escape') {
         dispatch('update', {
           showPopup: false,
@@ -252,7 +252,7 @@ function getMatchIndexes({ text, highlight }) {
     }
   });
   const matchRegex = new RegExp(`${highlightRegexText}`, 'ig');
-  let matches = text?.matchAll(matchRegex);
+  const matches = text?.matchAll(matchRegex);
   const indexes = [];
   for (const match of matches) {
     indexes.push({
@@ -504,7 +504,7 @@ export function Results({ posts, authors, tags }) {
   }, [allResults]);
 
   useEffect(() => {
-    let keyDownHandler = (event) => {
+    const keyDownHandler = (event) => {
       // keyCode 229 is the IME composition key for legacy browsers
       if (event.isComposing || event.keyCode === 229) {
         return;
@@ -512,8 +512,8 @@ export function Results({ posts, authors, tags }) {
       const selectedResultIdx = allResults.findIndex((d) => {
         return d.id === selectedResult;
       });
-      let nextResult = allResults[selectedResultIdx + 1];
-      let prevResult = allResults[selectedResultIdx - 1];
+      const nextResult = allResults[selectedResultIdx + 1];
+      const prevResult = allResults[selectedResultIdx - 1];
       if (event.key === 'ArrowUp' && prevResult) {
         setSelectedResult(prevResult?.id);
       } else if (event.key === 'ArrowDown' && nextResult) {

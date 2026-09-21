@@ -163,7 +163,7 @@ export class PopupContent extends React.Component {
     const pageStyle = {
       ...Styles.page[page],
     };
-    let popupWidthStyle = '';
+    const popupWidthStyle = '';
     let popupSize = 'regular';
 
     let cookieBannerText = '';

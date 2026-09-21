@@ -35,11 +35,8 @@ describe('package-json read', function () {
     });
 
     it('should read directory and parse package.json files', async function () {
-      let packagePath;
-      let pkgJson;
-
-      packagePath = tmp.dirSync({ unsafeCleanup: true });
-      pkgJson = JSON.stringify({
+      const packagePath = tmp.dirSync({ unsafeCleanup: true });
+      const pkgJson = JSON.stringify({
         name: 'test',
         version: '0.0.0',
       });
@@ -67,11 +64,8 @@ describe('package-json read', function () {
     });
 
     it('should read directory and ignore invalid package.json files', async function () {
-      let packagePath;
-      let pkgJson;
-
-      packagePath = tmp.dirSync({ unsafeCleanup: true });
-      pkgJson = JSON.stringify({
+      const packagePath = tmp.dirSync({ unsafeCleanup: true });
+      const pkgJson = JSON.stringify({
         name: 'test',
       });
 
@@ -95,11 +89,8 @@ describe('package-json read', function () {
     });
 
     it('should read directory and include symlinked directories', async function () {
-      let packagePath;
-      let pkgJson;
-
-      packagePath = tmp.dirSync({ unsafeCleanup: true });
-      pkgJson = JSON.stringify({
+      const packagePath = tmp.dirSync({ unsafeCleanup: true });
+      const pkgJson = JSON.stringify({
         name: 'test',
       });
 
@@ -188,11 +179,8 @@ describe('package-json read', function () {
     });
 
     it('should read directory and parse package.json files', async function () {
-      let packagePath;
-      let pkgJson;
-
-      packagePath = tmp.dirSync({ unsafeCleanup: true });
-      pkgJson = JSON.stringify({
+      const packagePath = tmp.dirSync({ unsafeCleanup: true });
+      const pkgJson = JSON.stringify({
         name: 'test',
         version: '0.0.0',
       });
@@ -220,11 +208,8 @@ describe('package-json read', function () {
     });
 
     it('should read directory and ignore invalid package.json files', async function () {
-      let packagePath;
-      let pkgJson;
-
-      packagePath = tmp.dirSync({ unsafeCleanup: true });
-      pkgJson = JSON.stringify({
+      const packagePath = tmp.dirSync({ unsafeCleanup: true });
+      const pkgJson = JSON.stringify({
         name: 'test',
       });
 

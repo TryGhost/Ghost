@@ -14,7 +14,7 @@ type Run = {
   member_id: string;
   step_attempts: number;
   next_welcome_email_automated_email_id: null | string;
-  automation_slug: string;
+  automation_slug: null | string;
   automation_status: string;
   automated_email_id: string;
 };
@@ -69,6 +69,9 @@ for (const [status, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
     slugToMemberStatus.set(slug, status);
   }
 }
+
+const getMemberStatus = (slug: unknown): undefined | MemberStatus =>
+  typeof slug === 'string' ? slugToMemberStatus.get(slug) : undefined;
 
 async function fetchAndLockRuns(): Promise<{
   runs: Run[];
@@ -193,7 +196,7 @@ async function processRun({
     return;
   }
 
-  const memberStatus = slugToMemberStatus.get(run.automation_slug);
+  const memberStatus = getMemberStatus(run.automation_slug);
   if (!memberStatus) {
     await markExited(run.id, 'email send failed');
     logging.error(

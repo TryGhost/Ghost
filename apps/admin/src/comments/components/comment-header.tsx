@@ -1,11 +1,4 @@
-import {
-  Badge,
-  Button,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  badgeVariants,
-} from '@tryghost/shade/components';
+import { Badge, Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
 import { LucideIcon, cn, formatTimestamp } from '@tryghost/shade/utils';
 import type { MouseEvent } from 'react';
 
@@ -34,11 +27,6 @@ interface CommentHeaderProps {
   onUnpinClick?: () => void;
   className?: string;
 }
-
-const pinnedButtonClassName = cn(
-  badgeVariants({ variant: 'warning' }),
-  'gap-1 hover:bg-state-warning/30',
-);
 
 export function CommentHeader({
   memberName,
@@ -119,25 +107,22 @@ export function CommentHeader({
       {isHidden && <Badge variant="secondary">Hidden</Badge>}
       {isPinned &&
         (onUnpinClick ? (
-          <button
-            aria-label="Unpin comment"
-            className={cn('group', pinnedButtonClassName)}
-            type="button"
-            onClick={handleUnpinClick}
-          >
-            <span className="grid size-3 shrink-0">
-              <LucideIcon.Pin className="col-start-1 row-start-1 size-3 group-hover:opacity-0 group-focus-visible:opacity-0" />
-              <LucideIcon.PinOff className="col-start-1 row-start-1 size-3 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100" />
-            </span>
-            <span className="grid justify-items-start text-left">
-              <span className="col-start-1 row-start-1 group-hover:opacity-0 group-focus-visible:opacity-0">
-                Pinned
+          <Badge className="group gap-1 hover:bg-state-warning/30" variant="warning" asChild>
+            <button aria-label="Unpin comment" type="button" onClick={handleUnpinClick}>
+              <span className="grid size-3 shrink-0">
+                <LucideIcon.Pin className="col-start-1 row-start-1 size-3 group-hover:opacity-0 group-focus-visible:opacity-0" />
+                <LucideIcon.PinOff className="col-start-1 row-start-1 size-3 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100" />
               </span>
-              <span className="col-start-1 row-start-1 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">
-                Unpin
+              <span className="grid justify-items-start text-left">
+                <span className="col-start-1 row-start-1 group-hover:opacity-0 group-focus-visible:opacity-0">
+                  Pinned
+                </span>
+                <span className="col-start-1 row-start-1 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">
+                  Unpin
+                </span>
               </span>
-            </span>
-          </button>
+            </button>
+          </Badge>
         ) : (
           <Badge className="gap-1" variant="warning">
             <LucideIcon.Pin className="size-3" />

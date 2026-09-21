@@ -2,7 +2,7 @@ const { urlService } = require('../services/proxy');
 const getContextObject = require('./context-object.js');
 
 function getAuthorUrl(data, absolute) {
-  let context = data.context ? data.context[0] : null;
+  const context = data.context ? data.context[0] : null;
 
   const contextObject = getContextObject(data, context);
 

@@ -4,11 +4,10 @@ import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
 export default class TierBenefits extends Transform {
     deserialize(serialized) {
-        let benefitsItems, benefitsArray;
 
-        benefitsArray = serialized || [];
+        const benefitsArray = serialized || [];
 
-        benefitsItems = benefitsArray.map((itemDetails) => {
+        const benefitsItems = benefitsArray.map((itemDetails) => {
             return TierBenefitItem.create({name: itemDetails});
         });
 
@@ -20,7 +19,7 @@ export default class TierBenefits extends Transform {
 
         if (isEmberArray(deserialized)) {
             benefitsArray = deserialized.map((item) => {
-                let name = item.get('name').trim();
+                const name = item.get('name').trim();
                 return name;
             }).compact();
         } else {

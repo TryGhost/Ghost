@@ -38,7 +38,7 @@ export const AVAILABLE_EVENTS = [
 ];
 
 export function eventName([event]/*, hash*/) {
-    let match = AVAILABLE_EVENTS.findBy('event', event);
+    const match = AVAILABLE_EVENTS.findBy('event', event);
 
     return match ? match.name : event;
 }

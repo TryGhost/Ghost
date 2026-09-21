@@ -206,6 +206,58 @@ export class StripeTestService {
     return { customer, subscription, price, paymentMethod };
   }
 
+  /** Seed an incomplete subscription, leaving its creation webhook for the test to deliver. */
+  async createIncompleteSubscription(opts: {
+    email: string;
+    name: string;
+    metadata?: Record<string, string>;
+  }): Promise<StripeSubscription> {
+    const customer = buildCustomer({ email: opts.email, name: opts.name });
+    this.server.upsertCustomer(customer);
+    // Link the free member before Stripe creates the subscription.
+    await this.sendCheckoutSessionCompletedWebhook(customer.id);
+
+    const price = buildPrice();
+    const paymentMethod = buildPaymentMethod({ name: opts.name });
+    const subscription = buildSubscription({
+      customerId: customer.id,
+      price,
+      paymentMethod,
+      status: 'incomplete',
+    });
+    subscription.metadata = opts.metadata ?? {};
+    this.server.upsertPrice(price);
+    this.server.upsertPaymentMethod(paymentMethod);
+    this.server.upsertSubscription(subscription);
+    return subscription;
+  }
+
+  async updateSubscriptionStatus(opts: {
+    subscription: StripeSubscription;
+    status: StripeSubscription['status'];
+    sendWebhook?: boolean;
+  }): Promise<void> {
+    const { subscription, status, sendWebhook = true } = opts;
+    const previousStatus = subscription.status;
+    subscription.status = status;
+    this.server.upsertSubscription(subscription);
+
+    // Stripe may change state before Ghost receives any of the queued events.
+    if (!sendWebhook) {
+      return;
+    }
+
+    const event = buildSubscriptionUpdatedEvent({
+      subscription,
+      previousAttributes: previousStatus === status ? {} : { status: previousStatus },
+    });
+    const response = await this.webhookClient.sendWebhook(event);
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`customer.subscription.updated webhook failed (${response.status}): ${body}`);
+    }
+  }
+
   async cancelSubscription(opts: { subscription: StripeSubscription }): Promise<void> {
     const subscription = opts.subscription;
     subscription.cancel_at_period_end = true;
@@ -432,7 +484,7 @@ export class StripeTestService {
     }
   }
 
-  private async sendSubscriptionCreatedWebhook(subscription: StripeSubscription): Promise<void> {
+  async sendSubscriptionCreatedWebhook(subscription: StripeSubscription): Promise<void> {
     const subscriptionEvent = buildSubscriptionCreatedEvent({ subscription });
     const subscriptionResponse = await this.webhookClient.sendWebhook(subscriptionEvent);
     debug('customer.subscription.created webhook response: %d', subscriptionResponse.status);

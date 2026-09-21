@@ -1080,7 +1080,7 @@ describe('Comments API', function () {
           .expectStatus(200);
 
         // get the LAST comment from data2
-        let lastComment = data2.body.comments[data2.body.comments.length - 1];
+        const lastComment = data2.body.comments[data2.body.comments.length - 1];
 
         assert.equal(lastComment.id, oldestComment.id);
       });
@@ -2695,13 +2695,7 @@ describe('Comments API', function () {
     });
 
     const readEndpoints = [
-      {
-        desc: 'GET /api/comments/ with a post filter',
-        method: 'get',
-        // `post_id` is not on the public query parameter allowlist, so a legacy
-        // browse has to scope itself with a filter.
-        url: () => `/api/comments/?filter=post_id:${postId}`,
-      },
+      { desc: 'GET /api/comments/', method: 'get', url: () => '/api/comments/' },
       {
         desc: 'GET /api/comments/post/:id/',
         method: 'get',
@@ -2951,7 +2945,7 @@ describe('Comments API', function () {
     function commentReadPaths() {
       return [
         '/members/api/comments/counts',
-        `/members/api/comments?filter=post_id:${postId}`,
+        '/members/api/comments',
         `/members/api/comments/post/${postId}`,
         `/members/api/comments/${comment.id}`,
         `/members/api/comments/${comment.id}/replies`,
