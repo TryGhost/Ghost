@@ -589,11 +589,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -975,7 +970,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "35794",
+  "content-length": "35705",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1478,11 +1473,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -1886,7 +1876,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "40114",
+  "content-length": "40025",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2420,11 +2410,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -2813,7 +2798,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "35506",
+  "content-length": "35417",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3676,11 +3661,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -4083,7 +4063,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "36351",
+  "content-length": "36262",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4972,11 +4952,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -5379,7 +5354,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "36351",
+  "content-length": "36262",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

@@ -488,11 +488,24 @@ class EmailService {
    * @return {string}
    */
   replaceDefinitions(htmlOrPlaintext, replacements, member) {
-    // Do manual replacements with an example member
-    for (const replacement of replacements) {
-      htmlOrPlaintext = htmlOrPlaintext.replace(replacement.token, replacement.getValue(member));
+    if (!replacements.length) {
+      return htmlOrPlaintext;
     }
-    return htmlOrPlaintext;
+    const values = replacements.map(({ token, getValue }) => ({ token, value: getValue(member) }));
+    const tokens = new RegExp(
+      replacements.map(({ token }) => `(?:${token.source})`).join('|'),
+      'g',
+    );
+
+    // Only match the original body, never placeholders inside inserted member data.
+    return htmlOrPlaintext.replace(tokens, (match) => {
+      for (const { token, value } of values) {
+        if (match.search(token) !== -1) {
+          return value;
+        }
+      }
+      return match;
+    });
   }
 
   /**

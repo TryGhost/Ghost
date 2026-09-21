@@ -66,6 +66,19 @@ function escapeHtml(unsafe) {
 }
 
 /**
+ * @param {string} html
+ * @returns {string}
+ */
+function fixOutlookChars(html) {
+  return html
+    .replace(/&apos;/g, '&#39;')
+    .replace(/→/g, '&rarr;')
+    .replace(/–/g, '&ndash;')
+    .replace(/“/g, '&ldquo;')
+    .replace(/”/g, '&rdquo;');
+}
+
+/**
  * @param {string} locale
  * @returns {boolean}
  */
@@ -754,23 +767,52 @@ class EmailRenderer {
     // Convert DOM back to HTML
     html = $.html(); // () Fix for vscode syntax highlighter
 
+    // Personalize the entire name row after CSS inlining so an absent name also
+    // removes its label and markup, including in clients that discard stylesheets.
+    const nameRow = $('.subscription-details .subscription-name');
+    const nameHtml = nameRow.length ? $.html(nameRow) : '';
+    const nameText = nameRow.text();
+    const plaintextHtml = nameHtml
+      ? html.replace(nameHtml, '<p>%%{subscription_name_text}%%</p>')
+      : html;
+    if (nameHtml) {
+      html = html.replace(nameHtml, '%%{subscription_name_html}%%');
+    }
+
     // Replacement strings
     const replacementDefinitions = this.buildReplacementDefinitions({
       html,
       newsletterUuid: newsletter.get('uuid'),
     });
 
+    if (nameHtml) {
+      const outlookNameHtml = fixOutlookChars(nameHtml);
+      replacementDefinitions.push(
+        {
+          id: 'subscription_name_html',
+          token: /%%\{subscription_name_html\}%%/g,
+          getValue: (member) =>
+            member.name?.trim()
+              ? outlookNameHtml.replace('%%{name}%%', () => escapeHtml(member.name))
+              : '',
+          trusted: true, // Member name is already HTML-escaped
+        },
+        {
+          id: 'subscription_name_text',
+          token: /%%\{subscription_name_text\}%%/g,
+          getValue: (member) =>
+            member.name?.trim() ? nameText.replace('%%{name}%%', () => member.name) : '',
+        },
+      );
+    }
+
     // TODO: normalizeReplacementStrings (replace unsupported replacement strings)
 
     // Convert HTML to plaintext
-    const plaintext = htmlToPlaintext.email(html);
+    const plaintext = htmlToPlaintext.email(plaintextHtml);
 
     // Fix any unsupported chars in Outlook
-    html = html.replace(/&apos;/g, '&#39;');
-    html = html.replace(/→/g, '&rarr;');
-    html = html.replace(/–/g, '&ndash;');
-    html = html.replace(/“/g, '&ldquo;');
-    html = html.replace(/”/g, '&rdquo;');
+    html = fixOutlookChars(html);
 
     return {
       html,
@@ -963,12 +1005,6 @@ class EmailRenderer {
         id: 'name',
         getValue: (member) => {
           return member.name;
-        },
-      },
-      {
-        id: 'name_class',
-        getValue: (member) => {
-          return member.name ? '' : 'hidden';
         },
       },
       {
