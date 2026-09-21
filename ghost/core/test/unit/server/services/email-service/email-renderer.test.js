@@ -1514,6 +1514,7 @@ describe('Email renderer', function () {
 
   describe('renderBody', function () {
     let renderedPost;
+    let translate;
     let postUrl = 'http://example.com';
     let customSettings = {};
     let renderersStub;
@@ -1524,6 +1525,7 @@ describe('Email renderer', function () {
     let labsEnabled;
 
     beforeEach(function () {
+      translate = sinon.stub().callsFake(t);
       renderedPost =
         '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
       labsEnabled = false;
@@ -1639,7 +1641,7 @@ describe('Email renderer', function () {
             return labsEnabled;
           },
         },
-        t: t,
+        t: translate,
         dir: i18n.dir.bind(i18n),
       });
     });
@@ -1774,6 +1776,26 @@ describe('Email renderer', function () {
 
       assert(codeBlockMatch, 'Expected rendered email HTML to include a code block');
       assert.equal(codeBlockMatch[1], 'const firstLine = 1;\nconst secondLine = 2;');
+    });
+
+    it('normalizes apostrophes in the translated subscription name label for Outlook', async function () {
+      translate.withArgs('Name').returns("Subscriber's name");
+      const response = await emailRenderer.renderBody(
+        createModel(basePost),
+        createModel({ ...baseNewsletter, show_subscription_details: true }),
+        null,
+        {},
+      );
+      const htmlName = response.replacements.find((def) => def.id === 'subscription_name_html');
+      const textName = response.replacements.find((def) => def.id === 'subscription_name_text');
+      const member = { name: 'Test User' };
+      const html = response.html.replace(htmlName.token, () => htmlName.getValue(member));
+      const plaintext = response.plaintext.replace(textName.token, () => textName.getValue(member));
+
+      assert(html.includes('Subscriber&#39;s name: Test User'));
+      assert(!html.includes('&apos;'));
+      assert(plaintext.includes("Subscriber's name: Test User"));
+      assert.equal(cheerio.load(html)('.subscription-name').length, 1);
     });
 
     for (const name of [
