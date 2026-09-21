@@ -21,8 +21,8 @@ describe('Unit: Model: invite', function () {
         });
 
         it('resend hits correct endpoints', async function () {
-            let store = this.owner.lookup('service:store');
-            let model = store.createRecord('invite', {
+            const store = this.owner.lookup('service:store');
+            const model = store.createRecord('invite', {
                 id: 42
             });
             let role;
@@ -47,9 +47,9 @@ describe('Unit: Model: invite', function () {
                 server.handledRequests.length,
                 'number of requests'
             ).to.equal(2);
-            let [, lastRequest] = server.handledRequests;
-            let requestBody = JSON.parse(lastRequest.requestBody);
-            let [invite] = requestBody.invites;
+            const [, lastRequest] = server.handledRequests;
+            const requestBody = JSON.parse(lastRequest.requestBody);
+            const [invite] = requestBody.invites;
 
             expect(
                 requestBody.invites.length,

@@ -1,11 +1,14 @@
+/* global vi */ // vitest runs with globals:true; the shared eslint config only declares mocha's
 const assert = require('node:assert/strict');
 const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
 const supertest = require('supertest');
+const sinon = require('sinon');
 const { extract } = require('@tryghost/zip');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
+const { GhostMailer } = require('../../../core/server/services/mail');
 const localUtils = require('./utils');
 
 // These tests make real HTTP requests (like the theme download tests) instead
@@ -155,13 +158,19 @@ describe('Exports API — download', function () {
 
     // members.csv → members importer (existing members show up as
     // per-row duplicates, not a rejected file)
-    await request
+    const sendMail = sinon.spy(GhostMailer.prototype, 'sendMail');
+    const membersUpload = await request
       .post(localUtils.API.getApiQuery('members/upload/'))
       .set('Origin', config.get('url'))
       .attach('membersfile', path.join(outPath, 'members.csv'))
       .expect((response) => {
         assert.ok([201, 202].includes(response.status), `expected 201/202, got ${response.status}`);
       });
+    // a deferred import finishes in the background and emails last, so wait for that
+    if (membersUpload.status === 202) {
+      await vi.waitUntil(() => sendMail.called, { timeout: 5000 });
+    }
+    sendMail.restore();
 
     // themes/{name}.zip → theme upload (test-theme rather than casper:
     // overriding default themes is blocked by design)

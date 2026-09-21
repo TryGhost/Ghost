@@ -3,23 +3,23 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
 describe('Unit: Helper: gh-count-characters', function () {
-    let defaultStyle = 'color: rgb(69, 195, 46);';
-    let errorStyle = 'color: rgb(240, 82, 48);';
+    const defaultStyle = 'color: rgb(69, 195, 46);';
+    const errorStyle = 'color: rgb(240, 82, 48);';
 
     it('counts remaining chars', function () {
-        let result = countCharacters(['test']);
+        const result = countCharacters(['test']);
         expect(result.string)
             .to.equal(`<span class="word-count" style="${defaultStyle}">196</span>`);
     });
 
     it('warns when nearing limit', function () {
-        let result = countCharacters([Array(195 + 1).join('x')]);
+        const result = countCharacters([Array(195 + 1).join('x')]);
         expect(result.string)
             .to.equal(`<span class="word-count" style="${errorStyle}">5</span>`);
     });
 
     it('indicates too many chars', function () {
-        let result = countCharacters([Array(205 + 1).join('x')]);
+        const result = countCharacters([Array(205 + 1).join('x')]);
         expect(result.string)
             .to.equal(`<span class="word-count" style="${errorStyle}">-5</span>`);
     });

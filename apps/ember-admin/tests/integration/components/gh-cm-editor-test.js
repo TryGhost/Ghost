@@ -19,7 +19,7 @@ describe('Integration: Component: gh-cm-editor', function () {
 
         await render(hbs`<GhCmEditor @value={{this.text}} @classNames="gh-input" @update={{this.onUpdate}} />`);
         // access CodeMirror directly as it doesn't pick up changes to the textarea
-        let cm = find('.gh-input .CodeMirror').CodeMirror;
+        const cm = find('.gh-input .CodeMirror').CodeMirror;
         cm.setValue('Testing');
 
         await settled();
@@ -32,7 +32,7 @@ describe('Integration: Component: gh-cm-editor', function () {
         // CodeMirror's events are triggered outside of anything we can watch for
         // in the tests so let's run the class check when we know the event has
         // been fired and timeout if it's not fired as we expect
-        let onFocus = async () => {
+        const onFocus = async () => {
             // wait for runloop to finish so that the new class has been rendered
             await settled();
             expect(find('.gh-input').classList.contains('focus'), 'has focused class on first render with autofocus')

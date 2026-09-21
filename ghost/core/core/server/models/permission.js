@@ -1,9 +1,6 @@
 const ghostBookshelf = require('./base');
 
-let Permission;
-let Permissions;
-
-Permission = ghostBookshelf.Model.extend({
+const Permission = ghostBookshelf.Model.extend({
   tableName: 'permissions',
 
   relationships: ['roles'],
@@ -17,7 +14,7 @@ Permission = ghostBookshelf.Model.extend({
    * has no access to the nested relations, which should be updated.
    */
   permittedAttributes: function permittedAttributes() {
-    let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
+    const filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
 
     this.relationships.forEach((key) => {
       filteredKeys.push(key);
@@ -35,7 +32,7 @@ Permission = ghostBookshelf.Model.extend({
   },
 });
 
-Permissions = ghostBookshelf.Collection.extend({
+const Permissions = ghostBookshelf.Collection.extend({
   model: Permission,
 });
 

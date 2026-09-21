@@ -54,7 +54,7 @@ function setupResendFailure(server, {responseCode = 400, timing = 0, message} = 
     }, {timing});
 }
 describe('Acceptance: Authentication', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
@@ -117,7 +117,7 @@ describe('Acceptance: Authentication', function () {
             sinon.stub(windowProxy, 'replaceLocation');
             sinon.stub(windowProxy, 'changeLocation');
 
-            let role = this.server.create('role', {name: 'Administrator'});
+            const role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role], slug: 'test-user'});
         });
 
@@ -315,8 +315,8 @@ describe('Acceptance: Authentication', function () {
     });
 
     describe('editor', function () {
-        let origDebounce = run.debounce;
-        let origThrottle = run.throttle;
+        const origDebounce = run.debounce;
+        const origThrottle = run.throttle;
 
         // we don't want the autosave interfering in this test
         beforeEach(function () {
@@ -325,14 +325,14 @@ describe('Acceptance: Authentication', function () {
         });
 
         it('displays re-auth modal attempting to save with invalid session', async function () {
-            let role = this.server.create('role', {name: 'Administrator'});
+            const role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
             let testOn = 'save'; // use marker for different type of server.put result
 
             // simulate an invalid session when saving the edited post
             this.server.put('/posts/:id/', function ({posts, db}, {params}) {
-                let post = posts.find(params.id);
-                let attrs = db.posts.find(params.id); // use attribute from db.posts to avoid hasInverseFor error
+                const post = posts.find(params.id);
+                const attrs = db.posts.find(params.id); // use attribute from db.posts to avoid hasInverseFor error
 
                 if (testOn === 'edit') {
                     return new Response(401, {}, {

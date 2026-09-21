@@ -8,7 +8,7 @@ const schema = require('../../../data/schema');
 const events = require('../../../lib/common/events');
 
 // Run tests or development with NUMERIC_IDS=1 to enable numeric object IDs
-let forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process.env.NUMERIC_IDS;
+const forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process.env.NUMERIC_IDS;
 let numberGenerator = 0;
 
 module.exports = function (Bookshelf) {
@@ -103,11 +103,11 @@ module.exports = function (Bookshelf) {
 
       /**
        * Do not call `toJSON`. This can remove properties e.g. password.
-       * @returns {*}
+       * @returns {Promise<void>}
        */
-      onValidate: function onValidate(model, columns, options) {
+      onValidate: async function onValidate(model, columns, options) {
         this.setEmptyValuesToNull();
-        return schema.validate(this.tableName, this, options);
+        schema.validate(this.tableName, this, options);
       },
 
       onFetched() {},

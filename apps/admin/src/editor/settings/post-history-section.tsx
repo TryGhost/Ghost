@@ -4,16 +4,19 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
 import { settingsPostHistoryButton } from '@tryghost/test-data/selectors/editor';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
+import type { SaveEngineState } from '@/editor/engine/save-engine';
 import { useSiteTimezone } from '@/editor/use-editor-settings';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { canViewPostHistory, revisionEntries, type RevisionEntry } from './post-history';
 import { PostHistoryModal } from './post-history-modal';
 import { SettingsSection } from './settings-section';
 
 export interface PostHistorySectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
   cardConfig: PostCardConfig;
+  /** The save engine's state, which says whether a restore can be written at all. */
+  state: SaveEngineState;
   /** The excerpt has its own home under the title, and is restored with the version. */
   showExcerpt: boolean;
 }
@@ -28,6 +31,7 @@ export function PostHistorySection({
   postType,
   cardConfig,
   showExcerpt,
+  state,
 }: PostHistorySectionProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -82,8 +86,8 @@ export function PostHistorySection({
           open={open}
           postType={postType}
           restoreError={
-            (session.state.kind === 'error' && session.state.error.kind === 'session-invalid') ||
-            session.state.kind === 'reauth-pending'
+            (state.kind === 'error' && state.error.kind === 'session-invalid') ||
+            state.kind === 'reauth-pending'
               ? 'Your session expired. Sign in again in a new tab, then try restoring again.'
               : undefined
           }

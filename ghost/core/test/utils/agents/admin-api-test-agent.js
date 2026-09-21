@@ -59,7 +59,7 @@ class AdminAPITestAgent extends TestAgent {
     this.resetAuthentication();
 
     if (role) {
-      let user = getRoleUserFromFixtures(role);
+      const user = getRoleUserFromFixtures(role);
       email = user.email;
       password = user.password;
     }

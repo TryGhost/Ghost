@@ -28,7 +28,7 @@ const iconUrlRegex = new RegExp(/^(\/|__GHOST_URL__\/)/);
 const iconUrlOptions = { require_protocol: true, protocols: ['http', 'https'] };
 
 function parseArraySettingValue(value) {
-  if (_.isArray(value)) {
+  if (Array.isArray(value)) {
     return value;
   }
 
@@ -43,11 +43,25 @@ function isValidNavigationUrl(value) {
   );
 }
 
+// Local installs serve uploaded icons from http://localhost:2368, which has no TLD
+function isLocalhostIconUrl(value) {
+  try {
+    return (
+      new URL(value).hostname === 'localhost' &&
+      validator.isURL(value, { ...iconUrlOptions, require_tld: false })
+    );
+  } catch {
+    return false;
+  }
+}
+
 function isValidNavigationIcon(value) {
   return (
     _.isString(value) &&
     !value.match(/\s/) &&
-    (validator.isURL(value, iconUrlOptions) || value.match(iconUrlRegex))
+    (validator.isURL(value, iconUrlOptions) ||
+      value.match(iconUrlRegex) ||
+      isLocalhostIconUrl(value))
   );
 }
 
@@ -149,10 +163,10 @@ module.exports = {
         //       settings API use raw unstringified objects (e.g. when adding notifications)
         //       The conditional can be removed once internals are changed to do the calls properly
         //       and the JSON.parse should be left as the only valid way to check the value.
-        if (!_.isArray(setting.value)) {
+        if (!Array.isArray(setting.value)) {
           try {
             const value = JSON.parse(setting.value);
-            if (!_.isArray(value)) {
+            if (!Array.isArray(value)) {
               errors.push(typeError);
             }
           } catch (err) {

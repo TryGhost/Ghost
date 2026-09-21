@@ -5,7 +5,7 @@ export default BaseSerializer.extend({
     embed: true,
 
     include(/*request*/) {
-        let includes = [];
+        const includes = [];
 
         includes.push('tierBenefits');
 

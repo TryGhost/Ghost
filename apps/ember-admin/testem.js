@@ -1,7 +1,7 @@
 /* eslint-env node */
 /* eslint-disable camelcase */
 
-let launch_in_ci = [process.env.BROWSER || 'Chrome'];
+const launch_in_ci = [process.env.BROWSER || 'Chrome'];
 
 module.exports = {
     framework: 'mocha',

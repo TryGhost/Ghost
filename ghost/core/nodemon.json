@@ -1,6 +1,6 @@
 {
   "watch": [".", "../*"],
-  "ignore": ["../admin/**", "content/**", "core/built/**"],
+  "ignore": ["../admin/**", "content/**", "core/built/**", "test/**"],
   "ext": "js,mjs,cjs,json,ts,tsx",
   "exec": "node --conditions=source --import=tsx"
 }

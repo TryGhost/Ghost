@@ -18,7 +18,7 @@ const messages = {
 
 // eslint-disable-next-line camelcase
 function cancel_link(options) {
-  let truncateOptions = (options || {}).hash || {};
+  const truncateOptions = (options || {}).hash || {};
 
   if (this.id === undefined || this.cancel_at_period_end === undefined) {
     throw new errors.IncorrectUsageError({ message: tpl(messages.invalidData) });
@@ -37,8 +37,8 @@ function cancel_link(options) {
 }
 
 module.exports = function cancelLabsWrapper() {
-  let self = this;
-  let args = arguments;
+  const self = this;
+  const args = arguments;
 
   return labs.enabledHelper(
     {

@@ -24,7 +24,6 @@ async function fetchRecommendations(apiOptions) {
 
   try {
     const controller = api.recommendationsPublic;
-    let response;
 
     const logLevel = config.get('optimization:getHelper:timeout:level') || 'error';
     const threshold = config.get('optimization:getHelper:timeout:threshold') || 5000;
@@ -47,7 +46,7 @@ async function fetchRecommendations(apiOptions) {
       }, threshold);
     });
 
-    response = await Promise.race([apiResponse, timeout]);
+    const response = await Promise.race([apiResponse, timeout]);
     clearTimeout(timer);
 
     return response;
@@ -64,10 +63,10 @@ async function fetchRecommendations(apiOptions) {
  * @returns {*}
  */
 function parseOptions(options) {
-  let limit = options.limit ?? 5;
-  let order = options.order ?? 'created_at desc';
-  let filter = options.filter ?? '';
-  let page = options.page ?? 1;
+  const limit = options.limit ?? 5;
+  const order = options.order ?? 'created_at desc';
+  const filter = options.filter ?? '';
+  const page = options.page ?? 1;
 
   return {
     limit,

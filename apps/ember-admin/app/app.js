@@ -35,7 +35,7 @@ const App = Application.extend({
 
 // TODO: remove once the validations refactor is complete
 registerWarnHandler((message, options, next) => {
-    let skip = [
+    const skip = [
         'ds.errors.add',
         'ds.errors.remove',
         'ds.errors.clear'

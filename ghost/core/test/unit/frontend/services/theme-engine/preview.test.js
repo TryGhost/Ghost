@@ -18,7 +18,7 @@ describe('Theme Preview', function () {
   it('can handle empty strings', function () {
     previewString = 'logo=';
 
-    let siteData = preview.handle(req, {});
+    const siteData = preview.handle(req, {});
 
     assert.equal(siteData.logo, null);
   });
@@ -26,7 +26,7 @@ describe('Theme Preview', function () {
   it('can handle nulls', function () {
     previewString = 'cover=null';
 
-    let siteData = preview.handle(req, {});
+    const siteData = preview.handle(req, {});
 
     assert.equal(siteData.cover_image, null);
   });
@@ -34,7 +34,7 @@ describe('Theme Preview', function () {
   it('can handle URIEncoded accent colors', function () {
     previewString = 'c=%23f02d2d';
 
-    let siteData = preview.handle(req, {});
+    const siteData = preview.handle(req, {});
 
     assert.equal(siteData.accent_color, '#f02d2d');
   });
@@ -42,7 +42,7 @@ describe('Theme Preview', function () {
   it('can handle multiple values', function () {
     previewString = 'c=%23f02d2d&icon=&logo=&cover=null';
 
-    let siteData = preview.handle(req, {});
+    const siteData = preview.handle(req, {});
 
     assert.equal(siteData.accent_color, '#f02d2d');
     assert.equal(siteData.icon, null);

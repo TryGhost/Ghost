@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const debug = require('@tryghost/debug')('i18n');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
@@ -22,10 +23,11 @@ class EmailServiceWrapper {
     return jsonModel.url;
   }
 
-  init({ ghostServer } = {}) {
+  init({ ghostServer, jobsService } = {}) {
     if (this.service) {
       return;
     }
+    assert(jobsService, 'Email service requires the jobs service');
 
     const EmailService = require('./email-service');
     const EmailController = require('./email-controller');
@@ -45,7 +47,6 @@ class EmailServiceWrapper {
     const configService = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
-    const jobsService = require('../jobs');
     const membersService = require('../members');
     const db = require('../../data/db');
     const sentry = require('../../../shared/sentry');

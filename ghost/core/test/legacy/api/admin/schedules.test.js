@@ -9,6 +9,7 @@ const SchedulingDefault =
 const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 const testUtils = require('../../../utils');
+const { mockManager } = require('../../../utils/e2e-framework');
 const localUtils = require('./utils');
 
 describe('Schedules API', function () {
@@ -21,13 +22,17 @@ describe('Schedules API', function () {
   });
 
   afterAll(function () {
+    mockManager.restore();
     sinon.restore();
   });
 
   beforeAll(async function () {
     await localUtils.startGhost();
+    mockManager.mockMailgun();
 
     request = supertest.agent(config.get('url'));
+
+    const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
     resources.push(
       testUtils.DataGenerator.forKnex.createPost({
@@ -100,13 +105,30 @@ describe('Schedules API', function () {
       }),
     );
 
+    resources.push(
+      testUtils.DataGenerator.forKnex.createPost({
+        published_by: testUtils.getExistingData().users[0].id,
+        published_at: moment().subtract(10, 'seconds').toDate(),
+        status: 'scheduled',
+        slug: 'sixth',
+        // Publishing with a newsletter creates the email, which is the path
+        // that must run exactly once when deliveries overlap
+        newsletter_id: defaultNewsletter.id,
+        authors: [
+          {
+            id: testUtils.getExistingData().users[0].id,
+          },
+        ],
+      }),
+    );
+
     const result = await Promise.all(
       resources.map((post) => {
         return models.Post.add(post, { context: { internal: true } });
       }),
     );
 
-    assert.equal(result.length, 5);
+    assert.equal(result.length, 6);
   });
 
   describe('publish', function () {
@@ -204,6 +226,40 @@ describe('Schedules API', function () {
         .expect('Content-Type', /json/)
         .expect('Cache-Control', testUtils.cacheRules.private)
         .expect(404);
+    });
+
+    it('two overlapping deliveries of the same job publish once', async function () {
+      // A scheduler with a persistent queue can hold two jobs for one post
+      // and fire both in the same tick. The first delivery publishes; the
+      // second must see the post is no longer scheduled and take the no-op
+      // path, so the post is not published (or emailed) twice.
+      const url = localUtils.API.getApiQuery(`schedules/posts/${resources[5].id}/?token=${token}`);
+
+      const [first, second] = await Promise.all([
+        request.put(url).expect('Content-Type', /json/).expect(200),
+        request.put(url).expect('Content-Type', /json/).expect(200),
+      ]);
+
+      const published = [first, second].filter((res) => res.body.posts.length === 1);
+      const noOps = [first, second].filter((res) => res.body.posts.length === 0);
+
+      assert.equal(published.length, 1, 'exactly one delivery publishes');
+      assert.equal(noOps.length, 1, 'the other delivery is a no-op');
+      assert.equal(published[0].body.posts[0].status, 'published');
+      assertExists(published[0].headers['x-cache-invalidate']);
+      assert.equal(noOps[0].headers['x-cache-invalidate'], undefined);
+
+      const post = await models.Post.findOne(
+        { id: resources[5].id },
+        { context: { internal: true } },
+      );
+      assert.equal(post.get('status'), 'published');
+
+      const emails = await models.Email.findAll({
+        filter: `post_id:'${resources[5].id}'`,
+        context: { internal: true },
+      });
+      assert.equal(emails.length, 1, 'the newsletter email is created once');
     });
 
     it('a deleted resource is a no-op, not an error', async function () {

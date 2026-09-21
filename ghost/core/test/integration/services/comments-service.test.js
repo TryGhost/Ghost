@@ -66,12 +66,10 @@ describe('CommentsService', function () {
         filter: `id:'${hiddenCommentId}'`,
       });
       const publicComments = await commentsService.api.getComments({
-        post_id: post.id,
         columns: ['id', 'pinned'],
         filter: `id:'${commentId}'`,
       });
       const regularComments = await commentsService.api.getComments({
-        post_id: post.id,
         columns: ['id'],
         filter: `id:'${commentId}'`,
       });

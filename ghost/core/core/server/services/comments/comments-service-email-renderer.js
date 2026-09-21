@@ -7,7 +7,7 @@ class CommentsServiceEmailRenderer {
 
     this.Handlebars = require('handlebars').create();
     this.Handlebars.registerHelper('t', function (key, options) {
-      let hash = options?.hash;
+      const hash = options?.hash;
       const params = hash || options || {};
 
       return t(key, {

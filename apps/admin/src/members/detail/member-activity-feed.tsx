@@ -1,10 +1,13 @@
 import React from 'react';
 import moment from 'moment-timezone';
-import { Card, CardContent, EmptyIndicator, Skeleton } from '@tryghost/shade/components';
+import { Button, Card, CardContent, EmptyIndicator, Skeleton } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 import { isSafeHref } from './is-safe-href';
 import { parseMemberEvent } from './member-event';
 import { useMemberActivityFeed } from '@tryghost/admin-x-framework/api/members';
+import { activityQueryOptions } from '@/members/activity/activity-filters';
+import { useActivitySettings } from '@/members/activity/use-activity-settings';
 import type { MemberActivityEvent } from '@tryghost/admin-x-framework/api/members';
 import type { ParsedMemberEvent } from './member-event';
 
@@ -22,8 +25,8 @@ interface MemberActivityFeedProps {
 /**
  * Renders a Lucide substitute for Ember's custom SVG icon names
  * (`event-signed-up`, `event-comment`, …). Intentional visual approximation
- * — pixel-perfect rendering lives behind the "View all member activity"
- * link that routes to Ember. Anything unmapped falls back to the generic
+ * — the full table lives behind the "View all member activity" link.
+ * Anything unmapped falls back to the generic
  * `Activity` icon so a new server-side event type never crashes the row.
  *
  * A switch (rather than a `Record<string, React.ComponentType>` map) sidesteps
@@ -32,7 +35,7 @@ interface MemberActivityFeedProps {
  * under that mix. Inline JSX resolves each icon at its use-site, which is what
  * every other member-detail component already does.
  */
-const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
+export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
   const iconProps = { className: 'shrink-0 text-muted-foreground', size: 16 };
   switch (iconName) {
     case 'event-signed-up':
@@ -59,6 +62,8 @@ const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
       return <LucideIcon.MailWarning {...iconProps} />;
     case 'event-email-changed':
       return <LucideIcon.AtSign {...iconProps} />;
+    case 'event-metafields-changed':
+      return <LucideIcon.UserPen {...iconProps} />;
     case 'event-comment':
       return <LucideIcon.MessageSquare {...iconProps} />;
     case 'event-click':
@@ -75,21 +80,32 @@ const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
 };
 
 /**
- * "View all member activity →" link. Points at Ember's members-activity
- * route (still on Ember post-cutover — the plan calls out that Phase 8 keeps
- * the paginated feed page on Ember for a follow-up). Uses a plain anchor with
- * the `#/…` href so the Ember hash-router picks it up rather than React
- * Router intercepting the click.
+ * "View all member activity →" link. The membersActivityReact experiment
+ * chooses the full feed's owner. A native hash link also notifies Ember when
+ * the experiment is off, while React handles the same URL when it is on.
  */
-const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => (
-  <a
-    className="block pt-3 font-medium text-primary hover:underline"
-    data-testid="member-activity-view-all"
-    href={`#/members-activity?member=${memberId}`}
-  >
-    View all member activity →
-  </a>
-);
+const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
+  const { isAdmin7 } = useShade();
+  const link = (
+    <a
+      className={isAdmin7 ? undefined : 'block pt-3 font-medium text-primary hover:underline'}
+      data-testid="member-activity-view-all"
+      href={`#/members-activity?member=${memberId}`}
+    >
+      View all member activity →
+    </a>
+  );
+
+  if (isAdmin7) {
+    return (
+      <Button className="mt-3" variant="ghost" asChild>
+        {link}
+      </Button>
+    );
+  }
+
+  return link;
+};
 
 // Copy pinned to Ember's `activity-feed-empty.hbs:5` so any future refactor of
 // the message stays in lockstep with what Ember users see.
@@ -100,9 +116,8 @@ const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) :
 /**
  * Ember's activity-feed row renders an `EmailPreviewLink` when `event.email`
  * is set on delivery/open/sent rows. We don't have that component in the
- * posts app — surface a plain "Email" label so the admin can at least see
- * the row carries an email object; the "View all" link routes them to Ember
- * for the actual preview.
+ * inline feed — surface a plain "Email" label so the admin can at least see
+ * the row carries an email object; the full activity page provides the preview.
  */
 function getEmailLabel(email: unknown): string | undefined {
   if (email && typeof email === 'object') {
@@ -192,10 +207,24 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   // behind the "View all" link. On the create screen there's no memberId
   // to query against, so disable the fetch entirely — an unsaved member has
   // no events by definition.
-  const { data, isLoading } = useMemberActivityFeed(memberId ?? '', {
-    limit: '5',
-    enabled: !!memberId,
+  // Leaves out the same events the member's full activity page does, so following
+  // "View all" never shows a different set of events.
+  const { settingsQuery, activitySettings } = useActivitySettings();
+  const { excludedEvents } = activityQueryOptions({
+    settings: activitySettings,
+    memberId,
+    excluded: null,
   });
+  // Waits for settings rather than asking twice. If they fail to load it still asks, with
+  // the defaults: the preview may then include newsletter or comment events a site has
+  // turned off, where the full page shows an error instead, but that beats a preview
+  // stuck showing no activity.
+  const { data, isLoading: feedLoading } = useMemberActivityFeed(memberId ?? '', {
+    limit: '5',
+    enabled: !!memberId && !settingsQuery.isLoading,
+    excludedEvents,
+  });
+  const isLoading = settingsQuery.isLoading || feedLoading;
   const rawEvents: MemberActivityEvent[] = data?.events ?? [];
   const events = rawEvents.map((rawEvent) =>
     parseMemberEvent(rawEvent, {

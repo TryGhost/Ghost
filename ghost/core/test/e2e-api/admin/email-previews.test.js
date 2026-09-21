@@ -1,5 +1,6 @@
 const {
   agentProvider,
+  configUtils,
   fixtureManager,
   matchers,
   mockManager,
@@ -590,6 +591,43 @@ describe('Email Preview API', function () {
           etag: anyEtag,
         })
         .expectEmptyBody();
+    });
+
+    describe('with per-recipient Message-Ids enabled', function () {
+      beforeEach(function () {
+        configUtils.set('bulkEmail:perRecipientMessageId', true);
+      });
+
+      afterEach(async function () {
+        await configUtils.restore();
+      });
+
+      it('gives each test email a fresh random per-recipient Message-Id', async function () {
+        const sendTestEmail = () =>
+          agent
+            .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
+            .body({
+              emails: ['test@ghost.org'],
+            })
+            .expectStatus(204);
+
+        await sendTestEmail();
+        await sendTestEmail();
+
+        const mailgunCreateMessageStub = mockManager.getMailgunCreateMessageStub();
+        sinon.assert.calledTwice(mailgunCreateMessageStub);
+        const messageIds = mailgunCreateMessageStub.getCalls().map((call) => {
+          const [, messageData] = call.args;
+          assert.equal(messageData['h:Message-Id'], '<%recipient.message_id%>');
+          return JSON.parse(messageData['recipient-variables'])['test@ghost.org'].message_id;
+        });
+
+        // test emails have no email id, so each send gets a fresh random prefix
+        for (const messageId of messageIds) {
+          assert.match(messageId, /^[0-9a-f-]{36}\.[a-f0-9]{32}@example\.com$/);
+        }
+        assert.notEqual(messageIds[0], messageIds[1]);
+      });
     });
   });
 

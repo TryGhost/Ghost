@@ -1,17 +1,16 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../../utils/assertions');
 const sinon = require('sinon');
-const { deferred } = require('../../../../../utils/deferred');
 
 const api = require('../../../../../../core/frontend/services/proxy').api;
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 
-function failTest(done) {
+function failTest(reject) {
   return function (err) {
     assertExists(err);
-    done(err);
+    reject(err);
   };
 }
 
@@ -78,19 +77,19 @@ describe('Unit - services/routing/controllers/static', function () {
   });
 
   it('no extra data to fetch', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve, reject } = Promise.withResolvers();
     renderer.renderer.callsFake(function () {
       sinon.assert.calledOnce(renderer.formatResponse.entries);
       sinon.assert.notCalled(tagsReadStub);
-      done();
+      resolve();
     });
 
-    controllers.static(req, res, failTest(done));
+    controllers.static(req, res, failTest(reject));
     return promise;
   });
 
   it('extra data to fetch', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve, reject } = Promise.withResolvers();
     res.routerOptions.data = {
       tag: {
         type: 'read',
@@ -104,15 +103,15 @@ describe('Unit - services/routing/controllers/static', function () {
     renderer.renderer.callsFake(function () {
       sinon.assert.called(tagsReadStub);
       sinon.assert.calledOnce(renderer.formatResponse.entries);
-      done();
+      resolve();
     });
 
-    controllers.static(req, res, failTest(done));
+    controllers.static(req, res, failTest(reject));
     return promise;
   });
 
   it('resolves the API call from a route data entry', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve, reject } = Promise.withResolvers();
     res.routerOptions.data = { tag: 'tag.bacon' };
 
     tagsReadStub.resolves({ tags: [{ slug: 'bacon' }] });
@@ -125,15 +124,15 @@ describe('Unit - services/routing/controllers/static', function () {
         visibility: 'public',
         context: { member: undefined },
       });
-      done();
+      resolve();
     });
 
-    controllers.static(req, res, failTest(done));
+    controllers.static(req, res, failTest(reject));
     return promise;
   });
 
   it('keys the response data by the name the route gave it', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve, reject } = Promise.withResolvers();
     res.routerOptions.data = { 'my-tag': 'tag.bacon' };
 
     tagsReadStub.resolves({ tags: [{ slug: 'bacon' }] });
@@ -142,15 +141,15 @@ describe('Unit - services/routing/controllers/static', function () {
       const response = renderer.formatResponse.entries.firstCall.args[0];
 
       assert.deepEqual(response.data['my-tag'], [{ slug: 'bacon' }]);
-      done();
+      resolve();
     });
 
-    controllers.static(req, res, failTest(done));
+    controllers.static(req, res, failTest(reject));
     return promise;
   });
 
   it('requests relations for a post or page entry', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve, reject } = Promise.withResolvers();
     const pagesReadStub = sinon.stub().resolves({ pages: [{ slug: 'team' }] });
     sinon.stub(api, 'pagesPublic').get(() => {
       return { read: pagesReadStub };
@@ -160,15 +159,15 @@ describe('Unit - services/routing/controllers/static', function () {
 
     renderer.renderer.callsFake(function () {
       assert.equal(pagesReadStub.firstCall.args[0].include, 'authors,tags,tiers');
-      done();
+      resolve();
     });
 
-    controllers.static(req, res, failTest(done));
+    controllers.static(req, res, failTest(reject));
     return promise;
   });
 
   it('attaches browse meta to the response', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve, reject } = Promise.withResolvers();
     const postsBrowseStub = sinon
       .stub()
       .resolves({ posts: [{ slug: 'welcome' }], meta: { pagination: {} } });
@@ -186,10 +185,10 @@ describe('Unit - services/routing/controllers/static', function () {
 
       const response = renderer.formatResponse.entries.firstCall.args[0];
       assert.deepEqual(response.data.featured.meta, { pagination: {} });
-      done();
+      resolve();
     });
 
-    controllers.static(req, res, failTest(done));
+    controllers.static(req, res, failTest(reject));
     return promise;
   });
 });

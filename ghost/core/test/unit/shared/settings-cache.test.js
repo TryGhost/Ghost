@@ -5,7 +5,7 @@ const _ = require('lodash');
 const events = require('../../../core/server/lib/common/events');
 
 // Testing  the Private API
-let CacheManager = require('../../../core/shared/settings-cache/cache-manager');
+const CacheManager = require('../../../core/shared/settings-cache/cache-manager');
 const publicSettings = require('../../../core/shared/settings-cache/public');
 const InMemoryCache = require('../../../core/server/adapters/cache/MemoryCache');
 
@@ -178,7 +178,7 @@ describe('settings cache', function () {
       ..._.mapValues(socialAccounts, (value) => ({ value })),
     });
 
-    let values = _.zipObject(_.keys(publicSettings), _.fill(Array(_.size(publicSettings)), null));
+    const values = _.zipObject(_.keys(publicSettings), _.fill(Array(_.size(publicSettings)), null));
     values.title = 'hello world';
     values.timezone = 'PST';
     values.secondary_navigation = false;
@@ -196,7 +196,7 @@ describe('settings cache', function () {
     cache.set('transistor', { value: true });
     cache.set('transistor_portal_enabled', { value: true });
 
-    let values = _.zipObject(_.keys(publicSettings), _.fill(Array(_.size(publicSettings)), null));
+    const values = _.zipObject(_.keys(publicSettings), _.fill(Array(_.size(publicSettings)), null));
     values.transistor_portal_enabled = false;
 
     assert.deepEqual(cache.getPublic(), values);
@@ -214,7 +214,7 @@ describe('settings cache', function () {
       ],
     };
 
-    let cacheStore = new InMemoryCache();
+    const cacheStore = new InMemoryCache();
     cache.init(events, settingsCollection, [], cacheStore);
     assert.equal(cache.get('key1'), 'init value');
 
@@ -228,7 +228,7 @@ describe('settings cache', function () {
     assert.equal(cache.get('key1'), 'first edit');
 
     // init does a reset by default
-    let cacheStoreForReset = new InMemoryCache();
+    const cacheStoreForReset = new InMemoryCache();
     cache.init(events, settingsCollection, [], cacheStoreForReset);
     sinon.assert.calledThrice(setSpy);
     assert.equal(cache.get('key1'), 'init value');

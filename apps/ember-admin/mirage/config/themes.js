@@ -37,7 +37,7 @@ export default function mockThemes(server) {
 
     server.put('/themes/:theme/activate/', function ({themes}, {params}) {
         themes.all().update('active', false);
-        let theme = themes.findBy({name: params.theme}).update({active: true});
+        const theme = themes.findBy({name: params.theme}).update({active: true});
 
         return {themes: [theme]};
     });

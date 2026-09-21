@@ -48,6 +48,7 @@ const PRIVATE_FEATURES = [
   'importMemberTier',
   'csvContentImporter',
   'adminUIRefresh',
+  'admin7Pill',
   'tagsX',
   'emailUniqueid',
   'improveSendingUI',
@@ -61,7 +62,9 @@ const PRIVATE_FEATURES = [
   'selfServeArchives',
   'machinePayments',
   'postsListReact',
+  'membersActivityReact',
   'editorReact',
+  'dunningWarnings',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -118,7 +121,6 @@ module.exports.isSet = function isSet(flag) {
  */
 module.exports.enabledHelper = function enabledHelper(options, callback) {
   const errDetails = {};
-  let errString;
 
   if (module.exports.isSet(options.flagKey) === true) {
     // helper is active, use the callback
@@ -144,7 +146,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
   );
 
   const { SafeString } = require('express-hbs');
-  errString = new SafeString(
+  const errString = new SafeString(
     `<script>console.error("${_.values(errDetails).join(' ')}");</script>`,
   );
 

@@ -157,6 +157,9 @@ optional Redis and object-storage adapters skip when their services are not
 available; start the relevant development services when you need to exercise
 those adapters.
 
+If E2E tests fail with `ECONNREFUSED 127.0.0.1:3306`, start the development
+server with `pnpm dev`.
+
 ## Run Browser E2E Tests
 
 The browser suite needs its test infrastructure running. For the normal
