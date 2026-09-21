@@ -250,14 +250,23 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
+  // Which of the card's images could not be embedded because their host
+  // refuses cross-origin reads. They are dropped from the copied card, so
+  // the copy has to say so instead of reporting plain success.
+  const [unembeddableImages, setUnembeddableImages] = useState<string[]>([]);
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
 
   const convertImagesToDataUrls = useCallback(async () => {
+    const unembeddable: string[] = [];
+
     if (account?.bannerImageUrl || coverImage) {
       const bannerUrl = account?.bannerImageUrl || coverImage;
       if (bannerUrl) {
         const dataUrl = await imageUrlToDataUrl(bannerUrl);
         setBannerDataUrl(dataUrl);
+        if (!dataUrl) {
+          unembeddable.push('cover image');
+        }
       }
     }
 
@@ -266,8 +275,13 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       if (avatarUrl) {
         const dataUrl = await imageUrlToDataUrl(avatarUrl);
         setAvatarDataUrl(dataUrl);
+        if (!dataUrl) {
+          unembeddable.push('avatar');
+        }
       }
     }
+
+    setUnembeddableImages(unembeddable);
   }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
 
   useEffect(() => {
@@ -365,7 +379,15 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       });
 
       await navigator.clipboard.write([clipboardItem]);
-      toast.success('Image copied to clipboard');
+      if (unembeddableImages.length > 0) {
+        // The card is on the clipboard without these images; saying only
+        // "copied" is how the missing avatar went unreported.
+        toast.warning(
+          `Image copied, but the ${unembeddableImages.join(' and ')} could not be embedded: the image host does not allow cross-origin requests.`,
+        );
+      } else {
+        toast.success('Image copied to clipboard');
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to copy profile card image:', error);
