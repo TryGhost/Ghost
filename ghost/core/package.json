@@ -193,6 +193,7 @@
     "iconv-lite": "0.7.3",
     "image-size": "1.2.1",
     "intl-messageformat": "5.4.3",
+    "ipaddr.js": "catalog:",
     "jose": "catalog:",
     "js-yaml": "catalog:",
     "jsdom": "catalog:",
