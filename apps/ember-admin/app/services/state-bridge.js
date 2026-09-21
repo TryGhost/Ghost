@@ -28,6 +28,8 @@ const emberDataTypeMapping = {
     CustomThemeSettingsResponseType: null // invalidated by React theme activation; nothing to sync in Ember
 };
 
+const SEARCH_INDEXED_USER_FIELDS = ['name', 'slug', 'url'];
+
 export default class StateBridgeService extends Service.extend(Evented) {
     @service customViews;
     @service feature;
@@ -111,6 +113,10 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
         const {type, singleton} = emberDataTypeMapping[dataType];
 
+        // Read before pushPayload overwrites the store with the new values
+        const staffSearchFieldsChanged = dataType === 'UsersResponseType'
+            && this.#searchIndexedUserChanged(response.users);
+
         // Clone the response before pushing to the Ember store because
         // pushPayload mutates the object in place (e.g. renaming keys via
         // serializer attrs). Without cloning, React code holding a reference
@@ -138,6 +144,11 @@ export default class StateBridgeService extends Service.extend(Evented) {
                 // eslint-disable-next-line no-console
                 console.error('Failed to set admin theme', error);
             }
+        }
+
+        if (staffSearchFieldsChanged) {
+            // Staff is React-only, so Ember's user model save() hook never runs for these edits.
+            this.search.expireContent();
         }
 
         if (dataType === 'SettingsResponseType') {
@@ -211,6 +222,20 @@ export default class StateBridgeService extends Service.extend(Evented) {
         if (record) {
             record.unloadRecord();
         }
+
+        if (dataType === 'UsersResponseType') {
+            // Ember's user model expires global search on delete, React deletions must too.
+            this.search.expireContent();
+        }
+    }
+
+    // useEditUser also saves preferences (admin theme, onboarding, navigation), which
+    // must not refetch the index — so only expire when an indexed field changed.
+    #searchIndexedUserChanged(users = []) {
+        return users.some((user) => {
+            const record = this.store.peekRecord('user', user.id);
+            return !record || SEARCH_INDEXED_USER_FIELDS.some(field => record[field] !== user[field]);
+        });
     }
 
     @action
