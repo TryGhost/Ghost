@@ -143,7 +143,7 @@ type SlugState =
   title.
 - `request` is the one generator request on the wire: its `ticket` (the
   submission it belongs to), `kind` (`title` or `manual`), the `text` sent, and
-  `slugAtRequest`, the slug when it was submitted.
+  `slugAtSubmission`, the slug when it was submitted.
 - `deferred` is the single submission waiting behind the request, or `null`:
   its ticket, the submission, and `slugAtSubmission`.
 
@@ -163,11 +163,13 @@ or resolves back to the current slug leaves the settled mode as it was.
 | generator answer                            | `settled` with the request's ticket and `{ok}` or `{error}`.                             |
 
 Effects: `request` sends `text` to the generator and reports the answer as a
-`settled` event; `resolve` settles the promise of the submission with that
-ticket; `notify` calls every subscriber with the committed view and a proposal
-or `null`; `resubmit` re-enters the reducer with the deferred submission after
-the effects before it ran. A listener that throws is reported to
-`onListenerError` and affects neither the transition nor the other listeners.
+`settled` event, reading an answer that is not a string as blank; `resolve`
+settles the promise of the submission with that ticket; `notify` calls every
+subscriber with a proposal or `null` and the view that proposal produced. The
+shell commits the state before running effects and runs them in order, so a
+listener that calls back into the machine queues behind the effects already
+due. A listener that throws is reported to `onListenerError` and affects neither
+the transition nor the other listeners.
 
 Proposals are `{slug, source}`:
 
@@ -198,9 +200,11 @@ never notifies, so superseded work cannot look like a current state change.
 
 `t` is the trimmed title; `c` is `normalizeManualSlug(input, slug)` (`null` for
 a blank or unchanged input); "same title" is `t === title && slug`; "frozen" is
-`!shouldGenerateSlug({mode: 'derived', slug}, t)`; "drain" re-enters the reducer
-with the deferred submission against the new idle state, so it takes the idle
-rows below.
+`!shouldGenerateSlug({mode: 'derived', slug}, t)`; "drain" evaluates the deferred
+submission against the new idle state inside the same transition, so it takes
+the idle rows below and nothing can be submitted ahead of it. `getState()`
+already reflects a drained request while subscribers are told about the
+proposal before it.
 
 | State              | Event                                          | Next state                                                           | Effects                                                                      |
 | ------------------ | ---------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------- |

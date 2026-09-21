@@ -14,11 +14,7 @@ export interface SlugPortAdapter {
   reset: () => void;
 }
 
-/**
- * Adapter over the slug machine. The machine's `pending` flag reads false
- * between an active request and a queued one, so settling follows the
- * submission promises instead.
- */
+/** Adapter over the slug machine. Settling follows the latest submission's promise. */
 export function createSlugPort(machine: SlugMachine): SlugPortAdapter {
   let latest: Promise<unknown> = Promise.resolve();
   let boundary = deferred<void>();
