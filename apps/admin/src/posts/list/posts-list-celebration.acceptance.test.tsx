@@ -6,6 +6,7 @@ import {
   fakePostsListScreen,
   post,
   renderAdminApp,
+  siteResponse,
 } from '@test-utils/acceptance';
 import { postsListScreen } from './posts-list.screen';
 
@@ -38,6 +39,36 @@ describe('Posts list publish celebration', () => {
     await expect.element(postsListScreen.celebrationModal()).toBeVisible();
     await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('Just published');
   });
+
+  it.each(['https://example.com/publication-icon.png', ''])(
+    'uses the configured publication icon (%s)',
+    async (icon) => {
+      const published = post({ title: 'Just published', status: 'published' });
+      fakePosts([published]);
+      localStorage.setItem(
+        'ghost-last-published-post',
+        JSON.stringify({ id: published.id, type: 'post' }),
+      );
+      const site = siteResponse();
+      site.site.icon = icon;
+
+      await renderAdminApp('/posts?type=published', {
+        ...FLAG_ON,
+        boot: { browseSite: { response: site } },
+      });
+
+      await expect.element(postsListScreen.celebrationModal()).toBeVisible();
+      await expect
+        .poll(() => {
+          const title = Array.from(document.querySelectorAll('[role="dialog"] strong')).find(
+            (element) => element.textContent === site.site.title,
+          );
+          const iconElement = title?.parentElement?.previousElementSibling;
+          return iconElement instanceof HTMLElement ? iconElement.style.backgroundImage : null;
+        })
+        .toBe(icon ? `url("${icon}")` : null);
+    },
+  );
 
   /**
    * Ember browses whichever resource the editor named — `store.query(post.type, …)`

@@ -461,6 +461,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
           <PostCelebrationModal
             post={celebration.post}
             postCount={celebration.postCount}
+            siteIcon={siteData?.site.icon}
             siteTitle={siteData?.site.title ?? ''}
             type={celebration.celebration.type}
             wasPublished={celebration.celebration.wasPublished}
