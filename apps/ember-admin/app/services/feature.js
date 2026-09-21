@@ -96,7 +96,6 @@ export default class FeatureService extends Service {
     @feature('importMemberTier') importMemberTier;
     @feature('adminUIRefresh') adminUIRefresh;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('tagDetailsReact') tagDetailsReact;
     @feature('paywallImprovements') paywallImprovements;
     @feature('automations') automations;
     @feature('csvContentImporter') csvContentImporter;
