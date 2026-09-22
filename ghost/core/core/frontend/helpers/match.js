@@ -25,9 +25,9 @@ function isEmptyValue(value) {
   }
 }
 
-const handleConditional = (conditional, options) => {
+const handleConditional = (conditional, options, context) => {
   if (_.isFunction(conditional)) {
-    conditional = conditional.call(this);
+    conditional = conditional.call(context);
   }
 
   // Default behavior is to render the positive path if the value is truthy and not empty.
@@ -100,7 +100,7 @@ module.exports = function match(...attrs) {
 
   if (attrs.length === 1) {
     // CASE: single attribute, treat it as simple true/false (like the if helper)
-    result = handleConditional(attrs[0], options);
+    result = handleConditional(attrs[0], options, this);
   } else if (attrs.length === 2) {
     // CASE: two attributes, assume the operator is "="
     result = handleMatch(attrs[0], '=', attrs[1]);
