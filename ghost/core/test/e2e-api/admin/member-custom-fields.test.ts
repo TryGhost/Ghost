@@ -6,6 +6,7 @@ const {
   mockManager,
   configUtils,
   hostLimits,
+  resetRateLimits,
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
@@ -2422,6 +2423,65 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ name: 'Topic', type: 'short_text' }] })
         .expectStatus(422);
       assert.match(body.errors[0].context, /shopify/);
+    });
+  });
+
+  // An integration holds every custom field permission, as it does the member ones, so its
+  // Admin API key can manage definitions as well as read and write the values set against
+  // them. Integration keys are also limited to a list of resources, read from the first
+  // segment of the path, and these routes count as `members` there like the rest of
+  // /members/.
+  describe('Integrations', function () {
+    // Switching back to the owner afterwards is a fresh sign-in, and this file signs in
+    // often enough to reach the login rate limiter, so it is reset before each test.
+    beforeEach(async function () {
+      await resetRateLimits();
+    });
+
+    it('lets an integration list and read the definitions', async function () {
+      const field = await createField({ name: 'Company' });
+
+      await agent.useZapierAdminAPIKey();
+      try {
+        const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+        assert.deepEqual(
+          body.members_metafields.map((definition: { key: string }) => definition.key),
+          [field.key],
+        );
+
+        const read = (await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200))
+          .body;
+        assert.equal(read.members_metafields[0].name, 'Company');
+      } finally {
+        await agent.loginAsOwner();
+      }
+    });
+
+    it('lets an integration create, change and delete a definition', async function () {
+      await agent.useZapierAdminAPIKey();
+      try {
+        const created = await createField({ name: 'Company' });
+        assert.equal(created.key, 'company');
+
+        const renamed = (
+          await agent
+            .put(`members/metafields/custom/${created.key}/`)
+            .body({ members_metafields: [{ name: 'Employer' }] })
+            .expectStatus(200)
+        ).body.members_metafields[0];
+        assert.equal(renamed.name, 'Employer');
+
+        await agent
+          .put('members/metafields/custom/')
+          .body({ members_metafields: [{ key: created.key }] })
+          .expectStatus(200);
+
+        // Deleting is only offered on an archived field, so it is archived first.
+        await setStatus(created.key, 'archived');
+        await agent.delete(`members/metafields/custom/${created.key}/`).expectStatus(204);
+      } finally {
+        await agent.loginAsOwner();
+      }
     });
   });
 
