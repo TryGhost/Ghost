@@ -385,7 +385,10 @@ test.describe('Content Visibility', async () => {
                 await card.getByTestId('visibility-toggle-web-paidMembers').click();
 
                 await expect(card.getByTestId('visibility-toggle-web-nonMembers')).not.toBeChecked();
+                await expect(card.getByTestId('visibility-toggle-web-freeMembers')).not.toBeChecked();
+                await expect(card.getByTestId('visibility-toggle-web-paidMembers')).not.toBeChecked();
                 await expect(card.getByTestId('visibility-toggle-email-freeMembers')).toBeChecked();
+                await expect(card.getByTestId('visibility-toggle-email-paidMembers')).toBeChecked();
                 await expect(page.getByTestId('visibility-indicator')).toBeVisible();
             });
 
@@ -451,6 +454,81 @@ test.describe('Content Visibility', async () => {
             expect(box.y).toBeGreaterThanOrEqual(0);
             expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
             expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+        });
+    });
+
+    test.describe('Panel state across cards', async function () {
+        const image = (caption) => ({
+            type: 'image',
+            src: '/content/images/2022/11/koenig-lexical.jpg',
+            width: 3840,
+            height: 2160,
+            title: '',
+            alt: '',
+            caption,
+            cardWidth: 'regular'
+        });
+
+        const twoImagesContent = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [
+                    {
+                        children: [{detail: 0, format: 0, mode: 'normal', style: '', text: 'some text', type: 'text', version: 1}],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    },
+                    image('first'),
+                    image('second')
+                ],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        test.beforeEach(async () => {
+            await initialize({page, uri: `/#/?content=${twoImagesContent}`});
+        });
+
+        // deselecting by clicking into text goes through the selection listener
+        // rather than DESELECT_CARD_COMMAND, so the open panel has to be closed
+        // there too - otherwise the next selected card opens with it showing
+        test('does not carry the visibility panel over to the next selected card', async function () {
+            await focusEditor(page);
+            const cards = page.locator('[data-kg-card="image"]');
+            const first = cards.nth(0);
+            const second = cards.nth(1);
+
+            await first.click();
+            await first.getByTestId('show-visibility').click();
+            await expect(first.getByTestId('settings-panel')).toBeVisible();
+
+            await page.locator('[data-lexical-editor] p').first().click();
+            await expect(first).toHaveAttribute('data-kg-card-selected', 'false');
+
+            await second.click();
+            await expect(second).toHaveAttribute('data-kg-card-selected', 'true');
+            await expect(second.getByTestId('settings-panel')).not.toBeVisible();
+        });
+
+        test('does not carry the visibility panel over when selecting another card directly', async function () {
+            await focusEditor(page);
+            const cards = page.locator('[data-kg-card="image"]');
+            const first = cards.nth(0);
+            const second = cards.nth(1);
+
+            await first.click();
+            await first.getByTestId('show-visibility').click();
+            await expect(first.getByTestId('settings-panel')).toBeVisible();
+
+            await second.click();
+            await expect(second).toHaveAttribute('data-kg-card-selected', 'true');
+            await expect(second.getByTestId('settings-panel')).not.toBeVisible();
         });
     });
 

@@ -228,6 +228,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                         setSelectedCardKey(cardKey);
                         setIsEditingCard(false);
+                        // Hide visibility settings when switching to a different card
+                        setShowVisibilitySettings(false);
                     }, {tag: 'history-merge'}); // don't include a history entry for selection change
                 }
 
@@ -274,6 +276,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                         setSelectedCardKey(null);
                         setIsEditingCard(false);
+                        // Hide visibility settings when deselecting a card, otherwise
+                        // the panel re-appears on the next card that gets selected
+                        setShowVisibilitySettings(false);
                     }, {tag: 'history-merge'}); // don't include a history entry for selection change
                 }
 
