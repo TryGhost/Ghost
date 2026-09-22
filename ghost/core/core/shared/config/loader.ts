@@ -4,6 +4,8 @@ import { bindAll as bindUrlHelpers, type BoundHelpers } from '@tryghost/config-u
 import * as localUtils from './utils';
 import { loadSecretsFromEnv, isSecretFileRef } from './secrets';
 import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
+import { attachAccessors, createSnapshot } from './snapshot';
+import type { Config } from './schema';
 
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:config');
@@ -13,7 +15,12 @@ interface LoadNconfOptions {
   customConfigPath?: string;
 }
 
-export type ConfigInstance = Nconf.Provider & BoundHelpers & ConfigHelpers;
+/**
+ * `env` is a config key as well as an nconf method, and the key wins - the env
+ * store is only ever loaded through the loader's own local handle. Omit the
+ * method so the property type is a plain string.
+ */
+export type ConfigInstance = Omit<Nconf.Provider, 'env'> & BoundHelpers & ConfigHelpers & Config;
 
 function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   debug('config start');
@@ -83,6 +90,13 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
 
   // Manually set values
   nconf.set('env', env);
+
+  // ## Schema
+
+  // Validate the loaded config and expose it as deep-frozen properties, so
+  // `config.paths.contentPath` reads the same value as `config.get('paths:contentPath')`
+  // while call sites migrate. See ./schema for the ratchet.
+  attachAccessors(nconf, createSnapshot(nconf));
 
   // Wrap this in a check, because else nconf.get() is executed unnecessarily
   // To output this, use DEBUG=ghost:*,ghost-config

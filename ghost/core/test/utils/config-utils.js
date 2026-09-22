@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const net = require('net');
 const config = require('../../core/shared/config');
+const { REFRESH_SNAPSHOT } = require('../../core/shared/config/snapshot');
 const configUtils = {};
 
 configUtils.config = config;
@@ -14,6 +15,14 @@ const clearDerivedContentPaths = function () {
  * configUtils.set({});
  * configUtils.set('key', 'value');
  */
+/**
+ * Rebuild the frozen, schema-parsed view after writing through nconf, so
+ * `config.someKey` agrees with `config.get('someKey')` inside the test.
+ */
+const refresh = function () {
+  config[REFRESH_SNAPSHOT]();
+};
+
 configUtils.set = function () {
   const key = arguments[0];
   const value = arguments[1];
@@ -31,6 +40,8 @@ configUtils.set = function () {
       clearDerivedContentPaths();
     }
   }
+
+  refresh();
 };
 
 /**
@@ -51,6 +62,8 @@ configUtils.restore = async function () {
   _.each(configUtils.defaultConfig, function (value, key) {
     config.set(key, _.cloneDeep(value));
   });
+
+  refresh();
 };
 
 configUtils.getServerUrl = function ({ protocol = 'http' } = {}) {
