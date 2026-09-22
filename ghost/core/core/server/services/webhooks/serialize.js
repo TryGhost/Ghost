@@ -23,7 +23,7 @@ const loadRequiredUrlRelations = async (model, urlService) => {
 };
 
 module.exports =
-  ({ urlService }) =>
+  ({ urlService, readMemberMetafields }) =>
   async (event, model) => {
     const _ = require('lodash');
     const api = require('../../api').endpoints;
@@ -70,6 +70,21 @@ module.exports =
         frame,
       );
       current = frame.response[docName][0];
+
+      // Custom fields are neither a column nor a relation on the member, so the model
+      // the event carries has none of them and the serializer above cannot put them in.
+      // They are read alongside, for an admin-level reader — the same audience the Admin
+      // API answers a member read for — so a webhook consumer is shown the member the
+      // API would show it.
+      //
+      // `current` only, because the values a write replaced are not on the model either;
+      // `previous` says a member's custom fields changed without saying what they were.
+      if (docName === 'members') {
+        const metafields = await readMemberMetafields(model.id);
+        if (metafields) {
+          current.metafields = metafields;
+        }
+      }
     }
 
     if (changed.length && Object.keys(model._previousAttributes).length) {

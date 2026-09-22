@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const { ADMIN, adminWriteOrigin } = require('../../../members-metafields');
+const { ADMIN, adminWriteOrigin, readValuesForMembers } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -93,23 +93,18 @@ module.exports = class MemberBREADService {
   /**
    * Metafields are extra fields a publisher can define on member records, such as a shoe
    * size or a delivery address. Their values live in their own table, so they are fetched
-   * here rather than loaded alongside the member.
-   *
-   * Returns null when this audience has no field to be told about, which tells the caller to
-   * leave the `metafields` key off the member payload rather than send an empty object: a key
-   * added to an API response cannot be withdrawn without breaking whoever started reading it,
-   * and most sites have never defined a field, so those sites keep the payload they had
-   * before this feature existed.
+   * here rather than loaded alongside the member. See `readValuesForMembers` for what a
+   * null answer means.
    * @param {string[]} memberIds
    * @param {import('../../../members-metafields').Audience} audience
    * @returns {Promise<Map<string, Record<string, unknown>> | null>}
    */
   async fetchMetafieldValues(memberIds, audience) {
-    if (!(await this.metafieldDefinitions.hasAnyReadable(audience))) {
-      return null;
-    }
-
-    return this.metafieldValues.getValuesForMembers(memberIds, audience);
+    return readValuesForMembers(
+      { definitions: this.metafieldDefinitions, values: this.metafieldValues },
+      memberIds,
+      audience,
+    );
   }
 
   /**

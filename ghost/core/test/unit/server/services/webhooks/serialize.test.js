@@ -11,7 +11,13 @@ const {
 const createSerialize = require('../../../../../core/server/services/webhooks/serialize');
 
 const noRelationsUrlService = { getRequiredRelations: () => [] };
-const serialize = createSerialize({ urlService: noRelationsUrlService });
+// A site that has defined no custom fields, which is what `null` means here. The
+// payload for a site that has is covered end to end in test/e2e-webhooks.
+const noMetafields = async () => null;
+const serialize = createSerialize({
+  urlService: noRelationsUrlService,
+  readMemberMetafields: noMetafields,
+});
 
 // Mocked internals
 const tiersService = require('../../../../../core/server/services/tiers');
@@ -89,7 +95,10 @@ describe('WebhookService - Serialize', function () {
     // loaded: a relation the event already carries (authors, with its
     // nested roles) is left untouched so the payload keeps them.
     const urlService = { getRequiredRelations: () => ['tags', 'authors'] };
-    const serializeWithRelations = createSerialize({ urlService });
+    const serializeWithRelations = createSerialize({
+      urlService,
+      readMemberMetafields: noMetafields,
+    });
 
     const post = fixtureManager.get('posts', 1);
     const postModel = new Post(post);

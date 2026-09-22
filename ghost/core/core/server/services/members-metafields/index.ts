@@ -1,5 +1,6 @@
 import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';
+import type { Audience } from './access';
 import { MetafieldBindingsService } from './bindings-service';
 import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
@@ -34,6 +35,33 @@ export {
 export let definitions: MetafieldDefinitionsService | undefined;
 export let values: MetafieldValuesService | undefined;
 export let bindings: MetafieldBindingsService | undefined;
+
+/**
+ * The values a set of members holds, as one audience reads them.
+ *
+ * Null when this audience has no field to be told about, which tells the caller to leave
+ * the `metafields` key off its payload rather than send an empty object: a key added to a
+ * response cannot be withdrawn without breaking whoever started reading it, and most sites
+ * have never defined a field, so those sites keep the payload they had before this feature
+ * existed.
+ *
+ * The services are passed in rather than read off this module, so a caller that already
+ * holds them (the members BREAD service) and one that does not (the webhook serializer,
+ * which uses the singletons below) get the same answer from the same place. Two readers
+ * asking this separately is two chances to disagree about what a site with no fields
+ * should send.
+ */
+export async function readValuesForMembers(
+  services: { definitions: MetafieldDefinitionsService; values: MetafieldValuesService },
+  memberIds: string[],
+  audience: Audience,
+): Promise<Map<string, Record<string, unknown>> | null> {
+  if (!(await services.definitions.hasAnyReadable(audience))) {
+    return null;
+  }
+
+  return services.values.getValuesForMembers(memberIds, audience);
+}
 
 export function init(): void {
   // The three are constructed together below, so checking all of them keeps the "all or
