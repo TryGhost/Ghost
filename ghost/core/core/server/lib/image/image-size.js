@@ -361,7 +361,7 @@ class ImageSize {
 
   _getPathFromUrl(imageUrl) {
     // local storage adapter's .exists() expects image paths without any prefixes
-    const subdirRegex = new RegExp(`^${this.urlUtils.getSubdir()}`);
+    const subdirRegex = new RegExp(`^${_.escapeRegExp(this.urlUtils.getSubdir())}`);
     const contentRegex = new RegExp(`^/${this.urlUtils.STATIC_IMAGE_URL_PREFIX}`);
     const storagePath = imageUrl.replace(subdirRegex, '').replace(contentRegex, '');
 
