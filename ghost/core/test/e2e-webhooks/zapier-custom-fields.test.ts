@@ -121,6 +121,52 @@ describe('Zapier and member custom fields', function () {
       assert.deepEqual(body.members[0].metafields.custom, { [key]: 'Ghost internals' });
     });
 
+    // Signing a member up and filing their answers in one step is the shape a survey Zap
+    // reaches for, and it is what an imported CSV row has always done. One call, one
+    // member, their answers already on them.
+    it('creates a member and their custom fields in one call', async function () {
+      const key = await definePublisherField('Favourite topic');
+
+      const { body } = await zapier
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'zap-creates@example.com',
+              metafields: { custom: { [key]: 'Ghost internals' } },
+            },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.deepEqual(body.members[0].metafields.custom, { [key]: 'Ghost internals' });
+
+      const { body: read } = await zapier.get(`members/${body.members[0].id}/`).expectStatus(200);
+      assert.deepEqual(read.members[0].metafields.custom, { [key]: 'Ghost internals' });
+    });
+
+    // A value the site will not accept fails the whole call, so no member is left behind
+    // holding none of the answers they were created with.
+    it('creates no member at all when a custom field value is refused', async function () {
+      await definePublisherField('Favourite topic');
+
+      await zapier
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'zap-rejected@example.com',
+              metafields: { custom: { not_a_field: 'x' } },
+            },
+          ],
+        })
+        .expectStatus(422);
+
+      const filter = encodeURIComponent("email:'zap-rejected@example.com'");
+      const { body } = await zapier.get(`members/?filter=${filter}`).expectStatus(200);
+      assert.equal(body.members.length, 0);
+    });
+
     // The values are reachable from a Zap too, but only by asking for them. The search
     // Zapier actually makes does not ask, which is the gap — this pins that the asking
     // works, so closing it is a change to the Zapier app rather than to Ghost.
@@ -145,6 +191,7 @@ describe('Zapier and member custom fields', function () {
     it('carries custom fields in the Updated Member trigger payload', async function () {
       const key = await definePublisherField('Favourite topic');
       const memberId = await createMember('zap-trigger@example.com');
+      await zapierWritesField(memberId, key, 'Reading');
       await subscribeZapTo(
         'member.edited',
         'https://test-webhook-receiver.com/zapier-member-edited/',
@@ -156,10 +203,9 @@ describe('Zapier and member custom fields', function () {
       const { member } = deliveredPayload();
       assert.equal(member.current.email, 'zap-trigger@example.com');
       assert.deepEqual(member.current.metafields.custom, { [key]: 'Ghost internals' });
-      // `previous` still says nothing about custom fields: the values a write replaced
-      // are not on the model the event carries, so a Zap sees what a member holds now
-      // rather than which field changed.
-      assert.deepEqual(member.previous, {});
+      // And what the field held before, which is how a Zap tells this edit apart from
+      // one that changed something else.
+      assert.deepEqual(member.previous.metafields.custom, { [key]: 'Reading' });
     });
 
     it('carries custom fields in the New Member trigger payload', async function () {
@@ -214,27 +260,6 @@ describe('Zapier and member custom fields', function () {
 
       assert.equal(body.members.length, 1);
       assert.equal(body.members[0].metafields, undefined);
-    });
-
-    // Signing a member up and filing their answers in one step is the shape a survey Zap
-    // would reach for, and it takes two steps instead: create, then update. Ghost says so
-    // rather than dropping the values, so a Zap built the wrong way fails loudly.
-    it('refuses custom fields sent to the Create Member action', async function () {
-      const key = await definePublisherField('Favourite topic');
-
-      const { body } = await zapier
-        .post('members/')
-        .body({
-          members: [
-            {
-              email: 'zap-creates@example.com',
-              metafields: { custom: { [key]: 'Ghost internals' } },
-            },
-          ],
-        })
-        .expectStatus(422);
-
-      assert.match(body.errors[0].context, /Create the member, then set values with an edit/);
     });
   });
 });

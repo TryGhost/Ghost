@@ -65,6 +65,9 @@ describe('MemberBreadService', function () {
 
       const linkStripeCustomerStub = sinon.stub().resolves();
       const createStub = sinon.stub().resolves(mockMemberModel);
+      // Stands in for a real transaction: runs the body with a marker the assertions
+      // can recognise wherever the service is expected to have threaded it through.
+      const transactionStub = sinon.stub().callsFake((fn) => fn('a-transaction'));
       const getSuppressionDataStub = sinon.stub().resolves({ suppressed: false, info: null });
 
       const memberRepository = {
@@ -86,6 +89,7 @@ describe('MemberBreadService', function () {
         },
         metafieldValues,
         metafieldDefinitions: createMetafieldDefinitionsStub(),
+        transaction: transactionStub,
       });
 
       // Stub the read method to avoid having to mock all its dependencies
@@ -103,43 +107,41 @@ describe('MemberBreadService', function () {
         createStub,
         getSuppressionDataStub,
         metafieldValues,
+        transactionStub,
       };
     }
 
-    it('refuses a create whose body names custom field values', async function () {
-      // Values can only be set on a later edit. The values service decides what
-      // counts as naming them, so drive it directly rather than through a body
-      // shape, which is the values service's own contract to test.
+    // Whether the values reach the same transaction as the member is the whole of this
+    // promise — an imported row has always committed both or neither, and a create over
+    // the API now answers the same way. What a value is allowed to be, and what happens
+    // when it is refused, belongs to the API tests that drive a real database.
+    it('writes a member and the values named for them in one transaction', async function () {
       const metafieldValues = createMetafieldValuesStub();
-      metafieldValues.namesValues.returns(true);
-      const { service, createStub } = createService({}, metafieldValues);
+      metafieldValues.planWrite.resolves([{ field: { key: 'favourite_topic' }, value: 'Ghosts' }]);
+      const { service, createStub, transactionStub } = createService({}, metafieldValues);
 
-      await assert.rejects(
-        () =>
-          service.add(
-            { email: 'test@example.com', metafields: { custom: { favourite_topic: 'Ghosts' } } },
-            {},
-          ),
-        (error) => {
-          assert.equal(error.errorType, 'ValidationError');
-          assert.equal(error.property, 'metafields');
-          return true;
-        },
+      await service.add(
+        { email: 'test@example.com', metafields: { custom: { favourite_topic: 'Ghosts' } } },
+        { context: { user: 'user_123' } },
       );
 
-      assert.equal(createStub.called, false, 'the member must not be created');
+      assert.equal(transactionStub.calledOnce, true);
+      assert.equal(createStub.firstCall.args[1].transacting, 'a-transaction');
+      assert.equal(metafieldValues.applyWrite.firstCall.args[0], 'member_123');
+      assert.equal(metafieldValues.applyWrite.firstCall.args[2].executor, 'a-transaction');
     });
 
-    it('creates a member when the body names no custom field values', async function () {
-      const { service, createStub, metafieldValues } = createService();
+    // The path almost every create takes. It keeps the shape it had before values could
+    // be named at all, transaction and all, so this feature costs a site that has never
+    // defined a field nothing.
+    it('creates a member outside a transaction when the body names no values', async function () {
+      const { service, createStub, metafieldValues, transactionStub } = createService();
 
       await service.add({ email: 'test@example.com' }, {});
 
       assert.equal(createStub.calledOnce, true);
-      // Asked unconditionally: the member data is handed over whether or not it
-      // carries the key, and an absent one is the values service's to judge.
-      assert.equal(metafieldValues.namesValues.calledOnce, true);
-      assert.equal(metafieldValues.namesValues.firstCall.args[0], undefined);
+      assert.equal(transactionStub.called, false);
+      assert.equal(metafieldValues.applyWrite.called, false);
     });
 
     it('passes context to linkStripeCustomer when stripe_customer_id is provided', async function () {

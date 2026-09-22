@@ -157,6 +157,7 @@ module.exports = function MembersAPI({
     giftService,
     metafieldValues,
     metafieldDefinitions,
+    transaction: (fn) => Member.transaction(fn),
   });
 
   const geolocationService = new GeolocationService();
