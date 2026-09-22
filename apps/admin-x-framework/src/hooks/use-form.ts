@@ -73,10 +73,11 @@ const useForm = <State>({
   // To prevent infinite renders, uses the value of onSaveCompleted from when the form was saved
   useEffect(() => {
     if (saveState === 'saved') {
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         onSaveCompleted?.();
         setSaveState((state) => (state === 'saved' ? '' : state));
       }, savedDelay);
+      return () => clearTimeout(timeout);
     }
   }, [saveState, savedDelay]);
 
