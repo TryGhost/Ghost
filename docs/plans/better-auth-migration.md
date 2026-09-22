@@ -21,12 +21,22 @@ sign-in, scoped Bearer tokens, an OAuth provider for integrations, session
 management UI) are Better Auth plugins that share one adapter, one hook
 pipeline and one principal model, rather than new bespoke middleware.
 
-It builds on the internal proposal "Modernising Ghost's Authentication"
-(Notion, April 2026), which did the original research and validated the core
-architecture with a proof of concept. Section 1.1 lists what that proposal
-changed in this plan. Read the [authentication guide](../codebase/authentication.md)
-for the current behaviour and the [codebase direction](../codebase/direction.md)
-for why Better Auth is the intended foundation.
+It implements the approved engineering proposal "Proposal: Modern
+Authentication" (Notion, September 2026), which set the direction: off-the-shelf
+before bespoke, common API conventions (Bearer credentials, personal access
+tokens, OAuth clients), least privilege by default, one authorisation model
+(permissions describe the user, roles are presets, scopes restrict a token and a
+user token's access is the intersection of the two), a standard credential
+lifecycle, and incremental convergence with legacy cleanup in major versions.
+It also builds on the earlier research document "Modernising Ghost's
+Authentication" (Notion, April 2026), which validated the core architecture
+with a proof of concept. Section 1.1 lists what that document changed in this
+plan. The engineering roadmap places "port auth/session handling to React
+(Better Auth)" in the next six months and the wider adoption and OAuth work
+after that; Phases 1, 2 and 7 below are the roadmap items. Read the
+[authentication guide](../codebase/authentication.md) for the current behaviour
+and the [codebase direction](../codebase/direction.md) for why Better Auth is
+the intended foundation.
 
 ## Contents
 
@@ -321,6 +331,18 @@ client counterpart in `apps/admin-x-framework` where the browser needs it.
 Server-only endpoints are declared with `metadata: { SERVER_ONLY: true }` so
 they are callable via `auth.api.*` but never exposed over HTTP.
 
+The approved proposal asks every PR "Could Better Auth provide this?". The
+answer for each Ghost-owned plugin:
+
+| Ghost plugin | Could Better Auth provide it? |
+| --- | --- |
+| `ghostSessionBridge` | No. It exists only to hand a Better Auth sign-in to the legacy session while both run; deleted in Phase 3 |
+| `ghostStaffLifecycle` | Partly. Sign-in, sessions and reset are Better Auth core; Ghost's `status` policy, `last_seen`, setup and invitation semantics are product rules layered on hooks |
+| `ghostDeviceVerification` | Not as-is. `twoFactor` and `emailOTP` are per-user opt-in factors; Ghost's rule is "every staff user, trusted browser, satisfied by any stronger factor". The plugin composes Better Auth's verification store, cookies and hooks; if Ghost later moves to per-user opt-in 2FA, it is replaced by `twoFactor` |
+| `ghostApiKeys` (legacy scheme) | No. The `apiKey` plugin hashes keys and binds them to a user; the legacy scheme needs a recoverable signing secret and integration-bound keys. New tokens use the `apiKey` plugin; the legacy plugin exists only until the scheme is retired |
+| `ghostSso` | Partly. Team SSO uses `@better-auth/sso`; this plugin only keeps the Ghost(Pro) support-access adapter contract working |
+| `ghostLegacySession` | No. One-off cookie exchange at cutover; deleted in Phase 8 |
+
 **`ghostSessionBridge`** (temporary, Phases 1–2, removed in Phase 3)
 
 - Express middleware on `/ghost` and the Admin API, placed where
@@ -422,6 +444,15 @@ they are callable via `auth.api.*` but never exposed over HTTP.
 - The scope vocabulary is a single table in `services/auth/policy/scopes.ts`
   shared by the token UI, the OAuth provider (`scopes` option) and, in 7.0,
   the simplified permission checks.
+- **Site tokens.** The approved proposal distinguishes user tokens (access is
+  the intersection of the user's permissions and the token's scopes) from site
+  tokens that carry explicitly granted scopes of their own, which is what
+  integrations need. Site tokens are a second `apiKey` configuration whose
+  `referenceId` is the site (or integration) rather than a user, resolving to
+  `kind: 'integration'`, `method: 'bearer_token'` with the token's scopes as
+  the whole authority. They are the standards-based successor to Admin API
+  integration keys and the path by which the legacy scheme can eventually be
+  retired.
 
 **`ghostSso`** (Phase 6)
 
@@ -808,6 +839,8 @@ Goal: CLI tools, AI agents and automations authenticate with
 3. Personal Access Tokens UI in React settings (`apps/admin/src/settings/general/users/`):
    create with name, scopes and expiry, list, revoke; the raw token is shown
    once. Existing Staff Access Token UI stays.
+   Site tokens with explicit scopes are created from the Integrations settings
+   (Administrators only) and appear beside the integration's legacy keys.
 4. Danger-zone reset revokes all `api_tokens`; user suspension and deletion
    revoke the user's tokens.
 5. Tests: e2e for Bearer auth success, missing scope, expired token, revoked
@@ -1097,6 +1130,13 @@ Notion Phase 4, breaking changes only here.
 - Members authentication (magic links, OTC, member sessions and identity
   tokens). It shares only `authenticate.js` composition with staff auth and
   is a separate migration candidate once the staff engine is stable.
+- Unifying staff and member identities, which the approved proposal puts "on
+  the table" without deciding. This plan neither requires nor precludes it:
+  `users` stays the Better Auth user model and new tables are named
+  `user_*` rather than `staff_*`, so members could later become Better Auth
+  users with a different access profile without renaming anything. Session
+  isolation, the unverified-session gate and the principal seam are the
+  controls that would have to become load-bearing if that happens.
 - Replacing the permissions engine during the migration. The principal seam
   is the only authorization change before 7.0.
 - Identity tokens (`GET /identities`, RS256, JWKS) and the Tinybird and
