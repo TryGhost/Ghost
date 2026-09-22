@@ -35,6 +35,36 @@ test.describe('Smart quotes', async () => {
             await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">rock ’n’ roll in the ’90s </span></p>`);
         });
 
+        test('uses primes for feet and inches', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('She\'s 5\'10" and has a 12" pizza');
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">She’s 5′10″ and has a 12″ pizza</span></p>`);
+        });
+
+        test('closes quotes that end with a number', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('"I was 25" in the 1990\'s');
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">“I was 25” in the 1990’s</span></p>`);
+        });
+
+        test('converts quotes typed with dead keys', async function ({browserName}) {
+            test.skip(browserName !== 'chromium', 'composition is simulated through the Chrome DevTools Protocol');
+
+            // a dead key (e.g. US-International) composes the quote rather than sending a keydown for it
+            const client = await page.context().newCDPSession(page);
+            const composeQuote = async () => {
+                await client.send('Input.imeSetComposition', {text: '"', selectionStart: 1, selectionEnd: 1});
+                await client.send('Input.insertText', {text: '"'});
+            };
+
+            await focusEditor(page);
+            await page.keyboard.type('say ');
+            await composeQuote();
+            await page.keyboard.type('hi');
+            await composeQuote();
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">say “hi”</span></p>`);
+        });
+
         test('uses surrounding text when typing mid-sentence', async function () {
             await focusEditor(page);
             await page.keyboard.type('say hi');

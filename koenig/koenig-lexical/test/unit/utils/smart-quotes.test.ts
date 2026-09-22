@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest';
-import {findMistypedLeadingApostrophe, getSmartQuote, smartenQuotes} from '../../../src/utils/smart-quotes';
+import {findMistypedQuote, getSmartQuote, smartenQuotes} from '../../../src/utils/smart-quotes';
 
 describe('Utils: smart-quotes', () => {
     describe('getSmartQuote', () => {
@@ -13,7 +13,7 @@ describe('Utils: smart-quotes', () => {
         test('closes double quotes after a word or punctuation', () => {
             expect(getSmartQuote('"', 'o')).toEqual('”');
             expect(getSmartQuote('"', '.')).toEqual('”');
-            expect(getSmartQuote('"', '5')).toEqual('”');
+            expect(getSmartQuote('"', '“I was 25')).toEqual('”');
         });
 
         test('uses apostrophes within words', () => {
@@ -36,6 +36,25 @@ describe('Utils: smart-quotes', () => {
             expect(getSmartQuote('\'', ' ', 'nice')).toEqual('‘');
             expect(getSmartQuote('\'', ' ', '1984')).toEqual('‘');
         });
+
+        test('uses primes for feet and inches', () => {
+            expect(getSmartQuote('\'', 'She is 5')).toEqual('′');
+            expect(getSmartQuote('"', 'She is 5′10')).toEqual('″');
+            expect(getSmartQuote('"', 'a 12')).toEqual('″');
+        });
+
+        test('uses inches inside a quotation when the measurement is clear', () => {
+            expect(getSmartQuote('"', '“She is 5′10')).toEqual('″');
+        });
+
+        test('closes quotes that end with a number', () => {
+            expect(getSmartQuote('"', '“I was 25')).toEqual('”');
+            expect(getSmartQuote('\'', 'the ‘1984')).toEqual('’');
+        });
+
+        test('uses an apostrophe after a number followed by letters', () => {
+            expect(getSmartQuote('\'', 'the 1990', 's')).toEqual('’');
+        });
     });
 
     describe('smartenQuotes', () => {
@@ -47,8 +66,14 @@ describe('Utils: smart-quotes', () => {
             expect(smartenQuotes('rock \'n\' roll in the \'90s')).toEqual('rock ’n’ roll in the ’90s');
         });
 
-        test('uses the preceding character for context', () => {
-            expect(smartenQuotes('" she said', 'd')).toEqual('” she said');
+        test('uses the preceding text for context', () => {
+            expect(smartenQuotes('" she said', '“Hello')).toEqual('” she said');
+        });
+
+        test('converts feet and inches', () => {
+            expect(smartenQuotes('She\'s 5\'10" and has a 12" pizza')).toEqual('She’s 5′10″ and has a 12″ pizza');
+            expect(smartenQuotes('"She\'s 5\'10"," he said')).toEqual('“She’s 5′10″,” he said');
+            expect(smartenQuotes('"I was 25" in the 1990\'s')).toEqual('“I was 25” in the 1990’s');
         });
 
         test('leaves replacement strings alone', () => {
@@ -61,17 +86,25 @@ describe('Utils: smart-quotes', () => {
         });
     });
 
-    describe('findMistypedLeadingApostrophe', () => {
-        test('finds a ‘ that turned out to be a leading apostrophe', () => {
-            expect(findMistypedLeadingApostrophe('the ‘90s')).toEqual(4);
-            expect(findMistypedLeadingApostrophe('rock ‘n')).toEqual(5);
-            expect(findMistypedLeadingApostrophe('‘til')).toEqual(0);
+    describe('findMistypedQuote', () => {
+        test('flips a ‘ that turned out to be a leading apostrophe at the end of the word', () => {
+            expect(findMistypedQuote('the ‘90s', ' ')).toEqual({index: 4, replacement: '’'});
+            expect(findMistypedQuote('rock ‘n', '\'')).toEqual({index: 5, replacement: '’'});
+            expect(findMistypedQuote('‘til', ',')).toEqual({index: 0, replacement: '’'});
+        });
+
+        test('waits until the word has ended', () => {
+            expect(findMistypedQuote('the ‘n', 'i')).toEqual(null);
         });
 
         test('ignores regular opening quotes', () => {
-            expect(findMistypedLeadingApostrophe('the ‘nice')).toEqual(-1);
-            expect(findMistypedLeadingApostrophe('the ‘1984')).toEqual(-1);
-            expect(findMistypedLeadingApostrophe('the ‘n')).toEqual(4);
+            expect(findMistypedQuote('the ‘nice', ' ')).toEqual(null);
+            expect(findMistypedQuote('the ‘1984', ' ')).toEqual(null);
+        });
+
+        test('flips a prime to an apostrophe when a letter follows', () => {
+            expect(findMistypedQuote('the 1990′', 's')).toEqual({index: 8, replacement: '’'});
+            expect(findMistypedQuote('5′', '1')).toEqual(null);
         });
     });
 });
