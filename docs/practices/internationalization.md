@@ -72,7 +72,8 @@ pnpm --filter @tryghost/i18n translate
 This extracts source strings, updates all locale files, and synchronizes
 `packages/i18n/locales/context.json`. Add a useful description for each new
 entry in `context.json` so translators know where the message appears and what
-it means. CI rejects extraction changes and empty context descriptions.
+it means. CI rejects extraction changes and empty context descriptions, and
+locale files must be byte-identical to what `pnpm translate` writes.
 
 Commit the source change, generated locale changes, and context changes
 together.
