@@ -112,6 +112,14 @@ module.exports =
       );
     }
 
+    // Custom fields are not attributes, so the pick above cannot reach them. The service
+    // that wrote them reads what they replaced before the write and leaves it on the
+    // model, which is the only place it still exists afterwards. Without it a consumer is
+    // told a member's custom fields changed and cannot tell which one.
+    if (docName === 'members' && model._previousMetafields) {
+      previous.metafields = model._previousMetafields;
+    }
+
     const payload = {
       [docName.replace(/s$/, '')]: {
         current,

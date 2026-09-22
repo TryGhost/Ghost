@@ -1400,12 +1400,14 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), { [good.key]: 'Ghosts' });
     });
 
-    it('rejects metafields when creating a member', async function () {
-      // Setting values on create is a later vertical; the API rejects rather
-      // than silently dropping them, so the gap is explicit.
+    // An imported CSV row has always arrived with its values already on it, so a create
+    // over the API answers the same way: one call, one member, their values stored with
+    // them. These two pin that the rules a value is held to do not depend on which verb
+    // carried it.
+    it('stores metafields named when creating a member', async function () {
       const field = await createField({ name: 'Favourite topic' });
 
-      await agent
+      const { body } = await agent
         .post('members/')
         .body({
           members: [
@@ -1415,7 +1417,35 @@ describe('Member Custom Fields Admin API', function () {
             },
           ],
         })
+        .expectStatus(201);
+
+      assert.deepEqual(body.members[0].metafields.custom, { [field.key]: 'Ghosts' });
+      assert.deepEqual(await readValues(body.members[0].id), { [field.key]: 'Ghosts' });
+    });
+
+    it('creates no member when a value named at create is refused', async function () {
+      await createField({ name: 'Favourite topic' });
+
+      const { body } = await agent
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'create-with-bad-values@example.com',
+              metafields: { custom: { no_such_field: 'Ghosts' } },
+            },
+          ],
+        })
         .expectStatus(422);
+      assert.match(body.errors[0].context, /Unknown custom field/);
+
+      // The plan is resolved before anything is written, so the refusal costs nothing:
+      // there is no member holding none of the values they were created with.
+      const rows = await models.Base.knex('members').where(
+        'email',
+        'create-with-bad-values@example.com',
+      );
+      assert.equal(rows.length, 0);
     });
 
     it('refuses a value in a namespace holding no fields, as an unknown field', async function () {
