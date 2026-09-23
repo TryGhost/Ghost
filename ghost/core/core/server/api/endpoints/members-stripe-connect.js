@@ -4,6 +4,7 @@ const membersService = require('../../services/members');
 const controller = {
   docName: 'members_stripe_connect',
   auth: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

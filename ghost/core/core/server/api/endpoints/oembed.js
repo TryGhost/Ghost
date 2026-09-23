@@ -5,6 +5,7 @@ const controller = {
   docName: 'oembed',
 
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

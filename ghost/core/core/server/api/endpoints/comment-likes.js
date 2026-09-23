@@ -6,6 +6,7 @@ const commentsService = require('../../services/comments');
 const controller = {
   docName: 'comment_likes',
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

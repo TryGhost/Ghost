@@ -5,6 +5,7 @@ const controller = {
   docName: 'config',
 
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

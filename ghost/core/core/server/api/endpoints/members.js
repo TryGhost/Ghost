@@ -56,6 +56,7 @@ const controller = {
   docName: 'members',
 
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -78,6 +79,7 @@ const controller = {
   },
 
   read: {
+    integrationTokens: true,
     options: ['include'],
     headers: {
       cacheInvalidate: false,
@@ -108,6 +110,7 @@ const controller = {
   },
 
   add: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       cacheInvalidate: false,
@@ -139,6 +142,7 @@ const controller = {
   },
 
   edit: {
+    integrationTokens: true,
     statusCode: 200,
     headers: {
       cacheInvalidate: false,
@@ -163,6 +167,7 @@ const controller = {
   },
 
   logout: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: false,
@@ -186,6 +191,7 @@ const controller = {
   },
 
   editSubscription: {
+    integrationTokens: true,
     statusCode: 200,
     headers: {
       cacheInvalidate: false,
@@ -245,6 +251,7 @@ const controller = {
   },
 
   createSubscription: {
+    integrationTokens: true,
     statusCode: 200,
     headers: {
       cacheInvalidate: false,
@@ -288,6 +295,7 @@ const controller = {
   },
 
   destroy: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: false,
@@ -316,6 +324,7 @@ const controller = {
   },
 
   bulkDestroy: {
+    integrationTokens: true,
     statusCode: 200,
     headers: {
       cacheInvalidate: false,
@@ -342,6 +351,7 @@ const controller = {
   },
 
   bulkEdit: {
+    integrationTokens: true,
     statusCode: 200,
     headers: {
       cacheInvalidate: false,
@@ -365,6 +375,7 @@ const controller = {
   },
 
   exportCSV: {
+    integrationTokens: true,
     options: ['limit', 'filter', 'search'],
     headers: {
       disposition: {
@@ -393,6 +404,7 @@ const controller = {
   },
 
   importCSV: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -422,6 +434,7 @@ const controller = {
   },
 
   memberStats: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -451,6 +464,7 @@ const controller = {
   },
 
   mrrStats: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -481,6 +495,7 @@ const controller = {
   },
 
   activityFeed: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -494,6 +509,7 @@ const controller = {
   },
 
   deleteEmailSuppression: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: false,

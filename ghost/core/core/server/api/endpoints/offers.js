@@ -11,6 +11,7 @@ const controller = {
   docName: 'offers',
 
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -25,6 +26,7 @@ const controller = {
   },
 
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -45,6 +47,7 @@ const controller = {
   },
 
   edit: {
+    integrationTokens: true,
     options: ['id'],
     permissions: true,
     headers: {
@@ -72,6 +75,7 @@ const controller = {
   },
 
   add: {
+    integrationTokens: true,
     permissions: true,
     headers: {
       cacheInvalidate: true,

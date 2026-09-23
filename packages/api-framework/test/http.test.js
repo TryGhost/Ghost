@@ -19,6 +19,7 @@ describe('HTTP', function () {
       host: 'example.com',
     };
     req.get = sinon.stub().returns('fallback.example.com');
+    req.query = {};
     req.originalUrl = '/ghost/api/content/posts/';
     req.secure = true;
     req.url = 'https://example.com/ghost/api/content/';
@@ -112,6 +113,7 @@ describe('HTTP', function () {
       };
 
       const apiImpl = sinon.stub().resolves('plain body');
+      apiImpl.integrationTokens = true;
       apiImpl.response = { format: 'plain' };
       apiImpl.statusCode = 201;
 
@@ -229,6 +231,50 @@ describe('HTTP', function () {
       });
 
       shared.http(apiImpl)(req, res, next);
+    });
+  });
+
+  // Reachable only with NODE_ENV=development, which no Admin API test runs under
+  describe('god_mode', function () {
+    const nodeEnv = process.env.NODE_ENV;
+
+    beforeEach(function () {
+      req.query = { god_mode: 'true' };
+      req.api_key = {
+        get(key) {
+          return { id: 'api-key-id', type: 'admin', integration_id: 'integration-id' }[key];
+        },
+      };
+    });
+
+    afterEach(function () {
+      process.env.NODE_ENV = nodeEnv;
+    });
+
+    it('lets an integration token call any endpoint in development', async function () {
+      process.env.NODE_ENV = 'development';
+
+      await new Promise((resolve) => {
+        const apiImpl = sinon.stub().resolves({});
+        res.json.callsFake(() => resolve());
+
+        shared.http(apiImpl)(req, res, next);
+      });
+    });
+
+    it('does nothing outside development', async function () {
+      process.env.NODE_ENV = 'production';
+
+      await new Promise((resolve) => {
+        const apiImpl = sinon.stub().resolves({});
+        next.callsFake((err) => {
+          assert.equal(err.errorType, 'NoPermissionError');
+          assert.equal(apiImpl.called, false);
+          resolve();
+        });
+
+        shared.http(apiImpl)(req, res, next);
+      });
     });
   });
 });

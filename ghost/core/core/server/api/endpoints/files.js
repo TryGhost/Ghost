@@ -5,6 +5,7 @@ const adapterManager = require('../../services/adapter-manager').default;
 const controller = {
   docName: 'files',
   upload: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       cacheInvalidate: false,

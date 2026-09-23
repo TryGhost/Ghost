@@ -11,6 +11,7 @@ const controller = {
   docName: 'member_signin_urls',
 
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

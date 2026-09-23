@@ -13,6 +13,7 @@ const urlRelationsForRouting = () => {
 const controller = {
   docName: 'search_index',
   fetchPosts: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -42,6 +43,7 @@ const controller = {
     },
   },
   fetchPages: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -71,6 +73,7 @@ const controller = {
     },
   },
   fetchTags: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -89,6 +92,7 @@ const controller = {
     },
   },
   fetchUsers: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

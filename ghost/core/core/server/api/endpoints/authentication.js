@@ -236,6 +236,7 @@ const controller = {
   },
 
   reset: {
+    staffTokens: false,
     statusCode: 200,
     headers: {
       cacheInvalidate: false,

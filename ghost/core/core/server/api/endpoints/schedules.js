@@ -14,6 +14,7 @@ function setCacheInvalidateHeader(frame, cacheInvalidation) {
 const controller = {
   docName: 'schedules',
   publish: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

@@ -40,6 +40,7 @@ export const controller = {
   },
 
   edit: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -51,6 +52,7 @@ export const controller = {
   },
 
   poll: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: false,

@@ -4,6 +4,7 @@ const models = require('../../models');
 const controller = {
   docName: 'roles',
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

@@ -7,6 +7,7 @@ const controller = {
   docName: 'newsletters',
 
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -25,6 +26,7 @@ const controller = {
   },
 
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -51,6 +53,7 @@ const controller = {
   },
 
   add: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       cacheInvalidate: true,
@@ -70,6 +73,7 @@ const controller = {
   },
 
   edit: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: true,
     },
@@ -91,6 +95,7 @@ const controller = {
   },
 
   verifyPropertyUpdate: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

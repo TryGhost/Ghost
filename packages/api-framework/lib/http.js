@@ -1,8 +1,47 @@
 const url = require('url');
 const debug = require('@tryghost/debug')('http');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 
 const Frame = require('./Frame');
 const headers = require('./headers');
+
+const messages = {
+  integrationTokenBlocked: 'API tokens do not have permission to access this endpoint',
+  staffTokenBlocked: 'Staff tokens are not allowed to access this endpoint',
+};
+
+/**
+ * An Admin API key is admitted by the endpoint it calls, whatever path it arrives on: an
+ * integration's key only by a method that declares `integrationTokens`, a staff token by
+ * every method except one that declares `staffTokens: false`. A signed-in session and a
+ * Content API key are left to the permissions stage.
+ *
+ * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl
+ * @param {import('express').Request} req
+ * @returns {Error | null}
+ */
+const refuseToken = (apiImpl, req) => {
+  if (req.api_key?.get('type') !== 'admin') {
+    return null;
+  }
+
+  // Staff tokens belong to a user, integration tokens don't
+  if (req.api_key.get('user_id')) {
+    return apiImpl.staffTokens === false
+      ? new errors.NoPermissionError({ message: tpl(messages.staffTokenBlocked) })
+      : null;
+  }
+
+  // Lets a local script drive any endpoint with an integration's key
+  if (req.query.god_mode && process.env.NODE_ENV === 'development') {
+    return null;
+  }
+
+  return apiImpl.integrationTokens === true
+    ? null
+    : new errors.NoPermissionError({ message: tpl(messages.integrationTokenBlocked) });
+};
 
 /**
  * @description HTTP wrapper.
@@ -22,6 +61,12 @@ const http = (apiImpl) => {
    */
   return async function Http(req, res, next) {
     debug(`External API request to ${req.url}`);
+
+    const refusal = refuseToken(apiImpl, req);
+    if (refusal) {
+      return next(refusal);
+    }
+
     let apiKey = null;
     let integration = null;
     let user = null;

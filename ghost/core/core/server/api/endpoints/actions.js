@@ -6,6 +6,7 @@ const controller = {
   docName: 'actions',
 
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

@@ -51,6 +51,7 @@ function getCacheHeaderFromEventString(event, dto) {
 const controller = {
   docName: 'posts',
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -85,6 +86,7 @@ const controller = {
   },
 
   exportCSV: {
+    integrationTokens: true,
     options: ['limit', 'filter', 'order'],
     headers: {
       disposition: {
@@ -112,6 +114,7 @@ const controller = {
   },
 
   importCSV: {
+    integrationTokens: true,
     statusCode: 202,
     headers: {
       cacheInvalidate: false,
@@ -134,6 +137,7 @@ const controller = {
   },
 
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -167,6 +171,7 @@ const controller = {
   },
 
   add: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       cacheInvalidate: false,
@@ -196,6 +201,7 @@ const controller = {
   },
 
   edit: {
+    integrationTokens: true,
     headers: {
       /** @type {boolean | {value: string}} */
       cacheInvalidate: false,
@@ -247,6 +253,7 @@ const controller = {
   },
 
   bulkEdit: {
+    integrationTokens: true,
     statusCode: 200,
     headers: {
       cacheInvalidate: true,
@@ -274,6 +281,7 @@ const controller = {
   },
 
   bulkDestroy: {
+    integrationTokens: true,
     statusCode: 200,
     headers: {
       cacheInvalidate: true,
@@ -293,6 +301,7 @@ const controller = {
   },
 
   destroy: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: true,
@@ -329,6 +338,7 @@ const controller = {
   },
 
   copy: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       location: {

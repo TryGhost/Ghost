@@ -114,6 +114,22 @@ describe('Admin API', function () {
       it('Request to list users will succeed', async function () {
         await agent.get('users').expectStatus(200);
       });
+
+      // The Admin Integration role may edit settings, so only the endpoint's own refusal
+      // of integration tokens stands between this key and the change.
+      it('Request to an endpoint that does not admit integration tokens will 403', async function () {
+        await agent
+          .put('settings')
+          .body({ settings: [{ key: 'title', value: 'Changed by an integration' }] })
+          .expectStatus(403)
+          .expect(({ body }) => {
+            assert.equal(body.errors[0].type, 'NoPermissionError');
+            assert.equal(
+              body.errors[0].message,
+              'API tokens do not have permission to access this endpoint',
+            );
+          });
+      });
     });
 
     describe('Backup Integration', function () {

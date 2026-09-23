@@ -26,8 +26,9 @@ authorization middleware:
 1. Authentication middleware looks for the credentials accepted by that API
    and attaches the matching identity to the request.
 2. Authorization middleware requires an identity where the route is private.
-3. Admin routes then apply the permission rules for the staff user or the
-   endpoint allowlist for an integration.
+3. Before an Admin API endpoint runs, it refuses an Admin API key it doesn't
+   admit (see [Admin API tokens](#admin-api-tokens)), then applies the
+   permission rules for the staff user or the integration.
 
 Start with:
 
@@ -100,8 +101,12 @@ An integration owns separate Admin and Content API credentials.
 Admin API integrations sign a short-lived JWT with their Admin API key and send
 it using the `Ghost` authorization scheme. Ghost verifies the signing key,
 token lifetime, and API audience before attaching the integration API key to the
-request. Integration tokens can access only the endpoint and method combinations
-allowlisted in the Admin API middleware.
+request. An integration token can call only the controller methods that declare
+`integrationTokens: true`, and a staff token is refused by the few that declare
+`staffTokens: false`. The API framework's HTTP wrapper enforces both, so the rule
+belongs to the endpoint rather than to the path a request arrives on.
+[`test/unit/api/token-access.test.ts`](../../ghost/core/test/unit/api/token-access.test.ts)
+lists every endpoint either rule applies to.
 
 See [Admin API token authentication](https://docs.ghost.org/admin-api#token-authentication)
 and [`services/auth/api-key/admin.js`](../../ghost/core/core/server/services/auth/api-key/admin.js).
