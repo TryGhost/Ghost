@@ -1,8 +1,8 @@
 const { isPlainObject, omit } = require('lodash');
-const config = require('../../../shared/config');
-const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../../shared/labs');
-const databaseInfo = require('../../data/db/info');
+const config = require('../../../../../shared/config');
+const settingsCache = require('../../../../../shared/settings-cache');
+const labs = require('../../../../../shared/labs');
+const databaseInfo = require('../../../../data/db/info');
 const ghostVersion = require('@tryghost/version');
 
 const tinybirdStatsPayloadProperties = ['endpoint', 'endpointBrowser', 'version', 'datasource'];

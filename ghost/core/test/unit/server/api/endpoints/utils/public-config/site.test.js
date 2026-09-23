@@ -1,10 +1,10 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const configUtils = require('../../../../utils/config-utils');
-const getSiteProperties = require('../../../../../core/server/services/public-config/site');
-const settingsCache = require('../../../../../core/shared/settings-cache');
+const configUtils = require('../../../../../../utils/config-utils');
+const getSiteProperties = require('../../../../../../../core/server/api/endpoints/utils/public-config/site');
+const settingsCache = require('../../../../../../../core/shared/settings-cache');
 
-describe('Public-config Service', function () {
+describe('Public-config response builders', function () {
   describe('Site Properties', function () {
     afterEach(function () {
       sinon.restore();
