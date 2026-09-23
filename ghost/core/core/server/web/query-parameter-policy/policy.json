@@ -3,6 +3,8 @@
   "public": [
     { "name": "m", "reason": "Link tracking" },
     { "name": "v", "reason": "Asset invalidation" },
+    { "name": "handle", "reason": "Selects the installed add-on for public card hydration" },
+    { "name": "block", "reason": "Selects the editor block runtime for public card hydration" },
     { "name": "r", "reason": "Password-protected site redirects" },
     { "name": "token", "reason": "Members API authentication" },
     { "name": "action", "reason": "Unsubscribe links" },

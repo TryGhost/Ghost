@@ -104,6 +104,16 @@ describe('Middleware: filterQueryParameters', function () {
       });
     });
 
+    it.each(['/public/addon-block-runtime', '/blog/public/addon-block-runtime'])(
+      'preserves add-on runtime selectors on %s',
+      async function (path) {
+        const state = await getRequestState(`${path}?handle=podcast&block=episode&unknown=value`);
+
+        assert.equal(state.originalUrl, `${path}?handle=podcast&block=episode`);
+        assert.deepEqual(state.query, { handle: 'podcast', block: 'episode' });
+      },
+    );
+
     it('removes nested undeclared parameters from the Express query state', async function () {
       const state = await getRequestState('/post/?step=run-step-id&unknown[nested]=value');
 
