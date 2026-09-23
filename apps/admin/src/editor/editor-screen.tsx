@@ -140,13 +140,20 @@ function EditorContent({
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
   const liveShowTitleAndFeatureImage = session.settings.show_title_and_feature_image;
+  const liveTitle = session.bind.title;
   const currentCardConfig = useMemo(
     () =>
-      withLiveSettings(cardConfig, {
-        visibility: liveVisibility,
-        showTitleAndFeatureImage: liveShowTitleAndFeatureImage,
-      }),
-    [cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
+      withLiveSettings(
+        {
+          ...cardConfig,
+          post: cardConfig.post ? { ...cardConfig.post, title: liveTitle } : undefined,
+        },
+        {
+          visibility: liveVisibility,
+          showTitleAndFeatureImage: liveShowTitleAndFeatureImage,
+        },
+      ),
+    [cardConfig, liveShowTitleAndFeatureImage, liveTitle, liveVisibility],
   );
 
   useSaveShortcut(session.dispatchExplicit);

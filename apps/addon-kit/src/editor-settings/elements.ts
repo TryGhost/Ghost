@@ -5,6 +5,9 @@ interface EditorControlProperties {
   description?: string;
 }
 
+/** Two equal-width fields in an editor settings panel. */
+export const GhEditorRowElement = createRemoteElement();
+
 export interface GhEditorInputProperties extends EditorControlProperties {
   multiline?: boolean;
   value?: string;
@@ -138,6 +141,7 @@ export const GhMediaUploadElement = createRemoteElement<
 });
 
 const EDITOR_SETTING_ELEMENTS = {
+  'gh-editor-row': GhEditorRowElement,
   'gh-media-upload': GhMediaUploadElement,
   'gh-editor-input': GhEditorInputElement,
   'gh-editor-toggle': GhEditorToggleElement,
@@ -155,6 +159,7 @@ export function registerEditorSettingsElements(): void {
 
 declare global {
   interface HTMLElementTagNameMap {
+    'gh-editor-row': InstanceType<typeof GhEditorRowElement>;
     'gh-media-upload': InstanceType<typeof GhMediaUploadElement>;
     'gh-editor-input': InstanceType<typeof GhEditorInputElement>;
     'gh-editor-toggle': InstanceType<typeof GhEditorToggleElement>;

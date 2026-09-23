@@ -1,5 +1,6 @@
 export {
   GhMediaUpload,
+  GhEditorRow,
   GhEditorFileInput,
   GhEditorInput,
   GhEditorSelect,

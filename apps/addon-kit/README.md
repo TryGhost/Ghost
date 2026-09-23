@@ -128,6 +128,11 @@ Lexical data; the Content API does not return Lexical or Mobiledoc source.
 
 ## Editor media uploads
 
+`GhEditorRow` groups two related settings fields into equal-width columns.
+Editor snapshots can mark an element with `data-ghost-post-title` to display the
+current post title as text. Koenig refreshes previews on load and resolves this
+binding locally, without copying the title into app properties or post history.
+
 The React host supplies `gh-media-upload` in card settings. Use `GhMediaUpload`
 from the editor-settings export with a label, audio/video format, and optional
 current URL. Its change event contains `{url, mime_type, byte_length}`, or null

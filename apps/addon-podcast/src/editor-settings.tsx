@@ -3,11 +3,12 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   GhMediaUpload,
   GhEditorInput,
+  GhEditorRow,
   GhEditorSelect,
   GhEditorToggle,
   type AddonEditorSettingsBridge,
 } from '@tryghost/addon-kit/editor-settings';
-import { MEDIA_SLOTS, parseConfiguration, type Show } from './model.ts';
+import { parseConfiguration, type Show } from './model.ts';
 
 function Settings({ ghost }: { ghost: AddonEditorSettingsBridge }) {
   const [props, setProps] = useState(ghost.props);
@@ -48,14 +49,35 @@ function Settings({ ghost }: { ghost: AddonEditorSettingsBridge }) {
     void propose({ [key]: parsed });
   };
   const missingShow = text('show_id') && !shows.some((show) => show.id === props.show_id);
+  const mediaField = (slot: 'full_audio' | 'full_video' | 'free_audio' | 'free_video') => {
+    const media = props[slot];
+    const url =
+      media && typeof media === 'object' && 'url' in media && typeof media.url === 'string'
+        ? media.url
+        : undefined;
+    return (
+      <GhMediaUpload
+        key={slot}
+        format={slot.endsWith('audio') ? 'audio' : 'video'}
+        label={
+          {
+            full_audio: 'Audio',
+            full_video: 'Video',
+            free_audio: 'Free audio',
+            free_video: 'Free video',
+          }[slot]
+        }
+        url={url}
+        onChange={(event) => void propose({ [slot]: event.detail })}
+      />
+    );
+  };
   return (
     <>
       <GhEditorSelect
         description={
           error ||
-          (!shows.length
-            ? 'Add a show in Podcasts settings, then reopen this post.'
-            : 'Each card is a separate episode.')
+          (!shows.length ? 'Add a show in Podcasts settings, then reopen this post.' : undefined)
         }
         label="Show"
         options={[
@@ -67,51 +89,33 @@ function Settings({ ghost }: { ghost: AddonEditorSettingsBridge }) {
         onChange={(event) => void propose({ show_id: event.detail || null })}
       />
       <GhEditorInput
-        description="Leave empty to use the current post title."
         label="Episode title"
         placeholder="Use post title"
         value={text('title')}
         onChange={(event) => void propose({ title: event.detail || null })}
       />
-      <GhEditorInput
-        label="Episode number"
-        value={number('episode_number')}
-        onChange={(event) => numberChanged('episode_number', event.detail)}
-      />
-      <GhEditorInput
-        label="Season number"
-        value={number('season_number')}
-        onChange={(event) => numberChanged('season_number', event.detail)}
-      />
-      {MEDIA_SLOTS.map((slot) => {
-        const media = props[slot];
-        const url =
-          media && typeof media === 'object' && 'url' in media && typeof media.url === 'string'
-            ? media.url
-            : undefined;
-        return (
-          <GhMediaUpload
-            key={slot}
-            format={slot.endsWith('audio') ? 'audio' : 'video'}
-            label={
-              {
-                full_audio: 'Full audio',
-                free_audio: 'Free audio',
-                full_video: 'Full video',
-                free_video: 'Free video',
-              }[slot]
-            }
-            url={url}
-            onChange={(event) => void propose({ [slot]: event.detail })}
-          />
-        );
-      })}
+      <GhEditorRow>
+        <GhEditorInput
+          label="Episode"
+          value={number('episode_number')}
+          onChange={(event) => numberChanged('episode_number', event.detail)}
+        />
+        <GhEditorInput
+          label="Season"
+          value={number('season_number')}
+          onChange={(event) => numberChanged('season_number', event.detail)}
+        />
+      </GhEditorRow>
+      {mediaField('full_audio')}
+      {mediaField('full_video')}
       <GhEditorToggle
         checked={props.offer_free === true}
-        description="Separate preview files can be offered where this card is publicly visible."
-        label="Offer free versions"
+        description="Offer separate preview files."
+        label="Free preview"
         onChange={(event) => void propose({ offer_free: event.detail })}
       />
+      {props.offer_free === true && mediaField('free_audio')}
+      {props.offer_free === true && mediaField('free_video')}
     </>
   );
 }

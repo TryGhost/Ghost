@@ -19,8 +19,7 @@ export default defineEditorBlockRenderer(
     } catch {
       /* Keep incomplete cards editable. */
     }
-    const title =
-      typeof props.title === 'string' && props.title.trim() ? props.title : 'Uses post title';
+    const title = typeof props.title === 'string' && props.title.trim() ? props.title : null;
     return {
       publicProps: {},
       content: (
@@ -30,7 +29,7 @@ export default defineEditorBlockRenderer(
           </span>
           <section>
             <p>{show?.title || 'Podcast episode'}</p>
-            <h2>{title}</h2>
+            <h2 data-ghost-post-title={title ? undefined : ''}>{title || 'Untitled post'}</h2>
             <p className="podcast-hint">
               {show
                 ? 'Episode details are saved with this post.'

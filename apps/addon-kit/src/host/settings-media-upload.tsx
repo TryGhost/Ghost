@@ -2,9 +2,9 @@ import {
   createRemoteComponentRenderer,
   type RemoteComponentRendererMap,
 } from '@remote-dom/react/host';
-import { useEffect, useId, useRef, useState } from 'react';
+import { forwardRef, type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { Button, Label } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { useKoenigFileUpload } from '@tryghost/admin-x-framework/hooks';
 import type { GhMediaReference, GhMediaUploadProperties } from '../editor-settings/elements.ts';
@@ -65,31 +65,26 @@ export function SettingsMediaUpload({
     }
   };
   return (
-    <Stack className="w-full" gap="sm">
+    <Stack className="w-full min-w-0" gap="sm">
       <Label htmlFor={id}>{label}</Label>
-      <Stack
-        className="w-full rounded-xl border border-border-default bg-surface-elevated p-4"
-        gap="md"
+      <Inline
+        align="center"
+        className="min-w-0 rounded-lg border border-border-default bg-surface-elevated px-3 py-2"
+        gap="sm"
       >
-        <Inline align="center" gap="md">
-          <Icon aria-hidden="true" className="shrink-0 text-muted-foreground" size={20} />
-          <Stack className="min-w-0" gap="sm">
-            <Text className="break-all" size="sm" weight="medium">
-              {url
-                ? url.split('/').pop()
-                : `Add an ${format === 'audio' ? 'audio' : 'episode video'} file`}
-            </Text>
-            <Text size="sm" tone="secondary">
-              {upload.isLoading
-                ? `Uploading ${formatNumber(upload.progress)}%`
-                : url
-                  ? 'Ready to publish'
-                  : format === 'audio'
-                    ? 'MP3, M4A, WAV or OGG'
-                    : 'MP4, WebM or OGV'}
-            </Text>
-          </Stack>
-        </Inline>
+        {url && <Icon aria-hidden="true" className="shrink-0 text-muted-foreground" size={16} />}
+        {(url || upload.isLoading) && (
+          <Text
+            className="min-w-0 flex-1 truncate"
+            size="sm"
+            title={url?.split('/').pop()}
+            tone={url ? 'primary' : 'secondary'}
+          >
+            {upload.isLoading
+              ? `Uploading ${formatNumber(upload.progress)}%`
+              : url?.split('/').pop()}
+          </Text>
+        )}
         <input
           ref={inputRef}
           accept={`${format}/*`}
@@ -106,27 +101,38 @@ export function SettingsMediaUpload({
             event.target.value = '';
           }}
         />
-        <Inline gap="sm">
+        {(url || !upload.isLoading) && (
           <Button
+            aria-label={`${url ? 'Replace' : 'Upload'} ${label?.toLowerCase() || format}`}
+            className={url ? 'shrink-0' : 'w-full justify-start text-muted-foreground'}
             disabled={upload.isLoading}
-            size="sm"
-            variant="outline"
+            size={url ? 'icon-sm' : 'sm'}
+            variant="ghost"
             onClick={() => inputRef.current?.click()}
           >
-            {url ? 'Replace file' : `Upload ${format}`}
+            {url ? (
+              <LucideIcon.Replace aria-hidden="true" size={14} />
+            ) : (
+              <>
+                <Icon aria-hidden="true" size={16} />
+                Upload file
+              </>
+            )}
           </Button>
-          {url ? (
-            <Button
-              disabled={upload.isLoading}
-              size="sm"
-              variant="ghost"
-              onClick={() => run(Promise.resolve(onChange?.(null)))}
-            >
-              Remove file
-            </Button>
-          ) : null}
-        </Inline>
-      </Stack>
+        )}
+        {url && (
+          <Button
+            aria-label={`Remove ${label?.toLowerCase() || format}`}
+            className="shrink-0"
+            disabled={upload.isLoading}
+            size="icon-sm"
+            variant="ghost"
+            onClick={() => run(Promise.resolve(onChange?.(null)))}
+          >
+            <LucideIcon.X aria-hidden="true" size={14} />
+          </Button>
+        )}
+      </Inline>
       {error || upload.errors.length ? (
         <Text className="text-destructive" size="sm">
           {error || upload.errors[0]?.message}
@@ -137,5 +143,24 @@ export function SettingsMediaUpload({
 }
 
 export const ADDON_EDITOR_SETTINGS_COMPONENTS: RemoteComponentRendererMap = new Map([
-  ['gh-media-upload', createRemoteComponentRenderer(SettingsMediaUpload)],
+  [
+    'gh-media-upload',
+    createRemoteComponentRenderer(
+      forwardRef(function MediaUpload(props: Parameters<typeof SettingsMediaUpload>[0], _ref) {
+        return <SettingsMediaUpload {...props} />;
+      }),
+    ),
+  ],
+  [
+    'gh-editor-row',
+    createRemoteComponentRenderer(
+      forwardRef<HTMLDivElement, { children?: ReactNode }>(function EditorRow({ children }, ref) {
+        return (
+          <Grid ref={ref} className="w-full min-w-0" columns={2} gap="md">
+            {children}
+          </Grid>
+        );
+      }),
+    ),
+  ],
 ]);

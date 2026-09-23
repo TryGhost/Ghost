@@ -36,6 +36,36 @@ const dataset = {
 };
 
 describe('AddonNodeComponent', function () {
+    it('binds the live post title without changing the saved snapshot or episode props', function () {
+        const saved = {...dataset, html: '<h2 data-ghost-post-title>Untitled post</h2>'};
+        const view = (title: string) => (
+            <KoenigComposerContext.Provider value={{...defaultKoenigComposerContext, cardConfig: {post: {title, visibility: 'public'}}}}>
+                <AddonNodeComponent dataset={saved} />
+            </KoenigComposerContext.Provider>
+        );
+        const {rerender} = render(view('The actual post title'));
+        expect(screen.getByTitle(dataset.label).getAttribute('srcdoc')).toContain('The actual post title');
+        rerender(view('<script>Updated title</script>'));
+        expect(screen.getByTitle(dataset.label).getAttribute('srcdoc')).toContain('&lt;script&gt;Updated title&lt;/script&gt;');
+        expect(saved.html).toBe('<h2 data-ghost-post-title>Untitled post</h2>');
+        expect(saved.props).toEqual({});
+    });
+
+    it('refreshes an older saved preview with the current provider without editing the card', async function () {
+        const renderBlock = vi.fn().mockResolvedValue({html: '<h2 data-ghost-post-title>Untitled post</h2>'});
+        render(
+            <KoenigComposerContext.Provider value={{...defaultKoenigComposerContext, cardConfig: {
+                post: {title: 'Current post title', visibility: 'public'},
+                addons: {blocks: [{addonHandle: dataset.addonHandle, blockName: dataset.blockName, label: dataset.label}], renderBlock}
+            }}}>
+                <AddonNodeComponent dataset={dataset} />
+            </KoenigComposerContext.Provider>
+        );
+        await waitFor(() => expect(screen.getByTitle(dataset.label).getAttribute('srcdoc')).toContain('Current post title'));
+        expect(dataset.html).toBe('<article>Episode 12</article>');
+        expect(renderBlock).toHaveBeenCalledOnce();
+    });
+
     it('shows the saved snapshot in a non-interactive iframe', function () {
         render(<AddonNodeComponent dataset={dataset} />);
 

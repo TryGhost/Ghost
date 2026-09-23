@@ -63,6 +63,7 @@ export type PostVisibility = 'public' | 'members' | 'paid' | 'tiers';
 // `visibility` is required: the host resolves it against the site default
 // before handing the config over, so cards never have to guess at access
 export interface CardConfigPost {
+    title?: string;
     displayName?: 'post' | 'page';
     isPage?: boolean;
     showTitleAndFeatureImage?: boolean;

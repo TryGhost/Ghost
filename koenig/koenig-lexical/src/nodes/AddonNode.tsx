@@ -5,7 +5,7 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$nodesOfType, createCommand} from 'lexical';
 import {AddonSettingsRemote} from '../components/AddonSettingsRemote';
-import {AddonNode as BaseAddonNode, normalizeAddonHeight, renderAddonEditorPreview} from '@tryghost/kg-default-nodes';
+import {AddonNode as BaseAddonNode, isSafeAddonSnapshot, normalizeAddonHeight, renderAddonEditorPreview} from '@tryghost/kg-default-nodes';
 import {SettingsPanel} from '../components/ui/SettingsPanel';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -133,7 +133,40 @@ function AddonNodeSettings({dataset, nodeKey}) {
 }
 
 export function AddonNodeComponent({dataset, nodeKey}) {
-    const srcDoc = renderAddonEditorPreview(dataset);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
+    const [preview, setPreview] = React.useState<{sourceId: string; sourceHtml: string; html: string; css?: string} | null>(null);
+    const datasetRef = React.useRef(dataset);
+    datasetRef.current = dataset;
+    // Refresh the editor-only snapshot when reopening a saved card. A provider
+    // update can improve its preview without changing the post or its history.
+    React.useEffect(() => {
+        const source = datasetRef.current;
+        const addons = cardConfig.addons;
+        if (!addons?.renderBlock || !addons.blocks.some(block => block.addonHandle === source.addonHandle && block.blockName === source.blockName)) {
+            return;
+        }
+        let cancelled = false;
+        void addons.renderBlock({addonHandle: source.addonHandle, blockName: source.blockName, props: structuredClone(source.props)}).then(output => {
+            if (!cancelled && output?.html && isSafeAddonSnapshot({...source, html: output.html, css: output.css ?? source.css})) {
+                setPreview({sourceHtml: source.html, sourceId: source.id, html: output.html, css: output.css});
+            }
+        }).catch(() => {
+            // The saved snapshot remains useful while the provider is offline.
+        });
+        return () => { cancelled = true; };
+    }, [cardConfig.addons, dataset.id, dataset.html]);
+    const srcDoc = React.useMemo(() => {
+        const current = preview?.sourceId === dataset.id && preview?.sourceHtml === dataset.html ? {...dataset, html: preview.html, css: preview.css ?? dataset.css} : dataset;
+        const markup = renderAddonEditorPreview(current);
+        if (!markup || !markup.includes('data-ghost-post-title')) {
+            return markup;
+        }
+        const document = new DOMParser().parseFromString(markup, 'text/html');
+        document.querySelectorAll('[data-ghost-post-title]').forEach(element => {
+            element.textContent = cardConfig.post?.title?.trim() || 'Untitled post';
+        });
+        return `<!doctype html>${document.documentElement.outerHTML}`;
+    }, [cardConfig.post?.title, dataset, preview]);
     const iframeRef = React.useRef<HTMLIFrameElement>(null);
     const [height, setHeight] = React.useState(() => normalizeAddonHeight(dataset.initialHeight));
 

@@ -80,7 +80,7 @@ it('discards every uncommitted field when the latest cumulative render fails', a
 it('patches each media slot independently and allows clearing a file', async () => {
   const ghost: AddonEditorSettingsBridge = {
     blockName: 'episode',
-    props: {},
+    props: { offer_free: true },
     onPropsChange: () => () => {},
     proposePatch: vi.fn().mockResolvedValue(undefined),
     fetch: vi.fn(),
@@ -88,7 +88,7 @@ it('patches each media slot independently and allows clearing a file', async () 
   };
   act(() => settings(ghost));
   const inputs = document.querySelectorAll('gh-media-upload');
-  const slots = ['full_audio', 'free_audio', 'full_video', 'free_video'];
+  const slots = ['full_audio', 'full_video', 'free_audio', 'free_video'];
   expect(inputs).toHaveLength(4);
   for (const [index, slot] of slots.entries()) {
     const media = {
@@ -105,4 +105,38 @@ it('patches each media slot independently and allows clearing a file', async () 
     inputs[0].dispatchEvent(new CustomEvent('change', { detail: null }));
   });
   expect(ghost.proposePatch).toHaveBeenLastCalledWith({ full_audio: null, version: 1 });
+});
+
+it('reveals free media fields with the toggle and retains files when disabled', async () => {
+  const preview = {
+    url: 'https://site.test/preview.mp3',
+    mime_type: 'audio/mpeg',
+    byte_length: 100,
+  };
+  const ghost: AddonEditorSettingsBridge = {
+    blockName: 'episode',
+    props: { offer_free: false, free_audio: preview },
+    onPropsChange: () => () => {},
+    proposePatch: vi.fn(async (patch) => {
+      ghost.props = { ...ghost.props, ...patch };
+    }),
+    fetch: vi.fn(),
+    assets: { uploadImage: vi.fn() },
+  };
+  act(() => settings(ghost));
+  const toggle = document.querySelector('gh-editor-toggle')!;
+  expect(document.querySelectorAll('gh-media-upload')).toHaveLength(2);
+  await act(async () => {
+    toggle.dispatchEvent(new CustomEvent('change', { detail: true }));
+  });
+  expect(document.querySelectorAll('gh-media-upload')).toHaveLength(4);
+  expect(
+    (document.querySelectorAll('gh-media-upload')[2] as HTMLElement & { url: string }).url,
+  ).toBe(preview.url);
+  await act(async () => {
+    toggle.dispatchEvent(new CustomEvent('change', { detail: false }));
+  });
+  expect(document.querySelectorAll('gh-media-upload')).toHaveLength(2);
+  expect(ghost.props.free_audio).toEqual(preview);
+  expect(ghost.proposePatch).toHaveBeenLastCalledWith({ offer_free: false, version: 1 });
 });

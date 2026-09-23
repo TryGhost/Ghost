@@ -14,7 +14,7 @@ it.each([
   const changed = vi.fn(async () => {});
   await renderInApp(<SettingsMediaUpload format={format} label={label} onChange={changed} />);
   await userEvent.upload(
-    page.getByLabelText(label).element(),
+    page.getByLabelText(label, { exact: true }).element(),
     new File(['media'], filename, { type: mime }),
   );
   await expect.poll(() => upload.requests.length).toBe(1);
@@ -40,10 +40,10 @@ it('shows server upload limits without leaving the editor', async () => {
   const changed = vi.fn(async () => {});
   await renderInApp(<SettingsMediaUpload label="Full audio" onChange={changed} />);
   await userEvent.upload(
-    page.getByLabelText('Full audio').element(),
+    page.getByLabelText('Full audio', { exact: true }).element(),
     new File(['media'], 'episode.mp3', { type: 'audio/mpeg' }),
   );
   await expect.element(page.getByText('Your plan supports files up to 100 MB.')).toBeVisible();
   expect(changed).not.toHaveBeenCalled();
-  await expect.element(page.getByRole('button', { name: 'Upload audio' })).toBeEnabled();
+  await expect.element(page.getByRole('button', { name: 'Upload full audio' })).toBeEnabled();
 });

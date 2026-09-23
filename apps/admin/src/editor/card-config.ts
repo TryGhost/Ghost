@@ -12,6 +12,7 @@ import type { AutocompleteLink, LinkSearchGroup } from './link-suggestions';
 export type PostType = 'post' | 'page';
 
 export interface CardConfigPost {
+  title?: string;
   displayName: PostType;
   isPage: boolean;
   showTitleAndFeatureImage: boolean;

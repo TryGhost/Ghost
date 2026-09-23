@@ -24,6 +24,9 @@ After rebuilding, refresh the installed manifest so its runtime integrity matche
 
 Card settings provide full and free audio/video uploads. Ghost owns file
 selection, progress, and storage; only a media reference enters card props.
+Free media fields appear when **Free preview** is enabled; disabling it
+keeps previously uploaded files for reuse. Episode and season numbers share a
+row, and an empty episode title follows the current post title in the editor.
 Closing settings keeps an active upload running. Removing the card or leaving
 the editor discards its late result. Media changes use the normal post save flow.
 

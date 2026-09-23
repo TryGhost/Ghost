@@ -5,6 +5,7 @@ import {
 import { registerGhostConnectionHook } from '../addon/connect.ts';
 import {
   GhMediaUploadElement,
+  GhEditorRowElement,
   GhEditorInputElement,
   GhEditorFileInputElement,
   GhEditorSelectElement,
@@ -14,6 +15,8 @@ import {
 
 registerEditorSettingsElements();
 registerGhostConnectionHook();
+
+export const GhEditorRow = createRemoteComponent('gh-editor-row', GhEditorRowElement);
 
 export const GhEditorInput = createRemoteComponent('gh-editor-input', GhEditorInputElement, {
   eventProps: { onChange: { event: 'change' } },
