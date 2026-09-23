@@ -51,7 +51,7 @@ export function init(options: GiftServiceInitOptions): void {
   const emailAnalyticsJobs = require('../email-analytics/jobs');
 
   const { GhostMailer } = require('../mail');
-  const MailgunClient = require('../lib/mailgun-client');
+  const MailgunClient = require('../../lib/mail/mailgun-client');
   const config = require('../../../shared/config');
   const settingsCache = require('../../../shared/settings-cache');
   const urlUtils = require('../../../shared/url-utils').default;

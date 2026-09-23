@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
 // @ts-expect-error This module lacks type definitions.
-import MailgunClient from '../../../../../core/server/services/lib/mailgun-client';
+import MailgunClient from '../../../../../core/server/lib/mail/mailgun-client';
 import { fetchMailgunEvents } from '../../../../../core/server/services/email-analytics/fetch-mailgun-events';
 
 type FetchMailgunEventsOptions = Parameters<typeof fetchMailgunEvents>[0];

@@ -4,9 +4,9 @@ const logging = require('@tryghost/logging');
 const {
   SIGNUP_CONTEXTS,
   canWelcomeEmailReplaceSignupPaidEmail,
-} = require('../../../lib/member-signup-contexts');
+} = require('../../../members/member-signup-contexts');
 const { collectedByPort } = require('../checkout/completed-session');
-/** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
+/** @typedef {import('../../../members/member-signup-contexts').SignupContext} SignupContext */
 
 function isStripeMetadataTrue(value) {
   return value === true || value === 'true';

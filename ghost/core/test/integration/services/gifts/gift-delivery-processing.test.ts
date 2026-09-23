@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { SendGiftDeliveryEvent } from '../../../../core/server/services/gifts/events/send-gift-delivery-event';
 
 const DomainEvents = require('@tryghost/domain-events');
-const MailgunClient = require('../../../../core/server/services/lib/mailgun-client');
+const MailgunClient = require('../../../../core/server/lib/mail/mailgun-client');
 const models = require('../../../../core/server/models');
 const { agentProvider, fixtureManager, mockManager } = require('../../../utils/e2e-framework');
 

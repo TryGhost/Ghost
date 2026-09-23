@@ -39,7 +39,7 @@ class MailgunEmailProvider {
 
   /**
    * @param {object} dependencies
-   * @param {import('../lib/mailgun-client')} dependencies.mailgunClient - mailgun client to send emails
+   * @param {import('../../lib/mail/mailgun-client')} dependencies.mailgunClient - mailgun client to send emails
    * @param {Config} dependencies.config
    */
   constructor({ mailgunClient, config }) {

@@ -5,7 +5,7 @@ import {
   addRecipientMessageIds,
   buildRecipientMessageId,
   isTemplatedRecipientMessageId,
-} from '../../../../../core/server/services/lib/mailgun-recipient-message-id';
+} from '../../../../../core/server/lib/mail/mailgun-recipient-message-id';
 
 const EMAIL_ID = '64f0c7a5e2b3a1d4c5b6a7f8';
 const DOMAIN = 'example.com';

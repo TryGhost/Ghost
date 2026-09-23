@@ -3,7 +3,7 @@ import tpl from '@tryghost/tpl';
 import * as errors from '@tryghost/errors';
 import type { RedirectConfig, RedirectsStore } from '@tryghost/adapter-base-redirects';
 
-import DynamicRedirectManager from '../lib/dynamic-redirect-manager';
+import DynamicRedirectManager from '../../lib/redirects/dynamic-redirect-manager';
 import { errify } from '../../../shared/errify';
 
 const messages = {
