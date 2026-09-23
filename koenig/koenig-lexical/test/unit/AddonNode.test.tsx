@@ -6,6 +6,16 @@ import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {act, render, screen, waitFor} from '@testing-library/react';
 import {vi} from 'vitest';
 
+vi.mock('../../src/hooks/useSettingsPanelReposition', () => ({default: () => ({ref: () => {}})}));
+
+const {disposeControls} = vi.hoisted(() => ({disposeControls: vi.fn()}));
+vi.mock('../../src/components/AddonSettingsRemote', () => ({
+    AddonSettingsRemote: () => {
+        React.useEffect(() => () => disposeControls(), []);
+        return <span data-testid="upload-controls">Upload controls</span>;
+    }
+}));
+
 vi.stubGlobal('ResizeObserver', class ResizeObserver {
     observe() {}
     unobserve() {}
@@ -89,7 +99,7 @@ describe('AddonNodeComponent', function () {
         const upload = vi.fn().mockResolvedValue([{url: 'https://site.example/content/images/chart.png'}]);
         const createSettingsSurface = vi.fn(() => ({
             receiver: {},
-            ready: new Promise<void>(() => {}),
+            ready: Promise.resolve(),
             updateProps: vi.fn().mockResolvedValue(undefined),
             destroy
         }));
@@ -143,7 +153,10 @@ describe('AddonNodeComponent', function () {
             'Your plan only supports smaller image uploads.'
         );
 
+        await waitFor(() => expect(screen.getByTestId('upload-controls')).toBeVisible());
         view.rerender(<Harness isEditing={false} />);
+        expect(disposeControls).not.toHaveBeenCalled();
+        expect(screen.getByTestId('upload-controls')).not.toBeVisible();
         expect(destroy).not.toHaveBeenCalled();
 
         view.unmount();

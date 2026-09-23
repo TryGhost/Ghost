@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ADDONS_SETTING_KEY,
+  ADDON_EDITOR_SETTINGS_COMPONENTS,
   createAddonEditorBlocksConfig,
   parseInstallRecords,
   refreshInstallRecords,
@@ -39,7 +40,11 @@ export function useAddonCardConfig(
   return useMemo(
     () =>
       raw !== null && resolved?.raw === raw
-        ? createAddonEditorBlocksConfig(resolved.installs, undefined, { siteTimezone })
+        ? createAddonEditorBlocksConfig(
+            resolved.installs,
+            { settingsComponents: ADDON_EDITOR_SETTINGS_COMPONENTS },
+            { siteTimezone },
+          )
         : undefined,
     [raw, resolved, siteTimezone],
   );

@@ -1,3 +1,4 @@
+import type { RemoteComponentRendererMap } from '@remote-dom/react/host';
 import { AddonSandboxController } from './sandbox-controller.ts';
 import { createEditorFetchCapability } from './host-fetch.ts';
 import { getEditorBlockDefinitions } from './installs.ts';
@@ -30,6 +31,7 @@ export interface AddonEditorSettingsSurfaceRequest extends AddonEditorRenderRequ
 
 export interface AddonEditorSettingsSurface {
   receiver: unknown;
+  components?: RemoteComponentRendererMap;
   ready: Promise<void>;
   updateProps(props: Record<string, unknown>): Promise<void>;
   destroy(): void;
@@ -60,6 +62,7 @@ interface EditorSettingsReceiver {
 }
 
 interface AddonEditorBlocksDependencies {
+  settingsComponents?: RemoteComponentRendererMap;
   createController(): EditorBlockController;
   createReceiver(): EditorSettingsReceiver;
 }
@@ -170,6 +173,7 @@ export function createAddonEditorBlocksConfig(
 
       return {
         receiver,
+        components: resolvedDependencies.settingsComponents,
         ready,
         async updateProps(nextProps) {
           await ready;

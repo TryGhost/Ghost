@@ -16,7 +16,12 @@ Enable the Add-ons and React editor experiments, then install
 app page, then insert **Podcast episode** from the post editor's slash menu.
 Several cards can belong to one post, and each card can select a different show.
 
-Implementation is in progress. This first authoring slice provides show
-configuration and episode metadata. Media uploads, gated player selection,
-public/private audio/video feeds, and the V2 conversion helper follow in later
-slices. Direct files will remain on Ghost storage; only feeds will be gated.
+Card settings provide full and free audio/video uploads. Ghost owns file
+selection, progress, and storage; only a media reference enters card props.
+Closing settings keeps an active upload running. Removing the card or leaving
+the editor discards its late result. Media changes use the normal post save flow.
+
+Implementation is in progress. Show configuration, episode metadata, uploads,
+and safe public snapshots are available. Gated player selection, public/private
+audio/video feeds, and the V2 conversion helper follow in later slices. Direct
+files remain on Ghost storage; only feeds will be gated.

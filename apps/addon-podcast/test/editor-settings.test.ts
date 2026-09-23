@@ -76,3 +76,33 @@ it('discards every uncommitted field when the latest cumulative render fails', a
   act(() => receive({ title: 'Restored by undo', season_number: null }));
   expect(inputs()[0].value).toBe('Restored by undo');
 });
+
+it('patches each media slot independently and allows clearing a file', async () => {
+  const ghost: AddonEditorSettingsBridge = {
+    blockName: 'episode',
+    props: {},
+    onPropsChange: () => () => {},
+    proposePatch: vi.fn().mockResolvedValue(undefined),
+    fetch: vi.fn(),
+    assets: { uploadImage: vi.fn() },
+  };
+  act(() => settings(ghost));
+  const inputs = document.querySelectorAll('gh-media-upload');
+  const slots = ['full_audio', 'free_audio', 'full_video', 'free_video'];
+  expect(inputs).toHaveLength(4);
+  for (const [index, slot] of slots.entries()) {
+    const media = {
+      url: `https://site.test/${slot}`,
+      mime_type: slot.endsWith('audio') ? 'audio/mpeg' : 'video/mp4',
+      byte_length: 100,
+    };
+    await act(async () => {
+      inputs[index].dispatchEvent(new CustomEvent('change', { detail: media }));
+    });
+    expect(ghost.proposePatch).toHaveBeenLastCalledWith({ [slot]: media, version: 1 });
+  }
+  await act(async () => {
+    inputs[0].dispatchEvent(new CustomEvent('change', { detail: null }));
+  });
+  expect(ghost.proposePatch).toHaveBeenLastCalledWith({ full_audio: null, version: 1 });
+});

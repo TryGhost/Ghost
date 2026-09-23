@@ -113,7 +113,32 @@ export const GhEditorFileInputElement = createRemoteElement<
   events: ['change'],
 });
 
+export interface GhMediaReference {
+  url: string;
+  mime_type: string;
+  byte_length: number;
+}
+export interface GhMediaUploadProperties extends EditorControlProperties {
+  format?: 'audio' | 'video';
+  url?: string;
+}
+export const GhMediaUploadElement = createRemoteElement<
+  GhMediaUploadProperties,
+  Record<string, never>,
+  Record<string, never>,
+  { change(event: CustomEvent<GhMediaReference | null>): void }
+>({
+  properties: {
+    label: { type: String },
+    description: { type: String },
+    format: { type: String },
+    url: { type: String },
+  },
+  events: ['change'],
+});
+
 const EDITOR_SETTING_ELEMENTS = {
+  'gh-media-upload': GhMediaUploadElement,
   'gh-editor-input': GhEditorInputElement,
   'gh-editor-toggle': GhEditorToggleElement,
   'gh-editor-select': GhEditorSelectElement,
@@ -130,6 +155,7 @@ export function registerEditorSettingsElements(): void {
 
 declare global {
   interface HTMLElementTagNameMap {
+    'gh-media-upload': InstanceType<typeof GhMediaUploadElement>;
     'gh-editor-input': InstanceType<typeof GhEditorInputElement>;
     'gh-editor-toggle': InstanceType<typeof GhEditorToggleElement>;
     'gh-editor-select': InstanceType<typeof GhEditorSelectElement>;

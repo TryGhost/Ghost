@@ -4,6 +4,7 @@ import {
 } from '@remote-dom/preact';
 import { registerGhostConnectionHook } from '../addon/connect.ts';
 import {
+  GhMediaUploadElement,
   GhEditorInputElement,
   GhEditorFileInputElement,
   GhEditorSelectElement,
@@ -44,4 +45,11 @@ export const GhEditorFileInput = createRemoteComponent(
 ) as RemoteComponentTypeFromElementConstructor<
   typeof GhEditorFileInputElement,
   { onChange?: (event: CustomEvent<import('./elements.ts').GhEditorFile>) => void }
+>;
+
+export const GhMediaUpload = createRemoteComponent('gh-media-upload', GhMediaUploadElement, {
+  eventProps: { onChange: { event: 'change' } },
+}) as RemoteComponentTypeFromElementConstructor<
+  typeof GhMediaUploadElement,
+  { onChange?: (event: CustomEvent<import('./elements.ts').GhMediaReference | null>) => void }
 >;

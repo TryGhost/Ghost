@@ -1,5 +1,6 @@
 import {isSafeAddonSnapshot, normalizeAddonHeight} from '@tryghost/kg-default-nodes';
 import type {AddonNodeData, AddonResourcePolicy} from '@tryghost/kg-default-nodes';
+import type {RemoteComponentRendererMap} from '@remote-dom/react/host';
 
 export interface AddonBlockDefinition {
     addonHandle: string;
@@ -51,6 +52,7 @@ export interface AddonAssetReference {
 }
 
 export interface AddonSettingsSurface {
+    components?: RemoteComponentRendererMap;
     receiver: unknown;
     ready: Promise<void>;
     updateProps: (props: Record<string, unknown>) => Promise<void>;

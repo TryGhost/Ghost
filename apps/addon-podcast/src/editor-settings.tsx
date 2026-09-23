@@ -1,12 +1,13 @@
 import { render } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import {
+  GhMediaUpload,
   GhEditorInput,
   GhEditorSelect,
   GhEditorToggle,
   type AddonEditorSettingsBridge,
 } from '@tryghost/addon-kit/editor-settings';
-import { parseConfiguration, type Show } from './model.ts';
+import { MEDIA_SLOTS, parseConfiguration, type Show } from './model.ts';
 
 function Settings({ ghost }: { ghost: AddonEditorSettingsBridge }) {
   const [props, setProps] = useState(ghost.props);
@@ -82,6 +83,29 @@ function Settings({ ghost }: { ghost: AddonEditorSettingsBridge }) {
         value={number('season_number')}
         onChange={(event) => numberChanged('season_number', event.detail)}
       />
+      {MEDIA_SLOTS.map((slot) => {
+        const media = props[slot];
+        const url =
+          media && typeof media === 'object' && 'url' in media && typeof media.url === 'string'
+            ? media.url
+            : undefined;
+        return (
+          <GhMediaUpload
+            key={slot}
+            format={slot.endsWith('audio') ? 'audio' : 'video'}
+            label={
+              {
+                full_audio: 'Full audio',
+                free_audio: 'Free audio',
+                full_video: 'Full video',
+                free_video: 'Free video',
+              }[slot]
+            }
+            url={url}
+            onChange={(event) => void propose({ [slot]: event.detail })}
+          />
+        );
+      })}
       <GhEditorToggle
         checked={props.offer_free === true}
         description="Separate preview files can be offered where this card is publicly visible."

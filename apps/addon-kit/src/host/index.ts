@@ -72,3 +72,5 @@ export {
   type GhostBridge,
   type HostCapabilities,
 } from '../types.ts';
+
+export { ADDON_EDITOR_SETTINGS_COMPONENTS, SettingsMediaUpload } from './settings-media-upload.tsx';

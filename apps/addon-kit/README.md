@@ -125,3 +125,16 @@ Static HTML, CSS, portable content, and resource policies are also public.
 Providers must keep private authoring values out of those outputs. Loading and
 failed insertion placeholders expose no authoring props. Admin keeps the saved
 Lexical data; the Content API does not return Lexical or Mobiledoc source.
+
+## Editor media uploads
+
+The React host supplies `gh-media-upload` in card settings. Use `GhMediaUpload`
+from the editor-settings export with a label, audio/video format, and optional
+current URL. Its change event contains `{url, mime_type, byte_length}`, or null
+when removing a file. File bytes and authenticated upload requests stay in the
+host. Saved references use the card's normal patch and post-save pipeline.
+
+Host controls are supplied through the optional `settingsComponents` map when
+creating the editor block configuration. Koenig retains the mounted settings
+surface while closed, allowing an in-flight upload to finish on its original
+card; disposing that surface prevents late upload callbacks.

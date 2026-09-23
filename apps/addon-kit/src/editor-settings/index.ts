@@ -1,5 +1,13 @@
-export { GhEditorFileInput, GhEditorInput, GhEditorSelect, GhEditorToggle } from './components.ts';
+export {
+  GhMediaUpload,
+  GhEditorFileInput,
+  GhEditorInput,
+  GhEditorSelect,
+  GhEditorToggle,
+} from './components.ts';
 export type {
+  GhMediaReference,
+  GhMediaUploadProperties,
   GhEditorFile,
   GhEditorFileInputProperties,
   GhEditorInputProperties,

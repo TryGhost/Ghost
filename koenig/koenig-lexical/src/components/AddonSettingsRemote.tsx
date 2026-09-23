@@ -161,6 +161,7 @@ const ADDON_SETTINGS_COMPONENTS: RemoteComponentRendererMap = new Map([
     ['remote-fragment', RemoteFragmentRenderer]
 ]);
 
-export function AddonSettingsRemote({receiver}) {
-    return <RemoteRootRenderer components={ADDON_SETTINGS_COMPONENTS} receiver={receiver} />;
+export function AddonSettingsRemote({receiver, components = undefined}) {
+    const componentMap = React.useMemo(() => new Map([...ADDON_SETTINGS_COMPONENTS, ...(components ?? [])]), [components]);
+    return <RemoteRootRenderer components={componentMap} receiver={receiver} />;
 }

@@ -115,16 +115,20 @@ function AddonNodeSettings({dataset, nodeKey}) {
         };
     }, [dataset.props, onError, surface]);
 
-    if (!isEditing || !definition?.hasSettings || !surface) {
+    if (!definition?.hasSettings || !surface) {
         return null;
     }
 
     return (
-        <SettingsPanel cardWidth={cardWidth} darkMode={darkMode}>
-            {status === 'loading' && <span className="text-sm text-grey-700">Loading settings…</span>}
-            {status === 'error' && <span className="text-sm text-red">Settings failed to load.</span>}
-            {status === 'ready' && <AddonSettingsRemote receiver={surface.receiver} />}
-        </SettingsPanel>
+        <div hidden={!isEditing}>
+            <SettingsPanel cardWidth={cardWidth} darkMode={darkMode}>
+                <div className="flex max-h-[70vh] min-w-0 flex-col gap-3 overflow-y-auto">
+                    {status === 'loading' && <span className="text-sm text-grey-700">Loading settings…</span>}
+                    {status === 'error' && <span className="text-sm text-red">Settings failed to load.</span>}
+                    {status === 'ready' && <AddonSettingsRemote components={surface.components} receiver={surface.receiver} />}
+                </div>
+            </SettingsPanel>
+        </div>
     );
 }
 
@@ -183,7 +187,7 @@ export function AddonNodeComponent({dataset, nodeKey}) {
                 />
                 <div aria-hidden="true" className="absolute inset-0" />
             </div>
-            {nodeKey && <AddonNodeSettings dataset={dataset} nodeKey={nodeKey} />}
+            {nodeKey && <AddonNodeSettings key={dataset.id} dataset={dataset} nodeKey={nodeKey} />}
         </>
     );
 }
