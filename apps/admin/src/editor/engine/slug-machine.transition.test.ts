@@ -10,6 +10,7 @@ import {
   type SlugStep,
   type UnchangedReason,
 } from './slug-machine';
+import readme from './README.md?raw';
 
 type IdleState = Extract<SlugState, { kind: 'idle' }>;
 type GeneratingState = Extract<SlugState, { kind: 'generating' }>;
@@ -161,7 +162,7 @@ const TRANSITIONS: readonly TransitionRow[] = [
   {
     from: IDLE,
     event: answered(3, 'late'),
-    when: 'always',
+    when: 'its submission already settled',
     to: IDLE,
     output: SILENT,
   },
@@ -215,7 +216,7 @@ const TRANSITIONS: readonly TransitionRow[] = [
     output: unchanged('error', 'hello', BOOM),
   },
   {
-    from: TITLE_LIVE,
+    from: { ...TITLE_LIVE, deferred: DEFERRED_EDIT },
     event: title('Again'),
     when: 'the title generates',
     to: {
@@ -227,6 +228,7 @@ const TRANSITIONS: readonly TransitionRow[] = [
       kind: 'deferred',
       deferred: { submission: { source: 'title', value: 'Again' }, slugAtSubmission: 'hello' },
     },
+    dropped: DEFERRED_EDIT,
   },
   {
     from: { ...TITLE_LIVE, deferred: DEFERRED_EDIT },
@@ -315,10 +317,10 @@ const TRANSITIONS: readonly TransitionRow[] = [
     output: unchanged('reverted'),
   },
   {
-    from: MANUAL_LIVE,
+    from: { ...MANUAL_LIVE, deferred: DEFERRED_TITLE },
     event: edit('hello'),
     when: 'the input is blank or the slug',
-    to: MANUAL_HELD,
+    to: { ...MANUAL_HELD, deferred: DEFERRED_TITLE },
     output: unchanged('reverted'),
   },
   {
@@ -374,6 +376,9 @@ function describeEvent(from: SlugState, event: SlugEvent): string {
     case 'answered':
     case 'failed':
     case 'released':
+      if (from.kind === 'idle') {
+        return event.kind;
+      }
       return `${event.kind}(${event.ticket === from.ticket ? 'slot' : 'older'} ticket)`;
     default:
       return event.kind;
@@ -389,6 +394,36 @@ function describeOutput(step: Pick<SlugStep, 'output' | 'dropped' | 'promoted'>)
   return [main, step.dropped && 'drops deferred', step.promoted && 'starts deferred']
     .filter(Boolean)
     .join(', ');
+}
+
+function renderRow(row: TransitionRow): string[] {
+  return [
+    `\`${describeState(row.from)}\``,
+    `\`${describeEvent(row.from, row.event)}\``,
+    row.when,
+    `\`${describeState(row.to)}\``,
+    describeOutput(row),
+  ];
+}
+
+// The README's table is checked against TRANSITIONS; header and separator rows are skipped.
+function readmeTable(): string[][] {
+  const start = readme.indexOf('<!-- slug-machine-transitions:start -->');
+  const end = readme.indexOf('<!-- slug-machine-transitions:end -->');
+  expect(start).toBeGreaterThan(-1);
+  expect(end).toBeGreaterThan(start);
+  return readme
+    .slice(start, end)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('|'))
+    .slice(2)
+    .map((line) =>
+      line
+        .slice(1, -1)
+        .split('|')
+        .map((cell) => cell.trim()),
+    );
 }
 
 function stepOf(row: TransitionRow): SlugStep {
@@ -414,6 +449,10 @@ describe('slug machine transition', () => {
       ...(step.dropped && { dropped: step.dropped }),
       ...(step.promoted && { promoted: step.promoted }),
     }).toEqual(stepOf(row));
+  });
+
+  it('is the table in the engine README', () => {
+    expect(readmeTable()).toEqual(TRANSITIONS.map(renderRow));
   });
 
   const SAMPLES: readonly SlugState[] = [

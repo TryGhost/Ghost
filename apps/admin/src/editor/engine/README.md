@@ -123,6 +123,18 @@ save.
 
 ### State model
 
+The machine is in one of two states. Both carry the settled mode, `slug`,
+`title`, `lastCommittedTitle` and the last ticket issued.
+
+| State        | Meaning                                                                                                                                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `idle`       | No submission holds the generator slot.                                                                                                                                                                                       |
+| `generating` | One submission holds the slot from its commit until its promise settles. It carries its `ticket`, its `source` (`title` or `manual`), the `request` text while its answer can still apply, and the one `deferred` submission. |
+
+A `generating` state is `live` while its request can still apply and `held`
+otherwise: the submission was refused, its answer arrived, or it was
+withdrawn. `pending` is true exactly when the state is live.
+
 Two modes and three statuses.
 
 | Mode      | Meaning                                                           |
@@ -251,27 +263,72 @@ Manual edits
 
 Ordering and staleness
 
-- At most one generator request is in flight. Further submissions wait behind
-  it; only the newest waiting submission is kept, and each one it replaces
-  resolves `stale` without reaching the server. The kept submission runs when
-  the active request settles and is evaluated against the state at that time.
-- A title commit behind an in-flight manual edit is deferred, not refused. If
-  the edit applies, the deferred commit resolves `custom`; if the edit fails or
-  reverts, the commit generates as normal.
-- A manual edit behind an in-flight title generation waits for it. Withdrawing
-  that waiting edit (blank or unchanged input) drops it and leaves the
-  generation running.
-- Withdrawing an in-flight manual edit makes its result `stale`, and mode and
-  `pending` fall back immediately; a title commit waiting behind it still runs
-  once the request physically settles.
-- Committing the slug's source title, or a frozen title, while a title
-  generation is in flight invalidates that generation immediately, drops any
-  waiting submission, and returns `same-title` or `frozen`.
-- `loaded()` invalidates everything from the previous post: in-flight results
-  resolve `stale` to their callers, are not delivered to subscribers, and the
-  new post reads not pending.
-- A failed or reverted manual edit never leaves the machine in custom mode and
-  never discards a title commit queued behind it.
+Each call is an event for `transition(state, event)`, which returns the next
+state and one output. Every submission takes the next ticket; the generator
+slot is the ticket on `generating`.
+
+| Event                 | Raised by                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `loaded`              | `loaded()`                                                                             |
+| `acknowledged`        | `saveAcknowledged()`                                                                   |
+| `title-committed`     | `titleCommitted()`                                                                     |
+| `slug-edited`         | `slugEdited()`                                                                         |
+| `answered` / `failed` | The generator returning or throwing for a ticket.                                      |
+| `released`            | A submission's promise settling. It frees the slot and starts the deferred submission. |
+
+| Output            | Effect                                                                                                            |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `silent`          | Nobody is notified. A dropped answer resolves its caller `stale` with the slug it was requested at.               |
+| `changed`         | Subscribers hear a `null` proposal.                                                                               |
+| `proposed(...)`   | Subscribers hear the proposal and the submission resolves with it.                                                |
+| `requested`       | Subscribers hear a `null` proposal and the generator is called with the request text.                             |
+| `refused(...)`    | The submission took the slot and resolves at once; subscribers hear the proposal. The slot frees when it settles. |
+| `deferred`        | The submission waits behind the slot, replacing any earlier deferred submission.                                  |
+| `drops deferred`  | The earlier deferred submission resolves `stale` with the slug at its submission, without reaching the server.    |
+| `starts deferred` | The deferred submission is evaluated against the state at that moment, as if it had just been committed.          |
+
+An `answered`, `failed` or `released` event whose ticket does not hold the
+slot is `silent` in every state: answers from a withdrawn request, from a
+submission that already settled, or from a previous post never apply. States
+are written `generating(source, live or held, settled mode, deferred source)`.
+
+<!-- slug-machine-transitions:start -->
+
+| From                                                | Event                    | When                                           | To                                                  | Output                               |
+| --------------------------------------------------- | ------------------------ | ---------------------------------------------- | --------------------------------------------------- | ------------------------------------ |
+| `idle(derived)`                                     | `title-committed`        | the title generates                            | `generating(title, live, derived)`                  | requested                            |
+| `idle(derived)`                                     | `title-committed`        | it is the slug's source title                  | `generating(title, held, derived)`                  | refused(same-title)                  |
+| `idle(derived)`                                     | `title-committed`        | the title is blank                             | `generating(title, held, derived)`                  | refused(frozen)                      |
+| `idle(custom)`                                      | `title-committed`        | always                                         | `generating(title, held, custom)`                   | refused(custom)                      |
+| `idle(derived)`                                     | `slug-edited`            | the input differs from the slug                | `generating(manual, live, derived)`                 | requested                            |
+| `idle(derived)`                                     | `slug-edited`            | the input is blank or the slug                 | `generating(manual, held, derived)`                 | refused(reverted)                    |
+| `idle(derived)`                                     | `answered`               | its submission already settled                 | `idle(derived)`                                     | silent                               |
+| `idle(derived)`                                     | `loaded`                 | the slug is not the slugified title            | `idle(custom)`                                      | changed                              |
+| `idle(custom)`                                      | `loaded`                 | the slug is the slugified title                | `idle(derived)`                                     | changed                              |
+| `idle(derived)`                                     | `acknowledged`           | the slug is still the one submitted            | `idle(derived)`                                     | changed                              |
+| `generating(title, live, derived)`                  | `answered(slot ticket)`  | the ticket holds the slot                      | `generating(title, held, derived)`                  | proposed(generated)                  |
+| `generating(title, live, derived)`                  | `answered(older ticket)` | the ticket is older                            | `generating(title, live, derived)`                  | silent                               |
+| `generating(title, live, derived)`                  | `answered(slot ticket)`  | the answer is blank                            | `generating(title, held, derived)`                  | proposed(empty-result)               |
+| `generating(title, live, derived)`                  | `failed(slot ticket)`    | the ticket holds the slot                      | `generating(title, held, derived)`                  | proposed(error)                      |
+| `generating(title, live, derived, deferred manual)` | `title-committed`        | the title generates                            | `generating(title, live, derived, deferred title)`  | deferred, drops deferred             |
+| `generating(title, live, derived, deferred manual)` | `title-committed`        | it is the slug's source title                  | `generating(title, held, derived)`                  | proposed(same-title), drops deferred |
+| `generating(title, live, derived)`                  | `title-committed`        | the title is blank                             | `generating(title, held, derived)`                  | proposed(frozen)                     |
+| `generating(title, live, derived)`                  | `slug-edited`            | the input differs from the slug                | `generating(title, live, derived, deferred manual)` | deferred                             |
+| `generating(title, live, derived, deferred manual)` | `slug-edited`            | the input is blank or the slug                 | `generating(title, live, derived)`                  | proposed(reverted), drops deferred   |
+| `generating(title, live, derived, deferred manual)` | `loaded`                 | always                                         | `idle(derived)`                                     | changed, drops deferred              |
+| `generating(title, held, derived)`                  | `acknowledged`           | the slug moved on since the save               | `generating(title, held, derived)`                  | silent                               |
+| `generating(title, held, derived)`                  | `released(slot ticket)`  | nothing is deferred                            | `idle(derived)`                                     | silent                               |
+| `generating(title, held, derived, deferred manual)` | `released(slot ticket)`  | an edit is deferred                            | `generating(manual, live, derived)`                 | requested, starts deferred           |
+| `generating(manual, live, derived)`                 | `answered(slot ticket)`  | the ticket holds the slot                      | `generating(manual, held, custom)`                  | proposed(manual)                     |
+| `generating(manual, live, derived)`                 | `answered(slot ticket)`  | the answer is the current slug                 | `generating(manual, held, derived)`                 | proposed(reverted)                   |
+| `generating(manual, live, derived)`                 | `answered(slot ticket)`  | the answer only appends a counter to the slug  | `generating(manual, held, derived)`                 | proposed(reverted)                   |
+| `generating(manual, live, derived, deferred title)` | `slug-edited`            | the input is blank or the slug                 | `generating(manual, held, derived, deferred title)` | proposed(reverted)                   |
+| `generating(manual, held, derived)`                 | `answered(slot ticket)`  | the request was withdrawn                      | `generating(manual, held, derived)`                 | silent                               |
+| `generating(manual, live, derived)`                 | `title-committed`        | always                                         | `generating(manual, live, derived, deferred title)` | deferred                             |
+| `generating(manual, held, custom, deferred title)`  | `released(slot ticket)`  | the edit applied and a title is deferred       | `generating(title, held, custom)`                   | refused(custom), starts deferred     |
+| `generating(manual, held, derived, deferred title)` | `released(slot ticket)`  | the edit did not apply and a title is deferred | `generating(title, live, derived)`                  | requested, starts deferred           |
+
+<!-- slug-machine-transitions:end -->
 
 ## Invariants
 
