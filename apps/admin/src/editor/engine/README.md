@@ -57,7 +57,7 @@ Every dispatch settles with a typed `SaveCompletion`:
 
 Reconcile-before-drain is a hard ordering contract because the server enforces optimistic concurrency on posts: any post update whose `updated_at` differs from the persisted one is rejected with `UPDATE_COLLISION` when a meaningful field changed. A queued save built from the pre-response snapshot carries the superseded `updated_at` and is rejected. The persisted snapshot type therefore requires `updatedAt` alongside `id`.
 
-### Errors and states
+### Errors
 
 | Error kind                      | State                                                                                                                                                                     | Exit                                                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -69,7 +69,90 @@ Reconcile-before-drain is a hard ordering contract because the server enforces o
 | `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, or an explicit save                                                                             |
 | `transport` / `unknown`         | `error`, no suppression                                                                                                                                                   | next save                                                                                                  |
 
-`error` and `conflict` persist until a save actually starts; timers arming or a dropped save do not clear them. `contentReloaded(updatedAt)` lets the caller validate a server document before replacing local content: it lifts the collision halt when the candidate is a valid timestamp that has moved past the rejected `updated_at`, and returns false otherwise. With no argument it checks the current snapshot. Other states: `idle`, `debouncing`, `saving`, `pending-coalesced`, `disposed`.
+`contentReloaded(updatedAt)` lets the caller validate a server document before replacing local content: it lifts the collision halt when the candidate is a valid timestamp that has moved past the rejected `updated_at`, and returns false otherwise. With no argument it checks the current snapshot.
+
+### State chart
+
+`transition(state, event, queue)` is the only way the state changes. Each change names an event and passes a read-only view of the queue as it stands after the event: the kind of the command in flight, the kind winning the pending slot, whether re-auth has frozen the queue, and whether the debounce or the timed cycle is armed.
+
+| Event              | When                                                                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `timer-armed`      | an autosave dispatch arms the timed cycle or restarts the debounce, or re-auth success re-arms them for content a disarmed status command would have carried |
+| `coalesced`        | a command lands in the pending slot behind the save in flight or the frozen command                                                                          |
+| `save-started`     | a command goes in flight                                                                                                                                     |
+| `drained`          | a save settled or was dropped and nothing is pending                                                                                                         |
+| `save-failed`      | reading the snapshot, prepare, or execute failed; carries the intent, the typed error, and whether the post had an id                                        |
+| `reauth-abandoned` | `reauthAbandoned()` settled the frozen command                                                                                                               |
+| `content-reloaded` | `contentReloaded()` accepted a document past the rejected `updated_at`                                                                                       |
+| `disposed`         | `dispose()`                                                                                                                                                  |
+
+The four queue events (`timer-armed`, `coalesced`, `save-started`, `drained`) resolve against the queue alone. A save in flight reads `saving`, or `pending-coalesced` while the pending slot is filled. Otherwise `error` and `conflict` persist until a save starts, so timers arming or a dropped save do not clear them, and every other state settles to `debouncing` while a timer is armed and to `idle` when none is. A frozen queue keeps `reauth-pending`; re-auth success lifts the freeze and the next queue event moves the state on. `content-reloaded` is the only way out of `conflict` other than a save attempt or disposal. A failed save moves by its error kind, as in the table above. `halted` and `crashed` leave only for `disposed`, and `disposed` ignores every event.
+
+Each row below starts from one representative state. A state and event pair the table does not list leaves the state unchanged whatever the queue holds.
+
+<!-- save-engine-transitions:start -->
+<!-- Rows mirror TRANSITIONS in save-engine.transition.test.ts, which fails when they differ. -->
+
+| From                                    | Event                                        | Queue                                             | To                                      |
+| --------------------------------------- | -------------------------------------------- | ------------------------------------------------- | --------------------------------------- |
+| `idle`                                  | `timer-armed`                                | timer armed                                       | `debouncing`                            |
+| `debouncing`                            | `timer-armed`                                | timer armed                                       | `debouncing`                            |
+| `saving(autosave)`                      | `timer-armed`                                | autosave in flight, timer armed                   | `saving(autosave)`                      |
+| `pending-coalesced(autosave, explicit)` | `timer-armed`                                | autosave in flight, explicit pending, timer armed | `pending-coalesced(autosave, explicit)` |
+| `reauth-pending(explicit)`              | `timer-armed`                                | frozen, timer armed                               | `reauth-pending(explicit)`              |
+| `reauth-pending(explicit)`              | `timer-armed`                                | timer armed                                       | `debouncing`                            |
+| `error(field, validation)`              | `timer-armed`                                | timer armed                                       | `error(field, validation)`              |
+| `conflict(explicit, conflict)`          | `timer-armed`                                | timer armed                                       | `conflict(explicit, conflict)`          |
+| `idle`                                  | `coalesced`                                  | autosave in flight, explicit pending              | `pending-coalesced(autosave, explicit)` |
+| `debouncing`                            | `coalesced`                                  | autosave in flight, explicit pending              | `pending-coalesced(autosave, explicit)` |
+| `saving(autosave)`                      | `coalesced`                                  | autosave in flight, explicit pending              | `pending-coalesced(autosave, explicit)` |
+| `pending-coalesced(autosave, explicit)` | `coalesced`                                  | autosave in flight, publish pending               | `pending-coalesced(autosave, publish)`  |
+| `reauth-pending(explicit)`              | `coalesced`                                  | autosave pending, frozen                          | `reauth-pending(explicit)`              |
+| `error(field, validation)`              | `coalesced`                                  | autosave in flight, explicit pending              | `pending-coalesced(autosave, explicit)` |
+| `conflict(explicit, conflict)`          | `coalesced`                                  | autosave in flight, explicit pending              | `pending-coalesced(autosave, explicit)` |
+| `idle`                                  | `save-started`                               | explicit in flight                                | `saving(explicit)`                      |
+| `debouncing`                            | `save-started`                               | explicit in flight                                | `saving(explicit)`                      |
+| `saving(autosave)`                      | `save-started`                               | explicit in flight                                | `saving(explicit)`                      |
+| `pending-coalesced(autosave, explicit)` | `save-started`                               | explicit in flight                                | `saving(explicit)`                      |
+| `reauth-pending(explicit)`              | `save-started`                               | explicit in flight                                | `saving(explicit)`                      |
+| `error(field, validation)`              | `save-started`                               | explicit in flight                                | `saving(explicit)`                      |
+| `conflict(explicit, conflict)`          | `save-started`                               | explicit in flight                                | `saving(explicit)`                      |
+| `idle`                                  | `drained`                                    | empty                                             | `idle`                                  |
+| `debouncing`                            | `drained`                                    | empty                                             | `idle`                                  |
+| `saving(autosave)`                      | `drained`                                    | empty                                             | `idle`                                  |
+| `saving(autosave)`                      | `drained`                                    | timer armed                                       | `debouncing`                            |
+| `pending-coalesced(autosave, explicit)` | `drained`                                    | empty                                             | `idle`                                  |
+| `reauth-pending(explicit)`              | `drained`                                    | empty                                             | `idle`                                  |
+| `error(field, validation)`              | `drained`                                    | timer armed                                       | `error(field, validation)`              |
+| `conflict(explicit, conflict)`          | `drained`                                    | empty                                             | `conflict(explicit, conflict)`          |
+| `saving(autosave)`                      | `save-failed(autosave, session-invalid)`     | empty                                             | `reauth-pending(autosave)`              |
+| `saving(autosave)`                      | `save-failed(autosave, not-found)`           | empty                                             | `halted`                                |
+| `saving(autosave)`                      | `save-failed(autosave, not-found, new post)` | empty                                             | `crashed`                               |
+| `saving(autosave)`                      | `save-failed(autosave, conflict)`            | empty                                             | `conflict(autosave, conflict)`          |
+| `saving(autosave)`                      | `save-failed(autosave, validation)`          | empty                                             | `error(autosave, validation)`           |
+| `saving(autosave)`                      | `save-failed(autosave, host-limit)`          | empty                                             | `error(autosave, host-limit)`           |
+| `saving(autosave)`                      | `save-failed(autosave, transport)`           | empty                                             | `error(autosave, transport)`            |
+| `saving(autosave)`                      | `save-failed(autosave, unknown)`             | empty                                             | `error(autosave, unknown)`              |
+| `idle`                                  | `save-failed(explicit, unknown)`             | empty                                             | `error(explicit, unknown)`              |
+| `debouncing`                            | `save-failed(autosave, unknown)`             | empty                                             | `error(autosave, unknown)`              |
+| `pending-coalesced(autosave, explicit)` | `save-failed(autosave, transport)`           | empty                                             | `error(autosave, transport)`            |
+| `reauth-pending(explicit)`              | `save-failed(explicit, unknown)`             | empty                                             | `error(explicit, unknown)`              |
+| `error(field, validation)`              | `save-failed(explicit, transport)`           | empty                                             | `error(explicit, transport)`            |
+| `conflict(explicit, conflict)`          | `save-failed(explicit, unknown)`             | empty                                             | `error(explicit, unknown)`              |
+| `reauth-pending(explicit)`              | `reauth-abandoned(session-invalid)`          | empty                                             | `error(explicit, session-invalid)`      |
+| `conflict(explicit, conflict)`          | `content-reloaded`                           | empty                                             | `idle`                                  |
+| `conflict(explicit, conflict)`          | `content-reloaded`                           | timer armed                                       | `debouncing`                            |
+| `idle`                                  | `disposed`                                   | empty                                             | `disposed`                              |
+| `debouncing`                            | `disposed`                                   | empty                                             | `disposed`                              |
+| `saving(autosave)`                      | `disposed`                                   | empty                                             | `disposed`                              |
+| `pending-coalesced(autosave, explicit)` | `disposed`                                   | empty                                             | `disposed`                              |
+| `reauth-pending(explicit)`              | `disposed`                                   | empty                                             | `disposed`                              |
+| `error(field, validation)`              | `disposed`                                   | empty                                             | `disposed`                              |
+| `conflict(explicit, conflict)`          | `disposed`                                   | empty                                             | `disposed`                              |
+| `halted`                                | `disposed`                                   | empty                                             | `disposed`                              |
+| `crashed`                               | `disposed`                                   | empty                                             | `disposed`                              |
+
+<!-- save-engine-transitions:end -->
 
 ### Re-auth
 

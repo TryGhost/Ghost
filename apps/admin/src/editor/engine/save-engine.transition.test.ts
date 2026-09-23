@@ -17,6 +17,7 @@ import {
   unknown,
   validation,
 } from './__test-utils__/engine-harness';
+import readme from './README.md?raw';
 
 type StateKind = SaveEngineState['kind'];
 type EventKind = SaveEngineEvent['kind'];
@@ -236,6 +237,35 @@ function describeQueue(context: SaveEngineContext): string {
   return parts.length ? parts.join(', ') : 'empty';
 }
 
+function renderRow([from, event, context, to]: TransitionRow): string[] {
+  return [
+    `\`${describeState(STATES[from])}\``,
+    `\`${describeEvent(event)}\``,
+    describeQueue(context),
+    `\`${describeState(to)}\``,
+  ];
+}
+
+// The README's table is checked against TRANSITIONS; header and separator rows are skipped.
+function readmeTable(): string[][] {
+  const start = readme.indexOf('<!-- save-engine-transitions:start -->');
+  const end = readme.indexOf('<!-- save-engine-transitions:end -->');
+  expect(start).toBeGreaterThan(-1);
+  expect(end).toBeGreaterThan(start);
+  return readme
+    .slice(start, end)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('|'))
+    .slice(2)
+    .map((line) =>
+      line
+        .slice(1, -1)
+        .split('|')
+        .map((cell) => cell.trim()),
+    );
+}
+
 const STATE_KINDS = Object.keys(STATES) as StateKind[];
 const EVENT_KINDS = Object.keys(EVENT_SAMPLES) as EventKind[];
 const named = new Set(TRANSITIONS.map(([from, event]) => `${from} ${event.kind}`));
@@ -263,5 +293,9 @@ describe('save engine transition', () => {
         expect(transition(state, event, context)).toBe(state);
       }
     }
+  });
+
+  it('is the table in the engine README', () => {
+    expect(readmeTable()).toEqual(TRANSITIONS.map(renderRow));
   });
 });
