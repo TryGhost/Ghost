@@ -112,6 +112,11 @@ export const editorScreen = {
   excerptInput: () => page.getByTestId(editorExcerptInput),
   /** The primary Koenig content editable. */
   body: () => page.getByTestId(editorBody).getByRole('textbox'),
+  /** Koenig's Signup card and its labels setting, by Koenig's own test ids. */
+  signupCard: () => page.getByTestId(editorBody).getByTestId('signup-card-container'),
+  signupLabelsInput: () => page.getByTestId('labels-dropdown').getByRole('textbox'),
+  signupLabelOption: (name: string) =>
+    page.getByTestId('labels-dropdown').getByRole('button', { name, exact: true }),
   secondaryInstance: () => page.getByTestId(editorSecondaryInstance),
   wordCount: () => page.getByTestId(editorWordCount),
   loadError: () => page.getByTestId(editorLoadError),
