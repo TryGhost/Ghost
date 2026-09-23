@@ -257,6 +257,8 @@ describe('Post settings authors', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openAuthors();
     await openAuthorList();
+    // The staff browse starts on open; arrow keys do nothing until its rows arrive.
+    await expect.element(editorScreen.settingsAuthorOption('José García')).toBeVisible();
 
     // Nothing typed, so the pick is the second row rather than the first.
     await userEvent.keyboard('{ArrowDown}{Enter}');
