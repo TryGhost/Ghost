@@ -527,6 +527,9 @@ catalogs:
     hono:
       specifier: 4.12.18
       version: 4.12.18
+    ipaddr.js:
+      specifier: 2.5.0
+      version: 2.5.0
     jose:
       specifier: 6.2.12
       version: 6.2.12
@@ -2784,6 +2787,9 @@ importers:
       intl-messageformat:
         specifier: 5.4.3
         version: 5.4.3
+      ipaddr.js:
+        specifier: 'catalog:'
+        version: 2.5.0
       jose:
         specifier: 'catalog:'
         version: 6.2.12
@@ -15888,6 +15894,10 @@ packages:
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
     engines: {node: '>= 0.10'}
+
+  ipaddr.js@2.5.0:
+    resolution: {integrity: sha512-aq+t5NAc+cS6rZQQVWC2x98CPqGtKKTMDd4Gaodv0wShnItdKg/51djkGJ1hqH+Oy0ivDftCbSLCQob8zso01w==}
+    engines: {node: '>= 10'}
 
   is-absolute-url@2.1.0:
     resolution: {integrity: sha512-vOx7VprsKyllwjSkLV79NIhpyLfr3jAp7VaTCMXOJHu4m0Ew1CZ2fcjASwmV1jI3BWuWHB013M48eyeldk9gYg==}
@@ -38377,6 +38387,8 @@ snapshots:
   ip-regex@4.3.0: {}
 
   ipaddr.js@1.9.1: {}
+
+  ipaddr.js@2.5.0: {}
 
   is-absolute-url@2.1.0: {}
 

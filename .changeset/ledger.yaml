@@ -25,6 +25,10 @@
   dir: packages/adapters/scheduling-base
   intents:
     - brown-rules-cut
+"@tryghost/adapter-base-scheduling@0.2.4":
+  dir: packages/adapters/scheduling-base
+  intents:
+    - sweet-eggs-joke
 "@tryghost/adapter-base-sso@0.1.1":
   dir: packages/adapters/sso-base
   intents:
