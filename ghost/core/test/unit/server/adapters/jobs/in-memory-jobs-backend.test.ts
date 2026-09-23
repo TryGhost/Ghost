@@ -403,15 +403,17 @@ describe('InMemoryJobsBackend', function () {
       );
     });
 
-    it('pins recurring schedules to UTC instead of inheriting Later global state', function () {
+    it('pins recurring schedules to UTC instead of inheriting Later global state', async function () {
       const setIntervalStub = sinon.stub(later, 'setInterval').returns({ clear: sinon.stub() });
+      const backend = new InMemoryJobsBackend();
       try {
-        const backend = new InMemoryJobsBackend();
+        backend.start({ processor: async () => {} });
         backend.scheduleRecurring({ type: 'weekly', payload: '{}' }, { cron: '0 0 * * 0' });
 
         sinon.assert.calledOnce(setIntervalStub);
         assert.equal(setIntervalStub.firstCall.args[2], 'UTC');
       } finally {
+        await backend.shutdown({ timeoutMs: 100 });
         setIntervalStub.restore();
       }
     });
