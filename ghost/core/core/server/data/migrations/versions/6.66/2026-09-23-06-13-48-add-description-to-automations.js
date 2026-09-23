@@ -2,7 +2,6 @@ const logging = require('@tryghost/logging');
 const {
   combineNonTransactionalMigrations,
   createAddColumnMigration,
-  createDropNullableMigration,
   createNonTransactionalMigration,
 } = require('../../utils');
 
@@ -10,13 +9,14 @@ module.exports = combineNonTransactionalMigrations(
   createAddColumnMigration('automations', 'description', {
     type: 'string',
     maxlength: 2000,
-    nullable: true,
+    nullable: false,
+    defaultTo: '',
   }),
 
   createNonTransactionalMigration(
     async function up(knex) {
       const updatedRows = await knex('automations')
-        .whereNull('description')
+        .where('description', '')
         .update({
           description: knex.raw(`CASE slug
           WHEN 'member-welcome-email-free' THEN 'Welcome new free members after they sign up.'
@@ -29,6 +29,4 @@ module.exports = combineNonTransactionalMigrations(
       logging.info('Keeping automation descriptions until column rollback');
     },
   ),
-
-  createDropNullableMigration('automations', 'description'),
 );

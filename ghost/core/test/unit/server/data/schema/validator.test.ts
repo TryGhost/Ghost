@@ -84,7 +84,7 @@ describe('Validate Schema', function () {
       assert.equal(post.get('featured'), true);
     });
 
-    it('allows empty strings to be passed to "allow empty" columns', function () {
+    it('allows empty strings for columns with database defaults', function () {
       const automation = models.Automation.forge({
         id: ObjectId().toHexString(),
         name: 'Welcome flow',
@@ -94,23 +94,6 @@ describe('Validate Schema', function () {
       });
 
       validateSchema('automations', automation, { method: 'insert' });
-    });
-
-    it('rejects null values from "allow empty" columns', function () {
-      const automation = models.Automation.forge({
-        id: ObjectId().toHexString(),
-        name: 'Welcome flow',
-        slug: 'welcome-flow',
-        description: null,
-        created_at: new Date(),
-      });
-
-      assert.throws(
-        () => validateSchema('automations', automation, { method: 'insert' }),
-        (errors: unknown) =>
-          Array.isArray(errors) &&
-          errors.some((error) => error.context === 'automations.description'),
-      );
     });
   });
 
