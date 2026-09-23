@@ -61,6 +61,7 @@ describe('Inline wait editing', () => {
     await renderAdminApp('/automations/first', flags);
     const first = waits().nth(0).getByRole('textbox', { name: 'Wait for' });
     for (const value of ['', '0', '31', '1.5', '-1', '2e1', '+2']) {
+      await first.click();
       await first.fill(value);
       await userEvent.tab();
       await expect.element(first).toHaveValue(value);
@@ -76,6 +77,7 @@ describe('Inline wait editing', () => {
       await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
       expect(save.requests).toHaveLength(0);
     }
+    await first.click();
     await first.fill('2');
     await expect
       .element(waits().nth(0).getByRole('button', { name: 'Why this step needs attention' }))

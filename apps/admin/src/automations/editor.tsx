@@ -1,5 +1,6 @@
 import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
-import AutomationHeader from './components/automation-header';
+import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useAutomationForEditing } from './hooks/use-automation-for-editing';
 import React from 'react';
 import {
@@ -68,11 +69,31 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
+  const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
+  const [validationFeedback, setValidationFeedback] = React.useState<{
+    action: AutomationValidationAction;
+    message: string;
+  } | null>(null);
+  const showValidationFeedback = (action: AutomationValidationAction) => {
+    if (automationRunAnalyticsEnabled) {
+      const messages = {
+        publish: 'Fix all issues to publish this automation.',
+        save: 'Fix all issues to save this automation.',
+        unpublish: 'Fix all issues to turn off this automation.',
+      };
+      setValidationFeedback({ action, message: messages[action] });
+    } else {
+      toast.error('Automation needs a few details', {
+        description: 'Fix the highlighted steps and try again.',
+      });
+    }
+  };
   const [editState, setEditState] = React.useState<AutomationEditState>({ phase: 'idle' });
   const [selectedRunId, setSelectedRunId] = React.useState<string | null>(null);
   // Invalid text stays in the input, outside the API-ready draft, but must block saving it.
   const [invalidWaitIds, setInvalidWaitIds] = React.useState<Set<string>>(new Set());
   const onWaitValidityChange = React.useCallback((stepId: string, valid: boolean) => {
+    setValidationFeedback(null);
     setInvalidWaitIds((current) => {
       if (current.has(stepId) === !valid) {
         return current;
@@ -115,6 +136,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
     (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
 
   const onDraftChange = (next: AutomationDetail) => {
+    setValidationFeedback(null);
     setDraft(next);
     setInvalidWaitIds((current) => {
       const remaining = new Set(
@@ -138,15 +160,14 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   const validateActionErrors = (
     automationToValidate: AutomationDetail,
     errorState: AutomationEditState,
-    requireEmailContent = true,
+    action: AutomationValidationAction = 'publish',
   ): boolean => {
-    const nextActionErrors = requireEmailContent ? getActionErrors(automationToValidate) : {};
+    setValidationFeedback(null);
+    const nextActionErrors = action === 'publish' ? getActionErrors(automationToValidate) : {};
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
-      setEditState(errorState);
-      toast.error('Automation needs a few details', {
-        description: 'Fix the highlighted steps and try again.',
-      });
+      setEditState(automationRunAnalyticsEnabled ? { phase: 'idle' } : errorState);
+      showValidationFeedback(action);
       return false;
     }
 
@@ -191,7 +212,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
       !validateActionErrors(
         draft,
         newStatus === 'active' ? errorState : { phase: 'idle' },
-        newStatus === 'active',
+        newStatus === 'active' ? 'publish' : oldStatus === 'active' ? 'unpublish' : 'save',
       )
     ) {
       return;
@@ -224,9 +245,10 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
           setEditState(errorState);
           if (hasActionErrors) {
-            toast.error('Automation needs a few details', {
-              description: 'Fix the highlighted steps and try again.',
-            });
+            if (automationRunAnalyticsEnabled) {
+              setEditState({ phase: 'idle' });
+            }
+            showValidationFeedback('publish');
           } else {
             toast.error('Automation couldn’t be saved');
           }
@@ -459,6 +481,9 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
         publishButtonVariant={publishButtonVariant}
         saveButtonChildren={saveButtonChildren}
         saveButtonVariant={saveButtonVariant}
+        validationFeedback={selectedRunId ? null : validationFeedback}
+        validationFeedbackEnabled={automationRunAnalyticsEnabled}
+        onDismissValidationFeedback={() => setValidationFeedback(null)}
         onPublish={onPublish}
         onSave={() => save()}
         onTurnOff={() => setEditState({ phase: 'confirming', action: 'unpublish' })}
