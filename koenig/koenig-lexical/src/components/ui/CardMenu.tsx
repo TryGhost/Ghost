@@ -2,6 +2,7 @@ import ExternalLinkIcon from '../../assets/icons/kg-help.svg?react';
 import React from 'react';
 import TrashCardIcon from '../../assets/icons/kg-trash.svg?react';
 import trackEvent from '../../utils/analytics';
+import {CardMenuPreview} from './CardMenuPreview';
 
 export const CardMenuSection = ({label, children, ...props}) => {
     let helpLink = '';
@@ -61,7 +62,7 @@ export const CardMenuItem = ({label, shortcut, desc, isSelected, scrollToItem, o
                 <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-white text-grey-900 dark:bg-transparent dark:text-grey-500">
                     <Icon className="size-[1.8rem]" />
                 </div>
-                <div className="flex w-full justify-between">
+                <div className="flex w-full min-w-0 justify-between gap-2">
                     <div className="m-0 truncate text-[1.35rem] font-medium leading-snug tracking-[.02rem] text-grey-900 dark:text-grey-200">{label}</div>
                     <div className="invisible m-0 truncate text-[1.35rem] font-medium leading-snug tracking-[.02rem] text-grey-500 group-hover:visible dark:text-grey-200">{shortcut}</div>
                 </div>
@@ -118,8 +119,16 @@ export const CardSnippetItem = ({label, isSelected, scrollToItem, Icon, onRemove
 };
 
 export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex, scrollToSelectedItem, closeMenu, source, searchTerm}) => {
+    // the preview follows the mouse, falling back to the keyboard selection
+    const [hoveredItemIndex, setHoveredItemIndex] = React.useState(null);
+
+    React.useEffect(() => {
+        setHoveredItemIndex(null);
+    }, [selectedItemIndex, menu]);
+
     // build up the children arrays from the passed in menu Map
     const CardMenuSections = [];
+    const menuItems = [];
 
     let itemIndex = 0;
     for (const [sectionLabel, items] of menu) {
@@ -127,6 +136,9 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
 
         items.forEach((item) => {
             const isSelected = itemIndex === selectedItemIndex;
+            const currentIndex = itemIndex;
+            const onMouseEnter = () => setHoveredItemIndex(currentIndex);
+            menuItems.push(item);
             const onClick = (event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -151,6 +163,7 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
                         scrollToItem={isSelected && scrollToSelectedItem}
                         shortcut={item.shortcut}
                         onClick={onClick}
+                        onMouseEnter={onMouseEnter}
                     />
                 );
             } else if (item.type === 'snippet') {
@@ -164,6 +177,7 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
                         label={item.label}
                         scrollToItem={isSelected && scrollToSelectedItem}
                         onClick={onClick}
+                        onMouseEnter={onMouseEnter}
                         onRemove={item.onRemove}
                     />
                 );
@@ -175,9 +189,15 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
         CardMenuSections.push(<CardMenuSection key={sectionLabel} label={sectionLabel}>{CardMenuItems}</CardMenuSection>);
     }
 
+    // the plus menu has no keyboard selection so fall back to the first item
+    const previewItem = menuItems[hoveredItemIndex ?? selectedItemIndex ?? 0];
+
     return (
-        <ul className="not-kg-prose z-[9999999] m-0 mb-3 max-h-[420px] w-[312px] scroll-p-2 flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-white bg-clip-padding p-0 font-sans text-sm shadow-md after:block after:pb-1 dark:bg-grey-950 md:w-[348px]" role="menu">
-            {CardMenuSections}
-        </ul>
+        <div className="not-kg-prose z-[9999999] mb-3 flex overflow-hidden rounded-lg bg-white bg-clip-padding font-sans text-sm shadow-md dark:bg-grey-950" onMouseLeave={() => setHoveredItemIndex(null)}>
+            <ul className="m-0 max-h-[340px] w-[240px] scroll-p-2 flex-col overflow-y-auto overflow-x-hidden p-0 after:block after:pb-1 md:w-[256px]" role="menu">
+                {CardMenuSections}
+            </ul>
+            <CardMenuPreview item={previewItem} />
+        </div>
     );
 };

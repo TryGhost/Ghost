@@ -1,3 +1,4 @@
+import BeforeAfterIcon from '../assets/icons/kg-card-type-before-after.svg?react';
 import GIFIcon from '../assets/icons/kg-card-type-gif.svg?react';
 import ImageCardIcon from '../assets/icons/kg-card-type-image.svg?react';
 import UnsplashIcon from '../assets/icons/kg-card-type-unsplash.svg?react';
@@ -11,6 +12,10 @@ import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 export const INSERT_IMAGE_COMMAND = createCommand();
+
+// Placeholder for the upcoming before/after card. Nothing handles this command
+// yet so choosing the menu item is a no-op.
+export const INSERT_BEFORE_AFTER_COMMAND = createCommand();
 
 export class ImageNode extends BaseImageNode {
     // transient properties used to control node behaviour
@@ -31,6 +36,17 @@ export class ImageNode extends BaseImageNode {
         queryParams: ['src'],
         priority: 1,
         shortcut: '/image'
+    },
+    {
+        label: 'Before/after',
+        desc: 'Compare two images with a slider',
+        Icon: BeforeAfterIcon,
+        insertCommand: INSERT_BEFORE_AFTER_COMMAND,
+        matches: ['before/after', 'before', 'after', 'compare', 'comparison', 'slider'],
+        priority: 5,
+        shortcut: '/before',
+        preview: 'before-after',
+        isHidden: ({config}) => config?.editorType === 'email'
     },
     {
         section: 'Embeds',
