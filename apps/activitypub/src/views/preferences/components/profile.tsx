@@ -250,14 +250,18 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
+  const [imageConversionFailed, setImageConversionFailed] = useState(false);
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
 
   const convertImagesToDataUrls = useCallback(async () => {
+    let failed = false;
+
     if (account?.bannerImageUrl || coverImage) {
       const bannerUrl = account?.bannerImageUrl || coverImage;
       if (bannerUrl) {
         const dataUrl = await imageUrlToDataUrl(bannerUrl);
         setBannerDataUrl(dataUrl);
+        failed = failed || dataUrl === null;
       }
     }
 
@@ -266,8 +270,11 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       if (avatarUrl) {
         const dataUrl = await imageUrlToDataUrl(avatarUrl);
         setAvatarDataUrl(dataUrl);
+        failed = failed || dataUrl === null;
       }
     }
+
+    setImageConversionFailed(failed);
   }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
 
   useEffect(() => {
@@ -314,6 +321,13 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
 
   const handleCopy = async () => {
     if (!profileCardRef.current || isProcessing) {
+      return;
+    }
+
+    if (imageConversionFailed) {
+      toast.error(
+        'Failed to prepare image for sharing — the image host blocks cross-origin access',
+      );
       return;
     }
 
