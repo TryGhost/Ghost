@@ -77,16 +77,16 @@ const DEFAULT_VIEWS = [{
     return CustomView.create(Object.assign({}, view, {isDefault: true}));
 });
 
-let isFilterEqual = function (filterA, filterB) {
-    let aProps = Object.getOwnPropertyNames(filterA);
-    let bProps = Object.getOwnPropertyNames(filterB);
+const isFilterEqual = function (filterA, filterB) {
+    const aProps = Object.getOwnPropertyNames(filterA);
+    const bProps = Object.getOwnPropertyNames(filterB);
 
     if (aProps.length !== bProps.length) {
         return false;
     }
 
     for (let i = 0; i < aProps.length; i++) {
-        let key = aProps[i];
+        const key = aProps[i];
         if (filterA[key] !== filterB[key]) {
             return false;
         }
@@ -95,7 +95,7 @@ let isFilterEqual = function (filterA, filterB) {
     return true;
 };
 
-let isViewEqual = function (viewA, viewB) {
+const isViewEqual = function (viewA, viewB) {
     return viewA.route === viewB.route
         && isFilterEqual(viewA.filter, viewB.filter);
 };
@@ -107,7 +107,7 @@ export default class CustomViewsService extends Service {
     @service settings;
 
     get viewList() {
-        let {settings, session} = this;
+        const {settings, session} = this;
 
         // avoid fetching user before authenticated otherwise the 403 can fire
         // during authentication and cause errors during setup/signin
@@ -140,7 +140,7 @@ export default class CustomViewsService extends Service {
         const {viewList} = this;
 
         // perform some ad-hoc validation of duplicate names because ValidationEngine doesn't support it
-        let duplicateView = viewList.find((existingView) => {
+        const duplicateView = viewList.find((existingView) => {
             return existingView.route === view.route
                 && existingView.name.trim().toLowerCase() === view.name.trim().toLowerCase()
                 && !isFilterEqual(existingView.filter, view.filter);
@@ -155,7 +155,7 @@ export default class CustomViewsService extends Service {
         // remove an older version of the view from our views list
         // - we don't allow editing the filter and route+filter combos are unique
         // - we create a new instance of a view from an existing one when editing to act as a "scratch" view
-        let matchingView = viewList.find(existingView => isViewEqual(existingView, view));
+        const matchingView = viewList.find(existingView => isViewEqual(existingView, view));
         if (matchingView) {
             viewList.replace(viewList.indexOf(matchingView), 1, [view]);
         } else {
@@ -172,7 +172,7 @@ export default class CustomViewsService extends Service {
     @task
     *deleteViewTask(view) {
         const {viewList} = this;
-        let matchingView = viewList.find(existingView => isViewEqual(existingView, view));
+        const matchingView = viewList.find(existingView => isViewEqual(existingView, view));
         if (matchingView && !matchingView.isDefault) {
             viewList.removeObject(matchingView);
             yield this._saveViewSettings(viewList);
@@ -201,7 +201,7 @@ export default class CustomViewsService extends Service {
     }
 
     findView(routeName, queryParams) {
-        let _routeName = routeName.replace(/_loading$/, '');
+        const _routeName = routeName.replace(/_loading$/, '');
         return this.viewList.find((view) => {
             return view.route === _routeName
                 && isFilterEqual(this.cleanFilter(view.filter), queryParams);
@@ -244,7 +244,7 @@ export default class CustomViewsService extends Service {
     }
 
     async _saveViewSettings(viewList) {
-        let sharedViews = viewList.reject(view => view.isDefault).map(view => view.toJSON());
+        const sharedViews = viewList.reject(view => view.isDefault).map(view => view.toJSON());
         this.settings.sharedViews = JSON.stringify(sharedViews);
         return this.settings.save();
     }

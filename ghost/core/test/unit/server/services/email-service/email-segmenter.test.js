@@ -92,7 +92,7 @@ describe('Email segmenter', function () {
       const emailSegmenter = new EmailSegmenter({
         membersRepository,
       });
-      let response = await emailSegmenter.getMembersCount(
+      const response = await emailSegmenter.getMembersCount(
         {
           id: 'newsletter-123',
           get: (key) => {
@@ -116,7 +116,7 @@ describe('Email segmenter', function () {
       const emailSegmenter = new EmailSegmenter({
         membersRepository,
       });
-      let response = await emailSegmenter.getMembersCount(
+      const response = await emailSegmenter.getMembersCount(
         {
           id: 'newsletter-123',
           get: (key) => {

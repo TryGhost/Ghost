@@ -16,7 +16,7 @@ const {
 } = matchers;
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const jobManager = require('../../../core/server/services/jobs/job-service');
+const { waitForEmailStatus } = require('../../utils/batch-email-utils');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
@@ -199,7 +199,7 @@ describe('Emails API', function () {
         etag: anyEtag,
       });
 
-    await jobManager.allSettled();
+    await waitForEmailStatus(fixtureManager.get('emails', 1).id);
     mockManager.assert.emittedEvent('email.edited');
   });
 

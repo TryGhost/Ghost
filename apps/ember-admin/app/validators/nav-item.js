@@ -6,9 +6,9 @@ export default BaseValidator.create({
     properties: ['label', 'url'],
 
     label(model) {
-        let label = model.label;
-        let icon = model.icon;
-        let hasValidated = model.hasValidated;
+        const label = model.label;
+        const icon = model.icon;
+        const hasValidated = model.hasValidated;
 
         if (isBlank(label) && isBlank(icon)) {
             model.errors.add('label', 'You must specify a label or icon');
@@ -19,10 +19,10 @@ export default BaseValidator.create({
     },
 
     url(model) {
-        let url = model.url;
-        let hasValidated = model.hasValidated;
-        let validatorOptions = {require_protocol: true};
-        let urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
+        const url = model.url;
+        const hasValidated = model.hasValidated;
+        const validatorOptions = {require_protocol: true};
+        const urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
 
         if (isBlank(url)) {
             model.errors.add('url', 'You must specify a URL or relative path');

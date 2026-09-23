@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.64.0",
+  "version": "6.65.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -175,7 +175,6 @@
     "express-jwt": "8.5.1",
     "express-lazy-router": "1.0.6",
     "express-query-boolean": "2.0.0",
-    "express-queue": "0.0.13",
     "express-session": "1.19.0",
     "fastq": "catalog:",
     "file-type": "21.3.4",
@@ -194,6 +193,7 @@
     "iconv-lite": "0.7.3",
     "image-size": "1.2.1",
     "intl-messageformat": "5.4.3",
+    "ipaddr.js": "catalog:",
     "jose": "catalog:",
     "js-yaml": "catalog:",
     "jsdom": "catalog:",
@@ -222,7 +222,7 @@
     "moment-timezone": "0.5.45",
     "mppx": "catalog:",
     "multer": "2.2.0",
-    "mysql2": "3.22.5",
+    "mysql2": "3.24.4",
     "nconf": "0.13.0",
     "node-html-markdown": "catalog:",
     "nodemailer": "8.0.11",
@@ -246,7 +246,6 @@
     "type-fest": "catalog:",
     "ua-parser-js": "1.0.41",
     "unidecode": "catalog:",
-    "xml": "1.0.1",
     "zod": "catalog:"
   },
   "devDependencies": {

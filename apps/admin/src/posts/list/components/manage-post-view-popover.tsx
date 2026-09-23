@@ -1,6 +1,9 @@
+import { useShade } from '@tryghost/shade/app';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import { FilterBar } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { POST_VIEW_COLORS, type PostViewColor, pickPostViewColor } from '@/posts/list/post-views';
 import { getColorHex } from '@/layout/app-sidebar/shared-views';
 import { useDeletePostView, useSavePostView } from '@/posts/list/hooks/use-post-views';
@@ -15,6 +18,7 @@ interface ManagePostViewPopoverProps {
   params: PostListParams;
   /** The saved view matching the current params, if the user is on one. */
   activeView?: SharedView;
+  inHeader?: boolean;
 }
 
 function isPostViewColor(value: string | undefined): value is PostViewColor {
@@ -166,31 +170,42 @@ export function ManagePostViewPopover({
   resource,
   params,
   activeView,
+  inHeader = false,
 }: ManagePostViewPopoverProps) {
   const [open, setOpen] = useState(false);
+  const { isAdmin7 } = useShade();
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        {/* Labelled in words. No `aria-label`: it would override the
-                    visible text as the accessible name, leaving the two out of
-                    step. */}
-        <Button data-testid="manage-post-view" variant="outline">
-          {activeView ? 'Edit view' : 'Save view'}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-72">
-        {/* Keyed so reopening starts from the current view's name. */}
-        <PopoverBody
-          key={activeView?.name ?? 'new'}
-          activeView={activeView}
-          params={params}
-          resource={resource}
-          onClose={() => {
-            setOpen(false);
-          }}
-        />
-      </PopoverContent>
-    </Popover>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          {inHeader ? (
+            <PageHeader.Action
+              data-testid="manage-post-view"
+              label={activeView ? 'Edit view' : 'Save view'}
+            >
+              {isAdmin7 && <LucideIcon.Bookmark className="size-4" />}
+              {activeView ? 'Edit view' : 'Save view'}
+            </PageHeader.Action>
+          ) : (
+            <FilterBar.Action data-testid="manage-post-view" variant="outline">
+              {activeView ? 'Edit view' : 'Save view'}
+            </FilterBar.Action>
+          )}
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-72">
+          {/* Keyed so reopening starts from the current view's name. */}
+          <PopoverBody
+            key={activeView?.name ?? 'new'}
+            activeView={activeView}
+            params={params}
+            resource={resource}
+            onClose={() => {
+              setOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }

@@ -13,9 +13,7 @@ const messages = {
   alreadyDisliked: 'This comment was disliked already',
   replyToReply: 'Can not reply to a reply',
   commentsNotEnabled: 'Comments are not enabled for this site.',
-  postIdRequired: 'A post ID is required to read comments.',
   cannotCommentOnPost: 'You do not have permission to comment on this post.',
-  cannotReadComment: 'You do not have permission to read comments on this post',
   cannotEditComment: 'You do not have permission to edit comments',
   cannotPinReply: 'Replies cannot be pinned',
   cannotPinDeletedComment: 'Deleted comments cannot be pinned',
@@ -41,7 +39,8 @@ const COMMENT_STATUSES_IN_REPLY_TO = [COMMENT_STATUS_PUBLISHED, COMMENT_STATUS_H
 // new `comment.get(...)` call has one obvious place to register its column.
 const REPLY_PARENT_REQUIRED_COLUMNS = ['parent_id', 'post_id'];
 const IN_REPLY_TO_REQUIRED_COLUMNS = ['parent_id'];
-const OWNERSHIP_REQUIRED_COLUMNS = ['member_id', 'post_id'];
+const OWNERSHIP_REQUIRED_COLUMNS = ['member_id'];
+const VOTE_REQUIRED_COLUMNS = ['post_id'];
 const REPORT_REQUIRED_COLUMNS = ['post_id', 'member_id', 'html', 'created_at'];
 
 function getColumnList(columns) {
@@ -169,14 +168,11 @@ class CommentsService {
   }
 
   /** @private */
-  checkPostAccess(postModel, memberModel, { action = 'comment' } = {}) {
-    const access = this.contentGating.checkPostAccess(
-      postModel.toJSON(),
-      memberModel ? memberModel.toJSON() : null,
-    );
+  checkPostAccess(postModel, memberModel) {
+    const access = this.contentGating.checkPostAccess(postModel.toJSON(), memberModel.toJSON());
     if (access === this.contentGating.BLOCK_ACCESS) {
       throw new errors.NoPermissionError({
-        message: tpl(action === 'read' ? messages.cannotReadComment : messages.cannotCommentOnPost),
+        message: tpl(messages.cannotCommentOnPost),
       });
     }
   }
@@ -192,32 +188,6 @@ class CommentsService {
         transacting,
       });
     });
-  }
-
-  async #checkPostAccessForRead(postId, options) {
-    if (options.isAdmin) {
-      return;
-    }
-
-    if (!postId) {
-      throw new errors.ValidationError({ message: tpl(messages.postIdRequired) });
-    }
-
-    const postModel = await this.models.Post.findOne(
-      { id: postId },
-      { require: true, transacting: options.transacting, withRelated: ['tiers'] },
-    );
-
-    let memberModel = null;
-    const memberId = options.context?.member?.id;
-    if (memberId) {
-      memberModel = await this.models.Member.findOne(
-        { id: memberId },
-        { require: true, transacting: options.transacting, withRelated: ['products'] },
-      );
-    }
-
-    this.checkPostAccess(postModel, memberModel, { action: 'read' });
   }
 
   /**
@@ -385,9 +355,27 @@ class CommentsService {
     this.checkCommentAccess(memberModel);
 
     return await this.#withTransaction(options, async (transactionOptions) => {
-      await this.#getPublishedCommentForAction(commentId, transactionOptions, [], {
-        forUpdate: true,
-      });
+      const comment = await this.#getPublishedCommentForAction(
+        commentId,
+        transactionOptions,
+        VOTE_REQUIRED_COLUMNS,
+        {
+          forUpdate: true,
+        },
+      );
+
+      const postModel = await this.models.Post.findOne(
+        {
+          id: comment.get('post_id'),
+        },
+        {
+          require: true,
+          ...transactionOptions,
+          withRelated: ['tiers'],
+        },
+      );
+
+      this.checkPostAccess(postModel, memberModel);
 
       const votes = await this.#getMemberCommentVotes(
         {
@@ -551,7 +539,6 @@ class CommentsService {
    */
   async getComments(options) {
     this.checkEnabled();
-    await this.#checkPostAccessForRead(options.post_id, options);
     const page = await this.models.Comment.findPage(
       withPinnedSelect({ ...options, parentId: null, pinnedFirst: true }),
     );
@@ -691,17 +678,6 @@ class CommentsService {
    */
   async getReplies(id, options, { includeHidden = false } = {}) {
     this.checkEnabled();
-
-    const parentComment = await this.#fetchCommentByID(id, options, {
-      requiredColumns: ['post_id'],
-    });
-
-    if (!parentComment) {
-      throw new errors.NotFoundError({ message: tpl(messages.commentNotFound) });
-    }
-
-    await this.#checkPostAccessForRead(parentComment.get('post_id'), options);
-
     const page = await this.models.Comment.findPage(
       withPinnedSelect({ ...options, parentId: id }, { includeHidden }),
     );
@@ -783,9 +759,7 @@ class CommentsService {
   async getCommentByID(id, options = {}) {
     this.checkEnabled();
 
-    const model = await this.#getReadableCommentByID(id, options, ['post_id']);
-    await this.#checkPostAccessForRead(model.get('post_id'), options);
-    return model;
+    return await this.#getReadableCommentByID(id, options);
   }
 
   /**
@@ -953,9 +927,6 @@ class CommentsService {
       });
     }
 
-    // Mutation responses include replies, so they require the same post access as reads.
-    await this.#checkPostAccessForRead(existingComment.get('post_id'), options);
-
     const model = await this.models.Comment.edit(
       {
         status: COMMENT_STATUS_DELETED,
@@ -990,8 +961,6 @@ class CommentsService {
         message: tpl(messages.cannotEditComment),
       });
     }
-
-    await this.#checkPostAccessForRead(existingComment.get('post_id'), options);
 
     if (!comment) {
       return existingComment;

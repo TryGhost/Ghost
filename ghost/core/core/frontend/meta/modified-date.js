@@ -1,7 +1,7 @@
 const getContextObject = require('./context-object.js');
 
 function getModifiedDate(data) {
-  let context = data.context ? data.context : null;
+  const context = data.context ? data.context : null;
   let modDate;
 
   const contextObject = getContextObject(data, context);

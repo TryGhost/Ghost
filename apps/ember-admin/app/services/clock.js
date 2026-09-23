@@ -20,7 +20,7 @@ export default class ClockService extends Service {
     }
 
     tick() {
-        let now = moment().utc();
+        const now = moment().utc();
 
         this.setProperties({
             second: now.seconds(),

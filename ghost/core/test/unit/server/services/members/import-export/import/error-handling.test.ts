@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import MembersCSVImporter from '../../../../../../../core/server/services/members/import-export/import/importer';
+import MembersImportJob from '../../../../../../../core/server/services/members/jobs/members-import-job';
 import type { MemberImportRow } from '../../../../../../../core/server/services/members/import-export/import/row';
 
 const errors = require('@tryghost/errors');
@@ -52,11 +53,15 @@ function harness(
   const created: string[] = [];
   const createFailures = new Map<string, unknown>();
   const archivedPrices: string[] = [];
-  const jobs: Array<{ name: string; job: () => Promise<void> }> = [];
+  const dispatched: MembersImportJob[] = [];
+  const spooled = new Map<string, MemberImportRow[]>();
+  const removedKeys: string[] = [];
+  let spoolWrites = 0;
   let spoolRemoved = false;
   // The importer reads knex once, at construction, so a test cannot swap it afterwards.
   let rollback: () => Promise<void> = async () => {};
   let removalFailure: Error | undefined;
+  let dispatchFailure: Error | undefined;
 
   const deps = {
     knex: {
@@ -64,15 +69,24 @@ function harness(
     } as unknown as Knex,
     readRows: async () => rows,
     spool: {
-      write: async (spooledRows: MemberImportRow[]) => ({
-        read: async () => spooledRows,
-        remove: async () => {
-          spoolRemoved = true;
-          if (removalFailure) {
-            throw removalFailure;
-          }
-        },
-      }),
+      write: async (spooledRows: MemberImportRow[]) => {
+        spoolWrites += 1;
+        const key = `members-import-${spoolWrites}.json`;
+        spooled.set(key, spooledRows);
+        return key;
+      },
+      read: async (key: string): Promise<MemberImportRow[]> => {
+        const spooledRows = spooled.get(key);
+        assert.ok(spooledRows, `expected rows spooled under ${key}`);
+        return spooledRows;
+      },
+      remove: async (key: string) => {
+        spoolRemoved = true;
+        removedKeys.push(key);
+        if (removalFailure) {
+          throw removalFailure;
+        }
+      },
     },
     members: {
       get: async () => null,
@@ -131,8 +145,11 @@ function harness(
     report: (error: unknown) => {
       reported.push(error);
     },
-    addJob: (job: { name: string; job: () => Promise<void> }) => {
-      jobs.push(job);
+    dispatchJob: async (job: MembersImportJob) => {
+      if (dispatchFailure) {
+        throw dispatchFailure;
+      }
+      dispatched.push(job);
     },
     getTimezone: () => 'Etc/UTC',
     getInlineThreshold: () => inlineThreshold,
@@ -141,20 +158,38 @@ function harness(
   const importer = new MembersCSVImporter(deps);
   const noopVerification = { testImportThreshold: async () => {} };
 
-  // The job is invoked directly rather than through the job manager.
+  const defer = () =>
+    importer.importCSV(
+      {
+        filePath: 'members.csv',
+        extraLabels: [{ name: 'VIP' }],
+        requestUserEmail: 'importer@example.com',
+      },
+      noopVerification,
+    );
+
+  // What the jobs service hands the handler: a new job built from the dispatched one's JSON.
+  const revive = (job: MembersImportJob) => new MembersImportJob(JSON.parse(JSON.stringify(job)));
+
+  // The job is handled directly rather than through the jobs service.
   const run = async (verification = noopVerification) => {
     await importer.importCSV(
       { filePath: 'members.csv', requestUserEmail: 'importer@example.com' },
       verification,
     );
-    assert.equal(jobs.length, 1, 'expected the import to be deferred to a background job');
-    await jobs[0].job();
+    assert.equal(dispatched.length, 1, 'expected the import to be deferred to a background job');
+    await importer.handle(revive(dispatched[0]), verification);
   };
 
   return {
     deps,
     importer,
+    defer,
+    revive,
     run,
+    dispatched,
+    removedKeys,
+    noopVerification,
     sent,
     reported,
     created,
@@ -174,6 +209,9 @@ function harness(
       rollback = async () => {
         throw error;
       };
+    },
+    failDispatchWith: (error: Error) => {
+      dispatchFailure = error;
     },
     failSpoolRemovalWith: (error: Error) => {
       removalFailure = error;
@@ -316,12 +354,9 @@ describe('members import error handling', function () {
 
     it('tells the publisher when the spooled rows cannot be read back', async function () {
       const h = harness();
-      h.deps.spool.write = async () => ({
-        read: async (): Promise<MemberImportRow[]> => {
-          throw new Error('ENOENT: no such file or directory');
-        },
-        remove: async () => {},
-      });
+      h.deps.spool.read = async (): Promise<MemberImportRow[]> => {
+        throw new Error('ENOENT: no such file or directory');
+      };
 
       await h.run();
 
@@ -450,13 +485,10 @@ describe('members import error handling', function () {
 
     it('survives a spool that throws before it returns a promise', async function () {
       const h = harness();
-      h.deps.spool.write = async (spooledRows: MemberImportRow[]) => ({
-        read: async () => spooledRows,
-        // Synchronous, so .catch() on the returned promise would never see it.
-        remove: (() => {
-          throw new Error('EACCES: permission denied');
-        }) as unknown as () => Promise<void>,
-      });
+      // Synchronous, so .catch() on the returned promise would never see it.
+      h.deps.spool.remove = (() => {
+        throw new Error('EACCES: permission denied');
+      }) as unknown as (key: string) => Promise<void>;
 
       await h.run();
 
@@ -480,6 +512,63 @@ describe('members import error handling', function () {
           },
         }),
       );
+    });
+  });
+
+  describe('handing a deferred import to the jobs service', function () {
+    it('dispatches a members-import job carrying only plain request-time values', async function () {
+      const h = harness();
+
+      const outcome = await h.defer();
+
+      assert.deepEqual(outcome, { deferred: true, originalImportSize: 2 });
+      assert.equal(h.dispatched.length, 1);
+      const [job] = h.dispatched;
+      assert.equal((job.constructor as typeof MembersImportJob).type, 'members-import');
+      const { labelName, ...rest } = JSON.parse(JSON.stringify(job));
+      assert.deepEqual(rest, {
+        spoolKey: 'members-import-1.json',
+        extraLabels: [{ name: 'VIP' }],
+        emailRecipient: 'importer@example.com',
+      });
+      assert.match(labelName, /^Import \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+      assert.deepEqual(h.created, [], 'nothing is imported until the job runs');
+      assert.deepEqual(h.sent, []);
+    });
+
+    it('removes the spooled rows and rethrows when the job cannot be dispatched', async function () {
+      const h = harness();
+      const refusal = new Error(
+        'Cannot enqueue job "members-import" before the jobs backend is started.',
+      );
+      h.failDispatchWith(refusal);
+
+      await assert.rejects(
+        () => h.defer(),
+        (error) => error === refusal,
+      );
+
+      assert.deepEqual(h.removedKeys, ['members-import-1.json']);
+      assert.deepEqual(h.sent, []);
+    });
+
+    it('runs a job this process did not dispatch', async function () {
+      const h = harness();
+      await h.defer();
+      const job = h.revive(h.dispatched[0]);
+      const elsewhere = harness();
+      // The rows as the other process's store holds them, under the key the job carries.
+      const key = await elsewhere.deps.spool.write([
+        row('first@example.com'),
+        row('second@example.com'),
+      ]);
+      assert.equal(key, job.spoolKey);
+
+      await elsewhere.importer.handle(job, elsewhere.noopVerification);
+
+      assert.deepEqual(elsewhere.created, ['first@example.com', 'second@example.com']);
+      assert.equal(elsewhere.onlyEmail().subject, COMPLETED);
+      assert.deepEqual(elsewhere.removedKeys, [job.spoolKey]);
     });
   });
 

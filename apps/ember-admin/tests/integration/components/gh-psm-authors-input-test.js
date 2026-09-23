@@ -199,7 +199,7 @@ describe('Integration: Component: gh-psm-authors-input', function () {
         await selectChoose('.ember-power-select-trigger', 'Remote Match');
         await settled();
 
-        let removeBtns = findAll('.ember-power-select-multiple-remove-btn');
+        const removeBtns = findAll('.ember-power-select-multiple-remove-btn');
         await click(removeBtns[0]);
 
         await clickTrigger();

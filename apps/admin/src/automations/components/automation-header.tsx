@@ -1,5 +1,6 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
+import { useShade } from '@tryghost/shade/app';
 import { Button, type ButtonProps, Skeleton } from '@tryghost/shade/components';
 import { Link } from '@tryghost/admin-x-framework';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -36,13 +37,14 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onPublish,
   onTurnOff,
 }) => {
+  const { isAdmin7 } = useShade();
   const name = automation?.name;
   const status = automation?.status;
 
   return (
     <header className="relative z-10 flex h-14 shrink-0 items-center justify-between bg-surface-elevated px-4 shadow-sm dark:border-b dark:border-gray-950">
       <div className="flex min-w-0 items-center gap-3">
-        <Button variant="ghost" asChild>
+        <Button size={isAdmin7 ? 'icon' : undefined} variant="ghost" asChild>
           <Link aria-label="Back to automations" to="/automations">
             <LucideIcon.ArrowLeft strokeWidth={2} />
           </Link>

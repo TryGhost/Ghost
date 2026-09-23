@@ -1,5 +1,6 @@
 import AutomationEditor from './editor';
 import React from 'react';
+import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import { MAX_AUTOMATION_ACTIONS } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationActionLinksResponseType,
@@ -1038,6 +1039,34 @@ describe('AutomationEditor', () => {
     expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
   });
 
+  it('hides the performance toggle and panel when run analytics is disabled', () => {
+    mockLabs.current = { automationRunAnalytics: false };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [automationDetail] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderEditor();
+
+    expect(screen.queryByRole('button', { name: /performance/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Performance')).not.toBeInTheDocument();
+  });
+
+  it('renders the performance toggle and panel shell when run analytics is enabled', () => {
+    mockLabs.current = { automationRunAnalytics: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [automationDetail] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderEditor();
+
+    expect(screen.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    expect(screen.getByText('Performance')).toBeInTheDocument();
+  });
+
   it('renders styled canvas zoom controls without the interaction toggle', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
@@ -1193,6 +1222,24 @@ describe('AutomationEditor', () => {
     expect(within(sidebar).queryByText('Paid')).not.toBeInTheDocument();
     expect(within(sidebar).queryByRole('button', { name: /Delete/ })).not.toBeInTheDocument();
     expect(within(sidebar).queryByRole('button', { name: /Edit/ })).not.toBeInTheDocument();
+  });
+
+  it('opens the trigger sidebar without member tiers when the automation has no slug', () => {
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [{ ...automationDetail, slug: null }] },
+      isLoading: false,
+      isError: false,
+    });
+
+    const { container } = renderEditor();
+
+    const trigger = container.querySelector(`[data-node-id="${TRIGGER_CANVAS_ID}"]`);
+    expect(trigger).not.toBeNull();
+    fireEvent.click(trigger!);
+
+    const sidebar = screen.getByRole('complementary', { name: 'Step details' });
+    expect(within(sidebar).getByRole('heading', { name: 'Member signs up' })).toBeInTheDocument();
+    expect(within(sidebar).queryByText('Members')).not.toBeInTheDocument();
   });
 
   it('opens step properties from the node right-click menu', async () => {

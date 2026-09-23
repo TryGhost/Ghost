@@ -14,7 +14,7 @@ describe('activity filters', () => {
     expect(global).not.toContain('automated_email_sent_event');
     expect(activityQueryOptions({ settings: {}, excluded: null, memberId: 'abc' })).toEqual({
       memberId: 'abc',
-      excludedEvents: ['aggregated_click_event'],
+      excludedEvents: ['aggregated_click_event', 'metafield_change_event'],
     });
     expect(availableActivityTypes({}, 'abc').map(({ event }) => event)).toContain(
       'email_opened_event',
@@ -53,6 +53,23 @@ describe('activity filters', () => {
     expect(availableActivityTypes({ emailTrackClicks: true }).map(({ event }) => event)).toContain(
       'click_event',
     );
+  });
+
+  it('offers custom field changes only where the site has custom fields', () => {
+    const events = (settings: Parameters<typeof availableActivityTypes>[0]) =>
+      availableActivityTypes(settings, 'abc').map(({ event }) => event);
+    expect(events({ customFieldsAvailable: true })).toContain('metafield_change_event');
+    expect(events({})).not.toContain('metafield_change_event');
+    expect(
+      activityQueryOptions({ settings: {}, excluded: null, memberId: 'abc' }).excludedEvents,
+    ).toContain('metafield_change_event');
+    expect(
+      activityQueryOptions({
+        settings: { customFieldsAvailable: true },
+        excluded: null,
+        memberId: 'abc',
+      }).excludedEvents,
+    ).not.toContain('metafield_change_event');
   });
 
   it.each([

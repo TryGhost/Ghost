@@ -75,6 +75,10 @@
     "active": "LocalImagesStorage",
     "media": "LocalMediaStorage",
     "files": "LocalFilesStorage",
+    "imports": {
+      "adapter": "LocalStorageBase",
+      "staticFileURLPrefix": "content/imports"
+    },
     "LocalMediaStorage": {},
     "LocalFilesStorage": {}
   },
@@ -367,7 +371,8 @@
   },
   "bulkEmail": {
     "batchSize": 1000,
-    "captureLinkClickBadMemberUuid": false
+    "captureLinkClickBadMemberUuid": false,
+    "perRecipientMessageId": false
   },
   "disableJSBackups": false,
   "disableMigrationBackups": false,

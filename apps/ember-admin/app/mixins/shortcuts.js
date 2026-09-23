@@ -48,10 +48,10 @@ key.setScope('default');
 export default Mixin.create({
 
     registerShortcuts() {
-        let shortcuts = this.shortcuts;
+        const shortcuts = this.shortcuts;
 
         Object.keys(shortcuts).forEach((shortcut) => {
-            let scope = shortcuts[shortcut].scope || 'default';
+            const scope = shortcuts[shortcut].scope || 'default';
             let action = shortcuts[shortcut];
             let options;
 
@@ -73,10 +73,10 @@ export default Mixin.create({
     },
 
     removeShortcuts() {
-        let shortcuts = this.shortcuts;
+        const shortcuts = this.shortcuts;
 
         Object.keys(shortcuts).forEach((shortcut) => {
-            let scope = shortcuts[shortcut].scope || 'default';
+            const scope = shortcuts[shortcut].scope || 'default';
             shortcutsCache.unregister(shortcut);
             key.unbind(shortcut, scope);
         });

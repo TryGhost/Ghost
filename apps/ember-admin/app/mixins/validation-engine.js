@@ -90,9 +90,6 @@ export default Mixin.create({
     */
     validate(opts) {
         let model = this;
-        let hasValidated,
-            type,
-            validator;
 
         opts = opts || {};
 
@@ -104,14 +101,13 @@ export default Mixin.create({
             model = this.model;
         }
 
-        type = this.validationType || model.validationType;
-        validator = this.get(`validators.${type}`) || model.validators[type];
-        hasValidated = this.hasValidated;
+        const type = this.validationType || model.validationType;
+        const validator = this.get(`validators.${type}`) || model.validators[type];
+        const hasValidated = this.hasValidated;
 
         opts.validationType = type;
 
         return new RSVP.Promise((resolve, reject) => {
-            let passed;
 
             if (!type || !validator) {
                 return reject([`The validator specified, "${type}", did not exist!`]);
@@ -125,7 +121,7 @@ export default Mixin.create({
                 model.errors.clear();
             }
 
-            passed = validator.check(model, opts.property);
+            const passed = validator.check(model, opts.property);
 
             return (passed) ? resolve() : reject();
         });
@@ -137,7 +133,7 @@ export default Mixin.create({
     * You can supply options to be passed into the `validate` method, since the ED `save` method takes no options.
     */
     save(options) {
-        let {_super} = this;
+        const {_super} = this;
 
         options = options || {};
         options.wasSave = true;

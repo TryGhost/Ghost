@@ -16,6 +16,9 @@ Read the human documentation before changing Shade:
   [recipes](./src/docs/recipes-guide.mdx), and
   [tokens](./src/docs/tokens.mdx) provide layer-specific guidance.
 
+- When constructing or changing page headers or their actions, use the
+  [Shade page header skill](../../.agents/skills/shade-page-header/SKILL.md).
+
 ## Required workflow
 
 - Use the repository Shade skills for the relevant task. In particular, use

@@ -3,20 +3,36 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { FIELD_TYPES, subFieldsOf, type FieldType } from '@tryghost/metafield-types';
+import {
+  FIELD_TYPES,
+  subFieldsOf,
+  type FieldType,
+  type MetafieldChangeEventField,
+} from '@tryghost/metafield-types';
 import {
   CUSTOM_NAMESPACE,
   QUALIFIER,
   formatIdentity,
   parseIdentity,
 } from '@tryghost/metafield-types/identity';
-import { DbMetafieldLeaf, DbMetafieldValue, FIELD_STATUS, type WrittenBy } from './schema';
-import { ACTIVE_ONLY, definitions, readableBy } from './queries';
+import {
+  DbMetafieldChangeEventWithMember,
+  DbMetafieldLeaf,
+  DbMetafieldValue,
+  FIELD_STATUS,
+  StoredFieldList,
+  type MetafieldChangeEvent,
+  type WriteOrigin,
+} from './schema';
+import { toDatabaseDate } from '../../lib/db-types/date';
+import { ACTIVE_ONLY, definitions, knexify, readableBy } from './queries';
 import { canWrite, type Audience, type MemberAccess } from './access';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
 
 const FIELDS_TABLE = 'members_metafields';
 const VALUES_TABLE = 'members_metafield_values';
+const CHANGE_EVENTS_TABLE = 'members_metafield_change_events';
+const MEMBERS_TABLE = 'members';
 
 /**
  * From the canonical schema, the same source definitions-service reads, so no key a site
@@ -42,6 +58,31 @@ const MAX_IDENTITY_LENGTH = MAX_KEY_LENGTH * 2 + 1;
 const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 
 const wireProperty = (identity: string): string => [QUALIFIER, identity].join('.');
+
+/** One value the site will not accept, against the name the write gave it. */
+interface Refusal {
+  message: string;
+  property: string;
+}
+
+/**
+ * Every refusal in one error.
+ *
+ * The API renders a single error, so the first still fills `message` and `property` and
+ * a client that reads only those sees exactly what it saw before. The whole set rides in
+ * `errorDetails`, which the renderer already passes through as `details`, so a client
+ * that wants to mark every refused input can have them all from one attempt.
+ */
+function refusalError(refusals: Refusal[]): errors.ValidationError {
+  const [first, ...rest] = refusals as [Refusal, ...Refusal[]];
+  return new errors.ValidationError({
+    message: first.message,
+    property: first.property,
+    // Omitted when there is nothing more to say, so the common single refusal keeps the
+    // shape it has always had rather than growing a one-element list.
+    ...(rest.length > 0 ? { errorDetails: refusals } : {}),
+  });
+}
 
 interface AllowedField {
   id: string;
@@ -229,23 +270,29 @@ export class MetafieldValuesService {
 
     const byIdentity = await this.allowedFieldsByIdentity(identities, audience);
     const writes: PlannedWrite[] = [];
+    // Gathered rather than thrown as they are found. A write names several values, and
+    // a composite is several again, so refusing at the first leaves someone correcting
+    // one part per round trip to learn what was wrong with the rest.
+    const refusals: Refusal[] = [];
 
     for (const [identity, raw] of Object.entries(values)) {
       const field = byIdentity.get(identity);
       if (!field) {
-        throw new errors.ValidationError({
+        refusals.push({
           message: `Unknown custom field: ${identity}`,
           property: wireProperty(identity),
         });
+        continue;
       }
 
       // A different refusal from the unknown-field one above: this audience can
       // already see the field, so naming it discloses nothing.
       if (!canWrite(audience, field)) {
-        throw new errors.ValidationError({
+        refusals.push({
           message: `Cannot set custom field: ${identity}`,
           property: wireProperty(identity),
         });
+        continue;
       }
 
       // `null` clears any field, and `''` clears one with no parts. For a value
@@ -262,13 +309,21 @@ export class MetafieldValuesService {
       // Which field failed rides in `property`.
       const value = FIELD_TYPES[field.type].value.safeParse(raw);
       if (!value.success) {
-        const issue = value.error.issues[0];
-        throw new errors.ValidationError({
-          message: issue.message,
-          property: [wireProperty(identity), ...issue.path].join('.'),
-        });
+        // Every issue, not the first: a value with parts fails once per part, and each
+        // names the part it belongs to, which is what lets a client mark them all.
+        for (const issue of value.error.issues) {
+          refusals.push({
+            message: issue.message,
+            property: [wireProperty(identity), ...issue.path].join('.'),
+          });
+        }
+        continue;
       }
       writes.push({ field, value: value.data });
+    }
+
+    if (refusals.length > 0) {
+      throw refusalError(refusals);
     }
 
     return writes;
@@ -282,16 +337,22 @@ export class MetafieldValuesService {
    * them, and saying nothing about a path leaves it alone. There is no whole-value
    * replace, so a caller that does not know about a field cannot erase it.
    *
-   * `writtenBy` is required and has no default: every writer has to name itself, so a new
-   * one cannot quietly inherit the identity of whichever was written first.
+   * `writtenBy` and `source` are required and have no default: every writer has to name
+   * itself and where it wrote, so a new one cannot quietly inherit the identity of
+   * whichever was written first.
    *
    * Always transactional. Given an executor it joins that transaction, so the importer's
    * failed value write takes its member with it; given none it opens its own.
+   *
+   * Every write also puts an entry on the member's activity feed, naming the fields it
+   * touched and who wrote them where, in the same transaction, so the feed cannot name a
+   * change that was not stored or miss one that was. A value has more than one author,
+   * and the feed is where a publisher finds out which of them changed it.
    */
   async applyWrite(
     memberId: string,
     writes: PlannedWrite[],
-    { writtenBy, executor = this.knex }: { writtenBy: WrittenBy; executor?: Knex },
+    { writtenBy, source, executor = this.knex }: WriteOrigin & { executor?: Knex },
   ): Promise<void> {
     if (writes.length === 0) {
       return;
@@ -366,6 +427,23 @@ export class MetafieldValuesService {
           // it currently holds rather than who wrote its first value.
           .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
       }
+
+      const fields: MetafieldChangeEventField[] = writes.map(({ field }) => ({
+        namespace: field.namespace,
+        key: field.key,
+        name: field.name,
+      }));
+      await trx(CHANGE_EVENTS_TABLE).insert({
+        id: new ObjectID().toHexString(),
+        member_id: memberId,
+        written_by_type: writtenBy.type,
+        written_by_id: writtenBy.id,
+        source,
+        metafields: StoredFieldList.encode(fields),
+        // A string rather than the Date the value rows take: SQLite stores a bound Date
+        // as a number, which sorts before every string the feed pages through time with.
+        created_at: toDatabaseDate(now),
+      });
     };
 
     // knex's marker for a transactor: join it rather than nesting a savepoint under it.
@@ -374,5 +452,79 @@ export class MetafieldValuesService {
     } else {
       await executor.transaction(apply);
     }
+  }
+
+  /**
+   * Entries from members' activity feeds, newest first, each with its member, as one page
+   * of the members events endpoint reads them.
+   *
+   * `filter` is a parsed NQL filter over this table's own columns: mapping the feed's
+   * names onto them is the feed's business, and applying them is this table's.
+   */
+  async browseChangeEvents({
+    limit,
+    filter,
+  }: {
+    /** Absent for every entry, as the feed asks for when paging is off. */
+    limit?: number;
+    filter?: object;
+  }): Promise<{ events: MetafieldChangeEvent[]; total: number }> {
+    const filtered = () => {
+      const query = this.knex(CHANGE_EVENTS_TABLE);
+      return filter ? knexify(query, filter, { tableName: CHANGE_EVENTS_TABLE }) : query;
+    };
+
+    // Joined rather than looked up afterwards: an entry cannot outlive its member, whose
+    // delete cascades to it, so every entry has one to join.
+    const newestFirst = filtered()
+      .join(MEMBERS_TABLE, `${MEMBERS_TABLE}.id`, `${CHANGE_EVENTS_TABLE}.member_id`)
+      .orderBy([
+        { column: `${CHANGE_EVENTS_TABLE}.created_at`, order: 'desc' },
+        { column: `${CHANGE_EVENTS_TABLE}.id`, order: 'desc' },
+      ]);
+    const page = limit === undefined ? newestFirst : newestFirst.limit(limit);
+
+    const [rows, counted] = await Promise.all([
+      page.select(
+        `${CHANGE_EVENTS_TABLE}.id`,
+        `${CHANGE_EVENTS_TABLE}.member_id`,
+        `${CHANGE_EVENTS_TABLE}.written_by_type`,
+        `${CHANGE_EVENTS_TABLE}.written_by_id`,
+        `${CHANGE_EVENTS_TABLE}.source`,
+        `${CHANGE_EVENTS_TABLE}.metafields`,
+        `${CHANGE_EVENTS_TABLE}.created_at`,
+        { member_uuid: `${MEMBERS_TABLE}.uuid` },
+        { member_name: `${MEMBERS_TABLE}.name` },
+        { member_email: `${MEMBERS_TABLE}.email` },
+      ),
+      filtered().count({ total: '*' }).first(),
+    ]);
+
+    // What to do with an entry whose field list can't be read is decided here, not in the
+    // parser: it is still shown, naming no fields. The feed pages through time a page per
+    // event type, so dropping an entry would push a valid one off the end of its page for
+    // good. Anything else a row can't be read for, the table's constraints rule out, so it
+    // throws rather than being hidden.
+    const events = rows.map(
+      ({ member_uuid: uuid, member_name: name, member_email: email, ...event }) => {
+        const fields = StoredFieldList.safeParse(event.metafields);
+        if (!fields.success) {
+          logging.warn(
+            {
+              event: { name: 'members.metafields.change_event_unreadable' },
+              err: fields.error,
+              changeEventId: event.id,
+            },
+            'Reading an unreadable metafield change entry as naming no fields',
+          );
+        }
+        return DbMetafieldChangeEventWithMember.parse({
+          event: fields.success ? event : { ...event, metafields: StoredFieldList.encode([]) },
+          member: { id: event.member_id, uuid, name, email },
+        });
+      },
+    );
+
+    return { events, total: Number(counted?.total ?? 0) };
   }
 }

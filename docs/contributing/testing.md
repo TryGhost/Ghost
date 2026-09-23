@@ -157,6 +157,9 @@ optional Redis and object-storage adapters skip when their services are not
 available; start the relevant development services when you need to exercise
 those adapters.
 
+If E2E tests fail with `ECONNREFUSED 127.0.0.1:3306`, start the development
+server with `pnpm dev`.
+
 ## Run Browser E2E Tests
 
 The browser suite needs its test infrastructure running. For the normal
@@ -239,6 +242,12 @@ script before the Ember Exam arguments:
 pnpm nx run ghost-admin:test -- 1 \
   --file-path=tests/acceptance/editor/publish-flow-test.js
 ```
+
+The React editor has its own acceptance specs in
+`apps/admin/src/editor/*.acceptance.test.tsx`, which run in Vitest Browser Mode
+through `pnpm nx test:acceptance @tryghost/admin`. See
+[the editor's README](../../apps/admin/src/editor/README.md) for the harness
+helpers and conventions they use.
 
 Do not run `ember test` or `ember exam` directly from `apps/ember-admin/`.
 Doing so bypasses Nx's dependency builds and can leave required Admin and

@@ -6,7 +6,7 @@ export default class ApiKey extends ApplicationAdapter {
             return super.queryRecord(...arguments);
         }
 
-        let url = `${this.buildURL('users', 'me')}token/`;
+        const url = `${this.buildURL('users', 'me')}token/`;
         return this.ajax(url, 'GET', {data: {}}).then((data) => {
             return data;
         });

@@ -64,8 +64,8 @@ async function fetchData(pathOptions, routerOptions, locals) {
   pathOptions = pathOptions || {};
   routerOptions = routerOptions || {};
 
-  let postQuery = _.cloneDeep(defaultPostQuery);
-  let promises = [];
+  const postQuery = _.cloneDeep(defaultPostQuery);
+  const promises = [];
 
   if (routerOptions.filter) {
     postQuery.options.filter = routerOptions.filter;

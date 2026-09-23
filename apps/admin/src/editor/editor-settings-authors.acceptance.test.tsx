@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  browseResponse,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
@@ -386,6 +387,23 @@ describe('Post settings authors', () => {
     await openAuthors();
 
     expect(editorScreen.settingsAuthorNames()).toEqual(['Owner User']);
+  });
+
+  it('offers every staff member, past the first page of the browse', async () => {
+    fakeSavablePost();
+    // `limit=all` is capped by Core, so the site's staff can span several pages.
+    const staffApi = fakeAdminEndpoint('GET', /^\/users\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      return browseResponse('users', [NADIA, JOSE], { page: pageNumber, limit: 1 });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAuthors();
+    await openAuthorList();
+
+    await expect.element(editorScreen.settingsAuthorOption(JOSE.name)).toBeVisible();
+    await expect.element(editorScreen.settingsAuthorOption(NADIA.name)).toBeVisible();
+    await expect.poll(() => staffApi.requests.length).toBe(2);
+    expect(new URL(staffApi.requests[1].url).searchParams.get('page')).toBe('2');
   });
 
   it.each(['Author', 'Contributor'] as StaffRoleName[])(

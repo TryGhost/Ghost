@@ -180,7 +180,7 @@ const Comment = ghostBookshelf.Model.extend(
     },
 
     orderAttributes: function orderAttributes() {
-      let keys = ghostBookshelf.Model.prototype.orderAttributes.call(this, arguments);
+      const keys = ghostBookshelf.Model.prototype.orderAttributes.call(this, arguments);
       keys.push('count__likes');
       keys.push('count__net_score');
       keys.push('count__reports');
@@ -209,7 +209,7 @@ const Comment = ghostBookshelf.Model.extend(
   },
   {
     destroy: function destroy(unfilteredOptions) {
-      let options = this.filterOptions(unfilteredOptions, 'destroy', {
+      const options = this.filterOptions(unfilteredOptions, 'destroy', {
         extraAllowedProperties: ['id'],
       });
 
@@ -492,7 +492,7 @@ const Comment = ghostBookshelf.Model.extend(
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {
-      let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+      const options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
       options.push('parentId');
       options.push('isAdmin');
       options.push('browseAll');

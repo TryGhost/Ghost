@@ -88,7 +88,7 @@ class TriggerButtonContent extends React.Component {
   componentDidUpdate() {
     if (this.container) {
       const height = this.container.current && this.container.current.offsetHeight;
-      let width = this.container.current && this.container.current.offsetWidth;
+      const width = this.container.current && this.container.current.offsetWidth;
       if (height !== this.height) {
         this.height = height;
         this.updateHeight(this.height);

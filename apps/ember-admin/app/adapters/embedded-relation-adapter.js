@@ -24,13 +24,13 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
     }
 
     findAll(store, type, sinceToken) {
-        let query, url;
+        let query;
 
         if (sinceToken) {
             query = {since: sinceToken};
         }
 
-        url = this.buildIncludeURL(store, type.modelName, null, null, 'findAll');
+        const url = this.buildIncludeURL(store, type.modelName, null, null, 'findAll');
 
         return this.ajax(url, 'GET', {data: query});
     }
@@ -137,7 +137,7 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
     }
 
     updateRecord(store, type, snapshot) {
-        let options = {
+        const options = {
             method: 'PUT',
             id: get(snapshot, 'id')
         };
@@ -149,9 +149,9 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
     }
 
     saveRecord(store, type, snapshot, options, requestType) {
-        let _options = options || {};
-        let url = this.buildIncludeURL(store, type.modelName, _options.id, snapshot, requestType);
-        let payload = this.preparePayload(store, type, snapshot);
+        const _options = options || {};
+        const url = this.buildIncludeURL(store, type.modelName, _options.id, snapshot, requestType);
+        const payload = this.preparePayload(store, type, snapshot);
 
         return this.ajax(url, _options.method, payload);
     }
@@ -164,8 +164,8 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
     }
 
     preparePayload(store, type, snapshot) {
-        let serializer = store.serializerFor(type.modelName);
-        let payload = {};
+        const serializer = store.serializerFor(type.modelName);
+        const payload = {};
 
         serializer.serializeIntoHash(payload, type, snapshot);
 
@@ -173,9 +173,9 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
     }
 
     buildIncludeURL(store, modelName, id, snapshot, requestType, query) {
-        let includes = this.getEmbeddedRelations(store, modelName);
-        let url = this.buildURL(modelName, id, snapshot, requestType, query);
-        let parsedUrl = new URL(url);
+        const includes = this.getEmbeddedRelations(store, modelName);
+        const url = this.buildURL(modelName, id, snapshot, requestType, query);
+        const parsedUrl = new URL(url);
 
         if (includes.length) {
             parsedUrl.searchParams.append('include', includes.map(underscore).join(','));
@@ -185,7 +185,7 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
     }
 
     buildQuery(store, modelName, options) {
-        let deDupe = {};
+        const deDupe = {};
         let toInclude = this.getEmbeddedRelations(store, modelName);
         let query = options || {};
 
@@ -215,9 +215,9 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
     }
 
     getEmbeddedRelations(store, modelName) {
-        let model = store.modelFor(modelName);
-        let ret = [];
-        let embedded = [];
+        const model = store.modelFor(modelName);
+        const ret = [];
+        const embedded = [];
 
         // Iterate through the model's relationships and build a list
         // of those that need to be pulled in via "include" from the API

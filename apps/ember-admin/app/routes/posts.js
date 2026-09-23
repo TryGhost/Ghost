@@ -63,7 +63,7 @@ export default class PostsRoute extends AuthenticatedRoute {
         // see https://github.com/TryGhost/Ghost/issues/11057
         this.router.on('routeWillChange', (transition) => {
             if (transition.to && (this.routeName === 'posts' || this.routeName === 'pages')) {
-                let toThisRoute = transition.to.find(route => route.name === this.routeName);
+                const toThisRoute = transition.to.find(route => route.name === this.routeName);
                 if (transition.from && transition.from.name === this.routeName && toThisRoute) {
                     transition.method('replace');
                 }
@@ -187,8 +187,8 @@ export default class PostsRoute extends AuthenticatedRoute {
         }
 
         const user = this.session.user;
-        let filterParams = {tag: params.tag, visibility: params.visibility};
-        let paginationParams = {
+        const filterParams = {tag: params.tag, visibility: params.visibility};
+        const paginationParams = {
             perPageParam: 'limit',
             totalPagesParam: 'meta.pagination.pages'
         };
@@ -210,18 +210,18 @@ export default class PostsRoute extends AuthenticatedRoute {
             filterParams.authors = params.author;
         }
 
-        let perPage = this.perPage;
+        const perPage = this.perPage;
 
         const filterStatuses = filterParams.status;
-        let queryParams = {allFilter: this._filterString({...filterParams})}; // pass along the parent filter so it's easier to apply the params filter to each infinity model
-        let models = {};
+        const queryParams = {allFilter: this._filterString({...filterParams})}; // pass along the parent filter so it's easier to apply the params filter to each infinity model
+        const models = {};
 
         if (filterStatuses.includes('scheduled')) {
-            let scheduledInfinityModelParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: 'scheduled'})};
+            const scheduledInfinityModelParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: 'scheduled'})};
             models.scheduledInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, scheduledInfinityModelParams));
         }
         if (filterStatuses.includes('draft')) {
-            let draftInfinityModelParams = {...queryParams, order: params.order || 'updated_at desc', filter: this._filterString({...filterParams, status: 'draft'})};
+            const draftInfinityModelParams = {...queryParams, order: params.order || 'updated_at desc', filter: this._filterString({...filterParams, status: 'draft'})};
             models.draftInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, draftInfinityModelParams));
         }
         if (filterStatuses.includes('published') || filterStatuses.includes('sent')) {
@@ -302,7 +302,7 @@ export default class PostsRoute extends AuthenticatedRoute {
     @action
     queryParamsDidChange() {
         // scroll back to the top
-        let contentList = document.querySelector('.content-list');
+        const contentList = document.querySelector('.content-list');
         if (contentList) {
             contentList.scrollTop = 0;
         }
@@ -347,7 +347,7 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     _filterString(filter) {
         return Object.keys(filter).map((key) => {
-            let value = filter[key];
+            const value = filter[key];
 
             if (!isBlank(value)) {
                 return `${key}:${filter[key]}`;
