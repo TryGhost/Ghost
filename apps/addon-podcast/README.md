@@ -51,4 +51,61 @@ Email and ordinary Ghost RSS use a safe link back to the current post. The
 link follows Ghost's body gating and contains neither media URLs nor private
 feed credentials. Copying a card binds it to its new parent post.
 
-Implementation is in progress. The V2 conversion helper follows in a later slice.
+## Converting V2 development content
+
+`convert-v2.mjs` is an offline, workspace-only helper for the previous custom
+post type spike. Stop Ghost before applying it and keep a full database backup.
+Use this branch's current dependencies; do not roll back or rewrite the V2
+migration history. The original V2 migration file remains unchanged on this
+branch so databases that applied it can boot. The original 6.65 paths are also
+retained for databases created before the spike was rebased onto main. This is
+a forward-only development compatibility path: do not roll back these aliases,
+since both versions refer to the same legacy tables and setting. Their tables/column are
+compatibility artifacts; V3 has no runtime dependency on them. Extra V2 tables
+and columns may remain in the development DB.
+
+Create a private Knex configuration file pointing at the intended development
+database. For SQLite:
+
+```json
+{
+  "client": "better-sqlite3",
+  "connection": { "filename": "/absolute/path/to/ghost.db" },
+  "useNullAsDefault": true
+}
+```
+
+MySQL uses `client: "mysql2"` and the database's connection object. Run from
+`ghost/core` with the current source renderer:
+
+```sh
+pnpm exec node --conditions=source --import tsx ../../apps/addon-podcast/convert-v2.mjs \
+  --database-config /absolute/path/to/knex-config.json
+
+pnpm exec node --conditions=source --import tsx ../../apps/addon-podcast/convert-v2.mjs \
+  --database-config /absolute/path/to/knex-config.json \
+  --apply --backup /absolute/path/to/new-podcast-backup.json
+```
+
+The first command reports candidates without changing them. Applying writes an
+exclusive, private backup of original posts and metadata before updating any
+post, in one database transaction. Errors abort the transaction. A rerun skips
+already converted posts. Keep the backup private because it includes body and
+media data.
+
+Each `podcast.episode` becomes one card at the start of its existing body. IDs,
+UUIDs, slugs, status, access, dates, show references, files and existing body
+content remain intact. Source metafields are retained for verification; the
+helper never deletes them. Missing rendered bodies are generated from their saved source.
+Legacy Mobiledoc is converted using Ghost's existing converter.
+
+Players now follow body gating. Restricted posts without a preview divider no
+longer offer an anonymous shell. The helper does not insert a divider or change
+access. Historical post revisions remain historical; restoring one can remove
+the new card. Production feed URL/GUID migration is outside this spike.
+
+After restarting on this branch, refresh the installed podcast manifest while
+preserving its `configuration`. Verify converted posts in the React editor,
+website, public feed and a private feed before removing any V2 source metadata.
+New development posts need no conversion: insert cards directly into ordinary
+posts, choose shows, upload media and publish normally.
