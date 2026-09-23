@@ -3,7 +3,7 @@ const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const assert = require('node:assert/strict');
 const DomainEvents = require('@tryghost/domain-events');
 
-const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
+const MailgunClient = require('../../../core/server/lib/mail/mailgun-client');
 const emailAnalytics = require('../../../core/server/services/email-analytics');
 const models = require('../../../core/server/models');
 

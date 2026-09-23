@@ -10,7 +10,7 @@ const {
 const { obfuscatedSetting, isSecretSetting, hideValueIfSecret } = require('./settings-utils');
 const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
-const MagicLink = require('../lib/magic-link/magic-link');
+const MagicLink = require('../../lib/mail/magic-link');
 const sentry = require('../../../shared/sentry');
 
 const EMAIL_KEYS = ['members_support_address'];

@@ -1,4 +1,4 @@
-import { normalizeMailgunMessageId } from '../lib/mailgun-message-id';
+import { normalizeMailgunMessageId } from '../../lib/mail/mailgun-message-id';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
 

@@ -6,7 +6,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const sentry = require('../../../shared/sentry');
-const MagicLink = require('../lib/magic-link/magic-link');
+const MagicLink = require('../../lib/mail/magic-link');
 
 const messages = {
   nameAlreadyExists: 'A newsletter with the same name already exists',

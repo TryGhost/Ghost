@@ -9,7 +9,7 @@ import {
   RecommendationMetadata,
   RecommendationMetadataService,
 } from '../../../../../../core/server/services/recommendations/service';
-import { InMemoryRepository } from '../../../../../../core/server/services/lib/in-memory-repository';
+import { InMemoryRepository } from '../../../../../../core/server/services/recommendations/service/in-memory-repository';
 import sinon from 'sinon';
 
 class InMemoryClickEventRepository<

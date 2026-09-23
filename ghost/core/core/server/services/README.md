@@ -10,6 +10,15 @@ domain logic uses TypeScript with named exports, while a thin CommonJS
 `index.js` or wrapper remains only where boot code or an existing `require()`
 boundary needs it.
 
+## Support code
+
+Keep helpers used by one service inside that service. Put shared support code
+in a purpose-named module under `server/lib/`, rather than a catch-all
+`services/lib/` directory. Transport-specific code belongs with its transport:
+API middleware under `server/web/api/middleware/` and endpoint response builders
+under `server/api/endpoints/utils/`. Sharing code does not by itself make it a
+service.
+
 ## Initialization
 
 Ghost's boot sequence owns service construction. A new service that requires

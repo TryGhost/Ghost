@@ -5,7 +5,7 @@ const { default: ObjectId } = require('bson-objectid');
 const sinon = require('sinon');
 const { agentProvider } = require('../../../utils/e2e-framework');
 const testUtils = require('../../../utils');
-const MailgunClient = require('../../../../core/server/services/lib/mailgun-client');
+const MailgunClient = require('../../../../core/server/lib/mail/mailgun-client');
 const {
   AUTOMATION_EMAIL_TAG,
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,

@@ -1,5 +1,5 @@
 // @ts-expect-error This module lacks type definitions.
-import MailgunClient from '../lib/mailgun-client';
+import MailgunClient from '../../lib/mail/mailgun-client';
 
 const DEFAULT_EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;

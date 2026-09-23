@@ -15,8 +15,8 @@ const { isEmail } = require('@tryghost/validator');
 const { normalizeEmail } = require('../utils/normalize-email');
 const { hasActiveOffer } = require('../utils/has-active-offer');
 const { getInboxLinks } = require('../../../../lib/get-inbox-links');
-const { SIGNUP_CONTEXTS } = require('../../../lib/member-signup-contexts');
-/** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
+const { SIGNUP_CONTEXTS } = require('../../member-signup-contexts');
+/** @typedef {import('../../member-signup-contexts').SignupContext} SignupContext */
 
 const messages = {
   emailRequired: 'Email is required.',

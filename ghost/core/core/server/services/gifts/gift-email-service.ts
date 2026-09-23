@@ -3,7 +3,7 @@ import type { GiftRecipientNoticeData } from './email-templates/gift-buyer-notic
 import type { GiftCadence } from './gift-schema';
 import { Color } from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
-import { getMailgunMessageId } from '../lib/mailgun-message-id';
+import { getMailgunMessageId } from '../../lib/mail/mailgun-message-id';
 import { GIFT_DELIVERY_EMAIL_TAG } from './constants';
 import type { ConfigInstance } from '../../../shared/config/loader';
 import { formatGiftDate } from './gift-date';
