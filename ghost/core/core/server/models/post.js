@@ -45,6 +45,12 @@ Post = ghostBookshelf.Model.extend(
   {
     tableName: 'posts',
 
+    customQuery(qb, options) {
+      if (options.has_card !== undefined) {
+        require('./posts-card-query').applyCardQuery(qb, options.has_card);
+      }
+    },
+
     actionsCollectCRUD: true,
     actionsResourceType: 'post',
     actionsExtraContext: ['type'],
@@ -1301,7 +1307,7 @@ Post = ghostBookshelf.Model.extend(
       // these are the only options that can be passed to Bookshelf / Knex.
       const validOptions = {
         findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
-        findPage: ['status', 'selectRaw'],
+        findPage: ['status', 'selectRaw', 'has_card'],
 
         findAll: ['columns', 'filter'],
         destroy: ['destroyAll', 'destroyBy'],

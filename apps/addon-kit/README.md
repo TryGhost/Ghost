@@ -86,3 +86,29 @@ Publish or preview the post to compare the static event, hydrated podcast player
 - The vocabulary is deliberately small (`gh-text`, `gh-stack`, `gh-inline`, `gh-badge`, `gh-heading`, `gh-separator`, `gh-stat`, `gh-sparkline`, `gh-tabs`/`gh-tab`, `gh-button`) and grows ad hoc when a real add-on hits a wall — never speculatively.
 - Cross-boundary function references use `@quilted/threads` **manual retain/release**, wired into the `RemoteReceiver` — this is load-bearing, not polish.
 - Ghost admin currently ships no CSP; if it ever gains one, the sandbox bootstrap needs a deliberate carve-out.
+
+## Discovering posts containing a card
+
+The Admin posts browse endpoint accepts an optional `has_card` selector:
+
+```text
+/ghost/api/admin/posts/?has_card=addon:podcast:episode&filter=status:published
+```
+
+The selector matches `type: "addon"`, `addonHandle`, and `blockName` on the same
+Lexical node. It follows the root/children tree, excluding objects inside props
+and text. Filtering happens before pagination and counts; multiple matching
+cards still return one post. Existing permissions, filters, and ordering apply.
+This is candidate discovery, not a decision about a reader's access to a card.
+
+For identities containing punctuation, Unicode, or separators, URI-encode each
+component before query-string encoding the complete selector:
+
+```js
+const selector = `addon:${encodeURIComponent(handle)}:${encodeURIComponent(blockName)}`;
+const params = new URLSearchParams({has_card: selector, filter: 'status:published'});
+```
+
+Invalid selectors return a validation error. This spike queries saved Lexical
+JSON directly on MySQL and SQLite; it does not maintain tags, metafields, or a
+persistent card index. The option is available on Admin browse, not Content API.

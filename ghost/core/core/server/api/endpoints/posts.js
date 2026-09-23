@@ -65,6 +65,7 @@ const controller = {
       'page',
       'debug',
       'absolute_urls',
+      'has_card',
     ],
     validation: {
       options: {
