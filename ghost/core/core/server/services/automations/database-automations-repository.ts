@@ -34,10 +34,12 @@ const HOUR_MS = 60 * 60 * 1000;
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
   {
     name: 'Free member welcome flow',
+    description: 'Welcome new free members after they sign up.',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
   },
   {
     name: 'Paid member welcome flow',
+    description: 'Welcome new paid members after they start their subscription.',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
   },
 ];
@@ -58,6 +60,7 @@ type AutomationRow = {
   id: string;
   slug: null | string;
   name: string;
+  description: string;
   status: string;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
@@ -500,7 +503,7 @@ async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
 
 async function ensureAutomation(
   trx: Knex.Transaction,
-  defaults: Readonly<{ name: string; slug: string }>,
+  defaults: Readonly<{ name: string; description: string; slug: string }>,
 ): Promise<AutomationRow> {
   const now = toDatabaseDate(new Date());
   const id = ObjectId().toHexString();
@@ -510,6 +513,7 @@ async function ensureAutomation(
       id,
       status: 'inactive',
       name: defaults.name,
+      description: defaults.description,
       slug: defaults.slug,
       created_at: now,
       updated_at: now,

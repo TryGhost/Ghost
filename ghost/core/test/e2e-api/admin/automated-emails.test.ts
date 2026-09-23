@@ -249,6 +249,7 @@ describe('Automated Emails API', function () {
       await models.Base.knex('automations').insert({
         id: ObjectId().toHexString(),
         name: 'Some other automation',
+        description: '',
         slug: 'some-other-automation',
         status: 'active',
         created_at: new Date(),
