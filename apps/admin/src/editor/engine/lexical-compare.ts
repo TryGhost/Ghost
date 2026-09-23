@@ -1,14 +1,5 @@
-import microdiff from 'microdiff';
-
 export type LexicalDocument = Record<string, unknown>;
 export type LexicalInput = string | LexicalDocument | null | undefined;
-
-export interface HumanizedDiffEntry {
-  type: 'CREATE' | 'REMOVE' | 'CHANGE';
-  path: string;
-  value?: unknown;
-  oldValue?: unknown;
-}
 
 export class LexicalParseError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
@@ -231,69 +222,4 @@ export function normalizeLexicalForCompare(input: LexicalInput, siteUrl = ''): s
 
 export function lexicalEquals(a: LexicalInput, b: LexicalInput, siteUrl = ''): boolean {
   return normalizeLexicalForCompare(a, siteUrl) === normalizeLexicalForCompare(b, siteUrl);
-}
-
-function nodeAt(document: unknown, path: ReadonlyArray<string | number>): unknown {
-  let current: unknown = document;
-  for (const segment of path) {
-    if (Array.isArray(current)) {
-      current = current[Number(segment)];
-    } else if (isRecord(current)) {
-      current = current[String(segment)];
-    } else {
-      return undefined;
-    }
-  }
-  return current;
-}
-
-function humanizePath(path: ReadonlyArray<string | number>, document: unknown): string {
-  return path
-    .map((segment, index) => {
-      if (typeof segment !== 'number') {
-        return segment;
-      }
-      const node = nodeAt(document, path.slice(0, index + 1));
-      const type = isRecord(node) ? node.type : undefined;
-      return typeof type === 'string' ? `${segment}[${type}]` : String(segment);
-    })
-    .join('.');
-}
-
-function comparableDocument(input: LexicalInput, siteUrl: string): LexicalDocument {
-  const document = parseLexical(input);
-  if (!document) {
-    return {};
-  }
-  const root = document.root as Record<string, unknown>;
-  const normalized = {
-    ...document,
-    root: { ...root, children: normalizeSiteUrls(rootChildren(document), siteUrl) },
-  };
-  return Object.fromEntries(
-    Object.entries(normalized).map(([key, value]) => [key, stripDirection(value)]),
-  );
-}
-
-export function humanizeLexicalDiff(
-  from: LexicalInput,
-  to: LexicalInput,
-  siteUrl = '',
-): HumanizedDiffEntry[] {
-  const fromDocument = comparableDocument(from, siteUrl);
-  const toDocument = comparableDocument(to, siteUrl);
-
-  return microdiff(fromDocument, toDocument, { cyclesFix: false }).map((change) => {
-    const entry: HumanizedDiffEntry = {
-      type: change.type,
-      path: humanizePath(change.path, fromDocument),
-    };
-    if ('value' in change) {
-      entry.value = change.value;
-    }
-    if ('oldValue' in change) {
-      entry.oldValue = change.oldValue;
-    }
-    return entry;
-  });
 }

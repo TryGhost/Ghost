@@ -34,7 +34,7 @@ export interface PostEditorProps {
   onExcerptBlur?: () => void;
   onLexicalChange?: (lexical: unknown) => void;
   onSecondaryChange?: (lexical: unknown) => void;
-  onSecondaryError?: (error: unknown) => void;
+  onSecondaryError?: () => void;
   registerEditorApi?: (api: KoenigInstance | null) => void;
   registerSecondaryApi?: (api: KoenigInstance | null) => void;
   onTkCountChange?: (count: number) => void;
