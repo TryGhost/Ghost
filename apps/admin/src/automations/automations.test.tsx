@@ -70,6 +70,7 @@ const automations = [
   {
     id: 'automation-id-1',
     name: 'Free member welcome flow',
+    description: 'Greet new free members.',
     slug: 'member-welcome-email-free',
     status: 'active' as const,
     stats: {
@@ -81,6 +82,7 @@ const automations = [
   {
     id: 'automation-id-2',
     name: 'Paid member welcome flow',
+    description: 'Welcome new paid members.',
     slug: 'member-welcome-email-paid',
     status: 'inactive' as const,
     stats: {
