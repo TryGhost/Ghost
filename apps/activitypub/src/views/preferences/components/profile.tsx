@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 
 import APAvatar from '@src/components/global/ap-avatar';
 import DotsPattern from './dots-pattern';
@@ -251,47 +251,53 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
   const [imageConversionFailed, setImageConversionFailed] = useState(false);
+  const [imagesReady, setImagesReady] = useState(false);
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
+  const bannerSourceUrl = account?.bannerImageUrl || coverImage || null;
+  const avatarSourceUrl = account?.avatarUrl || publicationIcon || null;
 
-  const convertImagesToDataUrls = useCallback(async () => {
-    let failed = false;
-
-    if (account?.bannerImageUrl || coverImage) {
-      const bannerUrl = account?.bannerImageUrl || coverImage;
-      if (bannerUrl) {
-        const dataUrl = await imageUrlToDataUrl(bannerUrl);
-        setBannerDataUrl(dataUrl);
-        failed = failed || dataUrl === null;
-      }
-    }
-
-    if (account?.avatarUrl || publicationIcon) {
-      const avatarUrl = account?.avatarUrl || publicationIcon;
-      if (avatarUrl) {
-        const dataUrl = await imageUrlToDataUrl(avatarUrl);
-        setAvatarDataUrl(dataUrl);
-        failed = failed || dataUrl === null;
-      }
-    }
-
-    setImageConversionFailed(failed);
-  }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
-
+  // Convert the current banner/avatar URLs to data URLs. Cancel and ignore
+  // results from older conversions when the URLs change mid-flight so a stale
+  // failure cannot overwrite a newer success (or vice versa).
   useEffect(() => {
-    let isMounted = true;
+    let cancelled = false;
+
+    setImagesReady(false);
+    setImageConversionFailed(false);
+    setBannerDataUrl(null);
+    setAvatarDataUrl(null);
 
     const convert = async () => {
-      await convertImagesToDataUrls();
+      let failed = false;
+      let nextBanner: string | null = null;
+      let nextAvatar: string | null = null;
+
+      if (bannerSourceUrl) {
+        nextBanner = await imageUrlToDataUrl(bannerSourceUrl);
+        failed = failed || nextBanner === null;
+      }
+
+      if (avatarSourceUrl) {
+        nextAvatar = await imageUrlToDataUrl(avatarSourceUrl);
+        failed = failed || nextAvatar === null;
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      setBannerDataUrl(nextBanner);
+      setAvatarDataUrl(nextAvatar);
+      setImageConversionFailed(failed);
+      setImagesReady(true);
     };
 
-    if (isMounted) {
-      convert();
-    }
+    void convert();
 
     return () => {
-      isMounted = false;
+      cancelled = true;
     };
-  }, [convertImagesToDataUrls]);
+  }, [bannerSourceUrl, avatarSourceUrl]);
 
   const getGradient = () => {
     switch (backgroundColor) {
@@ -320,7 +326,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   };
 
   const handleCopy = async () => {
-    if (!profileCardRef.current || isProcessing) {
+    if (!profileCardRef.current || isProcessing || !imagesReady) {
       return;
     }
 
@@ -558,14 +564,15 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
             </div>
             <Button
               className={`min-w-[160px] dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`}
+              disabled={!imagesReady || isProcessing}
               onClick={handleCopy}
             >
-              {isProcessing ? (
+              {isProcessing || !imagesReady ? (
                 <LoadingIndicator className="!border-current/10 before:!bg-current" size="sm" />
               ) : (
                 <LucideIcon.Copy />
               )}
-              {!isProcessing && 'Copy image'}
+              {imagesReady && !isProcessing && 'Copy image'}
             </Button>
           </div>
           {(account?.bannerImageUrl || coverImage) && (
