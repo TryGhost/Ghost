@@ -10,12 +10,15 @@
 //    implicit `any`s), and reverts if any other error remains;
 // 3. compiles the new file and reverts if the output isn't equivalent to
 //    the original (see equivalence.ts);
-// 4. optionally (--test) runs the file's tests and reverts if they fail.
+// 4. runs the file's tests (or, for a helper, the tests that import it) and
+//    reverts if they fail. Type-checking and compiling don't catch every
+//    difference: under vitest, an imported module can be a different instance
+//    than the one `require` returns elsewhere.
 //
 // Run `pnpm convert-to-ts --help` for options.
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
@@ -28,6 +31,8 @@ import { IncrementalTypeChecker, type TypeCheckError } from './typecheck';
 const CORE_ROOT = path.resolve(__dirname, '../..');
 const REPO_ROOT = path.resolve(CORE_ROOT, '../..');
 const OXFMT = path.join(REPO_ROOT, 'node_modules/.bin/oxfmt');
+const VITEST = path.join(CORE_ROOT, 'node_modules/.bin/vitest');
+const TEST_FILE = /\.test\.js$/;
 const MISSING_TYPES_ERROR = 7016;
 const EXPECT_ERROR_COMMENT = '// @ts-expect-error This module lacks type definitions.';
 
@@ -43,7 +48,9 @@ Options:
   --tsconfig <path>  The project to type-check. Default: test/tsconfig.json
   --allow-any        Annotate implicit \`any\`s (\`let x;\`, untyped parameters)
                      with explicit ones instead of reverting.
-  --test             Also run each converted test file, reverting on failure.
+  --skip-tests       Don't run tests. By default, each converted test file (or,
+                     for a helper, the tests that import it) is run with
+                     vitest, reverting on failure.
   --dry-run          Report what would be converted, then revert everything.
   --limit <n>        Stop after trying this many files.
   --report <path>    Write a JSON report of every file's outcome.
@@ -60,11 +67,8 @@ type Outcome =
       details?: string;
     };
 
-function listFiles(globs: string[], excludes: string[]): string[] {
-  const pathspecs = [
-    ...globs.map((glob) => `:(glob)${glob}`),
-    ...excludes.map((glob) => `:(glob,exclude)${glob}`),
-  ];
+function gitLsFiles(globs: string[]): string[] {
+  const pathspecs = globs.map((glob) => `:(glob)${glob}`);
   const result = spawnSync('git', ['ls-files', '-z', '--', ...pathspecs], {
     cwd: CORE_ROOT,
     encoding: 'utf8',
@@ -72,13 +76,17 @@ function listFiles(globs: string[], excludes: string[]): string[] {
   if (result.status !== 0) {
     throw new Error(`git ls-files failed: ${result.stderr}`);
   }
-  const files = result.stdout
-    .split('\0')
+  return result.stdout.split('\0').filter(Boolean);
+}
+
+function listFiles(globs: string[], excludes: string[]): string[] {
+  const files = gitLsFiles(globs)
     .filter((file) => file.endsWith('.js'))
+    .filter((file) => !excludes.some((exclude) => path.matchesGlob(file, exclude)))
     .map((file) => path.resolve(CORE_ROOT, file));
   // Convert helpers before the tests that import them, so that the tests
   // can import the converted helpers with their types.
-  const isTest = (file: string) => /\.test\.js$/.test(file);
+  const isTest = (file: string) => TEST_FILE.test(file);
   return [...files.filter((file) => !isTest(file)), ...files.filter(isTest)];
 }
 
@@ -203,14 +211,52 @@ function findNode(sourceFile: ts.SourceFile, position: number): ts.Node | undefi
   return found;
 }
 
-function runTest(tsFile: string): { passed: boolean; output: string } {
-  const relative = path.relative(CORE_ROOT, tsFile);
-  const args = ['exec', 'vitest', 'run'];
-  if (!relative.startsWith(`test${path.sep}unit${path.sep}`)) {
-    args.push('-c', 'vitest.config.db.ts');
+const SPECIFIER = /(?:\brequire\(\s*|\bfrom\s+|\bimport\s+)['"](\.[^'"]*)['"]/g;
+
+/** Test files that import `file` directly. */
+function findDependentTests(file: string): string[] {
+  const target = file.replace(/\.[jt]s$/, '');
+  return gitLsFiles(['test/**/*.test.js', 'test/**/*.test.ts'])
+    .map((test) => path.resolve(CORE_ROOT, test))
+    .filter((test) => existsSync(test))
+    .filter((test) =>
+      [...readFileSync(test, 'utf8').matchAll(SPECIFIER)].some((match) => {
+        const resolved = path.resolve(path.dirname(test), match[1]).replace(/\.[jt]s$/, '');
+        return (
+          resolved === target ||
+          (resolved === path.dirname(target) && path.basename(target) === 'index')
+        );
+      }),
+    );
+}
+
+/**
+ * Runs test files with vitest. Imports under vitest don't always behave like
+ * the compiled output suggests (an imported module can be a different
+ * instance than the one `require` returns elsewhere), so this is the check
+ * that catches those differences.
+ */
+function runTests(testFiles: string[]): { passed: boolean; output: string } {
+  const unit = testFiles.filter((file) => path.relative(CORE_ROOT, file).startsWith('test/unit/'));
+  const db = testFiles.filter((file) => !unit.includes(file));
+  let output = '';
+  for (const [files, config] of [
+    [unit, []],
+    [db, ['-c', 'vitest.config.db.ts']],
+  ] as const) {
+    if (files.length === 0) {
+      continue;
+    }
+    const result = spawnSync(VITEST, ['run', ...config, ...files], {
+      cwd: CORE_ROOT,
+      encoding: 'utf8',
+    });
+    output += `${result.stdout}\n${result.stderr}`;
+    if (result.status !== 0) {
+      return { passed: false, output };
+    }
   }
-  const result = spawnSync('pnpm', [...args, relative], { cwd: CORE_ROOT, encoding: 'utf8' });
-  return { passed: result.status === 0, output: `${result.stdout}\n${result.stderr}` };
+  return { passed: true, output };
 }
 
 function convertFile(
@@ -274,15 +320,19 @@ function convertFile(
     return fail({ status: 'reverted', stage: 'equivalence', reason: equivalence.reason, details });
   }
 
-  if (options.runTests && /\.test\.ts$/.test(tsFile)) {
-    const test = runTest(tsFile);
+  if (options.runTests) {
+    const testFiles = TEST_FILE.test(jsFile) ? [tsFile] : findDependentTests(tsFile);
+    if (testFiles.length === 0) {
+      return fail({ status: 'reverted', stage: 'test', reason: 'no tests import it' });
+    }
+    const test = runTests(testFiles);
     if (!test.passed) {
-      return fail({
-        status: 'reverted',
-        stage: 'test',
-        reason: 'tests failed',
-        details: test.output,
-      });
+      const details = test.output
+        .split('\n')
+        .filter((line) => /FAIL|Error/.test(line))
+        .slice(0, 10)
+        .join('\n');
+      return fail({ status: 'reverted', stage: 'test', reason: 'tests failed', details });
     }
   }
 
@@ -295,7 +345,7 @@ function main() {
     options: {
       exclude: { type: 'string', multiple: true },
       tsconfig: { type: 'string', default: 'test/tsconfig.json' },
-      test: { type: 'boolean', default: false },
+      'skip-tests': { type: 'boolean', default: false },
       'allow-any': { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
       limit: { type: 'string' },
@@ -324,7 +374,7 @@ function main() {
   files.forEach((file, index) => {
     const relative = path.relative(CORE_ROOT, file);
     const { outcome, revert } = convertFile(file, checker, {
-      runTests: values.test,
+      runTests: !values['skip-tests'],
       allowAny: values['allow-any'],
     });
     outcomes[relative] = outcome;
