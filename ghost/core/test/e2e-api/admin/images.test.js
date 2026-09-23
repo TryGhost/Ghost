@@ -248,6 +248,48 @@ describe('Images API', function () {
     });
   });
 
+  it('Sanitizes SVGs uploaded with an SVG content type and a non-SVG extension', async function () {
+    const originalFilePath = p.join(
+      __dirname,
+      '/../../utils/fixtures/images/svg-with-unsafe-script.svg',
+    );
+    const fileContents = await fs.readFile(originalFilePath);
+    const { body } = await uploadImageRequest({
+      fileContents,
+      filename: 'svg-content.png',
+      contentType: 'image/svg+xml',
+    }).expectStatus(201);
+
+    const relativePath = body.images[0].url.replace(urlUtils.urlFor('home', true), '/');
+    const filePath = config.getContentPath('images') + relativePath.replace('/content/images/', '');
+    const originalImagePath = imageTransform.generateOriginalImageName(filePath);
+    images.push(filePath, originalImagePath);
+
+    for (const savedPath of [filePath, originalImagePath]) {
+      const saved = await fs.readFile(savedPath, 'utf8');
+      assert.ok(!saved.includes('<script'), `${savedPath} should not contain a <script> tag`);
+    }
+  });
+
+  it('Errors when uploading a non-SVG with an SVG content type', async function () {
+    const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
+    const fileContents = await fs.readFile(originalFilePath);
+    await uploadImageRequest({
+      fileContents,
+      filename: 'ghost-logo.png',
+      contentType: 'image/svg+xml',
+    })
+      .expectStatus(415)
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: anyErrorId,
+            message: 'Please select a valid SVG image',
+          },
+        ],
+      });
+  });
+
   it('Errors when uploading an invalid SVG', async function () {
     const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/svg-malformed.svg');
     const fileContents = await fs.readFile(originalFilePath);
