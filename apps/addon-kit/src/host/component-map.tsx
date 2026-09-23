@@ -1,3 +1,4 @@
+import { SettingsInput, SettingsSelect, SettingsToggle } from './settings-controls.tsx';
 import { forwardRef, type ReactNode } from 'react';
 import {
   createRemoteComponentRenderer,
@@ -73,17 +74,26 @@ const GhTextHost = createRemoteComponentRenderer(
 );
 
 interface GhStackHostProps {
+  maxWidth?: 'form';
   gap?: GhStackGap;
   children?: ReactNode;
 }
 
 const GhStackHost = createRemoteComponentRenderer(
-  forwardRef<HTMLDivElement, GhStackHostProps>(function GhStackHost({ gap = 'md', children }, ref) {
+  forwardRef<HTMLDivElement, GhStackHostProps>(function GhStackHost(
+    { gap = 'md', maxWidth, children },
+    ref,
+  ) {
     // align="start" so buttons and other intrinsic-width children keep
     // their natural size instead of stretching to the card width; w-full
     // so nested stacks/rows still span the surface.
     return (
-      <Stack ref={ref} align="start" className="w-full" gap={gap}>
+      <Stack
+        ref={ref}
+        align="start"
+        className={maxWidth === 'form' ? 'w-full max-w-2xl' : 'w-full'}
+        gap={gap}
+      >
         {children}
       </Stack>
     );
@@ -298,6 +308,9 @@ const GhButtonHost = createRemoteComponentRenderer(
 );
 
 export const GH_COMPONENT_MAP: RemoteComponentRendererMap = new Map([
+  ['gh-editor-input', createRemoteComponentRenderer(SettingsInput)],
+  ['gh-editor-select', createRemoteComponentRenderer(SettingsSelect)],
+  ['gh-editor-toggle', createRemoteComponentRenderer(SettingsToggle)],
   ['gh-text', GhTextHost],
   ['gh-stack', GhStackHost],
   ['gh-inline', GhInlineHost],

@@ -1,3 +1,4 @@
+import { mutateAddonInstallRecords, type AddonInstallStore } from './configuration.ts';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   getSettingValue,
@@ -257,7 +258,10 @@ export async function refreshInstallRecords(
       try {
         const manifest = await fetchManifest(record.manifestUrl);
         if (manifest.handle === record.handle && manifest.version !== record.version) {
-          return pinManifest(manifest, record.manifestUrl, record.enabled);
+          return {
+            ...pinManifest(manifest, record.manifestUrl, record.enabled),
+            configuration: record.configuration,
+          };
         }
       } catch (error) {
         console.warn('[addons] manifest refresh failed', record.handle, error); // eslint-disable-line no-console
@@ -377,9 +381,31 @@ export interface UseAddonInstallsResult {
   isLoading: boolean;
 }
 
-export function useAddonInstalls(): UseAddonInstallsResult {
-  const { data: settingsData } = useBrowseSettings();
+export function useAddonInstallStore() {
+  const { data: settingsData, refetch } = useBrowseSettings();
   const { mutateAsync: editSettings } = useEditSettings();
+  const store = useMemo<AddonInstallStore>(
+    () => ({
+      async read() {
+        const fresh = await refetch();
+        if (fresh.isError || !fresh.data) {
+          throw new Error('Could not read app configuration');
+        }
+        return parseInstallRecords(
+          getSettingValue<string>(fresh.data.settings, ADDONS_SETTING_KEY) ?? null,
+        );
+      },
+      async write(records) {
+        await editSettings([{ key: ADDONS_SETTING_KEY, value: JSON.stringify(records) }]);
+      },
+    }),
+    [refetch, editSettings],
+  );
+  return { settingsData, store };
+}
+
+export function useAddonInstalls(): UseAddonInstallsResult {
+  const { settingsData, store } = useAddonInstallStore();
   const [installs, setInstalls] = useState<AddonInstallRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const reconciledRef = useRef(false);
@@ -415,7 +441,11 @@ export function useAddonInstalls(): UseAddonInstallsResult {
         readDevManifestUrls().map(async (manifestUrl) => {
           try {
             const manifest = await fetchManifest(manifestUrl);
-            resolved.set(manifest.handle, { ...pinManifest(manifest, manifestUrl), dev: true });
+            resolved.set(manifest.handle, {
+              ...pinManifest(manifest, manifestUrl),
+              configuration: resolved.get(manifest.handle)?.configuration,
+              dev: true,
+            });
           } catch (error) {
             console.warn('[addons] dev manifest failed to load', manifestUrl, error); // eslint-disable-line no-console
           }
@@ -433,7 +463,18 @@ export function useAddonInstalls(): UseAddonInstallsResult {
       if (recordsChanged && !reconciledRef.current) {
         reconciledRef.current = true;
         try {
-          await editSettings([{ key: ADDONS_SETTING_KEY, value: JSON.stringify(updated) }]);
+          await mutateAddonInstallRecords(store, (latest) =>
+            latest.map((record) => {
+              const original = records.find((entry) => entry.handle === record.handle);
+              const refreshed = updated.find((entry) => entry.handle === record.handle);
+              return original &&
+                refreshed &&
+                record.version === original.version &&
+                record.manifestUrl === original.manifestUrl
+                ? { ...refreshed, enabled: record.enabled, configuration: record.configuration }
+                : record;
+            }),
+          );
         } catch (error) {
           console.warn('[addons] failed to persist auto-updated install records', error); // eslint-disable-line no-console
         }
@@ -445,7 +486,7 @@ export function useAddonInstalls(): UseAddonInstallsResult {
     return () => {
       cancelled = true;
     };
-  }, [settingsRaw, editSettings, devVersion]);
+  }, [settingsRaw, store, devVersion]);
 
   return useMemo(() => ({ installs, isLoading }), [installs, isLoading]);
 }
@@ -463,29 +504,26 @@ export interface UseAddonActionsResult {
 }
 
 export function useAddonActions(): UseAddonActionsResult {
-  const { data: settingsData } = useBrowseSettings();
-  const { mutateAsync: editSettings } = useEditSettings();
-  const settings = settingsData?.settings ?? null;
-  const settingsRaw = getSettingValue<string>(settings, ADDONS_SETTING_KEY) ?? '[]';
-
+  const { store } = useAddonInstallStore();
   const install = useCallback(
     async (manifestUrl: string) => {
       const manifest = await fetchManifest(manifestUrl);
       const record = pinManifest(manifest, manifestUrl);
-      const records = upsertInstallRecord(parseInstallRecords(settingsRaw), record);
-      await editSettings([{ key: ADDONS_SETTING_KEY, value: JSON.stringify(records) }]);
+      await mutateAddonInstallRecords(store, (records) =>
+        upsertInstallRecord(records, {
+          ...record,
+          configuration: records.find((entry) => entry.handle === record.handle)?.configuration,
+        }),
+      );
       return record;
     },
-    [settingsRaw, editSettings],
+    [store],
   );
-
   const uninstall = useCallback(
     async (handle: string) => {
-      const records = removeInstallRecord(parseInstallRecords(settingsRaw), handle);
-      await editSettings([{ key: ADDONS_SETTING_KEY, value: JSON.stringify(records) }]);
+      await mutateAddonInstallRecords(store, (records) => removeInstallRecord(records, handle));
     },
-    [settingsRaw, editSettings],
+    [store],
   );
-
   return useMemo(() => ({ install, uninstall }), [install, uninstall]);
 }

@@ -1,8 +1,23 @@
-import {EditorFileInputControl} from '../../src/components/AddonSettingsRemote';
+import {EditorFileInputControl, EditorInputControl} from '../../src/components/AddonSettingsRemote';
 import {expect, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 
 describe('AddonSettingsRemote', () => {
+    it('preserves active typing across delayed values and restores canonical values on blur', () => {
+        const onChange = vi.fn();
+        const {rerender} = render(<EditorInputControl label="Title" value="" onChange={onChange} />);
+        const input = screen.getByRole('textbox');
+        fireEvent.focus(input);
+        fireEvent.change(input, {target: {value: 'ab'}});
+        rerender(<EditorInputControl label="Title" value="a" onChange={onChange} />);
+        expect(input).toHaveValue('ab');
+        expect(onChange).toHaveBeenLastCalledWith('ab');
+        fireEvent.blur(input);
+        expect(input).toHaveValue('a');
+        rerender(<EditorInputControl label="Title" value="Restored by undo" onChange={onChange} />);
+        expect(input).toHaveValue('Restored by undo');
+    });
+
     it('shares only the explicitly selected file bytes and metadata', async () => {
         const onChange = vi.fn();
         const file = new File([new Uint8Array([0, 255, 1])], 'data.bin', {type: 'application/octet-stream'});

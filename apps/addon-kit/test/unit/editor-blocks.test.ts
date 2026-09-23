@@ -76,7 +76,7 @@ describe('createAddonEditorBlocksConfig', function () {
     expect(controller.destroy).toHaveBeenCalledOnce();
   });
 
-  it('passes site presentation context to content and settings renderers', async function () {
+  it('passes site context and only the owning app configuration to card renderers', async function () {
     const receiver = { connection: { mutate: vi.fn(), call: vi.fn() } };
     const controller = {
       start: vi.fn().mockResolvedValue(undefined),
@@ -92,7 +92,10 @@ describe('createAddonEditorBlocksConfig', function () {
       destroy: vi.fn(),
     };
     const config = createAddonEditorBlocksConfig(
-      [install],
+      [
+        { ...install, configuration: { shows: [{ id: 'show-one' }] } },
+        { ...install, handle: 'other', configuration: { private: 'other app' } },
+      ],
       {
         createController: () => controller,
         createReceiver: () => receiver,
@@ -118,9 +121,11 @@ describe('createAddonEditorBlocksConfig', function () {
 
     expect(controller.renderBlock.mock.calls[0][0].request.context).toEqual({
       siteTimezone: 'Europe/Stockholm',
+      configuration: { shows: [{ id: 'show-one' }] },
     });
     expect(controller.renderSettings.mock.calls[0][0].request.context).toEqual({
       siteTimezone: 'Europe/Stockholm',
+      configuration: { shows: [{ id: 'show-one' }] },
     });
   });
 

@@ -6,6 +6,7 @@ interface EditorControlProperties {
 }
 
 export interface GhEditorInputProperties extends EditorControlProperties {
+  multiline?: boolean;
   value?: string;
   placeholder?: string;
 }
@@ -25,6 +26,7 @@ export const GhEditorInputElement = createRemoteElement<
     description: { type: String },
     value: { type: String },
     placeholder: { type: String },
+    multiline: { type: Boolean },
   },
   events: ['change'],
 });

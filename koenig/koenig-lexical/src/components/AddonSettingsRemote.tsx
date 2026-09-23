@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {DropdownSetting, InputSetting, ToggleSetting} from './ui/SettingsPanel';
 import {type RemoteComponentRendererMap, RemoteFragmentRenderer, RemoteRootRenderer, createRemoteComponentRenderer} from '@remote-dom/react/host';
 
@@ -13,17 +13,33 @@ interface EditorInputHostProps extends EditorControlHostProps {
     onChange?: (value: string) => void;
 }
 
+export function EditorInputControl({label, description, value = '', placeholder, onChange}: EditorInputHostProps) {
+    const [draft, setDraft] = useState(value);
+    const [focused, setFocused] = useState(false);
+    useEffect(() => {
+        if (!focused) {
+            setDraft(value);
+        }
+    }, [value, focused]);
+    return (
+        <InputSetting
+            description={description}
+            label={label ?? ''}
+            placeholder={placeholder}
+            value={draft}
+            onBlur={() => setFocused(false)}
+            onChange={event => {
+                setDraft(event.target.value);
+                void onChange?.(event.target.value);
+            }}
+            onFocus={() => setFocused(true)}
+        />
+    );
+}
+
 const EditorInputHost = createRemoteComponentRenderer(React.forwardRef<HTMLElement, EditorInputHostProps>(
-    function EditorInputHost({label, description, value = '', placeholder, onChange}, _ref) {
-        return (
-            <InputSetting
-                description={description}
-                label={label ?? ''}
-                placeholder={placeholder}
-                value={value}
-                onChange={event => void onChange?.(event.target.value)}
-            />
-        );
+    function EditorInputHost(props, _ref) {
+        return <EditorInputControl {...props} />;
     }
 ));
 

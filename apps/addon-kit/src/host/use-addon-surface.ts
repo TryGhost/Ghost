@@ -37,14 +37,14 @@ export function useAddonSurface({
   target,
   context,
 }: UseAddonSurfaceOptions): UseAddonSurfaceResult {
-  const [receiver] = useState(() => new RemoteReceiver({ retain, release }));
+  const [receiver, setReceiver] = useState(() => new RemoteReceiver({ retain, release }));
   const [status, setStatus] = useState<AddonSurfaceStatus>('loading');
   const [error, setError] = useState<Error | null>(null);
   const capabilities = useHostCapabilities(install);
   const { data: siteData } = useBrowseSite();
 
   const site = siteData?.site;
-  const contextKey = JSON.stringify(context);
+  const contextKey = JSON.stringify({ ...context, configuration: install.configuration ?? {} });
   const envelope = useMemo<AddonDataEnvelope>(
     () => ({
       site: {
@@ -79,6 +79,8 @@ export function useAddonSurface({
 
     let cancelled = false;
     const controller = new AddonSandboxController();
+    const surfaceReceiver = new RemoteReceiver({ retain, release });
+    setReceiver(surfaceReceiver);
     controllerRef.current = controller;
     readyRef.current = false;
     setStatus('loading');
@@ -86,8 +88,14 @@ export function useAddonSurface({
 
     const boot = async () => {
       await controller.start();
+      if (cancelled) {
+        return;
+      }
       await controller.loadBundle({ url: renderBundleUrl, integrity: renderEntry?.integrity });
 
+      if (cancelled) {
+        return;
+      }
       if (shouldRenderEntry) {
         await controller.loadBundle({
           url: shouldRenderEntry.bundleUrl,
@@ -109,7 +117,7 @@ export function useAddonSurface({
 
       await controller.render({
         bundleUrl: renderBundleUrl,
-        connection: receiver.connection,
+        connection: surfaceReceiver.connection,
         data: envelopeRef.current,
         capabilities: capabilitiesRef.current,
       });
@@ -133,7 +141,7 @@ export function useAddonSurface({
       controller.destroy();
     };
     // Reboot only when the surface identity changes, not on data changes.
-  }, [install.handle, install.version, target, renderBundleUrl, receiver]);
+  }, [install.handle, install.version, target, renderBundleUrl]);
 
   useEffect(() => {
     if (readyRef.current && controllerRef.current) {

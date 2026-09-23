@@ -1,3 +1,5 @@
+import { useAddonInstallStore } from './installs.ts';
+import { saveAddonConfiguration } from './configuration.ts';
 import { useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from '@tryghost/admin-x-framework';
@@ -13,6 +15,10 @@ import type { AddonInstallRecord, HostCapabilities } from '../types.ts';
 
 export function useHostCapabilities(install: AddonInstallRecord): HostCapabilities {
   const navigate = useNavigate();
+  const { store } = useAddonInstallStore();
+  const configurationRef = useRef<(configuration: Record<string, unknown>) => Promise<void>>();
+  configurationRef.current = (configuration) =>
+    saveAddonConfiguration(install.handle, configuration, store);
   const { data: currentUser } = useCurrentUser();
 
   const navigateRef = useRef(navigate);
@@ -22,6 +28,7 @@ export function useHostCapabilities(install: AddonInstallRecord): HostCapabiliti
 
   return useMemo<HostCapabilities>(
     () => ({
+      saveConfiguration: (configuration) => configurationRef.current!(configuration),
       async showToast(message, options) {
         if (options?.type === 'error') {
           toast.error(message);

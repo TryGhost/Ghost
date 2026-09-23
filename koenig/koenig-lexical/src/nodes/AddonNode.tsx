@@ -3,10 +3,10 @@ import CardContext from '../context/CardContext';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import {$nodesOfType, createCommand} from 'lexical';
 import {AddonSettingsRemote} from '../components/AddonSettingsRemote';
 import {AddonNode as BaseAddonNode, normalizeAddonHeight, renderAddonEditorPreview} from '@tryghost/kg-default-nodes';
 import {SettingsPanel} from '../components/ui/SettingsPanel';
-import {createCommand} from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const INSERT_ADDON_COMMAND = createCommand();
@@ -195,6 +195,16 @@ export class AddonNode extends BaseAddonNode {
 
     constructor(dataset = {}, key?) {
         super(dataset, key);
+    }
+
+    static importJSON(serializedNode: Record<string, unknown>) {
+        const node = super.importJSON(serializedNode);
+        // A paste into the same document is a new card. Loading a document,
+        // moving a card, and history clones retain their saved identities.
+        if (node.id && $nodesOfType(AddonNode).some(existing => existing !== node && existing.isAttached() && existing.id === node.id)) {
+            node.id = globalThis.crypto.randomUUID();
+        }
+        return node;
     }
 
     getIcon() {

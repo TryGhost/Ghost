@@ -1,0 +1,48 @@
+{
+  "name": "@tryghost/addon-podcast",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node build.mjs && node server.mjs",
+    "build": "tsc && node build.mjs",
+    "serve": "node server.mjs",
+    "test": "vitest run",
+    "lint": "eslint --cache src test",
+    "lint:fix": "eslint --cache --fix src test",
+    "test:unit": "vitest run"
+  },
+  "dependencies": {
+    "@tryghost/addon-kit": "workspace:*",
+    "preact": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint-react": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "build": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ],
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
+  }
+}

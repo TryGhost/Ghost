@@ -45,6 +45,9 @@ function bootstrap({ port }: BootstrapInit): void {
   function buildGhost(data: AddonDataEnvelope, capabilities: HostCapabilities): GhostBridge {
     currentData = data;
     return {
+      configuration: capabilities.saveConfiguration
+        ? { save: (configuration) => capabilities.saveConfiguration!(configuration) }
+        : undefined,
       get data() {
         return currentData!;
       },

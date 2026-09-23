@@ -24,11 +24,13 @@ export const GhTextElement = createRemoteElement<GhTextProperties>({
 export type GhStackGap = 'sm' | 'md' | 'lg';
 
 export interface GhStackProperties {
+  maxWidth?: 'form';
   gap?: GhStackGap;
 }
 
 export const GhStackElement = createRemoteElement<GhStackProperties>({
   properties: {
+    maxWidth: { type: String },
     gap: { type: String },
   },
 });

@@ -81,8 +81,13 @@ export function createAddonEditorBlocksConfig(
 ): AddonEditorBlocksConfig {
   const resolvedDependencies = { ...defaultDependencies, ...dependencies };
   const blocks = getEditorBlockDefinitions(installs);
-  const presentationContext =
-    Object.keys(context).length > 0 ? structuredClone(context) : undefined;
+  function presentationContext(install: AddonInstallRecord) {
+    const value = { ...context, configuration: install.configuration };
+    if (value.configuration === undefined) {
+      delete value.configuration;
+    }
+    return Object.keys(value).length > 0 ? { context: structuredClone(value) } : {};
+  }
 
   return {
     blocks,
@@ -115,7 +120,7 @@ export function createAddonEditorBlocksConfig(
           request: {
             blockName,
             props,
-            ...(presentationContext ? { context: structuredClone(presentationContext) } : {}),
+            ...presentationContext(install!),
           },
         });
       } finally {
@@ -151,7 +156,7 @@ export function createAddonEditorBlocksConfig(
           request: {
             blockName,
             props: structuredClone(props),
-            ...(presentationContext ? { context: structuredClone(presentationContext) } : {}),
+            ...presentationContext(install!),
           },
           capabilities: {
             ...createEditorFetchCapability(install),

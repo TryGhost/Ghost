@@ -159,6 +159,23 @@ describe('refreshInstallRecords', function () {
     vi.unstubAllGlobals();
   });
 
+  it('keeps app configuration when the provider publishes a new manifest', async () => {
+    const record = {
+      ...pinManifest(manifest, 'http://localhost:4650/manifest.json'),
+      configuration: { shows: [{ id: 'stable', title: 'Show' }] },
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ ...manifest, version: '2.0.0' }),
+      }),
+    );
+    const [refreshed] = await refreshInstallRecords([record]);
+    expect(refreshed.version).toBe('2.0.0');
+    expect(refreshed.configuration).toEqual(record.configuration);
+  });
+
   it('re-pins changed manifests before an editor uses their bundles', async function () {
     const record = pinManifest(manifest, 'http://localhost:4650/manifest.json');
     const updatedManifest = {

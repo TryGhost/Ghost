@@ -77,6 +77,7 @@ export interface AddonEditorSettingsCapabilities {
  * Everything is async: there are no synchronous reads of host state.
  */
 export interface HostCapabilities {
+  saveConfiguration?(configuration: Record<string, unknown>): Promise<void>;
   showToast(message: string, options?: { type?: 'success' | 'error' }): Promise<void>;
   navigate(path: string): Promise<void>;
   fetch(request: SerializedRequest): Promise<SerializedResponse>;
@@ -144,6 +145,7 @@ export interface SandboxExports {
  * The `ghost` bridge object handed to add-on entry modules.
  */
 export interface GhostBridge {
+  configuration?: { save(configuration: Record<string, unknown>): Promise<void> };
   /** Live view of the current data envelope. */
   readonly data: AddonDataEnvelope;
   /** Subscribe to data envelope changes. Returns an unsubscribe function. */
@@ -182,6 +184,8 @@ export interface AddonEditorBlockRequest {
 }
 
 export interface AddonEditorPresentationContext {
+  /** Only this install's saved app configuration; never serialized into card props. */
+  configuration?: Record<string, unknown>;
   siteTimezone?: string;
 }
 
@@ -311,6 +315,7 @@ export interface AddonManifest {
  * `addons` setting. A list, not a service.
  */
 export interface AddonInstallRecord {
+  configuration?: Record<string, unknown>;
   manifestUrl: string;
   handle: string;
   name: string;
