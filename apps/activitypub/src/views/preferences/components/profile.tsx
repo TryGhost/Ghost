@@ -245,6 +245,12 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const coverImage = siteData?.site?.cover_image;
   const publicationIcon = siteData?.site?.icon;
   const profileCardRef = useRef<HTMLDivElement>(null);
+  // Identifies the latest image-conversion run. The effect re-runs whenever an
+  // image URL changes, so an older run can still be awaiting a fetch when a new
+  // one starts; its results are stale and must not overwrite the newer run's
+  // state — in particular it must not clear the converting guard, which would
+  // let a copy through with the previous (or mixed) images.
+  const conversionRunId = useRef(0);
   const [backgroundColor, setBackgroundColor] = useState<'light' | 'dark' | 'accent'>('light');
   const [cardFormat, setCardFormat] = useState<'vertical' | 'square'>('vertical');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -262,6 +268,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
 
   const convertImagesToDataUrls = useCallback(async () => {
+    const runId = (conversionRunId.current += 1);
     setIsConvertingImages(true);
     const unembeddable: string[] = [];
 
@@ -269,6 +276,9 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       const bannerUrl = account?.bannerImageUrl || coverImage;
       if (bannerUrl) {
         const dataUrl = await imageUrlToDataUrl(bannerUrl);
+        if (runId !== conversionRunId.current) {
+          return;
+        }
         setBannerDataUrl(dataUrl);
         if (!dataUrl) {
           unembeddable.push('cover image');
@@ -280,6 +290,9 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       const avatarUrl = account?.avatarUrl || publicationIcon;
       if (avatarUrl) {
         const dataUrl = await imageUrlToDataUrl(avatarUrl);
+        if (runId !== conversionRunId.current) {
+          return;
+        }
         setAvatarDataUrl(dataUrl);
         if (!dataUrl) {
           unembeddable.push('avatar');
@@ -287,6 +300,9 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       }
     }
 
+    if (runId !== conversionRunId.current) {
+      return;
+    }
     setUnembeddableImages(unembeddable);
     setIsConvertingImages(false);
   }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
