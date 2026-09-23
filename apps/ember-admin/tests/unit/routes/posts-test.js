@@ -71,4 +71,18 @@ describe('Unit: Route: posts', function () {
         expect(transition.abort.called, 'transition not aborted').to.be.false;
         expect(router.replaceWith.called, 'no parking').to.be.false;
     });
+
+    it('restores the sidebar before loading the Ember posts list', function () {
+        const {route, ui} = setupRoute(this.owner, {flagValue: false});
+        const transition = {abort: sinon.spy(), intent: {url: '/posts'}};
+
+        ui.set('isFullScreen', true);
+        ui.set.resetHistory();
+
+        route.beforeModel(transition);
+
+        expect(transition.abort.called, 'transition not aborted').to.be.false;
+        expect(ui.isFullScreen, 'full-screen mode cleared before model loading').to.be.false;
+        expect(ui.set.calledOnceWith('isFullScreen', false), 'full-screen reset once').to.be.true;
+    });
 });
