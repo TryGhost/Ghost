@@ -75,11 +75,11 @@ async function fetchData(pathOptions, routerOptions, locals) {
     postQuery.options.order = routerOptions.order;
   }
 
-  if (Object.prototype.hasOwnProperty.call(pathOptions, 'page')) {
+  if (Object.hasOwn(pathOptions, 'page')) {
     postQuery.options.page = pathOptions.page;
   }
 
-  if (Object.prototype.hasOwnProperty.call(pathOptions, 'limit')) {
+  if (Object.hasOwn(pathOptions, 'limit')) {
     postQuery.options.limit = pathOptions.limit;
   }
 
