@@ -221,7 +221,7 @@ describe('Editable email cards', () => {
     await expect
       .element(emailCards().nth(1).getByRole('textbox'))
       .not.toHaveAttribute('aria-invalid', 'true');
-    const wait = page.getByRole('button', { name: 'Wait: 1 day' });
+    const wait = page.getByRole('article', { name: 'Wait: 1 day' });
     await expect
       .poll(
         () =>

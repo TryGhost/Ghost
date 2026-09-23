@@ -78,6 +78,35 @@ describe('Recorded trigger, wait, and outcome cards', () => {
     }
   });
 
+  it('switches between the full-width phone list and history without losing selection or drafts', async () => {
+    await page.viewport(390, 844);
+    try {
+      setup();
+      respond(history('a'));
+      await renderAdminApp('/automations/first', flags);
+      await editingCanvas().getByRole('textbox', { name: 'Wait for' }).fill('5');
+      await open();
+      await expect(editingCanvas()).toHaveCount(0);
+      await select();
+      await expect.element(canvas()).toBeVisible();
+      await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+      expect(canvas().element().getBoundingClientRect().width).toBe(390);
+      await open();
+      await expect(canvas()).toHaveCount(0);
+      await expect
+        .element(page.getByRole('button', { name: /View run history for Alex,/ }))
+        .toHaveAttribute('aria-pressed', 'true');
+      await select();
+      await expect.element(canvas().getByRole('button', { name: 'Back to editing' })).toHaveFocus();
+      await close();
+      await expect
+        .element(editingCanvas().getByRole('textbox', { name: 'Wait for' }))
+        .toHaveValue('5');
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
   it('shows when the active wait ends without claiming it completed or predicting the run end', async () => {
     setup();
     const data = history('a');

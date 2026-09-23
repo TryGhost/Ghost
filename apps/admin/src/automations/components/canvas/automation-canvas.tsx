@@ -62,8 +62,9 @@ const NODE_VISUAL_GAP_Y = 112;
 // keeping the visible gap uniform as content and validation messages change.
 const REGULAR_NODE_HEIGHT = 68;
 const EMAIL_NODE_WITH_STATS_HEIGHT = 133;
-const EDITABLE_EMAIL_NODE_WIDTH = 400;
+const EDITABLE_NODE_WIDTH = 400;
 const EDITABLE_EMAIL_NODE_HEIGHT = 350;
+const EDITABLE_WAIT_NODE_HEIGHT = 144;
 const INITIAL_VIEWPORT_Y = 40;
 // Rendered height of the tail node (h-12) — used to derive the content's bottom edge for the pan bound.
 const TAIL_NODE_HEIGHT = 48;
@@ -100,6 +101,7 @@ const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
 
 const buildNodeContextMenuItems = ({
   canDelete = false,
+  canEditSettings = true,
   canEditEmailBody = false,
   onDelete,
   onEditEmailBody,
@@ -108,6 +110,7 @@ const buildNodeContextMenuItems = ({
   stepId,
 }: {
   canDelete?: boolean;
+  canEditSettings?: boolean;
   canEditEmailBody?: boolean;
   onDelete?: (deleteStepId: string) => void;
   onEditEmailBody?: (editEmailBodyStepId: string, mode?: EmailModalMode) => void;
@@ -115,13 +118,15 @@ const buildNodeContextMenuItems = ({
   onSelectStep: (nextStepId: string) => void;
   stepId: string;
 }): NodeContextMenuEntry[] => {
-  const items: NodeContextMenuEntry[] = [
-    {
-      icon: LucideIcon.Settings2,
-      label: 'Edit settings',
-      onSelect: () => onSelectStep(stepId),
-    },
-  ];
+  const items: NodeContextMenuEntry[] = canEditSettings
+    ? [
+        {
+          icon: LucideIcon.Settings2,
+          label: 'Edit settings',
+          onSelect: () => onSelectStep(stepId),
+        },
+      ]
+    : [];
 
   if (canEditEmailBody && onEditEmailBody) {
     items.push({
@@ -205,7 +210,9 @@ type BuildGraphParams = {
   nodeSizes: Record<string, { width: number; height: number }>;
   graceStepId: string | null;
   onInteract: (stepId: string) => void;
+  onWaitValidityChange?: (stepId: string, valid: boolean) => void;
   onUpdateSubject: (stepId: string, subject: string) => void;
+  onUpdateWait: (stepId: string, hours: number) => void;
   disabled: boolean;
   onDelete: (stepId: string) => void;
   onEditEmailBody: (stepId: string, mode?: EmailModalMode) => void;
@@ -224,7 +231,9 @@ const buildGraph = ({
   nodeSizes,
   graceStepId,
   onInteract,
+  onWaitValidityChange,
   onUpdateSubject,
+  onUpdateWait,
   disabled,
   onDelete,
   onEditEmailBody,
@@ -279,7 +288,8 @@ const buildGraph = ({
   ordered.forEach((action) => {
     const displayData = buildActionData(action);
     const editableEmail = automationRunAnalyticsEnabled && action.type === 'send_email';
-    const width = editableEmail ? EDITABLE_EMAIL_NODE_WIDTH : NODE_WIDTH;
+    const editableWait = automationRunAnalyticsEnabled && action.type === 'wait';
+    const width = editableEmail || editableWait ? EDITABLE_NODE_WIDTH : NODE_WIDTH;
     const errorMessage = actionErrors[action.id];
     const showStatsFooter =
       automationAnalyticsEnabled &&
@@ -305,7 +315,18 @@ const buildGraph = ({
               },
             }
           : {}),
+        ...(editableWait && action.type === 'wait'
+          ? {
+              wait: {
+                hours: action.data.wait_hours,
+                onInteract: () => onInteract(action.id),
+                onValidityChange: (valid: boolean) => onWaitValidityChange?.(action.id, valid),
+                onUpdate: (hours: number) => onUpdateWait(action.id, hours),
+              },
+            }
+          : {}),
         contextMenuItems: buildNodeContextMenuItems({
+          canEditSettings: !editableWait,
           canDelete: true,
           canEditEmailBody: action.type === 'send_email',
           onDelete,
@@ -326,9 +347,11 @@ const buildGraph = ({
       (nodeSizes[action.id]?.height ??
         (editableEmail
           ? EDITABLE_EMAIL_NODE_HEIGHT
-          : showStatsFooter
-            ? EMAIL_NODE_WITH_STATS_HEIGHT
-            : REGULAR_NODE_HEIGHT)) + NODE_VISUAL_GAP_Y;
+          : editableWait
+            ? EDITABLE_WAIT_NODE_HEIGHT
+            : showStatsFooter
+              ? EMAIL_NODE_WITH_STATS_HEIGHT
+              : REGULAR_NODE_HEIGHT)) + NODE_VISUAL_GAP_Y;
   });
 
   nodes.push({
@@ -349,7 +372,9 @@ const buildGraph = ({
         (node) =>
           node.position.x +
           (nodeSizes[node.id]?.width ??
-            ('email' in node.data && node.data.email ? EDITABLE_EMAIL_NODE_WIDTH : NODE_WIDTH)),
+            (('email' in node.data && node.data.email) || ('wait' in node.data && node.data.wait)
+              ? EDITABLE_NODE_WIDTH
+              : NODE_WIDTH)),
       ),
     ),
     bottom: cursorY + (nodeSizes[TAIL_CANVAS_ID]?.height ?? TAIL_NODE_HEIGHT),
@@ -398,6 +423,7 @@ const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: 
 
 type AutomationCanvasProps = {
   actionErrors?: Record<string, string>;
+  onWaitValidityChange?: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
   isEmailNavigationBlocked?: boolean;
   isLoading: boolean;
@@ -427,6 +453,7 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   actionErrors = {},
+  onWaitValidityChange,
   automation,
   isEmailNavigationBlocked = false,
   isLoading,
@@ -500,11 +527,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       setNewStepId(insertedAction?.id ?? null);
       setGraceStepId(insertedAction?.type === 'send_email' ? insertedAction.id : null);
       if (insertedAction) {
-        setSelectedStep(
-          automationRunAnalyticsEnabled && insertedAction.type === 'send_email'
-            ? null
-            : { id: insertedAction.id },
-        );
+        setSelectedStep(automationRunAnalyticsEnabled ? null : { id: insertedAction.id });
       }
       onChange(next);
     },
@@ -664,7 +687,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       nodeSizes,
       graceStepId,
       onInteract: settleOtherSteps,
+      onWaitValidityChange,
       onUpdateSubject: handleUpdateSubject,
+      onUpdateWait: handleUpdateWait,
       disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
       onDelete: handleRequestDelete,
       onEditEmailBody: handleContextMenuEditEmail,
@@ -685,7 +710,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     nodeSizes,
     graceStepId,
     settleOtherSteps,
+    onWaitValidityChange,
     handleUpdateSubject,
+    handleUpdateWait,
     handleContextMenuEditEmail,
     handleContextMenuPreviewEmail,
     handlePick,
@@ -737,7 +764,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       if (!automation || node.id === TAIL_CANVAS_ID || node.id === TRIGGER_CANVAS_ID) {
         return;
       }
-      if ('email' in node.data && node.data.email) {
+      if (('email' in node.data && node.data.email) || ('wait' in node.data && node.data.wait)) {
         return;
       }
       const action = automation.actions.find((item) => item.id === node.id);
@@ -847,7 +874,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
               if (event.button !== 0) {
                 return;
               }
-              if (node.id !== TAIL_CANVAS_ID && !('email' in node.data && node.data.email)) {
+              if (
+                node.id !== TAIL_CANVAS_ID &&
+                !('email' in node.data && node.data.email) &&
+                !('wait' in node.data && node.data.wait)
+              ) {
                 setSelectedStep({ id: node.id });
               }
             }}

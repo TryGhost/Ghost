@@ -1,43 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type {
   AutomationDetail,
   AutomationSendEmailAction,
   AutomationWaitAction,
 } from '@tryghost/admin-x-framework/api/automations';
-import {
-  Button,
-  Field,
-  FieldError,
-  FieldLabel,
-  Input,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-  InputGroupText,
-} from '@tryghost/shade/components';
+import { Button, Field, FieldLabel, Input } from '@tryghost/shade/components';
 import { EmailPerformanceSection } from './email-performance-section';
-import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import type { MemberTier, StepSidebarDetail } from '@/automations/components/types';
 import { TRIGGER_CANVAS_ID } from './nodes';
+import { WaitDurationField } from './wait-duration-field';
 import { formatWait } from './format-wait';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-
-const MAX_WAIT_DAYS = 30;
-const WHOLE_NUMBER_PATTERN = /^\d+$/;
-
-const getValidWaitDays = (value: string): number | null => {
-  const days = Number(value);
-  if (
-    !WHOLE_NUMBER_PATTERN.test(value) ||
-    !Number.isInteger(days) ||
-    days < 1 ||
-    days > MAX_WAIT_DAYS
-  ) {
-    return null;
-  }
-  return days;
-};
 
 const SidebarField: React.FC<{ label: string; children: React.ReactNode; htmlFor?: string }> = ({
   children,
@@ -103,101 +77,14 @@ const WaitSidebarBody: React.FC<{
   action: AutomationWaitAction;
   onUpdate: (waitHours: number) => void;
   onDelete: () => void;
-}> = ({ action, onUpdate, onDelete }) => {
-  if (action.data.wait_hours % 24 !== 0) {
-    throw new Error(
-      `WaitSidebarBody: wait_hours must be a multiple of 24, received ${action.data.wait_hours}`,
-    );
-  }
-  const initialDays = action.data.wait_hours / 24;
-  const [daysText, setDaysText] = useState<string>(String(initialDays));
-  const [hasBlurredDaysInput, setHasBlurredDaysInput] = useState(false);
-
-  const days = Number(daysText);
-  const isValid = getValidWaitDays(daysText) !== null;
-  const showValidationError = hasBlurredDaysInput && !isValid;
-  const updateWaitDays = (nextDays: number) => {
-    const nextHours = nextDays * 24;
-    if (nextHours !== action.data.wait_hours) {
-      onUpdate(nextHours);
-    }
-  };
-
-  const stepWaitDays = (direction: -1 | 1) => {
-    const currentDays = getValidWaitDays(daysText);
-    if (currentDays === null) {
-      return;
-    }
-
-    const nextDays = Math.min(MAX_WAIT_DAYS, Math.max(1, currentDays + direction));
-    setDaysText(String(nextDays));
-    updateWaitDays(nextDays);
-  };
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const nextDaysText = event.target.value;
-    setDaysText(nextDaysText);
-
-    const nextDays = getValidWaitDays(nextDaysText);
-    if (nextDays === null) {
-      return;
-    }
-    updateWaitDays(nextDays);
-  };
-
-  return (
-    <div className="flex flex-1 flex-col gap-5">
-      <SidebarField htmlFor="automation-wait-days" label="Wait for">
-        <InputGroup
-          aria-label="Wait duration in days"
-          className="h-(--control-height)"
-          data-disabled={showValidationError ? 'true' : undefined}
-        >
-          <InputGroupInput
-            aria-describedby={showValidationError ? 'automation-wait-days-error' : undefined}
-            aria-invalid={showValidationError}
-            className="w-10 min-w-10 flex-none pr-1 font-mono tabular-nums"
-            id="automation-wait-days"
-            inputMode="numeric"
-            value={daysText}
-            onBlur={() => setHasBlurredDaysInput(true)}
-            onChange={handleChange}
-            onFocus={() => setHasBlurredDaysInput(false)}
-          />
-          <InputGroupText className="mr-auto">{days === 1 ? 'day' : 'days'}</InputGroupText>
-          <InputGroupAddon align="inline-end" className="gap-0.5 pr-2">
-            <InputGroupButton
-              aria-label="Decrease wait by one day"
-              disabled={!isValid || days <= 1}
-              size="icon-xs"
-              title="Decrease wait by one day"
-              onClick={() => stepWaitDays(-1)}
-            >
-              <LucideIcon.Minus className="size-4" />
-            </InputGroupButton>
-            <InputGroupButton
-              aria-label="Increase wait by one day"
-              disabled={!isValid || days >= MAX_WAIT_DAYS}
-              size="icon-xs"
-              title="Increase wait by one day"
-              onClick={() => stepWaitDays(1)}
-            >
-              <LucideIcon.Plus className="size-4" />
-            </InputGroupButton>
-          </InputGroupAddon>
-        </InputGroup>
-        {showValidationError && (
-          <FieldError className="text-xs" id="automation-wait-days-error">
-            Enter a delay between 1 and {formatNumber(MAX_WAIT_DAYS)} days
-          </FieldError>
-        )}
-      </SidebarField>
-      <div className="mt-auto pt-6">
-        <DeleteStepButton onClick={onDelete} />
-      </div>
+}> = ({ action, onUpdate, onDelete }) => (
+  <div className="flex flex-1 flex-col gap-5">
+    <WaitDurationField waitHours={action.data.wait_hours} onUpdate={onUpdate} />
+    <div className="mt-auto pt-6">
+      <DeleteStepButton onClick={onDelete} />
     </div>
-  );
-};
+  </div>
+);
 
 const SendEmailSidebarBody: React.FC<{
   automationId: string;
