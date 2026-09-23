@@ -4,6 +4,7 @@ import { useShade } from '@tryghost/shade/app';
 import { Button, type ButtonProps, Skeleton } from '@tryghost/shade/components';
 import { Link } from '@tryghost/admin-x-framework';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { Inline } from '@tryghost/shade/primitives';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 
 export type AutomationRequestState = 'idle' | 'loading' | 'error';
@@ -42,8 +43,8 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   const status = automation?.status;
 
   return (
-    <header className="relative z-10 flex h-14 shrink-0 items-center justify-between bg-surface-elevated px-4 shadow-sm dark:border-b dark:border-gray-950">
-      <div className="flex min-w-0 items-center gap-3">
+    <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4">
+      <Inline className="min-w-0" gap="sm">
         <Button size={isAdmin7 ? 'icon' : undefined} variant="ghost" asChild>
           <Link aria-label="Back to automations" to="/automations">
             <LucideIcon.ArrowLeft strokeWidth={2} />
@@ -57,11 +58,10 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
             {status && <AutomationStatusBadge status={status} />}
           </>
         )}
-      </div>
-      <div className="flex shrink-0 items-center gap-3">
+      </Inline>
+      <Inline className="shrink-0" gap="sm">
         {status === 'active' && (
           <Button disabled={!isTurnOffButtonEnabled} variant="outline" onClick={onTurnOff}>
-            <LucideIcon.Power />
             Turn off
           </Button>
         )}
@@ -77,7 +77,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         >
           {publishButtonChildren}
         </Button>
-      </div>
+      </Inline>
     </header>
   );
 };
