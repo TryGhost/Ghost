@@ -547,31 +547,19 @@ export function createSaveEngine<
     }
   }
 
-  function isTerminal(): boolean {
-    return state.kind === 'halted' || state.kind === 'crashed';
+  function apply(event: SaveEngineEvent): void {
+    setState(
+      transition(state, event, {
+        inFlight: inFlight?.command.kind ?? null,
+        pending: pending?.command.kind ?? null,
+        frozen: frozen !== null,
+        armed: debounce !== null || timedCycle !== null,
+      }),
+    );
   }
 
-  // Errors persist until a save actually starts; timers arming or dropping do not clear them.
-  function deriveState({ keepHalt = true } = {}): SaveEngineState {
-    if (frozen || isTerminal() || disposed) {
-      return state;
-    }
-    if (inFlight) {
-      return pending
-        ? {
-            kind: 'pending-coalesced',
-            intent: inFlight.command.kind,
-            pending: pending.command.kind,
-          }
-        : { kind: 'saving', intent: inFlight.command.kind };
-    }
-    if (keepHalt && (state.kind === 'error' || state.kind === 'conflict')) {
-      return state;
-    }
-    if (debounce || timedCycle) {
-      return { kind: 'debouncing' };
-    }
-    return { kind: 'idle' };
+  function isTerminal(): boolean {
+    return state.kind === 'halted' || state.kind === 'crashed';
   }
 
   function isSuppressed(snapshot: S): boolean {
@@ -621,7 +609,7 @@ export function createSaveEngine<
       enqueue(AUTOSAVE, waiters);
     }, autosaveDebounceMs());
     debounce = { handle, waiters };
-    setState(deriveState());
+    apply({ kind: 'timer-armed' });
   }
 
   function armTimedCycle(): void {
@@ -634,7 +622,7 @@ export function createSaveEngine<
       enqueue(TIMED, waiters);
     }, TIMED_SAVE_INTERVAL_MS);
     timedCycle = { handle, waiters };
-    setState(deriveState());
+    apply({ kind: 'timer-armed' });
   }
 
   // Higher priority wins and carries the riders; a later status command supersedes only the earlier one.
@@ -659,7 +647,7 @@ export function createSaveEngine<
   function enqueue(command: SaveCommand, waiters: Waiter[]): void {
     if (inFlight || frozen) {
       coalesce(command, waiters);
-      setState(deriveState());
+      apply({ kind: 'coalesced' });
       return;
     }
     void run({ command, waiters });
@@ -674,13 +662,13 @@ export function createSaveEngine<
     if (next) {
       void run(next);
     } else {
-      setState(deriveState());
+      apply({ kind: 'drained' });
     }
   }
 
-  function failSlot(slot: Slot, error: SaveError): void {
+  function failSlot(slot: Slot, error: SaveError, persisted: boolean): void {
     settle(slot.waiters, failed(error, slot.command.kind));
-    setState({ kind: 'error', intent: slot.command.kind, error });
+    apply({ kind: 'save-failed', intent: slot.command.kind, error, persisted });
     drain();
   }
 
@@ -744,7 +732,7 @@ export function createSaveEngine<
     try {
       snapshot = ports.getSnapshot();
     } catch (cause) {
-      failSlot(slot, toSaveError(cause));
+      failSlot(slot, toSaveError(cause), false);
       return;
     }
     const early = dropReason(slot, snapshot);
@@ -757,7 +745,7 @@ export function createSaveEngine<
     inFlight = slot;
     const abort = new AbortController();
     inFlightAbort = abort;
-    setState(deriveState());
+    apply({ kind: 'save-started' });
 
     let outcome: SaveOutcome<R>;
     try {
@@ -824,10 +812,11 @@ export function createSaveEngine<
 
   function handleError(slot: Slot, snapshot: S, error: SaveError): void {
     const intent = slot.command.kind;
+    const persisted = Boolean(snapshot.id);
 
     if (error.kind === 'session-invalid') {
       frozen = { slot, error };
-      setState({ kind: 'reauth-pending', intent });
+      apply({ kind: 'save-failed', intent, error, persisted });
       return;
     }
 
@@ -840,7 +829,7 @@ export function createSaveEngine<
       }
       settle(dropWaiters, dropped('halted'));
       settle(slot.waiters, failed(error, intent));
-      setState({ kind: snapshot.id ? 'halted' : 'crashed' });
+      apply({ kind: 'save-failed', intent, error, persisted });
       return;
     }
 
@@ -855,7 +844,7 @@ export function createSaveEngine<
       }
       settle(dropWaiters, dropped('conflict'));
       settle(slot.waiters, failed(error, intent));
-      setState({ kind: 'conflict', intent, error });
+      apply({ kind: 'save-failed', intent, error, persisted });
       return;
     }
 
@@ -866,7 +855,7 @@ export function createSaveEngine<
     if (error.kind === 'host-limit' && !changesStatus(slot.command, snapshot)) {
       suppressedVersion = snapshot.version;
     }
-    failSlot(slot, error);
+    failSlot(slot, error, persisted);
   }
 
   function captureCommand(kind: DispatchIntent, snapshot: S | null, options?: PublishOptions) {
@@ -1006,7 +995,7 @@ export function createSaveEngine<
     for (const waiter of waiters) {
       waiter.resolve(failed(error, waiter.command.kind));
     }
-    setState({ kind: 'error', intent: slot.command.kind, error });
+    apply({ kind: 'reauth-abandoned', error });
   }
 
   // A server document that no longer carries the rejected updated_at ends the
@@ -1022,7 +1011,7 @@ export function createSaveEngine<
       return false;
     }
     staleUpdatedAt = null;
-    setState(deriveState({ keepHalt: false }));
+    apply({ kind: 'content-reloaded' });
     return true;
   }
 
@@ -1119,7 +1108,7 @@ export function createSaveEngine<
     pending = null;
     frozen = null;
     settle(waiters, dropped('disposed'));
-    setState({ kind: 'disposed' });
+    apply({ kind: 'disposed' });
     listeners.clear();
   }
 
