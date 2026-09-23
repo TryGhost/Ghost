@@ -26,7 +26,7 @@ async function selectTextWithHover(element, start = 0, end = element.textContent
 }
 
 describe('Editor tests with roles', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
     describe('Super Editor tests', function () {
         beforeEach(async function () {
@@ -44,7 +44,7 @@ describe('Editor tests with roles', function () {
             await selectTextWithHover(find('.kg-prose p span'));
             await settled();
             await waitUntil(() => document.querySelectorAll('[data-kg-toolbar-button="snippet"]').length > 0);
-            let snippetButton = document.querySelector('[data-kg-toolbar-button="snippet"]');
+            const snippetButton = document.querySelector('[data-kg-toolbar-button="snippet"]');
             expect(snippetButton).to.not.be.null;
             expect(snippetButton.textContent.trim()).to.equal('Save as snippet');
         });

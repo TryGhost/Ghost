@@ -309,12 +309,11 @@ module.exports = class Mention {
       timestamp = new Date();
     }
 
-    let payload;
-    payload = data.payload ? JSON.parse(JSON.stringify(data.payload)) : null;
+    const payload = data.payload ? JSON.parse(JSON.stringify(data.payload)) : null;
 
     /** @type boolean */
-    let verified;
-    verified = isNew ? false : !!data.verified;
+
+    const verified = isNew ? false : !!data.verified;
 
     /** @type {ObjectID | null} */
     let resourceId = null;

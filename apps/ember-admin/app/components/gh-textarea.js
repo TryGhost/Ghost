@@ -50,7 +50,7 @@ export default class GhTextarea extends TextArea.extend(TextInputMixin) {
     }
 
     _autoExpand() {
-        let el = this.element;
+        const el = this.element;
 
         // collapse the element first so that we can shrink as well as expand
         // then set the height to match the text height

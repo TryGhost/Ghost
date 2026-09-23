@@ -215,8 +215,8 @@ export function paidMemberOnTier() {
   if (!products || !products[1]) {
     return null;
   }
-  let price = site?.products?.[1].monthlyPrice;
-  let updatedMember = getMemberData({
+  const price = site?.products?.[1].monthlyPrice;
+  const updatedMember = getMemberData({
     paid: true,
     status: 'paid',
     subscriptions: [

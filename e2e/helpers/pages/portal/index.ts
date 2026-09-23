@@ -1,5 +1,6 @@
 export * from './account-home-page';
 export * from './account-page';
+export * from './account-profile-page';
 export * from './account-plan-page';
 export * from './gift-page';
 export * from './newsletter-management-page';

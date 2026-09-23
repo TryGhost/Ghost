@@ -76,7 +76,7 @@ class ReferrerTranslator {
 
     // In finding the 'content' that got the user to sign up, we want the latest entry with referrer data
     for (const item of history) {
-      let refUrl = this.getUrlFromStr(item.referrerUrl);
+      const refUrl = this.getUrlFromStr(item.referrerUrl);
       if (refUrl?.hostname === 'checkout.stripe.com') {
         // Ignore stripe, because second try payments should not be attributed to Stripe
         continue;

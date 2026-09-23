@@ -14,6 +14,14 @@ const meta = {
     },
   },
   argTypes: {
+    size: {
+      control: { type: 'select' },
+      options: ['default', 'sm', 'md'],
+    },
+    shape: {
+      control: { type: 'select' },
+      options: ['rounded', 'pill'],
+    },
     variant: {
       control: { type: 'select' },
       options: ['default', 'secondary', 'destructive', 'success', 'warning', 'outline'],
@@ -34,6 +42,36 @@ export const Secondary: Story = {
   args: {
     variant: 'secondary',
     children: 'Secondary',
+  },
+};
+
+export const SmallSecondaryPill: Story = {
+  args: {
+    size: 'sm',
+    variant: 'secondary',
+    children: 'Small pill',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use the small pill for compact labels in dense interfaces.',
+      },
+    },
+  },
+};
+
+export const MediumSecondaryPill: Story = {
+  args: {
+    size: 'md',
+    variant: 'secondary',
+    children: 'Medium pill',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use the medium pill when a label needs more visual presence.',
+      },
+    },
   },
 };
 
@@ -76,4 +114,20 @@ export const AllVariants: Story = {
       <Badge variant="outline">Outline</Badge>
     </div>
   ),
+};
+
+export const Interactive: Story = {
+  render: () => (
+    <Badge variant="warning" asChild>
+      <button type="button">Pinned</button>
+    </Badge>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use asChild when a badge is an action, preserving the native button semantics and inherited design.',
+      },
+    },
+  },
 };

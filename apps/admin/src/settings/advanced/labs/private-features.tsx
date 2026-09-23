@@ -55,6 +55,12 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
+    title: 'Admin 7 · Milestone 2 · Pill controls',
+    description:
+      'Preview Admin 7 controls and page headers on React pages. The editor is excluded.',
+    flag: 'admin7Pill',
+  },
+  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
@@ -144,6 +150,12 @@ const features: Feature[] = [
     description:
       'Enables the remote add-on spike: sandboxed third-party add-ons rendering into admin surfaces',
     flag: 'addons',
+  },
+  {
+    title: 'Dunning warnings',
+    description:
+      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
+    flag: 'dunningWarnings',
   },
 ];
 

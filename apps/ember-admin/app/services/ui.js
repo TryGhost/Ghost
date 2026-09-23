@@ -27,8 +27,8 @@ function collectMetadataClasses(transition, prop) {
 }
 
 function updateBodyClasses(transition) {
-    let {body} = document;
-    let {oldClasses, newClasses} = collectMetadataClasses(transition, 'bodyClasses');
+    const {body} = document;
+    const {oldClasses, newClasses} = collectMetadataClasses(transition, 'bodyClasses');
 
     oldClasses.forEach((oldClass) => {
         body.classList.remove(oldClass);
@@ -95,7 +95,7 @@ export default class UiService extends Service {
 
             this.updateDocumentTitle();
 
-            let {newClasses: mainClasses} = collectMetadataClasses(transition, 'mainClasses');
+            const {newClasses: mainClasses} = collectMetadataClasses(transition, 'mainClasses');
             this.mainClass = mainClasses.join(' ');
         });
     }
@@ -113,7 +113,7 @@ export default class UiService extends Service {
     @action
     updateDocumentTitle() {
         let {currentRoute} = this.router;
-        let tokens = [];
+        const tokens = [];
 
         while (currentRoute) {
             let titleToken = get(currentRoute, 'metadata.titleToken');
@@ -129,7 +129,7 @@ export default class UiService extends Service {
             currentRoute = currentRoute.parent;
         }
 
-        let blogTitle = this.config.blogTitle;
+        const blogTitle = this.config.blogTitle;
 
         window.document.title = `Ghost Admin - ${blogTitle}`;
     }

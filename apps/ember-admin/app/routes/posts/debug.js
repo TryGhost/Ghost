@@ -3,9 +3,9 @@ import {pluralize} from 'ember-inflector';
 
 export default class Debug extends AuthenticatedRoute {
     model(params) {
-        let {post_id: id} = params;
+        const {post_id: id} = params;
 
-        let query = {
+        const query = {
             id,
             include: [
                 'tags',

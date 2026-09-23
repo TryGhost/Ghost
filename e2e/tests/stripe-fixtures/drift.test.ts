@@ -21,6 +21,17 @@ function fixture(name: string): Record<string, unknown> {
   return JSON.parse(fs.readFileSync(path.resolve(fixtureDir, `${name}.json`), 'utf8'));
 }
 
+test('Stripe fixtures use the API version pinned by Ghost', () => {
+  const manifest = fixture('manifest');
+  const stripeApiSource = fs.readFileSync(
+    new URL('../../../ghost/core/core/server/services/stripe/stripe-api.js', import.meta.url),
+    'utf8',
+  );
+
+  expect(manifest.api_version).toBe('2020-08-27');
+  expect(stripeApiSource).toContain(`const STRIPE_API_VERSION = '${manifest.api_version}'`);
+});
+
 /**
  * The fake Stripe server hand-builds the objects Stripe would return. Those shapes were
  * written from the docs, not from Stripe, so nothing has ever checked them against the

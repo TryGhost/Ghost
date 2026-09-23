@@ -205,7 +205,7 @@ describe('Oembed API', function () {
     it('errors when fetched url is an IP address', async function () {
       // in order to follow the 302, we need to stub differently; externalRequest will block the internal IP
       dnsPromises.lookup.restore();
-      let dnsStub = sinon.stub(dnsPromises, 'lookup');
+      const dnsStub = sinon.stub(dnsPromises, 'lookup');
       dnsStub.onCall(0).returns(Promise.resolve({ address: '123.123.123.123' }));
       dnsStub.onCall(1).returns(Promise.resolve({ address: '0.0.0.0' }));
 

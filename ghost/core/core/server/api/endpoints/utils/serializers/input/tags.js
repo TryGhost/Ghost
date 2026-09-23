@@ -5,7 +5,7 @@ const utils = require('../../index');
 const { rejectTagsRestrictedOrderFields } = require('../../api-filter-utils');
 
 function setDefaultOrder(frame) {
-  let defaultOrder = 'name asc';
+  const defaultOrder = 'name asc';
 
   if (!frame.options.order && frame.options.filter) {
     frame.options.autoOrder = slugFilterOrder('tags', frame.options.filter);

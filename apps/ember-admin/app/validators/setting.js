@@ -5,7 +5,7 @@ import {isBlank} from '@ember/utils';
 export default BaseValidator.create({
     properties: ['title', 'description', 'password', 'slackUrl'],
     title(model) {
-        let title = model.title;
+        const title = model.title;
 
         if (!validator.isLength(title || '', {max: 150})) {
             model.errors.add('title', 'Title is too long');
@@ -14,7 +14,7 @@ export default BaseValidator.create({
     },
 
     description(model) {
-        let desc = model.description;
+        const desc = model.description;
 
         if (!validator.isLength(desc || '', {max: 200})) {
             model.errors.add('description', 'Description is too long');
@@ -23,8 +23,8 @@ export default BaseValidator.create({
     },
 
     password(model) {
-        let isPrivate = model.isPrivate;
-        let password = model.password;
+        const isPrivate = model.isPrivate;
+        const password = model.password;
 
         if (isPrivate && password === '') {
             model.errors.add('password', 'Password must be supplied');
@@ -33,7 +33,7 @@ export default BaseValidator.create({
     },
 
     slackUrl(model) {
-        let slackUrl = model.slackUrl;
+        const slackUrl = model.slackUrl;
 
         if (!isBlank(slackUrl) && !validator.isURL(slackUrl, {require_protocol: true})) {
             model.errors.add(

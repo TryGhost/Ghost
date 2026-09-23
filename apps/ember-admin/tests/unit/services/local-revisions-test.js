@@ -385,10 +385,10 @@ describe('Unit: Service: local-revisions', function () {
     describe('restore', function () {
         it('creates a new post based on the revision data', async function () {
             // stub out the store service
-            let saveStub = sinon.stub().resolves({id: 'test-id'});
-            let setStub = sinon.stub();
-            let getStub = sinon.stub().returns('post');
-            let queryRecordStub = sinon.stub().resolves({id: '1'});
+            const saveStub = sinon.stub().resolves({id: 'test-id'});
+            const setStub = sinon.stub();
+            const getStub = sinon.stub().returns('post');
+            const queryRecordStub = sinon.stub().resolves({id: '1'});
             this.owner.register('service:store', Service.extend({
                 createRecord: () => {
                     return {

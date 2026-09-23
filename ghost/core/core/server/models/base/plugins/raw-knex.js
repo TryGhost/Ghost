@@ -66,7 +66,7 @@ module.exports = function (Bookshelf) {
             },
           };
 
-          let query = Bookshelf.knex(tableNames[modelName]);
+          const query = Bookshelf.knex(tableNames[modelName]);
 
           if (orderBy) {
             query.orderBy(orderBy);
@@ -111,7 +111,7 @@ module.exports = function (Bookshelf) {
             return [];
           }
 
-          let props = {};
+          const props = {};
 
           if (!withRelated) {
             return _.map(objects, (object) => {
@@ -136,7 +136,7 @@ module.exports = function (Bookshelf) {
             props[relation.name] = (async () => {
               debug('fetch withRelated', relation.name);
 
-              let relationQuery = Bookshelf.knex(relation.targetTable);
+              const relationQuery = Bookshelf.knex(relation.targetTable);
 
               // default fields to select
               _.each(relation.select, (fieldToSelect) => {

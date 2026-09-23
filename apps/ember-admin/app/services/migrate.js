@@ -45,7 +45,7 @@ export default class MigrateService extends Service {
         const theKey = await this.apiKey();
         const theOwner = await this.billing.getOwnerUser();
 
-        let payload = {
+        const payload = {
             apiUrl: this.apiUrl,
             apiKey: theKey,
             stripe: this.isStripeConnected,

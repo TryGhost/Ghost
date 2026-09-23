@@ -23,7 +23,7 @@ module.exports.forPost = (options, model, attrs) => {
   // 1. Gets excerpt from post's plaintext. If custom_excerpt exists, it overrides the excerpt but the key remains excerpt.
   if (columnsIncludesExcerpt) {
     if (!attrs.custom_excerpt) {
-      let plaintext = model.get('plaintext');
+      const plaintext = model.get('plaintext');
       if (plaintext) {
         attrs.excerpt = plaintext.substring(0, 500);
       } else {
@@ -39,7 +39,7 @@ module.exports.forPost = (options, model, attrs) => {
   }
 
   if (columnsIncludesPlaintext || formatsIncludesPlaintext) {
-    let plaintext = model.get('plaintext');
+    const plaintext = model.get('plaintext');
     if (plaintext) {
       attrs.plaintext = plaintext;
     } else {
@@ -49,7 +49,7 @@ module.exports.forPost = (options, model, attrs) => {
 
   // 3. Displays excerpt if no columns was requested - specifically needed for the Admin Posts API
   if (noColumnsRequested) {
-    let customExcerpt = model.get('custom_excerpt');
+    const customExcerpt = model.get('custom_excerpt');
 
     if (customExcerpt !== null) {
       attrs.excerpt = customExcerpt;

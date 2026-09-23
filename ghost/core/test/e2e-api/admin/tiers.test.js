@@ -164,7 +164,7 @@ describe('Tiers API', function () {
   });
 
   it('Can edit tier properties and relations', async function () {
-    let {
+    const {
       body: {
         tiers: [tier],
       },
@@ -242,7 +242,7 @@ describe('Tiers API', function () {
       benefits: ['TEST BENEFIT'],
     };
 
-    let {
+    const {
       body: {
         tiers: [tier],
       },

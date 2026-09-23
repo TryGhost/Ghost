@@ -13,8 +13,8 @@ import {timeout} from 'ember-concurrency';
 // to :post-id/?include=tags all ordering information is lost so we
 // need to build the tags array manually
 const assignPostWithTags = async function postWithTags(context, ...slugs) {
-    let post = await context.store.findRecord('post', 1);
-    let tags = await context.store.findAll('tag');
+    const post = await context.store.findRecord('post', 1);
+    const tags = await context.store.findAll('tag');
 
     slugs.forEach((slug) => {
         post.get('tags').pushObject(tags.findBy('slug', slug));
@@ -31,7 +31,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
 
     beforeEach(function () {
         server = startMirage();
-        let author = server.create('user');
+        const author = server.create('user');
 
         mockPosts(server);
         mockTags(server);
@@ -53,7 +53,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         await assignPostWithTags(this, 'one', 'three');
         await render(hbs`<GhPsmTagsInput @post={{post}} />`);
 
-        let selected = findAll('.tag-token');
+        const selected = findAll('.tag-token');
         expect(selected.length).to.equal(2);
         expect(selected[0]).to.contain.text('Tag 1');
         expect(selected[1]).to.contain.text('Tag 3');
@@ -71,7 +71,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         // unsure why settled() is sometimes not catching the update
         await timeout(100);
 
-        let options = findAll('.ember-power-select-option');
+        const options = findAll('.ember-power-select-option');
         expect(options.length).to.equal(4);
         expect(options[0]).to.contain.text('Tag 1');
         expect(options[1]).to.contain.text('#Tag 2');
@@ -166,7 +166,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
             // unsure why settled() is sometimes not catching the update
             await timeout(100);
 
-            let options = findAll('.ember-power-select-option');
+            const options = findAll('.ember-power-select-option');
             expect(options.length).to.equal(2);
             expect(options[0]).to.contain.text('Add "2"...');
             expect(options[1]).to.contain.text('Tag 2');
@@ -183,7 +183,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
             // unsure why settled() is sometimes not catching the update
             await timeout(100);
 
-            let options = findAll('.ember-power-select-option');
+            const options = findAll('.ember-power-select-option');
             expect(options.length).to.equal(1);
             expect(options[0]).to.contain.text('#Tag 2');
         });
@@ -199,7 +199,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
             await typeInSearch(`O'`);
             await settled();
 
-            let options = findAll('.ember-power-select-option');
+            const options = findAll('.ember-power-select-option');
             expect(options.length).to.equal(2);
             expect(options[0]).to.contain.text(`Add "O'"...`);
             expect(options[1]).to.contain.text(`O'Nolan`);
@@ -217,7 +217,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
             await typeInSearch('Alph');
             await settled();
 
-            let options = findAll('.ember-power-select-option');
+            const options = findAll('.ember-power-select-option');
             expect(options.length).to.equal(1);
             expect(options[0]).to.contain.text('Add "Alph"...');
         });
@@ -227,7 +227,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         await assignPostWithTags(this, 'two', 'three');
         await render(hbs`<GhPsmTagsInput @post={{post}} />`);
 
-        let selected = findAll('.tag-token');
+        const selected = findAll('.tag-token');
         expect(selected.length).to.equal(2);
         expect(selected[0]).to.have.class('tag-token--internal');
         expect(selected[1]).to.not.have.class('tag-token--internal');
@@ -258,7 +258,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
             let tags = await this.store.peekAll('tag');
             expect(tags.length).to.equal(5);
 
-            let removeBtns = findAll('.ember-power-select-multiple-remove-btn');
+            const removeBtns = findAll('.ember-power-select-multiple-remove-btn');
             await click(removeBtns[removeBtns.length - 1]);
 
             tags = await this.store.peekAll('tag');
@@ -278,7 +278,7 @@ describe('Integration: Component: gh-psm-tags-input', function () {
             await settled();
             await selectChoose('.ember-power-select-trigger', '.ember-power-select-option', 0);
 
-            let tags = await this.store.peekAll('tag');
+            const tags = await this.store.peekAll('tag');
             expect(tags.length).to.equal(6);
 
             expect(tags.findBy('name', 'New One').isNew).to.be.true;

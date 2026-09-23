@@ -38,22 +38,22 @@ export default class GhSearchInputComponent extends Component {
         }
 
         if (selected.groupName === 'Posts') {
-            let id = selected.id.replace('post.', '');
+            const id = selected.id.replace('post.', '');
             this.router.transitionTo('lexical-editor.edit', 'post', id);
         }
 
         if (selected.groupName === 'Pages') {
-            let id = selected.id.replace('page.', '');
+            const id = selected.id.replace('page.', '');
             this.router.transitionTo('lexical-editor.edit', 'page', id);
         }
 
         if (selected.groupName === 'Staff') {
-            let id = selected.id.replace('user.', '');
+            const id = selected.id.replace('user.', '');
             this.router.transitionTo(`/settings/staff/${id}`);
         }
 
         if (selected.groupName === 'Tags') {
-            let id = selected.id.replace('tag.', '');
+            const id = selected.id.replace('tag.', '');
             this.router.transitionTo('tag', id);
         }
     }

@@ -8,7 +8,9 @@ export const MAX_AUTOMATION_ACTIONS = 20;
 export type Automation = {
   id: string;
   name: string;
-  slug: string;
+  description?: string;
+  /** @deprecated `slug` will be removed in the future. */
+  slug?: null | string;
   status: AutomationStatus;
 };
 

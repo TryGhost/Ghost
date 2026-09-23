@@ -41,7 +41,7 @@ let SITE_UUID;
 function getOrGenerateSiteUuid() {
   if (!SITE_UUID) {
     try {
-      let configuredSiteUuid = config.get('site_uuid');
+      const configuredSiteUuid = config.get('site_uuid');
       if (configuredSiteUuid && validator.isUUID(configuredSiteUuid)) {
         SITE_UUID = configuredSiteUuid.toLowerCase();
         logging.info(`Setting site_uuid to configured value: ${SITE_UUID}`);

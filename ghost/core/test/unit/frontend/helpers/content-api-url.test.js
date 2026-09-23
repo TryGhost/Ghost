@@ -27,19 +27,19 @@ describe('{{content_api_url}} helper', function () {
     });
 
     it('should output an absolute url', async function () {
-      let result = content_api_url();
+      const result = content_api_url();
       const rendered = String(result);
       assert.equal(rendered, 'https://admin.tld:65535/ghost/api/content/');
       sinon.assert.notCalled(logWarnStub);
     });
     it('should output an absolute url when passed true', async function () {
-      let result = content_api_url(true);
+      const result = content_api_url(true);
       const rendered = String(result);
       assert.equal(rendered, 'https://admin.tld:65535/ghost/api/content/');
       sinon.assert.notCalled(logWarnStub);
     });
     it('should output a relative url when passed false', async function () {
-      let result = content_api_url(false);
+      const result = content_api_url(false);
       const rendered = String(result);
       assert.equal(rendered, '/ghost/api/content/');
       sinon.assert.notCalled(logWarnStub);
@@ -58,19 +58,19 @@ describe('{{content_api_url}} helper', function () {
     });
 
     it('should output an absolute url', async function () {
-      let result = content_api_url();
+      const result = content_api_url();
       const rendered = String(result);
       assert.equal(rendered, 'https://admin.tld:65535/blog/ghost/api/content/');
       sinon.assert.notCalled(logWarnStub);
     });
     it('should output an absolute url when passed true', async function () {
-      let result = content_api_url(true);
+      const result = content_api_url(true);
       const rendered = String(result);
       assert.equal(rendered, 'https://admin.tld:65535/blog/ghost/api/content/');
       sinon.assert.notCalled(logWarnStub);
     });
     it('should output a relative url when passed false', async function () {
-      let result = content_api_url(false);
+      const result = content_api_url(false);
       const rendered = String(result);
       assert.equal(rendered, '/blog/ghost/api/content/');
       sinon.assert.notCalled(logWarnStub);
@@ -86,14 +86,14 @@ describe('{{content_api_url}} helper', function () {
     });
 
     it('gives the site url without a subdirectory', async function () {
-      let result = content_api_url();
+      const result = content_api_url();
       const rendered = String(result);
       assert.equal(rendered, 'http://localhost:65535/ghost/api/content/');
       sinon.assert.notCalled(logWarnStub);
     });
     it('gives the site url with a subdirectory', async function () {
       configUtils.set({ url: 'http://localhost:65535/blog', 'admin:url': undefined });
-      let result = content_api_url();
+      const result = content_api_url();
       const rendered = String(result);
       assert.equal(rendered, 'http://localhost:65535/blog/ghost/api/content/');
       sinon.assert.notCalled(logWarnStub);

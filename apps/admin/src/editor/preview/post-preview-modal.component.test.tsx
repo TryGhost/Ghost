@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 
 import {
+  browseResponse,
   configResponse,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -371,6 +372,37 @@ describe('Post preview modal', () => {
     await expect.poll(() => previewApi.lastRequest?.url).toContain('newsletter=monthly-roundup');
   });
 
+  it('offers every newsletter, past the first page of the browse', async () => {
+    fakeTiers([]);
+    const first = newsletter({ name: 'Weekly digest', slug: 'weekly-digest' });
+    const second = newsletter({ name: 'Monthly roundup', slug: 'monthly-roundup' });
+    // `limit=all` is capped by Core, so the site's newsletters can span several pages.
+    const newslettersApi = fakeAdminEndpoint('GET', /^\/newsletters\/\?/, ({ url }) => {
+      const params = new URL(url).searchParams;
+      if (params.get('filter')) {
+        return browseResponse('newsletters', [], { limit: 1 });
+      }
+
+      return browseResponse('newsletters', [first, second], {
+        page: Number(params.get('page') ?? '1'),
+        limit: 1,
+      });
+    });
+    const previewApi = fakeEmailPreview();
+    await renderPreviewModal({ newsletterSlug: 'monthly-roundup' });
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect.poll(() => newslettersApi.requests.length).toBe(2);
+    expect(new URL(newslettersApi.requests[1].url).searchParams.get('page')).toBe('2');
+    // A newsletter past the first page must not be taken for one that has been archived.
+    expect(
+      newslettersApi.requests.some((request) => new URL(request.url).searchParams.get('filter')),
+    ).toBe(false);
+    await expect.poll(() => previewApi.lastRequest?.url).toContain('newsletter=monthly-roundup');
+  });
+
   it('preselects the post’s own newsletter', async () => {
     fakePreviewWorld({
       newsletters: [
@@ -464,11 +496,11 @@ describe('Post preview modal', () => {
     await expect.poll(() => previewApi.requests.length).toBe(1);
   });
 
-  it('reports and retries a failed active-newsletter lookup', async () => {
+  it('reports and retries a failed newsletter lookup', async () => {
     fakePreviewWorld();
     const lookupApi = fakeAdminEndpoint(
       'GET',
-      /^\/newsletters\/\?.*filter=status(?:%3A|:)active/,
+      /^\/newsletters\/\?limit=all/,
       { errors: [{ message: 'Could not load newsletters' }] },
       { status: 500 },
     );

@@ -433,10 +433,9 @@ const Sidebar: React.FC<{
             {newsletter.status === 'active' ? (
               !onlyOne && (
                 <Button
-                  className="text-destructive hover:text-destructive"
                   disabled={activeNewsletters.length === 1}
                   type="button"
-                  variant="ghost"
+                  variant="destructive-ghost"
                   onClick={() => void confirmStatusChange()}
                 >
                   Archive newsletter

@@ -18,10 +18,11 @@ import {
   settingsVisibilitySelect,
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
+import { PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { TIERS_REQUIRED, tiersIncomplete } from '@/editor/session/settings-fields';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SectionLoadError } from './section-load-error';
 import { SettingsSection } from './settings-section';
 import {
@@ -86,7 +87,7 @@ function TierGroup({
 }
 
 export interface AccessSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
 }
 
@@ -116,7 +117,7 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     defaultErrorHandler: false,
     enabled: visibility === 'tiers',
     requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: { filter: 'type:paid', limit: 'all' },
+    searchParams: PAID_TIERS_SEARCH_PARAMS,
   });
   const options = tierOptions(tiersData?.tiers);
 

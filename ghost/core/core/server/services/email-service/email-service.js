@@ -204,7 +204,7 @@ class EmailService {
     });
 
     try {
-      this.#batchSendingService.scheduleEmail(email);
+      await this.#batchSendingService.scheduleEmail(email);
     } catch (e) {
       await email.save(
         {
@@ -334,7 +334,7 @@ class EmailService {
     logging.warn(`Email resume: scheduling ${email.id} for re-send ${JSON.stringify(breadcrumb)}`);
 
     // Skip checkLimits — this email already passed limits when first sent.
-    this.#batchSendingService.scheduleEmail(email);
+    await this.#batchSendingService.scheduleEmail(email);
   }
 
   async #buildResumeBreadcrumb(email) {
@@ -392,8 +392,20 @@ class EmailService {
     // so we have a immediate response when retrying an email (schedule can take a while to kick off sometimes)
     await email.save({ status: 'pending' }, { patch: true });
 
-    this.#batchSendingService.scheduleEmail(email);
+    try {
+      await this.#batchSendingService.scheduleEmail(email);
+    } catch (e) {
+      await email.save({ status: 'failed' }, { patch: true });
+      throw e;
+    }
     return email;
+  }
+
+  /**
+   * @param {import('./jobs/send-email-job').default} job
+   */
+  async handleSendEmailJob(job) {
+    await this.#batchSendingService.emailJob({ emailId: job.emailId });
   }
 
   /**
@@ -476,11 +488,24 @@ class EmailService {
    * @return {string}
    */
   replaceDefinitions(htmlOrPlaintext, replacements, member) {
-    // Do manual replacements with an example member
-    for (const replacement of replacements) {
-      htmlOrPlaintext = htmlOrPlaintext.replace(replacement.token, replacement.getValue(member));
+    if (!replacements.length) {
+      return htmlOrPlaintext;
     }
-    return htmlOrPlaintext;
+    const values = replacements.map(({ token, getValue }) => ({ token, value: getValue(member) }));
+    const tokens = new RegExp(
+      replacements.map(({ token }) => `(?:${token.source})`).join('|'),
+      'g',
+    );
+
+    // Only match the original body, never placeholders inside inserted member data.
+    return htmlOrPlaintext.replace(tokens, (match) => {
+      for (const { token, value } of values) {
+        if (match.search(token) !== -1) {
+          return value;
+        }
+      }
+      return match;
+    });
   }
 
   /**
@@ -497,7 +522,7 @@ class EmailService {
     const exampleMember = await this.getExampleMember(null, audience.status);
 
     const subject = this.#emailRenderer.getSubject(post);
-    let { html, plaintext, replacements } = await this.#emailRenderer.renderBody(
+    const { html, plaintext, replacements } = await this.#emailRenderer.renderBody(
       post,
       newsletter,
       renderSegment,

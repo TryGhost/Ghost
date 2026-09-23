@@ -203,6 +203,8 @@
   --color-tab-active: var(--tab-active);
   --color-button-hover: var(--button-hover);
   --color-interactive-hover: var(--interactive-hover);
+  --color-filter-bar-background: var(--filter-bar-background);
+  --color-filter-bar-item-hover: var(--filter-bar-item-hover);
   --color-table-row-hover: var(--table-row-hover);
   --color-table-row-selected: var(--table-row-selected);
   --color-control-surface: var(--control-surface);
@@ -239,6 +241,9 @@
   --shadow-md-heavy:
     0 0 1px rgba(0, 0, 0, 0.22), 0 1px 6px rgba(0, 0, 0, 0.15), 0 8px 10px -8px rgba(0, 0, 0, 0.16),
     0px 24px 37px -21px rgba(0, 0, 0, 0.46);
+  --shadow-control-pressed: var(--control-pressed-shadow);
+  --shadow-control-outline: var(--control-outline-shadow);
+  --shadow-control-outline-pressed: var(--control-outline-pressed-shadow);
   --shadow-lg:
     0 0 7px rgba(0, 0, 0, 0.08), 0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011),
     0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016), 0 9.5px 10px -5px rgba(0, 0, 0, 0.02),
@@ -318,9 +323,13 @@
   --radius-3xl: 2.4rem;
   --radius-full: 9999px;
   --radius-control: var(--radius-md);
+  --radius-control-sm: var(--radius-sm);
+  --radius-menu: var(--radius-md);
+  --radius-menu-item: var(--radius-xs);
   --radius-surface: var(--radius-lg);
   --radius-badge: var(--radius-full);
   --radius-pill: var(--radius-full);
+  --radius-trend-badge: var(--radius-xs);
 
   /* Animation */
   /* ---------------------------------------------------------------------- */

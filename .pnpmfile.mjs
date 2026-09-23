@@ -88,14 +88,6 @@ function readPackage(pkg) {
     delete pkg.dependencies?.['apache-arrow'];
   }
 
-  // knex declares sqlite3 as an optional peer dep, and we don't use it/don't
-  // want to install it in production, so we'll remove it from the knex peer
-  // deps
-  if (pkg.name === 'knex') {
-    delete pkg.peerDependencies?.sqlite3;
-    delete pkg.peerDependenciesMeta?.sqlite3;
-  }
-
   // these deps pull in typescript as an optional peer dep, which ends up
   // being included in Ghost's production image because of the way pnpm hoists
   // optional peers. We don't want to ship ts in the prod image so we delete

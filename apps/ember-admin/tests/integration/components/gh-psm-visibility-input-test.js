@@ -21,7 +21,7 @@ describe('Integration: Component: gh-psm-visibility-input', function () {
     });
 
     it('updates post visibility on change', async function () {
-        let setVisibility = sinon.spy();
+        const setVisibility = sinon.spy();
 
         this.set('post', {
             visibility: 'public',

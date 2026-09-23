@@ -82,6 +82,8 @@ const create = ({ config, request, settingsCache, tinybirdService }) => {
       }
     });
 
+    searchParams.ghost_client = 'server';
+
     // Convert searchParams to query string and append to URL
     const queryString = new URLSearchParams(searchParams).toString();
     const fullUrl = `${tinybirdUrl}?${queryString}`;

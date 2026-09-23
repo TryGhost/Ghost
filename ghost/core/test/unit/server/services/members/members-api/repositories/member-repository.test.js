@@ -641,6 +641,127 @@ describe('MemberRepository', function () {
       };
     });
 
+    describe('incomplete subscriptions', function () {
+      let repo;
+      let storedSubscription;
+      let dispatch;
+
+      const toModel = (attributes) => ({
+        id: attributes.id,
+        get: (key) => attributes[key],
+      });
+
+      beforeEach(function () {
+        storedSubscription = null;
+        StripeCustomerSubscription.add.callsFake(async (attributes) => {
+          storedSubscription = { ...attributes, id: 'local_subscription_id' };
+          return toModel(storedSubscription);
+        });
+        StripeCustomerSubscription.edit.callsFake(async (attributes) => {
+          storedSubscription = { ...storedSubscription, ...attributes };
+          return toModel(storedSubscription);
+        });
+        MemberPaidSubscriptionEvent.findOne = sinon.stub().callsFake(async () => {
+          const created = MemberPaidSubscriptionEvent.add
+            .getCalls()
+            .find((call) => call.args[0].type === 'created');
+          return created ? toModel(created.args[0]) : null;
+        });
+        repo = buildRepo();
+        sinon
+          .stub(repo, 'getSubscriptionByStripeID')
+          .callsFake(async () => (storedSubscription ? toModel(storedSubscription) : null));
+        dispatch = sinon.stub(repo, 'dispatchEvent');
+        subscriptionData.metadata = {
+          attribution_id: 'post_id',
+          attribution_type: 'post',
+          attribution_url: '/original-post/',
+          referrer_source: 'Google',
+          utm_campaign: 'summer',
+        };
+      });
+
+      async function link(status) {
+        subscriptionData.status = status;
+        await repo.linkSubscription(
+          { id: 'member_id', subscription: subscriptionData },
+          { transacting: { executionPromise: Promise.resolve() } },
+        );
+      }
+
+      function createdEvents() {
+        return dispatch
+          .getCalls()
+          .map((call) => call.args[0])
+          .filter((event) => event instanceof SubscriptionCreatedEvent);
+      }
+
+      for (const status of ['incomplete', 'incomplete_expired']) {
+        it(`stores ${status} without paid activity or conversion events`, async function () {
+          await link(status);
+
+          assert.equal(storedSubscription.status, status);
+          assert.equal(storedSubscription.mrr, 0);
+          assert.equal(Member.edit.lastCall.args[0].status, 'free');
+          sinon.assert.notCalled(MemberPaidSubscriptionEvent.add);
+          assert.equal(createdEvents().length, 0);
+        });
+      }
+
+      it('never counts an incomplete subscription that expires, including repeat deliveries', async function () {
+        await link('incomplete');
+        await link('incomplete');
+        await link('incomplete_expired');
+        await link('incomplete_expired');
+
+        assert.equal(storedSubscription.status, 'incomplete_expired');
+        sinon.assert.notCalled(MemberPaidSubscriptionEvent.add);
+        assert.equal(createdEvents().length, 0);
+      });
+
+      for (const status of ['active', 'trialing', 'past_due', 'unpaid']) {
+        it(`records a single attributed conversion when incomplete becomes ${status}`, async function () {
+          await link('incomplete');
+          await link(status);
+          await link(status);
+
+          sinon.assert.calledOnce(MemberPaidSubscriptionEvent.add);
+          const activity = MemberPaidSubscriptionEvent.add.firstCall.args[0];
+          assert.equal(activity.type, 'created');
+          assert.equal(activity.from_plan, null);
+          assert.equal(activity.mrr_delta, status === 'trialing' ? 0 : 500);
+          assert.equal(createdEvents().length, 1);
+          assert.equal(createdEvents()[0].data.subscriptionId, 'local_subscription_id');
+          assert.deepEqual(createdEvents()[0].data.attribution, {
+            id: 'post_id',
+            url: '/original-post/',
+            type: 'post',
+            referrerSource: 'Google',
+            referrerMedium: null,
+            referrerUrl: null,
+            utmSource: null,
+            utmMedium: null,
+            utmCampaign: 'summer',
+            utmTerm: null,
+            utmContent: null,
+          });
+          assert.equal(Member.edit.lastCall.args[0].status, 'paid');
+        });
+      }
+
+      it('does not recreate a conversion already recorded before incomplete events were deferred', async function () {
+        await link('incomplete');
+        MemberPaidSubscriptionEvent.add.resetHistory();
+        MemberPaidSubscriptionEvent.findOne.resolves(toModel({ type: 'created' }));
+
+        await link('active');
+
+        sinon.assert.calledOnce(MemberPaidSubscriptionEvent.add);
+        assert.equal(MemberPaidSubscriptionEvent.add.firstCall.args[0].type, 'active');
+        assert.equal(createdEvents().length, 0);
+      });
+    });
+
     it('dispatches paid subscription event', async function () {
       const repo = buildRepo({
         stripeAPIService,

@@ -32,8 +32,15 @@ export function ForceUpgradeGuard() {
     return handle?.allowInForceUpgrade === true;
   });
 
-  if (forceUpgrade && !isAllowed) {
-    return <Navigate to="/pro" replace />;
+  if (!isAllowed) {
+    // Wait for config before mounting a page that may require a billing redirect.
+    if (forceUpgrade === undefined) {
+      return null;
+    }
+
+    if (forceUpgrade) {
+      return <Navigate to="/pro" replace />;
+    }
   }
 
   return <Outlet />;

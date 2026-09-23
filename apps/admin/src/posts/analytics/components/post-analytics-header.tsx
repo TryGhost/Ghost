@@ -1,3 +1,4 @@
+import { PageHeader } from '@tryghost/shade/patterns';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
 import EmailSendingStatusBanner from '@/posts/analytics/email-sending-status/email-sending-status-banner';
@@ -17,7 +18,6 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -55,6 +55,7 @@ import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gif
 import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useShade } from '@tryghost/shade/app';
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -62,6 +63,7 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
+  const { isAdmin7 } = useShade();
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
@@ -158,6 +160,73 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     }
   };
 
+  const shareAction = !post?.email_only && (
+    <PostShareModal
+      author={post?.authors?.[0]?.name || ''}
+      canShareAsGift={canManageGiftLink}
+      description=""
+      faviconURL={site?.icon || ''}
+      featureImageURL={post?.feature_image ?? undefined}
+      giftAccessLabel={giftAccessLabel(post?.visibility)}
+      open={isShareOpen}
+      postExcerpt={post?.excerpt || ''}
+      postTitle={post?.title}
+      postURL={post?.url}
+      siteTitle={site?.title || ''}
+      onClose={() => setIsShareOpen(false)}
+      onOpenChange={setIsShareOpen}
+      onShareAsGift={() => {
+        setIsShareOpen(false);
+        setIsGiftLinkOpen(true);
+      }}
+    >
+      <PageHeader.Action label="Share" primary onClick={() => setIsShareOpen(true)}>
+        <LucideIcon.Share /> Share
+      </PageHeader.Action>
+    </PostShareModal>
+  );
+
+  const moreActions = (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <PageHeader.Action label="More post actions" iconOnly>
+            <LucideIcon.Ellipsis />
+          </PageHeader.Action>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuGroup>
+            <DropdownMenuItem asChild>
+              <a href={post?.url} rel="noopener noreferrer" target="_blank">
+                <LucideIcon.ExternalLink />
+                View in browser
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                navigate(editorPath, { crossApp: editorIsEmberOwned });
+              }}
+            >
+              <LucideIcon.Pen />
+              Edit post
+              {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={handleDeletePost}
+            >
+              <LucideIcon.Trash />
+              Delete post
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
+
   return (
     <>
       <header className="z-50 -mx-(--page-gutter) bg-white/70 backdrop-blur-md dark:bg-background">
@@ -205,69 +274,23 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                 {!isPostLoading && (
-                  <>
-                    {!post?.email_only && (
-                      <PostShareModal
-                        author={post?.authors?.[0]?.name || ''}
-                        canShareAsGift={canManageGiftLink}
-                        description=""
-                        faviconURL={site?.icon || ''}
-                        featureImageURL={post?.feature_image ?? undefined}
-                        giftAccessLabel={giftAccessLabel(post?.visibility)}
-                        open={isShareOpen}
-                        postExcerpt={post?.excerpt || ''}
-                        postTitle={post?.title}
-                        postURL={post?.url}
-                        siteTitle={site?.title || ''}
-                        onClose={() => setIsShareOpen(false)}
-                        onOpenChange={setIsShareOpen}
-                        onShareAsGift={() => {
-                          setIsShareOpen(false);
-                          setIsGiftLinkOpen(true);
-                        }}
-                      >
-                        <Button variant="outline" onClick={() => setIsShareOpen(true)}>
-                          <LucideIcon.Share /> Share
-                        </Button>
-                      </PostShareModal>
+                  <PageHeader.ActionGroup>
+                    {isAdmin7 ? (
+                      <>
+                        {moreActions}
+                        {shareAction && (
+                          <PageHeader.ActionGroup.Primary>
+                            {shareAction}
+                          </PageHeader.ActionGroup.Primary>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {shareAction}
+                        {moreActions}
+                      </>
                     )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                          <LucideIcon.Ellipsis />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem asChild>
-                            <a href={post?.url} rel="noopener noreferrer" target="_blank">
-                              <LucideIcon.ExternalLink />
-                              View in browser
-                            </a>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              navigate(editorPath, { crossApp: editorIsEmberOwned });
-                            }}
-                          >
-                            <LucideIcon.Pen />
-                            Edit post
-                            {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={handleDeletePost}
-                          >
-                            <LucideIcon.Trash />
-                            Delete post
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
+                  </PageHeader.ActionGroup>
                 )}
               </div>
             </div>

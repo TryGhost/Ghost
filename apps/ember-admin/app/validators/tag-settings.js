@@ -6,7 +6,7 @@ export default BaseValidator.create({
     properties: ['name', 'slug', 'description', 'metaTitle', 'metaDescription'],
 
     name(model) {
-        let name = model.name;
+        const name = model.name;
 
         if (isBlank(name)) {
             model.errors.add('name', 'You must specify a name for the tag.');
@@ -21,7 +21,7 @@ export default BaseValidator.create({
     },
 
     slug(model) {
-        let slug = model.slug;
+        const slug = model.slug;
 
         if (!validator.isLength(slug || '', {max: 191})) {
             model.errors.add('slug', 'URL cannot be longer than 191 characters.');
@@ -30,7 +30,7 @@ export default BaseValidator.create({
     },
 
     description(model) {
-        let description = model.description;
+        const description = model.description;
 
         if (!validator.isLength(description || '', {max: 500})) {
             model.errors.add('description', 'Description cannot be longer than 500 characters.');
@@ -39,7 +39,7 @@ export default BaseValidator.create({
     },
 
     metaTitle(model) {
-        let metaTitle = model.metaTitle;
+        const metaTitle = model.metaTitle;
 
         if (!validator.isLength(metaTitle || '', {max: 300})) {
             model.errors.add('metaTitle', 'Meta Title cannot be longer than 300 characters.');
@@ -48,7 +48,7 @@ export default BaseValidator.create({
     },
 
     metaDescription(model) {
-        let metaDescription = model.metaDescription;
+        const metaDescription = model.metaDescription;
 
         if (!validator.isLength(metaDescription || '', {max: 500})) {
             model.errors.add('metaDescription', 'Meta Description cannot be longer than 500 characters.');

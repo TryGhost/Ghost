@@ -259,7 +259,7 @@ class StripeMocker {
           return parseFloat(value);
         }
 
-        let keywords = {
+        const keywords = {
           true: true,
           false: false,
           null: null,

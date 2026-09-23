@@ -13,7 +13,6 @@ import {
   PopoverClose,
   PopoverContent,
   PopoverTrigger,
-  buttonVariants,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 
@@ -119,10 +118,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            className={buttonVariants({ variant: 'destructive' })}
-            onClick={handleDeleteClick}
-          >
+          <AlertDialogAction variant="destructive" onClick={handleDeleteClick}>
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

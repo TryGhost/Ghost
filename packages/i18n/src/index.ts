@@ -5,11 +5,11 @@ import {
   LOCALE_DATA,
   SUPPORTED_LOCALES,
 } from './i18n-core.ts';
-import { requireLoader } from './require-loader.ts';
+import { fileLoader } from './file-loader.ts';
 import { generateThemeResources } from './theme-resources.ts';
 import type { I18nFactory } from './types.ts';
 
-const generateResources = createGenerateResources(requireLoader);
+const generateResources = createGenerateResources(fileLoader);
 
 const i18n = Object.assign(createI18n({ generateResources, generateThemeResources }), {
   LOCALE_DATA,

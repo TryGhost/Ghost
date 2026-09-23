@@ -10,13 +10,13 @@ import {setupMirage} from 'ember-cli-mirage/test-support';
 const KEY_S = 83;
 
 describe('Acceptance: Custom Post Templates', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
         this.server.loadFixtures('settings','configs');
 
-        let role = this.server.create('role', {name: 'Administrator'});
+        const role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {roles: [role]});
 
         await authenticateSession();
@@ -61,7 +61,7 @@ describe('Acceptance: Custom Post Templates', function () {
         });
 
         it('can change selected template', async function () {
-            let post = this.server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
+            const post = this.server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
 
             await visit('/editor/post/1');
             await click('[data-test-psm-trigger]');
@@ -70,7 +70,7 @@ describe('Acceptance: Custom Post Templates', function () {
             expect(find('[data-test-custom-template-form]')).to.exist;
 
             // custom template should be selected
-            let select = find('[data-test-select="custom-template"]');
+            const select = find('[data-test-select="custom-template"]');
             expect(select.value, 'selected value').to.equal('custom-news-bulletin.hbs');
 
             // templates list should contain default and custom templates in alphabetical order
@@ -100,7 +100,7 @@ describe('Acceptance: Custom Post Templates', function () {
         it('disables template selector if slug matches slug-based template');
 
         it('doesn\'t query themes endpoint unncessarily', async function () {
-            let themeRequests = () => {
+            const themeRequests = () => {
                 return this.server.pretender.handledRequests.filter(function (request) {
                     return request.url.match(/\/themes\//);
                 });

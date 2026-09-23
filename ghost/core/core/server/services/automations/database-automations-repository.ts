@@ -56,7 +56,7 @@ const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG
 
 type AutomationRow = {
   id: string;
-  slug: string;
+  slug: null | string;
   name: string;
   status: string;
   created_at: DatabaseDate;
@@ -117,7 +117,7 @@ type StepToRunRow = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  automation_slug: string;
+  automation_slug: null | string;
   automation_status: 'inactive' | 'active';
   member_id: string | null;
   member_email: string;

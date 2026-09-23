@@ -310,13 +310,11 @@ export function MultiSelectCombobox<T = unknown>({
 
   // --- Default item renderer ---
 
-  const getCommandItemValue = (
-    option: FilterOption<T>,
-    isSelected: boolean,
-  ): string | undefined => {
-    if (isSelected) {
-      return undefined;
-    }
+  // The text cmdk searches, for a selected row as much as an unselected one: a row
+  // that moves up into the selected group while a search is typed is re-mounted, and
+  // without a value of its own it comes back unscored and hidden until the search
+  // changes, so the pick looked like it had vanished.
+  const getCommandItemValue = (option: FilterOption<T>): string => {
     const detail = option.detail ? ` - ${option.detail}` : '';
     return option.label + detail;
   };
@@ -325,7 +323,7 @@ export function MultiSelectCombobox<T = unknown>({
     <CommandItem
       key={String(option.value)}
       className="group flex items-center gap-2"
-      value={getCommandItemValue(option, isSelected)}
+      value={getCommandItemValue(option)}
       onSelect={onSelect}
     >
       {option.icon}
@@ -413,7 +411,7 @@ export function MultiSelectCombobox<T = unknown>({
               )}
               <div className="p-1.5">
                 <button
-                  className="flex w-full items-center justify-center rounded-xs px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+                  className="flex w-full items-center justify-center rounded-menu-item px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
                   disabled={source.isLoadingMore}
                   type="button"
                   onClick={source.loadMore}

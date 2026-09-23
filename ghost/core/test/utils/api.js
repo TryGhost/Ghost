@@ -76,8 +76,8 @@ function checkResponse(
  */
 const doAuth = (apiOptions) => {
   return async function doAuthInner() {
-    let API_URL = arguments[0];
-    let request = arguments[1];
+    const API_URL = arguments[0];
+    const request = arguments[1];
 
     // Remove API_URL & request from this list
     let options = Array.prototype.slice.call(arguments, 2);

@@ -5,7 +5,7 @@ import {Factory} from 'miragejs';
 export default Factory.extend({
     name(i) { return `Integration ${i + 1}`;},
     event(i) {
-        let event = AVAILABLE_EVENTS[i % 3];
+        const event = AVAILABLE_EVENTS[i % 3];
         return event.event;
     },
     target(i) { return `https://example.com/${i + 1}`; },

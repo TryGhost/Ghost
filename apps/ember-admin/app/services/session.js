@@ -157,7 +157,7 @@ export default class SessionService extends ESASessionService {
     }
 
     handleInvalidation() {
-        let transition = this.appLoadTransition;
+        const transition = this.appLoadTransition;
 
         if (transition) {
             transition.send('authorizationFailed');

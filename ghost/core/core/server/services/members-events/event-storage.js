@@ -23,7 +23,7 @@ class EventStorage {
    */
   subscribe(domainEvents) {
     domainEvents.subscribe(MemberCreatedEvent, async (event) => {
-      let attribution = event.data.attribution;
+      const attribution = event.data.attribution;
 
       await this.models.MemberCreatedEvent.add({
         member_id: event.data.memberId,
@@ -45,7 +45,7 @@ class EventStorage {
     });
 
     domainEvents.subscribe(SubscriptionCreatedEvent, async (event) => {
-      let attribution = event.data.attribution;
+      const attribution = event.data.attribution;
 
       await this.models.SubscriptionCreatedEvent.add({
         member_id: event.data.memberId,

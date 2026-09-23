@@ -1,8 +1,8 @@
-import { type Filter, Filters } from '@tryghost/shade/patterns';
-import { Button } from '@tryghost/shade/components';
+import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
+import { useShade } from '@tryghost/shade/app';
 import { Inline } from '@tryghost/shade/primitives';
 import type { ReactNode } from 'react';
-import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { cn } from '@tryghost/shade/utils';
 import { usePostFilterFields } from '@/posts/list/use-post-filter-fields';
 import type { PostResource } from '@/posts/list/post-resource';
 import type { User } from '@tryghost/admin-x-framework/api/users';
@@ -44,27 +44,30 @@ export function PostsFilters({
   viewActions,
   onFiltersChange,
 }: PostsFiltersProps) {
+  const { isAdmin7 } = useShade();
   const fields = usePostFilterFields(resource, currentUser, params);
   const hasFilters = filters.length > 0;
-  const showIconOnlyTrigger = iconOnly && !hasFilters;
 
-  // Outlined and pinned right: inline it read as another chip's own X, and
-  // in normal flow wrapping chips would drag it down off the first row.
+  // Pinned right: inline it would read as another chip's own X, and wrapping
+  // chips would drag it down off the first row.
   const trailingActions = hasFilters ? (
-    <Inline className="shrink-0 sm:absolute sm:top-0 sm:right-0" gap="sm">
-      <Button
-        className="hidden items-center text-muted-foreground hover:text-foreground lg:inline-flex"
+    <FilterBar.Actions>
+      <FilterBar.Action
+        className={cn(
+          'hidden items-center lg:inline-flex',
+          !isAdmin7 && 'text-muted-foreground hover:text-foreground',
+        )}
         type="button"
-        variant="outline"
+        variant={isAdmin7 ? 'ghost' : 'outline'}
         onClick={() => onFiltersChange([])}
       >
         Clear
-      </Button>
+      </FilterBar.Action>
       {viewActions}
-    </Inline>
+    </FilterBar.Actions>
   ) : undefined;
 
-  return (
+  const controls = (
     // Testid on the wrapper — `Filters` doesn't forward arbitrary props.
     <Inline
       align="center"
@@ -73,23 +76,7 @@ export function PostsFilters({
       gap="sm"
     >
       <Filters
-        // Collapsed with `text-[0px]`, not by dropping the label: the
-        // word "Filter" stays in the accessible name at every width.
-        addButtonClassName={cn(
-          showIconOnlyTrigger &&
-            'min-w-[34px] gap-0 !px-3 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base',
-          // In the bar it is icon-only at every width — the chips
-          // beside it already say what it adds to.
-          hasFilters && 'gap-0 !px-3 text-[0px]',
-        )}
-        addButtonIcon={
-          hasFilters ? (
-            <LucideIcon.ListFilterPlus className="size-4" />
-          ) : (
-            <LucideIcon.ListFilter className="size-4" />
-          )
-        }
-        addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+        addButton={<Filters.Trigger collapseLabel={iconOnly} />}
         // Each field maps to one URL param holding one value; a second
         // chip per field would sit there without being in the URL.
         allowMultiple={false}
@@ -113,4 +100,6 @@ export function PostsFilters({
       />
     </Inline>
   );
+
+  return controls;
 }

@@ -41,10 +41,10 @@ module.exports = function link(options) {
     options.hash.href = '';
   }
 
-  let href = options.hash.href.string || options.hash.href;
+  const href = options.hash.href.string || options.hash.href;
 
   // Calculate dynamic properties
-  let classes = buildLinkClasses(config.get('url'), href, options);
+  const classes = buildLinkClasses(config.get('url'), href, options);
 
   // Remove all the attributes we don't want to do a one-to-one mapping of
   managedAttributes.forEach((attr) => {
@@ -52,14 +52,14 @@ module.exports = function link(options) {
   });
 
   // Setup our one-to-one mapping of attributes;
-  let attributes = options.hash;
+  const attributes = options.hash;
 
   // Prepare output
-  let classString = classes.length > 0 ? `class="${classes.join(' ')}"` : '';
-  let hrefString = `href="${href}"`;
-  let attributeString = _.size(attributes) > 0 ? _formatAttrs(attributes) : '';
+  const classString = classes.length > 0 ? `class="${classes.join(' ')}"` : '';
+  const hrefString = `href="${href}"`;
+  const attributeString = _.size(attributes) > 0 ? _formatAttrs(attributes) : '';
   let openingTag = `<a ${classString} ${hrefString} ${attributeString}>`;
-  let closingTag = `</a>`;
+  const closingTag = `</a>`;
 
   // Clean up any extra spaces
   openingTag = openingTag.replace(/\s{2,}/g, ' ').replace(/\s>/, '>');

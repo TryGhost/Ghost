@@ -1,8 +1,5 @@
-import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { ConfigInstance } from '../../../shared/config/loader';
-// @ts-expect-error This module lacks type definitions.
-import type DomainEvents from '@tryghost/domain-events';
 import type { GhostMetrics } from '@tryghost/metrics';
 import {
   EmailAnalyticsService,
@@ -16,9 +13,11 @@ import { fetchMailgunEvents } from './fetch-mailgun-events';
 
 export class EmailAnalyticsServiceWrapper {
   #logName: string;
-  #config?: Pick<ConfigInstance, 'get'>;
-  #metrics?: Pick<GhostMetrics, 'metric'>;
-  #service?: EmailAnalyticsService;
+  readonly #jobType: string;
+  readonly #completionEvent: string;
+  readonly #config: Pick<ConfigInstance, 'get'>;
+  readonly #metrics: Pick<GhostMetrics, 'metric'>;
+  readonly #service: EmailAnalyticsService;
   #fetching = false;
   #restoredSchedule = false;
   #fetchOpenedEvents = true;
@@ -27,27 +26,10 @@ export class EmailAnalyticsServiceWrapper {
     return `[EmailAnalytics:${this.#logName}]`;
   }
 
-  get #backgroundJobName(): string {
-    switch (this.#logName) {
-      case 'newsletters':
-        return 'email-analytics-fetch-latest';
-      case 'automations':
-        return 'email-analytics-automation-fetch-latest';
-      case 'gifts':
-        return 'email-analytics-gift-fetch-latest';
-      default:
-        return `email-analytics-${this.#logName}-fetch-latest`;
-    }
-  }
-
-  constructor({ logName }: { logName: string }) {
-    this.#logName = logName;
-  }
-
-  init({
+  constructor({
+    logName,
+    jobType,
     config,
-    domainEvents,
-    event,
     queries,
     mailgunTags,
     jobNames,
@@ -57,8 +39,8 @@ export class EmailAnalyticsServiceWrapper {
     settingsCache,
   }: Readonly<{
     config: Pick<ConfigInstance, 'get'>;
-    domainEvents: Pick<DomainEvents, 'subscribe'>;
-    event: Parameters<DomainEvents['subscribe']>[0];
+    logName: string;
+    jobType: string;
     queries: Queries;
     mailgunTags: string[];
     jobNames: JobNames;
@@ -66,10 +48,10 @@ export class EmailAnalyticsServiceWrapper {
     createEventProcessor: () => BatchEventProcessor;
     metrics: Pick<GhostMetrics, 'metric'>;
     settingsCache: { get: (key: string) => unknown };
-  }>): void {
-    if (this.#service) {
-      return;
-    }
+  }>) {
+    this.#logName = logName;
+    this.#jobType = jobType;
+    this.#completionEvent = `${jobType.replaceAll('-', '_')}.completed`;
 
     this.#config = config;
     this.#metrics = metrics;
@@ -89,32 +71,10 @@ export class EmailAnalyticsServiceWrapper {
     logging.info(
       `${this.#logPrefix} Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`,
     );
-
-    // We currently cannot trigger a non-offloaded job from the job manager
-    // So the email analytics jobs simply emits an event.
-    domainEvents.subscribe(event, async () => {
-      await this.startFetch();
-    });
   }
 
   get service(): EmailAnalyticsService {
-    const result = this.#service;
-    if (!result) {
-      throw new errors.InternalServerError({
-        message: 'EmailAnalyticsServiceWrapper is not initialized with service',
-      });
-    }
-    return result;
-  }
-
-  #getConfig(): Pick<ConfigInstance, 'get'> {
-    const result = this.#config;
-    if (!result) {
-      throw new errors.InternalServerError({
-        message: 'EmailAnalyticsServiceWrapper is not initialized with config',
-      });
-    }
-    return result;
+    return this.#service;
   }
 
   _logJobCompletion(
@@ -123,7 +83,7 @@ export class EmailAnalyticsServiceWrapper {
     totalDurationMs: number,
     lagSeconds: number | null = null,
   ): void {
-    const config = this.#getConfig();
+    const config = this.#config;
 
     const {
       eventCount,
@@ -149,7 +109,7 @@ export class EmailAnalyticsServiceWrapper {
     const batchMode = config.get('emailAnalytics:batchProcessing') ? 'BATCHED' : 'SEQUENTIAL';
 
     const logMessage = [
-      `[Background Job] ${this.#backgroundJobName} processed ${jobType} | ${this.#logPrefix}`,
+      `[Background Job] ${this.#jobType} processed ${jobType} | ${this.#logPrefix}`,
       `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
       ...(lagSeconds === null ? [] : [`Lag: ${(lagSeconds / 60).toFixed(1)}m`]),
       `Mode: ${batchMode}`,
@@ -161,7 +121,7 @@ export class EmailAnalyticsServiceWrapper {
       {
         system: {
           event: 'job.completed',
-          job_type: this.#backgroundJobName,
+          job_type: this.#jobType,
           task: jobType,
           event_count: eventCount,
           duration_ms: totalDurationMs,
@@ -182,13 +142,7 @@ export class EmailAnalyticsServiceWrapper {
             ? 'email-analytics-open-throughput'
             : `email-${this.#logName}-analytics-open-throughput`;
 
-        const metrics = this.#metrics;
-        if (!metrics) {
-          throw new errors.InternalServerError({
-            message: 'EmailAnalyticsServiceWrapper is not initialized with metrics',
-          });
-        }
-        metrics.metric(metricName, {
+        this.#metrics.metric(metricName, {
           value: throughput,
           events: eventCount,
           duration: totalDurationMs,
@@ -255,16 +209,14 @@ export class EmailAnalyticsServiceWrapper {
       } catch (e) {
         logging.error(
           e,
-          `[Background Job] ${this.#backgroundJobName} failed while restoring scheduled events after ${Date.now() - startedAt}ms`,
+          `[Background Job] ${this.#jobType} failed while restoring scheduled events after ${Date.now() - startedAt}ms`,
         );
         throw e;
       }
     }
 
     if (this.#fetching) {
-      logging.info(
-        `[Background Job] ${this.#backgroundJobName} skipped because a fetch is already running`,
-      );
+      logging.info(`[Background Job] ${this.#jobType} skipped because a fetch is already running`);
       return;
     }
     this.#fetching = true;
@@ -299,15 +251,24 @@ export class EmailAnalyticsServiceWrapper {
         return;
       }
 
+      // The message is unchanged so existing log queries keep matching; the
+      // structured fields are additive.
       logging.info(
-        `[Background Job] ${this.#backgroundJobName} completed in ${Date.now() - startedAt}ms with ${c1 + c2 + c3 + c4} events | ${this.#logPrefix}`,
+        {
+          system: {
+            event: this.#completionEvent,
+            event_count: c1 + c2 + c3 + c4,
+            duration_ms: Date.now() - startedAt,
+          },
+        },
+        `[Background Job] ${this.#jobType} completed in ${Date.now() - startedAt}ms with ${c1 + c2 + c3 + c4} events | ${this.#logPrefix}`,
       );
 
       this.#fetching = false;
     } catch (e) {
       logging.error(
         e,
-        `[Background Job] ${this.#backgroundJobName} failed after ${Date.now() - startedAt}ms`,
+        `[Background Job] ${this.#jobType} failed after ${Date.now() - startedAt}ms`,
       );
 
       // Log again only the error, otherwise we lose the stack trace
@@ -318,7 +279,7 @@ export class EmailAnalyticsServiceWrapper {
 
   _restartFetch(reason: string): void {
     this.#fetching = false;
-    logging.info(`[Background Job] ${this.#backgroundJobName} continuing due to ${reason}`);
+    logging.info(`[Background Job] ${this.#jobType} continuing due to ${reason}`);
     this.startFetch();
   }
 }

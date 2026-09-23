@@ -12,6 +12,7 @@ const dnsPromises = require('dns').promises;
 const errors = require('@tryghost/errors');
 const config = require('../../shared/config');
 const validator = require('@tryghost/validator');
+const ipaddr = require('ipaddr.js');
 
 // Shared keep-alive agents so outbound HTTPS connections are pooled and reused
 // across page renders / oEmbed / webmention / recommendations / image probes.
@@ -44,70 +45,58 @@ function normalizeIPv4(addr) {
   return null;
 }
 
+const IPV4_COMPATIBLE = ipaddr.IPv6.parseCIDR('::/96');
+const NAT64_WELL_KNOWN = ipaddr.IPv6.parseCIDR('64:ff9b::/96');
+
 /**
- * Normalize an IPv6 address from any expanded form (e.g. 0:0:0:0:0:0:0:1)
- * to compressed notation (e.g. ::1) using the WHATWG URL parser.
- * Returns null if the address is not a valid IPv6 address.
+ * Build an IPv4 address from two 16-bit IPv6 groups.
+ *
+ * @param {number} hi
+ * @param {number} lo
+ * @returns {ipaddr.IPv4}
  */
-function normalizeIPv6(addr) {
-  try {
-    const hostname = new URL('http://[' + addr + ']/').hostname;
-    // hostname includes brackets, strip them
-    const normalized = hostname.slice(1, -1);
-    if (net.isIPv6(normalized)) {
-      return normalized;
-    }
-  } catch {
-    // URL parsing failed
-  }
-  return null;
+function ipv4FromGroups(hi, lo) {
+  return new ipaddr.IPv4([(hi >> 8) & 0xff, hi & 0xff, (lo >> 8) & 0xff, lo & 0xff]);
 }
 
 /**
- * Check if a normalized (dotted-decimal) IPv4 address falls in a private/reserved range.
+ * Default-deny: anything outside ipaddr.js's plain "unicast" range is private.
+ * IPv6 transition prefixes that route to an embedded IPv4 address are classified
+ * by that IPv4 address instead, so e.g. DNS64-synthesized addresses for public
+ * hosts are still allowed on NAT64 networks.
+ *
+ * @param {ipaddr.IPv4 | ipaddr.IPv6} address
+ * @returns {boolean}
  */
-function isPrivateIPv4(addr) {
-  const parts = addr.split('.');
-  const a = parseInt(parts[0], 10);
-  const b = parseInt(parts[1], 10);
+function isPrivateAddress(address) {
+  if (address instanceof ipaddr.IPv6) {
+    const parts = address.parts;
 
-  // 10.0.0.0/8
-  if (a === 10) {
-    return true;
+    // ::/96 - unspecified, loopback and deprecated IPv4-compatible addresses (RFC 4291).
+    // ipaddr.js classifies IPv4-compatible addresses such as ::7f00:1 as unicast.
+    if (address.match(IPV4_COMPATIBLE)) {
+      return true;
+    }
+
+    switch (address.range()) {
+      // ::ffff:0:0/96 IPv4-mapped (RFC 4291) and ::ffff:0:0:0/96 IPv4-translated (RFC 6145)
+      case 'ipv4Mapped':
+      case 'rfc6145':
+        return isPrivateAddress(ipv4FromGroups(parts[6], parts[7]));
+      // 64:ff9b::/96 NAT64 well-known prefix (RFC 6052). The 64:ff9b:1::/48 local-use
+      // prefix (RFC 8215) has a network-specific IPv4 position, so it stays blocked.
+      case 'rfc6052':
+        if (address.match(NAT64_WELL_KNOWN)) {
+          return isPrivateAddress(ipv4FromGroups(parts[6], parts[7]));
+        }
+        return true;
+      // 2002::/16 6to4 (RFC 3056)
+      case '6to4':
+        return isPrivateAddress(ipv4FromGroups(parts[1], parts[2]));
+    }
   }
-  // 172.16.0.0/12
-  if (a === 172 && b >= 16 && b <= 31) {
-    return true;
-  }
-  // 192.168.0.0/16
-  if (a === 192 && b === 168) {
-    return true;
-  }
-  // 127.0.0.0/8
-  if (a === 127) {
-    return true;
-  }
-  // 169.254.0.0/16
-  if (a === 169 && b === 254) {
-    return true;
-  }
-  // 100.64.0.0/10 (carrier-grade NAT, RFC 6598)
-  if (a === 100 && b >= 64 && b <= 127) {
-    return true;
-  }
-  // 198.18.0.0/15 (benchmarking, RFC 2544)
-  if (a === 198 && (b === 18 || b === 19)) {
-    return true;
-  }
-  // 0.0.0.0/8
-  if (a === 0) {
-    return true;
-  }
-  // 240.0.0.0/4 (reserved) and 255.255.255.255 (broadcast)
-  if (a >= 240) {
-    return true;
-  }
-  return false;
+
+  return address.range() !== 'unicast';
 }
 
 function isPrivateIp(addr) {
@@ -116,70 +105,17 @@ function isPrivateIp(addr) {
     return true;
   }
 
-  // Check for IPv4-mapped IPv6 in dotted notation (e.g. ::ffff:192.168.0.1)
-  const v4DottedMatch = addr.match(/^::ffff:(\d[\d.]+)$/i);
-  if (v4DottedMatch) {
-    const normalized = normalizeIPv4(v4DottedMatch[1]);
-    if (normalized) {
-      return isPrivateIPv4(normalized);
-    }
+  let address;
+  try {
+    // WHATWG normalization first so every IPv4 form Node will connect to
+    // (decimal, octal, hex, integer, shortened) is parsed the same way
+    address = ipaddr.parse(normalizeIPv4(addr) ?? addr);
+  } catch {
+    // Unrecognized format - fail closed
     return true;
   }
 
-  // Check for IPv4-mapped IPv6 in hex notation (e.g. ::ffff:7f00:1)
-  const v4HexMatch = addr.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
-  if (v4HexMatch) {
-    const hi = parseInt(v4HexMatch[1], 16);
-    const lo = parseInt(v4HexMatch[2], 16);
-    const mapped =
-      ((hi >> 8) & 0xff) + '.' + (hi & 0xff) + '.' + ((lo >> 8) & 0xff) + '.' + (lo & 0xff);
-    return isPrivateIPv4(mapped);
-  }
-
-  // Try normalizing as IPv4 (handles decimal, octal, hex, and integer notation)
-  const normalized = normalizeIPv4(addr);
-  if (normalized) {
-    return isPrivateIPv4(normalized);
-  }
-
-  // IPv6 checks
-  const normalized6 = normalizeIPv6(addr);
-  if (normalized6) {
-    // ::1 loopback, :: unspecified
-    if (normalized6 === '::1' || normalized6 === '::' || normalized6 === '::0') {
-      return true;
-    }
-    // fc00::/7 unique local
-    if (/^f[cd][0-9a-f]{2}:/i.test(normalized6)) {
-      return true;
-    }
-    // fe80::/10 link-local
-    if (/^fe[89ab][0-9a-f]:/i.test(normalized6)) {
-      return true;
-    }
-    // Re-check for IPv4-mapped IPv6 after normalization
-    // Handles expanded forms like 0:0:0:0:0:ffff:127.0.0.1 which normalize to ::ffff:...
-    const v4DottedNorm = normalized6.match(/^::ffff:(\d[\d.]+)$/i);
-    if (v4DottedNorm) {
-      const normV4 = normalizeIPv4(v4DottedNorm[1]);
-      if (normV4) {
-        return isPrivateIPv4(normV4);
-      }
-      return true;
-    }
-    const v4HexNorm = normalized6.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
-    if (v4HexNorm) {
-      const hi = parseInt(v4HexNorm[1], 16);
-      const lo = parseInt(v4HexNorm[2], 16);
-      const mapped =
-        ((hi >> 8) & 0xff) + '.' + (hi & 0xff) + '.' + ((lo >> 8) & 0xff) + '.' + (lo & 0xff);
-      return isPrivateIPv4(mapped);
-    }
-    return false;
-  }
-
-  // Unrecognized format - fail closed
-  return true;
+  return isPrivateAddress(address);
 }
 
 async function errorIfHostnameResolvesToPrivateIp(options) {

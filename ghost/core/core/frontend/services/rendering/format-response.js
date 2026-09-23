@@ -90,7 +90,7 @@ function formatResponse(post, context, locals = {}) {
 
   prepareContextResource(post);
 
-  let entry = {
+  const entry = {
     post: post,
   };
 

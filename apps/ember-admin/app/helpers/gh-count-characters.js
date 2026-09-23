@@ -6,12 +6,12 @@ export function countCharacters(params) {
         return;
     }
 
-    let el = document.createElement('span');
-    let content = params[0] || '';
+    const el = document.createElement('span');
+    const content = params[0] || '';
 
     // convert to array so that we get accurate symbol counts for multibyte chars
     // this will still count emoji+modifer as two chars
-    let {length} = Array.from(content);
+    const {length} = Array.from(content);
 
     el.className = 'word-count';
 

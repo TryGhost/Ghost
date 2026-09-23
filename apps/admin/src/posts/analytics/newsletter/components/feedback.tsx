@@ -32,6 +32,7 @@ import { usePostFeedback } from '@/posts/analytics/hooks/use-post-feedback';
 import { useState } from 'react';
 import PendingSendEmpty from '@/posts/analytics/email-sending-status/pending-send-empty';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useShade } from '@tryghost/shade/app';
 
 interface FeedbackProps {
   feedbackStats: {
@@ -42,6 +43,7 @@ interface FeedbackProps {
 }
 
 const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
+  const { isAdmin7 } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -91,7 +93,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
                 className="pb-3"
                 defaultValue="positive"
                 value={activeFeedbackTab}
-                variant="button"
+                variant={isAdmin7 ? 'button-sm' : 'button'}
                 onValueChange={(value) => setActiveFeedbackTab(value as 'positive' | 'negative')}
               >
                 <TabsList className="gap-1">
@@ -182,7 +184,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
         <CardFooter className="grow-0">
           <div className="flex w-full items-center justify-between gap-3">
             <Button
-              variant="outline"
+              variant="subtle"
               onClick={() => {
                 const positiveFilter = `(feedback.post_id:'${postId}'+feedback.score:1)`;
                 const negativeFilter = `(feedback.post_id:'${postId}'+feedback.score:0)`;

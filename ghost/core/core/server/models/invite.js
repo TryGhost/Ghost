@@ -15,10 +15,7 @@ const messages = {
   notAllowedToInvite: 'Not allowed to invite this role.',
 };
 
-let Invite;
-let Invites;
-
-Invite = ghostBookshelf.Model.extend(
+const Invite = ghostBookshelf.Model.extend(
   {
     tableName: 'invites',
 
@@ -142,7 +139,7 @@ Invite = ghostBookshelf.Model.extend(
   },
 );
 
-Invites = ghostBookshelf.Collection.extend({
+const Invites = ghostBookshelf.Collection.extend({
   model: Invite,
 });
 

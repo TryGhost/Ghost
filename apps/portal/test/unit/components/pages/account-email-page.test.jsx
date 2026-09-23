@@ -81,8 +81,8 @@ describe('Account Email Page', () => {
       member: getMemberData({ newsletters: newsletterData }),
     });
     let checkboxes = container.querySelectorAll('input[type="checkbox"]');
-    let newsletter1Checkbox = checkboxes[0];
-    let newsletter2Checkbox = checkboxes[1];
+    const newsletter1Checkbox = checkboxes[0];
+    const newsletter2Checkbox = checkboxes[1];
     // each newsletter should have the checked class (this is how we know they're enabled/subscribed to)
     expect(newsletter1Checkbox).toBeChecked();
     expect(newsletter2Checkbox).toBeChecked();
@@ -123,11 +123,11 @@ describe('Account Email Page', () => {
       site: siteData,
       member: getMemberData({ newsletters: newsletterData }),
     });
-    let checkboxes = container.querySelectorAll('input[type="checkbox"]');
-    let newsletter1Checkbox = checkboxes[0];
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    const newsletter1Checkbox = checkboxes[0];
     // each newsletter should have the checked class (this is how we know they're enabled/subscribed to)
     expect(newsletter1Checkbox).toBeChecked();
-    let subscriptionToggles = getAllByTestId('switch-input');
+    const subscriptionToggles = getAllByTestId('switch-input');
     fireEvent.click(subscriptionToggles[0]);
     expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {
       newsletters: [{ id: newsletterData[1].id }],

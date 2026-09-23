@@ -400,14 +400,16 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                           member={member}
                         />
                       )}
-                    <Button
-                      className="min-w-16"
-                      disabled={saveDisabled}
-                      variant={saveVariant}
-                      onClick={onSave}
-                    >
-                      {saveLabel}
-                    </Button>
+                    <PageHeader.ActionGroup.Primary>
+                      <Button
+                        className="min-w-16"
+                        disabled={saveDisabled}
+                        variant={saveVariant}
+                        onClick={onSave}
+                      >
+                        {saveLabel}
+                      </Button>
+                    </PageHeader.ActionGroup.Primary>
                   </PageHeader.ActionGroup>
                 </PageHeader.Actions>
               )}

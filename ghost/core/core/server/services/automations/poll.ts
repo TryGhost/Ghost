@@ -150,7 +150,9 @@ const processStep = async ({
   }
 
   // NOTE: This will change once we support additional automation triggers.
-  const memberStatus = slugToMemberStatus.get(step.automation_slug);
+  const memberStatus = step.automation_slug
+    ? slugToMemberStatus.get(step.automation_slug)
+    : undefined;
   if (!memberStatus) {
     logging.error(
       {

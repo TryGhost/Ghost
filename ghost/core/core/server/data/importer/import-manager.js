@@ -29,7 +29,7 @@ const messages = {
   zipContainsMultipleDataFormats:
     'Zip file contains multiple data formats. Please split up and import separately.',
 };
-let defaults = {
+const defaults = {
   extensions: ['.zip'],
   contentTypes: ['application/zip', 'application/x-zip-compressed'],
   directories: [],

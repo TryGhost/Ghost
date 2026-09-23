@@ -35,12 +35,15 @@ Out of scope for the current page-template milestone. Don't force a settings pag
 
 No standard yet — too few examples. Don't standardise prematurely.
 
+When constructing or changing header controls, follow [Shade page header](../shade-page-header/SKILL.md) and its linked Storybook contract.
+
 ## Canonical list page skeleton
 
 ```tsx
 import {ListPage} from '@tryghost/shade/page-templates';
 import {PageHeader, ViewBar, FilterBar} from '@tryghost/shade/patterns';
-import {Button, EmptyIndicator, Table} from '@tryghost/shade/components';
+import {EmptyIndicator, Table} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 <ListPage>
   <ListPage.Header>
@@ -53,7 +56,9 @@ import {Button, EmptyIndicator, Table} from '@tryghost/shade/components';
       </PageHeader.Left>
       <PageHeader.Actions>
         <PageHeader.ActionGroup>
-          <Button>Add member</Button>
+          <PageHeader.ActionGroup.Primary>
+            <PageHeader.Action label="Add member"><LucideIcon.Plus />Add member</PageHeader.Action>
+          </PageHeader.ActionGroup.Primary>
         </PageHeader.ActionGroup>
       </PageHeader.Actions>
     </PageHeader>

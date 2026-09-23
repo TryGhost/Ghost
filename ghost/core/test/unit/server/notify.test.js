@@ -26,7 +26,7 @@ describe('Notify', function () {
 
       sinon.assert.calledOnce(process.send);
 
-      let message = process.send.firstCall.args[0];
+      const message = process.send.firstCall.args[0];
       assert(message && typeof message === 'object');
       assert('debug' in message);
       assert(!('error' in message));
@@ -38,7 +38,7 @@ describe('Notify', function () {
 
       sinon.assert.calledOnce(process.send);
 
-      let message = process.send.firstCall.args[0];
+      const message = process.send.firstCall.args[0];
       assert(message && typeof message === 'object');
       assert('debug' in message);
       assert.equal(message.started, false);

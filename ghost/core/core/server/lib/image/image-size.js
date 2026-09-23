@@ -273,12 +273,10 @@ class ImageSize {
    * @returns {object} imageObject or error
    */
   getImageSizeFromStoragePath(imagePath) {
-    let filePath;
-
     imagePath = this.urlUtils.urlFor('image', { image: imagePath }, true);
 
     // get the storage readable filePath
-    filePath = this.storageUtils.getLocalImagesStoragePath(imagePath);
+    const filePath = this.storageUtils.getLocalImagesStoragePath(imagePath);
 
     return this.imageStore
       .read({ path: filePath })

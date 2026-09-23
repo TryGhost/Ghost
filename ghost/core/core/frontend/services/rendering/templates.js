@@ -118,7 +118,7 @@ templates.getEntryTemplateHierarchy = function getEntryTemplateHierarchy(postObj
 templates.pickTemplate = function pickTemplate(templateList, fallback) {
   let template;
 
-  if (!_.isArray(templateList)) {
+  if (!Array.isArray(templateList)) {
     templateList = [templateList];
   }
 

@@ -98,8 +98,8 @@ function defaultFormat(frame) {
 }
 
 function handlePostsMeta(frame) {
-  let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
-  let meta = _.pick(frame.data.pages[0], metaAttrs);
+  const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+  const meta = _.pick(frame.data.pages[0], metaAttrs);
   frame.data.pages[0].posts_meta = meta;
 }
 

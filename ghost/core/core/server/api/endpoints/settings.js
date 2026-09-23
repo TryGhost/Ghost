@@ -146,9 +146,9 @@ const controller = {
       },
     },
     async query(frame) {
-      let stripeConnectData = await getStripeConnectData(frame);
+      const stripeConnectData = await getStripeConnectData(frame);
 
-      let result = await settingsBREADService.edit(
+      const result = await settingsBREADService.edit(
         frame.data.settings,
         frame.options,
         stripeConnectData,

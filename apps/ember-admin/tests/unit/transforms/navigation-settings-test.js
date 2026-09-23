@@ -8,9 +8,9 @@ describe('Unit: Transform: navigation-settings', function () {
     setupTest();
 
     it('deserializes navigation json', function () {
-        let transform = this.owner.lookup('transform:navigation-settings');
-        let serialized = '[{"label":"One","url":"/one","icon":"https://example.com/one.svg","visibility":"members"},{"label":"Two","url":"/two"},{"label":"Three","url":"/three","visibility":"public_free"},{"label":"Four","url":"/four","visibility":"none"}]';
-        let result = transform.deserialize(serialized);
+        const transform = this.owner.lookup('transform:navigation-settings');
+        const serialized = '[{"label":"One","url":"/one","icon":"https://example.com/one.svg","visibility":"members"},{"label":"Two","url":"/two"},{"label":"Three","url":"/three","visibility":"public_free"},{"label":"Four","url":"/four","visibility":"none"}]';
+        const result = transform.deserialize(serialized);
 
         expect(result.length).to.equal(4);
         expect(result[0]).to.be.instanceof(NavigationItem);
@@ -33,14 +33,14 @@ describe('Unit: Transform: navigation-settings', function () {
     });
 
     it('serializes array of NavigationItems', function () {
-        let transform = this.owner.lookup('transform:navigation-settings');
-        let deserialized = emberA([
+        const transform = this.owner.lookup('transform:navigation-settings');
+        const deserialized = emberA([
             NavigationItem.create({label: 'One', url: '/one', icon: 'https://example.com/one.svg', visibility: 'members'}),
             NavigationItem.create({label: 'Two', url: '/two', visibility: 'public'}),
             NavigationItem.create({label: 'Three', url: '/three', visibility: 'public_free'}),
             NavigationItem.create({label: 'Four', url: '/four', visibility: 'none'})
         ]);
-        let result = transform.serialize(deserialized);
+        const result = transform.serialize(deserialized);
 
         expect(result).to.equal('[{"label":"One","url":"/one","icon":"https://example.com/one.svg","visibility":"members"},{"label":"Two","url":"/two"},{"label":"Three","url":"/three","visibility":"public_free"},{"label":"Four","url":"/four","visibility":"none"}]');
     });

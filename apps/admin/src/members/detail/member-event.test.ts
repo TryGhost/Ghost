@@ -64,6 +64,7 @@ describe('parseMemberEvent — icon', () => {
     ['email_failed_event', {}, 'event-email-delivery-failed'],
     ['email_complaint_event', {}, 'event-email-delivery-spam'],
     ['email_change_event', {}, 'event-email-changed'],
+    ['metafield_change_event', { source: 'portal', metafields: [] }, 'event-metafields-changed'],
     ['comment_event', {}, 'event-comment'],
     ['click_event', {}, 'event-click'],
     ['aggregated_click_event', {}, 'event-click'],
@@ -162,6 +163,77 @@ describe('parseMemberEvent — action text', () => {
     expect(parseMemberEvent(ev('email_change_event'), defaultCtx).action).toBe(
       'Email address changed',
     );
+  });
+
+  describe('metafield_change_event', () => {
+    const fields = (...names: string[]) =>
+      names.map((name, index) => ({ namespace: 'custom', key: `field_${index}`, name }));
+
+    it('names the fields a member changed, and where', () => {
+      expect(
+        parseMemberEvent(
+          ev('metafield_change_event', {
+            source: 'portal',
+            metafields: fields('Home address', 'Job title'),
+          }),
+          defaultCtx,
+        ).action,
+      ).toBe('updated Home address and Job title in Portal');
+    });
+
+    it('names a single field on its own', () => {
+      expect(
+        parseMemberEvent(
+          ev('metafield_change_event', {
+            source: 'portal',
+            metafields: fields('Job title'),
+          }),
+          defaultCtx,
+        ).action,
+      ).toBe('updated Job title in Portal');
+    });
+
+    it('counts the rest once a list is too long to read at a glance', () => {
+      expect(
+        parseMemberEvent(
+          ev('metafield_change_event', {
+            source: 'portal',
+            metafields: fields('A', 'B', 'C', 'D', 'E'),
+          }),
+          defaultCtx,
+        ).action,
+      ).toBe('updated A, B, C and 2 more fields in Portal');
+    });
+
+    it('reads the place a change was made after the fields', () => {
+      expect(
+        parseMemberEvent(
+          ev('metafield_change_event', { source: 'admin_api', metafields: fields('Job title') }),
+          defaultCtx,
+        ).action,
+      ).toBe('updated Job title through the Admin API');
+    });
+
+    it('does not claim a place it cannot name', () => {
+      expect(
+        parseMemberEvent(
+          ev('metafield_change_event', {
+            source: 'somewhere_new',
+            metafields: fields('Job title'),
+          }),
+          defaultCtx,
+        ).action,
+      ).toBe('updated Job title');
+    });
+
+    it('describes an entry that names no fields as a generic change', () => {
+      expect(
+        parseMemberEvent(
+          ev('metafield_change_event', { source: 'portal', metafields: [] }),
+          defaultCtx,
+        ).action,
+      ).toBe('updated custom fields in Portal');
+    });
   });
 
   it('automated_email_sent_event with free/paid slug → welcome (Free/Paid)', () => {

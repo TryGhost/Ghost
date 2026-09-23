@@ -164,7 +164,7 @@ export default class TagForm extends Component {
         const {tag} = this.args;
 
         let newUrl = tag.canonicalUrl;
-        let [oldUrl] = tag.changedAttributes().canonicalUrl;
+        const [oldUrl] = tag.changedAttributes().canonicalUrl;
         let errMessage = '';
 
         tag.errors.remove('canonicalUrl');

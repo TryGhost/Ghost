@@ -161,7 +161,7 @@ const Locations: React.FC<LocationsProps> = ({ data, isLoading, onLocationClick 
                 <CardFooter>
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant="outline">
+                      <Button variant="subtle">
                         View all <LucideIcon.TableOfContents />
                       </Button>
                     </SheetTrigger>

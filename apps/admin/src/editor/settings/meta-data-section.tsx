@@ -7,7 +7,7 @@ import {
   settingsMetaTitleInput,
   settingsSerpPreview,
 } from '@tryghost/test-data/selectors/editor';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import {
   META_DESCRIPTION_RECOMMENDED,
   META_TITLE_RECOMMENDED,
@@ -67,7 +67,7 @@ function SearchPreview({
 }
 
 export interface MetaDataSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   siteUrl: string;
 }
 

@@ -421,14 +421,19 @@ export function useEmberRouting(): EmberRouting {
  * Hook to get the forceUpgrade state.
  *
  * Returns true when the site is in force upgrade mode (requires billing action).
+ * Returns undefined while the initial config request is loading.
  *
  * Force upgrade state is determined by:
  * 1. Config hostSettings.forceUpgrade (set by server, requires restart to change)
  * 2. Subscription status (if subscription becomes 'active', forceUpgrade is cleared)
  */
-export function useForceUpgrade(): boolean {
-  const { data: config } = useBrowseConfig();
+export function useForceUpgrade(): boolean | undefined {
+  const { data: config, isLoading } = useBrowseConfig();
   const subscriptionStatus = useSubscriptionStatus();
+
+  if (isLoading) {
+    return undefined;
+  }
 
   const configForceUpgrade = config?.config?.hostSettings?.forceUpgrade;
 

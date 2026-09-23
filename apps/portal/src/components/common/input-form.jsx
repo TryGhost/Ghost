@@ -10,17 +10,22 @@ const FormInput = ({ field, onChange, onBlur = () => {}, onKeyDown = () => {} })
       <InputField
         key={field.name}
         label={field.label}
+        hideLabel={field.hideLabel}
         type={field.type}
         name={field.name}
         hidden={field.hidden}
         placeholder={field.placeholder}
         disabled={field.disabled}
+        readOnly={field.readOnly}
+        options={field.options}
         value={field.value}
         onKeyDown={onKeyDown}
         onChange={(e) => onChange(e, field)}
         onBlur={(e) => onBlur(e, field)}
         tabIndex={field.tabIndex}
         errorMessage={field.errorMessage}
+        invalid={field.invalid}
+        describedBy={field.describedBy}
         autoFocus={field.autoFocus}
       />
     </>

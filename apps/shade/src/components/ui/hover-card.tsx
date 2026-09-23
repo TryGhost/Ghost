@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as HoverCardPrimitive from '@radix-ui/react-hover-card';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 
 import { cn } from '@/lib/utils';
 
@@ -13,7 +13,7 @@ const HoverCardContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>
 >(({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
   <HoverCardPrimitive.Portal>
-    <div className={SHADE_APP_NAMESPACES}>
+    <ShadeScope>
       <HoverCardPrimitive.Content
         ref={ref}
         align={align}
@@ -24,7 +24,7 @@ const HoverCardContent = React.forwardRef<
         sideOffset={sideOffset}
         {...props}
       />
-    </div>
+    </ShadeScope>
   </HoverCardPrimitive.Portal>
 ));
 HoverCardContent.displayName = HoverCardPrimitive.Content.displayName;

@@ -16,6 +16,7 @@ import ActionHandler from './actions';
 import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notification';
 import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
 import { clearGiftFormState } from './components/pages/gift/form-state';
+import { fetchMemberCustomFields } from './utils/custom-fields';
 import './app.css';
 import {
   hasRecommendations,
@@ -90,11 +91,17 @@ export default class App extends React.Component {
     this.state = {
       site: null,
       member: null,
+      // The custom fields open to members, asked for with the member during init.
+      customFields: [],
       offers: [],
       page: 'loading',
       showPopup: false,
       action: 'init:running',
       actionErrorMessage: null,
+      // Inputs the site refused on the last save, keyed as the page names them, so the
+      // box that was refused carries the message rather than a notification floating
+      // above six that all look fine.
+      fieldErrors: {},
       initStatus: 'running',
       lastPage: null,
       notification: null,
@@ -296,6 +303,7 @@ export default class App extends React.Component {
         site,
         member,
         offers,
+        customFields,
         page,
         showPopup,
         popupNotification,
@@ -314,6 +322,7 @@ export default class App extends React.Component {
         site,
         member,
         offers,
+        customFields,
         page,
         lastPage,
         pageQuery,
@@ -368,16 +377,23 @@ export default class App extends React.Component {
   async fetchData() {
     const { site: apiSiteData, member, offers } = await this.fetchApiData();
     const { site: devSiteData, ...restDevData } = this.fetchDevData();
-    const linkData = await this.fetchLinkData(apiSiteData, member);
+    // Asked for beside the link data rather than after it: the account settings page is
+    // drawn from these, and a member who opens it should not wait for a round trip that
+    // could have been made while the page was still loading.
+    const [linkData, customFields] = await Promise.all([
+      this.fetchLinkData(apiSiteData, member),
+      fetchMemberCustomFields({ api: this.GhostApi, site: apiSiteData, member }),
+    ]);
     const { site: linkSiteData, ...restLinkData } = linkData?.staleGiftRedemptionRequest
       ? {}
       : linkData;
     const { site: previewSiteData, ...restPreviewData } = this.fetchPreviewData();
     const { site: notificationSiteData, ...restNotificationData } = this.fetchNotificationData();
-    let page = '';
+    const page = '';
     return {
       member,
       offers,
+      customFields,
       page,
       site: {
         ...apiSiteData,
@@ -419,7 +435,7 @@ export default class App extends React.Component {
     const qsParams = new URLSearchParams(qs);
     const data = {};
     // Handle the query params key/value pairs
-    for (let pair of qsParams.entries()) {
+    for (const pair of qsParams.entries()) {
       const key = pair[0];
       const value = decodeURIComponent(pair[1]);
       if (key === 'name') {
@@ -486,7 +502,7 @@ export default class App extends React.Component {
     let portalProducts = null;
     let monthlyPrice, yearlyPrice, currency;
     // Handle the query params key/value pairs
-    for (let pair of qsParams.entries()) {
+    for (const pair of qsParams.entries()) {
       const key = pair[0];
 
       // Note: this needs to be cleaned up, there is no reason why we need to double encode/decode
@@ -957,7 +973,7 @@ export default class App extends React.Component {
       fpScript.async = !0;
       fpScript.src = 'https://cdn.firstpromoter.com/fprom.js';
       fpScript.onload = fpScript.onreadystatechange = function () {
-        let _t = this.readyState;
+        const _t = this.readyState;
         if (!_t || 'complete' === _t || 'loaded' === _t) {
           try {
             window.$FPROM.init(firstPromoterId, siteDomain);
@@ -1399,6 +1415,8 @@ export default class App extends React.Component {
       scrollbarWidth,
       otcRef,
       inboxLinks,
+      customFields,
+      fieldErrors,
     } = this.state;
     const contextPage = this.getContextPage({ site, page, member });
     const contextMember = this.getContextMember({
@@ -1420,6 +1438,8 @@ export default class App extends React.Component {
       pageQuery,
       pageData,
       member: contextMember,
+      customFields,
+      fieldErrors,
       lastPage,
       showPopup,
       popupNotification,

@@ -73,7 +73,7 @@ describe('Unit: models/custom-theme-setting', function () {
     it('transforms urls when persisting to db', function () {
       const setting = CustomThemeSetting.forge();
 
-      let returns = setting.formatOnWrite({
+      const returns = setting.formatOnWrite({
         theme: 'test',
         key: 'something',
         value: '/assets/image.jpg',

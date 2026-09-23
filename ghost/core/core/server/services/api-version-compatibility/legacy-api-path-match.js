@@ -1,8 +1,8 @@
 const pathMatch = require('path-match')();
 
 module.exports = (url) => {
-  let basePath = 'ghost/api';
-  let apiRouteMatcher = '/:version(v2|v3|v4|canary)?/:api(admin|content)/*';
+  const basePath = 'ghost/api';
+  const apiRouteMatcher = '/:version(v2|v3|v4|canary)?/:api(admin|content)/*';
   let urlToMatch = url;
 
   if (url.includes(basePath)) {

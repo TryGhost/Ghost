@@ -16,4 +16,4 @@ Each check locks ready steps, then runs up to 100 at once. A `wait` action advan
 - [`database-automations-repository.ts`](database-automations-repository.ts) stores automations, runs, and steps.
 - [`service.ts`](service.ts) starts checks and schedules future ones.
 - [`poll.ts`](poll.ts) runs ready steps.
-- [`welcome-email-automation-poll.js`](welcome-email-automation-poll.js) processes older welcome email runs.
+- [`welcome-email-automation-poll.ts`](welcome-email-automation-poll.ts) processes older welcome email runs.

@@ -15,12 +15,12 @@ export default Model.extend({
     ghostPaths: service(),
 
     resend() {
-        let inviteData = {
+        const inviteData = {
             email: this.email,
             role_id: this.role.id
         };
 
-        let inviteUrl = this.get('ghostPaths.url').api('invites');
+        const inviteUrl = this.get('ghostPaths.url').api('invites');
 
         return this.ajax.del(`${inviteUrl}${this.id}`)
             .then(() => {

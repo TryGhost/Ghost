@@ -129,6 +129,7 @@ export default tseslint.config(
     },
     rules: {
       ...ghostBaseRules,
+      'prefer-const': 'error',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',

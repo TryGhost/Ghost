@@ -1,9 +1,9 @@
 const fileUploadResponse = function (db, {requestBody}) {
     // let [ref] = requestBody.getAll('ref');
-    let [purpose] = requestBody.getAll('purpose');
-    let [file] = requestBody.getAll('file');
-    let now = new Date();
-    let year = now.getFullYear();
+    const [purpose] = requestBody.getAll('purpose');
+    const [file] = requestBody.getAll('file');
+    const now = new Date();
+    const year = now.getFullYear();
     let month = `${now.getMonth()}`;
 
     if (month.length === 1) {

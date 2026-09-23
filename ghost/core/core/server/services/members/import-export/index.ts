@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-types/csv';
-import { INTERNAL, type Audience, type WrittenBy } from '../../members-metafields';
+import { INTERNAL, type Audience, type WriteOrigin } from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -55,7 +55,7 @@ interface ImporterServices {
       applyWrite(
         memberId: string,
         plan: unknown[],
-        options: { writtenBy: WrittenBy; executor?: Knex },
+        options: WriteOrigin & { executor?: Knex },
       ): Promise<void>;
     };
   };
@@ -131,6 +131,7 @@ export function makeImporter(deps: ImporterServices) {
     applyWrite: (memberId, plan, executor) =>
       deps.metafields.values.applyWrite(memberId, plan, {
         writtenBy: { type: 'import', id: null },
+        source: 'import',
         executor,
       }),
   };

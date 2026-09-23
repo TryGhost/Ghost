@@ -36,11 +36,11 @@ describe('Auth Service: setup', function () {
           },
         ],
       });
-      let tiersAPI = {
+      const tiersAPI = {
         browse: tierBrowseStub,
         edit: tierEditStub,
       };
-      let newslettersApi = {
+      const newslettersApi = {
         browse: newsletterBrowseStub,
         edit: newsletterEditStub,
       };
@@ -48,7 +48,7 @@ describe('Auth Service: setup', function () {
         tiers: tiersAPI,
         newsletters: newslettersApi,
       };
-      let data = {
+      const data = {
         user: {
           id: 'user-1',
         },

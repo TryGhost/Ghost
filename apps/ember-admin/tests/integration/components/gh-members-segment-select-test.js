@@ -31,8 +31,8 @@ describe('Integration: Component: gh-members-segment-select', function () {
         await clickTrigger();
         await waitUntil(() => findAll('.ember-power-select-option').length >= 4);
 
-        let options = findAll('.ember-power-select-option');
-        let optionTexts = options.map(o => o.textContent.trim());
+        const options = findAll('.ember-power-select-option');
+        const optionTexts = options.map(o => o.textContent.trim());
 
         expect(optionTexts).to.include('Free members');
         expect(optionTexts).to.include('Paid members');
@@ -70,7 +70,7 @@ describe('Integration: Component: gh-members-segment-select', function () {
         await render(hbs`<GhMembersSegmentSelect @segment={{this.segment}} @onChange={{this.onChange}} />`);
         await waitUntil(() => findAll('.ember-power-select-multiple-option').length > 0);
 
-        let tokens = findAll('.ember-power-select-multiple-option');
+        const tokens = findAll('.ember-power-select-multiple-option');
         expect(tokens.length).to.equal(1);
         expect(tokens[0].textContent).to.include('Free members');
     });
@@ -89,7 +89,7 @@ describe('Integration: Component: gh-members-segment-select', function () {
         await waitUntil(() => findAll('.ember-power-select-option').length > 0);
 
         // Verify first page loaded
-        let labelRequests = server.pretender.handledRequests.filter(r => r.url.includes('/labels'));
+        const labelRequests = server.pretender.handledRequests.filter(r => r.url.includes('/labels'));
         expect(labelRequests.length).to.be.at.least(1);
 
         // Scroll to bottom to trigger second page
@@ -166,7 +166,7 @@ describe('Integration: Component: gh-members-segment-select', function () {
 
         // The label should appear as a selected token — this proves it was
         // registered with labelsManager via addLabel so selectedOptions resolves it
-        let tokens = findAll('.ember-power-select-multiple-option');
+        const tokens = findAll('.ember-power-select-multiple-option');
         expect(tokens.length).to.equal(1);
         expect(tokens[0].textContent).to.include('Unique Outlier');
     });
@@ -182,8 +182,8 @@ describe('Integration: Component: gh-members-segment-select', function () {
         await clickTrigger();
         await waitUntil(() => findAll('.ember-power-select-option').length > 0);
 
-        let options = findAll('.ember-power-select-option');
-        let optionTexts = options.map(o => o.textContent.trim());
+        const options = findAll('.ember-power-select-option');
+        const optionTexts = options.map(o => o.textContent.trim());
 
         expect(optionTexts).to.not.include('Hidden');
         expect(optionTexts).to.include('Free members');

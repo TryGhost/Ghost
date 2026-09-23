@@ -1,6 +1,5 @@
-import countries from 'i18n-iso-countries';
-import enLocale from 'i18n-iso-countries/langs/en.json';
 import { CustomFieldPicker } from '@/shared/member-custom-fields/custom-field-picker';
+import { countryName } from '@tryghost/admin-x-framework/utils/countries';
 import {
   Combobox,
   ComboboxContent,
@@ -50,18 +49,7 @@ import {
   useState,
 } from 'react';
 
-countries.registerLocale(enLocale);
-
-// Names for codes ISO 3166-1 does not carry as standalone entries but Stripe ships to.
-const EXTRA_COUNTRY_NAMES: Record<string, string> = {
-  AC: 'Ascension Island',
-  TA: 'Tristan da Cunha',
-  ZZ: 'Unknown region',
-};
-
-const countryName = (code: string) =>
-  EXTRA_COUNTRY_NAMES[code] ?? countries.getName(code, 'en', { select: 'alias' }) ?? code;
-
+// Where Stripe will ship, which is narrower than where an address may be.
 const countryOptions = STRIPE_ALLOWED_COUNTRIES.map((code) => ({
   value: code,
   label: countryName(code),

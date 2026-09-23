@@ -9,6 +9,7 @@ import {
   label,
   member,
   renderAdminApp,
+  settingsResponse,
   tier,
 } from '@test-utils/acceptance';
 import { membersScreen } from './members.screen';
@@ -179,5 +180,75 @@ describe('Members list', () => {
     await expect(membersApi).toHaveSentFilter(/name:~'Alice'/);
     await expect(membersScreen.memberRows()).toHaveCount(1);
     await expect.element(membersScreen.link('Alice Alpha')).toBeVisible();
+  });
+
+  // A navigation that lands while the list is syncing its filters to the URL must not be
+  // overwritten: leaving a saved view and clicking straight back lands on the view.
+  it('reopens a saved view clicked straight after leaving it', async () => {
+    const vip = label({ name: 'VIP' });
+    const viewFilter = 'label:[VIP]';
+    fakeMembers(({ filter }) =>
+      filter
+        ? [member({ name: 'Vip One', labels: [vip] })]
+        : [member({ name: 'Vip One', labels: [vip] }), member({ name: 'Plain' })],
+    );
+    await renderAdminApp(`/members?filter=${encodeURIComponent(viewFilter)}`, {
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: {
+              shared_views: JSON.stringify([
+                { name: 'VIPs', route: 'members', filter: { filter: viewFilter } },
+              ]),
+            },
+          }),
+        },
+      },
+    });
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        setTimeout(resolve, ms);
+      });
+    // The list's own "Members" link, not the heading: the sidebar has one by that href.
+    const membersLink = () =>
+      document.querySelector<HTMLAnchorElement>('a[href="#/members"]') ?? undefined;
+    await expect.element(membersScreen.link('VIPs')).toBeVisible();
+
+    const onTheView = () =>
+      currentRoute().includes('filter=') &&
+      document.querySelectorAll('[data-slot="filter-item"]').length === 1 &&
+      membersScreen.memberRows().elements().length === 1;
+
+    // How quickly the second click follows the first is what exposed the race, so a few
+    // short gaps are tried, each starting from the view. Clicks go straight to the DOM so
+    // the gap between them is the one chosen.
+    for (const gap of [5, 10, 20, 30]) {
+      membersLink()!.click();
+      await wait(gap);
+      const viewLink = membersScreen.link('VIPs').element();
+      if (!(viewLink instanceof HTMLElement)) {
+        throw new Error('The saved view link is not a clickable element');
+      }
+      viewLink.click();
+
+      // Straight after the clicks the page can still show the view it is leaving, so one look
+      // proves nothing. Wait until it rests on the view; a stale write leaves it for good.
+      let onViewSince: number | undefined;
+      await expect
+        .poll(
+          () => {
+            if (!onTheView()) {
+              onViewSince = undefined;
+              return false;
+            }
+            onViewSince ??= performance.now();
+            return performance.now() - onViewSince >= 500;
+          },
+          { message: `settles on the view after a ${gap}ms gap`, timeout: 10_000, interval: 20 },
+        )
+        .toBe(true);
+    }
   });
 });

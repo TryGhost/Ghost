@@ -1,8 +1,11 @@
+import { TooltipProvider } from '@tryghost/shade/components';
 import MembersActions from '@/members/components/members-actions';
 import { exportMembers } from '@/members/components/members-actions-helpers';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render as testingLibraryRender, screen } from '@testing-library/react';
+
+const render = (ui: React.ReactElement) => testingLibraryRender(ui, { wrapper: TooltipProvider });
 
 const importModalPropsRef: { current: Record<string, unknown> | null } = { current: null };
 const { mockBlobDownloadFromEndpoint, mockUseLocation, mockUseNavigate } = vi.hoisted(() => ({

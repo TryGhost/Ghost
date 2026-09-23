@@ -1,12 +1,12 @@
 import sinon from 'sinon';
 import createKnex from 'knex';
 
-import {
-  automations,
-  gifts,
-  init,
-  newsletters,
-} from '../../../../../core/server/services/email-analytics';
+import assert from 'node:assert/strict';
+import { vi } from 'vitest';
+type Analytics = typeof import('../../../../../core/server/services/email-analytics');
+let analytics: Analytics;
+let init: Analytics['init'];
+
 import { GIFT_DELIVERY_EMAIL_TAG } from '../../../../../core/server/services/gifts/constants';
 import { AUTOMATION_EMAIL_TAG } from '../../../../../core/server/services/member-welcome-emails/constants';
 
@@ -27,12 +27,29 @@ describe('email analytics service', function () {
 
   let dependencies: Parameters<typeof init>[0];
 
-  beforeEach(function () {
+  beforeEach(async function () {
     config.get.reset();
     config.get.withArgs('bulkEmail:mailgun:tag').returns('custom-mailgun-tag');
-    newslettersInit = sinon.stub(newsletters, 'init');
-    automationsInit = sinon.stub(automations, 'init');
-    giftsInit = sinon.stub(gifts, 'init');
+    newslettersInit = sinon.stub().returns({ startFetch: sinon.stub().resolves() });
+    automationsInit = sinon.stub().returns({ startFetch: sinon.stub().resolves() });
+    giftsInit = sinon.stub().returns({ startFetch: sinon.stub().resolves() });
+    const constructors = {
+      newsletters: newslettersInit,
+      automations: automationsInit,
+      gifts: giftsInit,
+    };
+    vi.resetModules();
+    vi.doMock(
+      '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper',
+      () => ({
+        EmailAnalyticsServiceWrapper: function (options: { logName: keyof typeof constructors }) {
+          return constructors[options.logName](options);
+        },
+      }),
+    );
+    analytics = await import('../../../../../core/server/services/email-analytics');
+    init = analytics.init;
+    domainEvents.subscribe.resetHistory();
 
     dependencies = {
       automationsApi,
@@ -67,8 +84,34 @@ describe('email analytics service', function () {
     };
   });
 
-  afterEach(function () {
+  afterEach(async function () {
+    await dependencies.db.knex.destroy();
+    vi.doUnmock(
+      '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper',
+    );
+    vi.resetModules();
     sinon.restore();
+  });
+
+  it('guards access before initialization and retains independent executors', async function () {
+    assert.throws(() => analytics.getNewsletters(), /initialized/);
+    assert.throws(() => analytics.getAutomations(), /initialized/);
+    assert.throws(() => analytics.getGifts(), /initialized/);
+    init(dependencies);
+    const wrappers = [analytics.getNewsletters(), analytics.getAutomations(), analytics.getGifts()];
+    assert.equal(new Set(wrappers).size, 3);
+    init(dependencies);
+    assert.equal(analytics.getNewsletters(), wrappers[0]);
+    assert.equal(analytics.getAutomations(), wrappers[1]);
+    assert.equal(analytics.getGifts(), wrappers[2]);
+    sinon.assert.calledOnce(newslettersInit);
+    sinon.assert.calledOnce(automationsInit);
+    sinon.assert.calledOnce(giftsInit);
+    sinon.assert.calledThrice(domainEvents.subscribe);
+    for (const [index, call] of domainEvents.subscribe.getCalls().entries()) {
+      await call.args[1]();
+      sinon.assert.calledOnce(wrappers[index].startFetch as sinon.SinonStub);
+    }
   });
 
   it('initializes newsletter, automation, and gift analytics with configured Mailgun tags', function () {
@@ -78,10 +121,7 @@ describe('email analytics service', function () {
       newslettersInit,
       sinon.match({
         config,
-        domainEvents,
-        event: {
-          name: 'StartEmailAnalyticsJobEvent',
-        },
+        jobType: 'email-analytics-fetch-latest',
         mailgunTags: ['bulk-email', 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-latest-others',
@@ -107,10 +147,7 @@ describe('email analytics service', function () {
       automationsInit,
       sinon.match({
         config,
-        domainEvents,
-        event: {
-          name: 'StartAutomationEmailAnalyticsJobEvent',
-        },
+        jobType: 'email-analytics-automation-fetch-latest',
         mailgunTags: [AUTOMATION_EMAIL_TAG, 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-automation-latest-others',
@@ -135,10 +172,7 @@ describe('email analytics service', function () {
       giftsInit,
       sinon.match({
         config,
-        domainEvents,
-        event: {
-          name: 'StartGiftEmailAnalyticsJobEvent',
-        },
+        jobType: 'email-analytics-gift-fetch-latest',
         mailgunTags: [GIFT_DELIVERY_EMAIL_TAG, 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-gifts-latest-others',
