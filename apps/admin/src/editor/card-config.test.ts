@@ -91,6 +91,13 @@ describe('getCardVisibilitySettings', () => {
 });
 
 describe('buildPostCardConfig', () => {
+  it('passes installed add-on surfaces through live settings without changing them', () => {
+    const addons = { blocks: [], renderBlock: vi.fn() };
+    const cardConfig = buildPostCardConfig(sources({ addons }), ports);
+    expect(cardConfig.addons).toBe(addons);
+    expect(withLiveSettings(cardConfig, { visibility: 'paid' }).addons).toBe(addons);
+  });
+
   it('assembles the post editor card config', () => {
     const cardConfig = buildPostCardConfig(sources(), ports);
 

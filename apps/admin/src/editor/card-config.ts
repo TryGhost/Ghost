@@ -1,3 +1,4 @@
+import type { AddonEditorBlocksConfig } from '@tryghost/addon-kit/host';
 import { type Config } from '@tryghost/admin-x-framework/api/config';
 import {
   type Setting,
@@ -43,6 +44,7 @@ export interface PostCardConfigSources {
   pinturaConfig: { jsUrl: string; cssUrl: string } | null;
   post: CardConfigPost | undefined;
   snippets: CardConfigSnippet[];
+  addons?: AddonEditorBlocksConfig;
 }
 
 export interface PostCardConfigPorts {
@@ -74,6 +76,7 @@ export interface PostCardConfig extends PostCardConfigPorts {
   stripeEnabled: boolean;
   post: CardConfigPost | undefined;
   snippets: CardConfigSnippet[];
+  addons?: AddonEditorBlocksConfig;
   visibilitySettings: CardVisibilitySettings;
 }
 
@@ -140,6 +143,7 @@ export function buildPostCardConfig(
     stripeEnabled: checkStripeEnabled(settings, config),
     post: sources.post,
     snippets: sources.snippets,
+    addons: sources.addons,
     createSnippet: ports.createSnippet,
     deleteSnippet: ports.deleteSnippet,
     visibilitySettings: getCardVisibilitySettings(sources.post),

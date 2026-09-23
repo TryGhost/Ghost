@@ -18,6 +18,7 @@ import {
   buildCardConfigPost,
   buildPostCardConfig,
 } from './card-config';
+import { useAddonCardConfig } from './use-addon-card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorSettings, useSiteTimezone } from './use-editor-settings';
 import { usePostLinkSuggestions } from './use-post-link-suggestions';
@@ -52,6 +53,7 @@ export function usePostCardConfig({
   const settings = settingsData?.settings ?? null;
   const config = configData?.config;
   const site = siteData?.site;
+  const addons = useAddonCardConfig(settings, config?.labs?.addons === true, timezone);
 
   const labelsRequest = useRef<Promise<string[]> | null>(null);
   const fetchLabels = useCallback(() => {
@@ -100,6 +102,7 @@ export function usePostCardConfig({
         pinturaConfig,
         post: cardConfigPost,
         snippets,
+        addons,
       },
       {
         fetchEmbed,
@@ -119,6 +122,7 @@ export function usePostCardConfig({
     pinturaConfig,
     cardConfigPost,
     snippets,
+    addons,
     fetchEmbed,
     fetchAutocompleteLinks,
     searchLinks,
