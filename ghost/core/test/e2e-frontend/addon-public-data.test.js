@@ -74,4 +74,72 @@ describe('Add-on public data', function () {
     assert.ok(website.text.includes('Safe player'));
     assert.ok(!website.text.includes(secret));
   });
+
+  it('uses the new enclosing post for copied cards, including HTML-only responses', async function () {
+    const lexical = JSON.stringify({
+      root: {
+        type: 'root',
+        version: 1,
+        direction: null,
+        format: '',
+        indent: 0,
+        children: [
+          {
+            type: 'addon',
+            version: 1,
+            id: 'copied-episode',
+            addonHandle: 'podcast',
+            blockName: 'episode',
+            props: { post_id: '000000000000000000000000' },
+            publicProps: {},
+            html: '<p>Copied episode</p>',
+          },
+        ],
+      },
+    });
+    for (const title of ['Original episode post', 'Copied episode post']) {
+      const response = await adminAgent
+        .post('posts/')
+        .body({ posts: [{ title, lexical, status: 'published' }] })
+        .expectStatus(201);
+      const post = response.body.posts[0];
+      const content = await contentAPIAgent.get(`posts/${post.id}/?fields=html`).expectStatus(200);
+      assert.ok(content.body.posts[0].html.includes(`data-addon-post-id="${post.id}"`));
+      assert.ok(!content.body.posts[0].html.includes('000000000000000000000000'));
+      const website = await frontendAgent.get(`/${post.slug}/`).expect(200);
+      assert.ok(website.text.includes(`data-addon-post-id="${post.id}"`));
+      const stored = await adminAgent.get(`posts/${post.id}/?formats=lexical`).expectStatus(200);
+      assert.equal(JSON.parse(stored.body.posts[0].lexical).root.children[0].id, 'copied-episode');
+    }
+  });
+  it('binds cards on draft preview pages to their enclosing post', async function () {
+    const lexical = JSON.stringify({
+      root: {
+        type: 'root',
+        version: 1,
+        direction: null,
+        format: '',
+        indent: 0,
+        children: [
+          {
+            type: 'addon',
+            version: 1,
+            id: 'preview-episode',
+            addonHandle: 'podcast',
+            blockName: 'episode',
+            props: {},
+            publicProps: {},
+            html: '<p>Preview episode</p>',
+          },
+        ],
+      },
+    });
+    const created = await adminAgent
+      .post('posts/')
+      .body({ posts: [{ title: 'Draft podcast preview', lexical }] })
+      .expectStatus(201);
+    const post = created.body.posts[0];
+    const website = await frontendAgent.get(`/p/${post.uuid}/`).expect(200);
+    assert.ok(website.text.includes(`data-addon-post-id="${post.id}"`));
+  });
 });

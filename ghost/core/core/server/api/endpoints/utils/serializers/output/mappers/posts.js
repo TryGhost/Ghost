@@ -9,6 +9,7 @@ const date = require('../utils/date');
 const extraAttrs = require('../utils/extra-attrs');
 const gating = require('../utils/post-gating');
 const previewRendering = require('../utils/preview-rendering');
+const { withAddonPostContext } = require('../utils/addon-post-context');
 const url = require('../utils/url');
 
 const utils = require('../../../index');
@@ -118,6 +119,10 @@ module.exports = async (model, frame, options = {}) => {
     if (jsonModel.html) {
       jsonModel.html = await memberAttribution.outboundLinkTagger.addToHtml(jsonModel.html);
     }
+  }
+
+  if (jsonModel.html) {
+    jsonModel.html = withAddonPostContext(jsonModel.html, model.id);
   }
 
   // Transforms post/page metadata to flat structure

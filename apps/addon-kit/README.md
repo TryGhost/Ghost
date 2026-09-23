@@ -158,3 +158,9 @@ member's existing `{uuid, key}` signed-link credential, or null. These credentia
 are a spike contract for later replacement; they are not app-specific. Both
 context and access responses are private and uncached. Providers must keep Admin
 keys server-side and validate access on each request.
+
+Rendered card figures carry `data-addon-post-id` from the current enclosing
+post response, alongside the node's `data-addon-id`. This includes preview
+pages and HTML-only Content API responses. Parent identity is not saved in card
+props: copying a card or a post binds it to its new parent. Providers must still
+verify the published post, card identity, and access for every player request.
