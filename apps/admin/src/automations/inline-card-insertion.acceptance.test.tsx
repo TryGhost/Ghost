@@ -4,7 +4,7 @@ import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import { detail, flags, setup, editingCanvas } from './run-history.test-utils';
 
 describe('Inline card insertion', () => {
-  for (const endGrace of ['another step', 'publish'] as const) {
+  for (const endGrace of ['another step', 'the trigger', 'publish'] as const) {
     it(`gives a new email time to be edited until ${endGrace}`, async () => {
       setup();
       const save = fakeAdminEndpoint('PUT', '/automations/first/', {
@@ -24,6 +24,10 @@ describe('Inline card insertion', () => {
         await editingCanvas()
           .getByRole('article', { name: /^Wait:/ })
           .getByRole('textbox', { name: 'Wait for' })
+          .click();
+      } else if (endGrace === 'the trigger') {
+        await editingCanvas()
+          .getByRole('article', { name: 'Member signs up', exact: true })
           .click();
       } else {
         await page.getByRole('button', { name: 'Publish', exact: true }).click();
@@ -46,12 +50,24 @@ describe('Inline card insertion', () => {
     for (const position of ['append', 'insert'] as const) {
       it(`${position}s ${type} without opening or retaining the settings sidebar`, async () => {
         setup();
+        const automation = detail('first');
+        automation.actions.push({
+          id: 'existing-email',
+          type: 'send_email',
+          data: { email_subject: 'Existing', email_lexical: '', email_design_setting_id: 'design' },
+        });
+        automation.edges.push({
+          source_action_id: 'draft-wait',
+          target_action_id: 'existing-email',
+        });
+        fakeAdminEndpoint('GET', '/automations/first/', { automations: [automation] });
         const save = fakeAdminEndpoint('PUT', '/automations/first/', {
           automations: [detail('first')],
         });
         await renderAdminApp('/automations/first', flags);
         // Starting with another step open also checks that stale settings close.
-        await page.getByRole('button', { name: 'Trigger: Member signs up' }).click();
+        await page.getByRole('button', { name: 'Email actions' }).click();
+        await page.getByRole('menuitem', { name: 'Edit settings' }).click();
         await expect
           .element(page.getByRole('complementary', { name: 'Step details' }))
           .toBeVisible();
@@ -72,7 +88,7 @@ describe('Inline card insertion', () => {
         const cards = editingCanvas().getByRole('article', {
           name: type === 'Email' ? /^Send email/ : /^Wait:/,
         });
-        await expect(cards).toHaveCount(type === 'Email' ? 1 : 2);
+        await expect(cards).toHaveCount(2);
         const card = position === 'append' ? cards.last() : cards.first();
         const input = card.getByRole('textbox', {
           name: type === 'Email' ? 'Subject line' : 'Wait for',
