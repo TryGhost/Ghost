@@ -78,6 +78,8 @@ describe('Admin API token access', function () {
       'media.upload',
       'member-commenting.disable',
       'member-commenting.enable',
+      'member-metafields.browse',
+      'member-metafields.read',
       'member-signin-urls.read',
       'members-stripe-connect.auth',
       'members.activityFeed',

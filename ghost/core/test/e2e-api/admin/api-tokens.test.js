@@ -115,6 +115,11 @@ describe('Admin API', function () {
         await agent.get('users').expectStatus(200);
       });
 
+      // How an integration discovers which fields a site collects before it writes them
+      it('Request to list custom field definitions will succeed', async function () {
+        await agent.get('members/metafields/custom/').expectStatus(200);
+      });
+
       // The Admin Integration role may edit settings, so only the endpoint's own refusal
       // of integration tokens stands between this key and the change.
       it('Request to an endpoint that does not admit integration tokens will 403', async function () {

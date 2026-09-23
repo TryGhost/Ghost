@@ -47,6 +47,7 @@ const controller = {
   docName: 'members_metafields',
 
   browse: {
+    integrationTokens: true,
     headers: noCacheInvalidation,
     options: ['namespace', 'filter'],
     validation: { options: { namespace: { required: true } } },
@@ -63,6 +64,7 @@ const controller = {
   },
 
   read: {
+    integrationTokens: true,
     headers: noCacheInvalidation,
     options: ['namespace', 'key'],
     validation: { options: { namespace: { required: true }, key: { required: true } } },
