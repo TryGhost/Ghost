@@ -34,6 +34,7 @@ export function defineEditorBlockRenderer(
 
     return {
       html,
+      ...(output.publicProps === undefined ? {} : { publicProps: output.publicProps }),
       portableHtml:
         output.portableContent === null ||
         output.portableContent === undefined ||

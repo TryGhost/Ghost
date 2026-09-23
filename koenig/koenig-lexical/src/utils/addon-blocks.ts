@@ -21,6 +21,7 @@ export interface AddonBlockRenderRequest {
 }
 
 export interface AddonBlockRenderOutput {
+    publicProps?: Record<string, unknown>;
     html: string;
     css?: string;
     portableHtml?: string;
@@ -76,6 +77,7 @@ export function buildAddonNodeData(
         blockName: definition.blockName,
         label: definition.label,
         props,
+        ...(output.publicProps === undefined ? {} : {publicProps: structuredClone(output.publicProps)}),
         html: output.html,
         css: typeof output.css === 'string' ? output.css : '',
         portableHtml: typeof output.portableHtml === 'string' ? output.portableHtml : '',

@@ -21,6 +21,8 @@ it('renders only safe metadata and escapes episode titles', async () => {
   });
   expect(output.html).toContain('&lt;script');
   expect(output.html).not.toContain('<script>');
+  expect(output.publicProps).toEqual({});
+  expect(JSON.stringify(output)).not.toContain('private.example');
   expect(output.html).not.toContain('private.example');
   expect(output.portableHtml).not.toContain('private.example');
 });

@@ -20,6 +20,7 @@ function updateAddonNode(node, dataset) {
     node.blockName = dataset.blockName;
     node.label = dataset.label;
     node.props = structuredClone(dataset.props);
+    node.publicProps = dataset.publicProps === undefined ? undefined : structuredClone(dataset.publicProps);
     node.html = dataset.html;
     node.css = dataset.css;
     node.portableHtml = dataset.portableHtml;
@@ -71,6 +72,8 @@ export const AddonPlugin = () => {
                         blockName: definition.blockName,
                         label: definition.label,
                         props,
+                        // Until the provider renders, no authoring values are public.
+                        publicProps: {},
                         html: '<div data-ghost-addon-loading>Loading add-on block…</div>',
                         css: '[data-ghost-addon-loading]{box-sizing:border-box;padding:24px;color:#738a94;font:14px sans-serif}',
                         portableHtml: '<p>Loading add-on block…</p>',

@@ -16,6 +16,7 @@ export default defineEditorBlockRenderer(({ blockName, props, context }) => {
   const title =
     typeof props.title === 'string' && props.title.trim() ? props.title : 'Uses post title';
   return {
+    publicProps: {},
     content: (
       <article className="podcast-episode">
         <span aria-hidden="true" className="podcast-mark">

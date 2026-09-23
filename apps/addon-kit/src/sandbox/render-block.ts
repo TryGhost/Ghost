@@ -20,6 +20,7 @@ export async function renderEditorBlockModule(
 
   return {
     html: output.html,
+    ...(output.publicProps === undefined ? {} : { publicProps: output.publicProps }),
     portableHtml: typeof output.portableHtml === 'string' ? output.portableHtml : '',
     css: typeof output.css === 'string' ? output.css : '',
     initialHeight: Number.isFinite(output.initialHeight) ? output.initialHeight : 320,

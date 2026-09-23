@@ -39,6 +39,22 @@ describe('renderEditorBlockModule', function () {
     });
   });
 
+  it('preserves an explicit empty public property bag across provider serialization', async () => {
+    const renderer = defineEditorBlockRenderer(() => ({
+      content: h('p', null, 'Episode'),
+      publicProps: {},
+    }));
+    const output = await renderEditorBlockModule(
+      { default: renderer },
+      {
+        blockName: 'episode',
+        props: { full_audio: { url: 'https://storage.test/full.mp3' } },
+      },
+    );
+    expect(output.publicProps).toEqual({});
+    expect(JSON.stringify(output)).not.toContain('full.mp3');
+  });
+
   it('requires a static web component', async function () {
     const providerRenderer = defineEditorBlockRenderer(() => ({ content: null }));
 

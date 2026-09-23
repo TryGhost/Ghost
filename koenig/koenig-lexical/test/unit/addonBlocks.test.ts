@@ -35,6 +35,15 @@ describe('add-on editor blocks', function () {
         });
     });
 
+    it('keeps saved authoring data separate from public hydration props', () => {
+        const node = buildAddonNodeData({
+            addonHandle: 'podcast', blockName: 'episode', label: 'Episode',
+            initialProperties: {full_audio: {url: 'https://storage.test/full.mp3'}}
+        }, {html: '<p>Episode</p>', publicProps: {}}, 'episode-one');
+        expect(node.props).toEqual({full_audio: {url: 'https://storage.test/full.mp3'}});
+        expect(node.publicProps).toEqual({});
+    });
+
     it('rejects insertion when the content renderer does not return a static web snapshot', function () {
         expect(() => buildAddonNodeData({
             addonHandle: 'transistor',

@@ -16,6 +16,35 @@ describe('AddonNode', function () {
         });
     });
 
+    it('keeps authoring properties in saved JSON and only exposes explicit public properties', () => {
+        editor.update(() => {
+            const node = $createAddonNode({
+                id: 'episode-one', addonHandle: 'podcast', blockName: 'episode',
+                props: {full_audio: {url: 'https://storage.test/private-full.mp3'}},
+                publicProps: {showTitle: 'Studio Notes'},
+                html: '<p>Listen to this episode</p>', portableHtml: '<p>Read the post</p>',
+                hydrate: true
+            });
+            expect(node.exportJSON().props).toEqual({full_audio: {url: 'https://storage.test/private-full.mp3'}});
+            const output = node.exportDOM(editor, {dom}).element as HTMLElement;
+            expect(output.outerHTML).not.toContain('private-full.mp3');
+            expect(output.querySelector('iframe')?.srcdoc).toContain('showTitle');
+            expect(renderAddonEditorPreview(node, {dom})).not.toContain('private-full.mp3');
+            expect((node.exportDOM(editor, {dom, target: 'email'}).element as HTMLElement).outerHTML).not.toContain('private-full.mp3');
+        }, {discrete: true});
+    });
+
+    it('does not expose authoring data when imported public properties are null', () => {
+        editor.update(() => {
+            const node = AddonNode.importJSON({
+                type: 'addon', version: 1, id: 'episode-one', addonHandle: 'podcast', blockName: 'episode',
+                props: {secret: 'authoring-secret'}, publicProps: null,
+                html: '<p>Episode</p>'
+            });
+            expect((node.exportDOM(editor, {dom}).element as HTMLElement).outerHTML).not.toContain('authoring-secret');
+        }, {discrete: true});
+    });
+
     it('gives every block an independent public property bag', async function () {
         await new Promise<void>((resolve, reject) => {
             editor.update(() => {

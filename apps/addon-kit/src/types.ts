@@ -190,6 +190,8 @@ export interface AddonEditorPresentationContext {
 }
 
 export interface AddonEditorComponentOutput {
+  /** Explicit public hydration data. Set {} to keep all authoring props private. */
+  publicProps?: Record<string, unknown>;
   /** Required static web representation. */
   content: ComponentChild;
   /** Optional portable representation for email, RSS and other non-web targets. */
@@ -233,6 +235,7 @@ export interface AddonEditorSettingsModuleExports {
 }
 
 export interface AddonEditorBlockRenderOutput {
+  publicProps?: Record<string, unknown>;
   html: string;
   portableHtml: string;
   css: string;

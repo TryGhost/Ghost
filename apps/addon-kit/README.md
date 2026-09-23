@@ -112,3 +112,16 @@ const params = new URLSearchParams({has_card: selector, filter: 'status:publishe
 Invalid selectors return a validation error. This spike queries saved Lexical
 JSON directly on MySQL and SQLite; it does not maintain tags, metafields, or a
 persistent card index. The option is available on Admin browse, not Content API.
+
+## Public card data
+
+Editor renderers can return `publicProps` alongside their static content. Saved
+`props` remain the authoritative authoring data; only `publicProps` enter the
+public iframe bootstrap. Return `{}` when hydration should receive none of the
+authoring fields. Omitting `publicProps` retains the original contract in which
+all props are public, for existing public cards.
+
+Static HTML, CSS, portable content, and resource policies are also public.
+Providers must keep private authoring values out of those outputs. Loading and
+failed insertion placeholders expose no authoring props. Admin keeps the saved
+Lexical data; the Content API does not return Lexical or Mobiledoc source.

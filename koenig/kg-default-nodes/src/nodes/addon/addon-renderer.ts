@@ -13,6 +13,8 @@ export type AddonNodeData = {
     blockName: string;
     label: string;
     props: Record<string, unknown>;
+    /** Explicit public hydration data; omitted on legacy cards whose props are public. */
+    publicProps?: Record<string, unknown>;
     html: string;
     css: string;
     portableHtml: string;
@@ -218,6 +220,7 @@ export function isSafeAddonSnapshot(node: AddonNodeData): boolean {
         && typeof node.label === 'string'
         && node.label.length <= 200
         && hasSafeProperties(node.props)
+        && (node.publicProps === undefined || hasSafeProperties(node.publicProps))
         && typeof node.html === 'string'
         && typeof node.css === 'string'
         && typeof node.portableHtml === 'string'
@@ -346,7 +349,7 @@ function buildStaticDocument(document: Document, node: AddonNodeData, {includeBo
         + `<style data-ghost-addon-content-style>${css}</style>`
         + '</head><body>'
         + `<main id="ghost-addon-root">${markup}</main>`
-        + (includeBootstrap ? `<script nonce="${BOOTSTRAP_NONCE}" data-ghost-addon-bootstrap>${STATIC_FRAME_BOOTSTRAP}(${serializeScriptValue(node.id)},${serializeScriptValue(node.blockName)},${serializeScriptJson(node.props)},${shouldHydrate});</script>` : '')
+        + (includeBootstrap ? `<script nonce="${BOOTSTRAP_NONCE}" data-ghost-addon-bootstrap>${STATIC_FRAME_BOOTSTRAP}(${serializeScriptValue(node.id)},${serializeScriptValue(node.blockName)},${serializeScriptJson(node.publicProps === undefined ? node.props : node.publicProps)},${shouldHydrate});</script>` : '')
         + '</body></html>';
 }
 

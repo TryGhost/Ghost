@@ -14,6 +14,7 @@ const addonProperties = {
     blockName: {default: ''},
     label: {default: ''},
     props: {default: {} as Record<string, unknown>},
+    publicProps: {default: undefined as Record<string, unknown> | undefined},
     html: {default: '', urlType: 'html'},
     css: {default: ''},
     portableHtml: {default: '', urlType: 'html'},
@@ -34,6 +35,7 @@ export class AddonNode extends generateDecoratorNode({
         super({
             ...dataset,
             props: structuredClone(dataset.props ?? {}),
+            publicProps: dataset.publicProps === undefined ? undefined : structuredClone(dataset.publicProps ?? {}),
             resourceOrigins: [...(dataset.resourceOrigins ?? [])],
             resourcePolicy: dataset.resourcePolicy ? structuredClone(dataset.resourcePolicy) : undefined
         }, key);

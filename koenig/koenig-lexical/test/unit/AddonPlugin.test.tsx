@@ -27,6 +27,7 @@ describe('AddonPlugin', function () {
     it('renders and inserts a provider-specific command as the generic add-on node', async function () {
         const renderBlock = vi.fn().mockResolvedValue({
             html: '<article>Episode 12</article>',
+            publicProps: {},
             css: 'article { color: rebeccapurple; }',
             portableHtml: '<p>Episode 12</p>',
             initialHeight: 240
@@ -81,6 +82,7 @@ describe('AddonPlugin', function () {
                 addonHandle: 'transistor',
                 blockName: 'episode-player',
                 props: {episodeId: '1234'},
+                publicProps: {},
                 html: '<article>Episode 12</article>'
             });
         });
@@ -129,7 +131,8 @@ describe('AddonPlugin', function () {
             editor.dispatchCommand(INSERT_ADDON_COMMAND, {
                 addonHandle: 'transistor',
                 blockName: 'episode-player',
-                label: 'Transistor podcast player'
+                label: 'Transistor podcast player',
+                initialProperties: {secret: 'initial-authoring-secret'}
             });
         });
 
@@ -142,6 +145,7 @@ describe('AddonPlugin', function () {
                 placeholderKey = addonNode?.getKey();
                 placeholderIndex = children.findIndex($isAddonNode);
                 expect(addonNode?.html).toContain('data-ghost-addon-loading');
+                expect(addonNode.exportDOM(editor).element.outerHTML).not.toContain('initial-authoring-secret');
             });
         });
 
