@@ -318,7 +318,11 @@ describe('Automation run selection and canvas transitions', () => {
     const save = fakeAdminEndpoint('PUT', '/automations/first/', { automations: [emailDetail] });
     respond(history('a'));
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('button', { name: 'Send email: Welcome' }).click();
+    await page
+      .getByRole('article', { name: 'Send email: Welcome' })
+      .getByRole('button', { name: 'Email actions' })
+      .click();
+    await page.getByRole('menuitem', { name: 'Edit settings' }).click();
     await page.getByPlaceholder('Subject line').fill('Unsaved subject');
     await open();
     await select();
@@ -329,7 +333,7 @@ describe('Automation run selection and canvas transitions', () => {
     await close();
     await expect.element(page.getByPlaceholder('Subject line')).toHaveValue('Unsaved subject');
     await expect
-      .element(page.getByRole('button', { name: 'Send email: Unsaved subject' }))
+      .element(page.getByRole('article', { name: 'Send email: Unsaved subject' }))
       .toBeVisible();
     expect(save.requests).toHaveLength(0);
   });

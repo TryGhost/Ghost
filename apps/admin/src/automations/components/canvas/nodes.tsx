@@ -11,11 +11,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tryghost/shade/components';
+import { Grid } from '@tryghost/shade/primitives';
 import { Handle, Position } from '@xyflow/react';
 import type { Node, NodeProps } from '@xyflow/react';
 import type { AutomationEmailStats } from '@tryghost/admin-x-framework/api/automations';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { formatRate } from './format-stats';
+import { EditableEmailCard, type EditableEmailData } from './editable-email-card';
 import { OffValue } from './off-value';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
@@ -28,6 +30,7 @@ export const TAIL_CANVAS_ID = '__tail__';
 export type CanvasAnchor = { sourceId: string; targetId: string };
 
 export type StepNodeDisplayData = {
+  email?: EditableEmailData;
   errorMessage?: string;
   icon: React.ElementType;
   label: string;
@@ -205,36 +208,48 @@ const StepNodeContent: React.FC<{ data: StepNodeData }> = ({ data }) => {
   );
 };
 
-const FooterMetric: React.FC<{ label: string; tracked?: boolean; children: React.ReactNode }> = ({
-  label,
-  tracked = true,
-  children,
-}) => (
-  <div className="flex flex-col text-left">
+const FooterMetric: React.FC<{
+  label: string;
+  tracked?: boolean;
+  compact?: boolean;
+  children: React.ReactNode;
+}> = ({ label, tracked = true, compact = false, children }) => (
+  <div className={cn('flex flex-col text-left', compact && 'gap-1')}>
     <span className={cn('text-xs', tracked ? 'text-text-secondary' : 'text-muted-foreground')}>
       {label}
     </span>
     {tracked ? (
-      <span className="text-base font-medium">{children}</span>
+      <span className={compact ? 'font-mono text-md tabular-nums' : 'text-base font-medium'}>
+        {children}
+      </span>
     ) : (
-      <OffValue className="text-base" />
+      <OffValue className={compact ? 'text-md' : 'text-base'} />
     )}
   </div>
 );
 
-const EmailStepStatsFooter: React.FC<{ stats: AutomationEmailStats }> = ({ stats }) => {
+const EmailStepStatsFooter: React.FC<{ stats: AutomationEmailStats; divider?: boolean }> = ({
+  stats,
+  divider = true,
+}) => {
   const { emailTrackOpens, emailTrackClicks } = useEmailTrackingSettings();
 
   return (
-    <div className="mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3">
-      <FooterMetric label="Sent">{formatNumber(stats.email_sent_count)}</FooterMetric>
-      <FooterMetric label="Opened" tracked={emailTrackOpens}>
-        {formatRate(stats.opened_rate)}
+    <Grid
+      className={cn('w-full', divider && 'mt-3 border-t border-border-default pt-3')}
+      columns={3}
+      gap="md"
+    >
+      <FooterMetric compact={!divider} label="Sent">
+        {formatNumber(stats.email_sent_count)}
       </FooterMetric>
-      <FooterMetric label="Clicked" tracked={emailTrackClicks}>
-        {formatRate(stats.clicked_rate)}
+      <FooterMetric compact={!divider} label="Opened" tracked={emailTrackOpens}>
+        {!divider && stats.opened_rate === null ? '—' : formatRate(stats.opened_rate)}
       </FooterMetric>
-    </div>
+      <FooterMetric compact={!divider} label="Clicked" tracked={emailTrackClicks}>
+        {!divider && stats.clicked_rate === null ? '—' : formatRate(stats.clicked_rate)}
+      </FooterMetric>
+    </Grid>
   );
 };
 
@@ -246,18 +261,36 @@ const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => (
 ));
 TriggerNode.displayName = 'TriggerNode';
 
-const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => (
-  <NodeShell
-    data={data}
-    footer={
-      data.showStatsFooter && data.stats ? <EmailStepStatsFooter stats={data.stats} /> : undefined
-    }
-  >
-    <HiddenHandle position={Position.Top} type="target" />
-    <StepNodeContent data={data} />
-    <HiddenHandle position={Position.Bottom} type="source" />
-  </NodeShell>
-));
+const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) =>
+  data.email ? (
+    <EditableEmailCard
+      email={data.email}
+      errorMessage={data.errorMessage}
+      footer={
+        data.showStatsFooter && data.stats ? (
+          <EmailStepStatsFooter divider={false} stats={data.stats} />
+        ) : undefined
+      }
+      isNew={data.isNew}
+      menuItems={data.contextMenuItems}
+      selected={data.selected}
+    >
+      <HiddenHandle position={Position.Top} type="target" />
+      <HiddenHandle position={Position.Bottom} type="source" />
+    </EditableEmailCard>
+  ) : (
+    <NodeShell
+      data={data}
+      footer={
+        data.showStatsFooter && data.stats ? <EmailStepStatsFooter stats={data.stats} /> : undefined
+      }
+    >
+      <HiddenHandle position={Position.Top} type="target" />
+      <StepNodeContent data={data} />
+      <HiddenHandle position={Position.Bottom} type="source" />
+    </NodeShell>
+  ),
+);
 StepNode.displayName = 'StepNode';
 
 const TailNode: React.FC<NodeProps<TailFlowNode>> = ({ data }) => {

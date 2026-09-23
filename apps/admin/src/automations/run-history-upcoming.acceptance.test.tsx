@@ -51,7 +51,11 @@ describe('Upcoming steps in active run history', () => {
     const request = fakeAdminEndpoint('GET', '/automations/first/', { automations: [savedPlan()] });
     respond(activeHistory());
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('button', { name: 'Send email: Saved future subject' }).click();
+    await page
+      .getByRole('article', { name: 'Send email: Saved future subject' })
+      .getByRole('button', { name: 'Email actions' })
+      .click();
+    await page.getByRole('menuitem', { name: 'Edit settings' }).click();
     await page.getByPlaceholder('Subject line').fill('Unsaved future subject');
     await open();
     expect(request.requests).toHaveLength(1);
