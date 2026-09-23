@@ -9,10 +9,12 @@ what a save sends, when it runs, and what an acknowledgement may change.
 
 ## One session per post
 
-One session per opened post, built and disposed together. A new post always gets
-its own; nothing is carried from one new post to the next. Once a create
-acquires an id the URL is replaced from new to edit as a state-driven effect,
-with the screen keyed on the session so the switch does not remount the editor.
+One session per opened post, built and disposed together. Building a session
+starts no timer, request or outside subscription, so a session discarded without
+`dispose()` leaves nothing running. A new post always gets its own; nothing is
+carried from one new post to the next. Once a create acquires an id the URL is
+replaced from new to edit as a state-driven effect, with the screen keyed on the
+session so the switch does not remount the editor.
 
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.
