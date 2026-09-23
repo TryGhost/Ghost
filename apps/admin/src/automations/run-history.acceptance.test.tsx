@@ -318,20 +318,17 @@ describe('Automation run selection and canvas transitions', () => {
     const save = fakeAdminEndpoint('PUT', '/automations/first/', { automations: [emailDetail] });
     respond(history('a'));
     await renderAdminApp('/automations/first', flags);
-    await page
-      .getByRole('article', { name: 'Send email: Welcome' })
-      .getByRole('button', { name: 'Email actions' })
-      .click();
-    await page.getByRole('menuitem', { name: 'Edit settings' }).click();
-    await page.getByPlaceholder('Subject line').fill('Unsaved subject');
+    await page.getByRole('textbox', { name: 'Subject line' }).fill('Unsaved subject');
     await open();
     await select();
     await expect.element(canvas()).toHaveTextContent('Alex');
     await expect
-      .element(document.querySelector<HTMLElement>('[aria-label="Step details"]'))
-      .not.toBeVisible();
+      .element(page.getByRole('complementary', { name: 'Step details' }))
+      .not.toBeInTheDocument();
     await close();
-    await expect.element(page.getByPlaceholder('Subject line')).toHaveValue('Unsaved subject');
+    await expect
+      .element(page.getByRole('textbox', { name: 'Subject line' }))
+      .toHaveValue('Unsaved subject');
     await expect
       .element(page.getByRole('article', { name: 'Send email: Unsaved subject' }))
       .toBeVisible();

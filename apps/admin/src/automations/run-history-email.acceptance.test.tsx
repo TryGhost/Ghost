@@ -153,12 +153,7 @@ describe('Historical email cards', () => {
       ),
     );
     await renderAdminApp('/automations/first', flags);
-    await page
-      .getByRole('article', { name: 'Send email: Current subject' })
-      .getByRole('button', { name: 'Email actions' })
-      .click();
-    await page.getByRole('menuitem', { name: 'Edit settings' }).click();
-    await page.getByPlaceholder('Subject line').fill('Unsaved subject');
+    await page.getByRole('textbox', { name: 'Subject line' }).fill('Unsaved subject');
     await open();
     await select();
     await expect.element(subject()).toHaveTextContent('Welcome to the club');
@@ -171,7 +166,9 @@ describe('Historical email cards', () => {
     await expect.element(email()).not.toHaveTextContent('Received');
     await expect.element(email()).not.toHaveTextContent('Delivered');
     await close();
-    await expect.element(page.getByPlaceholder('Subject line')).toHaveValue('Unsaved subject');
+    await expect
+      .element(page.getByRole('textbox', { name: 'Subject line' }))
+      .toHaveValue('Unsaved subject');
     expect(save.requests).toHaveLength(0);
   });
 

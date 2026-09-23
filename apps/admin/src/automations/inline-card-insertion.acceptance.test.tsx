@@ -64,12 +64,13 @@ describe('Inline card insertion', () => {
         const save = fakeAdminEndpoint('PUT', '/automations/first/', {
           automations: [detail('first')],
         });
-        await renderAdminApp('/automations/first', flags);
-        // Starting with another step open also checks that stale settings close.
-        await page.getByRole('button', { name: 'Email actions' }).click();
-        await page.getByRole('menuitem', { name: 'Edit settings' }).click();
+        await renderAdminApp('/automations/first', {
+          labs: { ...flags.labs, automationAnalytics: true },
+        });
+        // Starting with performance open checks that insertion dismisses it.
+        await page.getByRole('button', { name: 'View email analytics' }).click();
         await expect
-          .element(page.getByRole('complementary', { name: 'Step details' }))
+          .element(page.getByRole('complementary', { name: 'Email performance' }))
           .toBeVisible();
         await page
           .getByRole('button', {
@@ -84,6 +85,9 @@ describe('Inline card insertion', () => {
           .click();
         await expect
           .element(page.getByRole('complementary', { name: 'Step details' }))
+          .not.toBeInTheDocument();
+        await expect
+          .element(page.getByRole('complementary', { name: 'Email performance' }))
           .not.toBeInTheDocument();
         const cards = editingCanvas().getByRole('article', {
           name: type === 'Email' ? /^Send email/ : /^Wait:/,

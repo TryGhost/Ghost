@@ -72,6 +72,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
       data-testid={`add-step-button-${edgeData.sourceId}-${edgeData.targetId}`}
       disabled={edgeData.disabled}
       type="button"
+      data-automation-step-picker
     >
       <LucideIcon.Plus className="size-5" strokeWidth={1.5} />
     </button>
@@ -100,6 +101,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
           className="border-0 p-0 shadow-lg"
           side="top"
           sideOffset={12}
+          data-automation-step-picker
         >
           <StepPicker onPick={handlePick} />
         </PopoverContent>

@@ -44,6 +44,7 @@ import { RunHistory } from './run-history';
 import { PerformanceSidebar } from './performance-sidebar';
 import { type StepPickerType } from './step-picker';
 import { StepSidebar } from './step-sidebar';
+import { EmailPerformanceSidebar } from './email-performance-sidebar';
 import { formatWait } from './format-wait';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -322,6 +323,9 @@ const buildGraph = ({
                 onInteract: () => onInteract(action.id),
                 onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
                 onEditContent: () => onEditEmailBody(action.id),
+                onToggleAnalytics: automationAnalyticsEnabled
+                  ? () => onSelectStep(action.id)
+                  : undefined,
               },
             }
           : {}),
@@ -336,7 +340,7 @@ const buildGraph = ({
             }
           : {}),
         contextMenuItems: buildNodeContextMenuItems({
-          canEditSettings: !editableWait,
+          canEditSettings: !editableWait && !editableEmail,
           canDelete: true,
           canEditEmailBody: action.type === 'send_email',
           onDelete,
@@ -726,7 +730,16 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       onPreviewEmail: handleContextMenuPreviewEmail,
       onSelectStep: (id) => {
         settleOtherSteps(id);
-        setSelectedStep({ id });
+        setSelectedStep((current) =>
+          automationRunAnalyticsEnabled && current?.id === id ? null : { id },
+        );
+        if (
+          automationRunAnalyticsEnabled &&
+          layoutRef.current &&
+          layoutRef.current.clientWidth < 1360
+        ) {
+          setIsPerformanceOpen(false);
+        }
       },
       newStepId,
       selectedStepId,
@@ -934,18 +947,36 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           />
         )}
       </Box>
-      {/* Keep local field drafts and selected email settings intact while hidden. */}
+      {/* The redesigned editor exposes settings in its cards and performance in this panel. */}
       <Box className={isHistoryOpen ? 'hidden' : 'contents'}>
-        <StepSidebar
-          automation={automation}
-          isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
-          stepId={selectedStepId}
-          onClose={clearDetail}
-          onDelete={handleRequestDelete}
-          onEditEmail={handleEditEmail}
-          onUpdateSubject={handleUpdateSubject}
-          onUpdateWait={handleUpdateWait}
-        />
+        {automationRunAnalyticsEnabled ? (
+          <EmailPerformanceSidebar
+            automationId={automation.id}
+            email={
+              automationAnalyticsEnabled
+                ? automation.actions.find(
+                    (action): action is AutomationSendEmailAction =>
+                      action.id === selectedStepId && action.type === 'send_email',
+                  )
+                : undefined
+            }
+            suspended={
+              isHistoryOpen || Boolean(emailModalAction) || Boolean(deleteConfirmationAction)
+            }
+            onClose={clearDetail}
+          />
+        ) : (
+          <StepSidebar
+            automation={automation}
+            isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+            stepId={selectedStepId}
+            onClose={clearDetail}
+            onDelete={handleRequestDelete}
+            onEditEmail={handleEditEmail}
+            onUpdateSubject={handleUpdateSubject}
+            onUpdateWait={handleUpdateWait}
+          />
+        )}
       </Box>
       {emailModalAction && automation && (
         <EmailContentModal

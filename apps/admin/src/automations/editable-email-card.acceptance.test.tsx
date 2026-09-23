@@ -102,14 +102,18 @@ describe('Editable email cards', () => {
     await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
     await emailCards().nth(0).getByRole('button', { name: 'Email actions' }).click();
     await expect.element(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
-    await page.getByRole('menuitem', { name: 'Edit settings' }).click();
-    await expect.element(page.getByPlaceholder('Subject line')).toHaveValue('Welcome');
+    await expect
+      .element(page.getByRole('menuitem', { name: 'Edit settings' }))
+      .not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
     // Let the menu finish unmounting and restoring focus before the next app mounts.
     await expect
       .poll(() => document.querySelector('[data-slot="dropdown-menu-content"]'))
       .toBeNull();
-    await page.getByPlaceholder('Subject line').click();
-    await expect.element(page.getByPlaceholder('Subject line')).toHaveFocus();
+    await emailCards().nth(0).getByRole('textbox', { name: 'Subject line' }).click();
+    await expect
+      .element(emailCards().nth(0).getByRole('textbox', { name: 'Subject line' }))
+      .toHaveFocus();
     expect(save.requests).toHaveLength(0);
   });
 
