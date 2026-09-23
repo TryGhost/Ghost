@@ -25,6 +25,7 @@ import { MemberActivityGate } from './member-activity-gate';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
+import { AppsFlagGuard, appsRouteChildren, editorialBoardRouteChildren } from './apps/api';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { membersRouteChildren } from './members/api';
@@ -36,6 +37,7 @@ import {
   canManageAutomations,
   canManageMembers,
   canManageTags,
+  hasAdminAccess,
 } from '@tryghost/admin-x-framework/api/users';
 
 import { NotFound } from './shared/not-found';
@@ -111,6 +113,22 @@ const appRoutes: RouteObject[] = [
     path: '/tags/:tagSlug',
     Component: TagDetailGate,
     handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
+  },
+  {
+    // Behind the `apps` Labs flag: AppsFlagGuard renders the children while
+    // the flag is on and a 404 otherwise.
+    path: '/apps',
+    Component: AppsFlagGuard,
+    handle: { requiresAccess: hasAdminAccess } satisfies AccessRouteHandle,
+    children: appsRouteChildren,
+  },
+  {
+    // The Editorial board app's main-navigation screen, behind the same
+    // `apps` Labs flag as the Apps section.
+    path: '/editorial-board',
+    Component: AppsFlagGuard,
+    handle: { requiresAccess: hasAdminAccess } satisfies AccessRouteHandle,
+    children: editorialBoardRouteChildren,
   },
   {
     path: '/members',

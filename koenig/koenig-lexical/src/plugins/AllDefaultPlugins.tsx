@@ -21,6 +21,7 @@ import {HeaderPlugin} from '../plugins/HeaderPlugin';
 import {KoenigSnippetPlugin} from '../plugins/KoenigSnippetPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {PaywallPlugin} from '../plugins/PaywallPlugin';
+import {PodcastPlugin} from '../plugins/PodcastPlugin';
 import {ProductPlugin} from '../plugins/ProductPlugin';
 import {SignupPlugin} from '../plugins/SignupPlugin';
 import {TogglePlugin} from '../plugins/TogglePlugin';
@@ -63,6 +64,7 @@ export const AllDefaultPlugins = () => {
             <EmbedPlugin />
             <SignupPlugin />
             <TransistorPlugin />
+            <PodcastPlugin />
             <CallToActionPlugin />
         </>
     );

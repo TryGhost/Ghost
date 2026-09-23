@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import { useFramework } from '@tryghost/admin-x-framework';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import {
+  useFeatureFlag,
   useFetchApi,
   useKoenigFetchEmbed,
   usePinturaConfig,
@@ -21,6 +22,7 @@ import {
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorSettings, useSiteTimezone } from './use-editor-settings';
 import { usePostLinkSuggestions } from './use-post-link-suggestions';
+import { useIsAppActivated, usePodcastsWithEpisodes } from '@/apps/api';
 
 export interface PostCardConfigOptions {
   post: CardConfigPostSource;
@@ -48,6 +50,28 @@ export function usePostCardConfig({
   const pinturaConfig = usePinturaConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const fetchEmbed = useKoenigFetchEmbed(EDITOR_REQUEST_OPTIONS);
   const fetchApi = useFetchApi();
+  const appsEnabled = useFeatureFlag('apps');
+  const podcastsActivated = useIsAppActivated('podcasts');
+  const podcastsWithEpisodes = usePodcastsWithEpisodes();
+  const podcasts = useMemo(
+    () =>
+      podcastsWithEpisodes.map((podcast) => ({
+        id: podcast.id,
+        title: podcast.title,
+        artworkUrl: podcast.artworkUrl,
+        episodes: podcast.episodes.map((episode) => ({
+          id: episode.id,
+          title: episode.title,
+          description: episode.description,
+          audioUrl: episode.audioUrl,
+          duration: episode.duration,
+          artworkUrl: episode.artworkUrl,
+          status: episode.status,
+        })),
+      })),
+    [podcastsWithEpisodes],
+  );
+  const activatedApps = useMemo(() => (podcastsActivated ? ['podcasts'] : []), [podcastsActivated]);
 
   const settings = settingsData?.settings ?? null;
   const config = configData?.config;
@@ -100,6 +124,9 @@ export function usePostCardConfig({
         pinturaConfig,
         post: cardConfigPost,
         snippets,
+        appsEnabled,
+        activatedApps,
+        podcasts,
       },
       {
         fetchEmbed,
@@ -119,6 +146,9 @@ export function usePostCardConfig({
     pinturaConfig,
     cardConfigPost,
     snippets,
+    appsEnabled,
+    activatedApps,
+    podcasts,
     fetchEmbed,
     fetchAutocompleteLinks,
     searchLinks,

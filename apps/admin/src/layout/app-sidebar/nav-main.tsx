@@ -17,6 +17,8 @@ import NetworkIcon from './icons/network-icon';
 import { NavMenuItem } from './nav-menu-item';
 import { useIsActiveLink } from './use-is-active-link';
 import { getAdminToolbarUrl } from '@/utils/admin-toolbar-url';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useIsAppActivated } from '@/apps/api';
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const { data: currentUser } = useCurrentUser();
@@ -41,6 +43,11 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   });
   const showNetworkBadge =
     networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
+  // The Editorial board app adds its own primary nav item once activated.
+  // The shell already reports a failed config load; don't toast it again here.
+  const appsEnabled = useFeatureFlag('apps', { defaultErrorHandler: false });
+  const editorialBoardActivated = useIsAppActivated('editorial-board');
+  const showEditorialBoard = appsEnabled && editorialBoardActivated;
 
   // Only show NavMain for admin users
   if (!currentUser || !hasAdminAccess(currentUser)) {
@@ -73,6 +80,14 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                   {formatNumber(networkNotificationCount)}
                 </SidebarMenuBadge>
               )}
+            </NavMenuItem>
+          )}
+          {showEditorialBoard && (
+            <NavMenuItem>
+              <NavMenuItem.Link to="editorial-board" activeOnSubpath>
+                <LucideIcon.KanbanSquare />
+                <NavMenuItem.Label>Editorial board</NavMenuItem.Label>
+              </NavMenuItem.Link>
             </NavMenuItem>
           )}
           <NavMenuItem className="group/viewsite relative">

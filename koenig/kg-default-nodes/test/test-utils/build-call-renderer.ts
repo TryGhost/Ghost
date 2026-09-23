@@ -20,6 +20,7 @@ import {renderProductNode} from '../../src/nodes/product/product-renderer.js';
 import {renderSignupCardToDOM} from '../../src/nodes/signup/signup-renderer.js';
 import {renderToggleNode} from '../../src/nodes/toggle/toggle-renderer.js';
 import {renderTransistorNode} from '../../src/nodes/transistor/transistor-renderer.js';
+import {renderPodcastNode} from '../../src/nodes/podcast/podcast-renderer.js';
 import {renderVideoNode} from '../../src/nodes/video/video-renderer.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -50,6 +51,7 @@ const nodeRenderers: Record<string, RendererFn | Record<number, RendererFn>> = {
     signup: renderSignupCardToDOM,
     toggle: renderToggleNode,
     transistor: renderTransistorNode,
+    podcast: renderPodcastNode,
     video: renderVideoNode
 };
 

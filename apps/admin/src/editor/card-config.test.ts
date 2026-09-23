@@ -50,6 +50,9 @@ const sources = (overrides: Partial<PostCardConfigSources> = {}): PostCardConfig
   pinturaConfig: null,
   post: buildCardConfigPost({ displayName: 'post', visibility: 'members' }, 'public'),
   snippets: [],
+  appsEnabled: false,
+  activatedApps: [],
+  podcasts: [],
   ...overrides,
 });
 
@@ -99,7 +102,7 @@ describe('buildPostCardConfig', () => {
       klipy: null,
       pinturaConfig: null,
       renderLabels: true,
-      feature: { transistor: false, paywallImprovements: false },
+      feature: { transistor: false, paywallImprovements: false, podcasts: false },
       deprecated: { headerV1: true },
       membersEnabled: true,
       siteTitle: 'Test Site',
@@ -200,7 +203,54 @@ describe('buildPostCardConfig', () => {
       ports,
     );
 
-    expect(cardConfig.feature).toEqual({ transistor: true, paywallImprovements: true });
+    expect(cardConfig.feature).toEqual({
+      transistor: true,
+      paywallImprovements: true,
+      podcasts: false,
+    });
+  });
+
+  it('enables the podcasts card only with the apps flag and the app activated', () => {
+    const withFlagOnly = buildPostCardConfig(sources({ appsEnabled: true }), ports);
+    expect(withFlagOnly.feature.podcasts).toBe(false);
+
+    const withActivationOnly = buildPostCardConfig(sources({ activatedApps: ['podcasts'] }), ports);
+    expect(withActivationOnly.feature.podcasts).toBe(false);
+
+    const withBoth = buildPostCardConfig(
+      sources({ appsEnabled: true, activatedApps: ['podcasts'] }),
+      ports,
+    );
+    expect(withBoth.feature.podcasts).toBe(true);
+  });
+
+  it('offers the podcasts and episodes to the card only while the card is enabled', () => {
+    const podcasts = [
+      {
+        id: 'p1',
+        title: 'The Daily Awesome',
+        artworkUrl: '',
+        episodes: [
+          {
+            id: 'e1',
+            title: 'Episode 1',
+            description: '',
+            audioUrl: '',
+            duration: '',
+            artworkUrl: '',
+            status: 'draft',
+          },
+        ],
+      },
+    ];
+
+    expect(buildPostCardConfig(sources({ podcasts }), ports).podcasts).toEqual([]);
+    expect(
+      buildPostCardConfig(
+        sources({ appsEnabled: true, activatedApps: ['podcasts'], podcasts }),
+        ports,
+      ).podcasts,
+    ).toEqual(podcasts);
   });
 
   it('treats invite-only member signup as members disabled', () => {

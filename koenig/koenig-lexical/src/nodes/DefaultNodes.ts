@@ -32,6 +32,7 @@ import {LinkNode} from '@lexical/link';
 import {ListItemNode, ListNode} from '@lexical/list';
 import {MarkdownNode} from './MarkdownNode';
 import {PaywallNode} from './PaywallNode';
+import {PodcastNode} from './PodcastNode';
 import {ProductNode} from './ProductNode';
 import {SignupNode} from './SignupNode';
 import {ToggleNode} from './ToggleNode';
@@ -73,6 +74,7 @@ const DEFAULT_NODES = [
     GalleryNode,
     SignupNode,
     TransistorNode,
+    PodcastNode,
     TKNode,
     AtLinkNode,
     AtLinkSearchNode,

@@ -34,6 +34,24 @@ export interface CardConfigSnippetInput {
   value: string;
 }
 
+/** An episode the podcast card can pick, as the Podcasts app describes it. */
+export interface CardConfigPodcastEpisode {
+  id: string;
+  title: string;
+  description: string;
+  audioUrl: string;
+  duration: string;
+  artworkUrl: string;
+  status: string;
+}
+
+export interface CardConfigPodcast {
+  id: string;
+  title: string;
+  artworkUrl: string;
+  episodes: CardConfigPodcastEpisode[];
+}
+
 export interface PostCardConfigSources {
   settings: Setting[];
   config: Config;
@@ -43,6 +61,12 @@ export interface PostCardConfigSources {
   pinturaConfig: { jsUrl: string; cssUrl: string } | null;
   post: CardConfigPost | undefined;
   snippets: CardConfigSnippet[];
+  /** The `apps` Labs flag as Admin resolves it, including session overrides. */
+  appsEnabled: boolean;
+  /** Ids of apps activated under Apps; gates app-provided cards. */
+  activatedApps: string[];
+  /** The Podcasts app's podcasts and episodes, offered by the podcast card. */
+  podcasts: CardConfigPodcast[];
 }
 
 export interface PostCardConfigPorts {
@@ -61,7 +85,8 @@ export interface PostCardConfig extends PostCardConfigPorts {
   klipy: NonNullable<Config['klipy']> | null;
   pinturaConfig: { jsUrl: string; cssUrl: string } | null;
   renderLabels: boolean;
-  feature: { transistor: boolean; paywallImprovements: boolean };
+  feature: { transistor: boolean; paywallImprovements: boolean; podcasts: boolean };
+  podcasts: CardConfigPodcast[];
   deprecated: { headerV1: boolean };
   membersEnabled: boolean;
   siteTitle: string;
@@ -112,6 +137,7 @@ export function buildPostCardConfig(
   ports: PostCardConfigPorts,
 ): PostCardConfig {
   const { settings, config, site, currentUser } = sources;
+  const podcastsEnabled = sources.appsEnabled && sources.activatedApps.includes('podcasts');
 
   return {
     unsplash: getSettingValue<boolean>(settings, 'unsplash') ? sources.unsplashHeaders : null,
@@ -124,7 +150,11 @@ export function buildPostCardConfig(
     feature: {
       transistor: getSettingValue<boolean>(settings, 'transistor') === true,
       paywallImprovements: config.labs?.paywallImprovements === true,
+      // The Podcasts app card needs both the `apps` Labs flag and the app to
+      // have been activated under Apps.
+      podcasts: podcastsEnabled,
     },
+    podcasts: podcastsEnabled ? sources.podcasts : [],
     deprecated: {
       headerV1: true,
     },
