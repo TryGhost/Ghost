@@ -133,4 +133,47 @@ export class GhostClient {
       ]),
     );
   }
+
+  async *postPages(): AsyncGenerator<Post[]> {
+    let page = 1;
+    for (;;) {
+      const result = await this.#request<{
+        posts: Post[];
+        meta: { pagination: { next: number | null } };
+      }>(
+        `posts/?formats=lexical&include=tiers&has_card=addon%3Apodcast%3Aepisode&filter=status:published&limit=100&order=published_at%20desc,id%20desc&page=${page}`,
+      );
+      if (!Array.isArray(result.posts)) {
+        throw new GhostRequestError(503);
+      }
+      yield result.posts;
+      const next = result.meta?.pagination?.next;
+      if (next === null) {
+        return;
+      }
+      if (!Number.isSafeInteger(next) || next <= page) {
+        throw new GhostRequestError(503);
+      }
+      page = next;
+    }
+  }
+}
+
+export function feedCredential(params: URLSearchParams): MemberCredential | null {
+  if (!params.has('uuid') && !params.has('key')) {
+    return null;
+  }
+  const uuid = params.get('uuid');
+  const key = params.get('key');
+  if (
+    !uuid ||
+    !key ||
+    uuid.length > 100 ||
+    key.length > 200 ||
+    params.getAll('uuid').length !== 1 ||
+    params.getAll('key').length !== 1
+  ) {
+    throw new MemberCredentialError('Invalid member credentials.');
+  }
+  return { uuid, key };
 }

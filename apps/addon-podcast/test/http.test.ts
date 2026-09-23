@@ -5,10 +5,37 @@ import { createProviderHandler } from '../src/provider/http.ts';
 import { MemberCredentialError } from '../src/provider/ghost-client.ts';
 
 const id = '0123456789abcdef01234567';
-async function request(body: unknown, options: { origin?: string; failAuth?: boolean } = {}) {
+async function request(
+  body: unknown,
+  options: {
+    origin?: string;
+    failAuth?: boolean;
+    path?: string;
+    method?: string;
+    failPage?: boolean;
+  } = {},
+) {
   const ghost = {
+    async *postPages() {
+      yield [];
+      if (options.failPage) {
+        throw new Error('Upstream page failed');
+      }
+    },
     post: vi.fn(async () => null),
-    configuration: vi.fn(async () => ({ shows: [] })),
+    configuration: vi.fn(async () => ({
+      shows: [
+        {
+          id: 'one',
+          title: 'Show',
+          description: '',
+          artwork: '',
+          author: '',
+          language: 'en',
+          explicit: false,
+        },
+      ],
+    })),
     access: vi.fn(async () => {
       if (options.failAuth) {
         throw new MemberCredentialError();
@@ -17,8 +44,8 @@ async function request(body: unknown, options: { origin?: string; failAuth?: boo
     }),
   };
   const req = Object.assign(Readable.from([JSON.stringify(body)]), {
-    method: 'POST',
-    url: '/api/player',
+    method: options.method ?? 'POST',
+    url: options.path ?? '/api/player',
     headers: { origin: options.origin ?? 'https://site.test' },
   });
   let status = 200;
@@ -36,13 +63,42 @@ async function request(body: unknown, options: { origin?: string; failAuth?: boo
       output = value;
     },
   };
-  await createProviderHandler(ghost, 'https://site.test')(
-    req as unknown as IncomingMessage,
-    res as unknown as ServerResponse,
-  );
-  return { status, output: JSON.parse(output), headers, ghost };
+  await createProviderHandler(
+    ghost,
+    'https://site.test',
+    'https://provider.test',
+  )(req as unknown as IncomingMessage, res as unknown as ServerResponse);
+  return {
+    status,
+    output: headers['Content-Type'].startsWith('application/rss+xml') ? output : JSON.parse(output),
+    headers,
+    ghost,
+  };
 }
 describe('player HTTP boundary', () => {
+  it('serves uncached XML and fails closed for invalid credentials or incomplete feeds', async () => {
+    const feed = { method: 'GET', path: '/feeds/one/audio.xml' };
+    const publicResponse = await request(null, feed);
+    expect(publicResponse.status).toBe(200);
+    expect(publicResponse.headers['Content-Type']).toBe('application/rss+xml; charset=utf-8');
+    expect(publicResponse.headers['Cache-Control']).toBe('private, no-store');
+    expect(publicResponse.output).toContain('<rss');
+    expect((await request(null, { ...feed, path: `${feed.path}?uuid=member` })).status).toBe(401);
+    expect(
+      (
+        await request(null, {
+          ...feed,
+          path: `${feed.path}?uuid=member&key=invalid`,
+          failAuth: true,
+        })
+      ).status,
+    ).toBe(401);
+    const failed = await request(null, { ...feed, failPage: true });
+    expect(failed.status).toBe(503);
+    expect(failed.headers['Content-Type']).toContain('application/json');
+    expect(failed.output).toEqual({ error: 'Podcast unavailable.' });
+    expect((await request(null, { ...feed, path: '/feeds/missing/video.xml' })).status).toBe(404);
+  });
   it('is uncached, limits CORS, and ignores browser media/access claims', async () => {
     const result = await request({
       post_id: id,

@@ -19,6 +19,10 @@ const request = (body: unknown): AddonEditorBlockRequest => ({
 it('renders selected audio and video with current title and delegates sign-in to Portal', async () => {
   const input = request({
     state: 'ready',
+    feeds: {
+      audio: 'https://provider.test/feeds/one/audio.xml',
+      video: 'https://provider.test/feeds/one/video.xml',
+    },
     episode: { title: 'Current title' },
     show: { title: 'My show' },
     media: {
@@ -33,6 +37,8 @@ it('renders selected audio and video with current title and delegates sign-in to
   expect(document.querySelector('h2')?.textContent).toBe('Current title');
   expect(document.querySelector('audio')?.src).toBe('https://site.test/free.mp3');
   expect(document.querySelector('video')?.src).toBe('https://site.test/free.mp4');
+  expect(document.querySelector('summary')?.textContent).toBe('Subscribe to podcast');
+  expect(document.querySelector('a')?.href).toBe('https://provider.test/feeds/one/audio.xml');
   document.querySelector('button')!.click();
   expect(input.bridge?.requestSignin).toHaveBeenCalledOnce();
   expect(input.bridge?.fetch).toHaveBeenCalledWith('/api/player', {

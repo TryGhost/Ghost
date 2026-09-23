@@ -89,9 +89,21 @@ export function Player({ request }: { request: AddonEditorBlockRequest }) {
           {request.envelope?.context.member ? 'View membership options' : 'Sign in or subscribe'}
         </button>
       )}
+      <details className="podcast-subscribe">
+        <summary>Subscribe to podcast</summary>
+        <p>
+          {request.envelope?.context.member
+            ? 'Use your private feed in a podcast app. Keep this link to yourself.'
+            : 'Add the public feed to your podcast app, or sign in for your personal feed.'}
+        </p>
+        <p>
+          <a href={data.feeds.audio}>Audio RSS feed</a> ·{' '}
+          <a href={data.feeds.video}>Video RSS feed</a>
+        </p>
+      </details>
     </article>
   );
 }
 
 export const playerCss =
-  '.podcast-player{box-sizing:border-box;padding:28px;border:1px solid #e5e7eb;border-radius:16px;font-family:inherit;background:#fafafa;color:#171717;overflow-wrap:anywhere}.podcast-player h2{font-size:24px;line-height:1.25;letter-spacing:-.03em;margin:8px 0 24px}.podcast-player p{font-size:14px;line-height:1.5}.podcast-player .podcast-show{color:#62676e;margin:0}.podcast-player audio,.podcast-player video{display:block;width:100%;max-width:100%;margin:16px 0}.podcast-player video{max-height:60vh;background:#171717;border-radius:8px}.podcast-player button{font:inherit;font-size:14px;font-weight:600;color:white;background:#171717;border:0;border-radius:999px;padding:12px 20px;cursor:pointer}.podcast-player button:focus-visible{outline:2px solid #4169e1;outline-offset:3px}@media(max-width:400px){.podcast-player{padding:20px}}';
+  '.podcast-player{box-sizing:border-box;padding:28px;border:1px solid #e5e7eb;border-radius:16px;font-family:inherit;background:#fafafa;color:#171717;overflow-wrap:anywhere}.podcast-player h2{font-size:24px;line-height:1.25;letter-spacing:-.03em;margin:8px 0 24px}.podcast-player p{font-size:14px;line-height:1.5}.podcast-player .podcast-show{color:#62676e;margin:0}.podcast-player audio,.podcast-player video{display:block;width:100%;max-width:100%;margin:16px 0}.podcast-player video{max-height:60vh;background:#171717;border-radius:8px}.podcast-player button{font:inherit;font-size:14px;font-weight:600;color:white;background:#171717;border:0;border-radius:999px;padding:12px 20px;cursor:pointer}.podcast-subscribe{margin-top:24px;border-top:1px solid #e5e7eb;padding-top:20px}.podcast-subscribe summary{cursor:pointer;font-size:14px;font-weight:600}.podcast-subscribe a{color:inherit;text-underline-offset:3px}.podcast-player button:focus-visible{outline:2px solid #4169e1;outline-offset:3px}@media(max-width:400px){.podcast-player{padding:20px}}';

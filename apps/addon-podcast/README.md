@@ -33,6 +33,19 @@ preview divider controls whether its card can offer a free version. Hidden cards
 remain inaccessible through direct player requests. Member-session refreshes
 replace the iframe and discard old responses.
 
-Implementation is in progress. Public/private audio/video feeds, portable post
-links, and the V2 conversion helper follow in later slices. Direct files remain
-on Ghost storage; only feeds will be gated.
+## Podcast feeds
+
+Each show exposes `/feeds/<show-id>/audio.xml` and
+`/feeds/<show-id>/video.xml`. Set `PROVIDER_URL` to the provider's externally
+reachable base URL when it differs from `http://localhost:4655`. The player's
+**Subscribe to podcast** control provides these links, personalised with the
+current member's signed credential after sign-in. Treat private URLs as secrets.
+
+Feeds query ordinary published posts containing podcast cards and respect each
+card's actual visibility, including public previews. Every eligible card emits
+one item per configured format. Membership and content changes apply on the
+next request; failures return an error instead of a partial feed. Responses are
+uncached. Direct files remain public on Ghost storage; only feeds are gated.
+
+Implementation is in progress. Portable post links and the V2 conversion helper
+follow in later slices.

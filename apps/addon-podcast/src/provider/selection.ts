@@ -1,3 +1,5 @@
+import type { AccessDecision } from './ghost-client.ts';
+
 export type MediaFormat = 'audio' | 'video';
 export interface Media {
   url: string;
@@ -64,6 +66,7 @@ export function extractEpisodes(post: Post): Episode[] {
       node.addonHandle !== 'podcast' ||
       node.blockName !== 'episode' ||
       typeof node.id !== 'string' ||
+      !node.id.isWellFormed() ||
       !node.id.trim() ||
       node.id.length > 256 ||
       counts.get(node.id) !== 1 ||
@@ -90,6 +93,18 @@ export function extractEpisodes(post: Post): Episode[] {
       },
     ];
   });
+}
+
+/** Bind media to the same saved content/access snapshot used by Ghost gating. */
+export function episodeAccess(episode: Episode, decision: AccessDecision | undefined) {
+  if (
+    !decision ||
+    !episode.post.card_revision ||
+    episode.post.card_revision !== decision.card_revision
+  ) {
+    throw new Error('Post revision changed.');
+  }
+  return { access: decision.access, visible: decision.visible_card_ids.includes(episode.cardId) };
 }
 
 /** Shared by player and feeds; placement is checked before choosing any media. */

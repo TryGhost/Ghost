@@ -1,11 +1,58 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { GhostClient, MemberCredentialError } from '../src/provider/ghost-client.ts';
+import {
+  feedCredential,
+  GhostClient,
+  MemberCredentialError,
+} from '../src/provider/ghost-client.ts';
 
 const id = '0123456789abcdef01234567';
 const ghost = () => new GhostClient('https://publisher.test/blog/', `${id}:${'ab'.repeat(32)}`);
 afterEach(() => vi.unstubAllGlobals());
 
 describe('Ghost API boundary', () => {
+  it('queries exact card candidates in stable order and traverses empty pages', async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ posts: [], meta: { pagination: { next: 2 } } })),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ posts: [{ id }], meta: { pagination: { next: null } } })),
+      );
+    vi.stubGlobal('fetch', fetch);
+    const pages = [];
+    for await (const page of ghost().postPages()) {
+      pages.push(page);
+    }
+    expect(pages).toEqual([[], [{ id }]]);
+    const urls = fetch.mock.calls.map(([url]) => url as URL);
+    expect(urls.map((url) => url.searchParams.get('page'))).toEqual(['1', '2']);
+    for (const url of urls) {
+      expect(url.searchParams.get('has_card')).toBe('addon:podcast:episode');
+      expect(url.searchParams.get('order')).toBe('published_at desc,id desc');
+      expect(url.searchParams.get('filter')).toBe('status:published');
+      expect(url.searchParams.get('include')).toBe('tiers');
+    }
+  });
+  it('rejects broken pagination and malformed private feed credentials', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () => new Response(JSON.stringify({ posts: [], meta: { pagination: { next: 1 } } })),
+      ),
+    );
+    await expect(
+      (async () => {
+        for await (const page of ghost().postPages()) {
+          expect(page).toEqual([]);
+        }
+      })(),
+    ).rejects.toThrow();
+    for (const query of ['uuid=u', 'key=k', 'uuid=u&key=', 'uuid=u&key=k&key=other']) {
+      expect(() => feedCredential(new URLSearchParams(query))).toThrow(MemberCredentialError);
+    }
+    expect(feedCredential(new URLSearchParams())).toBeNull();
+  });
   it('reads current published lexical data with a server-only short-lived integration token', async () => {
     const fetch = vi.fn(
       async () =>

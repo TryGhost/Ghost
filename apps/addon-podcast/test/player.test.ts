@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { player } from '../src/provider/player.ts';
+import { player as getPlayer } from '../src/provider/player.ts';
+
+const player = (ghost: Parameters<typeof getPlayer>[0], input: Parameters<typeof getPlayer>[1]) =>
+  getPlayer(ghost, input, 'https://provider.test');
 
 const id = '0123456789abcdef01234567';
 const full = { url: 'https://site.test/full.mp3', mime_type: 'audio/mpeg', byte_length: 42 };
@@ -86,6 +89,12 @@ describe('player provider', () => {
       media: { audio: { ...full, variant: 'full' } },
     });
     expect(ghost.access).toHaveBeenCalledWith([id], member);
+    const result = await player(ghost, { post_id: id, card_id: 'episode-one', member });
+    if (!('feeds' in result)) {
+      throw new Error('Expected subscription links');
+    }
+    expect(new URL(result.feeds.audio).searchParams.get('uuid')).toBe(member.uuid);
+    expect(new URL(result.feeds.audio).searchParams.get('key')).toBe(member.key);
     ghost.access.mockRejectedValueOnce(new Error('Invalid member'));
     await expect(player(ghost, { post_id: id, card_id: 'missing', member })).rejects.toThrow(
       'Invalid member',

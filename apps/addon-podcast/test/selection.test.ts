@@ -30,6 +30,9 @@ const post = (children: unknown[]) => ({
 });
 
 describe('podcast selection', () => {
+  it('omits card IDs that cannot be encoded into stable feed identity', () => {
+    expect(extractEpisodes(post([card('\ud800')]))).toEqual([]);
+  });
   it('selects only visible cards, full media first, then explicitly offered free media', () => {
     expect(selectMedia(props, 'audio', { access: true, visible: false })).toBeNull();
     expect(selectMedia(props, 'audio', { access: true, visible: true })).toEqual({

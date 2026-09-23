@@ -11,6 +11,7 @@ const adminKey = process.env.GHOST_ADMIN_API_KEY ?? '';
 const provider = createProviderHandler(
   siteUrl && adminKey ? new GhostClient(siteUrl, adminKey) : null,
   siteUrl,
+  process.env.PROVIDER_URL ?? `http://localhost:${port}`,
 );
 const contentTypes = {
   '.js': 'text/javascript; charset=utf-8',
@@ -18,7 +19,7 @@ const contentTypes = {
 };
 
 createServer(async (request, response) => {
-  if (request.url?.startsWith('/api/')) {
+  if (request.url?.startsWith('/api/') || request.url?.startsWith('/feeds/')) {
     await provider(request, response);
     return;
   }
