@@ -70,6 +70,22 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   const editMutation = useEditAutomation();
   const [editState, setEditState] = React.useState<AutomationEditState>({ phase: 'idle' });
   const [selectedRunId, setSelectedRunId] = React.useState<string | null>(null);
+  // Invalid text stays in the input, outside the API-ready draft, but must block saving it.
+  const [invalidWaitIds, setInvalidWaitIds] = React.useState<Set<string>>(new Set());
+  const onWaitValidityChange = React.useCallback((stepId: string, valid: boolean) => {
+    setInvalidWaitIds((current) => {
+      if (current.has(stepId) === !valid) {
+        return current;
+      }
+      const next = new Set(current);
+      if (valid) {
+        next.delete(stepId);
+      } else {
+        next.add(stepId);
+      }
+      return next;
+    });
+  }, []);
   const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
   const [isEmailModalDirty, setIsEmailModalDirty] = React.useState(false);
   const isEmailModalDirtyRef = React.useRef(false);
@@ -95,10 +111,17 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
   // otherwise flip the dirty flag immediately after every successful publish.
   const hasUnsavedChanges =
-    !!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation));
+    invalidWaitIds.size > 0 ||
+    (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
 
   const onDraftChange = (next: AutomationDetail) => {
     setDraft(next);
+    setInvalidWaitIds((current) => {
+      const remaining = new Set(
+        [...current].filter((id) => next.actions.some((action) => action.id === id)),
+      );
+      return remaining.size === current.size ? current : remaining;
+    });
     setActionErrors((oldErrors) => {
       if (Object.keys(oldErrors).length === 0) {
         return oldErrors;
@@ -115,9 +138,10 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   const validateActionErrors = (
     automationToValidate: AutomationDetail,
     errorState: AutomationEditState,
+    requireEmailContent = true,
   ): boolean => {
-    const nextActionErrors = getActionErrors(automationToValidate);
-    if (Object.keys(nextActionErrors).length > 0) {
+    const nextActionErrors = requireEmailContent ? getActionErrors(automationToValidate) : {};
+    if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
       setEditState(errorState);
       toast.error('Automation needs a few details', {
@@ -163,7 +187,13 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
       }
     }
 
-    if (newStatus === 'active' && !validateActionErrors(draft, errorState)) {
+    if (
+      !validateActionErrors(
+        draft,
+        newStatus === 'active' ? errorState : { phase: 'idle' },
+        newStatus === 'active',
+      )
+    ) {
       return;
     }
 
@@ -460,6 +490,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           interceptedNavigation.reset();
         }}
         onSelectRun={setSelectedRunId}
+        onWaitValidityChange={onWaitValidityChange}
       />
 
       <DirtyConfirmDialog {...discardDialogProps} />

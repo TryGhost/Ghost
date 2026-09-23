@@ -17,6 +17,7 @@ import type { Node, NodeProps } from '@xyflow/react';
 import type { AutomationEmailStats } from '@tryghost/admin-x-framework/api/automations';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { formatRate } from './format-stats';
+import { EditableWaitCard, type EditableWaitData } from './editable-wait-card';
 import { EditableEmailCard, type EditableEmailData } from './editable-email-card';
 import { OffValue } from './off-value';
 
@@ -31,6 +32,7 @@ export type CanvasAnchor = { sourceId: string; targetId: string };
 
 export type StepNodeDisplayData = {
   email?: EditableEmailData;
+  wait?: EditableWaitData;
   errorMessage?: string;
   icon: React.ElementType;
   label: string;
@@ -278,6 +280,16 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) =>
       <HiddenHandle position={Position.Top} type="target" />
       <HiddenHandle position={Position.Bottom} type="source" />
     </EditableEmailCard>
+  ) : data.wait ? (
+    <EditableWaitCard
+      errorMessage={data.errorMessage}
+      isNew={data.isNew}
+      menuItems={data.contextMenuItems}
+      wait={data.wait}
+    >
+      <HiddenHandle position={Position.Top} type="target" />
+      <HiddenHandle position={Position.Bottom} type="source" />
+    </EditableWaitCard>
   ) : (
     <NodeShell
       data={data}
