@@ -55,18 +55,20 @@ a field patch would be dropped before the request is built.
 
 A settings field is staged with one call and committed with another. Staging
 writes the value into the live projection and nothing else; committing puts it
-through the one save policy gate. What that gate does depends on the post's
-status.
+through the one save policy gate. The title's blur and every feature-image
+commit — setting, clearing, alt text, the caption's blur — go through the same
+gate. What that gate does depends on the post's status.
 
-| Status                           | On a field commit                                                   | Persisted by                           |
-| -------------------------------- | ------------------------------------------------------------------- | -------------------------------------- |
-| `draft`                          | dispatches the save engine's `field` intent, as a title commit does | the field save itself                  |
-| `published`, `scheduled`, `sent` | nothing — the value is staged in the live document                  | the next explicit save (Update, Cmd-S) |
+| Status                           | On a field commit                                  | Persisted by                           |
+| -------------------------------- | -------------------------------------------------- | -------------------------------------- |
+| `draft`                          | dispatches the save engine's `field` intent        | the field save itself                  |
+| `published`, `scheduled`, `sent` | nothing — the value is staged in the live document | the next explicit save (Update, Cmd-S) |
 
 The gate also holds a draft's field save back while a value it would send is not
 yet valid: an incomplete tier pairing, a meta or social-card title or
 description past its column width, an author list the writer emptied, or a
-publish time that has not passed. The value stays staged, the section says why,
+staged publish time that has not passed. A draft whose saved publish time is in
+the future is not held back by it. The value stays staged, the section says why,
 and the next save the writer asks for is refused with the same message. A
 draft's body autosave is not held back the same way: it runs, and the same rules
 fail it before any request is sent, so the engine reports that error until the

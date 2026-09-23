@@ -147,7 +147,7 @@ export interface EditorSession {
   editPublishedAt: (publishedAt: string) => void;
   /** The publish time the writer is looking at, staged edit included. */
   getPublishedAt: () => string | null;
-  /** The one save policy gate for settings fields; see the README. */
+  /** The one save policy gate for every field-level save; see the README. */
   commitField: () => void;
   /** The slug the machine holds, which a title commit moves without a field patch. */
   getSlug: () => string;
@@ -159,7 +159,6 @@ export interface EditorSession {
   setBaseline: (lexical: LexicalInput) => void;
   baselineFailed: (error: unknown) => void;
   commitTitle: (title: string) => void;
-  dispatchField: () => void;
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
   dispatchPublish: (options?: PublishOptions) => Promise<SaveCompletion>;
@@ -605,15 +604,16 @@ export function createEditorSession({
   // Seed the external-store snapshot before the session is handed to React.
   notifyChanged();
 
-  // The one place the sidebar's save policy lives. A draft persists a settings
-  // field the way the body does; every other status stages it until Update.
+  // The one place the field save policy lives. A draft persists a field the way
+  // the body does; every other status stages it until Update.
   function commitField(): void {
-    // Invalid settings stay staged rather than dispatching a field save.
+    // Invalid settings stay staged rather than dispatching a field save. As in
+    // prepare, only a staged publish time is checked, never the saved one.
     if (
       status !== 'draft' ||
       settingsFieldError(validatedFieldsOf(live)) ||
       authorsEmptied() ||
-      publishedAtInFuture(status, livePublishedAt())
+      (stagedPublishedAt !== publishedAt && publishedAtInFuture(status, stagedPublishedAt))
     ) {
       return;
     }
@@ -760,7 +760,6 @@ export function createEditorSession({
         slug.commitTitle(title);
       }
     },
-    dispatchField: () => void engine.dispatch('field'),
     dispatchAutosave: () => void engine.dispatch('autosave'),
     dispatchExplicit: () => engine.dispatch('explicit'),
     dispatchPublish: (options) => engine.dispatch('publish', options),

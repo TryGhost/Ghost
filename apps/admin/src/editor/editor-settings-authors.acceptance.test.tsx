@@ -27,6 +27,7 @@ const OWNER_ID = '1';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
+const UPLOADED_IMAGE = 'https://example.com/content/images/2026/09/hills.png';
 
 const POLL = { timeout: 10_000 };
 
@@ -207,6 +208,68 @@ describe('Post settings authors', () => {
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi).authors).toEqual([{ id: NADIA.id }]);
     await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
+  });
+
+  it('holds a new feature image back while the author list is emptied', async () => {
+    const saveApi = fakeSavablePost({ feature_image: null });
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
+      images: [{ url: UPLOADED_IMAGE, ref: null }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAuthors();
+
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+
+    await userEvent.upload(
+      editorScreen.featureImageInput().element(),
+      new File(['image'], 'hills.png', { type: 'image/png' }),
+    );
+
+    await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
+    await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Crediting someone again lets the staged image through with the authors.
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      authors: [{ id: NADIA.id }],
+      feature_image: UPLOADED_IMAGE,
+    });
+  });
+
+  it('holds a renamed title back while the author list is emptied', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAuthors();
+    await expect.element(editorScreen.settingsSlug()).toHaveValue('hello-from-react');
+
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+
+    await editorScreen.titleInput().fill('Brand New Name');
+    await editorScreen.body().click();
+
+    await expect.element(editorScreen.settingsSlug()).toHaveValue('brand-new-name');
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Crediting someone again lets the staged title and slug through with the authors.
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      title: 'Brand New Name',
+      slug: 'brand-new-name',
+      authors: [{ id: NADIA.id }],
+    });
   });
 
   it('stages a published post’s authors until Update', async () => {

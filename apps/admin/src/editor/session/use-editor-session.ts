@@ -112,7 +112,7 @@ export interface EditorSessionHandle {
   stageSettings: (patch: EditorSettingsPatch) => void;
   /**
    * Applies the sidebar's save policy to what is staged, on the blur that ends
-   * an edit. The excerpt is a settings field wherever it is rendered.
+   * an edit. The excerpt and the feature image go through it wherever they render.
    */
   commitSettings: () => void;
   /** The title the engine holds, which is the default title while the input is blank. */
@@ -129,7 +129,6 @@ export interface EditorSessionHandle {
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
   getLiveLexical: EditorSession['getLiveLexical'];
-  dispatchField: () => void;
   dispatchExplicit: () => void;
   /** An explicit save whose completion the caller acts on, such as before a publish or preview. */
   saveExplicit: () => Promise<SaveCompletion>;
@@ -414,7 +413,7 @@ export function useEditorSession({
 
   const onTitleBlur = useCallback(() => {
     session.commitTitle(title);
-    session.dispatchField();
+    session.commitField();
   }, [session, title]);
 
   const onLexicalChange = useCallback(
@@ -500,7 +499,6 @@ export function useEditorSession({
       editPublishedAt,
       getSaveSnapshot: session.getSaveSnapshot,
       getLiveLexical: session.getLiveLexical,
-      dispatchField: session.dispatchField,
       dispatchExplicit,
       saveExplicit: session.dispatchExplicit,
       dispatchPublish,

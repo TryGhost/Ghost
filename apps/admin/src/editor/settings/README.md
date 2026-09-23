@@ -14,7 +14,8 @@ that ends the edit — a blur for a text field, the choice itself for a toggle o
 a picker. Committing is not saving: whether the value is persisted now or held
 until the writer asks for a save is the session's one save policy gate, and
 [the session README](../session/README.md#staging-and-committing) describes it
-and the rules that hold a commit back.
+and the rules that hold a commit back. The title and the feature image commit
+through the same gate, so they follow the same status policy and validity check.
 
 Two of the panel's sections write something that is not a settings field, so
 they have their own routes onto the session: the URL section edits the slug
