@@ -138,3 +138,23 @@ Host controls are supplied through the optional `settingsComponents` map when
 creating the editor block configuration. Koenig retains the mounted settings
 surface while closed, allowing an in-flight upload to finish on its original
 card; disposing that surface prevents late upload callbacks.
+
+## Post access and card visibility
+
+Providers can use their integration Admin key to call `POST /ghost/api/admin/post_access/`
+with `{post_access: [{post_ids: [...], member: {uuid, key}}]}`. Omit `member` for
+anonymous access. The batch accepts at most 100 IDs and returns one
+`{id, access, visible_card_ids}` decision per distinct ID. Missing, unpublished,
+scheduled, and deleted posts return false access and no visible cards.
+
+Card visibility runs the real Lexical renderer and Ghost's website preview and
+conditional-content gating. Temporary unpredictable markers bind the result to
+actual rendered card nodes; HTML mentioning a card ID cannot grant access.
+Empty or rejected snapshots and ambiguous duplicate card IDs are omitted. A
+rendering failure fails the request instead of returning partial decisions.
+
+The same-origin `GET /members/api/member/context/` returns the current signed-in
+member's existing `{uuid, key}` signed-link credential, or null. These credentials
+are a spike contract for later replacement; they are not app-specific. Both
+context and access responses are private and uncached. Providers must keep Admin
+keys server-side and validate access on each request.

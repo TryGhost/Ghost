@@ -7,6 +7,10 @@ const localUtils = require('./utils');
 // but that's not the problem the index.js max - line eslint "proxy" rule is there to solve.
 
 module.exports = {
+  get postAccess() {
+    return apiFramework.pipeline(require('./post-access'), localUtils);
+  },
+
   get automations() {
     return apiFramework.pipeline(require('./automations').controller, localUtils);
   },

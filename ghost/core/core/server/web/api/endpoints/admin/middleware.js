@@ -55,6 +55,7 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
   const allowlisted = {
     site: ['GET'],
     posts: ['GET', 'PUT', 'DELETE', 'POST'],
+    post_access: ['POST'],
     pages: ['GET', 'PUT', 'DELETE', 'POST'],
     images: ['POST'],
     webhooks: ['POST', 'PUT', 'DELETE'],

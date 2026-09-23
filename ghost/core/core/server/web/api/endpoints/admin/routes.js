@@ -25,6 +25,7 @@ module.exports = function apiRoutes() {
   router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
   // ## Posts
+  router.post('/post_access', mw.authAdminApi, http(api.postAccess.browse));
   router.get('/posts', mw.authAdminApi, http(api.posts.browse));
   router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));
 

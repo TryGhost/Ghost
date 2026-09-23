@@ -4,6 +4,7 @@ const config = require('../../../../shared/config');
 const { http } = require('@tryghost/api-framework');
 const api = require('../../../api').endpoints;
 const middleware = require('../../../services/members/middleware');
+const { currentMemberContext } = require('../../../services/members/access-context');
 
 /**
  * A member's own account, over HTTP.
@@ -22,6 +23,7 @@ module.exports = function accountRoutes() {
   const router = express.Router('member-account');
 
   router.use(middleware.loadMemberIdentity);
+  router.get('/context', currentMemberContext);
 
   // Reading who you are. Answering with nothing when there is no member is the
   // right answer rather than a failure: a themed page asks this on every view.
