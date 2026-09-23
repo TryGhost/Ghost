@@ -101,7 +101,7 @@ module.exports = {
   all(apiConfig, frame) {
     debug('validate all');
 
-    let validationErrors = validate(apiConfig.options, frame.options);
+    const validationErrors = validate(apiConfig.options, frame.options);
 
     if (!_.isEmpty(validationErrors)) {
       return Promise.reject(validationErrors[0]);

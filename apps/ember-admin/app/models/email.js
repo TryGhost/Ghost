@@ -32,7 +32,7 @@ export default Model.extend({
     isFailure: equal('status', 'failed'),
 
     openRate: computed('emailCount', 'openedCount', function () {
-        let {emailCount, openedCount} = this;
+        const {emailCount, openedCount} = this;
 
         if (emailCount === 0) {
             return 0;

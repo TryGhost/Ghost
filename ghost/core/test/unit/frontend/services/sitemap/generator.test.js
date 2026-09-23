@@ -408,10 +408,6 @@ describe('Generators', function () {
       });
 
       it('compare content output', function () {
-        let idxFirst;
-        let idxSecond;
-        let idxThird;
-
         urlUtilsUrlForStub
           .withArgs('image', { image: 'post-100.jpg' }, true)
           .returns('http://my-ghost-blog.com/images/post-100.jpg');
@@ -471,9 +467,9 @@ describe('Generators', function () {
         assert(xml.includes('<image:loc>http://my-ghost-blog.com/images/post-300.jpg</image:loc>'));
 
         // Validate order newest to oldest
-        idxFirst = xml.indexOf('<loc>http://my-ghost-blog.com/url/300/</loc>');
-        idxSecond = xml.indexOf('<loc>http://my-ghost-blog.com/url/200/</loc>');
-        idxThird = xml.indexOf('<loc>http://my-ghost-blog.com/url/100/</loc>');
+        const idxFirst = xml.indexOf('<loc>http://my-ghost-blog.com/url/300/</loc>');
+        const idxSecond = xml.indexOf('<loc>http://my-ghost-blog.com/url/200/</loc>');
+        const idxThird = xml.indexOf('<loc>http://my-ghost-blog.com/url/100/</loc>');
 
         assert(idxFirst < idxSecond);
         assert(idxSecond < idxThird);

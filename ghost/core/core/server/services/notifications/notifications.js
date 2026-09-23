@@ -37,7 +37,7 @@ class Notifications {
    * @returns {Object[]} - all notifications
    */
   fetchAllNotifications() {
-    let allNotifications = this.settingsCache.get('notifications');
+    const allNotifications = this.settingsCache.get('notifications');
 
     // @TODO: this check can be removed to improve read operation perf. It's here only because
     //        reads are done often and this gives a possibility to self-heal any broken records.
@@ -151,7 +151,7 @@ class Notifications {
       addedAt: moment().toDate(),
     };
 
-    let notificationsToCheck = notifications;
+    const notificationsToCheck = notifications;
     let notificationsToAdd = [];
 
     const allNotifications = this.fetchAllNotifications();

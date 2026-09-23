@@ -10,7 +10,7 @@ const unsavedModalSelector = '[data-test-modal="unsaved-post-changes"]';
 const backToPostsSelector = '[data-test-link="posts"]';
 
 describe('Acceptance: Editor: Unsaved changes', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {

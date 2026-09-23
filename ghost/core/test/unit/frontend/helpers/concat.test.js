@@ -37,70 +37,70 @@ describe('{{concat}} helper', function () {
   });
 
   it('can correctly concat nothing', function () {
-    let templateString = '{{concat}}';
-    let expected = '';
+    const templateString = '{{concat}}';
+    const expected = '';
     shouldCompileToExpected(templateString, {}, expected);
   });
 
   it('can correctly concat things that resolve to empty', function () {
-    let templateString = '{{concat tag.slug slug}}';
-    let expected = '';
+    const templateString = '{{concat tag.slug slug}}';
+    const expected = '';
     shouldCompileToExpected(templateString, { tag: {} }, expected);
   });
 
   it('can concat simple strings', function () {
-    let templateString = '{{concat "hello" "world"}}';
-    let expected = 'helloworld';
+    const templateString = '{{concat "hello" "world"}}';
+    const expected = 'helloworld';
     shouldCompileToExpected(templateString, {}, expected);
   });
 
   it('can concat simple strings with a custom separator', function () {
-    let templateString = '{{concat "hello" "world" separator=" "}}';
-    let expected = 'hello world';
+    const templateString = '{{concat "hello" "world" separator=" "}}';
+    const expected = 'hello world';
     shouldCompileToExpected(templateString, {}, expected);
   });
 
   it('can concat strings and numbers', function () {
-    let templateString = '{{concat "abcd" 1234}}';
-    let expected = 'abcd1234';
+    const templateString = '{{concat "abcd" 1234}}';
+    const expected = 'abcd1234';
     shouldCompileToExpected(templateString, {}, expected);
   });
 
   it('can concat strings and global variables', function () {
-    let templateString = '{{concat @site.url "?my=param"}}';
-    let expected = 'https://siteurl.com?my=param';
+    const templateString = '{{concat @site.url "?my=param"}}';
+    const expected = 'https://siteurl.com?my=param';
     shouldCompileToExpectedWithGlobals(templateString, {}, expected, defaultGlobals);
   });
 
   it('can concat strings and local variables', function () {
-    let templateString = '{{concat tag.slug "?my=param"}}';
-    let expected = 'my-tag?my=param';
+    const templateString = '{{concat tag.slug "?my=param"}}';
+    const expected = 'my-tag?my=param';
     shouldCompileToExpected(templateString, { tag: { slug: 'my-tag' } }, expected);
   });
 
   it('can concat strings from custom helpers (SafeStrings)', function () {
     // Simulate a post - using a draft to prove url helper gets called
     // because published posts get their urls from a cache that we don't have access to, so we just get 404
-    let templateString = '{{concat (url) "?my=param"}}';
-    let expected = '/p/1234/?my=param';
+    const templateString = '{{concat (url) "?my=param"}}';
+    const expected = '/p/1234/?my=param';
     shouldCompileToExpected(templateString, draftPostData, expected);
   });
 
   it('can concat mixed args', function () {
-    let templateString = '{{concat @site.url (url) "?slug=" slug}}';
-    let expected = 'https://siteurl.com/p/1234/?slug=my-post';
+    const templateString = '{{concat @site.url (url) "?slug=" slug}}';
+    const expected = 'https://siteurl.com/p/1234/?slug=my-post';
     shouldCompileToExpectedWithGlobals(templateString, draftPostData, expected, defaultGlobals);
   });
 
   it('will output object Object for sill args', function () {
-    let templateString = '{{concat @site "?my=param"}}';
-    let expected = '[object Object]?my=param';
+    const templateString = '{{concat @site "?my=param"}}';
+    const expected = '[object Object]?my=param';
     shouldCompileToExpectedWithGlobals(templateString, {}, expected, defaultGlobals);
   });
 
   it('can concat empty safestrings', function () {
-    let templateString = '{{concat non_empty_safe_string empty_safe_string}}';
-    let expected = 'non_empty_safe_string';
+    const templateString = '{{concat non_empty_safe_string empty_safe_string}}';
+    const expected = 'non_empty_safe_string';
     shouldCompileToExpected(
       templateString,
       {
@@ -113,44 +113,44 @@ describe('{{concat}} helper', function () {
 
   it('can concat arrays with default separator', function () {
     const testArray = [new SafeString('hello'), new SafeString('world'), new SafeString('test')];
-    let templateString = '{{concat test_array}}';
-    let expected = 'helloworldtest';
+    const templateString = '{{concat test_array}}';
+    const expected = 'helloworldtest';
     shouldCompileToExpected(templateString, { test_array: testArray }, expected);
   });
 
   it('can concat arrays with custom separator', function () {
     const testArray = [new SafeString('hello'), new SafeString('world'), new SafeString('test')];
-    let templateString = '{{concat test_array separator="|"}}';
-    let expected = 'hello|world|test';
+    const templateString = '{{concat test_array separator="|"}}';
+    const expected = 'hello|world|test';
     shouldCompileToExpected(templateString, { test_array: testArray }, expected);
   });
 
   it('can concat arrays with empty strings', function () {
     const testArray = [new SafeString('hello'), new SafeString(''), new SafeString('world')];
-    let templateString = '{{concat test_array separator="|"}}';
-    let expected = 'hello||world';
+    const templateString = '{{concat test_array separator="|"}}';
+    const expected = 'hello||world';
     shouldCompileToExpected(templateString, { test_array: testArray }, expected);
   });
 
   it('can concat mixed arrays and strings', function () {
     const testArray = [new SafeString('array1'), new SafeString('array2')];
-    let templateString = '{{concat "prefix" test_array "suffix" separator="-"}}';
-    let expected = 'prefix-array1-array2-suffix';
+    const templateString = '{{concat "prefix" test_array "suffix" separator="-"}}';
+    const expected = 'prefix-array1-array2-suffix';
     shouldCompileToExpected(templateString, { test_array: testArray }, expected);
   });
 
   it('can concat multiple arrays', function () {
     const array1 = [new SafeString('a'), new SafeString('b')];
     const array2 = [new SafeString('c'), new SafeString('d')];
-    let templateString = '{{concat array1 array2 separator="|"}}';
-    let expected = 'a|b|c|d';
+    const templateString = '{{concat array1 array2 separator="|"}}';
+    const expected = 'a|b|c|d';
     shouldCompileToExpected(templateString, { array1: array1, array2: array2 }, expected);
   });
 
   it('can concat arrays with trailing empty strings', function () {
     const testArray = [new SafeString('hello'), new SafeString('world'), new SafeString('')];
-    let templateString = '{{concat test_array separator="|"}}';
-    let expected = 'hello|world|';
+    const templateString = '{{concat test_array separator="|"}}';
+    const expected = 'hello|world|';
     shouldCompileToExpected(templateString, { test_array: testArray }, expected);
   });
   it('can concatenate an array produced by the split helper', function () {

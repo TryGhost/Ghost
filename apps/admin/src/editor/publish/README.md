@@ -87,7 +87,7 @@ Following visibility maps a public or members-only post to everyone (`status:fre
 
 `setRecipientFilter(null)` is a real choice — "no recipients" — and is distinct from never having chosen.
 
-Core represents the special segments as `all` and `none`. Inputs and explicit selections normalize those API sentinels to the editor's expanded everyone filter and `null`, matching the legacy Admin transform.
+Core represents the special segments as `all` and `none`. Inputs and explicit selections normalize those API sentinels to the editor's expanded everyone filter and `null`.
 
 `fullRecipientFilter` is what the email service receives: the newsletter's own audience filter (subscribed to that newsletter, email not disabled, plus paid-only for a paid newsletter), AND-ed with the recipient filter when there is one. It is `null` while no newsletter is selected.
 
@@ -102,7 +102,7 @@ Core represents the special segments as `all` and `none`. Inputs and explicit se
 
 ## Scheduling
 
-Times are ISO 8601 strings with milliseconds zeroed, because the API stores seconds and a non-zero millisecond value can fail validation when a scheduled post is updated.
+Times are ISO 8601 strings with milliseconds zeroed, for the reason given under [the engine's commands](../engine/README.md#commands).
 
 - `minScheduledAt` is five seconds ahead of now and is recomputed on every read; it is the floor the picker enforces.
 - `scheduledAt` starts at that floor.
@@ -169,7 +169,7 @@ Two interstitials can stand in front of the flow. A post with unresolved TK mark
 
 ## Publishing
 
-Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches the command from `toDispatch()`, and branches on the completion the engine returns:
+Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches the command from `toDispatch()`, and branches on the [completion](../engine/README.md#queue-semantics) the engine returns:
 
 | Completion              | Result                                                              |
 | ----------------------- | ------------------------------------------------------------------- |
@@ -194,21 +194,17 @@ The email's id is only knowable from a reload, so the poller's reload records it
 
 ## Requests
 
-Every request the flow makes opts out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), its settings, config, newsletter, tier and label queries, each recipient count, and the current-user read those counts depend on all pass the shared editor `EDITOR_REQUEST_OPTIONS`, and the email retry carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience, a note on the complete step, or an error on the email-error step.
+Every request the flow makes passes the editor's shared request options, which opt out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), the settings, config, newsletter, tier, label and recipient-count reads behind its hooks, and the email retry, which carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience, a note on the complete step, or an error on the email-error step.
 
 The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
 
-Uploads carry the same opt-out: the feature image, the Facebook and X card images, and the files Koenig cards accept. An upload runs over an editor holding unsaved work, so a 401 mid-upload surfaces as the generic upload error in place rather than a navigation away from the post; the save engine reports the expired session on the next save. The one-time Mobiledoc conversion of an older post opts out the same way.
-
-The opt-out belongs to whichever component starts a fetch, not to the cache entry: a query key shared with a screen outside the flow is refetched with the options of whoever triggered that fetch. Every editor component reading a shared key therefore opts out too — the status line's count and settings reads, the card config's boot reads, and the preview modal's — so that a refetch one of them initiates cannot navigate away mid-edit. The editor's own settings reads all run through one hook that also disables the global error handler, so no observer of that key can toast for another; a session-expiry error is silent either way because the handler deliberately swallows it. The editor reports the expiry from the save engine instead.
-
-The same options reach the less-visible reads behind those hooks too. `createQuery` and `createInfiniteQuery` forward them through `usePermission` to its current-user observer; the editor's feature-flag, settings-selector and Pintura hooks accept them; and the editor screen's direct current-user reads opt out. That matters because an opted-out outer query cannot protect a second observer of the same cache key when that observer initiates its own refetch.
-
-If the current-user prerequisite for `useMembersCount` fails, the hook exposes that error and its retry rather than staying in a loading state forever. Callers that need the count to proceed can therefore recover in place.
-
-An audience that could not be counted is not an audience of none: `useMembersCount` resolves a failed request to `null`, never to `0`. Where the flow states a recipient count in a sentence it drops to descriptive copy ("all members"); the segment checkboxes, which have nothing to say without a number, render no count at all. A 401 on the tier or label queries is quieter still — those segments simply do not appear in the recipient picker, leaving the free/paid split. That is pre-existing behaviour and is not surfaced to the user.
-
 Flow-owned queries also disable the global error handler. `usePublishInputs()` returns its query or validation error plus a retry callback instead of leaving callers with an unexplained permanent loading state.
+
+## Counting the audience
+
+Recipient counts come from the framework's members-count hook, and the flow reads them wherever it states an audience: the options step, the confirm and complete steps, each recipient segment, and the update flow's description of a scheduled send.
+
+An audience that could not be counted is not an audience of none: the hook resolves a failed request to `null`, never to `0`. Where the flow states a count in a sentence it drops to descriptive copy ("all members"); the segment checkboxes, which have nothing to say without a number, render no count at all. A 401 on the tier or label queries is quieter still — those segments simply do not appear in the recipient picker, leaving the free/paid split, and that is not surfaced to the user.
 
 ## Update flow
 
@@ -220,8 +216,6 @@ Its email copy also follows the persisted post rather than the draft-only machin
 
 That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the editor's read carries both. A caller whose read omits them gets copy that degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
 
-## Not yet ported
+## Not here yet
 
-The size of a newsletter is not shown. The options step keeps the slot the warning belongs in, but nothing measures the rendered email yet, so a send over the 100kB clipping threshold goes unflagged.
-
-The host limit ports are optional and unset, so `checkLimits()` finds no blocks unless a caller supplies them.
+Known gaps, listed so they are not mistaken for decisions: the size of a newsletter is not shown, so a send over the 100kB clipping threshold goes unflagged even though the options step keeps the slot the warning belongs in; and the host limit ports are optional and unset, so `checkLimits()` finds no blocks unless a caller supplies them.

@@ -125,7 +125,7 @@ class SettingsHelpers {
   }
 
   getMembersSupportAddress() {
-    let supportAddress = this.settingsCache.get('members_support_address');
+    const supportAddress = this.settingsCache.get('members_support_address');
 
     if (!supportAddress) {
       // In the new flow, we make a difference between an empty setting (= use default) and a 'noreply' setting (=use noreply @ domain)

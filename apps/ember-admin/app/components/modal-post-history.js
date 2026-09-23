@@ -9,7 +9,7 @@ import {waitFor} from '@ember/test-waiters';
 function checkFinishedRendering(element, done) {
     let last = element.innerHTML;
     function check() {
-        let html = element.innerHTML;
+        const html = element.innerHTML;
         if (html === last) {
             done();
         } else {
@@ -162,16 +162,16 @@ export default class ModalPostHistory extends Component {
     updateSelectedHTML() {
         return new Promise((resolve) => {
             if (this.selectedEditor) {
-                let selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
+                const selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
 
                 this.selectedEditor.editorInstance.setEditorState(selectedState);
             }
 
-            let current = document.querySelector('.gh-post-history-hidden-lexical.current');
+            const current = document.querySelector('.gh-post-history-hidden-lexical.current');
 
             let currentDone = false;
 
-            let updateIfDone = () => {
+            const updateIfDone = () => {
                 if (currentDone) {
                     this.selectedHTML = this.stripInitialPlaceholder(current.innerHTML);
                 }

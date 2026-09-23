@@ -1,6 +1,8 @@
-const validation = require('../../../../../../core/server/web/api/middleware/upload')._test;
+const upload = require('../../../../../../core/server/web/api/middleware/upload');
+const validation = upload._test;
 const imageFixturePath = '../../../../../utils/fixtures/images/';
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const assert = require('node:assert/strict');
 const config = require('../../../../../../core/shared/config');
@@ -178,6 +180,69 @@ describe('web utils', function () {
 
       const sanitized = validation.sanitizeSvgContent(original);
       assert.ok(sanitized, 'Safe SVG should return a string after sanitization');
+    });
+  });
+
+  describe('mediaValidation', function () {
+    let tmpDir;
+
+    beforeEach(function () {
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-media-validation-'));
+    });
+
+    afterEach(function () {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    const runMediaValidation = async (thumbnailFixture, originalname = thumbnailFixture) => {
+      const thumbnailPath = path.join(tmpDir, thumbnailFixture);
+      fs.copyFileSync(path.join(__dirname, imageFixturePath, thumbnailFixture), thumbnailPath);
+
+      const req = {
+        files: {
+          file: [{ originalname: 'video.mp4', mimetype: 'video/mp4', path: 'video.mp4' }],
+          thumbnail: [{ originalname, mimetype: 'image/svg+xml', path: thumbnailPath }],
+        },
+      };
+      const nextArgs = await new Promise((resolve) => {
+        upload.mediaValidation({ type: 'media' })(req, {}, (...args) => resolve(args));
+      });
+
+      return { nextArgs, thumbnailPath };
+    };
+
+    it('sanitizes SVG thumbnails', async function () {
+      const { nextArgs, thumbnailPath } = await runMediaValidation('svg-with-unsafe-script.svg');
+
+      assert.deepEqual(nextArgs, []);
+      const stored = fs.readFileSync(thumbnailPath, 'utf8');
+      assert.ok(stored.includes('<svg'));
+      assert.ok(!stored.includes('<script'), 'Stored thumbnail should not contain a <script> tag');
+    });
+
+    it('sanitizes thumbnails with an SVG content type and a non-SVG extension', async function () {
+      const { nextArgs, thumbnailPath } = await runMediaValidation(
+        'svg-with-unsafe-script.svg',
+        'thumbnail.png',
+      );
+
+      assert.deepEqual(nextArgs, []);
+      const stored = fs.readFileSync(thumbnailPath, 'utf8');
+      assert.ok(!stored.includes('<script'), 'Stored thumbnail should not contain a <script> tag');
+    });
+
+    it('rejects non-SVG thumbnails with an SVG content type', async function () {
+      const { nextArgs } = await runMediaValidation('ghost-logo.png');
+
+      assert.equal(nextArgs[0].errorType, 'UnsupportedMediaTypeError');
+      assert.equal(nextArgs[0].message, 'Please select a valid SVG image');
+    });
+
+    it('rejects SVG thumbnails that cannot be sanitized', async function () {
+      const { nextArgs } = await runMediaValidation('svg-malformed.svg');
+
+      assert.equal(nextArgs[0].errorType, 'UnsupportedMediaTypeError');
+      assert.equal(nextArgs[0].message, 'Please select a valid SVG image');
     });
   });
 });

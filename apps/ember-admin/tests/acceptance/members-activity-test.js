@@ -166,7 +166,7 @@ describe('Acceptance: Members activity', function () {
             const events = findAll('.gh-members-activity-event');
 
             let donationEvent = null;
-            for (let event of events) {
+            for (const event of events) {
                 if (event.textContent.includes('homepage')) {
                     donationEvent = event;
                     break;

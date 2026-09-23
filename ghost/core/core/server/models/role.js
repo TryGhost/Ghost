@@ -9,10 +9,7 @@ const messages = {
   notEnoughPermission: 'You do not have permission to perform this action',
 };
 
-let Role;
-let Roles;
-
-Role = ghostBookshelf.Model.extend(
+const Role = ghostBookshelf.Model.extend(
   {
     tableName: 'roles',
 
@@ -130,7 +127,7 @@ Role = ghostBookshelf.Model.extend(
   },
 );
 
-Roles = ghostBookshelf.Collection.extend({
+const Roles = ghostBookshelf.Collection.extend({
   model: Role,
 });
 

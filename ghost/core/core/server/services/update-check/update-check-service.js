@@ -230,7 +230,7 @@ class UpdateCheckService {
    * @return {Promise}
    */
   async updateCheckResponse(response) {
-    let notificationGroups = (this.config.notificationGroups || []).concat(['all']);
+    const notificationGroups = (this.config.notificationGroups || []).concat(['all']);
 
     debug('Notification Groups', notificationGroups);
     debug('Response Update Check Service', response);

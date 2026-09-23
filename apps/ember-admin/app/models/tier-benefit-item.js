@@ -9,13 +9,13 @@ export default EmberObject.extend(ValidationEngine, {
     validationType: 'tierBenefitItem',
 
     isComplete: computed('name', function () {
-        let {name} = this;
+        const {name} = this;
 
         return !isBlank(name);
     }),
 
     isBlank: computed('name', function () {
-        let {name} = this;
+        const {name} = this;
 
         return isBlank(name);
     })

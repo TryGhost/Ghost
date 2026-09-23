@@ -4,9 +4,9 @@ export default function mockLabels(server) {
     server.post('/labels/');
 
     server.get('/labels/', function ({labels}, request) {
-        let page = +request.queryParams.page || 1;
+        const page = +request.queryParams.page || 1;
         let limit = request.queryParams.limit;
-        let collection = labels.all();
+        const collection = labels.all();
 
         // Handle filter param for server-side search (e.g. filter=name:~'term')
         const nameFilter = extractFilterParam('name', request.queryParams.filter);
@@ -25,8 +25,8 @@ export default function mockLabels(server) {
     });
 
     server.get('/labels/:id/', function ({labels}, {params}) {
-        let {id} = params;
-        let label = labels.find(id);
+        const {id} = params;
+        const label = labels.find(id);
 
         return label || new Response(404, {}, {
             errors: [{

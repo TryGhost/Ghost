@@ -8,10 +8,10 @@ export default class PostsListContentFilter extends Component {
     @service router;
 
     get showCustomViewManagement() {
-        let isAdmin = get(this.args.currentUser || {}, 'isAdmin');
-        let onPostsScreen = this.router.currentRouteName === 'posts';
-        let isDefaultView = this.customViews?.activeView?.isDefault;
-        let hasFilter = this.args.selectedType.value
+        const isAdmin = get(this.args.currentUser || {}, 'isAdmin');
+        const onPostsScreen = this.router.currentRouteName === 'posts';
+        const isDefaultView = this.customViews?.activeView?.isDefault;
+        const hasFilter = this.args.selectedType.value
             || this.args.selectedVisibility.value
             || this.args.selectedAuthor.slug
             || this.args.selectedTag.slug
@@ -21,11 +21,11 @@ export default class PostsListContentFilter extends Component {
     }
 
     calculateActionsDropdownPosition(trigger, content) {
-        let {top, left, width, height} = trigger.getBoundingClientRect();
+        const {top, left, width, height} = trigger.getBoundingClientRect();
         // content.firstElementChild is required because we use .dropdown-menu which is absolute positioned
-        let {width: contentWidth} = content.firstElementChild.getBoundingClientRect();
+        const {width: contentWidth} = content.firstElementChild.getBoundingClientRect();
 
-        let style = {
+        const style = {
             left: left + width - contentWidth,
             top: top + height + 5
         };

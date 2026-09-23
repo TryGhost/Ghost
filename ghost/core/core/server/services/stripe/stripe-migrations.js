@@ -69,7 +69,7 @@ module.exports = class StripeMigrations {
         logging.info(`Populating products and prices for existing stripe customers`);
         const uniquePlans = _.uniq(subscriptions.map((d) => _.get(d, 'plan.id')));
 
-        let stripePrices = [];
+        const stripePrices = [];
         for (const plan of uniquePlans) {
           try {
             const stripePrice = await this.api.getPrice(plan, {
@@ -356,9 +356,9 @@ module.exports = class StripeMigrations {
 
     if (!monthlyPrice) {
       logging.info('Could not any active Monthly price - creating a new one');
-      let defaultStripeProduct;
+
       const stripeProductsPage = await this.models.StripeProduct.findPage({ ...options, limit: 1 });
-      defaultStripeProduct = stripeProductsPage.data[0];
+      const defaultStripeProduct = stripeProductsPage.data[0];
       const price = await this.api.createPrice({
         currency: 'usd',
         amount: 5000,
@@ -445,9 +445,9 @@ module.exports = class StripeMigrations {
 
     if (!yearlyPrice) {
       logging.info('Could not any active yearly price - creating a new one');
-      let defaultStripeProduct;
+
       const stripeProductsPage = await this.models.StripeProduct.findPage({ ...options, limit: 1 });
-      defaultStripeProduct = stripeProductsPage.data[0];
+      const defaultStripeProduct = stripeProductsPage.data[0];
       const price = await this.api.createPrice({
         currency: 'usd',
         amount: 500,
@@ -621,7 +621,7 @@ module.exports = class StripeMigrations {
     });
     if (invalidSubscriptions.length > 0) {
       logging.warn(`Deleting ${invalidSubscriptions.length} invalid subscription(s)`);
-      for (let sub of invalidSubscriptions) {
+      for (const sub of invalidSubscriptions) {
         logging.warn(`Deleting subscription - ${sub.id} - no price found`);
         await sub.destroy(options);
       }

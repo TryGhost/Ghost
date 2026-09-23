@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const slugFilterOrder = require('../../../../../../../../core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order');
+import assert from 'node:assert/strict';
+// @ts-expect-error -- JavaScript module has no type declarations
+import slugFilterOrder from '../../../../../../../../core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order';
 
 describe('Unit: endpoints/utils/serializers/input/utils/slug-filter-order', function () {
   it('returns parameterized sql and bindings for slug filter', function () {

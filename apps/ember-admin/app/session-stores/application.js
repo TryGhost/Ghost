@@ -15,7 +15,7 @@ export default class ApplicationStore extends EphemeralStore {
         return this.session.populateUser().then(() => {
             // provide the necessary data for internal-session to mark the
             // session as authenticated
-            let data = {authenticated: {authenticator: 'authenticator:cookie'}};
+            const data = {authenticated: {authenticator: 'authenticator:cookie'}};
             this.persist(data);
             return data;
         }).catch(() => {

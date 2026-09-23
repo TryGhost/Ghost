@@ -176,8 +176,8 @@ export default class GhPostSettingsMenu extends Component {
     willDestroyElement() {
         super.willDestroyElement(...arguments);
 
-        let post = this.post;
-        let errors = post.get('errors');
+        const post = this.post;
+        const errors = post.get('errors');
 
         // reset the publish date if it has an error
         if (errors.has('publishedAtBlogDate') || errors.has('publishedAtBlogTime')) {
@@ -263,8 +263,8 @@ export default class GhPostSettingsMenu extends Component {
     @action
     setPublishedAtBlogDate(date) {
         // date is a Date object that contains the correct date string in the blog timezone
-        let post = this.post;
-        let dateString = moment.tz(date, this.settings.get('timezone')).format('YYYY-MM-DD');
+        const post = this.post;
+        const dateString = moment.tz(date, this.settings.get('timezone')).format('YYYY-MM-DD');
 
         post.get('errors').remove('publishedAtBlogDate');
 
@@ -297,7 +297,7 @@ export default class GhPostSettingsMenu extends Component {
 
     @action
     setPublishedAtBlogTime(time) {
-        let post = this.post;
+        const post = this.post;
 
         post.get('errors').remove('publishedAtBlogDate');
 
@@ -311,8 +311,8 @@ export default class GhPostSettingsMenu extends Component {
 
     @action
     setCustomExcerpt(excerpt) {
-        let post = this.post;
-        let currentExcerpt = post.get('customExcerpt');
+        const post = this.post;
+        const currentExcerpt = post.get('customExcerpt');
 
         if (excerpt === currentExcerpt) {
             return;
@@ -325,8 +325,8 @@ export default class GhPostSettingsMenu extends Component {
 
     @action
     setHeaderInjection(code) {
-        let post = this.post;
-        let currentCode = post.get('codeinjectionHead');
+        const post = this.post;
+        const currentCode = post.get('codeinjectionHead');
 
         if (code === currentCode) {
             return;
@@ -339,8 +339,8 @@ export default class GhPostSettingsMenu extends Component {
 
     @action
     setFooterInjection(code) {
-        let post = this.post;
-        let currentCode = post.get('codeinjectionFoot');
+        const post = this.post;
+        const currentCode = post.get('codeinjectionFoot');
 
         if (code === currentCode) {
             return;
@@ -354,8 +354,8 @@ export default class GhPostSettingsMenu extends Component {
     @action
     setMetaTitle(metaTitle) {
         // Grab the post and current stored meta title
-        let post = this.post;
-        let currentTitle = post.get('metaTitle');
+        const post = this.post;
+        const currentTitle = post.get('metaTitle');
 
         // If the title entered matches the stored meta title, do nothing
         if (currentTitle === metaTitle) {
@@ -378,8 +378,8 @@ export default class GhPostSettingsMenu extends Component {
     @action
     setMetaDescription(metaDescription) {
         // Grab the post and current stored meta description
-        let post = this.post;
-        let currentDescription = post.get('metaDescription');
+        const post = this.post;
+        const currentDescription = post.get('metaDescription');
 
         // If the title entered matches the stored meta title, do nothing
         if (currentDescription === metaDescription) {
@@ -402,8 +402,8 @@ export default class GhPostSettingsMenu extends Component {
     @action
     setCanonicalUrl(value) {
         // Grab the post and current stored meta description
-        let post = this.post;
-        let currentCanonicalUrl = post.canonicalUrl;
+        const post = this.post;
+        const currentCanonicalUrl = post.canonicalUrl;
 
         // If the value entered matches the stored value, do nothing
         if (currentCanonicalUrl === value) {
@@ -426,8 +426,8 @@ export default class GhPostSettingsMenu extends Component {
     @action
     setOgTitle(ogTitle) {
         // Grab the post and current stored facebook title
-        let post = this.post;
-        let currentTitle = post.get('ogTitle');
+        const post = this.post;
+        const currentTitle = post.get('ogTitle');
 
         // If the title entered matches the stored facebook title, do nothing
         if (currentTitle === ogTitle) {
@@ -450,8 +450,8 @@ export default class GhPostSettingsMenu extends Component {
     @action
     setOgDescription(ogDescription) {
         // Grab the post and current stored facebook description
-        let post = this.post;
-        let currentDescription = post.get('ogDescription');
+        const post = this.post;
+        const currentDescription = post.get('ogDescription');
 
         // If the title entered matches the stored facebook description, do nothing
         if (currentDescription === ogDescription) {
@@ -474,8 +474,8 @@ export default class GhPostSettingsMenu extends Component {
     @action
     setTwitterTitle(twitterTitle) {
         // Grab the post and current stored twitter title
-        let post = this.post;
-        let currentTitle = post.get('twitterTitle');
+        const post = this.post;
+        const currentTitle = post.get('twitterTitle');
 
         // If the title entered matches the stored twitter title, do nothing
         if (currentTitle === twitterTitle) {
@@ -498,8 +498,8 @@ export default class GhPostSettingsMenu extends Component {
     @action
     setTwitterDescription(twitterDescription) {
         // Grab the post and current stored twitter description
-        let post = this.post;
-        let currentDescription = post.get('twitterDescription');
+        const post = this.post;
+        const currentDescription = post.get('twitterDescription');
 
         // If the description entered matches the stored twitter description, do nothing
         if (currentDescription === twitterDescription) {
@@ -605,7 +605,7 @@ export default class GhPostSettingsMenu extends Component {
 
     @action
     changeAuthors(newAuthors) {
-        let post = this.post;
+        const post = this.post;
 
         // return if nothing changed
         if (newAuthors.mapBy('id').join() === post.get('authors').mapBy('id').join()) {

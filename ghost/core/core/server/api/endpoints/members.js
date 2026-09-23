@@ -230,7 +230,7 @@ const controller = {
           },
         });
       }
-      let model = await membersService.api.memberBREADService.read(
+      const model = await membersService.api.memberBREADService.read(
         { id: frame.options.id },
         { metafieldsFor: ADMIN },
       );
@@ -273,7 +273,7 @@ const controller = {
           stripe_price_id: frame.data.stripe_price_id,
         },
       });
-      let model = await membersService.api.memberBREADService.read(
+      const model = await membersService.api.memberBREADService.read(
         { id: frame.options.id },
         { metafieldsFor: ADMIN },
       );
@@ -431,7 +431,7 @@ const controller = {
     async query() {
       const memberStats = await membersService.api.events.getStatuses();
       const last = _.last(memberStats);
-      let totalMembers = last ? last.paid + last.free + last.comped + last.gift : 0;
+      const totalMembers = last ? last.paid + last.free + last.comped + last.gift : 0;
 
       return {
         resource: 'members',

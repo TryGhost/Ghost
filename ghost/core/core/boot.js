@@ -31,7 +31,7 @@ class BootLogger {
    * @returns {void}
    */
   log(message) {
-    let { logging, startTime } = this;
+    const { logging, startTime } = this;
     logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
   }
   /**
@@ -40,7 +40,7 @@ class BootLogger {
    * @returns {void}
    */
   metric(name, initialTime) {
-    let { metrics, startTime } = this;
+    const { metrics, startTime } = this;
 
     if (!initialTime) {
       initialTime = startTime;

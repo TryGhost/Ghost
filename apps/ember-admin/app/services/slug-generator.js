@@ -18,7 +18,7 @@ export default class SlugGeneratorService extends Service {
         }
 
         // We already do a partial slugify at the client side to prevent issues with Pro returning a 404 page because of invalid (encoded) characters (a newline, %0A, for example)
-        let name = encodeURIComponent(slugify(textToSlugify));
+        const name = encodeURIComponent(slugify(textToSlugify));
         if (modelId) {
             url = this.get('ghostPaths.url').api('slugs', slugType, name, modelId);
         } else {
@@ -26,8 +26,8 @@ export default class SlugGeneratorService extends Service {
         }
 
         return this.ajax.request(url).then((response) => {
-            let [firstSlug] = response.slugs;
-            let {slug} = firstSlug;
+            const [firstSlug] = response.slugs;
+            const {slug} = firstSlug;
 
             return slug;
         });

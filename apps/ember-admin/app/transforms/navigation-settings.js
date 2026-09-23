@@ -4,7 +4,7 @@ import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
 export default class NavigationSettings extends Transform {
     deserialize(serialized, options) {
-        let navItems, settingsArray;
+        let settingsArray;
 
         try {
             settingsArray = JSON.parse(serialized) || [];
@@ -12,7 +12,7 @@ export default class NavigationSettings extends Transform {
             settingsArray = [];
         }
 
-        navItems = settingsArray.map((itemDetails) => {
+        const navItems = settingsArray.map((itemDetails) => {
             itemDetails.isSecondary = options && options.isSecondary || false;
             return NavigationItem.create(itemDetails);
         });
@@ -25,10 +25,10 @@ export default class NavigationSettings extends Transform {
 
         if (isEmberArray(deserialized)) {
             settingsArray = deserialized.map((item) => {
-                let label = item.label.trim();
-                let url = item.url.trim();
-                let icon = item.icon && item.icon.trim();
-                let visibility = item.visibility || 'public';
+                const label = item.label.trim();
+                const url = item.url.trim();
+                const icon = item.icon && item.icon.trim();
+                const visibility = item.visibility || 'public';
 
                 return {
                     label,

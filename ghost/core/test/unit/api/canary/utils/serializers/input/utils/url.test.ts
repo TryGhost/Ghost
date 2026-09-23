@@ -1,7 +1,30 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const urlService = require('../../../../../../../../core/server/services/url');
-const urlUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/input/utils/url');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import urlService from '../../../../../../../../core/server/services/url';
+// @ts-expect-error This module lacks type definitions.
+import urlUtil from '../../../../../../../../core/server/api/endpoints/utils/serializers/input/utils/url';
+
+type FrameOutput = {
+  filter?: string;
+  order?: string;
+  selectRaw?: string;
+  formats?: string | string[];
+  columns?: string[];
+  withRelated?: string[];
+};
+
+type UrlColumns = { routerType: string; columns: string[] };
+
+function testFrame<T extends { options: object }>(
+  value: T,
+): T & {
+  options: T['options'] & FrameOutput;
+  forcedUrlRelations?: string[];
+  forcedUrlColumns?: UrlColumns;
+} {
+  return value;
+}
 
 describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
   afterEach(function () {
@@ -10,8 +33,11 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
 
   describe('forceUrlColumns', function () {
     it('forces the required columns into the fetch when url is requested', function () {
-      sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility']);
-      const frame = { options: { columns: ['url', 'id'] } };
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredFields')
+        .withArgs('tags')
+        .returns(['visibility']);
+      const frame = testFrame({ options: { columns: ['url', 'id'] } });
 
       urlUtil.forceUrlColumns(frame, 'tags');
 
@@ -19,8 +45,11 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     });
 
     it('does not duplicate a column already requested', function () {
-      sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility']);
-      const frame = { options: { columns: ['url', 'visibility'] } };
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredFields')
+        .withArgs('tags')
+        .returns(['visibility']);
+      const frame = testFrame({ options: { columns: ['url', 'visibility'] } });
 
       urlUtil.forceUrlColumns(frame, 'tags');
 
@@ -28,8 +57,8 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     });
 
     it('is a no-op when url is not requested', function () {
-      const stub = sinon.stub(urlService, 'getRequiredFields');
-      const frame = { options: { columns: ['id', 'slug'] } };
+      const stub = sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredFields');
+      const frame = testFrame({ options: { columns: ['id', 'slug'] } });
 
       urlUtil.forceUrlColumns(frame, 'tags');
 
@@ -38,7 +67,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     });
 
     it('is a no-op when no columns are set (full fetch carries every field)', function () {
-      const frame = { options: {} };
+      const frame = testFrame({ options: {} });
 
       urlUtil.forceUrlColumns(frame, 'tags');
 
@@ -50,7 +79,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
         .stub(urlService, 'getRequiredFields')
         .withArgs('posts')
         .returns(['status', 'type', 'slug']);
-      const frame = { options: { columns: ['url', 'slug'] } };
+      const frame = testFrame({ options: { columns: ['url', 'slug'] } });
 
       urlUtil.forceUrlColumns(frame, 'posts');
 
@@ -64,8 +93,11 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     });
 
     it('records no forced columns when everything was already requested', function () {
-      sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status']);
-      const frame = { options: { columns: ['url', 'status'] } };
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredFields')
+        .withArgs('posts')
+        .returns(['status']);
+      const frame = testFrame({ options: { columns: ['url', 'status'] } });
 
       urlUtil.forceUrlColumns(frame, 'posts');
 
@@ -79,8 +111,14 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
       // lookup matches case-insensitively, so the forged value can differ
       // from the stored one, and the URL is built from whichever the
       // model ends up carrying.
-      sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['slug', 'status']);
-      const frame = { data: { slug: 'Welcome' }, options: { columns: ['url', 'title'] } };
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredFields')
+        .withArgs('posts')
+        .returns(['slug', 'status']);
+      const frame = testFrame({
+        data: { slug: 'Welcome' },
+        options: { columns: ['url', 'title'] },
+      });
 
       urlUtil.forceUrlColumns(frame, 'posts');
 
@@ -93,9 +131,12 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     it('forces the primary key into a narrowed fetch', function () {
       // The URL is looked up by `model.id`, so the primary key is
       // forced even when no relations are required.
-      sinon.stub(urlService, 'getRequiredRelations').returns([]);
-      sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status']);
-      const frame = { options: { columns: ['url', 'title'] } };
+      sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns([]);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredFields')
+        .withArgs('posts')
+        .returns(['status']);
+      const frame = testFrame({ options: { columns: ['url', 'title'] } });
 
       urlUtil.forceUrlRelations(frame, 'posts');
 
@@ -104,9 +145,12 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     });
 
     it('forces the primary key so the required relations can load', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags']);
-      sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns([]);
-      const frame = { options: { columns: ['url', 'title'] } };
+      sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns(['tags']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredFields')
+        .withArgs('posts')
+        .returns([]);
+      const frame = testFrame({ options: { columns: ['url', 'title'] } });
 
       urlUtil.forceUrlRelations(frame, 'posts');
 
@@ -117,9 +161,12 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     it('never strips the primary key from a read looked up by id', function () {
       // The model already carries the key it was fetched by, so stripping
       // it would take away an id the caller is served today.
-      sinon.stub(urlService, 'getRequiredRelations').returns(['tags']);
-      sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns([]);
-      const frame = { data: { id: 'abc123' }, options: { columns: ['url', 'title'] } };
+      sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns(['tags']);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredFields')
+        .withArgs('posts')
+        .returns([]);
+      const frame = testFrame({ data: { id: 'abc123' }, options: { columns: ['url', 'title'] } });
 
       urlUtil.forceUrlRelations(frame, 'posts');
 
@@ -128,9 +175,12 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     });
 
     it('does not duplicate the primary key when the caller requested it', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns([]);
-      sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns([]);
-      const frame = { options: { columns: ['url', 'id'] } };
+      sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns([]);
+      sinon
+        .stub(Object.getPrototypeOf(urlService), 'getRequiredFields')
+        .withArgs('posts')
+        .returns([]);
+      const frame = testFrame({ options: { columns: ['url', 'id'] } });
 
       urlUtil.forceUrlRelations(frame, 'posts');
 
@@ -139,8 +189,8 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     });
 
     it('is a no-op when the fetch is not narrowed', function () {
-      sinon.stub(urlService, 'getRequiredRelations').returns([]);
-      const frame = { options: {} };
+      sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns([]);
+      const frame = testFrame({ options: {} });
 
       urlUtil.forceUrlRelations(frame, 'posts');
 
@@ -149,8 +199,8 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     });
 
     it('is a no-op when the url will not be serialized', function () {
-      const relations = sinon.stub(urlService, 'getRequiredRelations');
-      const frame = { options: { columns: ['title', 'slug'] } };
+      const relations = sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations');
+      const frame = testFrame({ options: { columns: ['title', 'slug'] } });
 
       urlUtil.forceUrlRelations(frame, 'posts');
 

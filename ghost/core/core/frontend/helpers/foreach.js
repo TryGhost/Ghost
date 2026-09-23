@@ -49,7 +49,7 @@ module.exports = function foreach(items, options) {
   // Initial values set based on parameters sent through. If nothing sent, set to defaults
   const { fn, inverse, hash, data, ids } = options;
   let { columns, limit, from, to } = hash;
-  let length = _.size(items);
+  const length = _.size(items);
   let output = '';
   let frame;
   let contextPath;

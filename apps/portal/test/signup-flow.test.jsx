@@ -618,7 +618,7 @@ describe('Signup', () => {
     });
 
     test('with only paid plans available', async () => {
-      let {
+      const {
         ghostApi,
         popupFrame,
         popupIframeDocument,
@@ -927,7 +927,7 @@ describe('Signup', () => {
     });
 
     test('should not show free plan if it is hidden', async () => {
-      let { popupFrame, triggerButtonFrame, emailInput, nameInput, siteTitle, freePlanTitle } =
+      const { popupFrame, triggerButtonFrame, emailInput, nameInput, siteTitle, freePlanTitle } =
         await multiTierSetup({
           site: FixtureSite.multipleTiers.onlyPaidPlans,
         });
@@ -1024,7 +1024,7 @@ describe('Signup', () => {
   describe('on a paid-members only site', () => {
     describe('with only a free plan', () => {
       test('the trigger button redirects to signin instead of signup', async () => {
-        let {
+        const {
           popupFrame,
           emailInput,
           freePlanTitle,
@@ -1054,7 +1054,7 @@ describe('Signup', () => {
 
     test('does not render the free tier, only paid tiers', async () => {
       // Setup paid-members only site with 4 tiers: free + 3 paid
-      let {
+      const {
         popupFrame,
         emailInput,
         nameInput,

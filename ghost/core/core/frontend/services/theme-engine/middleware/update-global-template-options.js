@@ -6,7 +6,7 @@ const labs = require('../../../../shared/labs');
 const activeTheme = require('../active');
 
 function getSiteData() {
-  let siteData = settingsCache.getPublic();
+  const siteData = settingsCache.getPublic();
 
   // theme-only computed property added to @site
   if (settingsCache.get('members_signup_access') === 'none') {

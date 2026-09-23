@@ -202,7 +202,7 @@ module.exports = {
       });
     }
 
-    let result = await getStorage().delete(themeName);
+    const result = await getStorage().delete(themeName);
     list.del(themeName);
     return result;
   },

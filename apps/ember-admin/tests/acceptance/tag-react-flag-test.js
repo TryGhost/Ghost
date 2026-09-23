@@ -28,14 +28,14 @@ async function visitExpectingAbort(url) {
 }
 
 describe('Acceptance: tag React flag', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
 
-        let role = this.server.create('role', {name: 'Administrator'});
+        const role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {roles: [role]});
         this.server.create('tag', {name: 'My tag', slug: 'my-tag'});
 

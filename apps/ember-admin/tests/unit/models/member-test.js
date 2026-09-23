@@ -12,7 +12,7 @@ describe('Unit: Model: member', function () {
     });
 
     it('has a validation type of "member"', function () {
-        let model = store.createRecord('member');
+        const model = store.createRecord('member');
 
         expect(model.get('validationType')).to.equal('member');
     });

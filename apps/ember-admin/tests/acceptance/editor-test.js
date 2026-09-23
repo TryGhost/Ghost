@@ -18,7 +18,7 @@ import {visit} from '../helpers/visit';
 // https://github.com/cibernox/ember-power-datepicker/issues/30
 
 describe('Acceptance: Editor', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
@@ -26,7 +26,7 @@ describe('Acceptance: Editor', function () {
     });
 
     it('redirects to signin when not authenticated', async function () {
-        let author = this.server.create('user'); // necessary for post-author association
+        const author = this.server.create('user'); // necessary for post-author association
         this.server.create('post', {authors: [author]});
 
         await invalidateSession();
@@ -36,8 +36,8 @@ describe('Acceptance: Editor', function () {
     });
 
     it('does not redirect to staff page when authenticated as contributor', async function () {
-        let role = this.server.create('role', {name: 'Contributor'});
-        let author = this.server.create('user', {roles: [role], slug: 'test-user'});
+        const role = this.server.create('role', {name: 'Contributor'});
+        const author = this.server.create('user', {roles: [role], slug: 'test-user'});
         this.server.create('post', {authors: [author]});
 
         await authenticateSession();
@@ -47,8 +47,8 @@ describe('Acceptance: Editor', function () {
     });
 
     it('does not redirect to staff page when authenticated as author', async function () {
-        let role = this.server.create('role', {name: 'Author'});
-        let author = this.server.create('user', {roles: [role], slug: 'test-user'});
+        const role = this.server.create('role', {name: 'Author'});
+        const author = this.server.create('user', {roles: [role], slug: 'test-user'});
         this.server.create('post', {authors: [author]});
 
         await authenticateSession();
@@ -58,8 +58,8 @@ describe('Acceptance: Editor', function () {
     });
 
     it('does not redirect to staff page when authenticated as editor', async function () {
-        let role = this.server.create('role', {name: 'Editor'});
-        let author = this.server.create('user', {roles: [role], slug: 'test-user'});
+        const role = this.server.create('role', {name: 'Editor'});
+        const author = this.server.create('user', {roles: [role], slug: 'test-user'});
         this.server.create('post', {authors: [author]});
 
         await authenticateSession();
@@ -69,8 +69,8 @@ describe('Acceptance: Editor', function () {
     });
 
     it('does not redirect to staff page when authenticated as super editor', async function () {
-        let role = this.server.create('role', {name: 'Super Editor'});
-        let author = this.server.create('user', {roles: [role], slug: 'test-user'});
+        const role = this.server.create('role', {name: 'Super Editor'});
+        const author = this.server.create('user', {roles: [role], slug: 'test-user'});
         this.server.create('post', {authors: [author]});
 
         await authenticateSession();
@@ -80,7 +80,7 @@ describe('Acceptance: Editor', function () {
     });
     
     it('displays 404 when post does not exist', async function () {
-        let role = this.server.create('role', {name: 'Editor'});
+        const role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
@@ -92,8 +92,8 @@ describe('Acceptance: Editor', function () {
     });
 
     it('when logged in as a contributor, renders a save button instead of a publish menu & hides tags input', async function () {
-        let role = this.server.create('role', {name: 'Contributor'});
-        let author = this.server.create('user', {roles: [role]});
+        const role = this.server.create('role', {name: 'Contributor'});
+        const author = this.server.create('user', {roles: [role]});
         this.server.createList('post', 2, {authors: [author]});
         this.server.loadFixtures('settings');
         await authenticateSession();
@@ -129,7 +129,7 @@ describe('Acceptance: Editor', function () {
 
         beforeEach(async function () {
             this.server.loadFixtures();
-            let role = this.server.create('role', {name: 'Administrator'});
+            const role = this.server.create('role', {name: 'Administrator'});
             author = this.server.create('user', {roles: [role]});
 
             await authenticateSession();
@@ -137,8 +137,8 @@ describe('Acceptance: Editor', function () {
 
         describe('post settings menu', function () {
             it('can set publish date', async function () {
-                let [post1] = this.server.createList('post', 2, {authors: [author]});
-                let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
+                const [post1] = this.server.createList('post', 2, {authors: [author]});
+                const futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
 
                 // sanity check
                 expect(
@@ -190,7 +190,7 @@ describe('Acceptance: Editor', function () {
                 ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('HH:mm'));
 
                 // saves the post with the new date
-                let validTime = moment('2017-04-09 12:00');
+                const validTime = moment('2017-04-09 12:00');
                 await fillIn('[data-test-date-time-picker-time-input]', validTime.format('HH:mm'));
                 await blur('[data-test-date-time-picker-time-input]');
                 await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime.toDate());
@@ -224,10 +224,10 @@ describe('Acceptance: Editor', function () {
         });
 
         it('renders first countdown notification before scheduled time', async function () {
-            let clock = sinon.useFakeTimers(moment().valueOf());
-            let compareDate = moment().tz('Etc/UTC').add(4, 'minutes');
-            let compareDateString = compareDate.format('YYYY-MM-DD');
-            let compareTimeString = compareDate.format('HH:mm');
+            const clock = sinon.useFakeTimers(moment().valueOf());
+            const compareDate = moment().tz('Etc/UTC').add(4, 'minutes');
+            const compareDateString = compareDate.format('YYYY-MM-DD');
+            const compareTimeString = compareDate.format('HH:mm');
             this.server.create('post', {publishedAt: moment.utc().add(4, 'minutes'), status: 'scheduled', authors: [author]});
             this.server.create('setting', {timezone: 'Europe/Dublin'});
             clock.restore();
@@ -250,9 +250,9 @@ describe('Acceptance: Editor', function () {
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {
-            let adminRole = this.server.create('role', {name: 'Administrator'});
-            let authorRole = this.server.create('role', {name: 'Author'});
-            let user1 = this.server.create('user', {name: 'Primary', roles: [adminRole]});
+            const adminRole = this.server.create('role', {name: 'Administrator'});
+            const authorRole = this.server.create('role', {name: 'Author'});
+            const user1 = this.server.create('user', {name: 'Primary', roles: [adminRole]});
             this.server.create('user', {name: 'Waldo', roles: [authorRole]});
             this.server.create('post', {authors: [user1]});
 
@@ -263,14 +263,14 @@ describe('Acceptance: Editor', function () {
 
             await click('[data-test-psm-trigger]');
 
-            let tokens = findAll('[data-test-input="authors"] .ember-power-select-multiple-option');
+            const tokens = findAll('[data-test-input="authors"] .ember-power-select-multiple-option');
 
             expect(tokens.length).to.equal(1);
             expect(tokens[0].textContent.trim()).to.have.string('Primary');
 
             await selectChoose('[data-test-input="authors"]', 'Waldo');
 
-            let savedAuthors = this.server.schema.posts.find('1').authors.models;
+            const savedAuthors = this.server.schema.posts.find('1').authors.models;
 
             expect(savedAuthors.length).to.equal(2);
             expect(savedAuthors[0].name).to.equal('Primary');
@@ -278,7 +278,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('saves post settings fields', async function () {
-            let post = this.server.create('post', {authors: [author]});
+            const post = this.server.create('post', {authors: [author]});
 
             await visit(`/editor/post/${post.id}`);
 
@@ -315,7 +315,7 @@ describe('Acceptance: Editor', function () {
             await click('[data-test-button="codeinjection"]');
 
             // header injection has validation
-            let headerCM = find('[data-test-field="codeinjection-head"] .CodeMirror').CodeMirror;
+            const headerCM = find('[data-test-field="codeinjection-head"] .CodeMirror').CodeMirror;
             await headerCM.setValue(Array(65540).join('a'));
             await click(headerCM.getInputField());
             await blur(headerCM.getInputField());
@@ -341,7 +341,7 @@ describe('Acceptance: Editor', function () {
             ).to.equal('<script src="http://example.com/inject-head.js"></script>');
 
             // footer injection has validation
-            let footerCM = find('[data-test-field="codeinjection-foot"] .CodeMirror').CodeMirror;
+            const footerCM = find('[data-test-field="codeinjection-foot"] .CodeMirror').CodeMirror;
             await footerCM.setValue(Array(65540).join('a'));
             await click(footerCM.getInputField());
             await blur(footerCM.getInputField());
@@ -508,7 +508,7 @@ describe('Acceptance: Editor', function () {
         it('handles in-editor excerpt update and validation', async function () {
             enableLabsFlag(this.server, 'editorExcerpt');
 
-            let post = this.server.create('post', {authors: [author], customExcerpt: 'Existing excerpt'});
+            const post = this.server.create('post', {authors: [author], customExcerpt: 'Existing excerpt'});
 
             await visit(`/editor/post/${post.id}`);
 
@@ -540,7 +540,7 @@ describe('Acceptance: Editor', function () {
         // https://github.com/TryGhost/Ghost/issues/11786
         // NOTE: Flaky test with moving to Lexical editor, skipping for now
         it.skip('save shortcut works when tags/authors field is focused', async function () {
-            let post = this.server.create('post', {authors: [author]});
+            const post = this.server.create('post', {authors: [author]});
 
             await visit(`/editor/post/${post.id}`);
             await fillIn('[data-test-editor-title-input]', 'CMD-S Test');
@@ -555,15 +555,15 @@ describe('Acceptance: Editor', function () {
             });
 
             // Check if save request has been sent correctly.
-            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            let body = JSON.parse(lastRequest.requestBody);
+            const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            const body = JSON.parse(lastRequest.requestBody);
             expect(body.posts[0].title).to.equal('CMD-S Test');
         });
 
         // https://github.com/TryGhost/Ghost/issues/15391
         it('can handle many tags in PSM tags input', async function () {
             this.server.createList('tag', 1000);
-            let post = this.server.create('post', {authors: [author]});
+            const post = this.server.create('post', {authors: [author]});
 
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-psm-trigger]');
@@ -579,7 +579,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('renders a breadcrumb back to the post list', async function () {
-            let post = this.server.create('post', {authors: [author]});
+            const post = this.server.create('post', {authors: [author]});
 
             await visit(`/editor/post/${post.id}`);
 
@@ -595,7 +595,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('renders a breadcrumb back to post analytics root if that\'s where we came from', async function () {
-            let post = this.server.create('post', {
+            const post = this.server.create('post', {
                 authors: [author],
                 status: 'published',
                 title: 'Published Post'
@@ -619,7 +619,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('renders a breadcrumb back to the post analytics subpage if that\'s where we came from', async function () {
-            let post = this.server.create('post', {
+            const post = this.server.create('post', {
                 authors: [author],
                 status: 'published',
                 title: 'Published Post'
@@ -640,7 +640,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('renders a breadcrumb back to stats root if that\'s where we came from', async function () {
-            let post = this.server.create('post', {authors: [author]});
+            const post = this.server.create('post', {authors: [author]});
 
             await visit('/analytics');
             await visit(`/editor/post/${post.id}`);
@@ -657,7 +657,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('renders a breadcrumb back to the stats subpage if that\'s where we came from', async function () {
-            let post = this.server.create('post', {authors: [author]});
+            const post = this.server.create('post', {authors: [author]});
 
             await visit('/analytics/web');
             await visit(`/editor/post/${post.id}`);
@@ -674,7 +674,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('renders a breadcrumb with stats query params if that\'s where we came from', async function () {
-            let post = this.server.create('post', {authors: [author]});
+            const post = this.server.create('post', {authors: [author]});
 
             await visit('/analytics/growth?tab=total-members');
             await visit(`/editor/post/${post.id}`);
@@ -708,7 +708,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('updates slug when title changes without blur', async function () {
-            let post = this.server.create('post', {authors: [author]});
+            const post = this.server.create('post', {authors: [author]});
 
             await visit(`/editor/post/${post.id}`);
             await fillIn('[data-test-editor-title-input]', 'Test Title');
@@ -719,14 +719,14 @@ describe('Acceptance: Editor', function () {
                 ctrlKey: ctrlOrCmd === 'ctrl'
             });
 
-            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            let body = JSON.parse(lastRequest.requestBody);
+            const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            const body = JSON.parse(lastRequest.requestBody);
             expect(body.posts[0].slug).to.equal('test-title');
             expect(post.slug).to.equal('test-title');
         });
 
         it('handles TKs in title', async function () {
-            let post = this.server.create('post', {authors: [author]});
+            const post = this.server.create('post', {authors: [author]});
 
             await visit(`/editor/post/${post.id}`);
 

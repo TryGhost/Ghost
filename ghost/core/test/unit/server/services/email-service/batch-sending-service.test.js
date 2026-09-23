@@ -914,7 +914,6 @@ describe('Batch Sending Service', function () {
           });
         });
 
-        let service;
         let fetchCount = 0;
         const Member = createModelClass({});
         Member.getFilteredCollectionQuery = ({ filter }) => {
@@ -933,7 +932,7 @@ describe('Batch Sending Service', function () {
 
         const db = createDb({ all: [] });
         const insert = sinon.spy(db, 'insert');
-        service = new BatchSendingService({
+        const service = new BatchSendingService({
           models: { Member, EmailBatch: createModelClass({}) },
           domainWarmingService: { isEnabled: () => false },
           emailRenderer: {

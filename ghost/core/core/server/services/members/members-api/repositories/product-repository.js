@@ -418,7 +418,7 @@ class ProductRepository {
 
     const existingProduct = await this._Product.findOne({ id: productId }, options);
 
-    let productData = {
+    const productData = {
       name: data.name,
       visibility: data.visibility,
       description: data.description,

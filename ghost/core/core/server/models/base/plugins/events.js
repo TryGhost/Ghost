@@ -8,7 +8,7 @@ const schema = require('../../../data/schema');
 const events = require('../../../lib/common/events');
 
 // Run tests or development with NUMERIC_IDS=1 to enable numeric object IDs
-let forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process.env.NUMERIC_IDS;
+const forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process.env.NUMERIC_IDS;
 let numberGenerator = 0;
 
 module.exports = function (Bookshelf) {

@@ -55,6 +55,10 @@ access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
+The post editor is the largest area with documentation of its own — start at
+[src/editor/README.md](src/editor/README.md) before changing anything under
+`src/editor/`.
+
 ## Testing
 
 - **Unit tests** (`pnpm test:unit`): Vitest + jsdom, colocated `*.test.ts(x)` files.

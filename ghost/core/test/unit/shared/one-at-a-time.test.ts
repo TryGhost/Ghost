@@ -1,7 +1,6 @@
-// @ts-check
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const { oneAtATime } = require('../../../core/shared/one-at-a-time');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import { oneAtATime } from '../../../core/shared/one-at-a-time';
 
 /**
  * A helper function to give the event loop a little time.
@@ -27,7 +26,7 @@ describe('oneAtATime', function () {
   });
 
   it('enqueues a second call while the first is still running', async function () {
-    const first = Promise.withResolvers();
+    const first = Promise.withResolvers<void>();
     const fn = sinon.stub().onFirstCall().returns(first.promise).resolves();
     const run = oneAtATime(fn);
     sinon.assert.notCalled(fn);
@@ -47,8 +46,8 @@ describe('oneAtATime', function () {
   });
 
   it('only enqueues, at most, one additional call', async function () {
-    const first = Promise.withResolvers();
-    const second = Promise.withResolvers();
+    const first = Promise.withResolvers<void>();
+    const second = Promise.withResolvers<void>();
     const fn = sinon
       .stub()
       .onFirstCall()
@@ -86,8 +85,8 @@ describe('oneAtATime', function () {
   });
 
   it('ignores all errors', async function () {
-    const first = Promise.withResolvers();
-    const second = Promise.withResolvers();
+    const first = Promise.withResolvers<never>();
+    const second = Promise.withResolvers<never>();
     const fn = sinon
       .stub()
       .onFirstCall()
@@ -114,7 +113,7 @@ describe('oneAtATime', function () {
   });
 
   it('returns a promise that resolves when all work is done', async function () {
-    const first = Promise.withResolvers();
+    const first = Promise.withResolvers<void>();
     const fn = sinon.stub().onFirstCall().returns(first.promise).resolves();
     const run = oneAtATime(fn);
 

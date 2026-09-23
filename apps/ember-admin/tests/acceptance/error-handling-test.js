@@ -7,7 +7,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {versionMismatchResponse} from 'ghost-admin/mirage/utils';
 
-let htmlErrorResponse = function () {
+const htmlErrorResponse = function () {
     return new Response(
         504,
         {'Content-Type': 'text/html'},
@@ -16,13 +16,13 @@ let htmlErrorResponse = function () {
 };
 
 describe('Acceptance: Error Handling', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     describe('VersionMismatch errors', function () {
         describe('logged in', function () {
             beforeEach(async function () {
-                let role = this.server.create('role', {name: 'Administrator'});
+                const role = this.server.create('role', {name: 'Administrator'});
                 this.server.create('user', {roles: [role]});
 
                 await authenticateSession();
@@ -71,7 +71,7 @@ describe('Acceptance: Error Handling', function () {
         beforeEach(async function () {
             this.server.loadFixtures();
 
-            let roles = this.server.schema.roles.where({name: 'Administrator'});
+            const roles = this.server.schema.roles.where({name: 'Administrator'});
             this.server.create('user', {roles});
 
             await authenticateSession();

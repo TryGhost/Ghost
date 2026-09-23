@@ -26,7 +26,7 @@ const controller = {
     },
     permissions: true,
     async query() {
-      let themeName = settingsCache.get('active_theme');
+      const themeName = settingsCache.get('active_theme');
       const themeErrors = await themeService.api.getThemeErrors(themeName);
       return themeService.api.getJSON(themeName, themeErrors);
     },
@@ -46,7 +46,7 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      let themeName = frame.options.name;
+      const themeName = frame.options.name;
 
       if (limitService.isLimited('customThemes')) {
         await limitService.errorIfWouldGoOverLimit('customThemes', { value: themeName });
@@ -118,7 +118,7 @@ const controller = {
       // @NOTE: consistent filename uploads
       frame.options.originalname = frame.file.originalname.toLowerCase();
 
-      let zip = {
+      const zip = {
         path: frame.file.path,
         name: frame.file.originalname,
       };
@@ -150,7 +150,7 @@ const controller = {
       method: 'read',
     },
     query(frame) {
-      let themeName = frame.options.name;
+      const themeName = frame.options.name;
 
       return themeService.api.getZip(themeName);
     },
@@ -171,7 +171,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      let themeName = frame.options.name;
+      const themeName = frame.options.name;
 
       return themeService.api.destroy(themeName);
     },

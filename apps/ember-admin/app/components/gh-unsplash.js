@@ -64,7 +64,7 @@ export default class GhUnsplash extends Component {
     select(photo) {
         this.unsplash.triggerDownload(photo);
 
-        let selectParams = {
+        const selectParams = {
             src: photo.urls.regular.replace(/&w=1080/, '&w=2000'),
             width: photo.width,
             height: photo.height,
@@ -95,7 +95,7 @@ export default class GhUnsplash extends Component {
 
     @action
     handleResize(element) {
-        let width = element.clientWidth;
+        const width = element.clientWidth;
         let columns = 3;
 
         if (width <= ONE_COLUMN_WIDTH) {

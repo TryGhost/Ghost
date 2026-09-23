@@ -6,10 +6,7 @@ const messages = {
   labelNotFound: 'Label not found.',
 };
 
-let Label;
-let Labels;
-
-Label = ghostBookshelf.Model.extend(
+const Label = ghostBookshelf.Model.extend(
   {
     tableName: 'labels',
 
@@ -50,7 +47,7 @@ Label = ghostBookshelf.Model.extend(
 
       ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
       // Make sure name is trimmed of extra spaces
-      let name = this.get('name') && this.get('name').trim();
+      const name = this.get('name') && this.get('name').trim();
       this.set('name', name);
       if (this.hasChanged('slug') || (!this.get('slug') && this.get('name'))) {
         // Pass the new slug through the generator to strip illegal characters, detect duplicates
@@ -139,7 +136,7 @@ Label = ghostBookshelf.Model.extend(
   },
 );
 
-Labels = ghostBookshelf.Collection.extend({
+const Labels = ghostBookshelf.Collection.extend({
   model: Label,
 });
 

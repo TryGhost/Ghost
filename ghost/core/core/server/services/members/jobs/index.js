@@ -5,7 +5,7 @@ const CleanExpiredCompedJob = require('./clean-expired-comped-job').default;
 const cleanTokensTask = require('./clean-tokens-task').default;
 const cleanExpiredCompedTask = require('./clean-expired-comped-task').default;
 
-let hasScheduled = {
+const hasScheduled = {
   expiredComped: false,
   tokens: false,
 };

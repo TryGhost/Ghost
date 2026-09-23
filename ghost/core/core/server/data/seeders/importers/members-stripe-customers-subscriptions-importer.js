@@ -21,7 +21,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
 
   async import() {
     let offset = 0;
-    let limit = 5000;
+    const limit = 5000;
     this.products = await this.transaction
       .select('id', 'name')
       .from('products')

@@ -819,7 +819,7 @@ class BatchSendingService {
     let succeeded = false;
 
     try {
-      let members = await this.retryDb(
+      const members = await this.retryDb(
         async () => {
           const m = await this.getBatchMembers(batch.id);
 
@@ -957,7 +957,7 @@ class BatchSendingService {
    * @returns {Promise<MemberLike[]>}
    */
   async getBatchMembers(batchId) {
-    let models = await this.#models.EmailRecipient.findAll({
+    const models = await this.#models.EmailRecipient.findAll({
       filter: `batch_id:'${batchId}'`,
       withRelated: ['member', 'member.stripeSubscriptions', 'member.products'],
     });

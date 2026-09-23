@@ -3,7 +3,7 @@ const config = require('../../shared/config');
 const db = require('../data/db');
 const logging = require('@tryghost/logging');
 const { LimitService } = require('@tryghost/limit-service');
-let limitService = new LimitService();
+const limitService = new LimitService();
 
 const init = () => {
   let helpLink;

@@ -324,6 +324,20 @@ const writeSvg = async (filepath, content, isZipped = false) => {
 
   return await fs.writeFile(filepath, content);
 };
+
+/**
+ *
+ * @param {{ext: string, type: string}} file
+ * @returns {boolean}
+ *
+ * Extension and content type are allowlisted separately, so a file counts as an SVG if either
+ * one says so. Storage adapters that use the content type (e.g. S3) would otherwise serve an
+ * unsanitized SVG uploaded with a non-SVG extension as image/svg+xml.
+ */
+const isSvgFile = (file) => {
+  return file.ext === '.svg' || file.ext === '.svgz' || file.type === 'image/svg+xml';
+};
+
 /**
  *
  * @param {Object} options
@@ -369,7 +383,7 @@ const validation = function ({ type }) {
     }
 
     // Sanitize SVG files
-    if (req.file.ext === '.svg' || req.file.ext === '.svgz') {
+    if (isSvgFile(req.file)) {
       const sanitized = await sanitizeSvg(req.file.path, req.file.ext === '.svgz');
 
       if (!sanitized) {
@@ -392,7 +406,7 @@ const validation = function ({ type }) {
  * @returns {import('express').RequestHandler}
  */
 const mediaValidation = function ({ type }) {
-  return function mediaUploadValidation(req, res, next) {
+  return async function mediaUploadValidation(req, res, next) {
     const extensions =
       (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
     const contentTypes =
@@ -447,6 +461,19 @@ const mediaValidation = function ({ type }) {
             message: tpl(messages.thumbnail.invalidFile, { extensions: thumbnailExtensions }),
           }),
         );
+      }
+
+      // Sanitize SVG thumbnails
+      if (isSvgFile(req.thumbnail)) {
+        const sanitized = await sanitizeSvg(req.thumbnail.path, req.thumbnail.ext === '.svgz');
+
+        if (!sanitized) {
+          return next(
+            new errors.UnsupportedMediaTypeError({
+              message: tpl(messages.svg.invalidFile),
+            }),
+          );
+        }
       }
     }
 

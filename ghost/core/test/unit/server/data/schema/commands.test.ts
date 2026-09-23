@@ -1,7 +1,8 @@
-const assert = require('node:assert/strict');
-const errors = require('@tryghost/errors');
-
-const commands = require('../../../../../core/server/data/schema/commands');
+import assert from 'node:assert/strict';
+import { utils as errorUtils } from '@tryghost/errors';
+import createKnex from 'knex';
+// @ts-expect-error This module lacks type definitions.
+import commands from '../../../../../core/server/data/schema/commands';
 
 describe('schema commands', function () {
   describe('getTables', function () {
@@ -20,8 +21,7 @@ describe('schema commands', function () {
   });
 
   it('_hasForeignSQLite throws when knex is nox configured to use sqlite3', async function () {
-    const Knex = require('knex');
-    const knex = Knex({
+    const knex = createKnex({
       client: 'mysql',
     });
 
@@ -29,14 +29,14 @@ describe('schema commands', function () {
       await commands._hasForeignSQLite({ transaction: knex });
       assert.fail('addForeign did not throw');
     } catch (err) {
-      assert.equal(errors.utils.isGhostError(err), true);
+      assert(err instanceof Error);
+      assert.equal(errorUtils.isGhostError(err), true);
       assert.equal(err.message, 'Must use hasForeignSQLite3 on an SQLite3 database');
     }
   });
 
   it('_hasPrimaryKeySQLite throws when knex is configured to use sqlite', async function () {
-    const Knex = require('knex');
-    const knex = Knex({
+    const knex = createKnex({
       client: 'mysql',
     });
 
@@ -44,7 +44,8 @@ describe('schema commands', function () {
       await commands._hasPrimaryKeySQLite(null, knex);
       assert.fail('hasPrimaryKeySQLite did not throw');
     } catch (err) {
-      assert.equal(errors.utils.isGhostError(err), true);
+      assert(err instanceof Error);
+      assert.equal(errorUtils.isGhostError(err), true);
       assert.equal(err.message, 'Must use hasPrimaryKeySQLite on an SQLite3 database');
     }
   });
@@ -52,9 +53,14 @@ describe('schema commands', function () {
   describe('addTableColumn', function () {
     // addTableColumn isn't exported, so we exercise it through createTable
     // and stringify the builder rather than running it against a database.
-    function ddlFor(client, tableSpec) {
-      const Knex = require('knex');
-      const knex = Knex({ client, useNullAsDefault: true });
+    function ddlFor(
+      client: string,
+      tableSpec: Record<
+        string,
+        { type: string; maxlength?: number; nullable?: boolean } | string[][]
+      >,
+    ) {
+      const knex = createKnex({ client, useNullAsDefault: true });
 
       try {
         return commands.createTable('test_table', knex, tableSpec).toString();
@@ -119,10 +125,10 @@ describe('schema commands', function () {
     // default DEFINER security, which binds them to the migrating account
     // and breaks when a backup is restored under a different MySQL user.
     it('creates the view with SQL SECURITY INVOKER on MySQL', async function () {
-      const rawStatements = [];
+      const rawStatements: string[] = [];
       const fakeKnex = {
         client: { config: { client: 'mysql2' } },
-        raw: (sql) => {
+        raw: (sql: string) => {
           rawStatements.push(sql);
           return Promise.resolve();
         },
@@ -137,12 +143,12 @@ describe('schema commands', function () {
     });
 
     it('uses the plain builder (no security clause) on SQLite', async function () {
-      const builderViews = [];
+      const builderViews: string[] = [];
       const fakeKnex = {
         client: { config: { client: 'sqlite3' } },
-        raw: (sql) => sql,
+        raw: (sql: string) => sql,
         schema: {
-          createViewOrReplace: (name) => {
+          createViewOrReplace: (name: string) => {
             builderViews.push(name);
             return Promise.resolve();
           },
@@ -157,10 +163,10 @@ describe('schema commands', function () {
 
   describe('renameColumn', function () {
     it('uses requested algorithm on MySQL', async function () {
-      const rawStatements = [];
+      const rawStatements: string[] = [];
       const fakeKnex = {
         client: { config: { client: 'mysql2' } },
-        raw: (sql) => {
+        raw: (sql: string) => {
           rawStatements.push(sql);
           return Promise.resolve();
         },
@@ -176,10 +182,10 @@ describe('schema commands', function () {
     });
 
     it('does not force an algorithm when none is requested', async function () {
-      const rawStatements = [];
+      const rawStatements: string[] = [];
       const fakeKnex = {
         client: { config: { client: 'mysql2' } },
-        raw: (sql) => {
+        raw: (sql: string) => {
           rawStatements.push(sql);
           return Promise.resolve();
         },
@@ -193,17 +199,19 @@ describe('schema commands', function () {
     });
 
     it('retries without the algorithm when the server does not support it', async function () {
-      const rawStatements = [];
+      const rawStatements: string[] = [];
       const fakeKnex = {
         client: { config: { client: 'mysql2' } },
-        raw: (sql) => {
+        raw: (sql: string) => {
           rawStatements.push(sql);
 
           if (sql.includes('algorithm=')) {
-            const error = new Error(
-              'ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.',
+            const error = Object.assign(
+              new Error(
+                'ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.',
+              ),
+              { code: 'ER_ALTER_OPERATION_NOT_SUPPORTED' },
             );
-            error.code = 'ER_ALTER_OPERATION_NOT_SUPPORTED';
             return Promise.reject(error);
           }
 
@@ -222,13 +230,14 @@ describe('schema commands', function () {
     });
 
     it('does not retry on unrelated errors', async function () {
-      const rawStatements = [];
+      const rawStatements: string[] = [];
       const fakeKnex = {
         client: { config: { client: 'mysql2' } },
-        raw: (sql) => {
+        raw: (sql: string) => {
           rawStatements.push(sql);
-          const error = new Error("Table 'email_batches' doesn't exist");
-          error.code = 'ER_NO_SUCH_TABLE';
+          const error = Object.assign(new Error("Table 'email_batches' doesn't exist"), {
+            code: 'ER_NO_SUCH_TABLE',
+          });
           return Promise.reject(error);
         },
       };

@@ -285,7 +285,7 @@ module.exports = function MembersAPI({
       return null;
     }
 
-    let member = oldEmail
+    const member = oldEmail
       ? await getMemberIdentityData(oldEmail)
       : await getMemberIdentityData(email);
 
@@ -434,7 +434,7 @@ module.exports = function MembersAPI({
     }
 
     // max request time is 500ms so shouldn't slow requests down too much
-    let geolocation = JSON.stringify(await geolocationService.getGeolocationFromIP(ip));
+    const geolocation = JSON.stringify(await geolocationService.getGeolocationFromIP(ip));
     if (geolocation) {
       await users.update({ geolocation }, { id: member.id });
     }

@@ -158,7 +158,7 @@ describe('Member Data attributes:', () => {
     });
 
     // Mock window.location
-    let locationMock = vi.fn();
+    const locationMock = vi.fn();
     delete window.location;
     window.location = { assign: locationMock };
     window.location.href = new URL('https://portal.localhost').href;
@@ -881,7 +881,7 @@ describe('Portal Data attributes:', () => {
     });
 
     // Mock window.location
-    let locationMock = vi.fn();
+    const locationMock = vi.fn();
     delete window.location;
     window.location = { assign: locationMock };
     window.location.href = new URL('https://portal.localhost').href;
@@ -1010,7 +1010,7 @@ describe('Portal Data attributes:', () => {
                 <button data-portal="offers/${FixtureOffer.id}">Offer</button>
             `;
 
-      let { ghostApi, popupFrame, ...utils } = await setup({
+      const { ghostApi, popupFrame, ...utils } = await setup({
         site: FixturesSite.singleTier.basic,
         member: FixtureMember.paid,
         showPopup: false,

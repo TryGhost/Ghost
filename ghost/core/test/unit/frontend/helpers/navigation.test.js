@@ -122,11 +122,11 @@ describe('{{navigation}} helper', function () {
 
   it('can handle relativeUrl not being set (e.g. for images/assets)', function () {
     const singleItem = { label: 'Foo', url: '/foo' };
-    let rendered;
+
     delete optionsData.data.root.relativeUrl;
 
     optionsData.data.site.navigation = [singleItem];
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
     assert(rendered.string.includes('li'));
     assert(rendered.string.includes('nav-foo'));
     assert(rendered.string.includes('/foo'));
@@ -135,10 +135,9 @@ describe('{{navigation}} helper', function () {
   it('can render one item', function () {
     const singleItem = { label: 'Foo', url: '/foo' };
     const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
-    let rendered;
 
     optionsData.data.site.navigation = [singleItem];
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(rendered.string.includes('li'));
@@ -148,10 +147,9 @@ describe('{{navigation}} helper', function () {
 
   it('can render one item with an icon', function () {
     const singleItem = { label: 'Foo', url: '/foo', icon: 'https://example.com/icon.svg' };
-    let rendered;
 
     optionsData.data.site.navigation = [singleItem];
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(rendered.string.includes('class="nav-icon"'));
@@ -168,10 +166,9 @@ describe('{{navigation}} helper', function () {
       url: '/icon-only',
       icon: 'https://example.com/icons/Ambulance%20Truck.svg',
     };
-    let rendered;
 
     optionsData.data.site.navigation = [singleItem];
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(rendered.string.includes('nav-ambulance-truck'));
@@ -189,10 +186,9 @@ describe('{{navigation}} helper', function () {
     const secondItem = { label: 'Bar Baz Qux', url: '/qux' };
     const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
     const testUrl2 = 'href="' + configUtils.config.get('url') + '/qux"';
-    let rendered;
 
     optionsData.data.site.navigation = [firstItem, secondItem];
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(rendered.string.includes('nav-foo'));
@@ -204,11 +200,10 @@ describe('{{navigation}} helper', function () {
   it('can annotate the current url', function () {
     const firstItem = { label: 'Foo', url: '/foo' };
     const secondItem = { label: 'Bar', url: '/qux' };
-    let rendered;
 
     optionsData.data.site.navigation = [firstItem, secondItem];
     optionsData.data.root.relativeUrl = '/foo';
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(rendered.string.includes('nav-foo'));
@@ -220,11 +215,10 @@ describe('{{navigation}} helper', function () {
   it('can annotate current url with trailing slash', function () {
     const firstItem = { label: 'Foo', url: '/foo' };
     const secondItem = { label: 'Bar', url: '/qux' };
-    let rendered;
 
     optionsData.data.site.navigation = [firstItem, secondItem];
     optionsData.data.root.relativeUrl = '/foo/';
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(rendered.string.includes('nav-foo'));
@@ -235,10 +229,9 @@ describe('{{navigation}} helper', function () {
 
   it("doesn't html-escape URLs", function () {
     const firstItem = { label: 'Foo', url: '/?foo=bar&baz=qux' };
-    let rendered;
 
     optionsData.data.site.navigation = [firstItem];
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(!rendered.string.includes('&#x3D;'));
@@ -248,10 +241,9 @@ describe('{{navigation}} helper', function () {
 
   it('encodes URLs', function () {
     const firstItem = { label: 'Foo', url: '/?foo=space bar&<script>alert("gotcha")</script>' };
-    let rendered;
 
     optionsData.data.site.navigation = [firstItem];
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(rendered.string.includes('foo=space%20bar'));
@@ -261,10 +253,9 @@ describe('{{navigation}} helper', function () {
 
   it("doesn't double-encode URLs", function () {
     const firstItem = { label: 'Foo', url: '/?foo=space%20bar' };
-    let rendered;
 
     optionsData.data.site.navigation = [firstItem];
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(!rendered.string.includes('foo=space%2520bar'));
@@ -414,11 +405,10 @@ describe('{{navigation}} helper', function () {
     it('can render one item', function () {
       const singleItem = { label: 'Foo', url: '/foo' };
       const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
-      let rendered;
 
       optionsData.data.site.secondary_navigation = [singleItem];
       optionsData.hash = { type: 'secondary' };
-      rendered = runHelper(optionsData);
+      const rendered = runHelper(optionsData);
 
       assertExists(rendered);
       assert(rendered.string.includes('li'));
@@ -431,11 +421,10 @@ describe('{{navigation}} helper', function () {
       const secondItem = { label: 'Bar Baz Qux', url: '/qux' };
       const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
       const testUrl2 = 'href="' + configUtils.config.get('url') + '/qux"';
-      let rendered;
 
       optionsData.data.site.secondary_navigation = [firstItem, secondItem];
       optionsData.hash = { type: 'secondary' };
-      rendered = runHelper(optionsData);
+      const rendered = runHelper(optionsData);
 
       assertExists(rendered);
       assert(rendered.string.includes('nav-foo'));
@@ -472,12 +461,11 @@ describe('{{navigation}} helper with custom template', function () {
 
   it('can render one item and @site title', function () {
     const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
-    let rendered;
 
     // Set @site.title
     optionsData.data.site.title = 'Chaos is a ladder.';
 
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(rendered.string.includes('Chaos is a ladder'));
@@ -489,12 +477,11 @@ describe('{{navigation}} helper with custom template', function () {
 
   it('can pass attributes through', function () {
     const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
-    let rendered;
 
     // Simulate {{navigation isHeader=true}}
     optionsData.hash = { isHeader: true };
 
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(!rendered.string.includes('Chaos is a ladder'));
@@ -506,12 +493,11 @@ describe('{{navigation}} helper with custom template', function () {
 
   it('sets isSecondary for type=secondary', function () {
     const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
-    let rendered;
 
     // Simulate {{navigation type="secondary"}}
     optionsData.hash = { type: 'secondary' };
 
-    rendered = runHelper(optionsData);
+    const rendered = runHelper(optionsData);
 
     assertExists(rendered);
     assert(!rendered.string.includes('Chaos is a ladder'));

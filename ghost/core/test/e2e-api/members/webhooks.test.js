@@ -2785,7 +2785,7 @@ describe('Members API', function () {
   describe('Discounts', function () {
     const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
     let offer;
-    let couponId = 'testCoupon123';
+    const couponId = 'testCoupon123';
 
     beforeAll(async function () {
       const agents = await agentProvider.getAgentsForMembers();
@@ -3491,7 +3491,7 @@ describe('Members API', function () {
         },
       });
 
-      let webhookPayload = JSON.stringify({
+      const webhookPayload = JSON.stringify({
         type: 'checkout.session.completed',
         data: {
           object: {
@@ -3503,7 +3503,7 @@ describe('Members API', function () {
         },
       });
 
-      let webhookSignature = stripe.webhooks.generateTestHeaderString({
+      const webhookSignature = stripe.webhooks.generateTestHeaderString({
         payload: webhookPayload,
         secret: process.env.WEBHOOK_SECRET,
       });
@@ -3691,7 +3691,7 @@ describe('Members API', function () {
         },
       });
 
-      let webhookPayload = JSON.stringify({
+      const webhookPayload = JSON.stringify({
         type: 'checkout.session.completed',
         data: {
           object: {
@@ -3717,7 +3717,7 @@ describe('Members API', function () {
         },
       });
 
-      let webhookSignature = stripe.webhooks.generateTestHeaderString({
+      const webhookSignature = stripe.webhooks.generateTestHeaderString({
         payload: webhookPayload,
         secret: process.env.WEBHOOK_SECRET,
       });
@@ -4083,14 +4083,14 @@ describe('Members API', function () {
         .expectStatus(201);
       let member = res.body.members[0];
 
-      let webhookPayload = JSON.stringify({
+      const webhookPayload = JSON.stringify({
         type: 'customer.subscription.created',
         data: {
           object: subscription,
         },
       });
 
-      let webhookSignature = stripe.webhooks.generateTestHeaderString({
+      const webhookSignature = stripe.webhooks.generateTestHeaderString({
         payload: webhookPayload,
         secret: process.env.WEBHOOK_SECRET,
       });
@@ -4181,7 +4181,7 @@ describe('Members API', function () {
         },
       });
 
-      let webhookPayload = JSON.stringify({
+      const webhookPayload = JSON.stringify({
         type: 'checkout.session.completed',
         data: {
           object: {
@@ -4192,7 +4192,7 @@ describe('Members API', function () {
         },
       });
 
-      let webhookSignature = stripe.webhooks.generateTestHeaderString({
+      const webhookSignature = stripe.webhooks.generateTestHeaderString({
         payload: webhookPayload,
         secret: process.env.WEBHOOK_SECRET,
       });

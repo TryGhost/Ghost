@@ -12,7 +12,7 @@ export default class EditRoute extends AuthenticatedRoute {
         // if the transition is not new->edit, reset the post on the controller
         // so that the editor view is cleared before showing the loading state
         if (transition.urlMethod !== 'replace') {
-            let editor = this.controllerFor('lexical-editor');
+            const editor = this.controllerFor('lexical-editor');
             editor.set('post', null);
             editor.reset();
         }
@@ -20,13 +20,13 @@ export default class EditRoute extends AuthenticatedRoute {
 
     async model(params) {
         // eslint-disable-next-line camelcase
-        let {type: modelName, post_id} = params;
+        const {type: modelName, post_id} = params;
 
         if (!['post', 'page'].includes(modelName)) {
             throw new NotFoundError();
         }
 
-        let query = {
+        const query = {
             // eslint-disable-next-line camelcase
             id: post_id,
             // we need to explicitly request post_revisions which means we need
@@ -74,7 +74,7 @@ export default class EditRoute extends AuthenticatedRoute {
     // there's no specific controller for this route, instead all editor
     // handling is done on the editor route/controller
     setupController(controller, post) {
-        let editor = this.controllerFor('lexical-editor');
+        const editor = this.controllerFor('lexical-editor');
         editor.setPost(post);
     }
 }

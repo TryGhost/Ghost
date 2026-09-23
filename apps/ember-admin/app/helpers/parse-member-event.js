@@ -390,7 +390,7 @@ export default class ParseMemberEventHelper extends Helper {
 
     getInfo(event) {
         if (event.type === 'subscription_event') {
-            let mrrDelta = getNonDecimal(event.data.mrr_delta, event.data.currency);
+            const mrrDelta = getNonDecimal(event.data.mrr_delta, event.data.currency);
             if (mrrDelta === 0) {
                 return;
             }

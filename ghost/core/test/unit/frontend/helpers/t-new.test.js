@@ -6,7 +6,7 @@ const themeI18next = require('../../../../core/frontend/services/theme-engine/i1
 const labs = require('../../../../core/shared/labs');
 
 describe('NEW{{t}} helper', function () {
-  let ogBasePath = themeI18next.basePath;
+  const ogBasePath = themeI18next.basePath;
 
   beforeAll(function () {
     sinon.stub(labs, 'isSet').withArgs('themeTranslation').returns(true);
@@ -26,7 +26,7 @@ describe('NEW{{t}} helper', function () {
   it('theme translation is DE', function () {
     themeI18next.init({ activeTheme: 'locale-theme', locale: 'de' });
 
-    let rendered = t.call({}, 'Top left Button', {
+    const rendered = t.call({}, 'Top left Button', {
       hash: {},
     });
 
@@ -36,7 +36,7 @@ describe('NEW{{t}} helper', function () {
   it('theme translation is EN', function () {
     themeI18next.init({ activeTheme: 'locale-theme', locale: 'en' });
 
-    let rendered = t.call({}, 'Top left Button', {
+    const rendered = t.call({}, 'Top left Button', {
       hash: {},
     });
 
@@ -46,7 +46,7 @@ describe('NEW{{t}} helper', function () {
   it('[fallback] no theme translation file found for FR', function () {
     themeI18next.init({ activeTheme: 'locale-theme', locale: 'fr' });
 
-    let rendered = t.call({}, 'Top left Button', {
+    const rendered = t.call({}, 'Top left Button', {
       hash: {},
     });
 
@@ -56,7 +56,7 @@ describe('NEW{{t}} helper', function () {
   it('[fallback] no theme files at all, use key as translation', function () {
     themeI18next.init({ activeTheme: 'locale-theme-1.4', locale: 'de' });
 
-    let rendered = t.call({}, 'Top left Button', {
+    const rendered = t.call({}, 'Top left Button', {
       hash: {},
     });
 
@@ -64,7 +64,7 @@ describe('NEW{{t}} helper', function () {
   });
 
   it('returns an empty string if translation key is an empty string', function () {
-    let rendered = t.call({}, '', {
+    const rendered = t.call({}, '', {
       hash: {},
     });
 
@@ -72,7 +72,7 @@ describe('NEW{{t}} helper', function () {
   });
 
   it('returns an empty string if translation key is missing', function () {
-    let rendered = t.call({}, undefined, {
+    const rendered = t.call({}, undefined, {
       hash: {},
     });
 
@@ -82,7 +82,7 @@ describe('NEW{{t}} helper', function () {
   it('returns a translated string even if no options are passed', function () {
     themeI18next.init({ activeTheme: 'locale-theme', locale: 'en' });
 
-    let rendered = t.call({}, 'Top left Button');
+    const rendered = t.call({}, 'Top left Button');
 
     assert.equal(rendered, 'Left Button on Top');
   });

@@ -80,7 +80,7 @@ const PaidAccountActions = () => {
       );
     }
 
-    let offerLabelStr = getOfferLabel({ nextPayment });
+    const offerLabelStr = getOfferLabel({ nextPayment });
 
     if (offerLabelStr) {
       oldPriceClassName = 'gh-portal-account-old-price';

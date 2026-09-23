@@ -5,13 +5,9 @@ const featuredImageRegex = /^(!\[]\(([^)]*?)\)\s+)(?=#)/;
 const titleRegex = /^#\s?([\w\W]*?)(?=\n)/;
 const statusRegex = /(published||draft)-/;
 const dateRegex = /(\d{4}-\d{2}-\d{2})-/;
-let processDateTime;
-let processFileName;
-let processMarkdownFile;
-let MarkdownHandler;
 
 // Takes a date from the filename in y-m-d-h-m form, and converts it into a Date ready to import
-processDateTime = function (post, datetime) {
+const processDateTime = function (post, datetime) {
   const format = 'YYYY-MM-DD-HH-mm';
   datetime = moment.utc(datetime, format).valueOf();
 
@@ -24,7 +20,7 @@ processDateTime = function (post, datetime) {
   return post;
 };
 
-processFileName = function (filename) {
+const processFileName = function (filename) {
   let post = {};
   let name = filename.split('.')[0];
   let match;
@@ -50,7 +46,7 @@ processFileName = function (filename) {
   return post;
 };
 
-processMarkdownFile = function (filename, content) {
+const processMarkdownFile = function (filename, content) {
   const post = processFileName(filename);
   let match;
 
@@ -77,7 +73,7 @@ processMarkdownFile = function (filename, content) {
   return post;
 };
 
-MarkdownHandler = {
+const MarkdownHandler = {
   type: 'data',
   extensions: ['.md', '.markdown'],
   contentTypes: ['application/octet-stream', 'text/plain'],

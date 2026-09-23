@@ -12,7 +12,7 @@ const controller = {
     data: ['url', 'type'],
     options: [],
     query({ data }) {
-      let { url, type } = data;
+      const { url, type } = data;
 
       return oembed.fetchOembedDataFromUrl(url, type);
     },

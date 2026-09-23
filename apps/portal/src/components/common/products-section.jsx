@@ -576,7 +576,7 @@ function ProductBenefitsContainer({ product, hide = false }) {
     return null;
   }
 
-  let className = 'gh-portal-product-benefits';
+  const className = 'gh-portal-product-benefits';
   return (
     <div className={className}>
       <ProductBenefits product={product} />
@@ -1052,7 +1052,7 @@ function ProductsSection({ onPlanSelect, products, type = null, handleChooseSign
     className += ' gh-portal-upgrade-product';
   }
 
-  let finalProduct =
+  const finalProduct =
     products.find((p) => p.id === selectedProduct)?.id ||
     products.find((p) => p.type === 'paid')?.id;
   return (

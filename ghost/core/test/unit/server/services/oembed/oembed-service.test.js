@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const http = require('http');
 const nock = require('nock');
 const got = require('got').default;
 const sinon = require('sinon');
@@ -1216,6 +1217,185 @@ describe('oembed-service', function () {
         .getCalls()
         .find((call) => call.args[0].url.pathname === '/favicon.ico');
       assert.ok(faviconCall, 'beforeRequest hook should have been called for the favicon fetch');
+    });
+  });
+
+  describe('favicon probes', function () {
+    let server;
+    let serverHits;
+    let port;
+
+    beforeEach(async function () {
+      serverHits = [];
+      server = http.createServer((req, res) => {
+        serverHits.push(req.url);
+        res.writeHead(200, { 'content-type': 'image/png' });
+        res.end(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      });
+      await new Promise((resolve) => {
+        server.listen(0, '127.0.0.1', resolve);
+      });
+      port = server.address().port;
+      nock.enableNetConnect(/^(127\.0\.0\.1|localhost)(:\d+)?$/);
+    });
+
+    afterEach(async function () {
+      nock.disableNetConnect();
+      await new Promise((resolve) => {
+        server.close(resolve);
+      });
+    });
+
+    it('applies the connection-time dnsLookup from externalRequest hooks', async function () {
+      // externalRequest validates the resolved IP at connection time via a
+      // dnsLookup installed in beforeRequest. reachable-url's got 11 ignores
+      // it, so favicon probes must go through externalRequest itself.
+      const dnsLookup = sinon.stub().callsFake((hostname, options, callback) => {
+        (typeof options === 'function' ? options : callback)(
+          new Error('URL resolves to a non-permitted private IP block'),
+        );
+      });
+
+      const externalRequest = got.extend({
+        retry: { limit: 0 },
+        hooks: {
+          beforeRequest: [
+            (options) => {
+              options.dnsLookup = dnsLookup;
+            },
+          ],
+        },
+      });
+
+      const service = new OembedService({
+        config: {
+          get: sinon.stub().returns('testing'),
+          getContentPath: sinon.stub().returns('/tmp/content/images'),
+        },
+        externalRequest,
+        imageStore: {},
+      });
+
+      const html = `<html><head><title>Test Page</title></head><body></body></html>`;
+
+      await service.fetchBookmarkData(`http://localhost:${port}/page`, html, 'bookmark');
+
+      assert.ok(
+        dnsLookup.getCalls().some((call) => call.args[0] === 'localhost'),
+        'dnsLookup should be used for the favicon probe',
+      );
+      assert.deepEqual(serverHits, []);
+    });
+
+    it('resolves a reachable favicon without downloading the full body', async function () {
+      const service = new OembedService({ config: { get: () => 'testing' }, externalRequest: got });
+
+      const result = await service.resolveFaviconUrl(`http://127.0.0.1:${port}/favicon.png`, [
+        'image/png',
+      ]);
+
+      assert.deepEqual(result, { url: `http://127.0.0.1:${port}/favicon.png` });
+      assert.deepEqual(serverHits, ['/favicon.png']);
+    });
+  });
+
+  describe('resolveFaviconUrl', function () {
+    let service;
+
+    beforeEach(function () {
+      service = new OembedService({ config: { get: () => 'testing' }, externalRequest: got });
+    });
+
+    it('returns the final url for a valid icon', async function () {
+      nock('https://example.com')
+        .get('/favicon.ico')
+        .reply(301, '', { location: 'https://cdn.example.com/favicon.ico' });
+      nock('https://cdn.example.com')
+        .get('/favicon.ico')
+        .reply(206, Buffer.from([0x00]), { 'content-type': 'image/x-icon; charset=binary' });
+
+      const result = await service.resolveFaviconUrl('https://example.com/favicon.ico', [
+        'image/vnd.microsoft.icon',
+        'image/x-icon',
+      ]);
+
+      assert.deepEqual(result, { url: 'https://cdn.example.com/favicon.ico' });
+    });
+
+    it('sends a single-byte range request', async function () {
+      const scope = nock('https://example.com', { reqheaders: { range: 'bytes=0-0' } })
+        .get('/favicon.png')
+        .reply(206, Buffer.from([0x89]), { 'content-type': 'image/png' });
+
+      const result = await service.resolveFaviconUrl('https://example.com/favicon.png', [
+        'image/png',
+      ]);
+
+      assert.equal(scope.isDone(), true);
+      assert.deepEqual(result, { url: 'https://example.com/favicon.png' });
+    });
+
+    it('rejects non-2xx responses', async function () {
+      nock('https://example.com')
+        .get('/favicon.png')
+        .reply(404, 'nope', { 'content-type': 'image/png' });
+
+      assert.equal(
+        await service.resolveFaviconUrl('https://example.com/favicon.png', ['image/png']),
+        undefined,
+      );
+    });
+
+    it('rejects a mismatched content type', async function () {
+      nock('https://example.com')
+        .get('/favicon.png')
+        .reply(200, 'x', { 'content-type': 'text/html' });
+
+      assert.equal(
+        await service.resolveFaviconUrl('https://example.com/favicon.png', ['image/png']),
+        undefined,
+      );
+    });
+
+    it('rejects markup served with an image content type', async function () {
+      nock('https://example.com')
+        .get('/favicon.png')
+        .reply(200, '<html></html>', { 'content-type': 'image/png' });
+
+      assert.equal(
+        await service.resolveFaviconUrl('https://example.com/favicon.png', ['image/png']),
+        undefined,
+      );
+    });
+
+    it('rejects an empty body', async function () {
+      nock('https://example.com')
+        .get('/favicon.png')
+        .reply(200, '', { 'content-type': 'image/png' });
+
+      assert.equal(
+        await service.resolveFaviconUrl('https://example.com/favicon.png', ['image/png']),
+        undefined,
+      );
+    });
+
+    it('skips content checks when no content types are given', async function () {
+      nock('https://example.com')
+        .get('/icon')
+        .reply(200, '<svg></svg>', { 'content-type': 'text/html' });
+
+      assert.deepEqual(await service.resolveFaviconUrl('https://example.com/icon'), {
+        url: 'https://example.com/icon',
+      });
+    });
+
+    it('returns undefined when the request fails', async function () {
+      nock('https://example.com').get('/favicon.png').replyWithError('boom');
+
+      assert.equal(
+        await service.resolveFaviconUrl('https://example.com/favicon.png', ['image/png']),
+        undefined,
+      );
     });
   });
 

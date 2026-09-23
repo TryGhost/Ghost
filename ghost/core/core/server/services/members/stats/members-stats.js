@@ -135,11 +135,11 @@ class MembersStats {
       currentRangeDate = moment.tz(siteTimezone).subtract(days - 1, 'days');
     }
 
-    let endDate = moment.tz(siteTimezone).add(1, 'hour');
+    const endDate = moment.tz(siteTimezone).add(1, 'hour');
     const output = {};
 
     while (currentRangeDate.isBefore(endDate)) {
-      let dateStr = currentRangeDate.format('YYYY-MM-DD');
+      const dateStr = currentRangeDate.format('YYYY-MM-DD');
       runningTotal += resultObject[dateStr] || 0;
       output[dateStr] = runningTotal;
 

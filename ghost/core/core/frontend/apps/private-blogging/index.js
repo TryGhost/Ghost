@@ -16,7 +16,7 @@ const messages = {
 // routeKeywords.private: 'private'
 const PRIVATE_KEYWORD = 'private';
 
-let checkSubdir = function checkSubdir() {
+const checkSubdir = function checkSubdir() {
   if (urlUtils.getSubdir()) {
     const paths = urlUtils.getSubdir().split('/');
 
@@ -37,7 +37,7 @@ let checkSubdir = function checkSubdir() {
 
 module.exports = {
   activate: function activate(ghost) {
-    let privateRoute = `/${PRIVATE_KEYWORD}/`;
+    const privateRoute = `/${PRIVATE_KEYWORD}/`;
 
     checkSubdir();
 

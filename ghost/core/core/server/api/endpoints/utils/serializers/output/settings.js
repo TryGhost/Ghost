@@ -12,7 +12,7 @@ const mappers = require('./mappers');
  * @returns {*}
  */
 function settingsFilter(settings, filter) {
-  let filteredGroups = filter ? filter.split(',') : [];
+  const filteredGroups = filter ? filter.split(',') : [];
   return _.filter(settings, (setting) => {
     if (filteredGroups.length > 0) {
       return _.includes(filteredGroups, setting.group);

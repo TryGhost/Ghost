@@ -198,7 +198,7 @@
     // changeset. The first command installs the script's deps — Renovate's
     // own install can be lockfile-only, so @internal/scripts' node_modules
     // isn't guaranteed present. Both commands must be allowlisted in the
-    // runner via RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS (see
+    // runner via RENOVATE_ALLOWED_COMMANDS (see
     // .github/workflows/renovate.yml).
     {
       description: 'Auto-generate changesets for publishable package updates',

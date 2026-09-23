@@ -99,7 +99,7 @@ const fixtures = {
 
     let i;
     let k = 0;
-    let posts = [];
+    const posts = [];
 
     // insert users of different roles
     return Promise.resolve(fixtures.createUsersWithRoles())
@@ -256,8 +256,8 @@ const fixtures = {
       models.Post.fetchAll(_.merge({ columns: ['id'], withRelated: 'tags' }, context.internal)),
       models.Tag.fetchAll(_.merge({ columns: ['id', 'name'] }, context.internal)),
     ]).then(function (results) {
-      let posts = results[0].toJSON();
-      let tags = results[1].toJSON();
+      const posts = results[0].toJSON();
+      const tags = results[1].toJSON();
 
       const injectionTagId = _.chain(tags).filter({ name: 'injection' }).map('id').value()[0];
 
@@ -630,7 +630,7 @@ const fixtures = {
   },
 
   insertArchivedTiers: function insertArchivedTiers() {
-    let archivedProduct = DataGenerator.forKnex.createProduct({
+    const archivedProduct = DataGenerator.forKnex.createProduct({
       active: false,
     });
 
@@ -638,7 +638,7 @@ const fixtures = {
   },
 
   insertHiddenTiers: function insertArchivedTiers() {
-    let hiddenTier = DataGenerator.forKnex.createProduct({
+    const hiddenTier = DataGenerator.forKnex.createProduct({
       visibility: 'none',
     });
 
@@ -657,7 +657,7 @@ const fixtures = {
   },
 
   insertProducts: async function insertProducts() {
-    let coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
+    const coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
     await Promise.all(
       coreProductFixtures.map(async (product) => {
         const found = await models.Product.findOne(product, context.internal);
@@ -688,7 +688,7 @@ const fixtures = {
       }),
     );
 
-    let coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
+    const coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
     await Promise.all(
       coreProductFixtures.map(async (product) => {
         const found = await models.Product.findOne(product, context.internal);
@@ -698,7 +698,7 @@ const fixtures = {
       }),
     );
 
-    let testProductFixtures = DataGenerator.forKnex.products;
+    const testProductFixtures = DataGenerator.forKnex.products;
     for (const productFixture of testProductFixtures) {
       if (productFixture.id) {
         // Not currently used - this is used to add new text fixtures, e.g. a Bronze/Silver/Gold Tier
