@@ -14,7 +14,7 @@ function isUnsplashImage(url) {
 const { DateTime } = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailAddressParser = require('../email-address/email-address-parser');
-const { getEmailDesign } = require('../email-rendering/email-design');
+const { getEmailDesign } = require('../../lib/email-rendering/email-design');
 const { registerHelpers } = require('./helpers/register-helpers');
 const crypto = require('crypto');
 const { checkSegmentPostAccess, getPostAccessFilter } = require('../members/content-gating');
@@ -1134,7 +1134,7 @@ class EmailRenderer {
 
     registerHelpers(handlebars, labs, this.#t);
 
-    const emailPartials = path.join(__dirname, '..', 'email-rendering', 'partials');
+    const emailPartials = path.join(__dirname, '../../lib/email-rendering/partials');
     const emailTemplates = path.join(__dirname, 'email-templates');
 
     const [
