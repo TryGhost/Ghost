@@ -106,7 +106,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
       const nextErrors = getActionErrors(next);
       return Object.fromEntries(
-        Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
+        Object.entries(nextErrors).filter(([actionId]) => oldErrors[actionId]),
       );
     });
     setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));

@@ -153,7 +153,11 @@ describe('Historical email cards', () => {
       ),
     );
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('button', { name: 'Send email: Current subject' }).click();
+    await page
+      .getByRole('article', { name: 'Send email: Current subject' })
+      .getByRole('button', { name: 'Email actions' })
+      .click();
+    await page.getByRole('menuitem', { name: 'Edit settings' }).click();
     await page.getByPlaceholder('Subject line').fill('Unsaved subject');
     await open();
     await select();
