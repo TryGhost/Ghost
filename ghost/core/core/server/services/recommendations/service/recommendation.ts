@@ -179,7 +179,7 @@ export class Recommendation {
 
     for (const key of Object.keys(properties) as (keyof EditRecommendation)[]) {
       if (
-        Object.prototype.hasOwnProperty.call(properties, key) &&
+        Object.hasOwn(properties, key) &&
         properties[key] !== undefined &&
         properties[key] !== newProperties[key]
       ) {

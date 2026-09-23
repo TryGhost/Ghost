@@ -627,7 +627,7 @@ class CommentsService {
   async moderateComment(id, data, options) {
     const editData = {};
 
-    if (Object.prototype.hasOwnProperty.call(data, 'status')) {
+    if (Object.hasOwn(data, 'status')) {
       editData.status = data.status;
 
       if (data.status === COMMENT_STATUS_DELETED) {
@@ -635,7 +635,7 @@ class CommentsService {
       }
     }
 
-    if (Object.prototype.hasOwnProperty.call(data, 'pinned')) {
+    if (Object.hasOwn(data, 'pinned')) {
       if (typeof data.pinned !== 'boolean') {
         throw new errors.BadRequestError({
           message: tpl(messages.invalidPinnedValue),

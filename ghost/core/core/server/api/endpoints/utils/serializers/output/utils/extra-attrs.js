@@ -18,7 +18,7 @@ module.exports.forPost = (options, model, attrs) => {
   const formatsIncludesPlaintext = options.formats?.includes('plaintext');
 
   // no columns requested
-  const noColumnsRequested = !Object.prototype.hasOwnProperty.call(options, 'columns');
+  const noColumnsRequested = !Object.hasOwn(options, 'columns');
 
   // 1. Gets excerpt from post's plaintext. If custom_excerpt exists, it overrides the excerpt but the key remains excerpt.
   if (columnsIncludesExcerpt) {

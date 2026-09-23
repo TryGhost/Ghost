@@ -22,7 +22,7 @@ configUtils.set = function () {
     _.each(key, function (settingValue, settingKey) {
       config.set(settingKey, settingValue);
     });
-    if (Object.prototype.hasOwnProperty.call(key, 'paths:contentPath')) {
+    if (Object.hasOwn(key, 'paths:contentPath')) {
       clearDerivedContentPaths();
     }
   } else {
