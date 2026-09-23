@@ -34,6 +34,26 @@ describe('AddonNode', function () {
         }, {discrete: true});
     });
 
+    it('binds opt-in portable links to the render context without storing the parent URL', () => {
+        editor.update(() => {
+            const node = $createAddonNode({
+                id: 'episode', addonHandle: 'podcast', blockName: 'episode', publicProps: {},
+                html: '<p>Episode</p>',
+                portableHtml: '<p><a data-ghost-post-link href="https://old.example/">Listen on the website</a></p>'
+            });
+            for (const target of ['email', 'html']) {
+                const element = node.exportDOM(editor, {dom, target, postUrl: 'https://site.example/new/?a=1&b=2'}).element as HTMLElement;
+                const root = target === 'email' ? element : (element.querySelector('template') as HTMLTemplateElement).content;
+                expect(root.querySelector('a')?.getAttribute('href')).toBe('https://site.example/new/?a=1&b=2');
+                for (const postUrl of [undefined, 'javascript:alert(1)', new URL('https://site.test/').href.replace('https://', 'https://' + 'user' + ':' + 'pass' + '@')]) {
+                    const output = node.exportDOM(editor, {dom, target: 'email', postUrl}).element as HTMLElement;
+                    expect(output.querySelector('a')?.hasAttribute('href')).toBe(false);
+                }
+            }
+            expect(node.exportJSON().portableHtml).toContain('https://old.example/');
+        }, {discrete: true});
+    });
+
     it('does not expose authoring data when imported public properties are null', () => {
         editor.update(() => {
             const node = AddonNode.importJSON({

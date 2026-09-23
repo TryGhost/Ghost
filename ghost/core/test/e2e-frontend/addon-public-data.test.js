@@ -93,6 +93,7 @@ describe('Add-on public data', function () {
             props: { post_id: '000000000000000000000000' },
             publicProps: {},
             html: '<p>Copied episode</p>',
+            portableHtml: '<p><a data-ghost-post-link>Listen on the website</a></p>',
           },
         ],
       },
@@ -105,7 +106,13 @@ describe('Add-on public data', function () {
       const post = response.body.posts[0];
       const content = await contentAPIAgent.get(`posts/${post.id}/?fields=html`).expectStatus(200);
       assert.ok(content.body.posts[0].html.includes(`data-addon-post-id="${post.id}"`));
+      assert.ok(content.body.posts[0].html.includes(`href="${post.url}"`));
+      assert.equal(content.body.posts[0].url, undefined);
       assert.ok(!content.body.posts[0].html.includes('000000000000000000000000'));
+      const portable = await contentAPIAgent
+        .get(`posts/${post.id}/?fields=html,url`)
+        .expectStatus(200);
+      assert.ok(portable.body.posts[0].html.includes(`href="${post.url}"`));
       const website = await frontendAgent.get(`/${post.slug}/`).expect(200);
       assert.ok(website.text.includes(`data-addon-post-id="${post.id}"`));
       const stored = await adminAgent.get(`posts/${post.id}/?formats=lexical`).expectStatus(200);

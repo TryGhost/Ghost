@@ -135,7 +135,7 @@ module.exports = async (model, frame, options = {}) => {
   }
 
   if (jsonModel.html) {
-    jsonModel.html = withAddonPostContext(jsonModel.html, model.id);
+    jsonModel.html = withAddonPostContext(jsonModel.html, model.id, jsonModel.url);
   }
 
   // Transforms post/page metadata to flat structure
@@ -219,6 +219,10 @@ module.exports = async (model, frame, options = {}) => {
 
   if (jsonModel.count && !jsonModel.count.negative_feedback) {
     jsonModel.count.negative_feedback = 0;
+  }
+
+  if (frame.forcedPostHtmlUrl) {
+    delete jsonModel.url;
   }
 
   return jsonModel;

@@ -309,6 +309,28 @@ function sanitizeMarkup(document: Document, markup: string, {allowStyleElements 
     return template.innerHTML;
 }
 
+/** Resolve an app's explicit post-link marker from current host context. */
+function portableMarkup(document: Document, markup: string, postUrl?: string): string {
+    const template = document.createElement('template');
+    template.innerHTML = sanitizeMarkup(document, markup, {allowStyleElements: false});
+    let href: string | undefined;
+    try {
+        const url = new URL(postUrl || '');
+        if (['http:', 'https:'].includes(url.protocol) && !url.username && !url.password) {
+            href = url.href;
+        }
+    } catch {
+        // Without a current post URL, retain the label but no stale destination.
+    }
+    template.content.querySelectorAll('a[data-ghost-post-link]').forEach((link) => {
+        link.removeAttribute('href');
+        if (href) {
+            link.setAttribute('href', href);
+        }
+    });
+    return template.innerHTML;
+}
+
 function escapeHtml(value: string): string {
     return value
         .replaceAll('&', '&amp;')
@@ -407,7 +429,7 @@ export function renderAddonNode(node: AddonNodeData, options: ExportDOMOptions =
 
         const portableElement = document.createElement('div');
         portableElement.className = 'kg-card kg-addon-card';
-        portableElement.innerHTML = sanitizeMarkup(document, node.portableHtml, {allowStyleElements: false});
+        portableElement.innerHTML = portableMarkup(document, node.portableHtml, options.postUrl);
         return {element: portableElement, type: 'outer'};
     }
 
@@ -439,7 +461,7 @@ export function renderAddonNode(node: AddonNodeData, options: ExportDOMOptions =
     if (node.portableHtml) {
         const portable = document.createElement('template');
         portable.className = 'kg-addon-card-portable';
-        portable.innerHTML = sanitizeMarkup(document, node.portableHtml, {allowStyleElements: false});
+        portable.innerHTML = portableMarkup(document, node.portableHtml, options.postUrl);
         element.append(portable);
     }
 

@@ -114,6 +114,18 @@ const forceUrlColumns = (frame, routerType, extraColumns = []) => {
 // the `?fields=url` case. Forced relations are recorded on the frame for the
 // output mapper to strip. No-op when the routing config reads no relations.
 const forceUrlRelations = (frame, routerType) => {
+  // Portable add-on links in HTML depend on the enclosing URL, even when
+  // callers do not request a separate URL field. Reuse the normal routing
+  // dependency loading and remove this internal field after rendering.
+  if (
+    ['posts', 'pages'].includes(routerType) &&
+    Array.isArray(frame.options.columns) &&
+    frame.options.columns.includes('html') &&
+    !frame.options.columns.includes('url')
+  ) {
+    frame.options.columns.push('url');
+    frame.forcedPostHtmlUrl = true;
+  }
   if (!localUtils.willSerializeUrl(frame)) {
     return;
   }

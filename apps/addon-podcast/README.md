@@ -47,5 +47,8 @@ one item per configured format. Membership and content changes apply on the
 next request; failures return an error instead of a partial feed. Responses are
 uncached. Direct files remain public on Ghost storage; only feeds are gated.
 
-Implementation is in progress. Portable post links and the V2 conversion helper
-follow in later slices.
+Email and ordinary Ghost RSS use a safe link back to the current post. The
+link follows Ghost's body gating and contains neither media URLs nor private
+feed credentials. Copying a card binds it to its new parent post.
+
+Implementation is in progress. The V2 conversion helper follows in a later slice.

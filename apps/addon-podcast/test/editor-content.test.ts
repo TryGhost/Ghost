@@ -25,4 +25,6 @@ it('renders only safe metadata and escapes episode titles', async () => {
   expect(JSON.stringify(output)).not.toContain('private.example');
   expect(output.html).not.toContain('private.example');
   expect(output.portableHtml).not.toContain('private.example');
+  expect(output.portableHtml).toContain('data-ghost-post-link');
+  expect(output.portableHtml).toContain('Listen to this episode on the website');
 });
