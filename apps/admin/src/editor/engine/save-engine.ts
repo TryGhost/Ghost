@@ -157,6 +157,34 @@ export type SaveEngineState =
   | { kind: 'crashed' }
   | { kind: 'disposed' };
 
+/** Read-only view of the queue's bookkeeping at the moment of an event, after the event's own change. */
+export interface SaveEngineContext {
+  /** Kind of the command in flight. */
+  readonly inFlight: SaveIntent | null;
+  /** Kind that currently wins the pending slot. */
+  readonly pending: SaveIntent | null;
+  /** Re-auth holds the failed command. */
+  readonly frozen: boolean;
+  /** The autosave debounce or the timed cycle is armed. */
+  readonly armed: boolean;
+}
+
+/** Everything that changes the engine's state. */
+export type SaveEngineEvent =
+  /** The autosave debounce or the timed cycle was armed. */
+  | { kind: 'timer-armed' }
+  /** A command landed in the pending slot behind the in-flight or frozen command. */
+  | { kind: 'coalesced' }
+  | { kind: 'save-started' }
+  /** Nothing was left in flight or pending after a save settled or was dropped. */
+  | { kind: 'drained' }
+  /** Reading the snapshot, prepare, or execute failed; `persisted` is whether the post had an id. */
+  | { kind: 'save-failed'; intent: SaveIntent; error: SaveError; persisted: boolean }
+  | { kind: 'reauth-abandoned'; error: SaveError }
+  /** The caller holds a document past the rejected `updated_at`. */
+  | { kind: 'content-reloaded' }
+  | { kind: 'disposed' };
+
 export type LeaveDecision = 'proceed' | 'confirm';
 
 /** A fresh generation, or `unchanged` when the slug port keeps the current slug (custom, same title, frozen). */
@@ -342,6 +370,117 @@ function toSaveError(cause: unknown): SaveError {
 
 export function isCollisionToken(value: string | null | undefined): value is string {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value));
+}
+
+function unreachable(value: never): never {
+  throw new Error(`Unhandled save engine value: ${JSON.stringify(value)}`);
+}
+
+// `error` and `conflict` persist until a save starts; a frozen queue keeps `reauth-pending`.
+function queueState(
+  state: SaveEngineState,
+  context: SaveEngineContext,
+  keepHalt: boolean,
+): SaveEngineState {
+  if (context.frozen) {
+    return state;
+  }
+  if (context.inFlight) {
+    return context.pending
+      ? { kind: 'pending-coalesced', intent: context.inFlight, pending: context.pending }
+      : { kind: 'saving', intent: context.inFlight };
+  }
+  if (keepHalt && (state.kind === 'error' || state.kind === 'conflict')) {
+    return state;
+  }
+  return context.armed ? { kind: 'debouncing' } : { kind: 'idle' };
+}
+
+function failureState(event: Extract<SaveEngineEvent, { kind: 'save-failed' }>): SaveEngineState {
+  const { intent, error } = event;
+  switch (error.kind) {
+    case 'session-invalid':
+      return { kind: 'reauth-pending', intent };
+    case 'not-found':
+      return { kind: event.persisted ? 'halted' : 'crashed' };
+    case 'conflict':
+      return { kind: 'conflict', intent, error };
+    case 'validation':
+    case 'host-limit':
+    case 'transport':
+    case 'unknown':
+      return { kind: 'error', intent, error };
+    default:
+      return unreachable(error.kind);
+  }
+}
+
+/** The engine's state chart: pure, and total over every state and event. */
+export function transition(
+  state: SaveEngineState,
+  event: SaveEngineEvent,
+  context: SaveEngineContext,
+): SaveEngineState {
+  switch (state.kind) {
+    case 'idle':
+    case 'debouncing':
+    case 'saving':
+    case 'pending-coalesced':
+    case 'reauth-pending':
+    case 'error':
+    case 'conflict':
+      switch (event.kind) {
+        case 'timer-armed':
+        case 'coalesced':
+        case 'save-started':
+        case 'drained':
+          return queueState(state, context, true);
+        case 'save-failed':
+          return failureState(event);
+        case 'reauth-abandoned':
+          return state.kind === 'reauth-pending'
+            ? { kind: 'error', intent: state.intent, error: event.error }
+            : state;
+        case 'content-reloaded':
+          return state.kind === 'conflict' ? queueState(state, context, false) : state;
+        case 'disposed':
+          return { kind: 'disposed' };
+        default:
+          return unreachable(event);
+      }
+    case 'halted':
+    case 'crashed':
+      switch (event.kind) {
+        case 'timer-armed':
+        case 'coalesced':
+        case 'save-started':
+        case 'drained':
+        case 'save-failed':
+        case 'reauth-abandoned':
+        case 'content-reloaded':
+          return state;
+        case 'disposed':
+          return { kind: 'disposed' };
+        default:
+          return unreachable(event);
+      }
+    case 'disposed':
+      switch (event.kind) {
+        case 'timer-armed':
+        case 'coalesced':
+        case 'save-started':
+        case 'drained':
+        case 'save-failed':
+        case 'reauth-abandoned':
+        case 'content-reloaded':
+        case 'disposed':
+          return state;
+        default:
+          return unreachable(event);
+      }
+    default:
+      return unreachable(state);
+  }
 }
 
 function sameState(a: SaveEngineState, b: SaveEngineState): boolean {
