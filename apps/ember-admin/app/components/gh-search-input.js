@@ -54,7 +54,7 @@ export default class GhSearchInputComponent extends Component {
 
         if (selected.groupName === 'Tags') {
             const id = selected.id.replace('tag.', '');
-            this.router.transitionTo('tag', id);
+            this.router.transitionTo(`/tags/${id}`);
         }
     }
 
