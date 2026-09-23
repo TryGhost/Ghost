@@ -181,6 +181,19 @@ export interface AddonEditorBlockRequest {
   blockName: string;
   props: Record<string, unknown>;
   context?: AddonEditorPresentationContext;
+  /** Website-only context; never part of a saved snapshot. */
+  envelope?: {
+    site: string;
+    apiVersion: string;
+    context: { postId: string; cardId: string; member: { uuid: string; key: string } | null };
+  };
+  bridge?: {
+    fetch(
+      path: string,
+      options?: { method?: 'GET' | 'POST'; body?: unknown },
+    ): Promise<{ status: number; body: unknown }>;
+    requestSignin(): void;
+  };
 }
 
 export interface AddonEditorPresentationContext {

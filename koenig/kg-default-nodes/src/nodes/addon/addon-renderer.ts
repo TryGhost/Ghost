@@ -87,6 +87,24 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId, blockName, serializedProp
     var attempts = 0;
     var retryTimer;
     var hydrationStarted = false;
+    var requestSequence = 0;
+    var pendingRequests = new Map();
+    var bridge = {
+        fetch: function (path, options) {
+            return new Promise(function (resolve, reject) {
+                var requestId = String(++requestSequence);
+                var timer = window.setTimeout(function () {
+                    pendingRequests.delete(requestId);
+                    reject(new Error('Provider request timed out'));
+                }, 15000);
+                pendingRequests.set(requestId, {resolve: resolve, reject: reject, timer: timer});
+                postToParent({type: 'ghost-addon', instanceId: instanceId, action: 'fetch', requestId: requestId, path: path, options: options || {}}, '*');
+            });
+        },
+        requestSignin: function () {
+            postToParent({type: 'ghost-addon', instanceId: instanceId, action: 'request-signin'}, '*');
+        }
+    };
     var props = {};
     try {
         props = JSON.parse(serializedProps);
@@ -158,6 +176,16 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId, blockName, serializedProp
         if (event.source !== window.parent || !message || message.type !== 'ghost-addon-host' || message.instanceId !== instanceId) {
             return;
         }
+        if (message.action === 'fetch-result') {
+            var pending = pendingRequests.get(message.requestId);
+            if (pending) {
+                pendingRequests.delete(message.requestId);
+                window.clearTimeout(pending.timer);
+                if (message.error) pending.reject(new Error(message.error));
+                else pending.resolve(message.response);
+            }
+            return;
+        }
         applyHostTypography(message);
         if (message.action === 'connect') {
             measure();
@@ -193,7 +221,7 @@ const STATIC_FRAME_BOOTSTRAP = `(function (instanceId, blockName, serializedProp
                 if (typeof hydrate !== 'function' || !root) {
                     throw new Error('Add-on bundle does not export hydration');
                 }
-                Promise.resolve(hydrate({blockName: blockName, props: props}, root)).then(function () {
+                Promise.resolve(hydrate({blockName: blockName, props: props, envelope: message.envelope, bridge: bridge}, root)).then(function () {
                     sendHydrationState('hydrated');
                     measure();
                 }, failHydration);
@@ -331,7 +359,7 @@ function buildStaticDocument(document: Document, node: AddonNodeData, {includeBo
     const legacySources = buildResourceSources(node.resourceOrigins, {includeData: true, allowHttp: true});
     const policy = node.resourcePolicy;
     const imageSources = policy ? buildResourceSources(policy.images ?? [], {includeData: true}) : legacySources;
-    const mediaSources = policy ? buildResourceSources(policy.media ?? [], {includeData: true}) : legacySources;
+    const mediaSources = policy ? buildResourceSources(policy.media ?? [], {includeData: true, allowHttp: true}) : legacySources;
     const fontSources = policy ? 'data:' : legacySources;
     const connectSources = policy ? '\'none\'' : legacySources;
     const shouldHydrate = enableHydration && node.hydrate === true;

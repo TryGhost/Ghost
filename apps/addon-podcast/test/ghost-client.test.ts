@@ -1,0 +1,57 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { GhostClient, MemberCredentialError } from '../src/provider/ghost-client.ts';
+
+const id = '0123456789abcdef01234567';
+const ghost = () => new GhostClient('https://publisher.test/blog/', `${id}:${'ab'.repeat(32)}`);
+afterEach(() => vi.unstubAllGlobals());
+
+describe('Ghost API boundary', () => {
+  it('reads current published lexical data with a server-only short-lived integration token', async () => {
+    const fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ posts: [{ id, status: 'published', lexical: '{}' }] })),
+    );
+    vi.stubGlobal('fetch', fetch);
+    expect(await ghost().post(id)).toMatchObject({ id, lexical: '{}' });
+    const [url, options] = fetch.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(url.pathname).toBe('/blog/ghost/api/admin/posts/');
+    expect(url.searchParams.get('formats')).toBe('lexical');
+    expect(url.searchParams.get('filter')).toBe(`id:${id}+status:published`);
+    expect(options.redirect).toBe('error');
+    const jwt = (options.headers as Record<string, string>).Authorization.slice(6);
+    const claims = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString());
+    expect(claims.exp - claims.iat).toBe(300);
+    expect(claims.aud).toBe('/admin/');
+  });
+  it('preserves card visibility and fails on missing decisions', async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ post_access: [{ id, access: false, visible_card_ids: ['card'] }] }),
+        ),
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify({ post_access: [] })));
+    vi.stubGlobal('fetch', fetch);
+    expect((await ghost().access([id])).get(id)).toEqual({
+      access: false,
+      visible_card_ids: ['card'],
+    });
+    await expect(ghost().access([id])).rejects.toThrow('Ghost request failed');
+  });
+  it('distinguishes invalid member credentials from upstream failures', async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ errors: [{ code: 'MEMBER_CREDENTIAL_INVALID' }] }), {
+          status: 401,
+        }),
+      )
+      .mockRejectedValueOnce(new Error('Offline'));
+    vi.stubGlobal('fetch', fetch);
+    await expect(ghost().access([id], { uuid: 'uuid', key: 'invalid' })).rejects.toBeInstanceOf(
+      MemberCredentialError,
+    );
+    await expect(ghost().post(id)).rejects.toThrow('Ghost request failed');
+  });
+});

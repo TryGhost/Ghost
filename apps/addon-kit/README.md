@@ -159,8 +159,22 @@ are a spike contract for later replacement; they are not app-specific. Both
 context and access responses are private and uncached. Providers must keep Admin
 keys server-side and validate access on each request.
 
+Published decisions also carry `card_revision`, a digest of the saved Lexical
+content and access configuration. Admin browse requests using `has_card` and
+Lexical format return the same digest; include tiers when requesting relations.
+Providers must require matching revisions before selecting media from a separate
+post read. This detects conflicting edits even within the same timestamp second.
+
 Rendered card figures carry `data-addon-post-id` from the current enclosing
 post response, alongside the node's `data-addon-id`. This includes preview
 pages and HTML-only Content API responses. Parent identity is not saved in card
 props: copying a card or a post binds it to its new parent. Providers must still
 verify the published post, card identity, and access for every player request.
+
+Hydration requests receive website-only `envelope.context` containing the current
+`postId`, `cardId`, and member credential, plus `bridge.fetch()` and
+`bridge.requestSignin()`. Fetches are limited to the installed manifest's backend
+origin and omit Ghost cookies; the iframe can retain `connect-src 'none'`.
+The host remounts provider cards on session-refresh events and discards replies
+from obsolete frames. The renderer replaces outdated saved markup before mounting
+the current public representation, while preserving matching snapshots.

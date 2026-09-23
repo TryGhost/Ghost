@@ -104,4 +104,15 @@ describe('renderEditorBlockModule', function () {
     root.remove();
     style.remove();
   });
+  it('replaces obsolete saved markup when the current public representation differs', async function () {
+    const providerRenderer = defineEditorBlockRenderer(
+      () => ({ content: h('article', {}, 'Current player') }),
+      { hydrate: true },
+    );
+    const root = document.createElement('main');
+    root.innerHTML = '<p>Obsolete saved snapshot</p>';
+    await providerRenderer.hydrate?.({ blockName: 'episode', props: {} }, root);
+    expect(root.textContent).toBe('Current player');
+    expect(root.children).toHaveLength(1);
+  });
 });

@@ -14,6 +14,142 @@
   const hydrationEligible = new WeakSet();
   const hydrationSent = new WeakSet();
   const runtimePromises = new Map();
+  const providerMetadata = new WeakMap();
+  const pendingFetches = new WeakMap();
+  const SITE_URL = BLOG_URL.includes('{{') ? new URL('/', document.baseURI).href : `${BLOG_URL}/`;
+  let memberRequest;
+  let memberIdentity;
+  let contextGeneration = 0;
+
+  async function currentMember() {
+    if (!memberRequest) {
+      memberRequest = window
+        .fetch(new URL('members/api/member/context/', SITE_URL).href, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          redirect: 'error',
+        })
+        .then(async (response) => {
+          if (!response.ok) throw new Error('Member context unavailable');
+          const context = await response.json();
+          if (
+            context.member !== null &&
+            (!context.member ||
+              typeof context.member.uuid !== 'string' ||
+              typeof context.member.key !== 'string')
+          ) {
+            throw new Error('Invalid member context');
+          }
+          return context.member;
+        })
+        .finally(() => {
+          memberRequest = null;
+        });
+    }
+    return memberRequest;
+  }
+
+  function remountCards() {
+    contextGeneration += 1;
+    for (const card of document.querySelectorAll(
+      '.kg-addon-card[data-addon-hydrate="true"][data-addon-post-id]',
+    )) {
+      if (!providerMetadata.has(card)) continue;
+      const oldFrame = card.querySelector('.kg-addon-card-frame');
+      if (!oldFrame) continue;
+      card.dataset.addonHydration = 'loading';
+      oldFrame.replaceWith(oldFrame.cloneNode(true));
+    }
+    connectFrames();
+  }
+
+  async function refreshMember() {
+    if (!document.querySelector('.kg-addon-card[data-addon-hydrate="true"][data-addon-post-id]'))
+      return;
+    try {
+      const member = await currentMember();
+      const identity = JSON.stringify(member);
+      remountCards();
+      memberIdentity = identity;
+    } catch {
+      memberIdentity = undefined;
+      remountCards();
+    }
+  }
+
+  async function providerFetch(match, message) {
+    const { card, frame } = match;
+    const metadata = providerMetadata.get(card);
+    const generation = contextGeneration;
+    const respond = (payload) => {
+      if (
+        generation === contextGeneration &&
+        card.querySelector('.kg-addon-card-frame') === frame
+      ) {
+        frame.contentWindow.postMessage(
+          {
+            type: 'ghost-addon-host',
+            instanceId: card.dataset.addonId,
+            action: 'fetch-result',
+            requestId: message.requestId,
+            ...payload,
+          },
+          '*',
+        );
+      }
+    };
+    const active = pendingFetches.get(frame) || 0;
+    if (
+      !metadata ||
+      typeof message.requestId !== 'string' ||
+      message.requestId.length > 100 ||
+      active >= 20
+    )
+      return;
+    pendingFetches.set(frame, active + 1);
+    try {
+      if (typeof message.path !== 'string' || message.path.length > 2000)
+        throw new Error('Invalid request');
+      const url = new URL(message.path, metadata.providerOrigin);
+      if (url.origin !== metadata.providerOrigin || url.username || url.password)
+        throw new Error('Provider origin required');
+      const method = message.options?.method || 'GET';
+      if (!['GET', 'POST'].includes(method)) throw new Error('Invalid method');
+      const body =
+        message.options?.body === undefined ? undefined : JSON.stringify(message.options.body);
+      if (body && body.length > 16384) throw new Error('Request too large');
+      const response = await window.fetch(url.href, {
+        method,
+        body: method === 'POST' ? body : undefined,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'omit',
+        cache: 'no-store',
+        referrerPolicy: 'no-referrer',
+        redirect: 'error',
+        signal: window.AbortSignal.timeout(10000),
+      });
+      const text = await response.text();
+      if (text.length > 1024 * 1024) throw new Error('Response too large');
+      respond({ response: { status: response.status, body: JSON.parse(text) } });
+    } catch {
+      respond({ error: 'Provider request unavailable.' });
+    } finally {
+      pendingFetches.set(frame, (pendingFetches.get(frame) || 1) - 1);
+    }
+  }
+
+  window.addEventListener('focus', () => {
+    void refreshMember();
+  });
+  window.addEventListener('hashchange', () => {
+    void refreshMember();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void refreshMember();
+  });
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) remountCards();
+  });
 
   function inheritedFontFamily(card) {
     const fontFamily = window.getComputedStyle(card).fontFamily;
@@ -78,6 +214,7 @@
         credentials: 'omit',
         cache: 'no-store',
         referrerPolicy: 'no-referrer',
+        redirect: 'error',
       };
       const metadataResponse = await window.fetch(metadataUrl.href, fetchOptions);
       if (!metadataResponse.ok) {
@@ -100,7 +237,7 @@
         source,
         typeof metadata.integrity === 'string' ? metadata.integrity : '',
       );
-      return source;
+      return { source, metadata };
     })();
     runtimePromises.set(key, request);
     return request;
@@ -119,13 +256,34 @@
     hydrationSent.add(frame);
     card.dataset.addonHydration = 'loading';
     try {
-      const source = await fetchRuntime(card);
+      const generation = contextGeneration;
+      const { source, metadata } = await fetchRuntime(card);
+      let envelope;
+      if (metadata.providerOrigin && card.dataset.addonPostId) {
+        const provider = new URL(metadata.providerOrigin);
+        if (
+          !['http:', 'https:'].includes(provider.protocol) ||
+          provider.origin !== metadata.providerOrigin
+        )
+          throw new Error('Invalid provider origin');
+        providerMetadata.set(card, metadata);
+        const member = await currentMember();
+        memberIdentity = JSON.stringify(member);
+        envelope = {
+          site: SITE_URL,
+          apiVersion: '2026-01',
+          context: { postId: card.dataset.addonPostId, cardId: card.dataset.addonId, member },
+        };
+      }
+      if (generation !== contextGeneration || card.querySelector('.kg-addon-card-frame') !== frame)
+        return;
       frame.contentWindow.postMessage(
         {
           type: 'ghost-addon-host',
           instanceId: card.dataset.addonId,
           action: 'hydrate',
           source,
+          envelope,
         },
         '*',
       );
@@ -200,6 +358,11 @@
       },
       '*',
     );
+
+    if (message.action === 'fetch') void providerFetch(match, message);
+    if (message.action === 'request-signin' && providerMetadata.has(match.card))
+      window.location.hash =
+        memberIdentity && memberIdentity !== 'null' ? '/portal/account/plans' : '/portal/signin';
 
     if (message.action === 'resize') {
       const requested = Number(message.height);

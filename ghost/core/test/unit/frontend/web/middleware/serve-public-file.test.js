@@ -220,6 +220,7 @@ describe('servePublicFile', function () {
           {
             handle: 'transistor',
             enabled: true,
+            backend: 'https://podcasts.example',
             editor: {
               contentBundleUrl: 'https://podcasts.example/editor-content.js',
               integrity: 'sha256-current',
@@ -237,6 +238,7 @@ describe('servePublicFile', function () {
       .expect('Cache-Control', 'no-store')
       .expect({
         bundleUrl: 'https://podcasts.example/editor-content.js',
+        providerOrigin: 'https://podcasts.example',
         integrity: 'sha256-current',
       });
 

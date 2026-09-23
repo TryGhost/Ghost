@@ -10,6 +10,7 @@ const extraAttrs = require('../utils/extra-attrs');
 const gating = require('../utils/post-gating');
 const previewRendering = require('../utils/preview-rendering');
 const { withAddonPostContext } = require('../utils/addon-post-context');
+const { cardRevision } = require('../../../../../../services/posts/card-revision');
 const url = require('../utils/url');
 
 const utils = require('../../../index');
@@ -37,6 +38,18 @@ module.exports = async (model, frame, options = {}) => {
         return jsonModel[attr];
       },
     };
+  }
+
+  // Card consumers bind separately requested visibility decisions to this saved
+  // snapshot. Capture before public tier/URL transforms and format projection.
+  if (
+    frame.options.has_card &&
+    !utils.isContentAPI(frame) &&
+    typeof jsonModel.lexical === 'string'
+  ) {
+    jsonModel.card_revision = cardRevision(
+      typeof model.toJSON === 'function' ? model.toJSON() : jsonModel,
+    );
   }
 
   // Map email_recipient_filter to email_segment

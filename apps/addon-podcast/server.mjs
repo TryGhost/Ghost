@@ -1,15 +1,27 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
+import { GhostClient } from './src/provider/ghost-client.ts';
+import { createProviderHandler } from './src/provider/http.ts';
 
 const port = Number(process.env.PORT ?? 4655);
 const dist = join(import.meta.dirname, 'dist');
+const siteUrl = process.env.GHOST_URL ?? '';
+const adminKey = process.env.GHOST_ADMIN_API_KEY ?? '';
+const provider = createProviderHandler(
+  siteUrl && adminKey ? new GhostClient(siteUrl, adminKey) : null,
+  siteUrl,
+);
 const contentTypes = {
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
 };
 
 createServer(async (request, response) => {
+  if (request.url?.startsWith('/api/')) {
+    await provider(request, response);
+    return;
+  }
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Cache-Control', 'no-store');
   const url = new URL(request.url ?? '/', `http://localhost:${port}`);

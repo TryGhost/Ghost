@@ -1,6 +1,7 @@
 import { createHmac } from 'node:crypto';
 import type { Request, Response, NextFunction } from 'express';
 import { getPostCardAccess } from './post-card-access';
+import { cardRevision } from '../posts/card-revision';
 
 const errors = require('@tryghost/errors');
 const models = require('../../models');
@@ -100,7 +101,11 @@ export async function postAccess(input: { post_ids?: unknown; member?: unknown }
     const decision = post
       ? await getPostCardAccess(post, member)
       : { access: false, visible_card_ids: [] };
-    data.push({ id, ...decision });
+    data.push({
+      id,
+      ...decision,
+      ...(post ? { card_revision: cardRevision(post) } : {}),
+    });
   }
   return { data };
 }

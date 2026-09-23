@@ -68,6 +68,8 @@ const manifest = {
         description: 'Add an episode to a podcast show',
         keywords: ['audio', 'video', 'show'],
         initialProperties: { version: 1 },
+        hydrate: true,
+        resourcePolicy: { images: ['https:'], media: ['https:', 'http:'] },
       },
     ],
     content,

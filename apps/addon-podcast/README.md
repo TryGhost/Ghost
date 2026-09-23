@@ -16,12 +16,23 @@ Enable the Add-ons and React editor experiments, then install
 app page, then insert **Podcast episode** from the post editor's slash menu.
 Several cards can belong to one post, and each card can select a different show.
 
+For website playback, start the provider with `GHOST_URL` and the server-only
+`GHOST_ADMIN_API_KEY` from a custom integration. Keep the key out of manifests
+and browser bundles. The provider rereads the published post and Ghost's current
+card-access decision on every request; conflicting content revisions fail closed.
+After rebuilding, refresh the installed manifest so its runtime integrity matches.
+
 Card settings provide full and free audio/video uploads. Ghost owns file
 selection, progress, and storage; only a media reference enters card props.
 Closing settings keeps an active upload running. Removing the card or leaving
 the editor discards its late result. Media changes use the normal post save flow.
 
-Implementation is in progress. Show configuration, episode metadata, uploads,
-and safe public snapshots are available. Gated player selection, public/private
-audio/video feeds, and the V2 conversion helper follow in later slices. Direct
-files remain on Ghost storage; only feeds will be gated.
+The player supports full/free audio and video, uses the current post title when
+the card has no title, and opens Ghost Portal for sign-in. A restricted post's
+preview divider controls whether its card can offer a free version. Hidden cards
+remain inaccessible through direct player requests. Member-session refreshes
+replace the iframe and discard old responses.
+
+Implementation is in progress. Public/private audio/video feeds, portable post
+links, and the V2 conversion helper follow in later slices. Direct files remain
+on Ghost storage; only feeds will be gated.

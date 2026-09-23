@@ -60,6 +60,12 @@ export function defineEditorBlockRenderer(
       if (contentStyle) {
         contentStyle.textContent = typeof output.css === 'string' ? output.css : '';
       }
+      // Public data and newer bundles can differ from the saved static snapshot.
+      // Preact hydration leaves unmatched old siblings behind, so only reuse an
+      // unchanged snapshot; otherwise mount the current representation cleanly.
+      if (root.innerHTML !== renderToString(output.content as VNode)) {
+        root.replaceChildren();
+      }
       hydrate(output.content as VNode, root);
     };
   }

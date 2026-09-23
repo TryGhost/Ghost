@@ -183,6 +183,20 @@ function createAddonBlockRuntimeMiddleware() {
     }
 
     const payload = { bundleUrl: parsedBundleUrl.href };
+    if (install.backend) {
+      try {
+        const provider = new URL(install.backend);
+        if (
+          ['http:', 'https:'].includes(provider.protocol) &&
+          !provider.username &&
+          !provider.password
+        ) {
+          payload.providerOrigin = provider.origin;
+        }
+      } catch {
+        return notFound();
+      }
+    }
     if (typeof install.editor.integrity === 'string') {
       payload.integrity = install.editor.integrity;
     }
