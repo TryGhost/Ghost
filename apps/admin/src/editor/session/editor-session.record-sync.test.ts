@@ -21,6 +21,19 @@ describe('createEditorSession', () => {
     expect(session.getSaveSnapshot().isDirty).toBe(true);
   });
 
+  it('treats a refetched title that differs only by whitespace as unchanged', () => {
+    const { session } = sessionHarness({ record: record({ title: 'Hello' }) });
+    session.setBaseline(record().lexical);
+
+    session.recordRefetched(record({ title: 'Hello ', updated_at: '2026-01-02T00:00:00.000Z' }));
+
+    expect(session.getSaveSnapshot()).toMatchObject({
+      title: 'Hello',
+      isDirty: false,
+      titleDirty: false,
+    });
+  });
+
   it.each([
     ['has no collision token', null],
     ['has a malformed collision token', 'not-a-date'],

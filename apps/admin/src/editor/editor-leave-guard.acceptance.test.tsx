@@ -234,6 +234,24 @@ describe('Post editor leave guard', () => {
     expect(saveApi.requests.length).toBe(0);
   });
 
+  it('leaves silently when the title only gained a trailing space', async () => {
+    // Published, so a dirty title would have to ask rather than save on the way out.
+    const saveApi = fakeEditablePost({
+      status: 'published',
+      published_at: '2026-01-01T00:00:00.000Z',
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave(FLAG_ON));
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    const dialogInsertions = watchLeaveDialog();
+
+    await editorScreen.titleInput().fill('Hello from React ');
+    await editorScreen.backLink('post').click();
+
+    await expect.poll(currentRoute).toBe('/posts');
+    expect(dialogInsertions()).toBe(0);
+    expect(saveApi.requests.length).toBe(0);
+  });
+
   it.each([
     { name: 'router link', options: withFastAutosave(FLAG_ON) },
     { name: 'native hash link', options: { labs: { editorReact: true } } },

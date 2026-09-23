@@ -216,6 +216,11 @@ function sameTags(
   return left.length === right.length && left.every((tag, index) => sameTag(tag, right[index]));
 }
 
+// The server trims the title on save, so surrounding whitespace never persists.
+function sameTitle(a: string, b: string): boolean {
+  return a.trim() === b.trim();
+}
+
 function relationIds(related: ReadonlyArray<PostRelationLike> | undefined): string[] {
   return (related ?? []).map((entry) => entry.id ?? '');
 }
@@ -225,6 +230,9 @@ function relationIds(related: ReadonlyArray<PostRelationLike> | undefined): stri
  * needs the site url the tracker was built with.
  */
 export function sameFieldValue(key: ProjectionKey, a: unknown, b: unknown): boolean {
+  if (key === 'title') {
+    return sameTitle(a as string, b as string);
+  }
   if (key === 'tags') {
     return sameTags(a as ReadonlyArray<TagLike>, b as ReadonlyArray<TagLike>);
   }
@@ -319,7 +327,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       });
     }
 
-    if (live.title.trim() !== saved.title.trim()) {
+    if (!sameTitle(saved.title, live.title)) {
       reasons.push({
         code: 'POST_TITLE_DIVERGED',
         reason: 'title is different',
@@ -530,7 +538,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
         return false;
       }
       if (
-        saved.title !== latestRevision.title ||
+        !sameTitle(saved.title, latestRevision.title) ||
         saved.custom_excerpt !== (latestRevision.custom_excerpt ?? null) ||
         saved.feature_image !== (latestRevision.feature_image ?? null)
       ) {

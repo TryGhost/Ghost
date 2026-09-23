@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
 import {
   createChangeTracker,
+  sameFieldValue,
   type EditablePostProjection,
   type PostId,
 } from '@/editor/engine/change-tracker';
@@ -429,6 +430,48 @@ describe('createChangeTracker', () => {
       tracker.setLive(POST_ID, { title: '  Title ' });
 
       expect(tracker.verdict().dirty).toBe(false);
+    });
+
+    describe('compares trimmed wherever it is asked', () => {
+      it.each([
+        ['Hello ', false],
+        ['Hello!', true],
+      ])('the change verdict: Hello → %j dirty=%s', (title, dirty) => {
+        const tracker = loadedTracker(post({ title: 'Hello' }));
+        tracker.setLive(POST_ID, { title });
+
+        expect(tracker.verdict().dirty).toBe(dirty);
+      });
+
+      it.each([
+        ['Hello ', false],
+        ['Hello!', true],
+      ])('the field check: Hello → %j dirty=%s', (title, dirty) => {
+        const tracker = loadedTracker(post({ title: 'Hello' }));
+        tracker.setLive(POST_ID, { title });
+
+        expect(tracker.isFieldDirty('title')).toBe(dirty);
+      });
+
+      it.each([
+        ['Hello ', true],
+        ['Hello!', false],
+      ])('the exported field compare: Hello vs %j same=%s', (title, same) => {
+        expect(sameFieldValue('title', 'Hello', title)).toBe(same);
+      });
+
+      it('rebases a live title that only gained whitespace onto the acknowledged one', () => {
+        const tracker = loadedTracker(post({ title: 'Hello' }));
+        tracker.setLive(POST_ID, { title: 'Hello ' });
+        tracker.saveAcknowledged(
+          POST_ID,
+          { title: 'Hello' },
+          post({ title: 'Hello, world', updated_at: T1 }),
+        );
+
+        expect(tracker.isFieldDirty('title')).toBe(false);
+        expect(tracker.verdict().dirty).toBe(false);
+      });
     });
   });
 
@@ -1090,6 +1133,15 @@ describe('createChangeTracker', () => {
 
       expect(tracker.hasChangedSinceRevision(revision())).toBe(true);
       expect(tracker.hasChangedSinceRevision(revision(change))).toBe(false);
+    });
+
+    it.each([
+      ['Hello ', false],
+      ['Hello!', true],
+    ])('compares the title trimmed: Hello vs revision %j changed=%s', (title, changed) => {
+      const tracker = loadedTracker(post({ title: 'Hello' }));
+
+      expect(tracker.hasChangedSinceRevision(revision({ title }))).toBe(changed);
     });
 
     it('treats a missing revision excerpt or feature image as null', () => {
