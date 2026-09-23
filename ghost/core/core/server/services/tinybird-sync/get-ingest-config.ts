@@ -46,6 +46,17 @@ export function getIngestConfig({
     analyticsPathIndex + ANALYTICS_PATH_PREFIX.length,
   )}api/v1/tinybird-sync`;
 
+  // The browser tracker uses localhost, but inside the development container
+  // that reaches Ghost itself. Analytics requests must go through the gateway.
+  if (
+    config.get('env') === 'development' &&
+    ['localhost', '127.0.0.1', '[::1]'].includes(endpoint.hostname)
+  ) {
+    endpoint.protocol = 'http:';
+    endpoint.hostname = 'ghost-dev-gateway';
+    endpoint.port = '';
+  }
+
   const statsResult = StatsConfigSchema.safeParse(config.get('tinybird:stats'));
   const settingsSiteUuidResult = SiteUuidSchema.safeParse(settingsCache.get('site_uuid'));
   let siteUuid = statsResult.success ? statsResult.data.id : undefined;

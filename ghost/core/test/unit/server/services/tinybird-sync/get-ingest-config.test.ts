@@ -8,6 +8,38 @@ const createDependencies = (values: Record<string, unknown>) => ({
 });
 
 describe('getIngestConfig', () => {
+  it.each(['localhost', '127.0.0.1', '[::1]'])(
+    'routes development loopback tracker URLs through the gateway: %s',
+    (hostname) => {
+      const dependencies = createDependencies({
+        env: 'development',
+        'tinybird:tracker:endpoint': `http://${hostname}:2368/blog/.ghost/analytics/api/v1/page_hit`,
+        'tinybird:sync_auth_key': 'sync-secret',
+      });
+
+      assert.equal(
+        getIngestConfig(dependencies)?.endpoint.href,
+        'http://ghost-dev-gateway/blog/.ghost/analytics/api/v1/tinybird-sync',
+      );
+    },
+  );
+
+  it.each([
+    ['production', 'http://localhost:2368'],
+    ['development', 'https://example.com'],
+  ])('preserves the tracker origin for %s at %s', (env, origin) => {
+    const dependencies = createDependencies({
+      env,
+      'tinybird:tracker:endpoint': `${origin}/.ghost/analytics/api/v1/page_hit`,
+      'tinybird:sync_auth_key': 'sync-secret',
+    });
+
+    assert.equal(
+      getIngestConfig(dependencies)?.endpoint.href,
+      `${origin}/.ghost/analytics/api/v1/tinybird-sync`,
+    );
+  });
+
   it('builds the sync endpoint and reads the configured Tinybird site UUID', () => {
     const dependencies = createDependencies({
       'tinybird:tracker:endpoint': 'https://example.com/foo/.ghost/analytics/bar',
