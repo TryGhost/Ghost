@@ -65,6 +65,8 @@ const EMAIL_NODE_WITH_STATS_HEIGHT = 133;
 const EDITABLE_NODE_WIDTH = 400;
 const EDITABLE_EMAIL_NODE_HEIGHT = 350;
 const EDITABLE_WAIT_NODE_HEIGHT = 144;
+const FIXED_TRIGGER_NODE_HEIGHT = 86;
+const EXIT_NODE_HEIGHT = 55;
 const INITIAL_VIEWPORT_Y = 40;
 // Rendered height of the tail node (h-12) — used to derive the content's bottom edge for the pan bound.
 const TAIL_NODE_HEIGHT = 48;
@@ -267,8 +269,13 @@ const buildGraph = ({
     {
       id: TRIGGER_CANVAS_ID,
       type: 'trigger',
-      position: { x: NODE_X, y: cursorY },
+      position: {
+        x: automationRunAnalyticsEnabled ? NODE_COLUMN_CENTER_X - EDITABLE_NODE_WIDTH / 2 : NODE_X,
+        y: cursorY,
+      },
       data: {
+        fixedTrigger: automationRunAnalyticsEnabled,
+        onInteract: () => onInteract(TRIGGER_CANVAS_ID),
         contextMenuItems: buildNodeContextMenuItems({
           onSelectStep,
           stepId: TRIGGER_CANVAS_ID,
@@ -283,7 +290,10 @@ const buildGraph = ({
       ...baseNodeProps,
     },
   ];
-  cursorY += (nodeSizes[TRIGGER_CANVAS_ID]?.height ?? REGULAR_NODE_HEIGHT) + NODE_VISUAL_GAP_Y;
+  cursorY +=
+    (nodeSizes[TRIGGER_CANVAS_ID]?.height ??
+      (automationRunAnalyticsEnabled ? FIXED_TRIGGER_NODE_HEIGHT : REGULAR_NODE_HEIGHT)) +
+    NODE_VISUAL_GAP_Y;
 
   ordered.forEach((action) => {
     const displayData = buildActionData(action);
@@ -357,10 +367,18 @@ const buildGraph = ({
   nodes.push({
     id: TAIL_CANVAS_ID,
     type: 'tail',
-    position: { x: NODE_X, y: cursorY },
-    data: { disabled, disabledReason, onPick, anchor: tailAnchor },
-    draggable: false,
-    connectable: false,
+    position: {
+      x: automationRunAnalyticsEnabled ? NODE_COLUMN_CENTER_X - EDITABLE_NODE_WIDTH / 2 : NODE_X,
+      y: cursorY,
+    },
+    data: {
+      disabled,
+      disabledReason,
+      onPick,
+      anchor: tailAnchor,
+      fixedExit: automationRunAnalyticsEnabled,
+    },
+    ...baseNodeProps,
   });
   // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
   // working if the graph ever grows wider (e.g. branching).
@@ -372,16 +390,18 @@ const buildGraph = ({
         (node) =>
           node.position.x +
           (nodeSizes[node.id]?.width ??
-            (('email' in node.data && node.data.email) || ('wait' in node.data && node.data.wait)
-              ? EDITABLE_NODE_WIDTH
-              : NODE_WIDTH)),
+            (automationRunAnalyticsEnabled ? EDITABLE_NODE_WIDTH : NODE_WIDTH)),
       ),
     ),
-    bottom: cursorY + (nodeSizes[TAIL_CANVAS_ID]?.height ?? TAIL_NODE_HEIGHT),
+    bottom:
+      cursorY +
+      (nodeSizes[TAIL_CANVAS_ID]?.height ??
+        (automationRunAnalyticsEnabled ? EXIT_NODE_HEIGHT : TAIL_NODE_HEIGHT)),
   };
 
   // Every connecting line between existing nodes gets a circular + on hover. The trailing edge into the
-  // tail node intentionally has none — the rectangular tail button already covers that slot.
+  // legacy tail node has none — its rectangular button already covers that slot.
+  // The fixed exit marker uses the same insertion control as the other connectors.
   const edges: Edge[] = [];
   let previousCanvasId: string = TRIGGER_CANVAS_ID;
   ordered.forEach((action) => {
@@ -407,7 +427,16 @@ const buildGraph = ({
     id: `e-${previousCanvasId}-${TAIL_CANVAS_ID}`,
     source: previousCanvasId,
     target: TAIL_CANVAS_ID,
-    type: 'smoothstep',
+    type: automationRunAnalyticsEnabled ? 'add-step-edge' : 'smoothstep',
+    data: automationRunAnalyticsEnabled
+      ? ({
+          ...tailAnchor,
+          disabled,
+          disabledReason,
+          onPick,
+          label: 'Add step',
+        } satisfies AddStepEdgeData)
+      : undefined,
     focusable: false,
     style: { stroke: DEFAULT_EDGE_STROKE },
   });
@@ -876,6 +905,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
               }
               if (
                 node.id !== TAIL_CANVAS_ID &&
+                !(automationRunAnalyticsEnabled && node.id === TRIGGER_CANVAS_ID) &&
                 !('email' in node.data && node.data.email) &&
                 !('wait' in node.data && node.data.wait)
               ) {
