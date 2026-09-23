@@ -110,10 +110,13 @@ export function PostPreviewModal({
   const testEmailAvailable =
     !!currentUser &&
     (isOwnerUser(currentUser) || isAdminUser(currentUser) || isEditorUser(currentUser));
+  // Contributors have no permission to read tiers.
+  const tiersAvailable =
+    paidMembersEnabled === true && !!currentUser && !isContributorUser(currentUser);
 
   const { data: tiersData } = useBrowseTiers({
     searchParams: PAID_TIERS_SEARCH_PARAMS,
-    enabled: open && prepareState === 'ready' && paidMembersEnabled === true,
+    enabled: open && prepareState === 'ready' && tiersAvailable,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const tiers = useMemo(() => tiersData?.tiers ?? [], [tiersData]);
