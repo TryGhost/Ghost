@@ -57,7 +57,7 @@ const features: Feature[] = [
   {
     title: 'Admin 7 · Milestone 2 · Pill controls',
     description:
-      'Preview Admin 7 controls and page headers on React pages. The editor is excluded.',
+      'Preview Admin 7 controls and page headers on React pages, including the React editor.',
     flag: 'admin7Pill',
   },
   {
@@ -92,6 +92,12 @@ const features: Feature[] = [
     description:
       'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication',
+  },
+  {
+    title: 'Member location maps',
+    description:
+      'Show a location map and profile header on member pages, with state pins for US members.',
+    flag: 'memberLocationMap',
   },
   {
     title: 'Member custom fields',

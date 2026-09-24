@@ -271,6 +271,15 @@
       allowedVersions: '<9',
     },
 
+    // Admin's Cmd-K search must match Ember's results, and Ember ships
+    // FlexSearch 0.7; 0.8 changes how titles are tokenized and ranked.
+    {
+      description: 'Cap the catalog flexsearch at 0.7 (matches Ember admin search)',
+      matchDepTypes: ['pnpm.catalog'],
+      matchPackageNames: ['flexsearch'],
+      allowedVersions: '<0.8',
+    },
+
     // Keep `@types/*` aligned with the runtime major they describe. Type defs
     // for a different major than what actually runs are silently wrong at best
     // (e.g. @types/express 5 vs Express 4) and build-breaking at worst

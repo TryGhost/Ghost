@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Button } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -10,7 +12,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
-import { PostPreviewModal } from './preview/post-preview-modal';
+import { PostPreviewModal, type PostPreviewModalProps } from './preview/post-preview-modal';
 import { postPreviewUrl } from './preview/preview-url';
 import { PublishFlowModal } from './publish/publish-flow-modal';
 import { UpdateFlowModal } from './publish/update-flow-modal';
@@ -23,6 +25,9 @@ import type { SaveCompletion } from './engine/save-engine';
 import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
 
 type OpenFlow = 'none' | 'publish' | 'update';
+
+/** The preview's props short of Publish, which only the publish controls can supply. */
+type HeaderPreviewProps = Omit<PostPreviewModalProps, 'onPublish' | 'publishDisabled'>;
 
 /** Turns a save the caller depends on into a rejection the flow renders in place. */
 async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
@@ -59,13 +64,13 @@ export function EditorHeaderActions({
   siteUrl,
   tkCount,
 }: EditorHeaderActionsProps) {
+  const { isAdmin7 } = useShade();
   const { persistedId, publishTime, title } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
 
   const openPreview = useCallback(() => setPreviewOpen(true), []);
-  const closePreview = useCallback(() => setPreviewOpen(false), []);
 
   const post = buildPublishFlowPost({
     snapshot: {
@@ -103,42 +108,47 @@ export function EditorHeaderActions({
     return null;
   }
 
+  const preview: HeaderPreviewProps = {
+    isPost: postType === 'post',
+    newsletterSlug: post.newsletter ?? undefined,
+    open: previewOpen,
+    postId: persistedId,
+    previewUrl: postPreviewUrl(siteUrl, record?.uuid),
+    onBeforeOpen: saveBeforePreview,
+    onOpenChange: setPreviewOpen,
+  };
+
   return (
     <Inline data-testid={editorHeaderActions} gap="sm">
       {isDraft ? (
-        <Button size="sm" variant="outline" onClick={openPreview}>
+        <PageHeader.Action fallbackSize="sm" label="Preview" onClick={openPreview}>
           Preview
-        </Button>
+        </PageHeader.Action>
       ) : null}
       {isContributor ? (
-        <Button disabled={isSaving} size="sm" onClick={session.dispatchExplicit}>
-          Save
-        </Button>
+        <>
+          <Button
+            disabled={isSaving}
+            size={isAdmin7 ? 'default' : 'sm'}
+            onClick={session.dispatchExplicit}
+          >
+            Save
+          </Button>
+          {isDraft ? <PostPreviewModal {...preview} /> : null}
+        </>
       ) : (
         <PublishActions
           isDraft={isDraft}
           isSaving={isSaving}
           openFlow={openFlow}
           post={post}
-          previewOpen={previewOpen}
+          preview={preview}
           session={session}
           tkCount={tkCount}
           onOpenFlow={setOpenFlow}
           onPreview={openPreview}
         />
       )}
-      {isDraft ? (
-        <PostPreviewModal
-          isPost={postType === 'post'}
-          newsletterSlug={post.newsletter ?? undefined}
-          open={previewOpen}
-          postId={persistedId}
-          previewUrl={postPreviewUrl(siteUrl, record?.uuid)}
-          onBeforeOpen={saveBeforePreview}
-          onOpenChange={setPreviewOpen}
-          onReturnToPublish={openFlow === 'publish' ? closePreview : undefined}
-        />
-      ) : null}
     </Inline>
   );
 }
@@ -150,7 +160,7 @@ interface PublishActionsProps {
   isDraft: boolean;
   isSaving: boolean;
   openFlow: OpenFlow;
-  previewOpen: boolean;
+  preview: HeaderPreviewProps;
   onOpenFlow: (flow: OpenFlow) => void;
   onPreview: () => void;
 }
@@ -166,10 +176,11 @@ function PublishActions({
   isDraft,
   isSaving,
   openFlow,
-  previewOpen,
+  preview,
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
+  const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
   const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
@@ -197,16 +208,25 @@ function PublishActions({
   }, [onOpenFlow, session]);
   const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
   const openPublishFlow = useCallback(() => onOpenFlow('publish'), [onOpenFlow]);
+  const { onOpenChange: setPreviewOpen } = preview;
+  const publishFromPreview = useCallback(() => {
+    setPreviewOpen(false);
+    onOpenFlow('publish');
+  }, [onOpenFlow, setPreviewOpen]);
 
-  // A flow opened under the preview's portal is hidden from a screen reader,
-  // so the preview's own Publish button is the only way into it from there.
-  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !previewOpen);
+  // The chord stays off while the preview is open: the preview's own Publish
+  // button is the only way into the flow from there.
+  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
 
   return (
     <>
       {isDraft ? (
         <>
-          <Button disabled={!inputs.isReady} size="sm" onClick={openPublishFlow}>
+          <Button
+            disabled={!inputs.isReady}
+            size={isAdmin7 ? 'default' : 'sm'}
+            onClick={openPublishFlow}
+          >
             Publish
           </Button>
           {inputs.error ? (
@@ -219,24 +239,33 @@ function PublishActions({
               >
                 {inputs.error.message}
               </Text>
-              <Button size="sm" variant="ghost" onClick={inputs.retry}>
+              <Button size={isAdmin7 ? 'default' : 'sm'} variant="ghost" onClick={inputs.retry}>
                 Retry
               </Button>
             </>
           ) : null}
+          <PostPreviewModal
+            {...preview}
+            publishDisabled={!inputs.isReady}
+            onPublish={publishFromPreview}
+          />
         </>
       ) : (
         <>
           <Button
             disabled={!session.isDirty() || isSaving}
-            size="sm"
+            size={isAdmin7 ? 'default' : 'sm'}
             onClick={session.dispatchExplicit}
           >
             Update
           </Button>
           {/* Ember routes a sent post to the update flow from its status line, not the header. */}
           {post.status === 'sent' ? null : (
-            <Button size="sm" variant="outline" onClick={() => onOpenFlow('update')}>
+            <Button
+              size={isAdmin7 ? 'default' : 'sm'}
+              variant="outline"
+              onClick={() => onOpenFlow('update')}
+            >
               {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
             </Button>
           )}
