@@ -1,9 +1,11 @@
+import { z } from 'zod';
+
 export const BILLING_SEARCH_GROUP_KEY = 'billing';
 
 export type SearchableModel = 'user' | 'tag' | 'pro-page' | 'post' | 'page';
 
 /** An entry from a `search-index/*` endpoint, or a configured billing item. */
-export type SearchIndexItem = {
+export interface SearchIndexItem {
   id: string;
   slug?: string;
   url?: string;
@@ -14,7 +16,7 @@ export type SearchIndexItem = {
   status?: string;
   visibility?: string;
   published_at?: string | null;
-};
+}
 
 export interface Searchable {
   name: string;
@@ -79,52 +81,46 @@ const PAGES: Searchable = {
 
 const BUILT_IN_GROUP_NAMES = [STAFF, TAGS, POSTS, PAGES].map((searchable) => searchable.name);
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
+/** Host config defines the billing group: `{groupName, items: [{id, title, path, keywords}]}`. */
+const billingSearchConfigSchema = z.object({
+  // a built-in name would put two groups under one heading
+  groupName: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((name) => !BUILT_IN_GROUP_NAMES.includes(name)),
+  items: z.array(z.unknown()),
+});
 
-function isBillingItem(
-  item: unknown,
-): item is { id: string; title: string; path: string; keywords?: unknown } {
-  return (
-    isRecord(item) &&
-    typeof item.id === 'string' &&
-    item.id !== '' &&
-    typeof item.title === 'string' &&
-    item.title !== '' &&
-    typeof item.path === 'string' &&
-    /^\/[^?#\s]*$/.test(item.path) &&
-    (item.path === '/' || !item.path.endsWith('/'))
-  );
-}
+const billingSearchItemSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  // a billing app route: no query, fragment, whitespace, or trailing slash
+  path: z
+    .string()
+    .regex(/^\/[^?#\s]*$/)
+    .refine((path) => path === '/' || !path.endsWith('/')),
+  keywords: z.string().catch(''),
+});
 
-/**
- * The billing group is defined entirely by host config, eg.
- * `{groupName: 'Ghost(Pro)', items: [{id, title, path: '/plans', keywords}]}`,
- * where each `path` is a billing app route.
- */
 function getBillingSearchable(searchConfig: unknown): Searchable | null {
-  if (!isRecord(searchConfig)) {
+  const config = billingSearchConfigSchema.safeParse(searchConfig);
+
+  if (!config.success) {
     return null;
   }
 
-  const groupName = typeof searchConfig.groupName === 'string' ? searchConfig.groupName.trim() : '';
-  const staticItems = Array.isArray(searchConfig.items)
-    ? searchConfig.items.filter(isBillingItem).map((item) => ({
-        id: item.id,
-        title: item.title,
-        path: item.path,
-        keywords: typeof item.keywords === 'string' ? item.keywords : '',
-      }))
-    : [];
+  const staticItems = config.data.items.flatMap((item) => {
+    const parsed = billingSearchItemSchema.safeParse(item);
+    return parsed.success ? [parsed.data] : [];
+  });
 
-  // a built-in name would cross-match items and route selections to the wrong group
-  if (!groupName || BUILT_IN_GROUP_NAMES.includes(groupName) || staticItems.length === 0) {
+  if (staticItems.length === 0) {
     return null;
   }
 
   return {
-    name: groupName,
+    name: config.data.groupName,
     key: BILLING_SEARCH_GROUP_KEY,
     model: 'pro-page',
     idField: 'id',

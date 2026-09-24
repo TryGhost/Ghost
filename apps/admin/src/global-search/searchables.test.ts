@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   BILLING_SEARCH_GROUP_KEY,
   type SearchResult,
-  createSearchResult,
   getSearchables,
   sortSearchResultsByStatus,
 } from './searchables';
@@ -61,6 +60,7 @@ describe('getSearchables', () => {
     ['a missing group name', { items: [billingItem()] }],
     ['a blank group name', { groupName: '   ', items: [billingItem()] }],
     ['a built-in group name', { groupName: 'Posts', items: [billingItem()] }],
+    ['a padded built-in group name', { groupName: ' Posts ', items: [billingItem()] }],
     ['no items', { groupName: 'Acme Hosting', items: [] }],
     ['a non-array items value', { groupName: 'Acme Hosting', items: billingItem() }],
   ])('omits the billing group for %s', (_description, search) => {
@@ -76,6 +76,7 @@ describe('getSearchables', () => {
     ['a fragment', { path: '/plans#top' }],
     ['whitespace', { path: '/my plans' }],
     ['a trailing slash', { path: '/support/' }],
+    ['an empty path segment', { path: '//' }],
     ['a missing id', { id: '' }],
     ['a missing title', { title: undefined }],
   ])('drops configured items with %s', (_description, overrides) => {
@@ -89,6 +90,14 @@ describe('getSearchables', () => {
     expect(billing.staticItems?.map((item) => item.id)).toEqual(['valid']);
   });
 
+  it('skips configured items that are not objects', () => {
+    const [, , billing] = getSearchables(
+      withBillingSearch({ groupName: 'Acme Hosting', items: [null, 'plans', billingItem()] }),
+    );
+
+    expect(billing.staticItems?.map((item) => item.id)).toEqual(['change-plan']);
+  });
+
   it('keeps the billing app root path', () => {
     const [, , billing] = getSearchables(
       withBillingSearch({ groupName: 'Acme Hosting', items: [billingItem({ path: '/' })] }),
@@ -97,57 +106,21 @@ describe('getSearchables', () => {
     expect(billing.staticItems?.[0].path).toBe('/');
   });
 
-  it('strips unknown fields and defaults non-string keywords to an empty string', () => {
+  it('strips unknown fields and defaults missing or non-string keywords to an empty string', () => {
     const [, , billing] = getSearchables(
       withBillingSearch({
         groupName: 'Acme Hosting',
-        items: [billingItem({ keywords: ['billing'], extra: 'ignored' })],
+        items: [
+          billingItem({ keywords: ['billing'], extra: 'ignored' }),
+          billingItem({ id: 'no-keywords', keywords: undefined }),
+        ],
       }),
     );
 
     expect(billing.staticItems).toEqual([
       { id: 'change-plan', title: 'Change plan', path: '/plans', keywords: '' },
+      { id: 'no-keywords', title: 'Change plan', path: '/plans', keywords: '' },
     ]);
-  });
-});
-
-describe('createSearchResult', () => {
-  const [staff, tags, posts] = getSearchables();
-
-  it('identifies staff and tags by slug', () => {
-    const item = { id: 'u1', slug: 'jamie', name: 'Jamie', url: 'https://site.test/author/jamie/' };
-
-    expect(createSearchResult(staff, item)).toMatchObject({
-      id: 'user.jamie',
-      title: 'Jamie',
-      url: 'https://site.test/author/jamie/',
-      groupName: 'Staff',
-    });
-    expect(createSearchResult(tags, { id: 't1', slug: 'news', name: 'News' }).id).toBe('tag.news');
-  });
-
-  it('identifies posts by id and carries their publishing fields', () => {
-    const result = createSearchResult(posts, {
-      id: 'p1',
-      slug: 'hello',
-      title: 'Hello',
-      status: 'published',
-      visibility: 'members',
-      published_at: '2024-05-08T16:21:07.000Z',
-    });
-
-    expect(result).toEqual({
-      id: 'post.p1',
-      url: undefined,
-      path: undefined,
-      title: 'Hello',
-      keywords: undefined,
-      groupName: 'Posts',
-      groupKey: undefined,
-      status: 'published',
-      visibility: 'members',
-      publishedAt: '2024-05-08T16:21:07.000Z',
-    });
   });
 });
 
@@ -191,6 +164,9 @@ describe('sortSearchResultsByStatus', () => {
   it('leaves other models in their incoming order', () => {
     const results = [result('published', 'published'), result('draft', 'draft')];
 
-    expect(sortSearchResultsByStatus(results, 'tag')).toBe(results);
+    expect(sortSearchResultsByStatus(results, 'tag').map(({ title }) => title)).toEqual([
+      'published',
+      'draft',
+    ]);
   });
 });

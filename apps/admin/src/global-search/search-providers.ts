@@ -1,4 +1,4 @@
-import { Document, Encoder, type Id } from 'flexsearch';
+import FlexSearch from 'flexsearch';
 import {
   type SearchIndexItem,
   type SearchResult,
@@ -9,10 +9,18 @@ import {
   sortSearchResultsByStatus,
 } from './searchables';
 
+/** `search-index/*` entries by model. Configured static items take precedence. */
+export type SearchContent = Partial<Record<SearchableModel, SearchIndexItem[]>>;
+
 export interface SearchProvider {
-  /** Replaces the searchable content for a model. Configured static items can't be replaced. */
-  setContent(model: SearchableModel, items: SearchIndexItem[]): void;
   search(term: string): SearchResultGroup[];
+}
+
+// every option is rendered, so each group is capped
+const RESULT_LIMIT = 100;
+
+function itemsFor(searchable: Searchable, content: SearchContent): SearchIndexItem[] {
+  return searchable.staticItems ?? content[searchable.model] ?? [];
 }
 
 function groupResults(
@@ -22,7 +30,8 @@ function groupResults(
   const groups: SearchResultGroup[] = [];
 
   searchables.forEach((searchable) => {
-    const options = sortSearchResultsByStatus(match(searchable), searchable.model);
+    const matches = match(searchable).slice(0, RESULT_LIMIT);
+    const options = sortSearchResultsByStatus(matches, searchable.model);
 
     if (options.length > 0) {
       groups.push({ groupName: searchable.name, groupKey: searchable.key, options });
@@ -32,54 +41,38 @@ function groupResults(
   return groups;
 }
 
-// FlexSearch 0.8's default encoder also folds diacritics and collapses repeated
-// letters, so "aa" would match every word starting with "a"
-const encoder = new Encoder({ normalize: (text) => text.toLowerCase(), dedupe: false });
-
 /** Matches word prefixes in any order, ranked by FlexSearch. */
-export function createFlexSearchProvider(searchables: Searchable[]): SearchProvider {
-  const indexes = new Map<SearchableModel, Document<SearchIndexItem>>();
-
-  const buildIndex = (searchable: Searchable, items: SearchIndexItem[]) => {
-    const index = new Document<SearchIndexItem>({
-      tokenize: 'forward',
-      encoder,
-      document: { id: 'id', index: searchable.index, store: true },
-    });
-    items.forEach((item) => index.add(item));
-    indexes.set(searchable.model, index);
-  };
-
-  searchables.forEach((searchable) => buildIndex(searchable, searchable.staticItems ?? []));
+export function createFlexSearchProvider(
+  searchables: Searchable[],
+  content: SearchContent,
+): SearchProvider {
+  const indexes = new Map(
+    searchables.map((searchable) => {
+      const index = new FlexSearch.Document<SearchIndexItem, true>({
+        tokenize: 'forward',
+        document: { id: 'id', index: searchable.index, store: true },
+      });
+      itemsFor(searchable, content).forEach((item) => index.add(item));
+      return [searchable.model, index] as const;
+    }),
+  );
 
   return {
-    setContent(model, items) {
-      const searchable = searchables.find((candidate) => candidate.model === model);
-
-      if (searchable && !searchable.staticItems) {
-        buildIndex(searchable, items);
-      }
-    },
-
     search(term) {
-      if (!term.trim()) {
-        return [];
-      }
-
       return groupResults(searchables, (searchable) => {
-        const seen = new Set<Id>();
+        const seen = new Set<string>();
         const results: SearchResult[] = [];
 
         indexes
           .get(searchable.model)
-          ?.search(term, { enrich: true })
+          ?.search<true>(term, RESULT_LIMIT, { enrich: true })
           .forEach((field) => {
-            field.result.forEach(({ id, doc }) => {
-              if (!doc || seen.has(id)) {
+            field.result.forEach(({ doc }) => {
+              if (seen.has(doc.id)) {
                 return;
               }
 
-              seen.add(id);
+              seen.add(doc.id);
               results.push(createSearchResult(searchable, doc));
             });
           });
@@ -91,28 +84,18 @@ export function createFlexSearchProvider(searchables: Searchable[]): SearchProvi
 }
 
 /** Matches the term as a case-insensitive substring, in content order. */
-export function createBasicSearchProvider(searchables: Searchable[]): SearchProvider {
-  const content = new Map<SearchableModel, SearchResult[]>();
-
-  searchables.forEach((searchable) => {
-    content.set(
+export function createBasicSearchProvider(
+  searchables: Searchable[],
+  content: SearchContent,
+): SearchProvider {
+  const resultsByModel = new Map(
+    searchables.map((searchable) => [
       searchable.model,
-      (searchable.staticItems ?? []).map((item) => createSearchResult(searchable, item)),
-    );
-  });
+      itemsFor(searchable, content).map((item) => createSearchResult(searchable, item)),
+    ]),
+  );
 
   return {
-    setContent(model, items) {
-      const searchable = searchables.find((candidate) => candidate.model === model);
-
-      if (searchable && !searchable.staticItems) {
-        content.set(
-          model,
-          items.map((item) => createSearchResult(searchable, item)),
-        );
-      }
-    },
-
     search(term) {
       if (!term.trim()) {
         return [];
@@ -123,7 +106,7 @@ export function createBasicSearchProvider(searchables: Searchable[]): SearchProv
       return groupResults(searchables, (searchable) => {
         const keywordsIndexed = searchable.index.includes('keywords');
 
-        return (content.get(searchable.model) ?? []).filter(
+        return (resultsByModel.get(searchable.model) ?? []).filter(
           (result) =>
             result.title.toLowerCase().includes(needle) ||
             (keywordsIndexed && Boolean(result.keywords?.toLowerCase().includes(needle))),
@@ -137,8 +120,11 @@ export function createBasicSearchProvider(searchables: Searchable[]): SearchProv
 export function createSearchProvider(
   searchables: Searchable[],
   locale: string | null | undefined,
+  content: SearchContent,
 ): SearchProvider {
   const isEnglish = locale?.toLowerCase().startsWith('en') ?? true;
 
-  return isEnglish ? createFlexSearchProvider(searchables) : createBasicSearchProvider(searchables);
+  return isEnglish
+    ? createFlexSearchProvider(searchables, content)
+    : createBasicSearchProvider(searchables, content);
 }
