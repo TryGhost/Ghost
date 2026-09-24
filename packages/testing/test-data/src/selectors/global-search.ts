@@ -1,5 +1,6 @@
 /**
- * Cmd-K search selector strings, consumed by the admin screen helpers.
+ * Cmd-K search selector strings, consumed by the admin screen helpers and
+ * the e2e page objects.
  * Source of truth: apps/admin/src/global-search and the sidebar's search button.
  */
 

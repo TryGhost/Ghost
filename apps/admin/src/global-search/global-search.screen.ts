@@ -17,11 +17,7 @@ export const globalSearchScreen = {
   group: (name: string) => globalSearchScreen.dialog().getByRole('group', { name }),
   option: (name: string | RegExp) => globalSearchScreen.dialog().getByRole('option', { name }),
   noResults: () => globalSearchScreen.dialog().getByText(noResultsText),
-  /** The highlighted parts of an option's title. */
-  highlights: (option: string | RegExp) =>
-    Array.from(globalSearchScreen.option(option).element().querySelectorAll('mark')).map(
-      (mark) => mark.textContent,
-    ),
+  highlight: (option: string | RegExp) => globalSearchScreen.option(option).getByRole('mark'),
 
   async pressShortcut(): Promise<void> {
     await userEvent.keyboard(`{${modifier}>}k{/${modifier}}`);

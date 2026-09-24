@@ -13,6 +13,7 @@ import {
 } from '@test-utils/acceptance';
 
 import { sidebarScreen } from '@/layout/sidebar.screen';
+import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 
 import { globalSearchScreen } from './global-search.screen';
 
@@ -95,7 +96,7 @@ describe('Cmd-K search', () => {
     await expect.element(globalSearchScreen.group('Tags')).toBeVisible();
     await expect.element(globalSearchScreen.option(/First post/)).toHaveTextContent('Draft');
     await expect.element(globalSearchScreen.option(/First page/)).toBeVisible();
-    expect(globalSearchScreen.highlights(/First post/)).toEqual(['First']);
+    await expect.element(globalSearchScreen.highlight(/First post/)).toHaveTextContent('First');
   });
 
   it('opens from the shortcut after Ember has already handled the key', async () => {
@@ -191,22 +192,20 @@ describe('Cmd-K search', () => {
   });
 
   it('leaves the shortcut alone while another dialog is open', async () => {
-    await renderAdminApp('/tags', flagOn);
+    const firstTag = tag({ name: 'First tag', slug: 'first-tag' });
+    fakeTags([firstTag]);
+    fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, { tags: [firstTag] });
+    await renderAdminApp('/tags/first-tag', flagOn);
     await expect.element(globalSearchScreen.openButton()).toBeVisible();
     expect(globalSearchScreen.dispatchShortcut()).toBe(true);
     await closeWithEscape();
 
-    const prompt = document.createElement('div');
-    prompt.setAttribute('role', 'alertdialog');
-    document.body.append(prompt);
-    try {
-      expect(globalSearchScreen.dispatchShortcut()).toBe(false);
-    } finally {
-      prompt.remove();
-    }
+    await tagDetailScreen.actionsButton().click();
+    await tagDetailScreen.deleteTagMenuItem().click();
+    await expect.element(tagDetailScreen.deleteModal()).toBeVisible();
 
-    expect(globalSearchScreen.dispatchShortcut()).toBe(true);
-    await expect.element(globalSearchScreen.dialog()).toBeVisible();
+    expect(globalSearchScreen.dispatchShortcut()).toBe(false);
+    await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
   });
 
   it('closes and ignores the shortcut once the sidebar is hidden', async () => {

@@ -8,8 +8,9 @@ import { isSearchShortcut } from './search-shortcut';
 const loadGlobalSearchModal = () => import('./global-search-modal');
 const GlobalSearchModal = lazy(loadGlobalSearchModal);
 
-// React dialogs, and Ember's promise and fullscreen modals, which scope Ember's own shortcut out
-const OPEN_DIALOG = '[role="dialog"], [role="alertdialog"], .epm-modal, .fullscreen-modal';
+// open React dialogs, and Ember's promise and fullscreen modals
+const OPEN_DIALOG =
+  ':is([role="dialog"], [role="alertdialog"])[data-state="open"], .epm-modal, .fullscreen-modal';
 
 /**
  * Owns the Cmd-K search modal behind the `globalSearchReact` flag: its open
