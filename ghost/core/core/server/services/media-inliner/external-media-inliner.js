@@ -5,6 +5,34 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');
 const path = require('path');
+const vm = require('node:vm');
+
+// Domains are regular expression patterns (migration tooling sends wildcards
+// such as `https?://i[0-9]{1}.wp.com`), so they cannot be escaped. Matching
+// runs under a V8 execution timeout instead to bound catastrophic backtracking.
+const FIND_MATCHES_TIMEOUT_MS = 1000;
+const PATTERN_TIMEOUT_CODE = 'MEDIA_INLINER_PATTERN_TIMEOUT';
+
+let findMatchesScript;
+let findMatchesContext;
+
+function matchAllWithTimeout(content, regex, timeout) {
+  if (!findMatchesScript) {
+    findMatchesScript = new vm.Script('Array.from(content.matchAll(regex), (match) => match[1])');
+    findMatchesContext = vm.createContext({});
+  }
+
+  findMatchesContext.content = content;
+  findMatchesContext.regex = regex;
+
+  try {
+    // Copy into this realm so callers get a normal Array
+    return Array.from(findMatchesScript.runInContext(findMatchesContext, { timeout }));
+  } finally {
+    findMatchesContext.content = undefined;
+    findMatchesContext.regex = undefined;
+  }
+}
 
 let fileTypeFromBuffer;
 
@@ -267,15 +295,33 @@ class ExternalMediaInliner {
     return null;
   }
 
-  static findMatches(content, domain) {
+  /**
+   * @param {string} content
+   * @param {string} domain - regular expression pattern matching the start of a media URL
+   * @param {Object} [options]
+   * @param {number} [options.timeout] - milliseconds before matching is abandoned
+   * @returns {string[]}
+   */
+  static findMatches(content, domain, { timeout = FIND_MATCHES_TIMEOUT_MS } = {}) {
     // NOTE: the src could end with a quote, bracket, apostrophe, double-backslash, or encoded quote.
     //     Backlashes are added to content as an escape character
     const srcTerminationSymbols = `("|\\)|'|(?=(?:,https?))| |<|\\\\|&quot;|$)`;
     const regex = new RegExp(`(${domain}.*?)(${srcTerminationSymbols})`, 'igm');
-    const matches = content.matchAll(regex);
 
     // Simplify the matches so we only get the result needed
-    let matchesArray = Array.from(matches, (m) => m[1]);
+    let matchesArray;
+    try {
+      matchesArray = matchAllWithTimeout(content, regex, timeout);
+    } catch (error) {
+      if (error.code === 'ERR_SCRIPT_EXECUTION_TIMEOUT') {
+        throw new errors.DataImportError({
+          message: `Matching media URLs for domain pattern "${domain}" timed out.`,
+          code: PATTERN_TIMEOUT_CODE,
+          errorDetails: { domain },
+        });
+      }
+      throw error;
+    }
 
     // Trim trailing commas from each match
     matchesArray = matchesArray.map((item) => {
@@ -291,11 +337,27 @@ class ExternalMediaInliner {
    *
    * @param {string} content - stringified JSON of post Lexical or Mobiledoc content
    * @param {String[]} domains - domains to inline media from
+   * @param {Set<string>} [timedOutDomains] - patterns to skip; timed out patterns are added
    * @returns {Promise<string>} - updated stringified JSON of post content
    */
-  async inlineContent(content, domains) {
+  async inlineContent(content, domains, timedOutDomains = new Set()) {
     for (const domain of domains) {
-      const matches = this.constructor.findMatches(content, domain);
+      if (timedOutDomains.has(domain)) {
+        continue;
+      }
+
+      let matches;
+      try {
+        matches = this.constructor.findMatches(content, domain);
+      } catch (err) {
+        if (err.code !== PATTERN_TIMEOUT_CODE) {
+          throw err;
+        }
+        // Skip only this pattern so replacements from other domains are kept
+        timedOutDomains.add(domain);
+        logging.error(err);
+        continue;
+      }
 
       for (const src of matches) {
         const result = await this.importUrl(src);
@@ -387,6 +449,10 @@ class ExternalMediaInliner {
 
     logging.info(`Starting inlining external media for posts: ${posts?.length}`);
 
+    // A pattern that timed out once is likely to time out again, so stop
+    // applying it rather than spending the timeout on every remaining post.
+    const timedOutDomains = new Set();
+
     for (const post of posts) {
       try {
         const mobiledocContent = post.get('mobiledoc');
@@ -395,7 +461,11 @@ class ExternalMediaInliner {
         const updatedFields = await this.inlineFields(post, postsInilingFields, domains);
 
         if (mobiledocContent) {
-          const inlinedContent = await this.inlineContent(mobiledocContent, domains);
+          const inlinedContent = await this.inlineContent(
+            mobiledocContent,
+            domains,
+            timedOutDomains,
+          );
 
           // If content has changed, update the post
           if (inlinedContent !== mobiledocContent) {
@@ -404,7 +474,7 @@ class ExternalMediaInliner {
         }
 
         if (lexicalContent) {
-          const inlinedContent = await this.inlineContent(lexicalContent, domains);
+          const inlinedContent = await this.inlineContent(lexicalContent, domains, timedOutDomains);
 
           // If content has changed, update the post
           if (inlinedContent !== lexicalContent) {

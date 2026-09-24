@@ -12,10 +12,10 @@ const ImageHandler = {
 
   loadFile: function (files, baseDir) {
     const store = adapterManager.getAdapter('storage:images');
-    const baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp('');
+    const baseDirRegex = baseDir ? new RegExp('^' + _.escapeRegExp(baseDir) + '/') : new RegExp('');
 
     const imageFolderRegexes = _.map(store.staticFileURLPrefix.split('/'), function (dir) {
-      return new RegExp('^' + dir + '/');
+      return new RegExp('^' + _.escapeRegExp(dir) + '/');
     });
 
     // normalize the directory structure
