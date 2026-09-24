@@ -59,7 +59,7 @@ function LocationMap({ country, region }: { country: MapLocation; region?: strin
       <svg
         ref={svgRef}
         aria-hidden="true"
-        className="size-full bg-muted dark:bg-surface-elevated-2"
+        className="size-full bg-muted dark:bg-background"
         data-map-kind="world"
         data-testid="member-location-map"
         preserveAspectRatio="xMidYMid slice"
@@ -69,7 +69,7 @@ function LocationMap({ country, region }: { country: MapLocation; region?: strin
           {atlas.countries.map((location) => (
             <path
               key={location.id}
-              className="fill-background stroke-border-default"
+              className="fill-background stroke-border-default dark:fill-muted/60"
               d={location.path}
               data-location={location.id}
               strokeWidth={0.7}
