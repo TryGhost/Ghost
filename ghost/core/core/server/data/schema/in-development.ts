@@ -1,6 +1,11 @@
-const logging = require('@tryghost/logging');
-const config = require('../../../shared/config');
-const schema = require('./schema');
+import logging from '@tryghost/logging';
+import type { Knex } from 'knex';
+import config from '../../../shared/config';
+import db from '../db';
+// @ts-expect-error This module lacks type definitions.
+import commands from './commands';
+// @ts-expect-error This module lacks type definitions.
+import schema from './schema';
 
 /**
  * Tables listed here are defined in `schema.js` but are still being iterated on.
@@ -17,41 +22,28 @@ const schema = require('./schema');
  *
  * Code that reads or writes these tables must only run behind a feature flag
  * that is off wherever the tables are not created.
- *
- * @type {string[]}
  */
-const IN_DEVELOPMENT_TABLES = [];
+export const IN_DEVELOPMENT_TABLES: string[] = [];
 
-/**
- * @param {string} tableName
- * @returns {boolean}
- */
-function isInDevelopmentTable(tableName) {
+export function isInDevelopmentTable(tableName: string): boolean {
   return IN_DEVELOPMENT_TABLES.includes(tableName);
 }
 
-/**
- * @returns {boolean}
- */
-function shouldCreateInDevelopmentTables() {
+export function shouldCreateInDevelopmentTables(): boolean {
   return config.get('createInDevelopmentTables') === true;
 }
 
 /**
  * The in-development tables in `schema.js` order, which is dependency order
- *
- * @returns {string[]}
  */
-function getInDevelopmentTables() {
+export function getInDevelopmentTables(): string[] {
   return Object.keys(schema).filter(isInDevelopmentTable);
 }
 
 /**
  * The tables `knex-migrator init` should create in the current environment
- *
- * @returns {string[]}
  */
-function getTablesToCreate() {
+export function getTablesToCreate(): string[] {
   const includeInDevelopment = shouldCreateInDevelopmentTables();
   return Object.keys(schema).filter(
     (tableName) => includeInDevelopment || !isInDevelopmentTable(tableName),
@@ -60,10 +52,8 @@ function getTablesToCreate() {
 
 /**
  * Creates in-development tables missing from an already initialised database
- *
- * @param {import('knex').Knex} [knex] - defaults to Ghost's connection
  */
-async function createMissingInDevelopmentTables(knex) {
+export async function createMissingInDevelopmentTables(knex: Knex = db.knex): Promise<void> {
   if (!shouldCreateInDevelopmentTables()) {
     return;
   }
@@ -73,10 +63,7 @@ async function createMissingInDevelopmentTables(knex) {
     return;
   }
 
-  // Required lazily so listing tables never opens a database connection
-  const commands = require('./commands');
-  knex = knex || require('../db').knex;
-  const existingTables = await commands.getTables(knex);
+  const existingTables: string[] = await commands.getTables(knex);
 
   for (const tableName of tables) {
     if (!existingTables.includes(tableName)) {
@@ -89,10 +76,8 @@ async function createMissingInDevelopmentTables(knex) {
 /**
  * Drops and recreates every in-development table, discarding its data, so the
  * database picks up changes to their definitions in `schema.js`
- *
- * @param {import('knex').Knex} [knex] - defaults to Ghost's connection
  */
-async function rebuildInDevelopmentTables(knex) {
+export async function rebuildInDevelopmentTables(knex: Knex = db.knex): Promise<void> {
   if (!shouldCreateInDevelopmentTables()) {
     logging.warn(
       'In-development tables are disabled in this environment (createInDevelopmentTables)',
@@ -100,11 +85,9 @@ async function rebuildInDevelopmentTables(knex) {
     return;
   }
 
-  const commands = require('./commands');
-  knex = knex || require('../db').knex;
   const tables = getInDevelopmentTables();
 
-  for (const tableName of [...tables].reverse()) {
+  for (const tableName of tables.toReversed()) {
     logging.info(`Dropping in-development table: ${tableName}`);
     await commands.deleteTable(tableName, knex);
   }
@@ -114,13 +97,3 @@ async function rebuildInDevelopmentTables(knex) {
     await commands.createTable(tableName, knex);
   }
 }
-
-module.exports = {
-  IN_DEVELOPMENT_TABLES,
-  isInDevelopmentTable,
-  shouldCreateInDevelopmentTables,
-  getInDevelopmentTables,
-  getTablesToCreate,
-  createMissingInDevelopmentTables,
-  rebuildInDevelopmentTables,
-};
