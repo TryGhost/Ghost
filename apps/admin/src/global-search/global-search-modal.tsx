@@ -52,9 +52,9 @@ function HighlightedText({ text, term }: { text: string; term: string }) {
 
   return highlightSegments(text, term).map((segment) =>
     segment.match ? (
-      <span key={segment.start} className="font-semibold underline">
+      <mark key={segment.start} className="bg-transparent font-semibold text-inherit underline">
         {segment.text}
-      </span>
+      </mark>
     ) : (
       <Fragment key={segment.start}>{segment.text}</Fragment>
     ),

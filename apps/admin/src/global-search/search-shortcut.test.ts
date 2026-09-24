@@ -36,6 +36,18 @@ describe('isSearchShortcut', () => {
     expect(isSearchShortcut(keydown({ key: 'k', code: 'KeyN', metaKey: true }), true)).toBe(true);
   });
 
+  it('ignores keydown events without a key, as autofill sends', () => {
+    const autofill = new Event('keydown') as KeyboardEvent;
+
+    expect(isSearchShortcut(autofill, true)).toBe(false);
+    expect(
+      isSearchShortcut(
+        Object.assign(new Event('keydown'), { metaKey: true }) as KeyboardEvent,
+        true,
+      ),
+    ).toBe(false);
+  });
+
   it('ignores keys pressed while composing text', () => {
     expect(isSearchShortcut(keydown({ metaKey: true, isComposing: true }), true)).toBe(false);
   });

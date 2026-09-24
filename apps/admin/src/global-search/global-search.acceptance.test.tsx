@@ -95,6 +95,7 @@ describe('Cmd-K search', () => {
     await expect.element(globalSearchScreen.group('Tags')).toBeVisible();
     await expect.element(globalSearchScreen.option(/First post/)).toHaveTextContent('Draft');
     await expect.element(globalSearchScreen.option(/First page/)).toBeVisible();
+    expect(globalSearchScreen.highlights(/First post/)).toEqual(['First']);
   });
 
   it('opens from the shortcut after Ember has already handled the key', async () => {
@@ -187,6 +188,25 @@ describe('Cmd-K search', () => {
 
     await expect.poll(() => navigateToBillingSubRoute.mock.calls).toEqual([['/plans']]);
     expect(handoff()).toBeNull();
+  });
+
+  it('leaves the shortcut alone while another dialog is open', async () => {
+    await renderAdminApp('/tags', flagOn);
+    await expect.element(globalSearchScreen.openButton()).toBeVisible();
+    expect(globalSearchScreen.dispatchShortcut()).toBe(true);
+    await closeWithEscape();
+
+    const prompt = document.createElement('div');
+    prompt.setAttribute('role', 'alertdialog');
+    document.body.append(prompt);
+    try {
+      expect(globalSearchScreen.dispatchShortcut()).toBe(false);
+    } finally {
+      prompt.remove();
+    }
+
+    expect(globalSearchScreen.dispatchShortcut()).toBe(true);
+    await expect.element(globalSearchScreen.dialog()).toBeVisible();
   });
 
   it('closes and ignores the shortcut once the sidebar is hidden', async () => {

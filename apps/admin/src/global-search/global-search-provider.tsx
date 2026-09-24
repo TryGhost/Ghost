@@ -8,6 +8,9 @@ import { isSearchShortcut } from './search-shortcut';
 const loadGlobalSearchModal = () => import('./global-search-modal');
 const GlobalSearchModal = lazy(loadGlobalSearchModal);
 
+// React dialogs, and Ember's promise and fullscreen modals, which scope Ember's own shortcut out
+const OPEN_DIALOG = '[role="dialog"], [role="alertdialog"], .epm-modal, .fullscreen-modal';
+
 /**
  * Owns the Cmd-K search modal behind the `globalSearchReact` flag: its open
  * state, the Cmd/Ctrl+K shortcut, and the lazily loaded modal.
@@ -42,13 +45,17 @@ export function GlobalSearchProvider({ children }: { children: ReactNode }) {
       if (!isSearchShortcut(event)) {
         return;
       }
+      // a result picked over another dialog (eg. an unsaved-changes prompt) would redirect it
+      if (!modal.open && document.querySelector(OPEN_DIALOG)) {
+        return;
+      }
       event.preventDefault();
       openSearch();
     };
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [canSearch, openSearch, setOpen]);
+  }, [canSearch, modal.open, openSearch, setOpen]);
 
   return (
     <OpenGlobalSearchContext.Provider value={canSearch ? openSearch : null}>
