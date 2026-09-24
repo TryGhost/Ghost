@@ -63,7 +63,23 @@ export const useLimiter = (): Limiter => {
       return noOpLimiter;
     }
 
-    const limits = { ...config.hostSettings.limits } as Record<string, LimitConfig>;
+    // A subscription without a start can't anchor a period, so it's treated as absent
+    const subscriptionStart = config.hostSettings.subscription?.start;
+    const subscription = subscriptionStart
+      ? { startDate: subscriptionStart, interval: 'month' as const }
+      : undefined;
+
+    // Periodic limits need a subscription to build, and registration stops at the first
+    // limit that throws, so without one they're skipped to keep the rest working
+    const limits = Object.fromEntries(
+      Object.entries(config.hostSettings.limits).filter(([name, limit]) => {
+        if (!subscription && limit && Object.prototype.hasOwnProperty.call(limit, 'maxPeriodic')) {
+          console.warn(`Skipping ${name} limit: periodic limits need hostSettings.subscription`); // eslint-disable-line no-console
+          return false;
+        }
+        return true;
+      }),
+    ) as Record<string, LimitConfig>;
     const limiter = new LimitService();
 
     if (limits.staff) {
@@ -99,6 +115,7 @@ export const useLimiter = (): Limiter => {
 
     limiter.loadLimits({
       limits,
+      subscription,
       helpLink,
       errors: {
         HostLimitError,
