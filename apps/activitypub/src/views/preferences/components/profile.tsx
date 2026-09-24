@@ -331,9 +331,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
     }
 
     if (imageConversionFailed) {
-      toast.error(
-        'Failed to prepare image for sharing — the image host blocks cross-origin access',
-      );
+      toast.error('Failed to prepare image for sharing.');
       return;
     }
 
@@ -563,6 +561,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
               </a>
             </div>
             <Button
+              aria-label="Copy image"
               className={`min-w-[160px] dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`}
               disabled={!imagesReady || isProcessing}
               onClick={handleCopy}
@@ -572,7 +571,11 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
               ) : (
                 <LucideIcon.Copy />
               )}
-              {imagesReady && !isProcessing && 'Copy image'}
+              {isProcessing || !imagesReady ? (
+                <span className="sr-only">Copy image</span>
+              ) : (
+                'Copy image'
+              )}
             </Button>
           </div>
           {(account?.bannerImageUrl || coverImage) && (
