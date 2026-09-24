@@ -403,7 +403,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                         {...memberAvatarProps(committedIdentity)}
                         src={member?.avatar_image}
                       />
-                      <PageHeader.Title className="min-w-0 truncate text-2xl sm:text-3xl">
+                      <PageHeader.Title className="min-w-0 truncate text-2xl tracking-tight sm:text-3xl">
                         {formatMemberName(committedIdentity)}
                       </PageHeader.Title>
                     </Inline>
