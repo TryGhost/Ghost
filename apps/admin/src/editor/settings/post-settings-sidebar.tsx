@@ -26,11 +26,7 @@ import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
-import {
-  SettingsToggleContext,
-  SubviewContext,
-  useSubviewController,
-} from './settings-subview-context';
+import { SubviewContext, useSubviewController } from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
 import { FACEBOOK_CARD_NETWORK, X_CARD_NETWORK } from './social-card-networks';
 import { SocialCardSection } from './social-card-section';
@@ -106,8 +102,6 @@ export interface PostSettingsSidebarProps {
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
-  /** The shell toggle follows the writer into the panel and its subviews. */
-  toggle?: ReactNode;
 }
 
 /**
@@ -122,7 +116,6 @@ export function PostSettingsSidebar({
   featureImage,
   currentUser,
   hasInlineExcerpt = false,
-  toggle,
 }: PostSettingsSidebarProps) {
   // The sections take the narrow port rather than the handle, so an edit they
   // cannot see does not hand them a new object.
@@ -194,39 +187,37 @@ export function PostSettingsSidebar({
 
   return (
     <SubviewContext.Provider value={subviews}>
-      <SettingsToggleContext.Provider value={toggle}>
-        <Box
-          className={cn(
-            'absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden bg-sidebar shadow-lg [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw] lg:static lg:shrink-0 lg:shadow-none',
-            open?.wide && '[--editor-settings-width:500px]',
-          )}
+      <Box
+        className={cn(
+          'absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw] lg:static lg:shrink-0',
+          open?.wide && '[--editor-settings-width:500px]',
+        )}
+      >
+        <aside
+          aria-label={open?.title ?? panelLabel}
+          className="m-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*4)] overflow-x-hidden overflow-y-auto rounded-xl border border-border bg-sidebar"
+          data-testid={postSettingsSidebar}
         >
-          <aside
-            aria-label={open?.title ?? panelLabel}
-            className={cn(
-              'h-full w-[350px] overflow-x-hidden overflow-y-auto bg-sidebar max-[500px]:w-screen',
-              open?.wide && 'w-[500px]',
+          <Box className="min-h-full opacity-(--editor-settings-progress,1)">
+            {open ? null : (
+              <Box className="sticky top-0 z-10 bg-sidebar">
+                <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
+                  <Text as="h2" className="pl-1" size="md" weight="semibold">
+                    {panelLabel}
+                  </Text>
+                  <Box
+                    aria-hidden="true"
+                    className="size-(--editor-settings-toggle-width) shrink-0"
+                  />
+                </Inline>
+              </Box>
             )}
-            data-testid={postSettingsSidebar}
-          >
-            <Box className="min-h-full opacity-(--editor-settings-progress,1)">
-              {open ? null : (
-                <Box className="sticky top-0 z-10 bg-sidebar">
-                  <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
-                    <Text as="h2" className="pl-1" size="md" weight="semibold">
-                      {panelLabel}
-                    </Text>
-                    {toggle}
-                  </Inline>
-                </Box>
-              )}
-              {SETTINGS_SECTION_ORDER.map((id) => (
-                <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
-              ))}
-            </Box>
-          </aside>
-        </Box>
-      </SettingsToggleContext.Provider>
+            {SETTINGS_SECTION_ORDER.map((id) => (
+              <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
+            ))}
+          </Box>
+        </aside>
+      </Box>
     </SubviewContext.Provider>
   );
 }

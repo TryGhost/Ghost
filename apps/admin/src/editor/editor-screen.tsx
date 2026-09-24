@@ -81,7 +81,7 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
   return (
     <Grid
       align="center"
-      className="grid-cols-[auto_minmax(0,1fr)] px-4 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*6+1px)] pb-3 pl-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
       <Button className="bg-background" size={isAdmin7 ? 'default' : 'sm'} variant="ghost" asChild>
@@ -154,25 +154,17 @@ function EditorContent({
   const shellRef = useRef<HTMLDivElement>(null);
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
-  const previousSettingsPresent = useRef(settingsPresent);
-  const restoreSettingsFocus = useRef(false);
   useLayoutEffect(() => {
-    if (
-      previousSettingsPresent.current !== settingsPresent &&
-      (settingsPresent || restoreSettingsFocus.current)
-    ) {
-      settingsToggleRef.current?.focus();
+    const toggle = settingsToggleRef.current;
+    if (!toggle) {
+      return;
     }
-    previousSettingsPresent.current = settingsPresent;
-    if (!settingsPresent && settingsToggleRef.current) {
-      const toggle = settingsToggleRef.current;
-      const measure = () => setSettingsToggleWidth(toggle.getBoundingClientRect().width);
-      measure();
-      const observer = new ResizeObserver(measure);
-      observer.observe(toggle);
-      return () => observer.disconnect();
-    }
-  }, [settingsPresent]);
+    const measure = () => setSettingsToggleWidth(toggle.getBoundingClientRect().width);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(toggle);
+    return () => observer.disconnect();
+  }, []);
   // Keep the panel's fields and subview mounted until the closing transition ends.
   // Reading animations also handles reduced motion (no animation) and reversals.
   useLayoutEffect(() => {
@@ -180,9 +172,6 @@ function EditorContent({
       return;
     }
     const finishClosing = () => {
-      // A writer may return to the document before the panel finishes closing.
-      restoreSettingsFocus.current =
-        settingsToggleRef.current?.closest('aside')?.contains(document.activeElement) ?? false;
       setSettingsPresent(false);
     };
     const animations = shellRef.current?.getAnimations() ?? [];
@@ -214,6 +203,7 @@ function EditorContent({
     return () => observer.disconnect();
   }, []);
   const toggleSettings = useCallback(() => {
+    settingsToggleRef.current?.focus();
     setSettingsPresent(true);
     setSettingsOpen((open) => !open);
   }, []);
@@ -236,11 +226,13 @@ function EditorContent({
     <PageHeader.Action
       ref={settingsToggleRef}
       aria-expanded={settingsOpen}
-      className={settingsPresent ? 'bg-sidebar' : 'bg-background'}
       data-testid={settingsMenuToggle}
       fallbackSize="sm"
       fallbackVariant="ghost"
       label="Settings"
+      style={{
+        backgroundColor: settingsOpen ? 'var(--sidebar-accent)' : 'var(--background)',
+      }}
       tooltip={false}
       iconOnly
       onClick={toggleSettings}
@@ -264,15 +256,7 @@ function EditorContent({
         } as CSSProperties
       }
     >
-      {settingsPresent && <Box className="pointer-events-none absolute inset-0 bg-sidebar" />}
-      <Stack
-        className="relative min-h-0 min-w-0 flex-1 rounded-r-[calc(var(--radius-2xl)*var(--editor-settings-progress))] bg-background transition-shadow duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none lg:z-40"
-        gap="none"
-        style={{
-          boxShadow: settingsOpen ? 'var(--shadow-sm)' : undefined,
-          overflow: settingsPresent ? 'hidden' : undefined,
-        }}
-      >
+      <Stack className="min-h-0 min-w-0 flex-1" gap="none">
         <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
           <EditorHeader postType={postType}>
             <EditorStatus
@@ -280,7 +264,7 @@ function EditorContent({
               record={statusRecordOf(session.loadedRecord ?? record, createdId)}
               state={session.state}
             />
-            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*2*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
+            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
               <EditorHeaderActions
                 currentUser={currentUser}
                 postType={postType}
@@ -288,9 +272,10 @@ function EditorContent({
                 siteUrl={cardConfig.siteUrl}
                 tkCount={tkCount}
               />
-              <Box className="w-[calc(var(--editor-settings-toggle-width)*(1-var(--editor-settings-progress)))] shrink-0">
-                {!settingsPresent && settingsToggle}
-              </Box>
+              <Box
+                aria-hidden="true"
+                className="w-[calc(var(--editor-settings-toggle-width)*(1-var(--editor-settings-progress)))] shrink-0"
+              />
             </PageHeader.ActionGroup>
           </EditorHeader>
         </Box>
@@ -322,6 +307,9 @@ function EditorContent({
           </div>
         </Box>
       </Stack>
+      <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40">
+        {settingsToggle}
+      </Box>
       {settingsPresent ? (
         <PostSettingsSidebar
           cardConfig={currentCardConfig}
@@ -331,7 +319,6 @@ function EditorContent({
           postType={postType}
           session={session}
           siteUrl={cardConfig.siteUrl}
-          toggle={settingsToggle}
         />
       ) : null}
       {snippetDialog}

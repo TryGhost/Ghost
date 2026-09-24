@@ -1,12 +1,4 @@
-import {
-  type ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { SettingsSectionId } from './sections';
 
 export interface OpenSubview {
@@ -22,8 +14,6 @@ export interface SubviewController {
   show: (subview: OpenSubview) => void;
   close: () => void;
 }
-
-export const SettingsToggleContext = createContext<ReactNode>(null);
 
 export const SubviewContext = createContext<SubviewController | null>(null);
 

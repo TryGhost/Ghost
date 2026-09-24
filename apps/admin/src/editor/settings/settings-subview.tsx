@@ -1,10 +1,10 @@
-import { type ReactNode, useContext, useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import { Button } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { settingsSubviewPane } from '@tryghost/test-data/selectors/editor';
 import type { SettingsSectionId } from './sections';
-import { SettingsToggleContext, useSubviews } from './settings-subview-context';
+import { useSubviews } from './settings-subview-context';
 
 export interface SettingsSubviewProps {
   /** The section's own id: the panel shows this section alone while its pane is open. */
@@ -37,7 +37,6 @@ export function SettingsSubview({
   children,
 }: SettingsSubviewProps) {
   const { open, show, close } = useSubviews();
-  const toggle = useContext(SettingsToggleContext);
   const isOpen = open?.id === id;
   const backRef = useRef<HTMLButtonElement>(null);
   const rowRef = useRef<HTMLButtonElement>(null);
@@ -66,7 +65,7 @@ export function SettingsSubview({
             <Text as="h2" className="flex-1" size="md" weight="semibold">
               {title}
             </Text>
-            {toggle}
+            <Box aria-hidden="true" className="size-(--editor-settings-toggle-width) shrink-0" />
           </Inline>
         </div>
         <Stack

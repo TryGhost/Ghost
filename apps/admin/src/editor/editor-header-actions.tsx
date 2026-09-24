@@ -119,7 +119,7 @@ export function EditorHeaderActions({
   };
 
   return (
-    <Inline data-testid={editorHeaderActions} gap="sm">
+    <Inline data-testid={editorHeaderActions} gap="md">
       {isDraft ? (
         <PageHeader.Action
           className="bg-background"
