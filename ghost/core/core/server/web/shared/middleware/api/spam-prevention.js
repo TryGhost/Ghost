@@ -5,6 +5,11 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const { once } = require('@tryghost/memoize/once');
+
+const loadExpressBrute = once(() => require('express-brute'));
+const loadBruteKnex = once(() => require('@tryghost/brute-knex'));
+
 let spam = config.get('spam') || {};
 
 const messages = {
@@ -91,8 +96,8 @@ const handleStoreError = (err) => {
 // We allow for a generous number of requests here to prevent communites on the same IP bing barred on account of a single user
 // Defaults to 50 attempts per hour and locks the endpoint for an hour
 const globalBlock = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -132,8 +137,8 @@ const globalBlock = () => {
 };
 
 const globalReset = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -173,8 +178,8 @@ const globalReset = () => {
 };
 
 const webmentionsBlock = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -209,8 +214,8 @@ const webmentionsBlock = () => {
 };
 
 const emailPreviewBlock = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -245,8 +250,8 @@ const emailPreviewBlock = () => {
 };
 
 const membersAuth = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -286,8 +291,8 @@ const membersAuth = () => {
  * This one should have higher limits because it checks across all email addresses
  */
 const membersAuthEnumeration = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -324,8 +329,8 @@ const membersAuthEnumeration = () => {
 };
 
 const checkoutSessionGlobal = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -362,8 +367,8 @@ const checkoutSessionGlobal = () => {
 };
 
 const checkoutSessionEmail = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -400,8 +405,8 @@ const checkoutSessionEmail = () => {
 };
 
 const otcVerificationEnumeration = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -439,8 +444,8 @@ const otcVerificationEnumeration = () => {
 };
 
 const otcVerification = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -482,8 +487,8 @@ const otcVerification = () => {
 // The user+IP count is reset when on successful login
 // Default value of 5 attempts per user+IP pair
 const userLogin = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -523,8 +528,8 @@ const userLogin = () => {
 // Defaults here are 5 attempts per hour for a user+IP pair
 // The endpoint is then locked for an hour
 const userReset = function userReset() {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -564,8 +569,8 @@ const userReset = function userReset() {
 };
 
 const userVerification = function userVerification() {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -600,8 +605,8 @@ const userVerification = function userVerification() {
 };
 
 const sendVerificationCode = function sendVerificationCode() {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -638,8 +643,8 @@ const sendVerificationCode = function sendVerificationCode() {
 // This protects a private blog from spam attacks. The defaults here allow 10 attempts per IP per hour
 // The endpoint is then locked for an hour
 const privateBlog = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
+  const ExpressBrute = loadExpressBrute();
+  const BruteKnex = loadBruteKnex();
   const db = require('../../../../data/db');
 
   store =
@@ -684,7 +689,7 @@ const privateBlog = () => {
 };
 
 const contentApiKey = () => {
-  const ExpressBrute = require('express-brute');
+  const ExpressBrute = loadExpressBrute();
 
   memoryStore = memoryStore || new ExpressBrute.MemoryStore();
 

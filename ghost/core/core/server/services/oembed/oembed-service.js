@@ -10,6 +10,10 @@ const iconv = require('iconv-lite');
 const path = require('path');
 const crypto = require('crypto');
 const imageTransform = require('@tryghost/image-transform');
+const { once } = require('@tryghost/memoize/once');
+
+const loadCheerio = once(() => require('cheerio/slim'));
+const loadOembedExtractor = once(() => require('@extractus/oembed-extractor'));
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
@@ -84,7 +88,7 @@ const detectFileType = async (buffer) => {
  * @returns {{url: string, provider: boolean}}
  */
 const findUrlWithProvider = (url) => {
-  const { hasProvider } = require('@extractus/oembed-extractor');
+  const { hasProvider } = loadOembedExtractor();
 
   let provider;
 
@@ -171,7 +175,7 @@ class OEmbedService {
    * @param {Object} [options]
    */
   async knownProvider(url, options = {}) {
-    const { extract } = require('@extractus/oembed-extractor');
+    const { extract } = loadOembedExtractor();
 
     try {
       return await extract(url, {}, options);
@@ -661,8 +665,7 @@ class OEmbedService {
    * @returns {Promise<Object>}
    */
   async fetchOembedData(url, html, cardType) {
-    // Lazy require the library to keep boot quick
-    const cheerio = require('cheerio/slim');
+    const cheerio = loadCheerio();
 
     // check for <link rel="alternate" type="application/json+oembed"> element
     let oembedUrl;

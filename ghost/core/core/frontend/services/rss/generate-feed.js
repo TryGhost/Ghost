@@ -2,6 +2,9 @@ const downsize = require('downsize-cjs');
 const RSS = require('rss');
 const urlUtils = require('../../../shared/url-utils').default;
 const { routerManager } = require('../routing');
+const { once } = require('@tryghost/memoize/once');
+
+const loadCheerio = once(() => require('cheerio/slim'));
 
 const generateTags = function generateTags(data) {
   if (data.tags) {
@@ -17,7 +20,7 @@ const generateTags = function generateTags(data) {
 };
 
 const generateItem = function generateItem(post) {
-  const cheerio = require('cheerio/slim');
+  const cheerio = loadCheerio();
 
   // RSS feeds carry posts (pages don't appear in RSS), so the router-level
   // type is always 'posts'. The post object on the public API has its DB

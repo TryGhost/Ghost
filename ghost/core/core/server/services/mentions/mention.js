@@ -1,6 +1,9 @@
 const ObjectID = require('bson-objectid').default;
 const { ValidationError } = require('@tryghost/errors');
 const MentionCreatedEvent = require('./mention-created-event');
+const { once } = require('@tryghost/memoize/once');
+
+const loadCheerio = once(() => require('cheerio/slim'));
 
 module.exports = class Mention {
   /** @type {Array} */
@@ -61,7 +64,7 @@ module.exports = class Mention {
 
     if (contentType.includes('text/html')) {
       try {
-        const cheerio = require('cheerio/slim');
+        const cheerio = loadCheerio();
         const $ = cheerio.load(html);
         const hasTargetUrl =
           $(

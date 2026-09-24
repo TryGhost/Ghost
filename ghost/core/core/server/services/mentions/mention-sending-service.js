@@ -1,6 +1,9 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const SendWebmentionsJob = require('./send-webmentions-job').default;
+const { once } = require('@tryghost/memoize/once');
+
+const loadCheerio = once(() => require('cheerio/slim'));
 
 module.exports = class MentionSendingService {
   #discoveryService;
@@ -242,7 +245,7 @@ module.exports = class MentionSendingService {
    * @returns {URL[]}
    */
   getLinks(html) {
-    const cheerio = require('cheerio/slim');
+    const cheerio = loadCheerio();
     const $ = cheerio.load(html);
     const urls = [];
     const siteUrl = this.siteUrl;

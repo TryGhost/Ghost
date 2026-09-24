@@ -4,6 +4,11 @@ const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
 const path = require('path');
 const clsx = require('clsx');
+const { once } = require('@tryghost/memoize/once');
+
+const loadCheerio = once(() => require('cheerio/slim'));
+const loadJuice = once(() => require('juice'));
+
 /**
  * @param {string} url
  * @returns {boolean}
@@ -205,7 +210,7 @@ function escapeRegExp(string) {
  * @return {ReturnType<typeof cheerio.load>}
  */
 function cheerioLoad(html) {
-  const cheerio = require('cheerio/slim');
+  const cheerio = loadCheerio();
   return cheerio.load(html);
 }
 
@@ -721,7 +726,7 @@ class EmailRenderer {
     html = $.html();
 
     // Juice HTML (inline CSS)
-    const juice = require('juice');
+    const juice = loadJuice();
     // resolveCSSVariables crashes on nameless declarations in user-authored style attributes
     html = juice(html, {
       inlinePseudoElements: true,

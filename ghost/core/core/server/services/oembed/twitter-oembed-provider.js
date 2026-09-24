@@ -1,4 +1,7 @@
 const logging = require('@tryghost/logging');
+const { once } = require('@tryghost/memoize/once');
+
+const loadOembedExtractor = once(() => require('@extractus/oembed-extractor'));
 
 /**
  * @typedef {import('./oembed-service').ICustomProvider} ICustomProvider
@@ -45,7 +48,7 @@ class TwitterOEmbedProvider {
       return null;
     }
 
-    const { extract } = require('@extractus/oembed-extractor');
+    const { extract } = loadOembedExtractor();
 
     /** @type {object} */
     const oembedData = await extract(url.href);
