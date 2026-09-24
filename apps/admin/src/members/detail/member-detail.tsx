@@ -390,7 +390,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                           <Skeleton className="h-4 w-40" />
                         ) : (
                           <BreadcrumbPage className="truncate" data-testid="member-detail-title">
-                            {mapEnabled ? 'Member' : title}
+                            {title}
                           </BreadcrumbPage>
                         )}
                       </BreadcrumbItem>

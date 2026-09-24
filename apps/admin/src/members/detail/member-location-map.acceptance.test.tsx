@@ -62,7 +62,7 @@ describe('Member location maps Labs flag', () => {
     await expect
       .element(page.getByRole('heading', { name: 'Ada Lovelace', level: 1 }))
       .toBeVisible();
-    await expect.element(page.getByTestId('member-detail-title')).toHaveTextContent('Member');
+    await expect.element(page.getByTestId('member-detail-title')).toHaveTextContent('Ada Lovelace');
     await expect(page.getByRole('heading', { name: 'Ada Lovelace', level: 2 })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'ada@example.com' })).toHaveCount(0);
   });
