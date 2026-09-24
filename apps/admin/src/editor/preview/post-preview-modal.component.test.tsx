@@ -682,6 +682,27 @@ describe('Post preview modal', () => {
     await expect(previewScreen.emailTab()).toHaveCount(0);
   });
 
+  it('never asks a contributor, who cannot read tiers, for them', async () => {
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Contributor' })];
+    installBootOverrides({ browseMe: { response: me } });
+    fakeNewsletters([]);
+    const tiersApi = fakeAdminEndpoint(
+      'GET',
+      /^\/tiers\//,
+      { errors: [{ message: 'You do not have permission to browse tiers' }] },
+      { status: 403 },
+    );
+    await renderPreviewModal();
+
+    await expect.element(previewScreen.browserFrame()).toBeVisible();
+    await previewScreen.segmentSelect().click();
+    await expect.element(previewScreen.option('Paid member')).toBeVisible();
+    await expect(previewScreen.option('Specific tier')).toHaveCount(0);
+    await expect(previewScreen.toastWithText(/permission to browse tiers/)).toHaveCount(0);
+    expect(tiersApi.requests).toHaveLength(0);
+  });
+
   it('lets an author preview email without offering a test send', async () => {
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Author' })];

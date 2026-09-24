@@ -25,7 +25,7 @@ One audience drives both formats, held as a segment plus an optional tier slug a
 | `paid`      | `member_status=paid`                    | `member_status=paid`                    |
 | `tier`      | `member_status=paid&member_tier=<slug>` | `member_status=paid&member_tier=<slug>` |
 
-The paid audiences appear only when paid members are enabled, and the tier audience only when the site has paid tiers. The default is a free member.
+The paid audiences appear only when paid members are enabled, and the tier audience only when the site has paid tiers and the user is not a contributor, who cannot read tiers. The default is a free member.
 
 ## Email
 
