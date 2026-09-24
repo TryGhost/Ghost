@@ -128,6 +128,8 @@ export default function MemberLocationMap({
           '-mt-5 -mr-[calc((100cqw-100%)/2-8px)] -ml-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))] rounded-t-xl rounded-b-none pt-40 pr-[calc((100cqw-100%)/2-8px)] pb-5 pl-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))]',
         country &&
           'max-sm:[&_[data-page-header=actions]]:absolute max-sm:[&_[data-page-header=actions]]:top-4 max-sm:[&_[data-page-header=actions]]:right-4',
+        country &&
+          'max-sm:pt-49 max-sm:[&_[aria-label=breadcrumb]]:absolute max-sm:[&_[aria-label=breadcrumb]]:top-4 max-sm:[&_[aria-label=breadcrumb]]:right-40 max-sm:[&_[aria-label=breadcrumb]]:left-4 max-sm:[&_[aria-label=breadcrumb]>ol]:flex-nowrap max-sm:[&_[aria-label=breadcrumb]>ol>li:last-child]:min-w-0',
       )}
       data-member-map-location={country ? 'known' : 'unknown'}
       data-testid="member-location-map-header"
