@@ -194,6 +194,25 @@ describe('Post settings tags', () => {
     await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Culture');
   });
 
+  it('refetches the site’s tags once a save has created one', async () => {
+    const { saveApi } = fakeTaggablePost();
+    const tagsApi = fakeTags([NEWS]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
+
+    await editorScreen.settingsTagsInput().fill('Culture');
+    // Offered only once the search for the typed name has answered.
+    await expect.element(editorScreen.settingsTagOption('Create “Culture”')).toBeVisible();
+    const browsesBefore = tagsApi.requests.length;
+    await editorScreen.settingsTagOption('Create “Culture”').click();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    // Without it, every tag list — the posts list's tag filter too — keeps
+    // serving a cache without the new tag for the five-minute staleTime.
+    await expect.poll(() => tagsApi.requests.length, POLL).toBeGreaterThan(browsesBefore);
+  });
+
   it('drops an uncommitted term when the list closes', async () => {
     fakeTaggablePost();
     fakeTags([NEWS]);
