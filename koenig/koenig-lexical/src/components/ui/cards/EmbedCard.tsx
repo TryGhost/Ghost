@@ -2,14 +2,34 @@ import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
+import {
+    EMBED_READY_MESSAGE,
+    EMBED_RENDERER_PERMISSIONS,
+    EMBED_RENDERER_TIMEOUT,
+    EMBED_RENDERER_VERSION,
+    EMBED_RENDER_MESSAGE,
+    EMBED_RESIZE_MESSAGE,
+    resolveEmbedHeight
+} from '../../../utils/embed-renderer';
 import {UrlInput} from '../UrlInput';
 
-export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlSubmit, handleRetry, handlePasteAsLink, handleClose}) {
+export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, rendererUrl, url, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlSubmit, handleRetry, handlePasteAsLink, handleClose}) {
     if (html) {
         return (
             <div>
                 <div className="not-kg-prose relative">
-                    <EmbedIframe dataTestId="embed-iframe" html={html} />
+                    {rendererUrl === undefined ? (
+                        <EmbedIframe dataTestId="embed-iframe" html={html} />
+                    ) : (
+                        <RendererEmbedIframe
+                            // remount for new content so each render gets a fresh renderer and handshake
+                            key={`${rendererUrl}\n${html}`}
+                            dataTestId="embed-iframe"
+                            html={html}
+                            rendererUrl={rendererUrl}
+                            url={url}
+                        />
+                    )}
                     <div className="absolute inset-0 z-50 mt-0"></div>
                 </div>
                 <CardCaptionEditor
@@ -130,8 +150,95 @@ function EmbedIframe({dataTestId, html}) {
     );
 }
 
+// Previews embed html in the embed renderer, which runs on a separate origin
+// so embed scripts can't reach the editor. Fails closed when the renderer is
+// unusable or doesn't answer.
+function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
+    const iframeRef = React.useRef<HTMLIFrameElement>(null);
+    const [unavailable, setUnavailable] = React.useState(!rendererUrl);
+
+    // a layout effect listens before the iframe can run, so a cached renderer's ready message isn't missed
+    React.useLayoutEffect(() => {
+        if (!rendererUrl) {
+            return;
+        }
+
+        const rendererOrigin = new URL(rendererUrl).origin;
+        let rendered = false;
+
+        const handleMessage = (event: MessageEvent) => {
+            const iframe = iframeRef.current;
+
+            if (!iframe || event.source !== iframe.contentWindow || event.origin !== rendererOrigin) {
+                return;
+            }
+
+            if (event.data?.type === EMBED_READY_MESSAGE && !rendered) {
+                if (event.data.version !== EMBED_RENDERER_VERSION) {
+                    setUnavailable(true);
+                    return;
+                }
+
+                rendered = true;
+                iframe.contentWindow.postMessage({type: EMBED_RENDER_MESSAGE, version: EMBED_RENDERER_VERSION, html}, rendererOrigin);
+                return;
+            }
+
+            if (event.data?.type === EMBED_RESIZE_MESSAGE) {
+                const height = resolveEmbedHeight(event.data.height);
+
+                if (height !== null) {
+                    iframe.style.height = `${height}px`;
+                }
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        // the renderer can be blocked, offline or misconfigured
+        const timeout = window.setTimeout(() => {
+            if (!rendered) {
+                setUnavailable(true);
+            }
+        }, EMBED_RENDERER_TIMEOUT);
+
+        return function cleanup() {
+            window.removeEventListener('message', handleMessage);
+            window.clearTimeout(timeout);
+        };
+    }, [html, rendererUrl]);
+
+    if (unavailable) {
+        return <EmbedPreviewUnavailable url={url} />;
+    }
+
+    return (
+        <iframe
+            ref={iframeRef}
+            className="bn miw-100 w-full"
+            data-testid={dataTestId}
+            referrerPolicy="no-referrer"
+            sandbox={EMBED_RENDERER_PERMISSIONS}
+            src={rendererUrl}
+            tabIndex={-1}
+            title="embed-card-iframe">
+        </iframe>
+    );
+}
+
+function EmbedPreviewUnavailable({url}) {
+    return (
+        <div className="flex min-h-[120px] w-full flex-col items-center justify-center gap-1 rounded border border-grey-200 p-4 text-center font-sans text-sm text-grey-700 dark:border-grey-900 dark:text-grey-500" data-testid="embed-preview-unavailable">
+            <span>Embed preview unavailable</span>
+            {url && <span className="break-all text-xs text-grey-500">{url}</span>}
+        </div>
+    );
+}
+
 EmbedCard.propTypes = {
     html: PropTypes.string,
+    rendererUrl: PropTypes.string,
+    url: PropTypes.string,
     isSelected: PropTypes.bool,
     urlInputValue: PropTypes.string,
     urlPlaceholder: PropTypes.string,
@@ -149,4 +256,15 @@ EmbedCard.propTypes = {
 EmbedIframe.propTypes = {
     dataTestId: PropTypes.string,
     html: PropTypes.string
+};
+
+RendererEmbedIframe.propTypes = {
+    dataTestId: PropTypes.string,
+    html: PropTypes.string,
+    rendererUrl: PropTypes.string,
+    url: PropTypes.string
+};
+
+EmbedPreviewUnavailable.propTypes = {
+    url: PropTypes.string
 };

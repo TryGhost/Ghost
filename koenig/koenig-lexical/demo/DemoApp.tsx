@@ -319,6 +319,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             ...defaultCardConfig.feature,
             transistor: searchParams.get('labs')?.includes('transistor') || defaultCardConfig.feature.transistor
         },
+        embedPreviewUrl: searchParams.get('embedPreviewUrl') || undefined,
         searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
         stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled,
         deprecated: {
