@@ -3,7 +3,8 @@ import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
-import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
+import { useShade } from '@tryghost/shade/app';
+import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { APIError } from '@tryghost/admin-x-framework/errors';
@@ -65,11 +66,12 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 }
 
 function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
+  const { isAdmin7 } = useShade();
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
 
   return (
     <Inline className="shrink-0 px-4 py-3" gap="sm">
-      <Button size="sm" variant="ghost" asChild>
+      <Button size={isAdmin7 ? 'default' : 'sm'} variant="ghost" asChild>
         <AdminLink to={postType === 'page' ? '/pages' : '/posts'}>
           <LucideIcon.ArrowLeft />
           {listLabel}
@@ -160,7 +162,7 @@ function EditorContent({
           state={session.state}
         />
         {/* One right-aligned group: two `ml-auto` siblings would split the free space. */}
-        <Inline className="ml-auto" gap="sm">
+        <PageHeader.ActionGroup className="ml-auto">
           <EditorHeaderActions
             currentUser={currentUser}
             postType={postType}
@@ -168,17 +170,18 @@ function EditorContent({
             siteUrl={cardConfig.siteUrl}
             tkCount={tkCount}
           />
-          <Button
+          <PageHeader.Action
             aria-expanded={settingsOpen}
-            aria-label="Settings"
             data-testid={settingsMenuToggle}
-            size="sm"
-            variant="ghost"
+            fallbackSize="sm"
+            fallbackVariant="ghost"
+            label="Settings"
+            iconOnly
             onClick={toggleSettings}
           >
             <LucideIcon.PanelRight />
-          </Button>
-        </Inline>
+          </PageHeader.Action>
+        </PageHeader.ActionGroup>
       </EditorHeader>
       <SessionBanners
         contentText={session.contentText}

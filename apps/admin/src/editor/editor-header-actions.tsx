@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Button } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -59,6 +61,7 @@ export function EditorHeaderActions({
   siteUrl,
   tkCount,
 }: EditorHeaderActionsProps) {
+  const { isAdmin7 } = useShade();
   const { persistedId, publishTime, title } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -106,12 +109,16 @@ export function EditorHeaderActions({
   return (
     <Inline data-testid={editorHeaderActions} gap="sm">
       {isDraft ? (
-        <Button size="sm" variant="outline" onClick={openPreview}>
+        <PageHeader.Action fallbackSize="sm" label="Preview" onClick={openPreview}>
           Preview
-        </Button>
+        </PageHeader.Action>
       ) : null}
       {isContributor ? (
-        <Button disabled={isSaving} size="sm" onClick={session.dispatchExplicit}>
+        <Button
+          disabled={isSaving}
+          size={isAdmin7 ? 'default' : 'sm'}
+          onClick={session.dispatchExplicit}
+        >
           Save
         </Button>
       ) : (
@@ -170,6 +177,7 @@ function PublishActions({
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
+  const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
   const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
@@ -206,7 +214,11 @@ function PublishActions({
     <>
       {isDraft ? (
         <>
-          <Button disabled={!inputs.isReady} size="sm" onClick={openPublishFlow}>
+          <Button
+            disabled={!inputs.isReady}
+            size={isAdmin7 ? 'default' : 'sm'}
+            onClick={openPublishFlow}
+          >
             Publish
           </Button>
           {inputs.error ? (
@@ -219,7 +231,7 @@ function PublishActions({
               >
                 {inputs.error.message}
               </Text>
-              <Button size="sm" variant="ghost" onClick={inputs.retry}>
+              <Button size={isAdmin7 ? 'default' : 'sm'} variant="ghost" onClick={inputs.retry}>
                 Retry
               </Button>
             </>
@@ -229,14 +241,18 @@ function PublishActions({
         <>
           <Button
             disabled={!session.isDirty() || isSaving}
-            size="sm"
+            size={isAdmin7 ? 'default' : 'sm'}
             onClick={session.dispatchExplicit}
           >
             Update
           </Button>
           {/* Ember routes a sent post to the update flow from its status line, not the header. */}
           {post.status === 'sent' ? null : (
-            <Button size="sm" variant="outline" onClick={() => onOpenFlow('update')}>
+            <Button
+              size={isAdmin7 ? 'default' : 'sm'}
+              variant="outline"
+              onClick={() => onOpenFlow('update')}
+            >
               {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
             </Button>
           )}

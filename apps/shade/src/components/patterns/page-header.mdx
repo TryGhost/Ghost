@@ -35,7 +35,7 @@ has no leading separation. Avoid additional margins or gaps on individual action
 ## Constructing controls
 
 Use `PageHeader.Action` for buttons. Set `label` to an accessible name that also
-explains the action in its tooltip. Set `iconOnly` for utilities; keep labelled
+explains the action when a tooltip is shown. Set `iconOnly` for utilities; keep labelled
 controls as icon + visible text. Put the action in `.ActionGroup.Primary` to inherit
 primary styling and suppress its tooltip. `primary` is available when a primary
 trigger must be constructed outside that slot, such as a modal trigger.
@@ -93,11 +93,18 @@ trigger. Remove fallback props when the rollout ends.
 
 ## Tooltips and focus
 
-Secondary actions use the semantic white tooltip surface with a shadow. The first
+Icon-only actions and actions with keyboard shortcuts have tooltips. Static labelled
+buttons omit them: repeating the visible label adds no information. Set `tooltip`
+on a labelled action when its text shows a changing value and the tooltip explains
+the action. Primary actions never have tooltips.
+
+Tooltips use the semantic white surface with a shadow. The first
 hover tooltip waits **1 second**. Moving between recently shown tooltips uses a
 **300ms skip-delay window**. Keyboard focus shows the tooltip immediately.
 
-Primary actions have **no tooltip**. Their visible labels already explain them.
+Wrap header controls in `PageHeader.ActionGroup`, including in editor and modal
+headers, so they receive this timing rather than inheriting another surface's delay.
+
 Selecting a dropdown item with the pointer closes the menu without reopening the
 trigger tooltip merely because focus returns. Keyboard navigation still restores
 focus and tooltip access. Disabled actions remain disabled and retain their size.
