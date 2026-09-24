@@ -1,5 +1,6 @@
 {
   "url": "http://127.0.0.1:2369",
+  "createInDevelopmentTables": true,
   "database": {
     "client": "better-sqlite3",
     "connection": {

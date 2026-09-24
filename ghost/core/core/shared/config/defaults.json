@@ -372,5 +372,6 @@
   },
   "disableJSBackups": false,
   "disableMigrationBackups": false,
+  "createInDevelopmentTables": false,
   "usingLoopbackReverseProxy": false
 }

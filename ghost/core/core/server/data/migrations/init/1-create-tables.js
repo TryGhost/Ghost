@@ -1,14 +1,16 @@
 const commands = require('../../schema').commands;
-const schema = require('../../schema').tables;
 const views = require('../../schema').views;
+const inDevelopment = require('../../schema').inDevelopment;
 const logging = require('@tryghost/logging');
-const schemaTables = Object.keys(schema);
 
 module.exports.up = async (options) => {
   const connection = options.connection;
 
   const existingTables = await commands.getTables(connection);
-  const missingTables = schemaTables.filter((t) => !existingTables.includes(t));
+  // In-development tables are only created where config enables them, see
+  // schema/in-development.js
+  const tablesToCreate = inDevelopment.getTablesToCreate();
+  const missingTables = tablesToCreate.filter((t) => !existingTables.includes(t));
 
   for (const table of missingTables) {
     logging.info('Creating table: ' + table);
