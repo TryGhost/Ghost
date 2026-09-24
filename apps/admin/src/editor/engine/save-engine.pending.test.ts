@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AUTOSAVE_DEBOUNCE_MS, TIMED_SAVE_INTERVAL_MS, type PostStatus } from './save-engine';
-import { flush, setup, validation, sessionInvalid } from './__test-utils__/engine-harness';
+import {
+  flush,
+  setup,
+  validation,
+  sessionInvalid,
+  FUTURE,
+  transport,
+} from './__test-utils__/engine-harness';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
@@ -131,6 +138,23 @@ describe('pending content', () => {
     expect(h.requests).toHaveLength(1);
     expect(h.requests[0].target).toEqual({ status: 'draft', publishedAt: null });
     expect(h.requests[0].command.kind).toBe('field');
+  });
+
+  it('replaces a previous validation hold when a same-version command can save', async () => {
+    const h = setup({ publishedAt: FUTURE });
+    h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
+    await h.engine.dispatch('field');
+    expect(h.engine.getPendingSave()?.reason).toBe('validation');
+
+    // Scheduling permits the future date without requiring another content edit.
+    const retry = h.engine.dispatch('schedule', { publishedAt: FUTURE });
+    await flush();
+    expect(h.requests).toHaveLength(1);
+    expect(h.engine.getPendingSave()).toEqual({ version: 1, reason: 'saving' });
+
+    await h.fail(transport);
+    await expect(retry).resolves.toMatchObject({ kind: 'failed', error: transport });
+    expect(h.engine.getPendingSave()).toEqual({ version: 1, reason: 'error', error: transport });
   });
 
   it('retains content while authentication is pending and releases it on disposal', async () => {

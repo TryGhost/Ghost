@@ -762,6 +762,19 @@ export function createSaveEngine<
         }
         outcome = { ok: false, error: preparation.error };
       } else {
+        // Validation belongs to an attempt's target, not just its edit version.
+        // A retry can permit the same content (for example, scheduling a future
+        // publish time), so retire its old hold once preparation succeeds.
+        if (blockedValidation?.version === snapshot.version) {
+          blockedValidation = null;
+          if (suppressedVersion === snapshot.version) {
+            suppressedVersion = null;
+          }
+        }
+        setState(deriveState());
+        if (disposed) {
+          return;
+        }
         outcome = await ports.execute(preparation.prepared, abort.signal);
         if (disposed) {
           return;
