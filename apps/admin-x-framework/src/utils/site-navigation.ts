@@ -17,7 +17,7 @@ export function pagePathForSlug(slug: string, pageRoutes: PageRoutes = {}): stri
   if (!slug) {
     return null;
   }
-  return Object.prototype.hasOwnProperty.call(pageRoutes, slug) ? pageRoutes[slug] : `/${slug}/`;
+  return Object.hasOwn(pageRoutes, slug) ? pageRoutes[slug] : `/${slug}/`;
 }
 
 function createMatcher(blogUrl?: string, pageRoutes: PageRoutes = {}) {
