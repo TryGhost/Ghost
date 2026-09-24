@@ -127,7 +127,7 @@ export default class PublishOptions {
             return this.navigationPlacementOverride;
         }
 
-        return this.currentNavigationPlacement ?? 'none';
+        return this.currentNavigationPlacement;
     }
 
     // Admin only. Hidden when scheduling because the page url isn't live yet.
@@ -136,10 +136,6 @@ export default class PublishOptions {
             !!this.user.isAdmin &&
             !this.isScheduled &&
             !!this.pageNavigationPath;
-    }
-
-    get desiredNavigationPlacement() {
-        return this.navigationPlacement === 'none' ? null : this.navigationPlacement;
     }
 
     get navigationOptions() {
@@ -159,7 +155,7 @@ export default class PublishOptions {
     }
 
     get selectedNavigationOption() {
-        return this.navigationOptions.find(o => o.value === this.navigationPlacement);
+        return this.navigationOptions.find(o => o.value === (this.navigationPlacement ?? 'none'));
     }
 
     @action
@@ -394,7 +390,7 @@ export default class PublishOptions {
         // Grab this before status flips to published. Unchanged placement means
         // we skip the settings write on a plain republish.
         const navigationPlacementChanged = this.showNavigationOption
-            && this.desiredNavigationPlacement !== this.currentNavigationPlacement;
+            && this.navigationPlacement !== this.currentNavigationPlacement;
 
         this.navigationSaveFailed = false;
 
@@ -421,7 +417,7 @@ export default class PublishOptions {
                 yield setPageNavigationPlacement(this.settings, {
                     label: this.post.title,
                     path: this.pageNavigationPath,
-                    placement: this.desiredNavigationPlacement,
+                    placement: this.navigationPlacement,
                     blogUrl: this.config.blogUrl,
                     pageRoutes: this.config.pageRoutes
                 });

@@ -14,10 +14,9 @@ export function getPagePlacement(settings, path, blogUrl, pageRoutes) {
 
 export async function setPageNavigationPlacement(settings, {label, path, placement, blogUrl, pageRoutes}) {
     await settings.reload();
-    const desired = placement === 'primary' || placement === 'secondary' ? placement : null;
-    const result = updatePageNavigation(itemsFor(settings, 'navigation'), itemsFor(settings, 'secondaryNavigation'), [{label, path}], desired, blogUrl, pageRoutes);
+    const result = updatePageNavigation(itemsFor(settings, 'navigation'), itemsFor(settings, 'secondaryNavigation'), [{label, path}], placement, blogUrl, pageRoutes);
     if (!result.changed) {
-        return desired;
+        return placement;
     }
 
     const previousPrimary = settings.navigation;
@@ -26,7 +25,7 @@ export async function setPageNavigationPlacement(settings, {label, path, placeme
         settings.navigation = emberA(result.navigation.map(item => NavigationItem.create({...item, isSecondary: false})));
         settings.secondaryNavigation = emberA(result.secondaryNavigation.map(item => NavigationItem.create({...item, isSecondary: true})));
         await settings.save();
-        return desired;
+        return placement;
     } catch (error) {
         if (settings.settingsModel) {
             settings.navigation = previousPrimary;

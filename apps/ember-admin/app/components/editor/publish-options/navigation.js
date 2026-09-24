@@ -5,6 +5,7 @@ export default class NavigationOption extends Component {
     @action
     onChange(event) {
         event.preventDefault();
-        this.args.publishOptions.setNavigationPlacement(event.target.value);
+        const placement = event.target.value;
+        this.args.publishOptions.setNavigationPlacement(placement === 'none' ? null : placement);
     }
 }
