@@ -26,7 +26,10 @@ beforeEach(() => {
   document.documentElement.style.fontSize = '62.5%';
 });
 
-function fakeLongDocument(postType: 'post' | 'page') {
+function fakeLongDocument(
+  postType: 'post' | 'page',
+  status: 'draft' | 'published' | 'scheduled' = 'draft',
+) {
   fakeEditorChrome();
   const resource = `${postType}s`;
   fakeAdminEndpoint('GET', new RegExp(`^/${resource}/abc123/\\?`), {
@@ -35,7 +38,9 @@ function fakeLongDocument(postType: 'post' | 'page') {
         id: 'abc123',
         title: 'A long document',
         lexical: LONG_DOCUMENT,
-        status: 'draft',
+        status,
+        published_at:
+          status === 'scheduled' ? '2027-01-01T12:00:00.000Z' : '2026-01-01T12:00:00.000Z',
         tags: [],
         authors: [{ id: '1' }],
       }),
@@ -60,6 +65,18 @@ function positions(postType: 'post' | 'page') {
     const { x, y, width, height } = control.element().getBoundingClientRect();
     return { x, y, width, height };
   });
+}
+
+function canvasBackground(): string {
+  let surface: Element | null = editorScreen.root().element();
+  while (surface) {
+    const background = getComputedStyle(surface).backgroundColor;
+    if (background !== 'transparent' && background !== 'rgba(0, 0, 0, 0)') {
+      return background;
+    }
+    surface = surface.parentElement;
+  }
+  throw new Error('The editor canvas has no opaque background');
 }
 
 afterEach(async () => {
@@ -204,6 +221,34 @@ describe('Floating editor shell', () => {
     );
     expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
   });
+
+  it.each([
+    { status: 'published', theme: 'light' },
+    { status: 'scheduled', theme: 'dark' },
+  ] as const)(
+    'keeps the $status action opaque against the $theme canvas',
+    async ({ status, theme }) => {
+      fakeLongDocument('post', status);
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({ nightShift: theme });
+      await renderAdminApp('/editor/post/abc123', {
+        ...FLAG_ON,
+        boot: { browseMe: { response: me } },
+      });
+      await expect.element(editorScreen.body()).toBeVisible();
+      const action =
+        status === 'published' ? editorScreen.unpublishButton() : editorScreen.unscheduleButton();
+      await expect.element(action).toBeVisible();
+      await expect
+        .poll(() => document.documentElement.classList.contains('dark'))
+        .toBe(theme === 'dark');
+      const pane = editorScreen.scrollPane();
+      pane.scrollTo({ top: 700 });
+      await expect.poll(() => pane.scrollTop).toBe(700);
+      expect(getComputedStyle(action.element()).backgroundColor).toBe(canvasBackground());
+      expect(getComputedStyle(action.element()).opacity).toBe('1');
+    },
+  );
 
   it.each([1280, 390])(
     'reserves space for a session warning beneath the header at %spx while keeping the footer anchored',

@@ -237,7 +237,7 @@ function PublishActions({
           {inputs.error ? (
             <>
               <Text
-                className="text-destructive"
+                className="bg-background text-destructive"
                 data-testid={editorPublishInputsError}
                 role="alert"
                 size="sm"
@@ -272,6 +272,7 @@ function PublishActions({
           {/* Ember routes a sent post to the update flow from its status line, not the header. */}
           {post.status === 'sent' ? null : (
             <Button
+              className="bg-background"
               size={isAdmin7 ? 'default' : 'sm'}
               variant="outline"
               onClick={() => onOpenFlow('update')}
