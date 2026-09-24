@@ -58,7 +58,7 @@ interface SegmentOption {
   value: PreviewSegment;
 }
 
-interface PostPreviewModalProps {
+export interface PostPreviewModalProps {
   open: boolean;
   postId: string;
   /** The post's public preview URL (`/p/:uuid/`), empty until the post has a uuid. */
@@ -69,8 +69,10 @@ interface PostPreviewModalProps {
   newsletterSlug?: string;
   /** Awaited before the preview renders, so the caller can save the draft first. */
   onBeforeOpen?: () => Promise<void>;
-  /** Supplied while a publish flow is open behind the preview, which this returns to. */
-  onReturnToPublish?: () => void;
+  /** Renders a Publish button; supplied for users who can publish. */
+  onPublish?: () => void;
+  /** Keeps the Publish button disabled while the caller cannot open its publish flow. */
+  publishDisabled?: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
@@ -81,7 +83,8 @@ export function PostPreviewModal({
   isPost = true,
   newsletterSlug,
   onBeforeOpen,
-  onReturnToPublish,
+  onPublish,
+  publishDisabled = false,
   onOpenChange,
 }: PostPreviewModalProps) {
   const [format, setFormat] = useState<PreviewFormat>('browser');
@@ -406,13 +409,14 @@ export function PostPreviewModal({
                 Open in new tab
               </Button>
             )}
-            <Button
-              variant={onReturnToPublish ? 'outline' : 'default'}
-              onClick={() => onOpenChange(false)}
-            >
+            <Button variant={onPublish ? 'outline' : 'default'} onClick={() => onOpenChange(false)}>
               Close
             </Button>
-            {onReturnToPublish ? <Button onClick={onReturnToPublish}>Publish</Button> : null}
+            {onPublish ? (
+              <Button disabled={publishDisabled} onClick={onPublish}>
+                Publish
+              </Button>
+            ) : null}
           </Inline>
         </>
       }

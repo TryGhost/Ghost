@@ -10,7 +10,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
-import { PostPreviewModal } from './preview/post-preview-modal';
+import { PostPreviewModal, type PostPreviewModalProps } from './preview/post-preview-modal';
 import { postPreviewUrl } from './preview/preview-url';
 import { PublishFlowModal } from './publish/publish-flow-modal';
 import { UpdateFlowModal } from './publish/update-flow-modal';
@@ -23,6 +23,9 @@ import type { SaveCompletion } from './engine/save-engine';
 import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
 
 type OpenFlow = 'none' | 'publish' | 'update';
+
+/** The preview's props short of Publish, which only the publish controls can supply. */
+type HeaderPreviewProps = Omit<PostPreviewModalProps, 'onPublish' | 'publishDisabled'>;
 
 /** Turns a save the caller depends on into a rejection the flow renders in place. */
 async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
@@ -65,7 +68,6 @@ export function EditorHeaderActions({
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
 
   const openPreview = useCallback(() => setPreviewOpen(true), []);
-  const closePreview = useCallback(() => setPreviewOpen(false), []);
 
   const post = buildPublishFlowPost({
     snapshot: {
@@ -103,6 +105,16 @@ export function EditorHeaderActions({
     return null;
   }
 
+  const preview: HeaderPreviewProps = {
+    isPost: postType === 'post',
+    newsletterSlug: post.newsletter ?? undefined,
+    open: previewOpen,
+    postId: persistedId,
+    previewUrl: postPreviewUrl(siteUrl, record?.uuid),
+    onBeforeOpen: saveBeforePreview,
+    onOpenChange: setPreviewOpen,
+  };
+
   return (
     <Inline data-testid={editorHeaderActions} gap="sm">
       {isDraft ? (
@@ -111,34 +123,25 @@ export function EditorHeaderActions({
         </Button>
       ) : null}
       {isContributor ? (
-        <Button disabled={isSaving} size="sm" onClick={session.dispatchExplicit}>
-          Save
-        </Button>
+        <>
+          <Button disabled={isSaving} size="sm" onClick={session.dispatchExplicit}>
+            Save
+          </Button>
+          {isDraft ? <PostPreviewModal {...preview} /> : null}
+        </>
       ) : (
         <PublishActions
           isDraft={isDraft}
           isSaving={isSaving}
           openFlow={openFlow}
           post={post}
-          previewOpen={previewOpen}
+          preview={preview}
           session={session}
           tkCount={tkCount}
           onOpenFlow={setOpenFlow}
           onPreview={openPreview}
         />
       )}
-      {isDraft ? (
-        <PostPreviewModal
-          isPost={postType === 'post'}
-          newsletterSlug={post.newsletter ?? undefined}
-          open={previewOpen}
-          postId={persistedId}
-          previewUrl={postPreviewUrl(siteUrl, record?.uuid)}
-          onBeforeOpen={saveBeforePreview}
-          onOpenChange={setPreviewOpen}
-          onReturnToPublish={openFlow === 'publish' ? closePreview : undefined}
-        />
-      ) : null}
     </Inline>
   );
 }
@@ -150,7 +153,7 @@ interface PublishActionsProps {
   isDraft: boolean;
   isSaving: boolean;
   openFlow: OpenFlow;
-  previewOpen: boolean;
+  preview: HeaderPreviewProps;
   onOpenFlow: (flow: OpenFlow) => void;
   onPreview: () => void;
 }
@@ -166,7 +169,7 @@ function PublishActions({
   isDraft,
   isSaving,
   openFlow,
-  previewOpen,
+  preview,
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
@@ -197,10 +200,15 @@ function PublishActions({
   }, [onOpenFlow, session]);
   const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
   const openPublishFlow = useCallback(() => onOpenFlow('publish'), [onOpenFlow]);
+  const { onOpenChange: setPreviewOpen } = preview;
+  const publishFromPreview = useCallback(() => {
+    setPreviewOpen(false);
+    onOpenFlow('publish');
+  }, [onOpenFlow, setPreviewOpen]);
 
-  // A flow opened under the preview's portal is hidden from a screen reader,
-  // so the preview's own Publish button is the only way into it from there.
-  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !previewOpen);
+  // The chord stays off while the preview is open: the preview's own Publish
+  // button is the only way into the flow from there.
+  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
 
   return (
     <>
@@ -224,6 +232,11 @@ function PublishActions({
               </Button>
             </>
           ) : null}
+          <PostPreviewModal
+            {...preview}
+            publishDisabled={!inputs.isReady}
+            onPublish={publishFromPreview}
+          />
         </>
       ) : (
         <>
