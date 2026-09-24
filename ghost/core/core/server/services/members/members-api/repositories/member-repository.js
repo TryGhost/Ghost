@@ -451,6 +451,7 @@ module.exports = class MemberRepository {
       'created_at',
       'products',
       'newsletters',
+      'enable_updates_and_announcements',
       'email_disabled',
       'status',
     ]);
