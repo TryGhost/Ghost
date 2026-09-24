@@ -1,0 +1,220 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { userEvent } from 'vitest/browser';
+
+import {
+  allowUnhandledRequests,
+  configResponse,
+  currentRoute,
+  fakeAdminEndpoint,
+  fakeTags,
+  renderAdminApp,
+  type RenderAdminAppOptions,
+  tag,
+} from '@test-utils/acceptance';
+
+import { sidebarScreen } from '@/layout/sidebar.screen';
+
+import { globalSearchScreen } from './global-search.screen';
+
+const flagOn: RenderAdminAppOptions = { labs: { globalSearchReact: true } };
+
+const handoff = () =>
+  JSON.parse(document.body.dataset.externalNavigate ?? 'null') as { route: string } | null;
+
+function fakeSearchIndex() {
+  fakeAdminEndpoint('GET', '/search-index/posts/', {
+    posts: [{ id: 'p1', title: 'First post', status: 'draft' }],
+  });
+  fakeAdminEndpoint('GET', '/search-index/pages/', {
+    pages: [{ id: 'g1', title: 'First page', status: 'published' }],
+  });
+  fakeAdminEndpoint('GET', '/search-index/tags/', {
+    tags: [{ id: 't1', slug: 'first-tag', name: 'First tag' }],
+  });
+  fakeAdminEndpoint('GET', '/search-index/users/', {
+    users: [{ id: 'u1', slug: 'first-user', name: 'First user' }],
+  });
+}
+
+function withBilling(): RenderAdminAppOptions {
+  const config = configResponse();
+  config.config.hostSettings = {
+    billing: {
+      enabled: true,
+      search: {
+        groupName: 'Acme Hosting',
+        items: [{ id: 'change-plan', title: 'Change plan', path: '/plans', keywords: 'billing' }],
+      },
+    },
+  };
+  return { ...flagOn, boot: { browseConfig: { response: config } } };
+}
+
+/** The Ember half of the state bridge, with the billing handoff this feature calls. */
+function installEmberBridge() {
+  const navigateToBillingSubRoute = vi.fn();
+  const state = {
+    on: () => {},
+    off: () => {},
+    sidebarVisible: true,
+    getRouteUrl: (routeName: string) => routeName,
+    isRouteActive: () => false,
+    navigateToBillingSubRoute,
+  };
+  window.EmberBridge = { state } as unknown as typeof window.EmberBridge;
+  return navigateToBillingSubRoute;
+}
+
+async function openAndSearch(term: string) {
+  await globalSearchScreen.openButton().click();
+  await globalSearchScreen.search(term);
+}
+
+async function closeWithEscape() {
+  await userEvent.keyboard('{Escape}');
+  await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
+}
+
+describe('Cmd-K search', () => {
+  beforeEach(() => {
+    delete document.body.dataset.externalNavigate;
+    fakeTags([]);
+    fakeSearchIndex();
+  });
+
+  afterEach(() => {
+    delete window.EmberBridge;
+  });
+
+  it('opens from the sidebar button and lists grouped results', async () => {
+    await renderAdminApp('/tags', flagOn);
+
+    await openAndSearch('first');
+
+    await expect.element(globalSearchScreen.group('Staff')).toBeVisible();
+    await expect.element(globalSearchScreen.group('Tags')).toBeVisible();
+    await expect.element(globalSearchScreen.option(/First post/)).toHaveTextContent('Draft');
+    await expect.element(globalSearchScreen.option(/First page/)).toBeVisible();
+  });
+
+  it('opens from the shortcut after Ember has already handled the key', async () => {
+    // Ember's keymaster binding runs first and prevents the default
+    const emberShortcut = (event: KeyboardEvent) => event.preventDefault();
+    document.addEventListener('keydown', emberShortcut);
+
+    try {
+      await renderAdminApp('/tags', flagOn);
+      await expect.element(globalSearchScreen.openButton()).toBeVisible();
+
+      await globalSearchScreen.pressShortcut();
+
+      await expect.element(globalSearchScreen.input()).toHaveFocus();
+      await closeWithEscape();
+    } finally {
+      document.removeEventListener('keydown', emberShortcut);
+    }
+  });
+
+  it('starts empty each time it opens', async () => {
+    await renderAdminApp('/tags', flagOn);
+    await openAndSearch('first');
+    await expect.element(globalSearchScreen.option(/First tag/)).toBeVisible();
+    await closeWithEscape();
+
+    await globalSearchScreen.openButton().click();
+
+    await expect.element(globalSearchScreen.input()).toHaveValue('');
+  });
+
+  it('says when nothing matches', async () => {
+    await renderAdminApp('/tags', flagOn);
+
+    await openAndSearch('nothing like this');
+
+    await expect.element(globalSearchScreen.noResults()).toBeVisible();
+  });
+
+  it('opens a tag in the React tag screen', async () => {
+    fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, {
+      tags: [tag({ name: 'First tag', slug: 'first-tag' })],
+    });
+    await renderAdminApp('/tags', flagOn);
+    await openAndSearch('first tag');
+
+    await globalSearchScreen.option(/First tag/).click();
+
+    await expect.poll(currentRoute).toBe('/tags/first-tag');
+    await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
+  });
+
+  it('hands a post to the Ember editor', async () => {
+    await renderAdminApp('/tags', flagOn);
+    await openAndSearch('first post');
+    await expect.element(globalSearchScreen.option(/First post/)).toBeVisible();
+
+    await userEvent.keyboard('{Enter}');
+
+    await expect.poll(() => handoff()?.route).toBe('/editor/post/p1');
+  });
+
+  it('opens a post in the React editor when React serves it', async () => {
+    // the editor owns its request graph
+    allowUnhandledRequests();
+    await renderAdminApp('/tags', { labs: { globalSearchReact: true, editorReact: true } });
+    await openAndSearch('first post');
+
+    await globalSearchScreen.option(/First post/).click();
+
+    await expect.poll(currentRoute).toBe('/editor/post/p1');
+    expect(handoff()).toBeNull();
+  });
+
+  it('hands a billing result to the billing app route', async () => {
+    await renderAdminApp('/tags', withBilling());
+    await openAndSearch('plan');
+
+    await globalSearchScreen.option(/Change plan/).click();
+
+    await expect.poll(() => handoff()?.route).toBe('/pro/plans');
+  });
+
+  it('sends a billing result for the billing route on screen straight to the billing app', async () => {
+    const navigateToBillingSubRoute = installEmberBridge();
+    await renderAdminApp('/pro/plans', withBilling());
+    await openAndSearch('plan');
+
+    await globalSearchScreen.option(/Change plan/).click();
+
+    await expect.poll(() => navigateToBillingSubRoute.mock.calls).toEqual([['/plans']]);
+    expect(handoff()).toBeNull();
+  });
+
+  it('closes and ignores the shortcut once the sidebar is hidden', async () => {
+    await renderAdminApp('/tags', flagOn);
+    await expect.element(globalSearchScreen.openButton()).toBeVisible();
+    expect(globalSearchScreen.dispatchShortcut()).toBe(true);
+    await expect.element(globalSearchScreen.dialog()).toBeVisible();
+
+    window.location.hash = '#/editor/post/p1';
+
+    await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
+    await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
+    expect(globalSearchScreen.dispatchShortcut()).toBe(false);
+  });
+
+  it('leaves search to Ember without the flag', async () => {
+    const emberKeypresses: KeyboardEvent[] = [];
+    const recordKeypress = (event: KeyboardEvent) => emberKeypresses.push(event);
+    document.addEventListener('keydown', recordKeypress);
+
+    try {
+      await renderAdminApp('/tags');
+      await globalSearchScreen.openButton().click();
+
+      expect(emberKeypresses.map((event) => event.keyCode)).toEqual([75]);
+      expect(globalSearchScreen.dispatchShortcut()).toBe(false);
+    } finally {
+      document.removeEventListener('keydown', recordKeypress);
+    }
+  });
+});
