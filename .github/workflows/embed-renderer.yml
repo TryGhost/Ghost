@@ -43,8 +43,11 @@ jobs:
         run: .github/embed-renderer/build.sh "$RUNNER_TEMP/embed-renderer"
 
       # --ignore-scripts: a static --no-build deploy needs none of netlify-cli's
-      # dependency build scripts, which pnpm otherwise refuses to skip
+      # dependency build scripts, which pnpm otherwise refuses to skip.
+      # Runs outside the checkout: from the repo root netlify-cli sees the pnpm
+      # workspace and refuses to deploy until one of its packages is picked
       - name: Deploy to Netlify
+        working-directory: ${{ runner.temp }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_EMBEDS_PUBLIC_SITE_ID }}
