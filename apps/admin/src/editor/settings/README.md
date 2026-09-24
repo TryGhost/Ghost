@@ -183,7 +183,8 @@ until then. Re-choosing the value already shown is not an edit and sends
 nothing. Choosing anything other than `Specific tier(s)` clears the tiers it
 granted. The tier list is every one of the site's paid
 tiers, active ones before archived, and it loads only while `Specific tier(s)`
-is the choice. Reads carry tier relations for Public, Members and Paid posts;
+is the choice. The browse is followed page by page, and the list shows once the
+last page has arrived. Reads carry tier relations for Public, Members and Paid posts;
 the free tier that comes with Public and Members reads is excluded from the
 selection, and a tier ID without type metadata is preserved. A failed tier
 lookup shows an error and a Retry action in place of the list.

@@ -113,6 +113,8 @@ export const editorScreen = {
   /** The primary Koenig content editable. */
   body: () => page.getByTestId(editorBody).getByRole('textbox'),
   secondaryInstance: () => page.getByTestId(editorSecondaryInstance),
+  /** An item in Koenig's `/` card menu, by its label. */
+  cardMenuItem: (label: string) => page.getByRole('menuitem', { name: label }),
   wordCount: () => page.getByTestId(editorWordCount),
   loadError: () => page.getByTestId(editorLoadError),
   reauthBanner: () => page.getByTestId(editorReauthBanner),
