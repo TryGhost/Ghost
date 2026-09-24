@@ -59,7 +59,7 @@ function LocationMap({ country, region }: { country: MapLocation; region?: strin
       <svg
         ref={svgRef}
         aria-hidden="true"
-        className="size-full bg-muted"
+        className="size-full bg-muted dark:bg-surface-elevated-2"
         data-map-kind="world"
         data-testid="member-location-map"
         preserveAspectRatio="xMidYMid slice"
