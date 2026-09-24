@@ -3,6 +3,7 @@ import MemberDisableCommentingModal from './member-disable-commenting-modal';
 import MemberImpersonateModal from './member-impersonate-modal';
 import MemberLogoutModal from './member-logout-modal';
 import React from 'react';
+import { MemberMapContext } from './member-map-context';
 import {
   Button,
   DropdownMenu,
@@ -43,6 +44,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
   allowLeaveWithUnsavedChanges,
 }) => {
   const { isAdmin7 } = useShade();
+  const mapVisible = React.useContext(MemberMapContext);
   const { data: currentUser } = useCurrentUser();
   const [showImpersonate, setShowImpersonate] = React.useState(false);
   const [showLogout, setShowLogout] = React.useState(false);
@@ -88,7 +90,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             className="size-(--control-height)"
             data-testid="member-actions"
             size="icon"
-            variant="subtle"
+            variant={mapVisible ? 'outline' : 'subtle'}
           >
             <LucideIcon.Ellipsis size={16} />
           </Button>

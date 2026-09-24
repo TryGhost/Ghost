@@ -5,6 +5,7 @@ import atlas from './map-data/world-states.json';
 import { Box } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { parseMemberGeolocation } from './member-detail-format';
+import { MemberMapContext } from './member-map-context';
 
 type MapLocation = (typeof atlas.countries)[number];
 
@@ -134,7 +135,7 @@ export default function MemberLocationMap({
           <LocationMap country={country} region={geo?.region} />
         </Box>
       )}
-      {children}
+      <MemberMapContext.Provider value={!!country}>{children}</MemberMapContext.Provider>
     </Box>
   );
 }
