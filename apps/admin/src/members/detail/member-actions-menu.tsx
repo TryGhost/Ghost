@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { canManageMembers } from '@tryghost/admin-x-framework/api/users';
 import { getMemberCommentingActionLabel, isMemberCommentingDisabled } from './member-commenting';
 import { toast } from 'sonner';
@@ -87,7 +87,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
         <DropdownMenuTrigger asChild>
           <Button
             aria-label="Actions"
-            className="size-(--control-height)"
+            className={cn('size-(--control-height)', mapVisible && 'bg-background')}
             data-testid="member-actions"
             size="icon"
             variant={mapVisible ? 'outline' : 'subtle'}
