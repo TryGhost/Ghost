@@ -329,7 +329,7 @@
     "You're not receiving emails": "Sie erhalten keine E-Mails.",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Sie erhalten keine E-Mails, weil Sie entweder eine kürzlich empfangene E-Mail von uns als Spam markiert haben oder weil unsere E-Mails nicht an die angegebene E-Mail-Adresse zugestellt werden konnten.",
     "You've been gifted a <strong>{duration}-month</strong> {tierName} membership_one": "Sie haben ein <strong>{duration}-monatiges </strong> {tierName}-Abonnement als Geschenk erhalten",
-    "You've been gifted a <strong>{duration}-month</strong> {tierName} membership_other": "Sie haben ein <strong>{duration}-monatiges </strong> {tierName}-Abonnement als Geschenk bekommen",
+    "You've been gifted a <strong>{duration}-month</strong> {tierName} membership_other": "Sie haben ein <strong>{duration}-monatiges </strong> {tierName}-Abonnement als Geschenk erhalten",
     "You've been gifted a <strong>{duration}-month</strong> {tierName} membership to {siteTitle}_one": "Sie haben ein <strong>{duration}-monatiges </strong> {tierName}-Abonnement bei {siteTitle} als Geschenk erhalten",
     "You've been gifted a <strong>{duration}-month</strong> {tierName} membership to {siteTitle}_other": "Sie haben ein <strong>{duration}-monatiges </strong> {tierName}-Abonnement bei {siteTitle} als Geschenk erhalten",
     "You've been gifted a <strong>{duration}-year</strong> {tierName} membership": "Sie haben ein <strong>{duration}-jähriges </strong> {tierName}-Abonnement als Geschenk erhalten",
