@@ -57,7 +57,7 @@ const features: Feature[] = [
   {
     title: 'Admin 7 · Milestone 2 · Pill controls',
     description:
-      'Preview Admin 7 controls and page headers on React pages. The editor is excluded.',
+      'Preview Admin 7 controls and page headers on React pages, including the React editor.',
     flag: 'admin7Pill',
   },
   {
