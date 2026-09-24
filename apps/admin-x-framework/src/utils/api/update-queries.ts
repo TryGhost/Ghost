@@ -1,5 +1,11 @@
 import { InfiniteData } from '@tanstack/react-query';
 
+// A plain Pages response is `{pages: Page[]}`, so `pages` can't identify InfiniteData; `pageParams` can.
+const isInfiniteData = <ResponseData>(data: unknown): data is InfiniteData<ResponseData> =>
+  typeof data === 'object' &&
+  data !== null &&
+  Array.isArray((data as { pageParams?: unknown }).pageParams);
+
 export const insertToQueryCache = <ResponseData>(
   field: string,
   recordsToInsert?: (response: ResponseData) => unknown[],
@@ -13,8 +19,8 @@ export const insertToQueryCache = <ResponseData>(
       recordsToInsert ||
       ((response: ResponseData) => (response as Record<string, unknown[]>)[field]);
 
-    if (typeof currentData === 'object' && 'pages' in currentData) {
-      const { pages } = currentData as InfiniteData<ResponseData>;
+    if (isInfiniteData<ResponseData>(currentData)) {
+      const { pages } = currentData;
       const lastPage = pages[pages.length - 1];
       return {
         ...currentData,
@@ -54,8 +60,8 @@ export const updateQueryCache = <ResponseData>(
 
     const updated = getRecords(newData);
 
-    if (typeof currentData === 'object' && 'pages' in currentData) {
-      const { pages } = currentData as InfiniteData<ResponseData>;
+    if (isInfiniteData<ResponseData>(currentData)) {
+      const { pages } = currentData;
       return {
         ...currentData,
         pages: pages.map((page) => ({
@@ -87,8 +93,8 @@ export const deleteFromQueryCache = <ResponseData, Payload>(
 
     const deletedIds = idsFromPayload?.(payload) || [payload as string];
 
-    if (typeof currentData === 'object' && 'pages' in currentData) {
-      const { pages } = currentData as InfiniteData<ResponseData>;
+    if (isInfiniteData<ResponseData>(currentData)) {
+      const { pages } = currentData;
       return {
         ...currentData,
         pages: pages.map((page) => ({
