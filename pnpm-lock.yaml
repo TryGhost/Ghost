@@ -512,6 +512,9 @@ catalogs:
     fastq:
       specifier: ^1.20.1
       version: 1.20.1
+    flexsearch:
+      specifier: 0.7.43
+      version: 0.7.43
     form-data:
       specifier: 4.0.6
       version: 4.0.6
@@ -1041,6 +1044,9 @@ importers:
       dompurify:
         specifier: 'catalog:'
         version: 3.4.13
+      flexsearch:
+        specifier: 'catalog:'
+        version: 0.7.43
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0
