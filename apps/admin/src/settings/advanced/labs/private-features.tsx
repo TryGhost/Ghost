@@ -94,6 +94,12 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
+    title: 'Member location maps',
+    description:
+      'Show a location map and profile header on member pages, with state pins for US members.',
+    flag: 'memberLocationMap',
+  },
+  {
     title: 'Member custom fields',
     description:
       'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
