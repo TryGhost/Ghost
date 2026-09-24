@@ -1,9 +1,7 @@
 const ghostBookshelf = require('./base');
 const ghostVersion = require('@tryghost/version');
-let Webhook;
-let Webhooks;
 
-Webhook = ghostBookshelf.Model.extend(
+const Webhook = ghostBookshelf.Model.extend(
   {
     tableName: 'webhooks',
 
@@ -87,7 +85,7 @@ Webhook = ghostBookshelf.Model.extend(
   },
 );
 
-Webhooks = ghostBookshelf.Collection.extend({
+const Webhooks = ghostBookshelf.Collection.extend({
   model: Webhook,
 });
 

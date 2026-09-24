@@ -316,7 +316,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     isRouteActive(routeNames, queryParams) {
-        let currentRouteName = this.router.currentRouteName?.replace(/_loading$/, '') || '';
+        const currentRouteName = this.router.currentRouteName?.replace(/_loading$/, '') || '';
         
         // Normalize routeNames to an array
         const routes = Array.isArray(routeNames) ? routeNames : routeNames.split(' ');
@@ -363,7 +363,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
         }
 
         const params = {};
-        for (let param of controller.queryParams) {
+        for (const param of controller.queryParams) {
             let controllerKey, urlKey;
             
             if (typeof param === 'string') {

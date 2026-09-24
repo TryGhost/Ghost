@@ -3,7 +3,7 @@ const debug = require('@tryghost/debug')('headers');
 const INVALIDATE_ALL = '/*';
 
 const cacheInvalidate = (result, options = {}) => {
-  let value = options.value;
+  const value = options.value;
 
   return {
     'X-Cache-Invalidate': value || INVALIDATE_ALL,
@@ -103,7 +103,7 @@ module.exports = {
    * @return {Promise<object>}
    */
   async get(result, apiConfigHeaders = {}, frame) {
-    let headers = {};
+    const headers = {};
 
     if (apiConfigHeaders.disposition) {
       const dispositionHeader = await disposition[apiConfigHeaders.disposition.type](

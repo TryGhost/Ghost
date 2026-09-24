@@ -142,7 +142,7 @@ describe('Portal Data links:', () => {
     });
 
     // Mock window.location
-    let locationMock = vi.fn();
+    const locationMock = vi.fn();
     delete window.location;
     window.location = { assign: locationMock };
     window.location.href = new URL('https://portal.localhost').href;
@@ -199,7 +199,7 @@ describe('Portal Data links:', () => {
       describe('with only a free plan', () => {
         test('renders invite-only message and does not allow signups', async () => {
           window.location.hash = '#/portal/signup';
-          let { popupFrame } = await setup({
+          const { popupFrame } = await setup({
             site: { ...FixtureSite.singleTier.onlyFreePlan, members_signup_access: 'paid' },
             member: null,
           });
@@ -218,7 +218,7 @@ describe('Portal Data links:', () => {
           window.location.hash = '#/portal/signup';
 
           // Set up a paid-members only site with a free tier + 3 paid tiers
-          let { popupFrame } = await setup({
+          const { popupFrame } = await setup({
             site: { ...FixtureSite.multipleTiers.basic, members_signup_access: 'paid' },
             member: null,
           });
@@ -262,7 +262,7 @@ describe('Portal Data links:', () => {
     test('does not open Portal when a paid member opens an offer link directly', async () => {
       window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
 
-      let { ghostApi, popupFrame, triggerButtonFrame, ...utils } = await setup({
+      const { ghostApi, popupFrame, triggerButtonFrame, ...utils } = await setup({
         site: FixtureSite.singleTier.basic,
         member: FixtureMember.paid,
         showPopup: false,
@@ -331,7 +331,7 @@ describe('Portal Data links:', () => {
     describe('on a paid-members only site', () => {
       test('renders paid-members only message and does not allow signups', async () => {
         window.location.hash = '#/portal/signup/free';
-        let { popupFrame } = await setup({
+        const { popupFrame } = await setup({
           site: { ...FixtureSite.multipleTiers.basic, members_signup_access: 'paid' },
           member: null,
         });
@@ -550,7 +550,7 @@ describe('Portal Data links:', () => {
     test('does not open when Stripe is disconnected', async () => {
       window.location.hash = '#/portal/gift';
 
-      let { popupFrame, triggerButtonFrame } = await setup({
+      const { popupFrame, triggerButtonFrame } = await setup({
         site: FixtureSite.singleTier.withoutStripe,
         showPopup: false,
       });
@@ -591,7 +591,7 @@ describe('Portal Data links:', () => {
     };
 
     test('renders a toast error when gift has expired', async () => {
-      let { ghostApi, triggerButtonFrame, ...utils } = await setupGiftRedemption({
+      const { ghostApi, triggerButtonFrame, ...utils } = await setupGiftRedemption({
         giftError: Object.assign(new Error('This gift has expired.'), { code: 'GIFT_EXPIRED' }),
       });
 
@@ -605,7 +605,7 @@ describe('Portal Data links:', () => {
     });
 
     test('renders a toast error when gift has already been redeemed', async () => {
-      let { ghostApi, triggerButtonFrame, ...utils } = await setupGiftRedemption({
+      const { ghostApi, triggerButtonFrame, ...utils } = await setupGiftRedemption({
         giftError: Object.assign(new Error('This gift has already been redeemed.'), {
           code: 'GIFT_REDEEMED',
         }),
@@ -621,7 +621,7 @@ describe('Portal Data links:', () => {
     });
 
     test('renders a toast error when logged-in member already has an active subscription', async () => {
-      let { ghostApi, triggerButtonFrame, ...utils } = await setupGiftRedemption({
+      const { ghostApi, triggerButtonFrame, ...utils } = await setupGiftRedemption({
         giftError: Object.assign(new Error('You already have an active subscription.'), {
           code: 'GIFT_PAID_MEMBER',
         }),
@@ -637,7 +637,7 @@ describe('Portal Data links:', () => {
     });
 
     test('renders a toast error when gift link is invalid', async () => {
-      let { ghostApi, triggerButtonFrame, ...utils } = await setupGiftRedemption({
+      const { ghostApi, triggerButtonFrame, ...utils } = await setupGiftRedemption({
         giftError: Object.assign(new Error('Gift not found'), { code: 'GIFT_NOT_FOUND' }),
       });
 
@@ -778,7 +778,7 @@ describe('Portal Data links:', () => {
       window.location.pathname = '/';
       window.sessionStorage.setItem(GIFT_FORM_STATE_KEY, 'saved-draft');
 
-      let { popupFrame, triggerButtonFrame } = await setup({
+      const { popupFrame, triggerButtonFrame } = await setup({
         site: FixtureSite.singleTier.basic,
         showPopup: false,
       });

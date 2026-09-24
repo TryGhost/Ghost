@@ -31,7 +31,7 @@ class BootLogger {
    * @returns {void}
    */
   log(message) {
-    let { logging, startTime } = this;
+    const { logging, startTime } = this;
     logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
   }
   /**
@@ -40,7 +40,7 @@ class BootLogger {
    * @returns {void}
    */
   metric(name, initialTime) {
-    let { metrics, startTime } = this;
+    const { metrics, startTime } = this;
 
     if (!initialTime) {
       initialTime = startTime;
@@ -141,10 +141,6 @@ async function initCore({ ghostServer, config }) {
     debug('Begin: Job Service');
     const jobService = require('./server/services/jobs');
 
-    if (config.get('server:testmode')) {
-      jobService.initTestMode();
-    }
-
     ghostServer.registerCleanupTask(async () => {
       await jobService.shutdown();
     }, 'Job Service');
@@ -153,10 +149,6 @@ async function initCore({ ghostServer, config }) {
     // Mentions Job Service allows mentions to be processed in the background
     debug('Begin: Mentions Job Service');
     const mentionsJobService = require('./server/services/mentions-jobs');
-
-    if (config.get('server:testmode')) {
-      mentionsJobService.initTestMode();
-    }
 
     ghostServer.registerCleanupTask(async () => {
       await mentionsJobService.shutdown();
@@ -409,7 +401,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     indexnow.init(),
     slack.init(),
     audienceFeedback.init(),
-    emailService.init({ ghostServer }),
+    emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       automationsApi,
       config,
@@ -544,11 +536,8 @@ async function initBackgroundServices({ config }) {
     ]);
   }
 
-  const labs = require('./shared/labs');
-  if (labs.isSet('automationsTinybirdSync')) {
-    const tinybirdSync = require('./server/services/tinybird-sync');
-    tinybirdSync.start();
-  }
+  const tinybirdSync = require('./server/services/tinybird-sync');
+  tinybirdSync.start();
 
   try {
     const updateCheck = require('./server/services/update-check');
@@ -704,10 +693,14 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const gifts = require('./server/services/gifts');
     const memberJobs = require('./server/services/members/jobs');
     const mentionsService = require('./server/services/mentions');
+    const membersService = require('./server/services/members');
+    const emailService = require('./server/services/email-service');
     memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
     assert(mentionsService.controller, 'Mentions controller should be initialized');
     assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
+    assert(membersService.handleImportJob, 'Members service should be initialized');
+    assert(emailService.service, 'Email service should be initialized');
     registerJobHandlers({
       jobsService,
       memberJobs,
@@ -715,6 +708,8 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       mediaInliner: mediaInliner.getInstance(),
       mentionsController: mentionsService.controller,
       mentionsSendingService: mentionsService.sendingService,
+      membersService,
+      emailService: emailService.service,
     });
     await jobsService.start();
     debug('End: Register job handlers');

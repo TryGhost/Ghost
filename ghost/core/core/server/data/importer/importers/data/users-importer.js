@@ -33,11 +33,11 @@ class UsersImporter extends BaseImporter {
     debug('beforeImport');
 
     let role;
-    let lookup = {};
+    const lookup = {};
 
     // NOTE: sort out duplicated roles based on incremental id
     _.each(this.requiredFromFile.roles_users, (attachedRole) => {
-      if (Object.prototype.hasOwnProperty.call(lookup, attachedRole.user_id)) {
+      if (Object.hasOwn(lookup, attachedRole.user_id)) {
         if (lookup[attachedRole.user_id].id < attachedRole.id) {
           lookup[attachedRole.user_id] = attachedRole;
         }
@@ -70,7 +70,7 @@ class UsersImporter extends BaseImporter {
 
       _.each(this.dataToImport, (obj) => {
         if (attachedRole.user_id === obj.id) {
-          if (!_.isArray(obj.roles)) {
+          if (!Array.isArray(obj.roles)) {
             obj.roles = [];
           }
 

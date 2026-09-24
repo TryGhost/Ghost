@@ -86,23 +86,108 @@ describe('i18n', function () {
     }
   });
 
-  it('is uses default export if available', async function () {
-    const translationFile = requireJson(path.join(`../locales/`, 'nl', 'portal.json'));
-    translationFile.Name = undefined;
-    translationFile.default = {
-      Name: 'Naam',
-    };
+  it('reads locale files from disk instead of pinning them in the module cache', function () {
+    // The Node loader reads and parses the file rather than require()ing it, so a
+    // locale is held only by the i18next store that asked for it and can be
+    // collected once that store goes away. A require() would pin it for the life
+    // of the process, defeating the point of loading one locale at a time.
+    const localeFile = path.join(import.meta.dirname, '../locales/nl/portal.json');
+    delete requireJson.cache[localeFile];
 
-    const t = i18n('nl', 'portal').t;
-    assert.equal(t('Name'), 'Naam');
+    assert.equal(i18n('nl', 'portal').t('Name'), 'Naam');
+    assert.equal(requireJson.cache[localeFile], undefined);
   });
 
-  it('generateResources (CJS require path) resolves locales and falls back to English', function () {
+  it('generateResources (Node file loader) resolves locales and falls back to English', function () {
     const resources = i18n.generateResources(['nl', 'xx'], 'portal');
 
     assert.equal(resources.nl.portal.Name, 'Naam');
-    // 'xx' is not a bundled locale — the require loader falls back to English.
+    // 'xx' is not a bundled locale — there is no file to read, so it falls back to English.
     assert.equal(resources.xx.portal.Name, i18n.generateResources(['en'], 'portal').en.portal.Name);
+  });
+
+  it('ignores a locale that would escape the locales directory', function () {
+    // `locale` builds a path, so a traversal must not be able to read an arbitrary
+    // ghost.json from elsewhere in the repo; it falls back to English instead.
+    const resources = i18n.generateResources(['../../../ghost/core/core/shared'], 'ghost');
+
+    assert.deepEqual(
+      resources['../../../ghost/core/core/shared'].ghost,
+      i18n.generateResources(['en'], 'ghost').en.ghost,
+    );
+  });
+
+  describe('only loads the locales that are actually in use', function () {
+    // The package ships ~60 locales per namespace. An instance must only ever
+    // register the locale it was asked for plus whatever i18next falls back to,
+    // so a site never pays for 59 locales it will not render.
+    const localesIn = (instance: I18nextInstance) => Object.keys(instance.store.data).sort();
+
+    it('registers only the requested locale and English', function () {
+      assert.deepEqual(localesIn(i18n('nl', 'ghost')), ['en', 'nl']);
+    });
+
+    it('registers the base language of a regional locale', function () {
+      // 'de-CH' resolves through 'de' before reaching English.
+      assert.deepEqual(localesIn(i18n('de-CH', 'portal')), ['de', 'de-CH', 'en']);
+    });
+
+    it('registers the configured fallback rather than the requested locale', function () {
+      // 'no' has no locale files of its own — it is mapped to 'nb' by fallbackLng.
+      const instance = i18n('no', 'portal');
+
+      assert.deepEqual(localesIn(instance), ['en', 'nb']);
+      assert.equal(instance.t('Yearly'), 'Årlig');
+    });
+
+    it('keeps the English fallback loaded for plural forms', function () {
+      // The English files are almost entirely empty strings — with returnEmptyString
+      // false the key itself is the English text, so the fallback looks like dead
+      // weight. It is not: a handful of plural keys ({count} month/year) have real
+      // English values, and most locales leave their own plural forms empty. Without
+      // en in the store those render as "2 month".
+      const t = i18n('nl', 'ghost').t;
+
+      assert.equal(t('{count} month', { count: 2 }), '2 months');
+      assert.equal(t('{count} year', { count: 3 }), '3 years');
+    });
+
+    it('registers only English for an unsupported locale', function () {
+      const instance = i18n('xx', 'portal');
+
+      assert.deepEqual(localesIn(instance), ['en']);
+      assert.equal(instance.resolvedLanguage, 'en');
+      assert.equal(instance.t('Name'), 'Name');
+    });
+
+    it('loads a locale on demand when the language changes', async function () {
+      // Ghost switches an existing instance's language when the site locale is
+      // edited, so a locale left unloaded at init still has to resolve later.
+      const instance = i18n('en', 'ghost');
+
+      assert.deepEqual(localesIn(instance), ['en']);
+
+      await instance.changeLanguage('fr');
+
+      assert.deepEqual(localesIn(instance), ['en', 'fr']);
+      assert.equal(instance.resolvedLanguage, 'fr');
+      assert.equal(
+        instance.t('Your subscription will renew on {date}.', { date: '8 Oct 2024' }),
+        'Votre abonnement sera renouvelé le 8 Oct 2024.',
+      );
+    });
+
+    it('keeps text direction correct after a language change', async function () {
+      // dir() reads the resolved language, which is only right if the new
+      // locale's resources are in the store before i18next resolves it.
+      const instance = i18n('en', 'ghost');
+
+      assert.equal(instance.dir(), 'ltr');
+
+      await instance.changeLanguage('ar');
+
+      assert.equal(instance.dir(), 'rtl');
+    });
   });
 
   describe('per-namespace registry entries', function () {

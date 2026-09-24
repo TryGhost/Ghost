@@ -345,6 +345,19 @@ describe('Post settings access', () => {
     await expect.element(editorScreen.updateButton()).toBeEnabled();
   });
 
+  it('browses paid tiers at the URL the publish flow and preview also send', async () => {
+    fakeSavablePost({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
+    const tiersApi = fakeTiers(SITE_TIERS);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await expect.element(editorScreen.settingsTier('Gold')).toBeVisible();
+    // A differently spelled param order would be a second cache entry and a second browse.
+    await expect
+      .poll(() => new URL(tiersApi.lastRequest?.url ?? '', window.location.origin).search)
+      .toBe('?filter=type%3Apaid&limit=all');
+  });
+
   it('leaves Access out for a role that cannot set it', async () => {
     fakeSavablePost({ authors: [{ id: '1' }] });
     await renderAdminApp(`/editor/post/${POST_ID}`, asContributor());

@@ -24,7 +24,7 @@ describe('Integration: Component: gh-alert', function () {
 
         await render(hbs`<GhAlert @message={{this.message}} />`);
 
-        let alert = this.element.querySelector('article.gh-alert');
+        const alert = this.element.querySelector('article.gh-alert');
         expect(alert).to.exist;
         expect(alert).to.contain.text('Test message');
     });
@@ -33,7 +33,7 @@ describe('Integration: Component: gh-alert', function () {
         this.set('message', new Message({message: 'Test message', type: 'success'}));
 
         await render(hbs`<GhAlert @message={{this.message}} />`);
-        let alert = this.element.querySelector('article.gh-alert');
+        const alert = this.element.querySelector('article.gh-alert');
 
         this.message.type = 'success';
         await settled();
@@ -53,13 +53,13 @@ describe('Integration: Component: gh-alert', function () {
     });
 
     it('closes notification through notifications service', async function () {
-        let message = new Message({message: 'Test close', type: 'success'});
+        const message = new Message({message: 'Test close', type: 'success'});
         this.set('message', message);
 
         await render(hbs`<GhAlert @message={{this.message}} />`);
         expect(find('article.gh-alert')).to.exist;
 
-        let notifications = this.owner.lookup('service:notifications');
+        const notifications = this.owner.lookup('service:notifications');
         notifications.closeNotification = sinon.stub();
 
         await click('[data-test-button="close-notification"]');

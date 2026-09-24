@@ -5,7 +5,6 @@ const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
-const jobsService = require('../../../core/server/services/jobs');
 const { mockManager } = require('../../utils/e2e-framework');
 
 // When the uploaded CSV has no subscription/comp columns at all, the import must not
@@ -37,7 +36,7 @@ describe('Members import with absent subscription columns', function () {
       .expect('Cache-Control', testUtils.cacheRules.private);
     assert.equal(res.status, 202, 'over the threshold the import defers');
 
-    await jobsService.allSettled();
+    await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
 
     const email = mockManager.assert.sentEmail({ subject: 'Your member import is complete' });
     const parsed = papaparse.parse(email.attachments[0].content.trim(), { header: true });

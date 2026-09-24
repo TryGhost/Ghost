@@ -64,8 +64,8 @@ async function fetchData(pathOptions, routerOptions, locals) {
   pathOptions = pathOptions || {};
   routerOptions = routerOptions || {};
 
-  let postQuery = _.cloneDeep(defaultPostQuery);
-  let promises = [];
+  const postQuery = _.cloneDeep(defaultPostQuery);
+  const promises = [];
 
   if (routerOptions.filter) {
     postQuery.options.filter = routerOptions.filter;
@@ -75,11 +75,11 @@ async function fetchData(pathOptions, routerOptions, locals) {
     postQuery.options.order = routerOptions.order;
   }
 
-  if (Object.prototype.hasOwnProperty.call(pathOptions, 'page')) {
+  if (Object.hasOwn(pathOptions, 'page')) {
     postQuery.options.page = pathOptions.page;
   }
 
-  if (Object.prototype.hasOwnProperty.call(pathOptions, 'limit')) {
+  if (Object.hasOwn(pathOptions, 'limit')) {
     postQuery.options.limit = pathOptions.limit;
   }
 

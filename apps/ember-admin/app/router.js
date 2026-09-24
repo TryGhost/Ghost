@@ -34,9 +34,6 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('tag.new', {path: '/tags/new'});
-    this.route('tag', {path: '/tags/:tag_slug'});
-
     this.route('migrate', function () {
         this.route('migrate', {path: '/*platform'});
     });

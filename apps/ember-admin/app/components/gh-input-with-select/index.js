@@ -39,7 +39,7 @@ export default class GhInputWithSelectComponent extends Component {
                 return newOptions;
             }
 
-            let searchAction = this.args.search;
+            const searchAction = this.args.search;
             if (searchAction) {
                 return resolve(searchAction(term, select)).then((results) => {
                     if (results.toArray) {

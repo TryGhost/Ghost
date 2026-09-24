@@ -9,8 +9,6 @@ import nql from '@tryghost/nql';
 import {action} from '@ember/object';
 import {canCopyGiftLink} from 'ghost-admin/utils/gift-link';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
-import {getPagePlacement, pagePathForSlug, setPagesNavigationPlacement} from 'ghost-admin/utils/site-navigation';
-import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 import {trackEvent} from 'ghost-admin/utils/analytics';
@@ -70,10 +68,7 @@ export default class PostsContextMenu extends Component {
     @service store;
     @service notifications;
     @service membersUtils;
-    @service settings;
     @service stateBridge;
-
-    @inject config;
 
     get menu() {
         return this.args.menu;
@@ -478,13 +473,13 @@ export default class PostsContextMenu extends Component {
 
     async performBulkDestroy() {
         const filter = this.selectionList.filter;
-        let bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts' : 'pages') + `?filter=${encodeURIComponent(filter)}`;
+        const bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts' : 'pages') + `?filter=${encodeURIComponent(filter)}`;
         return await this.ajax.delete(bulkUpdateUrl);
     }
 
     async performBulkEdit(_action, meta = {}) {
         const filter = this.selectionList.filter;
-        let bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts/bulk' : 'pages/bulk') + `?filter=${encodeURIComponent(filter)}`;
+        const bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts/bulk' : 'pages/bulk') + `?filter=${encodeURIComponent(filter)}`;
         return await this.ajax.put(bulkUpdateUrl, {
             data: {
                 bulk: {
@@ -540,100 +535,5 @@ export default class PostsContextMenu extends Component {
 
     get canCopySelection() {
         return this.selectionList.availableModels.length === 1;
-    }
-
-    // site navigation --------------------------------------------------------
-
-    // Published only (draft/scheduled urls 404). Also needs every selected
-    // model loaded: there's no bulk nav endpoint, so cmd+A on a long list
-    // would only update the rows currently in memory.
-    get canManageNavigation() {
-        const models = this.selectionList.availableModels;
-
-        return this.type === 'page'
-            && this.session.user.isAdmin
-            && models.length > 0
-            && models.length === this.selectionList.count
-            && models.every(model => model.status === 'published');
-    }
-
-    get selectedPagePlacements() {
-        return this.selectionList.availableModels
-            .map(model => getPagePlacement(this.settings, pagePathForSlug(model.slug, this.config.pageRoutes), this.config.blogUrl, this.config.pageRoutes));
-    }
-
-    get isSingleSelection() {
-        return this.selectionList.availableModels.length === 1;
-    }
-
-    get singleNavigationPlacement() {
-        return this.isSingleSelection ? this.selectedPagePlacements[0] : null;
-    }
-
-    get canAddToPrimaryNavigation() {
-        return this.selectedPagePlacements.some(placement => placement !== 'primary');
-    }
-
-    get canAddToSecondaryNavigation() {
-        return this.selectedPagePlacements.some(placement => placement !== 'secondary');
-    }
-
-    get canRemoveFromNavigation() {
-        return this.selectedPagePlacements.some(placement => placement !== null);
-    }
-
-    get primaryNavigationActionLabel() {
-        return this.singleNavigationPlacement === 'secondary' ? 'Move to primary navigation' : 'Add to primary navigation';
-    }
-
-    get secondaryNavigationActionLabel() {
-        return this.singleNavigationPlacement === 'primary' ? 'Move to secondary navigation' : 'Add to secondary navigation';
-    }
-
-    @action
-    addToPrimaryNavigation() {
-        this.menu.performTask({perform: () => this.updateNavigationPlacementTask.perform('primary')});
-    }
-
-    @action
-    addToSecondaryNavigation() {
-        this.menu.performTask({perform: () => this.updateNavigationPlacementTask.perform('secondary')});
-    }
-
-    @action
-    removeFromNavigation() {
-        this.menu.performTask({perform: () => this.updateNavigationPlacementTask.perform('none')});
-    }
-
-    @task
-    *updateNavigationPlacementTask(placement) {
-        const pages = this.selectionList.availableModels
-            .map(model => ({label: model.title, path: pagePathForSlug(model.slug, this.config.pageRoutes)}));
-        const count = pages.length;
-        const isMove = count === 1 && this.singleNavigationPlacement && this.singleNavigationPlacement !== placement;
-
-        try {
-            yield setPagesNavigationPlacement(this.settings, {
-                pages,
-                placement: placement === 'none' ? null : placement,
-                blogUrl: this.config.blogUrl,
-                pageRoutes: this.config.pageRoutes
-            });
-
-            let message;
-            if (placement === 'none') {
-                message = count > 1 ? `${count} pages removed from navigation` : 'Page removed from navigation';
-            } else if (isMove) {
-                message = `Page moved to ${placement} navigation`;
-            } else {
-                message = count > 1 ? `${count} pages added to ${placement} navigation` : `Page added to ${placement} navigation`;
-            }
-
-            this.notifications.showNotification(message, {type: 'success'});
-        } catch (error) {
-            this.notifications.showAPIError(error, {key: 'navigation.save'});
-        }
-
-        return true;
     }
 }

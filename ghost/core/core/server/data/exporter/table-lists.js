@@ -34,6 +34,7 @@ const BACKUP_TABLES = [
   'members_payment_events',
   'members_login_events',
   'members_email_change_events',
+  'members_metafield_change_events',
   'members_status_events',
   'members_paid_subscription_events',
   'members_subscribe_events',

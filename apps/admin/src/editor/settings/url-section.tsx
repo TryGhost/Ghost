@@ -8,7 +8,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
 import { normalizeManualSlug } from '@/editor/engine/slug-machine';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';
 import { formatUrlPreview } from './url-preview';
 
@@ -23,7 +23,7 @@ export function UrlSection({
   postType,
   siteUrl,
 }: {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
   siteUrl: string;
 }) {

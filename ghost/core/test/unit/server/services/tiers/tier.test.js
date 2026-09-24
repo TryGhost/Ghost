@@ -77,7 +77,7 @@ describe('Tier', function () {
   describe('create', function () {
     it('Errors if passed an invalid input', async function () {
       for (const invalidInput of invalidInputs) {
-        let input = {};
+        const input = {};
         Object.assign(input, validInput, invalidInput);
         await assertError(async function () {
           await Tier.create(input);
@@ -98,7 +98,7 @@ describe('Tier', function () {
 
     it('Does not error for valid inputs', async function () {
       for (const validInputItem of validInputs) {
-        let input = {};
+        const input = {};
         Object.assign(input, validInput, validInputItem);
         await Tier.create(input);
       }

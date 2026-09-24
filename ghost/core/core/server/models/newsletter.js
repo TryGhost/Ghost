@@ -85,7 +85,7 @@ const Newsletter = ghostBookshelf.Model.extend(
     },
 
     subscribeMembersById(memberIds, unfilteredOptions = {}) {
-      let pivotRows = [];
+      const pivotRows = [];
       for (const memberId of memberIds) {
         pivotRows.push({
           id: ObjectID().toHexString(),

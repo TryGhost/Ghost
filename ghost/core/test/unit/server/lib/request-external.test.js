@@ -71,7 +71,29 @@ describe('External Request', function () {
       assert.equal(isPrivateIp('8.8.8.8'), false);
       assert.equal(isPrivateIp('1.1.1.1'), false);
       assert.equal(isPrivateIp('123.123.123.123'), false);
-      assert.equal(isPrivateIp('203.0.113.1'), false);
+      assert.equal(isPrivateIp('192.0.1.1'), false);
+    });
+
+    it('detects documentation and test ranges as private', function () {
+      assert.equal(isPrivateIp('192.0.2.1'), true);
+      assert.equal(isPrivateIp('198.51.100.1'), true);
+      assert.equal(isPrivateIp('203.0.113.1'), true);
+      assert.equal(isPrivateIp('2001:db8::1'), true);
+    });
+
+    it('detects other special-purpose IPv6 ranges as private', function () {
+      assert.equal(isPrivateIp('fec0::1'), true); // deprecated site-local
+      assert.equal(isPrivateIp('100::1'), true); // discard
+      assert.equal(isPrivateIp('2001:2::1'), true); // benchmarking
+    });
+
+    it('detects shortened IPv4 notation as private', function () {
+      assert.equal(isPrivateIp('127.1'), true);
+      assert.equal(isPrivateIp('10.1'), true);
+    });
+
+    it('detects IPv6 addresses with zone IDs as private', function () {
+      assert.equal(isPrivateIp('fe80::1%eth0'), true);
     });
 
     // Octal bypass attempts
@@ -186,6 +208,63 @@ describe('External Request', function () {
 
     it('allows public IPv4-mapped IPv6 addresses (hex notation)', function () {
       assert.equal(isPrivateIp('::ffff:808:808'), false); // 8.8.8.8
+    });
+
+    it('detects 192.0.0.0/24 IETF protocol assignments as private', function () {
+      assert.equal(isPrivateIp('192.0.0.1'), true);
+      assert.equal(isPrivateIp('192.0.0.255'), true);
+    });
+
+    it('detects 224.0.0.0/4 multicast as private', function () {
+      assert.equal(isPrivateIp('224.0.0.1'), true);
+      assert.equal(isPrivateIp('239.255.255.255'), true);
+      assert.equal(isPrivateIp('223.255.255.255'), false);
+    });
+
+    it('detects IPv4-compatible IPv6 addresses (::/96) as private', function () {
+      assert.equal(isPrivateIp('::7f00:1'), true);
+      assert.equal(isPrivateIp('::127.0.0.1'), true);
+      assert.equal(isPrivateIp('::808:808'), true);
+    });
+
+    it('detects IPv4-translated IPv6 addresses with private IPv4 as private', function () {
+      assert.equal(isPrivateIp('::ffff:0:127.0.0.1'), true);
+      assert.equal(isPrivateIp('::ffff:0:a9fe:a9fe'), true);
+      assert.equal(isPrivateIp('::ffff:0:808:808'), false);
+    });
+
+    it('detects NAT64 64:ff9b::/96 addresses with private IPv4 as private', function () {
+      assert.equal(isPrivateIp('64:ff9b::7f00:1'), true); // 127.0.0.1
+      assert.equal(isPrivateIp('64:ff9b::a9fe:a9fe'), true); // 169.254.169.254
+      assert.equal(isPrivateIp('64:ff9b::10.0.0.1'), true);
+      assert.equal(isPrivateIp('64:ff9b:0:0:0:0:c0a8:1'), true); // 192.168.0.1
+      assert.equal(isPrivateIp('64:ff9b::808:808'), false); // 8.8.8.8
+    });
+
+    it('detects NAT64 local-use 64:ff9b:1::/48 as private', function () {
+      assert.equal(isPrivateIp('64:ff9b:1::a00:1'), true);
+      assert.equal(isPrivateIp('64:ff9b:1:ffff::808:808'), true);
+    });
+
+    it('detects 6to4 2002::/16 addresses with private IPv4 as private', function () {
+      assert.equal(isPrivateIp('2002:a9fe:a9fe::'), true); // 169.254.169.254
+      assert.equal(isPrivateIp('2002:7f00:1::1'), true); // 127.0.0.1
+      assert.equal(isPrivateIp('2002:808:808::1'), false); // 8.8.8.8
+    });
+
+    it('detects Teredo 2001::/32 as private', function () {
+      assert.equal(isPrivateIp('2001::a9fe:a9fe'), true);
+      assert.equal(isPrivateIp('2001:0:4136:e378:8000:63bf:3fff:fdd2'), true);
+    });
+
+    it('detects IPv6 multicast ff00::/8 as private', function () {
+      assert.equal(isPrivateIp('ff02::1'), true);
+    });
+
+    it('allows public IPv6 addresses', function () {
+      assert.equal(isPrivateIp('2606:4700:4700::1111'), false);
+      assert.equal(isPrivateIp('2001:4860:4860::8888'), false);
+      assert.equal(isPrivateIp('2a00:1450:4001:80b::200e'), false);
     });
 
     // Edge cases - fail closed

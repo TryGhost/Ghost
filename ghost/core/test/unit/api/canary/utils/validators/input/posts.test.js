@@ -136,7 +136,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
           },
         };
 
-        let result = validators.input.posts.add(apiConfig, frame);
+        const result = validators.input.posts.add(apiConfig, frame);
 
         assert(frame.data.posts[0].title);
         assert(frame.data.posts[0].authors);

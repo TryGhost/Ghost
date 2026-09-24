@@ -367,7 +367,7 @@ module.exports = class StripeAPI {
         let latestCustomer = customers[0];
         let latestSubscriptionTime = 0;
 
-        for (let customer of customers) {
+        for (const customer of customers) {
           // skip customers with no subscriptions
           if (
             !customer.subscriptions ||
@@ -378,7 +378,7 @@ module.exports = class StripeAPI {
           }
 
           // find the customer with the most recent subscription
-          for (let subscription of customer.subscriptions.data) {
+          for (const subscription of customer.subscriptions.data) {
             if (
               subscription.current_period_end &&
               subscription.current_period_end > latestSubscriptionTime
@@ -606,7 +606,7 @@ module.exports = class StripeAPI {
       subscriptionData.trial_period_days = options.trialDays;
     }
 
-    let stripeSessionOptions = {
+    const stripeSessionOptions = {
       payment_method_types: this.PAYMENT_METHOD_TYPES,
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,

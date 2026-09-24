@@ -240,7 +240,7 @@ class CacheManager {
   getPublic() {
     // This block correctly builds the type signature for the return value
     /** @type {PublicSettingsCache} */
-    let settings = Object.fromEntries(
+    const settings = Object.fromEntries(
       Object.keys(this.publicSettings).map((key) => [this.publicSettings[key], null]),
     );
 

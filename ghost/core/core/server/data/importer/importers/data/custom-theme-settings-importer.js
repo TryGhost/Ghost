@@ -20,7 +20,7 @@ class CustomThemeSettingsImporter extends BaseImporter {
   async doImport(options, importOptions) {
     debug('doImport', this.modelName, this.dataToImport.length);
 
-    let ops = [];
+    const ops = [];
 
     _.each(this.dataToImport, (item) => {
       ops.push(async () => {

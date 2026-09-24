@@ -34,7 +34,7 @@ function lexicalWithPublicPreview({before = 'Public preview content', after = 'F
 }
 
 describe('Acceptance: Publish flow', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(function () {

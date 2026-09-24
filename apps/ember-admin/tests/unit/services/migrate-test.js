@@ -40,7 +40,7 @@ describe('Unit: Service: migrate', function () {
             csvContentImporter: false
         }));
 
-        let payload = await migrateService.postMessagePayload();
+        const payload = await migrateService.postMessagePayload();
 
         expect(payload).to.be.an('object').that.has.all.keys('apiUrl', 'apiKey', 'stripe', 'csvContentImporter', 'ghostVersion', 'ownerEmail');
         expect(isValidUrl(payload.apiUrl)).to.be.true;
@@ -67,7 +67,7 @@ describe('Unit: Service: migrate', function () {
             csvContentImporter: true
         }));
 
-        let payload = await migrateService.postMessagePayload();
+        const payload = await migrateService.postMessagePayload();
 
         expect(payload.csvContentImporter).to.be.true;
     });

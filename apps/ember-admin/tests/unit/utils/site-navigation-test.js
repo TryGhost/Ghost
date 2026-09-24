@@ -5,8 +5,7 @@ import {expect} from 'chai';
 import {
     getPagePlacement,
     pagePathForSlug,
-    setPageNavigationPlacement,
-    setPagesNavigationPlacement
+    setPageNavigationPlacement
 } from 'ghost-admin/utils/site-navigation';
 
 // stubs for getPagePlacement / set*Placement
@@ -111,7 +110,7 @@ describe('Unit: Util: site-navigation', function () {
         });
     });
 
-    describe('setPagesNavigationPlacement', function () {
+    describe('setPageNavigationPlacement', function () {
         const blogUrl = 'https://example.com/';
 
         for (const placement of ['primary', 'secondary', null]) {
@@ -152,25 +151,6 @@ describe('Unit: Util: site-navigation', function () {
                 });
             }
         }
-
-        it('uses aliases in bulk moves while preserving unrelated pages', async function () {
-            const pageRoutes = {home: '/', custom: '/blog/about/'};
-            const settings = mutableSettings({navigation: [
-                {label: 'Home', url: '/home/'},
-                {label: 'Custom', url: '/blog/about/'},
-                {label: 'About', url: '/about/'}
-            ]});
-
-            await setPagesNavigationPlacement(settings, {
-                pages: [{label: 'Home', path: '/'}, {label: 'Custom', path: '/blog/about/'}],
-                placement: 'secondary',
-                blogUrl: 'https://example.com/blog/',
-                pageRoutes
-            });
-
-            expect(settings.navigation.map(item => item.url)).to.deep.equal(['/about/']);
-            expect(settings.secondaryNavigation.map(item => item.url)).to.deep.equal(['/home/', '/blog/about/']);
-        });
 
         it('removes both the slug alias and the custom-route entry', async function () {
             const settings = mutableSettings({
@@ -249,40 +229,14 @@ describe('Unit: Util: site-navigation', function () {
                 .to.deep.equal([externalItem]);
         });
 
-        it('does not reorder or re-save pages already in the destination', async function () {
-            const settings = mutableSettings({
-                navigation: [
-                    {label: 'Home', url: '/'},
-                    {label: 'About', url: '/about/'},
-                    {label: 'Contact', url: '/contact/'}
-                ]
-            });
-
-            await setPagesNavigationPlacement(settings, {
-                pages: [
-                    {label: 'About', path: '/about/'},
-                    {label: 'Partners', path: '/partners/'}
-                ],
-                placement: 'primary',
-                blogUrl
-            });
-
-            expect(settings.saved).to.be.true;
-            expect(settings.navigation.map(item => item.label)).to.deep.equal([
-                'Home',
-                'About',
-                'Contact',
-                'Partners'
-            ]);
-        });
-
-        it('skips saving when every page is already in the destination', async function () {
+        it('skips saving when the page is already in the destination', async function () {
             const settings = mutableSettings({
                 navigation: [{label: 'About', url: '/about/'}]
             });
 
-            await setPagesNavigationPlacement(settings, {
-                pages: [{label: 'About', path: '/about/'}],
+            await setPageNavigationPlacement(settings, {
+                label: 'About',
+                path: '/about/',
                 placement: 'primary',
                 blogUrl
             });

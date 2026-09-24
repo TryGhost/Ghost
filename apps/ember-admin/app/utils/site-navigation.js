@@ -12,14 +12,10 @@ export function getPagePlacement(settings, path, blogUrl, pageRoutes) {
     return getPageNavigationPlacement(itemsFor(settings, 'navigation'), itemsFor(settings, 'secondaryNavigation'), path, blogUrl, pageRoutes);
 }
 
-export function setPageNavigationPlacement(settings, {label, path, ...options}) {
-    return setPagesNavigationPlacement(settings, {...options, pages: [{label, path}]});
-}
-
-export async function setPagesNavigationPlacement(settings, {pages, placement, blogUrl, pageRoutes}) {
+export async function setPageNavigationPlacement(settings, {label, path, placement, blogUrl, pageRoutes}) {
     await settings.reload();
     const desired = placement === 'primary' || placement === 'secondary' ? placement : null;
-    const result = updatePageNavigation(itemsFor(settings, 'navigation'), itemsFor(settings, 'secondaryNavigation'), pages, desired, blogUrl, pageRoutes);
+    const result = updatePageNavigation(itemsFor(settings, 'navigation'), itemsFor(settings, 'secondaryNavigation'), [{label, path}], desired, blogUrl, pageRoutes);
     if (!result.changed) {
         return desired;
     }

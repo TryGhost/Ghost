@@ -37,7 +37,7 @@ module.exports = class CommentsStatsService {
       .groupBy('post_id');
 
     /** @type Object<string, number> */
-    let counts = {};
+    const counts = {};
 
     for (const row of results) {
       counts[row.post_id] = row.count;

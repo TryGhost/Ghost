@@ -59,15 +59,15 @@ describe('Unit: Service: state-bridge', function () {
         it('does not claim route ownership before Labs settings load', function () {
             settings.settingsModel = null;
 
-            expect(service.isFeatureEnabled('tagDetailsReact')).to.be.undefined;
+            expect(service.isFeatureEnabled('postsListReact')).to.be.undefined;
         });
 
         it('exposes the same strict Labs state used by Ember routes', function () {
             settings.settingsModel = {};
-            sinon.stub(feature, 'tagDetailsReact').get(() => true);
+            sinon.stub(feature, 'postsListReact').get(() => true);
             sinon.stub(feature, 'adminUIRefresh').get(() => 'true');
 
-            expect(service.isFeatureEnabled('tagDetailsReact')).to.be.true;
+            expect(service.isFeatureEnabled('postsListReact')).to.be.true;
             expect(service.isFeatureEnabled('adminUIRefresh')).to.be.false;
             expect(service.isFeatureEnabled('missingFlag')).to.be.false;
         });

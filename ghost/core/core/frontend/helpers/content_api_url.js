@@ -8,7 +8,7 @@ module.exports = function content_api_url(options) {
   const absoluteUrlRequested = getAbsoluteOption(options);
 
   try {
-    let path = urlUtils.urlFor('api', { type: 'content' }, absoluteUrlRequested);
+    const path = urlUtils.urlFor('api', { type: 'content' }, absoluteUrlRequested);
     result = new SafeString(path);
   } catch (error) {
     logging.error(error);

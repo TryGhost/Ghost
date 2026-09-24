@@ -135,7 +135,7 @@ export default function NewsletterSelectionPage({ pageData, onBack }) {
               retry={retry}
               disabled={disabled}
               onClick={() => {
-                let newsletters = subscribedNewsletters.map((d) => {
+                const newsletters = subscribedNewsletters.map((d) => {
                   return {
                     id: d.id,
                     name: d.name,

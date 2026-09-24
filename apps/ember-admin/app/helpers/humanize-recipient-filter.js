@@ -11,7 +11,7 @@ export default helper(function humanizeRecipientFilter([filter = '']/*, hash*/) 
         return 'All subscribers';
     }
 
-    let outputParts = [];
+    const outputParts = [];
 
     if (parts.includes('status:free')) {
         outputParts.push('Free subscribers');

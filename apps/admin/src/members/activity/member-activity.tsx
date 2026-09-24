@@ -30,13 +30,14 @@ import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseMemberActivityFeed, useMember } from '@tryghost/admin-x-framework/api/members';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { formatMemberName, memberAvatarProps } from '@/members/member-format';
 import { parseActivityEvent } from './activity-event';
 import ActivityEmailPreview from './activity-email-preview';
 import ActivityMemberSearch from './activity-member-search';
 import ActivityRow from './activity-row';
 import { EventIcon } from '@/members/detail/member-activity-feed';
+import { useActivitySettings } from './use-activity-settings';
 import {
   availableActivityTypes,
   activityQueryOptions,
@@ -50,14 +51,7 @@ function ActivityPage() {
   const excluded = params.get('excludedEvents');
   const [previewEmail, setPreviewEmail] = useState<unknown>(null);
   const sentinel = useRef<HTMLDivElement>(null);
-  const settingsQuery = useBrowseSettings({ defaultErrorHandler: false });
-  const settings = settingsQuery.data?.settings ?? [];
-  const activitySettings = {
-    editorDefaultEmailRecipients:
-      getSettingValue<string>(settings, 'editor_default_email_recipients') ?? undefined,
-    commentsEnabled: getSettingValue<string>(settings, 'comments_enabled') ?? undefined,
-    emailTrackClicks: getSettingValue<boolean>(settings, 'email_track_clicks') ?? undefined,
-  };
+  const { settingsQuery, settings, activitySettings } = useActivitySettings();
   const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') ?? false;
   const memberQuery = useMember(memberId ?? '', {
     enabled: !!memberId,

@@ -13,20 +13,20 @@ const stringToHslColor = function (str, saturation, lightness) {
 
 export default class GhMemberAvatarComponent extends Component {
     get memberName() {
-        let {member, name} = this.args;
+        const {member, name} = this.args;
 
         return member?.name || member?.email || name || 'NM';
     }
 
     get avatarImage() {
-        let {member} = this.args;
+        const {member} = this.args;
 
         // to cover both ways avatar image is returned depending on where member data comes from
         return member?.avatar_image || member?.avatarImage || null;
     }
 
     get backgroundStyle() {
-        let color = stringToHslColor(this.memberName, 45, 55);
+        const color = stringToHslColor(this.memberName, 45, 55);
         return htmlSafe(`background-color: ${color}`);
     }
 
@@ -35,8 +35,8 @@ export default class GhMemberAvatarComponent extends Component {
             return 'NM';
         }
 
-        let names = this.memberName.split(' ');
-        let intials = names.length > 1 ? [names[0][0], names[names.length - 1][0]] : [names[0][0]];
+        const names = this.memberName.split(' ');
+        const intials = names.length > 1 ? [names[0][0], names[names.length - 1][0]] : [names[0][0]];
         return intials.join('').toUpperCase();
     }
 }

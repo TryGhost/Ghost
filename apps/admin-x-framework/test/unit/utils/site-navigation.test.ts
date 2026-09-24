@@ -6,6 +6,53 @@ import {
 } from '../../../src/utils/site-navigation';
 
 describe('shared page navigation', () => {
+  it('uses aliases in bulk moves while preserving unrelated pages', () => {
+    const result = updatePageNavigation(
+      [
+        { label: 'Home', url: '/home/' },
+        { label: 'Custom', url: '/blog/about/' },
+        { label: 'About', url: '/about/' },
+      ],
+      [],
+      [
+        { label: 'Home', path: '/' },
+        { label: 'Custom', path: '/blog/about/' },
+      ],
+      'secondary',
+      'https://example.com/blog/',
+      { home: '/', custom: '/blog/about/' },
+    );
+
+    expect(result.navigation.map((item) => item.url)).toEqual(['/about/']);
+    expect(result.secondaryNavigation.map((item) => item.url)).toEqual(['/home/', '/blog/about/']);
+    expect(result.changed).toBe(true);
+  });
+
+  it('appends new pages without reordering pages already in the destination', () => {
+    const result = updatePageNavigation(
+      [
+        { label: 'Home', url: '/' },
+        { label: 'About', url: '/about/' },
+        { label: 'Contact', url: '/contact/' },
+      ],
+      [],
+      [
+        { label: 'About', path: '/about/' },
+        { label: 'Partners', path: '/partners/' },
+      ],
+      'primary',
+      'https://example.com/',
+    );
+
+    expect(result.navigation.map((item) => item.label)).toEqual([
+      'Home',
+      'About',
+      'Contact',
+      'Partners',
+    ]);
+    expect(result.changed).toBe(true);
+  });
+
   it('uses custom routes and falls back to slug URLs on older backends', () => {
     expect(pagePathForSlug('home', { home: '/' })).toBe('/');
     expect(pagePathForSlug('about')).toBe('/about/');

@@ -27,6 +27,7 @@ export const correctnessRules = {
   'dot-notation': 'error',
   eqeqeq: ['error', 'always'],
   'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
+  'prefer-const': ['error', { destructuring: 'all' }],
   'no-eval': 'error',
   'no-useless-call': 'error',
   'no-console': 'error',

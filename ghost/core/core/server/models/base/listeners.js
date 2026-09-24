@@ -92,7 +92,7 @@ const onNotificationsEdited = function (settingModel) {
 
   allNotifications = allNotifications.filter(function (notification) {
     // Do not delete the release notification
-    if (Object.prototype.hasOwnProperty.call(notification, 'custom') && !notification.custom) {
+    if (Object.hasOwn(notification, 'custom') && !notification.custom) {
       return true;
     }
 

@@ -56,7 +56,7 @@ export class UnsafeData {
       throw new errors.ValidationError({ message: `${this.field} must be an object` });
     }
 
-    if (!Object.prototype.hasOwnProperty.call(this.data, key)) {
+    if (!Object.hasOwn(this.data, key)) {
       return undefined;
     }
 
@@ -70,7 +70,7 @@ export class UnsafeData {
       throw new errors.ValidationError({ message: `${this.field} must be an object` });
     }
 
-    if (!Object.prototype.hasOwnProperty.call(this.data, key)) {
+    if (!Object.hasOwn(this.data, key)) {
       throw new errors.ValidationError({ message: `${this.fieldWithKey(key)} is required` });
     }
 
