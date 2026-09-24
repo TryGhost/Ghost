@@ -1,6 +1,7 @@
 import FlexSearch from 'flexsearch';
 import {
   type SearchIndexItem,
+  type SearchItem,
   type SearchResult,
   type SearchResultGroup,
   type Searchable,
@@ -21,7 +22,7 @@ export interface SearchProvider {
 // every option is rendered, so each group is capped
 const RESULT_LIMIT = 100;
 
-function itemsFor(searchable: Searchable, content: SearchContent): SearchIndexItem[] {
+function itemsFor(searchable: Searchable, content: SearchContent): SearchItem[] {
   if (searchable.model === 'pro-page') {
     return searchable.staticItems ?? [];
   }
@@ -56,7 +57,7 @@ export function createFlexSearchProvider(
 ): SearchProvider {
   const indexes = new Map(
     searchables.map((searchable) => {
-      const index = new FlexSearch.Document<SearchIndexItem, true>({
+      const index = new FlexSearch.Document<SearchItem, true>({
         tokenize: 'forward',
         document: { id: 'id', index: searchable.index, store: true },
       });

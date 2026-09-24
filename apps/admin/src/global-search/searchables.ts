@@ -4,15 +4,30 @@ export const BILLING_SEARCH_GROUP_KEY = 'billing';
 
 export type SearchableModel = 'user' | 'tag' | 'pro-page' | 'post' | 'page';
 
-/** An entry from a `search-index/*` endpoint, or a configured billing item. */
-export interface SearchIndexItem {
-  id: string;
-  slug?: string;
-  path?: string;
-  name?: string;
-  title?: string;
-  keywords?: string;
-  status?: string;
+const searchIndexItemSchema = z.object({
+  id: z.string(),
+  slug: z.string().optional(),
+  name: z.string().optional(),
+  title: z.string().optional(),
+  status: z.string().optional(),
+});
+
+/** An entry from a `search-index/*` endpoint. */
+export type SearchIndexItem = z.output<typeof searchIndexItemSchema>;
+
+/** A search-index entry, or a configured billing item. */
+export type SearchItem = SearchIndexItem & { path?: string; keywords?: string };
+
+function parseEach<T>(schema: z.ZodType<T>, items: unknown[]): T[] {
+  return items.flatMap((item) => {
+    const parsed = schema.safeParse(item);
+    return parsed.success ? [parsed.data] : [];
+  });
+}
+
+/** Keeps the entries of a `search-index/*` response that match the expected shape. */
+export function parseSearchIndexItems(items: unknown): SearchIndexItem[] {
+  return Array.isArray(items) ? parseEach(searchIndexItemSchema, items) : [];
 }
 
 export interface Searchable {
@@ -22,7 +37,7 @@ export interface Searchable {
   idField: 'id' | 'slug';
   titleField: 'name' | 'title';
   index: Array<'name' | 'title' | 'keywords'>;
-  staticItems?: SearchIndexItem[];
+  staticItems?: SearchItem[];
 }
 
 export interface SearchResult {
@@ -104,10 +119,7 @@ function getBillingSearchable(searchConfig: unknown): Searchable | null {
     return null;
   }
 
-  const staticItems = config.data.items.flatMap((item) => {
-    const parsed = billingSearchItemSchema.safeParse(item);
-    return parsed.success ? [parsed.data] : [];
-  });
+  const staticItems = parseEach(billingSearchItemSchema, config.data.items);
 
   if (staticItems.length === 0) {
     return null;
@@ -149,7 +161,7 @@ export function sortSearchResultsByStatus(
   return [...results].sort((a, b) => priority(a) - priority(b));
 }
 
-export function createSearchResult(searchable: Searchable, item: SearchIndexItem): SearchResult {
+export function createSearchResult(searchable: Searchable, item: SearchItem): SearchResult {
   return {
     id: `${searchable.model}.${item[searchable.idField]}`,
     path: item.path,
