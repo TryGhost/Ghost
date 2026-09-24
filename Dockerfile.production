@@ -143,4 +143,5 @@ FROM core AS full
 # build job) under ghost/core/core/built — the deploy stage excludes that path,
 # so this is the only stage that carries them. Local `full` builds must populate
 # both paths first (e.g. `pnpm nx run @tryghost/admin:build`).
-COPY --chown=nobody:nogroup ghost/core/core/built/admin ghost/core/core/built/embed-renderer core/built/
+COPY --chown=nobody:nogroup ghost/core/core/built/admin core/built/admin
+COPY --chown=nobody:nogroup ghost/core/core/built/embed-renderer core/built/embed-renderer
