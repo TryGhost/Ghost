@@ -1,5 +1,5 @@
 import { type ReactNode, useContext, useEffect, useRef } from 'react';
-import { Button, Separator } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { settingsSubviewPane } from '@tryghost/test-data/selectors/editor';
@@ -68,7 +68,6 @@ export function SettingsSubview({
             </Text>
             {toggle}
           </Inline>
-          <Separator />
         </div>
         <Stack
           className={cn('px-5 py-4', contentClassName)}
@@ -82,20 +81,17 @@ export function SettingsSubview({
   }
 
   return (
-    <>
-      <button
-        ref={rowRef}
-        className="flex w-full items-center gap-2 px-5 py-3 text-left hover:bg-interactive-hover focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0"
-        type="button"
-        onClick={() => show({ id, title, wide })}
-      >
-        {icon}
-        <Text as="span" className="flex-1" size="sm">
-          {label}
-        </Text>
-        <LucideIcon.ChevronRight className="size-4 shrink-0 text-text-tertiary" />
-      </button>
-      <Separator />
-    </>
+    <button
+      ref={rowRef}
+      className="flex w-full items-center gap-2 px-5 py-3 text-left hover:bg-interactive-hover focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0"
+      type="button"
+      onClick={() => show({ id, title, wide })}
+    >
+      {icon}
+      <Text as="span" className="flex-1" size="sm">
+        {label}
+      </Text>
+      <LucideIcon.ChevronRight className="size-4 shrink-0 text-text-tertiary" />
+    </button>
   );
 }

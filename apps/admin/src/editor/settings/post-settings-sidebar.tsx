@@ -1,5 +1,5 @@
 import { Fragment, memo, type ReactNode, useEffect, useId } from 'react';
-import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
+import { Label, Switch, Textarea } from '@tryghost/shade/components';
 import { Box, Inline, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import {
@@ -204,7 +204,7 @@ export function PostSettingsSidebar({
           <aside
             aria-label={open?.title ?? panelLabel}
             className={cn(
-              'h-full w-[350px] overflow-x-hidden overflow-y-auto border-l border-border bg-sidebar max-[500px]:w-screen',
+              'h-full w-[350px] overflow-x-hidden overflow-y-auto bg-sidebar max-[500px]:w-screen',
               open?.wide && 'w-[500px]',
             )}
             data-testid={postSettingsSidebar}
@@ -218,7 +218,6 @@ export function PostSettingsSidebar({
                     </Text>
                     {toggle}
                   </Inline>
-                  <Separator />
                 </Box>
               )}
               {SETTINGS_SECTION_ORDER.map((id) => (

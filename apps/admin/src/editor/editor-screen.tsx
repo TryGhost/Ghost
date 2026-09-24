@@ -264,7 +264,15 @@ function EditorContent({
         } as CSSProperties
       }
     >
-      <Stack className="min-h-0 min-w-0 flex-1" gap="none">
+      {settingsPresent && <Box className="pointer-events-none absolute inset-0 bg-sidebar" />}
+      <Stack
+        className="relative min-h-0 min-w-0 flex-1 rounded-r-[calc(var(--radius-2xl)*var(--editor-settings-progress))] bg-background transition-shadow duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none lg:z-40"
+        gap="none"
+        style={{
+          boxShadow: settingsOpen ? 'var(--shadow-sm)' : undefined,
+          overflow: settingsPresent ? 'hidden' : undefined,
+        }}
+      >
         <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
           <EditorHeader postType={postType}>
             <EditorStatus
