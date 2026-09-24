@@ -3,6 +3,7 @@ import {$getRoot, LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
 import {ImageNode, $createImageNode, $isImageNode} from '../../src/index.js';
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 
 const editorNodes = [ImageNode];
 
@@ -82,7 +83,8 @@ describe('ImageNode', function () {
                 cardWidth: 'regular',
                 width: null,
                 height: null,
-                href: ''
+                href: '',
+                visibility: buildDefaultVisibility()
             });
         }));
 
@@ -128,7 +130,8 @@ describe('ImageNode', function () {
 
             expect(imageNodeDataset).toEqual({
                 ...dataset,
-                cardWidth: 'regular'
+                cardWidth: 'regular',
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -153,6 +156,65 @@ describe('ImageNode', function () {
                     <figcaption>This is a <b>caption</b></figcaption>
                 </figure>
             `);
+        }));
+
+        it('renders nothing when hidden from email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const imageNode = $createImageNode(dataset);
+            imageNode.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: ''}
+            };
+
+            const {element, type} = imageNode.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a segment when limited to a member segment in email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const imageNode = $createImageNode(dataset);
+            imageNode.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:-free'}
+            };
+
+            const {element} = imageNode.exportDOM(editor, exportOptions);
+            const output = (element as HTMLElement).outerHTML;
+
+            expect(output).toContain('data-gh-segment="status:-free"');
+            expect(output).toContain('kg-visibility-wrapper');
+            expect(output).toContain('kg-image-card');
+        }));
+
+        it('renders nothing when hidden from web', editorTest(function () {
+            const imageNode = $createImageNode(dataset);
+            imageNode.visibility = {
+                web: {nonMember: false, memberSegment: ''},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = imageNode.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a gated block when limited to a member segment on web', editorTest(function () {
+            const imageNode = $createImageNode(dataset);
+            imageNode.visibility = {
+                web: {nonMember: false, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = imageNode.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('value');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:end-->');
         }));
 
         it('omits srcset attribute when target is email', editorTest(function () {
@@ -326,7 +388,23 @@ describe('ImageNode', function () {
                 alt: 'This is some alt text',
                 caption: 'This is a <b>caption</b>',
                 cardWidth: 'wide',
-                href: ''
+                href: '',
+                visibility: buildDefaultVisibility()
+            });
+        }));
+
+        it('contains visibility settings', editorTest(function () {
+            const imageNode = $createImageNode(dataset);
+            imageNode.visibility = {
+                web: {nonMember: false, memberSegment: ''},
+                email: {memberSegment: 'status:-free'}
+            };
+
+            const json = imageNode.exportJSON() as Record<string, unknown>;
+
+            expect(json.visibility).toEqual({
+                web: {nonMember: false, memberSegment: ''},
+                email: {memberSegment: 'status:-free'}
             });
         }));
     });
