@@ -22,7 +22,7 @@ export interface KoenigPostEditorProps {
   onChange?: (lexical: unknown) => void;
   onSecondaryChange?: (lexical: unknown) => void;
   /** The hidden instance failed, so its serialization cannot be a change baseline. */
-  onSecondaryError?: (error: unknown) => void;
+  onSecondaryError?: () => void;
   registerAPI: (api: KoenigInstance | null) => void;
   registerSecondaryAPI: (api: KoenigInstance | null) => void;
   onWordCountChange: (count: number) => void;
@@ -92,7 +92,7 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
   const onSecondaryInstanceError = useCallback(
     (error: unknown) => {
       reportKoenigError(error);
-      onSecondaryError?.(error);
+      onSecondaryError?.();
     },
     [onSecondaryError],
   );

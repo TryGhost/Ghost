@@ -80,7 +80,7 @@ export interface EditorSessionBinding {
   onExcerptChange: (excerpt: string) => void;
   onLexicalChange: (lexical: unknown) => void;
   onSecondaryChange: (lexical: unknown) => void;
-  onSecondaryError: (error: unknown) => void;
+  onSecondaryError: () => void;
 }
 
 export interface EditorSessionHandle {
@@ -430,10 +430,7 @@ export function useEditorSession({
     [session],
   );
 
-  const onSecondaryError = useCallback(
-    (error: unknown) => session.baselineFailed(error),
-    [session],
-  );
+  const onSecondaryError = useCallback(() => session.baselineFailed(), [session]);
 
   const dispatchPublish = useMemo(
     () =>
