@@ -338,7 +338,11 @@ export function createEditorSession({
   function adoptWhereUnchanged(before: AuthoredFields, next: Partial<AuthoredFields>): void {
     for (const key of AUTHORED_KEYS) {
       const value = next[key];
-      if (value === undefined || value === before[key] || live[key] !== before[key]) {
+      if (
+        value === undefined ||
+        value === before[key] ||
+        !sameFieldValue(key, live[key], before[key])
+      ) {
         continue;
       }
       live = { ...live, [key]: value };

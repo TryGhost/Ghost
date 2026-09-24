@@ -132,9 +132,11 @@ A save writes a title and slug the writer never typed — the request's own
 default title, the slug derived from the title — and the server may normalize
 both again. The live document adopts each, before the acknowledgement is
 applied, and only where the writer has not typed past the value since, which is
-the rule the rebase itself uses. Skip this and the rebase keeps the superseded
-local value: the post reads as diverged from its own saved state for the rest of
-the session. Adopting is not an edit, so it must not move the version the
+the rule the rebase itself uses. Any difference from the submitted value is
+adopted, so a title the server trimmed replaces the input's text, while whether
+the writer has typed past it compares the title trimmed. Skip this and the
+rebase keeps the superseded local value: the post reads as diverged from its own
+saved state for the rest of the session. Adopting is not an edit, so it must not move the version the
 request was built against. Normalized title and slug acknowledgements are
 synchronized back into the slug machine through its ownership-preserving
 transition, so later saves do not resend a superseded value or freeze derived
