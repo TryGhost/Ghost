@@ -43,7 +43,7 @@ function LocationMap({ country, region }: { country: MapLocation; region?: strin
       const aspect = Math.max(svg.clientWidth, 1) / Math.max(svg.clientHeight, 1);
       const [centerX, centerY] = selected.anchor;
       const padding = isUS && !state ? 1.2 : 3;
-      const height = Math.max(boundsHeight * padding, (boundsWidth * padding) / aspect, 18);
+      const height = Math.max(boundsHeight * padding, (boundsWidth * padding) / aspect, 18) * 1.15;
       const width = height * aspect;
       setViewBox(`${centerX - width / 2} ${centerY - height / 2} ${width} ${height}`);
     };
