@@ -95,7 +95,10 @@ export function EditorHeaderActions({
     await requireSaved(session.saveExplicit());
   }, [session]);
 
-  const isSaving = session.state.kind === 'saving' || session.state.kind === 'pending-coalesced';
+  const isSaving =
+    session.state.kind === 'preparing' ||
+    session.state.kind === 'saving' ||
+    session.state.kind === 'pending-coalesced';
   const isContributor = !!currentUser && isContributorUser(currentUser);
 
   // A post the server has never seen can be neither published nor previewed.

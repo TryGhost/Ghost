@@ -172,7 +172,7 @@ describe('createEditorSession', () => {
       await session.editSlug('A New Slug');
       await settle();
 
-      expect(session.getView().pendingSave).toMatchObject({ reason: 'update' });
+      expect(session.getView().pendingSave).toMatchObject({ awaiting: 'update' });
       expect(state.updates).toHaveLength(0);
       expect(session.getSlug()).toBe('a-new-slug');
       expect(session.isDirty()).toBe(true);

@@ -186,7 +186,11 @@ export function SessionBanners({
     );
   }
 
-  if (state.kind === 'conflict' || state.kind === 'halted') {
+  if (
+    state.kind === 'conflict' ||
+    state.kind === 'halted' ||
+    pendingSave?.blockedBy?.kind === 'conflict'
+  ) {
     return (
       <ConflictBanner
         contentText={contentText}
@@ -217,10 +221,10 @@ export function SessionBanners({
     );
   }
 
-  if (pendingSave?.reason === 'validation') {
+  if (pendingSave?.blockedBy?.kind === 'validation') {
     return (
       <Banner className="mx-4 mb-2 shrink-0" role="status" size="sm" variant="warning">
-        <Text>Changes are waiting to save. {pendingSave.error?.message}</Text>
+        <Text>Changes are waiting to save. {pendingSave.blockedBy.message}</Text>
       </Banner>
     );
   }

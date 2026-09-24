@@ -13,15 +13,17 @@ beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
 describe('pending content', () => {
-  it('registers edits without starting a save, and releases an undone edit', () => {
+  it('reads edits without notifications or starting a save, and releases an undone edit', () => {
     const h = setup();
-    h.engine.contentChanged();
-    expect(h.engine.getPendingSave()).toEqual({ version: 1, reason: 'field-commit' });
+    expect(h.engine.getPendingSave()).toEqual({
+      version: 1,
+      awaiting: 'field-commit',
+      blockedBy: null,
+    });
     expect(h.engine.getState()).toEqual({ kind: 'idle' });
     expect(h.execute).not.toHaveBeenCalled();
 
     h.patch({ isDirty: false });
-    h.engine.contentChanged();
     expect(h.engine.getPendingSave()).toBeNull();
   });
 
@@ -29,9 +31,12 @@ describe('pending content', () => {
     'retains %s edits until Update without blocking navigation',
     async (status) => {
       const h = setup({ status });
-      h.engine.contentChanged();
       await h.engine.dispatch('field');
-      expect(h.engine.getPendingSave()).toEqual({ version: 1, reason: 'update' });
+      expect(h.engine.getPendingSave()).toEqual({
+        version: 1,
+        awaiting: 'update',
+        blockedBy: null,
+      });
       await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
       expect(h.execute).not.toHaveBeenCalled();
 
@@ -45,9 +50,8 @@ describe('pending content', () => {
   it('holds an armed autosave and a field commit on the same invalid document', async () => {
     const h = setup();
     const autosave = h.engine.dispatch('autosave');
-    expect(h.engine.getPendingSave()?.reason).toBe('debounce');
+    expect(h.engine.getPendingSave()?.awaiting).toBe('debounce');
     h.edit();
-    h.engine.contentChanged();
     h.prepare.mockResolvedValue({ ok: false, error: validation });
     const field = h.engine.dispatch('field');
     await flush();
@@ -57,15 +61,14 @@ describe('pending content', () => {
     expect(h.engine.getState()).toEqual({ kind: 'idle' });
     expect(h.engine.getPendingSave()).toEqual({
       version: 2,
-      reason: 'validation',
-      error: validation,
+      awaiting: 'field-commit',
+      blockedBy: validation,
     });
     await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
     expect(h.execute).not.toHaveBeenCalled();
 
     // Correcting and committing persists the newest complete document once.
     h.edit();
-    h.engine.contentChanged();
     h.prepare.mockImplementation((request) => Promise.resolve({ ok: true, prepared: request }));
     const corrected = h.engine.dispatch('field');
     await h.succeed();
@@ -81,10 +84,86 @@ describe('pending content', () => {
     const save = h.engine.dispatch('autosave');
     await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
     await expect(save).resolves.toEqual({ kind: 'blocked', error: validation });
-    expect(h.engine.getPendingSave()?.reason).toBe('validation');
+    expect(h.engine.getPendingSave()?.blockedBy).toBe(validation);
     expect(h.engine.getState()).toEqual({ kind: 'idle' });
     expect(h.execute).not.toHaveBeenCalled();
     await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
+  });
+
+  it('keeps validation visible through unrelated edits until preparation passes', async () => {
+    const h = setup();
+    h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
+    await h.engine.dispatch('field');
+    h.edit();
+    expect(h.engine.getPendingSave()).toEqual({
+      version: 2,
+      awaiting: 'field-commit',
+      blockedBy: validation,
+    });
+
+    const save = h.engine.dispatch('autosave');
+    expect(h.engine.getPendingSave()).toEqual({
+      version: 2,
+      awaiting: 'debounce',
+      blockedBy: validation,
+    });
+    const seen: Array<ReturnType<typeof h.engine.getPendingSave>> = [];
+    h.engine.subscribe(() => seen.push(h.engine.getPendingSave()));
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+    expect(seen).toEqual([
+      { version: 2, awaiting: 'preparing', blockedBy: validation },
+      { version: 2, awaiting: 'saving', blockedBy: null },
+    ]);
+    await h.succeed();
+    await save;
+  });
+
+  it('debounces repeated edits to an invalid new post', async () => {
+    const h = setup({ id: null, updatedAt: null });
+    h.prepare.mockResolvedValue({ ok: false, error: validation });
+    await expect(h.engine.dispatch('autosave')).resolves.toMatchObject({ kind: 'blocked' });
+    for (let index = 0; index < 5; index += 1) {
+      h.edit();
+      void h.engine.dispatch('autosave');
+      await vi.advanceTimersByTimeAsync(100);
+      expect(h.engine.getPendingSave()?.blockedBy).toBe(validation);
+    }
+    expect(h.prepare).toHaveBeenCalledTimes(1);
+    expect(h.states.some((state) => state.kind === 'saving')).toBe(false);
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+    expect(h.prepare).toHaveBeenCalledTimes(2);
+    expect(h.execute).not.toHaveBeenCalled();
+
+    h.edit();
+    h.prepare.mockImplementation((request) => Promise.resolve({ ok: true, prepared: request }));
+    const corrected = h.engine.dispatch('autosave');
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+    await h.succeed();
+    await expect(corrected).resolves.toMatchObject({ kind: 'saved' });
+    expect(h.requests[0].snapshot.version).toBe(7);
+  });
+
+  it('retains server suppression through a passing preparation and a failed retry', async () => {
+    const h = setup();
+    const initial = h.engine.dispatch('explicit');
+    await h.fail(validation);
+    await initial;
+    const retry = h.engine.dispatch('explicit');
+    await flush();
+    await expect(h.engine.dispatch('field')).resolves.toEqual({
+      kind: 'dropped',
+      reason: 'suppressed',
+    });
+    await h.fail(transport);
+    await retry;
+    await expect(h.engine.dispatch('field')).resolves.toEqual({
+      kind: 'dropped',
+      reason: 'suppressed',
+    });
+    h.edit();
+    const corrected = h.engine.dispatch('field');
+    await h.succeed();
+    await expect(corrected).resolves.toMatchObject({ kind: 'saved' });
   });
 
   it('keeps edits made after submission pending even without another command', async () => {
@@ -92,12 +171,19 @@ describe('pending content', () => {
     const first = h.engine.dispatch('field');
     await flush();
     h.edit();
-    h.engine.contentChanged();
     expect(h.engine.getState().kind).toBe('saving');
-    expect(h.engine.getPendingSave()).toEqual({ version: 2, reason: 'field-commit' });
+    expect(h.engine.getPendingSave()).toEqual({
+      version: 2,
+      awaiting: 'field-commit',
+      blockedBy: null,
+    });
     await h.succeed();
     await first;
-    expect(h.engine.getPendingSave()).toEqual({ version: 2, reason: 'field-commit' });
+    expect(h.engine.getPendingSave()).toEqual({
+      version: 2,
+      awaiting: 'field-commit',
+      blockedBy: null,
+    });
     expect(h.execute).toHaveBeenCalledTimes(1);
 
     const next = h.engine.dispatch('field');
@@ -112,13 +198,12 @@ describe('pending content', () => {
     const first = h.engine.dispatch('field');
     await flush();
     h.edit();
-    h.engine.contentChanged();
     h.prepare.mockResolvedValue({ ok: false, error: validation });
     const second = h.engine.dispatch('field');
     await h.succeed();
     await first;
     await expect(second).resolves.toEqual({ kind: 'blocked', error: validation });
-    expect(h.engine.getPendingSave()).toMatchObject({ version: 2, reason: 'validation' });
+    expect(h.engine.getPendingSave()).toMatchObject({ version: 2, blockedBy: validation });
     expect(h.execute).toHaveBeenCalledTimes(1);
     await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
   });
@@ -129,9 +214,8 @@ describe('pending content', () => {
     await expect(
       h.engine.dispatch('publish', { newsletter: 'news', emailOnly: true }),
     ).resolves.toMatchObject({ kind: 'failed', error: validation });
-    expect(h.engine.getPendingSave()?.reason).toBe('validation');
+    expect(h.engine.getPendingSave()?.blockedBy).toBe(validation);
     h.edit();
-    h.engine.contentChanged();
     const corrected = h.engine.dispatch('field');
     await h.succeed();
     await corrected;
@@ -144,27 +228,30 @@ describe('pending content', () => {
     const h = setup({ publishedAt: FUTURE });
     h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
     await h.engine.dispatch('field');
-    expect(h.engine.getPendingSave()?.reason).toBe('validation');
+    expect(h.engine.getPendingSave()?.blockedBy).toBe(validation);
 
     // Scheduling permits the future date without requiring another content edit.
     const retry = h.engine.dispatch('schedule', { publishedAt: FUTURE });
     await flush();
     expect(h.requests).toHaveLength(1);
-    expect(h.engine.getPendingSave()).toEqual({ version: 1, reason: 'saving' });
+    expect(h.engine.getPendingSave()).toEqual({ version: 1, awaiting: 'saving', blockedBy: null });
 
     await h.fail(transport);
     await expect(retry).resolves.toMatchObject({ kind: 'failed', error: transport });
-    expect(h.engine.getPendingSave()).toEqual({ version: 1, reason: 'error', error: transport });
+    expect(h.engine.getPendingSave()).toEqual({
+      version: 1,
+      awaiting: 'field-commit',
+      blockedBy: transport,
+    });
   });
 
   it('retains content while authentication is pending and releases it on disposal', async () => {
     const h = setup();
     const save = h.engine.dispatch('field');
     await h.fail(sessionInvalid);
-    expect(h.engine.getPendingSave()?.reason).toBe('reauth');
+    expect(h.engine.getPendingSave()?.blockedBy).toBe(sessionInvalid);
     h.edit();
-    h.engine.contentChanged();
-    expect(h.engine.getPendingSave()).toMatchObject({ version: 2, reason: 'reauth' });
+    expect(h.engine.getPendingSave()).toMatchObject({ version: 2, blockedBy: sessionInvalid });
     h.engine.dispose();
     await expect(save).resolves.toEqual({ kind: 'dropped', reason: 'disposed' });
     expect(h.engine.getPendingSave()).toBeNull();

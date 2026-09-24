@@ -6,6 +6,78 @@ beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
 describe('session pending saves', () => {
+  it('keeps validation visible through unrelated edits and stable while body typing continues', async () => {
+    const loaded = record({ authors: [{ id: 'author-1' }] });
+    const { session, state } = sessionHarness(
+      { record: loaded, baseline: loaded.lexical },
+      { applied: serializedFields },
+    );
+    session.patchFields({ authors: [] });
+    session.commitField();
+    await vi.advanceTimersByTimeAsync(0);
+    const blocker = session.getView().pendingSave?.blockedBy;
+    expect(blocker?.kind).toBe('validation');
+
+    session.patchTitle('Unrelated title edit');
+    expect(session.getView().pendingSave).toEqual({ awaiting: 'field-commit', blockedBy: blocker });
+    session.patchLexical(body('First body edit'));
+    session.dispatchAutosave();
+    const debouncingView = session.getView();
+    expect(debouncingView.pendingSave).toEqual({ awaiting: 'debounce', blockedBy: blocker });
+    const listener = vi.fn();
+    session.subscribe(listener);
+    session.patchLexical(body('Second body edit'));
+    session.dispatchAutosave();
+    expect(session.getView()).toBe(debouncingView);
+    expect(listener).not.toHaveBeenCalled();
+    expect(state.updates).toHaveLength(0);
+
+    session.patchFields({ authors: [{ id: 'author-2' }] });
+    expect(session.getView().pendingSave?.blockedBy).toBe(blocker);
+    session.commitField();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(state.updates).toHaveLength(1);
+    expect(session.getView().pendingSave).toBeNull();
+    session.dispose();
+  });
+
+  it('never enters saving for invalid new-post edits', async () => {
+    const { session, state } = sessionHarness({ currentUserId: 'author-1' });
+    const kinds: string[] = [];
+    session.subscribe(() => kinds.push(session.getState().kind));
+    session.patchFields({ authors: [] });
+    session.patchLexical(body('First words'));
+    session.dispatchAutosave();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(session.getView().pendingSave?.blockedBy?.kind).toBe('validation');
+
+    for (let count = 0; count < 5; count += 1) {
+      session.patchLexical(body(`More words ${count}`));
+      session.dispatchAutosave();
+    }
+    expect(session.getView().pendingSave?.awaiting).toBe('debounce');
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+    expect(kinds).not.toContain('saving');
+    expect(kinds).not.toContain('pending-coalesced');
+    expect(state.creates).toHaveLength(0);
+    session.dispose();
+  });
+
+  it('derives pending work after a failed clean save marks the document dirty', async () => {
+    const loaded = record();
+    const { session } = sessionHarness(
+      { record: loaded, baseline: loaded.lexical },
+      { failSave: () => true },
+    );
+    expect(session.getView().pendingSave).toBeNull();
+    await session.dispatchExplicit();
+    expect(session.getView()).toMatchObject({
+      isDirty: true,
+      pendingSave: { awaiting: 'field-commit', blockedBy: { kind: 'unknown' } },
+    });
+    session.dispose();
+  });
+
   it('combines body, title, image and corrected authors after an armed autosave is blocked', async () => {
     const loaded = record({ authors: [{ id: 'author-1' }] });
     const { session, state } = sessionHarness(
@@ -22,7 +94,7 @@ describe('session pending saves', () => {
 
     expect(state.updates).toHaveLength(0);
     expect(session.getState()).toEqual({ kind: 'idle' });
-    expect(session.getView().pendingSave).toMatchObject({ reason: 'validation' });
+    expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } });
     expect(session.hasUnsavedContent()).toBe(true);
 
     session.patchFields({ authors: [{ id: 'author-2' }] });
@@ -60,7 +132,7 @@ describe('session pending saves', () => {
     await built.session.dispatchExplicit();
     expect(built.state.updates).toHaveLength(1);
     expect(built.state.updates[0].payload.feature_image).toBeNull();
-    expect(built.session.getView().pendingSave).toMatchObject({ reason: 'field-commit' });
+    expect(built.session.getView().pendingSave).toMatchObject({ awaiting: 'field-commit' });
     expect(built.session.getFields().feature_image).toBe('https://example.com/later.png');
 
     built.session.commitField();

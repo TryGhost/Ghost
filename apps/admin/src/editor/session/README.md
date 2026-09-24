@@ -54,15 +54,16 @@ a field patch would be dropped before the request is built.
 
 ## Staging and committing
 
-Every edit updates the live projection and registers pending content with the
-save engine. Staging alone does not start a request. A field commit — including
-title blur, image changes, and settings — dispatches `field` unconditionally;
+Every edit updates the live projection. The save engine derives pending content
+from that projection when the session reads its view. Staging alone does not
+start a request. A field commit — including title blur, image changes, and
+settings — dispatches `field` unconditionally;
 body edits dispatch `autosave`. The engine owns when these requests may run.
 
 | Status                           | Background save request                                         | Persisted by             |
 | -------------------------------- | --------------------------------------------------------------- | ------------------------ |
 | `draft`                          | Runs immediately for a field commit, or after the body debounce | The eligible save        |
-| `published`, `scheduled`, `sent` | Retains pending content with reason `update`                    | Explicit Update or Cmd-S |
+| `published`, `scheduled`, `sent` | Retains pending content awaiting `update`                       | Explicit Update or Cmd-S |
 
 Pending content is separate from the runnable queue. It includes edits awaiting
 a field commit, the autosave debounce, Update, validation, or recovery, and can
@@ -73,7 +74,7 @@ dirty, and leaving requires a save or confirmation.
 
 All saves use the same preparation validator. An incomplete tier pairing, an
 over-long meta/social field, an emptied author list, or a newly staged future
-publish time holds a background save with reason `validation`. Body autosave,
+publish time holds a background save with a validation blocker. Body autosave,
 title and image commits follow the same rule, including an already armed timer
 or queued request. The editor explains why changes are waiting even when the
 settings panel is closed. A saved future publish time is not itself invalid.
@@ -82,10 +83,13 @@ An explicit save returns a validation failure promptly and shows the save error.
 Its content stays pending; its publish/schedule/email target is not retained for
 automatic retry. Correcting the document and committing requests a new save that
 combines its current values. Unchanged invalid versions suppress background
-retries; an explicit retry still revalidates.
+retries; an explicit retry still revalidates. Unrelated edits retain the warning
+until a preparation succeeds. Body edits on a blocked new post debounce too,
+and preparation occupies the save slot without displaying “Saving…”.
 
-Failures never discard pending content. Server validation, network errors,
-authentication expiry and collisions retain their existing recovery policies.
+Failures never discard pending content. Server validation, network errors and
+authentication expiry retain their recovery policies. A collision remains
+recoverable after a retry fails for a different reason.
 Only accepting a server reload discards outstanding local work. Successful
 acknowledgement clears pending content only when the reconciled live document
 is clean; edits made after submission remain pending.
@@ -203,7 +207,11 @@ A reload replaces the whole document with the server's copy when the writer
 chooses it. The tracker is loaded afresh, so the hidden instance's old baseline
 goes with it; the identity adopts the fresh collision token, the editor surface
 re-seeds both Koenig instances, and the save engine validates the candidate
-before any of those replacements happen. The read is its own request, never a
+before any of those replacements happen. Its retained collision record authorizes
+recovery even after a retry fails for another reason; an active save or frozen
+authentication attempt must settle before the document can be replaced. The
+replacement completes before recovery is announced to subscribers, so an edit
+made from that notification belongs to the new document and is preserved. The read is its own request, never a
 refetch of the query the screen rendered from: a failing refetch puts that query
 into an error state and replaces the editor, taking the unsaved content and the
 way to copy it out with it. A reload that fails leaves the halt, the content and
@@ -217,9 +225,11 @@ way back in and the content stays untouched.
 
 ## The view React subscribes to
 
-The session publishes one cached view — the engine state, pending-save reason,
+The session publishes one cached view — the engine state, pending-save waiting
+and blocking information,
 dirtiness, title, slug, settings and publish time — and republishes it only
-when one of those values changes. The nested settings and publish-time
+when one of those values changes. Pending content is read on demand after
+tracker changes, including save errors that make a clean document dirty. The nested settings and publish-time
 references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
 for `useSyncExternalStore` and lets it stand in for those values as a dependency.

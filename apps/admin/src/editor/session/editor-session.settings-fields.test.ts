@@ -506,7 +506,7 @@ describe('createEditorSession', () => {
       session.commitField();
       await settle();
 
-      expect(session.getView().pendingSave).toMatchObject({ reason: 'validation' });
+      expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } });
       expect(state.updates).toHaveLength(0);
 
       expect(await session.dispatchExplicit()).toMatchObject({
@@ -709,7 +709,7 @@ describe('createEditorSession', () => {
 
         // The engine retains invalid content without sending a request.
         await settle();
-        expect(session.getView().pendingSave).toMatchObject({ reason: 'validation' });
+        expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } });
         expect(await session.dispatchExplicit()).toMatchObject({
           kind: 'failed',
           error: { kind: 'validation', message: 'At least one author is required.' },

@@ -254,7 +254,7 @@ describe('useFeatureImageBinding through the session', () => {
     act(() => result.current.onFeatureImageChange(IMAGE));
     await settle();
 
-    expect(session.getView().pendingSave).toMatchObject({ reason: 'validation' });
+    expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } });
     expect(state.updates).toHaveLength(0);
     expect(session.getState().kind).not.toBe('error');
     expect(session.getFields().feature_image).toBe(IMAGE);
@@ -279,7 +279,7 @@ describe('useFeatureImageBinding through the session', () => {
     act(() => result.current.onFeatureImageChange(IMAGE));
     await settle();
 
-    expect(session.getView().pendingSave).toMatchObject({ reason: 'validation' });
+    expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } });
     expect(state.updates).toHaveLength(0);
     expect(session.getState().kind).not.toBe('error');
     expect(session.isDirty()).toBe(true);
@@ -294,7 +294,7 @@ describe('useFeatureImageBinding through the session', () => {
     act(() => result.current.onFeatureImageAltChange('A field of grass'));
     await settle();
 
-    expect(session.getView().pendingSave).toMatchObject({ reason: 'update' });
+    expect(session.getView().pendingSave).toMatchObject({ awaiting: 'update' });
     expect(state.updates).toHaveLength(0);
     expect(session.isDirty()).toBe(true);
 

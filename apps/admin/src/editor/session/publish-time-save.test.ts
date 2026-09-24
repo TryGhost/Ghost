@@ -287,7 +287,7 @@ describe('staging the publish time', () => {
 
     expect(update).not.toHaveBeenCalled();
     await vi.waitFor(() =>
-      expect(session.getView().pendingSave).toMatchObject({ reason: 'validation' }),
+      expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } }),
     );
     expect(session.getState().kind).toBe('idle');
   });

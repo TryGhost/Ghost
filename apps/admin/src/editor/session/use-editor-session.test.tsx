@@ -147,7 +147,7 @@ describe('useEditorSession title blur', () => {
     act(() => result.current.bind.onTitleChange('A new title'));
     act(() => result.current.bind.onTitleBlur());
 
-    expect(result.current.pendingSave).toMatchObject({ reason: 'update' });
+    expect(result.current.pendingSave).toMatchObject({ awaiting: 'update' });
     expect(result.current.isDirty()).toBe(true);
   });
 
@@ -158,6 +158,8 @@ describe('useEditorSession title blur', () => {
     act(() => result.current.bind.onTitleChange('A new title'));
     act(() => result.current.bind.onTitleBlur());
 
-    await waitFor(() => expect(result.current.pendingSave).toMatchObject({ reason: 'validation' }));
+    await waitFor(() =>
+      expect(result.current.pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } }),
+    );
   });
 });

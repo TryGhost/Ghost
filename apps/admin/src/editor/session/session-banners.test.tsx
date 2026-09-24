@@ -44,6 +44,20 @@ function errored(error: Partial<SaveError>): SaveEngineState {
 }
 
 describe('SessionBanners', () => {
+  it('keeps collision recovery available after a retry reports another error', () => {
+    renderBanners(
+      { kind: 'error', intent: 'explicit', error: { kind: 'transport', message: 'Offline' } },
+      {
+        pendingSave: {
+          awaiting: 'field-commit',
+          blockedBy: { kind: 'conflict', message: 'Another writer changed this post.' },
+        },
+      },
+    );
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
@@ -70,8 +84,8 @@ describe('SessionBanners', () => {
       { kind: 'idle' },
       {
         pendingSave: {
-          reason: 'validation',
-          error: { kind: 'validation', message: 'At least one author is required.' },
+          awaiting: 'field-commit',
+          blockedBy: { kind: 'validation', message: 'At least one author is required.' },
         },
       },
     );

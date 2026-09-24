@@ -156,7 +156,6 @@ function EditorContent({
       <EditorHeader postType={postType}>
         <EditorStatus
           isDirty={session.isDirty()}
-          pendingSave={session.pendingSave}
           record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />

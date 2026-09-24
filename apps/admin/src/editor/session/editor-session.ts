@@ -282,10 +282,11 @@ export function createEditorSession({
     // The UI renders eligibility, not the edit counter: typing more body text
     // must not republish an otherwise unchanged React snapshot.
     const pendingSave =
-      view?.pendingSave?.reason === pending?.reason && view?.pendingSave?.error === pending?.error
+      view?.pendingSave?.awaiting === pending?.awaiting &&
+      view?.pendingSave?.blockedBy === pending?.blockedBy
         ? (view?.pendingSave ?? null)
         : pending
-          ? { reason: pending.reason, error: pending.error }
+          ? { awaiting: pending.awaiting, blockedBy: pending.blockedBy }
           : null;
     const isDirty = getSnapshot().isDirty;
     const currentSlug = machine.getState().slug;
@@ -345,7 +346,6 @@ export function createEditorSession({
       }
     }
     tracker.setLive(identity.id, patch);
-    engine.contentChanged();
     notifyChanged();
   }
 
@@ -413,10 +413,7 @@ export function createEditorSession({
 
   // A title commit and a load move the machine's slug without a field patch, so
   // the URL input hears about them through the session's own subscribers.
-  const stopSlugNotifications = machine.subscribe(() => {
-    engine.contentChanged();
-    notifyChanged();
-  });
+  const stopSlugNotifications = machine.subscribe(notifyChanged);
 
   // The post validator runs before every save: an explicit tier selection needs a
   // tier even on the first save, and an over-long field is not sent.
@@ -618,7 +615,6 @@ export function createEditorSession({
       notifyChanged();
     },
     onListenerError: onError,
-    onPendingSaveChange: notifyChanged,
   });
 
   // Seed the external-store snapshot before the session is handed to React.
@@ -639,7 +635,6 @@ export function createEditorSession({
     pendingSlugEdits.add(edit);
     // Register the request before notifying listeners that may save or leave.
     const submission = slug.editSlug(input);
-    engine.contentChanged();
     notifyChanged();
     try {
       const proposal = await submission;
@@ -662,7 +657,6 @@ export function createEditorSession({
     } finally {
       pendingSlugEdits.delete(edit);
       if (!disposed) {
-        engine.contentChanged();
         notifyChanged();
       }
     }
@@ -709,7 +703,6 @@ export function createEditorSession({
       version += 1;
       publishedAtEditedAt = version;
       releaseSavedPublishTime();
-      engine.contentChanged();
       notifyChanged();
     },
     getPublishedAt: livePublishedAt,
@@ -759,12 +752,10 @@ export function createEditorSession({
 
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
-      engine.contentChanged();
       notifyChanged();
     },
     baselineFailed: (error) => {
       tracker.baselineFailed(identity.id, error);
-      engine.contentChanged();
       notifyChanged();
     },
 
@@ -801,7 +792,6 @@ export function createEditorSession({
       publishedAt = next.published_at ?? null;
       releaseSavedPublishTime();
       latestRevision = latestRevisionOf(next);
-      engine.contentChanged();
       notifyChanged();
       return true;
     },
@@ -819,24 +809,28 @@ export function createEditorSession({
       ) {
         return false;
       }
-      if (engine.getState().kind !== 'conflict' || !engine.contentReloaded(updatedAt)) {
+      if (
+        !engine.contentReloaded(updatedAt, () => {
+          identity = { id: next.id, updatedAt };
+          status = next.status ?? 'draft';
+          publishedAt = next.published_at ?? null;
+          latestRevision = latestRevisionOf(next);
+          live = projectionOf(next);
+          stagedPublishedAt = null;
+          publishedAtEditedAt = 0;
+          pendingSlugEdits.clear();
+          writerEdits.clear();
+          inFlightSince = null;
+          version += 1;
+          tracker.load(identity.id, live);
+          slug.reset();
+          // The machine may notify subscribers, so the document boundary must be
+          // complete first and no later mutation may overwrite a subscriber edit.
+          machine.loaded({ slug: live.slug, title: live.title });
+        })
+      ) {
         return false;
       }
-      identity = { id: next.id, updatedAt };
-      status = next.status ?? 'draft';
-      publishedAt = next.published_at ?? null;
-      latestRevision = latestRevisionOf(next);
-      live = projectionOf(next);
-      stagedPublishedAt = null;
-      publishedAtEditedAt = 0;
-      pendingSlugEdits.clear();
-      writerEdits.clear();
-      inFlightSince = null;
-      version += 1;
-      tracker.load(identity.id, live);
-      machine.loaded({ slug: live.slug, title: live.title });
-      slug.reset();
-      engine.contentChanged();
       notifyChanged();
       return true;
     },

@@ -136,17 +136,8 @@ export type PrepareOutcome<P> = { ok: true; prepared: P } | { ok: false; error: 
 /** Unsaved content is independent of the commands currently allowed to execute. */
 export interface PendingSave {
   version: number;
-  reason:
-    | 'field-commit'
-    | 'debounce'
-    | 'update'
-    | 'saving'
-    | 'queued'
-    | 'validation'
-    | 'reauth'
-    | 'conflict'
-    | 'error';
-  error?: SaveError;
+  awaiting: 'field-commit' | 'debounce' | 'update' | 'preparing' | 'saving' | 'queued';
+  blockedBy: SaveError | null;
 }
 
 export type DropReason = 'not-draft' | 'clean' | 'suppressed' | 'conflict' | 'halted' | 'disposed';
@@ -165,6 +156,7 @@ export type SaveCompletion =
 export type SaveEngineState =
   | { kind: 'idle' }
   | { kind: 'debouncing' }
+  | { kind: 'preparing'; intent: SaveIntent; pending?: SaveIntent }
   | { kind: 'saving'; intent: SaveIntent }
   | { kind: 'pending-coalesced'; intent: SaveIntent; pending: SaveIntent }
   | { kind: 'reauth-pending'; intent: SaveIntent }
@@ -210,9 +202,7 @@ export interface SaveEnginePorts<
   setTimeout?: (fn: () => void, ms: number) => unknown;
   clearTimeout?: (handle: unknown) => void;
   onStateChange?: (state: SaveEngineState) => void;
-  /** Reports pending content independently of activity transitions. */
-  onPendingSaveChange?: (pending: PendingSave | null) => void;
-  /** A throwing state/pending callback or subscriber is reported here instead of interrupting the save. */
+  /** A throwing state callback or subscriber is reported here instead of interrupting the save. */
   onListenerError?: (error: unknown) => void;
 }
 
@@ -222,13 +212,11 @@ export interface SaveEngine {
   dispatch(kind: Exclude<DispatchIntent, 'publish' | 'schedule'>): Promise<SaveCompletion>;
   getState(): SaveEngineState;
   getPendingSave(): PendingSave | null;
-  /** Register live document changes without starting a save or bypassing its debounce. */
-  contentChanged(): void;
   subscribe(listener: (state: SaveEngineState) => void): () => void;
   reauthSucceeded(): void;
   reauthAbandoned(): void;
-  /** Leaves `conflict` once the caller has a document past the rejected `updated_at`. */
-  contentReloaded(updatedAt?: string): boolean;
+  /** Validates recovery, calls the synchronous non-throwing adoption, then notifies subscribers. */
+  contentReloaded(updatedAt?: string, adopt?: () => void): boolean;
   leaveRequested(): Promise<LeaveDecision>;
   /** Also aborts the in-flight signal; a response arriving afterwards is never reconciled. */
   dispose(): void;
@@ -397,98 +385,60 @@ export function createSaveEngine<
   const transitionWatchers = new Set<() => void>();
 
   let state: SaveEngineState = { kind: 'idle' };
-  let inFlight: Slot | null = null;
+  let inFlight: { slot: Slot; submittedVersion: number | null } | null = null;
   let inFlightAbort: AbortController | null = null;
   let pending: Slot | null = null;
   // Set while re-authentication is pending: the failed slot freezes the queue until reauth resolves.
   let frozen: Frozen | null = null;
   let debounce: Timer | null = null;
   let timedCycle: Timer | null = null;
-  let suppressedVersion: number | null = null;
-  // updated_at the server rejected; automatic saves stay halted while the snapshot still carries it.
-  let staleUpdatedAt: string | null = null;
+  // The version controls automatic retries; local validation remains visible until preparation passes.
+  let hold: { version: number; source: 'local-validation' | 'server'; error: SaveError } | null =
+    null;
+  // A failed retry cannot prove a rejected collision token safe.
+  let conflict: { updatedAt: string | null; error: SaveError; intent: SaveIntent } | null = null;
   let leaveInProgress: Promise<LeaveDecision> | null = null;
   let disposed = false;
-  let observedSnapshot: S | null = null;
-  let unreadableAfterSave = false;
-  let pendingSave: PendingSave | null = null;
-  let savingVersion: number | null = null;
-  let blockedValidation: { version: number; error: SaveError } | null = null;
 
-  function snapshotNow(): S {
-    const snapshot = ports.getSnapshot();
-    observedSnapshot = snapshot;
-    unreadableAfterSave = false;
-    return snapshot;
-  }
-
-  function describePendingSave(): PendingSave | null {
-    const snapshot = observedSnapshot;
-    if (disposed || !snapshot?.isDirty) {
+  function getPendingSave(): PendingSave | null {
+    if (disposed) {
       return null;
     }
-    const version = snapshot.version;
-    if (frozen) {
-      return { version, reason: 'reauth', error: frozen.error };
+    const snapshot = ports.getSnapshot();
+    if (!snapshot.isDirty) {
+      return null;
     }
-    if (state.kind === 'conflict') {
-      return { version, reason: 'conflict', error: state.error };
-    }
-    if (blockedValidation?.version === version) {
-      return { version, reason: 'validation', error: blockedValidation.error };
-    }
-    if (state.kind === 'error') {
-      return { version, reason: 'error', error: state.error };
-    }
-    if (pending) {
-      return { version, reason: 'queued' };
-    }
-    if (debounce || timedCycle) {
-      return { version, reason: 'debounce' };
-    }
-    if (inFlight && savingVersion === version) {
-      return { version, reason: 'saving' };
-    }
-    return { version, reason: snapshot.status === 'draft' ? 'field-commit' : 'update' };
-  }
-
-  function contentChanged(): void {
-    if (disposed) {
-      return;
-    }
-    snapshotNow();
-    setState(deriveState());
+    const awaiting = pending
+      ? 'queued'
+      : debounce || timedCycle
+        ? 'debounce'
+        : inFlight?.submittedVersion === null
+          ? 'preparing'
+          : inFlight?.submittedVersion === snapshot.version
+            ? 'saving'
+            : snapshot.status === 'draft'
+              ? 'field-commit'
+              : 'update';
+    const blockedBy =
+      frozen?.error ??
+      (isStale(snapshot) ? conflict?.error : null) ??
+      (hold?.source === 'local-validation' ? hold.error : null) ??
+      (state.kind === 'error' ? state.error : null);
+    return { version: snapshot.version, awaiting, blockedBy };
   }
 
   function setState(next: SaveEngineState): void {
-    const stateChanged = !sameState(state, next);
-    if (stateChanged) {
-      state = next;
-    }
-    const work = describePendingSave();
-    const workChanged =
-      work?.version !== pendingSave?.version ||
-      work?.reason !== pendingSave?.reason ||
-      work?.error !== pendingSave?.error;
-    if (!stateChanged && !workChanged) {
+    if (sameState(state, next)) {
       return;
     }
-    pendingSave = workChanged ? work : pendingSave;
-    next = state;
-    for (const listener of stateChanged ? [ports.onStateChange, ...listeners] : []) {
+    state = next;
+    for (const listener of [ports.onStateChange, ...listeners]) {
       // A nested transition already notified everyone with the newer state.
       if (state !== next) {
         break;
       }
       try {
         listener?.(next);
-      } catch (error) {
-        reportListenerError(error);
-      }
-    }
-    if (workChanged && pendingSave === work) {
-      try {
-        ports.onPendingSaveChange?.(pendingSave);
       } catch (error) {
         reportListenerError(error);
       }
@@ -508,15 +458,25 @@ export function createSaveEngine<
       return state;
     }
     if (inFlight) {
+      if (inFlight.submittedVersion === null) {
+        return {
+          kind: 'preparing',
+          intent: inFlight.slot.command.kind,
+          ...(pending ? { pending: pending.command.kind } : {}),
+        };
+      }
       return pending
         ? {
             kind: 'pending-coalesced',
-            intent: inFlight.command.kind,
+            intent: inFlight.slot.command.kind,
             pending: pending.command.kind,
           }
-        : { kind: 'saving', intent: inFlight.command.kind };
+        : { kind: 'saving', intent: inFlight.slot.command.kind };
     }
-    if (keepHalt && (state.kind === 'error' || state.kind === 'conflict')) {
+    if (conflict) {
+      return { kind: 'conflict', intent: conflict.intent, error: conflict.error };
+    }
+    if (keepHalt && state.kind === 'error') {
       return state;
     }
     if (debounce || timedCycle) {
@@ -526,11 +486,11 @@ export function createSaveEngine<
   }
 
   function isSuppressed(snapshot: S): boolean {
-    return suppressedVersion !== null && snapshot.version === suppressedVersion;
+    return hold !== null && snapshot.version === hold.version;
   }
 
   function isStale(snapshot: S): boolean {
-    return staleUpdatedAt !== null && snapshot.updatedAt === staleUpdatedAt;
+    return conflict !== null && snapshot.updatedAt === conflict.updatedAt;
   }
 
   // Field saves on published/scheduled/sent posts are dropped: the sidebar stages those edits until Update.
@@ -629,9 +589,15 @@ export function createSaveEngine<
     }
   }
 
+  function failureState(intent: SaveIntent, error: SaveError): SaveEngineState {
+    return conflict
+      ? { kind: 'conflict', intent: conflict.intent, error: conflict.error }
+      : { kind: 'error', intent, error };
+  }
+
   function failSlot(slot: Slot, error: SaveError): void {
     settle(slot.waiters, failed(error, slot.command.kind));
-    setState({ kind: 'error', intent: slot.command.kind, error });
+    setState(failureState(slot.command.kind, error));
     drain();
   }
 
@@ -693,7 +659,7 @@ export function createSaveEngine<
 
     let snapshot: S;
     try {
-      snapshot = snapshotNow();
+      snapshot = ports.getSnapshot();
     } catch (cause) {
       failSlot(slot, toSaveError(cause));
       return;
@@ -705,8 +671,7 @@ export function createSaveEngine<
       return;
     }
 
-    inFlight = slot;
-    savingVersion = snapshot.version;
+    inFlight = { slot, submittedVersion: null };
     const abort = new AbortController();
     inFlightAbort = abort;
     setState(deriveState());
@@ -718,7 +683,7 @@ export function createSaveEngine<
         return;
       }
       // Every await re-reads the post and re-runs the drop rules on it; the payload reflects the post as it is now.
-      snapshot = snapshotNow();
+      snapshot = ports.getSnapshot();
       if (dropInFlight(slot, snapshot)) {
         return;
       }
@@ -727,12 +692,11 @@ export function createSaveEngine<
         return;
       }
       if (proposal) {
-        snapshot = snapshotNow();
+        snapshot = ports.getSnapshot();
         if (dropInFlight(slot, snapshot)) {
           return;
         }
       }
-      savingVersion = snapshot.version;
       const preparation = await ports.prepare(
         buildRequest(slot.command, snapshot, proposal),
         abort.signal,
@@ -744,8 +708,11 @@ export function createSaveEngine<
         if (preparation.error.kind === 'validation') {
           // Local validation holds content without retaining a publish/email target.
           // An explicit caller still receives a failure immediately.
-          blockedValidation = { version: snapshot.version, error: preparation.error };
-          suppressedVersion = snapshot.version;
+          hold = {
+            version: snapshot.version,
+            source: 'local-validation',
+            error: preparation.error,
+          };
           inFlight = null;
           inFlightAbort = null;
           settle(
@@ -755,22 +722,17 @@ export function createSaveEngine<
               : failed(preparation.error, slot.command.kind),
           );
           if (!isBackgroundIntent(slot.command.kind)) {
-            setState({ kind: 'error', intent: slot.command.kind, error: preparation.error });
+            setState(failureState(slot.command.kind, preparation.error));
           }
           drain();
           return;
         }
         outcome = { ok: false, error: preparation.error };
       } else {
-        // Validation belongs to an attempt's target, not just its edit version.
-        // A retry can permit the same content (for example, scheduling a future
-        // publish time), so retire its old hold once preparation succeeds.
-        if (blockedValidation?.version === snapshot.version) {
-          blockedValidation = null;
-          if (suppressedVersion === snapshot.version) {
-            suppressedVersion = null;
-          }
+        if (hold?.source === 'local-validation') {
+          hold = null;
         }
+        inFlight.submittedVersion = snapshot.version;
         setState(deriveState());
         if (disposed) {
           return;
@@ -781,13 +743,6 @@ export function createSaveEngine<
         }
         if (outcome.ok) {
           await ports.reconcile(preparation.prepared, outcome.result);
-          // Persistence succeeded even if reading the reconciled document fails.
-          // A leave decision must still fail closed in that case.
-          try {
-            snapshotNow();
-          } catch {
-            unreadableAfterSave = true;
-          }
         }
       }
     } catch (cause) {
@@ -801,9 +756,8 @@ export function createSaveEngine<
     inFlightAbort = null;
 
     if (outcome.ok) {
-      suppressedVersion = null;
-      staleUpdatedAt = null;
-      blockedValidation = null;
+      hold = null;
+      conflict = null;
       settle(slot.waiters, {
         kind: 'saved',
         result: outcome.result,
@@ -839,7 +793,7 @@ export function createSaveEngine<
 
     // No automatic retry against the stale baseline: queued work is dropped, an explicit retry is the way out.
     if (error.kind === 'conflict') {
-      staleUpdatedAt = snapshot.updatedAt;
+      conflict = { updatedAt: snapshot.updatedAt, error, intent };
       const dropWaiters: Waiter[] = [];
       clearTimers(dropWaiters);
       if (pending) {
@@ -852,12 +806,12 @@ export function createSaveEngine<
       return;
     }
 
-    if (error.kind === 'validation') {
-      suppressedVersion = snapshot.version;
-    }
-    // A limit hit by a status change says nothing about draft persistence; only a draft save's limit halts it.
-    if (error.kind === 'host-limit' && !changesStatus(slot.command, snapshot)) {
-      suppressedVersion = snapshot.version;
+    // A publish limit says nothing about whether draft content can be saved.
+    if (
+      error.kind === 'validation' ||
+      (error.kind === 'host-limit' && !changesStatus(slot.command, snapshot))
+    ) {
+      hold = { version: snapshot.version, source: 'server', error };
     }
     failSlot(slot, error);
   }
@@ -893,7 +847,7 @@ export function createSaveEngine<
       let snapshot: S | null = null;
       if (isBackgroundIntent(kind) || isStatusIntent(kind)) {
         try {
-          snapshot = snapshotNow();
+          snapshot = ports.getSnapshot();
         } catch (cause) {
           resolve(failed(toSaveError(cause), kind));
           return;
@@ -919,7 +873,7 @@ export function createSaveEngine<
         return;
       }
       armTimedCycle();
-      if (snapshot.id === null) {
+      if (snapshot.id === null && hold?.source !== 'local-validation') {
         enqueue(waiter.command, [waiter]);
         return;
       }
@@ -928,12 +882,8 @@ export function createSaveEngine<
   }
 
   function readSnapshot(): S | null {
-    if (unreadableAfterSave) {
-      unreadableAfterSave = false;
-      return null;
-    }
     try {
-      return snapshotNow();
+      return ports.getSnapshot();
     } catch {
       return null;
     }
@@ -981,7 +931,7 @@ export function createSaveEngine<
       return;
     }
     armTimedCycle();
-    if (snapshot.id === null) {
+    if (snapshot.id === null && hold?.source !== 'local-validation') {
       enqueue(AUTOSAVE, []);
       return;
     }
@@ -1004,22 +954,31 @@ export function createSaveEngine<
     for (const waiter of waiters) {
       waiter.resolve(failed(error, waiter.command.kind));
     }
-    setState({ kind: 'error', intent: slot.command.kind, error });
+    setState(failureState(slot.command.kind, error));
   }
 
   // A server document that no longer carries the rejected updated_at ends the
   // halt the collision caused. A candidate lets the caller check before replacing it.
-  function contentReloaded(updatedAt?: string): boolean {
+  function contentReloaded(updatedAt?: string, adopt?: () => void): boolean {
     const candidate = updatedAt ?? readSnapshot()?.updatedAt;
     if (
       disposed ||
-      state.kind !== 'conflict' ||
+      isTerminal() ||
+      !conflict ||
+      inFlight ||
+      frozen ||
       !isCollisionToken(candidate) ||
-      (staleUpdatedAt !== null && candidate === staleUpdatedAt)
+      candidate === conflict.updatedAt
     ) {
       return false;
     }
-    staleUpdatedAt = null;
+    // Consume recovery before adoption can notify its own subscribers and reenter.
+    conflict = null;
+    hold = null;
+    adopt?.();
+    if (disposed) {
+      return false;
+    }
     setState(deriveState({ keepHalt: false }));
     return true;
   }
@@ -1108,7 +1067,7 @@ export function createSaveEngine<
     inFlightAbort = null;
     const waiters: Waiter[] = [];
     clearTimers(waiters);
-    for (const slot of [inFlight, pending, frozen?.slot ?? null]) {
+    for (const slot of [inFlight?.slot ?? null, pending, frozen?.slot ?? null]) {
       if (slot) {
         waiters.push(...slot.waiters);
       }
@@ -1124,8 +1083,7 @@ export function createSaveEngine<
   return {
     dispatch,
     getState: () => state,
-    getPendingSave: () => pendingSave,
-    contentChanged,
+    getPendingSave,
     subscribe,
     reauthSucceeded,
     reauthAbandoned,

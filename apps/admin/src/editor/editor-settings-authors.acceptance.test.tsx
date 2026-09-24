@@ -186,7 +186,7 @@ describe('Post settings authors', () => {
 
     await editorScreen.removeAuthor('Owner User').click();
 
-    // Staged rather than saved: the field gate holds an empty list back.
+    // The preparation validator holds the whole document while authors are empty.
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
     await expect
       .element(editorScreen.settingsAuthorsInput())
@@ -208,6 +208,32 @@ describe('Post settings authors', () => {
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi).authors).toEqual([{ id: NADIA.id }]);
     await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
+  });
+
+  it('keeps the validation notice visible while unrelated edits await a save', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAuthors();
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+
+    // Keep focus in the title: no blur or successful preparation can clear the hold.
+    await editorScreen.titleInput().fill('Still waiting for an author');
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+    await editorScreen.body().fill('Body awaiting the same author correction');
+    // This test disables the debounce, so a second blocked attempt cannot restore
+    // a notice that disappeared on the keystroke.
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+    expect(saveApi.requests).toHaveLength(0);
+
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
+    await expect(saveApi).toHaveSavedFields({
+      title: 'Still waiting for an author',
+      authors: [{ id: NADIA.id }],
+    });
+    expect(submittedPost(saveApi).lexical).toContain('Body awaiting the same author correction');
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
   });
 
   it('holds a new feature image back while the author list is emptied', async () => {
