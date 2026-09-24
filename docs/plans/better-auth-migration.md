@@ -66,9 +66,11 @@ The migration follows **expand, migrate, contract**:
   reset, then legacy API keys, moves into Better Auth behind a config switch.
   Existing routes, bodies, cookie name and error codes are kept by thin
   compatibility controllers. Staff are not logged out at cutover.
-- **Contract.** In Ghost 7.0 the legacy session stack is removed, and product
-  decides whether the `Authorization: Ghost` JWT scheme and the
-  database-driven permission tables follow.
+- **Contract.** In Ghost 7.0 the legacy session stack is removed. The
+  `Authorization: Ghost` JWT scheme, Staff Access Tokens and Content API keys
+  stay supported through 7.x, are deprecated during 7.x, and are removed in
+  Ghost 8.0 once Bearer tokens and OAuth clients have replaced them. Product
+  decides separately whether the database-driven permission tables go in 7.0.
 
 Design choices that hold throughout:
 
@@ -99,7 +101,7 @@ Design choices that hold throughout:
 | Sequencing | Value first: modern login methods and Bearer tokens ship while legacy auth stays authoritative; a bridge creates a Ghost session | Adopted. Phases 1 and 2 are the expand step; re-platforming sessions is Phase 3, not Phase 1 |
 | Session bridge | Better Auth sign-in creates a standard Ghost session | Adopted as the Phase 1 mechanism, reusing the existing `sessionFromToken` pattern; retired in Phase 3 |
 | Standard API tokens | `Authorization: Bearer` personal access tokens with scopes, token management UI, OAuth clients | Adopted as Phase 2 using Better Auth's `apiKey` and `bearer` plugins; OAuth clients via `@better-auth/oauth-provider` in Phase 7 |
-| Legacy `Authorization: Ghost` scheme | Deprecated with warnings in 6.x, removed in 7.0; integrations move to Bearer tokens | Preserved through 6.x by the `ghostApiKeys` plugin. Removal is a 7.0 product decision listed in §10; the plugin design supports either outcome |
+| Legacy `Authorization: Ghost` scheme | Deprecated with warnings in 6.x, removed in 7.0; integrations move to Bearer tokens | Preserved through 7.x by the `ghostApiKeys` plugin, deprecated during 7.x, removed in Ghost 8.0 (§10). Sessions cut over by 7.0; API keys get one more major version so integrations have a full cycle to move |
 | Permissions | 125 permissions across 5 tables replaced by role checks and scopes in 7.0 | Out of scope for the migration itself; the `Principal` and policy seam is designed so that replacement is mechanical in 7.0 |
 | Table count | Concern about adding tables across Ghost(Pro); reuse `users` and `tokens`; net 3 fewer tables after 7.0 | Adopted as a constraint. Sessions evolve in place instead of a new table; new tables are budgeted in §4.1 and need infrastructure sign-off; reuse of the members `tokens` table is evaluated in §4.1 |
 | Pro support access | Continues unchanged | The SSO adapter contract is unchanged; only its session creation call moves when sessions move (Phase 3), as it must |
@@ -427,10 +429,14 @@ answer for each Ghost-owned plugin:
 - Enforces the role rules that `models/api-key.js` `onSaving` enforces today
   and records the `refreshed` action on rotation.
 - Contributes to the `authorizationPolicy` used by `resolvePrincipal`:
-  staff-token blocklist and integration allowlist, declared as data. When the
-  legacy scheme is deprecated (Phase 8) this plugin adds the
-  `Deprecation`/`Warning` response headers and a usage counter; when it is
-  removed (7.0) the plugin is deleted.
+  staff-token blocklist and integration allowlist, declared as data. The plugin is the whole legacy surface: it lives through 7.x, adds
+  `Deprecation`/`Link` response headers and a per-key usage counter during the
+  7.x deprecation runway (Phase 10), and is deleted in Ghost 8.0. If the
+  permission tables are dropped in 7.0 (§10), the plugin maps each legacy key
+  role (`Admin Integration`, `DB Backup Integration`, `Scheduler Integration`,
+  `Self-Serve Migration Integration`, and the staff roles behind Staff Access
+  Tokens) to a static scope set so legacy keys keep exactly their current
+  authority without the tables.
 
 **Bearer token policy** (Phase 2, lives in `services/auth/policy/`)
 
@@ -450,9 +456,9 @@ answer for each Ghost-owned plugin:
   integrations need. Site tokens are a second `apiKey` configuration whose
   `referenceId` is the site (or integration) rather than a user, resolving to
   `kind: 'integration'`, `method: 'bearer_token'` with the token's scopes as
-  the whole authority. They are the standards-based successor to Admin API
-  integration keys and the path by which the legacy scheme can eventually be
-  retired.
+  the whole authority. They are the standards-based successor to Admin API integration keys; the legacy
+  scheme is retired in Ghost 8.0 once site tokens have been available for the
+  whole of 7.x.
 
 **`ghostSso`** (Phase 6)
 
@@ -558,9 +564,9 @@ phase that introduces each optional row.
 
 Removals in Ghost 7.0 (see §4.6): `sessions` legacy columns, `users.password`,
 `brute` if Better Auth rate limiting replaces `express-brute` everywhere, and,
-if product confirms the Notion end state, `api_keys`, `permissions`,
-`permissions_roles`, `permissions_users`. Net table count after 7.0 is then
-lower than today, matching the proposal's "3 fewer tables".
+if product confirms, `permissions`, `permissions_roles`, `permissions_users`.
+`api_keys` stays through 7.x and is dropped in Ghost 8.0 with the legacy scheme.
+Net table count is lower than today after 7.0 and lower again after 8.0.
 
 Reusing the members `tokens` table for `verification`, as the proof of concept
 did, saves one table. This plan does not recommend it: `tokens` is owned by
@@ -649,15 +655,16 @@ Better Auth does not purge expired rows. Add a daily job (jobs service) that
 deletes expired sessions and verification rows. Today's `sessions` rows are
 never purged.
 
-### 4.6 Ghost 7.0 removals
+### 4.6 Ghost 7.0 and 8.0 removals
 
-Drop `sessions.session_id`/`session_data`, drop `users.password`, remove
-`express-session`, `express-brute` for auth routes, `otplib`, and
-`jsonwebtoken` where `jose` replaced it. Product decisions (§10): remove the
-`Authorization: Ghost` scheme and `api_keys` in favour of Bearer tokens and
-OAuth clients; replace the permission tables with role checks and scopes.
-Decide then whether `user_accounts` credential rows are part of content
-exports (today `users.password` is exported).
+Ghost 7.0: drop `sessions.session_id`/`session_data`, drop `users.password`,
+remove `express-session`, `express-brute` for auth routes, `otplib`, and
+`jsonwebtoken` where `jose` replaced it; product decision (§10) on replacing the
+permission tables with role checks and scopes; decide whether `user_accounts`
+credential rows are part of content exports (today `users.password` is
+exported). Ghost 8.0: remove the `Authorization: Ghost` scheme, Staff Access
+Tokens, `ghostApiKeys`, `api_keys` and the Custom Integrations UI in favour of
+Bearer tokens and OAuth clients, after the whole of 7.x as a deprecation cycle.
 
 ## 5. Compatibility contract
 
@@ -682,7 +689,7 @@ setting.
 | `GET/PUT /users/:id/token` | cookie | `{ apiKey: {...} }` | `getOrCreateStaffToken`, `rotateSecret` |
 | `POST /integrations/:id/api_key/:keyid/refresh`, `POST /integrations` | unchanged | unchanged | `rotateSecret`; integration creation still generates `content` + `admin` keys |
 | `GET /users/me/` | cookie, staff token or Bearer token | `200` when authenticated, `403 Authorization failed` otherwise | Ember's session probe |
-| Admin API with `Authorization: Ghost <JWT>` | HS256, `kid`, `aud` | same error codes: `INVALID_AUTH_HEADER`, `INVALID_JWT`, `MISSING_ADMIN_API_KID`, `UNKNOWN_ADMIN_API_KEY`, `INVALID_API_KEY_TYPE` | Phase 8 adds deprecation headers only if §10 decides removal |
+| Admin API with `Authorization: Ghost <JWT>` | HS256, `kid`, `aud` | same error codes: `INVALID_AUTH_HEADER`, `INVALID_JWT`, `MISSING_ADMIN_API_KID`, `UNKNOWN_ADMIN_API_KEY`, `INVALID_API_KEY_TYPE` | Supported through 7.x; deprecation headers during 7.x (Phase 10); removed in 8.0 |
 | Admin API with `Authorization: Bearer <token>` | new in Phase 2 | `401` with a new `INVALID_BEARER_TOKEN` code; scope violations `403` | additive |
 | Content API `?key=` | | `UNKNOWN_CONTENT_API_KEY`, `INVALID_API_KEY_TYPE`, `INVALID_REQUEST` | |
 | `GET /ghost/auth-frame` | cookie | served only when the cookie header contains `ghost-admin-api-session` | cookie name preserved from Phase 3; during Phases 1–2 the bridge creates that cookie |
@@ -743,7 +750,8 @@ green under every engine setting it affects, and a short update to
 [authentication.md](../codebase/authentication.md). Sizes are rough relative
 estimates for one engineer. Phases 1 and 2 correspond to the Notion
 proposal's Phases 1 and 2; Phases 3 to 6 are the migration it deferred to
-"clean up"; Phase 7 is its Phase 3; Phases 8 and 9 are its Phase 4.
+"clean up"; Phase 7 is its Phase 3; Phases 8 to 10 are its Phase 4, split so that sessions cut over in 7.0 and
+API-key authentication is retired in 8.0.
 
 ### Phase 0: Spikes, sign-off and PoC review (S)
 
@@ -838,7 +846,8 @@ Goal: CLI tools, AI agents and automations authenticate with
    `tokenPermissionCheck` enforces scopes by resource and method.
 3. Personal Access Tokens UI in React settings (`apps/admin/src/settings/general/users/`):
    create with name, scopes and expiry, list, revoke; the raw token is shown
-   once. Existing Staff Access Token UI stays.
+   once. The Staff Access Token UI stays until 7.0, then points users to Personal Access
+   Tokens; existing staff tokens keep verifying until 8.0.
    Site tokens with explicit scopes are created from the Integrations settings
    (Administrators only) and appear beside the integration's legacy keys.
 4. Danger-zone reset revokes all `api_tokens`; user suspension and deletion
@@ -983,32 +992,54 @@ Notion Phase 3. Aligns with the Ember-to-React migration.
    mirroring `spam.user_login`, `user_reset`, `user_verification`,
    `send_verification_code`, `global_reset`, with reset-on-success parity.
    Remove `express-brute` from the compatibility routes only then.
-3. If §10 confirms removal of the `Authorization: Ghost` scheme: add
-   `Deprecation` and `Link` headers and a per-key usage counter in
-   `ghostApiKeys`, surface usage in the integrations UI, publish the
-   migration guide for the Admin API SDK and Zapier, and announce the 7.0
-   removal.
+3. Start counting legacy `Authorization: Ghost` usage per key in `ghostApiKeys`
+   and surface it in the integrations UI, so the 7.x deprecation runway (Phase
+   10) begins with data.
 4. After one release with no incidents: remove the legacy engine,
    `ghostLegacySession`, `express-session`, `session-store.js`,
    `models/session.js`, `totp.ts`, the legacy reset-token window, and the
    `hybrid`/`legacy` values of `auth:engine`.
 
-### Phase 9: Ghost 7.0 contract (L)
+### Phase 9: Ghost 7.0 contract for sessions (L)
 
-Notion Phase 4, breaking changes only here.
+Notion Phase 4, first half. Breaking changes for staff sessions only; API keys
+are untouched.
 
 1. Migrations in §4.6: drop legacy `sessions` columns and `users.password`;
    switch new password hashes to scrypt with bcrypt-aware verification.
-2. If confirmed: remove the `Authorization: Ghost` scheme, `ghostApiKeys`,
-   `api_keys` and the Custom Integrations UI; internal integrations
-   (`ghost-scheduler`, `ghost-internal-frontend`) move to client-credentials
-   OAuth clients or long-lived internal Bearer tokens; Content API keys are
-   re-issued from the token store or kept on a minimal table.
-3. If confirmed: replace `canThis` and the permission tables with role checks
+2. If confirmed: replace `canThis` and the permission tables with role checks
    plus scopes at the principal seam (mechanical change across ~70 endpoint
    files), drop `permissions`, `permissions_roles`, `permissions_users`.
+   `ghostApiKeys` maps legacy key roles to static scope sets so integration
+   keys and Staff Access Tokens keep their current authority (§3.3).
+3. Internal integrations (`ghost-scheduler`, `ghost-internal-frontend`) move
+   to site tokens or client-credentials OAuth clients so nothing inside Ghost
+   depends on the legacy scheme before it is deprecated.
 4. Update the public API documentation, SDKs and the Docker images' migration
    notes.
+
+### Phase 10: 7.x deprecation runway and Ghost 8.0 contract (L)
+
+Notion Phase 4, second half. Sessions are already on Better Auth; this phase
+retires API-key-based authentication.
+
+1. From 7.0: `ghostApiKeys` adds `Deprecation` and `Link` headers to
+   responses authenticated with the `Ghost` scheme and logs per-key usage;
+   the integrations UI shows which keys are still in use and offers a
+   one-click site token with equivalent scopes. The Staff Access Token UI is
+   replaced by Personal Access Tokens; existing staff tokens keep working.
+2. Publish the migration guide and ship Bearer support in the Admin API SDK,
+   Zapier and other first-party integrations; announce the 8.0 removal at
+   7.0.
+3. Content API keys: decide during 7.x whether the `?key=` contract survives
+   8.0 as a public site token (same query parameter, token store behind it)
+   or is removed with themes and Portal updated. Because the key is an
+   identifier rather than a secret, a like-for-like replacement is
+   straightforward.
+4. Ghost 8.0: remove the `Authorization: Ghost` scheme, Staff Access Tokens,
+   `ghostApiKeys`, `api-key/admin.js`, `api-key/content.js` (if Content API
+   keys are replaced), the Bookshelf `ApiKey` model, the Custom Integrations
+   UI, and drop the `api_keys` table.
 
 ## 7. Testing strategy
 
@@ -1092,7 +1123,7 @@ Notion Phase 4, breaking changes only here.
 | Geolocation lookup in the sign-in path | Injectable provider with the existing 500 ms timeout |
 | Better Auth upgrades change plugin APIs | Pin the catalog version; adapter and plugin suites run in CI; upgrade deliberately |
 | Importer/exporter of password hashes | `users.password` stays the exported field until 7.0; importer writes both columns |
-| Removing the `Ghost` scheme breaks integrations | Only in 7.0, after a full deprecation cycle with usage telemetry and SDK/Zapier updates; the decision is explicit in §10 |
+| Removing the `Ghost` scheme breaks integrations | Only in 8.0, after the whole of 7.x as a deprecation cycle with usage telemetry and SDK/Zapier updates; the 7.0 session cutover does not touch integrations |
 
 ## 10. Decisions to confirm before Phase 1
 
@@ -1114,10 +1145,12 @@ Notion Phase 4, breaking changes only here.
 6. **Verified-by-method policy.** Recommended: magic link, passkey, TOTP and
    SSO sign-ins skip the email code; `require_email_mfa` applies to password
    sign-in only, and is satisfied by any second factor.
-7. **7.0 end state for the `Authorization: Ghost` scheme and `api_keys`.**
-   The Notion proposal removes them in favour of Bearer tokens and OAuth
-   clients. This plan keeps them working through 6.x either way; removal
-   needs product sign-off and a deprecation cycle starting in Phase 8.
+7. **Two-major-version schedule for API keys.** Decided direction: sessions cut
+   over by Ghost 7.0; the `Authorization: Ghost` scheme, Staff Access Tokens and
+   `api_keys` stay supported through 7.x, are deprecated from 7.0 and are
+   removed in Ghost 8.0. The April research document proposed 7.0 for both; this
+   plan gives integrations a full major version. Still open: whether Content API
+   keys follow the same schedule or survive as public site tokens (Phase 10).
 8. **7.0 end state for permissions.** The Notion proposal replaces the
    permission tables with role checks and scopes. Out of scope here; the
    principal seam is designed for it. Confirm intent so the scope vocabulary
@@ -1203,4 +1236,8 @@ Changed:
 
 Removed in Phase 8 / Ghost 7.0:
 
-- `services/auth/session/express-session.js`, `session-store.js`, `session-from-token.ts`, `totp.ts`, `models/session.js`, the legacy `sessions` columns, `users.password`, `express-session`, `otplib`, auth-route `express-brute` usage, and (if confirmed) `api-key/admin.js`, `api-key/content.js`, `api_keys`, the permission tables.
+- `services/auth/session/express-session.js`, `session-store.js`, `session-from-token.ts`, `totp.ts`, `models/session.js`, the legacy `sessions` columns, `users.password`, `express-session`, `otplib`, auth-route `express-brute` usage, and (if confirmed) the permission tables.
+
+Removed in Ghost 8.0:
+
+- `api-key/admin.js`, `api-key/content.js` (if Content API keys are replaced), `better-auth/plugins/api-keys.ts`, `models/api-key.js`, the `api_keys` table, the Custom Integrations UI.
