@@ -15,6 +15,9 @@ on:
 permissions:
   contents: read
 
+env:
+  NODE_VERSION: 22.23.3
+
 concurrency:
   group: embed-renderer
   cancel-in-progress: false
@@ -28,6 +31,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: 'false'
+          store-cache: 'false'
+
       # every version ships on every deploy: a Netlify deploy replaces the site,
       # and editors request the renderer version they were built against
       - name: Build upload directory
@@ -38,7 +47,7 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_EMBEDS_PUBLIC_SITE_ID }}
         run: |
-          npx --yes netlify-cli@27 deploy \
+          pnpm --package=netlify-cli@27.8.0 dlx netlify deploy \
             --prod \
             --no-build \
             --dir="$RUNNER_TEMP/embed-renderer" \
