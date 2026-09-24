@@ -150,14 +150,56 @@ function EditorContent({
   const [tkCount, setTkCount] = useState(0);
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsPresent, setSettingsPresent] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
-  const previousSettingsOpen = useRef(settingsOpen);
+  const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
+  const previousSettingsPresent = useRef(settingsPresent);
+  const restoreSettingsFocus = useRef(false);
   useLayoutEffect(() => {
-    if (previousSettingsOpen.current !== settingsOpen) {
+    if (
+      previousSettingsPresent.current !== settingsPresent &&
+      (settingsPresent || restoreSettingsFocus.current)
+    ) {
       settingsToggleRef.current?.focus();
     }
-    previousSettingsOpen.current = settingsOpen;
-  }, [settingsOpen]);
+    previousSettingsPresent.current = settingsPresent;
+    if (!settingsPresent && settingsToggleRef.current) {
+      const toggle = settingsToggleRef.current;
+      const measure = () => setSettingsToggleWidth(toggle.getBoundingClientRect().width);
+      measure();
+      const observer = new ResizeObserver(measure);
+      observer.observe(toggle);
+      return () => observer.disconnect();
+    }
+  }, [settingsPresent]);
+  // Keep the panel's fields and subview mounted until the closing transition ends.
+  // Reading animations also handles reduced motion (no animation) and reversals.
+  useLayoutEffect(() => {
+    if (settingsOpen || !settingsPresent) {
+      return;
+    }
+    const finishClosing = () => {
+      // A writer may return to the document before the panel finishes closing.
+      restoreSettingsFocus.current =
+        settingsToggleRef.current?.closest('aside')?.contains(document.activeElement) ?? false;
+      setSettingsPresent(false);
+    };
+    const animations = shellRef.current?.getAnimations() ?? [];
+    if (!animations.length) {
+      finishClosing();
+      return;
+    }
+    let cancelled = false;
+    void Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+      if (!cancelled) {
+        finishClosing();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [settingsOpen, settingsPresent]);
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   useLayoutEffect(() => {
@@ -171,7 +213,10 @@ function EditorContent({
     observer.observe(header);
     return () => observer.disconnect();
   }, []);
-  const toggleSettings = useCallback(() => setSettingsOpen((open) => !open), []);
+  const toggleSettings = useCallback(() => {
+    setSettingsPresent(true);
+    setSettingsOpen((open) => !open);
+  }, []);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
@@ -191,7 +236,7 @@ function EditorContent({
     <PageHeader.Action
       ref={settingsToggleRef}
       aria-expanded={settingsOpen}
-      className="bg-background"
+      className={settingsPresent ? 'bg-sidebar' : 'bg-background'}
       data-testid={settingsMenuToggle}
       fallbackSize="sm"
       fallbackVariant="ghost"
@@ -206,13 +251,16 @@ function EditorContent({
 
   return (
     <Inline
+      ref={shellRef}
       align="stretch"
-      className="relative h-full min-h-0"
+      className="relative h-full min-h-0 transition-[--editor-settings-progress] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
       gap="none"
       style={
         {
           '--editor-header-height': `${headerHeight}px`,
           '--editor-overlap': '0px',
+          '--editor-settings-progress': settingsOpen ? 1 : 0,
+          '--editor-settings-toggle-width': `${settingsToggleWidth}px`,
         } as CSSProperties
       }
     >
@@ -224,7 +272,7 @@ function EditorContent({
               record={statusRecordOf(session.loadedRecord ?? record, createdId)}
               state={session.state}
             />
-            <PageHeader.ActionGroup className="ml-auto max-sm:col-start-2 max-sm:row-start-1">
+            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*2*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
               <EditorHeaderActions
                 currentUser={currentUser}
                 postType={postType}
@@ -232,7 +280,9 @@ function EditorContent({
                 siteUrl={cardConfig.siteUrl}
                 tkCount={tkCount}
               />
-              {!settingsOpen && settingsToggle}
+              <Box className="w-[calc(var(--editor-settings-toggle-width)*(1-var(--editor-settings-progress)))] shrink-0">
+                {!settingsPresent && settingsToggle}
+              </Box>
             </PageHeader.ActionGroup>
           </EditorHeader>
         </Box>
@@ -264,7 +314,7 @@ function EditorContent({
           </div>
         </Box>
       </Stack>
-      {settingsOpen ? (
+      {settingsPresent ? (
         <PostSettingsSidebar
           cardConfig={currentCardConfig}
           currentUser={currentUser}

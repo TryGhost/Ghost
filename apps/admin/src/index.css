@@ -6,10 +6,11 @@
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin/fonts.css';
 
-@keyframes editor-settings-open {
-  from {
-    width: 0;
-  }
+/* One progress value keeps the settings panel and its vacated header slot in sync. */
+@property --editor-settings-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
 }
 
 @keyframes email-sending-arrow-rise {
@@ -117,7 +118,6 @@
    must be generated in this Tailwind lane; the font files themselves load with
    settings/custom-fonts.css in the settings chunk. */
 @theme {
-  --animate-editor-settings-open: editor-settings-open 200ms ease-out;
   --animate-email-sending-arrow-rise: email-sending-arrow-rise 1200ms linear infinite;
   --animate-email-sending-fill-rise: email-sending-fill-rise 1200ms linear infinite;
   --font-cardo: Cardo;

@@ -67,6 +67,25 @@ function positions(postType: 'post' | 'page') {
   });
 }
 
+function slowSettingsTransition() {
+  const style = document.createElement('style');
+  style.textContent = `[style*="--editor-settings-progress"] {
+    transition-duration: 100s !important;
+  }`;
+  document.head.appendChild(style);
+  return style;
+}
+
+function settingsTransition() {
+  return document
+    .getAnimations()
+    .find(
+      (animation) =>
+        animation instanceof CSSTransition &&
+        animation.transitionProperty === '--editor-settings-progress',
+    );
+}
+
 function canvasBackground(): string {
   let surface: Element | null = editorScreen.root().element();
   while (surface) {
@@ -129,6 +148,9 @@ describe('Floating editor shell', () => {
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
     const sidebar = editorScreen.settingsSidebar().element();
+    await expect
+      .poll(() => sidebar.parentElement!.getBoundingClientRect().width)
+      .toBe(sidebar.getBoundingClientRect().width);
     await expect.poll(() => sidebar.getBoundingClientRect().right).toBe(window.innerWidth);
     const sidebarBounds = sidebar.getBoundingClientRect();
     const footerAfter = editorScreen.helpLink().element().getBoundingClientRect();
@@ -234,39 +256,152 @@ describe('Floating editor shell', () => {
     },
   );
 
-  it('moves the writing pane and its controls together during the sidebar opening animation', async () => {
+  it('eases the sidebar and fades its contents without making header actions jump', async () => {
     fakeLongDocument('post');
     await renderAdminApp('/editor/post/abc123', FLAG_ON);
     await expect.element(editorScreen.body()).toBeVisible();
-    // The acceptance host disables animations. Restore and pause this one halfway
-    // through so the assertion observes the opening, rather than only its end state.
-    const animationStyle = document.createElement('style');
-    animationStyle.textContent = `[class*="animate-editor-settings-open"] {
-      animation-duration: 200ms !important;
-      animation-delay: -100ms !important;
-      animation-play-state: paused !important;
-    }`;
-    document.head.appendChild(animationStyle);
+    const publishBefore = editorScreen.publishButton().element().getBoundingClientRect().right;
+    const footerBefore = editorScreen.helpLink().element().getBoundingClientRect().right;
+    // Hold the real transition long enough to inspect precise points on its timeline,
+    // independently of browser scheduling and Playwright's actionability waits.
+    const animationStyle = slowSettingsTransition();
     try {
       await editorScreen.settingsToggle().click();
-      await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+      await expect.poll(settingsTransition).toBeDefined();
+      const opening = settingsTransition()!;
+      opening.pause();
+      opening.currentTime = 0;
       const sidebar = editorScreen.settingsSidebar().element();
       const panel = sidebar.parentElement!;
+      const contents = sidebar.firstElementChild!;
+      expect(editorScreen.publishButton().element().getBoundingClientRect().right).toBeCloseTo(
+        publishBefore,
+        1,
+      );
+      expect(panel.getBoundingClientRect().width).toBe(0);
+      expect(getComputedStyle(contents).opacity).toBe('0');
+      expect(opening.effect!.getTiming().easing).not.toBe('linear');
+
+      opening.currentTime = 50_000;
       const width = panel.getBoundingClientRect().width;
+      const sidebarWidth = sidebar.getBoundingClientRect().width;
       expect(width).toBeGreaterThan(0);
-      expect(width).toBeLessThan(sidebar.getBoundingClientRect().width);
+      expect(width).toBeLessThan(sidebarWidth);
+      expect(Number(getComputedStyle(contents).opacity)).toBeGreaterThan(0);
+      expect(Number(getComputedStyle(contents).opacity)).toBeLessThan(1);
       const writingPane = editorScreen.root().element().getBoundingClientRect();
       expect(writingPane.right).toBeCloseTo(window.innerWidth - width, 0);
-      expect(editorScreen.publishButton().element().getBoundingClientRect().right).toBe(
-        editorScreen.helpLink().element().getBoundingClientRect().right,
-      );
+      const remainingToggle = (footerBefore - publishBefore) * (1 - width / sidebarWidth);
+      const publishDuring = editorScreen.publishButton().element().getBoundingClientRect().right;
+      const footerDuring = editorScreen.helpLink().element().getBoundingClientRect().right;
+      expect(publishDuring).toBeLessThan(publishBefore);
+      expect(footerDuring - publishDuring).toBeCloseTo(remainingToggle, 0);
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+      opening.finish();
+      await expect.poll(() => panel.getBoundingClientRect().width).toBe(sidebarWidth);
+      expect(getComputedStyle(contents).opacity).toBe('1');
+
+      const publishOpen = editorScreen.publishButton().element().getBoundingClientRect().right;
+      await editorScreen.settingsToggle().click();
+      await expect.poll(settingsTransition).toBeDefined();
+      const closing = settingsTransition()!;
+      closing.pause();
+      closing.currentTime = 0;
+      expect(editorScreen.publishButton().element().getBoundingClientRect().right).toBeCloseTo(
+        publishOpen,
+        1,
+      );
+      closing.currentTime = 50_000;
+      expect(sidebar.isConnected).toBe(true);
+      expect(panel.getBoundingClientRect().width).toBeGreaterThan(0);
+      expect(panel.getBoundingClientRect().width).toBeLessThan(sidebarWidth);
+      expect(Number(getComputedStyle(contents).opacity)).toBeGreaterThan(0);
+      expect(Number(getComputedStyle(contents).opacity)).toBeLessThan(1);
+      expect(editorScreen.publishButton().element().getBoundingClientRect().right).toBeGreaterThan(
+        publishOpen,
+      );
+      closing.finish();
+      await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+      expect(editorScreen.publishButton().element().getBoundingClientRect().right).toBeCloseTo(
+        publishBefore,
+        1,
+      );
+      expect(document.activeElement).toBe(editorScreen.settingsToggle().element());
     } finally {
       animationStyle.remove();
     }
-    await expect
-      .poll(() => editorScreen.settingsSidebar().element().getBoundingClientRect().right)
-      .toBe(window.innerWidth);
+  });
+
+  it('reverses a closing sidebar without discarding its contents or jumping its controls', async () => {
+    fakeLongDocument('post');
+    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await expect.element(editorScreen.body()).toBeVisible();
+    const animationStyle = slowSettingsTransition();
+    try {
+      await editorScreen.settingsToggle().click();
+      await expect.poll(settingsTransition).toBeDefined();
+      settingsTransition()!.finish();
+      const sidebar = editorScreen.settingsSidebar().element();
+      const panel = sidebar.parentElement!;
+      await expect
+        .poll(() => panel.getBoundingClientRect().width)
+        .toBe(sidebar.getBoundingClientRect().width);
+
+      await editorScreen.settingsToggle().click();
+      await expect.poll(settingsTransition).toBeDefined();
+      const closing = settingsTransition()!;
+      closing.pause();
+      closing.currentTime = 50_000;
+      const widthBefore = panel.getBoundingClientRect().width;
+      const publishBefore = editorScreen.publishButton().element().getBoundingClientRect().right;
+      // The focused toggle remains usable from the keyboard as its panel recedes.
+      await userEvent.keyboard(' ');
+      await expect.poll(() => settingsTransition() !== closing).toBe(true);
+      const reopening = settingsTransition()!;
+      reopening.pause();
+      reopening.currentTime = 0;
+      expect(editorScreen.settingsSidebar().element()).toBe(sidebar);
+      expect(panel.getBoundingClientRect().width).toBeCloseTo(widthBefore, 1);
+      expect(editorScreen.publishButton().element().getBoundingClientRect().right).toBeCloseTo(
+        publishBefore,
+        1,
+      );
+      reopening.finish();
+      await expect
+        .poll(() => panel.getBoundingClientRect().width)
+        .toBe(sidebar.getBoundingClientRect().width);
+      expect(editorScreen.settingsSidebar().element()).toBe(sidebar);
+      expect(document.activeElement).toBe(editorScreen.settingsToggle().element());
+    } finally {
+      animationStyle.remove();
+    }
+  });
+
+  it('preserves document focus when writing resumes during sidebar closing', async () => {
+    fakeLongDocument('post');
+    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await expect.element(editorScreen.body()).toBeVisible();
+    const animationStyle = slowSettingsTransition();
+    try {
+      await editorScreen.settingsToggle().click();
+      await expect.poll(settingsTransition).toBeDefined();
+      settingsTransition()!.finish();
+      const sidebar = editorScreen.settingsSidebar().element();
+      await expect
+        .poll(() => sidebar.parentElement!.getBoundingClientRect().width)
+        .toBe(sidebar.getBoundingClientRect().width);
+      await editorScreen.settingsToggle().click();
+      await expect.poll(settingsTransition).toBeDefined();
+      const closing = settingsTransition()!;
+      closing.pause();
+      closing.currentTime = 50_000;
+      editorScreen.titleInput().element().focus();
+      closing.finish();
+      await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+      expect(document.activeElement).toBe(editorScreen.titleInput().element());
+    } finally {
+      animationStyle.remove();
+    }
   });
 
   it('keeps the sidebar toggle in subview headers and omits its tooltip', async () => {

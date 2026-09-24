@@ -197,32 +197,34 @@ export function PostSettingsSidebar({
       <SettingsToggleContext.Provider value={toggle}>
         <Box
           className={cn(
-            'absolute inset-y-0 right-0 z-30 w-[350px] overflow-hidden shadow-lg motion-safe:animate-editor-settings-open max-[500px]:w-screen lg:static lg:shrink-0 lg:shadow-none',
-            open?.wide && 'w-[500px]',
+            'absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden bg-sidebar shadow-lg [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw] lg:static lg:shrink-0 lg:shadow-none',
+            open?.wide && '[--editor-settings-width:500px]',
           )}
         >
           <aside
             aria-label={open?.title ?? panelLabel}
             className={cn(
-              'h-full w-[350px] overflow-x-hidden overflow-y-auto border-l border-border bg-background max-[500px]:w-screen',
+              'h-full w-[350px] overflow-x-hidden overflow-y-auto border-l border-border bg-sidebar max-[500px]:w-screen',
               open?.wide && 'w-[500px]',
             )}
             data-testid={postSettingsSidebar}
           >
-            {open ? null : (
-              <Box className="sticky top-0 z-10 bg-background">
-                <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
-                  <Text as="h2" className="pl-1" size="md" weight="semibold">
-                    {panelLabel}
-                  </Text>
-                  {toggle}
-                </Inline>
-                <Separator />
-              </Box>
-            )}
-            {SETTINGS_SECTION_ORDER.map((id) => (
-              <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
-            ))}
+            <Box className="min-h-full opacity-(--editor-settings-progress,1)">
+              {open ? null : (
+                <Box className="sticky top-0 z-10 bg-sidebar">
+                  <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
+                    <Text as="h2" className="pl-1" size="md" weight="semibold">
+                      {panelLabel}
+                    </Text>
+                    {toggle}
+                  </Inline>
+                  <Separator />
+                </Box>
+              )}
+              {SETTINGS_SECTION_ORDER.map((id) => (
+                <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
+              ))}
+            </Box>
           </aside>
         </Box>
       </SettingsToggleContext.Provider>
