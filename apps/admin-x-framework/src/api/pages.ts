@@ -14,6 +14,7 @@ import {
   buildPostReadParams,
   serializePostPayload,
 } from './post-contract';
+import { tagsDataType } from './tags';
 import type {
   CreateContentData,
   EditContentData,
@@ -115,13 +116,14 @@ export interface EditPagePayload {
   sessionExpiryRedirect?: boolean;
 }
 
+// A tag sent without an id is created by the save itself, so tag lists go stale too.
 export const useAddPage = createMutation<PageResponseType, AddPagePayload>({
   method: 'POST',
   path: () => '/pages/',
   searchParams: ({ options }) => buildPageWriteParams(options),
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
-  invalidateQueries: { dataType },
+  invalidateQueries: { dataType: [dataType, tagsDataType] },
 });
 
 export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
@@ -130,7 +132,7 @@ export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
   searchParams: ({ options }) => buildPageWriteParams(options),
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
-  invalidateQueries: { dataType },
+  invalidateQueries: { dataType: [dataType, tagsDataType] },
 });
 
 export interface DeletePagePayload {
