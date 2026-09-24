@@ -69,7 +69,7 @@ function LocationMap({ country, region }: { country: MapLocation; region?: strin
           {atlas.countries.map((location) => (
             <path
               key={location.id}
-              className="fill-background stroke-border-default dark:fill-muted/40"
+              className="fill-background stroke-border-default"
               d={location.path}
               data-location={location.id}
               strokeWidth={0.7}
