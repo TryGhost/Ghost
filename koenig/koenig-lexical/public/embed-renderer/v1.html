@@ -24,6 +24,8 @@
         body.style.display = 'flex';
         body.style.margin = '0';
         body.style.justifyContent = 'center';
+        // don't stretch embeds to the frame, or ones that clip overflow (eg, TikTok) never grow
+        body.style.alignItems = 'flex-start';
 
         function setSize(element, property, value) {
             if (element.style[property] !== value) {
