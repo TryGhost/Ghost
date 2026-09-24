@@ -22,6 +22,7 @@ import {
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { Inline } from '@tryghost/shade/primitives';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
@@ -325,6 +326,7 @@ export function PostPreviewModal({
               </Tabs>
             )}
             <ToggleGroup
+              shape="rounded"
               type="single"
               value={device}
               onValueChange={(value) => {
@@ -387,27 +389,27 @@ export function PostPreviewModal({
               </Select>
             )}
           </Inline>
-          <Inline gap="sm">
-            <Button
-              aria-label="Copy preview link"
+          <PageHeader.ActionGroup>
+            <PageHeader.Action
               disabled={!previewActionsAvailable}
-              variant="outline"
+              label="Copy preview link"
+              iconOnly
               onClick={() => void copyPreviewLink()}
             >
               <LucideIcon.Link />
-            </Button>
+            </PageHeader.Action>
             {previewActionsAvailable ? (
-              <Button variant="outline" asChild>
+              <PageHeader.Action label="Open in new tab" asChild>
                 <a href={audienceUrl} rel="noopener noreferrer" target="_blank">
                   <LucideIcon.ExternalLink />
                   Open in new tab
                 </a>
-              </Button>
+              </PageHeader.Action>
             ) : (
-              <Button variant="outline" disabled>
+              <PageHeader.Action label="Open in new tab" disabled>
                 <LucideIcon.ExternalLink />
                 Open in new tab
-              </Button>
+              </PageHeader.Action>
             )}
             <Button variant={onPublish ? 'outline' : 'default'} onClick={() => onOpenChange(false)}>
               Close
@@ -417,7 +419,7 @@ export function PostPreviewModal({
                 Publish
               </Button>
             ) : null}
-          </Inline>
+          </PageHeader.ActionGroup>
         </>
       }
       layout="header"

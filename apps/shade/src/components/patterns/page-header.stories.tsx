@@ -203,7 +203,7 @@ export const Basic: Story = {
       </PageHeader.Left>
       <PageHeader.Actions>
         <PageHeader.ActionGroup>
-          <PageHeader.Action label="Sort">
+          <PageHeader.Action label="Sort" tooltip>
             <ArrowUpDown />
             Newest first
           </PageHeader.Action>
@@ -351,7 +351,7 @@ export const Admin7Disabled: Story = {
   render: () => (
     <ShadeApp darkMode={false} isAdmin7={false}>
       <PageHeader.ActionGroup>
-        <PageHeader.Action label="Sort">
+        <PageHeader.Action label="Sort" tooltip>
           <ArrowUpDown />
           Newest first
         </PageHeader.Action>
