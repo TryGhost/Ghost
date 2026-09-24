@@ -8,14 +8,11 @@ export type SearchableModel = 'user' | 'tag' | 'pro-page' | 'post' | 'page';
 export interface SearchIndexItem {
   id: string;
   slug?: string;
-  url?: string;
   path?: string;
   name?: string;
   title?: string;
   keywords?: string;
   status?: string;
-  visibility?: string;
-  published_at?: string | null;
 }
 
 export interface Searchable {
@@ -30,15 +27,12 @@ export interface Searchable {
 
 export interface SearchResult {
   id: string;
-  url?: string;
   path?: string;
   title: string;
   keywords?: string;
   groupName: string;
   groupKey?: string;
   status?: string;
-  visibility?: string;
-  publishedAt?: string | null;
 }
 
 export interface SearchResultGroup {
@@ -158,14 +152,11 @@ export function sortSearchResultsByStatus(
 export function createSearchResult(searchable: Searchable, item: SearchIndexItem): SearchResult {
   return {
     id: `${searchable.model}.${item[searchable.idField]}`,
-    url: item.url,
     path: item.path,
     title: item[searchable.titleField] ?? '',
     keywords: item.keywords,
     groupName: searchable.name,
     groupKey: searchable.key,
     status: item.status,
-    visibility: item.visibility,
-    publishedAt: item.published_at,
   };
 }

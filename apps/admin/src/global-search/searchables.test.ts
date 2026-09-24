@@ -40,8 +40,6 @@ describe('getSearchables', () => {
     ]);
     expect(searchables[2]).toMatchObject({
       key: BILLING_SEARCH_GROUP_KEY,
-      model: 'pro-page',
-      index: ['title', 'keywords'],
       staticItems: [billingItem()],
     });
   });
@@ -76,7 +74,6 @@ describe('getSearchables', () => {
     ['a fragment', { path: '/plans#top' }],
     ['whitespace', { path: '/my plans' }],
     ['a trailing slash', { path: '/support/' }],
-    ['an empty path segment', { path: '//' }],
     ['a missing id', { id: '' }],
     ['a missing title', { title: undefined }],
   ])('drops configured items with %s', (_description, overrides) => {

@@ -9,8 +9,10 @@ import {
   sortSearchResultsByStatus,
 } from './searchables';
 
-/** `search-index/*` entries by model. Configured static items take precedence. */
-export type SearchContent = Partial<Record<SearchableModel, SearchIndexItem[]>>;
+/** `search-index/*` entries by model. Billing items come from config, not content. */
+export type SearchContent = Partial<
+  Record<Exclude<SearchableModel, 'pro-page'>, SearchIndexItem[]>
+>;
 
 export interface SearchProvider {
   search(term: string): SearchResultGroup[];
@@ -20,7 +22,11 @@ export interface SearchProvider {
 const RESULT_LIMIT = 100;
 
 function itemsFor(searchable: Searchable, content: SearchContent): SearchIndexItem[] {
-  return searchable.staticItems ?? content[searchable.model] ?? [];
+  if (searchable.model === 'pro-page') {
+    return searchable.staticItems ?? [];
+  }
+
+  return content[searchable.model] ?? [];
 }
 
 function groupResults(
@@ -30,8 +36,10 @@ function groupResults(
   const groups: SearchResultGroup[] = [];
 
   searchables.forEach((searchable) => {
-    const matches = match(searchable).slice(0, RESULT_LIMIT);
-    const options = sortSearchResultsByStatus(matches, searchable.model);
+    const options = sortSearchResultsByStatus(match(searchable), searchable.model).slice(
+      0,
+      RESULT_LIMIT,
+    );
 
     if (options.length > 0) {
       groups.push({ groupName: searchable.name, groupKey: searchable.key, options });

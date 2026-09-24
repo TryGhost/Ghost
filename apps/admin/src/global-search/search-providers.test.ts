@@ -8,30 +8,14 @@ import {
 import { type SearchIndexItem, type SearchResultGroup, getSearchables } from './searchables';
 
 const content: SearchContent = {
-  user: [
-    {
-      id: 'u1',
-      slug: 'first-user',
-      name: 'First user',
-      url: 'https://site.test/author/first-user/',
-    },
-  ],
-  tag: [
-    { id: 't1', slug: 'first-tag', name: 'First tag', url: 'https://site.test/tag/first-tag/' },
-  ],
+  user: [{ id: 'u1', slug: 'first-user', name: 'First user' }],
+  tag: [{ id: 't1', slug: 'first-tag', name: 'First tag' }],
   post: [
-    {
-      id: 'p1',
-      title: 'First post',
-      url: 'https://site.test/first-post/',
-      status: 'published',
-      visibility: 'members',
-      published_at: '2024-05-08T16:21:07.000Z',
-    },
+    { id: 'p1', title: 'First post', status: 'published' },
     { id: 'p2', title: 'Second post', status: 'draft' },
     { id: 'p3', title: 'Third post', status: 'scheduled' },
   ],
-  page: [{ id: 'g1', title: 'First page', url: 'https://site.test/first-page/', status: 'draft' }],
+  page: [{ id: 'g1', title: 'First page', status: 'draft' }],
 };
 
 const billingSearch = {
@@ -83,22 +67,6 @@ describe.each([
       'post.p1',
       'page.g1',
     ]);
-    expect(results.map((group) => group.options[0].url)).toEqual([
-      'https://site.test/author/first-user/',
-      'https://site.test/tag/first-tag/',
-      'https://site.test/first-post/',
-      'https://site.test/first-page/',
-    ]);
-  });
-
-  it('carries post publishing fields', () => {
-    const [group] = search('first post');
-
-    expect(group.options[0]).toMatchObject({
-      status: 'published',
-      visibility: 'members',
-      publishedAt: '2024-05-08T16:21:07.000Z',
-    });
   });
 
   it('orders posts scheduled, then draft, then published', () => {
@@ -153,15 +121,6 @@ describe.each([
       expect(titles(searchBilling('dns'), 'Acme Hosting')).toEqual(['Set up a custom domain']);
       expect(titles(searchBilling('price'), 'Acme Hosting')).toEqual(['Change plan']);
     });
-
-    it('ignores content passed for the billing model', () => {
-      const provider = create(withBilling, {
-        'pro-page': [{ id: 'x', title: 'Injected billing' }],
-      });
-
-      expect(titles(provider.search('billing'), 'Acme Hosting')).toHaveLength(3);
-      expect(provider.search('injected')).toEqual([]);
-    });
   });
 });
 
@@ -211,11 +170,15 @@ describe('basic search provider matching', () => {
     expect(search('second post')).toEqual(['Second post']);
   });
 
-  it('keeps the first 100 matches in content order', () => {
-    const posts = postsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+  it('sorts by status before capping', () => {
+    const posts = [
+      ...postsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`)),
+      { id: 'd1', title: 'Draft post', status: 'draft' },
+    ];
     const [group] = createBasicSearchProvider(getSearchables(), { post: posts }).search('post');
 
-    expect(group.options.at(-1)?.title).toBe('Post 99');
+    expect(group.options).toHaveLength(100);
+    expect(group.options[0].title).toBe('Draft post');
   });
 });
 
