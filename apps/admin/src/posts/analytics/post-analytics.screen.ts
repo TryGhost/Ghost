@@ -11,6 +11,12 @@ export const postAnalyticsScreen = {
   newsletterTab: () => page.getByRole('button', { name: sel.newsletterTab, exact: true }),
   growthTab: () => page.getByRole('button', { name: sel.growthTab, exact: true }),
 
+  // Header actions
+  moreActionsButton: () => page.getByRole('button', { name: 'More post actions' }),
+  deletePostMenuItem: () => page.getByRole('menuitem', { name: 'Delete post' }),
+  confirmDeleteButton: () =>
+    page.getByRole('alertdialog').getByRole('button', { name: 'Delete', exact: true }),
+
   // Overview
   webPerformanceCard: () => page.getByTestId(sel.webPerformance),
   webPerformanceViewMoreButton: () =>
