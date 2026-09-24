@@ -24,6 +24,7 @@ describe('Utils: embed-renderer', () => {
 
         test.each([
             ['the editor origin', 'https://admin.example.com/embed-renderer/'],
+            ['the editor hostname on a different port', 'https://admin.example.com:8443/embed-renderer/'],
             ['invalid urls', 'not a url'],
             ['non-http protocols', 'javascript:alert(1)'],
             ['data urls', 'data:text/html,hello']

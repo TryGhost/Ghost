@@ -36,13 +36,15 @@ export function resolveEmbedHeight(value: unknown): number | null {
 // null when it can't be used safely, so the editor fails closed.
 export function getEmbedRendererUrl(previewUrl: string, editorOrigin: string): URL | null {
     let base: URL;
+    let editor: URL;
     try {
         base = new URL(previewUrl);
+        editor = new URL(editorOrigin);
     } catch {
         return null;
     }
 
-    if (!['https:', 'http:'].includes(base.protocol) || base.origin === editorOrigin) {
+    if (!['https:', 'http:'].includes(base.protocol) || base.hostname === editor.hostname) {
         return null;
     }
 
