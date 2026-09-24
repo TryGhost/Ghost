@@ -150,6 +150,14 @@ function EditorContent({
   const [tkCount, setTkCount] = useState(0);
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsToggleRef = useRef<HTMLButtonElement>(null);
+  const previousSettingsOpen = useRef(settingsOpen);
+  useLayoutEffect(() => {
+    if (previousSettingsOpen.current !== settingsOpen) {
+      settingsToggleRef.current?.focus();
+    }
+    previousSettingsOpen.current = settingsOpen;
+  }, [settingsOpen]);
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   useLayoutEffect(() => {
@@ -179,9 +187,27 @@ function EditorContent({
 
   useSaveShortcut(session.dispatchExplicit);
 
+  const settingsToggle = (
+    <PageHeader.Action
+      ref={settingsToggleRef}
+      aria-expanded={settingsOpen}
+      className="bg-background"
+      data-testid={settingsMenuToggle}
+      fallbackSize="sm"
+      fallbackVariant="ghost"
+      label="Settings"
+      tooltip={false}
+      iconOnly
+      onClick={toggleSettings}
+    >
+      <LucideIcon.PanelRight />
+    </PageHeader.Action>
+  );
+
   return (
-    <Stack
-      className="h-full"
+    <Inline
+      align="stretch"
+      className="relative h-full min-h-0"
       gap="none"
       style={
         {
@@ -190,82 +216,69 @@ function EditorContent({
         } as CSSProperties
       }
     >
-      <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
-        <EditorHeader postType={postType}>
-          <EditorStatus
-            isDirty={session.isDirty()}
-            record={statusRecordOf(session.loadedRecord ?? record, createdId)}
-            state={session.state}
-          />
-          <PageHeader.ActionGroup className="ml-auto max-sm:col-start-2 max-sm:row-start-1">
-            <EditorHeaderActions
-              currentUser={currentUser}
-              postType={postType}
-              session={session}
-              siteUrl={cardConfig.siteUrl}
-              tkCount={tkCount}
+      <Stack className="min-h-0 min-w-0 flex-1" gap="none">
+        <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
+          <EditorHeader postType={postType}>
+            <EditorStatus
+              isDirty={session.isDirty()}
+              record={statusRecordOf(session.loadedRecord ?? record, createdId)}
+              state={session.state}
             />
-            <PageHeader.Action
-              aria-expanded={settingsOpen}
-              className="bg-background"
-              data-testid={settingsMenuToggle}
-              fallbackSize="sm"
-              fallbackVariant="ghost"
-              label="Settings"
-              iconOnly
-              onClick={toggleSettings}
-            >
-              <LucideIcon.PanelRight />
-            </PageHeader.Action>
-          </PageHeader.ActionGroup>
-        </EditorHeader>
-      </Box>
-      <Box className="peer shrink-0">
-        <SessionBanners
-          contentText={session.contentText}
-          hasUnsavedContent={session.hasUnsavedContent}
-          state={session.state}
-          onDismissReauth={session.reauthAbandoned}
-          onReload={session.reload}
-          onRetryReauth={session.reauthSucceeded}
-          onRetrySave={session.dispatchExplicit}
+            <PageHeader.ActionGroup className="ml-auto max-sm:col-start-2 max-sm:row-start-1">
+              <EditorHeaderActions
+                currentUser={currentUser}
+                postType={postType}
+                session={session}
+                siteUrl={cardConfig.siteUrl}
+                tkCount={tkCount}
+              />
+              {!settingsOpen && settingsToggle}
+            </PageHeader.ActionGroup>
+          </EditorHeader>
+        </Box>
+        <Box className="peer shrink-0">
+          <SessionBanners
+            contentText={session.contentText}
+            hasUnsavedContent={session.hasUnsavedContent}
+            state={session.state}
+            onDismissReauth={session.reauthAbandoned}
+            onReload={session.reload}
+            onRetryReauth={session.reauthSucceeded}
+            onRetrySave={session.dispatchExplicit}
+          />
+        </Box>
+        {/* Session warnings reserve space; otherwise the document reaches behind the header. */}
+        <Box className="relative min-h-0 flex-1 peer-empty:[--editor-overlap:var(--editor-header-height)]">
+          <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
+            <PostEditor
+              key={session.contentKey}
+              {...session.bind}
+              autofocusTitle={!record}
+              cardConfig={currentCardConfig}
+              featureImage={featureImage}
+              postType={postType}
+              showExcerpt={showExcerpt}
+              onExcerptBlur={session.commitSettings}
+              onTkCountChange={setTkCount}
+            />
+          </div>
+        </Box>
+      </Stack>
+      {settingsOpen ? (
+        <PostSettingsSidebar
+          cardConfig={currentCardConfig}
+          currentUser={currentUser}
+          featureImage={featureImage.featureImage}
+          hasInlineExcerpt={showExcerpt}
+          postType={postType}
+          session={session}
+          siteUrl={cardConfig.siteUrl}
+          toggle={settingsToggle}
         />
-      </Box>
-      {/* The document reaches behind the header unless a banner needs reserved space.
-          Settings always starts below the header; only the writing pane overlaps it. */}
-      <Inline
-        align="stretch"
-        className="relative min-h-0 flex-1 peer-empty:[--editor-overlap:var(--editor-header-height)]"
-        gap="none"
-      >
-        <div className="-mt-(--editor-overlap) min-h-0 min-w-0 flex-1">
-          <PostEditor
-            key={session.contentKey}
-            {...session.bind}
-            autofocusTitle={!record}
-            cardConfig={currentCardConfig}
-            featureImage={featureImage}
-            postType={postType}
-            showExcerpt={showExcerpt}
-            onExcerptBlur={session.commitSettings}
-            onTkCountChange={setTkCount}
-          />
-        </div>
-        {settingsOpen ? (
-          <PostSettingsSidebar
-            cardConfig={currentCardConfig}
-            currentUser={currentUser}
-            featureImage={featureImage.featureImage}
-            hasInlineExcerpt={showExcerpt}
-            postType={postType}
-            session={session}
-            siteUrl={cardConfig.siteUrl}
-          />
-        ) : null}
-      </Inline>
+      ) : null}
       {snippetDialog}
       <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
-    </Stack>
+    </Inline>
   );
 }
 

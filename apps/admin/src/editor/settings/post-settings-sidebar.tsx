@@ -1,6 +1,6 @@
 import { Fragment, memo, type ReactNode, useEffect, useId } from 'react';
 import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
-import { Inline, Text } from '@tryghost/shade/primitives';
+import { Box, Inline, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import {
   canAccessSettings,
@@ -26,7 +26,11 @@ import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
-import { SubviewContext, useSubviewController } from './settings-subview-context';
+import {
+  SettingsToggleContext,
+  SubviewContext,
+  useSubviewController,
+} from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
 import { FACEBOOK_CARD_NETWORK, X_CARD_NETWORK } from './social-card-networks';
 import { SocialCardSection } from './social-card-section';
@@ -102,6 +106,8 @@ export interface PostSettingsSidebarProps {
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
+  /** The shell toggle follows the writer into the panel and its subviews. */
+  toggle?: ReactNode;
 }
 
 /**
@@ -116,6 +122,7 @@ export function PostSettingsSidebar({
   featureImage,
   currentUser,
   hasInlineExcerpt = false,
+  toggle,
 }: PostSettingsSidebarProps) {
   // The sections take the narrow port rather than the handle, so an edit they
   // cannot see does not hand them a new object.
@@ -187,26 +194,38 @@ export function PostSettingsSidebar({
 
   return (
     <SubviewContext.Provider value={subviews}>
-      <aside
-        aria-label={open?.title ?? panelLabel}
-        className={cn(
-          'absolute inset-y-0 right-0 z-10 w-[350px] overflow-y-auto border-l border-border bg-background shadow-lg max-[500px]:w-screen lg:static lg:shrink-0 lg:shadow-none',
-          open?.wide && 'w-[500px]',
-        )}
-        data-testid={postSettingsSidebar}
-      >
-        {open ? null : (
-          <>
-            <Text as="h2" className="px-5 py-4" size="md" weight="semibold">
-              {panelLabel}
-            </Text>
-            <Separator />
-          </>
-        )}
-        {SETTINGS_SECTION_ORDER.map((id) => (
-          <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
-        ))}
-      </aside>
+      <SettingsToggleContext.Provider value={toggle}>
+        <Box
+          className={cn(
+            'absolute inset-y-0 right-0 z-30 w-[350px] overflow-hidden shadow-lg motion-safe:animate-editor-settings-open max-[500px]:w-screen lg:static lg:shrink-0 lg:shadow-none',
+            open?.wide && 'w-[500px]',
+          )}
+        >
+          <aside
+            aria-label={open?.title ?? panelLabel}
+            className={cn(
+              'h-full w-[350px] overflow-x-hidden overflow-y-auto border-l border-border bg-background max-[500px]:w-screen',
+              open?.wide && 'w-[500px]',
+            )}
+            data-testid={postSettingsSidebar}
+          >
+            {open ? null : (
+              <Box className="sticky top-0 z-10 bg-background">
+                <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
+                  <Text as="h2" className="pl-1" size="md" weight="semibold">
+                    {panelLabel}
+                  </Text>
+                  {toggle}
+                </Inline>
+                <Separator />
+              </Box>
+            )}
+            {SETTINGS_SECTION_ORDER.map((id) => (
+              <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
+            ))}
+          </aside>
+        </Box>
+      </SettingsToggleContext.Provider>
     </SubviewContext.Provider>
   );
 }

@@ -1,10 +1,10 @@
-import { type ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, useContext, useEffect, useRef } from 'react';
 import { Button, Separator } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { settingsSubviewPane } from '@tryghost/test-data/selectors/editor';
 import type { SettingsSectionId } from './sections';
-import { useSubviews } from './settings-subview-context';
+import { SettingsToggleContext, useSubviews } from './settings-subview-context';
 
 export interface SettingsSubviewProps {
   /** The section's own id: the panel shows this section alone while its pane is open. */
@@ -37,6 +37,7 @@ export function SettingsSubview({
   children,
 }: SettingsSubviewProps) {
   const { open, show, close } = useSubviews();
+  const toggle = useContext(SettingsToggleContext);
   const isOpen = open?.id === id;
   const backRef = useRef<HTMLButtonElement>(null);
   const rowRef = useRef<HTMLButtonElement>(null);
@@ -58,13 +59,14 @@ export function SettingsSubview({
     return (
       <>
         <div className="sticky top-0 z-10 bg-background">
-          <Inline align="center" className="p-3" gap="sm">
+          <Inline align="center" className="px-4 py-3" gap="sm">
             <Button ref={backRef} aria-label={closeLabel} size="sm" variant="ghost" onClick={close}>
               <LucideIcon.ArrowLeft />
             </Button>
-            <Text as="h2" size="md" weight="semibold">
+            <Text as="h2" className="flex-1" size="md" weight="semibold">
               {title}
             </Text>
+            {toggle}
           </Inline>
           <Separator />
         </div>

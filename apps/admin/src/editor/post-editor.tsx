@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Button, buttonVariants } from '@tryghost/shade/components';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
 import { focusKoenigEditorOnBottomClick } from '@tryghost/admin-x-framework';
@@ -110,7 +111,7 @@ export function PostEditor({
   registerSecondaryApi,
   onTkCountChange,
 }: PostEditorProps) {
-  const { darkMode } = useFocusContext();
+  const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
@@ -339,21 +340,40 @@ export function PostEditor({
           />
         </Stack>
       </div>
-      <Inline className="absolute right-0 bottom-0 rounded-tl-md bg-background px-4 py-3" gap="sm">
+      <Inline className="absolute right-4 bottom-3" gap="sm">
         {!isKeyboardOpen && (
-          <Text data-testid={editorWordCount} size="xs" tone="secondary">
+          <Text
+            as="span"
+            className={buttonVariants({
+              variant: null,
+              size: isAdmin7 ? 'default' : 'sm',
+              shape: 'pill',
+              isAdmin7,
+              className: 'bg-background px-3 text-(length:--text-control) text-text-secondary',
+            })}
+            data-testid={editorWordCount}
+            tone="secondary"
+            weight="medium"
+          >
             {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
           </Text>
         )}
-        <a
-          aria-label="Editor help"
-          className="text-text-secondary hover:text-foreground"
-          href="https://ghost.org/help/using-the-editor/"
-          rel="noopener noreferrer"
-          target="_blank"
+        <Button
+          className="bg-background text-text-secondary hover:text-foreground"
+          shape="pill"
+          size={isAdmin7 ? 'icon' : 'icon-sm'}
+          variant="ghost"
+          asChild
         >
-          <LucideIcon.CircleHelp className="size-4" />
-        </a>
+          <a
+            aria-label="Editor help"
+            href="https://ghost.org/help/using-the-editor/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <LucideIcon.CircleHelp />
+          </a>
+        </Button>
       </Inline>
     </div>
   );
