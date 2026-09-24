@@ -340,7 +340,7 @@ export function PostEditor({
           />
         </Stack>
       </div>
-      <Inline className="absolute right-4 bottom-3" gap="sm">
+      <Inline className="absolute right-4 bottom-3 z-20" gap="sm">
         {!isKeyboardOpen && (
           <Text
             as="span"
@@ -349,7 +349,8 @@ export function PostEditor({
               size: isAdmin7 ? 'default' : 'sm',
               shape: 'pill',
               isAdmin7,
-              className: 'bg-background px-3 text-(length:--text-control) text-text-secondary',
+              className:
+                'bg-background/80 px-3 text-(length:--text-control) text-text-secondary backdrop-blur-sm',
             })}
             data-testid={editorWordCount}
             tone="secondary"
@@ -359,7 +360,7 @@ export function PostEditor({
           </Text>
         )}
         <Button
-          className="bg-background text-text-secondary hover:text-foreground"
+          className="bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground"
           shape="pill"
           size={isAdmin7 ? 'icon' : 'icon-sm'}
           variant="ghost"

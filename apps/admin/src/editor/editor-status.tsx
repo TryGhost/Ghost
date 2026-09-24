@@ -155,7 +155,7 @@ export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
         size: isAdmin7 ? 'default' : 'sm',
         shape: 'pill',
         isAdmin7,
-        className: `pointer-events-auto h-auto max-w-full min-w-0 justify-self-start bg-background px-3 py-1 text-(length:--text-control) whitespace-normal text-text-secondary max-sm:col-span-2 max-sm:row-start-2 ${isAdmin7 ? 'min-h-(--control-height)' : 'min-h-7'}`,
+        className: `pointer-events-auto h-auto max-w-full min-w-0 justify-self-start bg-background/80 px-3 py-1 text-(length:--text-control) whitespace-normal text-text-secondary backdrop-blur-sm max-sm:col-span-2 max-sm:row-start-2 ${isAdmin7 ? 'min-h-(--control-height)' : 'min-h-7'}`,
       })}
       data-testid={editorStatus}
       tone="secondary"

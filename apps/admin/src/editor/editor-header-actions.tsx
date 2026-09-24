@@ -122,7 +122,7 @@ export function EditorHeaderActions({
     <Inline data-testid={editorHeaderActions} gap="md">
       {isDraft ? (
         <PageHeader.Action
-          className="bg-background"
+          className="bg-background/80 backdrop-blur-sm"
           fallbackSize="sm"
           label="Preview"
           onClick={openPreview}
@@ -237,7 +237,7 @@ function PublishActions({
           {inputs.error ? (
             <>
               <Text
-                className="bg-background text-destructive"
+                className="bg-background/80 text-destructive backdrop-blur-sm"
                 data-testid={editorPublishInputsError}
                 role="alert"
                 size="sm"
@@ -245,7 +245,7 @@ function PublishActions({
                 {inputs.error.message}
               </Text>
               <Button
-                className="bg-background"
+                className="bg-background/80 backdrop-blur-sm"
                 size={isAdmin7 ? 'default' : 'sm'}
                 variant="ghost"
                 onClick={inputs.retry}
@@ -272,7 +272,7 @@ function PublishActions({
           {/* Ember routes a sent post to the update flow from its status line, not the header. */}
           {post.status === 'sent' ? null : (
             <Button
-              className="bg-background"
+              className="bg-background/80 backdrop-blur-sm"
               size={isAdmin7 ? 'default' : 'sm'}
               variant="outline"
               onClick={() => onOpenFlow('update')}

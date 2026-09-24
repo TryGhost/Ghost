@@ -12,7 +12,6 @@ import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
-import { useShade } from '@tryghost/shade/app';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -75,7 +74,6 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 }
 
 function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
-  const { isAdmin7 } = useShade();
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
 
   return (
@@ -84,12 +82,18 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
       className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*6+1px)] pb-3 pl-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
-      <Button className="bg-background" size={isAdmin7 ? 'default' : 'sm'} variant="ghost" asChild>
+      <PageHeader.Action
+        className="bg-background/80 backdrop-blur-sm"
+        fallbackSize="sm"
+        fallbackVariant="ghost"
+        label={listLabel}
+        asChild
+      >
         <AdminLink to={postType === 'page' ? '/pages' : '/posts'}>
           <LucideIcon.ArrowLeft />
           {listLabel}
         </AdminLink>
-      </Button>
+      </PageHeader.Action>
       {children}
     </Grid>
   );
@@ -226,13 +230,11 @@ function EditorContent({
     <PageHeader.Action
       ref={settingsToggleRef}
       aria-expanded={settingsOpen}
+      className={settingsOpen ? 'bg-sidebar-accent' : 'bg-background/80 backdrop-blur-sm'}
       data-testid={settingsMenuToggle}
       fallbackSize="sm"
       fallbackVariant="ghost"
       label="Settings"
-      style={{
-        backgroundColor: settingsOpen ? 'var(--sidebar-accent)' : 'var(--background)',
-      }}
       tooltip={false}
       iconOnly
       onClick={toggleSettings}
