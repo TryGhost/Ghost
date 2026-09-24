@@ -85,6 +85,11 @@ const EDITABLE_SETTINGS = [
   'pintura_css_url',
   'donations_currency',
   'donations_suggested_amount',
+  // POC: site-level Stripe Checkout branding
+  'stripe_checkout_background_color',
+  'stripe_checkout_accent_color',
+  'stripe_checkout_font',
+  'stripe_checkout_border_style',
   'recommendations_enabled',
   'body_font',
   'heading_font',

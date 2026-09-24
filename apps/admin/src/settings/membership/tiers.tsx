@@ -24,6 +24,10 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { ChevronDown } from 'lucide-react';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
@@ -41,7 +45,7 @@ import {
   useBrowseTiers,
 } from '@tryghost/admin-x-framework/api/tiers';
 import { currencySelectGroups, validateCurrencyAmount } from '@tryghost/admin-x-framework';
-import { formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
@@ -203,10 +207,29 @@ const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   }
 
   const stripeButton = stripeEnabled ? (
-    <StripeConnectedButton
-      className="hidden tablet:!visible tablet:!inline-flex"
-      onClick={() => void openConnectModal()}
-    />
+    <div className="hidden tablet:!visible tablet:!inline-flex">
+      <StripeConnectedButton
+        className="rounded-r-none border-r-0"
+        onClick={() => void openConnectModal()}
+      />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              aria-label="Customize checkout"
+              className="h-auto rounded-l-none"
+              size="icon"
+              type="button"
+              variant="outline"
+              onClick={() => updateRoute('tiers/checkout')}
+            >
+              <LucideIcon.Settings2 />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Customize checkout</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
   ) : (
     <StripeButton
       className="hidden tablet:!visible tablet:!block"

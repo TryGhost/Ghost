@@ -78,6 +78,44 @@ module.exports = class StripeAPI {
   }
 
   /**
+   * POC: site-level checkout branding (Settings → Tiers → Customize checkout), sent as
+   * `branding_settings` on every Checkout Session. Behind the stripeCheckoutCollection
+   * flag so sites without it keep their Stripe dashboard branding untouched.
+   *
+   * @param {object} [override] draft branding from the admin preview; replaces the saved one
+   * @returns {{branding_settings?: object}}
+   */
+  _checkoutBranding(override) {
+    if (!this.labs.isSet('stripeCheckoutCollection')) {
+      return {};
+    }
+    if (override) {
+      return Object.keys(override).length ? { branding_settings: override } : {};
+    }
+    const settingsCache = require('../../../shared/settings-cache');
+    const branding = {};
+    const buttonColor =
+      settingsCache.get('stripe_checkout_accent_color') || settingsCache.get('accent_color');
+    if (buttonColor) {
+      branding.button_color = buttonColor;
+    }
+    const backgroundColor = settingsCache.get('stripe_checkout_background_color');
+    if (backgroundColor) {
+      branding.background_color = backgroundColor;
+    }
+    const font = settingsCache.get('stripe_checkout_font');
+    if (font) {
+      // Stripe's enum spells families in snake case, e.g. "Roboto Slab" → "roboto_slab".
+      branding.font_family = font.toLowerCase().replace(/ /g, '_');
+    }
+    const borderStyle = settingsCache.get('stripe_checkout_border_style');
+    if (borderStyle) {
+      branding.border_style = borderStyle;
+    }
+    return Object.keys(branding).length ? { branding_settings: branding } : {};
+  }
+
+  /**
    * @returns {IPaymentMethodType[]|undefined}
    */
   get PAYMENT_METHOD_TYPES() {
@@ -607,6 +645,7 @@ module.exports = class StripeAPI {
     }
 
     const stripeSessionOptions = {
+      ...this._checkoutBranding(options.brandingOverride),
       payment_method_types: this.PAYMENT_METHOD_TYPES,
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
@@ -707,6 +746,7 @@ module.exports = class StripeAPI {
     };
 
     const stripeSessionOptions = {
+      ...this._checkoutBranding(),
       mode: 'payment',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: successUrl || this._config.checkoutSessionSuccessUrl,
@@ -789,6 +829,7 @@ module.exports = class StripeAPI {
         : i18n.t('{count} month', { count: duration });
 
     const stripeSessionOptions = {
+      ...this._checkoutBranding(),
       mode: 'payment',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: successUrl,
@@ -839,6 +880,7 @@ module.exports = class StripeAPI {
   async createCheckoutSetupSession(customer, options) {
     await this._rateLimitBucket.throttle();
     const session = await this._stripe.checkout.sessions.create({
+      ...this._checkoutBranding(),
       mode: 'setup',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       payment_method_types: this.PAYMENT_METHOD_TYPES,

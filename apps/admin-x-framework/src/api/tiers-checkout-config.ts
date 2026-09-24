@@ -80,3 +80,24 @@ export const useEditTierCheckoutConfig = createMutation<
   body: ({ config }) => ({ tiers_checkout_config: [config] }),
   invalidateQueries: { dataType },
 });
+
+export interface TierCheckoutPreviewResponseType {
+  tiers_checkout_preview: Array<{ url: string }>;
+}
+
+// POC: a real, hosted Stripe Checkout Session for a tier from an unsaved configuration
+// and branding, for the checkout customisation preview. Saves no checkout settings, but
+// resolving the price can create the tier's Stripe product/price.
+export const useCreateTierCheckoutPreview = createMutation<
+  TierCheckoutPreviewResponseType,
+  {
+    tierId: string;
+    config: TierCheckoutConfigInput;
+    branding: Record<string, string>;
+    cadence?: 'month' | 'year';
+  }
+>({
+  method: 'POST',
+  path: ({ tierId }) => `/tiers/${tierId}/checkout_preview/`,
+  body: ({ config, branding, cadence }) => ({ config, branding, cadence }),
+});

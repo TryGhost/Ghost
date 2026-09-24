@@ -149,6 +149,55 @@ export class TierCheckoutConfigService {
   }
 
   /**
+   * POC: what a tier's checkout would ask for under an unsaved configuration, in the same
+   * shape `resolve` gives live checkouts, so the admin preview builds its session through
+   * the same code. Parsed with the same input schema as a save, but without the save's
+   * extra checks (askable questions, destination field types); unknown custom fields are
+   * dropped. Nothing is written.
+   */
+  async resolveDraft(input: unknown): Promise<ResolvedCheckout> {
+    const stated = parseInput(input);
+    const questions = stated.custom_fields ?? [];
+    const fields: Array<{ key: string; name: string; type: FieldType }> = questions.length
+      ? await this.knex(FIELDS_TABLE)
+          .whereIn(
+            'key',
+            questions.map((question) => question.key),
+          )
+          .where('status', FIELD_STATUS.active)
+          .select('key', 'name', 'type')
+      : [];
+    const customFields: ResolvedQuestion[] = questions.flatMap((question) => {
+      const field = fields.find((candidate) => candidate.key === question.key);
+      if (!field) {
+        return [];
+      }
+      return [
+        {
+          key: question.key,
+          label: question.label ?? null,
+          optional: question.optional ?? true,
+          prompt: question.label ?? field.name,
+          type: field.type,
+        },
+      ];
+    });
+
+    return {
+      customFields,
+      shipping: stated.shipping?.collect
+        ? {
+            allowedCountries: stated.shipping.allowed_countries ?? null,
+            nameCustomFieldKey: stated.shipping.name.custom_field_key,
+            addressCustomFieldKey: stated.shipping.address.custom_field_key,
+          }
+        : null,
+      taxNumber: stated.tax_number?.collect ?? false,
+      phone: stated.phone?.collect ? { customFieldKey: stated.phone.custom_field_key } : null,
+    };
+  }
+
+  /**
    * Saves the checkout settings a request states, and leaves the rest alone.
    *
    * A request only has to include the sections it wants to change. Say nothing about

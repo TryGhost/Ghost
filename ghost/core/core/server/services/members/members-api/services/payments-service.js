@@ -150,6 +150,35 @@ class PaymentsService {
   }
 
   /**
+   * POC: a hosted Checkout Session built exactly like a logged-out signup for this tier,
+   * but from an unsaved checkout configuration and branding, for the admin preview. It is
+   * a real session: completing it charges and creates a member, and it stays payable for
+   * 24h. Resolving the price can create the tier's Stripe product/price if missing.
+   *
+   * @param {object} options
+   * @param {import('../../../tiers/tier')} options.tier
+   * @param {'month'|'year'} options.cadence
+   * @param {object} options.checkout resolved draft checkout (TierCheckoutConfigService.resolveDraft)
+   * @param {object} options.branding draft `branding_settings`
+   * @param {string} options.returnUrl
+   * @returns {Promise<string>} the hosted session's URL, opened by Admin in a new tab
+   */
+  async createCheckoutPreviewSession({ tier, cadence, checkout, branding, returnUrl }) {
+    const price = await this.getPriceForTierCadence(tier, cadence);
+    // Hosted, not embedded: embedded Checkout is a different layout (no header, form on a
+    // card), and members only ever see the hosted page.
+    const session = await this.stripeAPIService.createCheckoutSession(price.id, null, {
+      metadata: { ghostTierId: tier.id.toHexString(), ghostCheckoutPreview: 'true' },
+      successUrl: returnUrl,
+      cancelUrl: returnUrl,
+      trialDays: tier.trialDays,
+      checkout,
+      brandingOverride: branding,
+    });
+    return session.url;
+  }
+
+  /**
    * What this tier's checkout should ask for beyond the payment, or nothing.
    *
    * Undefined on every path but the configured one, including the flag being off: the

@@ -1,6 +1,7 @@
 import ColorPickerField from '@/settings/components/color-picker-field';
 import HeaderImageField from '@/settings/email-design/header-image-field';
 import HtmlField from '@/settings/components/html-field';
+import IconToggleGroup from '@/settings/components/icon-toggle-group';
 import NewsletterPreview from './newsletter-preview';
 import React, { useCallback, useEffect, useState } from 'react';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
@@ -28,11 +29,6 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
-  ToggleGroup,
-  ToggleGroupItem,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
 } from '@tryghost/shade/components';
 import {
   type ErrorMessages,
@@ -64,42 +60,6 @@ import { renderReplyToEmail, renderSenderEmail } from '@/settings/utils/newslett
 import { textColorForBackgroundColor } from '@tryghost/color-utils';
 import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-
-interface IconToggleOption {
-  value: string;
-  label: string;
-  icon: React.ReactNode;
-  disabled?: boolean;
-}
-
-const IconToggleGroup: React.FC<{
-  label: string;
-  value: string;
-  options: IconToggleOption[];
-  onValueChange: (value: string) => void;
-}> = ({ label, value, options, onValueChange }) => (
-  <ToggleGroup
-    aria-label={label}
-    type="single"
-    value={value}
-    onValueChange={(nextValue) => nextValue && onValueChange(nextValue)}
-  >
-    {options.map((option) => (
-      <Tooltip key={option.value}>
-        <TooltipTrigger asChild>
-          <ToggleGroupItem
-            aria-label={option.label}
-            disabled={option.disabled}
-            value={option.value}
-          >
-            {option.icon}
-          </ToggleGroupItem>
-        </TooltipTrigger>
-        <TooltipContent>{option.label}</TooltipContent>
-      </Tooltip>
-    ))}
-  </ToggleGroup>
-);
 
 const ReplyToEmailField: React.FC<{
   newsletter: Newsletter;

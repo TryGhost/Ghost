@@ -319,6 +319,25 @@
     }
   },
   "members": {
+    "stripe_checkout_background_color": {
+      "defaultValue": "",
+      "type": "string"
+    },
+    "stripe_checkout_accent_color": {
+      "defaultValue": "",
+      "type": "string"
+    },
+    "stripe_checkout_font": {
+      "defaultValue": "",
+      "type": "string"
+    },
+    "stripe_checkout_border_style": {
+      "defaultValue": "rounded",
+      "validations": {
+        "isIn": [["rounded", "rectangular", "pill"]]
+      },
+      "type": "string"
+    },
     "default_content_visibility": {
       "defaultValue": "public",
       "type": "string"

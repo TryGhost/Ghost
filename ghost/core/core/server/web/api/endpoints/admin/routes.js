@@ -158,6 +158,13 @@ module.exports = function apiRoutes() {
   // Named for the configuration rather than the checkout, so it cannot be mistaken for
   // the session that `create-stripe-checkout-session` creates from it.
   router.get('/tiers/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.browse));
+  // POC: hosted Stripe session for the checkout customisation preview (opened in a new tab).
+  router.post(
+    '/tiers/:id/checkout_preview',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutCollection'),
+    http(api.tiersCheckoutConfig.preview),
+  );
   router.get('/tiers/:id/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.read));
   router.put(
     '/tiers/:id/checkout_config',
