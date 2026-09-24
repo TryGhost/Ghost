@@ -1,4 +1,6 @@
-// Development-spike asset generator. Run with pnpm exec node <this file>.
+// Regenerate from the repository root:
+// pnpm --dir apps/admin exec node src/members/detail/map-data/generate-map.mjs
+// pnpm format apps/admin/src/members/detail/map-data/world-states.json
 import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { geoArea, geoContains, geoMercator, geoPath } from 'd3-geo';
