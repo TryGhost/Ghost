@@ -55,7 +55,9 @@ describe('shared page navigation', () => {
 
   it('uses custom routes and falls back to slug URLs on older backends', () => {
     expect(pagePathForSlug('home', { home: '/' })).toBe('/');
+    expect(pagePathForSlug('about', { about: '/company/' })).toBe('/company/');
     expect(pagePathForSlug('about')).toBe('/about/');
+    expect(pagePathForSlug('about', {})).toBe('/about/');
     expect(pagePathForSlug('toString')).toBe('/toString/');
     expect(pagePathForSlug('')).toBeNull();
   });
@@ -65,6 +67,13 @@ describe('shared page navigation', () => {
     ['http://example.com/blog/about/?ref=nav#top', '/about/', 'primary'],
     ['http://example.com/about/', '/about/', null],
     ['https://external.com/blog/about/', '/about/', null],
+    ['http://example.com/blogger/about/', '/about/', null],
+    ['/blog/about/', '/about/', null],
+    ['/blog/about/', '/blog/about/', 'primary'],
+    ['http://example.com/blog/blog/about/', '/blog/about/', 'primary'],
+    ['http://example.com/blog/blog/about/', '/about/', null],
+    ['/blog/', '/about/', null],
+    ['http://example.com/blog/', '/blog/', null],
     ['/blog/', '/', null],
     ['/blog/', '/blog/', 'primary'],
     ['http://example.com/blog/', '/', 'primary'],
@@ -74,6 +83,74 @@ describe('shared page navigation', () => {
       expect(
         getPageNavigationPlacement([{ label: 'Item', url }], [], path, 'http://example.com/blog/'),
       ).toBe(expected);
+    },
+  );
+
+  it.each([undefined, 'not a URL'])(
+    'matches only relative URLs without a valid site URL (%s)',
+    (siteUrl) => {
+      expect(
+        getPageNavigationPlacement([{ label: 'About', url: '/about/' }], [], '/about/', siteUrl),
+      ).toBe('primary');
+      expect(
+        getPageNavigationPlacement(
+          [{ label: 'About', url: 'https://other.example/about/' }],
+          [],
+          '/about/',
+          siteUrl,
+        ),
+      ).toBeNull();
+    },
+  );
+
+  it.each(['https://example.com/', 'https://example.com/blog/'])(
+    'recognizes, moves, and removes slug aliases on %s',
+    (siteUrl) => {
+      for (const url of ['/home/', `${siteUrl}home/`]) {
+        const item = { label: 'Welcome', url };
+        const pages = [{ label: 'Home', path: '/' }];
+        const routes = { home: '/' };
+        expect(getPageNavigationPlacement([item], [], '/', siteUrl, routes)).toBe('primary');
+        expect(updatePageNavigation([item], [], pages, 'primary', siteUrl, routes).changed).toBe(
+          false,
+        );
+        const moved = updatePageNavigation([item], [], pages, 'secondary', siteUrl, routes);
+        expect(moved).toEqual({ navigation: [], secondaryNavigation: [item], changed: true });
+        expect(
+          getPageNavigationPlacement([], moved.secondaryNavigation, '/', siteUrl, routes),
+        ).toBe('secondary');
+        expect(
+          updatePageNavigation([], moved.secondaryNavigation, pages, null, siteUrl, routes),
+        ).toEqual({ navigation: [], secondaryNavigation: [], changed: true });
+      }
+    },
+  );
+
+  it.each(['primary', 'secondary', null] as const)(
+    'preserves unrelated links when placing a nested custom route in %s',
+    (placement) => {
+      const unrelated = { label: 'About', url: '/about/' };
+      const routes = { custom: '/blog/about/' };
+      const siteUrl = 'https://example.com/blog/';
+      const path = pagePathForSlug('custom', routes);
+      const result = updatePageNavigation(
+        [unrelated, { label: 'Custom', url: path! }],
+        [],
+        [{ label: 'Custom', path }],
+        placement,
+        siteUrl,
+        routes,
+      );
+      expect(result.navigation).toContainEqual(unrelated);
+      expect(
+        getPageNavigationPlacement(
+          result.navigation,
+          result.secondaryNavigation,
+          path,
+          siteUrl,
+          routes,
+        ),
+      ).toBe(placement);
     },
   );
 
@@ -88,26 +165,29 @@ describe('shared page navigation', () => {
     ).toBe('primary');
   });
 
-  it('moves matching entries without mutating inputs or losing metadata', () => {
-    const item = Object.freeze({
-      label: 'Custom label',
-      url: '/home/?ref=nav',
-      icon: 'house',
-      visibility: 'members',
-    });
-    const primary = [item];
-    const result = updatePageNavigation(
-      primary,
-      [],
-      [{ label: 'Home', path: '/' }],
-      'secondary',
-      undefined,
-      { home: '/' },
-    );
-    expect(result).toEqual({ navigation: [], secondaryNavigation: [item], changed: true });
-    expect(primary).toEqual([item]);
-    expect(result.secondaryNavigation[0]).not.toBe(item);
-  });
+  it.each(['Custom label', ''])(
+    'moves matching entries without mutating inputs or losing metadata (label: "%s")',
+    (label) => {
+      const item = Object.freeze({
+        label,
+        url: '/home/?ref=nav',
+        icon: 'house',
+        visibility: 'members',
+      });
+      const primary = [item];
+      const result = updatePageNavigation(
+        primary,
+        [],
+        [{ label: 'Home', path: '/' }],
+        'secondary',
+        undefined,
+        { home: '/' },
+      );
+      expect(result).toEqual({ navigation: [], secondaryNavigation: [item], changed: true });
+      expect(primary).toEqual([item]);
+      expect(result.secondaryNavigation[0]).not.toBe(item);
+    },
+  );
 
   it('preserves order and references for no-op placement changes', () => {
     const primary = [
@@ -128,12 +208,47 @@ describe('shared page navigation', () => {
 
   it('removes all matching entries from both menus without removing external links', () => {
     const external = { label: 'Elsewhere', url: 'https://elsewhere.test/about/' };
+    const outsideSubdir = { label: 'Corporate About', url: 'https://example.com/about/' };
     const result = updatePageNavigation(
-      [{ label: 'About', url: '/about/' }, external],
+      [{ label: 'About', url: '/about/' }, external, outsideSubdir],
       [{ label: 'About', url: '/about/#top' }],
       [{ label: 'About', path: '/about/' }],
       null,
+      'https://example.com/blog/',
     );
-    expect(result).toEqual({ navigation: [external], secondaryNavigation: [], changed: true });
+    expect(result).toEqual({
+      navigation: [external, outsideSubdir],
+      secondaryNavigation: [],
+      changed: true,
+    });
+  });
+
+  it('removes both a slug alias and its custom-route entry', () => {
+    expect(
+      updatePageNavigation(
+        [{ label: 'Home', url: '/home/' }],
+        [{ label: 'Home', url: '/' }],
+        [{ label: 'Home', path: '/' }],
+        null,
+        undefined,
+        { home: '/' },
+      ),
+    ).toEqual({ navigation: [], secondaryNavigation: [], changed: true });
+  });
+
+  it('stores new links relative to the site installation', () => {
+    expect(
+      updatePageNavigation(
+        [],
+        [],
+        [{ label: 'About', path: pagePathForSlug('about') }],
+        'primary',
+        'https://example.com/blog/',
+      ),
+    ).toEqual({
+      navigation: [{ label: 'About', url: '/about/' }],
+      secondaryNavigation: [],
+      changed: true,
+    });
   });
 });
