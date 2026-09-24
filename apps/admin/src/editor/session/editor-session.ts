@@ -7,6 +7,7 @@ import {
   zeroMilliseconds,
   type LeaveDecision,
   type PersistedIdentity,
+  type PendingSave,
   type PostStatus,
   type PrepareOutcome,
   type PublishOptions,
@@ -111,6 +112,7 @@ export interface EditorSessionOptions {
 /** The state React renders, published together after a session change. */
 export interface EditorSessionView {
   readonly state: SaveEngineState;
+  readonly pendingSave: Omit<PendingSave, 'version'> | null;
   readonly isDirty: boolean;
   /** The title the engine holds, which is DEFAULT_TITLE while the input is blank. */
   readonly title: string;
@@ -147,7 +149,7 @@ export interface EditorSession {
   editPublishedAt: (publishedAt: string) => void;
   /** The publish time the writer is looking at, staged edit included. */
   getPublishedAt: () => string | null;
-  /** The one save policy gate for every field-level save; see the README. */
+  /** Requests a field save; the engine owns eligibility and pending work. */
   commitField: () => void;
   /** The slug the machine holds, which a title commit moves without a field patch. */
   getSlug: () => string;
@@ -276,6 +278,15 @@ export function createEditorSession({
       return;
     }
     const state = engine.getState();
+    const pending = engine.getPendingSave();
+    // The UI renders eligibility, not the edit counter: typing more body text
+    // must not republish an otherwise unchanged React snapshot.
+    const pendingSave =
+      view?.pendingSave?.reason === pending?.reason && view?.pendingSave?.error === pending?.error
+        ? (view?.pendingSave ?? null)
+        : pending
+          ? { reason: pending.reason, error: pending.error }
+          : null;
     const isDirty = getSnapshot().isDirty;
     const currentSlug = machine.getState().slug;
     const currentPublishedAt = livePublishedAt();
@@ -295,6 +306,7 @@ export function createEditorSession({
     if (
       view &&
       view.state === state &&
+      view.pendingSave === pendingSave &&
       view.isDirty === isDirty &&
       view.title === live.title &&
       view.slug === currentSlug &&
@@ -303,7 +315,15 @@ export function createEditorSession({
     ) {
       return;
     }
-    view = { state, isDirty, title: live.title, slug: currentSlug, settings, publishTime };
+    view = {
+      state,
+      pendingSave,
+      isDirty,
+      title: live.title,
+      slug: currentSlug,
+      settings,
+      publishTime,
+    };
     for (const listener of changeListeners) {
       try {
         listener();
@@ -325,6 +345,7 @@ export function createEditorSession({
       }
     }
     tracker.setLive(identity.id, patch);
+    engine.contentChanged();
     notifyChanged();
   }
 
@@ -374,11 +395,6 @@ export function createEditorSession({
     tracker.setLive(identity.id, patch);
   }
 
-  /** The writer removed every author the post had; Ember's validator refuses it too. */
-  function authorsEmptied(): boolean {
-    return live.authors.length === 0 && tracker.isFieldDirty('authors');
-  }
-
   function getSnapshot(): EditorSaveSnapshot {
     const verdict = tracker.verdict();
     return buildSaveSnapshot({
@@ -397,7 +413,10 @@ export function createEditorSession({
 
   // A title commit and a load move the machine's slug without a field patch, so
   // the URL input hears about them through the session's own subscribers.
-  const stopSlugNotifications = machine.subscribe(notifyChanged);
+  const stopSlugNotifications = machine.subscribe(() => {
+    engine.contentChanged();
+    notifyChanged();
+  });
 
   // The post validator runs before every save: an explicit tier selection needs a
   // tier even on the first save, and an over-long field is not sent.
@@ -599,24 +618,14 @@ export function createEditorSession({
       notifyChanged();
     },
     onListenerError: onError,
+    onPendingSaveChange: notifyChanged,
   });
 
   // Seed the external-store snapshot before the session is handed to React.
   notifyChanged();
 
-  // The one place the field save policy lives. A draft persists a field the way
-  // the body does; every other status stages it until Update.
+  // Every field commit enters the engine; it owns eligibility and pending work.
   function commitField(): void {
-    // Invalid settings stay staged rather than dispatching a field save. As in
-    // prepare, only a staged publish time is checked, never the saved one.
-    if (
-      status !== 'draft' ||
-      settingsFieldError(validatedFieldsOf(live)) ||
-      authorsEmptied() ||
-      (stagedPublishedAt !== publishedAt && publishedAtInFuture(status, stagedPublishedAt))
-    ) {
-      return;
-    }
     void engine.dispatch('field');
   }
 
@@ -630,6 +639,7 @@ export function createEditorSession({
     pendingSlugEdits.add(edit);
     // Register the request before notifying listeners that may save or leave.
     const submission = slug.editSlug(input);
+    engine.contentChanged();
     notifyChanged();
     try {
       const proposal = await submission;
@@ -652,6 +662,7 @@ export function createEditorSession({
     } finally {
       pendingSlugEdits.delete(edit);
       if (!disposed) {
+        engine.contentChanged();
         notifyChanged();
       }
     }
@@ -698,6 +709,7 @@ export function createEditorSession({
       version += 1;
       publishedAtEditedAt = version;
       releaseSavedPublishTime();
+      engine.contentChanged();
       notifyChanged();
     },
     getPublishedAt: livePublishedAt,
@@ -747,10 +759,12 @@ export function createEditorSession({
 
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
+      engine.contentChanged();
       notifyChanged();
     },
     baselineFailed: (error) => {
       tracker.baselineFailed(identity.id, error);
+      engine.contentChanged();
       notifyChanged();
     },
 
@@ -787,6 +801,7 @@ export function createEditorSession({
       publishedAt = next.published_at ?? null;
       releaseSavedPublishTime();
       latestRevision = latestRevisionOf(next);
+      engine.contentChanged();
       notifyChanged();
       return true;
     },
@@ -821,6 +836,7 @@ export function createEditorSession({
       tracker.load(identity.id, live);
       machine.loaded({ slug: live.slug, title: live.title });
       slug.reset();
+      engine.contentChanged();
       notifyChanged();
       return true;
     },

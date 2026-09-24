@@ -28,6 +28,18 @@ function derive(
 }
 
 describe('deriveEditorStatus', () => {
+  it('does not display the saving hold after validation blocks the document', () => {
+    expect(
+      deriveEditorStatus({
+        state: { kind: 'idle' },
+        pendingSave: { reason: 'validation' },
+        record: { status: 'draft' },
+        isDirty: true,
+        isSaving: true,
+      }),
+    ).toEqual({ kind: 'draft', saved: false });
+  });
+
   it('reads a post with no record as new', () => {
     expect(derive(undefined)).toEqual({ kind: 'new' });
   });

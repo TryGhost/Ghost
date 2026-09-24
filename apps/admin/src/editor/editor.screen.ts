@@ -132,6 +132,8 @@ export const editorScreen = {
       .getByTestId(editorConflictReloadConfirm)
       .getByRole('button', { name: conflictCancelReloadButton }),
   status: () => page.getByTestId(editorStatus),
+  pendingSaveNotice: () =>
+    page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 
   headerActions: () => page.getByTestId(editorHeaderActions),
   previewButton: () =>

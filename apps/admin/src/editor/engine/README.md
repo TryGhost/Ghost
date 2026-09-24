@@ -8,14 +8,14 @@
 
 ### Intents
 
-| Intent                            | Trigger                                                                           | Debounce                            | `save_revision` | Changes status?                                                                                                   |
-| --------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `autosave`                        | body change; a new post's first edit fires immediately                            | 3s restartable (none for new posts) | no              | never; drafts only, pinned to `draft`                                                                             |
-| `timed`                           | armed by an autosave dispatch, fires after 60s of continuous editing              | 60s cycle                           | no              | never; drafts only                                                                                                |
-| `field`                           | a title, feature-image or settings commit the session's save policy gate passes   | none                                | no              | never; drafts only. On a published/scheduled/sent post it is dropped with reason `not-draft`                      |
-| `explicit`                        | Cmd-S / Save / Update                                                             | none                                | yes             | never; preserves the current status (a past-scheduled post saves as `scheduled`, the server owns that transition) |
-| `leave`                           | navigating away from a dirty draft with unrevisioned changes or an armed autosave | none                                | yes             | never; preserves the current status                                                                               |
-| `publish` / `schedule` / `revert` | the publish flow                                                                  | none                                | no              | the only status-changing commands; each carries an explicit target                                                |
+| Intent                            | Trigger                                                                           | Debounce                            | `save_revision` | Changes status?                                                                                                                |
+| --------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `autosave`                        | body change; a new post's first edit fires immediately                            | 3s restartable (none for new posts) | no              | never; drafts only, pinned to `draft`                                                                                          |
+| `timed`                           | armed by an autosave dispatch, fires after 60s of continuous editing              | 60s cycle                           | no              | never; drafts only                                                                                                             |
+| `field`                           | a title, feature-image or settings commit                                         | none                                | no              | never; drafts only. On a published/scheduled/sent post the attempt is dropped with reason `not-draft`; content remains pending |
+| `explicit`                        | Cmd-S / Save / Update                                                             | none                                | yes             | never; preserves the current status (a past-scheduled post saves as `scheduled`, the server owns that transition)              |
+| `leave`                           | navigating away from a dirty draft with unrevisioned changes or an armed autosave | none                                | yes             | never; preserves the current status                                                                                            |
+| `publish` / `schedule` / `revert` | the publish flow                                                                  | none                                | no              | the only status-changing commands; each carries an explicit target                                                             |
 
 The autosave debounce is 3 seconds unless the caller passes `autosaveDebounceMs`, which the engine calls at each restart of the debounce and uses in place of the default.
 
@@ -32,6 +32,30 @@ The autosave debounce is 3 seconds unless the caller passes `autosaveDebounceMs`
 
 Email extras (`newsletter`, `emailSegment`, `emailOnly`) ride on exactly that command's request. A failed status command is disarmed: nothing retains its target, the publish flow dispatches a fresh command. Publish times are serialized with zeroed milliseconds, because the API stores seconds and a non-zero millisecond value can fail validation when a scheduled post is updated.
 
+### Pending content
+
+`contentChanged()` registers the current live document without starting a save.
+`getPendingSave()` returns its version and eligibility reason, independently of
+`getState()` (the active request/queue). `onPendingSaveChange` reports changes to
+this metadata; ordinary state subscribers still receive deduplicated activity
+transitions. Pending content is read from the live snapshot, not a second copy
+of the post.
+
+Reasons distinguish `field-commit`, `debounce`, `update`, `saving`, `queued`,
+`validation`, `reauth`, `conflict`, and `error`. An edit can await a commit while
+an older version is saving. Content awaiting a commit, Update, or local
+validation occupies no runnable slot and no unresolved save promise; the next eligible dispatch builds from the current
+whole document. Acknowledgements preserve newer edits and release pending work
+only when the reconciled document is clean.
+
+Local validation in `prepare` completes a background attempt as `blocked` and
+retains its content with a validation reason. Explicit and status commands
+complete as `failed` and surface an error, retaining content but no automatic
+replay of their status/email target. Background retries of the unchanged invalid
+version are suppressed. Every trigger uses this same path, including timers and
+commands queued behind another save. Transport failures keep their existing
+error and recovery semantics.
+
 ### Queue semantics
 
 One save in flight, one pending slot. A command arriving while idle runs immediately (after its debounce); one arriving during a save lands in the pending slot and coalesces: priority `publish`/`schedule`/`revert` > `explicit` > `leave` > `field` > `timed` > `autosave`, the winner's kind executes, every waiter keeps its own command, `requiresRevision` ORs across the slot, and the payload is rebuilt from the current post at execution, so coalescing never loses newer content. A later status command supersedes only the earlier status command; its riders stay with the winner. A new autosave restarts the debounce; an explicit cancels it and carries its waiters.
@@ -41,6 +65,7 @@ Every dispatch settles with a typed `SaveCompletion`:
 | Completion                       | Meaning                                                                                   |
 | -------------------------------- | ----------------------------------------------------------------------------------------- |
 | `saved` (`result`, `executedAs`) | the save that carried this command's content landed; `executedAs` names the kind that ran |
+| `blocked` (`error`)              | Local validation held a background attempt; content remains pending                       |
 | `failed` (`error`, `executedAs`) | typed error; content stays dirty                                                          |
 | `dropped` (`reason`)             | `not-draft`, `clean`, `suppressed`, `conflict`, `halted`, `disposed`                      |
 | `superseded` (`by`)              | a later status command replaced this one before it ran                                    |
@@ -50,7 +75,7 @@ Every dispatch settles with a typed `SaveCompletion`:
 
 `capture → prepare → execute → reconcile → drain`, all inside the single-flight unit:
 
-1. **Prepare** awaits pending manual slug work (`slug.settled()`), re-reads the snapshot, substitutes `(Untitled)` for a blank or whitespace title, asks `slug.fromTitle()` for every draft save and whenever the post has no slug (the port answers `generated` or `unchanged`; after an `unchanged` answer the slug current at that moment is sent), re-reads the snapshot again after the answer and re-runs the drop rules on it, resolves the target, then hands the `SaveRequest` to the caller's `prepare()` to build and validate the candidate. IO starts only after prepare settles; a prepare that answers `{ok: false, error}` fails the save with that error's kind and sends no request, a rejected prepare fails it as `unknown`, and a save disposed during slug work is never prepared.
+1. **Prepare** awaits pending manual slug work (`slug.settled()`), re-reads the snapshot, substitutes `(Untitled)` for a blank or whitespace title, asks `slug.fromTitle()` for every draft save and whenever the post has no slug (the port answers `generated` or `unchanged`; after an `unchanged` answer the slug current at that moment is sent), re-reads the snapshot again after the answer and re-runs the drop rules on it, resolves the target, then hands the `SaveRequest` to the caller's `prepare()` to build and validate the candidate. IO starts only after prepare settles; a prepare that answers `{ok: false, error}` sends no request; local validation holds background work and fails explicit work, a rejected prepare fails it as `unknown`, and a save disposed during slug work is never prepared.
 2. **Execute** is IO only and returns a typed `SaveOutcome`; its `AbortSignal` is aborted on `dispose()`, and a response arriving after dispose is never reconciled.
 3. **Reconcile** is awaited before the pending slot drains and must not throw: adopt the acknowledged id, status and `updated_at` first, keep edits made after `prepared.snapshot.version`, resync server-normalized values only where the local value did not change in flight.
 4. **Drain** starts the pending slot only when nothing is in flight.

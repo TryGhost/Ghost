@@ -86,6 +86,7 @@ export interface EditorSessionBinding {
 export interface EditorSessionHandle {
   bind: EditorSessionBinding;
   state: SaveEngineState;
+  pendingSave: EditorSessionView['pendingSave'];
   /** The server ID the post holds, once a create has acknowledged one. */
   persistedId: string | null;
   /** The server ID acquired by this session's first create, if it began new. */
@@ -106,12 +107,12 @@ export interface EditorSessionHandle {
   patchFeatureImage: EditorSession['patchFeatureImage'];
   /** The live settings fields, re-read on every sidebar edit. */
   settings: EditorSettingsFields;
-  /** Stages a settings field, then applies the sidebar's save policy. */
+  /** Stages a settings field, then asks the engine to save it. */
   editSettings: (patch: EditorSettingsPatch) => void;
   /** Stages a settings field the writer is still typing into, committing nothing. */
   stageSettings: (patch: EditorSettingsPatch) => void;
   /**
-   * Applies the sidebar's save policy to what is staged, on the blur that ends
+   * Requests a field save from the engine on the blur that ends
    * an edit. The excerpt and the feature image go through it wherever they render.
    */
   commitSettings: () => void;
@@ -259,9 +260,9 @@ export function useEditorSession({
   }, [session]);
 
   const view = useSyncExternalStore(session.subscribe, session.getView);
-  const { state, title: engineTitle, slug, settings, publishTime } = view;
+  const { state, pendingSave, title: engineTitle, slug, settings, publishTime } = view;
 
-  // The view keeps its identity until one of the six values it publishes
+  // The view keeps its identity until one of the values it publishes
   // changes, so it stands in for all of them as a dependency.
   const isDirtyNow = useCallback(() => view.isDirty, [view]);
 
@@ -478,6 +479,7 @@ export function useEditorSession({
     () => ({
       bind,
       state,
+      pendingSave,
       persistedId,
       createdId: isNew ? persistedId : null,
       isDirty: isDirtyNow,
@@ -529,6 +531,7 @@ export function useEditorSession({
       slug,
       stageSettings,
       state,
+      pendingSave,
     ],
   );
 }

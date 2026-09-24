@@ -215,7 +215,7 @@ describe('Post settings authors', () => {
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
       images: [{ url: UPLOADED_IMAGE, ref: null }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, { labs: { editorReact: true } });
     await openAuthors();
 
     await editorScreen.removeAuthor('Owner User').click();
@@ -229,6 +229,9 @@ describe('Post settings authors', () => {
     await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
     await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    // Exercise a real body autosave too, with the normal production debounce.
+    await editorScreen.body().fill('Body edited while authors are invalid');
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
     await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
@@ -237,6 +240,8 @@ describe('Post settings authors', () => {
     await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).lexical).toContain('Body edited while authors are invalid');
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
     expect(submittedPost(saveApi)).toMatchObject({
       authors: [{ id: NADIA.id }],
       feature_image: UPLOADED_IMAGE,

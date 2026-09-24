@@ -7,7 +7,7 @@ import {
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostNewsletter, PostStatus } from '@tryghost/admin-x-framework/api/posts';
-import type { SaveEngineState } from './engine/save-engine';
+import type { PendingSave, SaveEngineState } from './engine/save-engine';
 
 /** How long "Saving…" stays on screen once a save starts, so it is noticeable. */
 export const SAVING_MIN_DISPLAY_MS = 3000;
@@ -52,6 +52,7 @@ export type EditorStatusView =
 
 export interface DeriveEditorStatusInput {
   state: SaveEngineState;
+  pendingSave?: Pick<PendingSave, 'reason'> | null;
   record?: EditorStatusRecord;
   isDirty: boolean;
   /** Held true for a minimum window after a save starts. */
@@ -103,6 +104,7 @@ function isPastScheduled(record: EditorStatusRecord, now: Date): boolean {
 
 export function deriveEditorStatus({
   state,
+  pendingSave,
   record,
   isDirty,
   isSaving,
@@ -115,7 +117,7 @@ export function deriveEditorStatus({
 
   const status = record?.status ?? 'draft';
 
-  if (isSaving && status === 'draft') {
+  if (isSaving && status === 'draft' && pendingSave?.reason !== 'validation') {
     return { kind: 'saving' };
   }
 

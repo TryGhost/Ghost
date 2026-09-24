@@ -6,7 +6,7 @@ import { editorScheduleCountdown, editorStatus } from '@tryghost/test-data/selec
 import { formatPostTime } from '@/posts/list/post-time';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useSiteTimezone } from './use-editor-settings';
-import type { SaveEngineState } from './engine/save-engine';
+import type { PendingSave, SaveEngineState } from './engine/save-engine';
 import {
   type EditorStatusRecord,
   type EditorStatusView,
@@ -123,12 +123,13 @@ function StatusBody({
 
 export interface EditorStatusProps {
   state: SaveEngineState;
+  pendingSave?: Pick<PendingSave, 'reason'> | null;
   record?: EditorStatusRecord;
   isDirty: boolean;
 }
 
 /** Where the post stands: its status, the newsletter, and the last save. */
-export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
+export function EditorStatus({ state, pendingSave, record, isDirty }: EditorStatusProps) {
   const timezone = useSiteTimezone();
   const isSaving = useSavingHold(state.kind === 'saving' || state.kind === 'pending-coalesced');
   const [isHovered, setIsHovered] = useState(false);
@@ -160,7 +161,7 @@ export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
       <StatusBody
         isHovered={isHovered}
         timezone={timezone}
-        view={deriveEditorStatus({ state, record, isDirty, isSaving })}
+        view={deriveEditorStatus({ state, pendingSave, record, isDirty, isSaving })}
       />
     </Inline>
   );

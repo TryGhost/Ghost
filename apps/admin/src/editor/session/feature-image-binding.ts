@@ -78,7 +78,7 @@ export function normalizeCaptionHtml(html: string | null | undefined): string {
 /**
  * Feature image, alt text and caption as the editor holds them. Setting,
  * clearing and alt edits commit immediately; the caption commits on blur. Each
- * commit goes through the session's save policy, which may only stage it.
+ * commit enters the save engine, which retains work until it can be saved.
  */
 export function useFeatureImageBinding(
   port: FeatureImagePort,

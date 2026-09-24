@@ -11,8 +11,8 @@ export const dispatchedIntents: string[] = [];
 /** The ports each session handed the engine, so a spec can drive one on its own. */
 export const capturedPorts: EditorPorts[] = [];
 
-// A pass-through wrapper. The engine refuses a background save on anything but
-// a draft anyway, so `commitField`'s gate is only observable at the dispatch.
+// A pass-through wrapper for command-routing and preparation-port tests.
+// Pending-work behavior is asserted against the real engine.
 export function spiedSaveEngine(actual: SaveEngineModule): SaveEngineModule {
   const createSaveEngine = ((ports: EditorPorts) => {
     capturedPorts.push(ports);

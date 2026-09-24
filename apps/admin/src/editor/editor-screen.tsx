@@ -156,6 +156,7 @@ function EditorContent({
       <EditorHeader postType={postType}>
         <EditorStatus
           isDirty={session.isDirty()}
+          pendingSave={session.pendingSave}
           record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />
@@ -183,6 +184,7 @@ function EditorContent({
       <SessionBanners
         contentText={session.contentText}
         hasUnsavedContent={session.hasUnsavedContent}
+        pendingSave={session.pendingSave}
         state={session.state}
         onDismissReauth={session.reauthAbandoned}
         onReload={session.reload}

@@ -19,7 +19,7 @@ import {
   editorReauthBanner,
   editorSaveErrorBanner,
 } from '@tryghost/test-data/selectors/editor';
-import type { SaveError, SaveEngineState } from '@/editor/engine/save-engine';
+import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import type { ReloadOutcome } from './use-editor-session';
 
@@ -31,6 +31,7 @@ const GONE =
 
 export interface SessionBannersProps {
   state: SaveEngineState;
+  pendingSave?: Omit<PendingSave, 'version'> | null;
   hasUnsavedContent: () => boolean;
   contentText: () => string;
   onRetryReauth: () => void;
@@ -155,6 +156,7 @@ function ConflictBanner({
 
 export function SessionBanners({
   state,
+  pendingSave,
   hasUnsavedContent,
   contentText,
   onRetryReauth,
@@ -211,6 +213,14 @@ export function SessionBanners({
             Retry
           </Button>
         </Inline>
+      </Banner>
+    );
+  }
+
+  if (pendingSave?.reason === 'validation') {
+    return (
+      <Banner className="mx-4 mb-2 shrink-0" role="status" size="sm" variant="warning">
+        <Text>Changes are waiting to save. {pendingSave.error?.message}</Text>
       </Banner>
     );
   }

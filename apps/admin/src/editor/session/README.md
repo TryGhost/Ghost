@@ -5,7 +5,8 @@
 and the slug machine — into one editing session, and is the editor's only
 writer. Every title, excerpt, body, feature-image and settings change goes
 through it, and it owns everything those three modules deliberately do not:
-what a save sends, when it runs, and what an acknowledgement may change.
+what a save sends and what an acknowledgement may change. The save engine owns
+pending work and scheduling.
 
 ## One session per post
 
@@ -53,39 +54,41 @@ a field patch would be dropped before the request is built.
 
 ## Staging and committing
 
-A settings field is staged with one call and committed with another. Staging
-writes the value into the live projection and nothing else; committing puts it
-through the one save policy gate. The title's blur and every feature-image
-commit — setting, clearing, alt text, the caption's blur — go through the same
-gate. What that gate does depends on the post's status.
+Every edit updates the live projection and registers pending content with the
+save engine. Staging alone does not start a request. A field commit — including
+title blur, image changes, and settings — dispatches `field` unconditionally;
+body edits dispatch `autosave`. The engine owns when these requests may run.
 
-| Status                           | On a field commit                                  | Persisted by                           |
-| -------------------------------- | -------------------------------------------------- | -------------------------------------- |
-| `draft`                          | dispatches the save engine's `field` intent        | the field save itself                  |
-| `published`, `scheduled`, `sent` | nothing — the value is staged in the live document | the next explicit save (Update, Cmd-S) |
+| Status                           | Background save request                                         | Persisted by             |
+| -------------------------------- | --------------------------------------------------------------- | ------------------------ |
+| `draft`                          | Runs immediately for a field commit, or after the body debounce | The eligible save        |
+| `published`, `scheduled`, `sent` | Retains pending content with reason `update`                    | Explicit Update or Cmd-S |
 
-The gate also holds a draft's field save back while a value it would send is not
-yet valid: an incomplete tier pairing, a meta or social-card title or
-description past its column width, an author list the writer emptied, or a
-staged publish time that has not passed. A draft whose saved publish time is in
-the future is not held back by it. The value stays staged, the section says why,
-and the next save the writer asks for is refused with the same message. A
-draft's body autosave is not held back the same way: it runs, and the same rules
-fail it before any request is sent, so the engine reports that error until the
-value is valid again. The save banner carries the message whether or not the
-sidebar is open, so closing the panel does not hide it.
+Pending content is separate from the runnable queue. It includes edits awaiting
+a field commit, the autosave debounce, Update, validation, or recovery, and can
+coexist with an older request in flight. A blocked document never leaves a
+command in the runnable queue, so navigating away does not wait indefinitely.
+The live document remains the source of truth: Update enables, the post stays
+dirty, and leaving requires a save or confirmation.
 
-Staging is not a weaker form of saving. A staged value lives in the same live
-document as the body, so it counts everywhere unsaved work counts: the post
-reads dirty, the Update button enables, and the leave guard asks before the
-writer navigates away. The save engine independently refuses background saves
-for anything that is not a draft, so the gate states the policy rather than
-being its only enforcement.
+All saves use the same preparation validator. An incomplete tier pairing, an
+over-long meta/social field, an emptied author list, or a newly staged future
+publish time holds a background save with reason `validation`. Body autosave,
+title and image commits follow the same rule, including an already armed timer
+or queued request. The editor explains why changes are waiting even when the
+settings panel is closed. A saved future publish time is not itself invalid.
 
-Failures leave staged values alone. A rejected explicit save keeps them in the
-live document and surfaces the error in the editor's banners; a collision goes
-to the conflict banner, and only the writer choosing the server's copy discards
-what they staged.
+An explicit save returns a validation failure promptly and shows the save error.
+Its content stays pending; its publish/schedule/email target is not retained for
+automatic retry. Correcting the document and committing requests a new save that
+combines its current values. Unchanged invalid versions suppress background
+retries; an explicit retry still revalidates.
+
+Failures never discard pending content. Server validation, network errors,
+authentication expiry and collisions retain their existing recovery policies.
+Only accepting a server reload discards outstanding local work. Successful
+acknowledgement clears pending content only when the reconciled live document
+is clean; edits made after submission remain pending.
 
 ## What a save sends
 
@@ -177,7 +180,7 @@ Only a draft's title commit drives generation, so a published URL does not move
 under the writer. A slug is regenerated whenever the post has none, for any
 status, including after the default title has been substituted for a blank one.
 The session does not persist a proposal itself: an applied proposal is patched
-into the live document and then goes through the same gate as any other field,
+into the live document and then dispatches the same engine intent as any other field,
 so a draft saves it and every other status stages it until Update.
 
 ## Restoring a revision
@@ -214,13 +217,12 @@ way back in and the content stays untouched.
 
 ## The view React subscribes to
 
-The session publishes one cached view — the engine state, dirtiness, the title,
-the slug, the settings fields and the publish time — and republishes it only
+The session publishes one cached view — the engine state, pending-save reason,
+dirtiness, title, slug, settings and publish time — and republishes it only
 when one of those values changes. The nested settings and publish-time
 references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
-for `useSyncExternalStore` and lets it stand in for all six values as a
-dependency.
+for `useSyncExternalStore` and lets it stand in for those values as a dependency.
 
 ## The autosave debounce
 

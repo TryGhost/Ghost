@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { dispatchedIntents } from './__test-utils__/save-engine-spy';
@@ -147,17 +147,17 @@ describe('useEditorSession title blur', () => {
     act(() => result.current.bind.onTitleChange('A new title'));
     act(() => result.current.bind.onTitleBlur());
 
-    expect(dispatchedIntents).toEqual([]);
+    expect(result.current.pendingSave).toMatchObject({ reason: 'update' });
     expect(result.current.isDirty()).toBe(true);
   });
 
-  it('keeps a draft title staged while an emptied author list is staged', () => {
+  it('keeps a draft title staged while an emptied author list is staged', async () => {
     const { result } = setup(record({ authors: [{ id: 'author-1' }] }));
 
     act(() => result.current.editSettings({ authors: [] }));
     act(() => result.current.bind.onTitleChange('A new title'));
     act(() => result.current.bind.onTitleBlur());
 
-    expect(dispatchedIntents).toEqual([]);
+    await waitFor(() => expect(result.current.pendingSave).toMatchObject({ reason: 'validation' }));
   });
 });
