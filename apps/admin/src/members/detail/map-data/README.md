@@ -25,12 +25,13 @@ The renderer uses SVG references to reuse geometry only when the view crosses
 the date line. Path coordinates are rounded to two decimals (subpixel precision
 at the minimum header zoom).
 
-The asset is roughly 1.5 MB before compression (about 0.5 MB compressed). Further simplification,
-small-territory coverage and disputed-boundary policy need review before shipping.
+The asset is roughly 1.5 MB before compression (about 0.5 MB compressed) and is
+lazy-loaded by the member header. Coverage and boundaries follow Natural Earth
+50m data; small territories may be absent. Unrecognized country codes show no map.
+US locations without a recognized state show an overview without a pin.
 
 ## Licence
 
 Natural Earth map data is public domain. Attribution is not required.
 See [Natural Earth terms](https://www.naturalearthdata.com/about/terms-of-use/).
-This replaces both the MapSVG world data and the separate Census/Albers US
-asset in this spike. The analytics map still uses its existing dataset.
+The analytics map uses its own dataset and is independent of this asset.

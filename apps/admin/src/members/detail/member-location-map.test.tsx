@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import MemberMapPrototype from './member-map-prototype';
+import MemberLocationMap from './member-location-map';
 import atlas from './map-data/world-states.json';
 
 beforeEach(() => {
@@ -14,9 +14,9 @@ afterEach(() => {
 });
 
 const header = (countryCode: string, region?: unknown) => (
-  <MemberMapPrototype geolocation={JSON.stringify({ country_code: countryCode, region })} enabled>
+  <MemberLocationMap geolocation={JSON.stringify({ country_code: countryCode, region })}>
     <h1>Member</h1>
-  </MemberMapPrototype>
+  </MemberLocationMap>
 );
 
 describe('member location map', () => {
@@ -85,7 +85,7 @@ describe('member location map', () => {
     render(header('TW'));
     expect(screen.getByRole('img', { name: 'Taiwan — approximate country location' })).toBeTruthy();
     expect(
-      screen.getByTestId('member-map-prototype').getAttribute('data-member-map-location'),
+      screen.getByTestId('member-location-map-header').getAttribute('data-member-map-location'),
     ).toBe('known');
   });
 

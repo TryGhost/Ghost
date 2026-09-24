@@ -47,7 +47,7 @@ describe('Member location maps Labs flag', () => {
       await expect
         .element(page.getByTestId('member-detail-title'))
         .toHaveTextContent('Ada Lovelace');
-      await expect(page.getByTestId('member-map-prototype')).toHaveCount(0);
+      await expect(page.getByTestId('member-location-map-header')).toHaveCount(0);
       await expect(page.getByRole('heading', { name: 'Ada Lovelace', level: 1 })).toHaveCount(0);
     },
   );
@@ -75,7 +75,7 @@ describe('Member location maps Labs flag', () => {
       .element(page.getByRole('heading', { name: 'Ada Lovelace', level: 1 }))
       .toBeVisible();
     await expect
-      .element(page.getByTestId('member-map-prototype'))
+      .element(page.getByTestId('member-location-map-header'))
       .toHaveAttribute('data-member-map-location', 'unknown');
     await expect(page.getByTestId('member-location-map')).toHaveCount(0);
   });
@@ -85,6 +85,6 @@ describe('Member location maps Labs flag', () => {
     await renderAdminApp('/members/new', { labs: { memberLocationMap: true } });
     await expect.element(page.getByTestId('member-detail-title')).toHaveTextContent('New member');
     await expect.element(page.getByLabelText('Name')).toBeVisible();
-    await expect(page.getByTestId('member-map-prototype')).toHaveCount(0);
+    await expect(page.getByTestId('member-location-map-header')).toHaveCount(0);
   });
 });

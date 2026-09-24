@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import MemberMapHeader from './member-map-header';
 
 const { loadMap } = vi.hoisted(() => ({ loadMap: vi.fn() }));
-vi.mock('./member-map-prototype', () => {
+vi.mock('./member-location-map', () => {
   loadMap();
   throw new Error('Map chunk download failed');
 });

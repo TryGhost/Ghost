@@ -1,4 +1,4 @@
-// Development spike: country-map backdrop on member detail pages.
+// Country and US state backdrop for member detail pages.
 // Countries and US states share one Natural Earth projection; no member data leaves this app.
 import React, { useId, useLayoutEffect, useRef, useState } from 'react';
 import atlas from './map-data/world-states.json';
@@ -107,19 +107,14 @@ function LocationMap({ country, region }: { country: MapLocation; region?: strin
   );
 }
 
-export default function MemberMapPrototype({
-  enabled,
+export default function MemberLocationMap({
   geolocation,
   children,
-}: React.PropsWithChildren<{ enabled: boolean; geolocation?: string | null }>) {
+}: React.PropsWithChildren<{ geolocation?: string | null }>) {
   const geo = parseMemberGeolocation(geolocation);
   const countryCode =
     typeof geo?.country_code === 'string' ? geo.country_code.trim().toLowerCase() : '';
   const country = atlas.countries.find((item) => item.id === countryCode);
-
-  if (!enabled) {
-    return children;
-  }
 
   return (
     <Box
@@ -132,7 +127,7 @@ export default function MemberMapPrototype({
           '-mt-5 -mr-[calc((100cqw-100%)/2-8px)] -ml-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))] rounded-t-xl rounded-b-none pt-40 pr-[calc((100cqw-100%)/2-8px)] pb-5 pl-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))]',
       )}
       data-member-map-location={country ? 'known' : 'unknown'}
-      data-testid="member-map-prototype"
+      data-testid="member-location-map-header"
     >
       {country && (
         <Box className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
