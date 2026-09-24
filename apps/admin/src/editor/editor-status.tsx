@@ -151,7 +151,7 @@ export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
   return (
     <Inline
       align="center"
-      className="text-sm"
+      className="pointer-events-auto min-w-0 justify-self-start bg-background text-sm max-sm:col-span-2 max-sm:row-start-2"
       data-testid={editorStatus}
       gap="xs"
       onMouseEnter={() => setIsHovered(true)}

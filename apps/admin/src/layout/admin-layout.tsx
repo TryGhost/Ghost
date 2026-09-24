@@ -92,7 +92,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="relative h-full bg-background">
         <main ref={mainRef} className="flex h-full flex-col overflow-y-auto">
           <DunningBanner />
-          <div className="flex-1">{children}</div>
+          <div className="min-h-0 flex-1">{children}</div>
         </main>
         <div
           ref={contributorMenuRef}
@@ -130,7 +130,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         )}
       >
         <DunningBanner />
-        <main ref={mainRef} className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
+        <main ref={mainRef} className={cn('min-h-0 flex-1', sidebarVisible && pageChromeClassName)}>
           <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
             {children}
           </ActivityPubHostLayoutProvider>

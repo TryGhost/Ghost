@@ -16,6 +16,7 @@ import type { PostCardConfig, PostType } from './card-config';
 import { FeatureImage } from './feature-image';
 import { KoenigPostEditor } from './koenig-post-editor';
 import { textHasTk } from './tk';
+import { useOnscreenKeyboard } from './use-onscreen-keyboard';
 import type { FeatureImageBinding } from './session/feature-image-binding';
 
 export interface PostEditorProps {
@@ -110,6 +111,7 @@ export function PostEditor({
   onTkCountChange,
 }: PostEditorProps) {
   const { darkMode } = useFocusContext();
+  const isKeyboardOpen = useOnscreenKeyboard();
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const editorApiRef = useRef<KoenigInstance | null>(null);
@@ -258,9 +260,9 @@ export function PostEditor({
 
   return (
     <div className="relative h-full min-h-0" data-testid={postEditor}>
-      <div className="h-full overflow-y-auto">
+      <div className="h-full scroll-pt-(--editor-overlap) overflow-y-auto">
         <Stack
-          className="min-h-full px-6 pt-12 pb-24"
+          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24"
           gap="none"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onPaneDrop}
@@ -337,10 +339,12 @@ export function PostEditor({
           />
         </Stack>
       </div>
-      <Inline className="absolute right-0 bottom-0 px-4 py-3" gap="sm">
-        <Text data-testid={editorWordCount} size="xs" tone="secondary">
-          {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
-        </Text>
+      <Inline className="absolute right-0 bottom-0 rounded-tl-md bg-background px-4 py-3" gap="sm">
+        {!isKeyboardOpen && (
+          <Text data-testid={editorWordCount} size="xs" tone="secondary">
+            {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
+          </Text>
+        )}
         <a
           aria-label="Editor help"
           className="text-text-secondary hover:text-foreground"

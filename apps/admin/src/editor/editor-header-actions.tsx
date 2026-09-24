@@ -121,7 +121,12 @@ export function EditorHeaderActions({
   return (
     <Inline data-testid={editorHeaderActions} gap="sm">
       {isDraft ? (
-        <PageHeader.Action fallbackSize="sm" label="Preview" onClick={openPreview}>
+        <PageHeader.Action
+          className="bg-background"
+          fallbackSize="sm"
+          label="Preview"
+          onClick={openPreview}
+        >
           Preview
         </PageHeader.Action>
       ) : null}
@@ -239,7 +244,12 @@ function PublishActions({
               >
                 {inputs.error.message}
               </Text>
-              <Button size={isAdmin7 ? 'default' : 'sm'} variant="ghost" onClick={inputs.retry}>
+              <Button
+                className="bg-background"
+                size={isAdmin7 ? 'default' : 'sm'}
+                variant="ghost"
+                onClick={inputs.retry}
+              >
                 Retry
               </Button>
             </>

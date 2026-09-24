@@ -1,11 +1,20 @@
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -70,15 +79,19 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
 
   return (
-    <Inline className="shrink-0 px-4 py-3" gap="sm">
-      <Button size={isAdmin7 ? 'default' : 'sm'} variant="ghost" asChild>
+    <Grid
+      align="center"
+      className="grid-cols-[auto_minmax(0,1fr)] px-4 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      gap="sm"
+    >
+      <Button className="bg-background" size={isAdmin7 ? 'default' : 'sm'} variant="ghost" asChild>
         <AdminLink to={postType === 'page' ? '/pages' : '/posts'}>
           <LucideIcon.ArrowLeft />
           {listLabel}
         </AdminLink>
       </Button>
       {children}
-    </Inline>
+    </Grid>
   );
 }
 
@@ -137,6 +150,19 @@ function EditorContent({
   const [tkCount, setTkCount] = useState(0);
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    if (!header) {
+      return;
+    }
+    const measure = () => setHeaderHeight(header.getBoundingClientRect().height);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
   const toggleSettings = useCallback(() => setSettingsOpen((open) => !open), []);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
@@ -154,46 +180,65 @@ function EditorContent({
   useSaveShortcut(session.dispatchExplicit);
 
   return (
-    <Stack className="h-full" gap="none">
-      <EditorHeader postType={postType}>
-        <EditorStatus
-          isDirty={session.isDirty()}
-          record={statusRecordOf(session.loadedRecord ?? record, createdId)}
-          state={session.state}
-        />
-        {/* One right-aligned group: two `ml-auto` siblings would split the free space. */}
-        <PageHeader.ActionGroup className="ml-auto">
-          <EditorHeaderActions
-            currentUser={currentUser}
-            postType={postType}
-            session={session}
-            siteUrl={cardConfig.siteUrl}
-            tkCount={tkCount}
+    <Stack
+      className="h-full"
+      gap="none"
+      style={
+        {
+          '--editor-header-height': `${headerHeight}px`,
+          '--editor-overlap': '0px',
+        } as CSSProperties
+      }
+    >
+      <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
+        <EditorHeader postType={postType}>
+          <EditorStatus
+            isDirty={session.isDirty()}
+            record={statusRecordOf(session.loadedRecord ?? record, createdId)}
+            state={session.state}
           />
-          <PageHeader.Action
-            aria-expanded={settingsOpen}
-            data-testid={settingsMenuToggle}
-            fallbackSize="sm"
-            fallbackVariant="ghost"
-            label="Settings"
-            iconOnly
-            onClick={toggleSettings}
-          >
-            <LucideIcon.PanelRight />
-          </PageHeader.Action>
-        </PageHeader.ActionGroup>
-      </EditorHeader>
-      <SessionBanners
-        contentText={session.contentText}
-        hasUnsavedContent={session.hasUnsavedContent}
-        state={session.state}
-        onDismissReauth={session.reauthAbandoned}
-        onReload={session.reload}
-        onRetryReauth={session.reauthSucceeded}
-        onRetrySave={session.dispatchExplicit}
-      />
-      <Inline align="stretch" className="relative min-h-0 flex-1" gap="none">
-        <div className="min-h-0 min-w-0 flex-1">
+          <PageHeader.ActionGroup className="ml-auto max-sm:col-start-2 max-sm:row-start-1">
+            <EditorHeaderActions
+              currentUser={currentUser}
+              postType={postType}
+              session={session}
+              siteUrl={cardConfig.siteUrl}
+              tkCount={tkCount}
+            />
+            <PageHeader.Action
+              aria-expanded={settingsOpen}
+              className="bg-background"
+              data-testid={settingsMenuToggle}
+              fallbackSize="sm"
+              fallbackVariant="ghost"
+              label="Settings"
+              iconOnly
+              onClick={toggleSettings}
+            >
+              <LucideIcon.PanelRight />
+            </PageHeader.Action>
+          </PageHeader.ActionGroup>
+        </EditorHeader>
+      </Box>
+      <Box className="peer shrink-0">
+        <SessionBanners
+          contentText={session.contentText}
+          hasUnsavedContent={session.hasUnsavedContent}
+          state={session.state}
+          onDismissReauth={session.reauthAbandoned}
+          onReload={session.reload}
+          onRetryReauth={session.reauthSucceeded}
+          onRetrySave={session.dispatchExplicit}
+        />
+      </Box>
+      {/* The document reaches behind the header unless a banner needs reserved space.
+          Settings always starts below the header; only the writing pane overlaps it. */}
+      <Inline
+        align="stretch"
+        className="relative min-h-0 flex-1 peer-empty:[--editor-overlap:var(--editor-header-height)]"
+        gap="none"
+      >
+        <div className="-mt-(--editor-overlap) min-h-0 min-w-0 flex-1">
           <PostEditor
             key={session.contentKey}
             {...session.bind}
