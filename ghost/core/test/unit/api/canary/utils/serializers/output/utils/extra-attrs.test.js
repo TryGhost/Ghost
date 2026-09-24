@@ -36,7 +36,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
       const attrs = {};
       extraAttrsUtil.forPost(options, model, attrs);
       sinon.assert.called(modelGetStub);
-      assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'excerpt'), true);
+      assert.equal(Object.hasOwn(attrs, 'excerpt'), true);
       assert.equal(attrs.excerpt, null);
     });
 
@@ -50,7 +50,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
         attrs,
       );
       sinon.assert.called(modelGetStub);
-      assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'plaintext'), true);
+      assert.equal(Object.hasOwn(attrs, 'plaintext'), true);
     });
 
     it('has plaintext when formats includes plaintext', function () {
@@ -63,14 +63,14 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
         attrs,
       );
       sinon.assert.called(modelGetStub);
-      assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'plaintext'), true);
+      assert.equal(Object.hasOwn(attrs, 'plaintext'), true);
     });
 
     it('has excerpt when no columns are passed', function () {
       const attrs = {};
       extraAttrsUtil.forPost({}, model, attrs);
       sinon.assert.called(modelGetStub);
-      assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'excerpt'), true);
+      assert.equal(Object.hasOwn(attrs, 'excerpt'), true);
     });
 
     it('has reading_time when no columns are passed', function () {
@@ -78,7 +78,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
         html: 'html',
       };
       extraAttrsUtil.forPost({}, model, attrs);
-      assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'reading_time'), true);
+      assert.equal(Object.hasOwn(attrs, 'reading_time'), true);
     });
 
     it('has reading_time when columns includes reading_time', function () {
@@ -92,7 +92,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
         model,
         attrs,
       );
-      assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'reading_time'), true);
+      assert.equal(Object.hasOwn(attrs, 'reading_time'), true);
     });
 
     it('does not leak null reading_time from the database when html is absent', function () {
@@ -100,7 +100,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
         reading_time: null,
       };
       extraAttrsUtil.forPost({}, model, attrs);
-      assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'reading_time'), false);
+      assert.equal(Object.hasOwn(attrs, 'reading_time'), false);
     });
   });
 });

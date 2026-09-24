@@ -78,11 +78,7 @@ export type SlackPingServiceDeps = {
  * @TODO: change this function to check for the properties we depend on
  */
 function hasPostProperties(data: Record<string, unknown>): boolean {
-  return (
-    Object.prototype.hasOwnProperty.call(data, 'html') &&
-    Object.prototype.hasOwnProperty.call(data, 'title') &&
-    Object.prototype.hasOwnProperty.call(data, 'slug')
-  );
+  return Object.hasOwn(data, 'html') && Object.hasOwn(data, 'title') && Object.hasOwn(data, 'slug');
 }
 
 export class SlackPingService {

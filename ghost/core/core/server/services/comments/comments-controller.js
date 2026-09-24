@@ -190,10 +190,10 @@ module.exports = class CommentsController {
   async adminEdit(frame) {
     const data = frame.data.comments[0];
     const updates = {};
-    if (Object.prototype.hasOwnProperty.call(data, 'status')) {
+    if (Object.hasOwn(data, 'status')) {
       updates.status = data.status;
     }
-    if (Object.prototype.hasOwnProperty.call(data, 'pinned')) {
+    if (Object.hasOwn(data, 'pinned')) {
       updates.pinned = data.pinned;
     }
 

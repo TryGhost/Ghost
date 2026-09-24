@@ -492,9 +492,7 @@ const mockLimitService = (limit, options) => {
   if (!mocks.limitService.originalEntries.has(limit)) {
     mocks.limitService.originalEntries.set(
       limit,
-      Object.prototype.hasOwnProperty.call(limitService.limits, limit)
-        ? limitService.limits[limit]
-        : undefined,
+      Object.hasOwn(limitService.limits, limit) ? limitService.limits[limit] : undefined,
     );
   }
   limitService.limits[limit] = {
