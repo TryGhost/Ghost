@@ -253,7 +253,7 @@ function EditorContent({
     <Inline
       ref={shellRef}
       align="stretch"
-      className="relative h-full min-h-0 transition-[--editor-settings-progress] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+      className="relative h-full min-h-0 transition-[--editor-settings-progress] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
       gap="none"
       style={
         {
