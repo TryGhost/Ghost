@@ -66,6 +66,12 @@ function installEmberBridge() {
   return navigateToBillingSubRoute;
 }
 
+/** The listbox the input's `aria-controls` names, or null when it isn't in the DOM. */
+function controlledListbox() {
+  const id = globalSearchScreen.input().element().getAttribute('aria-controls');
+  return id ? document.getElementById(id) : null;
+}
+
 async function openAndSearch(term: string) {
   await globalSearchScreen.openButton().click();
   await globalSearchScreen.search(term);
@@ -91,7 +97,7 @@ describe('Cmd-K search', () => {
     await renderAdminApp('/tags', flagOn);
     await globalSearchScreen.openButton().click();
     await expect.element(globalSearchScreen.input()).toHaveFocus();
-    expect(globalSearchScreen.controlledListbox()).not.toBeNull();
+    await expect.poll(controlledListbox).not.toBeNull();
 
     await globalSearchScreen.search('first');
 
