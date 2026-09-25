@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -22,6 +22,16 @@ const NEW_POST_ID = 'new123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 // The lists are React-owned so the delete's navigation stays in the router.
 const FLAG_ON = { labs: { editorReact: true, postsListReact: true } };
+// Ember owns the lists, so the delete's navigation must hand over to Ember.
+const LISTS_ON_EMBER = { labs: { editorReact: true } };
+
+/** The cross-app navigation the harness records in place of moving the hash. */
+const handoff = () =>
+  JSON.parse(document.body.dataset.externalNavigate ?? 'null') as {
+    route: string;
+    isExternal: boolean;
+    replace?: boolean;
+  } | null;
 
 const POLL = { timeout: 10_000 };
 
@@ -118,6 +128,23 @@ function fakeRefusedDelete({
   );
 }
 
+function fakeDeletablePage() {
+  editorChrome();
+  const current = post({
+    id: POST_ID,
+    title: 'A page',
+    slug: 'a-page',
+    status: 'draft',
+    lexical: buildLexicalParagraph('A page'),
+    updated_at: LOADED_AT,
+    published_at: null,
+    tags: [],
+  });
+  fakeAdminEndpoint('GET', new RegExp(`^/pages/${POST_ID}/\\?`), () => ({ pages: [current] }));
+  fakeAdminEndpoint('PUT', new RegExp(`^/pages/${POST_ID}/\\?`), () => ({ pages: [current] }));
+  return fakeAdminEndpoint('DELETE', `/pages/${POST_ID}/`, null, { status: 204 });
+}
+
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
@@ -139,6 +166,10 @@ async function typeIntoBody(text: string) {
  * to the API, and the only exit from the editor that leaves no post behind.
  */
 describe('Post settings delete', () => {
+  beforeEach(() => {
+    delete document.body.dataset.externalNavigate;
+  });
+
   it('offers nothing to delete until the post exists', async () => {
     editorChrome();
     let created = post({
@@ -227,7 +258,27 @@ describe('Post settings delete', () => {
 
     await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
     await expect.poll(currentRoute, POLL).toBe('/posts');
+    expect(handoff()).toBeNull();
     // Nothing may be written to a post that is gone, dirty body or not.
+    expect(calls.slice(calls.indexOf('DELETE'))).toEqual(['DELETE']);
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+  });
+
+  it('hands the exit to Ember when Ember owns the posts list', async () => {
+    const { calls, deleteApi } = fakeDeletablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, LISTS_ON_EMBER);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await openSidebar();
+    await typeIntoBody(' and more');
+
+    await editorScreen.settingsDelete().click();
+    await editorScreen.confirmSettingsDelete().click();
+
+    await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
+    // Ember only follows a hashchange, which the router's own navigation never
+    // fires, so the list is reached through the cross-app handoff instead.
+    await expect.poll(handoff, POLL).toEqual({ route: '/posts', isExternal: true, replace: true });
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     expect(calls.slice(calls.indexOf('DELETE'))).toEqual(['DELETE']);
     await expect(editorScreen.leaveDialog()).toHaveCount(0);
   });
@@ -323,20 +374,7 @@ describe('Post settings delete', () => {
   });
 
   it('deletes a page through the pages API and returns to the pages list', async () => {
-    editorChrome();
-    const current = post({
-      id: POST_ID,
-      title: 'A page',
-      slug: 'a-page',
-      status: 'draft',
-      lexical: buildLexicalParagraph('A page'),
-      updated_at: LOADED_AT,
-      published_at: null,
-      tags: [],
-    });
-    fakeAdminEndpoint('GET', new RegExp(`^/pages/${POST_ID}/\\?`), () => ({ pages: [current] }));
-    fakeAdminEndpoint('PUT', new RegExp(`^/pages/${POST_ID}/\\?`), () => ({ pages: [current] }));
-    const deleteApi = fakeAdminEndpoint('DELETE', `/pages/${POST_ID}/`, null, { status: 204 });
+    const deleteApi = fakeDeletablePage();
 
     await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
     await openSidebar();
@@ -351,5 +389,18 @@ describe('Post settings delete', () => {
 
     await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
     await expect.poll(currentRoute, POLL).toBe('/pages');
+    expect(handoff()).toBeNull();
+  });
+
+  it('hands the exit to Ember when Ember owns the pages list', async () => {
+    const deleteApi = fakeDeletablePage();
+
+    await renderAdminApp(`/editor/page/${POST_ID}`, LISTS_ON_EMBER);
+    await openDeleteDialog();
+    await editorScreen.confirmSettingsDelete().click();
+
+    await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
+    await expect.poll(handoff, POLL).toEqual({ route: '/pages', isExternal: true, replace: true });
+    expect(currentRoute()).toBe(`/editor/page/${POST_ID}`);
   });
 });

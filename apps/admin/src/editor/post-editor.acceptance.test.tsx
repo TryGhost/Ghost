@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -11,6 +11,7 @@ import {
   fakeAdminEndpoint,
   fakeNewsletters,
   fakePosts,
+  fakePostsListScreen,
   fakeSnippets,
   post,
   renderAdminApp,
@@ -22,6 +23,14 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
+
+/** The cross-app navigation the harness records in place of moving the hash. */
+const handoff = () =>
+  JSON.parse(document.body.dataset.externalNavigate ?? 'null') as {
+    route: string;
+    isExternal: boolean;
+    replace?: boolean;
+  } | null;
 const CURRENT_USER_ID = '1';
 
 const MOBILEDOC =
@@ -83,6 +92,10 @@ function pasteText(content: string) {
  * editor-save.acceptance.test.tsx.
  */
 describe('Post editor', () => {
+  beforeEach(() => {
+    delete document.body.dataset.externalNavigate;
+  });
+
   it('loads the post into the title and body', async () => {
     const postsApi = fakeEditorPost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -330,10 +343,28 @@ describe('Post editor', () => {
 
       // a mobiledoc record must not be converted for a user who is redirected;
       // the PUT has no fake, so it would 418 and fail the test
-      await expect.poll(currentRoute).toBe(listPath);
+      // Ember owns the lists here, so the return is a cross-app handoff.
+      await expect.poll(handoff).toEqual({ route: listPath, isExternal: true, replace: true });
+      expect(currentRoute()).toBe(`/editor/${type}/${POST_ID}`);
       await expect(editorScreen.root()).toHaveCount(0);
     },
   );
+
+  it('returns a contributor to the React list when React owns it', async () => {
+    fakeEditorChrome();
+    fakePostsListScreen();
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [post({ id: POST_ID, status: 'draft', authors: [{ id: 'other-user' }] })],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      ...bootAs('Contributor'),
+      labs: { editorReact: true, postsListReact: true },
+    });
+
+    await expect.poll(currentRoute).toBe('/posts');
+    expect(handoff()).toBeNull();
+    await expect(editorScreen.root()).toHaveCount(0);
+  });
 
   it.each<[string, Role, Status]>([
     ['author', 'Author', 'published'],

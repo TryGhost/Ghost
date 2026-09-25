@@ -24,6 +24,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
 import { DEFAULT_TITLE } from '@/editor/engine/save-engine';
+import { useEmberOwnedRouteMatcher } from '@/routes';
 import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';
 
@@ -38,6 +39,7 @@ export interface DeleteSectionProps {
  */
 export function DeleteSection({ session, postType }: DeleteSectionProps) {
   const navigate = useNavigate();
+  const isEmberOwned = useEmberOwnedRouteMatcher();
   const queryClient = useQueryClient();
   const { mutateAsync: deletePost } = useDeletePost();
   const { mutateAsync: deletePage } = useDeletePage();
@@ -90,7 +92,8 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
       refetchType: 'none',
     });
 
-    navigate(postType === 'page' ? '/pages' : '/posts', { replace: true });
+    const listPath = postType === 'page' ? '/pages' : '/posts';
+    navigate(listPath, { replace: true, crossApp: isEmberOwned(listPath) });
   };
 
   return (

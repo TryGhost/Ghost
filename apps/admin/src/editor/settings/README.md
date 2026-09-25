@@ -406,7 +406,8 @@ ends the editing session before leaving for the list: the save in flight is
 abandoned and every later one is dropped, including the save the leave guard
 would otherwise make on the way out, so nothing is written after the delete
 lands. The writer is not asked about unsaved changes, and the list replaces the
-editor in history rather than stacking on top of it.
+editor in history rather than stacking on top of it. The list is reached whether
+React or Ember serves it.
 
 The list the delete lands on is refetched rather than served from the cache it
 was left with, which would still carry the deleted row. The refetch is left to

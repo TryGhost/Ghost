@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
+import { useEmberOwnedRouteMatcher } from '@/routes';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
@@ -326,6 +327,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
   const navigate = useNavigate();
+  const isEmberOwned = useEmberOwnedRouteMatcher();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
@@ -346,9 +348,9 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   const returnToList = !!currentUser && !!loaded && shouldReturnToList(currentUser, loaded);
   useEffect(() => {
     if (returnToList) {
-      navigate(listPath, { replace: true });
+      navigate(listPath, { replace: true, crossApp: isEmberOwned(listPath) });
     }
-  }, [returnToList, navigate, listPath]);
+  }, [returnToList, navigate, listPath, isEmberOwned]);
 
   const needsConversion = !!currentUser && !!loaded?.mobiledoc && !loaded.lexical && !returnToList;
   useEffect(() => {
