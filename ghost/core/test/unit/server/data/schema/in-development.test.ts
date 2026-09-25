@@ -1,7 +1,13 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import schema from '../../../../../core/server/data/schema/schema';
+
+// require, not import: config-utils and in-development must resolve to the same
+// CommonJS config instance, so values set here are the ones the module reads
 const configUtils = require('../../../../utils/config-utils');
-const schema = require('../../../../../core/server/data/schema/schema');
-const inDevelopment = require('../../../../../core/server/data/schema/in-development');
+const inDevelopment: typeof import('../../../../../core/server/data/schema/in-development') = require('../../../../../core/server/data/schema/in-development');
+
+type ColumnSpec = { references?: string };
 
 describe('In-development schema tables', function () {
   afterEach(async function () {
@@ -20,7 +26,7 @@ describe('In-development schema tables', function () {
   it('are never referenced by finalised tables', function () {
     // A finalised table exists in every database, so a foreign key to a table
     // that is only created in development would fail to create in production
-    for (const [tableName, table] of Object.entries(schema)) {
+    for (const [tableName, table] of Object.entries<Record<string, ColumnSpec>>(schema)) {
       if (inDevelopment.isInDevelopmentTable(tableName)) {
         continue;
       }
@@ -39,12 +45,38 @@ describe('In-development schema tables', function () {
     }
   });
 
+  describe('shouldCreateInDevelopmentTables', function () {
+    it('is enabled in development and testing when configured', function () {
+      configUtils.set('createInDevelopmentTables', true);
+
+      for (const env of ['development', 'testing', 'testing-mysql']) {
+        configUtils.set('env', env);
+        assert.equal(inDevelopment.shouldCreateInDevelopmentTables(), true, env);
+      }
+    });
+
+    it('is disabled when not configured', function () {
+      configUtils.set('env', 'development');
+      configUtils.set('createInDevelopmentTables', false);
+
+      assert.equal(inDevelopment.shouldCreateInDevelopmentTables(), false);
+    });
+
+    it('ignores the config outside development and testing', function () {
+      configUtils.set('env', 'production');
+      configUtils.set('createInDevelopmentTables', true);
+
+      assert.equal(inDevelopment.shouldCreateInDevelopmentTables(), false);
+    });
+  });
+
   describe('getTablesToCreate', function () {
-    let originalTables;
+    let originalTables: string[];
 
     beforeEach(function () {
       originalTables = [...inDevelopment.IN_DEVELOPMENT_TABLES];
       inDevelopment.IN_DEVELOPMENT_TABLES.splice(0, Infinity, 'posts_meta');
+      configUtils.set('env', 'development');
     });
 
     afterEach(function () {

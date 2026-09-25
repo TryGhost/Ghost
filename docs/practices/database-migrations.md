@@ -89,12 +89,13 @@ state that existed before `up()`.
 A new table's shape often changes several times before its feature is ready.
 Rather than writing a migration for each change, list the table in
 `IN_DEVELOPMENT_TABLES` in
-[`core/server/data/schema/in-development.js`](../../ghost/core/core/server/data/schema/in-development.js)
+[`core/server/data/schema/in-development.ts`](../../ghost/core/core/server/data/schema/in-development.ts)
 and define it only in `schema.js`. While it is listed:
 
-- `knex-migrator init` creates it only where `createInDevelopmentTables` is
-  enabled in config. It is on in the development and testing environments and
-  off everywhere else, so production databases never contain the table.
+- `knex-migrator init` creates it only in the development and testing
+  environments, where `createInDevelopmentTables` is enabled in config. Other
+  environments ignore that setting, so production databases never contain the
+  table.
 - Booting Ghost creates it in an existing development database if it is
   missing.
 - It needs no versioned migration, and it is left out of the schema integrity

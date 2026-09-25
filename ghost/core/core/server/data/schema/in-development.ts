@@ -10,9 +10,9 @@ import schema from './schema';
 /**
  * Tables listed here are defined in `schema.js` but are still being iterated on.
  *
- * - `knex-migrator init` only creates them when `createInDevelopmentTables` is
- *   enabled in config (development and testing environments by default), so
- *   production databases never contain them.
+ * - `knex-migrator init` only creates them in the development and testing
+ *   environments, and only while `createInDevelopmentTables` is enabled in
+ *   config, so production databases never contain them.
  * - Boot creates any that are missing from an existing development database.
  * - They need no versioned migration and are left out of the schema integrity
  *   hash, so their definition can change freely.
@@ -29,8 +29,15 @@ export function isInDevelopmentTable(tableName: string): boolean {
   return IN_DEVELOPMENT_TABLES.includes(tableName);
 }
 
+/**
+ * Only development and testing databases may contain in-development tables,
+ * whatever the config says, so a misconfigured production site can't create
+ * tables that have no migrations
+ */
 export function shouldCreateInDevelopmentTables(): boolean {
-  return config.get('createInDevelopmentTables') === true;
+  const env: string = config.get('env');
+  const isDevelopmentOrTesting = env === 'development' || env.startsWith('testing');
+  return isDevelopmentOrTesting && config.get('createInDevelopmentTables') === true;
 }
 
 /**

@@ -2,7 +2,7 @@
 
 /**
  * Drops and recreates the in-development tables listed in
- * core/server/data/schema/in-development.js so a local database picks up
+ * core/server/data/schema/in-development.ts so a local database picks up
  * changes to their definitions. Their data is discarded.
  */
 try {

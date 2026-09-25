@@ -8,7 +8,7 @@ module.exports.up = async (options) => {
 
   const existingTables = await commands.getTables(connection);
   // In-development tables are only created where config enables them, see
-  // schema/in-development.js
+  // schema/in-development.ts
   const tablesToCreate = inDevelopment.getTablesToCreate();
   const missingTables = tablesToCreate.filter((t) => !existingTables.includes(t));
 
