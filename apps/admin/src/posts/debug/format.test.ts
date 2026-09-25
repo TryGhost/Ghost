@@ -15,6 +15,7 @@ describe('debug dates', () => {
     );
     expect(formatDebugDate('2026-09-10T11:30:01.023+02:00')).toBe('10 Sep, 2026, 09:30:01 UTC');
     expect(formatDebugDate(null)).toBe('N/A');
+    expect(formatDebugDate('2026-09-10 11:30:01')).toBe('N/A');
   });
 
   it('formats publication metadata in the site timezone across a date boundary', () => {
@@ -32,6 +33,14 @@ describe('debug dates', () => {
     expect(defaultRefetchRange('2026-09-09T10:00:00Z', now)).toEqual({
       begin: '2026-09-09T10:00',
       end: '2026-09-10T11:00',
+    });
+  });
+
+  it('ends the default range now for an email created within the last hour', () => {
+    const now = Temporal.Instant.from('2026-09-10T12:00:00Z');
+    expect(defaultRefetchRange('2026-09-10T11:30:00Z', now)).toEqual({
+      begin: '2026-09-10T11:30',
+      end: '2026-09-10T12:00',
     });
   });
 

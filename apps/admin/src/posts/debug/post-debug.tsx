@@ -209,7 +209,7 @@ function DebugContent({ post }: { post: Post }) {
     (post.status === 'published' || post.status === 'sent') &&
     email?.status !== 'failed';
   const publication = sent
-    ? post.status === 'sent'
+    ? post.email_only
       ? 'Sent'
       : 'Published and sent'
     : email?.status === 'failed'

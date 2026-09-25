@@ -214,14 +214,32 @@ describe('Post debug', () => {
       .toBeVisible();
   });
 
+  it('keeps the refetch controls when analytics status cannot be loaded', async () => {
+    seed();
+    fakeAdminEndpoint(
+      'GET',
+      `/emails/${EMAIL_ID}/analytics/`,
+      { errors: [{ message: 'Analytics unavailable' }] },
+      { status: 500 },
+    );
+    const schedule = fakeAdminEndpoint('PUT', new RegExp(`^/emails/${EMAIL_ID}/analytics/`), {});
+    await renderAdminApp(route);
+    await overview().click();
+    await expect
+      .element(page.getByText('Could not load analytics status.', { exact: false }))
+      .toBeVisible();
+    await page.getByRole('button', { name: 'Refetch Analytics', exact: true }).click();
+    await expect.poll(() => schedule.requests.length).toBe(1);
+    await expect.element(page.getByRole('button', { name: 'Custom Date Range' })).toBeVisible();
+  });
+
   it('refreshes analytics and email status and stops polling on unmount', async () => {
     const api = seed();
     const app = await renderAdminApp(route);
     await overview().click();
     await expect.poll(() => api.emails.requests.length).toBeGreaterThan(0);
-    const emailRequests = api.emails.requests.length;
     const analyticsRequests = api.analytics.requests.length;
-    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/`, {
+    const refreshedEmail = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/`, {
       emails: [{ ...email, status: 'submitted', error: null }],
     });
     await expect
@@ -230,7 +248,7 @@ describe('Post debug', () => {
     await expect
       .poll(() => page.getByRole('link', { name: 'Retry' }).query(), { timeout: 12000 })
       .toBeNull();
-    expect(emailRequests).toBeGreaterThan(0);
+    expect(refreshedEmail.requests.length).toBeGreaterThan(0);
     await app.unmount();
     const stopped = api.analytics.requests.length;
     await new Promise((resolve) => {

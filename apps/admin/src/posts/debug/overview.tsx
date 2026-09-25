@@ -70,6 +70,7 @@ export default function Overview({ email, emailId }: { email: Email; emailId: st
   const [customRange, setCustomRange] = useState<{ begin: string; end: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pending = schedule.isPending || cancel.isPending;
+  const scheduled = analytics.data?.scheduled;
 
   function openCustomRange() {
     setCustomRange(defaultRefetchRange(email.created_at));
@@ -133,98 +134,97 @@ export default function Overview({ email, emailId }: { email: Email; emailId: st
           <AnalyticsJob job={analytics.data.latest} title="Analytics Delivery/failures" />
           <AnalyticsJob job={analytics.data.latestOpened} title="Analytics Opens" />
           <AnalyticsJob job={analytics.data.missing} title="Analytics Missing" />
-          {analytics.data.scheduled?.schedule ? (
-            <Stack gap="md">
-              <AnalyticsJob job={analytics.data.scheduled} title="Analytics Scheduled" />
-              <Details
-                rows={[
-                  [
-                    'Schedule',
-                    `${formatDebugDate(analytics.data.scheduled.schedule.begin, true)} – ${formatDebugDate(analytics.data.scheduled.schedule.end, true)}`,
-                  ],
-                ]}
-              />
-              {!analytics.data.scheduled.canceled && (
-                <Button
-                  className="self-start"
-                  disabled={pending}
-                  variant="outline"
-                  onClick={() => {
-                    void cancelRefetch();
-                  }}
-                >
-                  Cancel scheduled refetch
-                </Button>
-              )}
-            </Stack>
-          ) : customRange ? (
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                void scheduleRefetch(true);
-              }}
-            >
-              <Stack gap="lg">
-                <Stack gap="sm">
-                  <Label htmlFor="custom-begin-date">Begin (UTC)</Label>
-                  <Input
-                    id="custom-begin-date"
-                    type="datetime-local"
-                    value={customRange.begin}
-                    required
-                    onChange={(event) =>
-                      setCustomRange({ ...customRange, begin: event.target.value })
-                    }
-                  />
-                </Stack>
-                <Stack gap="sm">
-                  <Label htmlFor="custom-end-date">End (UTC)</Label>
-                  <Input
-                    id="custom-end-date"
-                    type="datetime-local"
-                    value={customRange.end}
-                    required
-                    onChange={(event) =>
-                      setCustomRange({ ...customRange, end: event.target.value })
-                    }
-                  />
-                </Stack>
-                <Inline gap="sm">
-                  <Button disabled={pending} type="submit">
-                    Schedule Custom Refetch
-                  </Button>
-                  <Button
-                    disabled={pending}
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setCustomRange(null);
-                      setError(null);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </Inline>
-              </Stack>
-            </form>
-          ) : (
-            <Inline gap="sm" wrap>
+        </>
+      )}
+      {!analytics.isLoading &&
+        (scheduled?.schedule ? (
+          <Stack gap="md">
+            <AnalyticsJob job={scheduled} title="Analytics Scheduled" />
+            <Details
+              rows={[
+                [
+                  'Schedule',
+                  `${formatDebugDate(scheduled.schedule.begin, true)} – ${formatDebugDate(scheduled.schedule.end, true)}`,
+                ],
+              ]}
+            />
+            {!scheduled.canceled && (
               <Button
+                className="self-start"
                 disabled={pending}
                 variant="outline"
                 onClick={() => {
-                  void scheduleRefetch();
+                  void cancelRefetch();
                 }}
               >
-                Refetch Analytics
+                Cancel scheduled refetch
               </Button>
-              <Button disabled={pending} variant="outline" onClick={openCustomRange}>
-                Custom Date Range
-              </Button>
-            </Inline>
-          )}
-        </>
-      )}
+            )}
+          </Stack>
+        ) : customRange ? (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void scheduleRefetch(true);
+            }}
+          >
+            <Stack gap="lg">
+              <Stack gap="sm">
+                <Label htmlFor="custom-begin-date">Begin (UTC)</Label>
+                <Input
+                  id="custom-begin-date"
+                  type="datetime-local"
+                  value={customRange.begin}
+                  required
+                  onChange={(event) =>
+                    setCustomRange({ ...customRange, begin: event.target.value })
+                  }
+                />
+              </Stack>
+              <Stack gap="sm">
+                <Label htmlFor="custom-end-date">End (UTC)</Label>
+                <Input
+                  id="custom-end-date"
+                  type="datetime-local"
+                  value={customRange.end}
+                  required
+                  onChange={(event) => setCustomRange({ ...customRange, end: event.target.value })}
+                />
+              </Stack>
+              <Inline gap="sm">
+                <Button disabled={pending} type="submit">
+                  Schedule Custom Refetch
+                </Button>
+                <Button
+                  disabled={pending}
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setCustomRange(null);
+                    setError(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Inline>
+            </Stack>
+          </form>
+        ) : (
+          <Inline gap="sm" wrap>
+            <Button
+              disabled={pending}
+              variant="outline"
+              onClick={() => {
+                void scheduleRefetch();
+              }}
+            >
+              Refetch Analytics
+            </Button>
+            <Button disabled={pending} variant="outline" onClick={openCustomRange}>
+              Custom Date Range
+            </Button>
+          </Inline>
+        ))}
       {error && (
         <p className="text-destructive" role="alert">
           {error}
