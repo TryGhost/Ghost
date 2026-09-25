@@ -157,6 +157,8 @@ export const addFeatureImageLabel = 'Add feature image';
 export const featureImageAltLabel = 'Alt text for feature image';
 export const featureImageUnsplashButton = 'Select feature image from Unsplash';
 export const unsplashSearchHeading = 'Unsplash';
+// The gallery's insert control; @tryghost/kg-unsplash-selector owns the label.
+export const unsplashInsertImageButton = 'Insert image';
 export const removeFeatureImageButton = 'Remove feature image';
 export const addFacebookImageLabel = 'Add Facebook image';
 export const removeFacebookImageButton = 'Remove Facebook image';
