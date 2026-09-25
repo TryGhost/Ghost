@@ -72,7 +72,7 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
     } catch (deleteError) {
       setError(
         deleteError instanceof SessionExpiredError
-          ? 'Your session expired. Sign in again in a new tab, then try deleting again.'
+          ? 'Your session expired. Delete again to sign in and continue.'
           : getErrorMessage(deleteError, `Couldn’t delete this ${noun}.`),
       );
       setIsDeleting(false);

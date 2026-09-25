@@ -6,6 +6,7 @@ import {
   LOADED_AT,
   record,
   sessionHarness,
+  type HarnessHooks,
 } from '@/editor/session/__test-utils__/session-harness';
 
 describe('createEditorSession', () => {
@@ -152,7 +153,32 @@ describe('createEditorSession', () => {
     });
   });
 
-  it('rolls back a restore when reauthentication would wait behind the history modal', async () => {
+  it('holds a restore for re-authentication and lands it once the session is back', async () => {
+    const hooks: HarnessHooks = {
+      failUpdateWith: new SessionExpiredError(new Response(null, { status: 401 }), undefined),
+    };
+    const { session, state } = sessionHarness({ record: record() }, hooks);
+    const restored = session.restoreRevision({
+      lexical: buildLexicalParagraph('Older words'),
+      title: 'Older title',
+      custom_excerpt: null,
+      feature_image: null,
+      feature_image_alt: null,
+      feature_image_caption: null,
+    });
+    await expect.poll(() => session.getState().kind).toBe('reauth-pending');
+    expect(session.getFields().title).toBe('Older title');
+
+    hooks.failUpdateWith = undefined;
+    session.reauthSucceeded();
+
+    expect(await restored).toBe(true);
+    expect(state.updates).toHaveLength(2);
+    expect(state.updates[1].payload.title).toBe('Older title');
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
+  });
+
+  it('rolls back a restore when re-authentication is abandoned', async () => {
     const { session } = sessionHarness(
       { record: record() },
       { failUpdateWith: new SessionExpiredError(new Response(null, { status: 401 }), undefined) },
@@ -165,8 +191,12 @@ describe('createEditorSession', () => {
       feature_image_alt: null,
       feature_image_caption: null,
     });
-    await expect.poll(() => session.getState().kind).toBe('error');
+    await expect.poll(() => session.getState().kind).toBe('reauth-pending');
+
+    session.reauthAbandoned();
+
     expect(await restored).toBe(false);
+    expect(session.getState().kind).toBe('error');
     expect(session.getFields().title).toBe('Hello');
     expect(session.getLiveLexical()).toBe(record().lexical);
   });

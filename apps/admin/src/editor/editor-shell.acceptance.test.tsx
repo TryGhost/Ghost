@@ -609,9 +609,11 @@ describe('Floating editor shell', () => {
       await editorScreen.body().click();
       await userEvent.keyboard('{End} more');
       await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.element(editorScreen.reauthBanner()).toBeVisible();
+      await expect.element(editorScreen.reauthDialog()).toBeVisible();
+      await userEvent.keyboard('{Escape}');
+      await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
 
-      const banner = editorScreen.reauthBanner().element().getBoundingClientRect();
+      const banner = editorScreen.saveErrorBanner().element().getBoundingClientRect();
       expect(banner.top).toBeGreaterThanOrEqual(headerBefore.bottom);
       expect(pane.getBoundingClientRect().top).toBeGreaterThanOrEqual(banner.bottom);
       expect(pane.clientHeight).toBeLessThan(paneHeight);
@@ -624,7 +626,7 @@ describe('Floating editor shell', () => {
 
       pane.scrollTo({ top: 700 });
       await expect.poll(() => pane.scrollTop).toBe(700);
-      expect(editorScreen.reauthBanner().element().getBoundingClientRect().top).toBe(banner.top);
+      expect(editorScreen.saveErrorBanner().element().getBoundingClientRect().top).toBe(banner.top);
       expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
       expect(banner.left).toBeGreaterThanOrEqual(0);

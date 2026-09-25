@@ -173,14 +173,14 @@ Two interstitials can stand in front of the flow. A post with unresolved TK mark
 
 Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches the command from `toDispatch()`, and branches on the [completion](../engine/README.md#queue-semantics) the engine returns:
 
-| Completion              | Result                                                              |
-| ----------------------- | ------------------------------------------------------------------- |
-| `saved`                 | The email confirmation runs when the publish emails immediately     |
-| `needs-retry`           | Back to confirm with the re-auth message; the user retries in place |
-| `failed` (`conflict`)   | The collision message, in place                                     |
-| `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link      |
-| `failed` (`validation`) | The validation message, in place                                    |
-| `dropped`/`superseded`  | The post is no longer publishable from here                         |
+| Completion              | Result                                                             |
+| ----------------------- | ------------------------------------------------------------------ |
+| `saved`                 | The email confirmation runs when the publish emails immediately    |
+| `needs-retry`           | Back to confirm, told the session is back; the user confirms again |
+| `failed` (`conflict`)   | The collision message, in place                                    |
+| `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link     |
+| `failed` (`validation`) | The validation message, in place                                   |
+| `dropped`/`superseded`  | The post is no longer publishable from here                        |
 
 No completion closes the modal or navigates. Reaching the complete step writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`), and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's.
 
