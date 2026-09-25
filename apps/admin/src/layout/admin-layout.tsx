@@ -134,7 +134,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <DunningBanner />
           <main
             ref={mainRef}
-            className={cn('min-h-0 flex-1', sidebarVisible && pageChromeClassName)}
+            className={cn('flex-1', sidebarVisible ? pageChromeClassName : 'min-h-0')}
           >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
               {children}
