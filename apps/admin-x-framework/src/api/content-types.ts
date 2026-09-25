@@ -67,6 +67,7 @@ export type PostRevision = {
   post_status?: string | null;
   reason?: string | null;
   created_at?: string;
+  created_at_ts?: number;
   author?: PostAuthor | null;
 };
 

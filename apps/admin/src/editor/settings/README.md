@@ -287,11 +287,13 @@ The row opens the post's saved versions, and it is absent whenever there is
 nothing to show: a post that has never been saved, one with no lexical content,
 and a published or sent post that only ever went out as an email.
 
-Versions are listed newest first, each with its date in the site's timezone and
-the author who wrote it, shown with their avatar; an author the API no longer
-resolves reads as a deleted staff user. The newest carries a `Latest` label, the version that first took the
-post to published carries `Published`, and one written because the post was
-unpublished carries `Unpublished`. Selecting a version previews it — feature
+Versions are listed newest first by the millisecond the server recorded them,
+so two saved within the same second keep the order they were saved in. Each shows its date
+in the site's timezone and the author who wrote it, shown with their avatar; an
+author the API no longer resolves reads as a deleted staff user. The newest
+carries a `Latest` label, the version that first took the post to published
+carries `Published`, and one written because the post was unpublished carries
+`Unpublished`. Selecting a version previews it — feature
 image, title, the excerpt where the inline excerpt is on, and a read-only
 rendering of its body — and changes nothing about the post. The feature image
 caption is stored HTML, rendered as such and limited to the marks a caption can
