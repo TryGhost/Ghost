@@ -13,15 +13,39 @@ function parseInstant(value?: string | null) {
   }
 }
 
-export function formatDebugDate(value?: string | null, milliseconds = false) {
-  const instant = parseInstant(value);
-  if (!instant) {
-    return 'N/A';
-  }
+function formatUtc(instant: Temporal.Instant, milliseconds: boolean) {
   const date = instant.toZonedDateTimeISO('UTC');
   const month = date.toLocaleString('en-US', { month: 'short' });
   const fraction = milliseconds ? `.${String(date.millisecond).padStart(3, '0')}` : '';
-  return `${pad(date.day)} ${month}, ${date.year}, ${pad(date.hour)}:${pad(date.minute)}:${pad(date.second)}${fraction} UTC`;
+  return `${pad(date.day)} ${month}, ${date.year}, ${pad(date.hour)}:${pad(date.minute)}:${pad(date.second)}${fraction}`;
+}
+
+export function formatDebugDate(value?: string | null, milliseconds = false) {
+  const instant = parseInstant(value);
+  return instant ? `${formatUtc(instant, milliseconds)} UTC` : 'N/A';
+}
+
+/** Date and time on separate lines for tables whose caption already states UTC. */
+export function formatSyncTime(value?: string | null) {
+  const instant = parseInstant(value);
+  if (!instant) {
+    return null;
+  }
+  const date = instant.toZonedDateTimeISO('UTC');
+  const month = date.toLocaleString('en-US', { month: 'short' });
+  return {
+    date: `${pad(date.day)} ${month} ${date.year}`,
+    time: `${pad(date.hour)}:${pad(date.minute)}:${pad(date.second)}`,
+  };
+}
+
+export function secondsBetween(from?: string | null, to?: string | null) {
+  const begin = parseInstant(from);
+  const end = parseInstant(to);
+  if (!begin || !end) {
+    return null;
+  }
+  return begin.until(end).total({ unit: 'seconds' });
 }
 
 export function formatPublishedDate(value: string, timezone: string) {
@@ -59,7 +83,7 @@ export function refetchRangeToUtc(range: { begin: string; end: string }) {
   };
 }
 
-export function formatIngestionLag(seconds?: number | null) {
+export function formatDuration(seconds?: number | null) {
   if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0) {
     return 'N/A';
   }

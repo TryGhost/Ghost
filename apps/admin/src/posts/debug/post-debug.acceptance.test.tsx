@@ -91,8 +91,6 @@ function seed() {
   return { posts, emails, batches, failures, analytics };
 }
 
-const overview = () => page.getByRole('tab', { name: 'Overview', exact: true });
-
 describe('Post debug', () => {
   it('renders failures and full batch details at the existing URL', async () => {
     const api = seed();
@@ -103,23 +101,33 @@ describe('Post debug', () => {
     await expect
       .element(page.getByRole('link', { name: /Ada ada@example.com/ }))
       .toHaveAttribute('href', '#/members/member-1');
-    await expect.element(page.getByText('Mailbox does not exist')).toBeVisible();
-    await expect.element(page.getByText('Enhanced code: 5.1.1')).toBeVisible();
-    await page.getByRole('button', { name: 'Show full error' }).click();
     await expect
-      .element(page.getByRole('button', { name: 'Show less' }))
+      .element(
+        page.getByRole('button', {
+          name: /550 · 5.1.1\s*Mailbox does not exist\s*1 recipient · permanent/,
+        }),
+      )
       .toHaveAttribute('aria-expanded', 'true');
+    await expect
+      .element(
+        page.getByRole('button', { name: /451\s*Try again later\s*1 recipient · temporary/ }),
+      )
+      .toHaveAttribute('aria-expanded', 'false');
     await expect
       .element(page.getByRole('link', { name: 'Retry' }))
       .toHaveAttribute('href', `#/editor/post/${POST_ID}`);
-    await page.getByRole('tab', { name: /^Temporary failures\s*1$/ }).click();
+    await page.getByRole('tab', { name: /^Temporary\s*1$/ }).click();
     await expect.element(page.getByText('deleted@example.com')).toBeVisible();
     await expect
       .element(page.getByRole('link', { name: /Deleted member/ }))
       .not.toBeInTheDocument();
     await page.getByRole('tab', { name: /^Errored batches\s*1$/ }).click();
+    await expect.element(page.getByText('1 of 2 batches failed.')).toBeVisible();
     await expect.element(page.getByText('Provider id: provider-id')).toBeVisible();
-    await expect.element(page.getByText('1,234', { exact: true }).first()).toBeVisible();
+    await page.getByRole('button', { name: 'Show full error' }).click();
+    await expect
+      .element(page.getByRole('button', { name: 'Show less' }))
+      .toHaveAttribute('aria-expanded', 'true');
     expect(new URL(api.batches.lastRequest!.url).searchParams.get('include')).toBe(
       'count.recipients',
     );
@@ -136,17 +144,25 @@ describe('Post debug', () => {
     seed();
     const schedule = fakeAdminEndpoint('PUT', new RegExp(`^/emails/${EMAIL_ID}/analytics/`), {});
     await renderAdminApp(route);
-    await overview().click();
     await expect.element(page.getByText('1d 1h 1m 1s')).toBeVisible();
-    await expect.element(page.getByText('10 Sep, 2026, 09:59:00.456 UTC')).toBeVisible();
-    await page.getByRole('button', { name: 'Refetch Analytics', exact: true }).click();
+    await expect
+      .element(page.getByTitle('10 Sep, 2026, 09:30:00.123 UTC'))
+      .toHaveTextContent('10 Sep 202609:30:00');
+    await expect
+      .element(
+        page.getByTitle(
+          'Fetching from 10 Sep, 2026, 09:00:00.000 UTC\nFetched through 10 Sep, 2026, 09:59:00.456 UTC',
+        ),
+      )
+      .toHaveTextContent('10 Sep 202609:59:00');
+    await page.getByRole('button', { name: 'Refetch analytics', exact: true }).click();
     await expect.poll(() => schedule.requests.length).toBe(1);
     expect(new URL(schedule.lastRequest!.url).search).toBe('');
-    await page.getByRole('button', { name: 'Custom Date Range' }).click();
+    await page.getByRole('button', { name: 'Custom date range' }).click();
     await expect.element(page.getByLabelText('Begin (UTC)')).toHaveValue('2026-09-01T10:00');
     await page.getByLabelText('Begin (UTC)').fill('2026-09-02T12:30');
     await page.getByLabelText('End (UTC)').fill('2026-09-03T13:45');
-    await page.getByRole('button', { name: 'Schedule Custom Refetch' }).click();
+    await page.getByRole('button', { name: 'Schedule refetch' }).click();
     await expect.poll(() => schedule.requests.length).toBe(2);
     const params = new URL(schedule.lastRequest!.url).searchParams;
     expect(params.get('begin')).toBe('2026-09-02T12:30:00.000Z');
@@ -169,7 +185,6 @@ describe('Post debug', () => {
       return {};
     });
     await renderAdminApp(route);
-    await overview().click();
     await page.getByRole('button', { name: 'Cancel scheduled refetch' }).click();
     await expect.poll(() => cancel.requests.length).toBe(1);
     await expect
@@ -186,9 +201,8 @@ describe('Post debug', () => {
       { status: 500 },
     );
     await renderAdminApp(route);
-    await overview().click();
-    await page.getByRole('button', { name: 'Custom Date Range' }).click();
-    await page.getByRole('button', { name: 'Schedule Custom Refetch' }).click();
+    await page.getByRole('button', { name: 'Custom date range' }).click();
+    await page.getByRole('button', { name: 'Schedule refetch' }).click();
     await expect.element(page.getByText('Refetch unavailable')).toBeVisible();
     await expect.element(page.getByLabelText('Begin (UTC)')).toBeVisible();
   });
@@ -202,15 +216,11 @@ describe('Post debug', () => {
       scheduled: {},
     });
     await renderAdminApp(route);
-    await overview().click();
     await expect
-      .element(page.getByText('Analytics Delivery/failures', { exact: true }))
-      .toBeVisible();
+      .element(page.getByRole('row').filter({ hasText: 'Delivery and failures' }))
+      .toHaveTextContent(/IdleStarted 10 Sep 2026, 10:00:00N\/AN\/AN\/A$/);
     await expect
-      .element(page.getByRole('row').filter({ hasText: 'Ingestion lag' }).first())
-      .toHaveTextContent('N/A');
-    await expect
-      .element(page.getByRole('button', { name: 'Refetch Analytics', exact: true }))
+      .element(page.getByRole('button', { name: 'Refetch analytics', exact: true }))
       .toBeVisible();
   });
 
@@ -224,19 +234,17 @@ describe('Post debug', () => {
     );
     const schedule = fakeAdminEndpoint('PUT', new RegExp(`^/emails/${EMAIL_ID}/analytics/`), {});
     await renderAdminApp(route);
-    await overview().click();
     await expect
       .element(page.getByText('Could not load analytics status.', { exact: false }))
       .toBeVisible();
-    await page.getByRole('button', { name: 'Refetch Analytics', exact: true }).click();
+    await page.getByRole('button', { name: 'Refetch analytics', exact: true }).click();
     await expect.poll(() => schedule.requests.length).toBe(1);
-    await expect.element(page.getByRole('button', { name: 'Custom Date Range' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Custom date range' })).toBeVisible();
   });
 
   it('refreshes analytics and email status and stops polling on unmount', async () => {
     const api = seed();
     const app = await renderAdminApp(route);
-    await overview().click();
     await expect.poll(() => api.emails.requests.length).toBeGreaterThan(0);
     const analyticsRequests = api.analytics.requests.length;
     const refreshedEmail = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/`, {
@@ -256,6 +264,47 @@ describe('Post debug', () => {
     });
     expect(api.analytics.requests.length).toBe(stopped);
   }, 25000);
+
+  it('summarises delivery, settings and submission timing', async () => {
+    seed();
+    await renderAdminApp(route);
+    const metric = (label: string) =>
+      page.getByText(label, { exact: true }).first().element().parentElement!.textContent;
+    await expect.poll(() => metric('Delivered')).toBe('Delivered1,20097%');
+    expect(metric('Sent')).toBe('Sent1,234');
+    expect(metric('Opened')).toBe('Opened423%');
+    expect(metric('Failed')).toBe('Failed343%');
+    await expect.element(page.getByText('Recipient filter: status:paid')).toBeVisible();
+    await expect.element(page.getByText('Click tracking off')).toBeVisible();
+    await expect.element(page.getByText('Member feedback on')).toBeVisible();
+    await expect.element(page.getByText(/\(1m later\)$/)).toBeVisible();
+  });
+
+  it('groups recipients that share a failure code and pages long groups', async () => {
+    seed();
+    fakeAdminEndpoint('GET', new RegExp(`^/emails/${EMAIL_ID}/recipient-failures/`), {
+      failures: Array.from({ length: 25 }, (_, index) => ({
+        id: `failure-${index}`,
+        severity: 'permanent',
+        code: 550,
+        enhanced_code: '5.1.1',
+        message: index === 0 ? 'Mailbox full' : 'Mailbox does not exist',
+        email_recipient: { member_name: `Reader ${index}`, member_email: `r${index}@example.com` },
+        member: null,
+      })),
+    });
+    await renderAdminApp(route);
+    await expect
+      .element(
+        page.getByRole('button', { name: /550 · 5.1.1\s*Mailbox does not exist\s*25 recipients/ }),
+      )
+      .toHaveAttribute('aria-expanded', 'true');
+    await expect.element(page.getByText('r19@example.com')).toBeVisible();
+    await expect.element(page.getByText('r20@example.com')).not.toBeInTheDocument();
+    await expect.element(page.getByText('Mailbox full', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Show 5 more' }).click();
+    await expect.element(page.getByText('r24@example.com')).toBeVisible();
+  });
 
   it('does not request email diagnostics for a post without an email', async () => {
     fakePosts([post({ id: POST_ID, title: 'Web only', email: null })]);
