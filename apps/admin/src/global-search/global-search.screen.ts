@@ -3,6 +3,7 @@ import {
   noResultsText,
   searchDialog,
   searchSiteButton,
+  shortcutHintText,
 } from '@tryghost/test-data/selectors/global-search';
 
 import { isMacPlatform } from '@/utils/is-mac-platform';
@@ -17,6 +18,12 @@ export const globalSearchScreen = {
   group: (name: string) => globalSearchScreen.dialog().getByRole('group', { name }),
   option: (name: string | RegExp) => globalSearchScreen.dialog().getByRole('option', { name }),
   noResults: () => globalSearchScreen.dialog().getByText(noResultsText),
+  shortcutHint: () => globalSearchScreen.dialog().getByText(shortcutHintText),
+  /** The listbox the input's `aria-controls` names, or null when it isn't in the DOM. */
+  controlledListbox: () => {
+    const id = globalSearchScreen.input().element().getAttribute('aria-controls');
+    return id ? document.getElementById(id) : null;
+  },
   highlight: (option: string | RegExp) => globalSearchScreen.option(option).getByRole('mark'),
 
   async pressShortcut(): Promise<void> {
@@ -38,6 +45,14 @@ export const globalSearchScreen = {
     });
     document.dispatchEvent(event);
     return event.defaultPrevented;
+  },
+
+  /** Clicks the page at the centre of `locator`'s box, landing on whatever is on top there. */
+  async clickAt(locator: ReturnType<typeof page.getByText>): Promise<void> {
+    const box = locator.element().getBoundingClientRect();
+    await userEvent.click(page.elementLocator(document.body), {
+      position: { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+    });
   },
 
   async search(term: string): Promise<void> {

@@ -89,8 +89,11 @@ describe('Cmd-K search', () => {
 
   it('opens from the sidebar button and lists grouped results', async () => {
     await renderAdminApp('/tags', flagOn);
+    await globalSearchScreen.openButton().click();
+    await expect.element(globalSearchScreen.input()).toHaveFocus();
+    expect(globalSearchScreen.controlledListbox()).not.toBeNull();
 
-    await openAndSearch('first');
+    await globalSearchScreen.search('first');
 
     await expect.element(globalSearchScreen.group('Staff')).toBeVisible();
     await expect.element(globalSearchScreen.group('Tags')).toBeVisible();
@@ -115,6 +118,16 @@ describe('Cmd-K search', () => {
     } finally {
       document.removeEventListener('keydown', emberShortcut);
     }
+  });
+
+  it('closes on a click over the shortcut hint, which sits on the overlay', async () => {
+    await renderAdminApp('/tags', flagOn);
+    await globalSearchScreen.openButton().click();
+    await expect.element(globalSearchScreen.shortcutHint()).toBeVisible();
+
+    await globalSearchScreen.clickAt(globalSearchScreen.shortcutHint());
+
+    await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
   });
 
   it('starts empty each time it opens', async () => {

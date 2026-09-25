@@ -10,3 +10,4 @@ export const searchDialog = 'Search site';
 
 // text fragments
 export const noResultsText = 'No results found';
+export const shortcutHintText = 'Open with';
