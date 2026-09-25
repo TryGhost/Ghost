@@ -2302,7 +2302,11 @@ module.exports = {
       nullable: false,
       validations: { isEmail: true },
     },
-    '@@INDEXES@@': [['automation_id', 'created_at'], ['updated_at']],
+    '@@INDEXES@@': [
+      ['automation_id', 'created_at'],
+      ['automation_id', 'id', 'member_id'],
+      ['updated_at'],
+    ],
   },
   automation_run_steps: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
