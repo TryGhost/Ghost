@@ -55,6 +55,17 @@ describe('Unit: Service: state-bridge', function () {
         sinon.restore();
     });
 
+    describe('#navigateToBillingSubRoute', function () {
+        it('hands the sub-route to the billing app', function () {
+            const billing = this.owner.lookup('service:billing');
+            sinon.stub(billing, 'navigateToSubRoute');
+
+            service.navigateToBillingSubRoute('/plans');
+
+            expect(billing.navigateToSubRoute.calledOnceWithExactly('/plans')).to.be.true;
+        });
+    });
+
     describe('#isFeatureEnabled', function () {
         it('does not claim route ownership before Labs settings load', function () {
             settings.settingsModel = null;

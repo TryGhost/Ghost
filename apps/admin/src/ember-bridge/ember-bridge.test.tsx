@@ -625,6 +625,25 @@ describe('theme bridge helpers', () => {
     expect(applyEmberAdminThemePreference('dark')).toBe(false);
   });
 
+  test('navigateEmberBillingSubRoute hands the sub-route to Ember and reports it', async () => {
+    const { navigateEmberBillingSubRoute } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    const navigate = vi.fn();
+    mock.stateBridge.navigateToBillingSubRoute = navigate;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    expect(navigateEmberBillingSubRoute('/plans')).toBe(true);
+    expect(navigate).toHaveBeenCalledWith('/plans');
+  });
+
+  test('navigateEmberBillingSubRoute returns false without a bridge or method', async () => {
+    const { navigateEmberBillingSubRoute } = await import('./ember-bridge');
+    expect(navigateEmberBillingSubRoute('/plans')).toBe(false);
+
+    window.EmberBridge = { state: createMockStateBridge().stateBridge };
+    expect(navigateEmberBillingSubRoute('/plans')).toBe(false);
+  });
+
   test('preloadEmberAdminThemeStylesheet resolves with and without the bridge', async () => {
     const { preloadEmberAdminThemeStylesheet } = await import('./ember-bridge');
     await expect(preloadEmberAdminThemeStylesheet()).resolves.toBeUndefined();

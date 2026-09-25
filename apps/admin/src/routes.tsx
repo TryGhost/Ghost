@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import {
   type AdminRouteHandle,
   type RouteObject,
@@ -227,22 +228,33 @@ export const routes: RouteObject[] = [
 // (and so gets router history state, which the unsaved-changes blockers need).
 const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback, EmberListWithGiftLinks]);
 
-export function useIsEmberOwnedRoute(pathname: string): boolean {
+/** Decides for any path whether Ember owns it, for destinations only known at event time. */
+export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
   const postsListOwner = useFlagGatedRouteOwner('postsListReact');
   const editorOwner = useFlagGatedRouteOwner('editorReact');
   const memberActivityOwner = useFlagGatedRouteOwner('membersActivityReact');
-  const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
-  if (!leaf) {
-    return true;
-  }
-  if (leaf.Component === PostsListGate || leaf.Component === PagesListGate) {
-    return postsListOwner !== 'react';
-  }
-  if (leaf.Component === EditorGate) {
-    return editorOwner !== 'react';
-  }
-  if (leaf.Component === MemberActivityGate) {
-    return memberActivityOwner !== 'react';
-  }
-  return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
+
+  return useCallback(
+    (pathname: string) => {
+      const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
+      if (!leaf) {
+        return true;
+      }
+      if (leaf.Component === PostsListGate || leaf.Component === PagesListGate) {
+        return postsListOwner !== 'react';
+      }
+      if (leaf.Component === EditorGate) {
+        return editorOwner !== 'react';
+      }
+      if (leaf.Component === MemberActivityGate) {
+        return memberActivityOwner !== 'react';
+      }
+      return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
+    },
+    [postsListOwner, editorOwner, memberActivityOwner],
+  );
+}
+
+export function useIsEmberOwnedRoute(pathname: string): boolean {
+  return useEmberOwnedRouteMatcher()(pathname);
 }

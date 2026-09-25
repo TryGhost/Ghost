@@ -15,6 +15,7 @@ export {
   isEmberThemeManaged,
   preloadEmberAdminThemeStylesheet,
   applyEmberAdminThemePreference,
+  navigateEmberBillingSubRoute,
   emberMutationHandlers,
 } from './ember-bridge';
 export type {

@@ -27,6 +27,7 @@ export interface StateBridge {
   isFeatureEnabled?: (name: string) => boolean | undefined;
   preloadAdminThemeStylesheet?: () => Promise<void>;
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
+  navigateToBillingSubRoute?: (subRoute: string) => void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -312,6 +313,19 @@ export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
     return false;
   }
   void stateBridge.applyAdminThemePreference(mode);
+  return true;
+}
+
+/**
+ * Hands a billing app sub-route straight to Ember's billing app, for when the
+ * billing route is already showing. Returns false when no bridge is present.
+ */
+export function navigateEmberBillingSubRoute(subRoute: string): boolean {
+  const stateBridge = window.EmberBridge?.state;
+  if (!stateBridge?.navigateToBillingSubRoute) {
+    return false;
+  }
+  stateBridge.navigateToBillingSubRoute(subRoute);
   return true;
 }
 
