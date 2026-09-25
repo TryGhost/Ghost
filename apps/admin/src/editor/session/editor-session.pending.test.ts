@@ -83,7 +83,7 @@ describe('session pending saves', () => {
     session.dispose();
   });
 
-  it('keeps the saving view stable when later body edits only change pending version', async () => {
+  it('keeps the saving view stable when later body edits only change the edit version', async () => {
     const loaded = record();
     let before: unknown;
     let after: unknown;

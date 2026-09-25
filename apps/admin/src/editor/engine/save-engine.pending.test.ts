@@ -15,10 +15,7 @@ afterEach(() => vi.useRealTimers());
 describe('pending content', () => {
   it('reads edits without notifications or starting a save, and releases an undone edit', () => {
     const h = setup();
-    expect(h.engine.getPendingSave()).toEqual({
-      version: 1,
-      blockedBy: null,
-    });
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: null });
     expect(h.engine.getState()).toEqual({ kind: 'idle' });
     expect(h.execute).not.toHaveBeenCalled();
 
@@ -31,10 +28,7 @@ describe('pending content', () => {
     async (status) => {
       const h = setup({ status });
       await h.engine.dispatch('field');
-      expect(h.engine.getPendingSave()).toEqual({
-        version: 1,
-        blockedBy: null,
-      });
+      expect(h.engine.getPendingSave()).toEqual({ blockedBy: null });
       await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
       expect(h.execute).not.toHaveBeenCalled();
 
@@ -56,10 +50,7 @@ describe('pending content', () => {
     await expect(autosave).resolves.toEqual({ kind: 'blocked', error: validation });
     await expect(field).resolves.toEqual({ kind: 'blocked', error: validation });
     expect(h.engine.getState()).toEqual({ kind: 'idle' });
-    expect(h.engine.getPendingSave()).toEqual({
-      version: 2,
-      blockedBy: validation,
-    });
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: validation });
     await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
     expect(h.execute).not.toHaveBeenCalled();
 
@@ -159,23 +150,14 @@ describe('pending content', () => {
     h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
     await h.engine.dispatch('field');
     h.edit();
-    expect(h.engine.getPendingSave()).toEqual({
-      version: 2,
-      blockedBy: validation,
-    });
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: validation });
 
     const save = h.engine.dispatch('autosave');
-    expect(h.engine.getPendingSave()).toEqual({
-      version: 2,
-      blockedBy: validation,
-    });
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: validation });
     const seen: Array<ReturnType<typeof h.engine.getPendingSave>> = [];
     h.engine.subscribe(() => seen.push(h.engine.getPendingSave()));
     await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
-    expect(seen).toEqual([
-      { version: 2, blockedBy: validation },
-      { version: 2, blockedBy: null },
-    ]);
+    expect(seen).toEqual([{ blockedBy: validation }, { blockedBy: null }]);
     await h.succeed();
     await save;
   });
@@ -234,16 +216,10 @@ describe('pending content', () => {
     await flush();
     h.edit();
     expect(h.engine.getState().kind).toBe('saving');
-    expect(h.engine.getPendingSave()).toEqual({
-      version: 2,
-      blockedBy: null,
-    });
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: null });
     await h.succeed();
     await first;
-    expect(h.engine.getPendingSave()).toEqual({
-      version: 2,
-      blockedBy: null,
-    });
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: null });
     expect(h.execute).toHaveBeenCalledTimes(1);
 
     const next = h.engine.dispatch('field');
@@ -263,7 +239,7 @@ describe('pending content', () => {
     await h.succeed();
     await first;
     await expect(second).resolves.toEqual({ kind: 'blocked', error: validation });
-    expect(h.engine.getPendingSave()).toMatchObject({ version: 2, blockedBy: validation });
+    expect(h.engine.getPendingSave()).toMatchObject({ blockedBy: validation });
     expect(h.execute).toHaveBeenCalledTimes(1);
     await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
   });
@@ -294,14 +270,11 @@ describe('pending content', () => {
     const retry = h.engine.dispatch('schedule', { publishedAt: FUTURE });
     await flush();
     expect(h.requests).toHaveLength(1);
-    expect(h.engine.getPendingSave()).toEqual({ version: 1, blockedBy: null });
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: null });
 
     await h.fail(transport);
     await expect(retry).resolves.toMatchObject({ kind: 'failed', error: transport });
-    expect(h.engine.getPendingSave()).toEqual({
-      version: 1,
-      blockedBy: transport,
-    });
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: transport });
   });
 
   it('retains content while authentication is pending and releases it on disposal', async () => {
@@ -310,7 +283,7 @@ describe('pending content', () => {
     await h.fail(sessionInvalid);
     expect(h.engine.getPendingSave()?.blockedBy).toBe(sessionInvalid);
     h.edit();
-    expect(h.engine.getPendingSave()).toMatchObject({ version: 2, blockedBy: sessionInvalid });
+    expect(h.engine.getPendingSave()).toMatchObject({ blockedBy: sessionInvalid });
     h.engine.dispose();
     await expect(save).resolves.toEqual({ kind: 'dropped', reason: 'disposed' });
     expect(h.engine.getPendingSave()).toBeNull();

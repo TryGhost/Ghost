@@ -135,7 +135,6 @@ export type PrepareOutcome<P> = { ok: true; prepared: P } | { ok: false; error: 
 
 /** Unsaved content is independent of the commands currently allowed to execute. */
 export interface PendingSave {
-  version: number;
   blockedBy: SaveError | null;
 }
 
@@ -412,7 +411,7 @@ export function createSaveEngine<
       (isStale(snapshot) ? conflict?.error : null) ??
       (hold?.source === 'local-validation' ? hold.error : null) ??
       (state.kind === 'error' ? state.error : null);
-    return { version: snapshot.version, blockedBy };
+    return { blockedBy };
   }
 
   function setState(next: SaveEngineState): void {

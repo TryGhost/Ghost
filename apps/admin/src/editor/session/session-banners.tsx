@@ -31,7 +31,7 @@ const GONE =
 
 export interface SessionBannersProps {
   state: SaveEngineState;
-  pendingSave?: Omit<PendingSave, 'version'> | null;
+  pendingSave?: PendingSave | null;
   hasUnsavedContent: () => boolean;
   contentText: () => string;
   onRetryReauth: () => void;

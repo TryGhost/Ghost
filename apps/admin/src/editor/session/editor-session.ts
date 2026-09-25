@@ -112,7 +112,7 @@ export interface EditorSessionOptions {
 /** The state React renders, published together after a session change. */
 export interface EditorSessionView {
   readonly state: SaveEngineState;
-  readonly pendingSave: Omit<PendingSave, 'version'> | null;
+  readonly pendingSave: PendingSave | null;
   readonly isDirty: boolean;
   /** The title the engine holds, which is DEFAULT_TITLE while the input is blank. */
   readonly title: string;
@@ -279,14 +279,10 @@ export function createEditorSession({
     }
     const state = engine.getState();
     const pending = engine.getPendingSave();
-    // The UI renders eligibility, not the edit counter: typing more body text
-    // must not republish an otherwise unchanged React snapshot.
+    // getPendingSave() allocates per call; typing more body text must not
+    // republish an otherwise unchanged React snapshot.
     const pendingSave =
-      view?.pendingSave?.blockedBy === pending?.blockedBy
-        ? (view?.pendingSave ?? null)
-        : pending
-          ? { blockedBy: pending.blockedBy }
-          : null;
+      view?.pendingSave?.blockedBy === pending?.blockedBy ? (view?.pendingSave ?? null) : pending;
     const isDirty = getSnapshot().isDirty;
     const currentSlug = machine.getState().slug;
     const currentPublishedAt = livePublishedAt();

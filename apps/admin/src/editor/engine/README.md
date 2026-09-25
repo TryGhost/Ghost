@@ -36,9 +36,8 @@ Email extras (`newsletter`, `emailSegment`, `emailOnly`) ride on exactly that co
 
 `getPendingSave()` derives pending content directly from the current session
 snapshot and the engine's active work. It returns `null` when the document is
-clean, otherwise `{version, blockedBy}`. There is no separate edit
-registration, snapshot cache, or pending-change callback; the session reads this
-view when its document or engine activity changes.
+clean, otherwise `{blockedBy}`. The session reads it whenever its document or
+engine activity changes.
 
 `blockedBy` holds the error preventing progress. The engine's activity state
 reports preparation, saving, and queued commands separately. Typing can restart
@@ -55,8 +54,9 @@ controls suppression of unchanged background retries. A passing preparation
 clears a local validation hold, even when the command's target changes without a
 content edit. A save attempt that finds the document clean also releases local
 validation, including when the version is unchanged or slug work was pending.
-Restoring saved values therefore does not leave a warning for a later edit. Subsequent body edits on a blocked new post use the normal debounce
-instead of preparing a create on every keystroke.
+Restoring saved values therefore does not leave a warning for a later edit.
+Subsequent body edits on a blocked new post use the normal debounce instead of
+preparing a create on every keystroke.
 
 Server validation and host-limit holds keep their existing suppression rules;
 a passing local preparation does not establish that the server will accept the
@@ -96,7 +96,7 @@ Reconcile-before-drain is a hard ordering contract because the server enforces o
 | `session-invalid`               | `reauth-pending`; queue frozen, later commands coalesce into the pending slot, content untouched                                                                          | `reauthSucceeded()` / `reauthAbandoned()`                                                                  |
 | `not-found` with an id          | `halted` (deleted elsewhere); every queued command dropped `halted`, content kept for copy-out                                                                            | none                                                                                                       |
 | `not-found` without an id       | `crashed` (corrupt new-post state)                                                                                                                                        | none                                                                                                       |
-| `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or `contentReloaded(updatedAt)` with a candidate that no longer matches the rejected one |
+| `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or `contentReloaded(updatedAt, adopt?)` with a candidate different from the rejected one |
 | server `validation`             | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, or an explicit save                                                                             |
 | `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, or an explicit save                                                                             |
 | `transport` / `unknown`         | `error`, no suppression                                                                                                                                                   | next save                                                                                                  |

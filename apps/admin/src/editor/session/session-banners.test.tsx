@@ -8,7 +8,7 @@ import type { ReloadOutcome } from './use-editor-session';
 const noop = () => undefined;
 
 interface BannerOverrides {
-  pendingSave?: Omit<PendingSave, 'version'>;
+  pendingSave?: PendingSave;
   hasUnsavedContent?: () => boolean;
   contentText?: () => string;
   onReload?: () => Promise<ReloadOutcome>;
