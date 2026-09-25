@@ -112,12 +112,12 @@ describe('Post debug', () => {
     await expect
       .element(page.getByRole('link', { name: 'Retry' }))
       .toHaveAttribute('href', `#/editor/post/${POST_ID}`);
-    await page.getByRole('tab', { name: '1 Temporary failure', exact: true }).click();
+    await page.getByRole('tab', { name: /^Temporary failures\s*1$/ }).click();
     await expect.element(page.getByText('deleted@example.com')).toBeVisible();
     await expect
       .element(page.getByRole('link', { name: /Deleted member/ }))
       .not.toBeInTheDocument();
-    await page.getByRole('tab', { name: '1 batch errored', exact: true }).click();
+    await page.getByRole('tab', { name: /^Errored batches\s*1$/ }).click();
     await expect.element(page.getByText('Provider id: provider-id')).toBeVisible();
     await expect.element(page.getByText('1,234', { exact: true }).first()).toBeVisible();
     expect(new URL(api.batches.lastRequest!.url).searchParams.get('include')).toBe(
