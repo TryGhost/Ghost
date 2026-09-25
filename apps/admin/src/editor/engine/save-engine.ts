@@ -943,19 +943,17 @@ export function createSaveEngine<
     frozen = null;
     pending = null;
     const snapshot = readSnapshot();
-    let reconfirm = false;
     for (const slot of slots) {
       for (const waiter of slot.waiters) {
         if (needsReconfirmation(waiter.command, snapshot)) {
           waiter.resolve({ kind: 'needs-retry' });
-          reconfirm = true;
         } else {
           coalesce(waiter.command, [waiter]);
         }
       }
     }
-    // Content a disarmed status command would have carried resumes through the normal autosave path.
-    if (reconfirm && !pending) {
+    // Nothing re-queued: a status command needs retry or a background save had no waiters.
+    if (!pending) {
       resumeAutosave(snapshot);
     }
     drain();

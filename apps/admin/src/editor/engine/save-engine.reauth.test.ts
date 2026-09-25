@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AUTOSAVE_DEBOUNCE_MS, TIMED_SAVE_INTERVAL_MS, type DispatchIntent } from './save-engine';
-import { dispatchAny, flush, PAST, sessionInvalid, setup } from './__test-utils__/engine-harness';
+import {
+  dispatchAny,
+  flush,
+  type Harness,
+  PAST,
+  sessionInvalid,
+  setup,
+} from './__test-utils__/engine-harness';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -270,6 +277,73 @@ describe('createSaveEngine', () => {
       await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
       expect(h.execute).toHaveBeenCalledTimes(2);
       expect(h.requests[1]).toMatchObject({ command: { kind: 'autosave' } });
+    });
+
+    // The autosave re-armed after a needs-retry publish runs with no waiters of its own.
+    async function freezeUnwaitedAutosave(h: Harness) {
+      void h.engine.dispatch('publish');
+      await h.fail(sessionInvalid);
+      h.engine.reauthSucceeded();
+      await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+      expect(h.execute).toHaveBeenCalledTimes(2);
+      expect(h.requests[1]).toMatchObject({ command: { kind: 'autosave' } });
+      await h.fail(sessionInvalid);
+      expect(h.engine.getState()).toEqual({ kind: 'reauth-pending', intent: 'autosave' });
+    }
+
+    it('re-arms a background save that had no waiters once re-auth succeeds', async () => {
+      const h = setup();
+      await freezeUnwaitedAutosave(h);
+
+      h.engine.reauthSucceeded();
+      await flush();
+      expect(h.engine.getState()).toEqual({ kind: 'debouncing' });
+
+      await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+      expect(h.execute).toHaveBeenCalledTimes(3);
+      expect(h.requests[2]).toMatchObject({
+        command: { kind: 'autosave' },
+        target: { status: 'draft' },
+        snapshot: { version: 1 },
+      });
+
+      await h.succeed();
+      expect(h.snapshot.isDirty).toBe(false);
+      await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
+      expect(h.execute).toHaveBeenCalledTimes(3);
+    });
+
+    it('re-runs a frozen explicit save once for its waiters and arms nothing else', async () => {
+      const h = setup();
+      const explicit = h.engine.dispatch('explicit');
+      await h.fail(sessionInvalid);
+
+      h.engine.reauthSucceeded();
+      await flush();
+      expect(h.execute).toHaveBeenCalledTimes(2);
+      expect(h.requests[1]).toMatchObject({ command: { kind: 'explicit' }, saveRevision: true });
+      expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'explicit' });
+
+      await h.succeed();
+      await expect(explicit).resolves.toMatchObject({ kind: 'saved', executedAs: 'explicit' });
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+      h.edit();
+      await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
+      expect(h.execute).toHaveBeenCalledTimes(2);
+    });
+
+    it('drops a background save that had no waiters to error when re-auth is abandoned', async () => {
+      const h = setup();
+      await freezeUnwaitedAutosave(h);
+
+      h.engine.reauthAbandoned();
+      expect(h.engine.getState()).toEqual({
+        kind: 'error',
+        intent: 'autosave',
+        error: sessionInvalid,
+      });
+      await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
+      expect(h.execute).toHaveBeenCalledTimes(2);
     });
 
     it('settles every waiter with the session error when re-auth is abandoned', async () => {

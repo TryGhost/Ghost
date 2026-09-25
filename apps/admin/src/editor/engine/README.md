@@ -75,16 +75,16 @@ Reconcile-before-drain is a hard ordering contract because the server enforces o
 
 `transition(state, event, queue)` is the only way the state changes. Each change names an event and passes a read-only view of the queue as it stands after the event: the kind of the command in flight, the kind winning the pending slot, whether re-auth has frozen the queue, and whether the debounce or the timed cycle is armed.
 
-| Event              | When                                                                                                                                                         |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `timer-armed`      | an autosave dispatch arms the timed cycle or restarts the debounce, or re-auth success re-arms them for content a disarmed status command would have carried |
-| `coalesced`        | a command lands in the pending slot behind the save in flight or the frozen command                                                                          |
-| `save-started`     | a command goes in flight                                                                                                                                     |
-| `drained`          | a save settled or was dropped and nothing is pending                                                                                                         |
-| `save-failed`      | reading the snapshot, prepare, or execute failed; carries the intent, the typed error, and whether the post had an id                                        |
-| `reauth-abandoned` | `reauthAbandoned()` settled the frozen command                                                                                                               |
-| `content-reloaded` | `contentReloaded()` accepted a document past the rejected `updated_at`                                                                                       |
-| `disposed`         | `dispose()`                                                                                                                                                  |
+| Event              | When                                                                                                                                |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `timer-armed`      | an autosave dispatch arms the timed cycle or restarts the debounce, or re-auth success re-arms them because no waiter was re-queued |
+| `coalesced`        | a command lands in the pending slot behind the save in flight or the frozen command                                                 |
+| `save-started`     | a command goes in flight                                                                                                            |
+| `drained`          | a save settled or was dropped and nothing is pending                                                                                |
+| `save-failed`      | reading the snapshot, prepare, or execute failed; carries the intent, the typed error, and whether the post had an id               |
+| `reauth-abandoned` | `reauthAbandoned()` settled the frozen command                                                                                      |
+| `content-reloaded` | `contentReloaded()` accepted a document past the rejected `updated_at`                                                              |
+| `disposed`         | `dispose()`                                                                                                                         |
 
 The four queue events (`timer-armed`, `coalesced`, `save-started`, `drained`) resolve against the queue alone. A save in flight reads `saving`, or `pending-coalesced` while the pending slot is filled. Otherwise `error` and `conflict` persist until a save starts, so timers arming or a dropped save do not clear them, and every other state settles to `debouncing` while a timer is armed and to `idle` when none is. A frozen queue keeps `reauth-pending`; re-auth success lifts the freeze and the next queue event moves the state on. `content-reloaded` is the only way out of `conflict` other than a save attempt or disposal. A failed save moves by its error kind, as in the table above. `halted` and `crashed` leave only for `disposed`, and `disposed` ignores every event.
 
@@ -156,7 +156,7 @@ Each row below starts from one representative state. A state and event pair the 
 
 ### Re-auth
 
-`reauthSucceeded()` inspects every waiter in both the frozen and the pending slot and judges each by its resolved effect against the current post: a command whose target would change the status resolves `needs-retry` and never auto-fires; everything else is coalesced into the pending slot with its own command and drained, without re-debouncing, so a frozen explicit rider re-runs while the publish it coalesced into does not. Content a disarmed status command would have carried resumes through the autosave path; if the snapshot cannot be read at that point the debounce is re-armed so the retry surfaces a failure instead of abandoning content. `reauthAbandoned()` settles every waiter with the session error and moves to `error`; the caller decides on a sign-in redirect, the queue never dangles.
+`reauthSucceeded()` inspects every waiter in both the frozen and the pending slot and judges each by its resolved effect against the current post: a command whose target would change the status resolves `needs-retry` and never auto-fires; everything else is coalesced into the pending slot with its own command and drained, without re-debouncing, so a frozen explicit rider re-runs while the publish it coalesced into does not. When no waiter is re-queued, because every one needs retry or the frozen command was a background save the engine re-armed itself, with no waiters, a dirty draft resumes through the autosave path, re-arming the debounce and the timed cycle as a dispatch does; if the snapshot cannot be read at that point the debounce is re-armed so the retry surfaces a failure instead of abandoning content. `reauthAbandoned()` settles every waiter with the session error and moves to `error`; the caller decides on a sign-in redirect, the queue never dangles.
 
 ### Leave
 
