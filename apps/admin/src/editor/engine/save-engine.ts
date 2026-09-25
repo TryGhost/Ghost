@@ -904,6 +904,14 @@ export function createSaveEngine<
     const snapshot = readSnapshot();
     let reconfirm = false;
     for (const slot of slots) {
+      // Internal autosaves have work to retry even without a caller awaiting it.
+      if (slot.waiters.length === 0) {
+        if (needsReconfirmation(slot.command, snapshot)) {
+          reconfirm = true;
+        } else {
+          coalesce(slot.command, []);
+        }
+      }
       for (const waiter of slot.waiters) {
         if (needsReconfirmation(waiter.command, snapshot)) {
           waiter.resolve({ kind: 'needs-retry' });

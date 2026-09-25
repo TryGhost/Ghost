@@ -59,6 +59,54 @@ describe('createSaveEngine', () => {
       await expect(field).resolves.toMatchObject({ kind: 'saved', executedAs: 'explicit' });
     });
 
+    it.each([false, true])(
+      'retries an internal autosave through repeated authentication failures (new=%s)',
+      async (isNew) => {
+        const h = setup(isNew ? { id: null, updatedAt: null } : {});
+        const publish = h.engine.dispatch('publish', { newsletter: 'news', emailOnly: true });
+        await h.fail(sessionInvalid);
+        h.engine.reauthSucceeded();
+        await expect(publish).resolves.toEqual({ kind: 'needs-retry' });
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+        expect(h.requests).toHaveLength(2);
+        await h.fail(sessionInvalid);
+        h.edit();
+        h.engine.reauthSucceeded();
+        await flush();
+        expect(h.requests).toHaveLength(3);
+        expect(h.requests[2]).toMatchObject({
+          command: { kind: 'autosave' },
+          snapshot: { version: 2 },
+          target: { status: 'draft' },
+        });
+        expect(h.requests[2].target.newsletter).toBeUndefined();
+        await h.fail(sessionInvalid);
+        const explicit = h.engine.dispatch('explicit');
+        h.engine.reauthSucceeded();
+        await h.succeed();
+        await expect(explicit).resolves.toMatchObject({ kind: 'saved', executedAs: 'explicit' });
+        expect(h.requests).toHaveLength(4);
+        expect(h.snapshot.isDirty).toBe(false);
+        expect(h.maxConcurrent()).toBe(1);
+      },
+    );
+
+    it('does not replay an internal draft autosave after the post becomes published', async () => {
+      const h = setup();
+      const publish = h.engine.dispatch('publish');
+      await h.fail(sessionInvalid);
+      h.engine.reauthSucceeded();
+      await publish;
+      await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+      await h.fail(sessionInvalid);
+      h.patch({ status: 'published' });
+      h.engine.reauthSucceeded();
+      await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
+      expect(h.requests).toHaveLength(2);
+      expect(h.snapshot.status).toBe('published');
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
     it('ignores reauthSucceeded when nothing is waiting on re-authentication', async () => {
       const h = setup();
       h.engine.reauthSucceeded();
