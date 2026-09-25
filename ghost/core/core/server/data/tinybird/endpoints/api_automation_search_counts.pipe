@@ -1,0 +1,72 @@
+DESCRIPTION >
+    Aggregate one complete member-search ID set or one bounded count window.
+
+NODE selected_status_runs
+SQL >
+    %
+    {% if len(String(run_ids, required=True)) > 749999 or len(String(run_ids, required=True).split(',')) > 30000 %}
+        {{ error('run_ids exceeds the count batch limit') }}
+    {% end %}
+    SELECT id, created_at
+    FROM _mv_automation_runs FINAL
+    WHERE site_uuid = {{ String(site_uuid, required=True) }}
+        AND automation_id = {{ String(automation_id, required=True) }}
+        {% if defined(date_from) %}
+        AND created_at >= toDateTime64({{ String(date_from) }}, 3, {{ String(timezone, 'UTC') }})
+        {% end %}
+        {% if defined(date_to) %}
+        AND created_at < toDateTime64({{ String(date_to) }}, 3, {{ String(timezone, 'UTC') }})
+        {% end %}
+        AND id IN splitByChar(',', {{ String(run_ids, required=True) }})
+
+NODE run_status_flags
+SQL >
+    %
+    SELECT
+        automation_run_id,
+        -- Combine categories after FINAL has selected each step's latest version.
+        groupBitOr(toUInt8(multiIf(
+            status = 'pending', 1,
+            status = 'finished', 2,
+            status IN ('automation disabled', 'failed', 'member changed status', 'member unsubscribed'), 4,
+            8
+        ))) AS status_flags
+    FROM _mv_automation_run_steps FINAL
+    WHERE site_uuid = {{ String(site_uuid, required=True) }}
+        AND automation_run_id >= {{ String(first_id, required=True) }}
+        AND automation_run_id <= {{ String(last_id, required=True) }}
+    GROUP BY automation_run_id
+
+NODE automation_status_buckets
+SQL >
+    %
+    SELECT
+        {% if Boolean(include_entries, False) %}
+        formatDateTime(runs.created_at, '%F', {{ String(timezone, 'UTC') }}) AS date,
+        {% end %}
+        countIf(bitAnd(status_flags, 1) != 0) AS in_progress_run_count,
+        countIf(status_flags = 2) AS completed_run_count,
+        countIf(status_flags IN (4, 6)) AS exited_early_run_count,
+        count() - in_progress_run_count - completed_run_count - exited_early_run_count AS unclassified_run_count
+    FROM selected_status_runs runs
+    LEFT JOIN run_status_flags flags ON flags.automation_run_id = runs.id
+
+    {% if Boolean(include_entries, False) %}
+    GROUP BY date
+    {% end %}
+
+NODE automation_status_counts
+SQL >
+    %
+    SELECT
+        sum(b.in_progress_run_count) AS in_progress_run_count,
+        sum(b.completed_run_count) AS completed_run_count,
+        sum(b.exited_early_run_count) AS exited_early_run_count,
+        sum(b.unclassified_run_count) AS unclassified_run_count
+        {% if Boolean(include_entries, False) %}
+        , arraySort(groupArray((date, b.in_progress_run_count + b.completed_run_count + b.exited_early_run_count + b.unclassified_run_count))) AS entries
+        {% end %}
+    FROM automation_status_buckets b
+    SETTINGS max_execution_time = 2
+
+TYPE ENDPOINT

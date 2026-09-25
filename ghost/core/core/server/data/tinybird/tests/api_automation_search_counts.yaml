@@ -1,0 +1,96 @@
+- name: recorded_outcomes_and_latest_versions
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-1%2Cstatus-run-10%2Cstatus-run-2%2Cstatus-run-3%2Cstatus-run-4%2Cstatus-run-5%2Cstatus-run-6%2Cstatus-run-7%2Cstatus-run-8%2Cstatus-run-9&first_id=status-run-1&last_id=status-run-9
+  expected_result: |
+    {"in_progress_run_count":2,"completed_run_count":2,"exited_early_run_count":4,"unclassified_run_count":2}
+
+- name: other_automation
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=other-automation&run_ids=status-run-11&first_id=status-run-11&last_id=status-run-11
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: other_site
+  parameters: site_uuid=15840000-0000-4000-8000-000000000001&automation_id=status-automation&run_ids=status-run-3&first_id=status-run-3&last_id=status-run-3
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: empty_history
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=missing&run_ids=&first_id=&last_id=
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: pending_unknown
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-pending_unknown&run_ids=case-pending_unknown&first_id=case-pending_unknown&last_id=case-pending_unknown
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: exit_without_finished
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-exit_without_finished&run_ids=case-exit_without_finished&first_id=case-exit_without_finished&last_id=case-exit_without_finished
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":1,"unclassified_run_count":0}
+
+- name: unknown_exit
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-unknown_exit&run_ids=case-unknown_exit&first_id=case-unknown_exit&last_id=case-unknown_exit
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":1}
+
+- name: finished_only
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-finished_only&run_ids=case-finished_only&first_id=case-finished_only&last_id=case-finished_only
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: missing_steps
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-missing_steps&run_ids=case-missing_steps&first_id=case-missing_steps&last_id=case-missing_steps
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":1}
+
+- name: missing_site
+  parameters: automation_id=status-automation&run_ids=&first_id=&last_id=
+  expected_http_status: 400
+  expected_result: >-
+    Template Syntax Error: Required parameter is not defined. Check the parameters run_ids, site_uuid and automation_id. Please provide a value or set a default value in the pipe code.
+
+- name: missing_automation
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&run_ids=&first_id=&last_id=
+  expected_http_status: 400
+  expected_result: >-
+    Template Syntax Error: Required parameter is not defined. Check the parameters run_ids, site_uuid and automation_id. Please provide a value or set a default value in the pipe code.
+
+- name: subset_ignores_other_runs_in_step_range
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-1&first_id=&last_id=zzzz
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: empty_selected_set
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=&first_id=&last_id=
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: ignores_ids_from_other_automation
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=other-automation&run_ids=status-run-1&first_id=&last_id=zzzz
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: entry_date_includes_later_step_history
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-1&first_id=&last_id=zzzz&date_from=2019-12-31&date_to=2020-01-01&timezone=Atlantic/Cape_Verde
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: date_excludes_matching_member_entry
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-1&first_id=&last_id=zzzz&date_from=2019-12-31&date_to=2020-01-01&timezone=UTC
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: chart_timezone_and_full_history
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-1&first_id=&last_id=zzzz&include_entries=true&timezone=Atlantic/Cape_Verde&date_from=2019-12-31&date_to=2020-01-01
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0,"entries":[["2019-12-31",1]]}
+
+- name: chart_empty_selection
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=&first_id=&last_id=&include_entries=true&timezone=UTC
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0,"entries":[]}
+
+- name: chart_all_time_utc
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&run_ids=status-run-1,status-run-3&first_id=&last_id=zzzz&include_entries=true&timezone=UTC
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":1,"exited_early_run_count":0,"unclassified_run_count":0,"entries":[["2020-01-01",2]]}
