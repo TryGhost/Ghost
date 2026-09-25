@@ -101,10 +101,12 @@ async function closeWithEscape() {
 }
 
 describe('Cmd-K search', () => {
+  let index: ReturnType<typeof fakeSearchIndex>;
+
   beforeEach(() => {
     delete document.body.dataset.externalNavigate;
     fakeTags([]);
-    fakeSearchIndex();
+    index = fakeSearchIndex();
   });
 
   afterEach(() => {
@@ -160,7 +162,6 @@ describe('Cmd-K search', () => {
 
   it('leaves the index alone while closed, then reloads what changed on the next search', async () => {
     const ember = installEmberBridge();
-    const index = fakeSearchIndex();
     await renderAdminApp('/tags', flagOn);
     await openAndSearch('first');
     await expect.element(globalSearchScreen.option(/First post/)).toBeVisible();
