@@ -18,7 +18,6 @@ import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { navigateEmberBillingSubRoute } from '@/ember-bridge';
 import { useEmberOwnedRouteMatcher } from '@/routes';
 import { getSearchDestination } from './search-destination';
-import { searchShortcutLabel } from './search-shortcut';
 import type { SearchResult } from './searchables';
 import { useGlobalSearch } from './use-global-search';
 
@@ -154,7 +153,7 @@ export default function GlobalSearchModal({ open, onOpenChange }: GlobalSearchMo
             size="xs"
             weight="semibold"
           >
-            Open with {searchShortcutLabel}
+            Open with Ctrl/⌘ + K
           </Text>
         )}
       </DialogContent>

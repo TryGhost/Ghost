@@ -98,7 +98,9 @@ describe('Cmd-K search', () => {
     await globalSearchScreen.openButton().click();
     await expect.element(globalSearchScreen.input()).toHaveFocus();
     await expect.poll(controlledListbox).not.toBeNull();
-    await expect.element(globalSearchScreen.shortcutHint()).toBeVisible();
+    await expect
+      .element(globalSearchScreen.shortcutHint())
+      .toHaveTextContent('Open with Ctrl/⌘ + K');
 
     await globalSearchScreen.search('first');
 
