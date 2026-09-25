@@ -3,9 +3,11 @@ import { Temporal } from 'temporal-polyfill';
 import {
   defaultRefetchRange,
   formatDebugDate,
-  formatIngestionLag,
+  formatDuration,
   formatPublishedDate,
+  formatSyncTime,
   refetchRangeToUtc,
+  secondsBetween,
 } from './format';
 
 describe('debug dates', () => {
@@ -16,6 +18,20 @@ describe('debug dates', () => {
     expect(formatDebugDate('2026-09-10T11:30:01.023+02:00')).toBe('10 Sep, 2026, 09:30:01 UTC');
     expect(formatDebugDate(null)).toBe('N/A');
     expect(formatDebugDate('2026-09-10 11:30:01')).toBe('N/A');
+    expect(formatSyncTime('2026-09-10T11:30:01.023+02:00')).toEqual({
+      date: '10 Sep',
+      time: '09:30:01',
+      offsetNanoseconds: 0,
+    });
+    expect(
+      formatSyncTime('2026-09-10T23:30:01Z', { year: true, timezone: 'Australia/Sydney' }),
+    ).toEqual({ date: '11 Sep 2026', time: '09:30:01', offsetNanoseconds: 36_000_000_000_000 });
+    expect(formatSyncTime(undefined)).toBeNull();
+  });
+
+  it('measures the seconds between two timestamps', () => {
+    expect(secondsBetween('2026-09-10T10:00:00Z', '2026-09-10T10:01:30Z')).toBe(90);
+    expect(secondsBetween('2026-09-10T10:00:00Z', null)).toBeNull();
   });
 
   it('formats publication metadata in the site timezone across a date boundary', () => {
@@ -56,11 +72,11 @@ describe('debug dates', () => {
   });
 });
 
-it('formats ingestion lag without wrapping days and tolerates absent older-backend fields', () => {
-  expect(formatIngestionLag(90061)).toBe('1d 1h 1m 1s');
-  expect(formatIngestionLag(0)).toBe('0s');
-  expect(formatIngestionLag(60)).toBe('1m');
+it('formats durations without wrapping days and tolerates absent older-backend fields', () => {
+  expect(formatDuration(90061)).toBe('1d 1h 1m 1s');
+  expect(formatDuration(0)).toBe('0s');
+  expect(formatDuration(60)).toBe('1m');
   for (const value of [undefined, null, -1, NaN, Infinity]) {
-    expect(formatIngestionLag(value)).toBe('N/A');
+    expect(formatDuration(value)).toBe('N/A');
   }
 });
