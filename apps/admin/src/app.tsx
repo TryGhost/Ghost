@@ -5,6 +5,7 @@ import { EmberProvider, EmberFallback, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
 import { useEmberAuthSync, useEmberDataSync } from './ember-bridge';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
+import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 
 function App() {
   const { data: currentUser } = useCurrentUser();
@@ -12,6 +13,7 @@ function App() {
   // hold on settings, and resolving it before routes mount keeps route guards
   // (e.g. force-upgrade) ahead of screen-level data fetches.
   useBrowseSettings();
+  useAccentColorProperties();
   useEmberAuthSync();
   useEmberDataSync();
 
