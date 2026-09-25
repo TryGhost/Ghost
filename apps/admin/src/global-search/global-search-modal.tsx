@@ -109,18 +109,17 @@ export default function GlobalSearchModal({ open, onOpenChange }: GlobalSearchMo
   };
 
   const hasTerm = term.trim() !== '';
-  const showList = results.length > 0 || hasTerm;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined} className="gap-0 p-0">
         <DialogTitle className="sr-only">Search site</DialogTitle>
         <Command
-          className={cn('sm:rounded-lg', !showList && '[&_[cmdk-input-wrapper]]:border-b-0')}
+          className={cn('sm:rounded-lg', !hasTerm && '[&_[cmdk-input-wrapper]]:border-b-0')}
           shouldFilter={false}
         >
           <CommandInput placeholder="Search site" value={term} onValueChange={setTerm} />
-          {showList && (
+          {hasTerm && (
             <CommandList className="max-h-[50vh]">
               {results.map((group, index) => (
                 <Fragment key={group.groupKey ?? group.groupName}>
@@ -151,12 +150,7 @@ export default function GlobalSearchModal({ open, onOpenChange }: GlobalSearchMo
             </CommandList>
           )}
         </Command>
-        {/* sits on the dialog's always-dark overlay, so it doesn't follow the theme */}
-        <Text
-          className="absolute top-full right-0 mt-1.5 px-2 text-white/90 text-shadow-sm"
-          size="xs"
-          weight="semibold"
-        >
+        <Text className="absolute top-full right-0 mt-1.5 px-2" size="xs" weight="semibold">
           Open with {searchShortcutLabel}
         </Text>
       </DialogContent>
