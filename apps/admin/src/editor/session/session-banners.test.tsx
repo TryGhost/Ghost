@@ -49,7 +49,6 @@ describe('SessionBanners', () => {
       { kind: 'error', intent: 'explicit', error: { kind: 'transport', message: 'Offline' } },
       {
         pendingSave: {
-          awaiting: 'field-commit',
           blockedBy: { kind: 'conflict', message: 'Another writer changed this post.' },
         },
       },
@@ -84,7 +83,6 @@ describe('SessionBanners', () => {
       { kind: 'idle' },
       {
         pendingSave: {
-          awaiting: 'field-commit',
           blockedBy: { kind: 'validation', message: 'At least one author is required.' },
         },
       },

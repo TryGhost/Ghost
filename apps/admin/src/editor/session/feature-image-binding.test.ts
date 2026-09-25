@@ -294,7 +294,7 @@ describe('useFeatureImageBinding through the session', () => {
     act(() => result.current.onFeatureImageAltChange('A field of grass'));
     await settle();
 
-    expect(session.getView().pendingSave).toMatchObject({ awaiting: 'update' });
+    expect(session.getView().pendingSave).toMatchObject({ blockedBy: null });
     expect(state.updates).toHaveLength(0);
     expect(session.isDirty()).toBe(true);
 

@@ -136,7 +136,6 @@ export type PrepareOutcome<P> = { ok: true; prepared: P } | { ok: false; error: 
 /** Unsaved content is independent of the commands currently allowed to execute. */
 export interface PendingSave {
   version: number;
-  awaiting: 'field-commit' | 'debounce' | 'update' | 'preparing' | 'saving' | 'queued';
   blockedBy: SaveError | null;
 }
 
@@ -392,7 +391,7 @@ export function createSaveEngine<
   let frozen: Frozen | null = null;
   let debounce: Timer | null = null;
   let timedCycle: Timer | null = null;
-  // The version controls automatic retries; local validation remains visible until preparation passes.
+  // The version controls automatic retries; local validation lasts until preparation passes or a clean attempt.
   let hold: { version: number; source: 'local-validation' | 'server'; error: SaveError } | null =
     null;
   // A failed retry cannot prove a rejected collision token safe.
@@ -408,23 +407,12 @@ export function createSaveEngine<
     if (!snapshot.isDirty) {
       return null;
     }
-    const awaiting = pending
-      ? 'queued'
-      : debounce || timedCycle
-        ? 'debounce'
-        : inFlight?.submittedVersion === null
-          ? 'preparing'
-          : inFlight?.submittedVersion === snapshot.version
-            ? 'saving'
-            : snapshot.status === 'draft'
-              ? 'field-commit'
-              : 'update';
     const blockedBy =
       frozen?.error ??
       (isStale(snapshot) ? conflict?.error : null) ??
       (hold?.source === 'local-validation' ? hold.error : null) ??
       (state.kind === 'error' ? state.error : null);
-    return { version: snapshot.version, awaiting, blockedBy };
+    return { version: snapshot.version, blockedBy };
   }
 
   function setState(next: SaveEngineState): void {
@@ -640,7 +628,14 @@ export function createSaveEngine<
     return true;
   }
 
+  function releaseValidationOnClean(snapshot: S): void {
+    if (!snapshot.isDirty && hold?.source === 'local-validation') {
+      hold = null;
+    }
+  }
+
   function dropReason(slot: Slot, snapshot: S): DropReason | null {
+    releaseValidationOnClean(snapshot);
     if (!isBackgroundIntent(slot.command.kind)) {
       return null;
     }
@@ -862,6 +857,9 @@ export function createSaveEngine<
         return;
       }
 
+      // A clean refetch can keep the edit version unchanged; release local
+      // validation before the version-based suppression check.
+      releaseValidationOnClean(snapshot);
       const reason = backgroundDropReason(snapshot);
       if (reason) {
         setState(deriveState());

@@ -236,6 +236,25 @@ describe('Post settings authors', () => {
     await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
   });
 
+  it('does not revive the authors warning after undoing their removal', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAuthors();
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Owner User').click();
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Keep the title focused: a later save must not hide a stale warning.
+    await editorScreen.titleInput().fill('Unrelated title edit');
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
   it('holds a new feature image back while the author list is emptied', async () => {
     const saveApi = fakeSavablePost({ feature_image: null });
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {

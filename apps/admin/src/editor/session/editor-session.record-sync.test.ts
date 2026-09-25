@@ -130,7 +130,7 @@ describe('createEditorSession', () => {
     expect(session.recordReloaded(reloaded)).toBe(true);
     expect(recovered).toBe(true);
     expect(session.getFields().title).toBe('Edited after recovery');
-    expect(session.getView().pendingSave).toMatchObject({ awaiting: 'update', blockedBy: null });
+    expect(session.getView().pendingSave).toMatchObject({ blockedBy: null });
     session.dispose();
   });
 

@@ -36,16 +36,15 @@ Email extras (`newsletter`, `emailSegment`, `emailOnly`) ride on exactly that co
 
 `getPendingSave()` derives pending content directly from the current session
 snapshot and the engine's active work. It returns `null` when the document is
-clean, otherwise `{version, awaiting, blockedBy}`. There is no separate edit
+clean, otherwise `{version, blockedBy}`. There is no separate edit
 registration, snapshot cache, or pending-change callback; the session reads this
 view when its document or engine activity changes.
 
-`awaiting` distinguishes a field commit, debounce, Update, preparation, saving,
-and queued work. `blockedBy` holds the error preventing progress, independently
-of that next trigger. Typing can restart a debounce while the document is still
-blocked by validation. An edit can also await a commit while an older version is
-saving. None of these facts requires retaining a runnable command or unresolved
-save promise. Every eligible dispatch builds from the current whole document;
+`blockedBy` holds the error preventing progress. The engine's activity state
+reports preparation, saving, and queued commands separately. Typing can restart
+a debounce while validation blocks the document, and an edit can await a commit
+while an older version is saving. These facts do not require an unresolved save
+promise. Every eligible dispatch builds from the current whole document;
 acknowledgements preserve newer edits.
 
 Local validation in `prepare` completes a background attempt as `blocked`.
@@ -54,7 +53,9 @@ automatic replay of their status/email target. One hold records the validation
 error and attempted version: unrelated edits retain the error, while the version
 controls suppression of unchanged background retries. A passing preparation
 clears a local validation hold, even when the command's target changes without a
-content edit. Subsequent body edits on a blocked new post use the normal debounce
+content edit. A save attempt that finds the document clean also releases local
+validation, including when the version is unchanged or slug work was pending.
+Restoring saved values therefore does not leave a warning for a later edit. Subsequent body edits on a blocked new post use the normal debounce
 instead of preparing a create on every keystroke.
 
 Server validation and host-limit holds keep their existing suppression rules;

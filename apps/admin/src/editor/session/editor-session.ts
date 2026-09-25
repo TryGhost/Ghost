@@ -282,11 +282,10 @@ export function createEditorSession({
     // The UI renders eligibility, not the edit counter: typing more body text
     // must not republish an otherwise unchanged React snapshot.
     const pendingSave =
-      view?.pendingSave?.awaiting === pending?.awaiting &&
       view?.pendingSave?.blockedBy === pending?.blockedBy
         ? (view?.pendingSave ?? null)
         : pending
-          ? { awaiting: pending.awaiting, blockedBy: pending.blockedBy }
+          ? { blockedBy: pending.blockedBy }
           : null;
     const isDirty = getSnapshot().isDirty;
     const currentSlug = machine.getState().slug;

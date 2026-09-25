@@ -19,11 +19,11 @@ describe('session pending saves', () => {
     expect(blocker?.kind).toBe('validation');
 
     session.patchTitle('Unrelated title edit');
-    expect(session.getView().pendingSave).toEqual({ awaiting: 'field-commit', blockedBy: blocker });
+    expect(session.getView().pendingSave).toEqual({ blockedBy: blocker });
     session.patchLexical(body('First body edit'));
     session.dispatchAutosave();
     const debouncingView = session.getView();
-    expect(debouncingView.pendingSave).toEqual({ awaiting: 'debounce', blockedBy: blocker });
+    expect(debouncingView.pendingSave).toEqual({ blockedBy: blocker });
     const listener = vi.fn();
     session.subscribe(listener);
     session.patchLexical(body('Second body edit'));
@@ -55,11 +55,59 @@ describe('session pending saves', () => {
       session.patchLexical(body(`More words ${count}`));
       session.dispatchAutosave();
     }
-    expect(session.getView().pendingSave?.awaiting).toBe('debounce');
     await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
     expect(kinds).not.toContain('saving');
     expect(kinds).not.toContain('pending-coalesced');
     expect(state.creates).toHaveLength(0);
+    session.dispose();
+  });
+
+  it('retires the authors warning when restoring the original authors makes the document clean', async () => {
+    const loaded = record({ authors: [{ id: 'author-1' }] });
+    const { session, state } = sessionHarness(
+      { record: loaded, baseline: loaded.lexical },
+      { applied: serializedFields },
+    );
+    session.patchFields({ authors: [] });
+    session.commitField();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(session.getView().pendingSave?.blockedBy?.kind).toBe('validation');
+    session.patchFields({ authors: [{ id: 'author-1' }] });
+    session.commitField();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(session.isDirty()).toBe(false);
+    expect(session.getView().pendingSave).toBeNull();
+    session.patchTitle('An unrelated title edit');
+    expect(session.getView().pendingSave).toEqual({ blockedBy: null });
+    expect(state.updates).toHaveLength(0);
+    session.dispose();
+  });
+
+  it('keeps the saving view stable when later body edits only change pending version', async () => {
+    const loaded = record();
+    let before: unknown;
+    let after: unknown;
+    const listener = vi.fn();
+    const { session } = sessionHarness(
+      { record: loaded, baseline: loaded.lexical },
+      {
+        applied: serializedFields,
+        duringSave: () => {
+          before = session.getView();
+          const stop = session.subscribe(listener);
+          session.patchLexical(body('Typed during the save'));
+          after = session.getView();
+          stop();
+        },
+      },
+    );
+    session.patchLexical(body('Submitted body'));
+    await session.dispatchExplicit();
+    expect(after).toBe(before);
+    expect(listener).not.toHaveBeenCalled();
+    expect(session.getLiveLexical()).toBe(JSON.stringify(body('Typed during the save')));
+    expect(session.isDirty()).toBe(true);
+    expect(session.getView().pendingSave).toEqual({ blockedBy: null });
     session.dispose();
   });
 
@@ -73,7 +121,7 @@ describe('session pending saves', () => {
     await session.dispatchExplicit();
     expect(session.getView()).toMatchObject({
       isDirty: true,
-      pendingSave: { awaiting: 'field-commit', blockedBy: { kind: 'unknown' } },
+      pendingSave: { blockedBy: { kind: 'unknown' } },
     });
     session.dispose();
   });
@@ -132,7 +180,7 @@ describe('session pending saves', () => {
     await built.session.dispatchExplicit();
     expect(built.state.updates).toHaveLength(1);
     expect(built.state.updates[0].payload.feature_image).toBeNull();
-    expect(built.session.getView().pendingSave).toMatchObject({ awaiting: 'field-commit' });
+    expect(built.session.getView().pendingSave).toMatchObject({ blockedBy: null });
     expect(built.session.getFields().feature_image).toBe('https://example.com/later.png');
 
     built.session.commitField();

@@ -17,7 +17,6 @@ describe('pending content', () => {
     const h = setup();
     expect(h.engine.getPendingSave()).toEqual({
       version: 1,
-      awaiting: 'field-commit',
       blockedBy: null,
     });
     expect(h.engine.getState()).toEqual({ kind: 'idle' });
@@ -34,7 +33,6 @@ describe('pending content', () => {
       await h.engine.dispatch('field');
       expect(h.engine.getPendingSave()).toEqual({
         version: 1,
-        awaiting: 'update',
         blockedBy: null,
       });
       await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
@@ -50,7 +48,6 @@ describe('pending content', () => {
   it('holds an armed autosave and a field commit on the same invalid document', async () => {
     const h = setup();
     const autosave = h.engine.dispatch('autosave');
-    expect(h.engine.getPendingSave()?.awaiting).toBe('debounce');
     h.edit();
     h.prepare.mockResolvedValue({ ok: false, error: validation });
     const field = h.engine.dispatch('field');
@@ -61,7 +58,6 @@ describe('pending content', () => {
     expect(h.engine.getState()).toEqual({ kind: 'idle' });
     expect(h.engine.getPendingSave()).toEqual({
       version: 2,
-      awaiting: 'field-commit',
       blockedBy: validation,
     });
     await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
@@ -76,6 +72,74 @@ describe('pending content', () => {
     expect(h.requests).toHaveLength(1);
     expect(h.requests[0].snapshot.version).toBe(3);
     expect(h.engine.getPendingSave()).toBeNull();
+  });
+
+  it.each(['before-dispatch', 'same-version', 'slug-settled', 'slug-generated'])(
+    'releases local validation when a correction is clean at %s',
+    async (when) => {
+      const h = setup();
+      h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
+      await h.engine.dispatch('field');
+      if (when !== 'same-version') {
+        h.edit();
+      }
+      if (when === 'before-dispatch' || when === 'same-version') {
+        h.patch({ isDirty: false });
+        await expect(h.engine.dispatch('field')).resolves.toEqual({
+          kind: 'dropped',
+          reason: 'clean',
+        });
+      } else if (when === 'slug-settled') {
+        const release = h.holdSlugWork();
+        const correction = h.engine.dispatch('field');
+        h.patch({ isDirty: false });
+        await release();
+        await expect(correction).resolves.toEqual({ kind: 'dropped', reason: 'clean' });
+      } else {
+        h.holdSlugRequests();
+        const correction = h.engine.dispatch('field');
+        await flush();
+        h.patch({ isDirty: false });
+        await h.resolveSlug('hello', 'unchanged');
+        await expect(correction).resolves.toEqual({ kind: 'dropped', reason: 'clean' });
+      }
+      expect(h.engine.getPendingSave()).toBeNull();
+      h.edit();
+      expect(h.engine.getPendingSave()?.blockedBy).toBeNull();
+      expect(h.prepare).toHaveBeenCalledTimes(1);
+      expect(h.execute).not.toHaveBeenCalled();
+    },
+  );
+
+  it('starts a corrected new post immediately after a clean validation exit', async () => {
+    const h = setup({ id: null, updatedAt: null });
+    h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
+    await h.engine.dispatch('field');
+    h.patch({ isDirty: false });
+    await h.engine.dispatch('field');
+    h.edit();
+    const save = h.engine.dispatch('autosave');
+    await flush();
+    expect(h.requests).toHaveLength(1);
+    await h.succeed();
+    await expect(save).resolves.toMatchObject({ kind: 'saved' });
+  });
+
+  it('keeps server suppression when a same-version snapshot becomes clean', async () => {
+    const h = setup();
+    const save = h.engine.dispatch('field');
+    await h.fail(validation);
+    await save;
+    h.patch({ isDirty: false });
+    await expect(h.engine.dispatch('field')).resolves.toEqual({
+      kind: 'dropped',
+      reason: 'suppressed',
+    });
+    h.patch({ isDirty: true });
+    await expect(h.engine.dispatch('field')).resolves.toEqual({
+      kind: 'dropped',
+      reason: 'suppressed',
+    });
   });
 
   it('holds invalid body autosaves without entering a save error', async () => {
@@ -97,22 +161,20 @@ describe('pending content', () => {
     h.edit();
     expect(h.engine.getPendingSave()).toEqual({
       version: 2,
-      awaiting: 'field-commit',
       blockedBy: validation,
     });
 
     const save = h.engine.dispatch('autosave');
     expect(h.engine.getPendingSave()).toEqual({
       version: 2,
-      awaiting: 'debounce',
       blockedBy: validation,
     });
     const seen: Array<ReturnType<typeof h.engine.getPendingSave>> = [];
     h.engine.subscribe(() => seen.push(h.engine.getPendingSave()));
     await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
     expect(seen).toEqual([
-      { version: 2, awaiting: 'preparing', blockedBy: validation },
-      { version: 2, awaiting: 'saving', blockedBy: null },
+      { version: 2, blockedBy: validation },
+      { version: 2, blockedBy: null },
     ]);
     await h.succeed();
     await save;
@@ -174,14 +236,12 @@ describe('pending content', () => {
     expect(h.engine.getState().kind).toBe('saving');
     expect(h.engine.getPendingSave()).toEqual({
       version: 2,
-      awaiting: 'field-commit',
       blockedBy: null,
     });
     await h.succeed();
     await first;
     expect(h.engine.getPendingSave()).toEqual({
       version: 2,
-      awaiting: 'field-commit',
       blockedBy: null,
     });
     expect(h.execute).toHaveBeenCalledTimes(1);
@@ -234,13 +294,12 @@ describe('pending content', () => {
     const retry = h.engine.dispatch('schedule', { publishedAt: FUTURE });
     await flush();
     expect(h.requests).toHaveLength(1);
-    expect(h.engine.getPendingSave()).toEqual({ version: 1, awaiting: 'saving', blockedBy: null });
+    expect(h.engine.getPendingSave()).toEqual({ version: 1, blockedBy: null });
 
     await h.fail(transport);
     await expect(retry).resolves.toMatchObject({ kind: 'failed', error: transport });
     expect(h.engine.getPendingSave()).toEqual({
       version: 1,
-      awaiting: 'field-commit',
       blockedBy: transport,
     });
   });

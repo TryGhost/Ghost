@@ -63,7 +63,7 @@ body edits dispatch `autosave`. The engine owns when these requests may run.
 | Status                           | Background save request                                         | Persisted by             |
 | -------------------------------- | --------------------------------------------------------------- | ------------------------ |
 | `draft`                          | Runs immediately for a field commit, or after the body debounce | The eligible save        |
-| `published`, `scheduled`, `sent` | Retains pending content awaiting `update`                       | Explicit Update or Cmd-S |
+| `published`, `scheduled`, `sent` | Retains pending content until Update                            | Explicit Update or Cmd-S |
 
 Pending content is separate from the runnable queue. It includes edits awaiting
 a field commit, the autosave debounce, Update, validation, or recovery, and can
@@ -84,7 +84,7 @@ Its content stays pending; its publish/schedule/email target is not retained for
 automatic retry. Correcting the document and committing requests a new save that
 combines its current values. Unchanged invalid versions suppress background
 retries; an explicit retry still revalidates. Unrelated edits retain the warning
-until a preparation succeeds. Body edits on a blocked new post debounce too,
+until a preparation succeeds or a save attempt finds the document clean. Body edits on a blocked new post debounce too,
 and preparation occupies the save slot without displaying “Saving…”.
 
 Failures never discard pending content. Server validation, network errors and
@@ -225,8 +225,8 @@ way back in and the content stays untouched.
 
 ## The view React subscribes to
 
-The session publishes one cached view — the engine state, pending-save waiting
-and blocking information,
+The session publishes one cached view — the engine state, pending-save
+blocking information,
 dirtiness, title, slug, settings and publish time — and republishes it only
 when one of those values changes. Pending content is read on demand after
 tracker changes, including save errors that make a clean document dirty. The nested settings and publish-time
