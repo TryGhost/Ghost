@@ -6,8 +6,9 @@ export const UNREACHABLE_MESSAGE =
   'Unable to connect, please check your internet connection and try again.';
 export const CONFLICT_MESSAGE =
   'Someone else has edited this post since you opened it. Reload the editor to get their changes before publishing.';
-export const REAUTH_MESSAGE =
-  'Your session expired. Sign in again in a new tab, then try publishing again.';
+export const REAUTH_MESSAGE = 'Your session was restored. Confirm again to publish.';
+export const SESSION_ABANDONED_MESSAGE =
+  'Your session expired. Confirm again to sign in and publish.';
 export const UNKNOWN_MESSAGE = 'Unknown Error';
 export const DROPPED_MESSAGE = 'This post can no longer be published from here. Reload the editor.';
 
@@ -58,7 +59,7 @@ export function describeCompletionFailure(completion: SaveCompletion): Completio
     case 'conflict':
       return { message: CONFLICT_MESSAGE };
     case 'session-invalid':
-      return { message: REAUTH_MESSAGE };
+      return { message: SESSION_ABANDONED_MESSAGE };
     case 'host-limit':
       return {
         message: error.message || UNKNOWN_MESSAGE,

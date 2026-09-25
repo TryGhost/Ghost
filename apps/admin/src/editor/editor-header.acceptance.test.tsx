@@ -576,19 +576,48 @@ describe('Editor header actions', () => {
     expect(submittedPost(saveApi, 1)).toMatchObject({ status: 'published' });
   });
 
-  it('holds the publish flow on the confirm step when the session expired', async () => {
+  it('holds the publish on the confirm step until the writer signs in again', async () => {
     publishChrome();
     const saveApi = fakeSavablePost({}, { failWith: 401 });
+    const sessionApi = fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
 
-    await expect.element(editorScreen.reauthBanner()).toHaveTextContent('Your session expired');
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
     // The engine holds the publish until the session is restored, so the flow waits with it.
     await expect.element(publishScreen.confirm()).toBeVisible();
     await expect(publishScreen.complete()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(1);
+
+    // Saves answer again: declared after the expired fake, so it takes over from it.
+    const restoredApi = fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), ({ body }) => ({
+      posts: [
+        {
+          ...post({ id: POST_ID, title: 'Hello from React', slug: 'hello-from-react' }),
+          ...(body as { posts: Partial<SavedPost>[] }).posts[0],
+          updated_at: '2026-01-01T00:00:01.000Z',
+        },
+      ],
+    }));
+    await editorScreen.reauthPassword().fill('hunter22');
+    await editorScreen.reauthSignIn().click();
+
+    // A status change is never sent unasked: the flow asks for the confirm again.
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    expect(sessionApi.requests).toHaveLength(1);
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('Your session was restored. Confirm again to publish.');
+    await expect(publishScreen.complete()).toHaveCount(0);
+    expect(restoredApi.requests).toHaveLength(0);
+
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeVisible();
+    expect(submittedPost(restoredApi)).toMatchObject({ id: POST_ID, status: 'published' });
+    expect(restoredApi.requests).toHaveLength(1);
   });
 
   it('reports a collision in the publish flow and sends nothing more', async () => {

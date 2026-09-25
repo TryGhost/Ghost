@@ -198,8 +198,8 @@ and caption into the live document and saves them explicitly, so the server
 keeps a version of what was replaced. The tracker is told about the restore only
 once that save lands. A save that is refused puts the post back as it was —
 content, title and slug — and reports the failure. A restore that meets an
-expired session is rolled back rather than left frozen, because the re-auth
-controls are behind the history modal.
+expired session waits behind the sign-in dialog, which sits above the history
+modal, and lands once the session is back; abandoning the sign-in rolls it back.
 
 A restore is a document boundary for the slug: the restored title is not a title
 the writer typed, so the slug is kept rather than moved to it, and whether it
@@ -226,6 +226,20 @@ version it first read.
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
 way back in and the content stays untouched.
+
+## Signing in again without leaving
+
+A save that finds the session gone freezes the queue and opens a sign-in dialog
+over the editor (`reauth-dialog.tsx`); the content stays on screen behind it and
+nothing navigates. The writer's email is already filled in and only the password
+is asked for; the credentials go to the session endpoint and nowhere else. A site
+that requires a sign-in code turns the dialog into a second step that asks for
+the emailed code. A wrong password or code is named inside the dialog and nothing
+else changes. Once the session is back the held save goes out on its own; a
+status change it was carrying, such as a publish, is re-confirmed rather than
+sent unasked. Clicking outside the dialog does nothing; Escape or Cancel abandons
+it, which moves the queue to the save-error banner with the content kept, and the
+banner's retry brings the dialog back.
 
 ## The view React subscribes to
 

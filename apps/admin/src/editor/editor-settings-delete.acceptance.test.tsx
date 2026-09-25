@@ -271,7 +271,7 @@ describe('Post settings delete', () => {
     await expect
       .element(editorScreen.settingsDeleteError())
       .toHaveTextContent(
-        'Your session expired. Sign in again in a new tab, then try deleting again.',
+        'Your session expired. Delete again to sign in and continue.',
       );
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     await editorScreen.cancelSettingsDelete().click();
