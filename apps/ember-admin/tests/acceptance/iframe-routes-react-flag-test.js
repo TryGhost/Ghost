@@ -8,9 +8,6 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
-// The `iframeRoutesReact` flag hands /site and /migrate/* to the React app.
-// Ember's side of that handshake is each route's beforeModel: it aborts so
-// the Ember screen stays unrendered and parks the router on react-fallback.
 describe('Acceptance: iframe routes React flag', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
@@ -83,6 +80,24 @@ describe('Acceptance: iframe routes React flag', function () {
             await settled();
 
             expect(navigate.calledOnceWith('/site')).to.be.true;
+        });
+
+        it('navigates React when Ember initiates a migrate transition', async function () {
+            await signInAs(this.server, 'Administrator');
+            const route = this.owner.lookup('route:migrate');
+            const navigate = sinon.stub(route, '_navigateToReactRoute');
+
+            await visit('/tags');
+            try {
+                await this.owner.lookup('service:router').transitionTo('migrate.migrate', 'substack');
+            } catch (error) {
+                if (error?.message !== 'TransitionAborted') {
+                    throw error;
+                }
+            }
+            await settled();
+
+            expect(navigate.calledOnceWith('/migrate/substack')).to.be.true;
         });
 
         it('keeps staff without admin access out of /migrate', async function () {

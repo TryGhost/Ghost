@@ -5,7 +5,7 @@ import './matchers';
 import { defaultBootResolver, defaultBootRoutes } from './boot';
 import { resetFakeApi, settleRequests, startFakeApi, verifyNoUnhandledRequests } from './worker';
 import { resetDeclaredResources } from './resources';
-import { resetFakeFrameOrigins } from './frames';
+import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
 
 beforeAll(async () => {
   // Playwright waits for an element to stop moving before it acts on it, so every
@@ -22,6 +22,7 @@ beforeAll(async () => {
   document.head.appendChild(style);
 
   await startFakeApi({ resolver: defaultBootResolver, routes: defaultBootRoutes() });
+  await guardFrameNavigations();
 });
 
 afterEach(async () => {
@@ -36,9 +37,9 @@ afterEach(async () => {
   } finally {
     resetFakeApi();
     resetDeclaredResources();
-    await resetFakeFrameOrigins();
     sessionStorage.clear();
     window.location.hash = '';
     verifyNoUnhandledRequests();
+    await resetFakeFrameOrigins();
   }
 });

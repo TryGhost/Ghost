@@ -1,24 +1,18 @@
 import { AdminPage } from './admin-page';
 import { FrameLocator, Locator, Page } from '@playwright/test';
-
-export const MIGRATION_APP_ORIGIN = 'https://migrate.ghost.org';
+import { closeMigrateButton, migrateFrame } from '@tryghost/test-data/selectors/migrate';
 
 export class MigratePage extends AdminPage {
   readonly migrationAppFrame: Locator;
   readonly migrationApp: FrameLocator;
+  readonly closeButton: Locator;
 
   constructor(page: Page) {
     super(page);
     this.pageUrl = '/ghost/#/migrate';
-    this.migrationAppFrame = page.getByTitle('Migrate');
+    // Case-insensitive: the Ember frame is titled "migrate".
+    this.migrationAppFrame = page.getByTitle(migrateFrame);
     this.migrationApp = this.migrationAppFrame.contentFrame();
-  }
-
-  /** Serves `html` in place of the external migration app. */
-  async fakeMigrationApp(html: string): Promise<void> {
-    await this.page.route(
-      (url) => url.origin === MIGRATION_APP_ORIGIN,
-      (route) => route.fulfill({ contentType: 'text/html', body: html }),
-    );
+    this.closeButton = page.getByRole('button', { name: closeMigrateButton, exact: true });
   }
 }

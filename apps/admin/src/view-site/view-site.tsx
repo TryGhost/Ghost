@@ -14,12 +14,14 @@ function SiteFrame({ siteUrl }: { siteUrl: string }) {
   const [src] = useState(() => siteFrameUrl(siteUrl, Date.now()));
 
   return (
-    <iframe
-      className="absolute inset-0 size-full border-0"
-      data-view-site-preview=""
-      src={src}
-      title="Site preview"
-    />
+    <div className="relative size-full">
+      <iframe
+        className="absolute inset-0 size-full border-0"
+        data-view-site-preview=""
+        src={src}
+        title="Site preview"
+      />
+    </div>
   );
 }
 

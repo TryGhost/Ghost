@@ -1,6 +1,8 @@
 import { MigratePage } from '@/admin-pages';
 import { expect, test } from '@/helpers/playwright';
 
+const MIGRATION_APP_ORIGIN = 'https://migrate.ghost.org';
+
 // Stands in for the migration app: asks Admin for its credentials, shows what
 // it received, and can send Admin back to the migration settings.
 const migrationAppStandIn = `<!doctype html><body>
@@ -35,13 +37,17 @@ for (const react of [false, true]) {
       const { integrations } = (await response.json()) as IntegrationsResponse;
       const migrationKey = integrations.find(({ slug }) => slug === 'self-serve-migration')
         ?.api_keys[0].secret;
+      await page.route(
+        (url) => url.origin === MIGRATION_APP_ORIGIN,
+        (route) => route.fulfill({ contentType: 'text/html', body: migrationAppStandIn }),
+      );
 
       const migratePage = new MigratePage(page);
-      await migratePage.fakeMigrationApp(migrationAppStandIn);
       await migratePage.goto('/ghost/#/migrate/substack');
 
       const initialData = migratePage.migrationApp.locator('#initial-data');
       await expect(initialData).not.toBeEmpty();
+      await expect(migratePage.closeButton).toBeVisible({ visible: react });
       expect(JSON.parse((await initialData.textContent()) ?? '')).toEqual({
         apiUrl: `${new URL(baseURL ?? '').origin}/ghost`,
         apiKey: migrationKey,

@@ -14,9 +14,7 @@ export default class MigrateRoute extends AuthenticatedRoute {
             return this.transitionTo('index');
         }
 
-        // React owns /migrate/* when the flag is on. See MembersActivityRoute
-        // for why the aborted transition parks on react-fallback without a
-        // URL update.
+        // React owns /migrate/* when the flag is on; parking keeps Ember's route state honest.
         if (this.feature.iframeRoutesReact !== true) {
             return;
         }

@@ -110,6 +110,11 @@ const Migrate = () => {
     return () => window.removeEventListener('message', handleMessage);
   }, [csvContentImporter, fetchApi, ghostVersion, isEmberOwned, navigate, stripe]);
 
+  // The credentials reply reads settings, so the app only loads once they have.
+  if (!settingsData) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-background">
       <iframe

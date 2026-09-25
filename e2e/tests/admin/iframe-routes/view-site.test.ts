@@ -14,6 +14,7 @@ for (const react of [false, true]) {
       const sitePage = new SitePage(page);
       await sitePage.waitForPageToFullyLoad();
       await expect(sitePage.sitePreview.contentFrame().locator('body.home-template')).toBeVisible();
+      await expect(sitePage.emberSitePreview).toHaveCount(react ? 0 : 1);
     });
   });
 }

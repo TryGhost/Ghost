@@ -5,8 +5,7 @@ export default class SiteRoute extends AuthenticatedRoute {
     @service feature;
     @service router;
 
-    // React owns /site when the flag is on. See MembersActivityRoute for why
-    // the aborted transition parks on react-fallback without a URL update.
+    // React owns /site when the flag is on; parking keeps Ember's route state honest.
     beforeModel(transition) {
         const result = super.beforeModel(...arguments);
         if (this.feature.iframeRoutesReact !== true) {

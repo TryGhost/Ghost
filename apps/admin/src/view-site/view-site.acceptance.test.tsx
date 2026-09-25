@@ -1,12 +1,16 @@
 import { describe, expect, it, onTestFinished } from 'vitest';
-import { page } from 'vitest/browser';
-import { fakeFrameOrigin, renderAdminApp, siteResponse } from '@test-utils/acceptance';
+import {
+  emberScreenShown,
+  fakeFrameOrigin,
+  renderAdminApp,
+  siteResponse,
+} from '@test-utils/acceptance';
+import { viewSiteScreen } from './view-site.screen';
 
 const SITE_URL = String(siteResponse().site.url);
 const SITE_ORIGIN = new URL(SITE_URL).origin;
 
-// Reports each page the frame loads, since the test cannot read a
-// cross-origin frame's location.
+// Reports each page the frame loads; a cross-origin frame's location is unreadable.
 const siteStandIn = `<!doctype html><script>
   parent.postMessage({ siteFrameLoaded: location.href }, '*');
 </script>`;
@@ -23,20 +27,14 @@ function loadedSitePages(): string[] {
   return pages;
 }
 
-const siteFrame = () => page.getByTitle('Site preview');
-
 describe('View site', () => {
   it.each([false, undefined])('leaves the page with Ember when the flag is %s', async (enabled) => {
     await renderAdminApp('/site', {
       labs: enabled === undefined ? {} : { iframeRoutesReact: enabled },
     });
 
-    // There is no Ember runtime in this tier; the shell exposes its host
-    // instead.
-    await expect
-      .poll(() => document.getElementById('ember-app')?.parentElement?.hidden)
-      .toBe(false);
-    await expect.element(siteFrame()).not.toBeInTheDocument();
+    await expect.poll(emberScreenShown).toBe(true);
+    await expect.element(viewSiteScreen.frame()).not.toBeInTheDocument();
   });
 
   it('shows the site homepage without the admin toolbar', async () => {
@@ -50,6 +48,7 @@ describe('View site', () => {
     expect(loaded.searchParams.get('admin')).toBe('1');
     expect(loaded.searchParams.get('admin_toolbar')).toBe('0');
     expect(loaded.searchParams.get('v')).toMatch(/^\d+$/);
+    expect(emberScreenShown()).toBe(false);
   });
 
   it('returns to the homepage when View site is clicked again', async () => {
@@ -58,11 +57,11 @@ describe('View site', () => {
     await renderAdminApp('/site', { labs: { iframeRoutesReact: true } });
     await expect.poll(() => pages.length).toBe(1);
 
-    const frame = siteFrame().element() as HTMLIFrameElement;
+    const frame = viewSiteScreen.frame().element() as HTMLIFrameElement;
     frame.contentWindow?.location.replace(`${SITE_ORIGIN}/about/`);
     await expect.poll(() => pages.at(-1)).toBe(`${SITE_ORIGIN}/about/`);
 
-    await page.getByRole('link', { name: 'View site', exact: true }).click();
+    await viewSiteScreen.navLink().click();
 
     await expect.poll(() => pages.length).toBe(3);
     expect(new URL(pages[2]).pathname).toBe('/');

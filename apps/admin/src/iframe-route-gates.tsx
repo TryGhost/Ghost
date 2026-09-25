@@ -3,18 +3,15 @@ import { lazy } from 'react';
 import { lazyMigrateScreen } from './migrate/api';
 import { lazyViewSiteScreen } from './view-site/api';
 
-/**
- * Serves `/site` and `/migrate/*` from React when the `iframeRoutesReact`
- * Labs flag is on, and from Ember otherwise. The gating semantics (loading,
- * error, and flag branching) live in FlagGatedRoute.
- */
 const ViewSiteReact = lazy(lazyViewSiteScreen);
 const MigrateReact = lazy(lazyMigrateScreen);
 
+/** Serves `/site` from React when `iframeRoutesReact` is on, Ember otherwise. */
 export function ViewSiteGate() {
   return <FlagGatedRoute component={ViewSiteReact} flag="iframeRoutesReact" />;
 }
 
+/** Serves `/migrate/*` from React when `iframeRoutesReact` is on, Ember otherwise. */
 export function MigrateGate() {
   return <FlagGatedRoute component={MigrateReact} flag="iframeRoutesReact" />;
 }

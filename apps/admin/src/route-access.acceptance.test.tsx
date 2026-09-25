@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
 
 import {
   allowUnhandledRequests,
@@ -13,6 +12,7 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import type { StaffRoleName } from '@tryghost/test-data';
+import { migrateScreen } from '@/migrate/migrate.screen';
 
 function asRole(name: StaffRoleName): RenderAdminAppOptions {
   const me = currentUserResponse();
@@ -91,7 +91,7 @@ describe('Route access', () => {
         });
 
         await expect.poll(currentRoute).toBe('/');
-        await expect.element(page.getByTitle('Migrate')).not.toBeInTheDocument();
+        await expect.element(migrateScreen.frame()).not.toBeInTheDocument();
       },
     );
   });

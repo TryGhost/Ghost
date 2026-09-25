@@ -1,44 +1,60 @@
-import { describe, expect, it, onTestFinished } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished } from 'vitest';
 import { page } from 'vitest/browser';
 import {
   allowUnhandledRequests,
+  configResponse,
   currentRoute,
+  emberScreenShown,
   fakeFrameOrigin,
   fakeIntegrations,
   fakeUsers,
   renderAdminApp,
+  settingsResponse,
   staffRole,
   staffUser,
 } from '@test-utils/acceptance';
 import type { Integration } from '@tryghost/admin-x-framework/api/integrations';
+import { sidebarScreen } from '@/layout/sidebar.screen';
+import { migrateScreen } from './migrate.screen';
 
 const MIGRATE_ORIGIN = 'https://migrate.ghost.org';
 const flagOn = { labs: { iframeRoutesReact: true } };
 
-// Stands in for the migration app: reports its URL, relays every message it
-// receives back to Admin's window, then runs `script`.
+// Stands in for the migration app: reports each load with its own id, echoes
+// pings with that id, relays every other message back to Admin's window, then
+// runs `script`.
 function migrateStandIn(script = '') {
   return `<!doctype html><script>
-    window.addEventListener('message', (event) => parent.postMessage({ received: event.data }, '*'));
-    parent.postMessage({ loaded: location.href }, '*');
+    const loadId = Math.random().toString(36).slice(2);
+    window.addEventListener('message', (event) => {
+      if (event.data?.ping) {
+        parent.postMessage({ pong: loadId }, '*');
+        return;
+      }
+      parent.postMessage({ received: event.data }, '*');
+    });
+    parent.postMessage({ loaded: location.href, loadId }, '*');
     ${script}
   </script>`;
 }
 
 interface StandInMessage {
   loaded?: string;
+  loadId?: string;
+  pong?: string;
   received?: { request: string; response: Record<string, unknown> };
 }
 
 function standInMessages(): StandInMessage[] {
   const messages: StandInMessage[] = [];
   const listener = (event: MessageEvent<StandInMessage | null>) => {
+    const data = event.data;
     if (
       event.origin === MIGRATE_ORIGIN &&
-      event.data &&
-      ('loaded' in event.data || 'received' in event.data)
+      data &&
+      ('loaded' in data || 'pong' in data || 'received' in data)
     ) {
-      messages.push(event.data);
+      messages.push(data);
     }
   };
   window.addEventListener('message', listener);
@@ -77,20 +93,22 @@ function selfServeMigration(secret: string): Integration {
 const siteOwner = () =>
   staffUser({ email: 'owner@example.com', roles: [staffRole({ name: 'Owner' })] });
 
-const migrateFrame = () => page.getByTitle('Migrate');
+const externalNavigation = (): unknown =>
+  JSON.parse(document.body.dataset.externalNavigate ?? 'null');
 
 describe('Migrate', () => {
+  // The recorded handoff lives on the host page, which outlives a single test.
+  beforeEach(() => {
+    delete document.body.dataset.externalNavigate;
+  });
+
   it.each([false, undefined])('leaves the page with Ember when the flag is %s', async (enabled) => {
     await renderAdminApp('/migrate/substack', {
       labs: enabled === undefined ? {} : { iframeRoutesReact: enabled },
     });
 
-    // There is no Ember runtime in this tier; the shell exposes its host
-    // instead.
-    await expect
-      .poll(() => document.getElementById('ember-app')?.parentElement?.hidden)
-      .toBe(false);
-    await expect.element(migrateFrame()).not.toBeInTheDocument();
+    await expect.poll(emberScreenShown).toBe(true);
+    await expect.element(migrateScreen.frame()).not.toBeInTheDocument();
   });
 
   it('opens the migration app for the chosen platform', async () => {
@@ -99,9 +117,7 @@ describe('Migrate', () => {
     await renderAdminApp('/migrate/substack', flagOn);
 
     await expect.poll(() => messages[0]?.loaded).toBe(`${MIGRATE_ORIGIN}/?platform=substack`);
-    await expect
-      .element(page.getByRole('link', { name: 'View site', exact: true }))
-      .not.toBeInTheDocument();
+    await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
   });
 
   it('sends the migration app its credentials when asked', async () => {
@@ -112,7 +128,20 @@ describe('Migrate', () => {
       migrateStandIn(`parent.postMessage({ request: 'apiUrl' }, '*');`),
     );
     const messages = standInMessages();
-    await renderAdminApp('/migrate', flagOn);
+    await renderAdminApp('/migrate', {
+      ...flagOn,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: {
+              stripe_connect_account_id: 'acct_123',
+              stripe_connect_publishable_key: 'pk_live_123',
+              stripe_connect_livemode: true,
+            },
+          }),
+        },
+      },
+    });
 
     await expect
       .poll(() => messages.find((message) => message.received)?.received)
@@ -121,9 +150,9 @@ describe('Migrate', () => {
         response: {
           apiUrl: `${window.location.origin}/ghost`,
           apiKey: 'ssm-secret',
-          stripe: false,
+          stripe: true,
           csvContentImporter: false,
-          ghostVersion: '6.52',
+          ghostVersion: String(configResponse().config.version).split('.').slice(0, 2).join('.'),
           ownerEmail: 'owner@example.com',
         },
       });
@@ -147,23 +176,39 @@ describe('Migrate', () => {
       .toBeVisible();
   });
 
-  it('follows the routes the migration app sends without reloading it', async () => {
+  it('follows migration routes without reloading the app', async () => {
     await fakeFrameOrigin(
       MIGRATE_ORIGIN,
       migrateStandIn(`parent.postMessage({ route: '/migrate/beehiiv' }, '*');`),
     );
     const messages = standInMessages();
     await renderAdminApp('/migrate/substack', flagOn);
-
     await expect.poll(currentRoute).toBe('/migrate/beehiiv');
-    await expect.element(migrateFrame()).toBeInTheDocument();
+
+    const frame = migrateScreen.frame().element() as HTMLIFrameElement;
+    frame.contentWindow?.postMessage({ ping: true }, MIGRATE_ORIGIN);
+
+    await expect
+      .poll(() => messages.find((message) => message.pong)?.pong)
+      .toBe(messages[0]?.loadId);
     expect(messages.filter((message) => message.loaded)).toHaveLength(1);
+  });
+
+  it('hands routes Ember owns to Ember', async () => {
+    await fakeFrameOrigin(
+      MIGRATE_ORIGIN,
+      migrateStandIn(`parent.postMessage({ route: '/pro' }, '*');`),
+    );
+    await renderAdminApp('/migrate', flagOn);
+
+    await expect.poll(externalNavigation).toMatchObject({ route: '/pro', isExternal: true });
   });
 
   it('ignores messages from other origins', async () => {
     await fakeFrameOrigin(MIGRATE_ORIGIN, migrateStandIn());
+    const messages = standInMessages();
     await renderAdminApp('/migrate', flagOn);
-    await expect.element(migrateFrame()).toBeInTheDocument();
+    await expect.poll(() => messages.length).toBeGreaterThan(0);
 
     // Handled in order, so honouring the second would supersede the first.
     window.dispatchEvent(
@@ -185,9 +230,9 @@ describe('Migrate', () => {
     await fakeFrameOrigin(MIGRATE_ORIGIN, migrateStandIn());
     await renderAdminApp('/migrate/substack', flagOn);
 
-    await page.getByRole('button', { name: 'Close' }).click();
+    await migrateScreen.closeButton().click();
 
     await expect.poll(currentRoute).toBe('/settings/migration');
-    await expect.element(migrateFrame()).not.toBeInTheDocument();
+    await expect.element(migrateScreen.frame()).not.toBeInTheDocument();
   });
 });
