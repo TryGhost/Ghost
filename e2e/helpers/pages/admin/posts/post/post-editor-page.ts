@@ -174,6 +174,12 @@ class PublishFlow extends BasePage {
     await this.closeButton.click();
   }
 
+  /** The complete step offers no Close button; Escape dismisses the dialog. */
+  async dismiss(): Promise<void> {
+    await this.page.keyboard.press('Escape');
+    await this.modal.waitFor({ state: 'hidden' });
+  }
+
   async selectPublishType(type: PublishType): Promise<void> {
     await this.publishTypeButton.click();
 
