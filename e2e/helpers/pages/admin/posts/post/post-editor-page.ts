@@ -408,6 +408,13 @@ export class PostEditorPage extends AdminPage {
     await this.page.keyboard.type(text);
   }
 
+  /** Selects the whole body and types over it. */
+  async replaceBody(text: string): Promise<void> {
+    await this.lexicalEditor.click();
+    await this.page.keyboard.press('ControlOrMeta+a');
+    await this.page.keyboard.type(text);
+  }
+
   async revertToDraft(): Promise<void> {
     await this.updateFlowButton.click();
     await this.revertToDraftButton.click();
