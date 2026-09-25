@@ -6,6 +6,8 @@ import {
   codeInjectionHeadLabel,
   codeInjectionPageFootLabel,
   codeInjectionPageHeadLabel,
+  settingsCodeInjectionBackButton,
+  settingsCodeInjectionRow,
 } from '@tryghost/test-data/selectors/editor';
 
 import {
@@ -34,8 +36,6 @@ const PAGE_ROUTE = new RegExp(`^/pages/${POST_ID}/\\?`);
 // The panel's own width, and the width the wide pane widens it to.
 const PANEL_WIDTH = 350;
 const WIDE_PANEL_WIDTH = 500;
-const BACK_LABEL = 'Close code injection panel';
-const ROW_LABEL = 'Code injection';
 
 const POLL = { timeout: 10_000 };
 
@@ -102,7 +102,7 @@ function footEditor() {
 async function openCodeInjection() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-  await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+  await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
   await expect.element(headEditor()).toBeVisible();
   await expect.element(footEditor()).toBeVisible();
@@ -138,11 +138,11 @@ describe('Post settings code injection', () => {
     await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
     expect(sidebarWidthPx()).toBe(WIDE_PANEL_WIDTH);
 
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsCodeInjectionBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsCodeInjectionRow)).toBeVisible();
     // The panel goes back to the width the section list is shown at.
     await expect.poll(sidebarWidthPx).toBe(PANEL_WIDTH);
   });
@@ -153,11 +153,13 @@ describe('Post settings code injection', () => {
     await openCodeInjection();
 
     // Opening a pane leaves the writer on its back button.
-    await expect.element(editorScreen.settingsSubviewBack(BACK_LABEL)).toHaveFocus();
+    await expect
+      .element(editorScreen.settingsSubviewBack(settingsCodeInjectionBackButton))
+      .toHaveFocus();
     await userEvent.keyboard('{Escape}');
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsCodeInjectionRow)).toBeVisible();
   });
 
   it('keeps the pane open on Escape inside an editor', async () => {
@@ -196,7 +198,7 @@ describe('Post settings code injection', () => {
     await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-    await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+    await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
 
     await expect
       .element(editorScreen.settingsCodeInjection(codeInjectionPageHeadLabel))
@@ -274,14 +276,14 @@ describe('Post settings code injection', () => {
 
     await typeInto(headEditor(), '<script>onClose();</script>');
     await expect.element(headEditor()).toHaveFocus();
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsCodeInjectionBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect(saveApi).toHaveSavedFields({
       codeinjection_head: '<script>onClose();</script>',
     });
 
-    await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+    await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
     await expect.element(headEditor()).toHaveTextContent('<script>onClose();</script>');
   });
 

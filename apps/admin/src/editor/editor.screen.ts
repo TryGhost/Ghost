@@ -102,6 +102,7 @@ import {
   stayInEditorButton,
   tkIndicator,
   toggleFeatureImageAltButton,
+  unsplashSearchHeading,
   unsplashSearchModal,
 } from '@tryghost/test-data/selectors/editor';
 
@@ -297,7 +298,7 @@ export const editorScreen = {
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),
   featureImageUnsplashButton: () => page.getByRole('button', { name: featureImageUnsplashButton }),
   /** The Unsplash search modal, wherever the picker that opened it sits. */
-  unsplashModal: () => page.getByRole('heading', { name: 'Unsplash' }),
+  unsplashModal: () => page.getByRole('heading', { name: unsplashSearchHeading }),
   unsplashSearch: () => page.getByTestId(unsplashSearchModal),
   unsplashSearchInput: () => page.getByPlaceholder('Search free high-resolution photos'),
   unsplashInsertImage: () => page.getByTestId(unsplashSearchModal).getByText('Insert image'),
