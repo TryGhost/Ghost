@@ -12,6 +12,7 @@ import {
   tag,
 } from '@test-utils/acceptance';
 
+import type { EmberDataChangeEvent } from '@/ember-bridge';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 
@@ -23,18 +24,20 @@ const handoff = () =>
   JSON.parse(document.body.dataset.externalNavigate ?? 'null') as { route: string } | null;
 
 function fakeSearchIndex() {
-  fakeAdminEndpoint('GET', '/search-index/posts/', {
-    posts: [{ id: 'p1', title: 'First post', status: 'draft' }],
-  });
-  fakeAdminEndpoint('GET', '/search-index/pages/', {
-    pages: [{ id: 'g1', title: 'First page', status: 'published' }],
-  });
-  fakeAdminEndpoint('GET', '/search-index/tags/', {
-    tags: [{ id: 't1', slug: 'first-tag', name: 'First tag' }],
-  });
-  fakeAdminEndpoint('GET', '/search-index/users/', {
-    users: [{ id: 'u1', slug: 'first-user', name: 'First user' }],
-  });
+  return {
+    posts: fakeAdminEndpoint('GET', '/search-index/posts/', {
+      posts: [{ id: 'p1', title: 'First post', status: 'draft' }],
+    }),
+    pages: fakeAdminEndpoint('GET', '/search-index/pages/', {
+      pages: [{ id: 'g1', title: 'First page', status: 'published' }],
+    }),
+    tags: fakeAdminEndpoint('GET', '/search-index/tags/', {
+      tags: [{ id: 't1', slug: 'first-tag', name: 'First tag' }],
+    }),
+    users: fakeAdminEndpoint('GET', '/search-index/users/', {
+      users: [{ id: 'u1', slug: 'first-user', name: 'First user' }],
+    }),
+  };
 }
 
 function withBilling(): RenderAdminAppOptions {
@@ -51,19 +54,34 @@ function withBilling(): RenderAdminAppOptions {
   return { ...flagOn, boot: { browseConfig: { response: config } } };
 }
 
-/** The Ember half of the state bridge, with the billing handoff this feature calls. */
+/** The Ember half of the state bridge: the billing handoff, and saves Ember reports. */
 function installEmberBridge() {
   const navigateToBillingSubRoute = vi.fn();
+  const dataChangeHandlers = new Set<(event: EmberDataChangeEvent) => void>();
   const state = {
-    on: () => {},
-    off: () => {},
+    on: (event: string, callback: (event: EmberDataChangeEvent) => void) => {
+      if (event === 'emberDataChange') {
+        dataChangeHandlers.add(callback);
+      }
+    },
+    off: (_event: string, callback: (event: EmberDataChangeEvent) => void) => {
+      dataChangeHandlers.delete(callback);
+    },
     sidebarVisible: true,
     getRouteUrl: (routeName: string) => routeName,
     isRouteActive: () => false,
     navigateToBillingSubRoute,
   };
   window.EmberBridge = { state } as unknown as typeof window.EmberBridge;
-  return navigateToBillingSubRoute;
+
+  return {
+    navigateToBillingSubRoute,
+    reportSave: (modelName: string) => {
+      dataChangeHandlers.forEach((handler) =>
+        handler({ operation: 'update', modelName, id: 'p1', data: null }),
+      );
+    },
+  };
 }
 
 /** The listbox the input's `aria-controls` names, or null when it isn't in the DOM. */
@@ -83,10 +101,12 @@ async function closeWithEscape() {
 }
 
 describe('Cmd-K search', () => {
+  let index: ReturnType<typeof fakeSearchIndex>;
+
   beforeEach(() => {
     delete document.body.dataset.externalNavigate;
     fakeTags([]);
-    fakeSearchIndex();
+    index = fakeSearchIndex();
   });
 
   afterEach(() => {
@@ -138,6 +158,25 @@ describe('Cmd-K search', () => {
     await globalSearchScreen.clickAt(globalSearchScreen.shortcutHint());
 
     await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
+  });
+
+  it('leaves the index alone while closed, then reloads what changed on the next search', async () => {
+    const ember = installEmberBridge();
+    await renderAdminApp('/tags', flagOn);
+    await openAndSearch('first');
+    await expect.element(globalSearchScreen.option(/First post/)).toBeVisible();
+    await closeWithEscape();
+
+    ember.reportSave('post');
+    // no request can follow a save while search is closed; allow time for one to start
+    await new Promise((resolve) => {
+      setTimeout(resolve, 300);
+    });
+    expect(index.posts.requests).toHaveLength(1);
+
+    await openAndSearch('first');
+    await expect.element(globalSearchScreen.option(/First post/)).toBeVisible();
+    expect(index.posts.requests).toHaveLength(2);
   });
 
   it('starts empty each time it opens', async () => {
@@ -204,7 +243,7 @@ describe('Cmd-K search', () => {
   });
 
   it('sends a billing result for the billing route on screen straight to the billing app', async () => {
-    const navigateToBillingSubRoute = installEmberBridge();
+    const { navigateToBillingSubRoute } = installEmberBridge();
     await renderAdminApp('/pro/plans', withBilling());
     await openAndSearch('plan');
 
