@@ -196,6 +196,8 @@ export function useEditorSession({
     autosaveDebounceMs.current = bootedDebounceMs(configData?.config.editorAutosaveDebounceMs);
   });
 
+  // Construction must start no timer, request or outside subscription:
+  // StrictMode may call this twice and discard the first session undisposed.
   const [session] = useState<EditorSession>(() =>
     createEditorSession({
       record,

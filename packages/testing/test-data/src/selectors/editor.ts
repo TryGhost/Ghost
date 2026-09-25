@@ -156,6 +156,7 @@ export const showTitleLearnMoreLink = 'Learn more';
 export const addFeatureImageLabel = 'Add feature image';
 export const featureImageAltLabel = 'Alt text for feature image';
 export const featureImageUnsplashButton = 'Select feature image from Unsplash';
+export const unsplashSearchHeading = 'Unsplash';
 export const removeFeatureImageButton = 'Remove feature image';
 export const addFacebookImageLabel = 'Add Facebook image';
 export const removeFacebookImageButton = 'Remove Facebook image';
@@ -191,3 +192,16 @@ export const codeInjectionHeadLabel = 'Post header';
 export const codeInjectionFootLabel = 'Post footer';
 export const codeInjectionPageHeadLabel = 'Page header';
 export const codeInjectionPageFootLabel = 'Page footer';
+export const settingsCodeInjectionRow = 'Code injection';
+export const settingsCodeInjectionBackButton = 'Close code injection panel';
+export const settingsMetaDataRow = 'Meta data';
+export const settingsMetaDataBackButton = 'Close meta data panel';
+export const settingsXCardRow = 'X card';
+export const settingsXCardBackButton = 'Close X card panel';
+export const settingsFacebookCardRow = 'Facebook card';
+export const settingsFacebookCardBackButton = 'Close Facebook card panel';
+export const settingsKeyboardShortcutsRow = 'Keyboard shortcuts';
+export const settingsKeyboardShortcutsBackButton = 'Close keyboard shortcuts panel';
+
+// text fragments
+export const settingsTagsCreateText = 'Create';

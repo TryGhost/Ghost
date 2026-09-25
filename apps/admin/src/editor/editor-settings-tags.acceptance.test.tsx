@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import { settingsTagsCreateText } from '@tryghost/test-data/selectors/editor';
 
 import {
   currentUserResponse,
@@ -185,7 +186,7 @@ describe('Post settings tags', () => {
     await openTagList();
 
     await editorScreen.settingsTagsInput().fill('Culture');
-    await editorScreen.settingsTagOption('Create “Culture”').click();
+    await editorScreen.settingsTagOption(`${settingsTagsCreateText} “Culture”`).click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     // Named, not created first: an abandoned edit leaves no stray tag behind.
@@ -252,7 +253,9 @@ describe('Post settings tags', () => {
 
     // A comma is an ordinary character in a tag name, not a separator.
     await editorScreen.settingsTagsInput().fill('Arts, Culture');
-    await expect.element(editorScreen.settingsTagOption(/Create/)).toBeVisible();
+    await expect
+      .element(editorScreen.settingsTagOption(new RegExp(settingsTagsCreateText)))
+      .toBeVisible();
     await userEvent.keyboard('{Tab}');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);

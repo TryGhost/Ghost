@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import { settingsXCardBackButton, settingsXCardRow } from '@tryghost/test-data/selectors/editor';
 
 import {
   UNSPLASH_PICKED,
@@ -25,7 +26,6 @@ const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
-const BACK_LABEL = 'Close X card panel';
 const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';
 const FEATURE = 'https://example.com/content/images/2026/09/coast.png';
 // The site fixture's own description, which the card falls back to last.
@@ -75,7 +75,7 @@ function fakeImageUpload() {
 async function openXCard() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-  await editorScreen.settingsSubviewRow('X card').click();
+  await editorScreen.settingsSubviewRow(settingsXCardRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }
 
@@ -111,9 +111,9 @@ describe('Post settings X card', () => {
         );
         await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
         await expect.element(editorScreen.settingsXImageInput()).toBeDisabled();
-        await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+        await editorScreen.settingsSubviewBack(settingsXCardBackButton).click();
         await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-        await editorScreen.settingsSubviewRow('X card').click();
+        await editorScreen.settingsSubviewRow(settingsXCardRow).click();
         await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
         await expect.element(editorScreen.settingsXImageInput()).toBeDisabled();
         await expect.element(editorScreen.settingsXImageUnsplashButton()).toBeDisabled();
@@ -143,11 +143,11 @@ describe('Post settings X card', () => {
     await expect.element(editorScreen.settingsXDescription()).toBeVisible();
     await expect.element(editorScreen.settingsXImage()).toBeVisible();
 
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsXCardBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow('X card')).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsXCardRow)).toBeVisible();
   });
 
   it('saves an uploaded X image as soon as it lands', async () => {

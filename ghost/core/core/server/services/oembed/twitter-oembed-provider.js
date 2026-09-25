@@ -45,10 +45,10 @@ class TwitterOEmbedProvider {
       return null;
     }
 
-    const { extract } = require('@extractus/oembed-extractor');
+    const { extractOembed } = require('./extract-oembed');
 
     /** @type {object} */
-    const oembedData = await extract(url.href);
+    const oembedData = await extractOembed(url.href, { fetch: externalRequest.fetch });
 
     if (this.dependencies.config.bearerToken) {
       const query = {

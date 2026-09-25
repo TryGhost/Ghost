@@ -6,12 +6,13 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { isMacPlatform } from '@/utils/is-mac-platform';
+import { useOpenGlobalSearch } from '@/global-search/global-search-context';
+import { searchShortcutLabel } from '@/global-search/search-shortcut';
 
 const ctrlOrCmd = isMacPlatform() ? 'command' : 'ctrl';
-const searchShortcut = ctrlOrCmd === 'command' ? '⌘K' : 'Ctrl+K';
 
-// Search is currently handled by the Ember app, firing a keyboard event avoids needing to sync state
-const openSearchModal = (event: React.MouseEvent<HTMLButtonElement>) => {
+// Without the globalSearchReact flag, search is handled by the Ember app, and firing a keyboard event avoids needing to sync state
+const openEmberSearchModal = (event: React.MouseEvent<HTMLButtonElement>) => {
   event.preventDefault();
   const searchShortcutEvent = new KeyboardEvent('keydown', {
     key: 'k',
@@ -30,6 +31,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
   const siteIcon = site.data?.site.icon ?? 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png';
   const isPrivate = getSettingValue<boolean>(settings.data?.settings, 'is_private') ?? false;
   const showSearch = currentUser && !isContributorUser(currentUser);
+  const openGlobalSearch = useOpenGlobalSearch();
 
   return (
     <SidebarHeader {...props}>
@@ -61,7 +63,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
           <Button
             className="flex h-(--control-height) items-center justify-between rounded-full border-transparent bg-white pr-2 text-base text-muted-foreground shadow-xs hover:bg-background hover:text-gray-700 hover:shadow-sm dark:border-gray-900/50 dark:bg-gray-900/30 dark:hover:border-gray-900/80 dark:hover:text-gray-400 [&_svg]:stroke-2"
             variant="outline"
-            onClick={openSearchModal}
+            onClick={openGlobalSearch ?? openEmberSearchModal}
           >
             <div className="flex items-center gap-2">
               <LucideIcon.Search className="text-muted-foreground" />
@@ -71,7 +73,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
               className="bg-transparent text-gray-500 shadow-none dark:text-gray-800"
               style={{ textShadow: 'none' }}
             >
-              {searchShortcut}
+              {searchShortcutLabel}
             </Kbd>
           </Button>
         )}

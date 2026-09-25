@@ -15,7 +15,7 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  NODE_VERSION: 22.23.1
+  NODE_VERSION: 22.23.3
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -228,7 +228,7 @@ jobs:
         # test:unit's Nx cache is keyed on `node -v` (nx.json) so each leg runs.
         id: node_matrix
         run: |
-          echo 'matrix=["22.23.1", "24.20.0"]' >> $GITHUB_OUTPUT
+          echo "matrix=[\"${NODE_VERSION}\", \"24.20.0\"]" >> $GITHUB_OUTPUT
 
       - name: Start Nx Cloud CI run
         run: pnpm nx start-ci-run
@@ -1255,19 +1255,20 @@ jobs:
             echo "::error::IS_SHIPPING is set but VITE_SENTRY_AUTH_TOKEN is empty — Koenig sourcemaps would not reach Sentry"
             exit 1
           fi
-          # Builds apps/admin/dist AND ghost/core/core/built/admin (asset-delivery).
+          # Builds apps/admin/dist, ghost/core/core/built/admin (asset-delivery),
+          # and ghost/core/core/built/embed-renderer (separate-origin previews).
           pnpm nx run @tryghost/admin:build
 
-      # The built admin (ghost/core/core/built/admin) is consumed by both job_pack
-      # (packed into the Ghost-CLI archive) and job_docker (COPYed into the full
-      # image). Ship it as a tarball to preserve file modes and speed transfer.
+      # The built admin and embed renderer are consumed by both job_pack (packed
+      # into the Ghost-CLI archive) and job_docker (COPYed into the full image).
+      # Ship them as a tarball to preserve file modes and speed transfer.
       #
       # --exclude '*.map': admin sourcemaps (~60MB) are uploaded to Sentry during
       # the build (IS_SHIPPING), not shipped in the image. ghost/core's `files`
       # field strips them from the Ghost-CLI archive (!core/built/**/*.map), so
       # excluding them here matches that for the Docker image too.
       - name: Pack admin build
-        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/core/built admin
+        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/core/built admin embed-renderer
 
       - name: Upload admin build artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -1346,7 +1347,8 @@ jobs:
           name: admin-build
 
       - name: Extract admin build
-        # The archive includes core/built/admin via ghost/core's files allowlist.
+        # The archive includes core/built/admin and core/built/embed-renderer via
+        # ghost/core's files allowlist.
         run: |
           mkdir -p ghost/core/core/built
           tar -xzf admin-build.tar.gz -C ghost/core/core/built
@@ -1575,9 +1577,9 @@ jobs:
           path: ${{ runner.temp }}/admin-artifact
 
       - name: Extract admin build into context
-        # The full stage COPYs ghost/core/core/built/admin from the context; the
-        # deploy stage excludes core/built entirely, so admin never leaks into core
-        # and adding it is the only context change between the core and full builds.
+        # The full stage COPYs the admin and embed renderer from the context; the
+        # deploy stage excludes core/built entirely, so neither leaks into core and
+        # adding them is the only context change between the core and full builds.
         run: |
           mkdir -p ghost/core/core/built
           tar -xzf "${RUNNER_TEMP}/admin-artifact/admin-build.tar.gz" -C ghost/core/core/built
@@ -1587,8 +1589,8 @@ jobs:
         env:
           BUILDKIT_PROGRESS: plain
         with:
-          # Same repo-root context as core (admin now present at
-          # ghost/core/core/built/admin, excluded by the deploy stage) so the
+          # Same repo-root context as core (admin and embed renderer now present
+          # under ghost/core/core/built, excluded by the deploy stage) so the
           # deploy/install/build layers cache-hit from the core build above.
           context: .
           file: Dockerfile.production

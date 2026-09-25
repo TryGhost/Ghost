@@ -32,10 +32,11 @@ compose.yml
 .codex
 .cursor
 
-# NOTE: core/built/admin is intentionally NOT ignored — the production image's
-# `full` stage COPYs it from the build context, where CI injects the admin build
-# artifact. The `core` stage copies from the deploy stage (which never builds
-# admin), so a stray local admin build cannot leak into the core image.
+# NOTE: core/built/admin and core/built/embed-renderer are intentionally NOT
+# ignored — the production image's `full` stage COPYs them from the build
+# context, where CI injects the admin build artifact. The `core` stage copies
+# from the deploy stage (which never builds either), so stray local builds cannot
+# leak into the core image.
 
 # Ignore local config files (.json and .jsonc)
 ghost/core/config.local.json*

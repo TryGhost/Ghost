@@ -117,6 +117,7 @@ window.ReactDOM = ReactDOM;
 export default Route.extend(ShortcutsRoute, {
     ajax: service(),
     configManager: service(),
+    feature: service(),
     ghostPaths: service(),
     notifications: service(),
     router: service(),
@@ -243,6 +244,11 @@ export default Route.extend(ShortcutsRoute, {
         },
 
         openSearchModal() {
+            // React owns Cmd-K search while this flag is on
+            if (this.feature.globalSearchReact) {
+                return;
+            }
+
             // Don't open the search modal if the sidebar is hidden
             // e.g. in the editor or settings screens
             if (this.ui.isFullScreen) {
