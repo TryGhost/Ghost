@@ -1,0 +1,74 @@
+import { useId } from 'react';
+import { FieldError, Label } from '@tryghost/shade/components';
+import { Text } from '@tryghost/shade/primitives';
+import {
+  settingsPublishDate,
+  settingsPublishDateError,
+  settingsPublishDateNote,
+  settingsPublishTime,
+} from '@tryghost/test-data/selectors/editor';
+import { DateTimePicker } from '@/editor/date-time-picker';
+import { useSiteTimezone } from '@/editor/use-editor-settings';
+import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from '@/editor/session/settings-fields';
+import type { EditorSettingsPort } from './editor-settings-port';
+import { SettingsSection } from './settings-section';
+
+/** A scheduled post is re-timed from the publish menu, not from here. */
+const RESCHEDULE_NOTE = 'Use the publish menu to re-schedule';
+
+export interface PublishDateSectionProps {
+  session: EditorSettingsPort;
+}
+
+/**
+ * When the post is published, in the site's timezone. A post that carries no
+ * publish time yet shows now, and only an edit stages a value.
+ */
+export function PublishDateSection({ session }: PublishDateSectionProps) {
+  const errorId = useId();
+  const labelId = useId();
+  const timezone = useSiteTimezone();
+
+  const { status, publishedAt } = session.publishTime;
+  // Read per render: a value fixed at mount goes stale, and the calendar's cap
+  // with it, as soon as the site's day turns over.
+  const now = new Date().toISOString();
+  const value = publishedAt ?? now;
+
+  const isScheduled = status === 'scheduled';
+  const isPastScheduled = isScheduled && !!publishedAt && Date.parse(publishedAt) < Date.now();
+  const invalid = publishedAtInFuture(status, publishedAt);
+
+  return (
+    <SettingsSection>
+      <Label id={labelId}>
+        {isScheduled && !isPastScheduled ? 'Scheduled date' : 'Publish date'}
+      </Label>
+      <DateTimePicker
+        dateLabel="Publish date"
+        dateTestId={settingsPublishDate}
+        describedBy={invalid ? errorId : undefined}
+        disabled={isScheduled}
+        invalid={invalid}
+        labelledBy={labelId}
+        // Ember caps the calendar at today; a past publish time is the rule.
+        maxDate={now}
+        timeLabel="Publish time"
+        timeTestId={settingsPublishTime}
+        timezone={timezone}
+        value={value}
+        onChange={(date) => session.editPublishedAt(date.toISOString())}
+      />
+      {invalid ? (
+        <FieldError data-testid={settingsPublishDateError} id={errorId}>
+          {PUBLISHED_AT_MUST_BE_PAST}
+        </FieldError>
+      ) : null}
+      {isScheduled && !isPastScheduled ? (
+        <Text data-testid={settingsPublishDateNote} size="sm" tone="secondary">
+          {RESCHEDULE_NOTE}
+        </Text>
+      ) : null}
+    </SettingsSection>
+  );
+}

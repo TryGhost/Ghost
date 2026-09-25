@@ -4,6 +4,41 @@ Renders newsletter emails, splits them into recipient batches, and submits the
 batches to the configured email provider. Domain terms live in
 [CONTEXT.md](CONTEXT.md).
 
+## Job lifecycle
+
+New sends, retries, and boot recovery dispatch a data-only `SendEmailJob`
+containing the email ID through the class-based jobs service. Boot injects
+that service and registers `EmailService.handleSendEmailJob`, which delegates
+to `BatchSendingService.emailJob`. The batch sender refetches the email and
+acquires its status lock before preparing or submitting batches. See the
+[jobs guide](../../../../../../docs/codebase/jobs.md#queues) for queue isolation
+and concurrency limits.
+
+`scheduleEmail()` waits for dispatch to complete, not for submission. The
+current in-memory backend provides no durable acceptance guarantee and drops
+dispatches after shutdown starts without rejecting them. Email status records
+the sending outcome; a job handler returning does not imply submission, since
+it may have skipped the send, recorded a failure, or stopped for shutdown.
+
+Shutdown first stops workers from claiming new batches. The batch sender's
+separate cleanup task waits for active batch preparation and submission even
+if the jobs backend's shutdown wait times out. This tracking currently ends
+before the final email status write. On boot, recovery reschedules eligible
+interrupted sends within `bulkEmail:resumeMaxAgeMs` and skips batches already
+submitted.
+
+## Testing
+
+Tests that publish or retry a newsletter should mock the email provider and
+await `waitForEmailStatus(emailId)` from
+[`test/utils/batch-email-utils.js`](../../../../test/utils/batch-email-utils.js)
+before restoring mocks or deleting fixtures. The helper returns on either
+`submitted` or `failed`, so assert the expected status explicitly.
+
+A terminal email status describes the send's outcome; it does not prove that
+every competing retry or job attempting the status lock has finished. Tests
+which create competing attempts must also wait for those attempts to settle.
+
 ## Sending status
 
 The sending status served by the Admin API's `emails/:id/status` endpoint is
@@ -22,15 +57,18 @@ attempts, so a retried email reports submitting with frozen progress while it
 waits for its job, and `failed_during` is the same derivation applied to a
 failed email.
 
-The rough ETA extrapolates from a rolling window of recently completed batches:
-their creation times while preparing and their update times while submitting.
-It is `0` once nothing remains in the current phase, always `null` for failed
-emails, and otherwise `null` until at least two batches with distinct
-timestamps have completed in the current attempt. A batch that failed during
-the current attempt is only retried together with its email, so it does not
-count as remaining work; the ETA can therefore reach `0` while completed is
-still below total, and consumers should key completion on the status, never
-on the ETA.
+The rough ETA measures recent recipient throughput, including work completed by
+concurrent workers. It stays `null` until enough timing samples are available in
+the current phase and attempt, so short sends may finish without showing an ETA.
+The rate uses the last minute of completions, including the interval crossing
+the window boundary. Early estimates use the available history. Sparse sends
+retain at least two measured intervals.
+Progress counts update independently of the estimate.
+
+The ETA is always `null` for failed emails and `0` once no work remains in the
+current phase. Batches that failed during the current attempt are not remaining
+work until the email is retried, so the ETA can reach `0` while completed is
+still below total. Consumers should key completion on the status, never the ETA.
 
 Ghost does not record when a sending attempt or phase started, so the ETA uses
 the email's `updated_at` as a proxy for the start of the current attempt: the

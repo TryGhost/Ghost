@@ -11,6 +11,6 @@ import * as sinon from 'sinon';
  * Returns the sinon clock — `clock.tick()`/`clock.tickAsync()` advance time;
  * `clock.restore()` (or `sinon.restore()`) undoes it.
  */
-export function mockSystemTime(now = Date.now()) {
+export function mockSystemTime(now: number | Date = Date.now()) {
   return sinon.useFakeTimers({ now, toFake: ['Date'] });
 }

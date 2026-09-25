@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
 import { DbMetafield, FIELD_STATUS } from '../members-metafields/schema';
+import { MEMBER_ACCESS, type MemberAccess } from '../members-metafields';
 import type { Metafield, RequestContext } from '../members-metafields';
 import {
   MAX_CHECKOUT_LABEL_LENGTH,
@@ -40,7 +41,18 @@ import { CheckoutConfigInput } from './serializers';
 
 type FieldRow = Pick<z.infer<typeof DbMetafield>, 'key' | 'name' | 'type' | 'status'>;
 
-type NewField = { key: string; name: string; type: FieldType };
+type NewField = { key: string; name: string; type: FieldType; access: { member: MemberAccess } };
+
+/**
+ * What a member may do with a field this service creates for them.
+ *
+ * The opposite of the default a publisher-made field gets. These hold what the member
+ * themselves gave at checkout, and collection can be switched on while the screen for
+ * opening a field to members is not, since the two sit behind different flags. A closed
+ * default would then leave a member unable to correct their own address and nobody able
+ * to open it for them.
+ */
+const COLLECTED_FIELD_ACCESS = { member: MEMBER_ACCESS.write } as const;
 
 /**
  * A request states its settings in named sections: one for shipping, one for phone. Each
@@ -228,7 +240,12 @@ export class TierCheckoutConfigService {
         });
       }
       if (!alreadyPlanned) {
-        create.set(key, { key, name: wants.name, type: wants.type });
+        create.set(key, {
+          key,
+          name: wants.name,
+          type: wants.type,
+          access: COLLECTED_FIELD_ACCESS,
+        });
       }
     }
 

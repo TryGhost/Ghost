@@ -238,7 +238,7 @@ module.exports = class CustomThemeSettingsService {
       return [];
     }
 
-    let removedIds = [];
+    const removedIds = [];
 
     // sync any knownSettings that have changed in the theme
     for (const knownSetting of knownSettings) {

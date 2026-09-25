@@ -48,7 +48,10 @@ type QueryHookOptions<ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
-  /** Whether this query leaves an expired session for its caller to handle in place. */
+  /**
+   * Whether this query leaves an expired session for its caller to handle in place.
+   * Applies to fetches this call site initiates, not to shared cache entries it joins.
+   */
   requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
 };
 
@@ -61,7 +64,7 @@ export const createQuery =
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
-    const hasPermission = usePermission(options.permissions);
+    const hasPermission = usePermission(options.permissions, { requestOptions });
 
     const result = useQuery<ResponseData>({
       ...query,
@@ -121,7 +124,10 @@ type InfiniteQueryHookOptions<ResponseData, PageData = ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
-  /** Whether this query leaves an expired session for its caller to handle in place. */
+  /**
+   * Whether this query leaves an expired session for its caller to handle in place.
+   * Applies to fetches this call site initiates, not to shared cache entries it joins.
+   */
   requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
   getNextPageParams?: (
     data: PageData,
@@ -139,7 +145,7 @@ export const createInfiniteQuery =
   }: InfiniteQueryHookOptions<ResponseData, PageData> = {}) => {
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
-    const hasPermission = usePermission(options.permissions);
+    const hasPermission = usePermission(options.permissions, { requestOptions });
 
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 

@@ -25,6 +25,10 @@
   dir: packages/adapters/scheduling-base
   intents:
     - brown-rules-cut
+"@tryghost/adapter-base-scheduling@0.2.4":
+  dir: packages/adapters/scheduling-base
+  intents:
+    - sweet-eggs-joke
 "@tryghost/adapter-base-sso@0.1.1":
   dir: packages/adapters/sso-base
   intents:
@@ -64,6 +68,12 @@
   intents:
     - common-squids-argue
     - six-parents-shout
+"@tryghost/kg-default-cards@10.3.6":
+  dir: koenig/kg-default-cards
+  intents:
+    - early-elephants-press
+    - plain-parsers-share
+    - tidy-sdk-bump-cards
 "@tryghost/kg-default-nodes@2.1.4":
   dir: koenig/kg-default-nodes
   intents:
@@ -97,6 +107,10 @@
   intents:
     - common-squids-argue
     - six-parents-shout
+"@tryghost/kg-lexical-html-renderer@1.5.1":
+  dir: koenig/kg-lexical-html-renderer
+  intents:
+    - tame-shirts-float
 "@tryghost/kg-markdown-html-renderer@7.2.4":
   dir: koenig/kg-markdown-html-renderer
   intents:
@@ -119,6 +133,10 @@
   intents:
     - common-squids-argue
     - four-rings-relate
+"@tryghost/koenig-lexical@1.10.0":
+  dir: koenig/koenig-lexical
+  intents:
+    - koenig-style-export
 "@tryghost/koenig-lexical@1.9.0":
   dir: koenig/koenig-lexical
   intents:

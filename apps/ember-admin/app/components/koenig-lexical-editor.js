@@ -340,8 +340,8 @@ export default class KoenigLexicalEditor extends Component {
 
     ReactComponent = (props) => {
         const fetchEmbed = async (url, {type}) => {
-            let oembedEndpoint = this.ghostPaths.url.api('oembed');
-            let response = await this.ajax.request(oembedEndpoint, {
+            const oembedEndpoint = this.ghostPaths.url.api('oembed');
+            const response = await this.ajax.request(oembedEndpoint, {
                 data: {url, type}
             });
             return response;
@@ -494,6 +494,7 @@ export default class KoenigLexicalEditor extends Component {
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             klipy: this.config.klipy?.apiKey ? this.config.klipy : null,
+            embedPreviewUrl: this.config.security?.embedPreviewUrl || undefined,
             fetchAutocompleteLinks,
             fetchEmbed,
             fetchLabels,

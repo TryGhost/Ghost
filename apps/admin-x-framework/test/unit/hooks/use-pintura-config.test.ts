@@ -60,6 +60,15 @@ describe('usePinturaConfig', () => {
     expect(result.current).toBeNull();
   });
 
+  it('forwards request options to both queries', () => {
+    const options = { requestOptions: { sessionExpiryRedirect: false } };
+
+    renderHook(() => usePinturaConfig(options));
+
+    expect(mockUseBrowseConfig).toHaveBeenCalledWith(options);
+    expect(mockUseBrowseSettings).toHaveBeenCalledWith(options);
+  });
+
   it('returns null when pintura is enabled but missing one or more urls', () => {
     mockGetSettingValues.mockReturnValue([true, 'https://cdn.example.com/pintura.js', undefined]);
 

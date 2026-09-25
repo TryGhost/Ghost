@@ -1,6 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
-  humanizeLexicalDiff,
   lexicalEquals,
   LexicalParseError,
   normalizeLexicalForCompare,
@@ -96,6 +95,34 @@ describe('normalizeLexicalForCompare', () => {
     expect(normalizeLexicalForCompare('')).toBe('[]');
     expect(normalizeLexicalForCompare(doc([]))).toBe('[]');
   });
+
+  it('parses a repeated document once', () => {
+    // The cache outlives one test, so the text below belongs to this test alone.
+    const input = JSON.stringify(doc([paragraph('repeated document')]));
+    const parse = vi.spyOn(JSON, 'parse');
+
+    try {
+      const first = normalizeLexicalForCompare(input);
+      const parsesForFirst = parse.mock.calls.length;
+      const second = normalizeLexicalForCompare(input);
+
+      expect(parsesForFirst).toBeGreaterThan(0);
+      expect(parse.mock.calls.length).toBe(parsesForFirst);
+      expect(second).toBe(first);
+    } finally {
+      parse.mockRestore();
+    }
+  });
+
+  it('normalises an object input again after it is mutated in place', () => {
+    const node = paragraph('mutable document');
+    const input = doc([node]);
+
+    const before = normalizeLexicalForCompare(input);
+    node.children[0].text = 'mutated document';
+
+    expect(normalizeLexicalForCompare(input)).not.toBe(before);
+  });
 });
 
 describe('lexicalEquals', () => {
@@ -166,7 +193,6 @@ describe('parseLexical', () => {
       expect(() => parseLexical(invalid)).toThrow(LexicalParseError);
       expect(() => lexicalEquals(invalid, doc([]))).toThrow(LexicalParseError);
       expect(() => lexicalEquals(doc([]), invalid)).toThrow(LexicalParseError);
-      expect(() => humanizeLexicalDiff(invalid, doc([]))).toThrow(LexicalParseError);
     },
   );
 
@@ -325,52 +351,5 @@ describe('lexicalEquals with a site url', () => {
 
     expect(lexicalEquals(absolute, relative, 'https://site.example')).toBe(true);
     expect(lexicalEquals(absolute, relative)).toBe(false);
-  });
-});
-
-describe('humanizeLexicalDiff', () => {
-  it('annotates numeric path segments with the node type from the source document', () => {
-    const from = doc([paragraph('Hello')]);
-    const to = doc([paragraph('Hello world')]);
-
-    expect(humanizeLexicalDiff(from, to)).toEqual([
-      {
-        type: 'CHANGE',
-        path: 'root.children.0[paragraph].children.0[extended-text].text',
-        value: 'Hello world',
-        oldValue: 'Hello',
-      },
-    ]);
-  });
-
-  it('reports added blocks with a CREATE entry and removed blocks with a REMOVE entry', () => {
-    const one = doc([paragraph('A')]);
-    const two = doc([paragraph('A'), paragraph('B')]);
-
-    expect(humanizeLexicalDiff(one, two)).toEqual([
-      { type: 'CREATE', path: 'root.children.1', value: stripDirection(paragraph('B')) },
-    ]);
-    expect(humanizeLexicalDiff(two, one)).toEqual([
-      {
-        type: 'REMOVE',
-        path: 'root.children.1[paragraph]',
-        oldValue: stripDirection(paragraph('B')),
-      },
-    ]);
-  });
-
-  it('ignores direction-only differences', () => {
-    expect(humanizeLexicalDiff(doc([paragraph('A')]), doc([paragraph('A', 'ltr')], 'ltr'))).toEqual(
-      [],
-    );
-  });
-
-  it('accepts serialized strings and missing documents', () => {
-    expect(humanizeLexicalDiff(JSON.stringify(doc([paragraph('A')])), null)).toEqual([
-      { type: 'REMOVE', path: 'root', oldValue: stripDirection(doc([paragraph('A')]).root) },
-    ]);
-    expect(humanizeLexicalDiff(null, doc([paragraph('A')]))).toEqual([
-      { type: 'CREATE', path: 'root', value: stripDirection(doc([paragraph('A')]).root) },
-    ]);
   });
 });

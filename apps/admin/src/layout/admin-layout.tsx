@@ -4,46 +4,46 @@ import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
-import { useAdmin7 } from '@/layout/use-admin7';
 import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
+import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
 
 const networkPageChrome = {
-  contentClassName: 'admin7:max-w-(--content-width)',
+  contentClassName: 'max-w-(--content-width)',
   contentGutter: 'var(--page-gutter)',
 };
 
-const admin7PageChromeClassName = [
-  'admin7:[&_.max-w-page]:max-w-(--content-width)',
-  'admin7:[&_[data-list-page=list-page]]:px-(--page-gutter)',
-  'admin7:[&_[data-detail-page=detail-page]]:px-(--page-gutter)',
-  'admin7:[&_[data-list-page=header]]:-mx-(--page-gutter)',
-  'admin7:[&_[data-list-page=header]]:px-(--page-gutter)',
-  'admin7:[&_[data-list-page=header]]:pt-[28px]',
-  'admin7:[&_[data-detail-page=header]]:pt-[28px]',
-  'admin7:[&_[data-network-header=header]]:pt-[8px]',
-  'admin7:[&_[data-page-header=main]]:flex-wrap',
-  'admin7:[&_[data-page-header=left]]:h-auto',
-  'admin7:[&_[data-page-header=left]]:max-w-full',
-  'admin7:[&_.admin-x-container-error]:bg-background',
-  'admin7:[&_.gh-canvas]:max-w-(--content-width)',
-  'admin7:[&_.gh-canvas]:px-(--page-gutter)',
-  'admin7:[&_.gh-main-width]:max-w-(--content-width)',
-  'admin7:[&_.gh-main-width]:px-(--page-gutter)',
-  'admin7:[&_.gh-canvas-header]:-mx-(--page-gutter)',
-  'admin7:[&_.gh-canvas-header]:px-(--page-gutter)',
-  'admin7:[&_.gh-canvas-header]:pt-[28px]!',
-  'admin7:[&_.gh-canvas-header]:pb-[28px]!',
-  'admin7:[&_[data-view-site-preview]]:inset-y-2!',
-  'admin7:[&_[data-view-site-preview]]:right-2!',
-  'admin7:[&_[data-view-site-preview]]:left-0!',
-  'admin7:[&_[data-view-site-preview]]:h-[calc(100%-16px)]!',
-  'admin7:[&_[data-view-site-preview]]:w-[calc(100%-8px)]!',
-  'admin7:[&_[data-view-site-preview]]:rounded-xl!',
-  'admin7:[&_[data-view-site-preview]]:border!',
-  'admin7:[&_[data-view-site-preview]]:border-[var(--border-subtle)]!',
+const pageChromeClassName = [
+  '[&_.max-w-page]:max-w-(--content-width)',
+  '[&_[data-list-page=list-page]]:px-(--page-gutter)',
+  '[&_[data-detail-page=detail-page]]:px-(--page-gutter)',
+  '[&_[data-list-page=header]]:-mx-(--page-gutter)',
+  '[&_[data-list-page=header]]:px-(--page-gutter)',
+  '[&_[data-list-page=header]]:pt-[28px]',
+  '[&_[data-detail-page=header]]:pt-[28px]',
+  '[&_[data-network-header=header]]:pt-[8px]',
+  '[&_[data-page-header=main]]:flex-wrap',
+  '[&_[data-page-header=left]]:h-auto',
+  '[&_[data-page-header=left]]:max-w-full',
+  '[&_.admin-x-container-error]:bg-background',
+  '[&_.gh-canvas]:max-w-(--content-width)',
+  '[&_.gh-canvas]:px-(--page-gutter)',
+  '[&_.gh-main-width]:max-w-(--content-width)',
+  '[&_.gh-main-width]:px-(--page-gutter)',
+  '[&_.gh-canvas-header]:-mx-(--page-gutter)',
+  '[&_.gh-canvas-header]:px-(--page-gutter)',
+  '[&_.gh-canvas-header]:pt-[28px]!',
+  '[&_.gh-canvas-header]:pb-[28px]!',
+  '[&_[data-view-site-preview]]:inset-y-2!',
+  '[&_[data-view-site-preview]]:right-2!',
+  '[&_[data-view-site-preview]]:left-0!',
+  '[&_[data-view-site-preview]]:h-[calc(100%-16px)]!',
+  '[&_[data-view-site-preview]]:w-[calc(100%-8px)]!',
+  '[&_[data-view-site-preview]]:rounded-xl!',
+  '[&_[data-view-site-preview]]:border!',
+  '[&_[data-view-site-preview]]:border-[var(--border-subtle)]!',
 ].join(' ');
 
 interface AdminLayoutProps {
@@ -53,26 +53,54 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
   const sidebarVisible = useAdminSidebarVisibility();
+  const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
-  const {
-    isReady: admin7Ready,
-    enabled: admin7Enabled,
-    pageChromeEnabled,
-  } = useAdmin7({
-    hasNavigation: sidebarVisible,
-    isEligibleUser: !!currentUser && !isContributor,
-  });
+
+  // The dunning takeover is positioned against the scrollable inset, so the
+  // inset must not scroll (and must sit at the top) while the takeover is up —
+  // otherwise the covered page scrolls back into view from underneath it
+  const insetRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (dunningLocked) {
+      insetRef.current?.scrollTo?.(0, 0);
+    }
+  }, [dunningLocked]);
+
+  // The covered regions become `inert` while the takeover is up: aria-modal is
+  // only a semantic hint, so without this the covered page stays reachable by
+  // keyboard and assistive technology. Applied through refs because React 18
+  // has no first-class inert prop. Whichever refs the active layout branch
+  // doesn't render stay null and are skipped.
+  //
+  // A layout effect on purpose: layout effects run before passive-effect
+  // cleanups, so on dismissal inert is cleared before the overlay's cleanup
+  // restores focus — focus() on a still-inert element is a silent no-op.
+  const sidebarRef = React.useRef<HTMLDivElement>(null);
+  const mainRef = React.useRef<HTMLElement>(null);
+  const contributorMenuRef = React.useRef<HTMLDivElement>(null);
+  React.useLayoutEffect(() => {
+    for (const region of [sidebarRef.current, mainRef.current, contributorMenuRef.current]) {
+      if (region) {
+        region.inert = dunningLocked;
+      }
+    }
+  }, [dunningLocked]);
 
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
     return (
       <div className="relative h-full bg-background">
-        <main className="flex h-full flex-col overflow-y-auto">
+        <main ref={mainRef} className="flex h-full flex-col overflow-y-auto">
+          <DunningBanner />
           <div className="flex-1">{children}</div>
         </main>
-        <div className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8">
+        <div
+          ref={contributorMenuRef}
+          className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8"
+        >
           <ContributorUserMenu />
         </div>
+        <DunningOverlay />
       </div>
     );
   }
@@ -80,26 +108,38 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <SidebarProvider
       className={cn(
-        !admin7Ready && 'invisible',
-        admin7Enabled && 'admin7',
-        pageChromeEnabled &&
-          'overflow-hidden [--content-width:1080px] [--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-[var(--border-subtle)] [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
+        sidebarVisible &&
+          'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
       )}
       open={!!currentUser && sidebarVisible}
-      style={
-        pageChromeEnabled ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined
-      }
+      style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
     >
-      {sidebarVisible && <AppSidebar variant={pageChromeEnabled ? 'floating' : undefined} />}
+      {sidebarVisible && (
+        <AppSidebar
+          ref={sidebarRef}
+          className={cn(dunningLocked && 'opacity-40')}
+          variant="floating"
+        />
+      )}
       <SidebarInset
-        className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
+        ref={insetRef}
+        className={cn(
+          'relative bg-background sidebar:max-h-full',
+          dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
+          sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+        )}
       >
-        <main className={cn('flex-1', pageChromeEnabled && admin7PageChromeClassName)}>
-          <ActivityPubHostLayoutProvider value={pageChromeEnabled ? networkPageChrome : undefined}>
+        <DunningBanner />
+        <main ref={mainRef} className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
+          <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
             {children}
           </ActivityPubHostLayoutProvider>
         </main>
-        <MobileNavBar />
+        {/* The mobile nav sits outside the takeover's cover (fixed, above the
+            inset) and its sheet opens in a portal, so it unmounts entirely
+            rather than relying on inert */}
+        {!dunningLocked && <MobileNavBar />}
+        <DunningOverlay />
       </SidebarInset>
     </SidebarProvider>
   );

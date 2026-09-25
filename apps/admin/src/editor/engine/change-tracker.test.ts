@@ -2,14 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
 import {
   createChangeTracker,
+  sameFieldValue,
   type EditablePostProjection,
   type PostId,
 } from '@/editor/engine/change-tracker';
-import {
-  lexicalEquals,
-  stripDirection,
-  type LexicalDocument,
-} from '@/editor/engine/lexical-compare';
+import { lexicalEquals, type LexicalDocument } from '@/editor/engine/lexical-compare';
 
 const textNode = (text: string) => ({
   detail: 0,
@@ -73,6 +70,23 @@ function post(overrides: Partial<EditablePostProjection> = {}): EditablePostProj
     feature_image: null,
     feature_image_alt: null,
     feature_image_caption: null,
+    featured: false,
+    visibility: 'public',
+    tiers: [],
+    authors: [{ id: 'author-1' }],
+    meta_title: null,
+    meta_description: null,
+    canonical_url: null,
+    custom_template: null,
+    codeinjection_head: null,
+    codeinjection_foot: null,
+    og_image: null,
+    og_title: null,
+    og_description: null,
+    twitter_image: null,
+    twitter_title: null,
+    twitter_description: null,
+    show_title_and_feature_image: null,
     updated_at: T0,
     ...overrides,
   };
@@ -187,13 +201,7 @@ describe('createChangeTracker', () => {
       const tracker = loadedTracker();
       tracker.setLive(POST_ID, { lexical: '{not json' });
 
-      expect(tracker.verdict().reasons).toEqual([
-        {
-          code: 'LEXICAL_PARSE_FAILED',
-          reason: 'lexical state could not be parsed for comparison',
-          context: { error: expect.stringContaining('JSON') as string },
-        },
-      ]);
+      expect(tracker.verdict().reasons).toEqual([{ code: 'LEXICAL_PARSE_FAILED' }]);
     });
 
     it.each(['{}', '{"root":{}}', '{"root":{"children":"invalid"}}'])(
@@ -202,14 +210,7 @@ describe('createChangeTracker', () => {
         const tracker = loadedTracker();
         tracker.setLive(POST_ID, { lexical: invalid });
 
-        expect(tracker.verdict().reasons).toEqual([
-          {
-            code: 'LEXICAL_PARSE_FAILED',
-            reason: 'lexical state could not be parsed for comparison',
-            context: { error: 'lexical root must be an object with a children array' },
-          },
-        ]);
-        expect(tracker.verdict({ includeDiff: true }).diff).toBeUndefined();
+        expect(tracker.verdict().reasons).toEqual([{ code: 'LEXICAL_PARSE_FAILED' }]);
       },
     );
 
@@ -220,22 +221,6 @@ describe('createChangeTracker', () => {
 
       expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
     });
-
-    it('carries the three serialized states in the reason context', () => {
-      const tracker = loadedTracker();
-      const edited = serialize(appendParagraph(SAVED_DOC, 'Edit'));
-      tracker.setLive(POST_ID, { lexical: edited });
-
-      expect(tracker.verdict().reasons[0]).toEqual({
-        code: 'SCRATCH_DIVERGED_FROM_SECONDARY',
-        reason: 'main editor content has diverged from both hidden editor and saved content',
-        context: {
-          secondaryLexical: serialize(SAVED_DOC),
-          lexical: serialize(SAVED_DOC),
-          scratch: edited,
-        },
-      });
-    });
   });
 
   describe('baseline readiness', () => {
@@ -244,17 +229,7 @@ describe('createChangeTracker', () => {
       tracker.load(POST_ID, post());
       tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
 
-      expect(tracker.verdict().reasons).toEqual([
-        {
-          code: 'BASELINE_PENDING',
-          reason:
-            'main editor content has diverged from saved content before the hidden editor reported',
-          context: {
-            lexical: serialize(SAVED_DOC),
-            scratch: serialize(appendParagraph(SAVED_DOC, 'Edit')),
-          },
-        },
-      ]);
+      expect(tracker.verdict().reasons).toEqual([{ code: 'BASELINE_PENDING' }]);
     });
 
     it('is dirty when a new post is typed into before the hidden editor reports', () => {
@@ -307,31 +282,20 @@ describe('createChangeTracker', () => {
     it('falls back to a live-vs-saved compare when the hidden editor fails', () => {
       const tracker = createChangeTracker();
       tracker.load(POST_ID, post());
-      tracker.baselineFailed(POST_ID, new Error('hidden editor crashed'));
+      tracker.baselineFailed(POST_ID);
       tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
       expect(tracker.verdict().dirty).toBe(false);
 
       const edited = serialize(appendParagraph(SAVED_DOC, 'Edit'));
       tracker.setLive(POST_ID, { lexical: edited });
-      expect(tracker.verdict().reasons).toEqual([
-        {
-          code: 'BASELINE_FAILED',
-          reason:
-            'main editor content has diverged from saved content and the hidden editor failed',
-          context: {
-            lexical: serialize(SAVED_DOC),
-            scratch: edited,
-            error: 'hidden editor crashed',
-          },
-        },
-      ]);
+      expect(tracker.verdict().reasons).toEqual([{ code: 'BASELINE_FAILED' }]);
     });
 
     it('keeps body protection for an old-schema post after the hidden editor fails', () => {
       const [fixture] = OLD_SCHEMA_CORPUS;
       const tracker = createChangeTracker();
       tracker.load(POST_ID, post({ lexical: serialize(fixture.before) }));
-      tracker.baselineFailed(POST_ID, 'boom');
+      tracker.baselineFailed(POST_ID);
       tracker.setLive(POST_ID, { lexical: serialize(fixture.after) });
 
       expect(codes(tracker)).toEqual(['BASELINE_FAILED']);
@@ -340,7 +304,7 @@ describe('createChangeTracker', () => {
     it('recovers once a late baseline report arrives after a failure', () => {
       const tracker = createChangeTracker();
       tracker.load(POST_ID, post());
-      tracker.baselineFailed(POST_ID, 'boom');
+      tracker.baselineFailed(POST_ID);
       const edited = serialize(appendParagraph(SAVED_DOC, 'Edit'));
       tracker.setLive(POST_ID, { lexical: edited });
 
@@ -350,24 +314,26 @@ describe('createChangeTracker', () => {
   });
 
   describe('tags', () => {
-    it('compares tags by ordered name list', () => {
+    it('compares tags in order', () => {
       const tracker = loadedTracker();
       tracker.setLive(POST_ID, { tags: [{ name: 'News' }, { name: 'Tech' }] });
 
-      expect(tracker.verdict().reasons).toEqual([
-        {
-          code: 'POST_TAGS_DIVERGED',
-          reason: 'tags are different',
-          context: { currentTags: ['News', 'Tech'], previousTags: ['News'] },
-        },
-      ]);
+      expect(tracker.verdict().reasons).toEqual([{ code: 'POST_TAGS_DIVERGED' }]);
     });
 
-    it('ignores identity when the names match', () => {
-      const tracker = loadedTracker(post({ tags: [{ name: 'News', id: '1' } as never] }));
-      tracker.setLive(POST_ID, { tags: [{ name: 'News', id: 'unsaved' } as never] });
+    it('settles a typed tag against the record it was saved as', () => {
+      const tracker = loadedTracker(post({ tags: [{ name: 'News', id: '1' }] }));
+      tracker.setLive(POST_ID, { tags: [{ name: 'news' }] });
 
       expect(tracker.verdict().dirty).toBe(false);
+    });
+
+    it('reads a tag swapped for a same-named one as a change', () => {
+      const tracker = loadedTracker(post({ tags: [{ name: 'News', id: '1' }] }));
+      tracker.setLive(POST_ID, { tags: [{ name: 'News', id: '2' }] });
+
+      expect(codes(tracker)).toEqual(['POST_TAGS_DIVERGED']);
+      expect(tracker.isFieldDirty('tags')).toBe(true);
     });
 
     it('treats reordered tags as a change', () => {
@@ -390,13 +356,7 @@ describe('createChangeTracker', () => {
       const tracker = loadedTracker();
       tracker.setLive(POST_ID, { title: 'New title' });
 
-      expect(tracker.verdict().reasons).toEqual([
-        {
-          code: 'POST_TITLE_DIVERGED',
-          reason: 'title is different',
-          context: { current: 'Title', scratch: 'New title' },
-        },
-      ]);
+      expect(tracker.verdict().reasons).toEqual([{ code: 'POST_TITLE_DIVERGED' }]);
     });
 
     it('ignores surrounding whitespace', () => {
@@ -405,16 +365,56 @@ describe('createChangeTracker', () => {
 
       expect(tracker.verdict().dirty).toBe(false);
     });
+
+    describe('compares trimmed wherever it is asked', () => {
+      it.each([
+        ['Hello ', false],
+        ['Hello!', true],
+      ])('the change verdict: Hello → %j dirty=%s', (title, dirty) => {
+        const tracker = loadedTracker(post({ title: 'Hello' }));
+        tracker.setLive(POST_ID, { title });
+
+        expect(tracker.verdict().dirty).toBe(dirty);
+      });
+
+      it.each([
+        ['Hello ', false],
+        ['Hello!', true],
+      ])('the field check: Hello → %j dirty=%s', (title, dirty) => {
+        const tracker = loadedTracker(post({ title: 'Hello' }));
+        tracker.setLive(POST_ID, { title });
+
+        expect(tracker.isFieldDirty('title')).toBe(dirty);
+      });
+
+      it.each([
+        ['Hello ', true],
+        ['Hello!', false],
+      ])('the exported field compare: Hello vs %j same=%s', (title, same) => {
+        expect(sameFieldValue('title', 'Hello', title)).toBe(same);
+      });
+
+      it('rebases a live title that only gained whitespace onto the acknowledged one', () => {
+        const tracker = loadedTracker(post({ title: 'Hello' }));
+        tracker.setLive(POST_ID, { title: 'Hello ' });
+        tracker.saveAcknowledged(
+          POST_ID,
+          { title: 'Hello' },
+          post({ title: 'Hello, world', updated_at: T1 }),
+        );
+
+        expect(tracker.isFieldDirty('title')).toBe(false);
+        expect(tracker.verdict().dirty).toBe(false);
+      });
+    });
   });
 
   describe('save errors', () => {
     it('keeps the post dirty until the error is cleared', () => {
       const tracker = loadedTracker();
-      tracker.markSaveError(['Validation failed']);
+      tracker.markSaveError();
 
-      expect(tracker.verdict().reasons).toEqual([
-        { code: 'POST_HAS_ERROR', reason: 'isError', context: { messages: ['Validation failed'] } },
-      ]);
+      expect(tracker.verdict().reasons).toEqual([{ code: 'POST_HAS_ERROR' }]);
 
       tracker.setLive(POST_ID, { lexical: serialize(SAVED_DOC) });
       expect(codes(tracker)).toEqual(['POST_HAS_ERROR']);
@@ -453,26 +453,14 @@ describe('createChangeTracker', () => {
       const tracker = loadedTracker();
       tracker.setLive(POST_ID, { custom_excerpt: 'Excerpt' });
 
-      expect(tracker.verdict().reasons).toEqual([
-        {
-          code: 'POST_HAS_DIRTY_ATTRIBUTES',
-          reason: 'post.hasDirtyAttributes === true',
-          context: { custom_excerpt: [null, 'Excerpt'] },
-        },
-      ]);
+      expect(tracker.verdict().reasons).toEqual([{ code: 'POST_HAS_DIRTY_ATTRIBUTES' }]);
     });
 
     it('reports changed attributes on a new post under its own code', () => {
       const tracker = loadedTracker(post({ lexical: null }), null);
       tracker.setLive(null, { feature_image: 'https://site.example/a.jpg' });
 
-      expect(tracker.verdict().reasons).toEqual([
-        {
-          code: 'NEW_POST_HAS_CHANGED_ATTRIBUTES',
-          reason: 'post.changedAttributes.length > 0',
-          context: { feature_image: [null, 'https://site.example/a.jpg'] },
-        },
-      ]);
+      expect(tracker.verdict().reasons).toEqual([{ code: 'NEW_POST_HAS_CHANGED_ATTRIBUTES' }]);
     });
 
     it('patches the projection so independent observers do not clobber each other', () => {
@@ -480,22 +468,21 @@ describe('createChangeTracker', () => {
       tracker.setLive(POST_ID, { custom_excerpt: 'Excerpt' });
       tracker.setLive(POST_ID, { feature_image: 'https://site.example/a.jpg' });
 
-      expect(tracker.verdict().reasons[0]?.context).toEqual({
-        custom_excerpt: [null, 'Excerpt'],
-        feature_image: [null, 'https://site.example/a.jpg'],
-      });
+      expect(tracker.isFieldDirty('custom_excerpt')).toBe(true);
+      expect(tracker.isFieldDirty('feature_image')).toBe(true);
 
       tracker.setLive(POST_ID, { custom_excerpt: null });
-      expect(tracker.verdict().reasons[0]?.context).toEqual({
-        feature_image: [null, 'https://site.example/a.jpg'],
-      });
+      expect(tracker.isFieldDirty('custom_excerpt')).toBe(false);
+      expect(tracker.isFieldDirty('feature_image')).toBe(true);
+      expect(codes(tracker)).toEqual(['POST_HAS_DIRTY_ATTRIBUTES']);
     });
 
     it('reports a changed slug', () => {
       const tracker = loadedTracker();
       tracker.setLive(POST_ID, { slug: 'custom' });
 
-      expect(tracker.verdict().reasons[0]?.context).toEqual({ slug: ['title', 'custom'] });
+      expect(codes(tracker)).toEqual(['POST_HAS_DIRTY_ATTRIBUTES']);
+      expect(tracker.isFieldDirty('slug')).toBe(true);
     });
 
     it('never treats updated_at as a live edit', () => {
@@ -503,6 +490,61 @@ describe('createChangeTracker', () => {
       tracker.setLive(POST_ID, { updated_at: T2 });
 
       expect(tracker.verdict().dirty).toBe(false);
+    });
+  });
+
+  describe('isFieldDirty', () => {
+    it('answers for one field at a time and releases it when the edit is undone', () => {
+      const tracker = loadedTracker();
+
+      tracker.setLive(POST_ID, { visibility: 'paid' });
+
+      expect(tracker.isFieldDirty('visibility')).toBe(true);
+      expect(tracker.isFieldDirty('meta_title')).toBe(false);
+
+      tracker.setLive(POST_ID, { visibility: 'public' });
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+
+    it('applies the field compare rules: tags by name when one has no id, relations by identity', () => {
+      const tracker = loadedTracker();
+
+      tracker.setLive(POST_ID, {
+        tags: [{ name: 'News', id: 'unsaved' }],
+        authors: [{ id: 'author-1', name: 'Renamed' } as never],
+      });
+
+      expect(tracker.isFieldDirty('tags')).toBe(false);
+      expect(tracker.isFieldDirty('authors')).toBe(false);
+
+      tracker.setLive(POST_ID, { authors: [{ id: 'author-2' }] });
+
+      expect(tracker.isFieldDirty('authors')).toBe(true);
+    });
+
+    it('never reports the collision token, and answers false with no post loaded', () => {
+      const tracker = loadedTracker(post({ updated_at: T0 }));
+      tracker.setSaved(POST_ID, post({ updated_at: T1 }));
+
+      expect(tracker.isFieldDirty('updated_at')).toBe(false);
+
+      tracker.dispose();
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+
+    it('releases a field the acknowledgement rebased onto the server value', () => {
+      const tracker = loadedTracker(post({ visibility: 'public', updated_at: T0 }));
+      tracker.setLive(POST_ID, { visibility: 'members' });
+
+      tracker.saveAcknowledged(
+        POST_ID,
+        { visibility: 'members' },
+        post({ visibility: 'paid', updated_at: T1 }),
+      );
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
     });
   });
 
@@ -550,10 +592,7 @@ describe('createChangeTracker', () => {
       const tracker = loadedTracker();
       tracker.setSaved(POST_ID, post({ title: 'Renamed elsewhere', updated_at: T1 }));
 
-      expect(tracker.verdict().reasons[0]).toMatchObject({
-        code: 'POST_TITLE_DIVERGED',
-        context: { current: 'Renamed elsewhere', scratch: 'Title' },
-      });
+      expect(codes(tracker)).toEqual(['POST_TITLE_DIVERGED']);
     });
 
     it('drops a refetch older than the held collision token', () => {
@@ -592,6 +631,36 @@ describe('createChangeTracker', () => {
       tracker.saveAcknowledged(POST_ID, submitted, { ...submitted, updated_at: T1 });
       expect(tracker.verdict().dirty).toBe(false);
     });
+
+    it.each(['before', 'during', 'after'] as const)(
+      'keeps untouched content clean when a field save finishes %s body initialization',
+      (timing) => {
+        const tracker = createChangeTracker();
+        tracker.load(POST_ID, post({ lexical: null }));
+        tracker.setLive(POST_ID, { slug: 'new-slug' });
+        const submitted = post({ lexical: null, slug: 'new-slug' });
+        const initialize = () => {
+          tracker.setBaseline(POST_ID, serialize(BLANK_DOC));
+          tracker.setLive(POST_ID, { lexical: serialize(BLANK_DOC) });
+        };
+
+        if (timing === 'after') {
+          initialize();
+        } else if (timing === 'during') {
+          tracker.setBaseline(POST_ID, serialize(BLANK_DOC));
+        }
+        tracker.saveAcknowledged(POST_ID, submitted, { ...submitted, updated_at: T1 });
+        if (timing === 'before') {
+          initialize();
+        } else if (timing === 'during') {
+          tracker.setLive(POST_ID, { lexical: serialize(BLANK_DOC) });
+        }
+
+        expect(tracker.verdict()).toEqual({ dirty: false, reasons: [] });
+        tracker.setLive(POST_ID, { lexical: serialize(doc([paragraph('An actual edit')])) });
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      },
+    );
 
     it('re-baselines on an acknowledged save', () => {
       const [fixture] = OLD_SCHEMA_CORPUS;
@@ -646,9 +715,7 @@ describe('createChangeTracker', () => {
         'SCRATCH_DIVERGED_FROM_SECONDARY',
         'POST_HAS_DIRTY_ATTRIBUTES',
       ]);
-      expect(verdict.reasons[3]?.context).toEqual({
-        custom_excerpt: ['Submitted excerpt', 'Later excerpt'],
-      });
+      expect(tracker.isFieldDirty('custom_excerpt')).toBe(true);
     });
 
     it('adopts server-canonicalized values where the live state still matches the submission', () => {
@@ -676,12 +743,8 @@ describe('createChangeTracker', () => {
         post({ slug: 'title-2', updated_at: T1 }),
       );
 
-      expect(tracker.verdict().reasons).toEqual([
-        expect.objectContaining({
-          code: 'POST_HAS_DIRTY_ATTRIBUTES',
-          context: { custom_excerpt: [null, 'Typed during the save'] },
-        }),
-      ]);
+      expect(codes(tracker)).toEqual(['POST_HAS_DIRTY_ATTRIBUTES']);
+      expect(tracker.isFieldDirty('custom_excerpt')).toBe(true);
     });
 
     it('treats an undefined submitted field as not submitted', () => {
@@ -755,7 +818,7 @@ describe('createChangeTracker', () => {
 
       tracker.setBaseline(null, serialize(doc([paragraph('Typed')])));
       expect(tracker.verdict().dirty).toBe(false);
-      tracker.baselineFailed(null, 'boom');
+      tracker.baselineFailed(null);
       tracker.setLive(null, { lexical: serialize(doc([paragraph('Typed more')])) });
       expect(codes(tracker)).toEqual(['BASELINE_FAILED']);
 
@@ -806,7 +869,7 @@ describe('createChangeTracker', () => {
       tracker.load('b', post({ title: 'B' }));
 
       tracker.setBaseline('a', serialize(doc([paragraph('A baseline')])));
-      tracker.baselineFailed('a', 'boom');
+      tracker.baselineFailed('a');
       tracker.setLive('a', { title: 'A edited', lexical: serialize(doc([paragraph('A typed')])) });
       tracker.saveAcknowledged(
         'a',
@@ -837,11 +900,11 @@ describe('createChangeTracker', () => {
 
       tracker.load(POST_ID, post());
       tracker.setLive(POST_ID, { title: 'Edited again' });
-      tracker.markSaveError('boom');
+      tracker.markSaveError();
       tracker.setSaved(POST_ID, post());
       tracker.saveAcknowledged(POST_ID, post(), post());
       tracker.setBaseline(POST_ID, serialize(SAVED_DOC));
-      tracker.baselineFailed(POST_ID, 'boom');
+      tracker.baselineFailed(POST_ID);
       expect(tracker.verdict()).toEqual({ dirty: false, reasons: [] });
     });
   });
@@ -872,10 +935,7 @@ describe('createChangeTracker', () => {
       expect(tracker.verdict().dirty).toBe(false);
 
       tracker.setLive(POST_ID, { title: 'Edited after restore' });
-      expect(tracker.verdict().reasons[0]).toMatchObject({
-        code: 'POST_TITLE_DIVERGED',
-        context: { current: 'Restored title', scratch: 'Edited after restore' },
-      });
+      expect(codes(tracker)).toEqual(['POST_TITLE_DIVERGED']);
     });
 
     it('waits for the hidden editor to re-report after an old-schema restore', () => {
@@ -898,7 +958,7 @@ describe('createChangeTracker', () => {
     it('reports dirty when a later save fails', () => {
       const tracker = loadedTracker();
       tracker.revisionRestored(POST_ID, restored);
-      tracker.markSaveError(['Server error']);
+      tracker.markSaveError();
 
       expect(codes(tracker)).toEqual(['POST_HAS_ERROR']);
     });
@@ -980,6 +1040,15 @@ describe('createChangeTracker', () => {
 
       expect(tracker.hasChangedSinceRevision(revision())).toBe(true);
       expect(tracker.hasChangedSinceRevision(revision(change))).toBe(false);
+    });
+
+    it.each([
+      ['Hello ', false],
+      ['Hello!', true],
+    ])('compares the title trimmed: Hello vs revision %j changed=%s', (title, changed) => {
+      const tracker = loadedTracker(post({ title: 'Hello' }));
+
+      expect(tracker.hasChangedSinceRevision(revision({ title }))).toBe(changed);
     });
 
     it('treats a missing revision excerpt or feature image as null', () => {
@@ -1087,18 +1156,7 @@ describe('createChangeTracker', () => {
       );
       tracker.setLive(POST_ID, { lexical: withLink('/contact/') });
 
-      expect(tracker.verdict({ includeDiff: true })).toEqual({
-        dirty: true,
-        reasons: [expect.objectContaining({ code: 'SCRATCH_DIVERGED_FROM_SECONDARY' })],
-        diff: [
-          {
-            type: 'CHANGE',
-            path: 'root.children.0[paragraph].children.1[link].url',
-            value: '/contact/',
-            oldValue: '/about/',
-          },
-        ],
-      });
+      expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
     });
 
     it('keeps a literal site URL deleted from prose dirty', () => {
@@ -1143,57 +1201,6 @@ describe('createChangeTracker', () => {
       tracker.setLive(POST_ID, { lexical: withLink('/about/') });
 
       expect(tracker.verdict().dirty).toBe(true);
-    });
-  });
-
-  describe('diff', () => {
-    it('is omitted unless requested and the content diverged', () => {
-      const tracker = loadedTracker();
-      tracker.setLive(POST_ID, { title: 'Edited' });
-
-      expect(tracker.verdict({ includeDiff: true }).diff).toBeUndefined();
-
-      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
-      expect(tracker.verdict().diff).toBeUndefined();
-    });
-
-    it('is omitted while the baseline is pending', () => {
-      const tracker = createChangeTracker();
-      tracker.load(POST_ID, post());
-      tracker.setLive(POST_ID, { lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
-
-      expect(tracker.verdict({ includeDiff: true }).diff).toBeUndefined();
-    });
-
-    it('humanizes the baseline-to-live difference with node types', () => {
-      const tracker = loadedTracker();
-      tracker.setLive(POST_ID, {
-        lexical: serialize(doc([paragraph('Hello world', 'ltr')], 'ltr')),
-      });
-
-      expect(tracker.verdict({ includeDiff: true }).diff).toEqual([
-        {
-          type: 'CHANGE',
-          path: 'root.children.0[paragraph].children.0[extended-text].text',
-          value: 'Hello world',
-          oldValue: 'Hello',
-        },
-      ]);
-    });
-
-    it('reports a deleted block as a removal', () => {
-      const tracker = loadedTracker(
-        post({ lexical: serialize(doc([paragraph('Hello'), paragraph('Gone')])) }),
-      );
-      tracker.setLive(POST_ID, { lexical: serialize(doc([paragraph('Hello')])) });
-
-      expect(tracker.verdict({ includeDiff: true }).diff).toEqual([
-        {
-          type: 'REMOVE',
-          path: 'root.children.1[paragraph]',
-          oldValue: stripDirection(paragraph('Gone')),
-        },
-      ]);
     });
   });
 });

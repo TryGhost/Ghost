@@ -95,7 +95,7 @@ describe('deriveEditorStatus', () => {
       derive({
         status: 'scheduled',
         publishedAt: '2026-09-02T13:00:00.000Z',
-        newsletter: { slug: 'weekly' },
+        newsletter: { slug: 'weekly', visibility: 'members' },
         emailSegment: 'status:free',
       }),
     ).toMatchObject({
@@ -110,7 +110,7 @@ describe('deriveEditorStatus', () => {
       derive({
         status: 'scheduled',
         publishedAt: '2026-09-02T13:00:00.000Z',
-        newsletter: { slug: 'weekly' },
+        newsletter: { slug: 'weekly', visibility: 'members' },
         emailSegment: 'all',
       }),
     ).toMatchObject({
@@ -124,7 +124,7 @@ describe('deriveEditorStatus', () => {
       derive({
         status: 'scheduled',
         publishedAt: '2026-09-02T13:00:00.000Z',
-        newsletter: { slug: 'weekly' },
+        newsletter: { slug: 'weekly', visibility: 'members' },
         emailSegment: 'none',
       }),
     ).toMatchObject({ recipientFilter: null, recipientSegment: null });
@@ -147,7 +147,7 @@ describe('deriveEditorStatus', () => {
       derive({
         status: 'scheduled',
         publishedAt: '2026-09-02T13:00:00.000Z',
-        newsletter: { slug: 'weekly' },
+        newsletter: { slug: 'weekly', visibility: 'members' },
         hasEmail: true,
       }),
     ).toMatchObject({ recipientFilter: null });

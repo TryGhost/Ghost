@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   EmptyIndicator,
   LoadingIndicator,
   Select,
@@ -22,11 +18,11 @@ import {
 } from '@tryghost/shade/components';
 import {
   getSettingValue,
-  useBrowseSettings,
   useNewslettersEnabled,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { Inline } from '@tryghost/shade/primitives';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
@@ -40,7 +36,11 @@ import {
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
 
+import { NEWSLETTERS_SEARCH_PARAMS, PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
+import { useEditorSettings } from '@/editor/use-editor-settings';
+import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
 import {
@@ -59,7 +59,7 @@ interface SegmentOption {
   value: PreviewSegment;
 }
 
-interface PostPreviewModalProps {
+export interface PostPreviewModalProps {
   open: boolean;
   postId: string;
   /** The post's public preview URL (`/p/:uuid/`), empty until the post has a uuid. */
@@ -70,6 +70,10 @@ interface PostPreviewModalProps {
   newsletterSlug?: string;
   /** Awaited before the preview renders, so the caller can save the draft first. */
   onBeforeOpen?: () => Promise<void>;
+  /** Renders a Publish button; supplied for users who can publish. */
+  onPublish?: () => void;
+  /** Keeps the Publish button disabled while the caller cannot open its publish flow. */
+  publishDisabled?: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
@@ -80,6 +84,8 @@ export function PostPreviewModal({
   isPost = true,
   newsletterSlug,
   onBeforeOpen,
+  onPublish,
+  publishDisabled = false,
   onOpenChange,
 }: PostPreviewModalProps) {
   const [format, setFormat] = useState<PreviewFormat>('browser');
@@ -93,10 +99,10 @@ export function PostPreviewModal({
   const [wasOpen, setWasOpen] = useState(open);
 
   const handleError = useHandleError();
-  const { data: currentUser } = useCurrentUser();
-  const { data: settingsData } = useBrowseSettings();
-  const paidMembersEnabled = usePaidMembersEnabled();
-  const newslettersEnabled = useNewslettersEnabled();
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useEditorSettings();
+  const paidMembersEnabled = usePaidMembersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const newslettersEnabled = useNewslettersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const membersEnabled =
     getSettingValue<boolean>(settingsData?.settings ?? [], 'members_enabled') === true;
   const emailAvailable =
@@ -108,26 +114,52 @@ export function PostPreviewModal({
   const testEmailAvailable =
     !!currentUser &&
     (isOwnerUser(currentUser) || isAdminUser(currentUser) || isEditorUser(currentUser));
+  // Contributors have no permission to read tiers.
+  const tiersAvailable =
+    paidMembersEnabled === true && !!currentUser && !isContributorUser(currentUser);
 
   const { data: tiersData } = useBrowseTiers({
-    searchParams: { filter: 'type:paid', limit: 'all' },
-    enabled: open && prepareState === 'ready' && paidMembersEnabled === true,
+    searchParams: PAID_TIERS_SEARCH_PARAMS,
+    enabled: open && prepareState === 'ready' && tiersAvailable,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const tiers = useMemo(() => tiersData?.tiers ?? [], [tiersData]);
 
   const {
     data: newslettersData,
+    fetchNextPage: fetchNextNewsletterPage,
+    hasNextPage: hasNextNewsletterPage,
     isError: activeNewslettersError,
-    isFetching: activeNewslettersFetching,
+    isFetching: newslettersFetching,
+    isFetchingNextPage: isFetchingNextNewsletterPage,
     refetch: refetchActiveNewsletters,
   } = useBrowseNewsletters({
-    searchParams: { filter: 'status:active', limit: 'all' },
+    searchParams: NEWSLETTERS_SEARCH_PARAMS,
     enabled: open && prepareState === 'ready' && emailAvailable,
     requestOptions: EDITOR_REQUEST_OPTIONS,
-    staleTime: 0,
   });
-  const activeNewsletters = useMemo(() => newslettersData?.newsletters ?? [], [newslettersData]);
+
+  // Core caps `limit=all`, so the response can still contain a next page. A
+  // newsletter past the cap would otherwise be taken for an archived one.
+  useEffect(() => {
+    if (hasNextNewsletterPage && !isFetchingNextNewsletterPage && !activeNewslettersError) {
+      void fetchNextNewsletterPage();
+    }
+  }, [
+    activeNewslettersError,
+    fetchNextNewsletterPage,
+    hasNextNewsletterPage,
+    isFetchingNextNewsletterPage,
+  ]);
+  const activeNewslettersFetching =
+    newslettersFetching || hasNextNewsletterPage || isFetchingNextNewsletterPage;
+  // The browse carries every newsletter, which is also the publish flow's list;
+  // narrowing here shares that one cache entry instead of asking for a subset.
+  const activeNewsletters = useMemo(
+    () =>
+      (newslettersData?.newsletters ?? []).filter((newsletter) => newsletter.status === 'active'),
+    [newslettersData],
+  );
 
   // The post's newsletter is what its email renders as, so it stays selectable
   // even once it has left the active list.
@@ -275,14 +307,11 @@ export function PostPreviewModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        aria-describedby={undefined}
-        className="top-0 left-0 grid h-dvh w-dvw max-w-none translate-x-0 grid-rows-[auto_1fr] gap-0 rounded-none p-0"
-        data-testid="post-preview-modal"
-      >
-        <DialogHeader className="flex-row items-center justify-between gap-4 border-b border-border-default p-4">
-          <DialogTitle className="text-lg">Preview</DialogTitle>
+    <FullscreenDialog
+      aria-describedby={undefined}
+      data-testid={postPreviewModal}
+      headerActions={
+        <>
           <Inline gap="md">
             {emailAvailable && (
               <Tabs
@@ -297,6 +326,7 @@ export function PostPreviewModal({
               </Tabs>
             )}
             <ToggleGroup
+              shape="rounded"
               type="single"
               value={device}
               onValueChange={(value) => {
@@ -359,76 +389,88 @@ export function PostPreviewModal({
               </Select>
             )}
           </Inline>
-          <Inline gap="sm">
-            <Button
-              aria-label="Copy preview link"
+          <PageHeader.ActionGroup>
+            <PageHeader.Action
               disabled={!previewActionsAvailable}
-              variant="outline"
+              label="Copy preview link"
+              iconOnly
               onClick={() => void copyPreviewLink()}
             >
               <LucideIcon.Link />
-            </Button>
+            </PageHeader.Action>
             {previewActionsAvailable ? (
-              <Button variant="outline" asChild>
+              <PageHeader.Action label="Open in new tab" asChild>
                 <a href={audienceUrl} rel="noopener noreferrer" target="_blank">
                   <LucideIcon.ExternalLink />
                   Open in new tab
                 </a>
-              </Button>
+              </PageHeader.Action>
             ) : (
-              <Button variant="outline" disabled>
+              <PageHeader.Action label="Open in new tab" disabled>
                 <LucideIcon.ExternalLink />
                 Open in new tab
-              </Button>
+              </PageHeader.Action>
             )}
-            <Button onClick={() => onOpenChange(false)}>Close</Button>
+            <Button variant={onPublish ? 'outline' : 'default'} onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
+            {onPublish ? (
+              <Button disabled={publishDisabled} onClick={onPublish}>
+                Publish
+              </Button>
+            ) : null}
+          </PageHeader.ActionGroup>
+        </>
+      }
+      layout="header"
+      open={open}
+      title="Preview"
+      onOpenChange={onOpenChange}
+    >
+      <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">
+        {prepareState === 'preparing' ? (
+          <Inline align="center" className="grow" gap="none" justify="center">
+            <LoadingIndicator size="lg" />
           </Inline>
-        </DialogHeader>
-        <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">
-          {prepareState === 'preparing' ? (
-            <Inline align="center" className="grow" gap="none" justify="center">
-              <LoadingIndicator size="lg" />
-            </Inline>
-          ) : prepareState === 'failed' ? (
-            <EmptyIndicator
-              actions={
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    preparePromise.current = null;
-                    setPrepareState('preparing');
-                  }}
-                >
-                  Retry
-                </Button>
-              }
-              className="grow justify-center"
-              data-testid="post-preview-save-failed"
-              description="Saving the post failed, so there is nothing new to preview."
-              title="Couldn’t preview this post"
-            >
-              <LucideIcon.TriangleAlert />
-            </EmptyIndicator>
-          ) : showEmail ? (
-            <EmailPreview
-              audience={audience}
-              canSendTestEmail={testEmailAvailable}
-              device={device}
-              newsletterLookupError={newsletterLookupError}
-              newsletterLookupPending={newsletterLookupPending}
-              newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
-              newsletters={newsletters}
-              newsletterSlug={selectedNewsletterSlug}
-              postId={postId}
-              tierName={selectedTier?.name}
-              onNewsletterChange={setPickedNewsletterSlug}
-              onRetryNewsletterLookup={retryNewsletterLookup}
-            />
-          ) : (
-            <BrowserPreview audience={audience} device={device} previewUrl={previewUrl} />
-          )}
-        </Inline>
-      </DialogContent>
-    </Dialog>
+        ) : prepareState === 'failed' ? (
+          <EmptyIndicator
+            actions={
+              <Button
+                variant="outline"
+                onClick={() => {
+                  preparePromise.current = null;
+                  setPrepareState('preparing');
+                }}
+              >
+                Retry
+              </Button>
+            }
+            className="grow justify-center"
+            data-testid={postPreviewSaveFailed}
+            description="Saving the post failed, so there is nothing new to preview."
+            title="Couldn’t preview this post"
+          >
+            <LucideIcon.TriangleAlert />
+          </EmptyIndicator>
+        ) : showEmail ? (
+          <EmailPreview
+            audience={audience}
+            canSendTestEmail={testEmailAvailable}
+            device={device}
+            newsletterLookupError={newsletterLookupError}
+            newsletterLookupPending={newsletterLookupPending}
+            newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
+            newsletters={newsletters}
+            newsletterSlug={selectedNewsletterSlug}
+            postId={postId}
+            tierName={selectedTier?.name}
+            onNewsletterChange={setPickedNewsletterSlug}
+            onRetryNewsletterLookup={retryNewsletterLookup}
+          />
+        ) : (
+          <BrowserPreview audience={audience} device={device} previewUrl={previewUrl} />
+        )}
+      </Inline>
+    </FullscreenDialog>
   );
 }

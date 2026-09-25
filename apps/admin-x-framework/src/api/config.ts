@@ -58,6 +58,11 @@ export type Config = {
         max?: number;
         error?: string;
       };
+      emails?: {
+        maxPeriodic?: number;
+        disabled?: boolean;
+        error?: string;
+      };
       customThemes?: {
         allowlist?: string[];
         error?: string;
@@ -74,6 +79,10 @@ export type Config = {
         disabled: boolean;
         error?: string;
       };
+      limitCustomFields?: {
+        disabled: boolean;
+        error?: string;
+      };
       publicSiteAccess?: {
         disabled: boolean;
         // Copy shown in the pre-launch banner when public site access is disabled.
@@ -82,6 +91,9 @@ export type Config = {
         title?: string; // Banner heading
         upgradeUrl?: string; // Destination for the banner's upgrade button
       };
+    };
+    subscription?: {
+      start?: string; // ISO date that anchors monthly periodic limits
     };
     billing?: {
       enabled?: boolean;
@@ -98,6 +110,15 @@ export type Config = {
         logo?: string; // Logo shown above the heading
         logoDark?: string; // Logo shown in dark mode, falls back to logo
         logoAlt?: string; // Alt text for the logo
+      };
+      // Payment-failure (dunning) state for the site's hosting subscription.
+      // Managed hosting providers set this while a payment is outstanding;
+      // Admin escalates from a warning banner to a locked overlay based on
+      // the position within the paymentFailedAt -> suspendsAt window.
+      dunning?: {
+        active?: boolean; // Only true while the payment is outstanding
+        paymentFailedAt?: string; // ISO date the payment first failed (window start)
+        suspendsAt?: string; // ISO date the host will suspend the site (window end)
       };
       // Search entries for billing paths, defined in host config (hostSettings.billing.search: {})
       search?: {
@@ -122,6 +143,8 @@ export type Config = {
   };
   security?: {
     staffDeviceVerification?: boolean;
+    // directory serving the Koenig embed renderer on a separate origin
+    embedPreviewUrl?: string;
   };
   featurebase?: {
     enabled?: boolean;

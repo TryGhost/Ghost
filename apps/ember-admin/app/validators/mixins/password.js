@@ -21,11 +21,11 @@ export default Mixin.create({
     * @return {boolean}
     */
     _characterOccurance(stringToTest) {
-        let chars = {};
-        let allowedOccurancy;
+        const chars = {};
+
         let valid = true;
 
-        allowedOccurancy = stringToTest.length / 2;
+        const allowedOccurancy = stringToTest.length / 2;
 
         // Loop through string and accumulate character counts
         for (let i = 0; i < stringToTest.length; i += 1) {
@@ -38,7 +38,7 @@ export default Mixin.create({
 
         // check if any of the accumulated chars exceed the allowed occurancy
         // of 50% of the words' length.
-        for (let charCount in chars) {
+        for (const charCount in chars) {
             if (chars[charCount] >= allowedOccurancy) {
                 valid = false;
                 return valid;
@@ -51,7 +51,6 @@ export default Mixin.create({
     passwordValidation(model, password, errorTarget) {
         let blogUrl = model.config?.blogUrl || window.location.host;
         let blogTitle = model.blogTitle || model.config?.blogTitle;
-        let blogUrlWithSlash;
 
         // the password that needs to be validated can differ from the password in the
         // passed model, e. g. for password changes or reset.
@@ -59,7 +58,7 @@ export default Mixin.create({
         errorTarget = errorTarget || 'password';
 
         blogUrl = blogUrl.replace(/^http(s?):\/\//, '');
-        blogUrlWithSlash = blogUrl.match(/\/$/) ? blogUrl : `${blogUrl}/`;
+        const blogUrlWithSlash = blogUrl.match(/\/$/) ? blogUrl : `${blogUrl}/`;
 
         blogTitle = blogTitle ? blogTitle.trim().toLowerCase() : blogTitle;
 

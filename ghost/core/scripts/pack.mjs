@@ -187,12 +187,34 @@ if (!buildFiles.some(isLicenseFile)) {
   );
 }
 
+// Copy the patch files named by the root patchedDependencies. They have to be in
+// place before the lockfile is generated in step 4: pnpm hashes each patch during
+// install and fails with ENOENT if one is missing. Paths are workspace-root
+// relative, and BUILD_DIR is the standalone install's root, so the dir keeps its
+// name and the specs in the trimmed workspace file need no rewriting.
+const patchSpecs = Object.values(rootWorkspace.patchedDependencies ?? {});
+if (patchSpecs.length > 0) {
+  console.log('\nCopying patches...');
+  await Promise.all(
+    patchSpecs.map(async (rel) => {
+      const dest = path.join(BUILD_DIR, rel);
+      await fs.mkdir(path.dirname(dest), { recursive: true });
+      await fs.copyFile(path.join(ROOT_DIR, rel), dest);
+      console.log(`  ${rel}`);
+    }),
+  );
+}
+
 // 3. Write a trimmed pnpm-workspace.yaml. We keep:
 //   - catalog + catalogs (lockfile records & validates these)
 //   - allowBuilds + strictDepBuilds (end-user installs need this to permit
 //     native module post-install scripts like better-sqlite3, sharp, re2)
 //   - overrides + packageExtensions (root dependency policy must apply to the
 //     standalone install too)
+//   - patchedDependencies, alongside the patch files copied above. Without it
+//     the standalone install resolves those packages unpatched, silently losing
+//     whatever the patch was for — the archive keeps overrides for the same
+//     reason, and a patch is no less part of root dependency policy.
 //   - ignoredOptionalDependencies: the archive gets no .pnpmfile.mjs, so the
 //     readPackage hook that strips knex's optional sqlite3 peer never runs here.
 //     This is what keeps sqlite3 out — dropping the provider (knex-migrator's
@@ -214,6 +236,7 @@ for (const key of [
   'overrides',
   'packageExtensions',
   'ignoredOptionalDependencies',
+  'patchedDependencies',
 ]) {
   if (rootWorkspace[key] !== undefined) {
     buildWorkspace[key] = rootWorkspace[key];
@@ -257,6 +280,9 @@ const requiredFiles = [
   'package.json',
   'index.js',
   'scripts/prune.mts',
+  // Every patch the trimmed workspace file declares, so a patch that never made
+  // it into the build tree fails here rather than at a consumer's install.
+  ...patchSpecs,
 ];
 const [packagedPkg, packagedWorkspace, missingFiles, componentTgzCount, packagedFiles] =
   await Promise.all([

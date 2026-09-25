@@ -79,11 +79,14 @@ export const postsListScreen = {
   /** A button inside a non-destructive modal (Add a tag, Change access). */
   dialogButton: (label: string) =>
     page.getByRole('dialog').getByRole('button', { name: label, exact: true }),
-  /** A row in the tag picker's list — a `cmdk` item, so `option`. */
+  /** A row in the tag picker's listbox. */
   tagOption: (name: string | RegExp) => page.getByRole('dialog').getByRole('option', { name }),
   tagSearchInput: () => page.getByRole('dialog').getByLabelText('Search tags'),
   /** The chip field. Click it to open the list, as the chevron invites. */
   tagPickerField: () => page.getByTestId('tag-picker'),
+  /** A picked tag's chip, which is the control that removes it. */
+  tagChip: (name: string) =>
+    page.getByRole('dialog').getByRole('button', { name: `Remove ${name}`, exact: true }),
   /**
    * The dialog's own heading, used to dismiss the tag list: it floats over
    * the footer, so the confirm button cannot be reached until something

@@ -6,7 +6,8 @@ const limitService = require('../services/limits');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
-const validatePassword = require('../lib/validate-password');
+const { validatePassword } = require('../lib/validate-password');
+const { generatePassword } = require('../lib/generate-password');
 const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils').default;
 const { setIsRoles } = require('./role-utils');
@@ -54,10 +55,8 @@ const messages = {
 const inactiveStates = ['inactive', 'locked'];
 
 const allStates = activeStates.concat(inactiveStates);
-let User;
-let Users;
 
-User = ghostBookshelf.Model.extend(
+const User = ghostBookshelf.Model.extend(
   {
     tableName: 'users',
 
@@ -66,8 +65,7 @@ User = ghostBookshelf.Model.extend(
 
     defaults: function defaults() {
       return {
-        // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
-        password: security.identifier.uid(50),
+        password: generatePassword(''),
         visibility: 'public',
         status: 'active',
         comment_notifications: true,
@@ -208,8 +206,7 @@ User = ghostBookshelf.Model.extend(
      */
     lock: function lock(options) {
       const update = {
-        // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
-        password: security.identifier.uid(50),
+        password: generatePassword(this.get('email') || ''),
       };
       if (this.get('status') !== 'inactive') {
         update.status = 'locked';
@@ -306,8 +303,8 @@ User = ghostBookshelf.Model.extend(
         }
 
         if (options.importing) {
-          // always set password to a random uid when importing
-          this.set('password', security.identifier.uid(50));
+          // generate a random password when importing
+          this.set('password', generatePassword(this.get('email') || ''));
 
           // lock users so they have to follow the password reset flow
           if (this.get('status') !== 'inactive') {
@@ -507,7 +504,7 @@ User = ghostBookshelf.Model.extend(
     findOne: function findOne(dataToClone, unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'findOne');
       let query;
-      let status;
+
       let data = JSON.parse(JSON.stringify(dataToClone));
       const lookupRole = data.role;
 
@@ -521,7 +518,7 @@ User = ghostBookshelf.Model.extend(
       delete data.role;
       data = Object.assign({}, { status: 'all' }, data || {});
 
-      status = data.status;
+      const status = data.status;
       delete data.status;
 
       data = this.filterData(data);
@@ -989,11 +986,11 @@ User = ghostBookshelf.Model.extend(
 
       // CASE: i want to edit roles
       if (action === 'edit' && unsafeAttrs.roles && unsafeAttrs.roles[0]) {
-        let role = unsafeAttrs.roles[0];
-        let roleId = role.id || role;
-        let editedUserId = userModel.id;
+        const role = unsafeAttrs.roles[0];
+        const roleId = role.id || role;
+        const editedUserId = userModel.id;
         // @NOTE: role id of logged in user
-        let contextRoleId = loadedPermissions.user.roles[0].id;
+        const contextRoleId = loadedPermissions.user.roles[0].id;
 
         if (roleId !== contextRoleId && editedUserId === context.user) {
           return Promise.reject(
@@ -1037,10 +1034,13 @@ User = ghostBookshelf.Model.extend(
                 }),
               );
             }
-          } else if (roleId !== contextRoleId) {
+          } else if (roleId !== contextRoleId || editedUserId !== context.user) {
             // CASE: you are trying to change a role, but you are not owner
-            // @NOTE: your role is not the same than the role you try to change (!)
-            // e.g. admin can assign admin role to a user, but not owner
+            // @NOTE: assigning any role to *another* user must always go through
+            // the assign check, including your own role. Otherwise an Editor could
+            // promote an Author to Editor, which the role hierarchy disallows.
+            // The only case that skips the check is a self-edit that leaves your
+            // own role untouched, e.g. a profile update that echoes back `roles`.
 
             return permissions
               .canThis(context)
@@ -1296,7 +1296,7 @@ User = ghostBookshelf.Model.extend(
   },
 );
 
-Users = ghostBookshelf.Collection.extend({
+const Users = ghostBookshelf.Collection.extend({
   model: User,
 });
 

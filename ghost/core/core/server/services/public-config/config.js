@@ -19,7 +19,7 @@ const sanitizeHostSettings = (hostSettings) => {
 
 const copyPayloadProperties = (target, source, properties) => {
   for (const property of properties) {
-    if (Object.prototype.hasOwnProperty.call(source, property)) {
+    if (Object.hasOwn(source, property)) {
       target[property] = source[property];
     }
   }

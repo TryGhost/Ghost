@@ -8,7 +8,7 @@ import { buildRouteSettings } from './route-settings-fixture';
 // The raw objects here have no YAML text behind them, so an empty source is attached.
 const parse = (raw: unknown) => parseRouteSettings(raw, '');
 
-describe('UNIT: services/route-settings/route-settings-parser', function () {
+describe('services/route-settings/route-settings-parser', function () {
   describe('parseRouteSettings', function () {
     it('handles null/undefined input', function () {
       assert.deepEqual(parse(null), {
@@ -104,7 +104,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
           routes: { '/featured/': { controller: 'channel', filter: 'featured:true' } },
         });
 
-        assert.equal(Object.prototype.hasOwnProperty.call(result.routes[0], 'rss'), false);
+        assert.equal(Object.hasOwn(result.routes[0], 'rss'), false);
       });
 
       it('respects explicit rss: true on channel route', function () {

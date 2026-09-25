@@ -19,8 +19,8 @@ function getStoredFeatureFlagOverrides() {
 }
 
 export function feature(name, options = {}) {
-    let {user, onChange} = options;
-    let watchedProps = user
+    const {user, onChange} = options;
+    const watchedProps = user
         ? [`accessibility.${name}`]
         : [`config.${name}`, `labs.${name}`, '_featureFlagOverridesRevision'];
 
@@ -79,7 +79,7 @@ export default class FeatureService extends Service {
 
     @computed('_nightShiftPref', '_osPrefersDark')
     get nightShift() {
-        let preference = this._nightShiftPref;
+        const preference = this._nightShiftPref;
 
         if (preference === 'system') {
             return this._osPrefersDark;
@@ -96,13 +96,16 @@ export default class FeatureService extends Service {
     @feature('importMemberTier') importMemberTier;
     @feature('adminUIRefresh') adminUIRefresh;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('tagDetailsReact') tagDetailsReact;
     @feature('paywallImprovements') paywallImprovements;
     @feature('automations') automations;
     @feature('csvContentImporter') csvContentImporter;
     @feature('postsListReact') postsListReact;
+    @feature('membersActivityReact') membersActivityReact;
+    @feature('membersCustomFields') membersCustomFields;
     @feature('editorReact') editorReact;
+    @feature('globalSearchReact') globalSearchReact;
     @feature('improveSendingUI') improveSendingUI;
+    @feature('dunningWarnings') dunningWarnings;
     _user = null;
     _featureFlagOverridesRevision = 0;
 
@@ -112,7 +115,7 @@ export default class FeatureService extends Service {
 
     @computed('settings.labs')
     get labs() {
-        let labs = this.settings.labs;
+        const labs = this.settings.labs;
 
         try {
             return JSON.parse(labs) || {};
@@ -123,7 +126,7 @@ export default class FeatureService extends Service {
 
     @computed('_user.accessibility')
     get accessibility() {
-        let accessibility = this.get('_user.accessibility');
+        const accessibility = this.get('_user.accessibility');
 
         try {
             return JSON.parse(accessibility) || {};
@@ -140,9 +143,9 @@ export default class FeatureService extends Service {
     }
 
     update(key, value, options = {}) {
-        let serviceProperty = options.user ? 'accessibility' : 'labs';
-        let model = this.get(options.user ? '_user' : 'settings');
-        let featureObject = this.get(serviceProperty);
+        const serviceProperty = options.user ? 'accessibility' : 'labs';
+        const model = this.get(options.user ? '_user' : 'settings');
+        const featureObject = this.get(serviceProperty);
 
         // set the new key value for either the labs property or the accessibility property
         set(featureObject, key, value);
@@ -210,7 +213,7 @@ export default class FeatureService extends Service {
         };
 
         if (mode === 'system') {
-            let mediaQuery = this._getSystemThemeMediaQuery();
+            const mediaQuery = this._getSystemThemeMediaQuery();
             isDark = mediaQuery?.matches ?? false;
             set(this, '_osPrefersDark', isDark);
 

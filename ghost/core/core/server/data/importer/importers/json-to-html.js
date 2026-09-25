@@ -25,9 +25,9 @@ const getValidURL = (url) => {
 
 // Take the array of items for a specific post and return the converted HTML
 const itemsToHtml = (items) => {
-  let itemHTMLChunks = [];
+  const itemHTMLChunks = [];
   items.forEach((item) => {
-    let type = item.item_type;
+    const type = item.item_type;
 
     if (type === 'header') {
       itemHTMLChunks.push(`<h3>${item.title}</h3>`);
@@ -37,7 +37,7 @@ const itemsToHtml = (items) => {
       // We have 2 values to work with here. `image` is smaller and most suitable, and `original_image_url` is the full-res that would need to be resized
       // - item.image (https://s3.amazonaws.com/revue/items/images/019/005/542/web/anita-austvika-C-JUrfmYqcw-unsplash.jpg?1667924147)
       // - item.original_image_url (https://s3.amazonaws.com/revue/items/images/019/005/542/original/anita-austvika-C-JUrfmYqcw-unsplash.jpg?1667924147)
-      let cardOpts = {
+      const cardOpts = {
         env: { dom: new SimpleDom.Document() },
         payload: {
           src: item.image,
@@ -50,7 +50,7 @@ const itemsToHtml = (items) => {
       // This could be a bookmark, or it could be a paragraph of text with a linked header, there's no way to tell
       // The safest option here is to output an image with text under it
       const itemURL = getValidURL(item.url);
-      let cardOpts = {
+      const cardOpts = {
         env: { dom: new SimpleDom.Document() },
         payload: {
           src: item.image,
@@ -62,7 +62,7 @@ const itemsToHtml = (items) => {
       const linkTitleHTML = itemURL
         ? `<a href="${serializer.escapeAttrValue(itemURL)}">${item.title}</a>`
         : item.title;
-      let linkHTML = `<h4>${linkTitleHTML}</h4>${item.description}`;
+      const linkHTML = `<h4>${linkTitleHTML}</h4>${item.description}`;
       itemHTMLChunks.push(linkHTML);
     } else if (type === 'tweet') {
       // Should this be an oEmbed call? Probably.
@@ -76,19 +76,22 @@ const itemsToHtml = (items) => {
       const isVimeo = /vimeo.com/.test(item.url);
       let videoHTML = '';
       if (isLongYouTube) {
-        let videoID = item.url.replace(
+        const videoID = item.url.replace(
           /https?:\/\/(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]*)/gi,
           '$1',
         );
         videoHTML = `<iframe width="200" height="113" src="https://www.youtube.com/embed/${videoID}?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
       } else if (isShortYouTube) {
-        let videoID = item.url.replace(/https?:\/\/(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]*)/gi, '$1');
+        const videoID = item.url.replace(
+          /https?:\/\/(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]*)/gi,
+          '$1',
+        );
         videoHTML = `<iframe width="200" height="113" src="https://www.youtube.com/embed/${videoID}?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
       } else if (isVimeo) {
-        let videoID = item.url.replace(/https?:\/\/(?:www\.)?vimeo\.com\/([0-9]+)/gi, '$1');
+        const videoID = item.url.replace(/https?:\/\/(?:www\.)?vimeo\.com\/([0-9]+)/gi, '$1');
         videoHTML = `<iframe src="https://player.vimeo.com/video/${videoID}" width="200" height="113" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
       }
-      let cardOpts = {
+      const cardOpts = {
         env: { dom: new SimpleDom.Document() },
         payload: {
           html: videoHTML,

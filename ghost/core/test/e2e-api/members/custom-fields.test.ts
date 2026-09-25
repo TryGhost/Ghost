@@ -36,18 +36,29 @@ describe('Member Custom Fields Members API', function () {
   let memberId: string;
   let fieldKey: string;
 
-  /** Define a field, as a publisher does, and hand back the key Ghost minted for it. */
   /** Every field this suite defined, so cleanup can undo its own work and no more. */
   const defined = new Set<string>();
 
-  async function defineField(name: string, type = 'short_text'): Promise<string> {
+  // Opens the field to members unless told otherwise. The API creates fields closed,
+  // so the tests that want a closed one ask for it explicitly.
+  async function defineField(
+    name: string,
+    { type = 'short_text', access = 'write' }: { type?: string; access?: string } = {},
+  ): Promise<string> {
     const { body } = await adminAgent
       .post('members/metafields/custom/')
-      .body({ members_metafields: [{ name, type }] })
+      .body({ members_metafields: [{ name, type, access: { member: access } }] })
       .expectStatus(201);
     const { key } = body.members_metafields[0];
     defined.add(key);
     return key;
+  }
+
+  async function setAccess(key: string, access: string): Promise<void> {
+    await adminAgent
+      .put(`members/metafields/custom/${key}/`)
+      .body({ members_metafields: [{ access: { member: access } }] })
+      .expectStatus(200);
   }
 
   async function archiveField(key: string): Promise<void> {
@@ -252,5 +263,342 @@ describe('Member Custom Fields Members API', function () {
     const after = await readMemberAsStaff();
     assert.equal(after.name, before.name);
     assert.equal(after.metafields.custom[fieldKey], '9', 'the defined field kept its value');
+  });
+
+  describe('the member activity feed', function () {
+    /** The entries staff see for this member's own field changes, newest first. */
+    async function fieldChangesInActivityFeed() {
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      // Every test here starts with a staff write, so the entries outgrow the default page.
+      const { body } = await adminAgent
+        .get(`members/events/?filter=${filter}&limit=1000`)
+        .expectStatus(200);
+      return body.events;
+    }
+
+    it('shows staff which fields a member changed, and nothing of what they hold', async function () {
+      const addressKey = await defineField('Home address', { type: 'address' });
+      const before = await fieldChangesInActivityFeed();
+
+      await membersAgent
+        .put('/api/member/')
+        .body({
+          metafields: {
+            custom: { [fieldKey]: '12', [addressKey]: { line1: '1 Secret Lane' } },
+          },
+        })
+        .expectStatus(200);
+
+      const events = await fieldChangesInActivityFeed();
+      assert.equal(events.length, before.length + 1, 'one entry for one write');
+
+      const [event] = events;
+      assert.equal(event.data.member.id, memberId);
+      // The member as the feed shows them: who they are and their avatar, nothing more.
+      assert.deepEqual(Object.keys(event.data.member).sort(), [
+        'avatar_image',
+        'email',
+        'id',
+        'name',
+        'uuid',
+      ]);
+      assert.equal(event.data.member.email, MEMBER_EMAIL);
+      assert.equal(event.data.written_by_type, 'member', 'the member made the change themselves');
+      assert.equal(event.data.source, 'portal', 'from their own account');
+      assert.deepEqual(
+        event.data.metafields.map((field: { name: string }) => field.name),
+        [SHOE_SIZE, 'Home address'],
+      );
+
+      const entry = JSON.stringify(event);
+      assert.ok(!entry.includes('1 Secret Lane'), 'the value is not repeated in the feed');
+      assert.ok(!entry.includes('"12"'), 'for any field');
+    });
+
+    it('places an entry in time like every other event', async function () {
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: '11' } } })
+        .expectStatus(200);
+
+      const [event] = await fieldChangesInActivityFeed();
+      const createdAt = Date.parse(event.data.created_at);
+      assert.ok(Math.abs(Date.now() - createdAt) < 60_000, 'stamped with when it happened');
+
+      // The feed pages through time with these filters, so an entry that sorts wrongly
+      // against them turns up on the wrong page, or on every page.
+      const since = async (operator: string) => {
+        const filter = encodeURIComponent(
+          `data.member_id:'${memberId}'+type:metafield_change_event+data.created_at:${operator}'2020-01-01 00:00:00'`,
+        );
+        const { body } = await adminAgent.get(`members/events/?filter=${filter}`).expectStatus(200);
+        return body.events.map((entry: { data: { id: string } }) => entry.data.id);
+      };
+      assert.ok((await since('>')).includes(event.data.id), 'after a date long past');
+      assert.ok(!(await since('<')).includes(event.data.id), 'and not before it');
+    });
+
+    it('keeps naming a field after the publisher deletes it', async function () {
+      const retiredKey = await defineField('Former employer');
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [retiredKey]: 'Acme' } } })
+        .expectStatus(200);
+
+      await archiveField(retiredKey);
+      await adminAgent.delete(`members/metafields/custom/${retiredKey}/`).expectStatus(204);
+      defined.delete(retiredKey);
+
+      const [event] = await fieldChangesInActivityFeed();
+      assert.deepEqual(event.data.metafields, [
+        { namespace: 'custom', key: retiredKey, name: 'Former employer' },
+      ]);
+    });
+
+    it('shows staff a change staff made, and that it was made in Admin', async function () {
+      const before = await fieldChangesInActivityFeed();
+
+      await setValuesAsStaff({ [fieldKey]: '10' });
+
+      const events = await fieldChangesInActivityFeed();
+      assert.equal(events.length, before.length + 1, 'one entry for one write');
+      const [event] = events;
+      assert.equal(event.data.written_by_type, 'user', 'a member of staff made the change');
+      assert.equal(event.data.source, 'admin');
+      assert.deepEqual(
+        event.data.metafields.map((field: { name: string }) => field.name),
+        [SHOE_SIZE],
+      );
+    });
+
+    it('records nothing for a change that names no fields, or one that is refused', async function () {
+      const before = await fieldChangesInActivityFeed();
+
+      await membersAgent.put('/api/member/').body({ name: 'Only renamed' }).expectStatus(200);
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: {} } })
+        .expectStatus(200);
+      // Refused, so nothing changed and nothing is reported as having changed.
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: 'x'.repeat(256) } } })
+        .expectStatus(422);
+
+      const after = await fieldChangesInActivityFeed();
+      assert.equal(after.length, before.length);
+    });
+  });
+
+  describe('what a publisher has kept to themselves', function () {
+    it('says nothing at all about a field the member may not see', async function () {
+      const privateKey = await defineField('Internal note', { access: 'none' });
+      await setValuesAsStaff({ [privateKey]: 'Difficult on the phone' });
+
+      const { body: offered } = await membersAgent
+        .get('/api/member/metafields/custom/')
+        .expectStatus(200);
+      assert.deepEqual(
+        offered.members_metafields.map((field: { key: string }) => field.key),
+        [fieldKey],
+        'the closed field is not among the fields there are to fill in',
+      );
+
+      const { body: account } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.deepEqual(
+        account.metafields,
+        { custom: { [fieldKey]: '9' } },
+        'nor is what staff put in it',
+      );
+
+      const seen = JSON.stringify(offered) + JSON.stringify(account);
+      assert.ok(!seen.includes(privateKey), 'the key is not named');
+      assert.ok(!seen.includes('Internal note'), 'nor the name the publisher gave it');
+      assert.ok(!seen.includes('Difficult on the phone'), 'nor what it holds');
+    });
+
+    it('answers a write to a closed field exactly as it answers a write to no field', async function () {
+      const privateKey = await defineField('Internal note', { access: 'none' });
+
+      const refusals = [];
+      for (const key of [privateKey, 'nothing_by_this_name']) {
+        const { body } = await membersAgent
+          .put('/api/member/')
+          .body({ metafields: { custom: { [key]: 'x' } } })
+          .expectStatus(422);
+        refusals.push(body.errors[0]);
+      }
+
+      const [closed, undefined_] = refusals;
+      // Any difference between these two is a way to ask a site which fields it holds.
+      assert.equal(closed.message, `Unknown custom field: custom.${privateKey}`);
+      assert.equal(undefined_.message, 'Unknown custom field: custom.nothing_by_this_name');
+      assert.equal(closed.type, undefined_.type);
+      assert.equal(closed.property, `metafields.custom.${privateKey}`);
+      assert.equal(undefined_.property, 'metafields.custom.nothing_by_this_name');
+
+      const stored = await readMemberAsStaff();
+      assert.equal(Object.hasOwn(stored.metafields.custom, privateKey), false);
+    });
+
+    // A member's request body keys reach a plain object on the way to being resolved,
+    // and a key naming something every object inherits reads back as present when it
+    // was never set. These are refused like any other unknown field today only because
+    // the namespace makes the key a compound one; if the bare form ever becomes
+    // addressable, this is what should fail first.
+    it('refuses a key naming an inherited property, and stores nothing', async function () {
+      for (const hostile of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
+        const { body } = await membersAgent
+          .put('/api/member/')
+          .body({ metafields: { custom: { [hostile]: 'x' } } })
+          .expectStatus(422);
+        assert.equal(body.errors[0].message, `Unknown custom field: custom.${hostile}`);
+      }
+
+      // Namespaces are data too, so the same key can arrive one level up. Built by
+      // parsing rather than as a literal: `{__proto__: …}` in source sets the
+      // prototype instead of creating a key, so it would serialise to `{}` and this
+      // would assert nothing.
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: JSON.parse('{"__proto__": {"anything": "x"}}') })
+        .expectStatus(422);
+
+      const stored = await readMemberAsStaff();
+      assert.deepEqual(stored.metafields.custom, { [fieldKey]: '9' }, 'nothing else was written');
+      assert.equal(
+        ({} as Record<string, unknown>).anything,
+        undefined,
+        'and nothing leaked onto Object',
+      );
+    });
+
+    // A write names several values, and a composite is several again. Refusing at the
+    // first would have someone correcting one part per round trip to find out what was
+    // wrong with the rest, so every refusal is reported from one attempt.
+    it('reports every value it refuses, not only the first', async function () {
+      const addressKey = await defineField('Shipping address', { type: 'address' });
+      const tooLong = 'x'.repeat(256);
+
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({
+          metafields: {
+            custom: {
+              [addressKey]: { line1: tooLong, line2: tooLong, country: 'nope' },
+              [fieldKey]: tooLong,
+            },
+          },
+        })
+        .expectStatus(422);
+
+      // The first still fills the error itself, so a client reading only that sees
+      // exactly what it saw before.
+      const [error] = body.errors;
+      assert.equal(error.property, `metafields.custom.${addressKey}.line1`);
+
+      // And the whole set rides alongside, each naming the value it belongs to.
+      const refused = (error.details as Array<{ property: string }>).map(
+        (detail) => detail.property,
+      );
+      assert.deepEqual(refused.sort(), [
+        `metafields.custom.${addressKey}.country`,
+        `metafields.custom.${addressKey}.line1`,
+        `metafields.custom.${addressKey}.line2`,
+        `metafields.custom.${fieldKey}`,
+      ]);
+
+      const stored = await readMemberAsStaff();
+      assert.deepEqual(stored.metafields.custom, { [fieldKey]: '9' }, 'and nothing was written');
+    });
+
+    // One refusal keeps the shape it has always had, rather than growing a list of one.
+    it('leaves details empty when only one value is refused', async function () {
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: 'x'.repeat(256) } } })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].property, `metafields.custom.${fieldKey}`);
+      assert.equal(body.errors[0].details, null);
+    });
+
+    it('will not let a member change a field they may only read', async function () {
+      const readOnlyKey = await defineField('Membership number', { access: 'read' });
+      await setValuesAsStaff({ [readOnlyKey]: 'M-001' });
+
+      const { body: account } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.equal(account.metafields.custom[readOnlyKey], 'M-001', 'they are shown it');
+
+      const { body: offered } = await membersAgent
+        .get('/api/member/metafields/custom/')
+        .expectStatus(200);
+      const offeredField = offered.members_metafields.find(
+        (field: { key: string }) => field.key === readOnlyKey,
+      );
+      assert.deepEqual(
+        offeredField.access,
+        { member: 'read' },
+        'and told they may not change it, so a client can render it as such',
+      );
+
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [readOnlyKey]: 'M-999' } } })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].message, `Cannot set custom field: custom.${readOnlyKey}`);
+
+      const stored = await readMemberAsStaff();
+      assert.equal(stored.metafields.custom[readOnlyKey], 'M-001');
+    });
+
+    it('leaves a member no way to tell a closed site from a site with no fields', async function () {
+      await setAccess(fieldKey, 'none');
+
+      const { body } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.equal(Object.hasOwn(body, 'metafields'), false);
+    });
+
+    it('shows a member what was already collected when a field is opened to them', async function () {
+      const laterKey = await defineField('Delivery address', { access: 'none' });
+      await setValuesAsStaff({ [laterKey]: '1 Main St' });
+
+      const { body: before } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.equal(Object.hasOwn(before.metafields.custom, laterKey), false);
+
+      await setAccess(laterKey, 'read');
+
+      const { body: after } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.equal(after.metafields.custom[laterKey], '1 Main St');
+    });
+
+    it('stops showing a member a field that is closed again, and keeps what they wrote', async function () {
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: '11' } } })
+        .expectStatus(200);
+
+      await setAccess(fieldKey, 'none');
+
+      const { body } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.equal(Object.hasOwn(body, 'metafields'), false);
+
+      const stored = await readMemberAsStaff();
+      assert.equal(stored.metafields.custom[fieldKey], '11');
+    });
+
+    it('shows staff every field, whatever a member may do with it', async function () {
+      const privateKey = await defineField('Internal note', { access: 'none' });
+      await setValuesAsStaff({ [privateKey]: 'Difficult on the phone' });
+
+      const stored = await readMemberAsStaff();
+      assert.equal(stored.metafields.custom[privateKey], 'Difficult on the phone');
+      assert.equal(stored.metafields.custom[fieldKey], '9');
+
+      const { body } = await adminAgent.get('members/metafields/custom/').expectStatus(200);
+      const keys = body.members_metafields.map((field: { key: string }) => field.key);
+      assert.ok(keys.includes(privateKey), 'and the definition, in the list they manage');
+    });
   });
 });

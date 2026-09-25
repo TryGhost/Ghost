@@ -37,6 +37,7 @@ import {
 import { HTable } from '@tryghost/shade/primitives';
 import {
   LucideIcon,
+  cn,
   formatNumber,
   formatPercentage,
   useSimplePagination,
@@ -56,6 +57,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useShade } from '@tryghost/shade/app';
 
 const FunnelArrow: React.FC = () => {
   return (
@@ -98,6 +100,7 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
 };
 
 const Newsletter: React.FC = () => {
+  const { isAdmin7 } = useShade();
   const navigate = useNavigate();
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [editedUrl, setEditedUrl] = useState('');
@@ -348,7 +351,7 @@ const Newsletter: React.FC = () => {
               <CardTitle>Newsletters</CardTitle>
               <CardDescription>How did this post perform</CardDescription>
             </CardHeader>
-            {isLoading ? (
+            {isLoading && !isNewsletterDataHidden ? (
               <CardContent className="h-[25vw] p-6">
                 <BarChartLoadingIndicator />
               </CardContent>
@@ -358,14 +361,15 @@ const Newsletter: React.FC = () => {
                   className={`grid ${chartHeaderClass} items-stretch border-b ${isNewsletterDataHidden ? 'pointer-events-none opacity-40' : ''}`}
                 >
                   <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
-                    <KpiCardMoreButton
-                      disabled={isNewsletterDataHidden}
-                      onClick={() => {
-                        navigateToMembers(`emails.post_id:${postId}`);
-                      }}
-                    >
-                      View members &rarr;
-                    </KpiCardMoreButton>
+                    {!isNewsletterDataHidden && (
+                      <KpiCardMoreButton
+                        onClick={() => {
+                          navigateToMembers(`emails.post_id:${postId}`);
+                        }}
+                      >
+                        View members &rarr;
+                      </KpiCardMoreButton>
+                    )}
                     <KpiCardLabel
                       onClick={() => {
                         navigateToMembers(`emails.post_id:${postId}`);
@@ -383,14 +387,15 @@ const Newsletter: React.FC = () => {
 
                   {emailTrackOpensEnabled && (
                     <KpiCard className="p-3 md:px-6 md:py-5">
-                      <KpiCardMoreButton
-                        disabled={isNewsletterDataHidden}
-                        onClick={() => {
-                          navigateToMembers(`opened_emails.post_id:${postId}`);
-                        }}
-                      >
-                        View members &rarr;
-                      </KpiCardMoreButton>
+                      {!isNewsletterDataHidden && (
+                        <KpiCardMoreButton
+                          onClick={() => {
+                            navigateToMembers(`opened_emails.post_id:${postId}`);
+                          }}
+                        >
+                          View members &rarr;
+                        </KpiCardMoreButton>
+                      )}
                       <KpiCardLabel
                         onClick={() => {
                           navigateToMembers(`opened_emails.post_id:${postId}`);
@@ -409,14 +414,15 @@ const Newsletter: React.FC = () => {
 
                   {emailTrackClicksEnabled && (
                     <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
-                      <KpiCardMoreButton
-                        disabled={isNewsletterDataHidden}
-                        onClick={() => {
-                          navigateToMembers(`clicked_links.post_id:${postId}`);
-                        }}
-                      >
-                        View members &rarr;
-                      </KpiCardMoreButton>
+                      {!isNewsletterDataHidden && (
+                        <KpiCardMoreButton
+                          onClick={() => {
+                            navigateToMembers(`clicked_links.post_id:${postId}`);
+                          }}
+                        >
+                          View members &rarr;
+                        </KpiCardMoreButton>
+                      )}
                       <KpiCardLabel
                         onClick={() => {
                           navigateToMembers(`clicked_links.post_id:${postId}`);
@@ -435,7 +441,7 @@ const Newsletter: React.FC = () => {
                 </div>
                 <PendingSendEmpty
                   description="Sends, opens and clicks will appear once every email has been sent"
-                  title="This newsletter is still sending"
+                  title="Your newsletter is being sent"
                 >
                   <div
                     className={`mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
@@ -558,9 +564,11 @@ const Newsletter: React.FC = () => {
                                 ) : (
                                   <>
                                     <Button
-                                      className="mr-2 shrink-0 bg-background"
-                                      size="sm"
-                                      variant="outline"
+                                      aria-label="Edit link"
+                                      className={cn('mr-2 shrink-0', !isAdmin7 && 'bg-background')}
+                                      size={isAdmin7 ? 'icon-sm' : 'sm'}
+                                      title={isAdmin7 ? 'Edit link' : undefined}
+                                      variant="subtle"
                                       onClick={() => handleEdit(linkId)}
                                     >
                                       <LucideIcon.Pen />
@@ -612,13 +620,8 @@ const Newsletter: React.FC = () => {
                           <SimplePaginationPreviousButton
                             disabled={!hasPreviousPage}
                             onClick={previousPage}
-                            // size='default'
                           />
-                          <SimplePaginationNextButton
-                            disabled={!hasNextPage}
-                            onClick={nextPage}
-                            // size='default'
-                          />
+                          <SimplePaginationNextButton disabled={!hasNextPage} onClick={nextPage} />
                         </SimplePaginationNavigation>
                       </SimplePagination>
                     )}

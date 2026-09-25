@@ -30,7 +30,7 @@ const { escapeExpression } = require('handlebars');
 
 /**
  * @typedef {object} EmailProviderSuccessResponse
- * @prop {string} id
+ * @prop {string|null} id Null when the batch carries a per-recipient Message-Id
  */
 
 class MailgunEmailProvider {
@@ -134,6 +134,11 @@ class MailgunEmailProvider {
         messageData.deliveryTime = options.deliveryTime;
       }
 
+      // only newsletters opt in; automation and gift emails rely on the id Mailgun returns
+      if (this.#config.get('bulkEmail:perRecipientMessageId') === true) {
+        messageData.perRecipientMessageId = true;
+      }
+
       // create recipient data for Mailgun using replacement definitions
       const htmlEscapedIds = new Set(
         replacementDefinitions.filter((def) => !def.trusted).map((def) => def.id),
@@ -163,7 +168,7 @@ class MailgunEmailProvider {
 
       // Return mailgun provider id, trim <> from response
       return {
-        id: response.id.trim().replace(/^<|>$/g, ''),
+        id: response.id === null ? null : response.id.trim().replace(/^<|>$/g, ''),
       };
     } catch (e) {
       let ghostError;

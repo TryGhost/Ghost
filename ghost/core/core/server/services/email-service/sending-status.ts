@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import type { StoredSendingStatus } from './sending-status-schema';
 
-const ETA_BATCH_WINDOW = 20;
+const ETA_WINDOW_MS = 60_000;
+const ETA_MIN_INTERVALS = 2;
 
 export const SendingPhase = z.enum(['preparing', 'submitting']);
 export type SendingPhase = z.infer<typeof SendingPhase>;
@@ -123,27 +124,46 @@ function estimateSecondsRemaining({
     return 0;
   }
 
-  const window = samples
+  const sorted = samples
     .filter(
       (sample) =>
         sample.recipientCount > 0 &&
         (attemptStartedAt === null || sample.timestamp >= attemptStartedAt),
     )
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-ETA_BATCH_WINDOW);
+    .sort((a, b) => a.timestamp - b.timestamp);
 
-  if (window.length < 2) {
+  // Coalesce completions sharing a timestamp so database timestamp precision does
+  // not turn their recipients into zero-duration samples or make row order matter.
+  const completions: BatchSample[] = [];
+  for (const sample of sorted) {
+    const previous = completions.at(-1);
+    if (previous?.timestamp === sample.timestamp) {
+      previous.recipientCount += sample.recipientCount;
+    } else {
+      completions.push({ ...sample });
+    }
+  }
+
+  // Three distinct timestamps provide two measured intervals for an initial rate.
+  if (completions.length < ETA_MIN_INTERVALS + 1) {
     return null;
   }
 
-  const elapsedSeconds = (window[window.length - 1].timestamp - window[0].timestamp) / 1000;
-  if (elapsedSeconds <= 0) {
-    return null;
+  // Include the baseline at or before the last minute so the first interval's
+  // recipients have their full elapsed time. Sparse sends still need two intervals.
+  const cutoff = completions[completions.length - 1].timestamp - ETA_WINDOW_MS;
+  let baseline = completions.length - 1;
+  while (baseline > 0 && completions[baseline].timestamp > cutoff) {
+    baseline -= 1;
   }
+  const window = completions.slice(
+    Math.max(0, Math.min(baseline, completions.length - ETA_MIN_INTERVALS - 1)),
+  );
 
-  const averageRecipientsPerBatch =
-    window.reduce((sum, sample) => sum + sample.recipientCount, 0) / window.length;
-  const recipientsPerSecond = (averageRecipientsPerBatch * (window.length - 1)) / elapsedSeconds;
-
-  return Math.ceil(remaining / recipientsPerSecond);
+  // Measure combined throughput across the window, including overlapping workers.
+  // The first completion is only the baseline: its recipients were processed
+  // before the measured time span.
+  const seconds = (window[window.length - 1].timestamp - window[0].timestamp) / 1000;
+  const recipients = window.slice(1).reduce((sum, sample) => sum + sample.recipientCount, 0);
+  return Math.ceil((remaining * seconds) / recipients);
 }

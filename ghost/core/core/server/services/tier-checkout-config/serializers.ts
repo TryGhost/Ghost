@@ -149,3 +149,64 @@ export const toCheckoutConfigResponse = z
     })),
   }))
   .pipe(CheckoutConfigResponse);
+
+/**
+ * What a tier asks a member for, as the tier payload carries it.
+ *
+ * The same rows as the publisher's resource above, minus everything about where a value
+ * lands. A member supplies a delivery address rather than a value for a named field, and
+ * which field holds it is the publisher's business; naming it here would invite a client
+ * to write there directly. The tax number goes too, because the processor keeps one
+ * against the customer it invoices and Ghost never stores it. So do the checkout
+ * questions, which a tier change does not draw.
+ *
+ * Not named for the collection, deliberately: a collection in this domain is a collected
+ * thing together with the field it lands in, and that second half is exactly the part
+ * this drops.
+ */
+const TierRequirements = z.object({
+  /**
+   * A block appears only when the tier asks for that thing, and says so as well, the same
+   * way the publisher's resource does. Presence and the flag agree, so a client may read
+   * whichever it finds clearer.
+   *
+   * Neither says whether a thing may be skipped, because nothing here may be: everything
+   * a tier requires is required. Collection a member could decline is the change that
+   * would need a field of its own rather than a new reading of these two.
+   */
+  shipping: z
+    .object({
+      collect: z.literal(true),
+      /** Absent means everywhere the processor ships, the same as for a publisher. */
+      allowed_countries: z.array(z.string()).optional(),
+    })
+    .optional(),
+  phone: z.object({ collect: z.literal(true) }).optional(),
+});
+export type TierRequirements = z.infer<typeof TierRequirements>;
+
+/**
+ * Keyed by tier, because the payload this joins onto is a list of tiers and a lookup is
+ * the only thing it needs. Tiers a publisher has never set up are absent, and a tier that
+ * collects only a tax number resolves to nothing asked.
+ */
+export function requirementsByTier(configs: TierCheckoutConfig[]): Map<string, TierRequirements> {
+  return new Map(
+    configs.map((config) => [
+      config.tierId,
+      TierRequirements.parse({
+        ...(config.shipping
+          ? {
+              shipping: {
+                collect: true as const,
+                ...(config.shipping.allowedCountries
+                  ? { allowed_countries: config.shipping.allowedCountries }
+                  : {}),
+              },
+            }
+          : {}),
+        ...(config.phone ? { phone: { collect: true as const } } : {}),
+      }),
+    ]),
+  );
+}

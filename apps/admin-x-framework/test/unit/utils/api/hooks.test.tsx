@@ -247,6 +247,25 @@ describe('API hooks', () => {
         expect(result.current.data).toEqual({ test: 1 });
       });
     });
+
+    it('forwards request options to the permission query', async () => {
+      await withMockFetch({ json: { test: 1 } }, async () => {
+        const useTestQuery = createQuery({
+          dataType: 'test',
+          path: '/test/',
+        });
+
+        const { result } = renderHook(
+          () => useTestQuery({ requestOptions: { sessionExpiryRedirect: false } }),
+          { wrapper },
+        );
+
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        expect(mockUseCurrentUser).toHaveBeenCalledWith({
+          requestOptions: { sessionExpiryRedirect: false },
+        });
+      });
+    });
   });
 
   describe('createInfiniteQuery', () => {
@@ -416,6 +435,26 @@ describe('API hooks', () => {
         // API call should have been made
         expect(mock.calls.length).toBe(1);
         expect(result.current.data).toEqual([1]);
+      });
+    });
+
+    it('forwards request options to the permission query', async () => {
+      await withMockFetch({ json: { test: 1 } }, async () => {
+        const useTestQuery = createInfiniteQuery({
+          dataType: 'test',
+          path: '/test/',
+          returnData: (originalData) => originalData,
+        });
+
+        const { result } = renderHook(
+          () => useTestQuery({ requestOptions: { sessionExpiryRedirect: false } }),
+          { wrapper },
+        );
+
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        expect(mockUseCurrentUser).toHaveBeenCalledWith({
+          requestOptions: { sessionExpiryRedirect: false },
+        });
       });
     });
   });

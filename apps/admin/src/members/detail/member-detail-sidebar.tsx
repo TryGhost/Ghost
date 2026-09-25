@@ -1,7 +1,7 @@
 import React from 'react';
 import moment from 'moment-timezone';
 import { Avatar } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
 import { formatMemberLocation, getMemberReferrerSource } from './member-detail-format';
 import { memberAvatarProps } from '@/members/member-format';
@@ -33,6 +33,7 @@ interface MemberDetailSidebarProps {
   // `gh-member-details.hbs:84`). Owned by the parent so all settings
   // reads happen in one place.
   engagementEnabled?: boolean;
+  showIdentity?: boolean;
 }
 
 // Matches Ember's `first-name` helper (`ghost/admin/app/helpers/first-name.js`):
@@ -46,6 +47,7 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
   draftName,
   draftEmail,
   engagementEnabled,
+  showIdentity = true,
 }) => {
   // Prefer the live draft over the saved member so a rename shows up in the
   // sidebar immediately. In create mode there's no saved member; fall back to
@@ -60,30 +62,32 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
       className="flex w-full shrink-0 flex-col gap-6 lg:w-80"
       data-testid="member-detail-sidebar"
     >
-      <div className="flex items-center gap-3 py-4">
-        <Avatar
-          className="size-12 min-w-12 [&_span]:text-lg"
-          {...memberAvatarProps({ name, email })}
-          src={member?.avatar_image}
-        />
-        <div className="min-w-0">
-          <h2 className="truncate text-xl font-semibold">{identityName}</h2>
-          {name && email && (
-            <a
-              className="block truncate text-muted-foreground hover:underline"
-              href={`mailto:${email}`}
-            >
-              {email}
-            </a>
-          )}
-          {!name &&
-            email && (
-              // In create mode only the email is filled at first; still show it so the
-              // sidebar visibly follows what the user has typed.
-              <span className="block truncate text-muted-foreground">{email}</span>
+      {showIdentity && (
+        <div className="flex items-center gap-3 py-4">
+          <Avatar
+            className="size-12 min-w-12 [&_span]:text-lg"
+            {...memberAvatarProps({ name, email })}
+            src={member?.avatar_image}
+          />
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-semibold">{identityName}</h2>
+            {name && email && (
+              <a
+                className="block truncate text-muted-foreground hover:underline"
+                href={`mailto:${email}`}
+              >
+                {email}
+              </a>
             )}
+            {!name &&
+              email && (
+                // In create mode only the email is filled at first; still show it so the
+                // sidebar visibly follows what the user has typed.
+                <span className="block truncate text-muted-foreground">{email}</span>
+              )}
+          </div>
         </div>
-      </div>
+      )}
 
       {!isNewMember && member && (
         <>
@@ -171,14 +175,18 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col gap-0.5">
                     <p className="text-muted-foreground">Emails received</p>
-                    <p className="text-2xl font-semibold">{member.email_count}</p>
+                    <p className="text-2xl font-semibold">
+                      {formatNumber(member.email_count ?? 0)}
+                    </p>
                   </div>
                   <div className="flex flex-col gap-0.5">
                     <p className="text-muted-foreground">Emails opened</p>
                     {/* Ember Data defaults this to `0`
                                             too (`ghost/admin/app/models/member.js:21`),
                                             so mirror that here for parity. */}
-                    <p className="text-2xl font-semibold">{member.email_opened_count ?? 0}</p>
+                    <p className="text-2xl font-semibold">
+                      {formatNumber(member.email_opened_count ?? 0)}
+                    </p>
                   </div>
                   <div className="flex flex-col gap-0.5">
                     <p className="text-muted-foreground">Average open rate</p>
@@ -192,7 +200,7 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
                       </p>
                     ) : (
                       <p className="text-2xl font-semibold">
-                        {member.email_open_rate}
+                        {formatNumber(member.email_open_rate)}
                         <span className="text-base font-normal text-muted-foreground">%</span>
                       </p>
                     )}

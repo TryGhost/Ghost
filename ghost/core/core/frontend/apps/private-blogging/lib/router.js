@@ -16,7 +16,7 @@ function _renderer(req, res) {
 
   // Renderer begin
   // Format data
-  let data = {};
+  const data = {};
 
   if (res.error) {
     data.error = res.error;

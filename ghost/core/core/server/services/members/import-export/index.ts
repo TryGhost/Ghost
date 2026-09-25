@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-types/csv';
-import type { WrittenBy } from '../../members-metafields';
+import { INTERNAL, type Audience, type WriteOrigin } from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -11,6 +11,7 @@ import MembersCSVImporter, {
 } from './import/importer';
 import readMemberRows from './import/reader';
 import { createRowSpool } from './import/spool';
+import type MembersImportJob from '../jobs/members-import-job';
 import MembersCSVExporter, {
   type ExportOptions,
   type MetafieldDefinition,
@@ -39,20 +40,22 @@ interface ImporterServices {
   };
   sendEmail: EmailNotifications['send'];
   urlFor(type: string, data: unknown, absolute: boolean): string;
-  addJob(job: { job: () => Promise<void>; offloaded: boolean; name: string }): void;
+  dispatchJob(job: MembersImportJob): Promise<void>;
   getTimezone(): string;
   getInlineThreshold(): number;
   stripeAPIService: unknown;
   productRepository: unknown;
   // The metafields services the members service hands the import composition root.
   metafields: {
-    definitions: { browse(): Promise<CsvField[]> };
+    definitions: {
+      browse(options: { namespace?: string }, audience: Audience): Promise<CsvField[]>;
+    };
     values: {
-      planWrite(values: Record<string, unknown>): Promise<unknown[]>;
+      planWrite(values: Record<string, unknown>, audience: Audience): Promise<unknown[]>;
       applyWrite(
         memberId: string,
         plan: unknown[],
-        options: { writtenBy: WrittenBy; executor?: Knex },
+        options: WriteOrigin & { executor?: Knex },
       ): Promise<void>;
     };
   };
@@ -60,9 +63,14 @@ interface ImporterServices {
 
 // The metafields services the members service hands the export composition root.
 interface MetafieldsServices {
-  definitions: { browse(): Promise<MetafieldDefinition[]> };
+  definitions: {
+    browse(options: { namespace?: string }, audience: Audience): Promise<MetafieldDefinition[]>;
+  };
   values: {
-    getValuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>>;
+    getValuesForMembers(
+      memberIds: string[],
+      audience: Audience,
+    ): Promise<Map<string, Record<string, unknown>>>;
   };
 }
 
@@ -116,19 +124,21 @@ export function makeImporter(deps: ImporterServices) {
   };
 
   const metafields: MetafieldsImport = {
-    activeFields: async () => deps.metafields.definitions.browse(),
-    planWrite: (values) => deps.metafields.values.planWrite(values),
+    activeFields: async () => deps.metafields.definitions.browse({}, INTERNAL),
+    planWrite: (values) => deps.metafields.values.planWrite(values, INTERNAL),
     // Every value the import writes came out of the file, whichever column carried it.
     // An import has no id to give until runs are tracked, so it names its kind only.
     applyWrite: (memberId, plan, executor) =>
       deps.metafields.values.applyWrite(memberId, plan, {
         writtenBy: { type: 'import', id: null },
+        source: 'import',
         executor,
       }),
   };
 
-  // Inline jobs never reach the job manager's Sentry handler, which is wired to the
-  // offloaded worker path only, so a throw here would be seen by nobody.
+  // The import job never rejects, so the jobs service never sees its failures, and the
+  // inline path's bookkeeping failures never reach the request: a throw here would be
+  // seen by nobody.
   const report: FailureReporter = (error) => {
     try {
       logging.error(
@@ -144,7 +154,7 @@ export function makeImporter(deps: ImporterServices) {
   return new MembersCSVImporter({
     knex: deps.knex,
     readRows: readMemberRows,
-    spool: createRowSpool(),
+    spool: createRowSpool(require('../../adapter-manager').default.getAdapter('storage:imports')),
     members,
     tiers: {
       getDefault: deps.getDefaultTier,
@@ -158,7 +168,7 @@ export function makeImporter(deps: ImporterServices) {
     metafields,
     email,
     report,
-    addJob: deps.addJob,
+    dispatchJob: deps.dispatchJob,
     getTimezone: deps.getTimezone,
     getInlineThreshold: deps.getInlineThreshold,
   });
@@ -191,8 +201,9 @@ export function makeExporter({
     metafields: {
       // Boot builds the definitions and values services before this one, so they
       // are always present -- no not-initialised state to guard.
-      activeDefinitions: async (): Promise<MetafieldDefinition[]> => definitions.browse(),
-      valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds),
+      activeDefinitions: async (): Promise<MetafieldDefinition[]> =>
+        definitions.browse({}, INTERNAL),
+      valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds, INTERNAL),
     },
   });
 

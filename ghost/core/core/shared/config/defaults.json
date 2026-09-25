@@ -71,6 +71,10 @@
     "active": "LocalImagesStorage",
     "media": "LocalMediaStorage",
     "files": "LocalFilesStorage",
+    "imports": {
+      "adapter": "LocalStorageBase",
+      "staticFileURLPrefix": "content/imports"
+    },
     "LocalMediaStorage": {},
     "LocalFilesStorage": {}
   },
@@ -305,8 +309,7 @@
         "enabled": false,
         "threshold": 500
       }
-    },
-    "openedJobLagWarningMinutes": 30
+    }
   },
   "linkClickTrackingCacheMemberUuid": false,
   "backgroundJobs": {
@@ -364,7 +367,8 @@
   },
   "bulkEmail": {
     "batchSize": 1000,
-    "captureLinkClickBadMemberUuid": false
+    "captureLinkClickBadMemberUuid": false,
+    "perRecipientMessageId": false
   },
   "disableJSBackups": false,
   "disableMigrationBackups": false,

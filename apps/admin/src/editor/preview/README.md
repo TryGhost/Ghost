@@ -2,14 +2,16 @@
 
 `<PostPreviewModal>` shows a post as its readers will get it: rendered by the site (Web) or rendered as the newsletter it would be sent as (Email). It is self-contained — the caller supplies the post's identity and preview URL, and the modal reads everything else (settings, tiers, newsletters, the current user, the email preview) from the Admin API.
 
-| Prop             | Meaning                                                                          |
-| ---------------- | -------------------------------------------------------------------------------- |
-| `open`           | Whether the modal is shown; `onOpenChange` reports closing                       |
-| `postId`         | Identifies the post for the email preview and test-send endpoints                |
-| `previewUrl`     | The post's public preview URL; empty until the post has a uuid                   |
-| `isPost`         | Pages have no email preview                                                      |
-| `newsletterSlug` | The post's own newsletter, preselected in the email preview                      |
-| `onBeforeOpen`   | Awaited before the preview renders, so the caller can save the draft it previews |
+| Prop              | Meaning                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| `open`            | Whether the modal is shown; `onOpenChange` reports closing                                   |
+| `postId`          | Identifies the post for the email preview and test-send endpoints                            |
+| `previewUrl`      | The post's public preview URL; empty until the post has a uuid                               |
+| `isPost`          | Pages have no email preview                                                                  |
+| `newsletterSlug`  | The post's own newsletter, preselected in the email preview                                  |
+| `onBeforeOpen`    | Awaited before the preview renders, so the caller can save the draft it previews             |
+| `onPublish`       | Renders a Publish button; supplied for every user who can publish                            |
+| `publishDisabled` | Keeps the Publish button rendered but disabled while the caller cannot open its publish flow |
 
 The modal never writes to the post. `onBeforeOpen` exists because a draft must be persisted before the site or the email renderer can see the latest content; what that means — dirty checks, a save in flight — belongs to the caller.
 
@@ -24,13 +26,15 @@ One audience drives both formats, held as a segment plus an optional tier slug a
 | `paid`      | `member_status=paid`                    | `member_status=paid`                    |
 | `tier`      | `member_status=paid&member_tier=<slug>` | `member_status=paid&member_tier=<slug>` |
 
-The paid audiences appear only when paid members are enabled, and the tier audience only when the site has paid tiers. The default is a free member.
+The paid audiences appear only when paid members are enabled, and the tier audience only when the site has paid tiers and the user is not a contributor, who cannot read tiers. The default is a free member.
 
 ## Email
 
 The Email tab is offered for posts only, when members are on, newsletters are not disabled in the editor settings, and the user is not a contributor.
 
 The rendered email arrives as a complete HTML document and is shown in a `srcdoc` iframe sandboxed without `allow-scripts` and without `allow-same-origin`, so it can neither run its own scripts nor reach the admin page. Scrollbar styling is concatenated into that document because the admin stylesheet does not apply inside it.
+
+The newsletters offered are the site's active ones, read from the same full browse the publish flow reads and narrowed here, every page of it. The post's own newsletter stays selectable even once it has been archived, which is looked up by slug; a newsletter the site has deleted leaves the email unsendable.
 
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
 

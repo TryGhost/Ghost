@@ -20,7 +20,7 @@ import HomeRedirect from './home-redirect';
 import { EmberListWithGiftLinks } from './gift-link-modal-host';
 import { EditorGate } from './editor-gate';
 import { PagesListGate, PostsListGate } from './posts-list-gate';
-import { TagDetailGate } from './tag-detail-gate';
+import { MemberActivityGate } from './member-activity-gate';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
@@ -30,7 +30,7 @@ import { membersRouteChildren } from './members/api';
 import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
 import { lazyPostAnalyticsRoot, postAnalyticsRouteChildren } from './posts/api';
 import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
-import { lazyTagsScreen } from './tags/api';
+import { lazyTagDetailScreen, lazyTagsScreen } from './tags/api';
 import {
   canManageAutomations,
   canManageMembers,
@@ -52,7 +52,6 @@ const EMBER_ROUTES: string[] = [
   '/posts/analytics/:postId/debug',
   '/restore',
   '/migrate/*',
-  '/members-activity',
 ];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
@@ -105,17 +104,22 @@ const appRoutes: RouteObject[] = [
     // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
     // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
     // tag with the literal slug "new" was already unreachable.
-    //
-    // TagDetailGate serves Ember or React depending on the
-    // `tagDetailsReact` Labs flag.
     path: '/tags/:tagSlug',
-    Component: TagDetailGate,
     handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyTagDetailScreen),
   },
   {
     path: '/members',
     handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
     children: membersRouteChildren,
+  },
+  {
+    path: '/members-activity',
+    Component: MemberActivityGate,
+    handle: {
+      ...emberFallbackHandle,
+      requiresAccess: canManageMembers,
+    } satisfies AccessRouteHandle & AdminRouteHandle,
   },
   {
     path: '/posts/analytics/:postId',
@@ -224,21 +228,21 @@ export const routes: RouteObject[] = [
 const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback, EmberListWithGiftLinks]);
 
 export function useIsEmberOwnedRoute(pathname: string): boolean {
-  const tagDetailOwner = useFlagGatedRouteOwner('tagDetailsReact');
   const postsListOwner = useFlagGatedRouteOwner('postsListReact');
   const editorOwner = useFlagGatedRouteOwner('editorReact');
+  const memberActivityOwner = useFlagGatedRouteOwner('membersActivityReact');
   const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
   if (!leaf) {
     return true;
-  }
-  if (leaf.Component === TagDetailGate) {
-    return tagDetailOwner !== 'react';
   }
   if (leaf.Component === PostsListGate || leaf.Component === PagesListGate) {
     return postsListOwner !== 'react';
   }
   if (leaf.Component === EditorGate) {
     return editorOwner !== 'react';
+  }
+  if (leaf.Component === MemberActivityGate) {
+    return memberActivityOwner !== 'react';
   }
   return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
 }

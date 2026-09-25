@@ -31,13 +31,13 @@ export default class LazyLoaderService extends Service {
             return this.scriptPromises[key];
         }
 
-        let scriptPromise = new RSVP.Promise((resolve, reject) => {
-            let script = document.createElement('script');
+        const scriptPromise = new RSVP.Promise((resolve, reject) => {
+            const script = document.createElement('script');
             script.type = 'text/javascript';
             script.async = true;
             script.src = prefixAssetUrl(url);
 
-            let el = document.getElementsByTagName('script')[0];
+            const el = document.getElementsByTagName('script')[0];
             el.parentNode.insertBefore(script, el);
 
             script.addEventListener('load', () => {
@@ -60,7 +60,7 @@ export default class LazyLoaderService extends Service {
         }
 
         return new RSVP.Promise((resolve, reject) => {
-            let link = document.createElement('link');
+            const link = document.createElement('link');
             link.id = `${key}-styles`;
             link.rel = alternate ? 'alternate stylesheet' : 'stylesheet';
             link.href = prefixAssetUrl(url);

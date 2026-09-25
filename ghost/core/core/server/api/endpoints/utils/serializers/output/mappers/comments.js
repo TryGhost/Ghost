@@ -86,7 +86,7 @@ const commentMapper = (model, frame) => {
   );
 
   if (!fields || fields.has('pinned')) {
-    if (Object.prototype.hasOwnProperty.call(jsonModel, 'pinned')) {
+    if (Object.hasOwn(jsonModel, 'pinned')) {
       response.pinned = Boolean(jsonModel.pinned);
     } else {
       const canShowPinned = !jsonModel.parent_id && Boolean(jsonModel.pinned_at);
@@ -118,11 +118,14 @@ const commentMapper = (model, frame) => {
     url.forPost(jsonModel.post.id, jsonModel.post, frame, routerType);
     response.post = _.pick(jsonModel.post, postFields);
 
-    // Compute excerpt from custom_excerpt or plaintext (same logic as post serializer)
-    if (jsonModel.post.custom_excerpt) {
-      response.post.excerpt = jsonModel.post.custom_excerpt;
-    } else if (jsonModel.post.plaintext) {
-      response.post.excerpt = jsonModel.post.plaintext.substring(0, 500);
+    // Excerpts can contain gated post content, so only Admin gets them
+    if (!isPublicRequest) {
+      // Compute excerpt from custom_excerpt or plaintext (same logic as post serializer)
+      if (jsonModel.post.custom_excerpt) {
+        response.post.excerpt = jsonModel.post.custom_excerpt;
+      } else if (jsonModel.post.plaintext) {
+        response.post.excerpt = jsonModel.post.plaintext.substring(0, 500);
+      }
     }
   }
 

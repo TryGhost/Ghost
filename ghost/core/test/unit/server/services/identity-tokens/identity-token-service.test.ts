@@ -1,7 +1,8 @@
 import assert from 'assert/strict';
 import { IdentityTokenService } from '../../../../../core/server/services/identity-tokens/identity-token-service';
-import { JWK } from 'node-jose';
+import crypto from 'node:crypto';
 import { verify } from 'jsonwebtoken';
+import { getPublicKeyInfo } from '../../../../../core/server/lib/public-jwk';
 
 describe('IdentityTokenService', function () {
   it('Can create JWTs', async function () {
@@ -34,14 +35,18 @@ m+HAlDNOZe7ryiuK7dj04wY2qoO/kCsxO9bR1M8LGRWFIHd4e8ExGWn5Qxk0/9X+
 8/teeCoaDHNy7R6167uxyX8=
 -----END PRIVATE KEY-----`;
     const issuer = 'issuer.com';
-    const keyStore = JWK.createKeyStore();
-    const key = await keyStore.add(privateKey, 'pem');
+    const { kid, jwk } = await getPublicKeyInfo(privateKey);
 
-    const service = new IdentityTokenService(privateKey, issuer, key.kid);
+    const service = new IdentityTokenService(privateKey, issuer, kid);
 
     const token = await service.getTokenForUser('egg@ghost.org', 'Legend');
 
-    const claims = verify(token, key.toPEM());
+    const claims = verify(
+      token,
+      crypto
+        .createPublicKey({ key: jwk as crypto.JsonWebKey, format: 'jwk' })
+        .export({ type: 'spki', format: 'pem' }) as string,
+    );
 
     if (typeof claims === 'string') {
       throw new Error('Unexpected return type');

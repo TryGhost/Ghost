@@ -73,6 +73,45 @@ describe('{{#get}} helper', function () {
         },
       );
     });
+    it('Changes the filter for SafeString id negations', function () {
+      const apiOptions = {
+        filter: new SafeString('id:-abcdef1234567890abcdef12+tag:news'),
+        limit: 1,
+      };
+      const { options, parseResult } = get.optimiseFilterCacheability('posts', apiOptions);
+      assert.equal(options.filter, 'id:-null+tag:news');
+      assert.equal(options.limit, 2);
+      assert.deepEqual(
+        parseResult({
+          posts: [
+            {
+              id: 'abcdef1234567890abcdef12',
+            },
+            {
+              id: '1234567890abcdef12345678',
+            },
+          ],
+        }),
+        {
+          posts: [
+            {
+              id: '1234567890abcdef12345678',
+            },
+          ],
+          meta: {
+            cacheabilityOptimisation: true,
+          },
+        },
+      );
+      sinon.assert.notCalled(logging.warn);
+    });
+    it('Leaves non-string filters without id negations untouched', function () {
+      for (const filter of [new SafeString('tag:news'), 123, true, ['tag:news'], { tag: 'news' }]) {
+        const { options } = get.optimiseFilterCacheability('posts', { filter });
+        assert.equal(options.filter, filter);
+      }
+      sinon.assert.notCalled(logging.warn);
+    });
   });
 
   describe('context preparation', function () {

@@ -5,6 +5,7 @@ const {
   fixtureManager,
   mockManager,
   configUtils,
+  hostLimits,
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
@@ -18,6 +19,7 @@ describe('Member Custom Fields Admin API', function () {
     loginAsOwner: () => Promise<void>;
     loginAsEditor: () => Promise<void>;
     useZapierAdminAPIKey: () => Promise<void>;
+    useStaffTokenForOwner: () => Promise<void>;
   };
 
   // The key is minted server-side from the name, so callers pass just a name
@@ -460,6 +462,76 @@ describe('Member Custom Fields Admin API', function () {
       // fresh field with the same name reclaims the original (unsuffixed) key.
       const fresh = await createField({ name: 'Favourite topic' });
       assert.equal(fresh.key, 'favourite_topic');
+    });
+  });
+
+  describe('Member access', function () {
+    it('creates a field closed to members', async function () {
+      const created = await createField({ name: 'Internal note' });
+      assert.deepEqual(created.access, { member: 'none' });
+    });
+
+    it('creates a field open to members when the publisher says so', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Shoe size', type: 'short_text', access: { member: 'write' } },
+          ],
+        })
+        .expectStatus(201);
+      assert.deepEqual(body.members_metafields[0].access, { member: 'write' });
+    });
+
+    it('opens and closes a field after the fact', async function () {
+      const field = await createField({ name: 'Shoe size' });
+
+      const opened = (
+        await agent
+          .put(`members/metafields/custom/${field.key}/`)
+          .body({ members_metafields: [{ access: { member: 'read' } }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+      assert.deepEqual(opened.access, { member: 'read' });
+
+      const closed = (
+        await agent
+          .put(`members/metafields/custom/${field.key}/`)
+          .body({ members_metafields: [{ access: { member: 'none' } }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+      assert.deepEqual(closed.access, { member: 'none' });
+    });
+
+    it('leaves access alone when an edit says nothing about it', async function () {
+      const field = await createField({ name: 'Shoe size' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ access: { member: 'write' } }] })
+        .expectStatus(200);
+
+      const renamed = (
+        await agent
+          .put(`members/metafields/custom/${field.key}/`)
+          .body({ members_metafields: [{ name: 'Shoe size (EU)' }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+
+      assert.equal(renamed.name, 'Shoe size (EU)');
+      assert.deepEqual(renamed.access, { member: 'write' });
+    });
+
+    it('refuses a level it does not recognise', async function () {
+      const field = await createField({ name: 'Shoe size' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ access: { member: 'admin' } }] })
+        .expectStatus(422);
+
+      const unchanged = (
+        await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200)
+      ).body.members_metafields[0];
+      assert.deepEqual(unchanged.access, { member: 'none' });
     });
   });
 
@@ -1547,6 +1619,71 @@ describe('Member Custom Fields Admin API', function () {
       assert.notEqual(secondWrite[0].written_by_id, owner, 'the integration is identified too');
       assert.ok(secondWrite[0].written_by_id);
       assert.equal(secondWrite[1].written_by_id, owner);
+
+      // Each write also shows on the member's activity feed, saying where it was made.
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      const { body } = await agent.get(`members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }: { data: { source: string; written_by_type: string } }) => ({
+          source: data.source,
+          writer: data.written_by_type,
+        })),
+        [
+          { source: 'admin_api', writer: 'integration' },
+          { source: 'admin', writer: 'user' },
+        ],
+      );
+    });
+
+    // A staff token belongs to a person rather than an integration, but whoever holds it is
+    // calling the API rather than using Admin, and the feed has to say so.
+    it('says a change made with a staff token was made through the Admin API', async function () {
+      const field = await createField({ name: 'Company' });
+      const memberId = await createMember();
+
+      await agent.useStaffTokenForOwner();
+      try {
+        await setValues(memberId, { [field.key]: 'Acme' });
+      } finally {
+        await agent.loginAsOwner();
+      }
+
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      const { body } = await agent.get(`members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }: { data: { source: string; written_by_type: string } }) => ({
+          source: data.source,
+          writer: data.written_by_type,
+        })),
+        [{ source: 'admin_api', writer: 'user' }],
+      );
+    });
+
+    // No API writes an entry the feed can't read, so the only way to show what happens to
+    // one is to put it in the table directly.
+    it('shows an unreadable activity entry as naming no fields rather than failing the feed', async function () {
+      const field = await createField({ name: 'Department' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Sales' });
+
+      await models.Base.knex('members_metafield_change_events').insert({
+        id: '0123456789abcdef01234567',
+        member_id: memberId,
+        written_by_type: 'import',
+        written_by_id: null,
+        source: 'import',
+        metafields: '{not json',
+        created_at: '2020-01-01 00:00:00',
+      });
+
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      const { body } = await agent.get(`members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }: { data: { metafields: Array<{ name: string }> } }) =>
+          data.metafields.map(({ name }) => name),
+        ),
+        [['Department'], []],
+      );
     });
 
     it("drops a field's values when the field is permanently deleted", async function () {
@@ -1958,12 +2095,30 @@ describe('Member Custom Fields Admin API', function () {
         primary_name?: string;
         key?: string;
         previous_name?: string;
+        member_access?: string;
+        previous_member_access?: string;
         action_name?: string;
         count?: number;
       };
 
     beforeAll(async function () {
       actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
+    });
+
+    it("records what a field's member access became, and what it was", async function () {
+      const field = await createField({ name: 'Shoe size' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ access: { member: 'write' } }] })
+        .expectStatus(200);
+
+      const actions = await customFieldActions();
+      const opened = actions.find((a: { event: string }) => a.event === 'edited') as unknown as {
+        context: unknown;
+      };
+
+      assert.equal(contextOf(opened).member_access, 'write');
+      assert.equal(contextOf(opened).previous_member_access, 'none');
     });
 
     it('records an "added" action when a field is created', async function () {
@@ -2312,6 +2467,171 @@ describe('Member Custom Fields Admin API', function () {
 
     it('404s the delete endpoint', async function () {
       await agent.delete('members/metafields/custom/company/').expectStatus(404);
+    });
+  });
+  // Custom fields can be switched off for a site by its host, separately from the flag,
+  // so the feature can be sold with a plan. The limit is unset everywhere today, which is
+  // what the first test pins: nothing changes for a site nobody has limited. When it is
+  // set, changing definitions answers 403 with the host's copy, distinct from the 404 the
+  // flag gives, because "your plan does not include this" is a different thing to tell a
+  // caller than "this does not exist here". Reading stays open either way, so a site whose
+  // plan drops can still see and export the fields it already has.
+  describe('Host limit', function () {
+    afterEach(async function () {
+      await hostLimits.restoreHostLimits();
+    });
+
+    it('leaves every route alone when the limit is unset', async function () {
+      const field = await createField({ name: 'Unlimited' });
+
+      await agent.get('members/metafields/custom/').expectStatus(200);
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ name: 'Still unlimited' }] })
+        .expectStatus(200);
+      // Deleting is only offered on an archived field, so archiving is the step
+      // that proves the edit route is open, and the delete that follows it too.
+      await setStatus(field.key, 'archived');
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
+    });
+
+    it('leaves every route alone when the limit is present but not disabled', async function () {
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: false } });
+
+      const field = await createField({ name: 'Permitted' });
+      await setStatus(field.key, 'archived');
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
+    });
+
+    describe('when the host disables the feature', function () {
+      let existingKey: string;
+
+      beforeEach(async function () {
+        // Created before the limit goes on, standing in for a site that had the feature
+        // and then dropped below the plan that includes it.
+        existingKey = (await createField({ name: 'Bought earlier' })).key;
+        await hostLimits.setHostLimits({
+          limitCustomFields: {
+            disabled: true,
+            error: 'Custom fields are available on the Publisher plan and above.',
+          },
+        });
+      });
+
+      it('still lists the fields the site already has', async function () {
+        const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+        assert.equal(
+          body.members_metafields.some((field: { key: string }) => field.key === existingKey),
+          true,
+        );
+      });
+
+      it('still reads a single field', async function () {
+        await agent.get(`members/metafields/custom/${existingKey}/`).expectStatus(200);
+      });
+
+      it('403s the create endpoint, with the host copy', async function () {
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+          .expectStatus(403);
+
+        // The guard is middleware, so the refusal reaches the caller as the limit service
+        // raised it. Endpoints that catch a host limit and re-word it put their own sentence
+        // in `message` and move the host's to `context`; this route has nowhere doing that,
+        // so the publisher reads what their host wrote and `context` stays empty.
+        assert.equal(
+          body.errors[0].message,
+          'Custom fields are available on the Publisher plan and above.',
+        );
+        assert.equal(body.errors[0].context, null);
+        assert.equal(body.errors[0].details.name, 'limitCustomFields');
+      });
+
+      it('403s the reorder endpoint', async function () {
+        await agent
+          .put('members/metafields/custom/')
+          .body({ members_metafields: [{ key: existingKey }] })
+          .expectStatus(403);
+      });
+
+      it('403s the edit endpoint', async function () {
+        await agent
+          .put(`members/metafields/custom/${existingKey}/`)
+          .body({ members_metafields: [{ name: 'Employer' }] })
+          .expectStatus(403);
+      });
+
+      it('403s the delete endpoint', async function () {
+        await agent.delete(`members/metafields/custom/${existingKey}/`).expectStatus(403);
+      });
+
+      // Turning checkout collection on makes the field the collected value lands in, so
+      // this route creates definitions without going near the routes above. That is
+      // deliberate and stays allowed: the publisher is not managing custom fields here,
+      // they are turning on shipping, and the field is the machinery that serves it.
+      //
+      // What makes it safe is the packaging, not anything enforced along the way. Only one
+      // plan limit is involved at all: limitStripeConnect, which withholds Stripe, without
+      // which there is nothing to charge for and so no reason to have a paid tier. Admin
+      // then offers a checkout configuration only on a paid tier. The plan that includes
+      // Stripe is the plan that will include custom fields, so a site that reaches here is
+      // entitled to what it provisions.
+      //
+      // That chain holds by coincidence of pricing, and only its first link is enforced.
+      // The last one is a convention of the interface: this route accepts a free tier, and
+      // checks neither the tier's type nor whether Stripe is connected. Nor does the
+      // stripeCheckoutCollection flag stand in for any of it, being a rollout switch with
+      // no view on what a site pays for.
+      //
+      // So this pins a decision, not a mechanism. If checkout collection is ever sold
+      // apart from custom fields, this route needs a limit of its own rather than
+      // borrowing this one, because what it governs is what a checkout may collect.
+      it('still provisions the field a checkout collection needs', async function () {
+        const { body: tiers } = await agent
+          .get('tiers/?limit=1&filter=type:paid')
+          .expectStatus(200);
+
+        await agent
+          .put(`tiers/${tiers.tiers[0].id}/checkout_config/`)
+          .body({
+            tiers_checkout_config: [
+              {
+                shipping: {
+                  collect: true,
+                  allowed_countries: ['GB'],
+                  name: { custom_field_key: 'shipping_name' },
+                  address: { custom_field_key: 'shipping_address' },
+                },
+              },
+            ],
+          })
+          .expectStatus(200);
+
+        const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+        assert.equal(
+          body.members_metafields.some(
+            (field: { key: string }) => field.key === 'shipping_address',
+          ),
+          true,
+        );
+      });
+
+      it('falls back to generic copy when the host sets no message', async function () {
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+          .expectStatus(403);
+
+        // The wording the limit service builds when a host supplies none, from the limit's
+        // own name.
+        assert.equal(
+          body.errors[0].message,
+          'Your plan does not support custom fields. Please upgrade to enable custom fields.',
+        );
+      });
     });
   });
 });

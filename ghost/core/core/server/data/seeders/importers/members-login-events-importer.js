@@ -1,6 +1,6 @@
 const { TableImporter } = require('./table-importer');
 const { luck } = require('../utils/random');
-const generateEvents = require('../utils/event-generator');
+const { generateEvents } = require('../utils/event-generator');
 const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-types/date');
 
 class MembersLoginEventsImporter extends TableImporter {
@@ -17,7 +17,7 @@ class MembersLoginEventsImporter extends TableImporter {
     }
 
     let offset = 0;
-    let limit = 100000;
+    const limit = 100000;
 
     while (true) {
       const members = await this.transaction

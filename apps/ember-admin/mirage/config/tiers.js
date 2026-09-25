@@ -23,8 +23,8 @@ export default function mockTiers(server) {
     server.get('/tiers/', withPermissionsCheck(ALLOWED_READ_ROLES, paginatedResponse('tiers')));
 
     server.get('/tiers/:id/', withPermissionsCheck(ALLOWED_READ_ROLES, function ({tiers}, {params}) {
-        let {id} = params;
-        let tier = tiers.find(id);
+        const {id} = params;
+        const tier = tiers.find(id);
 
         return tier || new Response(404, {}, {
             errors: [{

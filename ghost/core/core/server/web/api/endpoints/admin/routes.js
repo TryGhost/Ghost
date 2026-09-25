@@ -5,6 +5,7 @@ const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
+const limits = require('../../../../services/limits');
 
 const shared = require('../../../shared');
 
@@ -195,40 +196,38 @@ module.exports = function apiRoutes() {
 
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
-  // Reading definitions is deliberately not behind the feature flag: Admin asks every site
-  // for them, and a site without the flag simply has none, so the answer is an empty list
-  // rather than a 404. Creating and changing them is flagged. Registered before /members/:id
-  // so the literal path is not captured as an id.
-  router.get('/members/metafields/:namespace', mw.authAdminApi, http(api.membersMetafields.browse));
-  router.post(
-    '/members/metafields/:namespace',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersMetafields.add),
-  );
-  router.put(
-    '/members/metafields/:namespace',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersMetafields.reorder),
-  );
-  router.get(
-    '/members/metafields/:namespace/:key',
-    mw.authAdminApi,
-    http(api.membersMetafields.read),
-  );
-  router.put(
-    '/members/metafields/:namespace/:key',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersMetafields.edit),
-  );
-  router.delete(
-    '/members/metafields/:namespace/:key',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersMetafields.destroy),
-  );
+  // Custom field definitions. Mounted rather than listed so every route under it is
+  // reached the same way, and so the guards are stated once each instead of on every
+  // route that needs them.
+  //
+  // Order carries the rule here, the way Express reads it: a request walks this stack
+  // from the top, so the reads below are answered before the guards are reached, and
+  // everything registered after them passes through both. A route added at the end is
+  // guarded by being there, which is the safer way round to forget.
+  //
+  // Mounted before /members/:id so the literal path is not captured as an id.
+  const metafieldsRouter = express.Router('admin api members metafields');
+  router.use('/members/metafields', metafieldsRouter);
+
+  metafieldsRouter.use(mw.authAdminApi);
+
+  // Reading is deliberately open: Admin asks every site for its definitions to draw
+  // screens it renders either way, and a site that has none simply answers with an empty
+  // list rather than a 404.
+  metafieldsRouter.get('/:namespace', http(api.membersMetafields.browse));
+  metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
+
+  // Changing one needs the feature to exist in this build and the site's plan to include
+  // it. Two separate questions, asked once each: a 404 says the feature is not here, a 403
+  // says the plan does not cover it, and only the second is something a publisher can act
+  // on.
+  metafieldsRouter.use(labs.enabledMiddleware('membersCustomFields'));
+  metafieldsRouter.use(limits.requireFeature('limitCustomFields'));
+
+  metafieldsRouter.post('/:namespace', http(api.membersMetafields.add));
+  metafieldsRouter.put('/:namespace', http(api.membersMetafields.reorder));
+  metafieldsRouter.put('/:namespace/:key', http(api.membersMetafields.edit));
+  metafieldsRouter.delete('/:namespace/:key', http(api.membersMetafields.destroy));
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));
   router.put('/members/:id', mw.authAdminApi, http(api.members.edit));

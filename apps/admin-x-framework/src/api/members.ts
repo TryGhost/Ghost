@@ -7,11 +7,14 @@ import {
   createQuery,
   createQueryWithId,
 } from '../utils/api/hooks';
-import { apiUrl } from '../utils/api/fetch-api';
+import { escapeNqlString } from '@tryghost/nql-string';
+import { apiUrl, type RequestOptions } from '../utils/api/fetch-api';
 import type { FieldValue } from '@tryghost/metafield-types';
 import { useCurrentUser } from './current-user';
 import { canManageMembers } from './users';
 import { FREE_SEGMENT, PAID_SEGMENT } from '../utils/recipient-filter';
+
+export { useBrowseMemberActivityFeed, type BrowseMemberActivityOptions } from './member-activity';
 
 export type MemberLabel = {
   id: string;
@@ -209,8 +212,13 @@ export interface MembersCountResult {
   isFetching: boolean;
   /** Preserved for flows where an unreadable count must block a destructive action. */
   error: unknown;
-  /** Retries the count without forcing every descriptive count consumer to handle errors. */
+  /** Retries the failed current-user prerequisite and/or count request. */
   refetch: () => Promise<unknown>;
+}
+
+export interface MembersCountOptions {
+  /** Transport options for both requests this hook makes: the count and the current user. */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
 }
 
 /**
@@ -218,15 +226,21 @@ export interface MembersCountResult {
  * `members-count-cache` service + `members-count-fetcher` resource: a browse
  * request with `limit=1` reading `meta.pagination.total`, cached per-filter
  * for 60 seconds. As in Ember, roles that cannot manage members get
- * `count: null` without a request, a nullish filter counts as 0 without a
- * request, and request errors resolve to 0 with no error toast. While the
- * current user is still loading the result has `count: null` and
- * `isLoading: true`, so callers can tell it apart from a role that cannot
- * browse members. The request error and retry are also exposed for callers
- * such as publish limits that cannot safely treat an unreadable count as zero.
+ * `count: null` without a request and a nullish filter counts as 0 without a
+ * request. A failed request resolves to `count: null` with no error toast —
+ * an unreadable count is not a count of zero, and callers render descriptive
+ * copy for `null` rather than claiming an audience of none. While the current
+ * user is still loading the result has `count: null` and `isLoading: true`,
+ * so callers can tell it apart from a role that cannot browse members. The
+ * request error and retry are also exposed for callers such as publish limits
+ * that cannot safely treat an unreadable count as zero.
  */
-export function useMembersCount(filter: string | null | undefined): MembersCountResult {
-  const { data: currentUser } = useCurrentUser();
+export function useMembersCount(
+  filter: string | null | undefined,
+  { requestOptions }: MembersCountOptions = {},
+): MembersCountResult {
+  const currentUserQuery = useCurrentUser({ requestOptions });
+  const { data: currentUser } = currentUserQuery;
   const canFetch = Boolean(currentUser && canManageMembers(currentUser));
   const enabled = canFetch && filter !== null && filter !== undefined;
 
@@ -236,7 +250,34 @@ export function useMembersCount(filter: string | null | undefined): MembersCount
     staleTime: MEMBERS_COUNT_STALE_TIME,
     enabled,
     defaultErrorHandler: false,
+    requestOptions,
   });
+
+  const refetchAfterCurrentUserError = async () => {
+    const refreshedUser = await currentUserQuery.refetch();
+
+    if (
+      refreshedUser.isSuccess &&
+      refreshedUser.data &&
+      canManageMembers(refreshedUser.data) &&
+      filter !== null &&
+      filter !== undefined
+    ) {
+      return result.refetch();
+    }
+
+    return refreshedUser;
+  };
+
+  if (currentUserQuery.isError) {
+    return {
+      count: null,
+      isLoading: false,
+      isFetching: currentUserQuery.isFetching,
+      error: currentUserQuery.error,
+      refetch: refetchAfterCurrentUserError,
+    };
+  }
 
   if (currentUser === undefined) {
     return {
@@ -248,13 +289,23 @@ export function useMembersCount(filter: string | null | undefined): MembersCount
     };
   }
 
-  if (!enabled || result.isError) {
+  if (!enabled) {
     return {
       count: canFetch ? 0 : null,
       isLoading: false,
-      isFetching: enabled && result.isFetching,
-      error: enabled ? result.error : null,
-      refetch: enabled ? result.refetch : noOpMembersCountRefetch,
+      isFetching: false,
+      error: null,
+      refetch: noOpMembersCountRefetch,
+    };
+  }
+
+  if (result.isError) {
+    return {
+      count: null,
+      isLoading: false,
+      isFetching: result.isFetching,
+      error: result.error,
+      refetch: result.refetch,
     };
   }
 
@@ -809,11 +860,11 @@ const MEMBER_ACTIVITY_LIMIT = '20';
 // last event of the previous page (events are ordered created_at desc).
 //
 // KNOWN LIMITATION: the cursor is `created_at`-only, without the id tie-breaker
-// Ember's version added (`+id:<'<lastId>'`). Two events emitted in the same
+// required for reliable pagination. Two events emitted in the same
 // second on a page boundary can be skipped from the paginated list. The current
 // consumer (`MemberActivityFeed` in `apps/admin`) only fetches 5 events and
-// never calls `fetchNextPage`, so this is not exploitable today; add an id
-// secondary cursor before another screen starts paginating.
+// never calls `fetchNextPage`. Paginated consumers must use
+// useBrowseMemberActivityFeed, which drains timestamp boundaries by event type.
 function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
   const createdAt = events[events.length - 1]?.data?.created_at;
   if (!createdAt) {
@@ -822,8 +873,15 @@ function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
   return new Date(createdAt).toISOString().slice(0, 19).replace('T', ' ');
 }
 
-function buildMemberEventsFilter(memberId: string): string {
-  return `data.member_id:'${memberId}'`;
+// The same exclusion the full activity page sends, so the preview and the page leave out
+// the same events.
+function buildMemberEventsFilter(memberId: string, excludedEvents: string[]): string {
+  return [
+    excludedEvents.length > 0 && `type:-[${excludedEvents.map(escapeNqlString).join(',')}]`,
+    `data.member_id:'${memberId}'`,
+  ]
+    .filter(Boolean)
+    .join('+');
 }
 
 const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfiniteResponseType>({
@@ -864,12 +922,12 @@ const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfinit
 
 export function useMemberActivityFeed(
   memberId: string,
-  options: { enabled?: boolean; limit?: string } = {},
+  options: { enabled?: boolean; limit?: string; excludedEvents?: string[] } = {},
 ) {
-  const { limit = MEMBER_ACTIVITY_LIMIT, enabled } = options;
+  const { limit = MEMBER_ACTIVITY_LIMIT, enabled, excludedEvents = [] } = options;
   return useMemberActivityFeedQuery({
     searchParams: {
-      filter: buildMemberEventsFilter(memberId),
+      filter: buildMemberEventsFilter(memberId, excludedEvents),
       limit,
     },
     ...(enabled !== undefined ? { enabled } : {}),

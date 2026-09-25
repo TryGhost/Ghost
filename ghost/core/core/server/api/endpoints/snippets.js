@@ -1,6 +1,7 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const models = require('../../models');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const messages = {
   snippetNotFound: 'Snippet not found.',
@@ -25,7 +26,7 @@ const controller = {
       },
     },
     query(frame) {
-      return models.Snippet.findPage(frame.options);
+      return models.Snippet.findPage(restrictAdminApiQueryOptions(frame.options));
     },
   },
 

@@ -18,6 +18,14 @@ const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
   'member-welcome-email-paid': 'Welcome new paid members after they start their subscription.',
 };
 
+const getAutomationDescription = (automation: AutomationBrowseItem): string | undefined => {
+  if (automation.description !== undefined) {
+    return automation.description;
+  }
+
+  return automation.slug ? AUTOMATION_DESCRIPTIONS[automation.slug] : undefined;
+};
+
 // Widths are scoped to `lg` because below that the stats lay out on the row's
 // grid rather than in table cells, where a fixed width would fight the columns.
 const AUTOMATION_STAT_COLUMNS = [
@@ -63,7 +71,7 @@ const AutomationsListSkeleton: React.FC = () => {
     <Table
       aria-busy="true"
       aria-label="Automations"
-      className="flex table-fixed flex-col lg:table"
+      className="flex table-auto flex-col lg:table"
       data-testid="automations-list-loading"
     >
       <TableBody className="flex flex-col lg:table-row-group">
@@ -111,7 +119,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
   return (
     <Table
       aria-label="Automations"
-      className={cn('flex table-fixed flex-col lg:table', !showRunAnalytics && 'border-t')}
+      className={cn('flex table-auto flex-col lg:table', !showRunAnalytics && 'border-t')}
       data-testid="automations-list"
     >
       {showRunAnalytics && (
@@ -137,7 +145,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
       )}
       <TableBody className="flex flex-col lg:table-row-group">
         {automations.map((automation) => {
-          const description = AUTOMATION_DESCRIPTIONS[automation.slug];
+          const description = getAutomationDescription(automation);
           const lastEntry = automation.stats?.last_run_created_at;
           const totalEntries = automation.stats?.total_run_count ?? 0;
           const inProgressEntries = automation.stats?.in_progress_run_count ?? 0;
@@ -162,7 +170,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
 
           return (
             <TableRow
-              key={automation.slug}
+              key={automation.id}
               className="grid w-full cursor-pointer grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0"
               data-testid="automation-list-row"
               onClick={handleRowClick}

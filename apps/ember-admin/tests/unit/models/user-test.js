@@ -13,13 +13,13 @@ describe('Unit: Model: user', function () {
     });
 
     it('has a validation type of "user"', function () {
-        let model = store.createRecord('user');
+        const model = store.createRecord('user');
 
         expect(model.get('validationType')).to.equal('user');
     });
 
     it('isActive/isSuspended properties are correct', function () {
-        let model = store.createRecord('user', {
+        const model = store.createRecord('user', {
             status: 'active'
         });
 
@@ -42,26 +42,26 @@ describe('Unit: Model: user', function () {
     });
 
     it('role property is correct', function () {
-        let model = store.createRecord('user');
+        const model = store.createRecord('user');
 
         run(() => {
-            let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Author'}}});
+            const role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Author'}}});
             model.get('roles').pushObject(role);
         });
         expect(model.get('role.name')).to.equal('Author');
 
         run(() => {
-            let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Editor'}}});
+            const role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Editor'}}});
             model.set('role', role);
         });
         expect(model.get('role.name')).to.equal('Editor');
     });
 
     it('Contributor properties are correct', function () {
-        let model = store.createRecord('user');
+        const model = store.createRecord('user');
 
         run(() => {
-            let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Contributor'}}});
+            const role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Contributor'}}});
             model.set('role', role);
         });
         expect(model.get('isContributor')).to.be.ok;
@@ -77,10 +77,10 @@ describe('Unit: Model: user', function () {
     });
 
     it('Author properties are correct', function () {
-        let model = store.createRecord('user');
+        const model = store.createRecord('user');
 
         run(() => {
-            let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Author'}}});
+            const role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Author'}}});
             model.set('role', role);
         });
         expect(model.get('isAuthor')).to.be.ok;
@@ -96,10 +96,10 @@ describe('Unit: Model: user', function () {
     });
 
     it('Editor properties are correct', function () {
-        let model = store.createRecord('user');
+        const model = store.createRecord('user');
 
         run(() => {
-            let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Editor'}}});
+            const role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Editor'}}});
             model.set('role', role);
         });
         expect(model.get('isEditor')).to.be.ok;
@@ -115,10 +115,10 @@ describe('Unit: Model: user', function () {
     });
 
     it('Owner properties are correct', function () {
-        let model = store.createRecord('user');
+        const model = store.createRecord('user');
 
         run(() => {
-            let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Owner'}}});
+            const role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Owner'}}});
             model.set('role', role);
         });
         expect(model.get('isOwnerOnly')).to.be.ok;
@@ -134,10 +134,10 @@ describe('Unit: Model: user', function () {
     });
     
     it('Admin properties are correct', function () {
-        let model = store.createRecord('user');
+        const model = store.createRecord('user');
 
         run(() => {
-            let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Administrator'}}});
+            const role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Administrator'}}});
             model.set('role', role);
         });
         expect(model.get('isAdminOnly')).to.be.ok;
@@ -153,10 +153,10 @@ describe('Unit: Model: user', function () {
     });
 
     it('isSuperEditor properties are correct', function () {
-        let model = store.createRecord('user');
+        const model = store.createRecord('user');
 
         run(() => {
-            let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Super Editor'}}});
+            const role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Super Editor'}}});
             model.set('role', role);
         });
         expect(model.get('isSuperEditor')).to.be.ok;

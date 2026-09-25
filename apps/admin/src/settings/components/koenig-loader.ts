@@ -44,7 +44,15 @@ export type KoenigInstance = {
   lastNodeIsDecorator: () => boolean;
 };
 
-export const loadKoenig = function () {
+export type EditorResource = {
+  read: () => KoenigLexicalModule;
+};
+
+// One module-level load shared by every mount. Reading a failed load evicts it, so the
+// next mount retries instead of replaying a stale error; the erroring render still throws.
+let cached: EditorResource | undefined;
+
+const createKoenigResource = (): EditorResource => {
   let status: 'pending' | 'success' | 'error' = 'pending';
   let response: KoenigLexicalModule | undefined;
   let error: unknown;
@@ -67,13 +75,20 @@ export const loadKoenig = function () {
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw suspender;
       case 'error':
+        if (cached === resource) {
+          cached = undefined;
+        }
         throw error instanceof Error ? error : new Error(String(error));
       default:
         return response!;
     }
   };
 
-  return { read };
+  const resource: EditorResource = { read };
+  return resource;
 };
 
-export type EditorResource = ReturnType<typeof loadKoenig>;
+export const loadKoenig = function (): EditorResource {
+  cached ??= createKoenigResource();
+  return cached;
+};

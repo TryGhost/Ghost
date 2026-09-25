@@ -36,7 +36,7 @@ class TagsImporter extends BaseImporter {
   async doImport(options, importOptions) {
     debug('doImport', this.modelName, this.dataToImport.length);
 
-    let ops = [];
+    const ops = [];
 
     _.each(this.dataToImport, (obj) => {
       ops.push(async () => {

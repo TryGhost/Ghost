@@ -213,6 +213,9 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.contextMenuItem('Add a tag').click();
       await postsListScreen.tagPickerField().click();
       await postsListScreen.tagOption('News').click();
+      await expect
+        .element(postsListScreen.tagOption('News'))
+        .toHaveAttribute('aria-selected', 'true');
       // The list floats over the dialog's footer, so it has to be
       // dismissed before the confirm button can be reached — clicking
       // outside it, as a user would.
@@ -287,6 +290,8 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.tagSearchInput().fill('C++');
 
       await expect.poll(() => tags.lastRequest?.filter).toContain("tags.name:~'C++'");
+      // An empty include makes the real API refuse the search with withRelated.
+      expect(new URL(tags.lastRequest!.url).searchParams.get('include')).not.toBe('');
       await expect.element(postsListScreen.tagOption('C++')).toBeVisible();
       await expect(postsListScreen.tagOption(/Create/)).toHaveCount(0);
     });
@@ -367,6 +372,45 @@ describe('Posts list bulk actions', () => {
       await expect.element(postsListScreen.dialogButton('Add')).toBeVisible();
     });
 
+    it('removes a picked tag when its chip is clicked', async () => {
+      fakePosts([post({ title: 'Target', status: 'draft' })]);
+      fakeTags([tag({ id: 't1', name: 'News', slug: 'news' })]);
+      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+      await postsListScreen.listItems().first().click({ button: 'right' });
+      await postsListScreen.contextMenuItem('Add a tag').click();
+      await postsListScreen.tagPickerField().click();
+      await postsListScreen.tagOption('News').click();
+      await expect.element(postsListScreen.dialogButton('Add')).toBeEnabled();
+
+      await postsListScreen.tagChip('News').click();
+
+      await expect.element(postsListScreen.dialogButton('Add')).toBeDisabled();
+      await expect(postsListScreen.tagChip('News')).toHaveCount(0);
+    });
+
+    /**
+     * The term is part of what there is to lose, so backing out of the list
+     * leaves it in the field and the dialog's own guard still holds.
+     */
+    it('keeps a typed term through Escape', async () => {
+      fakePosts([post({ title: 'Target', status: 'draft' })]);
+      fakeTags([tag({ id: 't1', name: 'News', slug: 'news' })]);
+      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+      await postsListScreen.listItems().first().click({ button: 'right' });
+      await postsListScreen.contextMenuItem('Add a tag').click();
+      await postsListScreen.tagSearchInput().fill('Fresh tag');
+
+      await userEvent.keyboard('{Escape}');
+      await userEvent.keyboard('{Escape}');
+
+      await expect.element(postsListScreen.tagSearchInput()).toHaveValue('Fresh tag');
+      await expect.element(postsListScreen.dialogButton('Add')).toBeVisible();
+    });
+
     it('closes on Escape while the field is still empty', async () => {
       fakePosts([post({ title: 'Target', status: 'draft' })]);
       fakeTags([tag({ id: 't1', name: 'News', slug: 'news' })]);
@@ -377,7 +421,8 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.contextMenuItem('Add a tag').click();
       await postsListScreen.tagPickerField().click();
 
-      // First closes the list, second reaches the dialog.
+      // With nothing typed one Escape does both: the dialog's guard stands
+      // aside and the list closes under it. The second has nothing left to do.
       await userEvent.keyboard('{Escape}');
       await userEvent.keyboard('{Escape}');
 

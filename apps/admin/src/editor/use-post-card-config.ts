@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useFramework } from '@tryghost/admin-x-framework';
-import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import {
   useFetchApi,
   useKoenigFetchEmbed,
@@ -8,7 +7,7 @@ import {
 } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { getHomepageUrl, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import {
   type CardConfigPostSource,
@@ -18,7 +17,9 @@ import {
   buildCardConfigPost,
   buildPostCardConfig,
 } from './card-config';
+import { type LabelsPage, fetchAllLabelNames } from './card-labels';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { useEditorSettings, useSiteTimezone } from './use-editor-settings';
 import { usePostLinkSuggestions } from './use-post-link-suggestions';
 
 export interface PostCardConfigOptions {
@@ -38,12 +39,13 @@ export function usePostCardConfig({
   createSnippet,
   deleteSnippet,
 }: PostCardConfigOptions): PostCardConfig | null {
-  const { data: settingsData } = useBrowseSettings();
-  const { data: configData } = useBrowseConfig();
-  const { data: siteData } = useBrowseSite();
-  const { data: currentUser } = useCurrentUser();
+  const { data: settingsData } = useEditorSettings();
+  const timezone = useSiteTimezone();
+  const { data: configData } = useBrowseConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: siteData } = useBrowseSite({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { unsplashConfig } = useFramework();
-  const pinturaConfig = usePinturaConfig();
+  const pinturaConfig = usePinturaConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const fetchEmbed = useKoenigFetchEmbed(EDITOR_REQUEST_OPTIONS);
   const fetchApi = useFetchApi();
 
@@ -53,15 +55,12 @@ export function usePostCardConfig({
 
   const labelsRequest = useRef<Promise<string[]> | null>(null);
   const fetchLabels = useCallback(() => {
-    labelsRequest.current ??= fetchApi<{ labels: { name: string }[] }>(
-      apiUrl('/labels/', { limit: 'all', fields: 'id,name' }),
-      EDITOR_REQUEST_OPTIONS,
-    )
-      .then((response) => response.labels.map((label) => label.name))
-      .catch((error: unknown) => {
-        labelsRequest.current = null;
-        throw error;
-      });
+    labelsRequest.current ??= fetchAllLabelNames((url) =>
+      fetchApi<LabelsPage>(url, EDITOR_REQUEST_OPTIONS),
+    ).catch((error: unknown) => {
+      labelsRequest.current = null;
+      throw error;
+    });
 
     return labelsRequest.current;
   }, [fetchApi]);
@@ -73,7 +72,7 @@ export function usePostCardConfig({
     donationsEnabled: getSettingValue<boolean>(settings, 'donations_enabled') === true,
     recommendationsEnabled: getSettingValue<boolean>(settings, 'recommendations_enabled') === true,
     membersEnabled: getSettingValue<string>(settings, 'members_signup_access') !== 'none',
-    timezone: getSettingValue<string>(settings, 'timezone') ?? 'Etc/UTC',
+    timezone,
   });
 
   const defaultContentVisibility =

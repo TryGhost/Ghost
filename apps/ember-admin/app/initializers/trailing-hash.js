@@ -1,11 +1,11 @@
 import HashLocation from '@ember/routing/hash-location';
 import {inject as service} from '@ember/service';
 
-let trailingHash = HashLocation.extend({
+const trailingHash = HashLocation.extend({
     unsavedChanges: service('unsaved-changes'),
 
     formatURL() {
-        let url = this._super(...arguments);
+        const url = this._super(...arguments);
 
         if (url.indexOf('?') > 0) {
             return url.replace(/([^/])\?/, '$1/?');
@@ -28,7 +28,7 @@ let trailingHash = HashLocation.extend({
                 return;
             }
 
-            let target = event.target.closest?.('a[href^="#/"]');
+            const target = event.target.closest?.('a[href^="#/"]');
             if (!target) {
                 return;
             }
@@ -36,7 +36,7 @@ let trailingHash = HashLocation.extend({
             event.preventDefault();
             event.stopPropagation();
 
-            let href = target.getAttribute('href');
+            const href = target.getAttribute('href');
 
             this.unsavedChanges.confirmLeave().then((confirmed) => {
                 if (confirmed) {

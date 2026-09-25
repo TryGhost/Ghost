@@ -6,8 +6,8 @@ export default function mockIntegrations(server) {
     server.get('/integrations/', paginatedResponse('integrations'));
 
     server.post('/integrations/', function ({integrations}, {requestBody}) {
-        let body = JSON.parse(requestBody);
-        let [params] = body.integrations;
+        const body = JSON.parse(requestBody);
+        const [params] = body.integrations;
 
         // all integrations created via the API have a type of 'custom'
         params.type = 'custom';
@@ -38,11 +38,11 @@ export default function mockIntegrations(server) {
     });
 
     server.put('/integrations/:id/', function (schema, {params}) {
-        let {integrations, apiKeys, webhooks} = schema;
-        let attrs = this.normalizedRequestAttrs();
-        let integration = integrations.find(params.id);
-        let _apiKeys = [];
-        let _webhooks = [];
+        const {integrations, apiKeys, webhooks} = schema;
+        const attrs = this.normalizedRequestAttrs();
+        const integration = integrations.find(params.id);
+        const _apiKeys = [];
+        const _webhooks = [];
 
         // this is required to work around an issue with ember-cli-mirage and
         // embedded records. The `attrs` object will contain POJOs of the

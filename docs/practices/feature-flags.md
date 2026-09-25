@@ -80,9 +80,10 @@ Use `labs.enabledMiddleware('myFeature')` when an entire API route should return
 `labs.enabledHelper(...)`.
 
 In React Admin, use `useFeatureFlag` from
-`@tryghost/admin-x-framework/hooks`. It reads the server-computed value from the
-Admin config response and returns `false` while the response is missing or
-loading.
+`@tryghost/admin-x-framework/hooks`. It returns `true` when the server-computed
+value in the Admin config response is boolean `true` or the flag is enabled by
+an Admin session override. Without an override, it returns `false` while the
+response is missing or loading.
 
 In legacy Ember Admin, use the `feature` service. Existing Ember code reads a
 flag with `this.feature.get('myFeature')`.
@@ -91,16 +92,39 @@ Keep the decision at the boundary that owns the behavior. Hiding a button does
 not protect a server endpoint, and rejecting an endpoint does not give Admin a
 usable disabled state.
 
+## Admin 7 milestones
+
+Admin 7 milestones use ordinary private Labs flags with stable, descriptive
+`admin7`-prefixed keys and labels that identify their milestone and purpose.
+Follow the same registration and lifecycle as any other private flag.
+
+Read the current milestone's flag with `useFeatureFlag` at the boundary that
+owns the change, keeping any availability checks beside it. For shared design
+changes, pass the result to ShadeApp's `isAdmin7` prop. Components read
+`useShade().isAdmin7`; reuse this switch as milestones progress instead of
+adding a Shade prop for each milestone.
+
+Keep shared appearance in Shade and page-specific structure in the page. Build
+the enabled design as the intended default so retiring a flag means removing
+compatibility branches, without changing ordinary component calls. Document
+milestone-specific scope and exclusions alongside the affected design.
+
+Test the flag boundary and preserve existing behavioral coverage. Styling-only
+changes need visual review, not tests that assert appearance. Keep permanent
+permission and backend capability checks independent of the temporary flag.
+
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:
 
 ```text
-stored Labs setting → GA default → remote override → config.labs
+stored Labs setting → GA default → remote override → config.labs → Admin session override
 ```
 
-This means an explicit `config.labs` value always wins. The special `members`
-value is derived from the members signup setting rather than these flag lists.
+An explicit `config.labs` value wins on the server. An Admin session override
+can then force the flag on in the client only; it cannot force it off or change
+the server value. The special `members` value is derived from the members
+signup setting rather than these flag lists.
 
 Ghost also supports an opt-in remote override source. It is inactive unless an
 operator configures it, so normal self-hosted installations continue to use
@@ -116,6 +140,34 @@ Unknown flag names are accepted deliberately because Admin and Ghost Core may
 deploy at different times. Code which reads a new key still has to be deployed;
 the manifest only supplies its value. Invalid entries are ignored, and a fetch
 or parse failure keeps the last known good overrides.
+
+## Admin session overrides
+
+To preview a flagged Admin feature, add `labs` to the query string inside the
+Admin hash route, for example `/ghost/#/posts?labs=postsListReact`. Use
+comma-separated names (`?labs=postsListReact,editorReact`) or repeated parameters
+(`?labs=postsListReact&labs=editorReact`) to enable multiple flags.
+
+Admin stores the list in `sessionStorage` under `ghost-admin:labs-overrides`.
+It persists across navigation and reloads in the same tab for that browser
+session. A URL without `labs` reuses the stored list; a URL with `labs` replaces
+the whole list rather than adding to it. Visit a route with an empty value,
+such as `/ghost/#/posts?labs=`, to clear the overrides. Simply removing the
+parameter does not clear them.
+
+These overrides only force flags on. React's `useFeatureFlag` and legacy
+Ember's `feature` service honor them even when the server-computed value is
+`false`. There is no force-off syntax; clearing an override restores the normal
+value, which may still be `true`. If session storage is unavailable, the URL
+override still applies to the current React render, but cannot persist or be
+shared with Ember.
+
+Session overrides are client-only: they do not update the site's stored Labs
+setting or change Ghost Core's flag resolution. They cannot enable a gated
+server endpoint, change theme behavior, or supply missing backend support.
+Use them for Admin-only previews; features that also depend on server-side
+flags still need those flags enabled on the server, and Admin must still
+check backend compatibility.
 
 ## Test both states
 

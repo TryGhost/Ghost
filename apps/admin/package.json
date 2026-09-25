@@ -25,6 +25,8 @@
     "@codemirror/state": "catalog:",
     "@codemirror/theme-one-dark": "catalog:",
     "@dnd-kit/sortable": "catalog:",
+    "@radix-ui/react-focus-guards": "catalog:",
+    "@radix-ui/react-focus-scope": "catalog:",
     "@sentry/react": "catalog:",
     "@svg-maps/world": "2.0.0",
     "@tanstack/react-query": "catalog:",
@@ -49,10 +51,12 @@
     "@xyflow/react": "12.11.2",
     "clsx": "catalog:",
     "dequal": "catalog:",
+    "dompurify": "catalog:",
+    "flexsearch": "catalog:",
     "i18n-iso-countries": "7.14.0",
     "jszip": "3.10.1",
     "lucide-react": "catalog:",
-    "microdiff": "catalog:",
+    "luxon": "catalog:",
     "mingo": "catalog:",
     "moment": "catalog:",
     "moment-timezone": "catalog:",
@@ -85,6 +89,7 @@
     "@typescript/native": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/browser-playwright": "catalog:",
+    "d3-geo": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "ghost-admin": "workspace:*",
@@ -151,7 +156,8 @@
         ],
         "outputs": [
           "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin"
+          "{workspaceRoot}/ghost/core/core/built/admin",
+          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
         ],
         "dependsOn": [
           "^build",

@@ -6,7 +6,7 @@ const controllers = require('../../../../../core/frontend/services/routing/contr
 const RSSRouter = require('../../../../../core/frontend/services/routing/rss-router');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 
-describe('UNIT - services/routing/RSSRouter', function () {
+describe('services/routing/RSSRouter', function () {
   describe('instantiate', function () {
     beforeEach(function () {
       sinon.spy(RSSRouter.prototype, 'mountRoute');

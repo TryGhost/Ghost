@@ -17,9 +17,8 @@ import type { Page } from '@playwright/test';
  * `/editor/post` with its hidden secondary instance) is already asserted
  * there, so it is not repeated.
  *
- * Saves are observed through the network rather than through a save-state
- * chip: the React editor renders none. See the note on `waitForSaved` in the
- * page object.
+ * Autosaves are observed through the network: the chip says a save landed, not
+ * which edit it carried. Only the explicit save is asserted on the chip.
  */
 
 const POSTS_API = '/ghost/api/admin/posts/';
@@ -47,6 +46,21 @@ function recordPostWrites(page: Page): PostWrite[] {
   });
 
   return writes;
+}
+
+/** Requests are recorded at dispatch time so an in-flight duplicate cannot hide between waits. */
+function recordPostWriteRequests(page: Page): PostWrite[] {
+  const requests: PostWrite[] = [];
+
+  page.on('request', (request) => {
+    const method = request.method();
+
+    if ((method === 'POST' || method === 'PUT') && request.url().includes(POSTS_API)) {
+      requests.push({ method, url: request.url(), body: request.postData() ?? '' });
+    }
+  });
+
+  return requests;
 }
 
 function writesCarrying(writes: PostWrite[], text: string): PostWrite[] {
@@ -167,12 +181,7 @@ test.describe('Ghost Admin - Post editor (React)', () => {
     expect(post.lexical).toContain(addition);
   });
 
-  /**
-   * The React editor exposes `dispatchExplicit` on its session handle but
-   * nothing listens for the keystroke, so Cmd-S never reaches the save engine
-   * and no request asks for a revision.
-   */
-  test.fixme('explicit save - Cmd-S asks the server for a revision', async ({ page }) => {
+  test('explicit save - Cmd-S saves once, with a revision, and persists', async ({ page }) => {
     test.setTimeout(60000);
 
     const created = await postFactory.create({
@@ -184,16 +193,31 @@ test.describe('Ghost Admin - Post editor (React)', () => {
 
     await editor.gotoPost(created.id);
     await expect(editor.lexicalEditor).toBeVisible();
+    const writeRequests = recordPostWriteRequests(page);
     await editor.appendToBody(` ${addition}`);
+    // The edit is on screen, so the session holds it and the autosave is armed
+    await expect(editor.lexicalEditor).toContainText(addition);
+
     await page.keyboard.press('ControlOrMeta+s');
 
-    await expect
-      .poll(() => writes.filter((write) => write.url.includes('save_revision=true')).length, {
-        timeout: 20000,
-      })
-      .toBeGreaterThan(0);
+    // The explicit save cancels the armed autosave rather than following it,
+    // so the edit reaches the server once, carrying a revision
+    await expect.poll(() => writeRequests.length, { timeout: 20000 }).toBe(1);
+    expect(writeRequests[0].method).toBe('PUT');
+    expect(writeRequests[0].url).toContain('save_revision=true');
+    expect(writeRequests[0].body).toContain(addition);
+
+    await editor.waitForSaved();
+    await expectNoFurtherWrites(page);
+    expect(writeRequests).toHaveLength(1);
+
+    await page.reload();
+    await expect(editor.titleInput).toHaveValue(created.title);
+    await expect(editor.lexicalEditor).toContainText(addition);
 
     const post = await readPost(page, created.id);
+    expect(post.status).toBe('draft');
+    expect(post.title).toBe(created.title);
     expect(post.lexical).toContain(addition);
   });
 

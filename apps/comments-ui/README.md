@@ -6,7 +6,7 @@ Comments widget that is embedded at the bottom of posts in Ghost.
 
 ### Pre-requisites
 
-- Run `pnpm setup` in the Ghost monorepo root
+- Run `pnpm bootstrap` in the Ghost monorepo root
 
 ### Running via Ghost from the monorepo root
 

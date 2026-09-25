@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "catalog:",
+    "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"
   }

@@ -8,7 +8,6 @@ const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 const configUtils = require('../../utils/config-utils');
 const models = require('../../../core/server/models');
-const jobsService = require('../../../core/server/services/jobs');
 const { assertExists } = require('../../utils/assertions');
 const { mockManager } = require('../../utils/e2e-framework');
 
@@ -76,6 +75,7 @@ describe('Members import', function () {
 
     assert.equal(res.status, 202);
     assert.equal(res.body.meta.stats, undefined);
+    await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
   });
 
   it('accepts a headers-only file as nothing imported', async function () {
@@ -379,8 +379,8 @@ describe('Members import', function () {
     assert.equal(res.body.meta.stats, undefined);
 
     // The deferred job reports by email and must finish inside the test: the mail
-    // mock is torn down before the framework settles jobs.
-    await jobsService.allSettled();
+    // mock is torn down after it, and nothing else waits for it.
+    await mockManager.assert.sentEmailEventually({ subject: /^Your member import/ });
     mockManager.assert.sentEmailCount(1);
     // The report goes to the member manager who triggered the import -- the
     // authenticated request user, resolved by the import service from the frame.

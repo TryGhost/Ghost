@@ -1,6 +1,6 @@
 const { TableImporter } = require('./table-importer');
 const { faker } = require('@faker-js/faker');
-const generateEvents = require('../utils/event-generator');
+const { generateEvents } = require('../utils/event-generator');
 const { randomDateBetween } = require('../utils/random');
 const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-types/date');
 const debug = require('@tryghost/debug')('EmailRecipientsImporter');
@@ -18,7 +18,7 @@ function findFirstHigherIndex(arr, target) {
   let result = -1;
 
   while (start <= end) {
-    let mid = Math.floor((start + end) / 2);
+    const mid = Math.floor((start + end) / 2);
 
     if (arr[mid] >= target) {
       result = mid;
@@ -162,7 +162,7 @@ class EmailRecipientsImporter extends TableImporter {
       failedCount: this.model.failed_count,
     };
 
-    let offset = this.batchIndex * 1000;
+    const offset = this.batchIndex * 1000;
 
     // We always first create the failures, then the opened, then the delivered, so we need to remove those from the meta so we don't generate them multiple times
     this.emailMeta = {

@@ -291,12 +291,7 @@ const TierDetailModalContent: React.FC<{
   if (tier) {
     if (tier.active && tier.type !== 'free') {
       leftButton = (
-        <Button
-          className="text-destructive hover:text-destructive"
-          type="button"
-          variant="ghost"
-          onClick={confirmTierStatusChange}
-        >
+        <Button type="button" variant="destructive-ghost" onClick={confirmTierStatusChange}>
           Archive tier
         </Button>
       );

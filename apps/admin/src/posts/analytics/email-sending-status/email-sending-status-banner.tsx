@@ -1,25 +1,34 @@
 import { Banner, Button } from '@tryghost/shade/components';
-import { Inline, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { Box, Grid, Text } from '@tryghost/shade/primitives';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useEmailSendingStatusContext } from './email-sending-status-context';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
+import { getEmailSendingProgressCopy } from '@/posts/email-sending-status/email-sending-status-copy';
+import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
 import type { EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
-import type { ReactNode } from 'react';
 
-const formatEta = (seconds: number): string => {
-  if (seconds > 80) {
-    const minutes = Math.round(seconds / 60);
-    return `About ${formatNumber(minutes)} ${minutes === 1 ? 'minute' : 'minutes'} left`;
-  }
-  if (seconds > 40) {
-    return 'About 1 minute left';
-  }
-  return 'Less than 1 minute left';
-};
+const FILL_CLIP_ID = 'email-sending-fill-clip';
 
-const HalfFullGlyph = () => (
+/** A grey level rising over a white face and dropping back, on the arrow's tempo. */
+const FillingGlyph = () => (
   <svg aria-hidden="true" fill="none" height="12" viewBox="0 0 12 12" width="12">
-    <path d="M1.2 6 A4.8 4.8 0 0 1 10.8 6 Z" fill="currentColor" />
+    {/* Wider than the 4.8 face: cut to the same radius, the two anti-aliased
+        edges stack and the white bleeds through as a pale ring. */}
+    <clipPath id={FILL_CLIP_ID}>
+      <circle cx="6" cy="6" r="5.1" />
+    </clipPath>
+    <circle cx="6" cy="6" fill="currentColor" r="4.8" />
+    {/* Clip on the group, animation on the child: a transform on a clipped
+        element carries its own clip path along with it. */}
+    <g clipPath={`url(#${FILL_CLIP_ID})`}>
+      <rect
+        className="animate-email-sending-fill-rise fill-muted-foreground motion-reduce:translate-y-1/2 motion-reduce:animate-none"
+        height="12"
+        width="12"
+        x="0"
+        y="0"
+      />
+    </g>
   </svg>
 );
 
@@ -27,7 +36,7 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
   if (sending.status === 'preparing') {
     return (
       <span className="relative flex size-4 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted-foreground text-white ring-1 ring-muted-foreground ring-offset-1 ring-offset-background">
-        <HalfFullGlyph />
+        <FillingGlyph />
       </span>
     );
   }
@@ -49,21 +58,21 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
   );
 };
 
-const activeDetail = (sending: Exclude<EmailSendingState, { status: 'failed' }>): ReactNode => {
-  const { completed, total, estimated_seconds_remaining: eta } = sending.progress;
-  const estimate = eta === null ? null : formatEta(eta);
+const activeDetail = (sending: Exclude<EmailSendingState, { status: 'failed' }>) => {
+  const { completed, total } = sending.progress;
 
   if (total === 0) {
-    return estimate;
+    return null;
   }
 
-  return (
-    <>
-      <span className="inline-block min-w-[7ch] text-right">{formatNumber(completed)}</span>
-      {` of ${formatNumber(total)}`}
-      {estimate && ` · ${estimate}`}
-    </>
-  );
+  // Preparation reports a percentage so the recipient count only climbs
+  // once, during sending, while the audience size stays on screen throughout.
+  if (sending.status === 'preparing') {
+    const percent = Math.min(100, Math.floor((completed / total) * 100));
+    return `${formatNumber(percent)}% complete · ${formatNumber(total)} total`;
+  }
+
+  return getEmailSendingProgressCopy(sending, null).detail;
 };
 
 const failureDetail = (
@@ -84,11 +93,12 @@ const failureDetail = (
 
 const EmailSendingStatusBanner = () => {
   const { post } = usePostAnalytics();
-  const { status, hasUnknownDeliveryOutcome, isRetrying, retrySending } =
+  const { status, isNewsletterDataHidden, hasUnknownDeliveryOutcome, isRetrying, retrySending } =
     useEmailSendingStatusContext();
   const sending = status?.sending;
+  const estimate = useSendingEta(status);
 
-  if (!sending || sending.status === 'submitted') {
+  if (!sending || (sending.status === 'submitted' && !isNewsletterDataHidden)) {
     return null;
   }
 
@@ -98,18 +108,20 @@ const EmailSendingStatusBanner = () => {
       sending.failed_during === 'submitting' &&
       sending.progress.completed > 0
     : false;
-  const title = isFailed
-    ? hasSentEmails
-      ? 'Some emails failed to send'
-      : 'Emails failed to send'
-    : sending.status === 'preparing'
-      ? 'Preparing emails'
-      : 'Sending emails';
-  const detail = isFailed
-    ? hasUnknownDeliveryOutcome
+  let title: string;
+  let detail: string | null;
+
+  if (sending.status === 'failed') {
+    title = hasSentEmails ? 'Some emails failed to send' : 'Emails failed to send';
+    detail = hasUnknownDeliveryOutcome
       ? post?.email?.error || 'Something went wrong while sending this email.'
-      : failureDetail(sending, post?.email?.error)
-    : activeDetail(sending);
+      : failureDetail(sending, post?.email?.error);
+  } else {
+    const progressCopy = getEmailSendingProgressCopy(sending, null);
+    title = progressCopy.title;
+    detail = activeDetail(sending);
+  }
+
   const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
 
   return (
@@ -119,24 +131,34 @@ const EmailSendingStatusBanner = () => {
       role={isFailed ? 'alert' : 'status'}
       size="lg"
     >
-      <Inline align="center" gap="md" justify="between" wrap>
-        <Inline align="center" className="min-w-0" gap="sm">
+      <Grid
+        align="center"
+        className={cn(
+          'grid-cols-[auto_minmax(0,1fr)] gap-y-0 lg:grid-cols-[auto_auto_minmax(0,1fr)_auto]',
+          isFailed && !hasUnknownDeliveryOutcome && 'grid-cols-[auto_minmax(0,1fr)_auto]',
+        )}
+        gap="md"
+      >
+        <Box className="row-span-2 lg:row-span-1">
           <StatusGlyph sending={sending} />
-          <Text className="min-w-0 tabular-nums" size="sm">
-            <Text as="strong" size="sm" weight="semibold">
-              {title}
-            </Text>
-            {detail && (
-              <Text as="span" size="sm" tone="secondary">
-                {' · '}
-                {detail}
-              </Text>
-            )}
+        </Box>
+        <Text as="strong" className="text-base" weight="semibold">
+          {title}
+        </Text>
+        <Text className="col-start-2 min-w-0 tabular-nums lg:contents" size="sm" tone="secondary">
+          <Text as="span" size="sm" tone="secondary">
+            {detail}
           </Text>
-        </Inline>
+          {!isFailed && estimate && (
+            <Text as="span" className="whitespace-nowrap" size="sm" tone="secondary">
+              {detail && <span className="lg:hidden">{' · '}</span>}
+              {estimate}
+            </Text>
+          )}
+        </Text>
         {isFailed && !hasUnknownDeliveryOutcome && (
           <Button
-            className="shrink-0"
+            className="col-start-3 row-span-2 row-start-1 lg:col-start-4 lg:row-span-1"
             disabled={isRetrying}
             size="sm"
             variant="outline"
@@ -145,7 +167,7 @@ const EmailSendingStatusBanner = () => {
             {isRetrying ? 'Sending…' : retryLabel}
           </Button>
         )}
-      </Inline>
+      </Grid>
     </Banner>
   );
 };

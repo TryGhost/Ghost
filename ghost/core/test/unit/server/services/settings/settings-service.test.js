@@ -7,11 +7,11 @@ const { Settings } = require('../../../../../core/server/models/settings');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const limits = require('../../../../../core/server/services/limits');
 
-describe('UNIT: Settings Service', function () {
+describe('Settings Service', function () {
   let settingsService;
   let settingsCacheStub;
-  let originalSettingsGetter = settingsCache.get;
-  let originalLoggingError = logging.error;
+  const originalSettingsGetter = settingsCache.get;
+  const originalLoggingError = logging.error;
   let loggingStub;
 
   beforeEach(async function () {

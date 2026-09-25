@@ -14,6 +14,7 @@ import {
   buildPostWriteParams,
   serializePostPayload,
 } from './post-contract';
+import { tagsDataType } from './tags';
 import type {
   CreateContentData,
   EditContentData,
@@ -33,6 +34,7 @@ export type {
   PostEditorFields,
   PostEditorRecord,
   PostListFields,
+  PostNewsletter,
   PostRevision,
   PostStatus,
   PostTag,
@@ -131,13 +133,14 @@ export interface EditPostPayload {
   sessionExpiryRedirect?: boolean;
 }
 
+// A tag sent without an id is created by the save itself, so tag lists go stale too.
 export const useAddPost = createMutation<PostResponseType, AddPostPayload>({
   method: 'POST',
   path: () => '/posts/',
   searchParams: ({ options }) => buildPostWriteParams(options),
   body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
-  invalidateQueries: { dataType },
+  invalidateQueries: { dataType: [dataType, tagsDataType] },
 });
 
 export const useEditPost = createMutation<PostResponseType, EditPostPayload>({
@@ -146,12 +149,19 @@ export const useEditPost = createMutation<PostResponseType, EditPostPayload>({
   searchParams: ({ options }) => buildPostWriteParams(options),
   body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
-  invalidateQueries: { dataType },
+  invalidateQueries: { dataType: [dataType, tagsDataType] },
 });
 
-export const useDeletePost = createMutation<unknown, string>({
+export interface DeletePostPayload {
+  id: string;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+}
+
+export const useDeletePost = createMutation<unknown, DeletePostPayload>({
   method: 'DELETE',
-  path: (id) => `/posts/${id}/`,
+  path: ({ id }) => `/posts/${id}/`,
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
 });
 
 /**

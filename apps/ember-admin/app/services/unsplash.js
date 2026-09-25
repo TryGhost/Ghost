@@ -97,7 +97,7 @@ export default Service.extend({
     _loadingTasks: taskGroup().drop(),
 
     _loadNew: task(function* () {
-        let url = `${API_URL}/photos?per_page=30`;
+        const url = `${API_URL}/photos?per_page=30`;
         yield this._makeRequest(url);
     }).group('_loadingTasks'),
 
@@ -112,7 +112,7 @@ export default Service.extend({
     _search: task(function* (term) {
         yield timeout(DEBOUNCE_MS);
 
-        let url = `${API_URL}/search/photos?query=${term}&per_page=30`;
+        const url = `${API_URL}/search/photos?query=${term}&per_page=30`;
         yield this._makeRequest(url, {searchTermAtRequest: term});
     }).restartable(),
 
@@ -123,7 +123,7 @@ export default Service.extend({
             return;
         }
 
-        let photos = response.results || response;
+        const photos = response.results || response;
 
         photos.forEach(photo => this._addPhoto(photo));
     },
@@ -140,8 +140,8 @@ export default Service.extend({
     },
 
     _addPhotoToColumns(photo) {
-        let min = Math.min(...this._columnHeights);
-        let columnIndex = this._columnHeights.indexOf(min);
+        const min = Math.min(...this._columnHeights);
+        const columnIndex = this._columnHeights.indexOf(min);
 
         // use a fixed width when calculating height to compensate for different
         // overall image sizes
@@ -156,8 +156,8 @@ export default Service.extend({
     },
 
     _resetColumns() {
-        let columns = [];
-        let columnHeights = [];
+        const columns = [];
+        const columnHeights = [];
 
         // pre-fill column arrays based on columnCount
         for (let i = 0; i < this.columnCount; i += 1) {
@@ -176,9 +176,9 @@ export default Service.extend({
     },
 
     _makeRequest(url, _options = {}) {
-        let defaultOptions = {ignoreErrors: false};
-        let headers = {};
-        let options = {};
+        const defaultOptions = {ignoreErrors: false};
+        const headers = {};
+        const options = {};
 
         assign(options, defaultOptions, _options);
 
@@ -233,7 +233,7 @@ export default Service.extend({
             this.set('error', errorText);
 
             // throw error to prevent further processing
-            let error = new Error(errorText);
+            const error = new Error(errorText);
             error.response = response;
             throw error;
         });
@@ -244,13 +244,13 @@ export default Service.extend({
             return response;
         }
 
-        let pagination = {};
-        let linkRegex = new RegExp('<(.*)>; rel="(.*)"');
-        let {link: links} = response.headers.map;
+        const pagination = {};
+        const linkRegex = new RegExp('<(.*)>; rel="(.*)"');
+        const {link: links} = response.headers.map;
 
         if (links) {
             links.split(',').forEach((link) => {
-                let [, url, rel] = linkRegex.exec(link);
+                const [, url, rel] = linkRegex.exec(link);
 
                 pagination[rel] = url;
             });

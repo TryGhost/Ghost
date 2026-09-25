@@ -11,9 +11,9 @@ const { api } = require('../services/proxy');
  * }>}
  */
 async function getMemberStats() {
-  let memberStats = this.data || (await api.stats.memberCountHistory.query());
+  const memberStats = this.data || (await api.stats.memberCountHistory.query());
   const { free, paid, comped, gift } = memberStats.meta.totals;
-  let total = free + paid + comped + gift;
+  const total = free + paid + comped + gift;
   return { free, paid, comped, gift, total };
 }
 

@@ -218,7 +218,7 @@ describe('Permission Providers', function () {
 
   describe('API Key', function () {
     it('errors if api_key cannot be found', async function () {
-      let findApiKeySpy = sinon.stub(models.ApiKey, 'findOne');
+      const findApiKeySpy = sinon.stub(models.ApiKey, 'findOne');
       findApiKeySpy.returns(Promise.resolve());
 
       await assert.rejects(

@@ -15,7 +15,7 @@ export default class UnsavedChangesService extends Service {
     }
 
     register({isDirty, confirmLeave}) {
-        let token = Symbol('unsaved-changes');
+        const token = Symbol('unsaved-changes');
 
         this._registration = {token, isDirty, confirmLeave};
         this._confirmPromise = null;

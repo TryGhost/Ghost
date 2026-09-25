@@ -24,7 +24,7 @@ class TrimFocusInputComponent extends GhostTextInput {
         this.element.value = value;
         this._elementValueDidChange(event);
 
-        let inputMethod = this.input;
+        const inputMethod = this.input;
         if (inputMethod) {
             inputMethod(event);
         }

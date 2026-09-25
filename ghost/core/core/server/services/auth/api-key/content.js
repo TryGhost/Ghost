@@ -24,7 +24,7 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
     );
   }
 
-  let key = req.query.key;
+  const key = req.query.key;
 
   try {
     const apiKey = await models.ApiKey.findOne({ secret: key }, { withRelated: ['integration'] });

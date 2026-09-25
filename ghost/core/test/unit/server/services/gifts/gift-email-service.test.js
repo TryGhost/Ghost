@@ -8,6 +8,7 @@ describe('GiftEmailService', function () {
   let transactionalMailer;
   let bulkMailer;
   let service;
+  let config;
 
   const settingsCache = {
     get: (key) => {
@@ -70,12 +71,14 @@ describe('GiftEmailService', function () {
   };
 
   beforeEach(function () {
+    config = { get: sinon.stub() };
     transactionalMailer = { send: sinon.stub().resolves() };
     bulkMailer = {
       isConfigured: sinon.stub().returns(true),
       send: sinon.stub().resolves({ id: '<provider-123>' }),
     };
     service = new GiftEmailService({
+      config,
       transactionalMailer,
       bulkMailer,
       settingsCache,
@@ -226,6 +229,7 @@ describe('GiftEmailService', function () {
       },
     };
     const localizedService = new GiftEmailService({
+      config,
       transactionalMailer,
       bulkMailer,
       settingsCache: localizedSettingsCache,
@@ -265,6 +269,7 @@ describe('GiftEmailService', function () {
     };
 
     const noTitleService = new GiftEmailService({
+      config,
       transactionalMailer,
       bulkMailer,
       settingsCache: noTitleSettingsCache,
@@ -296,6 +301,7 @@ describe('GiftEmailService', function () {
     };
 
     const hostileService = new GiftEmailService({
+      config,
       transactionalMailer,
       bulkMailer,
       settingsCache: hostileSettingsCache,
@@ -333,74 +339,79 @@ describe('GiftEmailService', function () {
   });
 
   describe('sendGiftDelivery', function () {
-    it('sends the prototype delivery content through bulk Mailgun without open or click tracking', async function () {
-      const result = await service.sendGiftDelivery({
-        recipientEmail: 'recipient@example.com',
-        recipientName: 'Recipient',
-        buyerEmail: 'buyer@example.com',
-        buyerName: 'Buyer',
-        personalMessage: 'Enjoy this gift',
-        token: 'abc-123',
-        tierName: 'Gold',
-        benefits: ['All stories'],
-        cadence: 'year',
-        duration: 1,
-        expiresAt: new Date('2027-04-07'),
-      });
+    it.each([undefined, '', 'blog-123'])(
+      'sends gift delivery with site tag %s and without open or click tracking',
+      async function (siteTag) {
+        config.get.withArgs('bulkEmail:mailgun:tag').returns(siteTag);
+        const result = await service.sendGiftDelivery({
+          recipientEmail: 'recipient@example.com',
+          recipientName: 'Recipient',
+          buyerEmail: 'buyer@example.com',
+          buyerName: 'Buyer',
+          personalMessage: 'Enjoy this gift',
+          token: 'abc-123',
+          tierName: 'Gold',
+          benefits: ['All stories'],
+          cadence: 'year',
+          duration: 1,
+          expiresAt: new Date('2027-04-07'),
+        });
 
-      assert.deepEqual(result, { providerMessageId: 'provider-123' });
-      sinon.assert.notCalled(transactionalMailer.send);
-      const message = bulkMailer.send.firstCall.firstArg;
-      sinon.assert.match(message, {
-        subject: 'Buyer sent you a gift',
-        replyTo: 'support@example.com',
-        tags: ['gift-delivery'],
-        disable_tracking: true,
-      });
-      assert.deepEqual(bulkMailer.send.firstCall.args[1], { 'recipient@example.com': {} });
-      for (const field of ['html', 'plaintext']) {
-        sinon.assert.match(message[field], sinon.match('Recipient'));
-        sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
-        sinon.assert.match(message[field], sinon.match('All stories'));
-        sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
-      }
-      sinon.assert.match(
-        message.plaintext,
-        sinon.match('Buyer has gifted you a 1-year Gold membership to Test Site'),
-      );
-      sinon.assert.match(
-        message.plaintext,
-        sinon.match('Redeem your gift:\nhttps://example.com/gift/abc-123'),
-      );
-      sinon.assert.match(
-        message.plaintext,
-        sinon.match(
-          'This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).',
-        ),
-      );
-      sinon.assert.match(message.html, sinon.match('Redeem your gift</a>'));
-      sinon.assert.match(
-        message.html,
-        sinon.match((value) => !value.includes('Redeem your gift:')),
-      );
-      sinon.assert.match(
-        message.html,
-        sinon.match(
-          '<strong>Buyer</strong> has gifted you a <strong>1-year</strong> <strong>Gold</strong> membership to Test Site',
-        ),
-      );
-      sinon.assert.match(
-        message.html,
-        sinon.match(
-          'This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).',
-        ),
-      );
-      sinon.assert.match(message.html, sinon.match('background:#fff3ed'));
-      sinon.assert.match(message.html, sinon.match('color:#bd460c'));
-    });
+        assert.deepEqual(result, { providerMessageId: 'provider-123' });
+        sinon.assert.notCalled(transactionalMailer.send);
+        const message = bulkMailer.send.firstCall.firstArg;
+        sinon.assert.match(message, {
+          subject: 'Buyer sent you a gift',
+          replyTo: 'support@example.com',
+          tags: ['gift-delivery', ...(siteTag ? [siteTag] : [])],
+          disable_tracking: true,
+        });
+        assert.deepEqual(bulkMailer.send.firstCall.args[1], { 'recipient@example.com': {} });
+        for (const field of ['html', 'plaintext']) {
+          sinon.assert.match(message[field], sinon.match('Recipient'));
+          sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
+          sinon.assert.match(message[field], sinon.match('All stories'));
+          sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
+        }
+        sinon.assert.match(
+          message.plaintext,
+          sinon.match('Buyer has gifted you a 1-year Gold membership to Test Site'),
+        );
+        sinon.assert.match(
+          message.plaintext,
+          sinon.match('Redeem your gift:\nhttps://example.com/gift/abc-123'),
+        );
+        sinon.assert.match(
+          message.plaintext,
+          sinon.match(
+            'This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).',
+          ),
+        );
+        sinon.assert.match(message.html, sinon.match('Redeem your gift</a>'));
+        sinon.assert.match(
+          message.html,
+          sinon.match((value) => !value.includes('Redeem your gift:')),
+        );
+        sinon.assert.match(
+          message.html,
+          sinon.match(
+            '<strong>Buyer</strong> has gifted you a <strong>1-year</strong> <strong>Gold</strong> membership to Test Site',
+          ),
+        );
+        sinon.assert.match(
+          message.html,
+          sinon.match(
+            'This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).',
+          ),
+        );
+        sinon.assert.match(message.html, sinon.match('background:#fff3ed'));
+        sinon.assert.match(message.html, sinon.match('color:#bd460c'));
+      },
+    );
 
     it('shows the publication title when the publication has no icon', async function () {
       const iconlessService = new GiftEmailService({
+        config,
         transactionalMailer,
         bulkMailer,
         settingsCache,
@@ -449,6 +460,7 @@ describe('GiftEmailService', function () {
         },
       };
       const siteDateService = new GiftEmailService({
+        config,
         transactionalMailer,
         bulkMailer,
         settingsCache: siteSettingsCache,
@@ -491,6 +503,7 @@ describe('GiftEmailService', function () {
         },
       };
       const invalidLocaleService = new GiftEmailService({
+        config,
         transactionalMailer,
         bulkMailer,
         settingsCache: invalidLocaleSettingsCache,
@@ -525,6 +538,7 @@ describe('GiftEmailService', function () {
         get: (key) => (key === 'accent_color' ? 'invalid' : settingsCache.get(key)),
       };
       const invalidColorService = new GiftEmailService({
+        config,
         transactionalMailer,
         bulkMailer,
         settingsCache: invalidColorSettingsCache,
@@ -652,6 +666,7 @@ describe('GiftEmailService', function () {
         },
       };
       const literalService = new GiftEmailService({
+        config,
         transactionalMailer,
         bulkMailer,
         settingsCache: literalSettingsCache,
@@ -819,6 +834,7 @@ describe('GiftEmailService', function () {
         },
       };
       const localizedService = new GiftEmailService({
+        config,
         transactionalMailer,
         bulkMailer,
         settingsCache: localizedSettingsCache,

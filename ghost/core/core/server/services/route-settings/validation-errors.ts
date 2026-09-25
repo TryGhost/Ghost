@@ -148,9 +148,7 @@ const LIST_ENTRY_PROBLEMS: Record<string, string> = {
 };
 
 function lookup(table: Record<string, string>, key: PathSegment | undefined): string | undefined {
-  return typeof key === 'string' && Object.prototype.hasOwnProperty.call(table, key)
-    ? table[key]
-    : undefined;
+  return typeof key === 'string' && Object.hasOwn(table, key) ? table[key] : undefined;
 }
 
 /**
@@ -187,7 +185,7 @@ function describeExpectation(
   if (
     path.length === 2 &&
     typeof section === 'string' &&
-    Object.prototype.hasOwnProperty.call(CONTAINER_EXPECTATIONS, section)
+    Object.hasOwn(CONTAINER_EXPECTATIONS, section)
   ) {
     return CONTAINER_EXPECTATIONS[section];
   }
@@ -233,9 +231,7 @@ function codeForPath(path: readonly PathSegment[]): RouteSettingsErrorCode | und
 
   const key = fieldKey(path);
 
-  return typeof key === 'string' && Object.prototype.hasOwnProperty.call(FIELD_CODES, key)
-    ? FIELD_CODES[key]
-    : undefined;
+  return typeof key === 'string' && Object.hasOwn(FIELD_CODES, key) ? FIELD_CODES[key] : undefined;
 }
 
 function valueAtPath(value: unknown, path: readonly PathSegment[]): unknown {

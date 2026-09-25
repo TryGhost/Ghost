@@ -2,10 +2,11 @@ import { Banner, Button } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { LimitMessage } from './limit-message';
 import {
   publishBackToSettings,
-  publishConfirmButton,
+  publishConfirm,
   publishConfirmError,
   publishFlowConfirm,
 } from '@tryghost/test-data/selectors/editor';
@@ -51,7 +52,9 @@ export function ConfirmStep({
   onConfirm,
   onBack,
 }: ConfirmStepProps) {
-  const { count } = useMembersCount(state.fullRecipientFilter);
+  const { count } = useMembersCount(state.fullRecipientFilter, {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
   const publishType = confirmPublishType(captured);
   const showNewsletterName = !state.onlyDefaultNewsletter && state.newsletter?.name;
   const recipients = recipientsConfirmLabel({
@@ -122,7 +125,7 @@ export function ConfirmStep({
 
       <Stack align="start" gap="sm">
         <Button
-          data-testid={publishConfirmButton}
+          data-testid={publishConfirm}
           disabled={status === 'running'}
           size="lg"
           onClick={onConfirm}

@@ -20,7 +20,7 @@ async function accept(invitation) {
   return models.Base.transaction(async (transacting) => {
     const options = { context: { internal: true }, transacting, forUpdate: true };
 
-    let invite = await models.Invite.findOne({ token: inviteToken, status: 'sent' }, options);
+    const invite = await models.Invite.findOne({ token: inviteToken, status: 'sent' }, options);
 
     if (!invite) {
       throw new errors.NotFoundError({ message: tpl(messages.inviteNotFound) });
@@ -32,7 +32,7 @@ async function accept(invitation) {
 
     const email = invite.get('email');
 
-    let user = await models.User.findOne({ email }, options);
+    const user = await models.User.findOne({ email }, options);
     if (user) {
       throw new errors.ValidationError({
         message: tpl(messages.inviteEmailAlreadyExist.message),

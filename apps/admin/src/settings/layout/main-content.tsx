@@ -81,7 +81,7 @@ const MainContent: React.FC = () => {
   if (isEditorUser(currentUser)) {
     return (
       <Page>
-        <div className="flex-1 bg-white dark:bg-gray-950">
+        <div className="min-w-0 flex-1 bg-white dark:bg-gray-950">
           <div className="h-full overflow-y-auto overscroll-y-contain" id="settings-scroller">
             <div className="mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10">
               <Text as="h1" className="mb-[5vmin] text-4xl" leading="supertight" weight="bold">
@@ -106,7 +106,7 @@ const MainContent: React.FC = () => {
           <Sidebar />
         </div>
       </div>
-      <div className="h-full flex-1 bg-white tablet:basis-[800px] dark:bg-gray-950 dark:tablet:bg-black">
+      <div className="h-full min-w-0 flex-1 bg-white tablet:basis-[800px] dark:bg-gray-950 dark:tablet:bg-black">
         <div
           className="relative h-full overflow-y-scroll overscroll-y-contain pt-13"
           id="settings-scroller"

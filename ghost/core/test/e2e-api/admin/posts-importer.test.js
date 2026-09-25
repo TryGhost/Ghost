@@ -349,12 +349,15 @@ describe('Posts Importer API', function () {
 
   it('Can upload a posts CSV as Administrator', async function () {
     await agent.loginAsAdmin();
+    const getAdapter = sinon.spy(adapterManager, 'getAdapter');
 
     await agent
       .post('posts/upload/')
       .attach('postsfile', csvPath)
       .expectStatus(202)
       .expect(cacheInvalidateHeaderNotSet());
+
+    sinon.assert.calledWith(getAdapter, 'storage:imports');
   });
 
   it('downloads and stores referenced CSV media before creating the post', async function () {

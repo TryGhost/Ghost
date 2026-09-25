@@ -82,6 +82,8 @@ const create = ({ config, request, settingsCache, tinybirdService }) => {
       }
     });
 
+    searchParams.ghost_client = 'server';
+
     // Convert searchParams to query string and append to URL
     const queryString = new URLSearchParams(searchParams).toString();
     const fullUrl = `${tinybirdUrl}?${queryString}`;
@@ -91,7 +93,12 @@ const create = ({ config, request, settingsCache, tinybirdService }) => {
         Authorization: `Bearer ${token}`,
       },
       timeout: {
-        request: 10000,
+        // Allow Tinybird's 30-second query deadline to finish before timing out locally.
+        request: 35000,
+      },
+      retry: {
+        // A failed request may still be executing; avoid duplicating expensive queries.
+        limit: 0,
       },
     };
 

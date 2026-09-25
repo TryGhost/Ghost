@@ -7,7 +7,7 @@ describe('Unit: Model: role', function () {
     setupTest();
 
     it('provides a lowercase version of the name', function () {
-        let model = this.owner.lookup('service:store').createRecord('role', {
+        const model = this.owner.lookup('service:store').createRecord('role', {
             name: 'Author'
         });
 

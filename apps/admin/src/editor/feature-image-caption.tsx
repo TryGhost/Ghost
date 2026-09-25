@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from 'react';
+import { Suspense } from 'react';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
   type EditorResource,
@@ -6,7 +6,7 @@ import {
   loadKoenig,
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
-import { reportKoenigError } from './koenig-error';
+import { reportKoenigError } from './report-error';
 
 export interface FeatureImageCaptionProps {
   /** Paragraph-wrapped caption HTML; the editor parses it as a document. */
@@ -72,7 +72,7 @@ function CaptionMount({
 
 /** The feature image caption: one paragraph of basic formatting, emitted as HTML. */
 export function FeatureImageCaption(props: FeatureImageCaptionProps) {
-  const editor = useMemo(() => loadKoenig(), []);
+  const editor = loadKoenig();
 
   return (
     <div className="koenig-react-editor koenig-lexical flex-1">

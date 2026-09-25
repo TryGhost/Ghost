@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
-const cheerio = require('cheerio');
+const cheerio = require('cheerio/slim');
 const sinon = require('sinon');
 
 const Mention = require('../../../../../core/server/services/mentions/mention');

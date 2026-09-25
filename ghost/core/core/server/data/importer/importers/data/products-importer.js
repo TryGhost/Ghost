@@ -63,7 +63,7 @@ class ProductsImporter extends BaseImporter {
   validateStripePrice() {
     // the stripe price either needs to exist in the current db,
     // or be imported as part of the same import
-    let invalidProducts = [];
+    const invalidProducts = [];
     _.each(['monthly_price_id', 'yearly_price_id'], (field) => {
       _.each(this.dataToImport, (objectInFile) => {
         const importedObject = _.find(this.requiredFromFile.stripe_prices, {
@@ -90,7 +90,7 @@ class ProductsImporter extends BaseImporter {
 
   preventDuplicates() {
     debug('preventDuplicates');
-    let duplicateProducts = [];
+    const duplicateProducts = [];
     _.each(this.dataToImport, (objectInFile) => {
       const existingObject = _.find(this.requiredExistingData.products, {
         name: objectInFile.name,
@@ -114,7 +114,7 @@ class ProductsImporter extends BaseImporter {
   }
 
   preventInvalidFree() {
-    let invalidFreeProducts = [];
+    const invalidFreeProducts = [];
     _.each(this.dataToImport, (product) => {
       // A free product must not have any pricing data (otherwise it wouldn't be free, duh!)
       if (

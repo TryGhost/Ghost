@@ -261,7 +261,7 @@ class MemberWelcomeEmailService {
     const normalized = {};
 
     for (const field of SHARED_SENDER_FIELDS) {
-      if (!Object.prototype.hasOwnProperty.call(attrs, field)) {
+      if (!Object.hasOwn(attrs, field)) {
         continue;
       }
 
@@ -898,7 +898,7 @@ class MemberWelcomeEmailServiceWrapper {
     }
 
     if (!this.i18n) {
-      const i18nLib = require('@tryghost/i18n');
+      const i18nLib = require('@tryghost/i18n').default;
       const events = require('../../lib/common/events');
 
       this.i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
