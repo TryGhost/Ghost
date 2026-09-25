@@ -174,6 +174,7 @@ export const conflictCopyContentButton = 'Copy content';
 export const conflictDiscardAndReloadButton = 'Discard and reload';
 export const conflictCancelReloadButton = 'Cancel';
 export const editorPreviewButton = 'Preview';
+export const editorHelpLink = 'Editor help';
 export const editorPublishButton = 'Publish';
 export const editorUpdateButton = 'Update';
 export const editorSaveButton = 'Save';

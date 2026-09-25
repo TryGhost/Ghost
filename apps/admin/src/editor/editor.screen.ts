@@ -14,6 +14,7 @@ import {
   editorFeatureImage,
   editorFeatureImageCaption,
   editorHeaderActions,
+  editorHelpLink,
   editorLeaveDialog,
   editorLoadError,
   editorPreviewButton,
@@ -122,6 +123,18 @@ export const editorScreen = {
   /** An item in Koenig's `/` card menu, by its label. */
   cardMenuItem: (label: string) => page.getByRole('menuitem', { name: label }),
   wordCount: () => page.getByTestId(editorWordCount),
+  helpLink: () => page.getByRole('link', { name: editorHelpLink }),
+  /** The document's own scroll surface, independent of the editor shell. */
+  scrollPane: (): HTMLElement => {
+    const root = page.getByTestId(postEditor).element();
+    const pane = Array.from(root.querySelectorAll('div')).find((element) =>
+      ['auto', 'scroll'].includes(getComputedStyle(element).overflowY),
+    );
+    if (!pane) {
+      throw new Error('The editor document has no scroll surface');
+    }
+    return pane;
+  },
   loadError: () => page.getByTestId(editorLoadError),
   reauthBanner: () => page.getByTestId(editorReauthBanner),
   retryReauth: () => page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Retry' }),
