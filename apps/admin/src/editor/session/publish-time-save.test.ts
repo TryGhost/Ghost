@@ -286,7 +286,9 @@ describe('staging the publish time', () => {
     await Promise.resolve();
 
     expect(update).not.toHaveBeenCalled();
-    // Staged, not attempted: no save the writer did not ask for may fail.
+    await vi.waitFor(() =>
+      expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } }),
+    );
     expect(session.getState().kind).toBe('idle');
   });
 

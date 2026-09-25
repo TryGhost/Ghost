@@ -186,6 +186,7 @@ function EditorContent({
       <SessionBanners
         contentText={session.contentText}
         hasUnsavedContent={session.hasUnsavedContent}
+        pendingSave={session.pendingSave}
         state={session.state}
         onDismissReauth={session.reauthAbandoned}
         onReload={session.reload}
