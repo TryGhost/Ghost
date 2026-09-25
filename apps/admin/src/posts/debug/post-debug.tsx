@@ -29,6 +29,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  TabsTriggerCount,
 } from '@tryghost/shade/components';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Stack } from '@tryghost/shade/primitives';
@@ -262,18 +263,19 @@ function DebugContent({ post }: { post: Post }) {
       {!emailId || !email ? (
         <p className="text-muted-foreground">No email data for this post.</p>
       ) : (
-        <Tabs defaultValue="permanent">
-          <TabsList className="mb-6 h-auto flex-wrap">
+        <Tabs defaultValue="permanent" variant="pill">
+          <TabsList className="mb-6 h-auto flex-wrap gap-1">
             <TabsTrigger value="permanent">
-              {formatNumber(permanent.length)} Permanent{' '}
-              {permanent.length === 1 ? 'failure' : 'failures'}
+              Permanent failures
+              <TabsTriggerCount>{formatNumber(permanent.length)}</TabsTriggerCount>
             </TabsTrigger>
             <TabsTrigger value="temporary">
-              {formatNumber(temporary.length)} Temporary{' '}
-              {temporary.length === 1 ? 'failure' : 'failures'}
+              Temporary failures
+              <TabsTriggerCount>{formatNumber(temporary.length)}</TabsTriggerCount>
             </TabsTrigger>
             <TabsTrigger value="batches">
-              {formatNumber(failedBatches)} {failedBatches === 1 ? 'batch' : 'batches'} errored
+              Errored batches
+              <TabsTriggerCount>{formatNumber(failedBatches)}</TabsTriggerCount>
             </TabsTrigger>
             <TabsTrigger value="overview">Overview</TabsTrigger>
           </TabsList>
