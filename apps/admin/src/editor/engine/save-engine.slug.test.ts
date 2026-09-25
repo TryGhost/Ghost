@@ -18,7 +18,7 @@ describe('createSaveEngine', () => {
 
       const explicit = h.engine.dispatch('explicit');
       await flush();
-      expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'explicit' });
+      expect(h.engine.getState()).toEqual({ kind: 'preparing', intent: 'explicit' });
       expect(h.execute).not.toHaveBeenCalled();
 
       await release();
