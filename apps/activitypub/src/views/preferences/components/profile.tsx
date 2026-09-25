@@ -252,6 +252,9 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
   const [imageConversionFailed, setImageConversionFailed] = useState(false);
   const [imagesReady, setImagesReady] = useState(false);
+  // Bumped whenever banner/avatar source URLs change so an in-flight copy can
+  // abort if the screenshot card's image sources were invalidated mid-wait.
+  const imageSourceGenerationRef = useRef(0);
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
   const bannerSourceUrl = account?.bannerImageUrl || coverImage || null;
   const avatarSourceUrl = account?.avatarUrl || publicationIcon || null;
@@ -261,6 +264,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   // failure cannot overwrite a newer success (or vice versa).
   useEffect(() => {
     let cancelled = false;
+    imageSourceGenerationRef.current += 1;
 
     setImagesReady(false);
     setImageConversionFailed(false);
@@ -335,6 +339,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       return;
     }
 
+    const generationAtStart = imageSourceGenerationRef.current;
     setIsProcessing(true);
 
     // Wait for the next frame to ensure the loading indicator is painted
@@ -343,6 +348,13 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
         requestAnimationFrame(resolve);
       });
     });
+
+    // Account/site image URLs may have changed during the paint wait; abort so
+    // we never screenshot a card that fell back to unresolved remote URLs.
+    if (generationAtStart !== imageSourceGenerationRef.current) {
+      setIsProcessing(false);
+      return;
+    }
 
     try {
       if (
