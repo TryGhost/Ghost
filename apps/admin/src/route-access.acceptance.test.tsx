@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 
 import {
   allowUnhandledRequests,
@@ -79,6 +80,36 @@ describe('Route access', () => {
       },
     );
   });
+
+  describe.each([true, false])('migrate with React flag %s', (enabled) => {
+    it.each(['Super Editor', 'Editor', 'Author', 'Contributor'] as const)(
+      'denies %s access',
+      async (role) => {
+        await renderAdminApp('/migrate/substack', {
+          ...asRole(role),
+          labs: { iframeRoutesReact: enabled },
+        });
+
+        await expect.poll(currentRoute).toBe('/');
+        await expect.element(page.getByTitle('Migrate')).not.toBeInTheDocument();
+      },
+    );
+  });
+
+  it.each(['/site', '/migrate'])(
+    'redirects React %s to billing during a force upgrade',
+    async (path) => {
+      const config = configResponse();
+      config.config.hostSettings = { forceUpgrade: true };
+
+      await renderAdminApp(path, {
+        boot: { browseConfig: { response: config } },
+        labs: { iframeRoutesReact: true },
+      });
+
+      await expect.poll(currentRoute).toBe('/pro');
+    },
+  );
 
   it('redirects members to billing during a force upgrade', async () => {
     const config = configResponse();

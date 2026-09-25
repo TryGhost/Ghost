@@ -1,6 +1,7 @@
 import { availableParallelism } from 'node:os';
 
 import { defineConfig } from 'vitest/config';
+import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -22,6 +23,36 @@ import { sharedDefine, sharedResolve } from './vite.shared';
  * the top end; the floor keeps 2-core runners on their current two workers.
  */
 const getWorkerCount = () => Math.min(8, Math.max(2, availableParallelism() - 1));
+
+/*
+ * MSW cannot see iframe navigations, so a screen embedding an external app
+ * would load the real one. These route an origin's navigations to stand-in
+ * HTML on the worker's page (test-utils/acceptance/frames.ts). Vitest routes
+ * module mocks on the same context, so teardown removes only these routes.
+ */
+type FrameRouteHandler = Parameters<BrowserCommandContext['page']['route']>[1];
+const frameRoutes = new WeakMap<
+  BrowserCommandContext['page'],
+  Array<{ matcher: (url: URL) => boolean; handler: FrameRouteHandler }>
+>();
+
+const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
+  { page },
+  origin,
+  html,
+) => {
+  const matcher = (url: URL) => url.origin === origin;
+  const handler: FrameRouteHandler = (route) =>
+    route.fulfill({ contentType: 'text/html', body: html });
+  await page.route(matcher, handler);
+  frameRoutes.set(page, [...(frameRoutes.get(page) ?? []), { matcher, handler }]);
+};
+
+const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
+  const routes = frameRoutes.get(page) ?? [];
+  frameRoutes.delete(page);
+  await Promise.all(routes.map(({ matcher, handler }) => page.unroute(matcher, handler)));
+};
 
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, react()],
@@ -54,6 +85,7 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
+      commands: { fakeFrameOrigin, resetFakeFrameOrigins },
       instances: [{ browser: 'chromium' }],
       // Failure screenshots land in __screenshots__/ (gitignored).
       screenshotFailures: true,

@@ -104,6 +104,7 @@ export default class FeatureService extends Service {
     @feature('membersCustomFields') membersCustomFields;
     @feature('editorReact') editorReact;
     @feature('globalSearchReact') globalSearchReact;
+    @feature('iframeRoutesReact') iframeRoutesReact;
     @feature('improveSendingUI') improveSendingUI;
     @feature('dunningWarnings') dunningWarnings;
     _user = null;

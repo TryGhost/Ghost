@@ -141,6 +141,12 @@ const features: Feature[] = [
     flag: 'globalSearchReact',
   },
   {
+    title: 'React iframe routes',
+    description:
+      'Serves View site (/site) and the migration tool (/migrate) from the React app instead of the Ember screens.',
+    flag: 'iframeRoutesReact',
+  },
+  {
     title: 'React member activity',
     description: 'Preview the new member activity screen.',
     flag: 'membersActivityReact',
