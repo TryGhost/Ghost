@@ -2,28 +2,46 @@ import { Temporal } from 'temporal-polyfill';
 
 const pad = (value: number) => String(value).padStart(2, '0');
 
-export function formatDebugDate(value?: string | null, milliseconds = false) {
+function parseInstant(value?: string | null) {
   if (!value) {
+    return null;
+  }
+  try {
+    return Temporal.Instant.from(value);
+  } catch {
+    return null;
+  }
+}
+
+export function formatDebugDate(value?: string | null, milliseconds = false) {
+  const instant = parseInstant(value);
+  if (!instant) {
     return 'N/A';
   }
-  const date = Temporal.Instant.from(value).toZonedDateTimeISO('UTC');
+  const date = instant.toZonedDateTimeISO('UTC');
   const month = date.toLocaleString('en-US', { month: 'short' });
   const fraction = milliseconds ? `.${String(date.millisecond).padStart(3, '0')}` : '';
   return `${pad(date.day)} ${month}, ${date.year}, ${pad(date.hour)}:${pad(date.minute)}:${pad(date.second)}${fraction} UTC`;
 }
 
 export function formatPublishedDate(value: string, timezone: string) {
-  const date = Temporal.Instant.from(value).toZonedDateTimeISO(timezone);
+  const instant = parseInstant(value);
+  if (!instant) {
+    return null;
+  }
+  const date = instant.toZonedDateTimeISO(timezone);
   const month = date.toLocaleString('en-US', { month: 'short' });
   return `${date.day} ${month} ${date.year} at ${pad(date.hour)}:${pad(date.minute)}`;
 }
 
 export function defaultRefetchRange(createdAt?: string | null, now = Temporal.Now.instant()) {
-  const begin = createdAt ? Temporal.Instant.from(createdAt) : now;
+  const begin = parseInstant(createdAt) ?? now;
   const weekAfterCreation = begin.add({ hours: 7 * 24 });
   const hourAgo = now.subtract({ hours: 1 });
-  const end =
+  const cappedEnd =
     Temporal.Instant.compare(weekAfterCreation, hourAgo) < 0 ? weekAfterCreation : hourAgo;
+  // An email sent within the last hour would otherwise end before it begins.
+  const end = Temporal.Instant.compare(cappedEnd, begin) > 0 ? cappedEnd : now;
   const inputValue = (instant: Temporal.Instant) =>
     instant.toZonedDateTimeISO('UTC').toPlainDateTime().toString({ smallestUnit: 'minute' });
   return { begin: inputValue(begin), end: inputValue(end) };
