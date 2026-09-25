@@ -27,7 +27,8 @@
   "privacy": false,
   "security": {
     "allowWebhookInternalIPs": false,
-    "staffDeviceVerification": true
+    "staffDeviceVerification": true,
+    "embedPreviewUrl": "https://public.ghostembeds.com/"
   },
   "useMinFiles": true,
   "verifyRequestIntegrity": true,
