@@ -114,6 +114,11 @@ export interface AccountAliasesResponse {
   aliases: AccountAlias[];
 }
 
+export interface AccountMigrationStatus {
+  targetApId: string | null;
+  sent: boolean;
+}
+
 function emptyAccountAliasesResponse(): AccountAliasesResponse {
   return {
     destination: {
@@ -577,6 +582,18 @@ export class ActivityPubAPI {
     const json = await this.fetchJSON(url);
 
     return parseAccountAliasesResponse(json);
+  }
+
+  async getAccountMigration(): Promise<AccountMigrationStatus> {
+    const url = new URL('.ghost/activitypub/v1/migration', this.apiUrl);
+    return (await this.fetchJSON(url)) as unknown as AccountMigrationStatus;
+  }
+
+  async moveAccount(targetHandle: string): Promise<AccountMigrationStatus> {
+    const url = new URL('.ghost/activitypub/v1/migration', this.apiUrl);
+    return (await this.fetchJSON(url, 'POST', {
+      targetHandle,
+    })) as unknown as AccountMigrationStatus;
   }
 
   async getDomain(): Promise<SocialWebDomain> {
