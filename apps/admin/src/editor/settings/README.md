@@ -191,12 +191,16 @@ selection, and a tier ID without type metadata is preserved. A failed tier
 lookup shows an error and a Retry action in place of the list.
 
 An empty tier selection is staged like any other edit but never sent: the
-section asks for at least one tier, and while the pairing is incomplete no field
-save runs and a save the writer asks for is refused with the same message.
-Because the pairing is staged rather than held in the panel, it survives closing
-the sidebar, enables Update and is what the leave guard asks about. A create
-with untouched access settings still uses the server default; an explicit tier
-selection must include a tier even on the first save.
+section asks for at least one tier. On a post that exists, no field save runs
+while the pairing is incomplete and a save the writer asks for is refused with
+the same message. Because the pairing is staged rather than held in the panel,
+it survives closing the sidebar, enables Update and is what the leave guard asks
+about. A post the server has not created yet is not held to the rule: the
+section stages the incomplete pair without a save of its own, content saves go
+ahead with the pair left out, and the pair stays the writer's edit across the
+create, so the section keeps asking for a tier and the first tier picked sends
+visibility and tiers together. A create with untouched access settings uses the
+server default.
 
 When either access field changes to specific tiers, the save submits both
 visibility and the tier list, including tier IDs the writer never touched. A
