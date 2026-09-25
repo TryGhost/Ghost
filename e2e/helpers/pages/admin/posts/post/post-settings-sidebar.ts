@@ -340,6 +340,15 @@ class AccessSection extends InlineSection {
   async setVisibility(label: string): Promise<void> {
     await chooseSelectOption(this.page, this.visibilitySelect, label);
   }
+
+  /** Ticks a tier in the picker that `Specific tier(s)` shows. */
+  async selectTier(name: string): Promise<void> {
+    await this.tier(name).check();
+  }
+
+  async deselectTier(name: string): Promise<void> {
+    await this.tier(name).uncheck();
+  }
 }
 
 class ExcerptSection extends InlineSection {
