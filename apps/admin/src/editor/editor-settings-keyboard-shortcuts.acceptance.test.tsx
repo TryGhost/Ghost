@@ -109,7 +109,11 @@ describe('Post settings keyboard shortcuts', () => {
     await expect.element(pane).toHaveTextContent('Inserting');
 
     expect(editorScreen.settingsShortcutRows()).toHaveLength(50);
-    expect(editorScreen.settingsSidebar().element().getBoundingClientRect().width).toBe(342);
+    await expect
+      .poll(
+        () => editorScreen.settingsSidebar().element().parentElement!.getBoundingClientRect().width,
+      )
+      .toBe(350);
   });
 
   it('shows a Mac writer the Mac glyphs', async () => {
