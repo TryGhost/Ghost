@@ -14,7 +14,7 @@ export { useFeatureFlag } from './hooks/use-feature-flag';
 export { useHostLimits } from './hooks/use-host-limits';
 export type { HostLimits } from './hooks/use-host-limits';
 export { useLimiter } from './hooks/use-limiter';
-export type { Limiter } from './hooks/use-limiter';
+export type { Limiter, UseLimiterOptions } from './hooks/use-limiter';
 export { useKoenigFileUpload, koenigFileUploadTypes } from './hooks/use-koenig-file-upload';
 export { useKoenigFetchEmbed } from './hooks/use-koenig-fetch-embed';
 export type { KoenigFileUploadType } from './hooks/use-koenig-file-upload';
