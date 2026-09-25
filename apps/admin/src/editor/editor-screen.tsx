@@ -79,7 +79,7 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
   return (
     <Grid
       align="center"
-      className="grid-cols-[auto_minmax(0,1fr)] px-4 pt-[calc(var(--spacing)*5+1px)] pb-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
       <PageHeader.Action

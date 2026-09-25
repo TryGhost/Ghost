@@ -113,7 +113,7 @@ export function PostEditor({
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const writingAreaRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const editorApiRef = useRef<KoenigInstance | null>(null);
@@ -126,12 +126,12 @@ export function PostEditor({
   useAutosize(excerptRef, excerpt);
 
   useLayoutEffect(() => {
-    const container = scrollContainerRef.current;
+    const container = writingAreaRef.current;
     if (!container) {
       return;
     }
     // Koenig's breakout cards use viewport units; subtract the space outside
-    // the writing area, including the sidebar throughout its transition.
+    // the writing area, including its inset and the animated sidebar.
     const measure = () => {
       container.style.setProperty(
         '--kg-breakout-adjustment',
@@ -285,12 +285,10 @@ export function PostEditor({
 
   return (
     <div className="relative h-full min-h-0" data-testid={postEditor}>
-      <div
-        ref={scrollContainerRef}
-        className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto"
-      >
+      <div className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto">
         <Stack
-          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24"
+          ref={writingAreaRef}
+          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))]"
           gap="none"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onPaneDrop}
@@ -367,7 +365,10 @@ export function PostEditor({
           />
         </Stack>
       </div>
-      <Inline className="absolute right-4 bottom-3 z-20" gap="sm">
+      <Inline
+        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20"
+        gap="sm"
+      >
         {!isKeyboardOpen && (
           <Text
             as="span"

@@ -195,7 +195,7 @@ export function PostSettingsSidebar({
       >
         <aside
           aria-label={open?.title ?? panelLabel}
-          className="m-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*4)] overflow-x-hidden overflow-y-auto rounded-xl border border-border bg-sidebar"
+          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-x-hidden overflow-y-auto rounded-xl border border-border bg-sidebar"
           data-testid={postSettingsSidebar}
         >
           <Box className="min-h-full opacity-(--editor-settings-progress,1)">
