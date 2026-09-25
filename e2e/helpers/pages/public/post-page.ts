@@ -32,6 +32,11 @@ export class PostPage extends PublicPage {
     this.transistorPlaceholder = page.locator('.kg-transistor-placeholder');
   }
 
+  /** A social card tag in the head; Ghost keys `twitter:*` by `name` and `og:*` by `property`. */
+  socialMetaTag(key: string): Locator {
+    return this.page.locator(`meta[name="${key}"], meta[property="${key}"]`);
+  }
+
   async gotoPost(slug: string): Promise<void> {
     await this.goto(`/${slug}/`);
     await this.waitForPostToLoad();
