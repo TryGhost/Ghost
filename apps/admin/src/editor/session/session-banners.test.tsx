@@ -1,9 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { editorConflictReloadConfirm } from '@tryghost/test-data/selectors/editor';
 import { toast } from 'sonner';
 import type { PendingSave, SaveEngineState, SaveError } from '@/editor/engine/save-engine';
+import { reportShownAlert } from '@/editor/report-error';
 import { SessionBanners } from './session-banners';
 import type { ReloadOutcome } from './use-editor-session';
+
+vi.mock('@/editor/report-error', () => ({ reportShownAlert: vi.fn() }));
 
 const noop = () => undefined;
 
@@ -29,11 +33,8 @@ function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) 
   );
 }
 
-const CONFLICT: SaveEngineState = {
-  kind: 'conflict',
-  intent: 'autosave',
-  error: { kind: 'conflict', message: 'Someone else got there first.' },
-};
+const CONFLICT_ERROR: SaveError = { kind: 'conflict', message: 'Someone else got there first.' };
+const CONFLICT: SaveEngineState = { kind: 'conflict', intent: 'autosave', error: CONFLICT_ERROR };
 
 function errored(error: Partial<SaveError>): SaveEngineState {
   return {
@@ -227,4 +228,78 @@ describe('SessionBanners', () => {
       expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();
     },
   );
+});
+
+describe('SessionBanners reporting', () => {
+  beforeEach(() => {
+    vi.mocked(reportShownAlert).mockClear();
+  });
+
+  it('reports a failed-save banner once, by the text shown, not per render', () => {
+    const error: SaveError = { kind: 'transport', message: 'Offline' };
+    const state = errored(error);
+    const { rerender } = renderBanners(state);
+    rerender(
+      <SessionBanners
+        contentText={() => ''}
+        hasUnsavedContent={() => false}
+        state={state}
+        onDismissReauth={noop}
+        onReload={() => Promise.resolve('reloaded')}
+        onRetryReauth={noop}
+        onRetrySave={noop}
+      />,
+    );
+
+    expect(reportShownAlert).toHaveBeenCalledTimes(1);
+    expect(reportShownAlert).toHaveBeenCalledWith(
+      'Couldn’t reach the server. Your changes are still here.',
+      error,
+    );
+  });
+
+  it('reports a collision banner with the collision behind it', () => {
+    renderBanners(CONFLICT);
+
+    expect(reportShownAlert).toHaveBeenCalledTimes(1);
+    expect(reportShownAlert).toHaveBeenCalledWith(
+      expect.stringContaining('Someone else is editing this post'),
+      CONFLICT_ERROR,
+    );
+  });
+
+  it('reports a deleted-post banner as a not-found', () => {
+    renderBanners({ kind: 'halted' });
+
+    expect(reportShownAlert).toHaveBeenCalledTimes(1);
+    expect(reportShownAlert).toHaveBeenCalledWith(
+      expect.stringContaining('This post has been deleted'),
+      expect.objectContaining({ kind: 'not-found' }),
+    );
+  });
+
+  it('reports the deleted-post banner a reload reveals', async () => {
+    renderBanners(CONFLICT, { onReload: () => Promise.resolve('gone') });
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('has been deleted'));
+
+    expect(reportShownAlert).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(reportShownAlert).mock.calls[1][0]).toContain('This post has been deleted');
+  });
+
+  it.each<[string, SaveEngineState, PendingSave | undefined]>([
+    ['idle', { kind: 'idle' }, undefined],
+    ['saving', { kind: 'saving', intent: 'autosave' }, undefined],
+    ['an expired session', { kind: 'reauth-pending', intent: 'explicit' }, undefined],
+    [
+      'a held validation',
+      { kind: 'idle' },
+      { blockedBy: { kind: 'validation', message: 'At least one author is required.' } },
+    ],
+  ])('reports nothing for %s', (_label, state, pendingSave) => {
+    renderBanners(state, { pendingSave });
+
+    expect(reportShownAlert).not.toHaveBeenCalled();
+  });
 });

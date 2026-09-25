@@ -7,6 +7,7 @@ import {
   type SaveEngine,
   type SaveEngineState,
   type SaveError,
+  type SaveFailure,
   type SaveOutcome,
   type SaveRequest,
   type SaveResult,
@@ -57,7 +58,10 @@ export function dispatchAny(engine: SaveEngine, kind: DispatchIntent) {
 
 export function setup(
   overrides: Partial<SnapshotFields> = {},
-  ports: { autosaveDebounceMs?: () => number | undefined } = {},
+  ports: {
+    autosaveDebounceMs?: () => number | undefined;
+    onSaveFailed?: (failure: SaveFailure) => void;
+  } = {},
 ) {
   let snapshot = { ...BASE, ...overrides } as SaveSnapshot;
   const requests: SaveRequest[] = [];

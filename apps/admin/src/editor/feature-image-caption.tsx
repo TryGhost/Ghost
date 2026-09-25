@@ -76,7 +76,7 @@ export function FeatureImageCaption(props: FeatureImageCaptionProps) {
 
   return (
     <div className="koenig-react-editor koenig-lexical flex-1">
-      <ErrorBoundary name="the feature image caption">
+      <ErrorBoundary name="the feature image caption" onError={reportKoenigError}>
         <Suspense fallback={null}>
           <CaptionMount {...props} editor={editor} />
         </Suspense>

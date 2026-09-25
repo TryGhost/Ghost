@@ -5,6 +5,8 @@ import { Banner } from '@tryghost/shade/components';
 export interface ErrorBoundaryProps {
   children: ReactNode;
   name: ReactNode;
+  /** Replaces the default Sentry capture; the console lines stay. */
+  onError?: (error: unknown, info: ErrorInfo) => void;
 }
 
 /**
@@ -23,10 +25,14 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
   }
 
   componentDidCatch(error: unknown, info: ErrorInfo) {
-    Sentry.withScope((scope) => {
-      scope.setTag('adminx_settings_component', info.componentStack);
-      Sentry.captureException(error);
-    });
+    if (this.props.onError) {
+      this.props.onError(error, info);
+    } else {
+      Sentry.withScope((scope) => {
+        scope.setTag('adminx_settings_component', info.componentStack);
+        Sentry.captureException(error);
+      });
+    }
     // eslint-disable-next-line no-console
     console.error(error);
     // eslint-disable-next-line no-console
