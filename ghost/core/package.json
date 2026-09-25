@@ -85,6 +85,7 @@
     "@sentry/node": "7.120.4",
     "@slack/webhook": "7.1.0",
     "@tryghost/adapter-base-cache": "workspace:*",
+    "@tryghost/adapter-base-email": "workspace:*",
     "@tryghost/adapter-base-jobs": "workspace:*",
     "@tryghost/adapter-base-redirects": "workspace:*",
     "@tryghost/adapter-base-route-settings": "workspace:*",
