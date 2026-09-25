@@ -230,7 +230,11 @@ function EditorContent({
     <PageHeader.Action
       ref={settingsToggleRef}
       aria-expanded={settingsOpen}
-      className={settingsOpen ? 'bg-sidebar-accent' : 'bg-background/80 backdrop-blur-sm'}
+      className={
+        settingsOpen
+          ? 'bg-transparent enabled:aria-expanded:bg-transparent enabled:aria-expanded:shadow-none enabled:aria-expanded:hover:bg-sidebar-accent'
+          : 'bg-background/80 backdrop-blur-sm'
+      }
       data-testid={settingsMenuToggle}
       fallbackSize="sm"
       fallbackVariant="ghost"

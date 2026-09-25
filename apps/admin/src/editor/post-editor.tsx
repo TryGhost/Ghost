@@ -113,6 +113,7 @@ export function PostEditor({
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const editorApiRef = useRef<KoenigInstance | null>(null);
@@ -123,6 +124,29 @@ export function PostEditor({
 
   useAutosize(titleRef, title);
   useAutosize(excerptRef, excerpt);
+
+  useLayoutEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) {
+      return;
+    }
+    // Koenig's breakout cards use viewport units; subtract the space outside
+    // the writing area, including the sidebar throughout its transition.
+    const measure = () => {
+      container.style.setProperty(
+        '--kg-breakout-adjustment',
+        `${Math.max(0, window.innerWidth - container.clientWidth)}px`,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
 
   const titleHasTk = textHasTk(title);
   const excerptHasTk = showExcerpt && textHasTk(excerpt);
@@ -261,7 +285,10 @@ export function PostEditor({
 
   return (
     <div className="relative h-full min-h-0" data-testid={postEditor}>
-      <div className="h-full scroll-pt-(--editor-overlap) overflow-y-auto">
+      <div
+        ref={scrollContainerRef}
+        className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto"
+      >
         <Stack
           className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24"
           gap="none"
