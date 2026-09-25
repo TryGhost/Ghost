@@ -32,7 +32,7 @@ allowBuilds:
   'nx@23.2.0': true
   'protobufjs@7.6.4': true
   're2@1.26.1': true
-  'sharp@0.35.3': true
+  'sharp@0.35.4': true
   ssh2: false
 
 catalog:
@@ -118,6 +118,7 @@ catalog:
   ajv: 8.20.0
   ajv-formats: 3.0.1
   better-sqlite3: 12.11.1
+  body-parser: 1.20.8
   bson-objectid: 2.0.4
   chai: 4.5.0
   chalk: 4.1.2
@@ -138,6 +139,7 @@ catalog:
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.4
   eslint-plugin-tailwindcss: 4.0.4
+  express: 4.22.3
   flexsearch: 0.7.43
   fs-extra: 11.3.6
   glob: 13.0.6
@@ -145,7 +147,7 @@ catalog:
   got: 16.0.0
   ipaddr.js: 2.5.0
   jose: 6.2.12
-  js-yaml: 4.3.0
+  js-yaml: 4.3.2
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
   juice: 11.1.1
@@ -165,11 +167,13 @@ catalog:
   postcss: 8.5.26
   preact: ^10.29.2
   prettier: 3.9.6
+  qs: 6.16.0
   react: 18.3.1
   react-day-picker: 9.14.0
   react-dom: 18.3.1
   react-router: 7.18.1
   semver: 7.8.5
+  sharp: 0.35.4
   should: 13.2.3
   sinon: 22.1.0
   sonner: 2.0.7
@@ -192,7 +196,7 @@ catalog:
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
   typescript-eslint: 8.67.0
-  validator: 13.12.0
+  validator: 13.15.35
   vite: 8.1.3
   vite-plugin-svgr: 4.5.0
   vitest: 4.1.10
@@ -205,10 +209,10 @@ catalog:
   shell-quote: 1.10.0
   unidecode: 1.1.0
   mppx: 0.6.20
-  '@x402/core': 2.12.0
-  '@x402/evm': 2.12.0
-  '@x402/hono': 2.12.0
-  hono: 4.12.18
+  '@x402/core': 2.27.0
+  '@x402/evm': 2.27.0
+  '@x402/hono': 2.27.0
+  hono: 4.13.8
   '@octokit/core': 7.0.7
   '@octokit/plugin-retry': 8.1.1
   '@octokit/plugin-throttling': 11.0.5
@@ -306,7 +310,6 @@ overrides:
   'nth-check@<2.0.1': ^2.0.1
   'path-to-regexp@<0.1.13': ^0.1.13
   'protobufjs@<7.5.5': ^7.5.5
-  'qs@<6.14.1': ^6.14.2
   supports-color: '10.2.2'
   'tar@<7.5.11': ^7.5.11
   'tmp@<=0.2.3': ^0.2.4
@@ -318,6 +321,10 @@ overrides:
   # liquid-wormhole 3.0.1 pins this to a personal-fork git URL; redirect to the
   # upstream-maintained npm release so blockExoticSubdeps doesn't trip on it.
   perf-primitives: ^0.0.6
+  # routing-related dependencies
+  body-parser: 'catalog:'
+  express: 'catalog:'
+  qs: 'catalog:'
 
 packageExtensions:
   '@doist/react-interpolate@2.2.1':
