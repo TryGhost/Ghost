@@ -7,8 +7,8 @@ import {
 import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
-import { z } from 'zod';
 import moment from 'moment-timezone';
+import { z } from 'zod';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RunCursorScope } from './automation-run-cursor';
 import {
@@ -179,6 +179,29 @@ export function applyEntryDateFilter(
   }
 }
 
+// Shared by list and counts; null means the probe overflowed (never exhaustion).
+export async function probeMemberSearch(
+  knex: Knex,
+  automationId: string,
+  query: string,
+  scope: EntryDateScope = {},
+) {
+  if (!isMysql(knex)) {
+    return null;
+  }
+  const pattern = memberSearchPattern(query);
+  const rows = await knex('members')
+    .join('automation_runs as runs', 'runs.member_id', 'members.id')
+    .where('runs.automation_id', automationId)
+    .modify(applyEntryDateFilter, scope, 'runs.created_at')
+    .whereRaw(predicate, [pattern, pattern])
+    .select<{ id: string }[]>('runs.id')
+    .limit(SEARCH_LIMITS.smallSet + 1)
+    .hintComment('MAX_EXECUTION_TIME(2000)')
+    .timeout(SEARCH_LIMITS.sqlMs, { cancel: true });
+  return rows.length <= SEARCH_LIMITS.smallSet ? rows.map((row) => row.id) : null;
+}
+
 export async function browseMemberSearch(
   knex: Knex,
   client: TinybirdClient,
@@ -213,41 +236,22 @@ export async function browseMemberSearch(
       },
     },
   });
-  // The probe is complete only if it does not overflow. This optimization needs
-  // cancellable SQL; SQLite takes the bounded-ID candidate path below.
-  if (isMysql(knex)) {
-    const pattern = memberSearchPattern(query);
-    const probe = await knex('members')
-      .join('automation_runs as runs', 'runs.member_id', 'members.id')
-      .where('runs.automation_id', scope.automation_id)
-      .modify(applyEntryDateFilter, scope, 'runs.created_at')
-      .whereRaw(predicate, [pattern, pattern])
-      .select<{ id: string }[]>('runs.id')
-      .limit(SEARCH_LIMITS.smallSet + 1)
-      .hintComment('MAX_EXECUTION_TIME(2000)')
-      .timeout(SEARCH_LIMITS.sqlMs, { cancel: true });
-    if (probe.length <= SEARCH_LIMITS.smallSet) {
-      // An empty set still checks availability of the new pipe, not only Core.
-      const rows = await fetchCandidates(
-        client,
-        scope,
-        SEARCH_LIMITS.page + 1,
-        after,
-        probe.map((row) => row.id),
-      );
-      const page = rows.slice(0, SEARCH_LIMITS.page);
-      const members = await readMembers(
-        knex,
-        scope.automation_id,
-        page.map((row) => row.id),
-      );
-      const more = rows.length > SEARCH_LIMITS.page;
-      return result(
-        page.map((row) => ({ ...row, member: members.get(row.id) ?? null })),
-        more ? page.at(-1) : undefined,
-        more ? 'more' : 'exhausted',
-      );
-    }
+  const probe = await probeMemberSearch(knex, scope.automation_id, query, scope);
+  if (probe !== null) {
+    // An empty set still checks availability of the new pipe, not only Core.
+    const rows = await fetchCandidates(client, scope, SEARCH_LIMITS.page + 1, after, probe);
+    const page = rows.slice(0, SEARCH_LIMITS.page);
+    const members = await readMembers(
+      knex,
+      scope.automation_id,
+      page.map((row) => row.id),
+    );
+    const more = rows.length > SEARCH_LIMITS.page;
+    return result(
+      page.map((row) => ({ ...row, member: members.get(row.id) ?? null })),
+      more ? page.at(-1) : undefined,
+      more ? 'more' : 'exhausted',
+    );
   }
   const runs: SearchRun[] = [];
   let position = after;

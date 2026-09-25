@@ -79,7 +79,8 @@ Daily buckets remain the API contract. Admin's existing chart groups long histor
 by summing daily buckets: daily below 91 days, weekly for 91–270 days, and monthly
 for longer spans. Admin offers All time (the default), Last 7 days, Last 30 days,
 and Last 90 days, including today in the browser timezone, as in web analytics.
-The date selector controls only Total entries and its chart. Requests are keyed
+The date selector controls Total entries, its chart, current status cards, and
+the member run list using the same entry cohort. Requests are keyed
 by automation, dates, and timezone; response windows are checked before display.
 
 ## Status counts
@@ -98,8 +99,29 @@ by automation, dates, and timezone; response windows are checked before display.
 }
 ```
 
-All counts are all-time, with each run counted once using its latest recorded step
-outcomes:
+The optional `search` parameter scopes counts to every matching current member
+run across all statuses. Counts remain pending until their independent
+continuation reaches exhaustion; partial totals are never presented as complete.
+
+During search, `include_entries=true` also returns `meta.entry_buckets` with
+`version: 1`, the requested `timezone`, and sparse `{date, count}` entries for
+**this response's batches only**. The same Tinybird query supplies both the daily
+buckets and status counts. Admin combines buckets from every successful page and
+shows the searched chart only after exhaustion, when their sum agrees with the
+complete counts (including the diagnostic unclassified count). Retrying a page
+replaces its contribution; it does not append it again. No chart data is stored
+in the signed continuation token. Chart-enabled cursors bind the timezone even
+for all-time searches, and cannot be reused for counts-only requests.
+
+Search and entry dates apply to chart, cards, and list. Selecting a status or
+sorting/paging the list does not change the searched chart or all-status counts.
+Chart and cards share search scanning, pause, and retry behavior; the list remains
+independent. Admin detects older Core responses without chart buckets and shows
+chart unavailability while preserving supported searched counts and list data.
+
+Counts accept the same optional `date_from`, `date_to`, and `timezone` as entry
+stats. Dates select when a run entered; each selected run is counted once using
+its latest recorded step outcomes, including steps outside the date window:
 
 - **In progress:** any pending step; takes precedence over every other outcome.
 - **Completed:** at least one step, all finished.
@@ -108,12 +130,14 @@ outcomes:
 - **Unclassified:** missing or unknown history without pending steps. Admin
   explains this coverage gap below the three cards.
 
-The chart and status endpoints are independent requests; the cards can remain
+Outside search, the chart and status endpoints are independent requests; the cards can remain
 available if the chart fails, and vice versa. Both fetch on first sidebar opening.
 Each entry date range is fetched once per page visit. Returning to a visited range
 reuses its result, including any error until an explicit retry. Changing or clearing
-the range does not change or refetch any status counts. The status endpoint has no
-date-range parameters. Closing, reopening, focus, and reconnect do not refresh
+the range also changes the cards and run list to the same entry cohort. Bounded
+responses acknowledge the exclusive calendar bounds in `entry_window` (on the
+status row, or in `meta` for search and run-list responses). Admin rejects bounded
+results from older Core versions that do not acknowledge the window. Closing, reopening, focus, and reconnect do not refresh
 either request. Navigation clears the entry-range cache and starts a new page visit.
 
 ## Run list
@@ -136,6 +160,9 @@ newest first by default:
 
 Each row is a run, including repeat entries by the same member. `order` accepts
 `created_at desc` (default) or `created_at asc`; anything else returns 422.
+The optional entry-date parameters also apply to lists and member searches.
+List, search, and count cursors are scoped to the date bounds and timezone;
+changing or clearing them starts a fresh traversal.
 Entry-time ties use run ID in the same direction. Core validates the returned
 order. Member and Status sorting are not supported.
 Timestamps are UTC with millisecond precision. Status is `in_progress`,

@@ -19,6 +19,8 @@ export type TinybirdClient = {
       afterCreatedAt?: string;
       afterId?: string;
       runIds?: string;
+      firstId?: string;
+      lastId?: string;
     },
     transport?: { method: 'POST'; timeoutMs: number },
   ): Promise<unknown>;
