@@ -7,11 +7,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
   Dialog,
   DialogContent,
   DialogTitle,
 } from '@tryghost/shade/components';
-import { Inline, Text } from '@tryghost/shade/primitives';
+import { Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { navigateEmberBillingSubRoute } from '@/ember-bridge';
@@ -108,41 +109,56 @@ export default function GlobalSearchModal({ open, onOpenChange }: GlobalSearchMo
   };
 
   const hasTerm = term.trim() !== '';
+  const showList = results.length > 0 || hasTerm;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby={undefined} className="gap-0 overflow-hidden p-0">
+      <DialogContent aria-describedby={undefined} className="gap-0 p-0">
         <DialogTitle className="sr-only">Search site</DialogTitle>
-        <Command shouldFilter={false}>
+        <Command
+          className={cn('sm:rounded-lg', !showList && '[&_[cmdk-input-wrapper]]:border-b-0')}
+          shouldFilter={false}
+        >
           <CommandInput placeholder="Search site" value={term} onValueChange={setTerm} />
-          <CommandList className="max-h-[50vh]">
-            {results.map((group) => (
-              <CommandGroup key={group.groupKey ?? group.groupName} heading={group.groupName}>
-                {group.options.map((result) => (
-                  <CommandItem
-                    key={result.id}
-                    className="justify-between"
-                    value={result.id}
-                    onSelect={() => openResult(result)}
+          {showList && (
+            <CommandList className="max-h-[50vh]">
+              {results.map((group, index) => (
+                <Fragment key={group.groupKey ?? group.groupName}>
+                  {index > 0 && <CommandSeparator alwaysRender />}
+                  <CommandGroup
+                    className="[&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
+                    heading={group.groupName}
                   >
-                    <span className="truncate">
-                      <HighlightedText term={term} text={result.title} />
-                    </span>
-                    <StatusBadge status={result.status} />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            ))}
-            {hasTerm && results.length === 0 && (
-              <CommandEmpty>{isLoading ? 'Loading' : 'No results found'}</CommandEmpty>
-            )}
-          </CommandList>
+                    {group.options.map((result) => (
+                      <CommandItem
+                        key={result.id}
+                        className="justify-between"
+                        value={result.id}
+                        onSelect={() => openResult(result)}
+                      >
+                        <span className="truncate">
+                          <HighlightedText term={term} text={result.title} />
+                        </span>
+                        <StatusBadge status={result.status} />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Fragment>
+              ))}
+              {results.length === 0 && (
+                <CommandEmpty>{isLoading ? 'Loading' : 'No results found'}</CommandEmpty>
+              )}
+            </CommandList>
+          )}
         </Command>
-        <Inline className="border-t border-border px-3 py-2" justify="end">
-          <Text size="xs" tone="secondary">
-            Open with {searchShortcutLabel}
-          </Text>
-        </Inline>
+        {/* sits on the dialog's always-dark overlay, so it doesn't follow the theme */}
+        <Text
+          className="absolute top-full right-0 mt-1.5 px-2 text-white/90 text-shadow-sm"
+          size="xs"
+          weight="semibold"
+        >
+          Open with {searchShortcutLabel}
+        </Text>
       </DialogContent>
     </Dialog>
   );
