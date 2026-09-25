@@ -588,6 +588,31 @@ class CodeInjectionPane extends PaneSection {
     this.headCode = page.getByRole('textbox', { name: new RegExp(`^${codeInjectionHeadLabel}`) });
     this.footCode = page.getByRole('textbox', { name: new RegExp(`^${codeInjectionFootLabel}`) });
   }
+
+  /** Replaces the header code; an empty string clears it. */
+  async setHead(code: string): Promise<void> {
+    await replaceCode(this.headCode, code);
+  }
+
+  /** Replaces the footer code; an empty string clears it. */
+  async setFoot(code: string): Promise<void> {
+    await replaceCode(this.footCode, code);
+  }
+}
+
+/**
+ * Clears through CodeMirror's own keymap first: a fill writes to the DOM,
+ * which races its reconciliation. Blurs to commit, as the text fields do.
+ */
+async function replaceCode(field: Locator, code: string): Promise<void> {
+  await field.click();
+  const { keyboard } = field.page();
+  await keyboard.press('ControlOrMeta+a');
+  await keyboard.press('Backspace');
+  if (code) {
+    await field.fill(code);
+  }
+  await field.blur();
 }
 
 class MetaDataPane extends PaneSection {
