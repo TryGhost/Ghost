@@ -202,16 +202,8 @@ export default class FeatureService extends Service {
 
         let isDark = mode === 'dark';
 
-        const html = document.documentElement;
-
-        // Double-rAF: first frame paints the new theme, second frame releases
-        // the suppression so subsequent hover/focus transitions resume cleanly.
-        const releaseSuppression = () => {
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-                html.classList.remove('theme-switching');
-            }));
-        };
-
+        // React owns the `dark` class on <html>; this only switches Ember's own
+        // dark stylesheet and the `nightShift` value Ember components read.
         if (mode === 'system') {
             const mediaQuery = this._getSystemThemeMediaQuery();
             isDark = mediaQuery?.matches ?? false;
@@ -220,11 +212,8 @@ export default class FeatureService extends Service {
             if (mediaQuery) {
                 this._systemThemeMediaQuery = mediaQuery;
                 this._systemThemeListener = (event) => {
-                    html.classList.add('theme-switching');
-                    html.classList.toggle('dark', event.matches);
                     $('link[title=dark]').prop('disabled', !event.matches);
                     set(this, '_osPrefersDark', event.matches);
-                    releaseSuppression();
                 };
                 this._addSystemThemeListener();
             }
@@ -232,8 +221,6 @@ export default class FeatureService extends Service {
             set(this, '_osPrefersDark', false);
         }
 
-        html.classList.add('theme-switching');
-        html.classList.toggle('dark', isDark);
         $('link[title=dark]').prop('disabled', !isDark);
 
         return this._loadAdminThemeStylesheet().then(() => {
@@ -241,13 +228,9 @@ export default class FeatureService extends Service {
             // stylesheet was loading — re-read the current preference so we
             // don't stomp the listener's update with a stale `isDark`.
             const currentIsDark = mode === 'system' ? this._osPrefersDark : isDark;
-            html.classList.toggle('dark', currentIsDark);
             $('link[title=dark]').prop('disabled', !currentIsDark);
-            releaseSuppression();
         }).catch(() => {
             $('link[title=dark]').prop('disabled', true);
-            html.classList.remove('dark');
-            releaseSuppression();
         });
     }
 

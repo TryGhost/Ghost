@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  applyEmberAdminThemePreference,
-  isEmberThemeManaged,
-  preloadEmberAdminThemeStylesheet,
-} from '@/ember-bridge';
+import { applyEmberAdminThemePreference, preloadEmberAdminThemeStylesheet } from '@/ember-bridge';
 import { useEditUserPreferences, useUserPreferences } from '@/hooks/user-preferences';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -22,7 +18,7 @@ let themeSwitchingFrame: number | undefined;
 function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
   const html = document.documentElement;
   // `theme-switching` suppresses transitions (rule in shade/styles.css) so the
-  // swap lands in one paint; double-rAF release mirrors Ember's feature.js.
+  // swap lands in one paint; the second frame releases it once that paint is done.
   html.classList.add('theme-switching');
   html.classList.toggle('dark', resolvedTheme === 'dark');
 
@@ -38,13 +34,10 @@ function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
   });
 }
 
-// Applying the DOM theme is only a fallback for running without EmberBridge.
-// React still tracks system preference changes so resolvedTheme stays current
-// for consumers even when Ember owns the DOM — see isEmberThemeManaged.
+// Ember switches only its own dark stylesheet; the `dark` class is React's.
 function applyAdminTheme(mode: ThemeMode, resolvedTheme: ResolvedThemeMode) {
-  if (!applyEmberAdminThemePreference(mode)) {
-    applyThemeClass(resolvedTheme);
-  }
+  applyEmberAdminThemePreference(mode);
+  applyThemeClass(resolvedTheme);
 }
 
 // App code must consume this via ThemeProvider/useThemeContext (src/providers):
@@ -61,6 +54,11 @@ export function useTheme() {
   const persistedTheme: ThemeMode = preferences?.nightShift ?? 'light';
   const theme: ThemeMode = pendingTheme ?? persistedTheme;
   const resolvedTheme: ResolvedThemeMode = theme === 'system' ? systemTheme : theme;
+  const themeRef = useRef(theme);
+
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -69,7 +67,13 @@ export function useTheme() {
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (event: MediaQueryListEvent) => {
-      setSystemTheme(event.matches ? 'dark' : 'light');
+      const nextSystemTheme = event.matches ? 'dark' : 'light';
+      // Ember swaps its stylesheet inside the same event; waiting for the
+      // re-render would paint one frame with the two halves out of step.
+      if (themeRef.current === 'system') {
+        applyThemeClass(nextSystemTheme);
+      }
+      setSystemTheme(nextSystemTheme);
     };
 
     setSystemTheme(mediaQuery.matches ? 'dark' : 'light');
@@ -89,9 +93,6 @@ export function useTheme() {
   }, []);
 
   useEffect(() => {
-    if (isEmberThemeManaged()) {
-      return;
-    }
     applyThemeClass(resolvedTheme);
   }, [resolvedTheme]);
 
@@ -112,9 +113,6 @@ export function useTheme() {
 
       pendingRef.current = true;
       setIsPendingTheme(true);
-      // Reflect the choice immediately; cleared on rollback (catch) or once the
-      // persisted preference matches (effect above).
-      setPendingTheme(mode);
 
       try {
         const nextResolvedTheme = mode === 'system' ? systemTheme : mode;
@@ -122,10 +120,15 @@ export function useTheme() {
           // eslint-disable-next-line no-console
           console.error('[Theme] Failed to preload admin theme stylesheet:', error);
         });
+        themeRef.current = mode;
         applyAdminTheme(mode, nextResolvedTheme);
+        // After the preload, so the class effect can't beat Ember's stylesheet.
+        // Cleared on rollback (catch) or once the persisted preference matches.
+        setPendingTheme(mode);
         await editPreferences({ nightShift: mode });
       } catch (error) {
         setPendingTheme(null);
+        themeRef.current = theme;
         applyAdminTheme(theme, resolvedTheme);
         // eslint-disable-next-line no-console
         console.error('[Theme] Failed to update appearance preference:', error);

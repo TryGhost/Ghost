@@ -281,19 +281,6 @@ export function subscribeOpenGiftLinkModal(
 }
 
 /**
- * Whether Ember owns the DOM theme. In the embedded admin, Ember manages the
- * `dark` class and the dark stylesheet, and installs its own
- * prefers-color-scheme listener, so React must not apply the theme itself.
- *
- * Deliberately a synchronous snapshot (no waitForStateBridge): theme effects
- * need the answer at effect time and fall back to applying the theme
- * themselves while the bridge is absent.
- */
-export function isEmberThemeManaged(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.EmberBridge);
-}
-
-/**
  * Preloads Ember's dark stylesheet so a subsequent theme switch lands without
  * a flash. Resolves immediately when no bridge (or an older Ember without the
  * method) is present.
@@ -303,17 +290,12 @@ export async function preloadEmberAdminThemeStylesheet(): Promise<void> {
 }
 
 /**
- * Asks Ember to apply an admin theme preference. Returns false when no bridge
- * (or an older Ember without the method) is present, so the caller can fall
- * back to applying the theme itself.
+ * Tells Ember the admin theme preference so it can switch its own dark
+ * stylesheet. No-op when no bridge (or an older Ember without the method) is
+ * present.
  */
-export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
-  const stateBridge = window.EmberBridge?.state;
-  if (!stateBridge?.applyAdminThemePreference) {
-    return false;
-  }
-  void stateBridge.applyAdminThemePreference(mode);
-  return true;
+export function applyEmberAdminThemePreference(mode: AdminThemeMode): void {
+  void window.EmberBridge?.state.applyAdminThemePreference?.(mode);
 }
 
 /**

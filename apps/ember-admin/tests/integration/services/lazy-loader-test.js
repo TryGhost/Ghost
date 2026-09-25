@@ -59,6 +59,24 @@ describe('Integration: Service: lazy-loader', function () {
         });
     });
 
+    it('shares a style load that is still in flight', async function () {
+        const subject = this.owner.lookup('service:lazy-loader');
+
+        subject.setProperties({
+            stylePromises: {},
+            testing: false
+        });
+
+        const firstLoad = subject.loadStyle('in-flight', 'in-flight.css', true);
+        const secondLoad = subject.loadStyle('in-flight', 'in-flight.css', true);
+
+        expect(secondLoad).to.equal(firstLoad);
+        expect(document.querySelectorAll('#in-flight-styles').length).to.equal(1);
+
+        await firstLoad.catch(() => {});
+        document.querySelector('#in-flight-styles').remove();
+    });
+
     it('does not double-prefix URLs already rewritten by broccoli-asset-rev', async function () {
         // broccoli-asset-rev rewrites string literals in compiled JS at build
         // time, prepending the CDN origin. When the lazy-loader receives an
