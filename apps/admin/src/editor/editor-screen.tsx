@@ -79,7 +79,7 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
   return (
     <Grid
       align="center"
-      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*6+1px)] pb-3 pl-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      className="grid-cols-[auto_minmax(0,1fr)] px-4 pt-[calc(var(--spacing)*5+1px)] pb-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
       <PageHeader.Action
@@ -280,7 +280,7 @@ function EditorContent({
               />
               <Box
                 aria-hidden="true"
-                className="w-[calc(var(--editor-settings-toggle-width)*(1-var(--editor-settings-progress)))] shrink-0"
+                className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0"
               />
             </PageHeader.ActionGroup>
           </EditorHeader>
