@@ -13,6 +13,7 @@ type EmailVerificationUtilsOptions = {
   apiThreshold?: number;
   adminThreshold?: number;
   importThreshold?: number;
+  removedRecipientsThreshold?: number;
   persist?: boolean;
   siteId?: string;
   verified?: boolean;
@@ -31,6 +32,7 @@ export async function setupEmailVerificationUtils({
   apiThreshold = 0,
   adminThreshold = 1,
   importThreshold = 0,
+  removedRecipientsThreshold,
   verified = false,
   persist = false,
   siteId = '1',
@@ -55,6 +57,7 @@ export async function setupEmailVerificationUtils({
     apiThreshold,
     adminThreshold,
     importThreshold,
+    removedRecipientsThreshold,
     verified,
     webhookType: DEFAULT_WEBHOOK_TYPE,
     webhookUrl,
