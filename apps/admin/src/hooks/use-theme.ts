@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { applyEmberAdminThemePreference, preloadEmberAdminThemeStylesheet } from '@/ember-bridge';
 import { useEditUserPreferences, useUserPreferences } from '@/hooks/user-preferences';
 
@@ -35,9 +36,10 @@ function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
 }
 
 // Ember switches only its own dark stylesheet; the `dark` class is React's.
-function applyAdminTheme(mode: ThemeMode, resolvedTheme: ResolvedThemeMode) {
+// Resolves `system` live, as Ember does, so the two can't disagree after an await.
+function applyAdminTheme(mode: ThemeMode) {
   applyEmberAdminThemePreference(mode);
-  applyThemeClass(resolvedTheme);
+  applyThemeClass(mode === 'system' ? getSystemTheme() : mode);
 }
 
 // App code must consume this via ThemeProvider/useThemeContext (src/providers):
@@ -115,21 +117,20 @@ export function useTheme() {
       setIsPendingTheme(true);
 
       try {
-        const nextResolvedTheme = mode === 'system' ? systemTheme : mode;
         await preloadEmberAdminThemeStylesheet().catch((error) => {
           // eslint-disable-next-line no-console
           console.error('[Theme] Failed to preload admin theme stylesheet:', error);
         });
         themeRef.current = mode;
-        applyAdminTheme(mode, nextResolvedTheme);
-        // After the preload, so the class effect can't beat Ember's stylesheet.
-        // Cleared on rollback (catch) or once the persisted preference matches.
-        setPendingTheme(mode);
+        applyAdminTheme(mode);
+        // Post-preload so the class effect can't beat Ember's stylesheet; synchronous so
+        // JS theme readers flip in the same paint. Cleared on rollback or once persisted.
+        flushSync(() => setPendingTheme(mode));
         await editPreferences({ nightShift: mode });
       } catch (error) {
         setPendingTheme(null);
         themeRef.current = theme;
-        applyAdminTheme(theme, resolvedTheme);
+        applyAdminTheme(theme);
         // eslint-disable-next-line no-console
         console.error('[Theme] Failed to update appearance preference:', error);
       } finally {
@@ -137,7 +138,7 @@ export function useTheme() {
         setIsPendingTheme(false);
       }
     },
-    [editPreferences, resolvedTheme, systemTheme, theme],
+    [editPreferences, theme],
   );
 
   return {

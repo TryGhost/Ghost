@@ -320,6 +320,57 @@ describe('useTheme (with Ember mounted)', () => {
   );
 
   themeTest(
+    'rolls back to the current OS theme when saving fails after an OS change',
+    async ({ server, wrapper, animationFrames }) => {
+      mockPreferences(server, 'system');
+      let failSave = () => {};
+      const saveFailure = new Promise<void>((resolve) => {
+        failSave = resolve;
+      });
+      server.use(
+        http.put(USER_UPDATE_API_URL, async () => {
+          await saveFailure;
+          return HttpResponse.json({ errors: [{ message: 'Validation error' }] }, { status: 422 });
+        }),
+      );
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const mediaQuery = Object.assign(new EventTarget(), { matches: false }) as MediaQueryList;
+      const mediaSpy = vi.spyOn(window, 'matchMedia').mockReturnValue(mediaQuery);
+      mountEmberBridge([]);
+
+      try {
+        const { result } = renderHook(() => useTheme(), { wrapper });
+        await waitFor(() => expect(result.current.theme).toBe('system'));
+        flushAnimationFrames(animationFrames);
+
+        let switching: Promise<void> | undefined;
+        await act(() => {
+          switching = result.current.setTheme('dark');
+          return Promise.resolve();
+        });
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
+
+        act(() => {
+          Object.assign(mediaQuery, { matches: true });
+          mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
+        });
+        await act(async () => {
+          failSave();
+          await switching;
+        });
+
+        expect(result.current.theme).toBe('system');
+        expect(result.current.resolvedTheme).toBe('dark');
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
+        flushAnimationFrames(animationFrames);
+      } finally {
+        mediaSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      }
+    },
+  );
+
+  themeTest(
     'applies OS changes in system mode within the change event',
     async ({ server, wrapper, animationFrames }) => {
       mockPreferences(server, 'system');

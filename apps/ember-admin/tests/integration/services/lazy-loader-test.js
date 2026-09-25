@@ -63,18 +63,20 @@ describe('Integration: Service: lazy-loader', function () {
         const subject = this.owner.lookup('service:lazy-loader');
 
         subject.setProperties({
-            stylePromises: {},
             testing: false
         });
 
         const firstLoad = subject.loadStyle('in-flight', 'in-flight.css', true);
-        const secondLoad = subject.loadStyle('in-flight', 'in-flight.css', true);
 
-        expect(secondLoad).to.equal(firstLoad);
-        expect(document.querySelectorAll('#in-flight-styles').length).to.equal(1);
+        try {
+            const secondLoad = subject.loadStyle('in-flight', 'in-flight.css', true);
 
-        await firstLoad.catch(() => {});
-        document.querySelector('#in-flight-styles').remove();
+            expect(secondLoad).to.equal(firstLoad);
+            expect(document.querySelectorAll('#in-flight-styles').length).to.equal(1);
+        } finally {
+            await firstLoad.catch(() => {});
+            document.querySelector('#in-flight-styles').remove();
+        }
     });
 
     it('does not double-prefix URLs already rewritten by broccoli-asset-rev', async function () {
