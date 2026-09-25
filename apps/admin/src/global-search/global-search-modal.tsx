@@ -148,13 +148,15 @@ export default function GlobalSearchModal({ open, onOpenChange }: GlobalSearchMo
             )}
           </CommandList>
         </Command>
-        <Text
-          className="pointer-events-none absolute top-full right-0 mt-1.5 px-2"
-          size="xs"
-          weight="semibold"
-        >
-          Open with {searchShortcutLabel}
-        </Text>
+        {results.length === 0 && (
+          <Text
+            className="pointer-events-none absolute top-full right-0 mt-1.5 px-2"
+            size="xs"
+            weight="semibold"
+          >
+            Open with {searchShortcutLabel}
+          </Text>
+        )}
       </DialogContent>
     </Dialog>
   );

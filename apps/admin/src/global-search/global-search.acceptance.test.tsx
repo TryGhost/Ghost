@@ -98,6 +98,7 @@ describe('Cmd-K search', () => {
     await globalSearchScreen.openButton().click();
     await expect.element(globalSearchScreen.input()).toHaveFocus();
     await expect.poll(controlledListbox).not.toBeNull();
+    await expect.element(globalSearchScreen.shortcutHint()).toBeVisible();
 
     await globalSearchScreen.search('first');
 
@@ -106,6 +107,7 @@ describe('Cmd-K search', () => {
     await expect.element(globalSearchScreen.option(/First post/)).toHaveTextContent('Draft');
     await expect.element(globalSearchScreen.option(/First page/)).toBeVisible();
     await expect.element(globalSearchScreen.highlight(/First post/)).toHaveTextContent('First');
+    await expect.element(globalSearchScreen.shortcutHint()).not.toBeInTheDocument();
   });
 
   it('opens from the shortcut after Ember has already handled the key', async () => {
