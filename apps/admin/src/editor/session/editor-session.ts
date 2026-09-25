@@ -38,6 +38,7 @@ import {
   identityFor,
   publishedAtInFuture,
   settingsFieldError,
+  tiersIncomplete,
   validatedFieldsOf,
   type EditorSettingsPatch,
   type EditorSettingsFields,
@@ -415,12 +416,12 @@ export function createEditorSession({
   const stopSlugNotifications = machine.subscribe(notifyChanged);
 
   // The post validator runs before every save: an explicit tier selection needs a
-  // tier even on the first save, and an over-long field is not sent.
+  // tier once the post exists, and an over-long field is not sent.
   function requestInvalid(
     request: SaveRequest<EditorSaveSnapshot>,
     projection: EditablePostPatch,
   ): string | null {
-    const invalid = settingsFieldError(validatedFieldsOf(live));
+    const invalid = settingsFieldError(validatedFieldsOf(live), request.snapshot.id === null);
     if (invalid) {
       return invalid;
     }
@@ -472,10 +473,17 @@ export function createEditorSession({
         stageSettingsField(key, live, projection, payload);
       }
     }
-    // The write contract requires the pair even when only one field changed.
-    // Reads include tier relations for Public and Paid posts too, so switching
-    // to specific tiers can leave the relation IDs unchanged.
-    if (live.visibility === 'tiers' && ('visibility' in payload || 'tiers' in payload)) {
+    if (tiersIncomplete(live)) {
+      // The transport drops the unpaired pair (post-contract.ts). Kept out of the
+      // submitted projection too, or the ack rebases the held visibility away.
+      delete projection.visibility;
+      delete payload.visibility;
+      delete projection.tiers;
+      delete payload.tiers;
+    } else if (live.visibility === 'tiers' && ('visibility' in payload || 'tiers' in payload)) {
+      // The write contract requires the pair even when only one field changed.
+      // Reads include tier relations for Public and Paid posts too, so switching
+      // to specific tiers can leave the relation IDs unchanged.
       projection.visibility = live.visibility;
       payload.visibility = live.visibility;
       projection.tiers = live.tiers;
@@ -562,13 +570,19 @@ export function createEditorSession({
     // A matching refetch can make an unsubmitted edit look saved. Preserve
     // those edits through the rebase, whose fallback base is the latest saved
     // copy. Submitted fields already have a stable base in the request.
-    const unsubmittedEdits = Object.fromEntries(
+    const unsubmittedEdits: EditablePostPatch = Object.fromEntries(
       SETTINGS_FIELD_KEYS.filter(
         (key) =>
           prepared.projection[key] === undefined &&
           (writerEdits.get(key) ?? 0) > prepared.builtAtVersion,
       ).map((key) => [key, live[key]]),
     );
+    // A pair left out of the write was never acknowledged; its empty tier list
+    // equals a new post's saved one, so the rebase would take the server's relations.
+    if (prepared.projection.visibility === undefined && tiersIncomplete(live)) {
+      unsubmittedEdits.visibility = live.visibility;
+      unsubmittedEdits.tiers = live.tiers;
+    }
     const acknowledged = projectionOf(result.post);
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
     tracker.setLive(result.id, unsubmittedEdits);

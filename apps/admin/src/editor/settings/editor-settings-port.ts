@@ -23,6 +23,13 @@ export type EditorSettingsPort = Pick<
   bind: Pick<EditorSessionBinding, 'title' | 'excerpt' | 'onExcerptChange'>;
 };
 
+/** A post the server has not created yet: nothing loaded and no id acquired. */
+export function isNewPost(
+  session: Pick<EditorSettingsPort, 'createdId' | 'loadedRecord'>,
+): boolean {
+  return !session.loadedRecord && session.createdId === null;
+}
+
 /** The port's identity tracks the members it carries, not the render that produced it. */
 export function useEditorSettingsPort(session: EditorSessionHandle): EditorSettingsPort {
   const { title, excerpt, onExcerptChange } = session.bind;
