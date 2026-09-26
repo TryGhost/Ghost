@@ -2098,6 +2098,35 @@ describe('ActivityPubAPI', function () {
       ]);
     });
 
+    test('It sends an outbound account migration', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({ identities: [{ token: 'fake-token' }] }),
+        },
+        'https://activitypub.api/.ghost/activitypub/v1/migration': {
+          async assert(_resource, init) {
+            expect(init?.method).toEqual('POST');
+            expect(init?.body).toEqual('{"targetHandle":"@new@mastodon.social"}');
+          },
+          response: JSONResponse({
+            targetApId: 'https://mastodon.social/users/new',
+            sent: true,
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+      expect(await api.moveAccount('@new@mastodon.social')).toEqual({
+        targetApId: 'https://mastodon.social/users/new',
+        sent: true,
+      });
+    });
+
     test('It returns an empty alias response when adding an account alias has no response body', async function () {
       const fakeFetch = Fetch({
         'https://auth.api/': {

@@ -2,6 +2,7 @@ import {
   type Account,
   type AccountAliasesResponse,
   type AccountFollowsType,
+  type AccountMigrationStatus,
   type AccountSearchResult,
   ActivityPubAPI,
   ActivityPubCollectionResponse,
@@ -84,6 +85,7 @@ const QUERY_KEYS = {
   },
   account: (handle: string) => ['account', handle],
   accountAliases: (handle: string) => ['account_aliases', handle],
+  accountMigration: (handle: string) => ['account_migration', handle],
   accountDomain: (handle: string) => ['account_domain', handle],
   accountFollows: (handle: string, type: AccountFollowsType) => ['account_follows', handle, type],
   searchResults: (query: string) => ['search_results', query],
@@ -1853,6 +1855,30 @@ export function useAccountAliasesForUser(handle: string) {
       const api = createActivityPubAPI(handle, siteUrl);
 
       return api.getAccountAliases();
+    },
+  });
+}
+
+export function useAccountMigrationForUser(handle: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.accountMigration(handle),
+    retry: false,
+    async queryFn() {
+      const siteUrl = await getSiteUrl();
+      return createActivityPubAPI(handle, siteUrl).getAccountMigration();
+    },
+  });
+}
+
+export function useMoveAccountMutationForUser(handle: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    async mutationFn(targetHandle: string) {
+      const siteUrl = await getSiteUrl();
+      return createActivityPubAPI(handle, siteUrl).moveAccount(targetHandle);
+    },
+    onSuccess(response: AccountMigrationStatus) {
+      queryClient.setQueryData(QUERY_KEYS.accountMigration(handle), response);
     },
   });
 }
