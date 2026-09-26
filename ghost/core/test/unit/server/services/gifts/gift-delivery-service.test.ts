@@ -112,6 +112,20 @@ describe('GiftDeliveryService', function () {
     sinon.restore();
   });
 
+  it('resolves the original recipient address by an opaque provider message ID', async () => {
+    giftDeliveryRepository.getByProviderMessageId.resolves(
+      buildGiftDelivery({ recipientEmail: 'original@example.com' }),
+    );
+    const service = createService();
+    assert.equal(await service.getRecipientEmailForMessage('<Opaque-ID>'), 'original@example.com');
+    sinon.assert.calledOnceWithExactly(
+      giftDeliveryRepository.getByProviderMessageId,
+      '<Opaque-ID>',
+    );
+    giftDeliveryRepository.getByProviderMessageId.resolves(null);
+    assert.equal(await service.getRecipientEmailForMessage('missing'), null);
+  });
+
   it('returns the recipient email for a gift regardless of delivery state', async function () {
     giftDeliveryRepository.getByGiftToken.resolves(
       buildGiftDelivery({

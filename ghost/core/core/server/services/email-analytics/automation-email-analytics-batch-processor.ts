@@ -1,3 +1,7 @@
+import type { EmailEvent } from '@tryghost/adapter-base-email';
+// @ts-expect-error This module lacks type definitions.
+import type EmailSuppressionList from '../email-suppression-list';
+import type membersService from '../members';
 import type * as automationsApi from '../automations/automations-api';
 import type {
   AutomatedEmailEvents,
@@ -15,6 +19,9 @@ type EmailAnalyticsEvent = {
   type: string;
   providerId: string;
   timestamp: Date;
+  recipientEmail?: string;
+  severity?: EmailEvent['severity'];
+  suppress?: boolean;
 };
 
 const getMailgunMessageIds = (events: Iterable<EmailAnalyticsEvent>): Set<string> => {
@@ -60,10 +67,18 @@ const trackEarliest = (
 };
 
 export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcessor {
-  #automationsApi;
+  private readonly deps: {
+    automationsApi: AutomationsApi;
+    emailSuppressionList: Pick<
+      typeof EmailSuppressionList,
+      'handleBounce' | 'handleComplaint' | 'removeComplaint' | 'removeUnsubscribe'
+    >;
+    membersRepository: Pick<typeof membersService.api.members, 'unsubscribeFromUpdates'>;
+    requireProviderCleanup?: boolean;
+  };
 
-  constructor({ automationsApi }: { automationsApi: AutomationsApi }) {
-    this.#automationsApi = automationsApi;
+  constructor(deps: AutomationEmailAnalyticsBatchProcessor['deps']) {
+    this.deps = deps;
   }
 
   async processBatch(
@@ -74,7 +89,7 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
     const mailgunMessageIds = getMailgunMessageIds(events);
 
     const automatedEmailRecipients = await getAutomatedEmailRecipients(
-      this.#automationsApi,
+      this.deps.automationsApi,
       mailgunMessageIds,
     );
     const automatedEmailRecipientsByMessageId =
@@ -125,6 +140,54 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
           }
           break;
         }
+        case 'failed':
+        case 'complained':
+        case 'unsubscribed': {
+          const recipient = getRecipient();
+          // Safety and preference changes must match the original recipient address.
+          if (
+            !recipient ||
+            !event.recipientEmail ||
+            recipient.member_email !== event.recipientEmail
+          ) {
+            eventResult = new EventProcessingResult({ unprocessable: 1 });
+            break;
+          }
+          const suppressionEvent = {
+            email: event.recipientEmail,
+            timestamp: event.timestamp,
+            suppress: event.suppress ?? false,
+          };
+          const cleanupOptions = { requireSuccess: this.deps.requireProviderCleanup ?? true };
+          if (event.type === 'complained') {
+            await this.deps.emailSuppressionList.handleComplaint(suppressionEvent);
+            await this.deps.emailSuppressionList.removeComplaint(
+              event.recipientEmail,
+              cleanupOptions,
+            );
+            eventResult = new EventProcessingResult({ complained: 1 });
+          } else if (event.type === 'unsubscribed') {
+            if (recipient.member_id) {
+              await this.deps.membersRepository.unsubscribeFromUpdates({
+                id: recipient.member_id,
+                email: event.recipientEmail,
+              });
+            }
+            await this.deps.emailSuppressionList.removeUnsubscribe(
+              event.recipientEmail,
+              cleanupOptions,
+            );
+            eventResult = new EventProcessingResult({ unsubscribed: 1 });
+          } else {
+            if (event.severity === 'permanent') {
+              await this.deps.emailSuppressionList.handleBounce(suppressionEvent);
+            }
+            eventResult = new EventProcessingResult(
+              event.severity === 'permanent' ? { permanentFailed: 1 } : { temporaryFailed: 1 },
+            );
+          }
+          break;
+        }
         default:
           eventResult = new EventProcessingResult({ unhandled: 1 });
           break;
@@ -133,6 +196,6 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
       result.merge(eventResult);
     }
 
-    await this.#automationsApi.trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId);
+    await this.deps.automationsApi.trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId);
   }
 }

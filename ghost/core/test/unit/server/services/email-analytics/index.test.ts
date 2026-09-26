@@ -37,14 +37,21 @@ describe('email analytics provider wiring', () => {
         getAutomatedEmailRecipientsByMailgunIds: sinon.stub().resolves([]),
         trackEmailDeliveredAndOpened: sinon.stub().resolves(),
       },
-      giftDeliveryService: { recordOutcome: sinon.stub().resolves('recorded') },
+      giftDeliveryService: {
+        recordOutcome: sinon.stub().resolves('recorded'),
+        getRecipientEmailForMessage: sinon.stub().resolves(null),
+      },
       emailSuppressionList: {
         handleBounce: sinon.stub(),
         handleComplaint: sinon.stub(),
         removeComplaint: sinon.stub(),
         removeUnsubscribe: sinon.stub(),
       },
-      membersRepository: { get: sinon.stub(), update: sinon.stub() },
+      membersRepository: {
+        get: sinon.stub(),
+        update: sinon.stub(),
+        unsubscribeFromUpdates: sinon.stub().resolves(),
+      },
       models: { Email: {}, EmailRecipientFailure: {}, EmailSpamComplaintEvent: {} },
       prometheusClient: null,
       config: { get: sinon.stub() },

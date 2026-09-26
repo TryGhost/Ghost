@@ -12,6 +12,7 @@ describe('EventProcessingResult', function () {
     assert.equal(result.permanentFailed, 0);
     assert.equal(result.unsubscribed, 0);
     assert.equal(result.complained, 0);
+    assert.equal(result.ignored, 0);
     assert.equal(result.unhandled, 0);
     assert.equal(result.unprocessable, 0);
 
@@ -29,6 +30,7 @@ describe('EventProcessingResult', function () {
       permanentFailed: 4,
       unsubscribed: 5,
       complained: 6,
+      ignored: 10,
       unhandled: 7,
       unprocessable: 8,
       processingFailures: 9,
@@ -42,6 +44,7 @@ describe('EventProcessingResult', function () {
     assert.equal(result.permanentFailed, 4);
     assert.equal(result.unsubscribed, 5);
     assert.equal(result.complained, 6);
+    assert.equal(result.ignored, 10);
     assert.equal(result.unhandled, 7);
     assert.equal(result.unprocessable, 8);
 
@@ -59,6 +62,7 @@ describe('EventProcessingResult', function () {
       permanentFailed: 4,
       unsubscribed: 5,
       complained: 6,
+      ignored: 10,
       unhandled: 7,
       unprocessable: 8,
       processingFailures: 9,
@@ -80,6 +84,7 @@ describe('EventProcessingResult', function () {
         permanentFailed: 4,
         unsubscribed: 5,
         complained: 6,
+        ignored: 10,
         unhandled: 7,
         unprocessable: 8,
         processingFailures: 9, // not counted
@@ -94,6 +99,7 @@ describe('EventProcessingResult', function () {
         permanentFailed: 8,
         unsubscribed: 10,
         complained: 12,
+        ignored: 20,
         unhandled: 14,
         unprocessable: 16,
         processingFailures: 18, // not counted
@@ -107,6 +113,7 @@ describe('EventProcessingResult', function () {
       assert.equal(result.permanentFailed, 12);
       assert.equal(result.unsubscribed, 15);
       assert.equal(result.complained, 18);
+      assert.equal(result.ignored, 30);
       assert.equal(result.unhandled, 21);
       assert.equal(result.unprocessable, 24);
       assert.equal(result.processingFailures, 27);

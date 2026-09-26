@@ -1,28 +1,31 @@
+// @ts-expect-error This module lacks type definitions.
+import type EmailSuppressionList from '../email-suppression-list';
+import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
-
-type GiftDeliveryService = {
-  recordOutcome(data: {
-    providerMessageId: string;
-    outcome: 'delivered' | 'temporary_failed' | 'permanent_failed';
-    timestamp: Date;
-    error: string | null;
-  }): Promise<'recorded' | 'stale' | 'not_found'>;
-};
 
 type EmailAnalyticsEvent = {
   type: string;
   severity?: string;
   providerId: string;
   timestamp: Date;
+  recipientEmail?: string;
+  suppress?: boolean;
   error?: { code?: unknown; message?: unknown; enhancedCode?: unknown } | null;
 };
 
 export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
-  readonly #giftDeliveryService: GiftDeliveryService;
+  private readonly deps: {
+    giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome' | 'getRecipientEmailForMessage'>;
+    emailSuppressionList: Pick<
+      typeof EmailSuppressionList,
+      'handleBounce' | 'handleComplaint' | 'removeComplaint'
+    >;
+    requireProviderCleanup?: boolean;
+  };
 
-  constructor({ giftDeliveryService }: { giftDeliveryService: GiftDeliveryService }) {
-    this.#giftDeliveryService = giftDeliveryService;
+  constructor(deps: GiftEmailAnalyticsBatchProcessor['deps']) {
+    this.deps = deps;
   }
 
   async processBatch(
@@ -33,6 +36,40 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
     for (const event of events) {
       if (!fetchData.lastEventTimestamp || event.timestamp > fetchData.lastEventTimestamp) {
         fetchData.lastEventTimestamp = event.timestamp;
+      }
+
+      // Gifts have no marketing subscription scope and disable open tracking.
+      // Leave any provider unsubscribe in place; do not change newsletter consent.
+      if (event.type === 'opened' || event.type === 'unsubscribed') {
+        result.merge(new EventProcessingResult({ ignored: 1 }));
+        continue;
+      }
+      if (
+        event.type === 'complained' ||
+        (event.type === 'failed' && event.severity === 'permanent' && event.suppress)
+      ) {
+        const recipientEmail = await this.deps.giftDeliveryService.getRecipientEmailForMessage(
+          event.providerId,
+        );
+        if (!recipientEmail || recipientEmail !== event.recipientEmail) {
+          result.merge(new EventProcessingResult({ unprocessable: 1 }));
+          continue;
+        }
+        const suppressionEvent = {
+          email: recipientEmail,
+          timestamp: event.timestamp,
+          suppress: event.suppress ?? false,
+        };
+        if (event.type === 'complained') {
+          await this.deps.emailSuppressionList.handleComplaint(suppressionEvent);
+          await this.deps.emailSuppressionList.removeComplaint(recipientEmail, {
+            requireSuccess: this.deps.requireProviderCleanup ?? true,
+          });
+          result.merge(new EventProcessingResult({ complained: 1 }));
+          continue;
+        }
+        // Stale delivery outcomes must still complete their safety writes on replay.
+        await this.deps.emailSuppressionList.handleBounce(suppressionEvent);
       }
 
       let outcome: 'delivered' | 'temporary_failed' | 'permanent_failed' | null = null;
@@ -47,7 +84,7 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
         continue;
       }
 
-      const recordResult = await this.#giftDeliveryService.recordOutcome({
+      const recordResult = await this.deps.giftDeliveryService.recordOutcome({
         providerMessageId: event.providerId,
         outcome,
         timestamp: event.timestamp,

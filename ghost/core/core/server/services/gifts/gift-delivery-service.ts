@@ -133,6 +133,12 @@ export class GiftDeliveryService {
     return delivery?.recipientEmail ?? null;
   }
 
+  async getRecipientEmailForMessage(providerMessageId: string): Promise<string | null> {
+    const delivery =
+      await this.deps.giftDeliveryRepository.getByProviderMessageId(providerMessageId);
+    return delivery?.recipientEmail ?? null;
+  }
+
   async dispatchForGift({
     giftId,
   }: {

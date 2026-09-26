@@ -70,9 +70,14 @@ Both transports delegate to the existing family processors:
   their domain notifications, failure and complaint models, and statistics.
 - Automations use `automationsApi.trackEmailDeliveredAndOpened`. The existing
   repository owns revision counts, transactions and revision-before-recipient
-  locking, consistent with click tracking.
+  locking, consistent with click tracking. Failures and complaints use the
+  existing suppression service. Unsubscribes turn off Updates & Announcements
+  through the members repository, preserving newsletter subscriptions.
 - Gifts use `GiftDeliveryService.recordOutcome`, including its outcome ordering
-  and buyer notifications.
+  and buyer notifications. Complaints and qualifying failures also await local
+  suppression, even when a delivery outcome is stale. Opens and unsubscribes are
+  explicitly counted as ignored: gifts disable open tracking and have no
+  marketing subscription scope. Gift unsubscribes leave provider lists intact.
 
 The provider layer does not write domain tables. Each fetch or webhook gets its
 own newsletter buffers so concurrent requests cannot clear each other's updates.
@@ -91,13 +96,17 @@ result returns HTTP 503. Processing errors are not retried as lookup failures.
 Polling continues to skip missing recipients as before. The provider's `safeCursor`
 is returned unchanged, including when a capped multi-domain fetch stops early.
 
-Webhook support is limited to the existing family processors: newsletters support
-all normalized types, automations support delivered/opened events, and gifts
-support delivery/failure outcomes. Other automation/gift callbacks return HTTP 503
-before processing the notification. A gift failure requiring suppression is also
-rejected: recording an outcome alone does not perform that safety write. A processor
-reporting an unhandled event or processing failure cannot produce a success response.
-Adding automation/gift consent or suppression behavior is separate work.
+All normalized event types are dispatched to the owning family processor. Automation
+and gift safety handlers correlate the provider message ID and original recipient
+address before applying changes. Automation lookups expose existing `member_id`
+and `member_email` columns; gift recipient lookup stays in `GiftDeliveryService`.
+A deleted member or changed address does not cause an automation unsubscribe to
+alter another address. Automation preference updates hold the member lock until
+committed; provider cleanup runs afterwards.
+
+Automation failures contribute event counts and suppression decisions; no new
+failure-history storage is added. A processor reporting an unexpected unhandled
+event or processing failure still causes HTTP 503 instead of acknowledgement.
 
 Existing domain services commit independently; there is no transaction spanning
 the notification. Successfully processed events are retained and aggregated even
@@ -106,9 +115,9 @@ There is no event inbox, event-ID ledger, replay worker or schema migration.
 
 ## Suppression completion
 
-Newsletter bounce and complaint handling now calls the existing suppression
-service directly and awaits it. That service uses the existing Suppression model
-and members repository to save the suppression and disable the matching address
+Newsletter, automation and gift complaint or qualifying bounce handling calls
+the existing suppression service directly and awaits it. That service uses the
+existing Suppression model and members repository to save the suppression and disable the matching address
 in one transaction. It repairs member state when a suppression already exists.
 A failure rolls back and returns HTTP 503. An old address is resolved separately
 from the member's replacement address, which is not disabled.
@@ -116,8 +125,8 @@ from the member's replacement address, which is not disabled.
 `EmailSuppressedEvent` is emitted after those writes finish. Its former member
 update subscriber is removed, so critical work is not left to an asynchronous
 listener. Complaint cleanup runs after local suppression, including on replay;
-cleanup failure propagates for webhooks. Newsletter unsubscribe lookup and preference
-write failures also propagate, and provider cleanup runs only after local success.
+cleanup failure propagates for webhooks. Newsletter and automation unsubscribe
+lookup and preference write failures also propagate, and provider cleanup runs only after local success.
 Polling logs remote cleanup failures and continues after local state is saved;
 there is no separate cleanup retry worker. Failed local safety writes still stop
 polling so its window can be retried instead of losing the event. Providers classify
@@ -128,12 +137,9 @@ automatically suppress.
 
 This is a draft foundation, not complete provider support. In particular:
 
-- Additional automation/gift consent and suppression behavior is deliberately
-  outside this adapter refactor. Unsupported callbacks are rejected, not acknowledged.
-  HTTP 503 is a safety gate, not an implementation of these event types; provider
-  retries alone cannot make them supported.
-- Newsletter unsubscribe failures now propagate. Replay protection against undoing
-  a later resubscription still requires separate work in the existing service.
+- Newsletter and automation unsubscribe failures propagate. Replay protection
+  against undoing a later deliberate resubscription still requires separate work
+  in the owning service; there is no complete automation preference event history.
 - Delayed suppression after an explicit administrative unsuppression needs defined
   ordering. A unique suppression row alone does not provide event deduplication.
 - Providers must retry failed requests and retain notifications through outages.
@@ -148,7 +154,10 @@ The test-only webhook provider loads through AdapterManager without Mailgun
 credentials. Database tests exercise the existing newsletter, automation and gift
 processors, aggregate recomputation, opaque IDs and the one delayed retry. Safety
 tests hold a member update pending, fail it, verify rollback and HTTP 503, and
-replay a complaint to check duplicate handling and member-state repair.
+replay a complaint to check duplicate handling and member-state repair. Focused
+family tests cover automation preference failures and cleanup retries, preservation
+of newsletter subscriptions and replacement addresses, and gift suppression for
+stale delivery outcomes. Gift opens/unsubscribes have explicit no-op coverage.
 
 ## Related discussions
 

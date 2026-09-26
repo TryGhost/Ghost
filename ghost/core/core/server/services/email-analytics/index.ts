@@ -84,8 +84,11 @@ export const init = ({
     typeof EmailSuppressionList,
     'removeComplaint' | 'removeUnsubscribe' | 'handleBounce' | 'handleComplaint'
   >;
-  giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome'>;
-  membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;
+  giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome' | 'getRecipientEmailForMessage'>;
+  membersRepository: Pick<
+    typeof membersService.api.members,
+    'get' | 'update' | 'unsubscribeFromUpdates'
+  >;
   models: {
     Email: Email;
     EmailRecipientFailure: EmailRecipientFailure;
@@ -106,10 +109,19 @@ export const init = ({
   // or clear another request's pending newsletter updates.
   const createEventProcessor = (family: EmailFamily): BatchEventProcessor => {
     if (family === 'automations') {
-      return new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      return new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        emailSuppressionList,
+        membersRepository,
+        requireProviderCleanup: source.type === 'webhook',
+      });
     }
     if (family === 'gifts') {
-      return new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService });
+      return new GiftEmailAnalyticsBatchProcessor({
+        giftDeliveryService,
+        emailSuppressionList,
+        requireProviderCleanup: source.type === 'webhook',
+      });
     }
     return new NewsletterEmailAnalyticsBatchProcessor({
       config,

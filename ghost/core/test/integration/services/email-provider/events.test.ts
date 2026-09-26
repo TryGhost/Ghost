@@ -70,7 +70,10 @@ describe('provider email events', () => {
   let suppression: any;
   let membersRepository: any;
   let createEventProcessor: (family: string) => any;
-  let giftDeliveryService: { recordOutcome: (options: any) => Promise<any> };
+  let giftDeliveryService: {
+    recordOutcome: (options: any) => Promise<any>;
+    getRecipientEmailForMessage: (id: string) => Promise<string | null>;
+  };
   const domainEvents = { dispatch: sinon.stub() };
 
   beforeEach(async () => {
@@ -91,26 +94,41 @@ describe('provider email events', () => {
       knex,
       fakeWaitHoursMultiplier: null,
     });
-    giftDeliveryService = { recordOutcome: sinon.stub().resolves('recorded') };
-    const models = require('../../../../core/server/models');
-    membersRepository = {
-      get: (data: any, options: any) => models.Member.findOne(data, options),
-      update: (data: any, options: any) => models.Member.edit(data, options),
+    giftDeliveryService = {
+      recordOutcome: sinon.stub().resolves('recorded'),
+      getRecipientEmailForMessage: sinon.stub().resolves('reader@example.com'),
     };
+    const models = require('../../../../core/server/models');
+    const MemberRepository = require('../../../../core/server/services/members/members-api/repositories/member-repository');
+    membersRepository = new MemberRepository({
+      Member: models.Member,
+      MemberSubscribeEventModel: models.MemberSubscribeEvent,
+      MemberEmailChangeEvent: models.MemberEmailChangeEvent,
+      MemberStatusEvent: models.MemberStatusEvent,
+      stripeAPIService: { configured: false },
+    });
     const SuppressionService = require('../../../../core/server/services/email-suppression-list/mailgun-email-suppression-list');
     suppression = new SuppressionService({
       Suppression: models.Suppression,
       membersRepository,
       apiClient: {
         removeComplaint: (email: string) => provider.removeSuppression(email, 'complaint'),
+        removeUnsubscribe: (email: string) => provider.removeSuppression(email, 'unsubscribe'),
       },
     });
     createEventProcessor = (family) => {
       if (family === 'automations') {
-        return new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+        return new AutomationEmailAnalyticsBatchProcessor({
+          automationsApi,
+          emailSuppressionList: suppression,
+          membersRepository,
+        });
       }
       if (family === 'gifts') {
-        return new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService });
+        return new GiftEmailAnalyticsBatchProcessor({
+          giftDeliveryService,
+          emailSuppressionList: suppression,
+        });
       }
       const emailEventProcessor = new EmailEventProcessor({
         domainEvents,
@@ -302,7 +320,7 @@ describe('provider email events', () => {
       null,
     );
   });
-  it('records automation opens through the existing repository without double counting', async () => {
+  async function seedAutomationRecipient() {
     const automationId = newId();
     const actionId = newId();
     const revisionId = newId();
@@ -336,17 +354,10 @@ describe('provider email events', () => {
       track_opens: true,
       created_at: now,
     });
-    const events = [{ ...event, family: 'automations', type: 'opened' }];
-    await service.webhook(provider.source, sign({ events }));
-    await service.webhook(provider.source, sign({ events }));
-    assert((await knex('automated_email_recipients').where({ id }).first()).opened_at);
-    assert.equal(
-      (await knex('automation_action_revisions').where({ id: revisionId }).first())
-        .email_opened_count,
-      1,
-    );
-  });
-  it('routes gift outcomes through the existing gift processor and repository', async () => {
+    return { id, revisionId };
+  }
+
+  async function seedGiftDelivery() {
     const models = require('../../../../core/server/models');
     const giftId = newId();
     const deliveryId = newId();
@@ -373,7 +384,28 @@ describe('provider email events', () => {
       GiftDeliveryModel: models.GiftDelivery,
       knex,
     });
-    giftDeliveryService = { recordOutcome: (options) => repository.recordOutcome(options) };
+    giftDeliveryService = {
+      recordOutcome: (options) => repository.recordOutcome(options),
+      getRecipientEmailForMessage: async (id) =>
+        (await repository.getByProviderMessageId(id))?.recipientEmail ?? null,
+    };
+    return { deliveryId, repository };
+  }
+
+  it('records automation opens through the existing repository without double counting', async () => {
+    const { id, revisionId } = await seedAutomationRecipient();
+    const events = [{ ...event, family: 'automations', type: 'opened' }];
+    await service.webhook(provider.source, sign({ events }));
+    await service.webhook(provider.source, sign({ events }));
+    assert((await knex('automated_email_recipients').where({ id }).first()).opened_at);
+    assert.equal(
+      (await knex('automation_action_revisions').where({ id: revisionId }).first())
+        .email_opened_count,
+      1,
+    );
+  });
+  it('routes gift outcomes through the existing gift processor and repository', async () => {
+    const { deliveryId, repository } = await seedGiftDelivery();
     await service.webhook(provider.source, sign({ events: [{ ...event, family: 'gifts' }] }));
     assert.equal(
       (await knex('gift_deliveries').where({ id: deliveryId }).first()).outcome,
@@ -398,7 +430,7 @@ describe('provider email events', () => {
     const updating = new Promise<void>((resolve) => {
       started = resolve;
     });
-    const update = membersRepository.update;
+    const update = membersRepository.update.bind(membersRepository);
     sinon.stub(membersRepository, 'update').callsFake(async (...args: any[]) => {
       started();
       await new Promise<void>((resolve) => {
@@ -511,6 +543,122 @@ describe('provider email events', () => {
     assert.equal(
       (await knex('email_spam_complaint_events').where({ member_id: memberId })).length,
       1,
+    );
+  });
+
+  it('applies automation unsubscribe before cleanup and preserves newsletters and replacement addresses', async () => {
+    await seedAutomationRecipient();
+    const request = sign({ events: [{ ...event, family: 'automations', type: 'unsubscribed' }] });
+    const update = sinon
+      .stub(membersRepository, 'update')
+      .rejects(new Error('Preference write failed'));
+    await assert.rejects(service.webhook(provider.source, request), /Preference write failed/);
+    sinon.assert.notCalled(provider.removeSuppression);
+    assert.equal(
+      Boolean(
+        (await knex('members').where({ id: memberId }).first()).enable_updates_and_announcements,
+      ),
+      true,
+    );
+    update.restore();
+    provider.removeSuppression.rejects(new Error('Cleanup failed'));
+    await assert.rejects(service.webhook(provider.source, request), { statusCode: 503 });
+    assert.equal(
+      Boolean(
+        (await knex('members').where({ id: memberId }).first()).enable_updates_and_announcements,
+      ),
+      false,
+    );
+    assert.equal((await knex('members_newsletters').where({ member_id: memberId })).length, 1);
+    provider.removeSuppression.resolves();
+    await service.webhook(provider.source, request);
+    await knex('members')
+      .where({ id: memberId })
+      .update({ email: 'replacement@example.com', enable_updates_and_announcements: true });
+    await service.webhook(provider.source, request);
+    assert.equal(
+      Boolean(
+        (await knex('members').where({ id: memberId }).first()).enable_updates_and_announcements,
+      ),
+      true,
+    );
+  });
+
+  it('awaits automation suppression and repairs failed or duplicate callbacks', async () => {
+    await seedAutomationRecipient();
+    const complaint = sign({ events: [{ ...event, family: 'automations', type: 'complained' }] });
+    const update = sinon
+      .stub(membersRepository, 'update')
+      .rejects(new Error('Member write failed'));
+    await assert.rejects(service.webhook(provider.source, complaint), { statusCode: 503 });
+    assert.equal((await knex('suppressions')).length, 0);
+    sinon.assert.notCalled(provider.removeSuppression);
+    update.restore();
+    await service.webhook(provider.source, complaint);
+    await service.webhook(provider.source, complaint);
+    assert.equal((await knex('suppressions')).length, 1);
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      true,
+    );
+    // A permanent policy rejection must not disable the address.
+    await knex('members').where({ id: memberId }).update({ email_disabled: false });
+    const failure = { ...event, family: 'automations', type: 'failed', severity: 'permanent' };
+    await service.webhook(provider.source, sign({ events: [failure] }));
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      false,
+    );
+    await service.webhook(provider.source, sign({ events: [{ ...failure, suppress: true }] }));
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      true,
+    );
+  });
+
+  it('applies gift safety events even when the delivery outcome is stale and ignores unrelated consent events', async () => {
+    const { deliveryId } = await seedGiftDelivery();
+    await service.webhook(provider.source, sign({ events: [{ ...event, family: 'gifts' }] }));
+    const failure = {
+      ...event,
+      family: 'gifts',
+      type: 'failed',
+      severity: 'permanent',
+      suppress: true,
+      timestamp: new Date(event.timestamp.getTime() - 1000),
+    };
+    await service.webhook(provider.source, sign({ events: [failure] }));
+    assert.equal(
+      (await knex('gift_deliveries').where({ id: deliveryId }).first()).outcome,
+      'delivered',
+    );
+    assert.equal((await knex('suppressions')).length, 1);
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      true,
+    );
+    provider.removeSuppression.rejects(new Error('Cleanup failed'));
+    const complaint = sign({ events: [{ ...event, family: 'gifts', type: 'complained' }] });
+    await assert.rejects(service.webhook(provider.source, complaint), { statusCode: 503 });
+    provider.removeSuppression.resolves();
+    await service.webhook(provider.source, complaint);
+    provider.removeSuppression.resetHistory();
+    await service.webhook(
+      provider.source,
+      sign({
+        events: [
+          { ...event, family: 'gifts', type: 'opened' },
+          { ...event, family: 'gifts', type: 'unsubscribed' },
+        ],
+      }),
+    );
+    sinon.assert.notCalled(provider.removeSuppression);
+    assert.equal((await knex('members_newsletters').where({ member_id: memberId })).length, 1);
+    assert.equal(
+      Boolean(
+        (await knex('members').where({ id: memberId }).first()).enable_updates_and_announcements,
+      ),
+      true,
     );
   });
 });

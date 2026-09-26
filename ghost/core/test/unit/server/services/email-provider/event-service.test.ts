@@ -96,21 +96,19 @@ describe('email webhook delegation', () => {
     sinon.assert.calledOnce(processBatch);
     assert.equal(clock.countTimers(), 0);
   });
-  it('rejects unsupported family callbacks before processing any part of the notification', async () => {
-    for (const unsupported of [
+  it('delegates safety events to the owning family processor', async () => {
+    const events = [
       { ...event, family: 'automations', type: 'unsubscribed' },
       { ...event, family: 'automations', type: 'complained' },
       { ...event, family: 'gifts', type: 'failed', severity: 'permanent', suppress: true },
-      { ...event, family: 'gifts', type: 'opened' },
-    ]) {
-      verify.resolves({ events: [event, unsupported] });
-      await assert.rejects(service.webhook('provider', request), {
-        code: 'EMAIL_EVENT_NOT_HANDLED',
-        statusCode: 503,
-      });
-    }
-    sinon.assert.notCalled(createEventProcessor);
-    assert.equal(clock.countTimers(), 0);
+    ];
+    verify.resolves({ events });
+    await service.webhook('provider', request);
+    assert.deepEqual(createEventProcessor.args, [['automations'], ['gifts']]);
+    assert.deepEqual(
+      processBatch.args.map(([batch]) => batch[0]),
+      events,
+    );
   });
   it('does not process unverified or partly invalid notifications', async () => {
     verify.rejects(new Error('Invalid signature'));

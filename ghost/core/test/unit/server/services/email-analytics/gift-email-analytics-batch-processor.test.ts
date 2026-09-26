@@ -3,10 +3,26 @@ import sinon from 'sinon';
 import { GiftEmailAnalyticsBatchProcessor } from '../../../../../core/server/services/email-analytics/gift-email-analytics-batch-processor';
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 
+function safetyDeps() {
+  return {
+    emailSuppressionList: {
+      handleBounce: sinon.stub().resolves(),
+      handleComplaint: sinon.stub().resolves(),
+      removeComplaint: sinon.stub().resolves(),
+    },
+  };
+}
+
 describe('GiftEmailAnalyticsBatchProcessor', function () {
   it('maps provider delivery and failure events to latest gift outcomes without opens', async function () {
-    const giftDeliveryService = { recordOutcome: sinon.stub().resolves('recorded' as const) };
-    const processor = new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService });
+    const giftDeliveryService = {
+      getRecipientEmailForMessage: sinon.stub().resolves('reader@example.com'),
+      recordOutcome: sinon.stub().resolves('recorded' as const),
+    };
+    const processor = new GiftEmailAnalyticsBatchProcessor({
+      giftDeliveryService,
+      ...safetyDeps(),
+    });
     const result = new EventProcessingResult();
     const fetchData: { lastEventTimestamp?: Date } = {};
     const deliveredAt = new Date('2026-08-05T12:00:00.000Z');
@@ -54,12 +70,19 @@ describe('GiftEmailAnalyticsBatchProcessor', function () {
     });
     assert.equal(result.delivered, 1);
     assert.equal(result.temporaryFailed, 1);
-    assert.equal(result.unhandled, 1);
+    assert.equal(result.ignored, 1);
+    assert.equal(result.unhandled, 0);
   });
 
   it('treats failed events as temporary unless Mailgun marks them permanent', async function () {
-    const giftDeliveryService = { recordOutcome: sinon.stub().resolves('recorded' as const) };
-    const processor = new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService });
+    const giftDeliveryService = {
+      getRecipientEmailForMessage: sinon.stub().resolves('reader@example.com'),
+      recordOutcome: sinon.stub().resolves('recorded' as const),
+    };
+    const processor = new GiftEmailAnalyticsBatchProcessor({
+      giftDeliveryService,
+      ...safetyDeps(),
+    });
     const result = new EventProcessingResult();
 
     await processor.processBatch(
@@ -94,8 +117,14 @@ describe('GiftEmailAnalyticsBatchProcessor', function () {
   });
 
   it('marks events for unknown message IDs unprocessable', async function () {
-    const giftDeliveryService = { recordOutcome: sinon.stub().resolves('not_found' as const) };
-    const processor = new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService });
+    const giftDeliveryService = {
+      getRecipientEmailForMessage: sinon.stub().resolves('reader@example.com'),
+      recordOutcome: sinon.stub().resolves('not_found' as const),
+    };
+    const processor = new GiftEmailAnalyticsBatchProcessor({
+      giftDeliveryService,
+      ...safetyDeps(),
+    });
     const result = new EventProcessingResult();
 
     await processor.processBatch(
@@ -109,8 +138,14 @@ describe('GiftEmailAnalyticsBatchProcessor', function () {
   });
 
   it('counts stale events as processed without recording an ID mismatch', async function () {
-    const giftDeliveryService = { recordOutcome: sinon.stub().resolves('stale' as const) };
-    const processor = new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService });
+    const giftDeliveryService = {
+      getRecipientEmailForMessage: sinon.stub().resolves('reader@example.com'),
+      recordOutcome: sinon.stub().resolves('stale' as const),
+    };
+    const processor = new GiftEmailAnalyticsBatchProcessor({
+      giftDeliveryService,
+      ...safetyDeps(),
+    });
     const result = new EventProcessingResult();
 
     await processor.processBatch(
@@ -121,5 +156,80 @@ describe('GiftEmailAnalyticsBatchProcessor', function () {
 
     assert.equal(result.delivered, 1);
     assert.equal(result.unprocessable, 0);
+  });
+});
+
+describe('gift safety events', () => {
+  const event = {
+    providerId: 'message',
+    recipientEmail: 'reader@example.com',
+    timestamp: new Date(),
+    suppress: false,
+  };
+  it('suppresses complaints and stale qualifying failures while explicitly ignoring opens and unsubscribes', async () => {
+    const giftDeliveryService = {
+      getRecipientEmailForMessage: sinon.stub().resolves(event.recipientEmail),
+      recordOutcome: sinon.stub().resolves('stale' as const),
+    };
+    const deps = safetyDeps();
+    const processor = new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService, ...deps });
+    const result = new EventProcessingResult();
+    await processor.processBatch(
+      [
+        { ...event, type: 'complained' },
+        { ...event, type: 'failed', severity: 'permanent', suppress: true },
+        { ...event, type: 'unsubscribed' },
+        { ...event, type: 'opened' },
+      ],
+      result,
+      {},
+    );
+    sinon.assert.calledOnce(deps.emailSuppressionList.handleComplaint);
+    sinon.assert.calledOnce(deps.emailSuppressionList.handleBounce);
+    sinon.assert.calledOnce(giftDeliveryService.recordOutcome);
+    assert.equal(result.complained, 1);
+    assert.equal(result.permanentFailed, 1);
+    assert.equal(result.ignored, 2);
+    giftDeliveryService.getRecipientEmailForMessage.resolves('other@example.com');
+    await processor.processBatch([{ ...event, type: 'complained' }], result, {});
+    assert.equal(result.unprocessable, 1);
+    sinon.assert.calledOnce(deps.emailSuppressionList.handleComplaint);
+  });
+  it('propagates safety write and cleanup failures so callbacks can retry', async () => {
+    const giftDeliveryService = {
+      getRecipientEmailForMessage: sinon.stub().resolves(event.recipientEmail),
+      recordOutcome: sinon.stub().resolves('recorded' as const),
+    };
+    const deps = safetyDeps();
+    const processor = new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService, ...deps });
+    const result = new EventProcessingResult();
+    deps.emailSuppressionList.handleBounce.rejects(new Error('local failure'));
+    await assert.rejects(
+      processor.processBatch(
+        [{ ...event, type: 'failed', severity: 'permanent', suppress: true }],
+        result,
+        {},
+      ),
+      /local failure/,
+    );
+    sinon.assert.notCalled(giftDeliveryService.recordOutcome);
+    deps.emailSuppressionList.removeComplaint.rejects(new Error('cleanup failure'));
+    await assert.rejects(
+      processor.processBatch([{ ...event, type: 'complained' }], result, {}),
+      /cleanup failure/,
+    );
+    assert.equal(result.complained, 0);
+  });
+  it('reports a missing gift as unprocessable without suppressing an uncorrelated address', async () => {
+    const giftDeliveryService = {
+      getRecipientEmailForMessage: sinon.stub().resolves(null),
+      recordOutcome: sinon.stub().resolves('recorded' as const),
+    };
+    const deps = safetyDeps();
+    const processor = new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService, ...deps });
+    const result = new EventProcessingResult();
+    await processor.processBatch([{ ...event, type: 'complained' }], result, {});
+    assert.equal(result.unprocessable, 1);
+    sinon.assert.notCalled(deps.emailSuppressionList.handleComplaint);
   });
 });
