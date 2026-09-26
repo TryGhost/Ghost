@@ -85,3 +85,8 @@ Changing `schema.js` alone does not update an existing database. Every schema
 change needs a migration that moves an installed database to the new shape.
 Follow the [database migrations guide](../../../../../../docs/practices/database-migrations.md)
 for generation, iteration, testing, and review requirements.
+
+Tables listed in `in-development.ts` are the exception: they are created only
+in development and testing databases and need no migration until their
+definition is final. See the guide's section on new tables still in
+development.
