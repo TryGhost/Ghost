@@ -22,6 +22,7 @@ import { EmberListWithGiftLinks } from './gift-link-modal-host';
 import { EditorGate } from './editor-gate';
 import { PagesListGate, PostsListGate } from './posts-list-gate';
 import { MemberActivityGate } from './member-activity-gate';
+import { MigrateGate, ViewSiteGate } from './iframe-route-gates';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
@@ -40,6 +41,7 @@ import {
   canManageAutomations,
   canManageMembers,
   canManageTags,
+  hasAdminAccess,
 } from '@tryghost/admin-x-framework/api/users';
 
 import { NotFound } from './shared/not-found';
@@ -47,7 +49,6 @@ import { NotFound } from './shared/not-found';
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
 const EMBER_ROUTES: string[] = [
-  '/site',
   '/setup',
   '/signin/*',
   '/signout',
@@ -55,7 +56,6 @@ const EMBER_ROUTES: string[] = [
   '/reset/*',
   '/pro/*',
   '/restore',
-  '/migrate/*',
 ];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
@@ -204,6 +204,18 @@ const appRoutes: RouteObject[] = [
     Component: EditorGate,
     handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
   },
+  // Served by React or Ember depending on the `iframeRoutesReact` Labs flag.
+  // Neither allows force upgrade, which redirects both implementations to
+  // /pro.
+  { path: '/site', Component: ViewSiteGate },
+  {
+    path: '/migrate/*',
+    Component: MigrateGate,
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: hasAdminAccess,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+  },
   // Ember-handled routes
   ...emberFallbackRoutes,
   {
@@ -240,6 +252,7 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
   const postsListOwner = useFlagGatedRouteOwner('postsListReact');
   const editorOwner = useFlagGatedRouteOwner('editorReact');
   const memberActivityOwner = useFlagGatedRouteOwner('membersActivityReact');
+  const iframeRoutesOwner = useFlagGatedRouteOwner('iframeRoutesReact');
 
   return useCallback(
     (pathname: string) => {
@@ -256,9 +269,12 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
       if (leaf.Component === MemberActivityGate) {
         return memberActivityOwner !== 'react';
       }
+      if (leaf.Component === ViewSiteGate || leaf.Component === MigrateGate) {
+        return iframeRoutesOwner !== 'react';
+      }
       return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
     },
-    [postsListOwner, editorOwner, memberActivityOwner],
+    [postsListOwner, editorOwner, memberActivityOwner, iframeRoutesOwner],
   );
 }
 

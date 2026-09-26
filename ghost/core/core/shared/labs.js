@@ -66,6 +66,7 @@ const PRIVATE_FEATURES = [
   'membersActivityReact',
   'editorReact',
   'globalSearchReact',
+  'iframeRoutesReact',
   'dunningWarnings',
 ];
 

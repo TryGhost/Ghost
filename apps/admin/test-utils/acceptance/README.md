@@ -40,6 +40,8 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 Don't guess the app's network graph — run the test, the 418 names what's missing. Any request no fake handles is served a 418 (admin API paths _and_ known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently faked routes. Declare admin API requests with a resource fake or a `renderAdminApp` boot override, external URLs with `fakeEndpoint(method, url, response)`; `allowUnhandledRequests()` opts a single test out.
 
+**Embedded apps.** MSW cannot see iframe navigations, so an external frame gets a 418 page (no network) unless the spec declares `fakeFrameOrigin(origin, html)`. The stand-in HTML can script an embedding protocol with `window.parent.postMessage`; see `src/migrate/migrate.acceptance.test.tsx`.
+
 **Cross-app navigation.** When a spec asserts only the shell's behavior and a navigation mounts another app (settings, ActivityPub), don't fake that app's boot graph: `allowUnhandledRequests()` with a one-line constraint comment ("the settings app owns its request graph") is the sanctioned pattern.
 
 When your area calls a new external origin, add it to `EXTERNAL_URL_BLOCKLIST` in `worker.ts` so a forgotten fake fails the test instead of hitting the real network from CI. `fakeEndpoint` serves JSON bodies only — point fixture image URLs at a non-blocklisted host (they bypass the worker) rather than faking them.
