@@ -7,10 +7,14 @@ on:
 jobs:
   deploy:
     name: Deploy Preview
-    # Runs when the "preview" label is added — requires collaborator write access
+    # Runs when "preview" or a "preview:<profile>" label is added — either needs
+    # collaborator write access. Adding a profile label to an already-labelled PR
+    # has to redeploy, or the label would claim a profile the preview is not on;
+    # Ghost-Moya notices the change and reseeds.
     if: >-
       github.event.action == 'labeled'
-      && github.event.label.name == 'preview'
+      && (github.event.label.name == 'preview'
+          || startsWith(github.event.label.name, 'preview:'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -92,13 +96,38 @@ jobs:
           if [ "$STATE" != "open" ]; then
             echo "::warning::PR is no longer open ($STATE), skipping dispatch"
             echo "skip=true" >> "$GITHUB_OUTPUT"
-          elif [ "$HAS_LABEL" != "true" ]; then
+            exit 0
+          fi
+          if [ "$HAS_LABEL" != "true" ]; then
             echo "::warning::preview label was removed, skipping dispatch"
             echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "PR still eligible for preview deploy"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          # A `preview:<profile>` label picks how much seed data the preview starts
+          # with. The names are defined in TryGhost/Ghost-Moya's
+          # preview/profiles.json and validated there, so nothing here needs to
+          # know them — passing the suffix through keeps one source of truth.
+          # Sending nothing means Moya applies its own default.
+          PROFILES=$(echo "$PR" | jq -r '[.labels[] | select(startswith("preview:")) | ltrimstr("preview:")] | join(" ")')
+          COUNT=$(echo "$PROFILES" | wc -w)
+
+          if [ "$COUNT" -gt 1 ]; then
+            echo "::error::Multiple preview profile labels ($PROFILES) — remove all but one"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          if [ "$COUNT" -eq 1 ]; then
+            echo "Preview profile: ${PROFILES}"
+            echo "profile=${PROFILES}" >> "$GITHUB_OUTPUT"
+          else
+            echo "No preview:<profile> label, Ghost-Moya will use its default"
+            echo "profile=" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "PR still eligible for preview deploy"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
 
       - name: Resolve image digest from GHCR
         id: digest
@@ -140,7 +169,7 @@ jobs:
               "pr_number": "${{ github.event.pull_request.number }}",
               "image_digest": "${{ steps.digest.outputs.digest }}",
               "action": "deploy",
-              "seed": "true"
+              "profile": "${{ steps.recheck.outputs.profile }}"
             }
 
   destroy:
