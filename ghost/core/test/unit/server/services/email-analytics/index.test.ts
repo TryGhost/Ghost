@@ -18,7 +18,8 @@ describe('email analytics provider wiring', () => {
     vi.resetModules();
     wrappers.length = 0;
     subscribers.clear();
-    fetch.resetHistory();
+    fetch.reset();
+    fetch.resolves();
 
     vi.doMock(
       '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper',
@@ -127,6 +128,22 @@ describe('email analytics provider wiring', () => {
     analytics.init(deps);
     for (const wrapper of wrappers) {
       assert.equal(wrapper.options.polling, false);
+    }
+  });
+
+  it('preserves capped and completed polling results for cursor advancement', async () => {
+    analytics.init(deps);
+    const request = {
+      begin: new Date(0),
+      end: new Date(10000),
+      maxEvents: 10,
+      batchHandler: sinon.stub(),
+    };
+    for (const result of [{ safeCursor: new Date(5000) }, {}]) {
+      fetch.resolves(result);
+      for (const wrapper of wrappers) {
+        assert.equal(await wrapper.options.fetchEvents!(request), result);
+      }
     }
   });
 

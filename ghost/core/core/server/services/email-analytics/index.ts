@@ -138,7 +138,7 @@ export const init = ({
       options: Parameters<import('./email-analytics-service').FetchEvents>[0],
     ) => {
       if (source.type === 'poll') {
-        await source.fetch({
+        return await source.fetch({
           ...options,
           family,
           batchHandler: (events) => options.batchHandler(parseEmailEvents(events, family)),
