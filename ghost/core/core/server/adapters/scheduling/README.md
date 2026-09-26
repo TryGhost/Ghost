@@ -37,8 +37,14 @@ starts this rebuild with the previous key. Post scheduling and
 fresh poll chain and lets the old callback fail authentication.
 
 Boot rebuilds are consumer-specific and only run when the adapter sets
-`rescheduleOnBoot`. Same-key replacements use `bootstrap` unscheduling so the
-default adapter does not tombstone the replacement job.
+`rescheduleOnBoot`. Post scheduling registers each job again without
+unscheduling it: the job's idempotency key is derived from its fire time and
+callback URL, so a persistent queue recognises the job it already holds, and
+an in-process queue starts empty. A delete sent alongside the create is not
+ordered against it on the wire, and a late delete would remove the job just
+registered. `SignedFlushScheduler` still uses `bootstrap` unscheduling for its
+same-key replacements so the default adapter does not tombstone the
+replacement job.
 
 ## Consumers
 
