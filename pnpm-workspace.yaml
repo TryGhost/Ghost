@@ -30,7 +30,7 @@ allowBuilds:
   'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
   'msw@2.14.6': true
   'nx@23.2.0': true
-  'protobufjs@7.6.4': true
+  'protobufjs@7.6.6': true
   're2@1.26.1': true
   'sharp@0.35.4': true
   ssh2: false
@@ -112,9 +112,9 @@ catalog:
   '@uiw/codemirror-extensions-basic-setup': 4.25.11
   '@uiw/react-codemirror': 4.25.11
   '@vitejs/plugin-react': 6.0.3
-  '@vitest/browser-playwright': 4.1.10
-  '@vitest/coverage-v8': 4.1.10
-  '@vitest/ui': 4.1.10
+  '@vitest/browser-playwright': 4.1.11
+  '@vitest/coverage-v8': 4.1.11
+  '@vitest/ui': 4.1.11
   ajv: 8.20.0
   ajv-formats: 3.0.1
   better-sqlite3: 12.11.1
@@ -171,7 +171,7 @@ catalog:
   react: 18.3.1
   react-day-picker: 9.14.0
   react-dom: 18.3.1
-  react-router: 7.18.1
+  react-router: 7.18.4
   semver: 7.8.5
   sharp: 0.35.4
   should: 13.2.3
@@ -199,7 +199,7 @@ catalog:
   validator: 13.15.35
   vite: 8.1.3
   vite-plugin-svgr: 4.5.0
-  vitest: 4.1.10
+  vitest: 4.1.11
   vitest-browser-react: 2.2.0
   zod: 4.4.3
   form-data: 4.0.6
@@ -280,9 +280,12 @@ overrides:
   '@tootallnate/once@<3.0.1': ^3.0.1
   'ansi-html@<0.0.8': ^0.0.9
   'axios@<1.15.2': ^1.15.2
+  'baseline-browser-mapping@<2.11.0': ^2.11.0
   'braces@<3.0.3': ^3.0.3
+  'browserslist@>=4.0.0 <4.28.7': ^4.28.7
   'clean-css@<4.1.11': ^4.1.11
   'codemirror@<5.58.2': ^5.58.2
+  'colord@<2.9.4': ^2.9.4
   # consolidate 0.15 pulls in a bunch of legacy dependencies that ultimately
   # make their way into the Ghost docker image, forcing a 1.x upgrade trims
   # the final dependency list
@@ -307,17 +310,22 @@ overrides:
   'minimatch@<3.1.4': ^3.1.4
   'minimatch@>=9.0.0 <9.0.7': ^9.0.7
   'minimist@<0.2.4': ^0.2.4
+  'morgan@<1.12.0': ^1.12.0
   'nth-check@<2.0.1': ^2.0.1
   'path-to-regexp@<0.1.13': ^0.1.13
-  'protobufjs@<7.5.5': ^7.5.5
+  'postcss@>=8.0.0 <8.5.23': ^8.5.23
+  'protobufjs@<7.6.5': ^7.6.5
+  'smol-toml@<1.7.1': ^1.7.1
+  'socket.io-parser@<4.2.7': ^4.2.7
   supports-color: '10.2.2'
-  'tar@<7.5.11': ^7.5.11
+  'svgo@>=4.0.0 <4.1.0': ^4.1.0
+  'tar@<7.5.21': ^7.5.21
   'tmp@<=0.2.3': ^0.2.4
   'tough-cookie@<4.1.3': ^4.1.3
   'trim@<0.0.3': ^0.0.3
   'undici@<6.24.0': ^6.24.0
   'underscore@>=1.3.2 <1.12.1': ^1.12.1
-  '@xmldom/xmldom@<0.8.13': ^0.9.0
+  '@xmldom/xmldom@<0.9.12': ^0.9.12
   # liquid-wormhole 3.0.1 pins this to a personal-fork git URL; redirect to the
   # upstream-maintained npm release so blockExoticSubdeps doesn't trip on it.
   perf-primitives: ^0.0.6

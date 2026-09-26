@@ -39,7 +39,7 @@
     "@ember/test-waiters": "3.1.0",
     "@embroider/macros": "1.16.13",
     "@eslint/js": "catalog:",
-    "@faker-js/faker": "10.4.0",
+    "@faker-js/faker": "catalog:",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@internal/cfg-eslint": "workspace:*",
