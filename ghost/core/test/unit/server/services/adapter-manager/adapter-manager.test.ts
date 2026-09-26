@@ -10,6 +10,7 @@ import {
 } from '../../../../../core/server/services/adapter-manager/adapter-manager';
 import { resolveAdapterEntryPoint } from '../../../../../core/server/services/adapter-manager/utils';
 import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
+import { attachAccessors, createSnapshot } from '../../../../../core/shared/config/snapshot';
 import { bindAll as bindHelpers } from '../../../../../core/shared/config/helpers';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 import type { Adapter } from '../../../../../core/server/services/adapter-manager/types';
@@ -42,6 +43,10 @@ function makeConfig(adapters: object = {}): ConfigInstance {
 
   bindUrlHelpers(nconf);
   bindHelpers(nconf);
+  // the loader seeds these and then attaches the typed, frozen accessors
+  nconf.set('url', 'http://localhost:2368');
+  nconf.set('env', 'testing');
+  attachAccessors(nconf, createSnapshot(nconf));
 
   return nconf;
 }

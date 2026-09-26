@@ -9,6 +9,7 @@ import {
   resolveAdapterOptions,
 } from '../../../../core/server/services/adapter-manager/utils';
 import { bindAll as bindHelpers } from '../../../../core/shared/config/helpers';
+import { attachAccessors, createSnapshot } from '../../../../core/shared/config/snapshot';
 
 // The shape Ghost(Pro) configures: image, media and file features on a shared
 // S3Storage block, and nothing for imports.
@@ -30,8 +31,11 @@ function resolveFor(feature: string, siteConfig: object) {
   nconf.add('site', { type: 'literal', store: siteConfig });
   // A copy, because nconf's merge writes into the lower store's objects.
   nconf.add('defaults', { type: 'literal', store: structuredClone(defaults) });
+  // the loader sets this after its files are layered on
+  nconf.add('env', { type: 'literal', store: { env: 'testing' } });
   bindUrlHelpers(nconf);
   bindHelpers(nconf);
+  attachAccessors(nconf, createSnapshot(nconf));
 
   return resolveAdapterOptions(feature, normalizeAdapterConfig(nconf));
 }
