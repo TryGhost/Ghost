@@ -2804,8 +2804,8 @@ importers:
         specifier: 0.7.3
         version: 0.7.3
       image-size:
-        specifier: 1.2.1
-        version: 1.2.1
+        specifier: 2.0.4
+        version: 2.0.4
       intl-messageformat:
         specifier: 5.4.3
         version: 5.4.3
@@ -3558,8 +3558,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
       markdown-it-image-lazy-loading:
-        specifier: 2.0.1
-        version: 2.0.1
+        specifier: 2.1.0
+        version: 2.1.0
       markdown-it-lazy-headers:
         specifier: 0.1.3
         version: 0.1.3
@@ -15606,9 +15606,9 @@ packages:
     resolution: {integrity: sha512-P0t7ByhK8Jk9TU05ct/7+f7h8dNuXq5OY4m0IO/T+1aga/qHkpC0Wf472x3FLdq/zFDG17pgapCM3JDTxwZzow==}
     engines: {node: '>=0.10.0'}
 
-  image-size@1.2.1:
-    resolution: {integrity: sha512-rH+46sQJ2dlwfjfhCyNx5thzrv+dtmBIhPHk0zgRUukHzZ/kRueTJXoYYsclBaKcSMBWuGbOFXtioLpzTb5euw==}
-    engines: {node: '>=16.x'}
+  image-size@2.0.4:
+    resolution: {integrity: sha512-QRUkFFsRV/6fuESxb9Vkq+a0LkSrgKXuc2NEqfikiXxxN/G3tjWt5EVUlMaImRBZRZK/jRBEbYvpPYZL8t08Zw==}
+    engines: {node: '>=18'}
     hasBin: true
 
   immediate@3.0.6:
@@ -17315,8 +17315,8 @@ packages:
   markdown-it-footnote@4.0.0:
     resolution: {integrity: sha512-WYJ7urf+khJYl3DqofQpYfEYkZKbmXmwxQV8c8mO/hGIhgZ1wOe7R4HLFNwqx7TjILbnC98fuyeSsin19JdFcQ==}
 
-  markdown-it-image-lazy-loading@2.0.1:
-    resolution: {integrity: sha512-IN1DNE2ubw8yn0I7G2conoxSz0R5GgMuOczbxtV+k20MtXeHrDvMQPkQYYGQSd+ejy4eSKQOhqu3gk676Ca//A==}
+  markdown-it-image-lazy-loading@2.1.0:
+    resolution: {integrity: sha512-xF9lyzMFeHFMGunXOqvjau9verFxKujbFDS9qWNpxNlochjQMOn/RLHJqaFn6QRxCu7g+4QIwROxKMwmlJuplw==}
 
   markdown-it-lazy-headers@0.1.3:
     resolution: {integrity: sha512-65BxqvmYLpVifv6MvTElthY8zvZ/TpZBCdshr/mTpsFkqwcwWtfD3YoSE7RYSn7ugnEAAaj2gywszq+hI/Pxgg==}
@@ -19841,9 +19841,6 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
-
-  queue@6.0.2:
-    resolution: {integrity: sha512-iHZWu+q3IdFZFX36ro/lKBkSvfkztY5Y7HMiPlOUjhupPcG2JMfst2KKEpu5XndviX/3UhFbRngUPNKtgvtZiA==}
 
   quick-lru@5.1.1:
     resolution: {integrity: sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==}
@@ -37817,9 +37814,7 @@ snapshots:
 
   image-extensions@1.1.0: {}
 
-  image-size@1.2.1:
-    dependencies:
-      queue: 6.0.2
+  image-size@2.0.4: {}
 
   immediate@3.0.6: {}
 
@@ -39919,9 +39914,9 @@ snapshots:
 
   markdown-it-footnote@4.0.0: {}
 
-  markdown-it-image-lazy-loading@2.0.1:
+  markdown-it-image-lazy-loading@2.1.0:
     dependencies:
-      image-size: 1.2.1
+      image-size: 2.0.4
 
   markdown-it-lazy-headers@0.1.3: {}
 
@@ -43081,10 +43076,6 @@ snapshots:
   queue-lit@1.5.2: {}
 
   queue-microtask@1.2.3: {}
-
-  queue@6.0.2:
-    dependencies:
-      inherits: 2.0.4
 
   quick-lru@5.1.1: {}
 

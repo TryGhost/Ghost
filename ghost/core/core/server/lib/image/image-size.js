@@ -1,5 +1,6 @@
 const debug = require('@tryghost/debug')('utils:image-size');
-const sizeOf = require('image-size');
+const { imageSize: sizeOf } = require('image-size');
+const { imageSizeFromFile } = require('image-size/fromFile');
 
 const url = require('url');
 const path = require('path');
@@ -385,37 +386,31 @@ class ImageSize {
    * @returns {Promise<Object>} getImageDimensions
    * @description Takes a file path and returns width and height.
    */
-  getImageSizeFromPath(imagePath) {
-    return new Promise(function getSize(resolve, reject) {
-      let dimensions;
+  async getImageSizeFromPath(imagePath) {
+    try {
+      const dimensions = await imageSizeFromFile(imagePath);
 
-      try {
-        dimensions = sizeOf(imagePath);
-
-        if (dimensions.images) {
-          dimensions.width = _.maxBy(dimensions.images, (w) => {
-            return w.width;
-          }).width;
-          dimensions.height = _.maxBy(dimensions.images, (h) => {
-            return h.height;
-          }).height;
-        }
-
-        resolve({
-          width: dimensions.width,
-          height: dimensions.height,
-        });
-      } catch (err) {
-        reject(
-          new errors.ValidationError({
-            message: tpl(messages.invalidDimensions, {
-              file: imagePath,
-              error: err.message,
-            }),
-          }),
-        );
+      if (dimensions.images) {
+        dimensions.width = _.maxBy(dimensions.images, (w) => {
+          return w.width;
+        }).width;
+        dimensions.height = _.maxBy(dimensions.images, (h) => {
+          return h.height;
+        }).height;
       }
-    });
+
+      return {
+        width: dimensions.width,
+        height: dimensions.height,
+      };
+    } catch (err) {
+      throw new errors.ValidationError({
+        message: tpl(messages.invalidDimensions, {
+          file: imagePath,
+          error: err.message,
+        }),
+      });
+    }
   }
 }
 
