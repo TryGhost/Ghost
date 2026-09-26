@@ -356,7 +356,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const explorePingService = require('./server/services/explore-ping');
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
-  const automationsApi = require('./server/services/automations/automations-api');
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
@@ -370,6 +369,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
 
   // Initialize things that other services depend on first.
   emailAddressService.init();
+  require('./server/services/email-provider').init();
   const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
   schedulerAdapter.run();
@@ -381,6 +381,11 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   });
   const giftDeliveryService = giftService.deliveryService;
   assert(giftDeliveryService, 'Gift delivery service should be initialized');
+  require('./server/services/email-provider').initEvents({
+    knex: db.knex,
+    jobsService,
+    gifts: giftDeliveryService,
+  });
   if (ghostServer) {
     ghostServer.registerCleanupTask(async () => {
       await stripe.shutdown();
@@ -403,7 +408,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     audienceFeedback.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
-      automationsApi,
+      providers: require('./server/services/email-provider').getSources(),
+      eventService: require('./server/services/email-provider').getEventService(),
       config,
       db,
       domainEvents,
@@ -710,8 +716,14 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       mentionsSendingService: mentionsService.sendingService,
       membersService,
       emailService: emailService.service,
+      emailEvents: require('./server/services/email-provider').getEventService(),
     });
+    const {
+      ProcessEmailEventsJob,
+    } = require('./server/services/email-provider/process-email-events-job');
     await jobsService.start();
+    await jobsService.scheduleRecurring(new ProcessEmailEventsJob(), { cron: '*/30 * * * * *' });
+    await jobsService.dispatch(new ProcessEmailEventsJob());
     debug('End: Register job handlers');
     debug('End: Load Ghost Services & Apps');
 

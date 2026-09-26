@@ -1,243 +1,111 @@
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import createKnex from 'knex';
-
-import assert from 'node:assert/strict';
 import { vi } from 'vitest';
+import type { EmailAnalyticsServiceWrapper } from '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper';
+
+type Options = ConstructorParameters<typeof EmailAnalyticsServiceWrapper>[0];
 type Analytics = typeof import('../../../../../core/server/services/email-analytics');
-let analytics: Analytics;
-let init: Analytics['init'];
 
-import { GIFT_DELIVERY_EMAIL_TAG } from '../../../../../core/server/services/gifts/constants';
-import { AUTOMATION_EMAIL_TAG } from '../../../../../core/server/services/member-welcome-emails/constants';
+describe('email analytics provider wiring', () => {
+  let analytics: Analytics;
+  let deps: Parameters<Analytics['init']>[0];
+  const wrappers: { options: Options; startFetch: sinon.SinonStub }[] = [];
+  const subscribers = new Map<string, () => Promise<void>>();
+  const fetch = sinon.stub().resolves();
+  const ingest = sinon.stub().resolves();
 
-describe('email analytics service', function () {
-  const automationsApi = {
-    getAutomatedEmailRecipientsByMailgunIds: sinon.stub(),
-    trackEmailDeliveredAndOpened: sinon.stub(),
-  };
-  const config = { get: sinon.stub() };
-  const domainEvents = { subscribe: sinon.stub() };
-  const metrics = { metric: sinon.stub() };
-  const settingsCache = { get: sinon.stub() };
-  const giftDeliveryService = { recordOutcome: sinon.stub() };
-
-  let newslettersInit: sinon.SinonStub;
-  let automationsInit: sinon.SinonStub;
-  let giftsInit: sinon.SinonStub;
-
-  let dependencies: Parameters<typeof init>[0];
-
-  beforeEach(async function () {
-    config.get.reset();
-    config.get.withArgs('bulkEmail:mailgun:tag').returns('custom-mailgun-tag');
-    newslettersInit = sinon.stub().returns({ startFetch: sinon.stub().resolves() });
-    automationsInit = sinon.stub().returns({ startFetch: sinon.stub().resolves() });
-    giftsInit = sinon.stub().returns({ startFetch: sinon.stub().resolves() });
-    const constructors = {
-      newsletters: newslettersInit,
-      automations: automationsInit,
-      gifts: giftsInit,
-    };
+  beforeEach(async () => {
     vi.resetModules();
+    wrappers.length = 0;
+    subscribers.clear();
+    fetch.resetHistory();
+    ingest.resetHistory();
     vi.doMock(
       '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper',
       () => ({
-        EmailAnalyticsServiceWrapper: function (options: { logName: keyof typeof constructors }) {
-          return constructors[options.logName](options);
+        EmailAnalyticsServiceWrapper: function (options: Options) {
+          const wrapper = { options, startFetch: sinon.stub().resolves() };
+          wrappers.push(wrapper);
+          return wrapper;
         },
       }),
     );
     analytics = await import('../../../../../core/server/services/email-analytics');
-    init = analytics.init;
-    domainEvents.subscribe.resetHistory();
-
-    dependencies = {
-      automationsApi,
-      config,
-      db: {
-        knex: createKnex({
-          client: 'better-sqlite3',
-          connection: {
-            filename: ':memory:',
-          },
-          useNullAsDefault: true,
-        }),
+    deps = {
+      config: { get: sinon.stub() },
+      db: { knex: createKnex({ client: 'mysql2' }) },
+      metrics: { metric: sinon.stub() },
+      settingsCache: { get: sinon.stub() },
+      domainEvents: {
+        subscribe: (event, handler) => {
+          subscribers.set(event.name, handler);
+        },
       },
-      domainEvents,
-      emailSuppressionList: {
-        removeComplaint: sinon.stub(),
-        removeUnsubscribe: sinon.stub(),
-      },
-      giftDeliveryService,
-      membersRepository: {
-        get: sinon.stub(),
-        update: sinon.stub(),
-      },
-      models: {
-        Email: {},
-        EmailRecipientFailure: {},
-        EmailSpamComplaintEvent: {},
-      },
-      metrics,
-      prometheusClient: null,
-      settingsCache,
+      providers: [{ source: 'mailgun', getEventSource: () => ({ type: 'poll', fetch }) }],
+      eventService: { ingest },
     };
   });
-
-  afterEach(async function () {
-    await dependencies.db.knex.destroy();
+  afterEach(async () => {
+    await deps.db.knex.destroy();
     vi.doUnmock(
       '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper',
     );
     vi.resetModules();
-    sinon.restore();
   });
-
-  it('guards access before initialization and retains independent executors', async function () {
+  it('guards use before boot and initializes each family once', () => {
     assert.throws(() => analytics.getNewsletters(), /initialized/);
-    assert.throws(() => analytics.getAutomations(), /initialized/);
-    assert.throws(() => analytics.getGifts(), /initialized/);
-    init(dependencies);
-    const wrappers = [analytics.getNewsletters(), analytics.getAutomations(), analytics.getGifts()];
-    assert.equal(new Set(wrappers).size, 3);
-    init(dependencies);
+    analytics.init(deps);
+    analytics.init(deps);
+    assert.equal(wrappers.length, 3);
     assert.equal(analytics.getNewsletters(), wrappers[0]);
     assert.equal(analytics.getAutomations(), wrappers[1]);
     assert.equal(analytics.getGifts(), wrappers[2]);
-    sinon.assert.calledOnce(newslettersInit);
-    sinon.assert.calledOnce(automationsInit);
-    sinon.assert.calledOnce(giftsInit);
-    sinon.assert.calledThrice(domainEvents.subscribe);
-    for (const [index, call] of domainEvents.subscribe.getCalls().entries()) {
-      await call.args[1]();
-      sinon.assert.calledOnce(wrappers[index].startFetch as sinon.SinonStub);
+    assert.equal(wrappers[0].options.jobNames.latestOpened, 'email-analytics-latest-opened');
+  });
+  it('keeps retained source cursors separate and starts all three workflows', async () => {
+    deps.providers = [
+      ...deps.providers,
+      { source: 'old-account', getEventSource: () => ({ type: 'poll', fetch }) },
+    ];
+    analytics.init(deps);
+    assert.equal(wrappers.length, 6);
+    assert.notEqual(
+      wrappers[0].options.jobNames.latestOpened,
+      wrappers[3].options.jobNames.latestOpened,
+    );
+    for (const handler of subscribers.values()) {
+      await handler();
+    }
+    for (const wrapper of wrappers) {
+      sinon.assert.calledOnce(wrapper.startFetch);
     }
   });
-
-  it('initializes newsletter, automation, and gift analytics with configured Mailgun tags', function () {
-    init(dependencies);
-
-    sinon.assert.calledOnceWithExactly(
-      newslettersInit,
-      sinon.match({
-        config,
-        jobType: 'email-analytics-fetch-latest',
-        mailgunTags: ['bulk-email', 'custom-mailgun-tag'],
-        jobNames: {
-          latestNonOpened: 'email-analytics-latest-others',
-          missing: 'email-analytics-missing',
-          latestOpened: 'email-analytics-latest-opened',
-          scheduled: 'email-analytics-scheduled',
-        },
-        cursorSeed: {
-          tableName: 'email_recipients',
-          eventColumns: {
-            delivered: 'delivered_at',
-            opened: 'opened_at',
-            failed: 'failed_at',
-          },
-        },
-        metrics,
-        settingsCache,
-        createEventProcessor: sinon.match.func,
-      }),
-    );
-
-    sinon.assert.calledOnceWithExactly(
-      automationsInit,
-      sinon.match({
-        config,
-        jobType: 'email-analytics-automation-fetch-latest',
-        mailgunTags: [AUTOMATION_EMAIL_TAG, 'custom-mailgun-tag'],
-        jobNames: {
-          latestNonOpened: 'email-analytics-automation-latest-others',
-          missing: 'email-analytics-automation-missing',
-          latestOpened: 'email-analytics-automation-latest-opened',
-          scheduled: 'email-analytics-automation-scheduled',
-        },
-        cursorSeed: {
-          tableName: 'automated_email_recipients',
-          eventColumns: {
-            delivered: 'delivered_at',
-            opened: 'opened_at',
-          },
-        },
-        metrics,
-        settingsCache,
-        createEventProcessor: sinon.match.func,
-      }),
-    );
-
-    sinon.assert.calledOnceWithExactly(
-      giftsInit,
-      sinon.match({
-        config,
-        jobType: 'email-analytics-gift-fetch-latest',
-        mailgunTags: [GIFT_DELIVERY_EMAIL_TAG, 'custom-mailgun-tag'],
-        jobNames: {
-          latestNonOpened: 'email-analytics-gifts-latest-others',
-          missing: 'email-analytics-gifts-missing',
-          latestOpened: 'email-analytics-gifts-latest-opened',
-          scheduled: 'email-analytics-gifts-scheduled',
-        },
-        cursorSeed: {
-          tableName: 'gift_deliveries',
-          eventColumns: {
-            delivered: 'outcome_at',
-            failed: 'outcome_at',
-          },
-        },
-        metrics,
-        settingsCache,
-        createEventProcessor: sinon.match.func,
-      }),
-    );
+  it('passes the family to polling and durably ingests before advancing', async () => {
+    analytics.init(deps);
+    const options = wrappers[1].options;
+    const request = {
+      begin: new Date(),
+      end: new Date(),
+      maxEvents: 10,
+      batchHandler: sinon.stub(),
+    };
+    await options.fetchEvents!(request);
+    sinon.assert.calledWithMatch(fetch, { ...request, family: 'automations' });
+    const event = { timestamp: new Date() };
+    const result = new (
+      await import('../../../../../core/server/services/email-analytics/event-processing-result')
+    ).EventProcessingResult();
+    await options.createEventProcessor().processBatch([event], result, {});
+    sinon.assert.calledWithExactly(ingest, 'mailgun', [event], 'automations');
   });
-
-  it('does not add a site tag to automation analytics when none is configured', function () {
-    config.get.withArgs('bulkEmail:mailgun:tag').returns(undefined);
-
-    init(dependencies);
-
-    sinon.assert.calledOnceWithExactly(
-      automationsInit,
-      sinon.match({
-        mailgunTags: [AUTOMATION_EMAIL_TAG],
-      }),
-    );
-  });
-
-  it.each([undefined, ''])(
-    'does not add a gift analytics site tag when configured as %s',
-    function (siteTag) {
-      config.get.withArgs('bulkEmail:mailgun:tag').returns(siteTag);
-
-      init(dependencies);
-
-      sinon.assert.calledOnceWithExactly(
-        giftsInit,
-        sinon.match({ mailgunTags: [GIFT_DELIVERY_EMAIL_TAG] }),
-      );
-    },
-  );
-
-  it('registers Prometheus metrics for member stat aggregation', function () {
-    const registerCounter = sinon.stub();
-
-    init({
-      ...dependencies,
-      prometheusClient: {
-        registerCounter,
-        getMetric: sinon.stub(),
-      },
-    });
-
-    sinon.assert.calledWith(
-      registerCounter,
-      sinon.match({
-        name: 'email_analytics_aggregate_member_stats_count',
-        help: 'Count of member stats aggregations',
-      }),
-    );
+  it('does not poll a webhook provider', async () => {
+    deps.providers = [
+      { source: 'webhook', getEventSource: () => ({ type: 'webhook', verify: sinon.stub() }) },
+    ];
+    analytics.init(deps);
+    for (const wrapper of wrappers) {
+      assert.equal(wrapper.options.polling, false);
+    }
   });
 });

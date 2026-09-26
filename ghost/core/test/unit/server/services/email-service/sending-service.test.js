@@ -52,6 +52,42 @@ describe('Sending service', function () {
       sinon.restore();
     });
 
+    it('retries a batch through its original provider after switching accounts', async function () {
+      const oldProvider = {
+        source: 'old-account',
+        send: sinon.stub().resolves({ id: 'opaque-id' }),
+      };
+      const service = new SendingService({
+        emailRenderer,
+        emailProvider: { ...emailProvider, source: 'new-account' },
+        emailAddressService,
+        getProviderForSource: (source) => (source === oldProvider.source ? oldProvider : undefined),
+      });
+      const result = await service.send(
+        { post: {}, newsletter: {}, segment: null, emailId: '123', members: [] },
+        { providerSource: oldProvider.source },
+      );
+      assert.equal(result.id, 'opaque-id');
+      sinon.assert.calledOnce(oldProvider.send);
+      sinon.assert.notCalled(sendStub);
+    });
+
+    it('does not resend an existing batch through a different provider if its source was removed', async function () {
+      const service = new SendingService({
+        emailRenderer,
+        emailProvider: { ...emailProvider, source: 'new-account' },
+        emailAddressService,
+      });
+      await assert.rejects(
+        service.send(
+          { post: {}, newsletter: {}, segment: null, emailId: '123', members: [] },
+          { providerSource: 'removed-account' },
+        ),
+        /must remain configured/,
+      );
+      sinon.assert.notCalled(sendStub);
+    });
+
     it('calls mailgun client with correct data', async function () {
       const sendingService = new SendingService({
         emailRenderer,

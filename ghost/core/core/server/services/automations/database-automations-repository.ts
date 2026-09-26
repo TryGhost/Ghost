@@ -307,6 +307,7 @@ export function createDatabaseAutomationsRepository({
           automation_action_revision_id: options.automationActionRevisionId,
           automation_run_step_id: options.automationRunStepId,
           ...(options.mailgunMessageId ? { mailgun_message_id: options.mailgunMessageId } : {}),
+          email_provider_source: options.providerSource ?? 'mailgun',
           track_clicks: options.trackClicks,
           track_opens: options.trackOpens,
           created_at: now,

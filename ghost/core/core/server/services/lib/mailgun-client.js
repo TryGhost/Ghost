@@ -109,8 +109,8 @@ module.exports = class MailgunClient {
         messageData['o:tracking'] = 'no';
         messageData['o:tracking-clicks'] = 'no';
         messageData['o:tracking-opens'] = 'no';
-      } else if (message.track_opens) {
-        messageData['o:tracking-opens'] = true;
+      } else if (typeof message.track_opens === 'boolean') {
+        messageData['o:tracking-opens'] = message.track_opens;
       }
 
       // set the delivery time if specified

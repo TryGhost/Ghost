@@ -1,5 +1,6 @@
 const validator = require('@tryghost/validator');
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 
 /**
  * @typedef {object} EmailData
@@ -65,6 +66,7 @@ const logging = require('@tryghost/logging');
 class SendingService {
   #emailProvider;
   #emailRenderer;
+  #getProviderForSource;
   #emailAddressService;
 
   /**
@@ -73,10 +75,20 @@ class SendingService {
    * @param {EmailRenderer} dependencies.emailRenderer
    * @param {EmailAddressService} dependencies.emailAddressService
    */
-  constructor({ emailProvider, emailRenderer, emailAddressService }) {
+  constructor({
+    emailProvider,
+    emailRenderer,
+    emailAddressService,
+    getProviderForSource = () => undefined,
+  }) {
     this.#emailProvider = emailProvider;
+    this.#getProviderForSource = getProviderForSource;
     this.#emailRenderer = emailRenderer;
     this.#emailAddressService = emailAddressService;
+  }
+
+  get providerSource() {
+    return this.#emailProvider.source;
   }
 
   getMaximumRecipients() {
@@ -126,7 +138,16 @@ class SendingService {
     }
 
     const recipients = this.buildRecipients(members, emailBody.replacements);
-    return await this.#emailProvider.send(
+    const provider =
+      !options.providerSource || options.providerSource === this.#emailProvider.source
+        ? this.#emailProvider
+        : this.#getProviderForSource(options.providerSource);
+    if (!provider) {
+      throw new errors.EmailError({
+        message: 'The email batch provider must remain configured until sending completes',
+      });
+    }
+    return await provider.send(
       {
         subject: this.#emailRenderer.getSubject(post, isTestEmail),
         from: this.#emailRenderer.getFromAddress(post, newsletter, !!options.useFallbackAddress),

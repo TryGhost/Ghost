@@ -1,5 +1,5 @@
 import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
-import { getMailgunMessageId } from '../lib/mailgun-message-id';
+import { z } from 'zod';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import {
@@ -39,7 +39,7 @@ type MemberWelcomeEmailService = {
 type MemberModel = {
   get(key: 'name'): string | null;
   get(key: 'email' | 'status' | 'uuid'): string;
-  get(key: 'enable_updates_and_announcements'): boolean | null;
+  get(key: 'enable_updates_and_announcements' | 'email_disabled'): boolean | null;
   related(key: 'newsletters'): {
     models: unknown[];
   };
@@ -210,7 +210,7 @@ const processStep = async ({
       case 'wait':
         break;
       case 'send_email': {
-        if (!hasUpdatesAndAnnouncementsEnabled(member)) {
+        if (member.get('email_disabled') || !hasUpdatesAndAnnouncementsEnabled(member)) {
           await automationsApi.markStepTerminal(step, 'member unsubscribed');
           return null;
         }
@@ -236,14 +236,17 @@ const processStep = async ({
           automationActionRevisionId: step.automation_action_revision_id,
           automationRunStepId: step.id,
         });
-        const mailgunMessageId = getMailgunMessageId(sendResult);
-        // Only Mailgun sends can produce open events for automation emails
+        const { id: mailgunMessageId, source: providerSource } = z
+          .object({ id: z.string().min(1), source: z.string().min(1) })
+          .parse(sendResult);
+        // The bulk provider supplies the identity used to correlate events.
         const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
         try {
           await automationsApi.recordEmailSent({
             automationActionRevisionId: step.automation_action_revision_id,
             automationRunStepId: step.id,
             ...(mailgunMessageId ? { mailgunMessageId } : {}),
+            providerSource,
             memberEmail: member.get('email'),
             memberId: step.member_id,
             memberName: member.get('name'),

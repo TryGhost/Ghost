@@ -58,6 +58,7 @@ type MemberFixture = {
   status: string;
   uuid: string;
   enable_updates_and_announcements: boolean | null;
+  email_disabled: boolean;
   newsletters: unknown[];
 };
 
@@ -71,6 +72,7 @@ function buildMember(attrs: Partial<MemberFixture> = {}) {
     status: 'free',
     uuid: '00000000-0000-4000-8000-000000000001',
     enable_updates_and_announcements: true,
+    email_disabled: false,
     newsletters: [{}],
     ...attrs,
   };
@@ -153,8 +155,9 @@ describe('automations poll', function () {
       init: fake<PollOptions['memberWelcomeEmailService']['init']>(),
       api: {
         loadMemberWelcomeEmails: sinon.stub<[], Promise<void>>().resolves(),
-        sendAutomationEmail:
-          fake<PollOptions['memberWelcomeEmailService']['api']['sendAutomationEmail']>().resolves(),
+        sendAutomationEmail: fake<
+          PollOptions['memberWelcomeEmailService']['api']['sendAutomationEmail']
+        >().resolves({ id: 'mailgun-message-id', source: 'mailgun' }),
       },
     };
 
@@ -307,6 +310,20 @@ describe('automations poll', function () {
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
   });
 
+  it('does not send an automation to a suppressed member', async function () {
+    const step = buildEmailStep();
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    Member.findOne.resolves(buildMember({ email_disabled: true }));
+    await poll(options);
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.notCalled(automationsApi.recordEmailSent);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      step,
+      'member unsubscribed',
+    );
+  });
+
   it('sends email if updates & announcements is unset and the member has newsletter subscriptions', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
@@ -395,7 +412,8 @@ describe('automations poll', function () {
     });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     memberWelcomeEmailService.api.sendAutomationEmail.resolves({
-      id: ' <mailgun-message-id> ',
+      id: 'mailgun-message-id',
+      source: 'mailgun',
     });
 
     await poll(options);
@@ -410,6 +428,7 @@ describe('automations poll', function () {
       automationActionRevisionId: 'revision-id',
       automationRunStepId: step.id,
       mailgunMessageId: 'mailgun-message-id',
+      providerSource: 'mailgun',
       memberEmail: 'member@example.com',
       memberId: 'member-id',
       memberName: 'Test Member',
@@ -429,7 +448,10 @@ describe('automations poll', function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     settingsCacheGet.withArgs('email_track_opens').returns(true);
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({ id: '<mailgun-message-id>' });
+    memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+      id: 'mailgun-message-id',
+      source: 'mailgun',
+    });
 
     await poll(options);
 
@@ -451,7 +473,10 @@ describe('automations poll', function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     settingsCacheGet.withArgs('email_track_opens').returns(false);
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({ id: '<mailgun-message-id>' });
+    memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+      id: 'mailgun-message-id',
+      source: 'mailgun',
+    });
 
     await poll(options);
 
@@ -469,7 +494,7 @@ describe('automations poll', function () {
     );
   });
 
-  it('does not schedule email analytics when the send has no Mailgun message ID', async function () {
+  it('does not record acceptance or schedule analytics for an invalid provider response', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     memberWelcomeEmailService.api.sendAutomationEmail.resolves({
@@ -555,40 +580,14 @@ describe('automations poll', function () {
     );
   });
 
-  it('records the automated email recipient without a Mailgun message ID after an SMTP send', async function () {
-    const step = buildEmailStep({
-      automation_action_revision_id: 'revision-id',
-    });
+  it('rejects a response without the bulk provider acceptance identity', async function () {
+    const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    settingsCacheGet.withArgs('email_track_opens').returns(true);
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({
-      messageId: '<smtp-message-id>',
-      response: '250 Message accepted',
-    });
-
+    memberWelcomeEmailService.api.sendAutomationEmail.resolves({ messageId: '<smtp-message-id>' });
     await poll(options);
-
-    sinon.assert.calledOnceWithExactly(
-      memberWelcomeEmailService.api.sendAutomationEmail,
-      sinon.match({
-        trackOpens: true,
-      }),
-    );
-    sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
-      automationActionRevisionId: 'revision-id',
-      automationRunStepId: step.id,
-      memberEmail: 'member@example.com',
-      memberId: 'member-id',
-      memberName: 'Test Member',
-      memberUuid: '00000000-0000-4000-8000-000000000001',
-      trackClicks: false,
-      trackOpens: false,
-    });
-    sinon.assert.callOrder(
-      memberWelcomeEmailService.api.sendAutomationEmail,
-      automationsApi.recordEmailSent,
-      automationsApi.finishStepAndEnqueueNext,
-    );
+    sinon.assert.notCalled(automationsApi.recordEmailSent);
+    sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
+    sinon.assert.calledOnce(automationsApi.retryStep);
   });
 
   it('does not retry the email send when recording the automated email recipient fails', async function () {
@@ -608,7 +607,10 @@ describe('automations poll', function () {
   it('does not retry the email send when scheduling email analytics fails', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({ id: '<mailgun-message-id>' });
+    memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+      id: 'mailgun-message-id',
+      source: 'mailgun',
+    });
     scheduleAutomationEmailAnalyticsJob.rejects(new Error('email analytics scheduling failed'));
 
     await poll(options);

@@ -68,6 +68,17 @@ module.exports = function getConfigProperties() {
     security: config.get('security'),
   };
 
+  // Older Admin releases use this legacy field as the bulk-email readiness gate.
+  if (config.get('adapters:email:active') && config.get('adapters:email:active') !== 'Mailgun') {
+    const provider = require('../email-provider').getProvider();
+    configProperties.mailgunIsConfigured = provider.isConfigured();
+    configProperties.emailProvider = {
+      source: provider.source,
+      configured: provider.isConfigured(),
+      events: provider.getEventSource().type,
+    };
+  }
+
   if (config.get('explore') && config.get('explore:testimonials_url')) {
     configProperties.exploreTestimonialsUrl = config.get('explore:testimonials_url');
   }

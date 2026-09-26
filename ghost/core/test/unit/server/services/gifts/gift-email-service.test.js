@@ -75,7 +75,8 @@ describe('GiftEmailService', function () {
     transactionalMailer = { send: sinon.stub().resolves() };
     bulkMailer = {
       isConfigured: sinon.stub().returns(true),
-      send: sinon.stub().resolves({ id: '<provider-123>' }),
+      source: 'test-provider',
+      sendSingle: sinon.stub().resolves({ id: 'provider-123' }),
     };
     service = new GiftEmailService({
       config,
@@ -357,32 +358,35 @@ describe('GiftEmailService', function () {
           expiresAt: new Date('2027-04-07'),
         });
 
-        assert.deepEqual(result, { providerMessageId: 'provider-123' });
+        assert.deepEqual(result, {
+          providerMessageId: 'provider-123',
+          providerSource: 'test-provider',
+        });
         sinon.assert.notCalled(transactionalMailer.send);
-        const message = bulkMailer.send.firstCall.firstArg;
+        const message = bulkMailer.sendSingle.firstCall.firstArg;
         sinon.assert.match(message, {
           subject: 'Buyer sent you a gift',
           replyTo: 'support@example.com',
-          tags: ['gift-delivery', ...(siteTag ? [siteTag] : [])],
-          disable_tracking: true,
+          family: 'gifts',
+          disableTracking: true,
         });
-        assert.deepEqual(bulkMailer.send.firstCall.args[1], { 'recipient@example.com': {} });
-        for (const field of ['html', 'plaintext']) {
+        assert.equal(message.to, 'recipient@example.com');
+        for (const field of ['html', 'text']) {
           sinon.assert.match(message[field], sinon.match('Recipient'));
           sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
           sinon.assert.match(message[field], sinon.match('All stories'));
           sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
         }
         sinon.assert.match(
-          message.plaintext,
+          message.text,
           sinon.match('Buyer has gifted you a 1-year Gold membership to Test Site'),
         );
         sinon.assert.match(
-          message.plaintext,
+          message.text,
           sinon.match('Redeem your gift:\nhttps://example.com/gift/abc-123'),
         );
         sinon.assert.match(
-          message.plaintext,
+          message.text,
           sinon.match(
             'This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).',
           ),
@@ -436,7 +440,7 @@ describe('GiftEmailService', function () {
         expiresAt: new Date('2027-04-07'),
       });
 
-      const html = bulkMailer.send.firstCall.firstArg.html;
+      const html = bulkMailer.sendSingle.firstCall.firstArg.html;
       assert.match(html, /<span[^>]*>Test Site<\/span>/);
       assert.doesNotMatch(html, /<img /);
     });
@@ -485,9 +489,9 @@ describe('GiftEmailService', function () {
         expiresAt: new Date('2027-04-07T01:00:00.000Z'),
       });
 
-      const message = bulkMailer.send.firstCall.firstArg;
+      const message = bulkMailer.sendSingle.firstCall.firstArg;
       sinon.assert.match(message.html, sinon.match('6 Apr 2027'));
-      sinon.assert.match(message.plaintext, sinon.match('6 Apr 2027'));
+      sinon.assert.match(message.text, sinon.match('6 Apr 2027'));
     });
 
     it('keeps the publication timezone when its locale is not a valid tag', async function () {
@@ -528,9 +532,9 @@ describe('GiftEmailService', function () {
         expiresAt: new Date('2027-04-07T01:00:00.000Z'),
       });
 
-      const message = bulkMailer.send.firstCall.firstArg;
+      const message = bulkMailer.sendSingle.firstCall.firstArg;
       sinon.assert.match(message.html, sinon.match('6 Apr 2027'));
-      sinon.assert.match(message.plaintext, sinon.match('6 Apr 2027'));
+      sinon.assert.match(message.text, sinon.match('6 Apr 2027'));
     });
 
     it('falls back to neutral delivery colors when the accent color is invalid', async function () {
@@ -563,7 +567,7 @@ describe('GiftEmailService', function () {
         expiresAt: new Date('2027-04-07'),
       });
 
-      const html = bulkMailer.send.firstCall.firstArg.html;
+      const html = bulkMailer.sendSingle.firstCall.firstArg.html;
       sinon.assert.match(html, sinon.match('background:#F4F5F6'));
       sinon.assert.match(html, sinon.match('color:#738A94'));
     });
@@ -586,7 +590,7 @@ describe('GiftEmailService', function () {
       });
 
       assert.deepEqual(result, { providerMessageId: null });
-      sinon.assert.notCalled(bulkMailer.send);
+      sinon.assert.notCalled(bulkMailer.sendSingle);
       sinon.assert.calledOnceWithExactly(
         transactionalMailer.send,
         sinon.match({
@@ -618,15 +622,15 @@ describe('GiftEmailService', function () {
         expiresAt: new Date('2027-04-07'),
       });
 
-      const message = bulkMailer.send.firstCall.firstArg;
-      sinon.assert.match(message.plaintext, sinon.match(`a ${duration}-month Gold membership`));
+      const message = bulkMailer.sendSingle.firstCall.firstArg;
+      sinon.assert.match(message.text, sinon.match(`a ${duration}-month Gold membership`));
       sinon.assert.match(message.html, sinon.match(`<strong>${duration}-month</strong>`));
       sinon.assert.match(
         message.html,
         sinon.match((value) => !value.includes(`${duration} months`)),
       );
       sinon.assert.match(
-        message.plaintext,
+        message.text,
         sinon.match((value) => !value.includes(`${duration} months`)),
       );
     });
@@ -646,7 +650,7 @@ describe('GiftEmailService', function () {
         expiresAt: new Date('2027-04-07'),
       });
 
-      const html = bulkMailer.send.firstCall.firstArg.html;
+      const html = bulkMailer.sendSingle.firstCall.firstArg.html;
       assert.ok(!html.includes('<script>alert(1)</script>'));
       assert.ok(!html.includes('<img src=x onerror=alert(1)>'));
       assert.ok(!html.includes('<b>not markup</b>'));
@@ -691,19 +695,19 @@ describe('GiftEmailService', function () {
         expiresAt: new Date('2027-04-07'),
       });
 
-      const message = bulkMailer.send.firstCall.firstArg;
+      const message = bulkMailer.sendSingle.firstCall.firstArg;
       assert.equal(message.subject, 'Sam & Alex <Team> sent you a gift');
-      assert.match(message.plaintext, /Hi Pat O'Neil & Co,/);
+      assert.match(message.text, /Hi Pat O'Neil & Co,/);
       assert.match(
-        message.plaintext,
+        message.text,
         /Sam & Alex <Team> has gifted you a 1-year Gold & Silver <Plus> membership to Research & <Notes>/,
       );
-      assert.match(message.plaintext, /on behalf of Sam & Alex <Team> \(buyer@example.com\)\./);
-      assert.doesNotMatch(message.plaintext, /&(amp|lt|gt|#39);/);
+      assert.match(message.text, /on behalf of Sam & Alex <Team> \(buyer@example.com\)\./);
+      assert.doesNotMatch(message.text, /&(amp|lt|gt|#39);/);
     });
 
     it('rejects delivery when bulk Mailgun does not return an acceptance ID', async function () {
-      bulkMailer.send.resolves('Message sent');
+      bulkMailer.sendSingle.resolves('Message sent');
 
       await assert.rejects(
         service.sendGiftDelivery({
@@ -726,7 +730,7 @@ describe('GiftEmailService', function () {
 
     it('does not fall back when configured bulk Mailgun rejects the send', async function () {
       const error = new Error('Mailgun rejected the send');
-      bulkMailer.send.rejects(error);
+      bulkMailer.sendSingle.rejects(error);
 
       await assert.rejects(
         service.sendGiftDelivery({

@@ -9,8 +9,7 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const emailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-const MailgunClient = require('../lib/mailgun-client');
-const config = require('../../../shared/config');
+const { getProvider } = require('../email-provider');
 const labs = require('../../../shared/labs');
 const { Automation, EmailDesignSetting, Newsletter } = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
@@ -62,10 +61,10 @@ class MemberWelcomeEmailService {
   #memberWelcomeEmails = { free: null, paid: null };
   #defaultNewsletterSenderOptions = null;
 
-  constructor({ t, dir, singleUseTokenProvider }) {
+  constructor({ t, dir, singleUseTokenProvider, emailProvider = getProvider() }) {
     emailAddressService.init();
     this.#transactionalMailer = new mail.GhostMailer();
-    this.#bulkMailer = new MailgunClient({ config, settings: settingsCache });
+    this.#bulkMailer = emailProvider;
     this.#renderer = new MemberWelcomeEmailRenderer({ t, dir });
 
     const getSigninURL = (token) => {
@@ -468,10 +467,6 @@ class MemberWelcomeEmailService {
         break;
       case 'automation': {
         tags = [AUTOMATION_EMAIL_TAG];
-        const mailgunTagFromConfig = config.get('bulkEmail:mailgun:tag');
-        if (typeof mailgunTagFromConfig === 'string' && mailgunTagFromConfig.length > 0) {
-          tags.push(mailgunTagFromConfig);
-        }
         sendEmail = this.#sendBulkEmail.bind(this);
         break;
       }
@@ -553,32 +548,19 @@ class MemberWelcomeEmailService {
    * @param {string} [options.listUnsubscribe]
    * @returns {Promise<unknown>}
    */
-  async #sendBulkEmail({
-    to,
-    subject,
-    html,
-    text,
-    from,
-    replyTo,
-    tags,
-    trackOpens,
-    listUnsubscribe,
-  }) {
-    return await this.#bulkMailer.send(
-      {
-        subject,
-        html,
-        plaintext: text,
-        from,
-        replyTo,
-        tags,
-        ...(typeof trackOpens === 'boolean' ? { track_opens: trackOpens } : {}),
-      },
-      {
-        [to]: listUnsubscribe ? { list_unsubscribe: listUnsubscribe } : {},
-      },
-      [],
-    );
+  async #sendBulkEmail({ to, subject, html, text, from, replyTo, trackOpens, listUnsubscribe }) {
+    const response = await this.#bulkMailer.sendSingle({
+      family: 'automations',
+      to,
+      subject,
+      html,
+      text,
+      from,
+      replyTo,
+      trackOpens,
+      listUnsubscribe,
+    });
+    return { ...response, source: this.#bulkMailer.source };
   }
 
   async send({ member, memberStatus }) {

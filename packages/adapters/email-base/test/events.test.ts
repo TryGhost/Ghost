@@ -47,6 +47,9 @@ describe('email event contract', () => {
     expect(parsed.providerId).toBe('<opaque-id>');
     expect(parsed.timestamp).toEqual(new Date(event.timestamp));
     expect(parsed.suppress).toBe(false);
+    expect(
+      emailEventSchema.parse({ ...event, providerId: '', emailId: 'a'.repeat(24) }).providerId,
+    ).toBe('');
   });
 
   it('requires explicit failure severity and does not equate rejection with suppression', () => {

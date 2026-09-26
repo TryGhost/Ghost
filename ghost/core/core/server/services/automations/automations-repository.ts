@@ -100,6 +100,7 @@ export type RecordEmailSentOptions = Readonly<{
   automationActionRevisionId: string;
   automationRunStepId: string;
   mailgunMessageId?: string;
+  providerSource?: string;
   memberEmail: string;
   memberId: string;
   memberName: string | null;

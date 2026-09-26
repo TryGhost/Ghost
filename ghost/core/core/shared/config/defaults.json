@@ -42,6 +42,9 @@
     "assetSrc": "core/frontend/src"
   },
   "adapters": {
+    "email": {
+      "active": "Mailgun"
+    },
     "sso": {
       "active": "DefaultSSOAdapter"
     },

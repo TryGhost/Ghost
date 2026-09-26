@@ -3,7 +3,7 @@ import type { GiftRecipientNoticeData } from './email-templates/gift-buyer-notic
 import type { GiftCadence } from './gift-schema';
 import { Color } from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
-import { getMailgunMessageId } from '../lib/mailgun-message-id';
+import type { EmailProviderBase } from '@tryghost/adapter-base-email';
 import { GIFT_DELIVERY_EMAIL_TAG } from './constants';
 import type { ConfigInstance } from '../../../shared/config/loader';
 import { formatGiftDate } from './gift-date';
@@ -25,22 +25,7 @@ interface TransactionalMailer {
   }): Promise<unknown>;
 }
 
-interface BulkMailer {
-  isConfigured(): boolean;
-  send(
-    message: {
-      subject: string;
-      html: string;
-      plaintext: string;
-      from: string;
-      replyTo: string;
-      tags: string[];
-      disable_tracking: boolean;
-    },
-    recipientData: Record<string, Record<string, never>>,
-    replacements: never[],
-  ): Promise<unknown>;
-}
+type BulkMailer = Pick<EmailProviderBase, 'isConfigured' | 'sendSingle' | 'source'>;
 
 interface SettingsCache {
   get(key: string, options?: unknown): string | undefined;
@@ -337,7 +322,7 @@ export class GiftEmailService {
     cadence,
     duration,
     expiresAt,
-  }: GiftDeliverySendData): Promise<{ providerMessageId: string | null }> {
+  }: GiftDeliverySendData): Promise<{ providerMessageId: string | null; providerSource?: string }> {
     const siteDomain = this.siteDomain;
     const siteUrl = this.urlUtils.getSiteUrl();
     const siteTitle = this.settingsCache.get('title') ?? siteDomain;
@@ -390,28 +375,22 @@ export class GiftEmailService {
       return { providerMessageId: null };
     }
 
-    const response = await this.bulkMailer.send(
-      {
-        subject,
-        html,
-        plaintext: text,
-        from: this.getFromAddress(),
-        replyTo: this.getReplyToAddress(),
-        tags,
-        disable_tracking: true,
-      },
-      { [recipientEmail]: {} },
-      [],
-    );
-    const providerMessageId = getMailgunMessageId(response) ?? null;
-
-    if (!providerMessageId) {
+    const response = await this.bulkMailer.sendSingle({
+      family: 'gifts',
+      to: recipientEmail,
+      subject,
+      html,
+      text,
+      from: this.getFromAddress(),
+      replyTo: this.getReplyToAddress(),
+      disableTracking: true,
+    });
+    if (typeof response?.id !== 'string' || !response.id) {
       throw new errors.EmailError({
-        message: 'Bulk Mailgun did not accept gift delivery',
+        message: 'Email provider did not accept gift delivery',
         code: 'EMAIL_NOT_ACCEPTED',
       });
     }
-
-    return { providerMessageId };
+    return { providerMessageId: response.id, providerSource: this.bulkMailer.source };
   }
 }

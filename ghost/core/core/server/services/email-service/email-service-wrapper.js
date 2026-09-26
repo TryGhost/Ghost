@@ -28,13 +28,12 @@ class EmailServiceWrapper {
     const BatchSendingService = require('./batch-sending-service');
     const { SendingStatusService } = require('./sending-status-service');
     const EmailSegmenter = require('./email-segmenter');
-    const MailgunEmailProvider = require('./mailgun-email-provider');
+    const { getProvider, getSource } = require('../email-provider');
     const { DomainWarmingService } = require('./domain-warming-service');
 
     const { Post, Newsletter, Email, EmailBatch, EmailRecipient, Member } = require('../../models');
     const urlService = require('../url');
     const getRequiredUrlRelations = () => urlService.getRequiredRelations();
-    const MailgunClient = require('../lib/mailgun-client');
     const configService = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
@@ -56,23 +55,12 @@ class EmailServiceWrapper {
     const emailAnalyticsJobs = require('../email-analytics/jobs');
     const { cachedImageSizeFromUrl } = require('../../lib/image');
 
-    // Mailgun client instance for email provider
-    const mailgunClient = new MailgunClient({
-      config: configService,
-      settings: settingsCache,
-      labs,
-    });
     const i18nLanguage = settingsCache.get('locale') || 'en';
     const i18n = i18nLib(i18nLanguage, 'ghost');
 
     events.on('settings.locale.edited', (model) => {
       debug('locale changed, updating i18n to', model.get('value'));
       i18n.changeLanguage(model.get('value'));
-    });
-
-    const mailgunEmailProvider = new MailgunEmailProvider({
-      mailgunClient,
-      config: configService,
     });
 
     const emailRenderer = new EmailRenderer({
@@ -99,7 +87,8 @@ class EmailServiceWrapper {
     });
 
     const sendingService = new SendingService({
-      emailProvider: mailgunEmailProvider,
+      emailProvider: getProvider(),
+      getProviderForSource: getSource,
       emailRenderer,
       emailAddressService: emailAddressService.service,
     });

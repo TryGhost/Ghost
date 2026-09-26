@@ -69,7 +69,7 @@ export type EmailAnalyticsFetchResult = {
   result: EventProcessingResult;
 };
 
-type FetchEvents = (options: {
+export type FetchEvents = (options: {
   batchHandler: (events: any[]) => Promise<void>;
   begin: Date;
   end: Date;

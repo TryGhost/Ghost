@@ -5,6 +5,7 @@ import { CacheBase } from '@tryghost/adapter-base-cache';
 import { RedirectsStoreBase } from '@tryghost/adapter-base-redirects';
 import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
 import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
+import { EmailProviderBase } from '@tryghost/adapter-base-email';
 
 import type { BaseClassMap } from './adapter-manager';
 
@@ -20,6 +21,7 @@ export const baseClasses = {
   redirects: RedirectsStoreBase,
   'route-settings': RouteSettingsStoreBase,
   jobs: JobsBackendBase,
+  email: EmailProviderBase,
 } satisfies BaseClassMap;
 
 /**
@@ -40,4 +42,5 @@ export const baseClassPackages = {
   redirects: '@tryghost/adapter-base-redirects',
   'route-settings': '@tryghost/adapter-base-route-settings',
   jobs: '@tryghost/adapter-base-jobs',
+  email: '@tryghost/adapter-base-email',
 } satisfies Record<keyof typeof baseClasses, string>;

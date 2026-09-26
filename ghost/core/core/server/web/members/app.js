@@ -41,6 +41,18 @@ module.exports = function setupMembersApp() {
     stripeService.webhookController.handle.bind(stripeService.webhookController),
   );
 
+  membersApp.post(
+    '/webhooks/email/:source',
+    bodyParser.raw({ type: () => true, limit: '2mb' }),
+    (req, res, next) => {
+      const { getEventService } = require('../../services/email-provider');
+      const {
+        emailWebhookController,
+      } = require('../../services/email-provider/webhook-controller');
+      return emailWebhookController(getEventService())(req, res, next);
+    },
+  );
+
   // Initializes members specific routes as well as assigns members specific data to the req/res objects
   // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.
 

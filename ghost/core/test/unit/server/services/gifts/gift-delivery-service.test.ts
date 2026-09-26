@@ -345,6 +345,7 @@ describe('GiftDeliveryService', function () {
       'delivery_1',
       sinon.match.date,
       'provider-123',
+      'mailgun',
     );
     sinon.assert.calledOnceWithExactly(
       giftEmailService.sendGiftDelivery,
@@ -432,6 +433,7 @@ describe('GiftDeliveryService', function () {
       'delivery_1',
       sinon.match.date,
       null,
+      'mailgun',
     );
     sinon.assert.notCalled(giftEmailAnalytics.schedule);
   });
@@ -458,6 +460,7 @@ describe('GiftDeliveryService', function () {
       'delivery_1',
       sinon.match.date,
       'provider-123',
+      'mailgun',
     );
     sinon.assert.calledOnce(giftEmailAnalytics.schedule);
     sinon.assert.notCalled(giftDeliveryRepository.markFailed);
@@ -498,6 +501,7 @@ describe('GiftDeliveryService', function () {
       'delivery_1',
       sinon.match.date,
       'provider-123',
+      'mailgun',
     );
   });
 
@@ -638,6 +642,7 @@ describe('GiftDeliveryService', function () {
       sinon.assert.calledOnceWithExactly(
         giftDeliveryRepository.getByProviderMessageId,
         'provider-123',
+        'mailgun',
       );
       sinon.assert.calledOnceWithExactly(giftEmailService.sendDeliveryFailureNotification, {
         buyerEmail: gift.buyerEmail,

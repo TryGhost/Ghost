@@ -11,14 +11,14 @@ export const emailEventSchema = z
     type: z.enum(['delivered', 'opened', 'failed', 'unsubscribed', 'complained']),
     severity: z.enum(['temporary', 'permanent']).optional(),
     recipientEmail: z.string().email().max(191),
-    providerId: z.string().min(1).max(1000),
+    providerId: z.string().max(1000).default(''),
     emailId: z.string().length(24).optional(),
-    timestamp: z.coerce.date(),
+    timestamp: z.union([z.date(), z.iso.datetime({ offset: true })]).pipe(z.coerce.date()),
     error: z
       .object({
         code: z.union([z.string(), z.number()]).optional(),
         message: z.string().max(2000).optional(),
-        enhancedCode: z.string().max(100).optional(),
+        enhancedCode: z.string().max(100).nullable().optional(),
       })
       .nullable()
       .optional(),
@@ -27,6 +27,9 @@ export const emailEventSchema = z
     suppress: z.boolean().default(false),
   })
   .superRefine((event, ctx) => {
+    if (!event.providerId && !(event.family === 'newsletters' && event.emailId)) {
+      ctx.addIssue({ code: 'custom', message: 'An event requires a message ID or newsletter ID' });
+    }
     if (event.type === 'failed' && !event.severity) {
       ctx.addIssue({ code: 'custom', message: 'Failed events require a severity' });
     }
@@ -62,7 +65,6 @@ export interface SendingOptions {
 
 export interface SingleMessage {
   family: 'automations' | 'gifts';
-  correlationId?: string;
   to: string;
   from: string;
   replyTo?: string;

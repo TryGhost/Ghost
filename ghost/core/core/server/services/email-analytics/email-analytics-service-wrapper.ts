@@ -6,6 +6,7 @@ import {
   type CursorSeed,
   type EmailAnalyticsFetchResult,
   type JobNames,
+  type FetchEvents,
 } from './email-analytics-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import type { Queries } from './lib/queries';
@@ -18,6 +19,7 @@ export class EmailAnalyticsServiceWrapper {
   readonly #config: Pick<ConfigInstance, 'get'>;
   readonly #metrics: Pick<GhostMetrics, 'metric'>;
   readonly #service: EmailAnalyticsService;
+  readonly #polling: boolean;
   #fetching = false;
   #restoredSchedule = false;
   #fetchOpenedEvents = true;
@@ -37,18 +39,23 @@ export class EmailAnalyticsServiceWrapper {
     createEventProcessor,
     metrics,
     settingsCache,
+    fetchEvents,
+    polling = true,
   }: Readonly<{
     config: Pick<ConfigInstance, 'get'>;
     logName: string;
     jobType: string;
     queries: Queries;
     mailgunTags: string[];
+    fetchEvents?: FetchEvents;
+    polling?: boolean;
     jobNames: JobNames;
     cursorSeed: CursorSeed;
     createEventProcessor: () => BatchEventProcessor;
     metrics: Pick<GhostMetrics, 'metric'>;
     settingsCache: { get: (key: string) => unknown };
   }>) {
+    this.#polling = polling;
     this.#logName = logName;
     this.#jobType = jobType;
     this.#completionEvent = `${jobType.replaceAll('-', '_')}.completed`;
@@ -58,8 +65,10 @@ export class EmailAnalyticsServiceWrapper {
     this.#fetchOpenedEvents = Boolean(cursorSeed.eventColumns.opened);
 
     this.#service = new EmailAnalyticsService({
-      fetchEvents: (options) =>
-        fetchMailgunEvents({ ...options, config, settings: settingsCache, tags: mailgunTags }),
+      fetchEvents:
+        fetchEvents ??
+        ((options) =>
+          fetchMailgunEvents({ ...options, config, settings: settingsCache, tags: mailgunTags })),
       queries,
       jobNames,
       cursorSeed,
@@ -201,6 +210,9 @@ export class EmailAnalyticsServiceWrapper {
   }
 
   async startFetch(): Promise<void> {
+    if (!this.#polling) {
+      return;
+    }
     const startedAt = Date.now();
     if (!this.#restoredSchedule) {
       this.#restoredSchedule = true;
