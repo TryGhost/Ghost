@@ -1,4 +1,4 @@
-const sizeOf = require('image-size');
+const { imageSizeFromFile } = require('image-size/fromFile');
 const _ = require('lodash');
 const path = require('path');
 const errors = require('@tryghost/errors');
@@ -23,37 +23,31 @@ class BlogIcon {
    * @returns {Promise<Object>} getIconDimensions
    * @description Takes a file path and returns ico width and height.
    */
-  getIconDimensions(storagePath) {
-    return new Promise((resolve, reject) => {
-      let dimensions;
+  async getIconDimensions(storagePath) {
+    try {
+      const dimensions = await imageSizeFromFile(storagePath);
 
-      try {
-        dimensions = sizeOf(storagePath);
-
-        if (dimensions.images) {
-          dimensions.width = _.maxBy(dimensions.images, function (w) {
-            return w.width;
-          }).width;
-          dimensions.height = _.maxBy(dimensions.images, function (h) {
-            return h.height;
-          }).height;
-        }
-
-        resolve({
-          width: dimensions.width,
-          height: dimensions.height,
-        });
-      } catch (err) {
-        reject(
-          new errors.ValidationError({
-            message: tpl(messages.error, {
-              file: storagePath,
-              error: err.message,
-            }),
-          }),
-        );
+      if (dimensions.images) {
+        dimensions.width = _.maxBy(dimensions.images, function (w) {
+          return w.width;
+        }).width;
+        dimensions.height = _.maxBy(dimensions.images, function (h) {
+          return h.height;
+        }).height;
       }
-    });
+
+      return {
+        width: dimensions.width,
+        height: dimensions.height,
+      };
+    } catch (err) {
+      throw new errors.ValidationError({
+        message: tpl(messages.error, {
+          file: storagePath,
+          error: err.message,
+        }),
+      });
+    }
   }
 
   /**
