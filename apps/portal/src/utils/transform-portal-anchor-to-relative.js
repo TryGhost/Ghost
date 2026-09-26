@@ -1,6 +1,12 @@
 export function transformPortalAnchorToRelative(anchor) {
   const href = anchor.getAttribute('href');
-  const url = new URL(href, window.location.origin);
+  let url;
+  try {
+    url = new URL(href, window.location.origin);
+  } catch {
+    // A malformed theme link must not interrupt Portal initialization.
+    return;
+  }
   const supportedHashPrefixes = ['#/portal', '#/share'];
   const hasSupportedHashPrefix = supportedHashPrefixes.some((prefix) =>
     url.hash.startsWith(prefix),
