@@ -108,6 +108,7 @@ const controller = {
   docName: 'users',
 
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -126,6 +127,7 @@ const controller = {
   },
 
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -238,6 +240,7 @@ const controller = {
   },
 
   transferOwnership: {
+    staffTokens: false,
     headers: {
       cacheInvalidate: false,
     },
@@ -251,6 +254,7 @@ const controller = {
   },
 
   readStaffToken: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

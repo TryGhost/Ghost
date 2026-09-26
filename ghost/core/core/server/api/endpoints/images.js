@@ -10,6 +10,7 @@ const config = require('../../../shared/config');
 const controller = {
   docName: 'images',
   upload: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       cacheInvalidate: false,

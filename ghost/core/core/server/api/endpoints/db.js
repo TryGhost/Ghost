@@ -19,6 +19,7 @@ const controller = {
   docName: 'db',
 
   backupContent: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -47,6 +48,7 @@ const controller = {
   },
 
   exportContent: {
+    integrationTokens: true,
     options: ['include', 'filename'],
     validation: {
       options: {
@@ -84,6 +86,7 @@ const controller = {
   },
 
   importContent: {
+    integrationTokens: true,
     statusCode(result) {
       if (result && (result.db || result.problems)) {
         return 200;
@@ -116,6 +119,7 @@ const controller = {
   },
 
   inlineMedia: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -144,6 +148,7 @@ const controller = {
   },
 
   deleteAllContent: {
+    staffTokens: false,
     headers: {
       cacheInvalidate: true,
     },

@@ -24,6 +24,7 @@ const ALLOWED_INCLUDES = [
 const controller = {
   docName: 'comments',
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -51,6 +52,7 @@ const controller = {
     },
   },
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },

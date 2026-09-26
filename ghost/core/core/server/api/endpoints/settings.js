@@ -29,6 +29,7 @@ const controller = {
   docName: 'settings',
 
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -196,6 +197,7 @@ const controller = {
   },
 
   download: {
+    integrationTokens: true,
     headers: {
       disposition: {
         type: 'yaml',

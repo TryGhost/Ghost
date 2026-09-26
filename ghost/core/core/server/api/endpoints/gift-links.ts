@@ -33,6 +33,7 @@ const controller = {
   docName: 'gift_links',
 
   browse: {
+    integrationTokens: true,
     headers: noCacheInvalidation,
     options: ['id'],
     validation: { options: { id: { required: true } } },
@@ -45,6 +46,7 @@ const controller = {
   },
 
   ensure: {
+    integrationTokens: true,
     headers: noCacheInvalidation,
     statusCode: 200,
     options: ['id'],
@@ -58,6 +60,7 @@ const controller = {
   },
 
   create: {
+    integrationTokens: true,
     headers: noCacheInvalidation,
     statusCode: 200,
     options: ['id'],

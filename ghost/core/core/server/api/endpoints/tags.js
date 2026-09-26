@@ -14,6 +14,7 @@ const controller = {
   docName: 'tags',
 
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -32,6 +33,7 @@ const controller = {
   },
 
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -61,6 +63,7 @@ const controller = {
   },
 
   add: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       cacheInvalidate: true,
@@ -80,6 +83,7 @@ const controller = {
   },
 
   edit: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -112,6 +116,7 @@ const controller = {
   },
 
   destroy: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: true,

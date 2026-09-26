@@ -30,6 +30,7 @@ const controller = {
   docName: 'labels',
 
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -48,6 +49,7 @@ const controller = {
   },
 
   read: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -77,6 +79,7 @@ const controller = {
   },
 
   add: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       cacheInvalidate: false,
@@ -96,6 +99,7 @@ const controller = {
   },
 
   edit: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -131,6 +135,7 @@ const controller = {
   },
 
   destroy: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: true,

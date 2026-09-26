@@ -25,6 +25,7 @@ const controller = {
   docName: 'member_commenting',
 
   disable: {
+    integrationTokens: true,
     statusCode: 200,
     headers: {
       cacheInvalidate: INVALIDATE_MEMBERS_CACHE,
@@ -54,6 +55,7 @@ const controller = {
   },
 
   enable: {
+    integrationTokens: true,
     statusCode: 200,
     headers: {
       cacheInvalidate: INVALIDATE_MEMBERS_CACHE,

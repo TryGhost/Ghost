@@ -73,6 +73,7 @@ const controller = {
   },
 
   add: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       cacheInvalidate: false,

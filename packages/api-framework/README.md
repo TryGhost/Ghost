@@ -71,9 +71,15 @@ edit: {
   data: Array,
   validation: object | function,
   permissions: boolean | object | function,
+  integrationTokens?: true,
+  staffTokens?: false,
   query: function
 }
 ```
+
+Admin API keys are admitted by the controller method before any stage runs. An
+integration's key may call only a method that declares `integrationTokens: true`.
+A staff token may call any method except one that declares `staffTokens: false`.
 
 #### Examples
 

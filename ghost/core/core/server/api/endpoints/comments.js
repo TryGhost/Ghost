@@ -34,6 +34,7 @@ const controller = {
   docName: 'comments',
 
   edit: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -51,6 +52,7 @@ const controller = {
     },
   },
   browse: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -78,6 +80,7 @@ const controller = {
     },
   },
   browseAll: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -91,6 +94,7 @@ const controller = {
     },
   },
   add: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       cacheInvalidate: false,

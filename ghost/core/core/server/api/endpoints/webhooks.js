@@ -21,6 +21,7 @@ const controller = {
   docName: 'webhooks',
 
   add: {
+    integrationTokens: true,
     statusCode: 201,
     headers: {
       // NOTE: remove if there is ever a 'read' method
@@ -36,6 +37,7 @@ const controller = {
   },
 
   edit: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -79,6 +81,7 @@ const controller = {
   },
 
   destroy: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: false,

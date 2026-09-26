@@ -39,6 +39,7 @@ const controller = {
   docName: 'tiers_checkout_config',
 
   browse: {
+    integrationTokens: true,
     headers: { cacheInvalidate: false },
     permissions: { docName: 'products', method: 'browse' },
     query(): Promise<TierCheckoutResult> {
@@ -47,6 +48,7 @@ const controller = {
   },
 
   read: {
+    integrationTokens: true,
     headers: { cacheInvalidate: false },
     options: ['id'],
     validation: { options: { id: { required: true } } },
@@ -57,6 +59,7 @@ const controller = {
   },
 
   edit: {
+    integrationTokens: true,
     headers: { cacheInvalidate: true },
     options: ['id'],
     validation: { options: { id: { required: true } } },

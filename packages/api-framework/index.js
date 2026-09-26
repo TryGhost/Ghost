@@ -18,6 +18,8 @@
  * @property {function} [cache]
  * @property {(frame: import('./lib/Frame')) => object} [generateCacheKeyData]
  * @property {(frame: import('./lib/Frame')) => any} query
+ * @property {true} [integrationTokens] - An integration's Admin API key may call this
+ * @property {false} [staffTokens] - A staff token may not call this, though its user could
  */
 
 /**

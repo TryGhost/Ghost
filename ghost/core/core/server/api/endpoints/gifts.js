@@ -9,6 +9,7 @@ const controller = {
   docName: 'gifts',
 
   flushReminders: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: false,
@@ -23,6 +24,7 @@ const controller = {
   },
 
   flushDeliveries: {
+    integrationTokens: true,
     statusCode: 204,
     headers: {
       cacheInvalidate: false,

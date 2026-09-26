@@ -33,6 +33,7 @@ const controller = {
   },
 
   activate: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: true,
     },
@@ -66,6 +67,7 @@ const controller = {
   },
 
   install: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
@@ -102,6 +104,7 @@ const controller = {
   },
 
   upload: {
+    integrationTokens: true,
     headers: {
       cacheInvalidate: false,
     },
