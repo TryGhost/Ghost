@@ -2,6 +2,7 @@ import Ember from 'ember';
 import moment from 'moment-timezone';
 import upgradeUrl from 'ghost-admin/utils/upgrade-url';
 import {action} from '@ember/object';
+import {getPagePlacement, pagePathForSlug, setPageNavigationPlacement} from 'ghost-admin/utils/site-navigation';
 import {getPublicPreviewWarning} from 'ghost-admin/utils/public-preview-warning';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
@@ -101,6 +102,70 @@ export default class PublishOptions {
             this.isScheduled = false;
             this.scheduledAt = null;
         }
+    }
+
+    // navigation ----------------------------------------------------------
+    // undefined = follow whatever placement the page currently has
+    @tracked navigationPlacementOverride = undefined;
+    // true after a failed nav write during saveTask; cleared on the next save
+    @tracked navigationSaveFailed = false;
+
+    get pageNavigationPath() {
+        return pagePathForSlug(this.post.slug, this.config.pageRoutes);
+    }
+
+    get currentNavigationPlacement() {
+        if (!this.post.isPage || !this.pageNavigationPath) {
+            return null;
+        }
+
+        return getPagePlacement(this.settings, this.pageNavigationPath, this.config.blogUrl, this.config.pageRoutes);
+    }
+
+    get navigationPlacement() {
+        if (this.navigationPlacementOverride !== undefined) {
+            return this.navigationPlacementOverride;
+        }
+
+        return this.currentNavigationPlacement;
+    }
+
+    // Admin only. Hidden when scheduling because the page url isn't live yet.
+    get showNavigationOption() {
+        return this.post.isPage &&
+            !!this.user.isAdmin &&
+            !this.isScheduled &&
+            !!this.pageNavigationPath;
+    }
+
+    get navigationOptions() {
+        return [{
+            value: 'none',
+            label: 'None',
+            display: 'Not in site navigation'
+        }, {
+            value: 'primary',
+            label: 'Primary',
+            display: 'Primary navigation'
+        }, {
+            value: 'secondary',
+            label: 'Secondary',
+            display: 'Secondary navigation'
+        }];
+    }
+
+    get selectedNavigationOption() {
+        return this.navigationOptions.find(o => o.value === (this.navigationPlacement ?? 'none'));
+    }
+
+    @action
+    setNavigationPlacement(placement) {
+        this.navigationPlacementOverride = placement;
+    }
+
+    @action
+    resetNavigationPlacement() {
+        this.navigationPlacementOverride = undefined;
     }
 
     // publish type ------------------------------------------------------------
@@ -322,6 +387,12 @@ export default class PublishOptions {
         // willEmail can change after model changes are applied because the post
         // can leave draft status - grab it now before that happens
         const willEmail = this.willEmail;
+        // Grab this before status flips to published. Unchanged placement means
+        // we skip the settings write on a plain republish.
+        const navigationPlacementChanged = this.showNavigationOption
+            && this.navigationPlacement !== this.currentNavigationPlacement;
+
+        this.navigationSaveFailed = false;
 
         this._applyModelChanges();
 
@@ -332,12 +403,30 @@ export default class PublishOptions {
             adapterOptions.emailSegment = this.recipientFilter;
         }
 
+        let result;
         try {
-            return yield this.post.save({adapterOptions});
+            result = yield this.post.save({adapterOptions});
         } catch (e) {
             this._revertModelChanges();
             throw e;
         }
+
+        // Don't fail the publish if navigation save fails; flag it for the toast.
+        if (navigationPlacementChanged && this.post.isPublished) {
+            try {
+                yield setPageNavigationPlacement(this.settings, {
+                    label: this.post.title,
+                    path: this.pageNavigationPath,
+                    placement: this.navigationPlacement,
+                    blogUrl: this.config.blogUrl,
+                    pageRoutes: this.config.pageRoutes
+                });
+            } catch (e) {
+                this.navigationSaveFailed = true;
+            }
+        }
+
+        return result;
     }
 
     @task({drop: true})

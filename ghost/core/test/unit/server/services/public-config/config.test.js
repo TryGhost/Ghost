@@ -25,6 +25,7 @@ const allowedKeys = [
   'pintura',
   'signupForm',
   'security',
+  'pageRoutes',
 ];
 
 describe('Public-config Service', function () {
