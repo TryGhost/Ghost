@@ -205,11 +205,16 @@ module.exports = function apiRoutes() {
   // everything registered after them passes through both. A route added at the end is
   // guarded by being there, which is the safer way round to forget.
   //
+  // Authentication is stated once as well, but here, ahead of the mount. A mounted router
+  // sees `req.url` relative to its mount point, and the check that limits what an
+  // integration's key may reach reads the resource from the start of `req.url`: inside the
+  // router it would read the namespace instead of `members` and refuse every integration.
+  // It is a route rather than a `use()` because `use()` strips the path the same way.
+  //
   // Mounted before /members/:id so the literal path is not captured as an id.
   const metafieldsRouter = express.Router('admin api members metafields');
+  router.all('/members/metafields/*', mw.authAdminApi);
   router.use('/members/metafields', metafieldsRouter);
-
-  metafieldsRouter.use(mw.authAdminApi);
 
   // Reading is deliberately open: Admin asks every site for its definitions to draw
   // screens it renders either way, and a site that has none simply answers with an empty
