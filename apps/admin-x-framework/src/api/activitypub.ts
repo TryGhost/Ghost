@@ -1,6 +1,6 @@
-import { JSONObject } from './config';
+import type { JsonObject } from 'type-fest';
 
-export type ActivityPubContext = string | (string | JSONObject)[];
+export type ActivityPubContext = string | (string | JsonObject)[];
 
 export type ActivityPubAttachment = {
   type: string;
@@ -29,7 +29,7 @@ export type ObjectProperties = {
   content: string | null;
   summary: string | null;
   url?: string | undefined;
-  attributedTo?: ActorProperties | string | ActorProperties[] | JSONObject | JSONObject[];
+  attributedTo?: ActorProperties | string | ActorProperties[] | JsonObject | JsonObject[];
   image?:
     | string
     | {
