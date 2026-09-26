@@ -1,6 +1,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
+import { whereProviderMessageIds } from '../lib/where-provider-message-id';
 import ObjectId from 'bson-objectid';
 import { dequal } from 'dequal';
 import { type Knex } from 'knex';
@@ -322,7 +323,7 @@ export function createDatabaseAutomationsRepository({
       return await knex('automated_email_recipients')
         .select('id', 'mailgun_message_id', 'automation_action_revision_id')
         .whereNotNull('automation_action_revision_id')
-        .whereIn('mailgun_message_id', mailgunMessageIds);
+        .modify(whereProviderMessageIds, 'mailgun_message_id', mailgunMessageIds);
     },
 
     async trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId) {

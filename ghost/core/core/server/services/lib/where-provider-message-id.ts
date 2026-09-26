@@ -8,3 +8,15 @@ export function whereProviderMessageId(query: Knex.QueryBuilder, column: string,
     query.whereRaw('BINARY ?? = BINARY ?', [column, id]);
   }
 }
+
+/** Batch equivalent with an indexable candidate filter and an exact comparison. */
+export function whereProviderMessageIds(
+  query: Knex.QueryBuilder,
+  column: string,
+  ids: string[],
+): void {
+  query.whereIn(column, ids);
+  if (query.client.config.client === 'mysql2' && ids.length) {
+    query.whereRaw(`BINARY ?? IN (${ids.map(() => 'BINARY ?').join(', ')})`, [column, ...ids]);
+  }
+}
