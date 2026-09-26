@@ -31,6 +31,7 @@ import {
   getDefaultNewsletterIdsForNewMember,
   getEmailErrorMessage,
   getMemberEditableSlice,
+  getUpdatesAndAnnouncementsToSave,
   isDraftInSyncWithServer,
   isValidMemberEmail,
   normalizeDraftForComparison,
@@ -84,6 +85,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   const member = data?.members?.[0];
   const memberLocationMapEnabled = useFeatureFlag('memberLocationMap');
   const mapEnabled = memberLocationMapEnabled && !!member;
+  const automationsEnabled = useFeatureFlag('automations');
+  const canChangeUpdatesAndAnnouncements = automationsEnabled && newslettersUiEnabled;
+  const preserveUpdatesAndAnnouncements =
+    canChangeUpdatesAndAnnouncements &&
+    (isCreating || typeof member?.enable_updates_and_announcements !== 'boolean');
   // 4xx from the members endpoint on a real id means "gone" (deleted mid-flow
   // is the realistic case). 5xx/network is a different story — we don't want
   // to lie about that with a "not found" message.
@@ -133,7 +139,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
       if (draftMemberIdRef.current !== CREATE_ID) {
         draftMemberIdRef.current = CREATE_ID;
         newsletterDefaultsSeededRef.current = false;
-        const empty = getMemberEditableSlice({});
+        const empty = getMemberEditableSlice({}, canChangeUpdatesAndAnnouncements);
         lastServerSliceRef.current = empty;
         setDraft(empty);
       }
@@ -142,7 +148,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     if (!member) {
       return;
     }
-    const nextServerSlice = getMemberEditableSlice(member);
+    const nextServerSlice = getMemberEditableSlice(member, canChangeUpdatesAndAnnouncements);
     if (draftMemberIdRef.current !== member.id) {
       // A different member loaded → start fresh from its server values.
       draftMemberIdRef.current = member.id;
@@ -157,7 +163,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     setDraft((prev) =>
       isDraftInSyncWithServer(prev, previousServerSlice) ? nextServerSlice : prev,
     );
-  }, [member, isCreating]);
+  }, [member, isCreating, canChangeUpdatesAndAnnouncements]);
 
   // Seed the create-mode draft with the Ember default newsletter set the
   // first time the newsletters query resolves. Runs at most once per
@@ -180,24 +186,34 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     // moves with the draft. Assigned here rather than inside the updater:
     // updaters must stay pure, since React may run them more than once.
     const seeded = {
-      ...(lastServerSliceRef.current ?? getMemberEditableSlice({})),
+      ...(lastServerSliceRef.current ??
+        getMemberEditableSlice({}, canChangeUpdatesAndAnnouncements)),
       newsletters: [...defaults].sort(),
+      ...(canChangeUpdatesAndAnnouncements ? { updatesAndAnnouncements: true } : {}),
     };
     lastServerSliceRef.current = seeded;
-    setDraft((prev) => (prev ? { ...prev, newsletters: [...defaults].sort() } : prev));
-  }, [isCreating, newslettersData]);
+    setDraft((prev) =>
+      prev
+        ? {
+            ...prev,
+            newsletters: [...defaults].sort(),
+            ...(canChangeUpdatesAndAnnouncements ? { updatesAndAnnouncements: true } : {}),
+          }
+        : prev,
+    );
+  }, [isCreating, newslettersData, canChangeUpdatesAndAnnouncements]);
 
   // In create mode the baseline is whatever the seeding effect has decided
   // (`lastServerSliceRef.current` = empty initial draft OR draft + default
   // newsletters once the newsletters query resolves). Using a fresh
-  // `getMemberEditableSlice({})` here would treat the seeded defaults as
+  // empty editable slice here would treat the seeded defaults as
   // "unsaved changes" and trigger the beforeunload/nav-blocker on an
   // untouched form. In edit mode we still compare against the live server
   // value so a background refetch resurfaces external changes.
   const serverSlice = isCreating
     ? lastServerSliceRef.current
     : member
-      ? getMemberEditableSlice(member)
+      ? getMemberEditableSlice(member, canChangeUpdatesAndAnnouncements)
       : undefined;
   const hasUnsavedChanges =
     !!draft && !!serverSlice && !dequal(normalizeDraftForComparison(draft), serverSlice);
@@ -277,6 +293,12 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
           newsletters: newsletterDefaultsSeededRef.current
             ? draft.newsletters.map((id) => ({ id }))
             : undefined,
+          enable_updates_and_announcements: getUpdatesAndAnnouncementsToSave(
+            draft,
+            lastServerSliceRef.current ??
+              getMemberEditableSlice({}, canChangeUpdatesAndAnnouncements),
+            preserveUpdatesAndAnnouncements,
+          ),
         },
         {
           onSuccess: (response) => {
@@ -306,12 +328,17 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
       return;
     }
     editMutation.mutate(
-      buildMemberFieldEditPayload(member.id, draft, getMemberEditableSlice(member)),
+      buildMemberFieldEditPayload(
+        member.id,
+        draft,
+        getMemberEditableSlice(member, canChangeUpdatesAndAnnouncements),
+        preserveUpdatesAndAnnouncements,
+      ),
       {
         onSuccess: (response) => {
           const saved = response.members?.[0];
           if (saved) {
-            const savedSlice = getMemberEditableSlice(saved);
+            const savedSlice = getMemberEditableSlice(saved, canChangeUpdatesAndAnnouncements);
             lastServerSliceRef.current = savedSlice;
             setDraft(savedSlice);
           }
@@ -511,7 +538,8 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                       emailSuppression={member?.email_suppression}
                       memberId={member?.id}
                       subscribedIds={draft.newsletters}
-                      onChange={(nextIds) => onFieldChange({ newsletters: nextIds })}
+                      updatesAndAnnouncements={draft.updatesAndAnnouncements ?? false}
+                      onChange={onFieldChange}
                     />
                   )}
 
