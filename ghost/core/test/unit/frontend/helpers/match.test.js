@@ -31,6 +31,31 @@ describe('Match helper', function () {
 
   // The match helper, by default, is an inline helper that returns either true or false (as a string) for any given set of arguments.
   // In the first instance, the unit tests should check various combinations of arguments to ensure we get the right answer
+  describe('function-valued conditions', function () {
+    const context = {
+      published: true,
+      isPublished() {
+        return this.published;
+      },
+    };
+
+    runTests(
+      {
+        '{{match isPublished}}': 'true',
+        '{{#match isPublished}}Published{{else}}Draft{{/match}}': 'Published',
+      },
+      context,
+    );
+
+    runTests(
+      {
+        '{{#each posts}}{{#match isPublished}}Published{{else}}Draft{{/match}} {{/each}}':
+          'Published Draft ',
+      },
+      { posts: [context, { ...context, published: false }] },
+    );
+  });
+
   describe('{{match}} (inline)', function () {
     const hash = {
       truthy_bool: true,
