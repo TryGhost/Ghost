@@ -142,9 +142,10 @@ This is a monorepo package.
 Follow the instructions for the top-level repo.
 
 1. `git clone` this repo & `cd` into it as usual
-2. Run `pnpm install` to install top-level dependencies.
+2. Run `pnpm bootstrap` to install top-level dependencies.
 
 ## Test
 
-- `pnpm lint` runs oxlint
-- `pnpm test` runs lint and tests
+- `pnpm build` compiles the package to `build/`
+- `pnpm test` runs type checks and unit tests
+- `pnpm lint` checks the source and tests
