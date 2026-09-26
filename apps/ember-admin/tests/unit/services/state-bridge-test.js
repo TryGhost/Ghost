@@ -290,6 +290,76 @@ describe('Unit: Service: state-bridge', function () {
                 expect(store.pushPayload.calledOnce).to.be.true;
             });
         });
+
+        describe('UsersResponseType side effects', function () {
+            const buildStoredUser = attrs => EmberObject.create(Object.assign({
+                id: '1',
+                name: 'Jamie Larson',
+                slug: 'team-jamie',
+                url: 'https://example.com/author/team-jamie/'
+            }, attrs));
+
+            it('expires search content when a staff slug changes', function () {
+                sinon.stub(store, 'peekRecord').returns(buildStoredUser());
+
+                run(() => {
+                    service.onUpdate('UsersResponseType', {users: [{
+                        id: '1',
+                        name: 'Jamie Larson',
+                        slug: 'jamie-larson',
+                        url: 'https://example.com/author/jamie-larson/'
+                    }]});
+                });
+
+                expect(search.isContentStale).to.be.true;
+            });
+
+            it('expires search content when a staff name changes', function () {
+                sinon.stub(store, 'peekRecord').returns(buildStoredUser());
+
+                run(() => {
+                    service.onUpdate('UsersResponseType', {users: [{
+                        id: '1',
+                        name: 'Jamie L. Larson',
+                        slug: 'team-jamie',
+                        url: 'https://example.com/author/team-jamie/'
+                    }]});
+                });
+
+                expect(search.isContentStale).to.be.true;
+            });
+
+            it('expires search content for a user the store has not seen', function () {
+                sinon.stub(store, 'peekRecord').returns(null);
+
+                run(() => {
+                    service.onUpdate('UsersResponseType', {users: [{
+                        id: '2',
+                        name: 'Alex Chen',
+                        slug: 'alex-chen',
+                        url: 'https://example.com/author/alex-chen/'
+                    }]});
+                });
+
+                expect(search.isContentStale).to.be.true;
+            });
+
+            it('leaves search content alone when only preferences change', function () {
+                sinon.stub(store, 'peekRecord').returns(buildStoredUser());
+
+                run(() => {
+                    service.onUpdate('UsersResponseType', {users: [{
+                        id: '1',
+                        name: 'Jamie Larson',
+                        slug: 'team-jamie',
+                        url: 'https://example.com/author/team-jamie/',
+                        accessibility: '{"nightShift":true}'
+                    }]});
+                });
+
+                expect(search.isContentStale).to.be.false;
+            });
+        });
     });
 
     describe('#onInvalidate', function () {
@@ -402,6 +472,33 @@ describe('Unit: Service: state-bridge', function () {
 
             expect(store.peekRecord.calledWith('integration', '123')).to.be.true;
             // Should not throw error
+        });
+
+        it('expires search content when a staff user is deleted', function () {
+            const mockRecord = EmberObject.create({id: '123'});
+            mockRecord.unloadRecord = sinon.spy();
+
+            sinon.stub(store, 'peekRecord').returns(mockRecord);
+
+            run(() => {
+                service.onDelete('UsersResponseType', '123');
+            });
+
+            expect(mockRecord.unloadRecord.calledOnce).to.be.true;
+            expect(search.isContentStale).to.be.true;
+        });
+
+        it('leaves search content alone when a non-indexed record is deleted', function () {
+            const mockRecord = EmberObject.create({id: '123'});
+            mockRecord.unloadRecord = sinon.spy();
+
+            sinon.stub(store, 'peekRecord').returns(mockRecord);
+
+            run(() => {
+                service.onDelete('IntegrationsResponseType', '123');
+            });
+
+            expect(search.isContentStale).to.be.false;
         });
     });
 
