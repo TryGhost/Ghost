@@ -34,6 +34,29 @@ const MigrationToolsExport: React.FC = () => {
     }
   };
 
+  const postAnalyticsButton = (
+    <Button
+      className="h-9 font-semibold"
+      data-testid="post-analytics-export-button"
+      disabled={isExportingPosts}
+      type="button"
+      variant="secondary"
+      onClick={() => void exportPosts()}
+    >
+      {isExportingPosts ? (
+        <>
+          <LoadingIndicator size="sm" />
+          <span className="sr-only">Loading...</span>
+        </>
+      ) : (
+        <>
+          <LucideIcon.TrendingUp />
+          Post analytics
+        </>
+      )}
+    </Button>
+  );
+
   if (hasSelfServeArchives) {
     return (
       <>
@@ -48,6 +71,7 @@ const MigrationToolsExport: React.FC = () => {
             <LucideIcon.PackageOpen />
             Export data
           </Button>
+          {postAnalyticsButton}
         </div>
         <ExportAllModal mode={mode} open={exportAllOpen} onOpenChange={setExportAllOpen} />
       </>
@@ -65,26 +89,7 @@ const MigrationToolsExport: React.FC = () => {
         <LucideIcon.Download />
         Content &amp; settings
       </Button>
-      <Button
-        className="h-9 font-semibold"
-        data-testid="post-analytics-export-button"
-        disabled={isExportingPosts}
-        type="button"
-        variant="secondary"
-        onClick={() => void exportPosts()}
-      >
-        {isExportingPosts ? (
-          <>
-            <LoadingIndicator size="sm" />
-            <span className="sr-only">Loading...</span>
-          </>
-        ) : (
-          <>
-            <LucideIcon.TrendingUp />
-            Post analytics
-          </>
-        )}
-      </Button>
+      {postAnalyticsButton}
     </div>
   );
 };
