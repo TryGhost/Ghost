@@ -2906,8 +2906,8 @@ importers:
         specifier: 'catalog:'
         version: 2.0.0
       nodemailer:
-        specifier: 8.0.11
-        version: 8.0.11
+        specifier: 10.0.10
+        version: 10.0.10
       on-headers:
         specifier: 1.1.0
         version: 1.1.0
@@ -3026,9 +3026,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
-      '@types/nodemailer':
-        specifier: 8.0.1
-        version: 8.0.1
       '@types/on-headers':
         specifier: 1.0.4
         version: 1.0.4
@@ -10033,9 +10030,6 @@ packages:
 
   '@types/node@9.6.61':
     resolution: {integrity: sha512-/aKAdg5c8n468cYLy2eQrcR5k6chlbNwZNGUj3TboyPa2hcO2QAJcfymlqPzMiRj8B6nYKXjzQz36minFE0RwQ==}
-
-  '@types/nodemailer@8.0.1':
-    resolution: {integrity: sha512-PxpaInm8V1JQDd4j0ds5HfvWQk8JupS1C0Picb96QJsrrRDjBH+DlK7L4ZdNSqNULhiZRQHc40nLVShaGxXAMw==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -18211,13 +18205,9 @@ packages:
   nodemailer-stub-transport@1.1.0:
     resolution: {integrity: sha512-4fwl2f+647IIyuNuf6wuEMqK4oEU9FMJSYme8kPckVSr1rXIXcmI6BNcIWO+1cAK8XeexYKxYoFztam0jAwjkA==}
 
-  nodemailer@10.0.1:
-    resolution: {integrity: sha512-c+gU9cL9HLDax3vjxL88kW+6NOgdtEUWaZ+AUtxdJR6LLhf0kGdCLExof7yiKW7zdO9EfXCSIgmhGyFmUM0mYQ==}
+  nodemailer@10.0.10:
+    resolution: {integrity: sha512-He9XskOFms62SyAKkLu8CcGcYHAo+BSHSsORI8s4PJH8qZgZY4L4lDfvyN0twvmbpyG+eGrxpyBlskj9d9rJ8A==}
     engines: {node: '>=20.0.0'}
-
-  nodemailer@8.0.11:
-    resolution: {integrity: sha512-nrO/pDAUKl+wXX+lx16tDLbnm0fW6sK/x8mgohaCpg+CdCEl482bD4tCuAZk2DyliruiNTIZxRCoWkDqJEnAiA==}
-    engines: {node: '>=6.0.0'}
 
   nodemon@3.1.14:
     resolution: {integrity: sha512-jakjZi93UtB3jHMWsXL68FXSAosbLfY0In5gtKq3niLSkrWznrVBzXFNOEMJUfc9+Ke7SHWoAZsiMkNP3vq6Jw==}
@@ -28840,7 +28830,7 @@ snapshots:
       '@aws-sdk/client-sesv2': 3.1127.0
       '@tryghost/errors': 3.3.14
       '@tryghost/tpl': 2.3.14
-      nodemailer: 10.0.1
+      nodemailer: 10.0.10
       nodemailer-mailgun-transport: 2.1.5(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       nodemailer-stub-transport: 1.1.0
     transitivePeerDependencies:
@@ -29288,10 +29278,6 @@ snapshots:
       undici-types: 8.3.0
 
   '@types/node@9.6.61': {}
-
-  '@types/nodemailer@8.0.1':
-    dependencies:
-      '@types/node': 26.0.0
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -41125,9 +41111,7 @@ snapshots:
 
   nodemailer-stub-transport@1.1.0: {}
 
-  nodemailer@10.0.1: {}
-
-  nodemailer@8.0.11: {}
+  nodemailer@10.0.10: {}
 
   nodemon@3.1.14:
     dependencies:
