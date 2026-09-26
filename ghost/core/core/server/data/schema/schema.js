@@ -1659,6 +1659,7 @@ module.exports = {
     updated_at: { type: 'dateTime', nullable: true },
   },
   email_batches: {
+    email_provider_source: { type: 'string', maxlength: 64, nullable: false, defaultTo: 'mailgun' },
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     email_id: { type: 'string', maxlength: 24, nullable: false, references: 'emails.id' },
     mailgun_message_id: { type: 'string', maxlength: 255, nullable: true },
@@ -1676,6 +1677,26 @@ module.exports = {
     error_data: { type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: false },
+  },
+  email_provider_events: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    event_key: { type: 'string', maxlength: 64, nullable: false, unique: true },
+    source: { type: 'string', maxlength: 64, nullable: false },
+    payload: { type: 'text', maxlength: 65535, nullable: false },
+    status: { type: 'string', maxlength: 20, nullable: false, defaultTo: 'pending' },
+    attempts: { type: 'integer', nullable: false, defaultTo: 0 },
+    next_attempt_at: { type: 'dateTime', nullable: false },
+    lease_token: { type: 'string', maxlength: 24, nullable: true },
+    lease_expires_at: { type: 'dateTime', nullable: true },
+    applied_at: { type: 'dateTime', nullable: true },
+    completed_at: { type: 'dateTime', nullable: true },
+    result: { type: 'text', maxlength: 65535, nullable: true },
+    last_error: { type: 'string', maxlength: 2000, nullable: true },
+    created_at: { type: 'dateTime', nullable: false },
+    '@@INDEXES@@': [
+      ['status', 'next_attempt_at'],
+      ['status', 'lease_expires_at'],
+    ],
   },
   email_recipients: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2441,6 +2462,7 @@ module.exports = {
     '@@INDEXES@@': [['ready_at']],
   },
   automated_email_recipients: {
+    email_provider_source: { type: 'string', maxlength: 64, nullable: false, defaultTo: 'mailgun' },
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     automated_email_id: {
       type: 'string',
@@ -2564,6 +2586,7 @@ module.exports = {
     ],
   },
   gift_deliveries: {
+    email_provider_source: { type: 'string', maxlength: 64, nullable: false, defaultTo: 'mailgun' },
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     gift_id: {
       type: 'string',
