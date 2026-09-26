@@ -673,6 +673,32 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     if (frontend) {
       initFrontend();
     }
+    const jobsService = require('./server/services/jobs-service').init();
+    const {
+      createContentFileHandlers,
+      createContentFileImporters,
+    } = require('./server/data/importer/content-files');
+    const { GhostMailer } = require('./server/services/mail');
+    const adapterManager = require('./server/services/adapter-manager').default;
+    const siteImporter = require('./server/data/importer').init({
+      jobsService,
+      importsStorage: adapterManager.getAdapter('storage:imports'),
+      handlers: [
+        ...createContentFileHandlers(),
+        require('./server/data/importer/handlers/revue'),
+        require('./server/data/importer/handlers/json'),
+        require('./server/data/importer/handlers/markdown'),
+      ],
+      importers: [
+        ...createContentFileImporters(),
+        require('./server/data/importer/importers/importer-revue'),
+        require('./server/data/importer/importers/data'),
+      ],
+      mailer: new GhostMailer(),
+      config,
+      urlUtils: require('./shared/url-utils').default,
+      logging,
+    });
     const ghostApp = await initExpressApps({ frontend, backend, config });
 
     await initDynamicRouting({ frontend });
@@ -680,8 +706,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     if (frontend) {
       await initAppService();
     }
-
-    const jobsService = require('./server/services/jobs-service').init();
 
     await initServices({ ghostServer, config, prometheusClient, jobsService });
 
@@ -710,6 +734,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       mentionsSendingService: mentionsService.sendingService,
       membersService,
       emailService: emailService.service,
+      siteImporter,
     });
     await jobsService.start();
     debug('End: Register job handlers');
