@@ -78,11 +78,38 @@ describe('email webhook delegation', () => {
     sinon.assert.calledOnce(aggregate);
     assert.equal(clock.countTimers(), 0);
   });
+  it('rejects unhandled events instead of acknowledging them', async () => {
+    processBatch.callsFake(async (_events, result) => {
+      result.unhandled += 1;
+    });
+    await assert.rejects(service.webhook('provider', request), {
+      code: 'EMAIL_EVENT_NOT_HANDLED',
+      statusCode: 503,
+    });
+    sinon.assert.calledOnce(processBatch);
+    assert.equal(clock.countTimers(), 0);
+  });
   it('does not retry processing errors', async () => {
     const error = new Error('Database unavailable');
     processBatch.rejects(error);
     await assert.rejects(service.webhook('provider', request), error);
     sinon.assert.calledOnce(processBatch);
+    assert.equal(clock.countTimers(), 0);
+  });
+  it('rejects unsupported family callbacks before processing any part of the notification', async () => {
+    for (const unsupported of [
+      { ...event, family: 'automations', type: 'unsubscribed' },
+      { ...event, family: 'automations', type: 'complained' },
+      { ...event, family: 'gifts', type: 'failed', severity: 'permanent', suppress: true },
+      { ...event, family: 'gifts', type: 'opened' },
+    ]) {
+      verify.resolves({ events: [event, unsupported] });
+      await assert.rejects(service.webhook('provider', request), {
+        code: 'EMAIL_EVENT_NOT_HANDLED',
+        statusCode: 503,
+      });
+    }
+    sinon.assert.notCalled(createEventProcessor);
     assert.equal(clock.countTimers(), 0);
   });
   it('does not process unverified or partly invalid notifications', async () => {

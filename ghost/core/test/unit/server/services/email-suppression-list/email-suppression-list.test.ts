@@ -1,3 +1,7 @@
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
+// @ts-expect-error This module lacks type definitions.
+import MailgunEmailSuppressionList from '../../../../../core/server/services/email-suppression-list/mailgun-email-suppression-list';
 import assert from 'node:assert/strict';
 // @ts-expect-error This module lacks type definitions.
 import emailSuppressionList from '../../../../../core/server/services/email-suppression-list/email-suppression-list';
@@ -37,4 +41,21 @@ describe('EmailSuppressedEvent', function () {
     assert(event instanceof EmailSuppressedEvent);
     assert(event.timestamp);
   });
+});
+
+describe('provider suppression cleanup policy', () => {
+  afterEach(() => sinon.restore());
+  for (const method of ['removeComplaint', 'removeUnsubscribe']) {
+    it(`${method} propagates webhook cleanup failures but allows polling to continue`, async () => {
+      const failure = new Error('provider unavailable');
+      const remove = sinon.stub().rejects(failure);
+      const log = sinon.stub(logging, 'error');
+      const service = new MailgunEmailSuppressionList({ apiClient: { [method]: remove } });
+      await assert.rejects(service[method]('reader@example.com', { requireSuccess: true }), {
+        statusCode: 503,
+      });
+      assert.equal(await service[method]('reader@example.com', { requireSuccess: false }), false);
+      sinon.assert.calledTwice(log);
+    });
+  }
 });

@@ -56,6 +56,22 @@ export class EmailEventService {
   }
 
   private async processEvents(events: EmailEvent[]): Promise<void> {
+    // Keep webhook support within the existing family processors' capabilities.
+    // In particular, recording a gift failure does not perform suppression.
+    if (
+      events.some(
+        (event) =>
+          (event.family === 'automations' && !['delivered', 'opened'].includes(event.type)) ||
+          (event.family === 'gifts' &&
+            (!['delivered', 'failed'].includes(event.type) || event.suppress)),
+      )
+    ) {
+      throw new errors.InternalServerError({
+        message: 'Email webhook event is not supported for this family',
+        code: 'EMAIL_EVENT_NOT_HANDLED',
+        statusCode: 503,
+      });
+    }
     const processors = new Map<
       EmailFamily,
       {
@@ -77,6 +93,13 @@ export class EmailEventService {
         const result = new EventProcessingResult();
         await state.processor.processBatch([event], result, {});
         state.result.merge(result);
+        if (result.unhandled || result.processingFailures) {
+          throw new errors.InternalServerError({
+            message: 'Email event could not be handled',
+            code: 'EMAIL_EVENT_NOT_HANDLED',
+            statusCode: 503,
+          });
+        }
         if (result.unprocessable) {
           unmatched.push(event);
         }

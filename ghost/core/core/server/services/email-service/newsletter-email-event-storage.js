@@ -10,9 +10,19 @@ class NewsletterEmailEventStorage {
   #emailSuppressionList;
   #prometheusClient;
   #pendingUpdates;
+  #requireProviderCleanup;
 
-  constructor({ config, db, models, membersRepository, emailSuppressionList, prometheusClient }) {
+  constructor({
+    config,
+    db,
+    models,
+    membersRepository,
+    emailSuppressionList,
+    prometheusClient,
+    requireProviderCleanup = true,
+  }) {
     this.#config = config;
+    this.#requireProviderCleanup = requireProviderCleanup;
     this.#db = db;
     this.#models = models;
     this.#membersRepository = membersRepository;
@@ -198,25 +208,22 @@ class NewsletterEmailEventStorage {
   async handleUnsubscribed(event) {
     try {
       const result = await this.findNewslettersToKeep(event);
-
-      if (result.status === 'failed') {
-        // Leave Mailgun's suppression in place: these events are fetched
-        // once and never retried, so it is the only remaining protection.
-        return;
-      }
-
       if (result.status === 'ok') {
         await this.#membersRepository.update(
           { newsletters: result.newsletters },
           { id: event.memberId },
         );
       }
-
-      // Remove member from Mailgun's suppression list, only once the local
-      // record reflects the unsubscribe or there is no member left to protect
-      await this.#emailSuppressionList.removeUnsubscribe(event.email);
+      // Only lift the provider's suppression after the local preference is saved.
+      await this.#emailSuppressionList.removeUnsubscribe(event.email, {
+        requireSuccess: this.#requireProviderCleanup,
+      });
     } catch (err) {
-      logging.error(err);
+      throw new errors.InternalServerError({
+        message: 'Could not process email unsubscribe',
+        statusCode: 503,
+        err,
+      });
     }
   }
 
@@ -234,18 +241,14 @@ class NewsletterEmailEventStorage {
       }
     }
     // Cleanup follows local suppression, including on duplicate callbacks.
-    if ((await this.#emailSuppressionList.removeComplaint(event.email)) === false) {
-      throw new errors.InternalServerError({
-        message: 'Could not remove provider complaint',
-        statusCode: 503,
-      });
-    }
+    await this.#emailSuppressionList.removeComplaint(event.email, {
+      requireSuccess: this.#requireProviderCleanup,
+    });
   }
 
   /**
    * @typedef {{status: 'ok', newsletters: {id: string}[]}
-   *     | {status: 'no-member'}
-   *     | {status: 'failed'}} FindNewslettersToKeepResult
+   *     | {status: 'no-member'}} FindNewslettersToKeepResult
    */
 
   /**
@@ -255,7 +258,7 @@ class NewsletterEmailEventStorage {
   async findNewslettersToKeep(event) {
     try {
       const member = await this.#membersRepository.get(
-        { id: event.memberId },
+        { id: event.memberId, email: event.email },
         {
           withRelated: ['newsletters'],
         },
@@ -279,13 +282,11 @@ class NewsletterEmailEventStorage {
           }),
       };
     } catch (err) {
-      logging.error(
-        new errors.InternalServerError({
-          message: `Could not resolve newsletters to keep for unsubscribe event (member ${event.memberId}, email ${event.emailId})`,
-          err,
-        }),
-      );
-      return { status: 'failed' };
+      throw new errors.InternalServerError({
+        message: `Could not resolve newsletters to keep for unsubscribe event (member ${event.memberId}, email ${event.emailId})`,
+        statusCode: 503,
+        err,
+      });
     }
   }
 

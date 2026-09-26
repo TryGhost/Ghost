@@ -656,11 +656,10 @@ describe('Email Event Storage', function () {
       },
       emailSuppressionList,
     });
-    await eventHandler.handleUnsubscribed(event);
+    await assert.rejects(eventHandler.handleUnsubscribed(event), { statusCode: 503 });
 
     sinon.assert.notCalled(update);
     sinon.assert.notCalled(emailSuppressionList.removeUnsubscribe);
-    sinon.assert.calledOnce(logError);
   });
 
   it('Keeps Mailgun suppression when the email record is missing', async function () {
@@ -694,11 +693,10 @@ describe('Email Event Storage', function () {
       },
       emailSuppressionList,
     });
-    await eventHandler.handleUnsubscribed(event);
+    await assert.rejects(eventHandler.handleUnsubscribed(event), { statusCode: 503 });
 
     sinon.assert.notCalled(update);
     sinon.assert.notCalled(emailSuppressionList.removeUnsubscribe);
-    sinon.assert.calledOnce(logError);
   });
 
   it('Finds newsletters to keep during an unsubscribe', async function () {
@@ -839,6 +837,33 @@ describe('Email Event Storage', function () {
       };
       const eventHandler = createEventStorage({ prometheusClient });
       assert.doesNotThrow(() => eventHandler.recordEventStored('delivered'));
+    });
+  });
+
+  describe('newsletter unsubscribe failures', () => {
+    it('propagates preference persistence and provider cleanup errors', async () => {
+      const update = sinon.stub().rejects(new Error('write failed'));
+      const cleanup = sinon.stub().resolves();
+      const handler = createEventStorage({
+        membersRepository: {
+          get: sinon.stub().resolves({ related: () => ({ models: [{ id: 'newsletter' }] }) }),
+          update,
+        },
+        models: { Email: { findOne: sinon.stub().resolves({ get: () => 'newsletter' }) } },
+        emailSuppressionList: { removeUnsubscribe: cleanup },
+      });
+      const event = EmailUnsubscribedEvent.create({
+        email: 'reader@example.com',
+        memberId: 'member',
+        emailId: 'email',
+        timestamp: new Date(),
+      });
+      await assert.rejects(handler.handleUnsubscribed(event), { statusCode: 503 });
+      sinon.assert.notCalled(cleanup);
+      update.resolves();
+      cleanup.rejects(new Error('cleanup failed'));
+      await assert.rejects(handler.handleUnsubscribed(event), { statusCode: 503 });
+      sinon.assert.calledWithExactly(cleanup, event.email, { requireSuccess: true });
     });
   });
 });

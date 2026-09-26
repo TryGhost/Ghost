@@ -100,6 +100,7 @@ export const init = ({
   }
 
   const queries = new Queries(db.knex);
+  const source = provider.getEventSource();
 
   // Each fetch or webhook owns its buffers; concurrent requests must not flush
   // or clear another request's pending newsletter updates.
@@ -121,6 +122,7 @@ export const init = ({
           membersRepository,
           models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
           emailSuppressionList,
+          requireProviderCleanup: source.type === 'webhook',
           prometheusClient,
         }),
         prometheusClient,
@@ -130,7 +132,6 @@ export const init = ({
     });
   };
   eventService = new EmailEventService({ provider, createEventProcessor });
-  const source = provider.getEventSource();
   const eventSourceOptions = (family: EmailFamily) => ({
     polling: source.type === 'poll',
     mailgunTags: [],

@@ -51,20 +51,34 @@ class MailgunEmailSuppressionList {
     return true;
   }
 
-  async removeUnsubscribe(email) {
+  async removeUnsubscribe(email, { requireSuccess = false } = {}) {
     try {
       await this.apiClient.removeUnsubscribe(email);
     } catch (err) {
       logging.error(err);
+      if (requireSuccess) {
+        throw new errors.InternalServerError({
+          message: 'Could not remove provider unsubscribe',
+          statusCode: 503,
+          err,
+        });
+      }
       return false;
     }
   }
 
-  async removeComplaint(email) {
+  async removeComplaint(email, { requireSuccess = false } = {}) {
     try {
       await this.apiClient.removeComplaint(email);
     } catch (err) {
       logging.error(err);
+      if (requireSuccess) {
+        throw new errors.InternalServerError({
+          message: 'Could not remove provider complaint',
+          statusCode: 503,
+          err,
+        });
+      }
       return false;
     }
   }
