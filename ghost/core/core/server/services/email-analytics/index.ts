@@ -6,8 +6,6 @@ import type { Knex } from 'knex';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
 import type { ConfigInstance } from '../../../shared/config/loader';
 import type { GhostMetrics } from '@tryghost/metrics';
-// @ts-expect-error This module lacks type definitions.
-import type SettingsCache from '../../../shared/settings-cache';
 import { EmailAnalyticsServiceWrapper } from './email-analytics-service-wrapper';
 // @ts-expect-error This module lacks type definitions.
 import { AGGREGATE_MEMBER_STATS_METRIC_NAME } from './newsletter-email-analytics-batch-processor';
@@ -70,7 +68,6 @@ export const init = ({
   models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
   metrics,
   prometheusClient,
-  settingsCache,
 }: {
   provider: Pick<EmailProviderBase, 'source' | 'getEventSource'>;
   automationsApi: Pick<
@@ -96,7 +93,6 @@ export const init = ({
   };
   metrics: Pick<GhostMetrics, 'metric'>;
   prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
-  settingsCache: Pick<typeof SettingsCache, 'get'>;
 }) => {
   if (newsletters) {
     return;
@@ -146,7 +142,6 @@ export const init = ({
   eventService = new EmailEventService({ provider, createEventProcessor });
   const eventSourceOptions = (family: EmailFamily) => ({
     polling: source.type === 'poll',
-    mailgunTags: [],
     fetchEvents: async (
       options: Parameters<import('./email-analytics-service').FetchEvents>[0],
     ) => {
@@ -187,7 +182,6 @@ export const init = ({
       },
     },
     metrics,
-    settingsCache,
   });
 
   automations = new EmailAnalyticsServiceWrapper({
@@ -210,7 +204,6 @@ export const init = ({
       },
     },
     metrics,
-    settingsCache,
   });
 
   gifts = new EmailAnalyticsServiceWrapper({
@@ -233,7 +226,6 @@ export const init = ({
       },
     },
     metrics,
-    settingsCache,
   });
 
   domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => newsletters!.startFetch());

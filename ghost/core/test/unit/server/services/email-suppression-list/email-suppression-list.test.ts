@@ -45,7 +45,10 @@ describe('EmailSuppressedEvent', function () {
 
 describe('provider suppression cleanup policy', () => {
   afterEach(() => sinon.restore());
-  for (const method of ['removeComplaint', 'removeUnsubscribe']) {
+  for (const [method, reason] of [
+    ['removeComplaint', 'complaint'],
+    ['removeUnsubscribe', 'unsubscribe'],
+  ]) {
     it(`${method} propagates webhook cleanup failures but allows polling to continue`, async () => {
       const failure = new Error('provider unavailable');
       const remove = sinon.stub().rejects(failure);
@@ -53,9 +56,16 @@ describe('provider suppression cleanup policy', () => {
       const service = new MailgunEmailSuppressionList({ apiClient: { [method]: remove } });
       await assert.rejects(service[method]('reader@example.com', { requireSuccess: true }), {
         statusCode: 503,
+        message: `Could not remove provider ${reason}`,
       });
       assert.equal(await service[method]('reader@example.com', { requireSuccess: false }), false);
-      sinon.assert.calledTwice(log);
+      assert.equal(await service[method]('reader@example.com'), false);
+      sinon.assert.calledThrice(log);
+
+      remove.resolves();
+      assert.equal(await service[method]('reader@example.com'), undefined);
+      sinon.assert.alwaysCalledWithExactly(remove, 'reader@example.com');
+      sinon.assert.alwaysCalledOn(remove, service.apiClient);
     });
   }
 });

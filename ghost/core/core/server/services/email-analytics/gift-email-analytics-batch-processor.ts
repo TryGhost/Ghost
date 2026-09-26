@@ -1,18 +1,12 @@
+import type { EmailEvent } from '@tryghost/adapter-base-email';
 // @ts-expect-error This module lacks type definitions.
 import type EmailSuppressionList from '../email-suppression-list';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
 
-type EmailAnalyticsEvent = {
-  type: string;
-  severity?: string;
-  providerId: string;
-  timestamp: Date;
-  recipientEmail?: string;
-  suppress?: boolean;
-  error?: { code?: unknown; message?: unknown; enhancedCode?: unknown } | null;
-};
+type EmailAnalyticsEvent = Pick<EmailEvent, 'type' | 'providerId' | 'timestamp'> &
+  Partial<Pick<EmailEvent, 'recipientEmail' | 'severity' | 'suppress' | 'error'>>;
 
 export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
   private readonly deps: {

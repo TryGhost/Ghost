@@ -52,29 +52,22 @@ class MailgunEmailSuppressionList {
   }
 
   async removeUnsubscribe(email, { requireSuccess = false } = {}) {
-    try {
-      await this.apiClient.removeUnsubscribe(email);
-    } catch (err) {
-      logging.error(err);
-      if (requireSuccess) {
-        throw new errors.InternalServerError({
-          message: 'Could not remove provider unsubscribe',
-          statusCode: 503,
-          err,
-        });
-      }
-      return false;
-    }
+    return await this.#removeProviderSuppression(email, 'unsubscribe', requireSuccess);
   }
 
   async removeComplaint(email, { requireSuccess = false } = {}) {
+    return await this.#removeProviderSuppression(email, 'complaint', requireSuccess);
+  }
+
+  async #removeProviderSuppression(email, reason, requireSuccess) {
+    const method = reason === 'complaint' ? 'removeComplaint' : 'removeUnsubscribe';
     try {
-      await this.apiClient.removeComplaint(email);
+      await this.apiClient[method](email);
     } catch (err) {
       logging.error(err);
       if (requireSuccess) {
         throw new errors.InternalServerError({
-          message: 'Could not remove provider complaint',
+          message: `Could not remove provider ${reason}`,
           statusCode: 503,
           err,
         });

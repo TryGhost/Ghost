@@ -10,7 +10,6 @@ import {
 } from './email-analytics-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import type { Queries } from './lib/queries';
-import { fetchMailgunEvents } from './fetch-mailgun-events';
 
 export class EmailAnalyticsServiceWrapper {
   #logName: string;
@@ -33,12 +32,10 @@ export class EmailAnalyticsServiceWrapper {
     jobType,
     config,
     queries,
-    mailgunTags,
     jobNames,
     cursorSeed,
     createEventProcessor,
     metrics,
-    settingsCache,
     fetchEvents,
     polling = true,
   }: Readonly<{
@@ -46,14 +43,12 @@ export class EmailAnalyticsServiceWrapper {
     logName: string;
     jobType: string;
     queries: Queries;
-    mailgunTags: string[];
-    fetchEvents?: FetchEvents;
+    fetchEvents: FetchEvents;
     polling?: boolean;
     jobNames: JobNames;
     cursorSeed: CursorSeed;
     createEventProcessor: () => BatchEventProcessor;
     metrics: Pick<GhostMetrics, 'metric'>;
-    settingsCache: { get: (key: string) => unknown };
   }>) {
     this.#polling = polling;
     this.#logName = logName;
@@ -65,10 +60,7 @@ export class EmailAnalyticsServiceWrapper {
     this.#fetchOpenedEvents = Boolean(cursorSeed.eventColumns.opened);
 
     this.#service = new EmailAnalyticsService({
-      fetchEvents:
-        fetchEvents ??
-        ((options) =>
-          fetchMailgunEvents({ ...options, config, settings: settingsCache, tags: mailgunTags })),
+      fetchEvents,
       queries,
       jobNames,
       cursorSeed,

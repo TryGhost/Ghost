@@ -110,7 +110,7 @@ export abstract class EmailProviderBase {
     'removeSuppression',
   ]);
 
-  /** Identifier used for this provider's webhook endpoint and public configuration. */
+  /** Identifier used for this provider's webhook endpoint. */
   abstract readonly source: string;
   abstract isConfigured(): boolean;
   abstract send(

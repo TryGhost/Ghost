@@ -57,7 +57,6 @@ describe('email analytics provider wiring', () => {
       config: { get: sinon.stub() },
       db: { knex: createKnex({ client: 'mysql2' }) },
       metrics: { metric: sinon.stub() },
-      settingsCache: { get: sinon.stub() },
       domainEvents: {
         subscribe: (event: { name: string }, handler: () => Promise<void>) => {
           subscribers.set(event.name, handler);
@@ -102,7 +101,7 @@ describe('email analytics provider wiring', () => {
       maxEvents: 10,
       batchHandler: sinon.stub(),
     };
-    await options.fetchEvents!(request);
+    await options.fetchEvents(request);
     sinon.assert.calledWithMatch(fetch, { family: 'automations', begin: request.begin });
     const event = {
       id: 'event',
@@ -149,7 +148,7 @@ describe('email analytics provider wiring', () => {
     for (const result of [{ safeCursor: new Date(5000) }, {}]) {
       fetch.resolves(result);
       for (const wrapper of wrappers) {
-        assert.equal(await wrapper.options.fetchEvents!(request), result);
+        assert.equal(await wrapper.options.fetchEvents(request), result);
       }
     }
   });

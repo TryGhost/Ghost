@@ -415,7 +415,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       models,
       metrics,
       prometheusClient,
-      settingsCache,
     }),
     webhooks.listen(),
     comments.init(),

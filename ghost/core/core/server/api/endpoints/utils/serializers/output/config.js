@@ -16,7 +16,6 @@ module.exports = {
       'enableDeveloperExperiments',
       'stripeDirect',
       'mailgunIsConfigured',
-      'emailProvider',
       'emailAnalytics',
       'hostSettings',
       'klipy',

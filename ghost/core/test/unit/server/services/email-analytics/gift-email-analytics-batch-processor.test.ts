@@ -94,6 +94,7 @@ describe('GiftEmailAnalyticsBatchProcessor', function () {
         },
         {
           type: 'failed',
+          // @ts-expect-error Exercise the runtime fallback for an invalid severity.
           severity: 'unexpected',
           providerId: 'unexpected-severity',
           timestamp: new Date('2026-08-05T12:01:00.000Z'),

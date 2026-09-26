@@ -373,6 +373,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
       await processor.processBatch(
         [
           {
+            // @ts-expect-error Exercise the runtime fallback for an unsupported event.
             type: 'notstandard',
             providerId: 'message-1',
             timestamp: new Date(1),

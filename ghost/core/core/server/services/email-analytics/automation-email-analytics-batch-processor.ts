@@ -15,14 +15,8 @@ type AutomationsApi = {
   trackEmailDeliveredAndOpened: typeof automationsApi.trackEmailDeliveredAndOpened;
 };
 
-type EmailAnalyticsEvent = {
-  type: string;
-  providerId: string;
-  timestamp: Date;
-  recipientEmail?: string;
-  severity?: EmailEvent['severity'];
-  suppress?: boolean;
-};
+type EmailAnalyticsEvent = Pick<EmailEvent, 'type' | 'providerId' | 'timestamp'> &
+  Partial<Pick<EmailEvent, 'recipientEmail' | 'severity' | 'suppress'>>;
 
 const getMailgunMessageIds = (events: Iterable<EmailAnalyticsEvent>): Set<string> => {
   const result = new Set<string>();

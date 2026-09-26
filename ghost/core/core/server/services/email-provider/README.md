@@ -52,7 +52,7 @@ base class, and is selected using the normal AdapterManager configuration:
 ```
 
 `ExampleProvider` is illustrative, not a bundled implementation. Its `source`
-identifies the active webhook endpoint and public provider configuration; it is
+identifies the active webhook endpoint; it is
 not stored on sends. It contains up to 64 lowercase letters, digits, underscores
 or hyphens, starting with a letter or digit.
 
