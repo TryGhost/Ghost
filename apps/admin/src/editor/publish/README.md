@@ -174,7 +174,7 @@ Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches th
 | Completion              | Result                                                              |
 | ----------------------- | ------------------------------------------------------------------- |
 | `saved`                 | The email confirmation runs when the publish emails immediately     |
-| `needs-retry`           | Back to confirm with the re-auth message; the user retries in place |
+| `needs-retry`           | Back to confirm, told the session is back; the user confirms again  |
 | `failed` (`conflict`)   | The collision message, in place                                     |
 | `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link      |
 | `failed` (`validation`) | The validation message, in place                                    |

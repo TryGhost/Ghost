@@ -730,14 +730,7 @@ export function createEditorSession({
       // restore leaves the URL alone.
       slug.titleReplaced(revision.title);
 
-      // The reauth controls are behind the history modal. Fail and roll back
-      // this restore instead of leaving it frozen with no accessible way out.
-      const stop = engine.subscribe(() => {
-        if (engine.getState().kind === 'reauth-pending') {
-          engine.reauthAbandoned();
-        }
-      });
-      const completion = await engine.dispatch('explicit').finally(stop);
+      const completion = await engine.dispatch('explicit');
       if (completion.kind !== 'saved') {
         // The editor surface never adopted the revision, so nothing may keep it.
         patchLive(previous);

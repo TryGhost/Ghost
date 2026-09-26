@@ -306,7 +306,7 @@ the slug and what a refusal puts back — belongs to
 restored content and closes the history only once that save lands.
 
 While a restore is saving, the confirmation and history cannot be dismissed.
-An expired session asks the writer to sign in in a new tab before trying again.
+An expired session asks the writer to sign in, in place, before trying again.
 Closing history returns focus to its sidebar row. Older versions without body
 content remain available to preview but cannot be restored, so missing data
 cannot erase the current body. Malformed revision lists are treated as
@@ -399,8 +399,8 @@ open the editor is offered it — which posts each of them may actually delete i
 the API's answer, not the panel's.
 
 Confirming names the post and says the deletion is permanent. Cancelling returns
-focus to the Delete button. An expired session asks the writer to sign in in a
-new tab before retrying, so their draft stays open. A refusal keeps
+focus to the Delete button. An expired session asks the writer to sign in, in
+place, before retrying, so their draft stays open. A refusal keeps
 the dialog, shows the sentence the API gave for it and leaves the editor as it
 was, so unsaved work is still the writer's to save. A deletion that succeeds
 ends the editing session before leaving for the list: the save in flight is

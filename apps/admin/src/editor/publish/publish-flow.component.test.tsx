@@ -494,7 +494,9 @@ describe('Publish flow', () => {
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
-    await expect.element(publishScreen.confirmError()).toHaveTextContent('Your session expired');
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('Your session was restored. Confirm again to publish.');
     await expect.element(publishScreen.confirm()).toBeInTheDocument();
   });
 
