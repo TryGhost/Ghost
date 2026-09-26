@@ -9,6 +9,7 @@ export type BatchEventProcessor = {
 
   aggregate?: (options: {
     includeOpenedEvents: boolean;
+    skipUnchanged?: boolean;
     processingResult: EventProcessingResult;
     isFinal: boolean;
   }) => Promise<null | {
