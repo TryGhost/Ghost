@@ -855,6 +855,18 @@ describe('External Request', function () {
         });
       });
     });
+
+    it('dnsLookup is not installed for an allowlisted internal host', async function () {
+      configUtils.set('security:webhookAllowedInternalHosts', ['internal.example.com']);
+
+      const options = {
+        url: new URL('http://internal.example.com/endpoint'),
+      };
+
+      await installSafeDnsLookup(options);
+
+      assert.equal(options.dnsLookup, undefined);
+    });
   });
 
   describe('fetch', function () {
