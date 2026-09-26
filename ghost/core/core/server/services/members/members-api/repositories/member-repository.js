@@ -2631,30 +2631,28 @@ module.exports = class MemberRepository {
   }
 
   /**
+   * Removes all complimentary access for a member.
+   * Handles two types:
+   * 1. Stripe-backed: Subscriptions with plan_nickname 'Complimentary' — cancelled via Stripe, then synced via linkSubscription
+   * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription — removed directly
    *
    * @param {Object} data
    * @param {string} data.id - member ID
    * @param {Object} options
    * @param {Object} [options.transacting]
    */
-  /**
-   * Removes all complimentary access for a member.
-   * Handles two types:
-   * 1. Stripe-backed: Subscriptions with plan_nickname 'Complimentary' — cancelled via Stripe, then synced via linkSubscription
-   * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription — removed directly
-   *
-   * @param {{id: string}} data - member identifier
-   * @param {Object} options
-   */
-  async removeComplimentarySubscription({ id }, options) {
+  async removeComplimentarySubscription({ id }, options = {}) {
     if (!this._stripeAPIService.configured) {
       throw new errors.BadRequestError({
         message: tpl(messages.noStripeConnection, { action: 'cancel Complimentary Subscription' }),
       });
     }
 
-    const member = await this._Member.findOne({ id });
-    const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+    const { context, transacting } = options;
+    const sharedOptions = { context, transacting };
+
+    const member = await this._Member.findOne({ id }, sharedOptions);
+    const subscriptions = await member.related('stripeSubscriptions').fetch(sharedOptions);
 
     // 1. Cancel Stripe-backed complimentary subscriptions
     for (const subscription of subscriptions.models) {
@@ -2666,6 +2664,8 @@ module.exports = class MemberRepository {
           const updatedSubscription = await this._stripeAPIService.cancelSubscription(
             subscription.get('subscription_id'),
           );
+          // Full options rather than sharedOptions: linkSubscription reads batch_id from
+          // them to correlate the events it dispatches with the caller's operation.
           await this.linkSubscription(
             {
               id: id,
@@ -2683,6 +2683,38 @@ module.exports = class MemberRepository {
     }
 
     // 2. Remove Ghost-only comp products (products not backed by any active Stripe subscription)
+    //
+    // Deliberately a separate transaction from the Stripe calls above: the cleanup locks
+    // the member row, and that lock must not be held across a network round trip.
+    if (transacting) {
+      await this.removeComplimentaryProducts({ id }, sharedOptions);
+    } else {
+      await this._Member.transaction((trx) => {
+        return this.removeComplimentaryProducts({ id }, { ...sharedOptions, transacting: trx });
+      });
+    }
+
+    return true;
+  }
+
+  /**
+   * Removes the tiers a member holds complimentarily — the ones no active Stripe
+   * subscription pays for.
+   *
+   * The member row is locked before its tiers and subscriptions are read, so this
+   * read-modify-write cannot interleave with a linkSubscription for the same member,
+   * which takes the same lock. Without it, a subscription still being linked is invisible
+   * to the read, every tier then looks complimentary, and the removal takes away the one
+   * an active subscription is paying for.
+   *
+   * @param {Object} data
+   * @param {string} data.id - member ID
+   * @param {Object} options
+   * @param {Object} options.transacting
+   */
+  async removeComplimentaryProducts({ id }, options) {
+    const member = await this._Member.findOne({ id }, { ...options, forUpdate: true });
+
     await member.load(
       [
         'products',
@@ -2706,11 +2738,27 @@ module.exports = class MemberRepository {
       activeSubscriptionProductIds.has(product.id),
     );
 
-    if (filteredProducts.length !== currentProducts.length) {
-      await this._Member.edit({ products: filteredProducts }, { id });
+    // A paid member holds their tier through a Stripe subscription, so a result that
+    // takes every tier away contradicts the status and means the subscription behind it
+    // did not resolve — an unmapped Stripe product leaves `activeSubscriptionProductIds`
+    // empty just as a missed read does. Removing nothing keeps a paying member on their
+    // tier; the stale comp tier is corrected by the next linkSubscription for them.
+    if (
+      member.get('status') === 'paid' &&
+      currentProducts.length > 0 &&
+      filteredProducts.length === 0
+    ) {
+      logging.warn(
+        `Skipping complimentary tier removal for paid member ${id}: no active subscription resolved to a tier`,
+      );
+      return;
     }
 
-    return true;
+    if (filteredProducts.length !== currentProducts.length) {
+      // update() rather than _Member.edit(): it refuses to remove a tier an active
+      // subscription still pays for, and records the removal as a member product event.
+      await this.update({ products: filteredProducts }, { ...options, id });
+    }
   }
 
   /**
