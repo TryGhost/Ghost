@@ -13,6 +13,12 @@ const {
 const models = require('../../../core/server/models');
 const modelEvents = require('../../../core/server/lib/common/events');
 const createWebhookSerializer = require('../../../core/server/services/webhooks/serialize');
+// The serializer as the webhook pipeline builds it, minus the parts these tests do not
+// exercise: no routing relations to load, and a site that has defined no custom fields.
+const serializeWebhook = createWebhookSerializer({
+  urlService: { getRequiredRelations: () => [] },
+  readMemberMetafields: async () => null,
+});
 const urlServiceUtils = require('../../utils/url-service-utils');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const DomainEvents = require('@tryghost/domain-events');
@@ -437,10 +443,7 @@ describe('Members API', function () {
       );
 
       // The payload a webhook subscriber actually receives must show both states
-      const webhookBody = await createWebhookSerializer({ getRequiredRelations: () => [] })(
-        'member.edited',
-        memberEditedEvents[0],
-      );
+      const webhookBody = await serializeWebhook('member.edited', memberEditedEvents[0]);
       assert.equal(
         webhookBody.member.current.subscriptions[0].cancel_at_period_end,
         true,
@@ -606,10 +609,7 @@ describe('Members API', function () {
 
       assert.equal(reinstateEvents.length, 1, 'Reinstating should emit exactly one member.edited');
 
-      const webhookBody = await createWebhookSerializer({ getRequiredRelations: () => [] })(
-        'member.edited',
-        reinstateEvents[0],
-      );
+      const webhookBody = await serializeWebhook('member.edited', reinstateEvents[0]);
       assert.equal(
         webhookBody.member.current.subscriptions[0].cancel_at_period_end,
         false,
@@ -714,10 +714,7 @@ describe('Members API', function () {
         'Cancelling one of two subscriptions should emit exactly one member.edited',
       );
 
-      const webhookBody = await createWebhookSerializer({ getRequiredRelations: () => [] })(
-        'member.edited',
-        captured[0],
-      );
+      const webhookBody = await serializeWebhook('member.edited', captured[0]);
       const currentSubs = webhookBody.member.current.subscriptions;
       const previousSubs = webhookBody.member.previous.subscriptions;
 
