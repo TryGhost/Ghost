@@ -166,61 +166,55 @@ server's slug endpoint for sanitizing and deduplication, and reports the outcome
 as proposals. It never persists anything; the caller owns the input UI and the
 save.
 
-### State model
+The machine is a pure reducer, `reduceSlug(state, event)`, returning the next
+state and a list of effects, plus a thin shell that turns the public calls into
+events, runs the effects in order after committing the state, and maps each
+submission's ticket to the promise its caller holds.
 
-Two modes and three statuses.
+### States
 
-| Mode      | Meaning                                                           |
-| --------- | ----------------------------------------------------------------- |
-| `derived` | The slug follows the title. Eligible title commits regenerate it. |
-| `custom`  | The slug belongs to the user. Title commits never touch it.       |
+```ts
+type SlugState =
+  | { kind: 'idle'; mode; slug; title }
+  | { kind: 'generating'; mode; slug; title; request; deferred };
+```
 
-Mode is `custom` while a manual edit that can still apply is in flight.
-Otherwise it is the settled mode, which changes only when a post loads or a
-manual edit applies. A manual edit that fails, returns nothing, or resolves back
-to the current slug leaves the settled mode as it was. Mode is never re-derived
-from the title while a post is open; only loading a post runs the custom
-detection described under Rules.
+- `mode` is the settled ownership: `derived` (the slug follows the title) or
+  `custom` (the slug belongs to the user). Only a load or an applied manual edit
+  moves it. Mode is never re-derived from the title while a post is open.
+- `slug` is the current slug; `title` is the title the slug was loaded with or
+  last generated from. Only a load, an applied generation or an acknowledgement
+  advances `title`, so a refused or failed commit can be retried with the same
+  title.
+- `request` is the one generator request on the wire: its `ticket` (the
+  submission it belongs to), `kind` (`title` or `manual`), the `text` sent, and
+  `slugAtSubmission`, the slug when it was submitted.
+- `deferred` is the single submission waiting behind the request, or `null`:
+  its ticket, the submission, and `slugAtSubmission`.
 
-| Status    | Meaning                                                                                                          |
-| --------- | ---------------------------------------------------------------------------------------------------------------- |
-| `custom`  | Mode is `custom`.                                                                                                |
-| `derived` | Mode is `derived` and the last committed title would generate.                                                   |
-| `frozen`  | Mode is `derived` but the last committed title would not generate: it is blank, or `(Untitled)` with a slug set. |
+`getState()` returns the view `{mode, slug, title, pending}`. `pending` is true
+in `generating`. The view's `mode` reads `custom` while a manual request is on
+the wire, whatever the settled mode; a manual edit that fails, returns nothing
+or resolves back to the current slug leaves the settled mode as it was.
 
-Status follows the latest committed title regardless of what happened to that
-commit: a post whose blank title was just committed reads `frozen`, and a post
-whose commit failed reads `derived`.
+### Events, effects and proposals
 
-`getState()` returns `{status, mode, slug, title, lastCommittedTitle, pending}`.
+| Call                                        | Event                                                                                    |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `loaded({slug, title})`                     | `loaded`. Document boundary: the machine resets to the post and infers the settled mode. |
+| `saveAcknowledged(submitted, acknowledged)` | `acknowledged`. Compare-and-swaps server-normalized values without changing ownership.   |
+| `titleCommitted(title)`                     | `submitted` with a `title` submission and a fresh ticket. Resolves with a proposal.      |
+| `slugEdited(input)`                         | `submitted` with a `manual` submission and a fresh ticket. Resolves with a proposal.     |
+| generator answer                            | `settled` with the request's ticket and `{ok}` or `{error}`.                             |
 
-- `slug`: the current slug.
-- `title`: the title the slug was loaded with or last generated from. Only a
-  load or an applied generation advances it, so a refused or failed commit can
-  be retried with the same title.
-- `lastCommittedTitle`: the trimmed title of the most recent `titleCommitted`
-  call, whatever its outcome.
-- `pending`: true while a title or manual request that can still apply is in
-  flight. Withdrawn requests and requests from a previous post are not pending
-  even if their HTTP call has not returned. A submission waiting behind an
-  active request is not pending until it starts.
-
-### Inputs and proposals
-
-`createSlugMachine({generateSlug, onListenerError})` takes the generator port
-(`(text: string) => Promise<string>`) and an error sink for listener failures.
-
-| Call                                        | Effect                                                                                                                                                                   |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `loaded({slug, title})`                     | Document boundary. Resets the machine to the post, infers the settled mode, discards in-flight and waiting work from the previous post, notifies with a `null` proposal. |
-| `saveAcknowledged(submitted, acknowledged)` | Compare-and-swaps server-normalized values without changing ownership or newer work; notifies a change with a `null` proposal.                                           |
-| `titleCommitted(title)`                     | The title was committed (blur). Resolves with a proposal; never rejects.                                                                                                 |
-| `slugEdited(input)`                         | The slug input was committed. Resolves with a proposal; never rejects.                                                                                                   |
-| `getState()`                                | Snapshot of the state above.                                                                                                                                             |
-| `subscribe(listener)`                       | `listener(state, proposal)` on every state change; acknowledgements, pending changes and loads have no proposal. Returns an unsubscribe function.                        |
-
-A listener that throws is reported to `onListenerError` and affects neither the
-transition nor the other listeners.
+Effects: `request` sends `text` to the generator and reports the answer as a
+`settled` event, reading an answer that is not a string as blank; `resolve`
+settles the promise of the submission with that ticket; `notify` calls every
+subscriber with a proposal or `null` and the view that proposal produced. The
+shell commits the state before running effects and runs them in order, so a
+listener that calls back into the machine queues behind the effects already
+due. A listener that throws is reported to `onListenerError` and affects neither
+the transition nor the other listeners.
 
 Proposals are `{slug, source}`:
 
@@ -232,31 +226,194 @@ Proposals are `{slug, source}`:
 
 `unchanged` proposals carry a `reason`:
 
-| Reason         | When                                                                                                                                                                  | Caller action                                                |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `same-title`   | The committed title equals the title the slug came from and a slug exists. No request was made.                                                                       | None.                                                        |
-| `custom`       | The machine is in custom mode. No request was made.                                                                                                                   | None.                                                        |
-| `frozen`       | The committed title is blank, or is `(Untitled)` while a slug exists. No request was made.                                                                            | None.                                                        |
-| `stale`        | The call was superseded before it could apply: replaced by a newer submission, withdrawn, or a post loaded. `slug` is the slug at call time, not necessarily current. | Ignore it.                                                   |
-| `empty-result` | The server returned a blank slug.                                                                                                                                     | None.                                                        |
-| `reverted`     | A manual edit was blank or unchanged, or the server resolved it back to the current slug.                                                                             | Reset the slug input to `slug`.                              |
-| `error`        | The generator threw; `error` carries the thrown value.                                                                                                                | Surface the error; reset the slug input to `slug` if manual. |
+| Reason         | When                                                                                                                                                                     | Caller action                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| `same-title`   | The committed title equals the title the slug came from and a slug exists. No request was made.                                                                          | None.                                                        |
+| `custom`       | The settled mode is `custom`. No request was made.                                                                                                                       | None.                                                        |
+| `frozen`       | The committed title is blank, or is `(Untitled)` while a slug exists. No request was made.                                                                               | None.                                                        |
+| `stale`        | The submission was superseded: replaced in the deferred slot, withdrawn from the wire, or a post loaded. `slug` is the slug at submission time, not necessarily current. | Ignore it.                                                   |
+| `empty-result` | The server returned a blank slug.                                                                                                                                        | None.                                                        |
+| `reverted`     | A manual edit was blank or unchanged, or the server resolved it back to the current slug.                                                                                | Reset the slug input to `slug`.                              |
+| `error`        | The generator threw; `error` carries the thrown value.                                                                                                                   | Surface the error; reset the slug input to `slug` if manual. |
 
-Every proposal except `stale` is delivered to subscribers with the state it
+Every proposal except `stale` is delivered to subscribers with the view it
 produced. Subscribers are also notified with a `null` proposal when a request
-starts (`pending` becomes true), a post loads, or an acknowledgement resyncs a
-server-normalized value. A rejected manual edit is always reported (`reverted`,
-`empty-result`, or `error`) so the input can be reset to the kept slug instead
-of showing the rejected text.
+starts, a post loads, or an acknowledgement changes a value. A stale resolution
+never notifies, so superseded work cannot look like a current state change.
+
+### Transitions
+
+`reduceSlug(state, event)` is total over the states and events below. The
+table between the markers has a row for every state and event pair, and
+further rows where a guard of the reducer, or one a drained deferred submission
+meets, takes the same pair to a different next state or effect list. The
+transition spec checks every row against the reducer and the table against its
+rows, and fails when a state and event pair has no row, so the two cannot
+drift.
+
+- States are written `idle(mode)` and
+  `generating(request kind[, deferred kind])`. A `generating` state keeps the
+  settled mode it started with; it is `derived` unless the state is written
+  `generating(...; custom)`, which only a manual edit from `idle(custom)`
+  reaches. A manual request from `idle(derived)` settles into `idle(custom)`
+  only when its edit applied.
+- `submitted(title)` carries the trimmed title `t`; `submitted(manual)` carries
+  `c = normalizeManualSlug(input, slug)`, `null` for a blank or unchanged
+  input. "The title generates" means the settled mode is `derived`, `t` is not
+  the slug's source title (`t === title && slug`) and is not frozen
+  (`!shouldGenerateSlug({mode: 'derived', slug}, t)`).
+- `settled(ok)` and `settled(error)` are the generator's answer for the request
+  on the wire. An answer for any other ticket leaves every state as it is with
+  no effects.
+- Effects name the ticket they settle: `submission` is the event's, `request`
+  the one on the wire, `deferred` the one waiting behind it. A deferred
+  submission is drained inside the same transition once the wire is free, so
+  its `request` or `resolve` follows the effects of the request that freed it,
+  and the `notify` before it carries the idle view in between. `getState()`
+  already reflects the drained request.
+
+<!-- slug-machine-transitions:start -->
+
+| From                                          | Event               | When                                                                          | To                                            | Effects                                                                                                                     |
+| --------------------------------------------- | ------------------- | ----------------------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `idle(derived)`                               | `loaded`            | the slug is not the slugified title                                           | `idle(custom)`                                | notify(null)                                                                                                                |
+| `idle(custom)`                                | `loaded`            | the slug is the slugified title                                               | `idle(derived)`                               | notify(null)                                                                                                                |
+| `generating(title)`                           | `loaded`            | always                                                                        | `idle(derived)`                               | resolve(request: stale), notify(null)                                                                                       |
+| `generating(title, deferred title)`           | `loaded`            | always                                                                        | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), notify(null)                                                             |
+| `generating(title, deferred manual)`          | `loaded`            | always                                                                        | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), notify(null)                                                             |
+| `generating(manual)`                          | `loaded`            | always                                                                        | `idle(derived)`                               | resolve(request: stale), notify(null)                                                                                       |
+| `generating(manual, deferred title)`          | `loaded`            | always                                                                        | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), notify(null)                                                             |
+| `generating(manual, deferred manual)`         | `loaded`            | always                                                                        | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), notify(null)                                                             |
+| `generating(manual; custom)`                  | `loaded`            | always                                                                        | `idle(derived)`                               | resolve(request: stale), notify(null)                                                                                       |
+| `generating(manual, deferred title; custom)`  | `loaded`            | always                                                                        | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), notify(null)                                                             |
+| `generating(manual, deferred manual; custom)` | `loaded`            | always                                                                        | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), notify(null)                                                             |
+| `idle(derived)`                               | `acknowledged`      | the slug is still the one submitted                                           | `idle(derived)`                               | notify(null)                                                                                                                |
+| `idle(custom)`                                | `acknowledged`      | neither value is still the one submitted                                      | `idle(custom)`                                | none                                                                                                                        |
+| `generating(title)`                           | `acknowledged`      | the slug is still the one submitted                                           | `generating(title)`                           | notify(null)                                                                                                                |
+| `generating(title, deferred title)`           | `acknowledged`      | neither value is still the one submitted                                      | `generating(title, deferred title)`           | none                                                                                                                        |
+| `generating(title, deferred manual)`          | `acknowledged`      | the title is still the one submitted                                          | `generating(title, deferred manual)`          | notify(null)                                                                                                                |
+| `generating(manual)`                          | `acknowledged`      | the slug is still the one submitted                                           | `generating(manual)`                          | notify(null)                                                                                                                |
+| `generating(manual, deferred title)`          | `acknowledged`      | neither value is still the one submitted                                      | `generating(manual, deferred title)`          | none                                                                                                                        |
+| `generating(manual, deferred manual)`         | `acknowledged`      | the title is still the one submitted                                          | `generating(manual, deferred manual)`         | notify(null)                                                                                                                |
+| `generating(manual; custom)`                  | `acknowledged`      | the slug is still the one submitted                                           | `generating(manual; custom)`                  | notify(null)                                                                                                                |
+| `generating(manual, deferred title; custom)`  | `acknowledged`      | neither value is still the one submitted                                      | `generating(manual, deferred title; custom)`  | none                                                                                                                        |
+| `generating(manual, deferred manual; custom)` | `acknowledged`      | the slug is still the one submitted                                           | `generating(manual, deferred manual; custom)` | notify(null)                                                                                                                |
+| `idle(derived)`                               | `submitted(title)`  | the title generates                                                           | `generating(title)`                           | request(submission), notify(null)                                                                                           |
+| `idle(derived)`                               | `submitted(title)`  | it is the slug's source title                                                 | `idle(derived)`                               | resolve(submission: same-title), notify(same-title)                                                                         |
+| `idle(derived)`                               | `submitted(title)`  | the title is blank                                                            | `idle(derived)`                               | resolve(submission: frozen), notify(frozen)                                                                                 |
+| `idle(custom)`                                | `submitted(title)`  | always                                                                        | `idle(custom)`                                | resolve(submission: custom), notify(custom)                                                                                 |
+| `generating(title)`                           | `submitted(title)`  | the title generates                                                           | `generating(title, deferred title)`           | none                                                                                                                        |
+| `generating(title)`                           | `submitted(title)`  | it is the slug's source title                                                 | `idle(derived)`                               | resolve(request: stale), resolve(submission: same-title), notify(same-title)                                                |
+| `generating(title)`                           | `submitted(title)`  | the title is blank                                                            | `idle(derived)`                               | resolve(request: stale), resolve(submission: frozen), notify(frozen)                                                        |
+| `generating(title, deferred title)`           | `submitted(title)`  | the title generates                                                           | `generating(title, deferred title)`           | resolve(deferred: stale)                                                                                                    |
+| `generating(title, deferred title)`           | `submitted(title)`  | it is the slug's source title                                                 | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), resolve(submission: same-title), notify(same-title)                      |
+| `generating(title, deferred manual)`          | `submitted(title)`  | the title generates                                                           | `generating(title, deferred title)`           | resolve(deferred: stale)                                                                                                    |
+| `generating(title, deferred manual)`          | `submitted(title)`  | the title is blank                                                            | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), resolve(submission: frozen), notify(frozen)                              |
+| `generating(manual)`                          | `submitted(title)`  | always                                                                        | `generating(manual, deferred title)`          | none                                                                                                                        |
+| `generating(manual, deferred title)`          | `submitted(title)`  | always                                                                        | `generating(manual, deferred title)`          | resolve(deferred: stale)                                                                                                    |
+| `generating(manual, deferred manual)`         | `submitted(title)`  | always                                                                        | `generating(manual, deferred title)`          | resolve(deferred: stale)                                                                                                    |
+| `generating(manual; custom)`                  | `submitted(title)`  | always                                                                        | `generating(manual, deferred title; custom)`  | none                                                                                                                        |
+| `generating(manual, deferred title; custom)`  | `submitted(title)`  | always                                                                        | `generating(manual, deferred title; custom)`  | resolve(deferred: stale)                                                                                                    |
+| `generating(manual, deferred manual; custom)` | `submitted(title)`  | always                                                                        | `generating(manual, deferred title; custom)`  | resolve(deferred: stale)                                                                                                    |
+| `idle(derived)`                               | `submitted(manual)` | the input differs from the slug                                               | `generating(manual)`                          | request(submission), notify(null)                                                                                           |
+| `idle(derived)`                               | `submitted(manual)` | the input is blank or the slug                                                | `idle(derived)`                               | resolve(submission: reverted), notify(reverted)                                                                             |
+| `idle(custom)`                                | `submitted(manual)` | the input differs from the slug                                               | `generating(manual; custom)`                  | request(submission), notify(null)                                                                                           |
+| `idle(custom)`                                | `submitted(manual)` | the input is blank or the slug                                                | `idle(custom)`                                | resolve(submission: reverted), notify(reverted)                                                                             |
+| `generating(title)`                           | `submitted(manual)` | the input differs from the slug                                               | `generating(title, deferred manual)`          | none                                                                                                                        |
+| `generating(title)`                           | `submitted(manual)` | the input is blank or the slug                                                | `generating(title)`                           | resolve(submission: reverted), notify(reverted)                                                                             |
+| `generating(title, deferred title)`           | `submitted(manual)` | the input differs from the slug                                               | `generating(title, deferred manual)`          | resolve(deferred: stale)                                                                                                    |
+| `generating(title, deferred title)`           | `submitted(manual)` | the input is blank or the slug                                                | `generating(title, deferred title)`           | resolve(submission: reverted), notify(reverted)                                                                             |
+| `generating(title, deferred manual)`          | `submitted(manual)` | the input differs from the slug                                               | `generating(title, deferred manual)`          | resolve(deferred: stale)                                                                                                    |
+| `generating(title, deferred manual)`          | `submitted(manual)` | the input is blank or the slug                                                | `generating(title)`                           | resolve(deferred: stale), resolve(submission: reverted), notify(reverted)                                                   |
+| `generating(manual)`                          | `submitted(manual)` | the input differs from the slug                                               | `generating(manual, deferred manual)`         | none                                                                                                                        |
+| `generating(manual)`                          | `submitted(manual)` | the input is blank or the slug                                                | `idle(derived)`                               | resolve(request: stale), resolve(submission: reverted), notify(reverted)                                                    |
+| `generating(manual, deferred title)`          | `submitted(manual)` | the input differs from the slug                                               | `generating(manual, deferred manual)`         | resolve(deferred: stale)                                                                                                    |
+| `generating(manual, deferred title)`          | `submitted(manual)` | the input is blank or the slug; the deferred title generates                  | `generating(title)`                           | resolve(request: stale), resolve(submission: reverted), notify(reverted), request(deferred), notify(null)                   |
+| `generating(manual, deferred title)`          | `submitted(manual)` | the input is blank or the slug; the deferred title is the slug's source title | `idle(derived)`                               | resolve(request: stale), resolve(submission: reverted), notify(reverted), resolve(deferred: same-title), notify(same-title) |
+| `generating(manual, deferred title)`          | `submitted(manual)` | the input is blank or the slug; the deferred title is blank                   | `idle(derived)`                               | resolve(request: stale), resolve(submission: reverted), notify(reverted), resolve(deferred: frozen), notify(frozen)         |
+| `generating(manual, deferred manual)`         | `submitted(manual)` | the input differs from the slug                                               | `generating(manual, deferred manual)`         | resolve(deferred: stale)                                                                                                    |
+| `generating(manual, deferred manual)`         | `submitted(manual)` | the input is blank or the slug                                                | `idle(derived)`                               | resolve(deferred: stale), resolve(request: stale), resolve(submission: reverted), notify(reverted)                          |
+| `generating(manual; custom)`                  | `submitted(manual)` | the input differs from the slug                                               | `generating(manual, deferred manual; custom)` | none                                                                                                                        |
+| `generating(manual; custom)`                  | `submitted(manual)` | the input is blank or the slug                                                | `idle(custom)`                                | resolve(request: stale), resolve(submission: reverted), notify(reverted)                                                    |
+| `generating(manual, deferred title; custom)`  | `submitted(manual)` | the input differs from the slug                                               | `generating(manual, deferred manual; custom)` | resolve(deferred: stale)                                                                                                    |
+| `generating(manual, deferred title; custom)`  | `submitted(manual)` | the input is blank or the slug; the settled mode is custom                    | `idle(custom)`                                | resolve(request: stale), resolve(submission: reverted), notify(reverted), resolve(deferred: custom), notify(custom)         |
+| `generating(manual, deferred manual; custom)` | `submitted(manual)` | the input differs from the slug                                               | `generating(manual, deferred manual; custom)` | resolve(deferred: stale)                                                                                                    |
+| `generating(manual, deferred manual; custom)` | `submitted(manual)` | the input is blank or the slug                                                | `idle(custom)`                                | resolve(deferred: stale), resolve(request: stale), resolve(submission: reverted), notify(reverted)                          |
+| `idle(derived)`                               | `settled(ok)`       | no request is on the wire                                                     | `idle(derived)`                               | none                                                                                                                        |
+| `idle(custom)`                                | `settled(ok)`       | no request is on the wire                                                     | `idle(custom)`                                | none                                                                                                                        |
+| `generating(title)`                           | `settled(ok)`       | the answer is not blank                                                       | `idle(derived)`                               | resolve(request: generated), notify(generated)                                                                              |
+| `generating(title)`                           | `settled(ok)`       | the answer is blank                                                           | `idle(derived)`                               | resolve(request: empty-result), notify(empty-result)                                                                        |
+| `generating(title, deferred title)`           | `settled(ok)`       | the deferred title generates                                                  | `generating(title)`                           | resolve(request: generated), notify(generated), request(deferred), notify(null)                                             |
+| `generating(title, deferred title)`           | `settled(ok)`       | the deferred title is the slug's source title                                 | `idle(derived)`                               | resolve(request: generated), notify(generated), resolve(deferred: same-title), notify(same-title)                           |
+| `generating(title, deferred title)`           | `settled(ok)`       | the deferred title is (Untitled) and the answer is the first slug             | `idle(derived)`                               | resolve(request: generated), notify(generated), resolve(deferred: frozen), notify(frozen)                                   |
+| `generating(title, deferred title)`           | `settled(ok)`       | the answer is blank; the deferred title generates                             | `generating(title)`                           | resolve(request: empty-result), notify(empty-result), request(deferred), notify(null)                                       |
+| `generating(title, deferred manual)`          | `settled(ok)`       | the deferred edit differs from the slug                                       | `generating(manual)`                          | resolve(request: generated), notify(generated), request(deferred), notify(null)                                             |
+| `generating(title, deferred manual)`          | `settled(ok)`       | the deferred edit is the new slug                                             | `idle(derived)`                               | resolve(request: generated), notify(generated), resolve(deferred: reverted), notify(reverted)                               |
+| `generating(title, deferred manual)`          | `settled(ok)`       | the answer is blank; the deferred edit differs from the slug                  | `generating(manual)`                          | resolve(request: empty-result), notify(empty-result), request(deferred), notify(null)                                       |
+| `generating(manual)`                          | `settled(ok)`       | the answer is applied                                                         | `idle(custom)`                                | resolve(request: manual), notify(manual)                                                                                    |
+| `generating(manual)`                          | `settled(ok)`       | the answer is the current slug                                                | `idle(derived)`                               | resolve(request: reverted), notify(reverted)                                                                                |
+| `generating(manual)`                          | `settled(ok)`       | the answer only appends a counter to the slug                                 | `idle(derived)`                               | resolve(request: reverted), notify(reverted)                                                                                |
+| `generating(manual)`                          | `settled(ok)`       | the answer is blank                                                           | `idle(derived)`                               | resolve(request: empty-result), notify(empty-result)                                                                        |
+| `generating(manual, deferred title)`          | `settled(ok)`       | the edit applies                                                              | `idle(custom)`                                | resolve(request: manual), notify(manual), resolve(deferred: custom), notify(custom)                                         |
+| `generating(manual, deferred title)`          | `settled(ok)`       | the edit reverts; the deferred title generates                                | `generating(title)`                           | resolve(request: reverted), notify(reverted), request(deferred), notify(null)                                               |
+| `generating(manual, deferred title)`          | `settled(ok)`       | the edit reverts; the deferred title is the slug's source title               | `idle(derived)`                               | resolve(request: reverted), notify(reverted), resolve(deferred: same-title), notify(same-title)                             |
+| `generating(manual, deferred title)`          | `settled(ok)`       | the edit reverts; the deferred title is blank                                 | `idle(derived)`                               | resolve(request: reverted), notify(reverted), resolve(deferred: frozen), notify(frozen)                                     |
+| `generating(manual, deferred title)`          | `settled(ok)`       | the answer is blank; the deferred title generates                             | `generating(title)`                           | resolve(request: empty-result), notify(empty-result), request(deferred), notify(null)                                       |
+| `generating(manual, deferred manual)`         | `settled(ok)`       | the edit applies; the deferred edit differs from the slug                     | `generating(manual; custom)`                  | resolve(request: manual), notify(manual), request(deferred), notify(null)                                                   |
+| `generating(manual, deferred manual)`         | `settled(ok)`       | the edit applies; the deferred edit is the new slug                           | `idle(custom)`                                | resolve(request: manual), notify(manual), resolve(deferred: reverted), notify(reverted)                                     |
+| `generating(manual, deferred manual)`         | `settled(ok)`       | the edit reverts; the deferred edit differs from the slug                     | `generating(manual)`                          | resolve(request: reverted), notify(reverted), request(deferred), notify(null)                                               |
+| `generating(manual, deferred manual)`         | `settled(ok)`       | the answer is blank; the deferred edit differs from the slug                  | `generating(manual)`                          | resolve(request: empty-result), notify(empty-result), request(deferred), notify(null)                                       |
+| `generating(manual; custom)`                  | `settled(ok)`       | the answer is applied                                                         | `idle(custom)`                                | resolve(request: manual), notify(manual)                                                                                    |
+| `generating(manual; custom)`                  | `settled(ok)`       | the answer is the current slug                                                | `idle(custom)`                                | resolve(request: reverted), notify(reverted)                                                                                |
+| `generating(manual; custom)`                  | `settled(ok)`       | the answer is blank                                                           | `idle(custom)`                                | resolve(request: empty-result), notify(empty-result)                                                                        |
+| `generating(manual, deferred title; custom)`  | `settled(ok)`       | the edit applies                                                              | `idle(custom)`                                | resolve(request: manual), notify(manual), resolve(deferred: custom), notify(custom)                                         |
+| `generating(manual, deferred title; custom)`  | `settled(ok)`       | the edit reverts; the settled mode is custom                                  | `idle(custom)`                                | resolve(request: reverted), notify(reverted), resolve(deferred: custom), notify(custom)                                     |
+| `generating(manual, deferred manual; custom)` | `settled(ok)`       | the edit applies; the deferred edit differs from the slug                     | `generating(manual; custom)`                  | resolve(request: manual), notify(manual), request(deferred), notify(null)                                                   |
+| `generating(manual, deferred manual; custom)` | `settled(ok)`       | the edit reverts; the deferred edit differs from the slug                     | `generating(manual; custom)`                  | resolve(request: reverted), notify(reverted), request(deferred), notify(null)                                               |
+| `idle(derived)`                               | `settled(error)`    | no request is on the wire                                                     | `idle(derived)`                               | none                                                                                                                        |
+| `idle(custom)`                                | `settled(error)`    | no request is on the wire                                                     | `idle(custom)`                                | none                                                                                                                        |
+| `generating(title)`                           | `settled(error)`    | always                                                                        | `idle(derived)`                               | resolve(request: error), notify(error)                                                                                      |
+| `generating(title, deferred title)`           | `settled(error)`    | the deferred title generates                                                  | `generating(title)`                           | resolve(request: error), notify(error), request(deferred), notify(null)                                                     |
+| `generating(title, deferred manual)`          | `settled(error)`    | the deferred edit differs from the slug                                       | `generating(manual)`                          | resolve(request: error), notify(error), request(deferred), notify(null)                                                     |
+| `generating(manual)`                          | `settled(error)`    | always                                                                        | `idle(derived)`                               | resolve(request: error), notify(error)                                                                                      |
+| `generating(manual, deferred title)`          | `settled(error)`    | the deferred title generates                                                  | `generating(title)`                           | resolve(request: error), notify(error), request(deferred), notify(null)                                                     |
+| `generating(manual, deferred title)`          | `settled(error)`    | the deferred title is the slug's source title                                 | `idle(derived)`                               | resolve(request: error), notify(error), resolve(deferred: same-title), notify(same-title)                                   |
+| `generating(manual, deferred title)`          | `settled(error)`    | the deferred title is blank                                                   | `idle(derived)`                               | resolve(request: error), notify(error), resolve(deferred: frozen), notify(frozen)                                           |
+| `generating(manual, deferred manual)`         | `settled(error)`    | the deferred edit differs from the slug                                       | `generating(manual)`                          | resolve(request: error), notify(error), request(deferred), notify(null)                                                     |
+| `generating(manual; custom)`                  | `settled(error)`    | always                                                                        | `idle(custom)`                                | resolve(request: error), notify(error)                                                                                      |
+| `generating(manual, deferred title; custom)`  | `settled(error)`    | the settled mode is custom                                                    | `idle(custom)`                                | resolve(request: error), notify(error), resolve(deferred: custom), notify(custom)                                           |
+| `generating(manual, deferred manual; custom)` | `settled(error)`    | the deferred edit differs from the slug                                       | `generating(manual; custom)`                  | resolve(request: error), notify(error), request(deferred), notify(null)                                                     |
+
+<!-- slug-machine-transitions:end -->
+
+Consequences worth naming:
+
+- At most one request is on the wire, and a submission that reaches the reducer
+  while one is out waits in the single deferred slot. Only the newest waiting
+  submission is kept; each one it replaces resolves `stale` without reaching
+  the server.
+- A title commit behind a manual request is deferred, not refused. If the edit
+  applies, the deferred commit resolves `custom`; if the edit fails or reverts,
+  the commit generates as normal.
+- Withdrawing a request (a no-op blur over a manual request, or committing the
+  slug's source title or a frozen title over a title request) resolves it
+  `stale` at once and frees the wire. A deferred title commit behind a withdrawn
+  manual edit starts immediately; a deferred submission behind a withdrawn title
+  generation is dropped. The late generator answer for a withdrawn request is
+  ignored because its ticket is no longer held.
+- Withdrawing a deferred manual edit (a no-op blur while a title generation is
+  out) drops it and leaves the generation running.
+- `loaded()` resolves everything from the previous post `stale`; a late answer
+  for it is ignored and the new post reads not pending.
 
 ### Rules
 
 Generation
 
-- A title commit generates when mode is `derived`, the trimmed title is not
-  blank, and neither the `same-title` nor the `frozen` case applies. A blank
-  title never generates. `(Untitled)` generates `untitled` once, when no slug
-  exists, and is frozen after that.
+- A title commit generates when the settled mode is `derived`, the trimmed
+  title is not blank, and neither the same-title nor the frozen case applies. A
+  blank title never generates. `(Untitled)` generates `untitled` once, when no
+  slug exists, and is frozen after that.
 - The same-title check only applies when a slug exists; a post loaded with a
   title and no slug generates on its first commit.
 - The server result is applied as returned. A deduplicated result (`hello-2`)
@@ -290,33 +447,9 @@ Manual edits
   false positive: the guard decides by shape, so a candidate the server
   canonicalizes differently from `slugify` (protected slugs, the 185-character
   cap) is reverted when its result happens to take that shape.
-- An applied manual edit switches mode to `custom` for the rest of the session;
-  no later title commit regenerates the slug until the post is reloaded.
-  Reverted, empty, and failed edits leave the mode where it was.
-
-Ordering and staleness
-
-- At most one generator request is in flight. Further submissions wait behind
-  it; only the newest waiting submission is kept, and each one it replaces
-  resolves `stale` without reaching the server. The kept submission runs when
-  the active request settles and is evaluated against the state at that time.
-- A title commit behind an in-flight manual edit is deferred, not refused. If
-  the edit applies, the deferred commit resolves `custom`; if the edit fails or
-  reverts, the commit generates as normal.
-- A manual edit behind an in-flight title generation waits for it. Withdrawing
-  that waiting edit (blank or unchanged input) drops it and leaves the
-  generation running.
-- Withdrawing an in-flight manual edit makes its result `stale`, and mode and
-  `pending` fall back immediately; a title commit waiting behind it still runs
-  once the request physically settles.
-- Committing the slug's source title, or a frozen title, while a title
-  generation is in flight invalidates that generation immediately, drops any
-  waiting submission, and returns `same-title` or `frozen`.
-- `loaded()` invalidates everything from the previous post: in-flight results
-  resolve `stale` to their callers, are not delivered to subscribers, and the
-  new post reads not pending.
-- A failed or reverted manual edit never leaves the machine in custom mode and
-  never discards a title commit queued behind it.
+- An applied manual edit switches the settled mode to `custom` for the rest of
+  the session; no later title commit regenerates the slug until the post is
+  reloaded. Reverted, empty, and failed edits leave the mode where it was.
 
 ## Invariants
 
