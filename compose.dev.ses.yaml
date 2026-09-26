@@ -1,0 +1,15 @@
+# Local SES adapter development for Ghost's Docker-based monorepo workflow.
+# Use with:
+#   SES_ADAPTER_PATH=../ghost-ses-email-adapter SES_FROM_EMAIL=news@example.com \
+#   DEV_COMPOSE_FILES='-f compose.dev.ses.yaml' \
+#   pnpm dev
+#
+# Install the adapter's dependencies in SES_ADAPTER_PATH before starting Ghost.
+services:
+  ghost-dev:
+    volumes:
+      - ${SES_ADAPTER_PATH:-../ghost-ses-email-adapter}:/home/ghost/ghost/core/content/adapters/email/ses
+    environment:
+      adapters__email__active: ses
+      adapters__email__ses__region: ${SES_REGION:-us-east-1}
+      adapters__email__ses__fromEmail: ${SES_FROM_EMAIL:?Set SES_FROM_EMAIL to a verified SES sender}
