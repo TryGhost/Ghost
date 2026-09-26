@@ -20,7 +20,7 @@ module.exports = {
 function paginatedTiers(page, _apiConfig, frame) {
   return {
     tiers: page.data.map((model) => {
-      return serializeTier(model, frame.options, page.requirements);
+      return serializeTier(model, frame.options, page.checkoutConfig);
     }),
     meta: page.meta,
   };
@@ -45,7 +45,7 @@ function singleTier(model, _apiConfig, frame) {
  *
  * @returns {SerializedTier}
  */
-function serializeTier(tier, options, requirements = null) {
+function serializeTier(tier, options, checkoutConfig = null) {
   const json = tier.toJSON(options);
 
   const serialized = {
@@ -70,12 +70,11 @@ function serializeTier(tier, options, requirements = null) {
     serialized.benefits = null;
   }
 
-  // Only the payload that was asked for these carries them, so a response that did not
-  // look them up says nothing rather than saying every tier asks for nothing. Where they
-  // were looked up, every tier carries the key and an empty one means it asks for
-  // nothing.
-  if (requirements) {
-    serialized.requirements = requirements.get(json.id) ?? {};
+  // Only the payload that looked these up carries them, so a response that did not says
+  // nothing rather than saying every tier collects nothing. Where they were looked up,
+  // every tier carries the key and an empty one means it collects nothing.
+  if (checkoutConfig) {
+    serialized.checkout_config = checkoutConfig.get(json.id) ?? {};
   }
 
   if (serialized.type === 'free') {

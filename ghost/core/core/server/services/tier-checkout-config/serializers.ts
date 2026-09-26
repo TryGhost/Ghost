@@ -151,50 +151,55 @@ export const toCheckoutConfigResponse = z
   .pipe(CheckoutConfigResponse);
 
 /**
- * What a tier asks a member for, as the tier payload carries it.
+ * A tier's checkout settings, as the tier payload carries them.
  *
- * The same rows as the publisher's resource above, minus everything about where a value
- * lands. A member supplies a delivery address rather than a value for a named field, and
- * which field holds it is the publisher's business; naming it here would invite a client
- * to write there directly. The tax number goes too, because the processor keeps one
- * against the customer it invoices and Ghost never stores it. So do the checkout
- * questions, which a tier change does not draw.
+ * A slice of the publisher's resource above rather than a different idea about it, and
+ * named for what it is a slice of. Adding a key later is free and taking one away is
+ * not, so this carries only what a client can act on today: what the tier collects, and
+ * which of the publisher's fields each collected value is kept in.
  *
- * Not named for the collection, deliberately: a collection in this domain is a collected
- * thing together with the field it lands in, and that second half is exactly the part
- * this drops.
+ * Left out for now, and addable without a rename when something needs them: the checkout
+ * questions, and the tax number, which the processor keeps against the customer it
+ * invoices and Ghost never stores, so no client could collect one if it tried.
+ *
+ * The destination fields are here on purpose. A client that knows where a value lands can
+ * tell a member it already holds their address instead of asking for it again, which is
+ * the whole difference between carrying a value through and demanding it twice. It hands
+ * over no power a member's own client lacks — it can already read and write any of their
+ * fields — but it does couple a client to where a publisher put them, so re-pointing a
+ * binding is a change that reaches themes.
  */
-const TierRequirements = z.object({
+const TierCheckoutSlice = z.object({
   /**
-   * A block appears only when the tier asks for that thing, and says so as well, the same
+   * A block appears only when the tier collects that thing, and says so as well, the same
    * way the publisher's resource does. Presence and the flag agree, so a client may read
    * whichever it finds clearer.
-   *
-   * Neither says whether a thing may be skipped, because nothing here may be: everything
-   * a tier requires is required. Collection a member could decline is the change that
-   * would need a field of its own rather than a new reading of these two.
    */
   shipping: z
     .object({
       collect: z.literal(true),
       /** Absent means everywhere the processor ships, the same as for a publisher. */
       allowed_countries: z.array(z.string()).optional(),
+      name: z.object({ custom_field_key: z.string() }),
+      address: z.object({ custom_field_key: z.string() }),
     })
     .optional(),
-  phone: z.object({ collect: z.literal(true) }).optional(),
+  phone: z.object({ collect: z.literal(true), custom_field_key: z.string() }).optional(),
 });
-export type TierRequirements = z.infer<typeof TierRequirements>;
+export type TierCheckoutSlice = z.infer<typeof TierCheckoutSlice>;
 
 /**
  * Keyed by tier, because the payload this joins onto is a list of tiers and a lookup is
- * the only thing it needs. Tiers a publisher has never set up are absent, and a tier that
- * collects only a tax number resolves to nothing asked.
+ * the only thing it needs. Tiers a publisher has never set up are absent, and a tier
+ * collecting only a tax number resolves to a slice with nothing in it.
  */
-export function requirementsByTier(configs: TierCheckoutConfig[]): Map<string, TierRequirements> {
+export function checkoutConfigByTier(
+  configs: TierCheckoutConfig[],
+): Map<string, TierCheckoutSlice> {
   return new Map(
     configs.map((config) => [
       config.tierId,
-      TierRequirements.parse({
+      TierCheckoutSlice.parse({
         ...(config.shipping
           ? {
               shipping: {
@@ -202,10 +207,14 @@ export function requirementsByTier(configs: TierCheckoutConfig[]): Map<string, T
                 ...(config.shipping.allowedCountries
                   ? { allowed_countries: config.shipping.allowedCountries }
                   : {}),
+                name: { custom_field_key: config.shipping.nameCustomFieldKey },
+                address: { custom_field_key: config.shipping.addressCustomFieldKey },
               },
             }
           : {}),
-        ...(config.phone ? { phone: { collect: true as const } } : {}),
+        ...(config.phone
+          ? { phone: { collect: true as const, custom_field_key: config.phone.customFieldKey } }
+          : {}),
       }),
     ]),
   );
