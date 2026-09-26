@@ -19,6 +19,14 @@ describe('MemberWelcomeEmailRenderer', function () {
     iconUrl: 'https://example.com/content/images/icon.png',
   };
 
+  // The first real lexicalLib.render lazily loads the Koenig renderer, jsdom and
+  // the posts service, which can take longer than the default test timeout on a
+  // busy CI runner. Pay that cost once here so tests using the real renderer
+  // only measure the render itself.
+  beforeAll(async function () {
+    await lexicalLib.render(JSON.stringify(lexicalLib.blankDocument), { target: 'email' });
+  }, 30000);
+
   beforeEach(function () {
     lexicalRenderStub = sinon.stub(lexicalLib, 'render').resolves('<p>Hello World</p>');
   });
