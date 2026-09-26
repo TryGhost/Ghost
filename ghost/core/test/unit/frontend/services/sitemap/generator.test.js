@@ -86,6 +86,39 @@ describe('Generators', function () {
     });
   });
 
+  describe('ordering', function () {
+    const addPostAt = (gen, slug, updatedAt) =>
+      gen.addUrl(
+        `http://my-ghost-blog.com/${slug}/`,
+        testUtils.DataGenerator.forKnex.createPost({ slug, updated_at: updatedAt }),
+      );
+    const locs = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+
+    it('re-sorts a resource added after a render', function () {
+      generator = new PostGenerator({ maxPerPage: 2 });
+      addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+      addPostAt(generator, 'middle', '2024-03-01T00:00:00.000Z');
+      generator.getXml(1);
+
+      addPostAt(generator, 'newest', '2024-06-01T00:00:00.000Z');
+
+      assert.deepEqual(locs(generator.getXml(1)), [
+        'http://my-ghost-blog.com/newest/',
+        'http://my-ghost-blog.com/middle/',
+      ]);
+      assert.deepEqual(locs(generator.getXml(2)), ['http://my-ghost-blog.com/older/']);
+    });
+
+    it('keeps timestamps added after rendering an empty generator', function () {
+      generator = new PostGenerator();
+      assert.equal(generator.getXml(), null);
+
+      addPostAt(generator, 'only', '2024-06-01T00:00:00.000Z');
+
+      assert.match(generator.getXml(), /<lastmod>2024-06-01T00:00:00.000Z<\/lastmod>/);
+    });
+  });
+
   describe('IndexGenerator', function () {
     beforeEach(function () {
       generator = new IndexGenerator({
@@ -282,9 +315,8 @@ describe('Generators', function () {
           updated_at: '2024-01-01T00:00:00.000Z',
         });
 
-        const [record] = userGenerator.nodeLookup;
-        assert.equal(record.imageLoc, null);
-        assert.equal(record.loc, 'https://myblog.com/author/jo/');
+        assert.deepEqual(userGenerator.imageLocs, [null]);
+        assert.deepEqual(userGenerator.locs, ['https://myblog.com/author/jo/']);
       });
 
       it('escapes xml special characters in urls and captions', function () {
