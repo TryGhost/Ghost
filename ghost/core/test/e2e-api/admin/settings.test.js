@@ -18,7 +18,7 @@ const limits = require('../../../core/server/services/limits');
 const { anyErrorId } = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 113;
+const CURRENT_SETTINGS_COUNT = 114;
 
 const settingsMatcher = {};
 
@@ -35,16 +35,16 @@ const labsSettingMatcher = {
 const matchSettingsArray = (length) => {
   const settingsArray = new Array(length).fill(settingsMatcher);
 
-  if (length > 38) {
+  if (length > 39) {
     // Added a setting that is alphabetically before 'public_hash'? then you need to increment this counter.
     // Item at index x is the public hash, which is always different
-    settingsArray[38] = publicHashSettingMatcher;
+    settingsArray[39] = publicHashSettingMatcher;
   }
 
-  if (length > 74) {
+  if (length > 75) {
     // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
     // Item at index x is the lab settings, which changes as we add and remove features
-    settingsArray[74] = labsSettingMatcher;
+    settingsArray[75] = labsSettingMatcher;
   }
 
   return settingsArray;
@@ -211,6 +211,28 @@ describe('Settings API', function () {
         });
 
       emailMockReceiver.assertSentEmailCount(0);
+    });
+
+    it('Can edit the robots_txt setting', async function () {
+      const robotsTxt = 'User-agent: *\nSitemap: {{blog-url}}/sitemap.xml\nDisallow: /secret/\n';
+
+      const { body } = await agent
+        .put('settings/')
+        .body({
+          settings: [{ key: 'robots_txt', value: robotsTxt }],
+        })
+        .expectStatus(200)
+        .matchBodySnapshot({
+          settings: matchSettingsArray(CURRENT_SETTINGS_COUNT),
+        })
+        .matchHeaderSnapshot({
+          'content-length': anyContentLength,
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        });
+
+      const robotsTxtSetting = body.settings.find((setting) => setting.key === 'robots_txt');
+      assert.equal(robotsTxtSetting?.value, robotsTxt);
     });
 
     it('removes image size prefixes when setting the icon', async function () {

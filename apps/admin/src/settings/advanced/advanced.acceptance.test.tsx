@@ -388,6 +388,52 @@ describe('Advanced settings', () => {
     },
   );
 
+  it('edits robots.txt inline from Labs', async () => {
+    fakeSettingsScreens();
+    const settingsApi = fakeEditSettings();
+    await renderAdminApp('/settings/labs', {
+      boot: {
+        browseSettings: {
+          response: settingsResponse({ settings: { robots_txt: 'User-agent: *\n' } }),
+        },
+      },
+    });
+
+    const section = settingsScreen.section('labs');
+    await section.getByRole('button', { name: 'Open' }).click();
+    await section.getByRole('tab', { name: 'Beta features' }).click();
+    await section.getByTestId('robots-txt').getByRole('button', { name: 'Edit' }).click();
+
+    const modal = page.getByTestId('modal-robots-txt-editor');
+    await expect
+      .element(modal.getByRole('heading', { name: 'Custom robots.txt file' }))
+      .toBeVisible();
+
+    const editor = modal.getByRole('textbox').first();
+    await expect.element(editor).toBeVisible();
+    await expect.element(editor).toHaveTextContent('User-agent: *');
+    const robotsTxt = 'User-agent: *\nSitemap: {{blog-url}}/sitemap.xml\nDisallow: /secret/\n';
+    await editor.fill(robotsTxt);
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect.element(settingsScreen.successToast()).toHaveTextContent(/robots\.txt updated/i);
+    await expect(settingsApi).toHaveEditedSettings([{ key: 'robots_txt', value: robotsTxt }]);
+    await expect(modal).toHaveCount(0);
+  });
+
+  it('hides the robots.txt editor when the backend has no robots_txt setting', async () => {
+    fakeSettingsScreens();
+    const response = settingsResponse();
+    response.settings = response.settings.filter(({ key }) => key !== 'robots_txt');
+    await renderAdminApp('/settings/labs', { boot: { browseSettings: { response } } });
+
+    const section = settingsScreen.section('labs');
+    await section.getByRole('button', { name: 'Open' }).click();
+    await section.getByRole('tab', { name: 'Beta features' }).click();
+    await expect.element(section.getByTestId('routes')).toBeVisible();
+    await expect(section.getByTestId('robots-txt')).toHaveCount(0);
+  });
+
   it('shows a validation error and keeps the editor open when saving invalid redirects', async () => {
     const errorMessage =
       'Could not parse YAML: end of the stream or a document separator is expected.';

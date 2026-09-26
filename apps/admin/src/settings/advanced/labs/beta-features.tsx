@@ -1,6 +1,7 @@
 import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, { useState } from 'react';
+import RobotsTxtEditorModal from './robots-txt-editor-modal';
 import YamlFileEditorModal from './yaml-file-editor-modal';
 import { ActionList, Button, Dropzone } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
@@ -26,7 +27,10 @@ const BetaFeatures: React.FC = () => {
     boolean | undefined
   >;
   const isAutomationsEnabled = !!labs.automations;
-  const [openEditor, setOpenEditor] = useState<'redirects' | 'routes' | null>(null);
+  // robots_txt only exists on backends that ship the setting; older backends hide the editor
+  const hasRobotsTxtSetting = settings.some((setting) => setting.key === 'robots_txt');
+  const robotsTxt = getSettingValue<string>(settings, 'robots_txt') || '';
+  const [openEditor, setOpenEditor] = useState<'redirects' | 'routes' | 'robots-txt' | null>(null);
 
   const uploadRedirectsFile = async (file: File) => {
     try {
@@ -54,6 +58,7 @@ const BetaFeatures: React.FC = () => {
 
   const openRedirectsEditor = () => setOpenEditor('redirects');
   const openRoutesEditor = () => setOpenEditor('routes');
+  const openRobotsTxtEditor = () => setOpenEditor('robots-txt');
   const closeEditor = () => setOpenEditor(null);
 
   return (
@@ -206,6 +211,18 @@ const BetaFeatures: React.FC = () => {
           testId="routes"
           title="Routes"
         />
+        {hasRobotsTxtSetting && (
+          <LabItem
+            action={
+              <Button size="sm" type="button" variant="secondary" onClick={openRobotsTxtEditor}>
+                Edit
+              </Button>
+            }
+            detail="Serve a custom robots.txt in place of the default or your theme's file"
+            testId="robots-txt"
+            title="Custom robots.txt file"
+          />
+        )}
       </ActionList>
       {openEditor === 'redirects' && (
         <DialogPortal>
@@ -259,6 +276,11 @@ const BetaFeatures: React.FC = () => {
             onClose={closeEditor}
             onUpload={(file: File) => uploadRoutes(file)}
           />
+        </DialogPortal>
+      )}
+      {openEditor === 'robots-txt' && (
+        <DialogPortal>
+          <RobotsTxtEditorModal initialContent={robotsTxt} onClose={closeEditor} />
         </DialogPortal>
       )}
     </>
