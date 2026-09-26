@@ -1,4 +1,5 @@
 const moment = require('moment');
+const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils').default;
 const sitemapXml = require('./sitemap-xml');
 
@@ -17,6 +18,8 @@ class BaseSiteMapGenerator {
     // Indexes into the arrays above, newest first. Dropped wherever
     // siteMapContent is.
     this.order = null;
+    // Kept apart from locs so it survives releaseRecords().
+    this.count = 0;
     this.siteMapContent = new Map();
     this.lastModified = 0;
     this.maxPerPage = 50000;
@@ -28,7 +31,19 @@ class BaseSiteMapGenerator {
    * they are stored.
    */
   get size() {
-    return this.locs.length;
+    return this.count;
+  }
+
+  get pageCount() {
+    return Math.ceil(this.count / this.maxPerPage);
+  }
+
+  /**
+   * Whether the records have been dropped because every page is rendered.
+   * A released generator can still serve its pages but takes no more urls.
+   */
+  get released() {
+    return this.locs === null;
   }
 
   hasCanonicalUrl(datum, url) {
@@ -108,6 +123,12 @@ class BaseSiteMapGenerator {
   }
 
   addUrl(url, datum) {
+    if (this.released) {
+      throw new errors.IncorrectUsageError({
+        message: 'Cannot add a url to a sitemap generator whose pages are all rendered',
+      });
+    }
+
     if (this.hasCanonicalUrl(datum, url)) {
       return;
     }
@@ -188,9 +209,32 @@ class BaseSiteMapGenerator {
       return this.siteMapContent.get(page);
     }
 
+    // Not cached, so any page number a request carries cannot grow the map.
+    // This is also the only way a released generator gets here.
+    if (!(page >= 1 && page <= this.pageCount)) {
+      return null;
+    }
+
     const content = this.generateXmlFromNodes(page);
     this.siteMapContent.set(page, content);
+
+    if (this.siteMapContent.size === this.pageCount) {
+      this.releaseRecords();
+    }
+
     return content;
+  }
+
+  /**
+   * Once every page is rendered, the pages hold everything the records did.
+   * Rebuilds replace the generator rather than adding to it, so holding the
+   * records until then would keep the sitemap in memory twice.
+   */
+  releaseRecords() {
+    this.locs = null;
+    this.timestamps = null;
+    this.imageLocs = null;
+    this.order = null;
   }
 
   /**
@@ -199,7 +243,7 @@ class BaseSiteMapGenerator {
    * @param {string|null} imageLoc absolute image url
    */
   addRecord(loc, ts, imageLoc) {
-    const index = this.locs.length;
+    const index = this.count;
     if (index === this.timestamps.length) {
       const grown = new Float64Array(Math.max(INITIAL_CAPACITY, index * 2));
       grown.set(this.timestamps);
@@ -209,6 +253,7 @@ class BaseSiteMapGenerator {
     this.locs.push(loc);
     this.timestamps[index] = ts;
     this.imageLocs.push(imageLoc);
+    this.count += 1;
   }
 
   reset() {
@@ -216,6 +261,7 @@ class BaseSiteMapGenerator {
     this.timestamps = new Float64Array(INITIAL_CAPACITY);
     this.imageLocs = [];
     this.order = null;
+    this.count = 0;
     this.siteMapContent.clear();
     this.lastModified = 0;
   }
