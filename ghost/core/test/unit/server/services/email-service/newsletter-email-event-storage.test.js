@@ -1,6 +1,7 @@
 const NewsletterEmailEventStorage = require('../../../../../core/server/services/email-service/newsletter-email-event-storage');
 
 const sinon = require('sinon');
+const createKnex = require('knex');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const { createDb, createPrometheusClient } = require('./utils');
@@ -40,6 +41,112 @@ describe('Email Event Storage', function () {
     sinon.restore();
   });
 
+  for (const batched of [false, true]) {
+    it(`counts only newly stored recipient events with batching ${batched}`, async function () {
+      const db = createDb();
+      db.update.resolves(1);
+      const raw = sinon.stub(db.knex, 'raw');
+      const storage = createEventStorage({
+        db,
+        config: { get: () => batched },
+      });
+      sinon.stub(storage, 'saveFailure').resolves();
+      const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
+      const handlers = ['handleDelivered', 'handleOpened', 'handlePermanentFailed'];
+
+      // A first pass stores the recipient timestamps; replaying it changes no rows.
+      for (const affectedRows of [1, 0]) {
+        db.update.resolves(affectedRows);
+        raw.resolves([{ affectedRows }]);
+        for (const handler of handlers) {
+          assert.equal(await storage[handler](event), batched ? 0 : affectedRows);
+        }
+        const counts = await storage.flushBatchedUpdates();
+        assert.deepEqual(counts, {
+          storedDelivered: batched ? affectedRows : 0,
+          storedOpened: batched ? affectedRows : 0,
+          storedPermanentFailed: batched ? affectedRows : 0,
+        });
+      }
+    });
+  }
+
+  for (const handler of ['handleDelivered', 'handleOpened', 'handlePermanentFailed']) {
+    it(`validates sequential counts from ${handler}`, async function () {
+      const db = createDb();
+      db.update.resolves(1);
+      const storage = createEventStorage({ db, config: { get: () => false } });
+      sinon.stub(storage, 'saveFailure').resolves();
+      const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
+
+      db.update.resolves('1');
+      assert.equal(await storage[handler](event), 1);
+      db.update.resolves(-1);
+      await assert.rejects(storage[handler](event), { name: 'ZodError' });
+    });
+  }
+
+  it('flushes SQLite batches, counts only new timestamps, and clears pending updates', async function () {
+    const knex = createKnex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+    try {
+      await knex.schema.createTable('email_recipients', (table) => {
+        table.string('id').primary();
+        table.datetime('delivered_at');
+        table.datetime('opened_at');
+        table.datetime('failed_at');
+      });
+      await knex('email_recipients').insert([
+        { id: 'new-recipient' },
+        {
+          id: 'seen-recipient',
+          delivered_at: '2026-01-01 00:00:00',
+          opened_at: '2026-01-01 00:00:00',
+          failed_at: '2026-01-01 00:00:00',
+        },
+      ]);
+      const storage = createEventStorage({ db: { knex }, config: { get: () => true } });
+      sinon.stub(storage, 'saveFailure').resolves();
+      const raw = sinon.spy(knex, 'raw');
+
+      for (const emailRecipientId of ['new-recipient', 'seen-recipient']) {
+        const event = { emailRecipientId, timestamp: new Date('2026-01-02T00:00:00Z') };
+        await storage.handleDelivered(event);
+        await storage.handleOpened(event);
+        await storage.handlePermanentFailed(event);
+      }
+      const counts = await storage.flushBatchedUpdates();
+      assert.deepEqual(counts, { storedDelivered: 1, storedOpened: 1, storedPermanentFailed: 1 });
+      const recipient = await knex('email_recipients').where({ id: 'new-recipient' }).first();
+      assert.equal(recipient.delivered_at, '2026-01-02 00:00:00');
+      assert.equal(recipient.opened_at, '2026-01-02 00:00:00');
+      assert.equal(recipient.failed_at, '2026-01-02 00:00:00');
+
+      raw.resetHistory();
+      await storage.flushBatchedUpdates();
+      sinon.assert.notCalled(raw);
+
+      const replay = {
+        emailRecipientId: 'new-recipient',
+        timestamp: new Date('2026-01-02T00:00:00Z'),
+      };
+      await storage.handleDelivered(replay);
+      await storage.handleOpened(replay);
+      await storage.handlePermanentFailed(replay);
+      const replayCounts = await storage.flushBatchedUpdates();
+      assert.deepEqual(replayCounts, {
+        storedDelivered: 0,
+        storedOpened: 0,
+        storedPermanentFailed: 0,
+      });
+    } finally {
+      await knex.destroy();
+    }
+  });
+
   describe('Constructor', function () {
     it("doesn't throw", function () {
       createEventStorage({});
@@ -62,6 +169,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const eventHandler = createEventStorage({ db });
     await eventHandler.handleDelivered(event);
     sinon.assert.calledOnce(db.update);
@@ -71,6 +179,7 @@ describe('Email Event Storage', function () {
   it('Records the event stored metric when handling email delivered events', async function () {
     const event = EmailDeliveredEvent.create({});
     const db = createDb();
+    db.update.resolves(1);
     const prometheusClient = createPrometheusClient();
     const eventHandler = createEventStorage({ db, prometheusClient });
     sinon.stub(eventHandler, 'recordEventStored').resolves();
@@ -88,6 +197,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const eventHandler = createEventStorage({ db });
     await eventHandler.handleOpened(event);
     sinon.assert.calledOnce(db.update);
@@ -97,6 +207,7 @@ describe('Email Event Storage', function () {
   it('Records the event stored metric when handling email opened events', async function () {
     const event = EmailOpenedEvent.create({});
     const db = createDb();
+    db.update.resolves(1);
     const prometheusClient = createPrometheusClient();
     const eventHandler = createEventStorage({ db, prometheusClient });
     sinon.stub(eventHandler, 'recordEventStored').resolves();
@@ -119,6 +230,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const existing = {
       id: 1,
       get: (key) => {
@@ -165,6 +277,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const existing = {
       id: 1,
       get: (key) => {
@@ -210,6 +323,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const existing = {
       id: 1,
       get: (key) => {
@@ -256,6 +370,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const EmailRecipientFailure = {
       transaction: async function (callback) {
         return await callback(1);
@@ -291,6 +406,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const EmailRecipientFailure = {
       transaction: async function (callback) {
         return await callback(1);
@@ -325,6 +441,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const EmailRecipientFailure = {
       transaction: async function (callback) {
         return await callback(1);
@@ -356,6 +473,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const eventHandler = createEventStorage({
       db,
       models: {},
@@ -379,6 +497,7 @@ describe('Email Event Storage', function () {
     });
 
     const db = createDb();
+    db.update.resolves(1);
     const existing = {
       id: 1,
       get: (key) => {

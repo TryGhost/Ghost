@@ -213,6 +213,40 @@ describe('EmailAnalyticsServiceWrapper', function () {
     );
   });
 
+  it('logs newly stored recipient events separately from fetched events in the missing pass', async function () {
+    const infoLog = sinon.stub(logging, 'info');
+    const wrapper = initWrapper('newsletters');
+    const fetch = sinon.stub(wrapper.service, 'fetchMissing');
+    fetch.onFirstCall().resolves(
+      createFetchResult({
+        eventCount: 100,
+        result: new EventProcessingResult({
+          opened: 60,
+          delivered: 30,
+          permanentFailed: 10,
+          storedOpened: 2,
+          storedDelivered: 1,
+          storedPermanentFailed: 1,
+        }),
+      }),
+    );
+    fetch.onSecondCall().resolves(createFetchResult({ eventCount: 100 }));
+
+    assert.equal(await wrapper.fetchMissing(), 100);
+    assert.equal(await wrapper.fetchMissing(), 100);
+
+    const [[first, message], [replay, replayMessage]] = jobCompletionLogs(infoLog);
+    assert.equal(first.system.task, 'missing');
+    assert.equal(first.system.event_count, 100);
+    assert.equal(first.system.new_recipient_event_count, 4);
+    assert.equal(first.system.new_opened_count, 2);
+    assert.equal(first.system.new_delivered_count, 1);
+    assert.equal(first.system.new_permanent_failed_count, 1);
+    assert.match(message, /New recipient events: 4/);
+    assert.equal(replay.system.new_recipient_event_count, 0);
+    assert.match(replayMessage, /New recipient events: 0/);
+  });
+
   it('logs and preserves initial schedule restoration failures', async function () {
     const errorLog = sinon.stub(logging, 'error');
     const wrapper = logLatestOpenedJob('newsletters');
