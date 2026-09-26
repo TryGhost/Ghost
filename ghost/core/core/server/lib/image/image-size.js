@@ -126,8 +126,10 @@ class ImageSize {
         imageUrl = 'http:' + imageUrl;
       }
 
-      const extensionMatch = imageUrl.match(/(?:\.)([a-zA-Z]{3,4})(\?|$)/) || [];
-      const extension = (extensionMatch[1] || '').toLowerCase();
+      const extension = path
+        .extname(parsedUrl.pathname || '')
+        .slice(1)
+        .toLowerCase();
 
       if (FETCH_ONLY_FORMATS.includes(extension)) {
         resolve(this._fetchImageSizeFromUrl(imageUrl));
