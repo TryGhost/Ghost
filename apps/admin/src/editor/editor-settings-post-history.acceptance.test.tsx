@@ -78,6 +78,26 @@ const BARE = postRevision({
 // Deliberately out of order: the list is the component's to sort.
 const REVISIONS = [MIDDLE, NEWEST, OLDEST];
 
+// Two saves within one second, in the oldest-first order the API sends them.
+const SAME_SECOND_OLDER = postRevision({
+  id: 'rev-same-second-older',
+  title: 'Saved first',
+  lexical: buildLexicalParagraph('Saved first'),
+  post_status: 'draft',
+  created_at: '2026-02-04T09:00:00.000Z',
+  created_at_ts: 1770195600100,
+  author: { id: ADA.id, name: ADA.name },
+});
+const SAME_SECOND_NEWER = postRevision({
+  id: 'rev-same-second-newer',
+  title: 'Saved second',
+  lexical: buildLexicalParagraph('Saved second'),
+  post_status: 'draft',
+  created_at: '2026-02-04T09:00:00.000Z',
+  created_at_ts: 1770195600900,
+  author: { id: GRACE.id, name: GRACE.name },
+});
+
 function editorChrome() {
   fakeEditorChrome();
   fakeTiers([]);
@@ -224,6 +244,29 @@ describe('Post settings post history', () => {
     await expect
       .element(editorScreen.postHistoryRevision(2))
       .toHaveTextContent('1 Feb 2026, 09:00');
+  });
+
+  it('labels the newer of two versions saved in the same second as latest', async () => {
+    fakeSavablePost({ post_revisions: [SAME_SECOND_OLDER, SAME_SECOND_NEWER] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openHistory();
+
+    await expect(editorScreen.postHistoryRevisions()).toHaveCount(2);
+    await expect
+      .element(editorScreen.postHistoryRevision(0))
+      .toHaveTextContent(postHistoryLatestText);
+    await expect.element(editorScreen.postHistoryRevision(0)).toHaveTextContent('Grace Hopper');
+    await expect.element(editorScreen.postHistoryPreviewTitle()).toHaveTextContent('Saved second');
+    await expect(editorScreen.postHistoryRevision(0).restore()).toHaveCount(0);
+
+    await editorScreen.postHistoryRevision(1).select().click();
+
+    await expect
+      .element(editorScreen.postHistoryRevision(1))
+      .not.toHaveTextContent(postHistoryLatestText);
+    await expect.element(editorScreen.postHistoryRevision(1)).toHaveTextContent('Ada Lovelace');
+    await expect.element(editorScreen.postHistoryPreviewTitle()).toHaveTextContent('Saved first');
+    await expect.element(editorScreen.postHistoryRevision(1).restore()).toBeVisible();
   });
 
   it('previews the version the writer selects', async () => {
