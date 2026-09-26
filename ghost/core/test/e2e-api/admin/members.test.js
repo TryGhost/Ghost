@@ -2704,6 +2704,103 @@ describe('Members API', function () {
       });
   });
 
+  describe('Updates and announcements preference', function () {
+    let memberId;
+
+    async function createMemberWithPreference(preference) {
+      const member = { email: 'updates-preference@test.com', newsletters: [] };
+      if (preference !== undefined) {
+        member.enable_updates_and_announcements = preference;
+      }
+      const { body } = await agent
+        .post('/members/')
+        .body({ members: [member] })
+        .expectStatus(201);
+      memberId = body.members[0].id;
+      return body.members[0];
+    }
+
+    async function readMember() {
+      const { body } = await agent.get(`/members/${memberId}/`).expectStatus(200);
+      return body.members[0];
+    }
+
+    afterEach(async function () {
+      if (memberId) {
+        await agent.delete(`/members/${memberId}/`).expectStatus(204);
+        memberId = undefined;
+      }
+    });
+
+    it.each([true, false, null])('Persists %s when creating a member', async function (preference) {
+      const created = await createMemberWithPreference(preference);
+      assert.equal(created.enable_updates_and_announcements, preference);
+      assert.equal((await readMember()).enable_updates_and_announcements, preference);
+    });
+
+    it('Defaults to null when the preference is omitted on create', async function () {
+      const created = await createMemberWithPreference();
+      assert.equal(created.enable_updates_and_announcements, null);
+      assert.equal((await readMember()).enable_updates_and_announcements, null);
+    });
+
+    it.each([
+      [null, true],
+      [null, false],
+      [false, true],
+      [true, false],
+      [true, null],
+      [false, null],
+    ])('Persists a change from %s to %s', async function (initial, updated) {
+      await createMemberWithPreference(initial);
+
+      const { body } = await agent
+        .put(`/members/${memberId}/`)
+        .body({ members: [{ enable_updates_and_announcements: updated }] })
+        .expectStatus(200);
+
+      assert.equal(body.members[0].enable_updates_and_announcements, updated);
+      assert.equal((await readMember()).enable_updates_and_announcements, updated);
+    });
+
+    it.each([true, false, null])(
+      'Preserves %s when an unrelated edit omits the preference',
+      async function (preference) {
+        await createMemberWithPreference(preference);
+
+        await agent
+          .put(`/members/${memberId}/`)
+          .body({ members: [{ name: 'Updated name' }] })
+          .expectStatus(200);
+
+        const saved = await readMember();
+        assert.equal(saved.name, 'Updated name');
+        assert.equal(saved.enable_updates_and_announcements, preference);
+      },
+    );
+
+    it.each([true, false, null])(
+      'Preserves %s when newsletter subscriptions change',
+      async function (preference) {
+        await createMemberWithPreference(preference);
+
+        for (const subscriptions of [[{ id: newsletters[0].id }], []]) {
+          await agent
+            .put(`/members/${memberId}/`)
+            .body({ members: [{ newsletters: subscriptions }] })
+            .expectStatus(200);
+
+          const saved = await readMember();
+          assert.deepEqual(
+            saved.newsletters.map(({ id }) => id),
+            subscriptions.map(({ id }) => id),
+          );
+          assert.equal(saved.enable_updates_and_announcements, preference);
+        }
+      },
+    );
+  });
+
   it('Can subscribe to a newsletter', async function () {
     const clock = mockSystemTime(Date.now());
     const memberToChange = {
