@@ -109,6 +109,9 @@ export default class SearchIndex {
     try {
       const url = `${this.apiUrl}/ghost/api/content/search-index/posts/?key=${this.apiKey}`;
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch posts: ${response.status}`);
+      }
       const json = await response.json();
 
       return json.posts;
@@ -137,6 +140,9 @@ export default class SearchIndex {
     try {
       const url = `${this.apiUrl}/ghost/api/content/search-index/authors/?key=${this.apiKey}`;
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch authors: ${response.status}`);
+      }
       const json = await response.json();
 
       return json.authors;
@@ -165,6 +171,9 @@ export default class SearchIndex {
     try {
       const url = `${this.apiUrl}/ghost/api/content/search-index/tags/?key=${this.apiKey}`;
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch tags: ${response.status}`);
+      }
       const json = await response.json();
 
       return json.tags;
