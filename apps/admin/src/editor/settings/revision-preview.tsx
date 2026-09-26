@@ -95,7 +95,7 @@ export function RevisionPreview({
 
   return (
     <div className="mx-auto w-full max-w-[740px]" data-testid={postHistoryPreview}>
-      <ErrorBoundary name="this version">
+      <ErrorBoundary name="this version" onError={reportKoenigError}>
         <Suspense
           fallback={
             <Inline className="py-10" justify="center">

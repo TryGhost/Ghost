@@ -14,11 +14,13 @@ import {
   type SaveCompletion,
   type ScheduleOptions,
   type SaveEngineState,
+  type SaveFailure,
   type SaveOutcome,
   type SaveRequest,
   type SaveResult,
 } from '@/editor/engine/save-engine';
 import type {
+  ChangeReasonCode,
   EditablePostPatch,
   EditablePostProjection,
   RestoredRevision,
@@ -27,6 +29,7 @@ import type {
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import { pick } from '@/editor/engine/pick';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
+import type { EditorErrorContext } from '@/editor/report-error';
 import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
@@ -53,6 +56,20 @@ type SlugEditOutcome = 'applied' | 'unchanged' | 'failed';
 /** The full acknowledged record travels with the result so reconcile can rebase on it. */
 export interface EditorSaveResult extends SaveResult {
   post: EditorRecord;
+}
+
+/** A failed request with the post it was for: its server id, if any, and its persisted status. */
+export interface EditorSaveFailure extends SaveFailure {
+  readonly postId: string | null;
+  readonly status: PostStatus;
+}
+
+/** A leave the writer has to confirm, with why the tracker holds the post dirty. */
+export interface EditorLeaveConfirmation {
+  readonly postId: string | null;
+  readonly status: PostStatus;
+  readonly engineState: SaveEngineState['kind'];
+  readonly reasons: ChangeReasonCode[];
 }
 
 /** Fields the engine writes onto the request rather than reading from the live post. */
@@ -106,7 +123,11 @@ export interface EditorSessionOptions {
   transport: EditorSessionTransport;
   /** Called once the create acknowledges; the caller replaces the URL. */
   onIdAcquired: (id: string) => void;
-  onError: (error: unknown) => void;
+  onError: (error: unknown, context?: EditorErrorContext) => void;
+  /** Called once per request that settled as failed. */
+  onSaveFailed?: (failure: EditorSaveFailure) => void;
+  /** Called when a leave request answers `confirm`. */
+  onLeaveConfirmed?: (leave: EditorLeaveConfirmation) => void;
 }
 
 /** The state React renders, published together after a session change. */
@@ -223,6 +244,8 @@ export function createEditorSession({
   transport,
   onIdAcquired,
   onError,
+  onSaveFailed,
+  onLeaveConfirmed,
 }: EditorSessionOptions): EditorSession {
   let identity: PersistedIdentity = record
     ? { id: record.id, updatedAt: record.updated_at ?? '' }
@@ -614,6 +637,7 @@ export function createEditorSession({
       notifyChanged();
     },
     onListenerError: onError,
+    onSaveFailed: (failure) => onSaveFailed?.({ ...failure, postId: identity.id, status }),
   });
 
   // Seed the external-store snapshot before the session is handed to React.
@@ -836,9 +860,38 @@ export function createEditorSession({
 
     reauthSucceeded: () => engine.reauthSucceeded(),
     reauthAbandoned: () => engine.reauthAbandoned(),
-    leaveRequested: () => engine.leaveRequested(),
+    leaveRequested: async () => {
+      const decision = await engine.leaveRequested();
+      if (decision === 'confirm' && !disposed) {
+        try {
+          onLeaveConfirmed?.({
+            postId: identity.id,
+            status,
+            engineState: engine.getState().kind,
+            reasons: tracker.verdict().reasons.map((reason) => reason.code),
+          });
+        } catch (error) {
+          onError(error);
+        }
+      }
+      return decision;
+    },
 
     dispose: () => {
+      if (disposed) {
+        return;
+      }
+      // A draft leaving with a title but a slug still derived from the default title.
+      if (
+        status === 'draft' &&
+        live.slug.includes('untitled') &&
+        live.title.trim() &&
+        live.title !== DEFAULT_TITLE
+      ) {
+        onError(new Error('Draft post has title set with untitled slug'), {
+          extra: { slug: live.slug, title: live.title },
+        });
+      }
       disposed = true;
       pendingSlugEdits.clear();
       stopSlugNotifications();

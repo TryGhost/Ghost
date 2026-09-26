@@ -238,6 +238,29 @@ references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
 for `useSyncExternalStore` and lets it stand in for those values as a dependency.
 
+## What the session reports
+
+Failures never reach the writer as thrown errors; the session reports them. Every
+request that ran and failed is reported once, with the command it ran, the
+error, whether the post already had a server id, the post's persisted status,
+the id, and how long the request took. Queued work a failure dropped is not
+reported on its own. An expired session is reported only when re-authentication
+is abandoned, not when it is retried. A leave the writer has to
+confirm is reported with the reason codes the tracker holds the post dirty for.
+A draft disposed with a title but a slug still derived from the default title is
+reported as an error. A throwing subscriber or slug listener is reported as an
+error, and so is a slug edit the generator rejected.
+
+Sentry receives these through the editor's own reporter, with the response
+status and URL when the transport answered. Validation failures, host limits and
+an unreachable server are not sent: they are the writer's or the host's to act
+on. A failed request that took more than two seconds is sent as a second event
+with its timing. Every error banner the writer is shown — a failed save, a
+collision, a deleted post — is also sent once as a message carrying the text
+they read. A Koenig instance that crashes its error boundary is reported as a
+Lexical failure. Sentry stays optional: without a DSN the calls are no-ops, and
+an error is still logged to the console.
+
 ## The autosave debounce
 
 The autosave debounce is a boot value: the session reads it from the config the
