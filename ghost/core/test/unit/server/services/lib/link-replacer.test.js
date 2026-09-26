@@ -9,6 +9,46 @@ describe('LinkReplacementService', function () {
   });
 
   describe('replace', function () {
+    it('replaces single-quoted relative links without changing other attributes', async function () {
+      const html = `<a href='/story/' title="https://example.com/title">Story</a>`;
+      const replaceLink = sinon.spy((url) => url);
+
+      const replaced = await linkReplacer.replace(html, replaceLink, {
+        base: 'https://example.com/news/',
+      });
+
+      assert.equal(
+        replaced,
+        `<a href='https://example.com/story/' title="https://example.com/title">Story</a>`,
+      );
+      sinon.assert.calledOnce(replaceLink);
+      assert.equal(replaceLink.firstCall.args[1], '/story/');
+    });
+
+    it('escapes apostrophes in replacements for single-quoted attributes', async function () {
+      const html = `<a href='https://example.com/story/'>Story</a>`;
+
+      const replaced = await linkReplacer.replace(
+        html,
+        () => "https://example.com/reader's-story/",
+      );
+
+      assert.equal(replaced, `<a href='https://example.com/reader&#39;s-story/'>Story</a>`);
+    });
+
+    it('replaces mixed quote styles without shifting later links', async function () {
+      const html = `<a href='/one/'>One</a><a href="/two/">Two</a>`;
+
+      const replaced = await linkReplacer.replace(html, (url) => url, {
+        base: 'https://example.com/',
+      });
+
+      assert.equal(
+        replaced,
+        `<a href='https://example.com/one/'>One</a><a href="https://example.com/two/">Two</a>`,
+      );
+    });
+
     it('Can replace to URL', async function () {
       const html = '<a href="http://localhost:2368/dir/path">link</a>';
       const expected = '<a href="https://google.com/test-dir?test-query">link</a>';
