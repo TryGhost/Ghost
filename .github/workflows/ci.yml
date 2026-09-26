@@ -700,8 +700,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -828,8 +831,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -938,8 +944,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set env vars (MySQL)
         run: |
