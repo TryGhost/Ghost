@@ -71,11 +71,27 @@ describe('email event contract', () => {
     ).toBe(true);
   });
 
+  it.each(['josé@example.com', 'a&b@example.com', 'x=y@example.com', 'user@müller.de'])(
+    'preserves events for the Ghost-supported address %s',
+    (recipientEmail) => {
+      for (const type of ['delivered', 'opened', 'failed', 'complained', 'unsubscribed']) {
+        const parsed = emailEventSchema.parse({
+          ...event,
+          type,
+          recipientEmail,
+          ...(type === 'failed' ? { severity: 'permanent', suppress: true } : {}),
+        });
+        expect(parsed.recipientEmail).toBe(recipientEmail);
+      }
+    },
+  );
+
   it('rejects events that cannot be safely routed or deduplicated', () => {
     for (const invalid of [
       { id: '' },
       { family: 'welcome' },
       { recipientEmail: '' },
+      { recipientEmail: 'a'.repeat(192) },
       { providerId: '' },
       { timestamp: 'invalid' },
       { suppress: true },

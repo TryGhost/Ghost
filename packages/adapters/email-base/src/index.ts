@@ -10,7 +10,9 @@ export const emailEventSchema = z
     family: emailFamilySchema,
     type: z.enum(['delivered', 'opened', 'failed', 'unsubscribed', 'complained']),
     severity: z.enum(['temporary', 'permanent']).optional(),
-    recipientEmail: z.string().email().max(191),
+    // Ghost validates member addresses. Provider events must also accept those
+    // addresses, including international characters and uncommon local parts.
+    recipientEmail: z.string().min(1).max(191),
     providerId: z.string().max(1000).default(''),
     emailId: z.string().length(24).optional(),
     timestamp: z.union([z.date(), z.iso.datetime({ offset: true })]).pipe(z.coerce.date()),

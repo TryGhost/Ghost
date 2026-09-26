@@ -51,7 +51,11 @@ describe('Mailgun email adapter', () => {
   });
   it('rejects an unconfigured client that did not attempt a send', async () => {
     send.resolves(null);
-    await assert.rejects(adapter.sendSingle(single), { code: 'EMAIL_NOT_ACCEPTED' });
+    for (const family of ['gifts', 'automations'] as const) {
+      await assert.rejects(adapter.sendSingle({ ...single, family }), {
+        code: 'EMAIL_NOT_ACCEPTED',
+      });
+    }
   });
   it('preserves acceptance when a successful response has no tracking ID', async () => {
     send.resolves({});

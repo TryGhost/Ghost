@@ -141,6 +141,42 @@ describe('email analytics provider wiring', () => {
     }
   });
 
+  it('processes complaints for addresses accepted by Ghost without discarding them during polling', async () => {
+    const addresses = ['josé@example.com', 'a&b@example.com', 'x=y@example.com', 'user@müller.de'];
+    const events = addresses.map((recipientEmail, index) => ({
+      id: `event-${index}`,
+      family: 'automations',
+      type: 'complained',
+      recipientEmail,
+      providerId: `message-${index}`,
+      timestamp: new Date(),
+    }));
+    (deps.automationsApi.getAutomatedEmailRecipientsByMailgunIds as sinon.SinonStub).resolves(
+      events.map((event, index) => ({
+        id: `recipient-${index}`,
+        member_id: `member-${index}`,
+        member_email: event.recipientEmail,
+        mailgun_message_id: event.providerId,
+        automation_action_revision_id: 'revision',
+      })),
+    );
+    analytics.init(deps);
+    const { EventProcessingResult } =
+      await import('../../../../../core/server/services/email-analytics/event-processing-result');
+    const result = new EventProcessingResult();
+    await wrappers[1].options.createEventProcessor().processBatch(events, result, {});
+
+    assert.equal(result.complained, addresses.length);
+    assert.equal(result.unprocessable, 0);
+    assert.equal(result.processingFailures, 0);
+    for (const email of addresses) {
+      sinon.assert.calledWithMatch(deps.emailSuppressionList.handleComplaint as sinon.SinonStub, {
+        email,
+      });
+      sinon.assert.calledWith(deps.emailSuppressionList.removeComplaint as sinon.SinonStub, email);
+    }
+  });
+
   it('preserves capped and completed polling results for cursor advancement', async () => {
     analytics.init(deps);
     const request = {
@@ -171,7 +207,7 @@ describe('email analytics provider wiring', () => {
         suppress: false,
       };
       const invalid = [
-        { ...event, recipientEmail: 'invalid', timestamp: new Date(2000) },
+        { ...event, recipientEmail: '', timestamp: new Date(2000) },
         { ...event, emailId: 'invalid', timestamp: new Date(3000) },
         { ...event, type: 'failed', timestamp: new Date(4000) },
         { ...event, family: 'gifts', timestamp: new Date(5000) },
@@ -220,7 +256,7 @@ describe('email analytics provider wiring', () => {
     });
   }
 
-  it('retries a failed safety write from the same cursor after saving earlier tracking', async () => {
+  it('retries only the failed event once and advances past a persistent safety failure', async () => {
     const log = sinon.stub(logging, 'error');
     analytics.init(deps);
     const initialCursor = new Date(0);
@@ -246,38 +282,59 @@ describe('email analytics provider wiring', () => {
     const unsubscribe = deps.membersRepository.unsubscribeFromUpdates as sinon.SinonStub;
     unsubscribe.rejects(failure);
     fetch.callsFake(async ({ batchHandler }) => {
-      await batchHandler([event, { ...event, type: 'unsubscribed', timestamp: new Date(2000) }]);
+      await batchHandler([
+        event,
+        { ...event, type: 'unsubscribed', timestamp: new Date(2000) },
+        { ...event, type: 'opened', timestamp: new Date(3000) },
+      ]);
       return {};
     });
     const queries = sinon.createStubInstance(Queries);
     queries.getLastEventTimestamp.resolves(initialCursor);
     const service = new EmailAnalyticsService({ ...wrappers[1].options, queries });
 
-    await assert.rejects(service.fetchLatestNonOpenedEvents(), (error) => error === failure);
-    assert.deepEqual(service.getStatus().latest.lastEventTimestamp, initialCursor);
+    const result = await service.fetchLatestNonOpenedEvents();
+    const nextCursor = new Date(4000);
+    assert.deepEqual(service.getStatus().latest.lastEventTimestamp, nextCursor);
     sinon.assert.calledOnceWithExactly(
       deps.automationsApi.trackEmailDeliveredAndOpened as sinon.SinonStub,
       new Map([
-        ['recipient', { automationActionRevisionId: 'revision', deliveredAt: event.timestamp }],
+        [
+          'recipient',
+          {
+            automationActionRevisionId: 'revision',
+            deliveredAt: event.timestamp,
+            openedAt: new Date(3000),
+          },
+        ],
       ]),
     );
     sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe as sinon.SinonStub);
     assert.equal(
       queries.setJobTimestamp.args.some(([, status]) => status === 'finished'),
-      false,
+      true,
     );
-    sinon.assert.calledWithExactly(log, failure);
+    sinon.assert.calledTwice(unsubscribe);
+    sinon.assert.calledOnce(log);
+    assert.match(log.firstCall.firstArg.message, /after one retry/);
+    assert.equal(result.eventCount, 3);
+    assert.equal(result.result.delivered, 1);
+    assert.equal(result.result.opened, 1);
+    assert.equal(result.result.unsubscribed, 0);
+    assert.equal(result.result.processingFailures, 1);
 
-    unsubscribe.resolves();
-    const result = await service.fetchLatestNonOpenedEvents();
+    fetch.callsFake(async ({ batchHandler }) => {
+      await batchHandler([]);
+      return {};
+    });
+    await service.fetchLatestNonOpenedEvents();
     assert.deepEqual(
       fetch.args.map(([options]) => options.begin),
-      [initialCursor, initialCursor],
+      [initialCursor, nextCursor],
     );
-    assert.equal(result.result.delivered, 1);
-    assert.equal(result.result.unsubscribed, 1);
+    sinon.assert.calledTwice(unsubscribe);
     sinon.assert.calledWithExactly(unsubscribe, { id: 'member', email: 'reader@example.com' });
-    sinon.assert.calledOnce(deps.emailSuppressionList.removeUnsubscribe as sinon.SinonStub);
+    sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe as sinon.SinonStub);
   });
 
   it('propagates domain failures through the original automation processor', async () => {
@@ -291,4 +348,99 @@ describe('email analytics provider wiring', () => {
       error,
     );
   });
+
+  for (const persistent of [false, true]) {
+    it(`continues gift polling after a ${persistent ? 'persistent' : 'transient'} safety failure`, async () => {
+      const log = sinon.stub(logging, 'error');
+      const handleComplaint = deps.emailSuppressionList.handleComplaint as sinon.SinonStub;
+      if (persistent) {
+        handleComplaint.rejects(new Error('suppression failed'));
+      } else {
+        handleComplaint.onFirstCall().rejects(new Error('suppression failed'));
+      }
+      (deps.giftDeliveryService.getRecipientEmailForMessage as sinon.SinonStub).resolves(
+        'reader@example.com',
+      );
+      analytics.init(deps);
+      const event = {
+        id: 'event',
+        family: 'gifts',
+        type: 'complained',
+        recipientEmail: 'reader@example.com',
+        providerId: 'message',
+        timestamp: new Date(1000),
+      };
+      const { EventProcessingResult } =
+        await import('../../../../../core/server/services/email-analytics/event-processing-result');
+      const result = new EventProcessingResult();
+      await wrappers[2].options
+        .createEventProcessor()
+        .processBatch(
+          [
+            { ...event, type: 'delivered' },
+            event,
+            { ...event, type: 'delivered', timestamp: new Date(2000) },
+          ],
+          result,
+          {},
+        );
+
+      sinon.assert.calledTwice(handleComplaint);
+      sinon.assert.calledTwice(deps.giftDeliveryService.recordOutcome as sinon.SinonStub);
+      assert.equal(
+        (deps.emailSuppressionList.removeComplaint as sinon.SinonStub).callCount,
+        persistent ? 0 : 1,
+      );
+      assert.equal(result.delivered, 2);
+      assert.equal(result.complained, persistent ? 0 : 1);
+      assert.equal(result.processingFailures, persistent ? 1 : 0);
+      assert.equal(log.callCount, persistent ? 1 : 0);
+    });
+  }
+
+  for (const family of ['automations', 'gifts'] as const) {
+    it(`still propagates ${family} webhook safety failures without skipping or retrying`, async () => {
+      const event = {
+        id: 'event',
+        family,
+        type: 'complained',
+        recipientEmail: 'reader@example.com',
+        providerId: 'message',
+        timestamp: new Date(),
+      };
+      const failure = new Error('suppression failed');
+      (deps.emailSuppressionList.handleComplaint as sinon.SinonStub).rejects(failure);
+      (deps.automationsApi.getAutomatedEmailRecipientsByMailgunIds as sinon.SinonStub).resolves([
+        {
+          id: 'recipient',
+          member_id: 'member',
+          member_email: event.recipientEmail,
+          mailgun_message_id: event.providerId,
+          automation_action_revision_id: 'revision',
+        },
+      ]);
+      (deps.giftDeliveryService.getRecipientEmailForMessage as sinon.SinonStub).resolves(
+        event.recipientEmail,
+      );
+      deps.provider = {
+        source: 'test',
+        getEventSource: () => ({
+          type: 'webhook',
+          verify: sinon.stub().resolves({ events: [event] }),
+        }),
+      };
+      analytics.init(deps);
+
+      await assert.rejects(
+        analytics.getEventService().webhook('test', {
+          body: Buffer.from('{}'),
+          headers: {},
+        }),
+        (err) => err === failure,
+      );
+
+      sinon.assert.calledOnce(deps.emailSuppressionList.handleComplaint as sinon.SinonStub);
+      sinon.assert.notCalled(deps.emailSuppressionList.removeComplaint as sinon.SinonStub);
+    });
+  }
 });

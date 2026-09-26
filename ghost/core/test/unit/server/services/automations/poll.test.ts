@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import Mailgun from '../../../../../core/server/adapters/email/Mailgun';
+// @ts-expect-error This module lacks type definitions.
+import MailgunClient from '../../../../../core/server/services/lib/mailgun-client';
 
 import { poll } from '../../../../../core/server/services/automations/poll';
 import type { AutomationStepToRun } from '../../../../../core/server/services/automations/automations-repository';
@@ -655,6 +658,43 @@ describe('automations poll', function () {
     sinon.assert.calledOnceWithExactly(automationsApi.retryStep, step, retryAt);
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, retryAt);
   });
+
+  for (const attempts of [1, 10]) {
+    it(`handles an unconfigured Mailgun provider on automation attempt ${attempts}`, async function () {
+      sinon.stub(MailgunClient.prototype, 'getInstance').returns(null);
+      const adapter = new Mailgun();
+      memberWelcomeEmailService.api.sendAutomationEmail.callsFake(async ({ member, email }) =>
+        adapter.sendSingle({
+          family: 'automations',
+          to: member.email,
+          from: 'site@example.com',
+          subject: email.subject,
+          html: '<p>Automation</p>',
+          text: 'Automation',
+        }),
+      );
+      const step = buildEmailStep({ step_attempts: attempts });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      const startedAt = Date.now();
+
+      await poll(options);
+
+      sinon.assert.notCalled(automationsApi.recordEmailSent);
+      sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+      sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
+      if (attempts < 10) {
+        const retryAt = automationsApi.retryStep.firstCall.args[1];
+        assert.ok(Math.abs(retryAt.getTime() - (startedAt + RETRY_DELAY_MS)) < 2000);
+        sinon.assert.calledOnceWithExactly(automationsApi.retryStep, step, retryAt);
+        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, retryAt);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+      } else {
+        sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
+        sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+      }
+    });
+  }
 
   it('permanently fails email send failures at the attempt limit', async function () {
     const step = buildEmailStep({ step_attempts: 10 });

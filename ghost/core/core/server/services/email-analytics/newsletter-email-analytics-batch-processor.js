@@ -1,5 +1,6 @@
 const { EventProcessingResult } = require('./event-processing-result');
 const logging = require('@tryghost/logging');
+const { processEvent } = require('./process-event');
 /** @import {BatchEventProcessor} from './batch-event-processor' */
 /** @import {FetchData} from './email-analytics-service' */
 
@@ -14,14 +15,22 @@ class NewsletterEmailAnalyticsBatchProcessor {
   #emailEventProcessor;
   #prometheusClient;
   #queries;
+  #skipFailedEvents;
 
   #lastAggregation = Date.now();
 
-  constructor({ config, emailEventProcessor, prometheusClient, queries }) {
+  constructor({
+    config,
+    emailEventProcessor,
+    prometheusClient,
+    queries,
+    skipFailedEvents = false,
+  }) {
     this.#config = config;
     this.#emailEventProcessor = emailEventProcessor;
     this.#prometheusClient = prometheusClient;
     this.#queries = queries;
+    this.#skipFailedEvents = skipFailedEvents;
   }
 
   /**
@@ -47,7 +56,10 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
       try {
         for (const event of events) {
-          const batchResult = await this.#processEvent(event, recipientCache);
+          const batchResult = await processEvent(() => this.#processEvent(event, recipientCache), {
+            skipFailedEvents: this.#skipFailedEvents,
+            eventId: event.id,
+          });
 
           // Save last event timestamp
           if (
@@ -73,7 +85,10 @@ class NewsletterEmailAnalyticsBatchProcessor {
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
-        const batchResult = await this.#processEvent(event);
+        const batchResult = await processEvent(() => this.#processEvent(event), {
+          skipFailedEvents: this.#skipFailedEvents,
+          eventId: event.id,
+        });
 
         // Save last event timestamp
         if (

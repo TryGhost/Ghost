@@ -25,6 +25,12 @@ original bytes and headers, checks the account/site and replay window, and
 returns normalized events or a verified protocol handshake. Failed verification
 must throw. Never perform network requests to unvalidated URLs from a payload.
 
+Ghost retries an individual polled event once before logging and skipping a
+persistent processing failure. Local safety writes may remain incomplete, and
+provider protection is not removed after a failed write. There is no durable
+event retry queue. Batch failures still propagate; webhook processing failures
+are returned to the provider for redelivery.
+
 All providers report the email family, original recipient address, message ID,
 event ID and event timestamp. Permanent failure does not automatically suppress
 an address: classify invalid/suppressed recipients explicitly with `suppress`.

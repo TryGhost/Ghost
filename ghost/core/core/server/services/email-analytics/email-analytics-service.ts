@@ -515,6 +515,7 @@ export class EmailAnalyticsService {
         ignored: processingResult.ignored,
         unhandled: processingResult.unhandled,
         unprocessable: processingResult.unprocessable,
+        processingFailures: processingResult.processingFailures,
       };
       const beforeEmailIds = new Set(processingResult.emailIds);
       const beforeMemberIds = new Set(processingResult.memberIds);
@@ -534,6 +535,7 @@ export class EmailAnalyticsService {
         ignored: processingResult.ignored - beforeCounts.ignored,
         unhandled: processingResult.unhandled - beforeCounts.unhandled,
         unprocessable: processingResult.unprocessable - beforeCounts.unprocessable,
+        processingFailures: processingResult.processingFailures - beforeCounts.processingFailures,
         emailIds: processingResult.emailIds.filter((id) => !beforeEmailIds.has(id)),
         memberIds: processingResult.memberIds.filter((id) => !beforeMemberIds.has(id)),
       });

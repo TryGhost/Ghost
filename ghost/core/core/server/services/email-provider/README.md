@@ -15,6 +15,10 @@ provider is included.
   recipient record. As before, a missing tracking ID does not retry the accepted
   automation send: the recipient is recorded without provider open tracking.
   Suppressed members cannot receive automation sends.
+  An unconfigured Mailgun client now rejects instead of recording an unsent
+  message as accepted. Automation steps use their existing retry policy: up to
+  10 attempts, 10 minutes apart, then a terminal failure. This does not change
+  the older welcome-email flow's GhostMailer transport.
 - Gift recipient delivery uses the same transport with tracking disabled. Gifts
   keep their existing transactional fallback when bulk email is unconfigured;
   that path returns no delivery-tracking ID. Configured bulk gift delivery retains
@@ -72,7 +76,8 @@ Both transports delegate to the existing family processors:
   repository owns revision counts, transactions and revision-before-recipient
   locking, consistent with click tracking. Failures and complaints use the
   existing suppression service. Unsubscribes turn off Updates & Announcements
-  through the members repository, preserving newsletter subscriptions.
+  through the members repository, preserving newsletter subscriptions and
+  leaving provider unsubscribe entries intact.
 - Gifts use `GiftDeliveryService.recordOutcome`, including its outcome ordering
   and buyer notifications. Complaints and qualifying failures also await local
   suppression, even when a delivery outcome is stale. Opens and unsubscribes are
@@ -98,6 +103,8 @@ counted as unprocessable and logged without blocking valid rows on the same page
 They remain included in page counts, and usable timestamps contribute to the cursor;
 webhooks still validate the entire notification before processing. The provider's `safeCursor`
 is returned unchanged, including when a capped multi-domain fetch stops early.
+Recipient addresses are checked for presence and storage length only; Ghost's
+member validator owns address syntax, including international addresses.
 
 All normalized event types are dispatched to the owning family processor. Automation
 and gift safety handlers correlate the provider message ID and original recipient
@@ -107,7 +114,12 @@ Automation lookups expose existing `member_id`
 and `member_email` columns; gift recipient lookup stays in `GiftDeliveryService`.
 A deleted member or changed address does not cause an automation unsubscribe to
 alter another address. Automation preference updates hold the member lock until
-committed; provider cleanup runs afterwards.
+committed. Automation unsubscribe processing never clears provider protection.
+Mailgun's List-Unsubscribe header includes the Ghost preference URL and
+`%tag_unsubscribe_email%`; messages carry `ghost-email`, `automation-email` and
+any configured site tag. Those tags are not exclusively automation-scoped, and
+Mailgun's [unsubscribe deletion endpoint](https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/unsubscribe/delete-v3--domainid--unsubscribes--address-)
+removes the entire address entry for the domain, without a tag filter.
 
 Automation failures contribute event counts and suppression decisions; no new
 failure-history storage is added. A processor reporting an unexpected unhandled
@@ -117,7 +129,11 @@ Existing domain services commit independently; there is no transaction spanning
 the notification. Successfully processed events are retained and aggregated even
 if another recipient is missing. Provider redelivery can repeat completed events.
 Newsletter and automation batches also save earlier buffered tracking updates when
-a later event fails, while propagating the failure so polling retries its window.
+a later webhook event fails. Polling retries an individual failed event once in
+the same batch. If it still fails, it is logged and counted as a processing failure;
+later events continue and the cursor advances. Successful events are not repeated
+by this retry. Batch recipient reads, buffered writes and provider fetch errors
+still fail the polling window because they affect the batch as a whole.
 There is no event inbox, event-ID ledger, replay worker or schema migration.
 
 ## Suppression completion
@@ -126,17 +142,23 @@ Newsletter, automation and gift complaint or qualifying bounce handling calls
 the existing suppression service directly and awaits it. That service uses the
 existing Suppression model and members repository to save the suppression and disable the matching address
 in one transaction. It repairs member state when a suppression already exists.
-A failure rolls back and returns HTTP 503. An old address is resolved separately
+A failure rolls back and propagates to the caller; webhooks return HTTP 503.
+An old address is resolved separately
 from the member's replacement address, which is not disabled.
 
 `EmailSuppressedEvent` is emitted after those writes finish. Its former member
 update subscriber is removed, so critical work is not left to an asynchronous
 listener. Complaint cleanup runs after local suppression, including on replay;
 cleanup failure propagates for webhooks. Newsletter and automation unsubscribe
-lookup and preference write failures also propagate, and provider cleanup runs only after local success.
+lookup and preference write failures also propagate for webhooks. Newsletter
+unsubscribe cleanup runs only after local success; automation unsubscribes
+retain provider protection regardless of local success.
 Polling logs remote cleanup failures and continues after local state is saved;
-there is no separate cleanup retry worker. Failed local safety writes still stop
-polling so its window can be retried instead of losing the event. Providers classify
+there is no separate cleanup retry worker. Local event failures receive the one
+bounded retry described above. An exhausted safety write leaves provider protection
+intact but can leave Ghost's local state incomplete; the logged event requires
+operator reconciliation. There is no durable retry queue, and providers without
+remote suppression lists cannot rely on that protection. Providers classify
 invalid-mailbox failures using `suppress`; ordinary permanent rejections do not
 automatically suppress.
 
@@ -144,7 +166,7 @@ automatically suppress.
 
 This is a draft foundation, not complete provider support. In particular:
 
-- Newsletter and automation unsubscribe failures propagate. Replay protection
+- Webhook newsletter and automation unsubscribe failures propagate. Replay protection
   against undoing a later deliberate resubscription still requires separate work
   in the owning service; there is no complete automation preference event history.
 - Delayed suppression after an explicit administrative unsuppression needs defined
@@ -162,8 +184,8 @@ credentials. Database tests exercise the existing newsletter, automation and gif
 processors, aggregate recomputation, opaque IDs and the one delayed retry. Safety
 tests hold a member update pending, fail it, verify rollback and HTTP 503, and
 replay a complaint to check duplicate handling and member-state repair. Focused
-family tests cover automation preference failures and cleanup retries, preservation
-of newsletter subscriptions and replacement addresses, and gift suppression for
+family tests cover automation preference failures, preserved provider protection,
+newsletter subscriptions and replacement addresses, and gift suppression for
 stale delivery outcomes. Gift opens/unsubscribes have explicit no-op coverage.
 
 ## Related discussions

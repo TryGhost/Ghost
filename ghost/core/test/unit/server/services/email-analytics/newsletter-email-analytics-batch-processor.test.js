@@ -146,6 +146,48 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
             });
           });
 
+          for (const persistent of [false, true]) {
+            it(`isolates a ${persistent ? 'persistent' : 'transient'} polled safety failure`, async function () {
+              const log = sinon.stub(logging, 'error');
+              const processor = new NewsletterEmailAnalyticsBatchProcessor({
+                config: createMockConfig(),
+                emailEventProcessor,
+                skipFailedEvents: true,
+              });
+              const failure = new Error('unsubscribe failed');
+              if (persistent) {
+                emailEventProcessor.handleUnsubscribed.rejects(failure);
+              } else {
+                emailEventProcessor.handleUnsubscribed.onFirstCall().rejects(failure);
+              }
+              const result = new EventProcessingResult();
+              const fetchData = {};
+              await processor.processBatch(
+                [
+                  { type: 'delivered', emailId: 1, timestamp: new Date(1) },
+                  { id: 'unsubscribe', type: 'unsubscribed', emailId: 1, timestamp: new Date(2) },
+                  { type: 'opened', emailId: 1, timestamp: new Date(3) },
+                ],
+                result,
+                fetchData,
+              );
+
+              sinon.assert.calledOnce(emailEventProcessor.handleDelivered);
+              sinon.assert.calledOnce(emailEventProcessor.handleOpened);
+              sinon.assert.calledTwice(emailEventProcessor.handleUnsubscribed);
+              assert.equal(
+                emailEventProcessor.flushBatchedUpdates.callCount,
+                batchProcessing ? 1 : 0,
+              );
+              assert.equal(result.delivered, 1);
+              assert.equal(result.opened, 1);
+              assert.equal(result.unsubscribed, persistent ? 0 : 1);
+              assert.equal(result.processingFailures, persistent ? 1 : 0);
+              assert.equal(log.callCount, persistent ? 1 : 0);
+              assert.deepEqual(fetchData.lastEventTimestamp, new Date(3));
+            });
+          }
+
           it('preserves earlier updates when a later safety write fails', async function () {
             const processor = new NewsletterEmailAnalyticsBatchProcessor({
               config: createMockConfig(),

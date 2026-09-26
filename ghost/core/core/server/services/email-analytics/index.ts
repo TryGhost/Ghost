@@ -116,6 +116,7 @@ export const init = ({
         emailSuppressionList,
         membersRepository,
         requireProviderCleanup: source.type === 'webhook',
+        skipFailedEvents: source.type === 'poll',
       });
     }
     if (family === 'gifts') {
@@ -123,10 +124,12 @@ export const init = ({
         giftDeliveryService,
         emailSuppressionList,
         requireProviderCleanup: source.type === 'webhook',
+        skipFailedEvents: source.type === 'poll',
       });
     }
     return new NewsletterEmailAnalyticsBatchProcessor({
       config,
+      skipFailedEvents: source.type === 'poll',
       emailEventProcessor: new EmailEventProcessor({
         domainEvents,
         db,

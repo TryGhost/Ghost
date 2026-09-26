@@ -528,7 +528,7 @@ describe('automation safety events', () => {
     );
     sinon.assert.calledOnce(deps.emailSuppressionList.removeComplaint);
   });
-  it('propagates unsubscribe failure before cleanup and retries it on redelivery', async () => {
+  it('propagates unsubscribe failure and leaves provider protection intact on redelivery', async () => {
     const deps = safetyDeps();
     const processor = new AutomationEmailAnalyticsBatchProcessor({
       automationsApi: buildAutomationsApi([buildRecipient()]),
@@ -550,15 +550,7 @@ describe('automation safety events', () => {
       id: 'member-1',
       email: event.recipientEmail,
     });
-    sinon.assert.calledWithExactly(deps.membersRepository.unsubscribeFromUpdates, {
-      id: 'member-1',
-      email: event.recipientEmail,
-    });
-    sinon.assert.calledOnceWithExactly(
-      deps.emailSuppressionList.removeUnsubscribe,
-      event.recipientEmail,
-      { requireSuccess: true },
-    );
+    sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe);
     assert.equal(result.unsubscribed, 1);
   });
   it('saves earlier delivery and open tracking when a later safety write fails', async () => {
@@ -626,7 +618,7 @@ describe('automation safety events', () => {
     sinon.assert.notCalled(deps.emailSuppressionList.handleComplaint);
     assert.equal(result.unprocessable, 1);
   });
-  it('keeps polling cleanup best-effort and handles deleted members', async () => {
+  it('leaves provider unsubscribe protection intact for deleted members', async () => {
     const deps = safetyDeps();
     const processor = new AutomationEmailAnalyticsBatchProcessor({
       automationsApi: buildAutomationsApi([buildRecipient({ member_id: null })]),
@@ -639,10 +631,6 @@ describe('automation safety events', () => {
       {},
     );
     sinon.assert.notCalled(deps.membersRepository.unsubscribeFromUpdates);
-    sinon.assert.calledOnceWithExactly(
-      deps.emailSuppressionList.removeUnsubscribe,
-      event.recipientEmail,
-      { requireSuccess: false },
-    );
+    sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe);
   });
 });

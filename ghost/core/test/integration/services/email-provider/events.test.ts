@@ -546,7 +546,7 @@ describe('provider email events', () => {
     );
   });
 
-  it('applies automation unsubscribe before cleanup and preserves newsletters and replacement addresses', async () => {
+  it('applies automation unsubscribe while preserving provider protection, newsletters and replacement addresses', async () => {
     await seedAutomationRecipient();
     const request = sign({ events: [{ ...event, family: 'automations', type: 'unsubscribed' }] });
     const update = sinon
@@ -562,7 +562,8 @@ describe('provider email events', () => {
     );
     update.restore();
     provider.removeSuppression.rejects(new Error('Cleanup failed'));
-    await assert.rejects(service.webhook(provider.source, request), { statusCode: 503 });
+    await service.webhook(provider.source, request);
+    sinon.assert.notCalled(provider.removeSuppression);
     assert.equal(
       Boolean(
         (await knex('members').where({ id: memberId }).first()).enable_updates_and_announcements,
@@ -576,6 +577,7 @@ describe('provider email events', () => {
       .where({ id: memberId })
       .update({ email: 'replacement@example.com', enable_updates_and_announcements: true });
     await service.webhook(provider.source, request);
+    sinon.assert.notCalled(provider.removeSuppression);
     assert.equal(
       Boolean(
         (await knex('members').where({ id: memberId }).first()).enable_updates_and_announcements,
