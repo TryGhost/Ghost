@@ -1,4 +1,7 @@
+import errors from '@tryghost/errors';
 import * as automationsApi from '../../services/automations/automations-api';
+// @ts-expect-error This module lacks type definitions.
+import labs from '../../../shared/labs';
 
 type ReadFrame = {
   data: {
@@ -24,6 +27,12 @@ export const controller = {
     },
     permissions: true,
     async query() {
+      if (!labs.isSet('automations')) {
+        throw new errors.NotFoundError({
+          message: 'Automations are not enabled.',
+        });
+      }
+
       return await automationsApi.browse();
     },
   },
