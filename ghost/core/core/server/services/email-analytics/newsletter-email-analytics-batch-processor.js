@@ -45,18 +45,27 @@ class NewsletterEmailAnalyticsBatchProcessor {
       const recipientCache =
         await this.#emailEventProcessor.batchGetRecipients(emailIdentifications);
 
-      for (const event of events) {
-        const batchResult = await this.#processEvent(event, recipientCache);
+      try {
+        for (const event of events) {
+          const batchResult = await this.#processEvent(event, recipientCache);
 
-        // Save last event timestamp
-        if (
-          !fetchData.lastEventTimestamp ||
-          (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)
-        ) {
-          fetchData.lastEventTimestamp = event.timestamp;
+          // Save last event timestamp
+          if (
+            !fetchData.lastEventTimestamp ||
+            (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)
+          ) {
+            fetchData.lastEventTimestamp = event.timestamp;
+          }
+
+          result.merge(batchResult);
         }
-
-        result.merge(batchResult);
+      } catch (err) {
+        // Keep earlier updates even if a later safety write fails. The caller
+        // still retries the window; a flush error must not hide the first failure.
+        await this.#emailEventProcessor
+          .flushBatchedUpdates()
+          .catch((flushError) => logging.error(flushError));
+        throw err;
       }
 
       // Flush all batched updates to the database

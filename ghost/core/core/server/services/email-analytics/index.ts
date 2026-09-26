@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
-import type { EmailFamily, EmailProviderBase } from '@tryghost/adapter-base-email';
-import { EmailEventService, parseEmailEvents } from '../email-provider/event-service';
+import {
+  emailEventSchema,
+  type EmailEvent,
+  type EmailFamily,
+  type EmailProviderBase,
+} from '@tryghost/adapter-base-email';
+import logging from '@tryghost/logging';
+import { EmailEventService } from '../email-provider/event-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import type { Knex } from 'knex';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
@@ -149,11 +155,41 @@ export const init = ({
         return await source.fetch({
           ...options,
           family,
-          batchHandler: (events) => options.batchHandler(parseEmailEvents(events, family)),
         });
       }
     },
-    createEventProcessor: () => createEventProcessor(family),
+    createEventProcessor: (): BatchEventProcessor => {
+      const processor = createEventProcessor(family);
+      return {
+        async processBatch(events, result, fetchData) {
+          const validEvents: EmailEvent[] = [];
+          for (const event of events) {
+            const parsed = emailEventSchema.safeParse(event);
+            if (parsed.success && parsed.data.family === family) {
+              validEvents.push(parsed.data);
+              continue;
+            }
+            result.merge({ unprocessable: 1 });
+            // Invalid rows still count towards the polling limit and cursor.
+            // Never let a malformed timestamp replace the last usable cursor.
+            const timestamp = emailEventSchema.shape.timestamp.safeParse(event?.timestamp);
+            if (
+              timestamp.success &&
+              (!fetchData.lastEventTimestamp || timestamp.data > fetchData.lastEventTimestamp)
+            ) {
+              fetchData.lastEventTimestamp = timestamp.data;
+            }
+          }
+          if (validEvents.length !== events.length) {
+            logging.warn(
+              `[EmailAnalytics] Skipped ${events.length - validEvents.length} invalid ${family} events`,
+            );
+          }
+          await processor.processBatch(validEvents, result, fetchData);
+        },
+        aggregate: processor.aggregate?.bind(processor),
+      };
+    },
   });
 
   prometheusClient?.registerCounter({

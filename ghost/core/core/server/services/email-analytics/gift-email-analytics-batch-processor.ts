@@ -45,7 +45,10 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
         const recipientEmail = await this.deps.giftDeliveryService.getRecipientEmailForMessage(
           event.providerId,
         );
-        if (!recipientEmail || recipientEmail !== event.recipientEmail) {
+        if (
+          !recipientEmail ||
+          recipientEmail.toLowerCase() !== event.recipientEmail?.toLowerCase()
+        ) {
           result.merge(new EventProcessingResult({ unprocessable: 1 }));
           continue;
         }

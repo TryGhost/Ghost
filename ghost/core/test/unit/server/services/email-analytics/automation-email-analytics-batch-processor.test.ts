@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 import sinon from 'sinon';
+import logging from '@tryghost/logging';
 
 import { AutomationEmailAnalyticsBatchProcessor } from '../../../../../core/server/services/email-analytics/automation-email-analytics-batch-processor';
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
@@ -482,6 +483,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
 });
 
 describe('automation safety events', () => {
+  afterEach(() => sinon.restore());
   const event = {
     providerId: 'message-1',
     recipientEmail: 'reader@example.com',
@@ -495,16 +497,19 @@ describe('automation safety events', () => {
       ...deps,
     });
     const result = new EventProcessingResult();
+    const callback = { ...event, recipientEmail: event.recipientEmail.toUpperCase() };
     await processor.processBatch(
       [
-        { ...event, type: 'complained' },
-        { ...event, type: 'failed', severity: 'permanent', suppress: true },
-        { ...event, type: 'failed', severity: 'temporary' },
+        { ...callback, type: 'complained' },
+        { ...callback, type: 'failed', severity: 'permanent', suppress: true },
+        { ...callback, type: 'failed', severity: 'temporary' },
       ],
       result,
       {},
     );
-    sinon.assert.calledOnce(deps.emailSuppressionList.handleComplaint);
+    sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleComplaint, {
+      email: event.recipientEmail,
+    });
     sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleBounce, {
       email: event.recipientEmail,
       suppress: true,
@@ -531,14 +536,20 @@ describe('automation safety events', () => {
     });
     deps.membersRepository.unsubscribeFromUpdates.rejects(new Error('local failure'));
     const result = new EventProcessingResult();
-    await assert.rejects(
-      processor.processBatch([{ ...event, type: 'unsubscribed' }], result, {}),
-      /local failure/,
-    );
+    const callback = {
+      ...event,
+      type: 'unsubscribed' as const,
+      recipientEmail: event.recipientEmail.toUpperCase(),
+    };
+    await assert.rejects(processor.processBatch([callback], result, {}), /local failure/);
     sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe);
     assert.equal(result.unsubscribed, 0);
     deps.membersRepository.unsubscribeFromUpdates.resolves();
-    await processor.processBatch([{ ...event, type: 'unsubscribed' }], result, {});
+    await processor.processBatch([callback], result, {});
+    sinon.assert.calledWithExactly(deps.membersRepository.unsubscribeFromUpdates, {
+      id: 'member-1',
+      email: event.recipientEmail,
+    });
     sinon.assert.calledWithExactly(deps.membersRepository.unsubscribeFromUpdates, {
       id: 'member-1',
       email: event.recipientEmail,
@@ -550,6 +561,56 @@ describe('automation safety events', () => {
     );
     assert.equal(result.unsubscribed, 1);
   });
+  it('saves earlier delivery and open tracking when a later safety write fails', async () => {
+    const deps = safetyDeps();
+    const automationsApi = buildAutomationsApi([buildRecipient()]);
+    const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi, ...deps });
+    const failure = new Error('preference write failed');
+    const flushFailure = new Error('tracking write failed');
+    const log = sinon.stub(logging, 'error');
+    deps.membersRepository.unsubscribeFromUpdates.rejects(failure);
+    const events = [
+      { ...event, type: 'delivered' as const },
+      { ...event, type: 'opened' as const },
+      { ...event, type: 'unsubscribed' as const },
+      { ...event, type: 'complained' as const },
+    ];
+    const result = new EventProcessingResult();
+    await assert.rejects(processor.processBatch(events, result, {}), (error) => error === failure);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.trackEmailDeliveredAndOpened,
+      new Map([
+        [
+          'recipient-1',
+          {
+            automationActionRevisionId: 'revision-1',
+            deliveredAt: event.timestamp,
+            openedAt: event.timestamp,
+          },
+        ],
+      ]),
+    );
+    assert.equal(result.delivered, 1);
+    assert.equal(result.opened, 1);
+    assert.equal(result.unsubscribed, 0);
+    sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe);
+    sinon.assert.notCalled(deps.emailSuppressionList.handleComplaint);
+
+    // A secondary flush failure must not hide the safety failure or acknowledge it.
+    automationsApi.trackEmailDeliveredAndOpened.rejects(flushFailure);
+    await assert.rejects(
+      processor.processBatch(events, new EventProcessingResult(), {}),
+      (error) => error === failure,
+    );
+    sinon.assert.calledOnceWithExactly(log, flushFailure);
+    automationsApi.trackEmailDeliveredAndOpened.resolves();
+    deps.membersRepository.unsubscribeFromUpdates.resolves();
+    const retried = new EventProcessingResult();
+    await processor.processBatch(events, retried, {});
+    assert.equal(retried.unsubscribed, 1);
+    assert.equal(retried.complained, 1);
+  });
+
   it('does not apply safety events to another recipient address', async () => {
     const deps = safetyDeps();
     const processor = new AutomationEmailAnalyticsBatchProcessor({

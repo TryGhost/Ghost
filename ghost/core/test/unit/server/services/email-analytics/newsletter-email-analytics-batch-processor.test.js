@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const configUtils = require('../../../../utils/config-utils');
 
 const {
@@ -143,6 +144,49 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
             assert.deepEqual(fetchData, {
               lastEventTimestamp: new Date(3),
             });
+          });
+
+          it('preserves earlier updates when a later safety write fails', async function () {
+            const processor = new NewsletterEmailAnalyticsBatchProcessor({
+              config: createMockConfig(),
+              emailEventProcessor,
+            });
+            const failure = new Error('unsubscribe failed');
+            const flushFailure = new Error('flush failed');
+            const log = sinon.stub(logging, 'error');
+            emailEventProcessor.handleUnsubscribed.rejects(failure);
+            const events = [
+              { type: 'delivered', emailId: 1, timestamp: new Date(1) },
+              { type: 'opened', emailId: 1, timestamp: new Date(2) },
+              { type: 'unsubscribed', emailId: 1, timestamp: new Date(3) },
+              { type: 'complained', emailId: 1, timestamp: new Date(4) },
+            ];
+            const result = new EventProcessingResult();
+            await assert.rejects(
+              processor.processBatch(events, result, {}),
+              (error) => error === failure,
+            );
+            assert.equal(result.delivered, 1);
+            assert.equal(result.opened, 1);
+            assert.equal(result.unsubscribed, 0);
+            sinon.assert.notCalled(emailEventProcessor.handleComplained);
+            if (batchProcessing) {
+              sinon.assert.calledOnce(emailEventProcessor.flushBatchedUpdates);
+              emailEventProcessor.flushBatchedUpdates.rejects(flushFailure);
+              await assert.rejects(
+                processor.processBatch(events, new EventProcessingResult(), {}),
+                (error) => error === failure,
+              );
+              sinon.assert.calledOnceWithExactly(log, flushFailure);
+            } else {
+              sinon.assert.notCalled(emailEventProcessor.flushBatchedUpdates);
+            }
+            emailEventProcessor.flushBatchedUpdates.resolves();
+            emailEventProcessor.handleUnsubscribed.resolves({ emailId: 1, memberId: 1 });
+            const retried = new EventProcessingResult();
+            await processor.processBatch(events, retried, {});
+            assert.equal(retried.unsubscribed, 1);
+            assert.equal(retried.complained, 1);
           });
 
           it('handles opened', async function () {

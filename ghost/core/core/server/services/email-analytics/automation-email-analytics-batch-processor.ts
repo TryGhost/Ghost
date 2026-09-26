@@ -1,4 +1,5 @@
 import type { EmailEvent } from '@tryghost/adapter-base-email';
+import logging from '@tryghost/logging';
 // @ts-expect-error This module lacks type definitions.
 import type EmailSuppressionList from '../email-suppression-list';
 import type membersService from '../members';
@@ -91,103 +92,110 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
 
     const eventsByAutomatedEmailRecipientId = new Map<string, AutomatedEmailEvents>();
 
-    for (const event of events) {
-      if (!fetchData.lastEventTimestamp || event.timestamp > fetchData.lastEventTimestamp) {
-        fetchData.lastEventTimestamp = event.timestamp;
-      }
-
-      let eventResult: EventProcessingResult;
-
-      const getRecipient = () => {
-        const mailgunMessageId = event.providerId;
-        return automatedEmailRecipientsByMessageId.get(mailgunMessageId);
-      };
-
-      switch (event.type) {
-        case 'delivered': {
-          const recipient = getRecipient();
-          if (recipient) {
-            trackEarliest(
-              eventsByAutomatedEmailRecipientId,
-              recipient,
-              'deliveredAt',
-              event.timestamp,
-            );
-            eventResult = new EventProcessingResult({ delivered: 1 });
-          } else {
-            eventResult = new EventProcessingResult({ unprocessable: 1 });
-          }
-          break;
+    try {
+      for (const event of events) {
+        if (!fetchData.lastEventTimestamp || event.timestamp > fetchData.lastEventTimestamp) {
+          fetchData.lastEventTimestamp = event.timestamp;
         }
-        case 'opened': {
-          const recipient = getRecipient();
-          if (recipient) {
-            trackEarliest(
-              eventsByAutomatedEmailRecipientId,
-              recipient,
-              'openedAt',
-              event.timestamp,
-            );
-            eventResult = new EventProcessingResult({ opened: 1 });
-          } else {
-            eventResult = new EventProcessingResult({ unprocessable: 1 });
-          }
-          break;
-        }
-        case 'failed':
-        case 'complained':
-        case 'unsubscribed': {
-          const recipient = getRecipient();
-          // Safety and preference changes must match the original recipient address.
-          if (
-            !recipient ||
-            !event.recipientEmail ||
-            recipient.member_email !== event.recipientEmail
-          ) {
-            eventResult = new EventProcessingResult({ unprocessable: 1 });
+
+        let eventResult: EventProcessingResult;
+
+        const getRecipient = () => {
+          const mailgunMessageId = event.providerId;
+          return automatedEmailRecipientsByMessageId.get(mailgunMessageId);
+        };
+
+        switch (event.type) {
+          case 'delivered': {
+            const recipient = getRecipient();
+            if (recipient) {
+              trackEarliest(
+                eventsByAutomatedEmailRecipientId,
+                recipient,
+                'deliveredAt',
+                event.timestamp,
+              );
+              eventResult = new EventProcessingResult({ delivered: 1 });
+            } else {
+              eventResult = new EventProcessingResult({ unprocessable: 1 });
+            }
             break;
           }
-          const suppressionEvent = {
-            email: event.recipientEmail,
-            timestamp: event.timestamp,
-            suppress: event.suppress ?? false,
-          };
-          const cleanupOptions = { requireSuccess: this.deps.requireProviderCleanup ?? true };
-          if (event.type === 'complained') {
-            await this.deps.emailSuppressionList.handleComplaint(suppressionEvent);
-            await this.deps.emailSuppressionList.removeComplaint(
-              event.recipientEmail,
-              cleanupOptions,
-            );
-            eventResult = new EventProcessingResult({ complained: 1 });
-          } else if (event.type === 'unsubscribed') {
-            if (recipient.member_id) {
-              await this.deps.membersRepository.unsubscribeFromUpdates({
-                id: recipient.member_id,
-                email: event.recipientEmail,
-              });
+          case 'opened': {
+            const recipient = getRecipient();
+            if (recipient) {
+              trackEarliest(
+                eventsByAutomatedEmailRecipientId,
+                recipient,
+                'openedAt',
+                event.timestamp,
+              );
+              eventResult = new EventProcessingResult({ opened: 1 });
+            } else {
+              eventResult = new EventProcessingResult({ unprocessable: 1 });
             }
-            await this.deps.emailSuppressionList.removeUnsubscribe(
-              event.recipientEmail,
-              cleanupOptions,
-            );
-            eventResult = new EventProcessingResult({ unsubscribed: 1 });
-          } else {
-            if (event.severity === 'permanent') {
-              await this.deps.emailSuppressionList.handleBounce(suppressionEvent);
-            }
-            eventResult = new EventProcessingResult(
-              event.severity === 'permanent' ? { permanentFailed: 1 } : { temporaryFailed: 1 },
-            );
+            break;
           }
-          break;
+          case 'failed':
+          case 'complained':
+          case 'unsubscribed': {
+            const recipient = getRecipient();
+            const recipientEmail = recipient?.member_email;
+            // Safety and preference changes must match the original recipient address.
+            if (
+              !recipient ||
+              !recipientEmail ||
+              !event.recipientEmail ||
+              recipientEmail.toLowerCase() !== event.recipientEmail.toLowerCase()
+            ) {
+              eventResult = new EventProcessingResult({ unprocessable: 1 });
+              break;
+            }
+            const suppressionEvent = {
+              email: recipientEmail,
+              timestamp: event.timestamp,
+              suppress: event.suppress ?? false,
+            };
+            const cleanupOptions = { requireSuccess: this.deps.requireProviderCleanup ?? true };
+            if (event.type === 'complained') {
+              await this.deps.emailSuppressionList.handleComplaint(suppressionEvent);
+              await this.deps.emailSuppressionList.removeComplaint(recipientEmail, cleanupOptions);
+              eventResult = new EventProcessingResult({ complained: 1 });
+            } else if (event.type === 'unsubscribed') {
+              if (recipient.member_id) {
+                await this.deps.membersRepository.unsubscribeFromUpdates({
+                  id: recipient.member_id,
+                  email: recipientEmail,
+                });
+              }
+              await this.deps.emailSuppressionList.removeUnsubscribe(
+                recipientEmail,
+                cleanupOptions,
+              );
+              eventResult = new EventProcessingResult({ unsubscribed: 1 });
+            } else {
+              if (event.severity === 'permanent') {
+                await this.deps.emailSuppressionList.handleBounce(suppressionEvent);
+              }
+              eventResult = new EventProcessingResult(
+                event.severity === 'permanent' ? { permanentFailed: 1 } : { temporaryFailed: 1 },
+              );
+            }
+            break;
+          }
+          default:
+            eventResult = new EventProcessingResult({ unhandled: 1 });
+            break;
         }
-        default:
-          eventResult = new EventProcessingResult({ unhandled: 1 });
-          break;
-      }
 
-      result.merge(eventResult);
+        result.merge(eventResult);
+      }
+    } catch (err) {
+      // Preserve completed delivery/open updates before retrying the failed event.
+      await this.deps.automationsApi
+        .trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId)
+        .catch((flushError) => logging.error(flushError));
+      throw err;
     }
 
     await this.deps.automationsApi.trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId);

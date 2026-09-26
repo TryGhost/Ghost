@@ -175,19 +175,27 @@ describe('gift safety events', () => {
     const deps = safetyDeps();
     const processor = new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService, ...deps });
     const result = new EventProcessingResult();
+    const callback = { ...event, recipientEmail: event.recipientEmail.toUpperCase() };
     await processor.processBatch(
       [
-        { ...event, type: 'complained' },
-        { ...event, type: 'failed', severity: 'permanent', suppress: true },
+        { ...callback, type: 'complained' },
+        { ...callback, type: 'failed', severity: 'permanent', suppress: true },
         { ...event, type: 'unsubscribed' },
         { ...event, type: 'opened' },
       ],
       result,
       {},
     );
-    sinon.assert.calledOnce(deps.emailSuppressionList.handleComplaint);
-    sinon.assert.calledOnce(deps.emailSuppressionList.handleBounce);
-    sinon.assert.calledOnce(giftDeliveryService.recordOutcome);
+    sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleComplaint, {
+      email: event.recipientEmail,
+    });
+    sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleBounce, {
+      email: event.recipientEmail,
+    });
+    sinon.assert.calledOnceWithMatch(giftDeliveryService.recordOutcome, {
+      providerMessageId: event.providerId,
+      outcome: 'permanent_failed',
+    });
     assert.equal(result.complained, 1);
     assert.equal(result.permanentFailed, 1);
     assert.equal(result.ignored, 2);

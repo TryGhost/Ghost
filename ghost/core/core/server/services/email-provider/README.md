@@ -93,12 +93,17 @@ Ghost validates the whole notification first. If an existing processor cannot
 find a recipient, the webhook waits 500 ms and retries only unmatched events,
 once per notification. No transaction is held while waiting. A second missing
 result returns HTTP 503. Processing errors are not retried as lookup failures.
-Polling continues to skip missing recipients as before. The provider's `safeCursor`
+Polling continues to skip missing recipients as before. Invalid polled rows are
+counted as unprocessable and logged without blocking valid rows on the same page.
+They remain included in page counts, and usable timestamps contribute to the cursor;
+webhooks still validate the entire notification before processing. The provider's `safeCursor`
 is returned unchanged, including when a capped multi-domain fetch stops early.
 
 All normalized event types are dispatched to the owning family processor. Automation
 and gift safety handlers correlate the provider message ID and original recipient
-address before applying changes. Automation lookups expose existing `member_id`
+address before applying changes. Address matching ignores case and safety writes
+use the original stored address; provider message IDs remain case-sensitive.
+Automation lookups expose existing `member_id`
 and `member_email` columns; gift recipient lookup stays in `GiftDeliveryService`.
 A deleted member or changed address does not cause an automation unsubscribe to
 alter another address. Automation preference updates hold the member lock until
@@ -111,6 +116,8 @@ event or processing failure still causes HTTP 503 instead of acknowledgement.
 Existing domain services commit independently; there is no transaction spanning
 the notification. Successfully processed events are retained and aggregated even
 if another recipient is missing. Provider redelivery can repeat completed events.
+Newsletter and automation batches also save earlier buffered tracking updates when
+a later event fails, while propagating the failure so polling retries its window.
 There is no event inbox, event-ID ledger, replay worker or schema migration.
 
 ## Suppression completion
