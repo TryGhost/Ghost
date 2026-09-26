@@ -49,9 +49,15 @@ describe('Mailgun email adapter', () => {
     );
     assert.equal(send.firstCall.args[0].disable_tracking, undefined);
   });
-  it('rejects missing acceptance IDs and never guesses an envelope shape', async () => {
+  it('rejects an unconfigured client that did not attempt a send', async () => {
     send.resolves(null);
     await assert.rejects(adapter.sendSingle(single), { code: 'EMAIL_NOT_ACCEPTED' });
+  });
+  it('preserves acceptance when a successful response has no tracking ID', async () => {
+    send.resolves({});
+    assert.deepEqual(await adapter.sendSingle(single), { id: null });
+    send.rejects(new Error('send rejected'));
+    await assert.rejects(adapter.sendSingle(single), /send rejected/);
   });
   it('normalizes polling IDs and preserves the existing Mailgun suppression policy', async () => {
     const raw = {

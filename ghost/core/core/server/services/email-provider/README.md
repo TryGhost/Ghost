@@ -11,18 +11,23 @@ provider is included.
 - Newsletter rendering, segmentation and batch retries stay in `email-service`.
   Sends and batch retries use the single configured provider.
 - Automations use `MemberWelcomeEmailService.sendAutomationEmail` and the shared
-  single-recipient transport. Their accepted message ID is stored in the existing recipient record. Suppressed members cannot receive automation sends.
+  single-recipient transport. Their accepted message ID is stored in the existing
+  recipient record. As before, a missing tracking ID does not retry the accepted
+  automation send: the recipient is recorded without provider open tracking.
+  Suppressed members cannot receive automation sends.
 - Gift recipient delivery uses the same transport with tracking disabled. Gifts
   keep their existing transactional fallback when bulk email is unconfigured;
-  that path returns no delivery-tracking ID. Buyer notices, login messages and
+  that path returns no delivery-tracking ID. Configured bulk gift delivery retains
+  its existing requirement for a message ID. Buyer notices, login messages and
   the older welcome-email flow still use GhostMailer.
 
 The existing `mailgun_message_id` database columns retain their names to avoid
 renaming deployed schema. They contain opaque provider IDs: up to 255 characters
 for newsletter batches and 1000 for single messages. Providers normalize their
 own wire envelopes. Generic consumers preserve case, punctuation and brackets.
-Newsletter events may instead correlate using the Ghost email ID and original
-recipient address, which also supports Mailgun's per-recipient message IDs.
+Single and batch MySQL lookups use an indexable predicate plus a binary comparison
+to preserve opaque IDs on case-insensitive tables. Newsletter events may instead
+correlate using the Ghost email ID and original recipient address, which also supports Mailgun's per-recipient message IDs.
 
 Single-recipient correlation is recorded after provider acceptance. Events that
 arrive first receive one delayed lookup retry during the webhook request. This does not provide exactly-once sending: a process
@@ -83,7 +88,16 @@ Ghost validates the whole notification first. If an existing processor cannot
 find a recipient, the webhook waits 500 ms and retries only unmatched events,
 once per notification. No transaction is held while waiting. A second missing
 result returns HTTP 503. Processing errors are not retried as lookup failures.
-Polling continues to skip missing recipients as before.
+Polling continues to skip missing recipients as before. The provider's `safeCursor`
+is returned unchanged, including when a capped multi-domain fetch stops early.
+
+Webhook support is limited to the existing family processors: newsletters support
+all normalized types, automations support delivered/opened events, and gifts
+support delivery/failure outcomes. Other automation/gift callbacks return HTTP 503
+before processing the notification. A gift failure requiring suppression is also
+rejected: recording an outcome alone does not perform that safety write. A processor
+reporting an unhandled event or processing failure cannot produce a success response.
+Adding automation/gift consent or suppression behavior is separate work.
 
 Existing domain services commit independently; there is no transaction spanning
 the notification. Successfully processed events are retained and aggregated even
@@ -102,21 +116,24 @@ from the member's replacement address, which is not disabled.
 `EmailSuppressedEvent` is emitted after those writes finish. Its former member
 update subscriber is removed, so critical work is not left to an asynchronous
 listener. Complaint cleanup runs after local suppression, including on replay;
-cleanup failure propagates. Providers classify invalid-mailbox failures using
-`suppress`; ordinary permanent rejections do not automatically suppress.
+cleanup failure propagates for webhooks. Newsletter unsubscribe lookup and preference
+write failures also propagate, and provider cleanup runs only after local success.
+Polling logs remote cleanup failures and continues after local state is saved;
+there is no separate cleanup retry worker. Failed local safety writes still stop
+polling so its window can be retried instead of losing the event. Providers classify
+invalid-mailbox failures using `suppress`; ordinary permanent rejections do not
+automatically suppress.
 
 ## Remaining merge requirements
 
 This is a draft foundation, not complete provider support. In particular:
 
-- The existing automation processor handles deliveries and opens; the gift
-  processor handles delivery and failure outcomes. Their other event types remain
-  unhandled. New consent and suppression behavior for those families must be
-  implemented through the owning services and tested before claiming full support.
-- Newsletter unsubscribe handling still contains logged-and-swallowed failures.
-  It needs explicit retry outcomes and protection against replay undoing a later
-  resubscription. The deleted generic SQL repository is not a substitute for that
-  work in the existing service.
+- Additional automation/gift consent and suppression behavior is deliberately
+  outside this adapter refactor. Unsupported callbacks are rejected, not acknowledged.
+  HTTP 503 is a safety gate, not an implementation of these event types; provider
+  retries alone cannot make them supported.
+- Newsletter unsubscribe failures now propagate. Replay protection against undoing
+  a later resubscription still requires separate work in the existing service.
 - Delayed suppression after an explicit administrative unsuppression needs defined
   ordering. A unique suppression row alone does not provide event deduplication.
 - Providers must retry failed requests and retain notifications through outages.

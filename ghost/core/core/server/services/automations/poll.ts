@@ -236,7 +236,17 @@ const processStep = async ({
           automationActionRevisionId: step.automation_action_revision_id,
           automationRunStepId: step.id,
         });
-        const { id: mailgunMessageId } = z.object({ id: z.string().min(1) }).parse(sendResult);
+        // Acceptance must not become a resend because tracking metadata is missing.
+        const parsed = z
+          .object({
+            id: z
+              .string()
+              .min(1)
+              .max(1000)
+              .refine((id) => id.trim().length > 0),
+          })
+          .safeParse(sendResult);
+        const mailgunMessageId = parsed.success ? parsed.data.id : undefined;
         // The bulk provider supplies the identity used to correlate events.
         const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
         try {

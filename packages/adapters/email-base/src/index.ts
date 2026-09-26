@@ -117,7 +117,7 @@ export abstract class EmailProviderBase {
     message: NewsletterMessage,
     options: SendingOptions,
   ): Promise<{ id: string | null }>;
-  abstract sendSingle(message: SingleMessage): Promise<{ id: string }>;
+  abstract sendSingle(message: SingleMessage): Promise<{ id: string | null }>;
   abstract getMaximumRecipients(): number;
   abstract getTargetDeliveryWindow(): number;
   abstract getEventSource(): EventSource;

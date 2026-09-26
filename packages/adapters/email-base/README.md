@@ -13,8 +13,11 @@ Ghost loads one provider at boot and does not store provider ownership on sends.
 Providers must preserve recipient substitutions, including HTML escaping of
 untrusted replacements, List-Unsubscribe headers, requested tracking settings,
 and newsletter correlation metadata. Ghost owns link click tracking. A resolved
-send means provider acceptance, not delivery. Single sends require a message ID;
-newsletter batches may return null when events carry the newsletter `emailId`.
+send means provider acceptance, not delivery. Return a message ID for tracking;
+if an accepted single send has no usable ID, return `id: null`. Automations keep
+their existing behavior: record acceptance without provider delivery/open tracking
+and continue. Gift delivery retains its existing requirement for a tracking ID.
+Newsletter batches may return null when events carry the newsletter `emailId`. An unconfigured provider or rejected send must throw.
 
 Polling calls and awaits `batchHandler` before advancing its cursor. It reports
 `safeCursor` when it stops before `end`. Webhook verification authenticates the
@@ -27,4 +30,7 @@ event ID and event timestamp. Permanent failure does not automatically suppress
 an address: classify invalid/suppressed recipients explicitly with `suppress`.
 Complaints suppress marketing email; unsubscribes retain their workflow scope.
 Providers without remote suppression lists implement removal as an idempotent
-no-op. Transport failures must reject so Ghost can retry.
+no-op. Transport failures must reject and follow the workflow's existing retry
+policy. A timeout can leave acceptance uncertain; this contract does not provide
+exactly-once sending. Providers must not turn an accepted send into a rejection
+because tracking metadata is missing.

@@ -490,7 +490,7 @@ describe('automations poll', function () {
     );
   });
 
-  it('does not record acceptance or schedule analytics for an invalid provider response', async function () {
+  it('records acceptance without open tracking for a response without a provider ID', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     memberWelcomeEmailService.api.sendAutomationEmail.resolves({
@@ -501,6 +501,10 @@ describe('automations poll', function () {
     await poll(options);
 
     sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
+    sinon.assert.calledOnceWithMatch(automationsApi.recordEmailSent, { trackOpens: false });
+    assert.equal(automationsApi.recordEmailSent.firstCall.firstArg.mailgunMessageId, undefined);
+    sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+    sinon.assert.notCalled(automationsApi.retryStep);
   });
 
   it('snapshots enabled click tracking on the recipient', async function () {
@@ -576,14 +580,23 @@ describe('automations poll', function () {
     );
   });
 
-  it('rejects a response without the bulk provider acceptance identity', async function () {
+  it('does not resend accepted emails for missing or malformed tracking IDs', async () => {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({ messageId: '<smtp-message-id>' });
-    await poll(options);
-    sinon.assert.notCalled(automationsApi.recordEmailSent);
+    for (const response of [
+      null,
+      { id: null },
+      { id: '' },
+      { id: '  ' },
+      { id: 'x'.repeat(1001) },
+    ]) {
+      memberWelcomeEmailService.api.sendAutomationEmail.resolves(response);
+      await poll(options);
+    }
+    assert.equal(automationsApi.recordEmailSent.callCount, 5);
+    assert.equal(automationsApi.finishStepAndEnqueueNext.callCount, 5);
     sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
-    sinon.assert.calledOnce(automationsApi.retryStep);
+    sinon.assert.notCalled(automationsApi.retryStep);
   });
 
   it('does not retry the email send when recording the automated email recipient fails', async function () {

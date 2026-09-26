@@ -41,7 +41,7 @@ export default class Mailgun extends EmailProviderBase {
     return this.newsletters.send(message, options);
   }
 
-  async sendSingle(message: SingleMessage): Promise<{ id: string }> {
+  async sendSingle(message: SingleMessage): Promise<{ id: string | null }> {
     const response = await this.client.send(
       {
         subject: message.subject,
@@ -58,14 +58,14 @@ export default class Mailgun extends EmailProviderBase {
       },
       [],
     );
-    const id = getMailgunMessageId(response);
-    if (!id) {
+    // The legacy client returns null without attempting a send when unconfigured.
+    if (response === null) {
       throw new errors.EmailError({
-        message: 'Email provider did not accept the message',
+        message: 'Mailgun is not configured',
         code: 'EMAIL_NOT_ACCEPTED',
       });
     }
-    return { id };
+    return { id: getMailgunMessageId(response) || null };
   }
 
   getMaximumRecipients(): number {
