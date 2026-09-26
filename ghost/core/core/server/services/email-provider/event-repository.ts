@@ -4,19 +4,34 @@ import errors from '@tryghost/errors';
 import type { EmailEvent } from '@tryghost/adapter-base-email';
 import { toDatabaseDate, fromDatabaseDate } from '../../lib/db-types/date';
 import { whereProviderMessageId } from '../lib/where-provider-message-id';
-import type { ProcessingResult } from './inbox-repository';
 
-/** Applies local outcomes and safety state in the inbox transaction. */
+export interface ProcessingResult {
+  emailId?: string;
+  memberId?: string;
+  cleanup?: 'complaint' | 'unsubscribe';
+}
+
+export class EmailRecipientNotFoundError extends errors.InternalServerError {
+  constructor() {
+    super({
+      message: 'Email recipient is not available yet',
+      code: 'EMAIL_RECIPIENT_NOT_FOUND',
+      statusCode: 503,
+    });
+  }
+}
+
+/** Applies local outcomes and safety state to Ghost's existing email tables. */
 export class EmailEventRepository {
-  async apply(trx: Knex.Transaction, source: string, event: EmailEvent): Promise<ProcessingResult> {
+  async apply(trx: Knex.Transaction, event: EmailEvent): Promise<ProcessingResult> {
     if (event.family === 'gifts') {
       // Gift outcomes and buyer notifications remain owned by GiftDeliveryService.
       const delivery = await trx('gift_deliveries')
-        .where({ email_provider_source: source, recipient_email: event.recipientEmail })
+        .where({ recipient_email: event.recipientEmail })
         .modify(whereProviderMessageId, 'email_provider_message_id', event.providerId)
         .first();
       if (!delivery) {
-        throw new errors.NotFoundError({ message: 'Gift email recipient is not available yet' });
+        throw new EmailRecipientNotFoundError();
       }
       const result: ProcessingResult = {};
       await this.applySuppression(trx, event, result);
@@ -28,22 +43,19 @@ export class EmailEventRepository {
       .select(`${table}.*`)
       .where(`${table}.member_email`, event.recipientEmail);
     if (newsletter) {
-      query
-        .join('email_batches', 'email_batches.id', 'email_recipients.batch_id')
-        .where('email_batches.email_provider_source', source);
       if (event.emailId) {
         query.where('email_recipients.email_id', event.emailId);
       } else {
-        query.modify(whereProviderMessageId, 'email_batches.mailgun_message_id', event.providerId);
+        query
+          .join('email_batches', 'email_batches.id', 'email_recipients.batch_id')
+          .modify(whereProviderMessageId, 'email_batches.mailgun_message_id', event.providerId);
       }
     } else {
-      query
-        .where({ email_provider_source: source })
-        .modify(whereProviderMessageId, 'mailgun_message_id', event.providerId);
+      query.modify(whereProviderMessageId, 'mailgun_message_id', event.providerId);
     }
     const recipient = await query.forUpdate().first();
     if (!recipient) {
-      throw new errors.NotFoundError({ message: 'Email recipient is not available yet' });
+      throw new EmailRecipientNotFoundError();
     }
     const timestamp = toDatabaseDate(event.timestamp);
     const result: ProcessingResult = {
@@ -154,18 +166,26 @@ export class EmailEventRepository {
           if (!email) {
             throw new errors.NotFoundError({ message: 'Newsletter email was not found' });
           }
-          const removed = await trx('members_newsletters')
+          // Existing subscription history protects a later resubscribe when a
+          // provider retries after cleanup or aggregation failed.
+          const newerChange = await trx('members_subscribe_events')
             .where({ member_id: member.id, newsletter_id: email.newsletter_id })
-            .delete();
-          if (removed) {
-            await trx('members_subscribe_events').insert({
-              id: ObjectId().toHexString(),
-              member_id: member.id,
-              newsletter_id: email.newsletter_id,
-              subscribed: false,
-              source: 'system',
-              created_at: timestamp,
-            });
+            .where('created_at', '>=', timestamp)
+            .first();
+          if (!newerChange) {
+            const removed = await trx('members_newsletters')
+              .where({ member_id: member.id, newsletter_id: email.newsletter_id })
+              .delete();
+            if (removed) {
+              await trx('members_subscribe_events').insert({
+                id: ObjectId().toHexString(),
+                member_id: member.id,
+                newsletter_id: email.newsletter_id,
+                subscribed: false,
+                source: 'system',
+                created_at: timestamp,
+              });
+            }
           }
         } else {
           await trx('members')

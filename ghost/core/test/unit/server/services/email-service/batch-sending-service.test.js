@@ -1114,7 +1114,6 @@ describe('Batch Sending Service', function () {
 
       const service = new BatchSendingService({
         models: { EmailBatch },
-        sendingService: { providerSource: 'mailgun' },
         db,
       });
       const email = createModel({

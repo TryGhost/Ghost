@@ -7,8 +7,8 @@ webhooks. The package follows the internal TypeScript/ESM golden path and is not
 independently published.
 
 Message IDs are opaque. Event IDs identify individual events, not messages.
-`source` identifies a provider account and must stay stable across restarts and
-credential rotation. Never reuse it for a different account.
+`source` identifies the configured webhook endpoint and public provider metadata.
+Ghost loads one provider at boot and does not store provider ownership on sends.
 
 Providers must preserve recipient substitutions, including HTML escaping of
 untrusted replacements, List-Unsubscribe headers, requested tracking settings,

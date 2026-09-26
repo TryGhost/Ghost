@@ -322,7 +322,7 @@ export class GiftEmailService {
     cadence,
     duration,
     expiresAt,
-  }: GiftDeliverySendData): Promise<{ providerMessageId: string | null; providerSource?: string }> {
+  }: GiftDeliverySendData): Promise<{ providerMessageId: string | null }> {
     const siteDomain = this.siteDomain;
     const siteUrl = this.urlUtils.getSiteUrl();
     const siteTitle = this.settingsCache.get('title') ?? siteDomain;
@@ -391,6 +391,6 @@ export class GiftEmailService {
         code: 'EMAIL_NOT_ACCEPTED',
       });
     }
-    return { providerMessageId: response.id, providerSource: this.bulkMailer.source };
+    return { providerMessageId: response.id };
   }
 }

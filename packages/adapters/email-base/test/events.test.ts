@@ -42,7 +42,7 @@ describe('email event contract', () => {
     expect(provider.requiredFns).toContain('removeSuppression');
     expect(Object.isFrozen(provider.requiredFns)).toBe(true);
   });
-  it('preserves opaque identifiers and restores timestamps from durable JSON', () => {
+  it('preserves opaque identifiers and parses timestamps from JSON', () => {
     const parsed = emailEventSchema.parse(event);
     expect(parsed.providerId).toBe('<opaque-id>');
     expect(parsed.timestamp).toEqual(new Date(event.timestamp));

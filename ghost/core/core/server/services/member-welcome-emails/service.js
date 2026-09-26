@@ -549,7 +549,7 @@ class MemberWelcomeEmailService {
    * @returns {Promise<unknown>}
    */
   async #sendBulkEmail({ to, subject, html, text, from, replyTo, trackOpens, listUnsubscribe }) {
-    const response = await this.#bulkMailer.sendSingle({
+    return await this.#bulkMailer.sendSingle({
       family: 'automations',
       to,
       subject,
@@ -560,7 +560,6 @@ class MemberWelcomeEmailService {
       trackOpens,
       listUnsubscribe,
     });
-    return { ...response, source: this.#bulkMailer.source };
   }
 
   async send({ member, memberStatus }) {

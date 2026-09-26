@@ -184,7 +184,6 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('member_email');
     table.text('member_name');
     table.text('mailgun_message_id');
-    table.text('email_provider_source').notNullable().defaultTo('mailgun');
     table.datetime('delivered_at');
     table.datetime('opened_at');
     table.datetime('clicked_at');
@@ -2375,7 +2374,6 @@ describe('automations repository', function () {
         member_email: 'member@example.com',
         member_name: 'Test Member',
         mailgun_message_id: 'mailgun-message-id',
-        email_provider_source: 'mailgun',
         delivered_at: null,
         opened_at: null,
         clicked_at: null,

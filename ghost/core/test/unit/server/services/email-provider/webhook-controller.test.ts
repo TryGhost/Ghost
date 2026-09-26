@@ -4,7 +4,7 @@ import type { Request, Response } from 'express';
 import { emailWebhookController } from '../../../../../core/server/services/email-provider/webhook-controller';
 
 describe('email webhook controller', () => {
-  it('passes original bytes and headers through and waits for durable acceptance', async () => {
+  it('passes original bytes and headers through and waits for processing to finish', async () => {
     let accept: () => void = () => {};
     const accepted = new Promise<void>((resolve) => {
       accept = resolve;
@@ -32,7 +32,7 @@ describe('email webhook controller', () => {
     sinon.assert.notCalled(next);
   });
 
-  it('passes verification or storage failures to the webhook error handler', async () => {
+  it('passes verification or processing failures to the webhook error handler', async () => {
     const error = new Error('Notification could not be accepted');
     const next = sinon.stub();
     const res = { sendStatus: sinon.stub() } as unknown as Response;

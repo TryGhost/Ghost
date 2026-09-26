@@ -29,10 +29,7 @@ export interface GiftDeliveryRepository {
     giftToken: string,
     options?: RepositoryTransactionOptions,
   ): Promise<GiftDeliveryData | null>;
-  getByProviderMessageId(
-    providerMessageId: string,
-    providerSource?: string,
-  ): Promise<GiftDeliveryData | null>;
+  getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null>;
   findRecoverableForPurchasedGifts(
     now: Date,
     staleBefore: Date,
@@ -40,24 +37,17 @@ export interface GiftDeliveryRepository {
   ): Promise<RecoverableGiftDelivery[]>;
   findScheduledTimesForPurchasedGifts(now: Date): Promise<Date[]>;
   tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null>;
-  markSent(
-    id: string,
-    sentAt: Date,
-    providerMessageId: string | null,
-    providerSource?: string,
-  ): Promise<boolean>;
+  markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
   recordCancelledAcceptance(
     id: string,
     sentAt: Date,
     providerMessageId: string | null,
-    providerSource?: string,
   ): Promise<boolean>;
   markFailed(id: string): Promise<boolean>;
   markCancelled(id: string): Promise<boolean>;
   cancelPendingForGift(token: string, options?: RepositoryTransactionOptions): Promise<boolean>;
   recordOutcome(data: {
     providerMessageId: string;
-    providerSource?: string;
     outcome: GiftDeliveryOutcome;
     timestamp: Date;
     error: string | null;
@@ -153,12 +143,8 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     return row ? decodeGiftDeliveryRow(row) : null;
   }
 
-  async getByProviderMessageId(
-    providerMessageId: string,
-    providerSource = 'mailgun',
-  ): Promise<GiftDeliveryData | null> {
+  async getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null> {
     const row = await this.knex('gift_deliveries')
-      .where({ email_provider_source: providerSource })
       .modify(whereProviderMessageId, 'email_provider_message_id', providerMessageId)
       .first();
 
@@ -248,17 +234,11 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     return this.getById(id);
   }
 
-  async markSent(
-    id: string,
-    sentAt: Date,
-    providerMessageId: string | null,
-    providerSource = 'mailgun',
-  ): Promise<boolean> {
+  async markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean> {
     return this.updateState(id, 'sending', {
       status: 'sent',
       email_sent_at: toDatabaseDate(sentAt),
       email_provider_message_id: providerMessageId,
-      email_provider_source: providerSource ?? 'mailgun',
       started_at: null,
     });
   }
@@ -269,12 +249,10 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     id: string,
     sentAt: Date,
     providerMessageId: string | null,
-    providerSource?: string,
   ): Promise<boolean> {
     return this.updateState(id, 'cancelled', {
       email_sent_at: toDatabaseDate(sentAt),
       email_provider_message_id: providerMessageId,
-      email_provider_source: providerSource ?? 'mailgun',
     });
   }
 
@@ -308,13 +286,11 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
 
   async recordOutcome({
     providerMessageId,
-    providerSource = 'mailgun',
     outcome,
     timestamp,
     error,
   }: {
     providerMessageId: string;
-    providerSource?: string;
     outcome: GiftDeliveryOutcome;
     timestamp: Date;
     error: string | null;
@@ -327,7 +303,6 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
           ? ['temporary_failed']
           : [];
     const updated = await this.knex('gift_deliveries')
-      .where({ email_provider_source: providerSource })
       .modify(whereProviderMessageId, 'email_provider_message_id', providerMessageId)
       .whereNot({ outcome: 'permanent_failed' })
       .where((builder) => {
@@ -355,7 +330,6 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
 
     const delivery = await this.knex('gift_deliveries')
       .select('id')
-      .where({ email_provider_source: providerSource })
       .modify(whereProviderMessageId, 'email_provider_message_id', providerMessageId)
       .first();
 

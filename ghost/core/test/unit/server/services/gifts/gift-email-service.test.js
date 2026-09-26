@@ -360,7 +360,6 @@ describe('GiftEmailService', function () {
 
         assert.deepEqual(result, {
           providerMessageId: 'provider-123',
-          providerSource: 'test-provider',
         });
         sinon.assert.notCalled(transactionalMailer.send);
         const message = bulkMailer.sendSingle.firstCall.firstArg;

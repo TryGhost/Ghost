@@ -2,17 +2,15 @@
 
 Ghost loads a bulk email provider through AdapterManager at boot. Mailgun remains
 the default. The contract lives in `@tryghost/adapter-base-email`; this service
-owns provider selection and durable event processing. No additional production
+owns provider selection and shared event processing. No additional production
 provider is included.
 
 ## Sending and correlation
 
 - Newsletter rendering, segmentation and batch retries stay in `email-service`.
-  Each batch stores its source before sending. Retried batches use that source,
-  even after the active provider changes.
+  Sends and batch retries use the single configured provider.
 - Automations use `MemberWelcomeEmailService.sendAutomationEmail` and the shared
-  single-recipient transport. Their accepted message ID and source are stored
-  together. Suppressed members cannot receive automation sends.
+  single-recipient transport. Their accepted message ID is stored in the existing recipient record. Suppressed members cannot receive automation sends.
 - Gift recipient delivery uses the same transport with tracking disabled. Gifts
   keep their existing transactional fallback when bulk email is unconfigured;
   that path returns no delivery-tracking ID. Buyer notices, login messages and
@@ -26,7 +24,7 @@ Newsletter events may instead correlate using the Ghost email ID and original
 recipient address, which also supports Mailgun's per-recipient message IDs.
 
 Single-recipient correlation is recorded after provider acceptance. Events that
-arrive first are retried. This does not provide exactly-once sending: a process
+arrive first receive one delayed lookup retry during the webhook request. This does not provide exactly-once sending: a process
 failure between acceptance and saving the ID still requires reconciliation, as
 with the existing sending workflows.
 
@@ -41,30 +39,27 @@ base class, and is selected using the normal AdapterManager configuration:
   "adapters": {
     "email": {
       "active": "ExampleProvider",
-      "ExampleProvider": {"source": "account-2026"},
-      "previous": {"adapter": "Mailgun"}
+      "ExampleProvider": {"source": "example"}
     }
-  },
-  "emailProvider": {"retainedSources": ["previous"]}
+  }
 }
 ```
 
-`ExampleProvider` is illustrative, not a bundled implementation. Retained entries
-name AdapterManager features. Each instance must expose a unique, stable `source`
-of up to 64 lowercase letters, digits, underscores or hyphens. The first character
-must be a letter or digit. Do not reuse a source for another account.
+`ExampleProvider` is illustrative, not a bundled implementation. Its `source`
+identifies the active webhook endpoint and public provider configuration; it is
+not stored on sends. It contains up to 64 lowercase letters, digits, underscores
+or hyphens, starting with a letter or digit.
 
-Keep old accounts configured until their batches, delayed events, suppression
-cleanup and retries drain. The built-in Mailgun adapter represents the existing
-site Mailgun configuration as `mailgun`; configuring two independent Mailgun
-accounts is not supported by that adapter. Switching Mailgun credentials to a
-different account therefore needs separate operational reconciliation.
+The foundation supports one configured provider. It does not retain previous
+accounts, route existing sends to previous providers or handle overlapping
+provider migrations. The database schema is unchanged.
 
 ## Events
 
 Providers declare either a polling source or a webhook verifier. Polling keeps
-Ghost's current scheduling, source-specific cursors and Mailgun tag filters.
-Both transports enqueue the same validated event format.
+Ghost's current scheduling, cursors and Mailgun tag filters.
+Both transports process the same validated event format into the existing
+recipient, failure, complaint, suppression and statistics tables.
 
 Webhook providers receive raw bytes and headers at
 `POST /members/webhooks/email/:source` (under the site's configured subdirectory).
@@ -72,54 +67,61 @@ The request limit is 2 MB and one notification may contain at most 1000 events.
 The adapter must authenticate the signature, account, site and replay window
 before returning events or a protocol handshake. A provider must not fetch an
 unvalidated URL from an incoming notification. Ghost acknowledges events only
-after the whole valid notification has been persisted.
+after processing, provider cleanup and statistics updates have finished.
 
-The database inbox is the source of truth. Jobs wake a single worker queue, and
-a recurring job checks for work every 30 seconds. A five-minute lease and token
-fence allow recovery after a worker stops. Event identity combines source, event
-ID, family and recipient address. Duplicate notifications create no new work.
+Local outcomes, consent and suppression changes for a notification share a
+transaction. If a webhook recipient cannot be found, Ghost rolls back those
+changes, releases the database connection, waits 500 ms and retries once in a
+fresh transaction. There is at most one delay per notification, including
+notifications containing multiple events. A second lookup failure returns HTTP 503. Invalid signatures, invalid payloads and other processing failures do not
+receive this lookup retry.
 
-Local outcomes, consent and suppression changes commit with an `applied_at`
-checkpoint. Provider cleanup and aggregate recomputation run afterwards and can
-retry without repeating consent changes. Gift delivery outcomes continue through
-the gift service's idempotent outcome and buyer-notification workflow.
+Polling preserves the existing behavior of skipping unmatched recipients, so
+an old or deleted recipient cannot stall a source's history cursor. Other
+processing errors propagate before the polling cursor advances.
+
+Provider cleanup, gift outcomes and aggregate recomputation are awaited after
+local changes commit. Gift outcomes continue through the gift service's existing
+idempotent outcome and buyer-notification workflow. Existing subscription history
+prevents a repeated newsletter unsubscribe from undoing a later resubscribe.
 
 Complaints and explicitly classified invalid-mailbox failures suppress the
 original address. An ordinary permanent rejection does not automatically
 suppress it. Newsletter unsubscribes remove that newsletter subscription;
 automation unsubscribes disable updates and announcements. A delayed event for
 an old address cannot disable a member's replacement address. Unsuppression
-clears remote lists on all retained sources before removing the local record.
+clears the configured provider's remote lists before removing the local record.
 
-## Recovery and operational limits
+## Retries and operational limits
 
-Failures back off from two seconds to one hour. After 20 claims the row remains
-in `failed` state with its payload and last error for investigation. Unmatched
-events follow the same path instead of being silently dropped. Inspect
-`email_provider_events` by source and status, resolve the missing correlation or
-provider error, then reset the selected failed rows to `pending`, attempts to
-zero, and `next_attempt_at` to the current UTC time. Preserve `applied_at` and
-`result` so a cleanup retry cannot undo a later resubscribe.
+Webhook providers must retry failed requests, including HTTP 503, with enough
+retention to cover Ghost downtime. Ghost does not acknowledge and defer work to
+a background worker: requests remain open while processing. Provider callback
+timeouts and supported batch sizes must accommodate that processing time.
 
-Completed rows retain a deduplication tombstone with their payload cleared. There
-is no automatic tombstone expiry: deleting these rows allows older notifications
-to apply again. High-volume deployments need capacity and retention review.
-There is no Admin inbox inspection/replay UI in this foundation. Existing
-analytics lag fields describe polling ingestion; they do not report inbox lag.
+A database or provider error can occur after some effects have committed. A
+provider redelivery repeats processing, using the existing outcome records to
+avoid double-counting opens and the existing newsletter subscription history to
+protect resubscriptions. There is no global event-ID deduplication or local replay
+queue. Do not claim exactly-once effects: automation consent and suppression
+changes do not have a complete per-event history, and delayed callbacks can
+reapply those changes. Adapters must verify replay windows and preserve event
+timestamps. Retrying a permanently missing message ID cannot repair a send whose
+ID was never saved; that still needs operational reconciliation.
 
 ## Validation
 
 The fake webhook provider in `test/integration/services/email-provider` loads
 through AdapterManager without Mailgun credentials. Tests cover authentication,
-durable acknowledgement, replay, correlation races, source isolation, opaque IDs,
-suppression, consent, all three email families, aggregate retries, stale workers
-and migration idempotency. Unit tests cover the Mailgun edge and send routing.
+completion before acknowledgement, repeated delivery, a single delayed lookup
+retry, atomic local updates, active-provider validation, opaque IDs, suppression, consent,
+all three email families and aggregation failures. Unit tests cover the Mailgun
+edge and send routing.
 
-Before merging, run the standard MySQL integration and migration suites, HTTP
+Before merging, run the standard MySQL integration suites, HTTP
 route tests and the repository's `pnpm check` in the normal development/CI
-environment. SQLite coverage does not substitute for MySQL locking and migration
-validation. Benchmark event throughput and retained inbox size before deploying
-this pipeline to high-volume sites.
+environment. SQLite coverage does not substitute for MySQL locking validation. Benchmark request processing time and event throughput before
+deploying this pipeline to high-volume sites.
 
 ## Related discussions
 

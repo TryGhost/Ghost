@@ -54,7 +54,7 @@ interface GiftEmailService {
     cadence: GiftCadence;
     duration: number;
     expiresAt: Date;
-  }): Promise<{ providerMessageId: string | null; providerSource?: string }>;
+  }): Promise<{ providerMessageId: string | null }>;
   sendDeliveryFailureNotification(data: {
     buyerEmail: string;
     recipientEmail: string;
@@ -302,7 +302,7 @@ export class GiftDeliveryService {
       return 'failed';
     }
 
-    let result: { providerMessageId: string | null; providerSource?: string };
+    let result: { providerMessageId: string | null };
     try {
       result = await this.deps.giftEmailService.sendGiftDelivery({
         recipientEmail: delivery.recipientEmail,
@@ -341,7 +341,6 @@ export class GiftDeliveryService {
         delivery.id,
         sentAt,
         result.providerMessageId,
-        result.providerSource ?? 'mailgun',
       );
     } catch (err) {
       logging.warn(
@@ -358,7 +357,6 @@ export class GiftDeliveryService {
           delivery.id,
           sentAt,
           result.providerMessageId,
-          result.providerSource ?? 'mailgun',
         );
       } catch (retryErr) {
         logging.error(
@@ -391,7 +389,6 @@ export class GiftDeliveryService {
         delivery.id,
         sentAt,
         result.providerMessageId,
-        result.providerSource ?? 'mailgun',
       );
     }
 
@@ -454,7 +451,6 @@ export class GiftDeliveryService {
 
   async recordOutcome(data: {
     providerMessageId: string;
-    providerSource?: string;
     outcome: 'delivered' | 'temporary_failed' | 'permanent_failed';
     timestamp: Date;
     error: string | null;
@@ -462,21 +458,16 @@ export class GiftDeliveryService {
     const result = await this.deps.giftDeliveryRepository.recordOutcome(data);
 
     if (result === 'recorded' && data.outcome === 'permanent_failed') {
-      await this.notifyBuyerOfDeliveryFailure(data.providerMessageId, data.providerSource);
+      await this.notifyBuyerOfDeliveryFailure(data.providerMessageId);
     }
 
     return result;
   }
 
-  private async notifyBuyerOfDeliveryFailure(
-    providerMessageId: string,
-    providerSource?: string,
-  ): Promise<void> {
+  private async notifyBuyerOfDeliveryFailure(providerMessageId: string): Promise<void> {
     try {
-      const delivery = await this.deps.giftDeliveryRepository.getByProviderMessageId(
-        providerMessageId,
-        providerSource ?? 'mailgun',
-      );
+      const delivery =
+        await this.deps.giftDeliveryRepository.getByProviderMessageId(providerMessageId);
       if (!delivery) {
         logging.warn(
           {

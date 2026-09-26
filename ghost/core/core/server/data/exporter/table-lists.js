@@ -28,7 +28,6 @@ const BACKUP_TABLES = [
   'mobiledoc_revisions',
   'post_revisions',
   'email_batches',
-  'email_provider_events',
   'email_recipients',
   'email_recipient_failures',
   'members_cancel_events',

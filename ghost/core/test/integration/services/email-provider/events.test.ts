@@ -7,7 +7,7 @@ import errors from '@tryghost/errors';
 import { EmailProviderBase, type EmailEvent, type EventSource } from '@tryghost/adapter-base-email';
 import { AdapterManager } from '../../../../core/server/services/adapter-manager/adapter-manager';
 import { EmailEventService } from '../../../../core/server/services/email-provider/event-service';
-import { EmailInboxRepository } from '../../../../core/server/services/email-provider/inbox-repository';
+import { EmailEventRepository } from '../../../../core/server/services/email-provider/event-repository';
 import { Queries } from '../../../../core/server/services/email-analytics/lib/queries';
 import { GiftDeliveryBookshelfRepository } from '../../../../core/server/services/gifts/gift-delivery-bookshelf-repository';
 import config from '../../../../core/shared/config';
@@ -76,10 +76,8 @@ describe('provider email events', () => {
     service = new EmailEventService({
       knex,
       queries,
-      getSource: (source) => (source === provider.source ? provider : undefined),
+      provider,
       gifts: { recordOutcome: sinon.stub().resolves('recorded') },
-      wake: sinon.stub().resolves(),
-      logError: () => {},
     });
     memberId = newId();
     recipientId = newId();
@@ -112,7 +110,6 @@ describe('provider email events', () => {
     await knex('email_batches').insert({
       id: batchId,
       email_id: emailId,
-      email_provider_source: provider.source,
       mailgun_message_id: 'opaque-message',
       created_at: now,
       updated_at: now,
@@ -149,74 +146,91 @@ describe('provider email events', () => {
       },
     };
   };
-  const retryNow = () =>
-    knex('email_provider_events').where({ status: 'pending' }).update({ next_attempt_at: now });
 
-  it('migrates existing tables and tolerates repeated up/down operations', async () => {
-    const migration = require('../../../../core/server/data/migrations/versions/6.66/2026-09-25-23-51-52-add-email-provider-event-inbox');
-    await migration.up({ connection: knex });
-    await migration.down({ connection: knex });
-    await migration.down({ connection: knex });
-    assert.equal(await knex.schema.hasTable('email_provider_events'), false);
-    await migration.up({ connection: knex });
-    await migration.up({ connection: knex });
-    assert.equal((await knex('email_batches').first()).email_provider_source, 'mailgun');
-    assert.equal((await knex('email_recipients')).length, 1);
-  });
-  it('loads through AdapterManager and authenticates original bytes before durable acceptance', async () => {
+  it('loads through AdapterManager and authenticates original bytes before processing', async () => {
     const request = sign({ events: [event] });
     await assert.rejects(
       service.webhook(provider.source, { ...request, body: Buffer.from('{}') }),
       /Invalid signature/,
     );
-    assert.equal((await knex('email_provider_events')).length, 0);
-    await service.webhook(provider.source, request);
-    assert.equal((await knex('email_provider_events')).length, 1);
     assert.equal(
       (await knex('email_recipients').where({ id: recipientId }).first()).delivered_at,
       null,
     );
-    await service.process();
+    await service.webhook(provider.source, request);
     assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
     assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
-    assert.equal((await knex('email_provider_events').first()).status, 'completed');
   });
-  it('accepts verified handshakes without creating events', async () => {
+  it('accepts verified handshakes without processing events', async () => {
     assert.deepEqual(await service.webhook(provider.source, sign({ handshake: true })), {
       response: { status: 200, body: 'verified' },
     });
-    assert.equal((await knex('email_provider_events')).length, 0);
-  });
-  it('rejects a whole malformed notification without partially acknowledging it', async () => {
-    await assert.rejects(
-      service.webhook(provider.source, sign({ events: [event, { ...event, id: '' }] })),
-    );
-    assert.equal((await knex('email_provider_events')).length, 0);
-  });
-  it('deduplicates replayed events and counts opens once', async () => {
-    event.type = 'opened';
-    await service.ingest(provider.source, [event, event]);
-    await service.process();
-    await service.ingest(provider.source, [event]);
-    await service.process();
-    assert.equal((await knex('email_provider_events')).length, 1);
-    assert.equal((await knex('emails').where({ id: event.emailId }).first()).opened_count, 1);
-  });
-  it('retries events that arrive before their send correlation exists', async () => {
-    event.emailId = newId();
-    await service.ingest(provider.source, [event]);
-    await service.process();
-    assert.equal((await knex('email_provider_events').first()).status, 'pending');
     assert.equal(
       (await knex('email_recipients').where({ id: recipientId }).first()).delivered_at,
       null,
     );
   });
-  it('does not match the same message ID from another provider account', async () => {
-    await knex('email_batches').update({ email_provider_source: 'another-account' });
-    await service.ingest(provider.source, [event]);
-    await service.process();
-    assert.equal((await knex('email_provider_events').first()).status, 'pending');
+  it('validates a whole notification before applying any events', async () => {
+    await assert.rejects(
+      service.webhook(provider.source, sign({ events: [event, { ...event, id: '' }] })),
+    );
+    assert.equal(
+      (await knex('email_recipients').where({ id: recipientId }).first()).delivered_at,
+      null,
+    );
+  });
+  it('counts replayed newsletter opens once in the existing tables', async () => {
+    event.type = 'opened';
+    await service.webhook(provider.source, sign({ events: [event, event] }));
+    await service.webhook(provider.source, sign({ events: [event] }));
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).opened_count, 1);
+    assert.equal((await knex('email_recipients').where({ id: recipientId })).length, 1);
+  });
+  it('retries a webhook lookup in a fresh transaction after the send saves its ID', async () => {
+    delete event.emailId;
+    await knex('email_batches').update({ mailgun_message_id: null });
+    let failedLookup!: () => void;
+    const firstLookup = new Promise<void>((resolve) => {
+      failedLookup = resolve;
+    });
+    const original = EmailEventRepository.prototype.apply;
+    const apply = sinon.stub(EmailEventRepository.prototype, 'apply').callsFake(async function (
+      this: EmailEventRepository,
+      ...args
+    ) {
+      try {
+        return await original.apply(this, args);
+      } catch (error) {
+        failedLookup();
+        throw error;
+      }
+    });
+    const pending = service.webhook(provider.source, sign({ events: [event] }));
+    await firstLookup;
+    // This needs a DB connection, proving the failed transaction was released
+    // before the delay. The second lookup must see the newly committed ID.
+    await knex('email_batches').update({ mailgun_message_id: event.providerId });
+    await pending;
+    sinon.assert.calledTwice(apply);
+    assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
+  });
+  it('returns a temporary error after one retry and rolls back the whole notification', async () => {
+    const apply = sinon.spy(EmailEventRepository.prototype, 'apply');
+    await assert.rejects(
+      service.webhook(provider.source, sign({ events: [event, { ...event, emailId: newId() }] })),
+      { code: 'EMAIL_RECIPIENT_NOT_FOUND', statusCode: 503 },
+    );
+    assert.equal(apply.callCount, 4);
+    assert.equal(
+      (await knex('email_recipients').where({ id: recipientId }).first()).delivered_at,
+      null,
+    );
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 0);
+  });
+  it('rejects webhooks for a provider other than the active one', async () => {
+    await assert.rejects(service.webhook('inactive-provider', sign({ events: [event] })), {
+      statusCode: 404,
+    });
     assert.equal(
       (await knex('email_recipients').where({ id: recipientId }).first()).delivered_at,
       null,
@@ -225,23 +239,22 @@ describe('provider email events', () => {
   it('distinguishes permanent rejection from a suppressible mailbox failure', async () => {
     event.type = 'failed';
     event.severity = 'permanent';
-    await service.ingest(provider.source, [event]);
-    await service.process();
+    await service.ingest([event]);
     assert.equal((await knex('suppressions')).length, 0);
-    await service.ingest(provider.source, [{ ...event, id: 'invalid-mailbox', suppress: true }]);
-    await service.process();
+    await service.ingest([{ ...event, id: 'invalid-mailbox', suppress: true }]);
     assert.equal((await knex('suppressions').where({ email: event.recipientEmail })).length, 1);
     assert.equal(
       Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
       true,
     );
   });
+  it('continues processing a polling batch containing an unmatched recipient', async () => {
+    await service.ingest([{ ...event, emailId: newId() }, event], 'newsletters');
+    assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
+  });
   it('keeps opaque message IDs case-sensitive', async () => {
-    await service.ingest(provider.source, [
-      { ...event, emailId: undefined, providerId: 'Opaque-Message' },
-    ]);
-    await service.process();
-    assert.equal((await knex('email_provider_events').first()).status, 'pending');
+    await service.ingest([{ ...event, emailId: undefined, providerId: 'Opaque-Message' }]);
     assert.equal(
       (await knex('email_recipients').where({ id: recipientId }).first()).delivered_at,
       null,
@@ -249,8 +262,7 @@ describe('provider email events', () => {
   });
   it('does not suppress a member’s replacement address', async () => {
     await knex('members').where({ id: memberId }).update({ email: 'replacement@example.com' });
-    await service.ingest(provider.source, [{ ...event, type: 'complained' }]);
-    await service.process();
+    await service.ingest([{ ...event, type: 'complained' }]);
     assert.equal(
       Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
       false,
@@ -287,26 +299,23 @@ describe('provider email events', () => {
       member_uuid: randomUUID(),
       member_email: event.recipientEmail,
       mailgun_message_id: event.providerId,
-      email_provider_source: provider.source,
       automation_action_revision_id: revisionId,
       track_opens: true,
       created_at: now,
     });
-    await service.ingest(provider.source, [
+    await service.ingest([
       { ...event, family: 'automations', type: 'opened' },
       { ...event, id: 'second-open', family: 'automations', type: 'opened' },
     ]);
-    await service.process();
     assert((await knex('automated_email_recipients').where({ id }).first()).opened_at);
     assert.equal(
       (await knex('automation_action_revisions').where({ id: revisionId }).first())
         .email_opened_count,
       1,
     );
-    await service.ingest(provider.source, [
+    await service.ingest([
       { ...event, id: 'unsubscribe', family: 'automations', type: 'unsubscribed' },
     ]);
-    await service.process();
     assert.equal(
       Boolean(
         (await knex('members').where({ id: memberId }).first()).enable_updates_and_announcements,
@@ -336,7 +345,6 @@ describe('provider email events', () => {
       gift_id: giftId,
       recipient_email: event.recipientEmail,
       email_provider_message_id: event.providerId,
-      email_provider_source: provider.source,
       status: 'sent',
     });
     const repository = new GiftDeliveryBookshelfRepository({
@@ -346,37 +354,27 @@ describe('provider email events', () => {
     service = new EmailEventService({
       knex,
       queries,
-      getSource: () => provider,
+      provider,
       gifts: { recordOutcome: (options) => repository.recordOutcome(options) },
-      wake: async () => {},
-      logError: () => {},
     });
-    await service.ingest(provider.source, [{ ...event, family: 'gifts' }]);
-    await service.process();
+    await service.ingest([{ ...event, family: 'gifts' }]);
     assert.equal(
       (await knex('gift_deliveries').where({ id: deliveryId }).first()).outcome,
       'delivered',
     );
-    assert.equal(
-      await repository.getByProviderMessageId(event.providerId, 'another-account'),
-      null,
-    );
-    assert.equal(await repository.getByProviderMessageId('Opaque-Message', provider.source), null);
-    await service.ingest(provider.source, [
-      { ...event, id: 'gift-complaint', family: 'gifts', type: 'complained' },
-    ]);
-    await service.process();
+    assert.equal(await repository.getByProviderMessageId('Opaque-Message'), null);
+    await service.ingest([{ ...event, id: 'gift-complaint', family: 'gifts', type: 'complained' }]);
     assert.equal((await knex('suppressions').first()).email, event.recipientEmail);
     assert.equal(
       Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
       true,
     );
   });
-  it('applies consent once and retries remote cleanup without undoing a later resubscribe', async () => {
+  it('uses existing subscription history to preserve a resubscribe when cleanup is retried', async () => {
     event.type = 'unsubscribed';
     provider.removeSuppression.rejects(new Error('Provider unavailable'));
-    await service.ingest(provider.source, [event]);
-    await service.process();
+    const request = sign({ events: [event] });
+    await assert.rejects(service.webhook(provider.source, request), /Provider unavailable/);
     assert.equal((await knex('members_newsletters').where({ member_id: memberId })).length, 0);
     await knex('members_newsletters').insert({
       id: newId(),
@@ -384,36 +382,20 @@ describe('provider email events', () => {
       newsletter_id: newsletterId,
     });
     provider.removeSuppression.resolves();
-    await retryNow();
-    await service.process();
+    await service.webhook(provider.source, request);
     assert.equal((await knex('members_newsletters').where({ member_id: memberId })).length, 1);
-    assert.equal((await knex('email_provider_events').first()).status, 'completed');
+    assert.equal((await knex('members_subscribe_events').where({ member_id: memberId })).length, 1);
+    sinon.assert.calledTwice(provider.removeSuppression);
   });
-  it('retries aggregation after effects have committed', async () => {
+  it('propagates aggregation failures and recomputes totals when the provider retries', async () => {
     const aggregate = sinon
       .stub(queries, 'aggregateEmailStats')
       .rejects(new Error('Database unavailable'));
-    await service.ingest(provider.source, [event]);
-    await service.process();
-    assert((await knex('email_provider_events').first()).applied_at);
+    const request = sign({ events: [event] });
+    await assert.rejects(service.webhook(provider.source, request), /Database unavailable/);
+    assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
     aggregate.restore();
-    await retryNow();
-    await service.process();
+    await service.webhook(provider.source, request);
     assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
-    assert.equal((await knex('email_provider_events').first()).status, 'completed');
-  });
-  it('recovers expired leases and fences stale workers', async () => {
-    const inbox = new EmailInboxRepository(knex);
-    await inbox.enqueue(provider.source, [event], new Date(now + 'Z'));
-    const first = await inbox.claim(new Date('2026-09-01T12:00:01Z'));
-    assert(first);
-    const second = await inbox.claim(new Date('2026-09-01T12:06:00Z'));
-    assert(second);
-    assert.notEqual(first.token, second.token);
-    const apply = sinon.stub().resolves({});
-    assert.equal(await inbox.apply(first, apply), null);
-    sinon.assert.notCalled(apply);
-    await inbox.complete(first);
-    assert.equal((await knex('email_provider_events').first()).status, 'processing');
   });
 });

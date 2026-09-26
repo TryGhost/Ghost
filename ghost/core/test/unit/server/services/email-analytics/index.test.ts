@@ -42,7 +42,7 @@ describe('email analytics provider wiring', () => {
           subscribers.set(event.name, handler);
         },
       },
-      providers: [{ source: 'mailgun', getEventSource: () => ({ type: 'poll', fetch }) }],
+      provider: { getEventSource: () => ({ type: 'poll', fetch }) },
       eventService: { ingest },
     };
   });
@@ -63,17 +63,9 @@ describe('email analytics provider wiring', () => {
     assert.equal(analytics.getGifts(), wrappers[2]);
     assert.equal(wrappers[0].options.jobNames.latestOpened, 'email-analytics-latest-opened');
   });
-  it('keeps retained source cursors separate and starts all three workflows', async () => {
-    deps.providers = [
-      ...deps.providers,
-      { source: 'old-account', getEventSource: () => ({ type: 'poll', fetch }) },
-    ];
+  it('starts the configured provider for all three workflows', async () => {
     analytics.init(deps);
-    assert.equal(wrappers.length, 6);
-    assert.notEqual(
-      wrappers[0].options.jobNames.latestOpened,
-      wrappers[3].options.jobNames.latestOpened,
-    );
+    assert.equal(wrappers.length, 3);
     for (const handler of subscribers.values()) {
       await handler();
     }
@@ -81,7 +73,7 @@ describe('email analytics provider wiring', () => {
       sinon.assert.calledOnce(wrapper.startFetch);
     }
   });
-  it('passes the family to polling and durably ingests before advancing', async () => {
+  it('passes the family to polling and processes events before advancing', async () => {
     analytics.init(deps);
     const options = wrappers[1].options;
     const request = {
@@ -97,15 +89,33 @@ describe('email analytics provider wiring', () => {
       await import('../../../../../core/server/services/email-analytics/event-processing-result')
     ).EventProcessingResult();
     await options.createEventProcessor().processBatch([event], result, {});
-    sinon.assert.calledWithExactly(ingest, 'mailgun', [event], 'automations');
+    sinon.assert.calledWithExactly(ingest, [event], 'automations');
   });
   it('does not poll a webhook provider', async () => {
-    deps.providers = [
-      { source: 'webhook', getEventSource: () => ({ type: 'webhook', verify: sinon.stub() }) },
-    ];
+    deps.provider = { getEventSource: () => ({ type: 'webhook', verify: sinon.stub() }) };
     analytics.init(deps);
     for (const wrapper of wrappers) {
       assert.equal(wrapper.options.polling, false);
+    }
+  });
+
+  it('does not advance the polling timestamp when processing fails', async () => {
+    analytics.init(deps);
+    const event = { timestamp: new Date() };
+    const result = new (
+      await import('../../../../../core/server/services/email-analytics/event-processing-result')
+    ).EventProcessingResult();
+    const fetchData = {};
+    const error = new Error('Database unavailable');
+    ingest.rejects(error);
+    try {
+      await assert.rejects(
+        wrappers[0].options.createEventProcessor().processBatch([event], result, fetchData),
+        error,
+      );
+      assert.deepEqual(fetchData, {});
+    } finally {
+      ingest.resolves();
     }
   });
 });

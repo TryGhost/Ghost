@@ -236,9 +236,7 @@ const processStep = async ({
           automationActionRevisionId: step.automation_action_revision_id,
           automationRunStepId: step.id,
         });
-        const { id: mailgunMessageId, source: providerSource } = z
-          .object({ id: z.string().min(1), source: z.string().min(1) })
-          .parse(sendResult);
+        const { id: mailgunMessageId } = z.object({ id: z.string().min(1) }).parse(sendResult);
         // The bulk provider supplies the identity used to correlate events.
         const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
         try {
@@ -246,7 +244,6 @@ const processStep = async ({
             automationActionRevisionId: step.automation_action_revision_id,
             automationRunStepId: step.id,
             ...(mailgunMessageId ? { mailgunMessageId } : {}),
-            providerSource,
             memberEmail: member.get('email'),
             memberId: step.member_id,
             memberName: member.get('name'),

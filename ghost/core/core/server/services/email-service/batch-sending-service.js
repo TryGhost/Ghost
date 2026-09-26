@@ -643,7 +643,6 @@ class BatchSendingService {
         email_id: email.id,
         member_segment: segment,
         status: 'pending',
-        email_provider_source: this.#sendingService.providerSource,
         fallback_sending_domain: Boolean(options.useFallbackDomain),
       },
       options,
@@ -851,7 +850,6 @@ class BatchSendingService {
               members,
             },
             {
-              providerSource: batch.get('email_provider_source'),
               openTrackingEnabled: !!email.get('track_opens'),
               clickTrackingEnabled: !!email.get('track_clicks'),
               useFallbackAddress: batch.get('fallback_sending_domain'),

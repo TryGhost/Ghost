@@ -28,7 +28,7 @@ class EmailServiceWrapper {
     const BatchSendingService = require('./batch-sending-service');
     const { SendingStatusService } = require('./sending-status-service');
     const EmailSegmenter = require('./email-segmenter');
-    const { getProvider, getSource } = require('../email-provider');
+    const { getProvider } = require('../email-provider');
     const { DomainWarmingService } = require('./domain-warming-service');
 
     const { Post, Newsletter, Email, EmailBatch, EmailRecipient, Member } = require('../../models');
@@ -88,7 +88,6 @@ class EmailServiceWrapper {
 
     const sendingService = new SendingService({
       emailProvider: getProvider(),
-      getProviderForSource: getSource,
       emailRenderer,
       emailAddressService: emailAddressService.service,
     });

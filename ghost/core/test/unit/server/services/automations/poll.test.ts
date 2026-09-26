@@ -157,7 +157,7 @@ describe('automations poll', function () {
         loadMemberWelcomeEmails: sinon.stub<[], Promise<void>>().resolves(),
         sendAutomationEmail: fake<
           PollOptions['memberWelcomeEmailService']['api']['sendAutomationEmail']
-        >().resolves({ id: 'mailgun-message-id', source: 'mailgun' }),
+        >().resolves({ id: 'mailgun-message-id' }),
       },
     };
 
@@ -413,7 +413,6 @@ describe('automations poll', function () {
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     memberWelcomeEmailService.api.sendAutomationEmail.resolves({
       id: 'mailgun-message-id',
-      source: 'mailgun',
     });
 
     await poll(options);
@@ -428,7 +427,6 @@ describe('automations poll', function () {
       automationActionRevisionId: 'revision-id',
       automationRunStepId: step.id,
       mailgunMessageId: 'mailgun-message-id',
-      providerSource: 'mailgun',
       memberEmail: 'member@example.com',
       memberId: 'member-id',
       memberName: 'Test Member',
@@ -450,7 +448,6 @@ describe('automations poll', function () {
     settingsCacheGet.withArgs('email_track_opens').returns(true);
     memberWelcomeEmailService.api.sendAutomationEmail.resolves({
       id: 'mailgun-message-id',
-      source: 'mailgun',
     });
 
     await poll(options);
@@ -475,7 +472,6 @@ describe('automations poll', function () {
     settingsCacheGet.withArgs('email_track_opens').returns(false);
     memberWelcomeEmailService.api.sendAutomationEmail.resolves({
       id: 'mailgun-message-id',
-      source: 'mailgun',
     });
 
     await poll(options);
@@ -609,7 +605,6 @@ describe('automations poll', function () {
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     memberWelcomeEmailService.api.sendAutomationEmail.resolves({
       id: 'mailgun-message-id',
-      source: 'mailgun',
     });
     scheduleAutomationEmailAnalyticsJob.rejects(new Error('email analytics scheduling failed'));
 

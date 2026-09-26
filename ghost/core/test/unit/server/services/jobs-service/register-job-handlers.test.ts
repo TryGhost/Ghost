@@ -22,7 +22,6 @@ describe('register-job-handlers', function () {
   let mentionsController: { processWebmention: sinon.SinonStub };
   let mentionsSendingService: { sendWebmentions: sinon.SinonStub };
   let membersService: { handleImportJob: sinon.SinonStub };
-  const emailEvents = { process: sinon.stub().resolves() };
   let emailService: { handleSendEmailJob: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
@@ -61,7 +60,6 @@ describe('register-job-handlers', function () {
       mentionsSendingService,
       membersService,
       emailService,
-      emailEvents,
     });
   });
 

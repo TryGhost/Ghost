@@ -110,7 +110,7 @@ export abstract class EmailProviderBase {
     'removeSuppression',
   ]);
 
-  /** Stable identity of this provider account, unique amongst retained sources. */
+  /** Identifier used for this provider's webhook endpoint and public configuration. */
   abstract readonly source: string;
   abstract isConfigured(): boolean;
   abstract send(

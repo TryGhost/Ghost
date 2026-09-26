@@ -1,5 +1,3 @@
-import type { EmailEventService } from '../email-provider/event-service';
-import { ProcessEmailEventsJob } from '../email-provider/process-email-events-job';
 import { JobsService } from './jobs-service';
 import type { JobHandlingOptions } from './jobs-service';
 import type { GiftService } from '../gifts/gift-service';
@@ -49,7 +47,6 @@ interface RegisterJobHandlersDependencies {
     handleImportJob(job: MembersImportJob): Promise<void>;
   };
   emailService: EmailService;
-  emailEvents: Pick<EmailEventService, 'process'>;
 }
 
 export default function registerJobHandlers({
@@ -61,13 +58,7 @@ export default function registerJobHandlers({
   mentionsSendingService,
   membersService,
   emailService,
-  emailEvents,
 }: RegisterJobHandlersDependencies): void {
-  jobsService.handle(ProcessEmailEventsJob, () => emailEvents.process(), {
-    queue: 'email-events',
-    concurrency: 1,
-  });
-
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
   });

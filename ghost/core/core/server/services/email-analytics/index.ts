@@ -60,7 +60,7 @@ export function init({
   domainEvents,
   metrics,
   settingsCache,
-  providers,
+  provider,
   eventService,
 }: {
   config: Pick<ConfigInstance, 'get'>;
@@ -76,71 +76,56 @@ export function init({
   };
   metrics: Pick<GhostMetrics, 'metric'>;
   settingsCache: { get: (key: string) => unknown };
-  providers: readonly Pick<EmailProviderBase, 'source' | 'getEventSource'>[];
+  provider: Pick<EmailProviderBase, 'getEventSource'>;
   eventService: Pick<EmailEventService, 'ingest'>;
 }): void {
   if (newsletters) {
     return;
   }
-  assert(providers.length, 'Email analytics requires a provider');
-  const wrappers: Record<EmailFamily, EmailAnalyticsServiceWrapper[]> = {
-    newsletters: [],
-    automations: [],
-    gifts: [],
-  };
-  for (const provider of providers) {
-    const source = provider.getEventSource();
-    for (const family of Object.keys(pipelines) as EmailFamily[]) {
-      const pipeline = pipelines[family];
-      // Keep existing Mailgun cursors intact. Other accounts cannot share them.
-      const prefix = pipeline.prefix + (provider.source === 'mailgun' ? '' : `-${provider.source}`);
-      const jobNames: JobNames = {
-        latestNonOpened: `${prefix}-latest-others`,
-        missing: `${prefix}-missing`,
-        latestOpened: `${prefix}-latest-opened`,
-        scheduled: `${prefix}-scheduled`,
-      };
-      wrappers[family].push(
-        new EmailAnalyticsServiceWrapper({
-          logName: provider.source === 'mailgun' ? family : `${family}:${provider.source}`,
-          jobType: pipeline.jobType,
-          config,
-          queries: new Queries(db.knex),
-          mailgunTags: [],
-          jobNames,
-          cursorSeed: pipeline.seed,
-          metrics,
-          settingsCache,
-          polling: source.type === 'poll',
-          fetchEvents: async (options) => {
-            if (source.type === 'poll') {
-              return source.fetch({ ...options, family });
+  const source = provider.getEventSource();
+  const wrappers = {} as Record<EmailFamily, EmailAnalyticsServiceWrapper>;
+  for (const family of Object.keys(pipelines) as EmailFamily[]) {
+    const pipeline = pipelines[family];
+    const jobNames: JobNames = {
+      latestNonOpened: `${pipeline.prefix}-latest-others`,
+      missing: `${pipeline.prefix}-missing`,
+      latestOpened: `${pipeline.prefix}-latest-opened`,
+      scheduled: `${pipeline.prefix}-scheduled`,
+    };
+    wrappers[family] = new EmailAnalyticsServiceWrapper({
+      logName: family,
+      jobType: pipeline.jobType,
+      config,
+      queries: new Queries(db.knex),
+      mailgunTags: [],
+      jobNames,
+      cursorSeed: pipeline.seed,
+      metrics,
+      settingsCache,
+      polling: source.type === 'poll',
+      fetchEvents: async (options) => {
+        if (source.type === 'poll') {
+          return source.fetch({ ...options, family });
+        }
+      },
+      createEventProcessor: () => ({
+        async processBatch(events, _result, fetchData) {
+          await eventService.ingest(events, family);
+          for (const event of events) {
+            if (!fetchData.lastEventTimestamp || event.timestamp > fetchData.lastEventTimestamp) {
+              fetchData.lastEventTimestamp = event.timestamp;
             }
-          },
-          createEventProcessor: () => ({
-            async processBatch(events, _result, fetchData) {
-              await eventService.ingest(provider.source, events, family);
-              for (const event of events) {
-                if (
-                  !fetchData.lastEventTimestamp ||
-                  event.timestamp > fetchData.lastEventTimestamp
-                ) {
-                  fetchData.lastEventTimestamp = event.timestamp;
-                }
-              }
-            },
-          }),
-        }),
-      );
-    }
+          }
+        },
+      }),
+    });
   }
-  [newsletters] = wrappers.newsletters;
-  [automations] = wrappers.automations;
-  [gifts] = wrappers.gifts;
-  const start = async (family: EmailFamily) => {
-    await Promise.all(wrappers[family].map((wrapper) => wrapper.startFetch()));
-  };
-  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => start('newsletters'));
-  domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, () => start('automations'));
-  domainEvents.subscribe(StartGiftEmailAnalyticsJobEvent, () => start('gifts'));
+  newsletters = wrappers.newsletters;
+  automations = wrappers.automations;
+  gifts = wrappers.gifts;
+  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => wrappers.newsletters.startFetch());
+  domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, () =>
+    wrappers.automations.startFetch(),
+  );
+  domainEvents.subscribe(StartGiftEmailAnalyticsJobEvent, () => wrappers.gifts.startFetch());
 }

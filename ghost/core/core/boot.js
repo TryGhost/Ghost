@@ -383,7 +383,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   assert(giftDeliveryService, 'Gift delivery service should be initialized');
   require('./server/services/email-provider').initEvents({
     knex: db.knex,
-    jobsService,
     gifts: giftDeliveryService,
   });
   if (ghostServer) {
@@ -408,7 +407,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     audienceFeedback.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
-      providers: require('./server/services/email-provider').getSources(),
+      provider: require('./server/services/email-provider').getProvider(),
       eventService: require('./server/services/email-provider').getEventService(),
       config,
       db,
@@ -716,14 +715,8 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       mentionsSendingService: mentionsService.sendingService,
       membersService,
       emailService: emailService.service,
-      emailEvents: require('./server/services/email-provider').getEventService(),
     });
-    const {
-      ProcessEmailEventsJob,
-    } = require('./server/services/email-provider/process-email-events-job');
     await jobsService.start();
-    await jobsService.scheduleRecurring(new ProcessEmailEventsJob(), { cron: '*/30 * * * * *' });
-    await jobsService.dispatch(new ProcessEmailEventsJob());
     debug('End: Register job handlers');
     debug('End: Load Ghost Services & Apps');
 
