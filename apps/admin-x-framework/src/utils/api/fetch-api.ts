@@ -52,7 +52,8 @@ const xhrHeadersToFetchHeaders = (xhr: Readonly<XMLHttpRequest>): Headers => {
 };
 
 const xhrToFetchResponse = (xhr: Readonly<XMLHttpRequest>): Response =>
-  new Response(xhr.response, {
+  // Fetch forbids even an empty ArrayBuffer body for these statuses.
+  new Response([204, 205, 304].includes(xhr.status) ? null : xhr.response, {
     status: xhr.status,
     statusText: xhr.statusText,
     headers: xhrHeadersToFetchHeaders(xhr),
