@@ -10,6 +10,7 @@ interface PostCelebrationModalProps {
   /** Total published posts. Absent until the count request lands. */
   postCount?: number;
   siteTitle: string;
+  siteIcon?: string;
   onClose: () => void;
 }
 
@@ -25,6 +26,7 @@ export function PostCelebrationModal({
   wasPublished,
   postCount,
   siteTitle,
+  siteIcon,
   onClose,
 }: PostCelebrationModalProps) {
   const copy = getCelebrationCopy({
@@ -38,6 +40,7 @@ export function PostCelebrationModal({
     <PostShareModal
       author={post.authors?.[0]?.name ?? ''}
       emailOnly={post.email_only === true}
+      faviconURL={siteIcon}
       featureImageURL={post.feature_image ?? ''}
       postExcerpt={post.excerpt ?? post.custom_excerpt ?? ''}
       postTitle={post.title}
