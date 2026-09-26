@@ -296,7 +296,6 @@ describe('Sidebar user menu', () => {
   });
 
   it('switches the appearance and shows the current choice', async () => {
-    // Without the Ember bridge the app itself toggles the root dark class.
     const isDarkMode = () => document.documentElement.classList.contains('dark');
     await renderAdminApp('/site');
 

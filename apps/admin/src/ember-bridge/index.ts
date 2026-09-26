@@ -12,7 +12,6 @@ export {
   useEmberRouting,
   useForceUpgrade,
   subscribeOpenGiftLinkModal,
-  isEmberThemeManaged,
   preloadEmberAdminThemeStylesheet,
   applyEmberAdminThemePreference,
   navigateEmberBillingSubRoute,

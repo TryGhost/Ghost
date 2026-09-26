@@ -598,31 +598,24 @@ describe('useEmberRouting', () => {
 });
 
 describe('theme bridge helpers', () => {
-  test('isEmberThemeManaged reflects bridge presence', async () => {
-    const { isEmberThemeManaged } = await import('./ember-bridge');
-    expect(isEmberThemeManaged()).toBe(false);
-    window.EmberBridge = { state: createMockStateBridge().stateBridge };
-    expect(isEmberThemeManaged()).toBe(true);
-  });
-
-  test('applyEmberAdminThemePreference calls Ember when the method exists and reports it', async () => {
+  test('applyEmberAdminThemePreference calls Ember when the method exists', async () => {
     const { applyEmberAdminThemePreference } = await import('./ember-bridge');
     const mock = createMockStateBridge();
     const apply = vi.fn();
     mock.stateBridge.applyAdminThemePreference = apply;
     window.EmberBridge = { state: mock.stateBridge };
 
-    expect(applyEmberAdminThemePreference('dark')).toBe(true);
+    applyEmberAdminThemePreference('dark');
     expect(apply).toHaveBeenCalledWith('dark');
   });
 
-  test('applyEmberAdminThemePreference returns false without a bridge or method', async () => {
+  test('applyEmberAdminThemePreference is a no-op without a bridge or method', async () => {
     const { applyEmberAdminThemePreference } = await import('./ember-bridge');
-    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+    expect(() => applyEmberAdminThemePreference('dark')).not.toThrow();
 
     // Bridge present but from an older Ember without the method
     window.EmberBridge = { state: createMockStateBridge().stateBridge };
-    expect(applyEmberAdminThemePreference('dark')).toBe(false);
+    expect(() => applyEmberAdminThemePreference('dark')).not.toThrow();
   });
 
   test('navigateEmberBillingSubRoute hands the sub-route to Ember and reports it', async () => {

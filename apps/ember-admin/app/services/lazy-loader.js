@@ -12,10 +12,12 @@ export default class LazyLoaderService extends Service {
     testing = undefined;
 
     scriptPromises = null;
+    stylePromises = null;
 
     init() {
         super.init(...arguments);
         this.scriptPromises = {};
+        this.stylePromises = {};
 
         if (this.testing === undefined) {
             this.testing = config.environment === 'test';
@@ -55,11 +57,21 @@ export default class LazyLoaderService extends Service {
     }
 
     loadStyle(key, url, alternate = false) {
-        if (this.testing || document.querySelector(`#${key}-styles`)) {
+        if (this.testing) {
             return RSVP.resolve();
         }
 
-        return new RSVP.Promise((resolve, reject) => {
+        // A caller arriving mid-load must wait for it: an alternate stylesheet
+        // is disabled when it finishes loading, undoing any earlier toggle.
+        if (this.stylePromises[key]) {
+            return this.stylePromises[key];
+        }
+
+        if (document.querySelector(`#${key}-styles`)) {
+            return RSVP.resolve();
+        }
+
+        const stylePromise = new RSVP.Promise((resolve, reject) => {
             const link = document.createElement('link');
             link.id = `${key}-styles`;
             link.rel = alternate ? 'alternate stylesheet' : 'stylesheet';
@@ -92,5 +104,9 @@ export default class LazyLoaderService extends Service {
                 document.querySelector('head').appendChild(link);
             }
         });
+
+        this.stylePromises[key] = stylePromise;
+
+        return stylePromise;
     }
 }
