@@ -1,12 +1,44 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const configUtils = require('../../utils/config-utils');
-const errors = require('@tryghost/errors');
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import * as Sentry from '@sentry/node';
+import * as errors from '@tryghost/errors';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import configUtils from '../../utils/config-utils';
 
-const Sentry = require('@sentry/node');
+const localRequire = createRequire(__filename);
+
+type SentryTestEvent = {
+  tags: Record<string, string | number | null>;
+  exception?: {
+    values?: Array<{
+      value?: string | null;
+      type?: string | null;
+    }>;
+  };
+  contexts?: Record<string, Record<string, unknown>>;
+};
+
+type SentryTestHint = {
+  originalException?: unknown;
+};
+
+type SentryTestTransaction = {
+  transaction: string;
+};
+
+type SentryModule = {
+  requestHandler: { name: string };
+  errorHandler: { name: string };
+  captureException: { name: string };
+  captureMessage: { name: string };
+  beforeSend: (event: SentryTestEvent, hint: SentryTestHint) => SentryTestEvent | null;
+  beforeSendTransaction: (event: SentryTestTransaction) => SentryTestTransaction | null;
+};
 
 const fakeDSN = 'https://aaabbbccc000111222333444555667@sentry.io/1234567';
-let sentry;
+let sentry: SentryModule;
+let initSpy: sinon.SinonSpy;
 
 // These tests deliberately bust core/shared/sentry out of the require cache and
 // re-require it under different configs. Under the unit suite's shared module
@@ -15,24 +47,24 @@ let sentry;
 // invoking a different sentry instance than a co-scheduled test stubbed. Snapshot
 // the original cached module and put it back after each test so the registry is
 // left exactly as we found it.
-const sentryModulePath = require.resolve('../../../core/shared/sentry');
-const originalSentryModule = require.cache[sentryModulePath];
+const sentryModulePath = localRequire.resolve('../../../core/shared/sentry');
+const originalSentryModule = localRequire.cache[sentryModulePath];
 
 describe('sentry', function () {
   afterEach(async function () {
     await configUtils.restore();
     sinon.restore();
     if (originalSentryModule) {
-      require.cache[sentryModulePath] = originalSentryModule;
+      localRequire.cache[sentryModulePath] = originalSentryModule;
     } else {
-      delete require.cache[sentryModulePath];
+      delete localRequire.cache[sentryModulePath];
     }
   });
 
   describe('No sentry config', function () {
     beforeEach(function () {
-      delete require.cache[require.resolve('../../../core/shared/sentry')];
-      sentry = require('../../../core/shared/sentry');
+      delete localRequire.cache[localRequire.resolve('../../../core/shared/sentry')];
+      sentry = localRequire('../../../core/shared/sentry');
     });
 
     it('returns expected function signature', function () {
@@ -46,11 +78,11 @@ describe('sentry', function () {
   describe('With sentry config', function () {
     beforeEach(function () {
       configUtils.set({ sentry: { disabled: false, dsn: fakeDSN } });
-      delete require.cache[require.resolve('../../../core/shared/sentry')];
+      delete localRequire.cache[localRequire.resolve('../../../core/shared/sentry')];
 
-      sinon.spy(Sentry, 'init');
+      initSpy = sinon.spy(Sentry, 'init');
 
-      sentry = require('../../../core/shared/sentry');
+      sentry = localRequire('../../../core/shared/sentry');
     });
 
     it('returns expected function signature', function () {
@@ -60,7 +92,7 @@ describe('sentry', function () {
     });
 
     it('initialises sentry correctly', function () {
-      const initArgs = Sentry.init.getCall(0).args;
+      const initArgs = initSpy.getCall(0).args;
 
       assert.equal(initArgs[0].dsn, fakeDSN, 'shoudl be our fake dsn');
       assert.match(initArgs[0].release, /ghost@\d+\.\d+\.\d+/, 'should be a valid version');
@@ -75,10 +107,10 @@ describe('sentry', function () {
         PRO_ENV: env,
       });
 
-      delete require.cache[require.resolve('../../../core/shared/sentry')];
-      require('../../../core/shared/sentry');
+      delete localRequire.cache[localRequire.resolve('../../../core/shared/sentry')];
+      localRequire('../../../core/shared/sentry');
 
-      const initArgs = Sentry.init.getCall(1).args;
+      const initArgs = initSpy.getCall(1).args;
 
       assert.equal(initArgs[0].environment, env, 'should be the correct env');
     });
@@ -87,9 +119,9 @@ describe('sentry', function () {
   describe('beforeSend', function () {
     beforeEach(function () {
       configUtils.set({ sentry: { disabled: false, dsn: fakeDSN } });
-      delete require.cache[require.resolve('../../../core/shared/sentry')];
+      delete localRequire.cache[localRequire.resolve('../../../core/shared/sentry')];
 
-      sentry = require('../../../core/shared/sentry');
+      sentry = localRequire('../../../core/shared/sentry');
     });
 
     it('returns the event', function () {
@@ -182,9 +214,9 @@ describe('sentry', function () {
       // configure a DSN and re-require rather than relying on a previous
       // test having left a configured instance in the require cache.
       configUtils.set({ sentry: { disabled: false, dsn: fakeDSN } });
-      delete require.cache[require.resolve('../../../core/shared/sentry')];
+      delete localRequire.cache[localRequire.resolve('../../../core/shared/sentry')];
 
-      sentry = require('../../../core/shared/sentry');
+      sentry = localRequire('../../../core/shared/sentry');
     });
 
     it('filters transactions based on an allow list', function () {
