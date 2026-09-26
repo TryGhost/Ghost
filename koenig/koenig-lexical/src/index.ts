@@ -41,6 +41,7 @@ import ReplacementStringsPlugin from './plugins/ReplacementStringsPlugin';
 import RestrictContentPlugin from './plugins/RestrictContentPlugin';
 import SignupPlugin from './plugins/SignupPlugin';
 import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
+import SmartQuotesPlugin from './plugins/SmartQuotesPlugin';
 import TKCountPlugin from './plugins/TKCountPlugin';
 import TogglePlugin from './plugins/TogglePlugin';
 import TransistorPlugin from './plugins/TransistorPlugin';
@@ -114,6 +115,7 @@ export {
     RestrictContentPlugin,
     SignupPlugin,
     SlashCardMenuPlugin,
+    SmartQuotesPlugin,
     TKCountPlugin,
     TogglePlugin,
     TransistorPlugin,
