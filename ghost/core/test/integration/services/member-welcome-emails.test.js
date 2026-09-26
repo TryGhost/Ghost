@@ -6,7 +6,7 @@ const { mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const config = require('../../../core/shared/config');
-const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
+const MailgunClient = require('../../../core/server/lib/mail/mailgun-client');
 const mailService = require('../../../core/server/services/mail');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const {

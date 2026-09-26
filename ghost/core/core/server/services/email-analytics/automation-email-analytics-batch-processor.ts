@@ -1,4 +1,4 @@
-import { normalizeMailgunMessageId } from '../lib/mailgun-message-id';
+import { normalizeMailgunMessageId } from '../../lib/mail/mailgun-message-id';
 import type * as automationsApi from '../automations/automations-api';
 import type {
   AutomatedEmailEvents,

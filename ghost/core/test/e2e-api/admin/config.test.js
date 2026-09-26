@@ -10,7 +10,7 @@ const { anyContentVersion, anyEtag, anyContentLength, anyObject, stringMatching 
 /**
  * This is a snapshot test for the happy path of the config API
  * It does not test the full range of possible config values
- * as that should be tested in the unit tests for the public-config service
+ * as that should be tested in the unit tests for the public-config response builders
  */
 describe('Config API', function () {
   let agent;

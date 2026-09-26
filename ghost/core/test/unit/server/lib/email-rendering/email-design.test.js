@@ -1,8 +1,6 @@
 // @ts-check
 const assert = require('node:assert/strict');
-const {
-  getEmailDesign,
-} = require('../../../../../core/server/services/email-rendering/email-design');
+const { getEmailDesign } = require('../../../../../core/server/lib/email-rendering/email-design');
 
 const VALID_HEX_COLORS = ['#f00', '#F00', '#ab9801', '#AB9801'];
 const INVALID_HEX_COLORS = [
