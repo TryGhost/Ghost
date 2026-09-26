@@ -136,6 +136,8 @@ The publishing check runs for admins only, since nobody else can read the member
 
 Both blocks feed the state directly. An email block disables the email publish types and re-applies the initial-type rules, so the selection falls back to `publish`; that demotion also applies to a type the user picked before the block landed, since a block that arrives late must not leave an unsendable type selected.
 
+The editor supplies the ports through `usePublishLimits()`, which backs them with the framework's limiter and the editor's settings and config reads. The limiter loads only the two limits the flow checks (`members` and `emails` under the host's `hostSettings.limits`), so opening the editor never reads the staff lists the other limits count. `refreshSettings` refetches the site settings and rejects when that read fails; `checkSendingLimit` asks the limiter whether one more send would exceed the monthly `emails` limit, counting the recipients of every email created since the period started; `checkPublishingLimit` asks whether the site is already over its `members` limit; and `getEmailVerification` reads `email_verification_required` from the refreshed settings, with the host's `hostSettings.emailVerification.emailSendingDisabledMessage` as its copy. A site without a limit configured, or one whose limiter has not loaded, passes every check. The ports read the latest hook values each time they run, so the machine can capture them once at creation.
+
 ## Dirty state and reset
 
 `isDirty` compares the publish type, scheduling, newsletter and recipient filter against the values the machine started with; selecting the value that was already there is not a change. The scheduled time counts only while scheduling is on or the user has actually chosen a time, so turning scheduling on and back off leaves the state clean.
@@ -194,7 +196,7 @@ The email's id is only knowable from a reload, so the poller's reload records it
 
 ## Requests
 
-Every request the flow makes passes the editor's shared request options, which opt out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), the settings, config, newsletter, tier, label and recipient-count reads behind its hooks, and the email retry, which carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience, a note on the complete step, or an error on the email-error step.
+Every request the flow makes passes the editor's shared request options, which opt out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), the settings, config, newsletter, tier, label and recipient-count reads behind its hooks, the member and email counts the limit ports read through the limiter, and the email retry, which carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience, a note on the complete step, or an error on the email-error step.
 
 The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
 
@@ -218,4 +220,4 @@ That reading depends on what the caller supplies. `newsletterName` and `newslett
 
 ## Not here yet
 
-Known gaps, listed so they are not mistaken for decisions: the size of a newsletter is not shown, so a send over the 100kB clipping threshold goes unflagged even though the options step keeps the slot the warning belongs in; and the host limit ports are optional and unset, so `checkLimits()` finds no blocks unless a caller supplies them.
+Known gaps, listed so they are not mistaken for decisions: the size of a newsletter is not shown, so a send over the 100kB clipping threshold goes unflagged even though the options step keeps the slot the warning belongs in.

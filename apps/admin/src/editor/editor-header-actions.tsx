@@ -19,6 +19,7 @@ import { UpdateFlowModal } from './publish/update-flow-modal';
 import { buildPublishFlowPost, type PublishFlowPost } from './publish/flow-post';
 import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
+import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
@@ -190,6 +191,7 @@ function PublishActions({
 }: PublishActionsProps) {
   const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
+  const limits = usePublishLimits();
   const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
   const paywallImprovements = useFeatureFlag('paywallImprovements', {
@@ -289,6 +291,7 @@ function PublishActions({
       {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
           dispatch={session.dispatchPublish}
+          limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}
           site={inputs.site}
