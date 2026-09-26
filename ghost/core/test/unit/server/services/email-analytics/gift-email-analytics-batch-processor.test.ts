@@ -4,7 +4,7 @@ import { GiftEmailAnalyticsBatchProcessor } from '../../../../../core/server/ser
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 
 describe('GiftEmailAnalyticsBatchProcessor', function () {
-  it('maps Mailgun delivery and failure events to latest gift outcomes without opens', async function () {
+  it('maps provider delivery and failure events to latest gift outcomes without opens', async function () {
     const giftDeliveryService = { recordOutcome: sinon.stub().resolves('recorded' as const) };
     const processor = new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService });
     const result = new EventProcessingResult();
@@ -40,7 +40,7 @@ describe('GiftEmailAnalyticsBatchProcessor', function () {
     sinon.assert.calledWithExactly(
       giftDeliveryService.recordOutcome,
       sinon.match({
-        providerMessageId: 'provider-123',
+        providerMessageId: '<provider-123>',
         outcome: 'delivered',
         timestamp: deliveredAt,
         error: null,

@@ -45,7 +45,7 @@ module.exports = function setupMembersApp() {
     '/webhooks/email/:source',
     bodyParser.raw({ type: () => true, limit: '2mb' }),
     (req, res, next) => {
-      const { getEventService } = require('../../services/email-provider');
+      const { getEventService } = require('../../services/email-analytics');
       const {
         emailWebhookController,
       } = require('../../services/email-provider/webhook-controller');

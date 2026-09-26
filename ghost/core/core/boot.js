@@ -341,6 +341,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
+  const automationsApi = require('./server/services/automations/automations-api');
   const mentionsService = require('./server/services/mentions');
   const tagsPublic = require('./server/services/tags-public');
   const postsPublic = require('./server/services/posts-public');
@@ -381,10 +382,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   });
   const giftDeliveryService = giftService.deliveryService;
   assert(giftDeliveryService, 'Gift delivery service should be initialized');
-  require('./server/services/email-provider').initEvents({
-    knex: db.knex,
-    gifts: giftDeliveryService,
-  });
   if (ghostServer) {
     ghostServer.registerCleanupTask(async () => {
       await stripe.shutdown();
@@ -408,7 +405,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       provider: require('./server/services/email-provider').getProvider(),
-      eventService: require('./server/services/email-provider').getEventService(),
+      automationsApi,
       config,
       db,
       domainEvents,
@@ -423,7 +420,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     webhooks.listen(),
     comments.init(),
     linkTracking.init(),
-    emailSuppressionList.init(),
+    emailSuppressionList.init({ membersRepository: members.api.members }),
     slackNotifications.init(),
     mediaInliner.init(),
     contentImport.init(),

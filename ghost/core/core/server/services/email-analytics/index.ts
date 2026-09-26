@@ -1,131 +1,231 @@
 import assert from 'node:assert/strict';
+import type { EmailFamily, EmailProviderBase } from '@tryghost/adapter-base-email';
+import { EmailEventService, parseEmailEvents } from '../email-provider/event-service';
+import type { BatchEventProcessor } from './batch-event-processor';
 import type { Knex } from 'knex';
+import type { PrometheusClient } from '@tryghost/prometheus-metrics';
 import type { ConfigInstance } from '../../../shared/config/loader';
 import type { GhostMetrics } from '@tryghost/metrics';
-import type { EmailProviderBase, EmailFamily } from '@tryghost/adapter-base-email';
-import type { EmailEventService } from '../email-provider/event-service';
+// @ts-expect-error This module lacks type definitions.
+import type SettingsCache from '../../../shared/settings-cache';
 import { EmailAnalyticsServiceWrapper } from './email-analytics-service-wrapper';
-import type { CursorSeed, JobNames } from './email-analytics-service';
+// @ts-expect-error This module lacks type definitions.
+import { AGGREGATE_MEMBER_STATS_METRIC_NAME } from './newsletter-email-analytics-batch-processor';
+// @ts-expect-error This module lacks type definitions.
+import { NewsletterEmailAnalyticsBatchProcessor } from './newsletter-email-analytics-batch-processor';
+// @ts-expect-error This module lacks type definitions.
+import NewsletterEmailEventStorage from '../email-service/newsletter-email-event-storage';
+// @ts-expect-error This module lacks type definitions.
+import EmailEventProcessor from '../email-service/email-event-processor';
+import type membersService from '../members';
+// @ts-expect-error This module lacks type definitions.
+import type EmailSuppressionList from '../email-suppression-list';
+// @ts-expect-error This module lacks type definitions.
+import type { EmailRecipientFailure, EmailSpamComplaintEvent, Email } from '../../models';
+// @ts-expect-error This module lacks type definitions.
+import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
 import { StartEmailAnalyticsJobEvent } from './events/start-email-analytics-job-event';
 import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
+import type * as AutomationsApi from '../automations/automations-api';
+import { AutomationEmailAnalyticsBatchProcessor } from './automation-email-analytics-batch-processor';
+import { GiftEmailAnalyticsBatchProcessor } from './gift-email-analytics-batch-processor';
 import { StartGiftEmailAnalyticsJobEvent } from './events/start-gift-email-analytics-job-event';
+import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
+
+let eventService: EmailEventService | undefined;
+export function getEventService(): EmailEventService {
+  assert(eventService, 'Email event service should be initialized');
+  return eventService;
+}
 
 let newsletters: EmailAnalyticsServiceWrapper | undefined;
 let automations: EmailAnalyticsServiceWrapper | undefined;
 let gifts: EmailAnalyticsServiceWrapper | undefined;
+
 export function getNewsletters(): EmailAnalyticsServiceWrapper {
   assert(newsletters, 'Newsletter email analytics should be initialized');
   return newsletters;
 }
+
 export function getAutomations(): EmailAnalyticsServiceWrapper {
   assert(automations, 'Automation email analytics should be initialized');
   return automations;
 }
+
 export function getGifts(): EmailAnalyticsServiceWrapper {
   assert(gifts, 'Gift email analytics should be initialized');
   return gifts;
 }
 
-const pipelines: Record<EmailFamily, { jobType: string; prefix: string; seed: CursorSeed }> = {
-  newsletters: {
-    jobType: 'email-analytics-fetch-latest',
-    prefix: 'email-analytics',
-    seed: {
-      tableName: 'email_recipients',
-      eventColumns: { delivered: 'delivered_at', opened: 'opened_at', failed: 'failed_at' },
-    },
-  },
-  automations: {
-    jobType: 'email-analytics-automation-fetch-latest',
-    prefix: 'email-analytics-automation',
-    seed: {
-      tableName: 'automated_email_recipients',
-      eventColumns: { delivered: 'delivered_at', opened: 'opened_at' },
-    },
-  },
-  gifts: {
-    jobType: 'email-analytics-gift-fetch-latest',
-    prefix: 'email-analytics-gifts',
-    seed: {
-      tableName: 'gift_deliveries',
-      eventColumns: { delivered: 'outcome_at', failed: 'outcome_at' },
-    },
-  },
-};
-
-export function init({
+export const init = ({
+  provider,
+  automationsApi,
   config,
   db,
   domainEvents,
+  emailSuppressionList,
+  giftDeliveryService,
+  membersRepository,
+  models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
   metrics,
+  prometheusClient,
   settingsCache,
-  provider,
-  eventService,
 }: {
+  provider: Pick<EmailProviderBase, 'source' | 'getEventSource'>;
+  automationsApi: Pick<
+    typeof AutomationsApi,
+    'getAutomatedEmailRecipientsByMailgunIds' | 'trackEmailDeliveredAndOpened'
+  >;
   config: Pick<ConfigInstance, 'get'>;
   db: { knex: Knex };
-  domainEvents: {
-    subscribe: (
-      event:
-        | typeof StartEmailAnalyticsJobEvent
-        | typeof StartAutomationEmailAnalyticsJobEvent
-        | typeof StartGiftEmailAnalyticsJobEvent,
-      callback: () => Promise<void>,
-    ) => void;
+  domainEvents: Pick<DomainEvents, 'subscribe'>;
+  emailSuppressionList: Pick<
+    typeof EmailSuppressionList,
+    'removeComplaint' | 'removeUnsubscribe' | 'handleBounce' | 'handleComplaint'
+  >;
+  giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome'>;
+  membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;
+  models: {
+    Email: Email;
+    EmailRecipientFailure: EmailRecipientFailure;
+    EmailSpamComplaintEvent: EmailSpamComplaintEvent;
   };
   metrics: Pick<GhostMetrics, 'metric'>;
-  settingsCache: { get: (key: string) => unknown };
-  provider: Pick<EmailProviderBase, 'getEventSource'>;
-  eventService: Pick<EmailEventService, 'ingest'>;
-}): void {
+  prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
+  settingsCache: Pick<typeof SettingsCache, 'get'>;
+}) => {
   if (newsletters) {
     return;
   }
-  const source = provider.getEventSource();
-  const wrappers = {} as Record<EmailFamily, EmailAnalyticsServiceWrapper>;
-  for (const family of Object.keys(pipelines) as EmailFamily[]) {
-    const pipeline = pipelines[family];
-    const jobNames: JobNames = {
-      latestNonOpened: `${pipeline.prefix}-latest-others`,
-      missing: `${pipeline.prefix}-missing`,
-      latestOpened: `${pipeline.prefix}-latest-opened`,
-      scheduled: `${pipeline.prefix}-scheduled`,
-    };
-    wrappers[family] = new EmailAnalyticsServiceWrapper({
-      logName: family,
-      jobType: pipeline.jobType,
+
+  const queries = new Queries(db.knex);
+
+  // Each fetch or webhook owns its buffers; concurrent requests must not flush
+  // or clear another request's pending newsletter updates.
+  const createEventProcessor = (family: EmailFamily): BatchEventProcessor => {
+    if (family === 'automations') {
+      return new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+    }
+    if (family === 'gifts') {
+      return new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService });
+    }
+    return new NewsletterEmailAnalyticsBatchProcessor({
       config,
-      queries: new Queries(db.knex),
-      mailgunTags: [],
-      jobNames,
-      cursorSeed: pipeline.seed,
-      metrics,
-      settingsCache,
-      polling: source.type === 'poll',
-      fetchEvents: async (options) => {
-        if (source.type === 'poll') {
-          return source.fetch({ ...options, family });
-        }
-      },
-      createEventProcessor: () => ({
-        async processBatch(events, _result, fetchData) {
-          await eventService.ingest(events, family);
-          for (const event of events) {
-            if (!fetchData.lastEventTimestamp || event.timestamp > fetchData.lastEventTimestamp) {
-              fetchData.lastEventTimestamp = event.timestamp;
-            }
-          }
-        },
+      emailEventProcessor: new EmailEventProcessor({
+        domainEvents,
+        db,
+        eventStorage: new NewsletterEmailEventStorage({
+          config,
+          db,
+          membersRepository,
+          models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
+          emailSuppressionList,
+          prometheusClient,
+        }),
+        prometheusClient,
       }),
+      prometheusClient,
+      queries,
     });
-  }
-  newsletters = wrappers.newsletters;
-  automations = wrappers.automations;
-  gifts = wrappers.gifts;
-  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => wrappers.newsletters.startFetch());
-  domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, () =>
-    wrappers.automations.startFetch(),
-  );
-  domainEvents.subscribe(StartGiftEmailAnalyticsJobEvent, () => wrappers.gifts.startFetch());
-}
+  };
+  eventService = new EmailEventService({ provider, createEventProcessor });
+  const source = provider.getEventSource();
+  const eventSourceOptions = (family: EmailFamily) => ({
+    polling: source.type === 'poll',
+    mailgunTags: [],
+    fetchEvents: async (
+      options: Parameters<import('./email-analytics-service').FetchEvents>[0],
+    ) => {
+      if (source.type === 'poll') {
+        await source.fetch({
+          ...options,
+          family,
+          batchHandler: (events) => options.batchHandler(parseEmailEvents(events, family)),
+        });
+      }
+    },
+    createEventProcessor: () => createEventProcessor(family),
+  });
+
+  prometheusClient?.registerCounter({
+    name: AGGREGATE_MEMBER_STATS_METRIC_NAME,
+    help: 'Count of member stats aggregations',
+  });
+
+  newsletters = new EmailAnalyticsServiceWrapper({
+    logName: 'newsletters',
+    jobType: 'email-analytics-fetch-latest',
+    config,
+    queries,
+    ...eventSourceOptions('newsletters'),
+    jobNames: {
+      latestNonOpened: 'email-analytics-latest-others',
+      missing: 'email-analytics-missing',
+      latestOpened: 'email-analytics-latest-opened',
+      scheduled: 'email-analytics-scheduled',
+    },
+    cursorSeed: {
+      tableName: 'email_recipients',
+      eventColumns: {
+        delivered: 'delivered_at',
+        opened: 'opened_at',
+        failed: 'failed_at',
+      },
+    },
+    metrics,
+    settingsCache,
+  });
+
+  automations = new EmailAnalyticsServiceWrapper({
+    logName: 'automations',
+    jobType: 'email-analytics-automation-fetch-latest',
+    config,
+    queries,
+    ...eventSourceOptions('automations'),
+    jobNames: {
+      latestNonOpened: 'email-analytics-automation-latest-others',
+      missing: 'email-analytics-automation-missing',
+      latestOpened: 'email-analytics-automation-latest-opened',
+      scheduled: 'email-analytics-automation-scheduled',
+    },
+    cursorSeed: {
+      tableName: 'automated_email_recipients',
+      eventColumns: {
+        delivered: 'delivered_at',
+        opened: 'opened_at',
+      },
+    },
+    metrics,
+    settingsCache,
+  });
+
+  gifts = new EmailAnalyticsServiceWrapper({
+    logName: 'gifts',
+    jobType: 'email-analytics-gift-fetch-latest',
+    config,
+    queries,
+    ...eventSourceOptions('gifts'),
+    jobNames: {
+      latestNonOpened: 'email-analytics-gifts-latest-others',
+      missing: 'email-analytics-gifts-missing',
+      latestOpened: 'email-analytics-gifts-latest-opened',
+      scheduled: 'email-analytics-gifts-scheduled',
+    },
+    cursorSeed: {
+      tableName: 'gift_deliveries',
+      eventColumns: {
+        delivered: 'outcome_at',
+        failed: 'outcome_at',
+      },
+    },
+    metrics,
+    settingsCache,
+  });
+
+  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => newsletters!.startFetch());
+
+  domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, () => automations!.startFetch());
+
+  domainEvents.subscribe(StartGiftEmailAnalyticsJobEvent, () => gifts!.startFetch());
+};

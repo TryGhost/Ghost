@@ -246,8 +246,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
       );
     });
 
-    it('normalizes provider ids before looking recipients up', async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
+    it('preserves opaque provider ids when looking recipients up', async function () {
+      const automationsApi = buildAutomationsApi([
+        buildRecipient({ mailgun_message_id: '  <message-1>  ' }),
+      ]);
       const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
       const result = new EventProcessingResult();
 
@@ -264,7 +266,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
       );
 
       sinon.assert.calledOnceWithExactly(automationsApi.getAutomatedEmailRecipientsByMailgunIds, [
-        'message-1',
+        '  <message-1>  ',
       ]);
       assert.deepEqual(result, new EventProcessingResult({ delivered: 1 }));
     });
@@ -282,7 +284,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
           },
           {
             type: 'opened',
-            providerId: '<message-1>',
+            providerId: 'message-1',
             timestamp: new Date(2),
           },
         ],

@@ -51,6 +51,10 @@ describe('Email Event Processor', function () {
       assert.equal(emailId, 'fetched-email-id');
       reuseProcessor = eventProcessor;
     });
+    it('Treats object property names as opaque provider IDs', async function () {
+      assert.equal(await eventProcessor.getEmailId('__proto__'), 'fetched-email-id');
+      assert.equal(await eventProcessor.getEmailId('constructor'), 'fetched-email-id');
+    });
     it('Returns from memory', async function () {
       sinon.stub(db, 'first').rejects('Should not be called');
       const emailId = await reuseProcessor.getEmailId('provider-id');

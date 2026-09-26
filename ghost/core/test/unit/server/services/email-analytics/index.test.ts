@@ -13,14 +13,13 @@ describe('email analytics provider wiring', () => {
   const wrappers: { options: Options; startFetch: sinon.SinonStub }[] = [];
   const subscribers = new Map<string, () => Promise<void>>();
   const fetch = sinon.stub().resolves();
-  const ingest = sinon.stub().resolves();
 
   beforeEach(async () => {
     vi.resetModules();
     wrappers.length = 0;
     subscribers.clear();
     fetch.resetHistory();
-    ingest.resetHistory();
+
     vi.doMock(
       '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper',
       () => ({
@@ -33,18 +32,31 @@ describe('email analytics provider wiring', () => {
     );
     analytics = await import('../../../../../core/server/services/email-analytics');
     deps = {
+      automationsApi: {
+        getAutomatedEmailRecipientsByMailgunIds: sinon.stub().resolves([]),
+        trackEmailDeliveredAndOpened: sinon.stub().resolves(),
+      },
+      giftDeliveryService: { recordOutcome: sinon.stub().resolves('recorded') },
+      emailSuppressionList: {
+        handleBounce: sinon.stub(),
+        handleComplaint: sinon.stub(),
+        removeComplaint: sinon.stub(),
+        removeUnsubscribe: sinon.stub(),
+      },
+      membersRepository: { get: sinon.stub(), update: sinon.stub() },
+      models: { Email: {}, EmailRecipientFailure: {}, EmailSpamComplaintEvent: {} },
+      prometheusClient: null,
       config: { get: sinon.stub() },
       db: { knex: createKnex({ client: 'mysql2' }) },
       metrics: { metric: sinon.stub() },
       settingsCache: { get: sinon.stub() },
       domainEvents: {
-        subscribe: (event, handler) => {
+        subscribe: (event: { name: string }, handler: () => Promise<void>) => {
           subscribers.set(event.name, handler);
         },
       },
-      provider: { getEventSource: () => ({ type: 'poll', fetch }) },
-      eventService: { ingest },
-    };
+      provider: { source: 'test', getEventSource: () => ({ type: 'poll', fetch }) },
+    } as Parameters<Analytics['init']>[0];
   });
   afterEach(async () => {
     await deps.db.knex.destroy();
@@ -83,39 +95,50 @@ describe('email analytics provider wiring', () => {
       batchHandler: sinon.stub(),
     };
     await options.fetchEvents!(request);
-    sinon.assert.calledWithMatch(fetch, { ...request, family: 'automations' });
-    const event = { timestamp: new Date() };
-    const result = new (
-      await import('../../../../../core/server/services/email-analytics/event-processing-result')
-    ).EventProcessingResult();
+    sinon.assert.calledWithMatch(fetch, { family: 'automations', begin: request.begin });
+    const event = {
+      id: 'event',
+      family: 'automations',
+      type: 'opened',
+      recipientEmail: 'a@example.com',
+      providerId: '<opaque-id>',
+      timestamp: new Date(),
+      suppress: false,
+    };
+    await fetch.firstCall.firstArg.batchHandler([event]);
+    sinon.assert.calledWithExactly(request.batchHandler, [event]);
+    const { EventProcessingResult } =
+      await import('../../../../../core/server/services/email-analytics/event-processing-result');
+    const result = new EventProcessingResult();
     await options.createEventProcessor().processBatch([event], result, {});
-    sinon.assert.calledWithExactly(ingest, [event], 'automations');
+    sinon.assert.calledWithExactly(
+      deps.automationsApi.getAutomatedEmailRecipientsByMailgunIds as sinon.SinonStub,
+      ['<opaque-id>'],
+    );
+    sinon.assert.calledOnce(deps.automationsApi.trackEmailDeliveredAndOpened as sinon.SinonStub);
+    assert.equal(result.unprocessable, 1);
+    assert.equal(typeof wrappers[0].options.createEventProcessor().aggregate, 'function');
   });
   it('does not poll a webhook provider', async () => {
-    deps.provider = { getEventSource: () => ({ type: 'webhook', verify: sinon.stub() }) };
+    deps.provider = {
+      source: 'test',
+      getEventSource: () => ({ type: 'webhook', verify: sinon.stub() }),
+    };
     analytics.init(deps);
     for (const wrapper of wrappers) {
       assert.equal(wrapper.options.polling, false);
     }
   });
 
-  it('does not advance the polling timestamp when processing fails', async () => {
+  it('propagates domain failures through the original automation processor', async () => {
     analytics.init(deps);
-    const event = { timestamp: new Date() };
-    const result = new (
-      await import('../../../../../core/server/services/email-analytics/event-processing-result')
-    ).EventProcessingResult();
-    const fetchData = {};
     const error = new Error('Database unavailable');
-    ingest.rejects(error);
-    try {
-      await assert.rejects(
-        wrappers[0].options.createEventProcessor().processBatch([event], result, fetchData),
-        error,
-      );
-      assert.deepEqual(fetchData, {});
-    } finally {
-      ingest.resolves();
-    }
+    (deps.automationsApi.trackEmailDeliveredAndOpened as sinon.SinonStub).rejects(error);
+    const { EventProcessingResult } =
+      await import('../../../../../core/server/services/email-analytics/event-processing-result');
+    await assert.rejects(
+      wrappers[1].options.createEventProcessor().processBatch([], new EventProcessingResult(), {}),
+      error,
+    );
   });
 });

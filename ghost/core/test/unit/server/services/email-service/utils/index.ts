@@ -148,6 +148,11 @@ interface DbOptions {
 const createDb = ({ first, all }: DbOptions = {}) => {
   let a = all;
   const db: any = {
+    client: { config: { client: 'better-sqlite3' } },
+    modify: function (callback: (query: any, ...args: any[]) => void, ...args: any[]) {
+      callback(this, ...args);
+      return this;
+    },
     knex: function () {
       return this;
     },

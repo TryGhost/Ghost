@@ -1,4 +1,3 @@
-import { normalizeMailgunMessageId } from '../lib/mailgun-message-id';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
 
@@ -49,7 +48,7 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
       }
 
       const recordResult = await this.#giftDeliveryService.recordOutcome({
-        providerMessageId: normalizeMailgunMessageId(event.providerId),
+        providerMessageId: event.providerId,
         outcome,
         timestamp: event.timestamp,
         error: outcome !== 'delivered' && event.error ? JSON.stringify(event.error) : null,

@@ -1,9 +1,8 @@
 const { EmailSuppressionData, EmailSuppressedEvent } = require('./email-suppression-list');
-const { SpamComplaintEvent } = require('../email-service/events/spam-complaint-event');
-const { EmailBouncedEvent } = require('../email-service/events/email-bounced-event');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const models = require('../../models');
+const errors = require('@tryghost/errors');
+const assert = require('node:assert/strict');
 /** @import {IEmailSuppressionList} from './email-suppression-list' */
 
 /**
@@ -25,6 +24,7 @@ class MailgunEmailSuppressionList {
   constructor(deps) {
     this.Suppression = deps.Suppression;
     this.apiClient = deps.apiClient;
+    this.membersRepository = deps.membersRepository;
   }
 
   async removeEmail(email) {
@@ -117,48 +117,76 @@ class MailgunEmailSuppressionList {
     }
   }
 
-  async init() {
-    this.Suppression = models.Suppression;
-    const handleEvent = (reason) => async (event) => {
-      if (reason === 'bounce') {
-        if (!Number.isInteger(event.error?.code)) {
-          return;
+  async handleBounce(event) {
+    // Normalized provider events classify invalid mailboxes explicitly. Keep
+    // the legacy classification for callers that do not yet pass this field.
+    const suppress = event.suppress ?? [605, 607].includes(event.error?.code);
+    if (suppress) {
+      await this.suppressEmail(event, 'bounce');
+    }
+  }
+
+  async handleComplaint(event) {
+    await this.suppressEmail(event, 'spam');
+  }
+
+  async suppressEmail(event, reason) {
+    assert(this.membersRepository, 'Email suppression must be initialized at boot');
+    try {
+      await this.Suppression.transaction(async (transacting) => {
+        try {
+          await this.Suppression.add(
+            {
+              email: event.email,
+              email_id: event.emailId,
+              reason,
+              created_at: event.timestamp,
+            },
+            { transacting },
+          );
+        } catch (err) {
+          if (
+            !['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT'].includes(err.code) ||
+            !(await this.Suppression.findOne({ email: event.email }, { transacting }))
+          ) {
+            throw err;
+          }
         }
-        if (event.error.code !== 607 && event.error.code !== 605) {
-          return;
-        }
-      }
-      try {
-        await this.Suppression.add({
-          email: event.email,
-          email_id: event.emailId,
-          reason: reason,
-          created_at: event.timestamp,
-        });
-      } catch (err) {
-        if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
-          logging.error(err);
-          return;
-        }
-        // Suppression already exists — still dispatch so any drifted
-        // member state (e.g. email_disabled=false) gets corrected.
-        logging.info(
-          `Re-dispatching EmailSuppressedEvent for existing suppression (${reason}): ${event.email}`,
+        // Resolve and lock the original address, so an old callback cannot
+        // disable the member's replacement address. Repair drift on replay too.
+        const member = await this.membersRepository.get(
+          { email: event.email },
+          { transacting, forUpdate: true },
         );
-      }
-      DomainEvents.dispatch(
-        EmailSuppressedEvent.create(
-          {
-            emailAddress: event.email,
-            emailId: event.emailId,
-            reason: reason,
-          },
-          event.timestamp,
-        ),
-      );
-    };
-    DomainEvents.subscribe(EmailBouncedEvent, handleEvent('bounce'));
-    DomainEvents.subscribe(SpamComplaintEvent, handleEvent('spam'));
+        if (member) {
+          await this.membersRepository.update(
+            { email_disabled: true },
+            { id: member.id, transacting },
+          );
+        }
+      });
+    } catch (err) {
+      throw new errors.InternalServerError({
+        message: 'Could not save email suppression',
+        statusCode: 503,
+        err,
+      });
+    }
+    // Notifications follow the completed safety writes; they do not own them.
+    DomainEvents.dispatch(
+      EmailSuppressedEvent.create(
+        {
+          emailAddress: event.email,
+          emailId: event.emailId,
+          reason,
+        },
+        event.timestamp,
+      ),
+    );
+  }
+
+  async init({ membersRepository }) {
+    this.membersRepository = membersRepository;
   }
 }
 

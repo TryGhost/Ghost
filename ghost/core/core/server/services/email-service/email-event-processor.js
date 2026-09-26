@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const { whereProviderMessageId } = require('../lib/where-provider-message-id');
 
 const { EmailDeliveredEvent } = require('./events/email-delivered-event');
 const { EmailOpenedEvent } = require('./events/email-opened-event');
@@ -6,12 +7,6 @@ const { EmailBouncedEvent } = require('./events/email-bounced-event');
 const { EmailTemporaryBouncedEvent } = require('./events/email-temporary-bounced-event');
 const { EmailUnsubscribedEvent } = require('./events/email-unsubscribed-event');
 const { SpamComplaintEvent } = require('./events/spam-complaint-event');
-
-async function waitForEvent() {
-  return new Promise((resolve) => {
-    setTimeout(resolve, 70);
-  });
-}
 
 /**
  * @typedef EmailIdentification
@@ -51,9 +46,12 @@ class EmailEventProcessor {
     this.#eventStorage = eventStorage;
     this.#prometheusClient = prometheusClient;
     // Avoid having to query email_batch by mailgun_message_id for every event
-    this.providerIdEmailIdMap = {};
+    this.providerIdEmailIdMap = Object.create(null);
 
-    if (this.#prometheusClient) {
+    if (
+      this.#prometheusClient &&
+      !this.#prometheusClient.getMetric('email_analytics_events_processed')
+    ) {
       this.#prometheusClient.registerCounter({
         name: 'email_analytics_events_processed',
         help: 'Number of email analytics events processed',
@@ -136,11 +134,16 @@ class EmailEventProcessor {
    * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
    * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
    */
-  async handlePermanentFailed(emailIdentification, { timestamp, error, id }, recipientCache) {
+  async handlePermanentFailed(
+    emailIdentification,
+    { timestamp, error, id, suppress },
+    recipientCache,
+  ) {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailBouncedEvent.create({
         id,
+        suppress,
         error,
         email: emailIdentification.email,
         memberId: recipient.memberId,
@@ -151,7 +154,6 @@ class EmailEventProcessor {
       await this.#eventStorage.handlePermanentFailed(event);
 
       this.#domainEvents.dispatch(event);
-      await waitForEvent(); // Avoids knex connection pool to run dry
     }
     return recipient;
   }
@@ -194,7 +196,6 @@ class EmailEventProcessor {
       await this.#eventStorage.handleComplained(event);
 
       this.#domainEvents.dispatch(event);
-      await waitForEvent(); // Avoids knex connection pool to run dry
     }
     return recipient;
   }
@@ -274,7 +275,7 @@ class EmailEventProcessor {
       (await this.#db
         .knex('email_batches')
         .select('email_id as emailId')
-        .where('mailgun_message_id', providerId)
+        .modify(whereProviderMessageId, 'mailgun_message_id', providerId)
         .first()) || {};
 
     if (!emailId) {

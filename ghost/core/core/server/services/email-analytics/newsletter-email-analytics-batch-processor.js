@@ -160,7 +160,12 @@ class NewsletterEmailAnalyticsBatchProcessor {
       if (event.severity === 'permanent') {
         const recipient = await this.#emailEventProcessor.handlePermanentFailed(
           { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
-          { id: event.id, timestamp: event.timestamp, error: event.error },
+          {
+            id: event.id,
+            timestamp: event.timestamp,
+            error: event.error,
+            suppress: event.suppress,
+          },
           recipientCache,
         );
 

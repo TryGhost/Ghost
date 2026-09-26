@@ -26,7 +26,15 @@ const {
 } = require('../../../../../core/server/services/email-service/events/spam-complaint-event');
 
 const createEventStorage = (dependencies = {}) =>
-  new NewsletterEmailEventStorage({ config, ...dependencies });
+  new NewsletterEmailEventStorage({
+    config,
+    ...dependencies,
+    emailSuppressionList: {
+      handleBounce: sinon.stub().resolves(),
+      handleComplaint: sinon.stub().resolves(),
+      ...dependencies.emailSuppressionList,
+    },
+  });
 
 describe('Email Event Storage', function () {
   let logError;
@@ -46,7 +54,7 @@ describe('Email Event Storage', function () {
     });
 
     it('sets up metrics if prometheusClient is provided', function () {
-      const prometheusClient = createPrometheusClient();
+      const prometheusClient = createPrometheusClient({ getMetricStub: sinon.stub() });
       createEventStorage({ prometheusClient });
       sinon.assert.calledOnce(prometheusClient.registerCounter);
     });
@@ -783,7 +791,7 @@ describe('Email Event Storage', function () {
     sinon.assert.notCalled(logError);
   });
 
-  it('Handles logging failed complaint storage', async function () {
+  it('Propagates failed complaint storage', async function () {
     const event = SpamComplaintEvent.create({
       email: 'example@example.com',
       memberId: '123',
@@ -805,9 +813,9 @@ describe('Email Event Storage', function () {
       },
       emailSuppressionList,
     });
-    await eventHandler.handleComplained(event);
+    await assert.rejects(eventHandler.handleComplained(event), /Some database error/);
     sinon.assert.calledOnce(EmailSpamComplaintEvent.add);
-    sinon.assert.calledOnce(logError);
+    sinon.assert.notCalled(emailSuppressionList.removeComplaint);
   });
 
   describe('recordEventStored', function () {
@@ -827,7 +835,7 @@ describe('Email Event Storage', function () {
     it('does not throw if recording the event metric fails', function () {
       const prometheusClient = {
         registerCounter: sinon.stub(),
-        getMetric: sinon.stub().throws(new Error('Metric not found')),
+        getMetric: sinon.stub().onSecondCall().throws(new Error('Metric not found')),
       };
       const eventHandler = createEventStorage({ prometheusClient });
       assert.doesNotThrow(() => eventHandler.recordEventStored('delivered'));

@@ -26,7 +26,10 @@ class NewsletterEmailEventStorage {
       failed: new Map(), // recipientId -> timestamp
     };
 
-    if (this.#prometheusClient) {
+    if (
+      this.#prometheusClient &&
+      !this.#prometheusClient.getMetric('email_analytics_events_stored')
+    ) {
       this.#prometheusClient.registerCounter({
         name: 'email_analytics_events_stored',
         help: 'Number of email analytics events stored',
@@ -114,6 +117,7 @@ class NewsletterEmailEventStorage {
         });
     }
     await this.saveFailure('permanent', event);
+    await this.#emailSuppressionList.handleBounce(event);
   }
 
   async handleTemporaryFailed(event) {
@@ -158,10 +162,10 @@ class NewsletterEmailEventStorage {
           email_recipient_id: event.emailRecipientId,
           severity,
           message: event.error.message || `Error ${event.error.enhancedCode ?? event.error.code}`,
-          code: event.error.code,
-          enhanced_code: event.error.enhancedCode,
+          code: Number.isInteger(event.error.code) && event.error.code >= 0 ? event.error.code : 0,
+          enhanced_code: event.error.enhancedCode?.slice(0, 50),
           failed_at: event.timestamp,
-          event_id: event.id,
+          event_id: event.id?.slice(0, 255),
         },
         { ...options, autoRefresh: false },
       );
@@ -181,10 +185,10 @@ class NewsletterEmailEventStorage {
         {
           severity,
           message: event.error.message || `Error ${event.error.enhancedCode ?? event.error.code}`,
-          code: event.error.code,
-          enhanced_code: event.error.enhancedCode ?? null,
+          code: Number.isInteger(event.error.code) && event.error.code >= 0 ? event.error.code : 0,
+          enhanced_code: event.error.enhancedCode?.slice(0, 50) ?? null,
           failed_at: event.timestamp,
-          event_id: event.id,
+          event_id: event.id?.slice(0, 255),
         },
         { ...options, patch: true, autoRefresh: false },
       );
@@ -217,19 +221,24 @@ class NewsletterEmailEventStorage {
   }
 
   async handleComplained(event) {
+    await this.#emailSuppressionList.handleComplaint(event);
     try {
       await this.#models.EmailSpamComplaintEvent.add({
         member_id: event.memberId,
         email_id: event.emailId,
         email_address: event.email,
       });
-
-      // Remove from Mailgun's suppression list so it doesn't affect other sites on the same domain
-      await this.#emailSuppressionList.removeComplaint(event.email);
     } catch (err) {
       if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
-        logging.error(err);
+        throw err;
       }
+    }
+    // Cleanup follows local suppression, including on duplicate callbacks.
+    if ((await this.#emailSuppressionList.removeComplaint(event.email)) === false) {
+      throw new errors.InternalServerError({
+        message: 'Could not remove provider complaint',
+        statusCode: 503,
+      });
     }
   }
 

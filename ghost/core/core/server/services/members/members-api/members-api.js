@@ -17,9 +17,7 @@ const RouterController = require('./controllers/router-controller');
 const MemberController = require('./controllers/member-controller');
 const WellKnownController = require('./controllers/well-known-controller');
 
-const { EmailSuppressedEvent } = require('../../email-suppression-list/email-suppression-list');
 const MagicLink = require('../../lib/magic-link/magic-link');
-const DomainEvents = require('@tryghost/domain-events');
 const automationsApi = require('../../automations/automations-api');
 
 module.exports = function MembersAPI({
@@ -503,14 +501,6 @@ module.exports = function MembersAPI({
   const bus = new (require('events').EventEmitter)();
 
   bus.emit('ready');
-
-  DomainEvents.subscribe(EmailSuppressedEvent, async function (event) {
-    const member = await memberRepository.get({ email: event.data.emailAddress });
-    if (!member) {
-      return;
-    }
-    await memberRepository.update({ email_disabled: true }, { id: member.id });
-  });
 
   return {
     middleware,

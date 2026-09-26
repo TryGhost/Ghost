@@ -1,4 +1,3 @@
-import { normalizeMailgunMessageId } from '../lib/mailgun-message-id';
 import type * as automationsApi from '../automations/automations-api';
 import type {
   AutomatedEmailEvents,
@@ -21,7 +20,7 @@ type EmailAnalyticsEvent = {
 const getMailgunMessageIds = (events: Iterable<EmailAnalyticsEvent>): Set<string> => {
   const result = new Set<string>();
   for (const { providerId } of events) {
-    result.add(normalizeMailgunMessageId(providerId));
+    result.add(providerId);
   }
   return result;
 };
@@ -91,7 +90,7 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
       let eventResult: EventProcessingResult;
 
       const getRecipient = () => {
-        const mailgunMessageId = normalizeMailgunMessageId(event.providerId);
+        const mailgunMessageId = event.providerId;
         return automatedEmailRecipientsByMessageId.get(mailgunMessageId);
       };
 

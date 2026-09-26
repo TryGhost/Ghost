@@ -1,78 +1,72 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import type { Knex } from 'knex';
 import type { EmailEvent } from '@tryghost/adapter-base-email';
-import { EmailEventService } from '../../../../../core/server/services/email-provider/event-service';
 import {
-  EmailEventRepository,
-  EmailRecipientNotFoundError,
-} from '../../../../../core/server/services/email-provider/event-repository';
+  EmailEventService,
+  parseEmailEvents,
+} from '../../../../../core/server/services/email-provider/event-service';
+import type { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 
-describe('email event processing', () => {
+describe('email webhook delegation', () => {
   let clock: sinon.SinonFakeTimers;
-  let apply: sinon.SinonStub;
-  let transaction: sinon.SinonStub;
+  let processBatch: sinon.SinonStub;
+  let aggregate: sinon.SinonStub;
   let verify: sinon.SinonStub;
-  let removeSuppression: sinon.SinonStub;
-  let aggregateEmailStats: sinon.SinonStub;
-  let recordOutcome: sinon.SinonStub;
+  let createEventProcessor: sinon.SinonStub;
   let service: EmailEventService;
   const event: EmailEvent = {
     id: 'event-1',
     family: 'newsletters',
     type: 'delivered',
     recipientEmail: 'reader@example.com',
-    providerId: 'message-1',
+    providerId: '<Opaque-ID>',
     timestamp: new Date('2026-09-01T12:00:00Z'),
     suppress: false,
   };
   const request = { body: Buffer.from('{}'), headers: {} };
+  const missing = (_events: EmailEvent[], result: EventProcessingResult) => {
+    result.unprocessable += 1;
+  };
 
   beforeEach(() => {
     clock = sinon.useFakeTimers();
-    apply = sinon.stub(EmailEventRepository.prototype, 'apply').resolves({ emailId: 'email-1' });
-    transaction = sinon.stub().callsFake(async (callback) => callback({}));
+    processBatch = sinon.stub().callsFake(async (_events, result) => {
+      result.delivered += 1;
+    });
+    aggregate = sinon.stub().resolves(null);
     verify = sinon.stub().resolves({ events: [event] });
-    removeSuppression = sinon.stub().resolves();
-    aggregateEmailStats = sinon.stub().resolves();
-    recordOutcome = sinon.stub().resolves('recorded');
+    createEventProcessor = sinon.stub().returns({ processBatch, aggregate });
     service = new EmailEventService({
-      knex: { transaction } as unknown as Knex,
-      provider: {
-        source: 'provider',
-        getEventSource: () => ({ type: 'webhook', verify }),
-        removeSuppression,
-      },
-      queries: { aggregateEmailStats, aggregateMemberStatsBatch: sinon.stub().resolves() },
-      gifts: { recordOutcome },
+      provider: { source: 'provider', getEventSource: () => ({ type: 'webhook', verify }) },
+      createEventProcessor,
     });
   });
   afterEach(() => sinon.restore());
 
-  it('processes matching events without delaying or retrying', async () => {
+  it('delegates unchanged IDs and aggregates through the family processor', async () => {
     await service.webhook('provider', request);
-    sinon.assert.calledOnce(apply);
-    sinon.assert.calledOnceWithExactly(aggregateEmailStats, 'email-1', true);
+    sinon.assert.calledOnceWithExactly(createEventProcessor, 'newsletters');
+    assert.deepEqual(processBatch.firstCall.firstArg, [event]);
+    assert.equal(aggregate.firstCall.firstArg.processingResult.delivered, 1);
     assert.equal(clock.countTimers(), 0);
   });
-
-  it('retries an unmatched webhook once after 500 ms', async () => {
-    apply.onFirstCall().rejects(new EmailRecipientNotFoundError());
+  it('retries only unmatched events once after 500 ms', async () => {
+    const late = { ...event, id: 'late' };
+    verify.resolves({ events: [event, late] });
+    processBatch.onSecondCall().callsFake(missing);
     const pending = service.webhook('provider', request);
     await clock.tickAsync(499);
-    sinon.assert.calledOnce(apply);
-    sinon.assert.notCalled(aggregateEmailStats);
+    sinon.assert.calledTwice(processBatch);
     await clock.tickAsync(1);
     await pending;
-    sinon.assert.calledTwice(apply);
-    sinon.assert.calledTwice(transaction);
+    sinon.assert.calledThrice(processBatch);
+    assert.deepEqual(processBatch.thirdCall.firstArg, [late]);
     sinon.assert.calledOnce(verify);
-    sinon.assert.calledOnce(aggregateEmailStats);
+    sinon.assert.calledOnce(aggregate);
     assert.equal(clock.countTimers(), 0);
   });
-
-  it('returns 503 when the second lookup fails and schedules no further retry', async () => {
-    apply.rejects(new EmailRecipientNotFoundError());
+  it('returns 503 after a second missing result and still aggregates completed work', async () => {
+    processBatch.callsFake(missing);
     const rejected = assert.rejects(service.webhook('provider', request), {
       code: 'EMAIL_RECIPIENT_NOT_FOUND',
       statusCode: 503,
@@ -80,55 +74,35 @@ describe('email event processing', () => {
     await clock.tickAsync(500);
     await rejected;
     await clock.tickAsync(5000);
-    sinon.assert.calledTwice(apply);
-    sinon.assert.notCalled(aggregateEmailStats);
+    sinon.assert.calledTwice(processBatch);
+    sinon.assert.calledOnce(aggregate);
     assert.equal(clock.countTimers(), 0);
   });
-
-  it('skips unmatched polling recipients without delaying or retrying', async () => {
-    apply.rejects(new EmailRecipientNotFoundError());
-    await service.ingest([event], 'newsletters');
-    sinon.assert.calledOnce(apply);
-    sinon.assert.notCalled(aggregateEmailStats);
-    assert.equal(clock.countTimers(), 0);
-  });
-
-  it('does not retry database failures as missing recipients', async () => {
+  it('does not retry processing errors', async () => {
     const error = new Error('Database unavailable');
-    apply.rejects(error);
+    processBatch.rejects(error);
     await assert.rejects(service.webhook('provider', request), error);
-    sinon.assert.calledOnce(apply);
+    sinon.assert.calledOnce(processBatch);
     assert.equal(clock.countTimers(), 0);
   });
-
-  it('does not retry or apply unverified notifications', async () => {
-    const error = new Error('Invalid signature');
-    verify.rejects(error);
-    await assert.rejects(service.webhook('provider', request), error);
-    sinon.assert.notCalled(apply);
-    assert.equal(clock.countTimers(), 0);
+  it('does not process unverified or partly invalid notifications', async () => {
+    verify.rejects(new Error('Invalid signature'));
+    await assert.rejects(service.webhook('provider', request), /Invalid signature/);
+    verify.resolves({ events: [event, { ...event, id: '' }] });
+    await assert.rejects(service.webhook('provider', request));
+    sinon.assert.notCalled(createEventProcessor);
   });
-
-  it('rejects invalid sources and event families without processing', async () => {
+  it('rejects an inactive source before verification', async () => {
     await assert.rejects(service.webhook('unknown', request), /source was not found/);
-    await assert.rejects(service.ingest([event], 'automations'), /wrong family/);
-    sinon.assert.notCalled(apply);
-    assert.equal(clock.countTimers(), 0);
+    sinon.assert.notCalled(verify);
   });
-
-  it('does not reapply events when provider cleanup fails', async () => {
-    const error = new Error('Provider unavailable');
-    apply.resolves({ cleanup: 'unsubscribe' });
-    removeSuppression.rejects(error);
-    await assert.rejects(service.webhook('provider', request), error);
-    sinon.assert.calledOnce(apply);
-    sinon.assert.calledOnceWithExactly(removeSuppression, event.recipientEmail, 'unsubscribe');
-    assert.equal(clock.countTimers(), 0);
+  it('validates the polling family before processing', () => {
+    assert.throws(() => parseEmailEvents([event], 'automations'), /wrong family/);
+    assert.deepEqual(parseEmailEvents([event], 'newsletters'), [event]);
   });
-
   it('keeps the webhook pending until aggregates finish', async () => {
     let complete!: () => void;
-    aggregateEmailStats.callsFake(
+    aggregate.callsFake(
       () =>
         new Promise<void>((resolve) => {
           complete = resolve;
@@ -144,19 +118,13 @@ describe('email event processing', () => {
     await pending;
     assert.equal(finished, true);
   });
-
-  it('keeps gift outcomes in the gift service and propagates failures', async () => {
-    verify.resolves({ events: [{ ...event, family: 'gifts' }] });
-    const error = new Error('Gift notification failed');
-    recordOutcome.rejects(error);
-    await assert.rejects(service.webhook('provider', request), error);
-    sinon.assert.calledOnceWithExactly(recordOutcome, {
-      providerMessageId: event.providerId,
-      outcome: 'delivered',
-      timestamp: event.timestamp,
-      error: null,
+  it('uses a separate processor for each family and request', async () => {
+    verify.resolves({
+      events: [event, { ...event, family: 'automations' }, { ...event, family: 'gifts' }],
     });
-    sinon.assert.calledOnce(apply);
-    assert.equal(clock.countTimers(), 0);
+    await service.webhook('provider', request);
+    assert.deepEqual(createEventProcessor.args, [['newsletters'], ['automations'], ['gifts']]);
+    await service.webhook('provider', request);
+    assert.equal(createEventProcessor.callCount, 6);
   });
 });

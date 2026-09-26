@@ -7,7 +7,15 @@ import errors from '@tryghost/errors';
 import { EmailProviderBase, type EmailEvent, type EventSource } from '@tryghost/adapter-base-email';
 import { AdapterManager } from '../../../../core/server/services/adapter-manager/adapter-manager';
 import { EmailEventService } from '../../../../core/server/services/email-provider/event-service';
-import { EmailEventRepository } from '../../../../core/server/services/email-provider/event-repository';
+import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
+import { AutomationEmailAnalyticsBatchProcessor } from '../../../../core/server/services/email-analytics/automation-email-analytics-batch-processor';
+import { GiftEmailAnalyticsBatchProcessor } from '../../../../core/server/services/email-analytics/gift-email-analytics-batch-processor';
+import { EventProcessingResult } from '../../../../core/server/services/email-analytics/event-processing-result';
+const EmailEventProcessor = require('../../../../core/server/services/email-service/email-event-processor');
+const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
+const {
+  NewsletterEmailAnalyticsBatchProcessor,
+} = require('../../../../core/server/services/email-analytics/newsletter-email-analytics-batch-processor');
 import { Queries } from '../../../../core/server/services/email-analytics/lib/queries';
 import { GiftDeliveryBookshelfRepository } from '../../../../core/server/services/gifts/gift-delivery-bookshelf-repository';
 import config from '../../../../core/shared/config';
@@ -59,6 +67,11 @@ describe('provider email events', () => {
   let memberId: string;
   let recipientId: string;
   let newsletterId: string;
+  let suppression: any;
+  let membersRepository: any;
+  let createEventProcessor: (family: string) => any;
+  let giftDeliveryService: { recordOutcome: (options: any) => Promise<any> };
+  const domainEvents = { dispatch: sinon.stub() };
 
   beforeEach(async () => {
     await require('../../../utils/db-utils').teardown();
@@ -73,12 +86,46 @@ describe('provider email events', () => {
     });
     provider = manager.getAdapter('email');
     queries = new Queries(knex);
-    service = new EmailEventService({
+    get.withArgs('emailAnalytics:batchProcessing').returns(true);
+    const automationsApi = createDatabaseAutomationsRepository({
       knex,
-      queries,
-      provider,
-      gifts: { recordOutcome: sinon.stub().resolves('recorded') },
+      fakeWaitHoursMultiplier: null,
     });
+    giftDeliveryService = { recordOutcome: sinon.stub().resolves('recorded') };
+    const models = require('../../../../core/server/models');
+    membersRepository = {
+      get: (data: any, options: any) => models.Member.findOne(data, options),
+      update: (data: any, options: any) => models.Member.edit(data, options),
+    };
+    const SuppressionService = require('../../../../core/server/services/email-suppression-list/mailgun-email-suppression-list');
+    suppression = new SuppressionService({
+      Suppression: models.Suppression,
+      membersRepository,
+      apiClient: {
+        removeComplaint: (email: string) => provider.removeSuppression(email, 'complaint'),
+      },
+    });
+    createEventProcessor = (family) => {
+      if (family === 'automations') {
+        return new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      }
+      if (family === 'gifts') {
+        return new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService });
+      }
+      const emailEventProcessor = new EmailEventProcessor({
+        domainEvents,
+        db: { knex },
+        eventStorage: new NewsletterEmailEventStorage({
+          config,
+          db: { knex },
+          models: require('../../../../core/server/models'),
+          membersRepository,
+          emailSuppressionList: suppression,
+        }),
+      });
+      return new NewsletterEmailAnalyticsBatchProcessor({ config, queries, emailEventProcessor });
+    };
+    service = new EmailEventService({ provider, createEventProcessor });
     memberId = newId();
     recipientId = newId();
     const emailId = newId();
@@ -186,46 +233,39 @@ describe('provider email events', () => {
     assert.equal((await knex('emails').where({ id: event.emailId }).first()).opened_count, 1);
     assert.equal((await knex('email_recipients').where({ id: recipientId })).length, 1);
   });
-  it('retries a webhook lookup in a fresh transaction after the send saves its ID', async () => {
+  it('retries after the send saves its ID without holding a connection', async () => {
     delete event.emailId;
     await knex('email_batches').update({ mailgun_message_id: null });
     let failedLookup!: () => void;
     const firstLookup = new Promise<void>((resolve) => {
       failedLookup = resolve;
     });
-    const original = EmailEventRepository.prototype.apply;
-    const apply = sinon.stub(EmailEventRepository.prototype, 'apply').callsFake(async function (
-      this: EmailEventRepository,
-      ...args
-    ) {
-      try {
-        return await original.apply(this, args);
-      } catch (error) {
-        failedLookup();
-        throw error;
-      }
-    });
+    const original = EmailEventProcessor.prototype.handleDelivered;
+    const apply = sinon
+      .stub(EmailEventProcessor.prototype, 'handleDelivered')
+      .callsFake(async function (this: any, ...args: any[]) {
+        const result = await original.apply(this, args);
+        if (!result) {
+          failedLookup();
+        }
+        return result;
+      });
     const pending = service.webhook(provider.source, sign({ events: [event] }));
     await firstLookup;
-    // This needs a DB connection, proving the failed transaction was released
-    // before the delay. The second lookup must see the newly committed ID.
     await knex('email_batches').update({ mailgun_message_id: event.providerId });
     await pending;
     sinon.assert.calledTwice(apply);
     assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
   });
-  it('returns a temporary error after one retry and rolls back the whole notification', async () => {
-    const apply = sinon.spy(EmailEventRepository.prototype, 'apply');
+  it('returns 503 for a missing recipient and preserves completed events and aggregates', async () => {
+    const apply = sinon.spy(EmailEventProcessor.prototype, 'handleDelivered');
     await assert.rejects(
       service.webhook(provider.source, sign({ events: [event, { ...event, emailId: newId() }] })),
-      { code: 'EMAIL_RECIPIENT_NOT_FOUND', statusCode: 503 },
+      { statusCode: 503 },
     );
-    assert.equal(apply.callCount, 4);
-    assert.equal(
-      (await knex('email_recipients').where({ id: recipientId }).first()).delivered_at,
-      null,
-    );
-    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 0);
+    assert.equal(apply.callCount, 3);
+    assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
   });
   it('rejects webhooks for a provider other than the active one', async () => {
     await assert.rejects(service.webhook('inactive-provider', sign({ events: [event] })), {
@@ -236,40 +276,33 @@ describe('provider email events', () => {
       null,
     );
   });
-  it('distinguishes permanent rejection from a suppressible mailbox failure', async () => {
-    event.type = 'failed';
-    event.severity = 'permanent';
-    await service.ingest([event]);
-    assert.equal((await knex('suppressions')).length, 0);
-    await service.ingest([{ ...event, id: 'invalid-mailbox', suppress: true }]);
-    assert.equal((await knex('suppressions').where({ email: event.recipientEmail })).length, 1);
-    assert.equal(
-      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
-      true,
-    );
-  });
-  it('continues processing a polling batch containing an unmatched recipient', async () => {
-    await service.ingest([{ ...event, emailId: newId() }, event], 'newsletters');
-    assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
+  it('keeps polling counts and skips missing recipients through the newsletter processor', async () => {
+    const processor = createEventProcessor('newsletters');
+    const result = new EventProcessingResult();
+    await processor.processBatch([{ ...event, emailId: newId() }, event], result, {});
+    assert.equal(result.delivered, 1);
+    assert.equal(result.unprocessable, 1);
+    await processor.aggregate({
+      includeOpenedEvents: true,
+      processingResult: result,
+      isFinal: true,
+    });
     assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
   });
-  it('keeps opaque message IDs case-sensitive', async () => {
-    await service.ingest([{ ...event, emailId: undefined, providerId: 'Opaque-Message' }]);
+  it('preserves opaque IDs when resolving newsletter recipients', async () => {
+    const result = new EventProcessingResult();
+    await createEventProcessor('newsletters').processBatch(
+      [{ ...event, emailId: undefined, providerId: 'Opaque-Message' }],
+      result,
+      {},
+    );
+    assert.equal(result.unprocessable, 1);
     assert.equal(
       (await knex('email_recipients').where({ id: recipientId }).first()).delivered_at,
       null,
     );
   });
-  it('does not suppress a member’s replacement address', async () => {
-    await knex('members').where({ id: memberId }).update({ email: 'replacement@example.com' });
-    await service.ingest([{ ...event, type: 'complained' }]);
-    assert.equal(
-      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
-      false,
-    );
-    assert.equal((await knex('suppressions').first()).email, event.recipientEmail);
-  });
-  it('records automation opens once and applies consent without touching newsletter subscriptions', async () => {
+  it('records automation opens through the existing repository without double counting', async () => {
     const automationId = newId();
     const actionId = newId();
     const revisionId = newId();
@@ -303,28 +336,17 @@ describe('provider email events', () => {
       track_opens: true,
       created_at: now,
     });
-    await service.ingest([
-      { ...event, family: 'automations', type: 'opened' },
-      { ...event, id: 'second-open', family: 'automations', type: 'opened' },
-    ]);
+    const events = [{ ...event, family: 'automations', type: 'opened' }];
+    await service.webhook(provider.source, sign({ events }));
+    await service.webhook(provider.source, sign({ events }));
     assert((await knex('automated_email_recipients').where({ id }).first()).opened_at);
     assert.equal(
       (await knex('automation_action_revisions').where({ id: revisionId }).first())
         .email_opened_count,
       1,
     );
-    await service.ingest([
-      { ...event, id: 'unsubscribe', family: 'automations', type: 'unsubscribed' },
-    ]);
-    assert.equal(
-      Boolean(
-        (await knex('members').where({ id: memberId }).first()).enable_updates_and_announcements,
-      ),
-      false,
-    );
-    assert.equal((await knex('members_newsletters').where({ member_id: memberId })).length, 1);
   });
-  it('routes gift outcomes through their repository and applies gift complaints', async () => {
+  it('routes gift outcomes through the existing gift processor and repository', async () => {
     const models = require('../../../../core/server/models');
     const giftId = newId();
     const deliveryId = newId();
@@ -351,41 +373,13 @@ describe('provider email events', () => {
       GiftDeliveryModel: models.GiftDelivery,
       knex,
     });
-    service = new EmailEventService({
-      knex,
-      queries,
-      provider,
-      gifts: { recordOutcome: (options) => repository.recordOutcome(options) },
-    });
-    await service.ingest([{ ...event, family: 'gifts' }]);
+    giftDeliveryService = { recordOutcome: (options) => repository.recordOutcome(options) };
+    await service.webhook(provider.source, sign({ events: [{ ...event, family: 'gifts' }] }));
     assert.equal(
       (await knex('gift_deliveries').where({ id: deliveryId }).first()).outcome,
       'delivered',
     );
     assert.equal(await repository.getByProviderMessageId('Opaque-Message'), null);
-    await service.ingest([{ ...event, id: 'gift-complaint', family: 'gifts', type: 'complained' }]);
-    assert.equal((await knex('suppressions').first()).email, event.recipientEmail);
-    assert.equal(
-      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
-      true,
-    );
-  });
-  it('uses existing subscription history to preserve a resubscribe when cleanup is retried', async () => {
-    event.type = 'unsubscribed';
-    provider.removeSuppression.rejects(new Error('Provider unavailable'));
-    const request = sign({ events: [event] });
-    await assert.rejects(service.webhook(provider.source, request), /Provider unavailable/);
-    assert.equal((await knex('members_newsletters').where({ member_id: memberId })).length, 0);
-    await knex('members_newsletters').insert({
-      id: newId(),
-      member_id: memberId,
-      newsletter_id: newsletterId,
-    });
-    provider.removeSuppression.resolves();
-    await service.webhook(provider.source, request);
-    assert.equal((await knex('members_newsletters').where({ member_id: memberId })).length, 1);
-    assert.equal((await knex('members_subscribe_events').where({ member_id: memberId })).length, 1);
-    sinon.assert.calledTwice(provider.removeSuppression);
   });
   it('propagates aggregation failures and recomputes totals when the provider retries', async () => {
     const aggregate = sinon
@@ -397,5 +391,126 @@ describe('provider email events', () => {
     aggregate.restore();
     await service.webhook(provider.source, request);
     assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
+  });
+  it('waits for suppression and member updates before acknowledging a complaint', async () => {
+    let complete!: () => void;
+    let started!: () => void;
+    const updating = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const update = membersRepository.update;
+    sinon.stub(membersRepository, 'update').callsFake(async (...args: any[]) => {
+      started();
+      await new Promise<void>((resolve) => {
+        complete = resolve;
+      });
+      return update(...args);
+    });
+    let acknowledged = false;
+    const pending = service
+      .webhook(provider.source, sign({ events: [{ ...event, type: 'complained' }] }))
+      .then(() => {
+        acknowledged = true;
+      });
+    await updating;
+    assert.equal(acknowledged, false);
+    sinon.assert.notCalled(provider.removeSuppression);
+    complete();
+    await pending;
+    assert.equal((await knex('suppressions').where({ email: event.recipientEmail })).length, 1);
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      true,
+    );
+    sinon.assert.calledOnce(provider.removeSuppression);
+  });
+
+  it('rolls back suppression on a member update failure and safely retries a complaint', async () => {
+    const update = sinon
+      .stub(membersRepository, 'update')
+      .rejects(new Error('Database unavailable'));
+    const request = sign({ events: [{ ...event, type: 'complained' }] });
+    await assert.rejects(service.webhook(provider.source, request), { statusCode: 503 });
+    assert.equal((await knex('suppressions').where({ email: event.recipientEmail })).length, 0);
+    sinon.assert.notCalled(provider.removeSuppression);
+    update.restore();
+    await service.webhook(provider.source, request);
+    // Repair drift on replay without a second suppression or complaint record.
+    await knex('members').where({ id: memberId }).update({ email_disabled: false });
+    await service.webhook(provider.source, request);
+    assert.equal((await knex('suppressions').where({ email: event.recipientEmail })).length, 1);
+    assert.equal(
+      (await knex('email_spam_complaint_events').where({ member_id: memberId })).length,
+      1,
+    );
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      true,
+    );
+  });
+
+  it('keeps the replacement address enabled when an old address is suppressed', async () => {
+    await knex('members').where({ id: memberId }).update({ email: 'replacement@example.com' });
+    await service.webhook(
+      provider.source,
+      sign({ events: [{ ...event, type: 'failed', severity: 'permanent', suppress: true }] }),
+    );
+    assert.equal((await knex('suppressions').where({ email: event.recipientEmail })).length, 1);
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      false,
+    );
+  });
+
+  it('uses explicit mailbox classification instead of treating every permanent failure as suppressible', async () => {
+    const failure = {
+      ...event,
+      type: 'failed',
+      severity: 'permanent',
+      error: { code: 'mailbox-missing', message: 'Mailbox unavailable' },
+    };
+    await service.webhook(provider.source, sign({ events: [failure] }));
+    assert.equal((await knex('suppressions')).length, 0);
+    await service.webhook(provider.source, sign({ events: [{ ...failure, suppress: true }] }));
+    assert.equal((await knex('suppressions').where({ email: event.recipientEmail })).length, 1);
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      true,
+    );
+  });
+  it('returns 503 when saving the suppression fails before updating a member or cleaning up', async () => {
+    const models = require('../../../../core/server/models');
+    const save = sinon
+      .stub(models.Suppression, 'add')
+      .rejects(new Error('Suppression database unavailable'));
+    const update = sinon.spy(membersRepository, 'update');
+    const request = sign({ events: [{ ...event, type: 'complained' }] });
+    await assert.rejects(service.webhook(provider.source, request), { statusCode: 503 });
+    sinon.assert.notCalled(update);
+    sinon.assert.notCalled(provider.removeSuppression);
+    save.restore();
+    await service.webhook(provider.source, request);
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      true,
+    );
+  });
+
+  it('keeps local suppression when provider cleanup fails and retries cleanup on replay', async () => {
+    provider.removeSuppression.rejects(new Error('Provider unavailable'));
+    const request = sign({ events: [{ ...event, type: 'complained' }] });
+    await assert.rejects(service.webhook(provider.source, request), { statusCode: 503 });
+    assert.equal((await knex('suppressions').where({ email: event.recipientEmail })).length, 1);
+    assert.equal(
+      Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
+      true,
+    );
+    provider.removeSuppression.resolves();
+    await service.webhook(provider.source, request);
+    sinon.assert.calledTwice(provider.removeSuppression);
+    assert.equal(
+      (await knex('email_spam_complaint_events').where({ member_id: memberId })).length,
+      1,
+    );
   });
 });

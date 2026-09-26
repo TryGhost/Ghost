@@ -8,40 +8,31 @@ import type {
 import { emailEventSchema } from '@tryghost/adapter-base-email';
 import { z } from 'zod';
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
-import type { Knex } from 'knex';
-import type { Queries } from '../email-analytics/lib/queries';
-import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
-import {
-  EmailEventRepository,
-  EmailRecipientNotFoundError,
-  type ProcessingResult,
-} from './event-repository';
+import type { BatchEventProcessor } from '../email-analytics/batch-event-processor';
+import { EventProcessingResult } from '../email-analytics/event-processing-result';
 
 const WEBHOOK_LOOKUP_RETRY_MS = 500;
 const eventsSchema = z.array(emailEventSchema).max(1000);
 
+export function parseEmailEvents(events: unknown[], family?: EmailFamily): EmailEvent[] {
+  const parsed = eventsSchema.parse(events);
+  if (family && parsed.some((event) => event.family !== family)) {
+    throw new errors.IncorrectUsageError({
+      message: 'Email provider returned events for the wrong family',
+    });
+  }
+  return parsed;
+}
+
+/** Authenticates webhooks and delegates outcomes to Ghost's existing processors. */
 export class EmailEventService {
-  private readonly outcomes = new EmailEventRepository();
   private readonly deps: {
-    knex: Knex;
-    provider: Pick<EmailProviderBase, 'source' | 'getEventSource' | 'removeSuppression'>;
-    queries: Pick<Queries, 'aggregateEmailStats' | 'aggregateMemberStatsBatch'>;
-    gifts: Pick<GiftDeliveryService, 'recordOutcome'>;
+    provider: Pick<EmailProviderBase, 'source' | 'getEventSource'>;
+    createEventProcessor: (family: EmailFamily) => BatchEventProcessor;
   };
 
   constructor(deps: EmailEventService['deps']) {
     this.deps = deps;
-  }
-
-  async ingest(events: unknown[], family?: EmailFamily): Promise<void> {
-    const parsed = eventsSchema.parse(events);
-    if (family && parsed.some((event) => event.family !== family)) {
-      throw new errors.IncorrectUsageError({
-        message: 'Email provider returned events for the wrong family',
-      });
-    }
-    await this.processEvents(parsed);
   }
 
   async webhook(source: string, request: WebhookRequest): Promise<WebhookResult> {
@@ -52,8 +43,8 @@ export class EmailEventService {
     }
     const verified = await events.verify(request);
     if ('events' in verified) {
-      // Validate the entire notification before changing any records.
-      await this.processEvents(eventsSchema.parse(verified.events), true);
+      // Validate the whole notification before passing any events to services.
+      await this.processEvents(parseEmailEvents(verified.events));
     } else {
       z.object({
         status: z.union([z.literal(200), z.literal(204)]),
@@ -64,84 +55,62 @@ export class EmailEventService {
     return verified;
   }
 
-  private async processEvents(events: EmailEvent[], retryLookup = false): Promise<void> {
-    const provider = this.deps.provider;
-    const apply = () =>
-      this.deps.knex.transaction(async (trx) => {
-        const results: (ProcessingResult | null)[] = [];
-        for (const event of events) {
-          try {
-            results.push(await this.outcomes.apply(trx, event));
-          } catch (error) {
-            // Polling has always skipped unmatched recipients (including deleted
-            // records). One such event must not stall its entire history cursor.
-            if (retryLookup || !(error instanceof EmailRecipientNotFoundError)) {
-              throw error;
-            }
-            logging.warn(error);
-            results.push(null);
-          }
+  private async processEvents(events: EmailEvent[]): Promise<void> {
+    const processors = new Map<
+      EmailFamily,
+      {
+        processor: BatchEventProcessor;
+        result: EventProcessingResult;
+      }
+    >();
+    const process = async (batch: EmailEvent[]): Promise<EmailEvent[]> => {
+      const unmatched: EmailEvent[] = [];
+      for (const event of batch) {
+        let state = processors.get(event.family);
+        if (!state) {
+          state = {
+            processor: this.deps.createEventProcessor(event.family),
+            result: new EventProcessingResult(),
+          };
+          processors.set(event.family, state);
         }
-        return results;
-      });
-    let results;
+        const result = new EventProcessingResult();
+        await state.processor.processBatch([event], result, {});
+        state.result.merge(result);
+        if (result.unprocessable) {
+          unmatched.push(event);
+        }
+      }
+      return unmatched;
+    };
+
     try {
-      results = await apply();
-    } catch (error) {
-      if (!retryLookup || !(error instanceof EmailRecipientNotFoundError)) {
-        throw error;
-      }
-      // A provider can notify us before the sending request saves its message ID.
-      // Roll back and release the connection before waiting, then use a fresh
-      // transaction so the lookup can see the newly committed send. Wait at most
-      // once per notification, regardless of how many events it contains.
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, WEBHOOK_LOOKUP_RETRY_MS);
-      });
-      results = await apply();
-    }
-
-    for (const [index, event] of events.entries()) {
-      const result = results[index];
-      if (!result) {
-        continue;
-      }
-      if (event.family === 'gifts' && ['delivered', 'failed'].includes(event.type)) {
-        const outcome =
-          event.type === 'delivered'
-            ? 'delivered'
-            : event.severity === 'permanent'
-              ? 'permanent_failed'
-              : 'temporary_failed';
-        const recorded = await this.deps.gifts.recordOutcome({
-          providerMessageId: event.providerId,
-          outcome,
-          timestamp: event.timestamp,
-          error: event.error ? JSON.stringify(event.error) : null,
+      let unmatched = await process(events);
+      if (unmatched.length) {
+        // No transaction is held while waiting for the send to save its ID.
+        // Retry only unmatched events, once per notification.
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, WEBHOOK_LOOKUP_RETRY_MS);
         });
-        if (recorded === 'not_found') {
-          throw new EmailRecipientNotFoundError();
+        unmatched = await process(unmatched);
+        if (unmatched.length) {
+          throw new errors.InternalServerError({
+            message: 'Email recipient is not available yet',
+            code: 'EMAIL_RECIPIENT_NOT_FOUND',
+            statusCode: 503,
+          });
         }
       }
-      const cleanup = result.cleanup;
-      if (cleanup) {
-        await provider.removeSuppression(event.recipientEmail, cleanup);
+    } finally {
+      // Existing services commit independently. Keep aggregates up to date for
+      // completed events even when another event cannot be correlated.
+      for (const { processor, result } of processors.values()) {
+        await processor.aggregate?.({
+          includeOpenedEvents: true,
+          processingResult: result,
+          isFinal: true,
+        });
       }
-    }
-
-    const emailIds = new Set(
-      results.flatMap((result) => (result?.emailId ? [result.emailId] : [])),
-    );
-    const memberIds = [
-      ...new Set(
-        results.flatMap((result) => (result?.emailId && result.memberId ? [result.memberId] : [])),
-      ),
-    ];
-    for (const emailId of emailIds) {
-      await this.deps.queries.aggregateEmailStats(emailId, true);
-    }
-    if (memberIds.length) {
-      await this.deps.queries.aggregateMemberStatsBatch(memberIds);
     }
   }
 }
