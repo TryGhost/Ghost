@@ -245,19 +245,44 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const coverImage = siteData?.site?.cover_image;
   const publicationIcon = siteData?.site?.icon;
   const profileCardRef = useRef<HTMLDivElement>(null);
+  // Identifies the latest image-conversion run. The effect re-runs whenever an
+  // image URL changes, so an older run can still be awaiting a fetch when a new
+  // one starts; its results are stale and must not overwrite the newer run's
+  // state — in particular it must not clear the converting guard, which would
+  // let a copy through with the previous (or mixed) images.
+  const conversionRunId = useRef(0);
   const [backgroundColor, setBackgroundColor] = useState<'light' | 'dark' | 'accent'>('light');
   const [cardFormat, setCardFormat] = useState<'vertical' | 'square'>('vertical');
   const [isProcessing, setIsProcessing] = useState(false);
+  // The card renders the converted data URLs, so a copy that races the
+  // conversion would hand html2canvas the raw cross-origin URLs instead —
+  // which it drops, exactly the silent failure this screen reports on.
+  // Starts true: the mount effect converts immediately.
+  const [isConvertingImages, setIsConvertingImages] = useState(true);
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
+  // Which of the card's images could not be embedded because their host
+  // refuses cross-origin reads. They are dropped from the copied card, so
+  // the copy has to say so instead of reporting plain success.
+  const [unembeddableImages, setUnembeddableImages] = useState<string[]>([]);
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
 
   const convertImagesToDataUrls = useCallback(async () => {
+    const runId = (conversionRunId.current += 1);
+    setIsConvertingImages(true);
+    const unembeddable: string[] = [];
+
     if (account?.bannerImageUrl || coverImage) {
       const bannerUrl = account?.bannerImageUrl || coverImage;
       if (bannerUrl) {
         const dataUrl = await imageUrlToDataUrl(bannerUrl);
+        if (runId !== conversionRunId.current) {
+          return;
+        }
         setBannerDataUrl(dataUrl);
+        if (!dataUrl) {
+          unembeddable.push('cover image');
+        }
       }
     }
 
@@ -265,9 +290,21 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       const avatarUrl = account?.avatarUrl || publicationIcon;
       if (avatarUrl) {
         const dataUrl = await imageUrlToDataUrl(avatarUrl);
+        if (runId !== conversionRunId.current) {
+          return;
+        }
         setAvatarDataUrl(dataUrl);
+        if (!dataUrl) {
+          unembeddable.push('avatar');
+        }
       }
     }
+
+    if (runId !== conversionRunId.current) {
+      return;
+    }
+    setUnembeddableImages(unembeddable);
+    setIsConvertingImages(false);
   }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
 
   useEffect(() => {
@@ -313,7 +350,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   };
 
   const handleCopy = async () => {
-    if (!profileCardRef.current || isProcessing) {
+    if (!profileCardRef.current || isProcessing || isConvertingImages) {
       return;
     }
 
@@ -365,7 +402,15 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       });
 
       await navigator.clipboard.write([clipboardItem]);
-      toast.success('Image copied to clipboard');
+      if (unembeddableImages.length > 0) {
+        // The card is on the clipboard without these images; saying only
+        // "copied" is how the missing avatar went unreported.
+        toast.warning(
+          `Image copied, but the ${unembeddableImages.join(' and ')} could not be embedded: the image host does not allow cross-origin requests.`,
+        );
+      } else {
+        toast.success('Image copied to clipboard');
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to copy profile card image:', error);
@@ -544,6 +589,7 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
             </div>
             <Button
               className={`min-w-[160px] dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`}
+              disabled={isConvertingImages}
               onClick={handleCopy}
             >
               {isProcessing ? (
