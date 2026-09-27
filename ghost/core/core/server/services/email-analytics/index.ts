@@ -115,21 +115,19 @@ export const init = ({
         automationsApi,
         emailSuppressionList,
         membersRepository,
-        requireProviderCleanup: source.type === 'webhook',
-        skipFailedEvents: source.type === 'poll',
+        eventSource: source.type,
       });
     }
     if (family === 'gifts') {
       return new GiftEmailAnalyticsBatchProcessor({
         giftDeliveryService,
         emailSuppressionList,
-        requireProviderCleanup: source.type === 'webhook',
-        skipFailedEvents: source.type === 'poll',
+        eventSource: source.type,
       });
     }
     return new NewsletterEmailAnalyticsBatchProcessor({
       config,
-      skipFailedEvents: source.type === 'poll',
+      eventSource: source.type,
       emailEventProcessor: new EmailEventProcessor({
         domainEvents,
         db,
@@ -139,7 +137,7 @@ export const init = ({
           membersRepository,
           models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
           emailSuppressionList,
-          requireProviderCleanup: source.type === 'webhook',
+          eventSource: source.type,
           prometheusClient,
         }),
         prometheusClient,

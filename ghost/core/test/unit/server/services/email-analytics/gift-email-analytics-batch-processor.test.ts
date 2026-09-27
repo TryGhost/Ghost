@@ -5,6 +5,7 @@ import { EventProcessingResult } from '../../../../../core/server/services/email
 
 function safetyDeps() {
   return {
+    eventSource: 'webhook' as const,
     emailSuppressionList: {
       handleBounce: sinon.stub().resolves(),
       handleComplaint: sinon.stub().resolves(),

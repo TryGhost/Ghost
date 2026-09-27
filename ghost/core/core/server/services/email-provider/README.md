@@ -73,15 +73,17 @@ Both transports delegate to the existing family processors:
   their domain notifications, failure and complaint models, and statistics.
 - Automations use `automationsApi.trackEmailDeliveredAndOpened`. The existing
   repository owns revision counts, transactions and revision-before-recipient
-  locking, consistent with click tracking. Failures and complaints use the
+  locking, consistent with click tracking. Webhook failures and complaints use the
   existing suppression service. Unsubscribes turn off Updates & Announcements
   through the members repository, preserving newsletter subscriptions and
-  leaving provider unsubscribe entries intact.
+  leaving provider unsubscribe entries intact. Polling retains its original
+  delivery/open handling; failures, complaints and unsubscribes remain unhandled.
 - Gifts use `GiftDeliveryService.recordOutcome`, including its outcome ordering
-  and buyer notifications. Complaints and qualifying failures also await local
+  and buyer notifications. Webhook complaints and qualifying failures also await local
   suppression, even when a delivery outcome is stale. Opens and unsubscribes are
   explicitly counted as ignored: gifts disable open tracking and have no
   marketing subscription scope. Gift unsubscribes leave provider lists intact.
+  Polling retains delivery/failure outcomes and leaves other event types unhandled.
 
 The provider layer does not write domain tables. Each fetch or webhook gets its
 own newsletter buffers so concurrent requests cannot clear each other's updates.
@@ -106,7 +108,7 @@ Recipient addresses are checked for presence and storage length only; Ghost's
 member validator owns address syntax, including international addresses.
 
 All normalized event types are dispatched to the owning family processor. Automation
-and gift safety handlers correlate the provider message ID and original recipient
+and gift webhook safety handlers correlate the provider message ID and original recipient
 address before applying changes. Address matching ignores case and safety writes
 use the original stored address; provider message IDs remain case-sensitive.
 Automation lookups expose existing `member_id`
@@ -120,7 +122,7 @@ any configured site tag. Those tags are not exclusively automation-scoped, and
 Mailgun's [unsubscribe deletion endpoint](https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/unsubscribe/delete-v3--domainid--unsubscribes--address-)
 removes the entire address entry for the domain, without a tag filter.
 
-Automation failures contribute event counts and suppression decisions; no new
+Automation webhook failures contribute event counts and suppression decisions; no new
 failure-history storage is added. A processor reporting an unexpected unhandled
 event or processing failure still causes HTTP 503 instead of acknowledgement.
 
@@ -128,34 +130,40 @@ Existing domain services commit independently; there is no transaction spanning
 the notification. Successfully processed events are retained and aggregated even
 if another recipient is missing. Provider redelivery can repeat completed events.
 Newsletter and automation batches also save earlier buffered tracking updates when
-a later webhook event fails. Polling retries an individual failed event once in
-the same batch. If it still fails, it is logged and counted as a processing failure;
-later events continue and the cursor advances. Successful events are not repeated
-by this retry. Batch recipient reads, buffered writes and provider fetch errors
-still fail the polling window because they affect the batch as a whole.
+a later webhook event fails. The transport selects error handling at construction:
+
+- Polling logs newsletter unsubscribe lookup/update failures and complaint-record
+  failures, then continues as before. Duplicate complaint inserts also retain the
+  previous polling behavior: no provider cleanup is attempted.
+- Polling tracking, failure-record, gift-outcome and fetch errors still fail the
+  polling window. They are not swallowed or retried by a generic event wrapper.
+- Webhooks propagate local writes and cleanup failures for provider redelivery.
+  A duplicate complaint insert still allows a webhook to retry provider cleanup.
+
+There is no new per-event polling retry or skip policy.
 There is no event inbox, event-ID ledger, replay worker or schema migration.
 
 ## Suppression completion
 
-Newsletter, automation and gift complaint or qualifying bounce handling calls
-the existing suppression service directly and awaits it. That service uses the
+Newsletter safety handlers and automation/gift webhook safety handlers await
+the existing suppression service directly. That service uses the
 existing Suppression model and members repository to save the suppression and disable the matching address
 in one transaction. It repairs member state when a suppression already exists.
-A failure rolls back and propagates to the caller; webhooks return HTTP 503.
+A failure rolls back. Webhooks propagate it and return HTTP 503; newsletter polling
+logs it, matching the former suppression listener's error handling.
 An old address is resolved separately
 from the member's replacement address, which is not disabled.
 
 `EmailSuppressedEvent` is emitted after those writes finish. Its former member
 update subscriber is removed, so critical work is not left to an asynchronous
-listener. Complaint cleanup runs after local suppression, including on replay;
+listener. Complaint cleanup runs after local suppression, including on webhook replay;
 cleanup failure propagates for webhooks. Newsletter and automation unsubscribe
 lookup and preference write failures also propagate for webhooks. Newsletter
 unsubscribe cleanup runs only after local success; automation unsubscribes
 retain provider protection regardless of local success.
 Polling logs remote cleanup failures and continues after local state is saved;
-there is no separate cleanup retry worker. Local event failures receive the one
-bounded retry described above. An exhausted safety write leaves provider protection
-intact but can leave Ghost's local state incomplete; the logged event requires
+there is no separate cleanup retry worker. Logged local safety failures leave provider
+protection intact but can leave Ghost's local state incomplete; the logged event requires
 operator reconciliation. There is no durable retry queue, and providers without
 remote suppression lists cannot rely on that protection. Providers classify
 invalid-mailbox failures using `suppress`; ordinary permanent rejections do not

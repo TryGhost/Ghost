@@ -656,7 +656,8 @@ describe('Email Event Storage', function () {
       },
       emailSuppressionList,
     });
-    await assert.rejects(eventHandler.handleUnsubscribed(event), { statusCode: 503 });
+    await eventHandler.handleUnsubscribed(event);
+    sinon.assert.calledOnce(logError);
 
     sinon.assert.notCalled(update);
     sinon.assert.notCalled(emailSuppressionList.removeUnsubscribe);
@@ -693,7 +694,8 @@ describe('Email Event Storage', function () {
       },
       emailSuppressionList,
     });
-    await assert.rejects(eventHandler.handleUnsubscribed(event), { statusCode: 503 });
+    await eventHandler.handleUnsubscribed(event);
+    sinon.assert.calledOnce(logError);
 
     sinon.assert.notCalled(update);
     sinon.assert.notCalled(emailSuppressionList.removeUnsubscribe);
@@ -787,9 +789,10 @@ describe('Email Event Storage', function () {
     await eventHandler.handleComplained(event);
     sinon.assert.calledOnce(EmailSpamComplaintEvent.add);
     sinon.assert.notCalled(logError);
+    sinon.assert.notCalled(emailSuppressionList.removeComplaint);
   });
 
-  it('Propagates failed complaint storage', async function () {
+  it('Logs failed polled complaint storage without retrying', async function () {
     const event = SpamComplaintEvent.create({
       email: 'example@example.com',
       memberId: '123',
@@ -811,7 +814,8 @@ describe('Email Event Storage', function () {
       },
       emailSuppressionList,
     });
-    await assert.rejects(eventHandler.handleComplained(event), /Some database error/);
+    await eventHandler.handleComplained(event);
+    sinon.assert.calledOnce(logError);
     sinon.assert.calledOnce(EmailSpamComplaintEvent.add);
     sinon.assert.notCalled(emailSuppressionList.removeComplaint);
   });
@@ -840,30 +844,116 @@ describe('Email Event Storage', function () {
     });
   });
 
-  describe('newsletter unsubscribe failures', () => {
-    it('propagates preference persistence and provider cleanup errors', async () => {
-      const update = sinon.stub().rejects(new Error('write failed'));
-      const cleanup = sinon.stub().resolves();
-      const handler = createEventStorage({
-        membersRepository: {
-          get: sinon.stub().resolves({ related: () => ({ models: [{ id: 'newsletter' }] }) }),
-          update,
-        },
-        models: { Email: { findOne: sinon.stub().resolves({ get: () => 'newsletter' }) } },
-        emailSuppressionList: { removeUnsubscribe: cleanup },
-      });
-      const event = EmailUnsubscribedEvent.create({
-        email: 'reader@example.com',
-        memberId: 'member',
-        emailId: 'email',
-        timestamp: new Date(),
-      });
-      await assert.rejects(handler.handleUnsubscribed(event), { statusCode: 503 });
-      sinon.assert.notCalled(cleanup);
-      update.resolves();
-      cleanup.rejects(new Error('cleanup failed'));
-      await assert.rejects(handler.handleUnsubscribed(event), { statusCode: 503 });
-      sinon.assert.calledWithExactly(cleanup, event.email, { requireSuccess: true });
+  for (const eventSource of ['poll', 'webhook']) {
+    describe(`${eventSource} error handling`, () => {
+      for (const failurePoint of ['lookup', 'update', 'cleanup']) {
+        it(`preserves unsubscribe ${failurePoint} failure handling`, async () => {
+          const failure = new Error(`${failurePoint} failed`);
+          const get = sinon
+            .stub()
+            .resolves({ related: () => ({ models: [{ id: 'newsletter' }] }) });
+          const update = sinon.stub().resolves();
+          const cleanup = sinon.stub().resolves();
+          const failingOperation = { lookup: get, update, cleanup }[failurePoint];
+          failingOperation.rejects(failure);
+          const handler = createEventStorage({
+            eventSource,
+            membersRepository: { get, update },
+            models: { Email: { findOne: sinon.stub().resolves({ get: () => 'newsletter' }) } },
+            emailSuppressionList: { removeUnsubscribe: cleanup },
+          });
+          const event = EmailUnsubscribedEvent.create({
+            email: 'reader@example.com',
+            memberId: 'member',
+            emailId: 'email',
+            timestamp: new Date(),
+          });
+          if (eventSource === 'webhook') {
+            await assert.rejects(handler.handleUnsubscribed(event), { statusCode: 503 });
+          } else {
+            await handler.handleUnsubscribed(event);
+            sinon.assert.calledOnce(logError);
+          }
+          sinon.assert.calledOnce(failingOperation);
+          if (failurePoint !== 'cleanup') {
+            sinon.assert.notCalled(cleanup);
+          } else {
+            sinon.assert.calledWithExactly(cleanup, event.email, {
+              requireSuccess: eventSource === 'webhook',
+            });
+          }
+        });
+      }
+
+      for (const duplicate of [false, true]) {
+        it(`preserves ${duplicate ? 'duplicate' : 'failed'} complaint insert handling`, async () => {
+          const failure = Object.assign(new Error('complaint insert failed'), {
+            code: duplicate ? 'ER_DUP_ENTRY' : 'ER_UNKNOWN_ERROR',
+          });
+          const add = sinon.stub().rejects(failure);
+          const suppress = sinon.stub().resolves();
+          const cleanup = sinon.stub().resolves();
+          const handler = createEventStorage({
+            eventSource,
+            models: { EmailSpamComplaintEvent: { add } },
+            emailSuppressionList: { handleComplaint: suppress, removeComplaint: cleanup },
+          });
+          const event = SpamComplaintEvent.create({
+            email: 'reader@example.com',
+            memberId: 'member',
+            emailId: 'email',
+            timestamp: new Date(),
+          });
+          if (eventSource === 'webhook' && !duplicate) {
+            await assert.rejects(handler.handleComplained(event), (err) => err === failure);
+          } else {
+            await handler.handleComplained(event);
+          }
+          sinon.assert.calledOnce(add);
+          sinon.assert.calledOnce(suppress);
+          assert.equal(logError.callCount, eventSource === 'poll' && !duplicate ? 1 : 0);
+          assert.equal(cleanup.callCount, eventSource === 'webhook' && duplicate ? 1 : 0);
+        });
+      }
+
+      for (const method of ['handleComplaint', 'handleBounce']) {
+        it(`preserves ${method} suppression failure handling without retrying`, async () => {
+          const failure = new Error('suppression write failed');
+          const suppress = sinon.stub().rejects(failure);
+          const add = sinon.stub().resolves();
+          const cleanup = sinon.stub().resolves();
+          const handler = createEventStorage({
+            eventSource,
+            config: { get: () => true },
+            models: { EmailSpamComplaintEvent: { add } },
+            emailSuppressionList: { [method]: suppress, removeComplaint: cleanup },
+          });
+          const saveFailure = sinon.stub(handler, 'saveFailure').resolves();
+          const event = {
+            email: 'reader@example.com',
+            emailRecipientId: 'recipient',
+            timestamp: new Date(),
+            suppress: true,
+          };
+          const process = () =>
+            method === 'handleComplaint'
+              ? handler.handleComplained(event)
+              : handler.handlePermanentFailed(event);
+          if (eventSource === 'webhook') {
+            await assert.rejects(process(), (err) => err === failure);
+          } else {
+            await process();
+            sinon.assert.calledOnce(logError);
+          }
+          sinon.assert.calledOnce(suppress);
+          sinon.assert.notCalled(cleanup);
+          assert.equal(
+            add.callCount,
+            method === 'handleComplaint' && eventSource === 'poll' ? 1 : 0,
+          );
+          assert.equal(saveFailure.callCount, method === 'handleBounce' ? 1 : 0);
+        });
+      }
     });
-  });
+  }
 });

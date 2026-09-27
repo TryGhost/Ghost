@@ -28,11 +28,13 @@ original bytes and headers, checks the account/site and replay window, and
 returns normalized events or a verified protocol handshake. Failed verification
 must throw. Never perform network requests to unvalidated URLs from a payload.
 
-Ghost retries an individual polled event once before logging and skipping a
-persistent processing failure. Local safety writes may remain incomplete, and
-provider protection is not removed after a failed write. There is no durable
-event retry queue. Batch failures still propagate; webhook processing failures
-are returned to the provider for redelivery.
+Ghost preserves each existing polling error path: newsletter unsubscribe,
+complaint-record and suppression errors are logged, while tracking/outcome write
+and fetch failures still fail the polling window. There is no generic per-event
+retry or skip policy. Webhook processing failures are returned to the provider
+for redelivery; provider protection is not removed after a failed safety write.
+Polling retains its existing event coverage. Extended automation/gift safety
+handling applies to webhooks.
 
 All providers report the email family, original recipient address, message ID,
 event ID and event timestamp. Permanent failure does not automatically suppress

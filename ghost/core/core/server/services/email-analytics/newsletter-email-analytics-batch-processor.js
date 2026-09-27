@@ -1,6 +1,5 @@
 const { EventProcessingResult } = require('./event-processing-result');
 const logging = require('@tryghost/logging');
-const { processEvent } = require('./process-event');
 /** @import {BatchEventProcessor} from './batch-event-processor' */
 /** @import {FetchData} from './email-analytics-service' */
 
@@ -15,22 +14,16 @@ class NewsletterEmailAnalyticsBatchProcessor {
   #emailEventProcessor;
   #prometheusClient;
   #queries;
-  #skipFailedEvents;
+  #eventSource;
 
   #lastAggregation = Date.now();
 
-  constructor({
-    config,
-    emailEventProcessor,
-    prometheusClient,
-    queries,
-    skipFailedEvents = false,
-  }) {
+  constructor({ config, emailEventProcessor, prometheusClient, queries, eventSource = 'poll' }) {
     this.#config = config;
     this.#emailEventProcessor = emailEventProcessor;
     this.#prometheusClient = prometheusClient;
     this.#queries = queries;
-    this.#skipFailedEvents = skipFailedEvents;
+    this.#eventSource = eventSource;
   }
 
   /**
@@ -56,10 +49,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
       try {
         for (const event of events) {
-          const batchResult = await processEvent(() => this.#processEvent(event, recipientCache), {
-            skipFailedEvents: this.#skipFailedEvents,
-            eventId: event.id,
-          });
+          const batchResult = await this.#processEvent(event, recipientCache);
 
           // Save last event timestamp
           if (
@@ -72,11 +62,13 @@ class NewsletterEmailAnalyticsBatchProcessor {
           result.merge(batchResult);
         }
       } catch (err) {
-        // Keep earlier updates even if a later safety write fails. The caller
-        // still retries the window; a flush error must not hide the first failure.
-        await this.#emailEventProcessor
-          .flushBatchedUpdates()
-          .catch((flushError) => logging.error(flushError));
+        // Keep earlier webhook updates before reporting a failure for redelivery.
+        // Polling retains its original failed-batch behavior.
+        if (this.#eventSource === 'webhook') {
+          await this.#emailEventProcessor
+            .flushBatchedUpdates()
+            .catch((flushError) => logging.error(flushError));
+        }
         throw err;
       }
 
@@ -85,10 +77,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
-        const batchResult = await processEvent(() => this.#processEvent(event), {
-          skipFailedEvents: this.#skipFailedEvents,
-          eventId: event.id,
-        });
+        const batchResult = await this.#processEvent(event);
 
         // Save last event timestamp
         if (

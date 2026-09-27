@@ -29,6 +29,7 @@ function buildAutomationsApi(recipients: AutomatedEmailRecipientWithMailgunId[] 
 
 function safetyDeps() {
   return {
+    eventSource: 'webhook' as const,
     emailSuppressionList: {
       handleBounce: sinon.stub().resolves(),
       handleComplaint: sinon.stub().resolves(),
@@ -623,7 +624,6 @@ describe('automation safety events', () => {
     const processor = new AutomationEmailAnalyticsBatchProcessor({
       automationsApi: buildAutomationsApi([buildRecipient({ member_id: null })]),
       ...deps,
-      requireProviderCleanup: false,
     });
     await processor.processBatch(
       [{ ...event, type: 'unsubscribed' }],

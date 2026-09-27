@@ -146,50 +146,40 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
             });
           });
 
-          for (const persistent of [false, true]) {
-            it(`isolates a ${persistent ? 'persistent' : 'transient'} polled safety failure`, async function () {
-              const log = sinon.stub(logging, 'error');
+          for (const handler of ['handleDelivered', 'handlePermanentFailed']) {
+            it(`propagates polling ${handler} errors without retrying or processing later rows`, async function () {
               const processor = new NewsletterEmailAnalyticsBatchProcessor({
                 config: createMockConfig(),
                 emailEventProcessor,
-                skipFailedEvents: true,
+                eventSource: 'poll',
               });
-              const failure = new Error('unsubscribe failed');
-              if (persistent) {
-                emailEventProcessor.handleUnsubscribed.rejects(failure);
-              } else {
-                emailEventProcessor.handleUnsubscribed.onFirstCall().rejects(failure);
-              }
-              const result = new EventProcessingResult();
-              const fetchData = {};
-              await processor.processBatch(
-                [
-                  { type: 'delivered', emailId: 1, timestamp: new Date(1) },
-                  { id: 'unsubscribe', type: 'unsubscribed', emailId: 1, timestamp: new Date(2) },
-                  { type: 'opened', emailId: 1, timestamp: new Date(3) },
-                ],
-                result,
-                fetchData,
+              const failure = new Error('write failed');
+              emailEventProcessor[handler].rejects(failure);
+              await assert.rejects(
+                processor.processBatch(
+                  [
+                    {
+                      type: handler === 'handleDelivered' ? 'delivered' : 'failed',
+                      severity: 'permanent',
+                      emailId: 1,
+                      timestamp: new Date(1),
+                    },
+                    { type: 'opened', emailId: 1, timestamp: new Date(2) },
+                  ],
+                  new EventProcessingResult(),
+                  {},
+                ),
+                (err) => err === failure,
               );
-
-              sinon.assert.calledOnce(emailEventProcessor.handleDelivered);
-              sinon.assert.calledOnce(emailEventProcessor.handleOpened);
-              sinon.assert.calledTwice(emailEventProcessor.handleUnsubscribed);
-              assert.equal(
-                emailEventProcessor.flushBatchedUpdates.callCount,
-                batchProcessing ? 1 : 0,
-              );
-              assert.equal(result.delivered, 1);
-              assert.equal(result.opened, 1);
-              assert.equal(result.unsubscribed, persistent ? 0 : 1);
-              assert.equal(result.processingFailures, persistent ? 1 : 0);
-              assert.equal(log.callCount, persistent ? 1 : 0);
-              assert.deepEqual(fetchData.lastEventTimestamp, new Date(3));
+              sinon.assert.calledOnce(emailEventProcessor[handler]);
+              sinon.assert.notCalled(emailEventProcessor.handleOpened);
+              sinon.assert.notCalled(emailEventProcessor.flushBatchedUpdates);
             });
           }
 
-          it('preserves earlier updates when a later safety write fails', async function () {
+          it('preserves earlier webhook updates when a later safety write fails', async function () {
             const processor = new NewsletterEmailAnalyticsBatchProcessor({
+              eventSource: 'webhook',
               config: createMockConfig(),
               emailEventProcessor,
             });

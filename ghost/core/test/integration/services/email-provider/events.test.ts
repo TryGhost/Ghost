@@ -119,6 +119,7 @@ describe('provider email events', () => {
     createEventProcessor = (family) => {
       if (family === 'automations') {
         return new AutomationEmailAnalyticsBatchProcessor({
+          eventSource: 'webhook',
           automationsApi,
           emailSuppressionList: suppression,
           membersRepository,
@@ -126,6 +127,7 @@ describe('provider email events', () => {
       }
       if (family === 'gifts') {
         return new GiftEmailAnalyticsBatchProcessor({
+          eventSource: 'webhook',
           giftDeliveryService,
           emailSuppressionList: suppression,
         });
@@ -134,6 +136,7 @@ describe('provider email events', () => {
         domainEvents,
         db: { knex },
         eventStorage: new NewsletterEmailEventStorage({
+          eventSource: 'webhook',
           config,
           db: { knex },
           models: require('../../../../core/server/models'),
@@ -141,7 +144,12 @@ describe('provider email events', () => {
           emailSuppressionList: suppression,
         }),
       });
-      return new NewsletterEmailAnalyticsBatchProcessor({ config, queries, emailEventProcessor });
+      return new NewsletterEmailAnalyticsBatchProcessor({
+        eventSource: 'webhook',
+        config,
+        queries,
+        emailEventProcessor,
+      });
     };
     service = new EmailEventService({ provider, createEventProcessor });
     memberId = newId();

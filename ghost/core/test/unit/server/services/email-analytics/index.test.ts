@@ -141,12 +141,12 @@ describe('email analytics provider wiring', () => {
     }
   });
 
-  it('processes complaints for addresses accepted by Ghost without discarding them during polling', async () => {
+  it('processes tracking for addresses accepted by Ghost without discarding them during polling', async () => {
     const addresses = ['josé@example.com', 'a&b@example.com', 'x=y@example.com', 'user@müller.de'];
     const events = addresses.map((recipientEmail, index) => ({
       id: `event-${index}`,
       family: 'automations',
-      type: 'complained',
+      type: 'opened',
       recipientEmail,
       providerId: `message-${index}`,
       timestamp: new Date(),
@@ -166,15 +166,14 @@ describe('email analytics provider wiring', () => {
     const result = new EventProcessingResult();
     await wrappers[1].options.createEventProcessor().processBatch(events, result, {});
 
-    assert.equal(result.complained, addresses.length);
+    assert.equal(result.opened, addresses.length);
     assert.equal(result.unprocessable, 0);
     assert.equal(result.processingFailures, 0);
-    for (const email of addresses) {
-      sinon.assert.calledWithMatch(deps.emailSuppressionList.handleComplaint as sinon.SinonStub, {
-        email,
-      });
-      sinon.assert.calledWith(deps.emailSuppressionList.removeComplaint as sinon.SinonStub, email);
-    }
+    sinon.assert.calledOnce(deps.automationsApi.trackEmailDeliveredAndOpened as sinon.SinonStub);
+    assert.equal(
+      (deps.automationsApi.trackEmailDeliveredAndOpened as sinon.SinonStub).firstCall.firstArg.size,
+      addresses.length,
+    );
   });
 
   it('preserves capped and completed polling results for cursor advancement', async () => {
@@ -256,7 +255,7 @@ describe('email analytics provider wiring', () => {
     });
   }
 
-  it('retries only the failed event once and advances past a persistent safety failure', async () => {
+  it('keeps automation polling safety events unhandled without changing preferences', async () => {
     const log = sinon.stub(logging, 'error');
     analytics.init(deps);
     const initialCursor = new Date(0);
@@ -285,6 +284,14 @@ describe('email analytics provider wiring', () => {
       await batchHandler([
         event,
         { ...event, type: 'unsubscribed', timestamp: new Date(2000) },
+        { ...event, type: 'complained', timestamp: new Date(2000) },
+        {
+          ...event,
+          type: 'failed',
+          severity: 'permanent',
+          suppress: true,
+          timestamp: new Date(2000),
+        },
         { ...event, type: 'opened', timestamp: new Date(3000) },
       ]);
       return {};
@@ -314,14 +321,16 @@ describe('email analytics provider wiring', () => {
       queries.setJobTimestamp.args.some(([, status]) => status === 'finished'),
       true,
     );
-    sinon.assert.calledTwice(unsubscribe);
-    sinon.assert.calledOnce(log);
-    assert.match(log.firstCall.firstArg.message, /after one retry/);
-    assert.equal(result.eventCount, 3);
+    sinon.assert.notCalled(unsubscribe);
+    sinon.assert.notCalled(log);
+    sinon.assert.notCalled(deps.emailSuppressionList.handleComplaint as sinon.SinonStub);
+    sinon.assert.notCalled(deps.emailSuppressionList.handleBounce as sinon.SinonStub);
+    assert.equal(result.eventCount, 5);
     assert.equal(result.result.delivered, 1);
     assert.equal(result.result.opened, 1);
     assert.equal(result.result.unsubscribed, 0);
-    assert.equal(result.result.processingFailures, 1);
+    assert.equal(result.result.processingFailures, 0);
+    assert.equal(result.result.unhandled, 3);
 
     fetch.callsFake(async ({ batchHandler }) => {
       await batchHandler([]);
@@ -332,8 +341,7 @@ describe('email analytics provider wiring', () => {
       fetch.args.map(([options]) => options.begin),
       [initialCursor, nextCursor],
     );
-    sinon.assert.calledTwice(unsubscribe);
-    sinon.assert.calledWithExactly(unsubscribe, { id: 'member', email: 'reader@example.com' });
+    sinon.assert.notCalled(unsubscribe);
     sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe as sinon.SinonStub);
   });
 
@@ -349,52 +357,84 @@ describe('email analytics provider wiring', () => {
     );
   });
 
-  for (const persistent of [false, true]) {
-    it(`continues gift polling after a ${persistent ? 'persistent' : 'transient'} safety failure`, async () => {
-      const log = sinon.stub(logging, 'error');
-      const handleComplaint = deps.emailSuppressionList.handleComplaint as sinon.SinonStub;
-      if (persistent) {
-        handleComplaint.rejects(new Error('suppression failed'));
-      } else {
-        handleComplaint.onFirstCall().rejects(new Error('suppression failed'));
-      }
-      (deps.giftDeliveryService.getRecipientEmailForMessage as sinon.SinonStub).resolves(
-        'reader@example.com',
+  it('keeps gift polling outcomes and leaves safety events unhandled', async () => {
+    const handleComplaint = deps.emailSuppressionList.handleComplaint as sinon.SinonStub;
+    handleComplaint.rejects(new Error('suppression failed'));
+    analytics.init(deps);
+    const event = {
+      id: 'event',
+      family: 'gifts',
+      type: 'complained',
+      recipientEmail: 'reader@example.com',
+      providerId: 'message',
+      timestamp: new Date(1000),
+    };
+    const { EventProcessingResult } =
+      await import('../../../../../core/server/services/email-analytics/event-processing-result');
+    const result = new EventProcessingResult();
+    await wrappers[2].options
+      .createEventProcessor()
+      .processBatch(
+        [
+          { ...event, type: 'delivered' },
+          event,
+          { ...event, type: 'opened' },
+          { ...event, type: 'unsubscribed' },
+          { ...event, type: 'failed', severity: 'permanent', suppress: true },
+          { ...event, type: 'delivered', timestamp: new Date(2000) },
+        ],
+        result,
+        {},
       );
-      analytics.init(deps);
-      const event = {
-        id: 'event',
-        family: 'gifts',
-        type: 'complained',
-        recipientEmail: 'reader@example.com',
-        providerId: 'message',
-        timestamp: new Date(1000),
-      };
-      const { EventProcessingResult } =
-        await import('../../../../../core/server/services/email-analytics/event-processing-result');
-      const result = new EventProcessingResult();
-      await wrappers[2].options
-        .createEventProcessor()
-        .processBatch(
-          [
-            { ...event, type: 'delivered' },
-            event,
-            { ...event, type: 'delivered', timestamp: new Date(2000) },
-          ],
-          result,
-          {},
-        );
 
-      sinon.assert.calledTwice(handleComplaint);
-      sinon.assert.calledTwice(deps.giftDeliveryService.recordOutcome as sinon.SinonStub);
+    sinon.assert.notCalled(handleComplaint);
+    sinon.assert.notCalled(deps.emailSuppressionList.handleBounce as sinon.SinonStub);
+    sinon.assert.notCalled(deps.emailSuppressionList.removeComplaint as sinon.SinonStub);
+    sinon.assert.calledThrice(deps.giftDeliveryService.recordOutcome as sinon.SinonStub);
+    assert.equal(result.delivered, 2);
+    assert.equal(result.permanentFailed, 1);
+    assert.equal(result.unhandled, 3);
+    assert.equal(result.processingFailures, 0);
+  });
+
+  for (const family of ['automations', 'gifts'] as const) {
+    it(`still fails the polling window for ${family} tracking write errors`, async () => {
+      sinon.stub(logging, 'error');
+      analytics.init(deps);
+      const initialCursor = new Date(0);
+      const failure = new Error('tracking write failed');
+      const write = (
+        family === 'automations'
+          ? deps.automationsApi.trackEmailDeliveredAndOpened
+          : deps.giftDeliveryService.recordOutcome
+      ) as sinon.SinonStub;
+      write.rejects(failure);
+      fetch.callsFake(async ({ batchHandler }) => {
+        await batchHandler([
+          {
+            id: 'event',
+            family,
+            type: 'delivered',
+            recipientEmail: 'reader@example.com',
+            providerId: 'message',
+            timestamp: new Date(1000),
+          },
+        ]);
+      });
+      const queries = sinon.createStubInstance(Queries);
+      queries.getLastEventTimestamp.resolves(initialCursor);
+      const service = new EmailAnalyticsService({
+        ...wrappers[family === 'automations' ? 1 : 2].options,
+        queries,
+      });
+
+      await assert.rejects(service.fetchLatestNonOpenedEvents(), (err) => err === failure);
+      sinon.assert.calledOnce(write);
+      assert.deepEqual(service.getStatus().latest.lastEventTimestamp, initialCursor);
       assert.equal(
-        (deps.emailSuppressionList.removeComplaint as sinon.SinonStub).callCount,
-        persistent ? 0 : 1,
+        queries.setJobTimestamp.args.some(([, status]) => status === 'finished'),
+        false,
       );
-      assert.equal(result.delivered, 2);
-      assert.equal(result.complained, persistent ? 0 : 1);
-      assert.equal(result.processingFailures, persistent ? 1 : 0);
-      assert.equal(log.callCount, persistent ? 1 : 0);
     });
   }
 
@@ -441,6 +481,73 @@ describe('email analytics provider wiring', () => {
 
       sinon.assert.calledOnce(deps.emailSuppressionList.handleComplaint as sinon.SinonStub);
       sinon.assert.notCalled(deps.emailSuppressionList.removeComplaint as sinon.SinonStub);
+    });
+  }
+
+  for (const eventSource of ['poll', 'webhook'] as const) {
+    it(`wires newsletter unsubscribe failures to the ${eventSource} policy`, async () => {
+      const EmailEventProcessor = (
+        await import(
+          // @ts-expect-error This module lacks type definitions.
+          '../../../../../core/server/services/email-service/email-event-processor'
+        )
+      ).default;
+      const NewsletterEmailEventStorage = (
+        await import(
+          // @ts-expect-error This module lacks type definitions.
+          '../../../../../core/server/services/email-service/newsletter-email-event-storage'
+        )
+      ).default;
+      const log = sinon.stub(logging, 'error');
+      const lookup = deps.membersRepository.get as sinon.SinonStub;
+      lookup.rejects(new Error('lookup failed'));
+      (deps.config.get as sinon.SinonStub).withArgs('emailAnalytics:batchProcessing').returns(true);
+      Object.assign(deps.domainEvents, { dispatch: sinon.stub() });
+      sinon.stub(EmailEventProcessor.prototype, 'batchGetRecipients').resolves(new Map());
+      sinon
+        .stub(EmailEventProcessor.prototype, 'getRecipient')
+        .resolves({ emailId: 'a'.repeat(24), memberId: 'member', emailRecipientId: 'recipient' });
+      const flush = sinon
+        .stub(NewsletterEmailEventStorage.prototype, 'flushBatchedUpdates')
+        .resolves();
+      const event = {
+        id: 'event',
+        family: 'newsletters',
+        type: 'unsubscribed',
+        recipientEmail: 'a&b@example.com',
+        providerId: 'message',
+        timestamp: new Date(1000),
+      };
+      const events = [event, { ...event, type: 'opened', timestamp: new Date(2000) }];
+      deps.provider = {
+        source: 'test',
+        getEventSource: () =>
+          eventSource === 'poll'
+            ? { type: 'poll', fetch }
+            : { type: 'webhook', verify: sinon.stub().resolves({ events }) },
+      };
+      analytics.init(deps);
+
+      if (eventSource === 'webhook') {
+        await assert.rejects(
+          analytics.getEventService().webhook('test', { body: Buffer.from('{}'), headers: {} }),
+          { statusCode: 503 },
+        );
+      } else {
+        const { EventProcessingResult } =
+          await import('../../../../../core/server/services/email-analytics/event-processing-result');
+        const result = new EventProcessingResult();
+        const fetchData: { lastEventTimestamp?: Date } = {};
+        await wrappers[0].options.createEventProcessor().processBatch(events, result, fetchData);
+        assert.equal(result.unsubscribed, 1);
+        assert.equal(result.opened, 1);
+        assert.equal(result.processingFailures, 0);
+        assert.deepEqual(fetchData.lastEventTimestamp, new Date(2000));
+        sinon.assert.calledOnce(flush);
+        sinon.assert.calledOnce(log);
+      }
+      sinon.assert.calledOnce(lookup);
+      sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe as sinon.SinonStub);
     });
   }
 });

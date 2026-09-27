@@ -4,10 +4,9 @@ import type EmailSuppressionList from '../email-suppression-list';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
-import { processEvent } from './process-event';
 
 type EmailAnalyticsEvent = Pick<EmailEvent, 'type' | 'providerId' | 'timestamp'> &
-  Partial<Pick<EmailEvent, 'id' | 'recipientEmail' | 'severity' | 'suppress' | 'error'>>;
+  Partial<Pick<EmailEvent, 'recipientEmail' | 'severity' | 'suppress' | 'error'>>;
 
 export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
   private readonly deps: {
@@ -16,8 +15,7 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
       typeof EmailSuppressionList,
       'handleBounce' | 'handleComplaint' | 'removeComplaint'
     >;
-    requireProviderCleanup?: boolean;
-    skipFailedEvents?: boolean;
+    eventSource?: 'poll' | 'webhook';
   };
 
   constructor(deps: GiftEmailAnalyticsBatchProcessor['deps']) {
@@ -34,10 +32,7 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
         fetchData.lastEventTimestamp = event.timestamp;
       }
 
-      const eventResult = await processEvent(() => this.processEvent(event), {
-        skipFailedEvents: this.deps.skipFailedEvents,
-        eventId: event.id,
-      });
+      const eventResult = await this.processEvent(event);
       result.merge(eventResult);
     }
   }
@@ -46,11 +41,14 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
     // Gifts have no marketing subscription scope and disable open tracking.
     // Leave any provider unsubscribe in place; do not change newsletter consent.
     if (event.type === 'opened' || event.type === 'unsubscribed') {
-      return new EventProcessingResult({ ignored: 1 });
+      return new EventProcessingResult(
+        this.deps.eventSource === 'webhook' ? { ignored: 1 } : { unhandled: 1 },
+      );
     }
     if (
-      event.type === 'complained' ||
-      (event.type === 'failed' && event.severity === 'permanent' && event.suppress)
+      this.deps.eventSource === 'webhook' &&
+      (event.type === 'complained' ||
+        (event.type === 'failed' && event.severity === 'permanent' && event.suppress))
     ) {
       const recipientEmail = await this.deps.giftDeliveryService.getRecipientEmailForMessage(
         event.providerId,
@@ -66,7 +64,7 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
       if (event.type === 'complained') {
         await this.deps.emailSuppressionList.handleComplaint(suppressionEvent);
         await this.deps.emailSuppressionList.removeComplaint(recipientEmail, {
-          requireSuccess: this.deps.requireProviderCleanup ?? true,
+          requireSuccess: true,
         });
         return new EventProcessingResult({ complained: 1 });
       }
