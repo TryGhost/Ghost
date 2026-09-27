@@ -1,3 +1,5 @@
+/** @import { ReadonlyDeep } from 'type-fest' */
+
 module.exports = {
   get permissions() {
     return require('./permissions');
@@ -19,7 +21,7 @@ module.exports = {
    * is a Content API implementation -  see index.js file.
    *
    * @TODO: Move this helper function into a utils.js file.
-   * @param {import('@tryghost/api-framework').Frame} frame
+   * @param {Readonly<{apiType: 'content' | 'admin' | 'members'}>} frame
    * @return {boolean}
    */
   isContentAPI: (frame) => {
@@ -27,7 +29,7 @@ module.exports = {
   },
 
   /**
-   * @param {import('@tryghost/api-framework').Frame} frame
+   * @param {Readonly<{apiType: 'content' | 'admin' | 'members'}>} frame
    * @returns {boolean}
    */
   isMembersAPI: (frame) => {
@@ -35,16 +37,16 @@ module.exports = {
   },
 
   /**
-   * @param {import('@tryghost/api-framework').Frame} frame
+   * @param {ReadonlyDeep<{options: {context?: {internal?: boolean}}}>} frame
    * @returns {boolean}
    */
   isInternal: (frame) => {
-    return frame.options.context && frame.options.context.internal;
+    return Boolean(frame.options.context?.internal);
   },
 
   /**
    * @description Returns true if the request is a preview request.
-   * @param {import('@tryghost/api-framework').Frame} frame
+   * @param {Readonly<{isPreview?: unknown}>} frame
    * @returns {boolean}
    */
   isPreview: (frame) => {
@@ -57,7 +59,7 @@ module.exports = {
    * serializer's guard and the input serializers' force-load; a drift
    * between the two under-fetches and the lazy URL service rejects the
    * resource as thin.
-   * @param {import('@tryghost/api-framework').Frame} frame
+   * @param {ReadonlyDeep<{options: {columns?: unknown}}>} frame
    * @returns {boolean}
    */
   willSerializeUrl: (frame) => {
