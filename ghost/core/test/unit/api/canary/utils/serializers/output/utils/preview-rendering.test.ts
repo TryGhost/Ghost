@@ -1,18 +1,16 @@
-const assert = require('node:assert/strict');
-const previewRendering = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/preview-rendering');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import previewRendering from '../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/preview-rendering';
 
 describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', function () {
   describe('forPost', function () {
-    let frame;
-
-    beforeEach(function () {
-      frame = {
-        options: {},
-        original: {
-          context: {},
-        },
-      };
-    });
+    const frame = {
+      isPreview: true,
+      options: {},
+      original: {
+        context: {},
+      },
+    };
 
     it('is a no-op when frame.isPreview is falsy', function () {
       const html =
@@ -23,7 +21,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
         excerpt: 'original',
       };
 
-      previewRendering.forPost(attrs, frame);
+      previewRendering.forPost(attrs, { ...frame, isPreview: false });
 
       assert.equal(attrs.html, html);
       assert.equal(attrs.plaintext, 'original');
@@ -31,7 +29,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
     });
 
     it('is a no-op when HTML has no Transistor embed', function () {
-      frame.isPreview = true;
       const attrs = {
         html: '<p>Hello world</p>',
         plaintext: 'Hello world',
@@ -46,7 +43,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
     });
 
     it('replaces iframe+script with placeholder in preview mode', function () {
-      frame.isPreview = true;
       const attrs = {
         html: '<p>Before</p><iframe src="https://partner.transistor.fm/ghost/embed/abc" data-kg-transistor-embed></iframe><script>window.addEventListener("message", function(e) {})</script><p>After</p>',
         plaintext: 'Before After',
@@ -63,7 +59,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
     });
 
     it('replaces iframe+script+noscript with placeholder', function () {
-      frame.isPreview = true;
       const attrs = {
         html: '<iframe src="https://partner.transistor.fm/ghost/embed/abc" data-kg-transistor-embed></iframe><script>window.addEventListener("message", function(e) {})</script><noscript><a href="https://example.com">Listen</a></noscript>',
         plaintext: 'Listen',
@@ -79,7 +74,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
     });
 
     it('updates plaintext and excerpt after replacement', function () {
-      frame.isPreview = true;
       const attrs = {
         html: '<p>Some text</p><iframe src="https://example.com" data-kg-transistor-embed></iframe><script>x</script>',
         plaintext: 'old plaintext',
@@ -93,7 +87,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
     });
 
     it('does not add plaintext when not present', function () {
-      frame.isPreview = true;
       const attrs = {
         html: '<p>Some text</p><iframe src="https://example.com" data-kg-transistor-embed></iframe><script>x</script>',
       };
@@ -105,7 +98,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
     });
 
     it('does not add excerpt when not present', function () {
-      frame.isPreview = true;
       const attrs = {
         html: '<p>Some text</p><iframe src="https://example.com" data-kg-transistor-embed></iframe><script>x</script>',
         plaintext: 'old plaintext',
@@ -118,7 +110,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
     });
 
     it('handles multiple embeds in one post', function () {
-      frame.isPreview = true;
       const attrs = {
         html: '<iframe src="https://a.com" data-kg-transistor-embed></iframe><script>x1</script><p>Middle</p><iframe src="https://b.com" data-kg-transistor-embed></iframe><script>x2</script>',
         plaintext: 'Middle',
@@ -128,13 +119,12 @@ describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', fun
       previewRendering.forPost(attrs, frame);
 
       const matches = attrs.html.match(/kg-transistor-placeholder/g);
-      assert.equal(matches.length, 2);
+      assert.equal(matches?.length, 2);
       assert.ok(attrs.html.includes('<p>Middle</p>'));
       assert.ok(!attrs.html.includes('<iframe'));
     });
 
     it('handles whitespace between iframe, script, and noscript tags', function () {
-      frame.isPreview = true;
       const attrs = {
         html: '<iframe src="https://example.com" data-kg-transistor-embed> </iframe> <script type="text/javascript">x</script> <noscript>fallback</noscript>',
         plaintext: 'fallback',
