@@ -93,10 +93,7 @@ function _updateTextAttrs(attrs) {
 // @TODO: reconsider the location of this - it's part of members and adds a property to the API
 const forPost = (attrs, frame) => {
   // CASE: Access always defaults to true, unless members is enabled and the member does not have access
-  if (
-    !Object.prototype.hasOwnProperty.call(frame.options, 'columns') ||
-    frame.options.columns.includes('access')
-  ) {
+  if (!Object.hasOwn(frame.options, 'columns') || frame.options.columns.includes('access')) {
     attrs.access = true;
   }
 
@@ -132,10 +129,7 @@ const forPost = (attrs, frame) => {
     attrs.html = attrs.html.replace(/%7Buuid%7D/gi, member.uuid);
   }
 
-  if (
-    !Object.prototype.hasOwnProperty.call(frame.options, 'columns') ||
-    frame.options.columns.includes('access')
-  ) {
+  if (!Object.hasOwn(frame.options, 'columns') || frame.options.columns.includes('access')) {
     attrs.access = memberHasAccess;
   }
 

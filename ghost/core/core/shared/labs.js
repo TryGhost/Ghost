@@ -27,7 +27,7 @@ const messages = {
 };
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
-const GA_FEATURES = ['automationAnalytics', 'tagDetailsReact'];
+const GA_FEATURES = ['automationAnalytics'];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
@@ -56,6 +56,7 @@ const PRIVATE_FEATURES = [
   'pictureImageFormats',
   'getHelperDeduplication',
   'membersCustomFields',
+  'memberLocationMap',
   'stripeCheckoutCollection',
   'membersImportRedesign',
   'paywallImprovements',
@@ -64,6 +65,7 @@ const PRIVATE_FEATURES = [
   'postsListReact',
   'membersActivityReact',
   'editorReact',
+  'globalSearchReact',
   'dunningWarnings',
 ];
 

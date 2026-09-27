@@ -49,12 +49,15 @@ const assertRecentSourceQuery = (call, source) => {
  * @property {() => number} [getApiTriggerThreshold]
  * @property {() => number} [getAdminTriggerThreshold]
  * @property {() => number} [getImportTriggerThreshold]
+ * @property {() => number} [getRemovedRecipientsThreshold]
  * @property {boolean | (() => boolean)} [isVerified]
  * @property {boolean | (() => boolean)} [isVerificationRequired]
  * @property {import('sinon').SinonStub} [webhookStub]
  * @property {import('sinon').SinonStub} [settingsStub]
  * @property {import('sinon').SinonStub} [setVerificationRequired]
  * @property {import('sinon').SinonStub} [eventStub]
+ * @property {import('sinon').SinonStub} [countRecentEmailRecipients]
+ * @property {import('sinon').SinonStub} [countRemovedEmailRecipients]
  */
 
 /**
@@ -74,17 +77,21 @@ const createVerificationTrigger = ({
   getApiTriggerThreshold,
   getAdminTriggerThreshold,
   getImportTriggerThreshold,
+  getRemovedRecipientsThreshold,
   isVerified = false,
   isVerificationRequired = false,
   webhookStub = sinon.stub().resolves(true),
   settingsStub = sinon.stub().resolves(null),
   setVerificationRequired = sinon.stub(),
   eventStub = sinon.stub(),
+  countRecentEmailRecipients = sinon.stub().resolves(0),
+  countRemovedEmailRecipients = sinon.stub().resolves(0),
 } = {}) => {
   const trigger = new VerificationTrigger({
     getApiTriggerThreshold,
     getAdminTriggerThreshold,
     getImportTriggerThreshold,
+    getRemovedRecipientsThreshold,
     isVerified: typeof isVerified === 'function' ? isVerified : () => isVerified,
     isVerificationRequired:
       typeof isVerificationRequired === 'function'
@@ -98,6 +105,8 @@ const createVerificationTrigger = ({
     eventRepository: {
       getSignupEvents: eventStub,
     },
+    countRecentEmailRecipients,
+    countRemovedEmailRecipients,
   });
 
   return {
@@ -560,5 +569,103 @@ describe('Email verification flow', function () {
 
     sinon.assert.notCalled(eventStub);
     sinon.assert.notCalled(webhookStub);
+  });
+});
+
+describe('Removed recipients threshold', function () {
+  beforeEach(function () {
+    sinon.stub(DomainEvents, 'subscribe');
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('Triggers when enough recent recipients are no longer members', async function () {
+    const countRemovedEmailRecipients = sinon.stub().resolves(11);
+    const { trigger, webhookStub } = createVerificationTrigger({
+      getRemovedRecipientsThreshold: () => 10,
+      countRecentEmailRecipients: sinon.stub().resolves(500),
+      countRemovedEmailRecipients,
+    });
+
+    await trigger.testRemovedRecipientsThreshold();
+
+    assert.match(
+      countRemovedEmailRecipients.firstCall.args[0],
+      /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/,
+    );
+    assert.equal(countRemovedEmailRecipients.firstCall.args[1], 11);
+    sinon.assert.calledOnce(webhookStub);
+    assert.deepEqual(webhookStub.lastCall.firstArg, {
+      amountTriggered: 11,
+      threshold: 10,
+      method: 'removed_recipients',
+    });
+  });
+
+  it('Does not trigger at the threshold', async function () {
+    const { trigger, webhookStub } = createVerificationTrigger({
+      getRemovedRecipientsThreshold: () => 10,
+      countRecentEmailRecipients: sinon.stub().resolves(500),
+      countRemovedEmailRecipients: sinon.stub().resolves(10),
+    });
+
+    await trigger.testRemovedRecipientsThreshold();
+
+    sinon.assert.notCalled(webhookStub);
+  });
+
+  it('Skips the removed recipients query when total recipients are within the threshold', async function () {
+    const countRemovedEmailRecipients = sinon.stub().resolves(0);
+    const { trigger } = createVerificationTrigger({
+      getRemovedRecipientsThreshold: () => 10,
+      countRecentEmailRecipients: sinon.stub().resolves(10),
+      countRemovedEmailRecipients,
+    });
+
+    await trigger.testRemovedRecipientsThreshold();
+
+    sinon.assert.notCalled(countRemovedEmailRecipients);
+  });
+
+  it('Does not query anything when the threshold is not configured', async function () {
+    const countRecentEmailRecipients = sinon.stub().resolves(0);
+    const { trigger } = createVerificationTrigger({ countRecentEmailRecipients });
+
+    await trigger.testRemovedRecipientsThreshold();
+
+    sinon.assert.notCalled(countRecentEmailRecipients);
+  });
+
+  it('Does not query anything when the site is verified or already in review', async function () {
+    const countRecentEmailRecipients = sinon.stub().resolves(0);
+
+    for (const state of [{ isVerified: true }, { isVerificationRequired: true }]) {
+      const { trigger } = createVerificationTrigger({
+        ...state,
+        getRemovedRecipientsThreshold: () => 10,
+        countRecentEmailRecipients,
+      });
+
+      await trigger.testRemovedRecipientsThreshold();
+    }
+
+    sinon.assert.notCalled(countRecentEmailRecipients);
+  });
+
+  it('Only runs from checkVerificationRequired before a newsletter send', async function () {
+    const countRecentEmailRecipients = sinon.stub().resolves(0);
+    const { trigger } = createVerificationTrigger({
+      getImportTriggerThreshold: () => Infinity,
+      getRemovedRecipientsThreshold: () => 10,
+      countRecentEmailRecipients,
+    });
+
+    await trigger.checkVerificationRequired();
+    sinon.assert.notCalled(countRecentEmailRecipients);
+
+    await trigger.checkVerificationRequired({ newsletterSend: true });
+    sinon.assert.calledOnce(countRecentEmailRecipients);
   });
 });

@@ -60,6 +60,7 @@ export interface PostCardConfig extends PostCardConfigPorts {
   unsplash: Record<string, string | boolean> | null;
   klipy: NonNullable<Config['klipy']> | null;
   pinturaConfig: { jsUrl: string; cssUrl: string } | null;
+  embedPreviewUrl: string | undefined;
   renderLabels: boolean;
   feature: { transistor: boolean; paywallImprovements: boolean };
   deprecated: { headerV1: boolean };
@@ -117,6 +118,7 @@ export function buildPostCardConfig(
     unsplash: getSettingValue<boolean>(settings, 'unsplash') ? sources.unsplashHeaders : null,
     klipy: config.klipy?.apiKey ? config.klipy : null,
     pinturaConfig: sources.pinturaConfig,
+    embedPreviewUrl: config.security?.embedPreviewUrl || undefined,
     fetchAutocompleteLinks: ports.fetchAutocompleteLinks,
     fetchEmbed: ports.fetchEmbed,
     fetchLabels: ports.fetchLabels,

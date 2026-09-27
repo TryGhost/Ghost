@@ -58,6 +58,11 @@ export type Config = {
         max?: number;
         error?: string;
       };
+      emails?: {
+        maxPeriodic?: number;
+        disabled?: boolean;
+        error?: string;
+      };
       customThemes?: {
         allowlist?: string[];
         error?: string;
@@ -86,6 +91,9 @@ export type Config = {
         title?: string; // Banner heading
         upgradeUrl?: string; // Destination for the banner's upgrade button
       };
+    };
+    subscription?: {
+      start?: string; // ISO date that anchors monthly periodic limits
     };
     billing?: {
       enabled?: boolean;
@@ -135,6 +143,8 @@ export type Config = {
   };
   security?: {
     staffDeviceVerification?: boolean;
+    // directory serving the Koenig embed renderer on a separate origin
+    embedPreviewUrl?: string;
   };
   featurebase?: {
     enabled?: boolean;

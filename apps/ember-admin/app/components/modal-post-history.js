@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import DOMPurify from 'dompurify';
 import RestoreRevisionModal from '../components/modals/restore-revision';
 import {action, set} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 import {waitFor} from '@ember/test-waiters';
@@ -25,6 +26,9 @@ export default class ModalPostHistory extends Component {
     @service notifications;
     @service modals;
     @service ghostPaths;
+
+    @inject config;
+
     @tracked selectedHTML = null;
     @tracked selectedRevisionIndex = 0;
 
@@ -155,7 +159,8 @@ export default class ModalPostHistory extends Component {
 
     get cardConfig() {
         return {
-            post: this.args.model
+            post: this.args.model,
+            embedPreviewUrl: this.config.security?.embedPreviewUrl || undefined
         };
     }
 

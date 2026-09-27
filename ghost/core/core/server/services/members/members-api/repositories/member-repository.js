@@ -1111,8 +1111,7 @@ module.exports = class MemberRepository {
     const memberIds = memberRows.map((row) => row.id);
 
     if (data.action === 'unsubscribe') {
-      const hasNewsletterSelected =
-        Object.prototype.hasOwnProperty.call(data, 'newsletter') && data.newsletter !== null;
+      const hasNewsletterSelected = Object.hasOwn(data, 'newsletter') && data.newsletter !== null;
       if (hasNewsletterSelected) {
         const membersArr = memberIds.map((i) => `'${i}'`).join(',');
         const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({

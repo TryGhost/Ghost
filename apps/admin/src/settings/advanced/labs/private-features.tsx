@@ -57,7 +57,7 @@ const features: Feature[] = [
   {
     title: 'Admin 7 · Milestone 2 · Pill controls',
     description:
-      'Preview Admin 7 controls and page headers on React pages. The editor is excluded.',
+      'Preview Admin 7 controls and page headers on React pages, including the React editor.',
     flag: 'admin7Pill',
   },
   {
@@ -94,6 +94,12 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
+    title: 'Member location maps',
+    description:
+      'Show a location map and profile header on member pages, with state pins for US members.',
+    flag: 'memberLocationMap',
+  },
+  {
     title: 'Member custom fields',
     description:
       'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
@@ -127,6 +133,12 @@ const features: Feature[] = [
     description:
       'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
     flag: 'editorReact',
+  },
+  {
+    title: 'React global search',
+    description:
+      'Serves the Cmd/Ctrl+K search modal from the React app instead of the Ember modal. Gates the migration behind a runtime toggle so we can compare both implementations.',
+    flag: 'globalSearchReact',
   },
   {
     title: 'React member activity',

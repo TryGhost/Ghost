@@ -73,6 +73,8 @@ type PageHeaderActionProps = ButtonProps & {
   iconOnly?: boolean;
   primary?: boolean;
   shortcut?: string;
+  /** Show an explanation for a changing value; static labels need no tooltip. */
+  tooltip?: boolean;
   /** Temporary compatibility for existing screens; new headers use the defaults. */
   fallbackVariant?: ButtonProps['variant'];
   fallbackSize?: ButtonProps['size'];
@@ -85,6 +87,7 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
       iconOnly = false,
       primary: primaryProp,
       shortcut,
+      tooltip = iconOnly || Boolean(shortcut),
       fallbackVariant = 'outline',
       fallbackSize,
       className,
@@ -106,7 +109,7 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
         {...props}
       />
     );
-    return primary || !isAdmin7 ? (
+    return primary || !isAdmin7 || !tooltip ? (
       button
     ) : (
       <PageHeaderTooltip label={label} shortcut={shortcut}>

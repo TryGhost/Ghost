@@ -11,8 +11,8 @@
 # Build context: the monorepo repo root. The deploy stage runs `pnpm deploy`
 # against the workspace to produce a self-contained app dir (source + resolved
 # node_modules), so this image no longer depends on the `pnpm pack` output that
-# Ghost-CLI uses (scripts/pack.mjs). The `full` stage's admin build is injected
-# into the context by CI at core/built/admin.
+# Ghost-CLI uses (scripts/pack.mjs). The `full` stage's admin and embed renderer
+# builds are injected into the context by CI under core/built.
 #
 # Ownership model: application code (node_modules, server source, admin) is owned
 # by nobody:nogroup so the runtime user (ghost, uid 1000) can read but not modify
@@ -22,7 +22,7 @@
 # duplicated node_modules (~600MB) and the admin build (~80MB) and inflated every
 # image pull.
 
-ARG NODE_VERSION=22.23.1
+ARG NODE_VERSION=22.23.3
 
 # ---- deploy: build closure + self-contained app dir (build-only, not shipped) ----
 FROM node:$NODE_VERSION-bookworm-slim AS deploy
@@ -35,15 +35,15 @@ RUN corepack enable
 # `ghost...` filter. .dockerignore prunes node_modules/build/dist/.git/.nx so the
 # build starts from a clean tree and rebuilds outputs in-container.
 #
-# --exclude core/built: for the `full` target CI injects the admin build into the
-# context at ghost/core/core/built/admin. Excluding the whole built dir (not just
-# built/admin — the built dir itself is absent on a fresh checkout, so excluding
-# only its child would still leave a differing directory entry) keeps this COPY
-# layer's hash identical between the core and full builds. That lets `full` reuse
-# `core`'s cached deploy/install/build layers instead of re-running the whole
-# closure build, and keeps admin out of the deploy output so `core` stays
-# admin-free. The server's own core/built output is regenerated in-container by the
-# build steps below, so nothing is lost by excluding the host copy.
+# --exclude core/built: for the `full` target CI injects the admin and embed
+# renderer builds under ghost/core/core/built. Excluding the whole built dir (the
+# directory itself is absent on a fresh checkout, so excluding only its children
+# would still leave a differing directory entry) keeps this COPY layer's hash
+# identical between the core and full builds. That lets `full` reuse `core`'s
+# cached deploy/install/build layers instead of re-running the whole closure
+# build, and keeps both artifacts out of the deploy output so `core` stays
+# admin-free. The server's own core/built output is regenerated in-container by
+# the build steps below, so nothing is lost by excluding the host copy.
 COPY --exclude=ghost/core/core/built . .
 
 # Install only ghost and its dependency subgraph (`ghost...`), not the whole
@@ -66,8 +66,9 @@ RUN pnpm --filter-prod "ghost^..." -r run build && \
 
 # Produce a self-contained deploy dir: ghost/core's `files` set + a fully resolved,
 # production-only node_modules (--prod drops devDeps, keeps optional better-sqlite3).
-# Admin is never built here, so core/built/admin is absent — the core image stays
-# admin-free and the full stage injects admin from the build context.
+# Admin is never built here, so core/built/admin and core/built/embed-renderer are
+# absent — the core image stays admin-free and the full stage injects both from
+# the build context.
 #
 # inject-workspace-packages: hard-copy the workspace deps (kg-*/adapters/i18n) into
 # node_modules instead of linking them back to the workspace. The deploy dir is
@@ -133,13 +134,14 @@ EXPOSE 2368
 
 CMD ["node", "index.js"]
 
-# ---- Full: core + admin ----
+# ---- Full: core + admin + embed renderer ----
 FROM core AS full
 
 # COPY --chown sets ownership in the copy layer; a post-hoc `chown -R` would
-# duplicate the ~80MB admin build into a second layer. Admin is injected into the
-# build context by CI (downloaded from the admin build job) at
-# ghost/core/core/built/admin — the deploy stage excludes that path, so this is the
-# only stage that carries admin. Local `full` builds must populate that path first
-# (e.g. `pnpm nx run @tryghost/admin:build`).
+# duplicate the ~80MB admin build into a second layer. Admin and the embed
+# renderer are injected into the build context by CI (downloaded from the admin
+# build job) under ghost/core/core/built — the deploy stage excludes that path,
+# so this is the only stage that carries them. Local `full` builds must populate
+# both paths first (e.g. `pnpm nx run @tryghost/admin:build`).
 COPY --chown=nobody:nogroup ghost/core/core/built/admin core/built/admin
+COPY --chown=nobody:nogroup ghost/core/core/built/embed-renderer core/built/embed-renderer

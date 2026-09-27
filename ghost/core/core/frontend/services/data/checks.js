@@ -1,47 +1,47 @@
 function isPost(jsonData) {
   return (
-    Object.prototype.hasOwnProperty.call(jsonData, 'html') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'title') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'slug')
+    Object.hasOwn(jsonData, 'html') &&
+    Object.hasOwn(jsonData, 'title') &&
+    Object.hasOwn(jsonData, 'slug')
   );
 }
 
 function isNewsletter(jsonData) {
   return (
-    Object.prototype.hasOwnProperty.call(jsonData, 'name') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'subscribe_on_signup') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'visibility')
+    Object.hasOwn(jsonData, 'name') &&
+    Object.hasOwn(jsonData, 'subscribe_on_signup') &&
+    Object.hasOwn(jsonData, 'visibility')
   );
 }
 
 function isPage(jsonData = {}) {
-  return Object.prototype.hasOwnProperty.call(jsonData, 'show_title_and_feature_image');
+  return Object.hasOwn(jsonData, 'show_title_and_feature_image');
 }
 
 function isTag(jsonData) {
   return (
-    Object.prototype.hasOwnProperty.call(jsonData, 'name') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'slug') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'description') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'feature_image')
+    Object.hasOwn(jsonData, 'name') &&
+    Object.hasOwn(jsonData, 'slug') &&
+    Object.hasOwn(jsonData, 'description') &&
+    Object.hasOwn(jsonData, 'feature_image')
   );
 }
 
 function isUser(jsonData) {
   return (
-    Object.prototype.hasOwnProperty.call(jsonData, 'bio') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'website') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'profile_image') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'location')
+    Object.hasOwn(jsonData, 'bio') &&
+    Object.hasOwn(jsonData, 'website') &&
+    Object.hasOwn(jsonData, 'profile_image') &&
+    Object.hasOwn(jsonData, 'location')
   );
 }
 
 function isNav(jsonData) {
   return (
-    Object.prototype.hasOwnProperty.call(jsonData, 'label') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'url') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'slug') &&
-    Object.prototype.hasOwnProperty.call(jsonData, 'current')
+    Object.hasOwn(jsonData, 'label') &&
+    Object.hasOwn(jsonData, 'url') &&
+    Object.hasOwn(jsonData, 'slug') &&
+    Object.hasOwn(jsonData, 'current')
   );
 }
 

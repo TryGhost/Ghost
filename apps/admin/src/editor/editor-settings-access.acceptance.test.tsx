@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import {
+  browseResponse,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
@@ -17,6 +18,7 @@ import {
   withoutAutosave,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new123';
@@ -270,6 +272,51 @@ describe('Post settings access', () => {
     await expect(saveApi).toHaveSavedFields({
       tiers: [{ id: MANY_TIERS[0].id }, { id: last.id }],
     });
+  });
+
+  it('follows the tier browse to its last page', async () => {
+    fakeSavablePost({ visibility: 'tiers', tiers: [{ id: SILVER.id }] });
+    // `limit=all` is capped by Core, so the site's paid tiers can span several pages.
+    const tiersApi = fakeAdminEndpoint('GET', /^\/tiers\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      return browseResponse('tiers', [GOLD, SILVER], { page: pageNumber, limit: 1 });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await expect
+      .element(editorScreen.settingsTier('Silver'))
+      .toHaveAttribute('data-state', 'checked');
+    await expect.element(editorScreen.settingsTier('Gold')).toBeVisible();
+    await expect.poll(() => tiersApi.requests.length).toBe(2);
+    expect(new URL(tiersApi.requests[1].url).searchParams.get('page')).toBe('2');
+  });
+
+  it('shows no tiers until the last page of the browse arrives', async () => {
+    fakeSavablePost({ visibility: 'tiers', tiers: [{ id: SILVER.id }] });
+    const secondPage = deferred<void>();
+    const tiersApi = fakeAdminEndpoint('GET', /^\/tiers\/\?/, async ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      if (pageNumber === 2) {
+        await secondPage.promise;
+      }
+      return browseResponse('tiers', [GOLD, SILVER], { page: pageNumber, limit: 1 });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await expect.poll(() => tiersApi.requests.length).toBe(2);
+    await expect.element(editorScreen.settingsTiers()).toBeInTheDocument();
+    expect(editorScreen.settingsTiers().getByRole('checkbox').elements()).toHaveLength(0);
+
+    secondPage.resolve();
+
+    await expect
+      .element(editorScreen.settingsTier('Gold'))
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect
+      .element(editorScreen.settingsTier('Silver'))
+      .toHaveAttribute('data-state', 'checked');
   });
 
   it('reports a failed tier lookup and lets the writer retry', async () => {

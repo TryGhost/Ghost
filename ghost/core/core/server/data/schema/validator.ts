@@ -56,11 +56,11 @@ export function validateSchema(tableName: string, model: Model, options?: Option
 
     // check nullable
     if (
-      Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'nullable') &&
+      Object.hasOwn(schema[tableName][columnKey], 'nullable') &&
       schema[tableName][columnKey].nullable !== true &&
-      Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type') &&
+      Object.hasOwn(schema[tableName][columnKey], 'type') &&
       schema[tableName][columnKey].type !== 'text' &&
-      !Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'defaultTo')
+      !Object.hasOwn(schema[tableName][columnKey], 'defaultTo')
     ) {
       if (validator.isEmpty(strVal)) {
         message = tpl(messages.valueCannotBeBlank, {
@@ -78,7 +78,7 @@ export function validateSchema(tableName: string, model: Model, options?: Option
 
     // validate boolean columns
     if (
-      Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type') &&
+      Object.hasOwn(schema[tableName][columnKey], 'type') &&
       schema[tableName][columnKey].type === 'boolean'
     ) {
       if (!(validator.isBoolean(strVal) || validator.isEmpty(strVal))) {
@@ -103,7 +103,7 @@ export function validateSchema(tableName: string, model: Model, options?: Option
     // TODO: check if mandatory values should be enforced
     if (model.get(columnKey) !== null && model.get(columnKey) !== undefined) {
       // check length
-      if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'maxlength')) {
+      if (Object.hasOwn(schema[tableName][columnKey], 'maxlength')) {
         if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
           message = tpl(messages.valueExceedsMaxLength, {
             tableName: tableName,
@@ -120,7 +120,7 @@ export function validateSchema(tableName: string, model: Model, options?: Option
       }
 
       // check validations objects
-      if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'validations')) {
+      if (Object.hasOwn(schema[tableName][columnKey], 'validations')) {
         validationErrors = validationErrors.concat(
           validator.validate(
             strVal,
@@ -132,7 +132,7 @@ export function validateSchema(tableName: string, model: Model, options?: Option
       }
 
       // check type
-      if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type')) {
+      if (Object.hasOwn(schema[tableName][columnKey], 'type')) {
         if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(strVal)) {
           message = tpl(messages.valueIsNotInteger, {
             tableName: tableName,

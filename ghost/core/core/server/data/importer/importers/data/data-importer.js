@@ -86,7 +86,7 @@ const DataImporter = {
       },
     };
 
-    if (!Object.prototype.hasOwnProperty.call(importOptions, 'returnImportedData')) {
+    if (!Object.hasOwn(importOptions, 'returnImportedData')) {
       importOptions.returnImportedData = false;
     }
 

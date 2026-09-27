@@ -14,6 +14,7 @@ import {
   editorFeatureImage,
   editorFeatureImageCaption,
   editorHeaderActions,
+  editorHelpLink,
   editorLeaveDialog,
   editorLoadError,
   editorPreviewButton,
@@ -102,6 +103,7 @@ import {
   stayInEditorButton,
   tkIndicator,
   toggleFeatureImageAltButton,
+  unsplashSearchHeading,
   unsplashSearchModal,
 } from '@tryghost/test-data/selectors/editor';
 
@@ -112,8 +114,27 @@ export const editorScreen = {
   excerptInput: () => page.getByTestId(editorExcerptInput),
   /** The primary Koenig content editable. */
   body: () => page.getByTestId(editorBody).getByRole('textbox'),
+  /** Koenig's Signup card and its labels setting, by Koenig's own test ids. */
+  signupCard: () => page.getByTestId(editorBody).getByTestId('signup-card-container'),
+  signupLabelsInput: () => page.getByTestId('labels-dropdown').getByRole('textbox'),
+  signupLabelOption: (name: string) =>
+    page.getByTestId('labels-dropdown').getByRole('button', { name, exact: true }),
   secondaryInstance: () => page.getByTestId(editorSecondaryInstance),
+  /** An item in Koenig's `/` card menu, by its label. */
+  cardMenuItem: (label: string) => page.getByRole('menuitem', { name: label }),
   wordCount: () => page.getByTestId(editorWordCount),
+  helpLink: () => page.getByRole('link', { name: editorHelpLink }),
+  /** The document's own scroll surface, independent of the editor shell. */
+  scrollPane: (): HTMLElement => {
+    const root = page.getByTestId(postEditor).element();
+    const pane = Array.from(root.querySelectorAll('div')).find((element) =>
+      ['auto', 'scroll'].includes(getComputedStyle(element).overflowY),
+    );
+    if (!pane) {
+      throw new Error('The editor document has no scroll surface');
+    }
+    return pane;
+  },
   loadError: () => page.getByTestId(editorLoadError),
   reauthBanner: () => page.getByTestId(editorReauthBanner),
   retryReauth: () => page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Retry' }),
@@ -132,6 +153,8 @@ export const editorScreen = {
       .getByTestId(editorConflictReloadConfirm)
       .getByRole('button', { name: conflictCancelReloadButton }),
   status: () => page.getByTestId(editorStatus),
+  pendingSaveNotice: () =>
+    page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 
   headerActions: () => page.getByTestId(editorHeaderActions),
   previewButton: () =>
@@ -290,7 +313,7 @@ export const editorScreen = {
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),
   featureImageUnsplashButton: () => page.getByRole('button', { name: featureImageUnsplashButton }),
   /** The Unsplash search modal, wherever the picker that opened it sits. */
-  unsplashModal: () => page.getByRole('heading', { name: 'Unsplash' }),
+  unsplashModal: () => page.getByRole('heading', { name: unsplashSearchHeading }),
   unsplashSearch: () => page.getByTestId(unsplashSearchModal),
   unsplashSearchInput: () => page.getByPlaceholder('Search free high-resolution photos'),
   unsplashInsertImage: () => page.getByTestId(unsplashSearchModal).getByText('Insert image'),

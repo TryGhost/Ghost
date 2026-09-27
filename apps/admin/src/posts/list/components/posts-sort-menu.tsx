@@ -39,6 +39,7 @@ export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
           aria-label={`Sort: ${getOrderLabel(order)}`}
           data-testid="posts-sort"
           label="Sort"
+          tooltip
         >
           <LucideIcon.ArrowUpDown className="size-4" />
           {getOrderLabel(order)}

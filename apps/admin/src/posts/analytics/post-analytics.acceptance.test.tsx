@@ -8,6 +8,7 @@ import {
   fakeAdminEndpoint,
   fakeMembers,
   fakePosts,
+  fakePostsListScreen,
   fakeTinybirdPipe,
   fakeTinybirdToken,
   post,
@@ -16,7 +17,9 @@ import {
   webAnalyticsBootOverrides,
 } from '@test-utils/acceptance';
 import { membersScreen } from '@/members/members.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
+import { navigateTo } from '@/utils/navigation';
 import { postAnalyticsScreen } from './post-analytics.screen';
 
 const POST_ID = '64d623b64676110001e897d9';
@@ -667,6 +670,53 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.webTrafficTab()).toBeVisible();
     await expect.element(postAnalyticsScreen.growthTab()).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.growthCard()).not.toBeInTheDocument();
+  });
+});
+
+describe('Post analytics delete', () => {
+  const PUBLISHED_BUCKET = 'status:[published,sent]';
+
+  it('leaves for a posts list that no longer carries the deleted post', async () => {
+    delete document.body.dataset.externalNavigate;
+    fakePostsListScreen();
+    const deleteApi = fakeAdminEndpoint('DELETE', `/posts/${POST_ID}/`, null, { status: 204 });
+    // The list's published bucket and this screen's read by id, both of which
+    // stop serving the post once it is gone.
+    const { postsApi } = seedPostAnalyticsWorld({}, ({ filter }) =>
+      !deleteApi.requests.length && (filter === PUBLISHED_BUCKET || filter === `id:${POST_ID}`)
+        ? [seededPost()]
+        : [],
+    );
+    const listBrowses = () =>
+      postsApi.requests.filter(({ filter }) => filter === PUBLISHED_BUCKET).length;
+
+    await renderAdminApp('/posts', {
+      labs: { postsListReact: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+    await expect
+      .element(postsListScreen.listItems().first())
+      .toHaveTextContent('Attack of the Clones');
+
+    await postsListScreen.rowAction().first().click();
+    await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
+    await postAnalyticsScreen.moreActionsButton().click();
+    await postAnalyticsScreen.deletePostMenuItem().click();
+    await postAnalyticsScreen.confirmDeleteButton().click();
+
+    await expect.poll(() => deleteApi.requests.length).toBe(1);
+    await expect.poll(() => document.body.dataset.externalNavigate).toBeDefined();
+    const handoff = JSON.parse(document.body.dataset.externalNavigate!) as { route: string };
+    expect(handoff.route).toBe('/posts/');
+    const browsesBefore = listBrowses();
+
+    navigateTo(handoff.route);
+
+    await expect.poll(currentRoute).toBe('/posts/');
+    // Without the delete invalidating it, the list is served from the cache it
+    // was left with — within the five-minute staleTime, deleted row and all.
+    await expect.poll(listBrowses).toBeGreaterThan(browsesBefore);
+    await expect.poll(() => postsListScreen.listItems().elements().length).toBe(0);
   });
 });
 

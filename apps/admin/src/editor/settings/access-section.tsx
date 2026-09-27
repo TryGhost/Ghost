@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId } from 'react';
 import {
   Checkbox,
   FieldError,
@@ -111,7 +111,10 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
 
   const {
     data: tiersData,
+    fetchNextPage,
+    hasNextPage,
     isError: tiersFailed,
+    isFetchingNextPage,
     refetch: refetchTiers,
   } = useBrowseTiers({
     defaultErrorHandler: false,
@@ -119,7 +122,15 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     requestOptions: EDITOR_REQUEST_OPTIONS,
     searchParams: PAID_TIERS_SEARCH_PARAMS,
   });
-  const options = tierOptions(tiersData?.tiers);
+
+  // Core caps `limit=all`, so the response can still contain a next page. The
+  // list is not complete, so it is not shown, until every page has arrived.
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage && !tiersFailed) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, tiersFailed]);
+  const options = hasNextPage ? [] : tierOptions(tiersData?.tiers);
 
   // Leaving `tiers` clears the tiers it granted, as the tier pickers do.
   const changeVisibility = (next: string) =>

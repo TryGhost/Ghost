@@ -18,8 +18,7 @@ function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
   const { pathname } = useLocation();
   const isEmberOwnedRoute = useIsEmberOwnedRoute(pathname);
-  const isAdmin7 =
-    useFeatureFlag('admin7Pill') && !/^\/editor(?:\/|$)/.test(pathname) && !isEmberOwnedRoute;
+  const isAdmin7 = useFeatureFlag('admin7Pill') && !isEmberOwnedRoute;
 
   return (
     <ShadeApp

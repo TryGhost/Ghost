@@ -261,7 +261,7 @@ class MemberWelcomeEmailService {
     const normalized = {};
 
     for (const field of SHARED_SENDER_FIELDS) {
-      if (!Object.prototype.hasOwnProperty.call(attrs, field)) {
+      if (!Object.hasOwn(attrs, field)) {
         continue;
       }
 

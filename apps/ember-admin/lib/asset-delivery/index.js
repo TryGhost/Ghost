@@ -117,7 +117,14 @@ module.exports = {
             const assetsKoenigLexicalPath = `${assetsOut}/assets/koenig-lexical`;
 
             if (fs.existsSync(koenigLexicalPath)) {
-                fs.copySync(koenigLexicalPath, assetsKoenigLexicalPath, {overwrite: true, dereference: true});
+                const embedRendererPath = path.join(koenigLexicalPath, 'embed-renderer');
+                fs.copySync(koenigLexicalPath, assetsKoenigLexicalPath, {
+                    overwrite: true,
+                    dereference: true,
+                    // The renderer executes arbitrary embed HTML and must only
+                    // ship in core/built/embed-renderer for separate-origin hosting.
+                    filter: source => path.resolve(source) !== embedRendererPath
+                });
             } else {
                 console.log('Koenig-Lexical folder not found');
             }

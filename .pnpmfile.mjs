@@ -121,6 +121,11 @@ function readPackage(pkg) {
  */
 async function updateConfig(config) {
   const { packages, versioning = {} } = config;
+  // `pnpm dlx` runs this hook without the workspace package list
+  if (!packages) {
+    return config;
+  }
+
   const ignoredPackages = new Set(versioning.ignore ?? []);
 
   // step 1: enumerate all workspace packages with glob

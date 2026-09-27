@@ -151,7 +151,7 @@ function isToolbarSuppressed(req) {
 function adminToolbarMiddleware(req, res, next) {
   const toolbarSuppressed = isToolbarSuppressed(req);
 
-  if (Object.prototype.hasOwnProperty.call(req.query || {}, QUERY_PARAM)) {
+  if (Object.hasOwn(req.query || {}, QUERY_PARAM)) {
     const value = getQueryValue(req.query[QUERY_PARAM]);
 
     if (value === '0') {

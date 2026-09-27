@@ -305,9 +305,7 @@ class UpdateCheckService {
         status: message.status || 'alert',
         type: message.type || 'info',
         id: message.id,
-        dismissible: Object.prototype.hasOwnProperty.call(message, 'dismissible')
-          ? message.dismissible
-          : true,
+        dismissible: Object.hasOwn(message, 'dismissible') ? message.dismissible : true,
         top: !!message.top,
         message: message.content,
       };

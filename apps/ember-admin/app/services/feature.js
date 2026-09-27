@@ -96,7 +96,6 @@ export default class FeatureService extends Service {
     @feature('importMemberTier') importMemberTier;
     @feature('adminUIRefresh') adminUIRefresh;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('tagDetailsReact') tagDetailsReact;
     @feature('paywallImprovements') paywallImprovements;
     @feature('automations') automations;
     @feature('csvContentImporter') csvContentImporter;
@@ -104,6 +103,7 @@ export default class FeatureService extends Service {
     @feature('membersActivityReact') membersActivityReact;
     @feature('membersCustomFields') membersCustomFields;
     @feature('editorReact') editorReact;
+    @feature('globalSearchReact') globalSearchReact;
     @feature('improveSendingUI') improveSendingUI;
     @feature('dunningWarnings') dunningWarnings;
     _user = null;

@@ -193,7 +193,7 @@ class Base {
     const userReferenceProblems = {};
 
     const handleObject = (obj, key) => {
-      if (!Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (!Object.hasOwn(obj, key)) {
         return;
       }
 

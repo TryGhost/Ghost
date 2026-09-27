@@ -104,7 +104,7 @@ describe('services/route-settings/route-settings-parser', function () {
           routes: { '/featured/': { controller: 'channel', filter: 'featured:true' } },
         });
 
-        assert.equal(Object.prototype.hasOwnProperty.call(result.routes[0], 'rss'), false);
+        assert.equal(Object.hasOwn(result.routes[0], 'rss'), false);
       });
 
       it('respects explicit rss: true on channel route', function () {

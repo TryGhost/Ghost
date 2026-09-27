@@ -17,8 +17,6 @@ import { sidebarScreen } from '@/layout/sidebar.screen';
 import { tagsScreen } from '@/tags/tags.screen';
 import { tagDetailScreen } from './tag-detail.screen';
 
-const FLAGS = { labs: { tagDetailsReact: true } };
-
 /**
  * A working single-tag fake: the slug read serves the latest state and writes
  * update it, so the post-save refetch reflects what was saved — the shape a
@@ -34,11 +32,11 @@ function fakeTagWorld(t: Tag) {
   return saveApi;
 }
 
-describe('Tag detail (tagDetailsReact on)', () => {
+describe('Tag detail', () => {
   it('renders the seeded tag', async () => {
     const t = tag({ name: 'News', slug: 'news', description: 'All the news', count: { posts: 3 } });
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await expect.element(tagDetailScreen.title()).toHaveTextContent('News');
     await expect.element(tagDetailScreen.internalBadge()).not.toBeInTheDocument();
@@ -64,7 +62,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
   it('shows an internal badge after the name for internal tags', async () => {
     const t = tag({ name: '#News', slug: 'hash-news', visibility: 'internal' });
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await expect.element(tagDetailScreen.title()).toHaveTextContent('#News');
     await expect.element(tagDetailScreen.internalBadge()).toHaveTextContent('INTERNAL');
@@ -73,7 +71,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
   it('shows metadata in Search, X card, and Facebook card tabs', async () => {
     const t = tag({ name: 'News', slug: 'news' });
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     const metadataCard = tagDetailScreen.metadataCard();
     const searchTab = metadataCard.getByRole('tab', { name: 'Search' });
@@ -150,7 +148,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
       codeinjection_foot: foot,
     });
     const saveApi = fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await expect
       .element(tagDetailScreen.codeInjectionTrigger())
@@ -192,7 +190,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
   it('opens code injection when only the footer contains code', async () => {
     const t = tag({ name: 'News', slug: 'news', codeinjection_foot: '<script>footer();</script>' });
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await expect
       .element(tagDetailScreen.codeInjectionTrigger())
@@ -203,7 +201,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
   it('keeps CodeMirror autocomplete visible in the code injection accordion', async () => {
     const t = tag({ name: 'News', slug: 'news' });
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.codeInjectionTrigger().click();
     const headerEditor = tagDetailScreen.headerEditor();
@@ -225,11 +223,10 @@ describe('Tag detail (tagDetailsReact on)', () => {
   });
 
   it('redirects to billing during a force upgrade', async () => {
-    const config = configResponse(FLAGS);
+    const config = configResponse();
     config.config.hostSettings = { forceUpgrade: true };
 
     await renderAdminApp('/tags/news', {
-      ...FLAGS,
       boot: { browseConfig: { response: config } },
     });
 
@@ -241,7 +238,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     const t = tag({ name: 'News', slug: 'news', feature_image: null });
     fakeTagWorld(t);
     fakeEndpoint('GET', 'https://api.unsplash.com/photos', []);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.unsplashButton().click();
 
@@ -253,7 +250,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     fakeTags([t]);
     fakeTagWorld(t);
     fakeEndpoint('GET', 'https://api.unsplash.com/photos', []);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.unsplashButton().click();
     await expect.element(tagDetailScreen.unsplashHeading()).toBeVisible();
@@ -269,7 +266,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
   it('saves edits and reports the saved state', async () => {
     const t = tag({ name: 'News', slug: 'news', visibility: 'public' });
     const saveApi = fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.nameInput().fill('Renamed');
     await tagDetailScreen.saveButton().click();
@@ -291,7 +288,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
       meta_title: ' Meta title ',
     });
     const saveApi = fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.saveButton().click();
 
@@ -305,7 +302,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     const t = tag({ name: 'News', slug: 'news', visibility: 'public' });
     fakeTags([t]);
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.nameInput().fill('Renamed');
     await tagDetailScreen.saveButton().click();
@@ -322,7 +319,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     const created = tag({ name: 'Weekly News', slug: 'weekly-news' });
     const createApi = fakeAdminEndpoint('POST', new RegExp('^/tags/'), { tags: [created] });
     fakeTagWorld(created);
-    await renderAdminApp('/tags/new', FLAGS);
+    await renderAdminApp('/tags/new');
 
     await expect.element(tagDetailScreen.title()).toHaveTextContent('New tag');
     const nameInput = tagDetailScreen.nameInput();
@@ -343,7 +340,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
   it('shows validation errors instead of saving an invalid tag', async () => {
     const t = tag({ name: 'News', slug: 'news' });
     const saveApi = fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.nameInput().fill('');
     await tagDetailScreen.saveButton().click();
@@ -360,7 +357,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     const saveApi = fakeTagWorld(t);
     const pendingUpload = deferred<{ images: { url: string; ref: null }[] }>();
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', () => pendingUpload.promise);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     const uploadInput = tagDetailScreen.uploadImageInput();
     await expect.element(uploadInput).toBeVisible();
@@ -387,7 +384,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
   it('rejects image formats that the legacy uploader does not support', async () => {
     const t = tag({ name: 'News', slug: 'news', feature_image: null });
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen
       .uploadImageInput()
@@ -402,7 +399,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     const t = tag({ name: 'News', slug: 'news', feature_image: null });
     fakeTagWorld(t);
     fakeAdminEndpoint('POST', '/images/upload/', null, { status: 413 });
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen
       .uploadImageInput()
@@ -423,7 +420,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     fakeTags([first, second]);
     fakeTagWorld(first);
     fakeTagWorld(second);
-    await renderAdminApp(`/tags/${first.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${first.slug}`);
 
     await tagDetailScreen.saveButton().click();
     await expect.element(tagDetailScreen.savedButton()).toBeVisible();
@@ -444,7 +441,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
       new RegExp(`^/tags/${t.id}/`),
       () => pendingSave.promise,
     );
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.nameInput().fill('Renamed');
     await tagDetailScreen.saveButton().click();
@@ -469,7 +466,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
       current = response.tags[0];
       return response;
     });
-    await renderAdminApp(`/tags/${current.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${current.slug}`);
 
     await tagDetailScreen.accentColorHexInput().fill('AABBCC');
     await userEvent.keyboard('{Meta>}s{/Meta}');
@@ -493,7 +490,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
       current = response.tags[0];
       return response;
     });
-    await renderAdminApp(`/tags/${current.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${current.slug}`);
 
     await tagDetailScreen.colorPickerButton().click();
     await tagDetailScreen.pickerHexInput().fill('#AABBCC');
@@ -521,7 +518,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
       current = response.tags[0];
       return response;
     });
-    await renderAdminApp(`/tags/${current.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${current.slug}`);
 
     await tagDetailScreen.nameInput().fill('Renamed');
     await tagDetailScreen.saveButton().click();
@@ -540,7 +537,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     fakeTags([]);
     const pendingCreate = deferred<{ tags: Tag[] }>();
     const createApi = fakeAdminEndpoint('POST', new RegExp('^/tags/'), () => pendingCreate.promise);
-    await renderAdminApp('/tags/new', FLAGS);
+    await renderAdminApp('/tags/new');
 
     await tagDetailScreen.nameInput().fill('Weekly News');
     await tagDetailScreen.saveButton().click();
@@ -575,7 +572,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.nameInput().fill('Renamed');
     await tagDetailScreen.saveButton().click();
@@ -593,7 +590,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     const deleteApi = fakeAdminEndpoint('DELETE', new RegExp(`^/tags/${t.id}/`), null, {
       status: 204,
     });
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.actionsButton().click();
     await tagDetailScreen.deleteTagMenuItem().click();
@@ -610,7 +607,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
   it('uses the current draft name in the delete confirmation', async () => {
     const t = tag({ name: 'News', slug: 'news' });
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.nameInput().fill('Draft name');
     await tagDetailScreen.actionsButton().click();
@@ -628,14 +625,14 @@ describe('Tag detail (tagDetailsReact on)', () => {
       { errors: [{ type: 'NotFoundError', message: 'Tag not found.' }] },
       { status: 404 },
     );
-    await renderAdminApp('/tags/unknown', FLAGS);
+    await renderAdminApp('/tags/unknown');
 
     await expect.element(tagDetailScreen.notFound()).toBeVisible();
   });
 
   it('keeps the Tags nav item active on the new tag route', async () => {
     fakeTags([]);
-    await renderAdminApp('/tags/new', FLAGS);
+    await renderAdminApp('/tags/new');
 
     await expect.element(tagDetailScreen.title()).toHaveTextContent('New tag');
     await expect.element(sidebarScreen.navLink('Tags')).toHaveAttribute('aria-current', 'page');
@@ -645,7 +642,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     const t = tag({ name: 'News', slug: 'news' });
     fakeTags([t]);
     fakeTagWorld(t);
-    await renderAdminApp('/tags', FLAGS);
+    await renderAdminApp('/tags');
 
     await tagsScreen.tagRows().getByRole('link', { name: 'News' }).click();
 
@@ -657,7 +654,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     const t = tag({ name: 'News', slug: 'news' });
     fakeTags([t]);
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`);
 
     await tagDetailScreen.nameInput().fill('Renamed');
     await expect.poll(unsavedChangesGuarded).toBe(true);
@@ -682,7 +679,7 @@ describe('Tag detail history guard', () => {
     const t = tag({ name: 'News', slug: 'news' });
     fakeTags([t]);
     fakeTagWorld(t);
-    await renderAdminApp('/site', FLAGS);
+    await renderAdminApp('/site');
 
     await sidebarScreen.navLink('Tags').click();
     await expect.poll(currentRoute).toBe('/tags');
@@ -702,23 +699,5 @@ describe('Tag detail history guard', () => {
     window.history.back();
     await tagDetailScreen.leaveButton().click();
     await expect.poll(currentRoute).toBe('/tags');
-  });
-});
-
-describe('Tag detail (tagDetailsReact off)', () => {
-  // No tag fakes are declared in these tests on purpose: if the React screen
-  // mounted it would fetch the tag and fail the spec as an unhandled request.
-  it('defers /tags/:slug to Ember', async () => {
-    await renderAdminApp('/tags/news');
-
-    await expect.poll(currentRoute).toBe('/tags/news');
-    await expect.element(tagDetailScreen.detail()).not.toBeInTheDocument();
-  });
-
-  it('defers /tags/new to Ember', async () => {
-    await renderAdminApp('/tags/new');
-
-    await expect.poll(currentRoute).toBe('/tags/new');
-    await expect.element(tagDetailScreen.detail()).not.toBeInTheDocument();
   });
 });

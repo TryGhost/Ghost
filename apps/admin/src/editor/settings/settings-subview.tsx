@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef } from 'react';
-import { Button, Separator } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Button } from '@tryghost/shade/components';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { settingsSubviewPane } from '@tryghost/test-data/selectors/editor';
 import type { SettingsSectionId } from './sections';
@@ -57,16 +57,16 @@ export function SettingsSubview({
   if (isOpen) {
     return (
       <>
-        <div className="sticky top-0 z-10 bg-background">
-          <Inline align="center" className="p-3" gap="sm">
+        <div className="sticky top-0 z-10 bg-sidebar">
+          <Inline align="center" className="px-4 py-3" gap="sm">
             <Button ref={backRef} aria-label={closeLabel} size="sm" variant="ghost" onClick={close}>
               <LucideIcon.ArrowLeft />
             </Button>
-            <Text as="h2" size="md" weight="semibold">
+            <Text as="h2" className="flex-1" size="md" weight="semibold">
               {title}
             </Text>
+            <Box aria-hidden="true" className="size-(--editor-settings-toggle-width) shrink-0" />
           </Inline>
-          <Separator />
         </div>
         <Stack
           className={cn('px-5 py-4', contentClassName)}
@@ -80,20 +80,17 @@ export function SettingsSubview({
   }
 
   return (
-    <>
-      <button
-        ref={rowRef}
-        className="flex w-full items-center gap-2 px-5 py-3 text-left hover:bg-interactive-hover focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0"
-        type="button"
-        onClick={() => show({ id, title, wide })}
-      >
-        {icon}
-        <Text as="span" className="flex-1" size="sm">
-          {label}
-        </Text>
-        <LucideIcon.ChevronRight className="size-4 shrink-0 text-text-tertiary" />
-      </button>
-      <Separator />
-    </>
+    <button
+      ref={rowRef}
+      className="flex w-full items-center gap-2 px-5 py-3 text-left hover:bg-interactive-hover focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0"
+      type="button"
+      onClick={() => show({ id, title, wide })}
+    >
+      {icon}
+      <Text as="span" className="flex-1" size="sm">
+        {label}
+      </Text>
+      <LucideIcon.ChevronRight className="size-4 shrink-0 text-text-tertiary" />
+    </button>
   );
 }

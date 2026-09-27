@@ -1703,10 +1703,7 @@ describe('Comments API', function () {
         await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher]).expect(
           ({ body }) => {
             assert.equal(body.comments[0].disliked, true);
-            assert.equal(
-              Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'),
-              false,
-            );
+            assert.equal(Object.hasOwn(body.comments[0].count, 'dislikes'), false);
           },
         );
       });
@@ -1731,10 +1728,7 @@ describe('Comments API', function () {
         await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher]).expect(
           ({ body }) => {
             assert.equal(body.comments[0].disliked, false);
-            assert.equal(
-              Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'),
-              false,
-            );
+            assert.equal(Object.hasOwn(body.comments[0].count, 'dislikes'), false);
           },
         );
       });
@@ -1780,14 +1774,8 @@ describe('Comments API', function () {
           body.comments.map((comment) => comment.id),
           [bestComment.get('id'), likedComment.get('id'), dislikedComment.get('id')],
         );
-        assert.equal(
-          Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'),
-          false,
-        );
-        assert.equal(
-          Object.prototype.hasOwnProperty.call(body.comments[0].count, 'net_score'),
-          false,
-        );
+        assert.equal(Object.hasOwn(body.comments[0].count, 'dislikes'), false);
+        assert.equal(Object.hasOwn(body.comments[0].count, 'net_score'), false);
       });
 
       it('Cannot like a comment multiple times', async function () {

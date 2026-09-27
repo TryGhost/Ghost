@@ -9,6 +9,7 @@ import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
+import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
 const networkPageChrome = {
   contentClassName: 'max-w-(--content-width)',
@@ -92,7 +93,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="relative h-full bg-background">
         <main ref={mainRef} className="flex h-full flex-col overflow-y-auto">
           <DunningBanner />
-          <div className="flex-1">{children}</div>
+          <div className="min-h-0 flex-1">{children}</div>
         </main>
         <div
           ref={contributorMenuRef}
@@ -106,41 +107,46 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <SidebarProvider
-      className={cn(
-        sidebarVisible &&
-          'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
-      )}
-      open={!!currentUser && sidebarVisible}
-      style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
-    >
-      {sidebarVisible && (
-        <AppSidebar
-          ref={sidebarRef}
-          className={cn(dunningLocked && 'opacity-40')}
-          variant="floating"
-        />
-      )}
-      <SidebarInset
-        ref={insetRef}
+    <GlobalSearchProvider>
+      <SidebarProvider
         className={cn(
-          'relative bg-background sidebar:max-h-full',
-          dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
-          sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+          sidebarVisible &&
+            'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
         )}
+        open={!!currentUser && sidebarVisible}
+        style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
       >
-        <DunningBanner />
-        <main ref={mainRef} className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
-          <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
-            {children}
-          </ActivityPubHostLayoutProvider>
-        </main>
-        {/* The mobile nav sits outside the takeover's cover (fixed, above the
+        {sidebarVisible && (
+          <AppSidebar
+            ref={sidebarRef}
+            className={cn(dunningLocked && 'opacity-40')}
+            variant="floating"
+          />
+        )}
+        <SidebarInset
+          ref={insetRef}
+          className={cn(
+            'relative bg-background sidebar:max-h-full',
+            dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
+            sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+          )}
+        >
+          <DunningBanner />
+          <main
+            ref={mainRef}
+            className={cn('flex-1', sidebarVisible ? pageChromeClassName : 'min-h-0')}
+          >
+            <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
+              {children}
+            </ActivityPubHostLayoutProvider>
+          </main>
+          {/* The mobile nav sits outside the takeover's cover (fixed, above the
             inset) and its sheet opens in a portal, so it unmounts entirely
             rather than relying on inert */}
-        {!dunningLocked && <MobileNavBar />}
-        <DunningOverlay />
-      </SidebarInset>
-    </SidebarProvider>
+          {!dunningLocked && <MobileNavBar />}
+          <DunningOverlay />
+        </SidebarInset>
+      </SidebarProvider>
+    </GlobalSearchProvider>
   );
 }

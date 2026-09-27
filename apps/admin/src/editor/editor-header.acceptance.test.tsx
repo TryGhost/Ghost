@@ -16,6 +16,7 @@ import {
   settingsResponse,
   staffRole,
   submittedPost,
+  withoutAutosave,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -87,6 +88,21 @@ function publishChrome({ newsletters = 0 } = {}) {
     members: [],
     meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
   });
+}
+
+/** Newsletters answer 500, which fails the header's publish inputs. */
+function failNewsletters() {
+  fakeAdminEndpoint(
+    'GET',
+    /^\/newsletters\//,
+    { errors: [{ type: 'InternalServerError', message: 'Newsletters are unavailable.' }] },
+    { status: 500 },
+  );
+}
+
+/** Newsletters answer again, so a retry of the publish inputs succeeds. */
+function restoreNewsletters() {
+  fakeAdminEndpoint('GET', /^\/newsletters\//, browseResponse('newsletters', [], { limit: 'all' }));
 }
 
 /**
@@ -354,7 +370,7 @@ describe('Editor header actions', () => {
     await userEvent.keyboard('{Meta>}p{/Meta}');
     await expect.element(previewScreen.modal()).toBeVisible();
 
-    // A flow opened under the preview is unreachable, so the chord does nothing here.
+    // The publish chord is off while the preview is open.
     await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
     await expect(publishScreen.options()).toHaveCount(0);
 
@@ -464,12 +480,7 @@ describe('Editor header actions', () => {
   it('offers a retry when the publish inputs fail to load', async () => {
     publishChrome();
     fakeSavablePost();
-    fakeAdminEndpoint(
-      'GET',
-      /^\/newsletters\//,
-      { errors: [{ type: 'InternalServerError', message: 'Newsletters are unavailable.' }] },
-      { status: 500 },
-    );
+    failNewsletters();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
@@ -477,13 +488,7 @@ describe('Editor header actions', () => {
     await expect.element(editorScreen.publishButton()).toBeDisabled();
 
     // The retry re-reads the same endpoint, which now answers.
-    fakeAdminEndpoint(
-      'GET',
-      /^\/newsletters\//,
-      browseResponse('newsletters', [], {
-        limit: 'all',
-      }),
-    );
+    restoreNewsletters();
     await editorScreen.retryPublishInputs().click();
 
     await expect.element(editorScreen.publishButton()).toBeEnabled();
@@ -505,10 +510,60 @@ describe('Editor header actions', () => {
     await expect.element(publishScreen.options()).toBeVisible();
   });
 
+  it('publishes from a preview opened by the header Preview button', async () => {
+    publishChrome();
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Owner'));
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.modal()).toBeVisible();
+
+    await previewScreen.publishButton().click();
+
+    await expect(previewScreen.modal()).toHaveCount(0);
+    await expect.element(publishScreen.options()).toBeVisible();
+  });
+
+  it('offers a contributor no Publish in the preview', async () => {
+    publishChrome();
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
+
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.closeButton()).toBeVisible();
+    await expect(previewScreen.publishButton()).toHaveCount(0);
+  });
+
+  it('disables Publish in the preview until the publish inputs load', async () => {
+    publishChrome();
+    fakeSavablePost();
+    failNewsletters();
+    await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Owner'));
+
+    await expect.element(editorScreen.publishButton()).toBeDisabled();
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.modal()).toBeVisible();
+    await expect.element(previewScreen.publishButton()).toBeDisabled();
+
+    // The preview is modal, so the header's Retry is reachable once it closes.
+    await previewScreen.closeButton().click();
+    await expect(previewScreen.modal()).toHaveCount(0);
+    restoreNewsletters();
+    await editorScreen.retryPublishInputs().click();
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await expect(publishScreen.options()).toHaveCount(0);
+
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.publishButton()).toBeEnabled();
+    await expect(publishScreen.options()).toHaveCount(0);
+  });
+
   it('saves unsaved work before the publish it carries', async () => {
     publishChrome();
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    // Only the publish flow's explicit save should win this race, not the autosave timer.
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await typeIntoBody(' and more');

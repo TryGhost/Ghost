@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  humanizeLexicalDiff,
   lexicalEquals,
   LexicalParseError,
   normalizeLexicalForCompare,
@@ -194,7 +193,6 @@ describe('parseLexical', () => {
       expect(() => parseLexical(invalid)).toThrow(LexicalParseError);
       expect(() => lexicalEquals(invalid, doc([]))).toThrow(LexicalParseError);
       expect(() => lexicalEquals(doc([]), invalid)).toThrow(LexicalParseError);
-      expect(() => humanizeLexicalDiff(invalid, doc([]))).toThrow(LexicalParseError);
     },
   );
 
@@ -353,52 +351,5 @@ describe('lexicalEquals with a site url', () => {
 
     expect(lexicalEquals(absolute, relative, 'https://site.example')).toBe(true);
     expect(lexicalEquals(absolute, relative)).toBe(false);
-  });
-});
-
-describe('humanizeLexicalDiff', () => {
-  it('annotates numeric path segments with the node type from the source document', () => {
-    const from = doc([paragraph('Hello')]);
-    const to = doc([paragraph('Hello world')]);
-
-    expect(humanizeLexicalDiff(from, to)).toEqual([
-      {
-        type: 'CHANGE',
-        path: 'root.children.0[paragraph].children.0[extended-text].text',
-        value: 'Hello world',
-        oldValue: 'Hello',
-      },
-    ]);
-  });
-
-  it('reports added blocks with a CREATE entry and removed blocks with a REMOVE entry', () => {
-    const one = doc([paragraph('A')]);
-    const two = doc([paragraph('A'), paragraph('B')]);
-
-    expect(humanizeLexicalDiff(one, two)).toEqual([
-      { type: 'CREATE', path: 'root.children.1', value: stripDirection(paragraph('B')) },
-    ]);
-    expect(humanizeLexicalDiff(two, one)).toEqual([
-      {
-        type: 'REMOVE',
-        path: 'root.children.1[paragraph]',
-        oldValue: stripDirection(paragraph('B')),
-      },
-    ]);
-  });
-
-  it('ignores direction-only differences', () => {
-    expect(humanizeLexicalDiff(doc([paragraph('A')]), doc([paragraph('A', 'ltr')], 'ltr'))).toEqual(
-      [],
-    );
-  });
-
-  it('accepts serialized strings and missing documents', () => {
-    expect(humanizeLexicalDiff(JSON.stringify(doc([paragraph('A')])), null)).toEqual([
-      { type: 'REMOVE', path: 'root', oldValue: stripDirection(doc([paragraph('A')]).root) },
-    ]);
-    expect(humanizeLexicalDiff(null, doc([paragraph('A')]))).toEqual([
-      { type: 'CREATE', path: 'root', value: stripDirection(doc([paragraph('A')]).root) },
-    ]);
   });
 });

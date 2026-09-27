@@ -195,6 +195,47 @@ describe('createEditorSession', () => {
     expect(session.getSaveSnapshot().isDirty).toBe(true);
   });
 
+  it.each([
+    ['only added whitespace', 'Hello ', 'Hello, world', false],
+    ['typed more than whitespace', 'Hello!', 'Hello!', true],
+  ])(
+    'adopts the server title only when the writer %s in flight',
+    async (_case, typed, title, isDirty) => {
+      const built = sessionHarness(
+        { record: record({ title: 'Hello' }) },
+        {
+          duringSave: () => built.session.patchTitle(typed),
+          acknowledge: (next) => ({ ...next, title: 'Hello, world' }),
+        },
+      );
+      const { session } = built;
+
+      session.setBaseline(record().lexical);
+      session.patchLexical(body('Edited'));
+      await session.dispatchExplicit();
+
+      expect(session.getSaveSnapshot()).toMatchObject({ title, isDirty });
+    },
+  );
+
+  it('overwrites the input with a server-trimmed title', async () => {
+    const { session } = sessionHarness(
+      { record: record({ title: 'Hello' }) },
+      { acknowledge: (next) => ({ ...next, title: next.title.trim() }) },
+    );
+
+    session.setBaseline(record().lexical);
+    session.patchTitle('Hello ');
+    session.patchLexical(body('Edited'));
+    await session.dispatchExplicit();
+
+    expect(session.getSaveSnapshot()).toMatchObject({
+      title: 'Hello',
+      isDirty: false,
+      titleDirty: false,
+    });
+  });
+
   it('leaves tags out of the payload so edits elsewhere survive', async () => {
     const { session, state } = sessionHarness({
       record: record({ tags: [{ id: 'tag1', name: 'News' }] }),

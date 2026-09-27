@@ -98,7 +98,7 @@ describe('useEmberFeatureFlag', () => {
     mock.stateBridge.isFeatureEnabled = vi.fn(() => enabled);
     window.EmberBridge = { state: mock.stateBridge };
 
-    const { result } = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
     expect(result.current).toBe(false);
 
     enabled = true;
@@ -112,7 +112,7 @@ describe('useEmberFeatureFlag', () => {
     const mock = createMockStateBridge();
     mock.stateBridge.isFeatureEnabled = vi.fn(() => true);
 
-    const { result } = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
     expect(result.current).toBeUndefined();
 
     window.EmberBridge = { state: mock.stateBridge };
@@ -129,7 +129,7 @@ describe('useEmberFeatureFlag', () => {
     mock.stateBridge.isFeatureEnabled = vi.fn(() => undefined);
     window.EmberBridge = { state: mock.stateBridge };
 
-    const { result } = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
 
     expect(result.current).toBeNull();
   });
@@ -623,6 +623,25 @@ describe('theme bridge helpers', () => {
     // Bridge present but from an older Ember without the method
     window.EmberBridge = { state: createMockStateBridge().stateBridge };
     expect(applyEmberAdminThemePreference('dark')).toBe(false);
+  });
+
+  test('navigateEmberBillingSubRoute hands the sub-route to Ember and reports it', async () => {
+    const { navigateEmberBillingSubRoute } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    const navigate = vi.fn();
+    mock.stateBridge.navigateToBillingSubRoute = navigate;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    expect(navigateEmberBillingSubRoute('/plans')).toBe(true);
+    expect(navigate).toHaveBeenCalledWith('/plans');
+  });
+
+  test('navigateEmberBillingSubRoute returns false without a bridge or method', async () => {
+    const { navigateEmberBillingSubRoute } = await import('./ember-bridge');
+    expect(navigateEmberBillingSubRoute('/plans')).toBe(false);
+
+    window.EmberBridge = { state: createMockStateBridge().stateBridge };
+    expect(navigateEmberBillingSubRoute('/plans')).toBe(false);
   });
 
   test('preloadEmberAdminThemeStylesheet resolves with and without the bridge', async () => {

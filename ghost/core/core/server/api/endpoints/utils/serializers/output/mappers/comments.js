@@ -86,7 +86,7 @@ const commentMapper = (model, frame) => {
   );
 
   if (!fields || fields.has('pinned')) {
-    if (Object.prototype.hasOwnProperty.call(jsonModel, 'pinned')) {
+    if (Object.hasOwn(jsonModel, 'pinned')) {
       response.pinned = Boolean(jsonModel.pinned);
     } else {
       const canShowPinned = !jsonModel.parent_id && Boolean(jsonModel.pinned_at);

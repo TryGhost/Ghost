@@ -1,6 +1,10 @@
 import { describe, expect, it, onTestFinished } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import {
+  settingsKeyboardShortcutsBackButton,
+  settingsKeyboardShortcutsRow,
+} from '@tryghost/test-data/selectors/editor';
 
 import {
   currentUserResponse,
@@ -18,8 +22,6 @@ const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = { labs: { editorReact: true } };
 const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
-const BACK_LABEL = 'Close keyboard shortcuts panel';
-const ROW_LABEL = 'Keyboard shortcuts';
 const MAC_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 const WINDOWS_AGENT =
@@ -63,7 +65,7 @@ function fakeEditablePost(overrides: Partial<ReturnType<typeof post>> = {}) {
 async function openShortcuts() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-  await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+  await editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }
 
@@ -79,14 +81,20 @@ describe('Post settings keyboard shortcuts', () => {
 
     // The pane replaces the list it was opened from.
     await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSidebar()).toHaveAttribute('aria-label', ROW_LABEL);
-    await expect.element(page.getByRole('heading', { level: 2, name: ROW_LABEL })).toBeVisible();
+    await expect
+      .element(editorScreen.settingsSidebar())
+      .toHaveAttribute('aria-label', settingsKeyboardShortcutsRow);
+    await expect
+      .element(page.getByRole('heading', { level: 2, name: settingsKeyboardShortcutsRow }))
+      .toBeVisible();
 
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsKeyboardShortcutsBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
+    await expect
+      .element(editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow))
+      .toBeVisible();
   });
 
   it('lists every shortcut under the group it belongs to, without widening the panel', async () => {
@@ -101,7 +109,11 @@ describe('Post settings keyboard shortcuts', () => {
     await expect.element(pane).toHaveTextContent('Inserting');
 
     expect(editorScreen.settingsShortcutRows()).toHaveLength(50);
-    expect(editorScreen.settingsSidebar().element().getBoundingClientRect().width).toBe(350);
+    await expect
+      .poll(
+        () => editorScreen.settingsSidebar().element().parentElement!.getBoundingClientRect().width,
+      )
+      .toBe(350);
   });
 
   it('shows a Mac writer the Mac glyphs', async () => {
@@ -156,7 +168,9 @@ describe('Post settings keyboard shortcuts', () => {
     await userEvent.keyboard('{Escape}');
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toHaveFocus();
+    await expect
+      .element(editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow))
+      .toHaveFocus();
   });
 
   it('gives a contributor the same reference list', async () => {

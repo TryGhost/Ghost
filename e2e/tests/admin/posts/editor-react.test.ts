@@ -77,6 +77,20 @@ async function readPost(page: Page, postId: string) {
   return post;
 }
 
+async function readPostSettings(page: Page, postId: string) {
+  const response = await page.request.get(`/ghost/api/admin/posts/${postId}/?include=tags`);
+  expect(response.status()).toBe(200);
+  const {
+    posts: [post],
+  } = await response.json();
+
+  return {
+    slug: post.slug,
+    tags: post.tags.map((tag: { name: string }) => tag.name),
+    metaTitle: post.meta_title,
+  };
+}
+
 /**
  * Nothing more is written. A non-event can only be asserted over a window, and
  * this one has to outlast the 3s autosave debounce plus the request itself —
@@ -255,5 +269,41 @@ test.describe('Ghost Admin - Post editor (React)', () => {
     const post = await readPost(page, created.id);
     expect(post.title).toBe(renamed);
     expect(post.status).toBe('draft');
+  });
+
+  test('settings sidebar - URL, tags and meta data persist across a reload', async ({ page }) => {
+    const created = await postFactory.create({
+      title: `react-sidebar-${Date.now()}`,
+      status: 'draft',
+      featured: false,
+    });
+    const stamp = Date.now();
+    const slug = `react-sidebar-slug-${stamp}`;
+    const tag = `react-sidebar-tag-${stamp}`;
+    const metaTitle = `React sidebar meta title ${stamp}`;
+    const { settings } = editor;
+
+    await editor.gotoPost(created.id);
+    await settings.open();
+
+    await settings.url.setSlug(slug);
+    await settings.tags.add(tag);
+
+    await settings.openSection('meta-data');
+    await settings.metaData.titleInput.fill(metaTitle);
+    await settings.closeSection('meta-data');
+    await settings.close();
+
+    // A draft saves each committed field, so the server catches up without a Cmd-S
+    await expect
+      .poll(() => readPostSettings(page, created.id), { timeout: 15000 })
+      .toEqual({ slug, tags: [tag], metaTitle });
+
+    await page.reload();
+    await settings.open();
+    await expect(settings.url.slugInput).toHaveValue(slug);
+    await expect(settings.tags.token(tag)).toBeVisible();
+    await settings.openSection('meta-data');
+    await expect(settings.metaData.titleInput).toHaveValue(metaTitle);
   });
 });

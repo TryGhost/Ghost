@@ -271,6 +271,15 @@
       allowedVersions: '<9',
     },
 
+    // Admin's Cmd-K search must match Ember's results, and Ember ships
+    // FlexSearch 0.7; 0.8 changes how titles are tokenized and ranked.
+    {
+      description: 'Cap the catalog flexsearch at 0.7 (matches Ember admin search)',
+      matchDepTypes: ['pnpm.catalog'],
+      matchPackageNames: ['flexsearch'],
+      allowedVersions: '<0.8',
+    },
+
     // Keep `@types/*` aligned with the runtime major they describe. Type defs
     // for a different major than what actually runs are silently wrong at best
     // (e.g. @types/express 5 vs Express 4) and build-breaking at worst
@@ -283,7 +292,7 @@
     //    Node.js runtime declared in `engines`, not a dependency — so a hard
     //    version cap is the only lever. Raise it when we bump the Node engine.
     {
-      description: 'Cap @types/node at the default Node major (devEngines: 22.23.1)',
+      description: 'Cap @types/node at the default Node major (devEngines: 22.23.3)',
       matchPackageNames: ['@types/node'],
       allowedVersions: '<23',
     },

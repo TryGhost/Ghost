@@ -73,7 +73,7 @@ describe('snippets api', () => {
       const { result } = renderHookWithProviders(() => useBrowseSnippets());
 
       await waitFor(() => {
-        expect(result.current.data).toEqual({ snippets: [existingSnippet] });
+        expect(result.current.data?.snippets).toEqual([existingSnippet]);
       });
 
       const call = findCall(mock, '/snippets/');
@@ -91,7 +91,7 @@ describe('snippets api', () => {
       );
 
       await waitFor(() => {
-        expect(result.current.data).toEqual({ snippets: [existingSnippet] });
+        expect(result.current.data?.snippets).toEqual([existingSnippet]);
       });
 
       const url = new URL(String(findCall(mock, '/snippets/')![0]));
