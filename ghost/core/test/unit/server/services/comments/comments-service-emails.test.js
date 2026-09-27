@@ -242,5 +242,28 @@ describe('Comments Service: CommentsServiceEmails', function () {
       const [, templateData] = renderStub.firstCall.args;
       assert.equal(templateData.postUrl, POST_URL_FOR_COMMENT);
     });
+
+    it('notifyReport: starts independent lookups without waiting for the post', async function () {
+      const { instance, post, comment } = buildHarness();
+      let releasePost;
+      instance.models.Post.findOne.returns(
+        new Promise((resolve) => {
+          releasePost = () => resolve(post);
+        }),
+      );
+
+      const notification = instance.notifyReport(comment, {
+        name: 'Reporter',
+        email: 'reporter@example.com',
+      });
+
+      try {
+        sinon.assert.calledOnce(instance.models.Member.findOne);
+        sinon.assert.calledOnce(instance.models.User.getOwnerUser);
+      } finally {
+        releasePost();
+        await notification;
+      }
+    });
   });
 });
