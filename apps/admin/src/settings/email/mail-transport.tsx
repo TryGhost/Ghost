@@ -279,33 +279,21 @@ const MailTransport: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                       }
                     }}
                   />
-                  <button
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-xs p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-hidden"
-                    title={
-                      isSavedPassword
-                        ? 'Saved password cannot be revealed for security'
-                        : showPassword
-                          ? 'Hide password'
-                          : 'Show password'
-                    }
-                    type="button"
-                    onClick={() => {
-                      if (isSavedPassword) {
-                        toast.info(
-                          'Saved passwords cannot be revealed for security reasons. Enter a new password to preview.',
-                        );
-                        return;
-                      }
-                      setShowPassword(!showPassword);
-                    }}
-                  >
-                    {showPassword && !isSavedPassword ? (
-                      <LucideIcon.EyeOff className="size-4" />
-                    ) : (
-                      <LucideIcon.Eye className="size-4" />
-                    )}
-                  </button>
+                  {!isSavedPassword && (
+                    <button
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-xs p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-hidden"
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <LucideIcon.EyeOff className="size-4" />
+                      ) : (
+                        <LucideIcon.Eye className="size-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
               </Field>
             </div>
