@@ -4,6 +4,7 @@ const settingsCache = require('../../../shared/settings-cache');
 const labs = require('../../../shared/labs');
 const databaseInfo = require('../../data/db/info');
 const ghostVersion = require('@tryghost/version');
+const routeSettings = require('../route-settings');
 
 const tinybirdStatsPayloadProperties = ['endpoint', 'endpointBrowser', 'version', 'datasource'];
 
@@ -66,6 +67,7 @@ module.exports = function getConfigProperties() {
     pintura: config.get('pintura'),
     signupForm: config.get('signupForm'),
     security: config.get('security'),
+    pageRoutes: routeSettings.service.pageRoutes,
   };
 
   if (config.get('explore') && config.get('explore:testimonials_url')) {

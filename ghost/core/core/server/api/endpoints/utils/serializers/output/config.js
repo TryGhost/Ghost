@@ -23,6 +23,7 @@ module.exports = {
       'signupForm',
       'stats',
       'security',
+      'pageRoutes',
       'exploreTestimonialsUrl',
       'featurebase',
       'docsbot',

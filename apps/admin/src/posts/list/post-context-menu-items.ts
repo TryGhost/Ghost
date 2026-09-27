@@ -26,6 +26,9 @@ export type PostContextMenuKey =
   | 'add-tag'
   | 'change-access'
   | 'duplicate'
+  | 'navigation-primary'
+  | 'navigation-secondary'
+  | 'navigation-remove'
   | 'delete';
 
 export interface PostContextMenuItem {
@@ -34,6 +37,7 @@ export interface PostContextMenuItem {
   /** Whether a separator sits above this item. */
   separated: boolean;
   destructive?: boolean;
+  disabled?: boolean;
 }
 
 export interface PostContextMenuInputs {
@@ -43,15 +47,16 @@ export interface PostContextMenuInputs {
    * necessarily reasons about the ones in memory.
    */
   posts: PostListItem[];
-  /** Unused by the item list today — every label Ember emits here is
-   * hardcoded to "post" — but kept so callers pass a complete description of
-   * the selection, and for the Phase 8 modals. */
+  /** Navigation placement actions are only available for pages. */
   resource: PostResource;
-  /** Owner or Administrator. Only they may delete. */
+  /** Owner or Administrator. Only they may delete or change site navigation. */
   isAdmin: boolean;
   membersEnabled: boolean;
   /** Decided by the shared gift-link rules, which need the current user. */
   canCopyGiftLink: boolean;
+  navigationPlacements?: Array<'primary' | 'secondary' | null>;
+  selectionCount?: number;
+  navigationRunning?: boolean;
 }
 
 /** `canCopySelection` — the single-post actions. */
@@ -136,6 +141,39 @@ export function getPostContextMenuItems(inputs: PostContextMenuInputs): PostCont
 
   if (isSingle(posts)) {
     add('duplicate', 'Duplicate');
+  }
+
+  const placements = inputs.navigationPlacements;
+  if (
+    inputs.resource === 'pages' &&
+    isAdmin &&
+    placements &&
+    placements.length === posts.length &&
+    inputs.selectionCount === posts.length &&
+    posts.every((post) => post.status === 'published')
+  ) {
+    const extra = { disabled: inputs.navigationRunning };
+    if (placements.some((placement) => placement !== 'primary')) {
+      add(
+        'navigation-primary',
+        isSingle(posts) && placements[0] === 'secondary'
+          ? 'Move to primary navigation'
+          : 'Add to primary navigation',
+        extra,
+      );
+    }
+    if (placements.some((placement) => placement !== 'secondary')) {
+      add(
+        'navigation-secondary',
+        isSingle(posts) && placements[0] === 'primary'
+          ? 'Move to secondary navigation'
+          : 'Add to secondary navigation',
+        extra,
+      );
+    }
+    if (placements.some((placement) => placement !== null)) {
+      add('navigation-remove', 'Remove from navigation', extra);
+    }
   }
 
   // Set apart from the rest: it is the one item here that cannot be undone.

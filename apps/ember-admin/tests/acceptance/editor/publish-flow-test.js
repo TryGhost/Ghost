@@ -1,5 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
+import {Response} from 'miragejs';
 import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
@@ -870,6 +871,271 @@ describe('Acceptance: Publish flow', function () {
             expect(
                 find('[data-test-setting="email-recipients"] [data-test-setting-title]').textContent
             ).to.match(/\d+\s*subscriber/);
+        });
+    });
+
+    describe('pages', function () {
+        it('moves an existing slug link when publishing a custom-routed page', async function () {
+            this.server.db.configs.update(1, {pageRoutes: {home: '/'}});
+            this.server.db.settings.update({key: 'navigation'}, {value: JSON.stringify([{label: 'Welcome', url: '/home/'}])});
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Home', slug: 'home'});
+            expect(find('[data-test-setting="navigation"] [data-test-setting-title]')).to.contain.trimmed.text('Primary navigation');
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="secondary"] + label');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            const secondary = JSON.parse(this.server.db.settings.findBy({key: 'secondary_navigation'}).value);
+            expect(navigation).to.deep.equal([]);
+            expect(secondary).to.deep.equal([{label: 'Welcome', url: '/home/'}]);
+        });
+
+        it('publishes a custom-routed homepage into navigation using its route', async function () {
+            this.server.db.configs.update(1, {pageRoutes: {home: '/'}});
+            this.server.db.settings.update({key: 'navigation'}, {value: '[]'});
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Home', slug: 'home'});
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="primary"] + label');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation).to.deep.equal([{label: 'Home', url: '/'}]);
+        });
+
+        async function openPublishFlow(context, pageAttrs = {}) {
+            const attrs = {status: 'draft', ...pageAttrs};
+
+            // mirage factory skips slug; real drafts always have one by publish time
+            if (!attrs.slug && attrs.title) {
+                attrs.slug = attrs.title.toLowerCase().replace(/[^\w]+/g, '-').replace(/(^-|-$)/g, '');
+            }
+
+            const page = context.server.create('page', attrs);
+
+            await visit(`/editor/page/${page.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            return page;
+        }
+
+        it('offers a navigation placement option when publishing an unlinked page', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Partners'});
+
+            expect(find('[data-test-setting="navigation"]'), 'navigation setting').to.exist;
+            expect(
+                find('[data-test-setting="navigation"] [data-test-setting-title]'), 'navigation title'
+            ).to.contain.trimmed.text('Not in site navigation');
+
+            // default is "not in nav", so publish should leave settings alone
+            await click('[data-test-button="continue"]');
+            expect(find('[data-test-text="confirm-details"]').textContent).to.not.contain('navigation');
+            await click('[data-test-button="confirm-publish"]');
+
+            expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation.map(item => item.label)).to.not.include('Partners');
+        });
+
+        it('does not promise or apply navigation placement when scheduling', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Partners'});
+
+            // pick primary, then schedule: option disappears and confirm must not mention nav
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="primary"] + label');
+            await click('[data-test-setting="publish-at"] [data-test-setting-title]');
+            await click('[data-test-radio="schedule"]');
+
+            expect(find('[data-test-setting="navigation"]'), 'navigation setting while scheduled').to.not.exist;
+
+            await click('[data-test-button="continue"]');
+            expect(find('[data-test-text="confirm-details"]').textContent)
+                .to.not.contain('navigation');
+
+            await click('[data-test-button="confirm-publish"]');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation.map(item => item.label)).to.not.include('Partners');
+        });
+
+        it('adds the page to primary navigation when selected', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Partners'});
+
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="primary"] + label');
+
+            expect(
+                find('[data-test-setting="navigation"] [data-test-setting-title]'), 'navigation title'
+            ).to.contain.trimmed.text('Primary navigation');
+
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-text="confirm-details"]').textContent)
+                .to.contain('listed in your primary navigation');
+
+            await click('[data-test-button="confirm-publish"]');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation).to.deep.include({label: 'Partners', url: '/partners/'});
+        });
+
+        it('adds the page to secondary navigation when selected', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Partners'});
+
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="secondary"] + label');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            const secondaryNavigation = JSON.parse(this.server.db.settings.findBy({key: 'secondary_navigation'}).value);
+            expect(secondaryNavigation).to.deep.include({label: 'Partners', url: '/partners/'});
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation.map(item => item.label)).to.not.include('Partners');
+        });
+
+        it('pre-selects the current placement for an already-linked page', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            // /about is already in the default primary nav fixture
+            await openPublishFlow(this, {title: 'About'});
+
+            expect(
+                find('[data-test-setting="navigation"] [data-test-setting-title]'), 'navigation title'
+            ).to.contain.trimmed.text('Primary navigation');
+
+            // confirm still says where it will live even if we aren't changing it
+            await click('[data-test-button="continue"]');
+            expect(find('[data-test-text="confirm-details"]').textContent)
+                .to.contain('listed in your primary navigation');
+            await click('[data-test-button="confirm-publish"]');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation.map(item => item.label)).to.include('About');
+        });
+
+        it('can move an already-linked page to a different menu when republishing', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'About'});
+
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="secondary"] + label');
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-text="confirm-details"]').textContent)
+                .to.contain('listed in your secondary navigation');
+
+            await click('[data-test-button="confirm-publish"]');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation.map(item => item.label), 'primary nav').to.not.include('About');
+
+            const secondaryNavigation = JSON.parse(this.server.db.settings.findBy({key: 'secondary_navigation'}).value);
+            expect(secondaryNavigation.map(item => item.label), 'secondary nav').to.include('About');
+        });
+
+        it('discards an unsaved navigation change when the modal is reopened', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'Partners'});
+
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="primary"] + label');
+            expect(
+                find('[data-test-setting="navigation"] [data-test-setting-title]'), 'picked placement'
+            ).to.contain.trimmed.text('Primary navigation');
+
+            await click('[data-test-button="publish-flow-publish"]'); // header Close
+
+            await click('[data-test-button="publish-flow"]');
+            expect(
+                find('[data-test-setting="navigation"] [data-test-setting-title]'), 'reset placement'
+            ).to.contain.trimmed.text('Not in site navigation');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation.map(item => item.label)).to.not.include('Partners');
+        });
+
+        it('can remove an already-linked page from navigation when republishing', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            await openPublishFlow(this, {title: 'About'});
+
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="none"] + label');
+            await click('[data-test-button="continue"]');
+
+            // "None" means confirm says nothing about navigation, but we still remove it
+            expect(find('[data-test-text="confirm-details"]').textContent).to.not.contain('navigation');
+
+            await click('[data-test-button="confirm-publish"]');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation.map(item => item.label)).to.not.include('About');
+        });
+
+        it('does not show the navigation option to editors', async function () {
+            await loginAsRole('Editor', this.server);
+
+            await openPublishFlow(this, {title: 'Partners'});
+
+            expect(find('[data-test-setting="navigation"]'), 'navigation setting').to.not.exist;
+
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
+        });
+
+        it('does not show the navigation option for posts', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            const post = this.server.create('post', {status: 'draft', title: 'A post'});
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-test-setting="navigation"]'), 'navigation setting').to.not.exist;
+        });
+
+        it('publishes the page and notifies when the navigation save fails', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            const page = await openPublishFlow(this, {title: 'Partners'});
+
+            this.server.put('/settings/', function () {
+                return new Response(500, {}, {errors: [{
+                    message: 'Could not save settings',
+                    type: 'InternalServerError'
+                }]});
+            });
+
+            await click('[data-test-setting="navigation"] [data-test-setting-title]');
+            await click('[data-test-navigation-placement="primary"] + label');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            expect(page.status, 'page status after publish').to.equal('published');
+            expect(find('[data-test-text="notification-content"]'), 'failure notification')
+                .to.contain.text('navigation couldn\'t be updated');
+
+            const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+            expect(navigation.map(item => item.label)).to.not.include('Partners');
         });
     });
 });

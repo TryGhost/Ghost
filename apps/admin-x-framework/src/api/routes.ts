@@ -4,6 +4,7 @@ import { downloadFromEndpoint } from '../utils/helpers';
 export const useUploadRoutes = createMutation<unknown, File>({
   method: 'POST',
   path: () => '/settings/routes/yaml/',
+  invalidateQueries: { dataType: 'ConfigResponseType' },
   body: (file) => {
     const formData = new FormData();
     formData.append('routes', file);
