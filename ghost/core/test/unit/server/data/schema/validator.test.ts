@@ -83,18 +83,6 @@ describe('Validate Schema', function () {
       validateSchema('posts', post, { method: 'insert' });
       assert.equal(post.get('featured'), true);
     });
-
-    it('allows empty strings for columns with database defaults', function () {
-      const automation = models.Automation.forge({
-        id: ObjectId().toHexString(),
-        name: 'Welcome flow',
-        slug: 'welcome-flow',
-        description: '',
-        created_at: new Date(),
-      });
-
-      validateSchema('automations', automation, { method: 'insert' });
-    });
   });
 
   describe('webhooks.add', function () {

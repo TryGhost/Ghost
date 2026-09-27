@@ -81,7 +81,6 @@ describe('automation link redirects', function () {
       id: automationId,
       status: 'active',
       name: `Automation ${automationId}`,
-      description: '',
       slug: `automation-${automationId}`,
       created_at: currentTime,
       updated_at: currentTime,
