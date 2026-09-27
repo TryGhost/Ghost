@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {
@@ -97,6 +97,14 @@ const MailTransport: React.FC<{ keywords: string[] }> = ({ keywords }) => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+
+  const isSavedPassword = smtpPass === '••••••••';
+
+  useEffect(() => {
+    if (!isEditing) {
+      setShowPassword(false);
+    }
+  }, [isEditing]);
 
   const { mutateAsync: sendTestMail } = useSendTestMail();
 
@@ -259,25 +267,45 @@ const MailTransport: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                 <FieldLabel htmlFor="smtp-pass">Password</FieldLabel>
                 <div className="relative">
                   <Input
+                    className="pr-10"
                     id="smtp-pass"
-                    placeholder={smtpPass ? '••••••••' : ''}
-                    type={showPassword ? 'text' : 'password'}
+                    placeholder={isSavedPassword ? '••••••••' : 'Enter password'}
+                    type={showPassword && !isSavedPassword ? 'text' : 'password'}
                     value={smtpPass ?? ''}
                     onChange={(e) => updateSetting('mail_smtp_pass', e.target.value)}
+                    onFocus={(e) => {
+                      if (isSavedPassword) {
+                        e.target.select();
+                      }
+                    }}
                   />
-                  <Button
-                    className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    size="sm"
+                  <button
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-xs p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-hidden"
+                    title={
+                      isSavedPassword
+                        ? 'Saved password cannot be revealed for security'
+                        : showPassword
+                          ? 'Hide password'
+                          : 'Show password'
+                    }
                     type="button"
-                    variant="ghost"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => {
+                      if (isSavedPassword) {
+                        toast.info(
+                          'Saved passwords cannot be revealed for security reasons. Enter a new password to preview.',
+                        );
+                        return;
+                      }
+                      setShowPassword(!showPassword);
+                    }}
                   >
-                    {showPassword ? (
+                    {showPassword && !isSavedPassword ? (
                       <LucideIcon.EyeOff className="size-4" />
                     ) : (
                       <LucideIcon.Eye className="size-4" />
                     )}
-                  </Button>
+                  </button>
                 </div>
               </Field>
             </div>
