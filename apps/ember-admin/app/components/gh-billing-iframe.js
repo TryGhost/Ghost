@@ -65,6 +65,10 @@ export default class GhBillingIframe extends Component {
             this._handleTokenRequest();
         }
 
+        if (data?.request === 'theme') {
+            this._handleThemeRequest();
+        }
+
         if (data?.request === 'forceUpgradeInfo') {
             this._handleForceUpgradeRequest();
         }
@@ -80,6 +84,27 @@ export default class GhBillingIframe extends Component {
 
     _postMessageToBillingIframe(message) {
         this.billing.postMessageToBillingApp(message);
+    }
+
+    // The billing app renders in its own document and can't see this one's
+    // `dark` class, so its theme has to be sent over postMessage.
+    _billingAppTheme() {
+        return this.feature.nightShift ? 'dark' : 'light';
+    }
+
+    _handleThemeRequest() {
+        this._postMessageToBillingIframe(this._billingAppTheme());
+    }
+
+    // Read from the template so the broadcast re-runs when the theme changes;
+    // `@observes` isn't usable here because this is a Glimmer component.
+    get _themeBroadcast() {
+        return this._billingAppTheme();
+    }
+
+    @action
+    _broadcastThemeToBillingIframe() {
+        this._postMessageToBillingIframe(this._billingAppTheme());
     }
 
     _handleTokenRequest() {

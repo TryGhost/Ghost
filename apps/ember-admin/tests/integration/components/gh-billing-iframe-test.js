@@ -96,6 +96,59 @@ describe('Integration: Component: gh-billing-iframe', function () {
         });
     });
 
+    it('answers a theme request with the admin theme', async function () {
+        const feature = this.owner.lookup('service:feature');
+        const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
+
+        await render(hbs`<GhBillingIframe />`);
+
+        postMessage.resetHistory();
+
+        await postBillingMessage({request: 'theme'});
+
+        // bare 'dark' / 'light', matching what the child expects
+        expect(postMessage.lastCall.args[0]).to.equal(feature.nightShift ? 'dark' : 'light');
+    });
+
+    it('reports dark for a dark admin and light for a light one', async function () {
+        const feature = this.owner.lookup('service:feature');
+        const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
+
+        await render(hbs`<GhBillingIframe />`);
+
+        for (const [nightShift, expected] of [[true, 'dark'], [false, 'light']]) {
+            Object.defineProperty(feature, 'nightShift', {configurable: true, value: nightShift});
+            postMessage.resetHistory();
+
+            await postBillingMessage({request: 'theme'});
+
+            expect(postMessage.lastCall.args[0]).to.equal(expected);
+        }
+    });
+
+    it('announces a theme change without waiting to be asked', async function () {
+        const feature = this.owner.lookup('service:feature');
+
+        // Drive the real accessibility chain rather than overriding
+        // `nightShift`, which would bypass the reactive update that runs the
+        // template's did-update.
+        feature.set('_user', {accessibility: JSON.stringify({nightShift: 'system'})});
+        feature.set('_osPrefersDark', true);
+
+        const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
+
+        await render(hbs`<GhBillingIframe />`);
+        expect(feature.nightShift, 'precondition: system preference resolving dark').to.be.true;
+
+        postMessage.resetHistory();
+
+        // the OS switches to light while the billing app is open
+        feature.set('_osPrefersDark', false);
+        await settled();
+
+        expect(postMessage.lastCall.args[0]).to.equal('light');
+    });
+
     it('handles valid route messages without marking the billing app loaded', async function () {
         const markBillingAppLoaded = sinon.spy(billing, 'markBillingAppLoaded');
         const handleRouteChangeInIframe = sinon.spy(billing, 'handleRouteChangeInIframe');
