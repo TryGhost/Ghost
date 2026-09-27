@@ -660,7 +660,7 @@ describe('automations poll', function () {
   });
 
   for (const attempts of [1, 10]) {
-    it(`handles an unconfigured Mailgun provider on automation attempt ${attempts}`, async function () {
+    it(`completes an unconfigured Mailgun automation without retrying on attempt ${attempts}`, async function () {
       sinon.stub(MailgunClient.prototype, 'getInstance').returns(null);
       const adapter = new Mailgun();
       memberWelcomeEmailService.api.sendAutomationEmail.callsFake(async ({ member, email }) =>
@@ -675,24 +675,17 @@ describe('automations poll', function () {
       );
       const step = buildEmailStep({ step_attempts: attempts });
       automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-      const startedAt = Date.now();
+      settingsCacheGet.withArgs('email_track_opens').returns(true);
 
       await poll(options);
 
-      sinon.assert.notCalled(automationsApi.recordEmailSent);
-      sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+      sinon.assert.calledOnceWithMatch(automationsApi.recordEmailSent, { trackOpens: false });
+      assert.equal(automationsApi.recordEmailSent.firstCall.firstArg.mailgunMessageId, undefined);
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
       sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
-      if (attempts < 10) {
-        const retryAt = automationsApi.retryStep.firstCall.args[1];
-        assert.ok(Math.abs(retryAt.getTime() - (startedAt + RETRY_DELAY_MS)) < 2000);
-        sinon.assert.calledOnceWithExactly(automationsApi.retryStep, step, retryAt);
-        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, retryAt);
-        sinon.assert.notCalled(automationsApi.markStepTerminal);
-      } else {
-        sinon.assert.notCalled(automationsApi.retryStep);
-        sinon.assert.notCalled(options.enqueueAnotherPollAt);
-        sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
-      }
+      sinon.assert.notCalled(automationsApi.retryStep);
+      sinon.assert.notCalled(options.enqueueAnotherPollAt);
+      sinon.assert.notCalled(automationsApi.markStepTerminal);
     });
   }
 

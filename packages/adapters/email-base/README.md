@@ -12,12 +12,15 @@ Ghost loads one provider at boot and does not store provider ownership on sends.
 
 Providers must preserve recipient substitutions, including HTML escaping of
 untrusted replacements, List-Unsubscribe headers, requested tracking settings,
-and newsletter correlation metadata. Ghost owns link click tracking. A resolved
-send means provider acceptance, not delivery. Return a message ID for tracking;
+and newsletter correlation metadata. Ghost owns link click tracking. A configured
+send resolves on provider acceptance, not delivery. Return a message ID for tracking;
 if an accepted single send has no usable ID, return `id: null`. Automations keep
 their existing behavior: record acceptance without provider delivery/open tracking
 and continue. Gift delivery retains its existing requirement for a tracking ID.
-Newsletter batches may return null when events carry the newsletter `emailId`. An unconfigured provider or rejected send must throw.
+Newsletter batches may return null when events carry the newsletter `emailId`.
+Rejected sends must throw. Unconfigured providers also throw, except for the
+legacy Mailgun automation path: it returns `id: null` without sending, and Ghost
+records the recipient and completes the step without retrying.
 
 Polling calls and awaits `batchHandler` before advancing its cursor. It reports
 `safeCursor` when it stops before `end`. Webhook verification authenticates the

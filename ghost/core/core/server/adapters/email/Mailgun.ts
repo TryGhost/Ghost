@@ -58,8 +58,9 @@ export default class Mailgun extends EmailProviderBase {
       },
       [],
     );
-    // The legacy client returns null without attempting a send when unconfigured.
-    if (response === null) {
+    // Preserve the legacy automation no-op: an unconfigured client returns null
+    // and the step completes without a tracking ID. Gifts still require acceptance.
+    if (response === null && message.family !== 'automations') {
       throw new errors.EmailError({
         message: 'Mailgun is not configured',
         code: 'EMAIL_NOT_ACCEPTED',

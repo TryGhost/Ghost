@@ -15,10 +15,9 @@ provider is included.
   recipient record. As before, a missing tracking ID does not retry the accepted
   automation send: the recipient is recorded without provider open tracking.
   Suppressed members cannot receive automation sends.
-  An unconfigured Mailgun client now rejects instead of recording an unsent
-  message as accepted. Automation steps use their existing retry policy: up to
-  10 attempts, 10 minutes apart, then a terminal failure. This does not change
-  the older welcome-email flow's GhostMailer transport.
+  Unconfigured Mailgun retains the legacy automation no-op: no email is sent,
+  but the recipient is recorded without a provider ID and the step completes
+  without retrying. Actual send errors still use the existing retry policy.
 - Gift recipient delivery uses the same transport with tracking disabled. Gifts
   keep their existing transactional fallback when bulk email is unconfigured;
   that path returns no delivery-tracking ID. Configured bulk gift delivery retains
