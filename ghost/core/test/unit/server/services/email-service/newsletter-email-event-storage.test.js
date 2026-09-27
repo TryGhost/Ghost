@@ -910,7 +910,12 @@ describe('Email Event Storage', function () {
             await handler.handleComplained(event);
           }
           sinon.assert.calledOnce(add);
-          sinon.assert.calledOnce(suppress);
+          sinon.assert.calledOnceWithExactly(suppress, event, { eventSource });
+          if (eventSource === 'poll') {
+            sinon.assert.callOrder(add, suppress);
+          } else {
+            sinon.assert.callOrder(suppress, add);
+          }
           assert.equal(logError.callCount, eventSource === 'poll' && !duplicate ? 1 : 0);
           assert.equal(cleanup.callCount, eventSource === 'webhook' && duplicate ? 1 : 0);
         });
@@ -945,8 +950,13 @@ describe('Email Event Storage', function () {
             await process();
             sinon.assert.calledOnce(logError);
           }
-          sinon.assert.calledOnce(suppress);
-          sinon.assert.notCalled(cleanup);
+          sinon.assert.calledOnceWithExactly(suppress, event, { eventSource });
+          if (method === 'handleComplaint' && eventSource === 'poll') {
+            sinon.assert.calledOnceWithExactly(cleanup, event.email, { requireSuccess: false });
+            sinon.assert.callOrder(add, cleanup, suppress);
+          } else {
+            sinon.assert.notCalled(cleanup);
+          }
           assert.equal(
             add.callCount,
             method === 'handleComplaint' && eventSource === 'poll' ? 1 : 0,
@@ -954,6 +964,30 @@ describe('Email Event Storage', function () {
           assert.equal(saveFailure.callCount, method === 'handleBounce' ? 1 : 0);
         });
       }
+
+      it('preserves complaint cleanup failure handling and suppression order', async () => {
+        const failure = new Error('cleanup failed');
+        const suppress = sinon.stub().resolves();
+        const add = sinon.stub().resolves();
+        const cleanup = sinon.stub().rejects(failure);
+        const handler = createEventStorage({
+          eventSource,
+          models: { EmailSpamComplaintEvent: { add } },
+          emailSuppressionList: { handleComplaint: suppress, removeComplaint: cleanup },
+        });
+        const event = { email: 'reader@example.com', timestamp: new Date() };
+        if (eventSource === 'webhook') {
+          await assert.rejects(handler.handleComplained(event), (err) => err === failure);
+          sinon.assert.callOrder(suppress, add, cleanup);
+          sinon.assert.notCalled(logError);
+        } else {
+          await handler.handleComplained(event);
+          sinon.assert.callOrder(add, cleanup, suppress);
+          sinon.assert.calledOnceWithExactly(logError, failure);
+        }
+        sinon.assert.calledOnceWithExactly(suppress, event, { eventSource });
+        sinon.assert.calledOnce(cleanup);
+      });
     });
   }
 });

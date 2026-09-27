@@ -236,7 +236,10 @@ class NewsletterEmailEventStorage {
   }
 
   async handleComplained(event) {
-    const suppressed = await this.#handleSuppression('handleComplaint', event);
+    if (this.#eventSource === 'webhook') {
+      // Webhooks must finish local safety writes before lifting provider protection.
+      await this.#handleSuppression('handleComplaint', event);
+    }
     try {
       try {
         await this.#models.EmailSpamComplaintEvent.add({
@@ -254,12 +257,9 @@ class NewsletterEmailEventStorage {
           throw err;
         }
       }
-      // A failed local safety write must never lift provider protection.
-      if (suppressed) {
-        await this.#emailSuppressionList.removeComplaint(event.email, {
-          requireSuccess: this.#eventSource === 'webhook',
-        });
-      }
+      await this.#emailSuppressionList.removeComplaint(event.email, {
+        requireSuccess: this.#eventSource === 'webhook',
+      });
     } catch (err) {
       if (this.#eventSource === 'webhook') {
         throw err;
@@ -268,19 +268,22 @@ class NewsletterEmailEventStorage {
         logging.error(err);
       }
     }
+    if (this.#eventSource !== 'webhook') {
+      // Polling previously dispatched suppression after complaint storage/cleanup,
+      // including when either of those operations failed.
+      await this.#handleSuppression('handleComplaint', event);
+    }
   }
 
   async #handleSuppression(method, event) {
     try {
-      await this.#emailSuppressionList[method](event);
-      return true;
+      await this.#emailSuppressionList[method](event, { eventSource: this.#eventSource });
     } catch (err) {
       if (this.#eventSource === 'webhook') {
         throw err;
       }
       // The former polling suppression listener logged errors independently of analytics.
       logging.error(err);
-      return false;
     }
   }
 

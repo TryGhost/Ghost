@@ -124,21 +124,25 @@ class MailgunEmailSuppressionList {
     }
   }
 
-  async handleBounce(event) {
+  async handleBounce(event, options) {
     // Normalized provider events classify invalid mailboxes explicitly. Keep
     // the legacy classification for callers that do not yet pass this field.
     const suppress = event.suppress ?? [605, 607].includes(event.error?.code);
     if (suppress) {
-      await this.suppressEmail(event, 'bounce');
+      await this.suppressEmail(event, 'bounce', options);
     }
   }
 
-  async handleComplaint(event) {
-    await this.suppressEmail(event, 'spam');
+  async handleComplaint(event, options) {
+    await this.suppressEmail(event, 'spam', options);
   }
 
-  async suppressEmail(event, reason) {
+  async suppressEmail(event, reason, { eventSource = 'webhook' } = {}) {
     assert(this.membersRepository, 'Email suppression must be initialized at boot');
+    if (eventSource === 'poll') {
+      await this.#suppressPolledEmail(event, reason);
+      return;
+    }
     try {
       await this.Suppression.transaction(async (transacting) => {
         try {
@@ -180,6 +184,35 @@ class MailgunEmailSuppressionList {
       });
     }
     // Notifications follow the completed safety writes; they do not own them.
+    this.#dispatchSuppressedEvent(event, reason);
+  }
+
+  async #suppressPolledEmail(event, reason) {
+    // Preserve the former polling listeners' separate writes: a member update
+    // failure must not roll back a saved suppression or its notification.
+    try {
+      await this.Suppression.add({
+        email: event.email,
+        email_id: event.emailId,
+        reason,
+        created_at: event.timestamp,
+      });
+    } catch (err) {
+      if (!['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT'].includes(err.code)) {
+        throw err;
+      }
+      logging.info(
+        `Re-dispatching EmailSuppressedEvent for existing suppression (${reason}): ${event.email}`,
+      );
+    }
+    this.#dispatchSuppressedEvent(event, reason);
+    const member = await this.membersRepository.get({ email: event.email });
+    if (member) {
+      await this.membersRepository.update({ email_disabled: true }, { id: member.id });
+    }
+  }
+
+  #dispatchSuppressedEvent(event, reason) {
     DomainEvents.dispatch(
       EmailSuppressedEvent.create(
         {

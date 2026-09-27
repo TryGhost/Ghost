@@ -145,27 +145,31 @@ There is no event inbox, event-ID ledger, replay worker or schema migration.
 
 ## Suppression completion
 
-Newsletter safety handlers and automation/gift webhook safety handlers await
-the existing suppression service directly. That service uses the
-existing Suppression model and members repository to save the suppression and disable the matching address
-in one transaction. It repairs member state when a suppression already exists.
-A failure rolls back. Webhooks propagate it and return HTTP 503; newsletter polling
-logs it, matching the former suppression listener's error handling.
-An old address is resolved separately
-from the member's replacement address, which is not disabled.
+Newsletter safety handlers and automation/gift webhook safety handlers call the
+existing suppression service directly, using the existing Suppression model and
+members repository. The service resolves the original email address separately
+from any replacement address and repairs member state when a suppression already
+exists. Its former member update subscriber is removed.
 
-`EmailSuppressedEvent` is emitted after those writes finish. Its former member
-update subscriber is removed, so critical work is not left to an asynchronous
-listener. Complaint cleanup runs after local suppression, including on webhook replay;
-cleanup failure propagates for webhooks. Newsletter and automation unsubscribe
-lookup and preference write failures also propagate for webhooks. Newsletter
-unsubscribe cleanup runs only after local success; automation unsubscribes
-retain provider protection regardless of local success.
-Polling logs remote cleanup failures and continues after local state is saved;
-there is no separate cleanup retry worker. Logged local safety failures leave provider
-protection intact but can leave Ghost's local state incomplete; the logged event requires
-operator reconciliation. There is no durable retry queue, and providers without
-remote suppression lists cannot rely on that protection. Providers classify
+Webhooks save the suppression and disable the matching address in one transaction.
+A failure rolls back and returns HTTP 503. `EmailSuppressedEvent` is emitted after
+both writes finish. Complaint cleanup runs after successful local suppression,
+including on webhook replay; cleanup failure propagates for redelivery.
+
+Newsletter polling preserves the former listeners' separate writes: the suppression
+is saved and `EmailSuppressedEvent` is emitted before attempting to disable the
+member. A member lookup or update failure is logged without rolling back the
+suppression. Complaint storage and provider cleanup happen before suppression;
+cleanup does not depend on either suppression write succeeding. A failed or
+duplicate complaint insert skips cleanup but still attempts suppression.
+
+Newsletter and automation unsubscribe lookup and preference write failures
+propagate for webhooks. Newsletter unsubscribe cleanup runs only after local
+success; automation unsubscribes retain provider protection regardless of local
+success. Polling logs remote cleanup failures and continues. Local polling failures
+can leave incomplete state and require operator reconciliation; complaint cleanup
+may already have removed provider protection. There is no durable retry queue or
+separate cleanup worker. Providers classify
 invalid-mailbox failures using `suppress`; ordinary permanent rejections do not
 automatically suppress.
 
