@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
-import previewRendering from '../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/preview-rendering';
+import * as previewRendering from '../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/preview-rendering';
 
 describe('Unit: endpoints/utils/serializers/output/utils/preview-rendering', function () {
   describe('forPost', function () {
