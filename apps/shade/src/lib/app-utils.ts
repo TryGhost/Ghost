@@ -1,5 +1,5 @@
 import moment, {Moment} from 'moment-timezone';
-import isEmail from 'validator/es/lib/isEmail';
+import isEmail from 'validator/es/lib/isEmail.js';
 
 import {formatDisplayDate} from './ds-utils';
 
