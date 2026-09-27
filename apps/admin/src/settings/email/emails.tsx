@@ -231,7 +231,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
 const Emails: React.FC = () => {
   const { config } = useGlobalData();
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
-  const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
+  const hasMailgun = !config.mailgunIsConfigured;
   const visibleSearchKeywords = [
     searchKeywords.enableNewsletters,
     searchKeywords.mailTransport,

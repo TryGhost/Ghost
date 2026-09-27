@@ -115,56 +115,64 @@ function createMailError({ message, err, ignoreDefaultMessage } = { message: '' 
 }
 
 function getEffectiveMailConfig() {
-    const validDbTransports = ['smtp', 'mailgun'];
-    const dbTransport = settingsCache.get('mail_transport');
-    if (dbTransport && typeof dbTransport === 'string' && validDbTransports.includes(dbTransport.toLowerCase())) {
-        const transport = dbTransport.toLowerCase();
-        let options = {};
-        if (transport === 'smtp') {
-            const host = settingsCache.get('mail_smtp_host');
-            if (host) {
-                options = {
-                    host: host,
-                    port: parseInt(settingsCache.get('mail_smtp_port'), 10) || 587,
-                    secure: settingsCache.get('mail_smtp_secure') === true || settingsCache.get('mail_smtp_secure') === 'true',
-                    auth: {
-                        user: settingsCache.get('mail_smtp_user'),
-                        pass: settingsCache.get('mail_smtp_pass')
-                    }
-                };
-                return {
-                    transport,
-                    options
-                };
-            }
-        } else if (transport === 'mailgun') {
-            const bulkEmailMailgun = config.get('bulkEmail')?.mailgun;
-            const domain = settingsCache.get('mailgun_domain') || bulkEmailMailgun?.domain;
-            const apiKey = settingsCache.get('mailgun_api_key') || bulkEmailMailgun?.apiKey;
-            const baseUrl = settingsCache.get('mailgun_base_url') || bulkEmailMailgun?.baseUrl;
-            options = {
-                auth: {
-                    api_key: apiKey,
-                    domain: domain
-                }
-            };
-            if (baseUrl && typeof baseUrl === 'string' && baseUrl.includes('eu')) {
-                options.host = 'api.eu.mailgun.net';
-            }
-            return {
-                transport,
-                options
-            };
+  const validDbTransports = ['smtp', 'mailgun'];
+  const dbTransport = settingsCache.get('mail_transport');
+  if (
+    dbTransport &&
+    typeof dbTransport === 'string' &&
+    validDbTransports.includes(dbTransport.toLowerCase())
+  ) {
+    const transport = dbTransport.toLowerCase();
+    let options = {};
+    if (transport === 'smtp') {
+      const host = settingsCache.get('mail_smtp_host');
+      if (host) {
+        options = {
+          host: host,
+          port: parseInt(settingsCache.get('mail_smtp_port'), 10) || 587,
+          secure:
+            settingsCache.get('mail_smtp_secure') === true ||
+            settingsCache.get('mail_smtp_secure') === 'true',
+          auth: {
+            user: settingsCache.get('mail_smtp_user'),
+            pass: settingsCache.get('mail_smtp_pass'),
+          },
+        };
+        return {
+          transport,
+          options,
+        };
+      }
+    } else if (transport === 'mailgun') {
+      const bulkEmailMailgun = config.get('bulkEmail')?.mailgun;
+      const domain = settingsCache.get('mailgun_domain') || bulkEmailMailgun?.domain;
+      const apiKey = settingsCache.get('mailgun_api_key') || bulkEmailMailgun?.apiKey;
+      const baseUrl = settingsCache.get('mailgun_base_url') || bulkEmailMailgun?.baseUrl;
+      if (domain && apiKey) {
+        options = {
+          auth: {
+            api_key: apiKey,
+            domain: domain,
+          },
+        };
+        if (baseUrl && typeof baseUrl === 'string' && baseUrl.includes('eu')) {
+          options.host = 'api.eu.mailgun.net';
         }
+        return {
+          transport,
+          options,
+        };
+      }
     }
+  }
 
-    let transport = config.get('mail') && config.get('mail').transport || 'direct';
-    transport = transport.toLowerCase();
-    const options = config.get('mail') && _.clone(config.get('mail').options) || {};
-    return {
-        transport,
-        options
-    };
+  let transport = (config.get('mail') && config.get('mail').transport) || 'direct';
+  transport = transport.toLowerCase();
+  const options = (config.get('mail') && _.clone(config.get('mail').options)) || {};
+  return {
+    transport,
+    options,
+  };
 }
 
 module.exports = class GhostMailer {
@@ -177,16 +185,19 @@ module.exports = class GhostMailer {
     const { transport, options } = getEffectiveMailConfig();
     const configKey = JSON.stringify({ transport, options });
 
-    if (this.currentConfigKey === configKey && this.transport) {
-      return;
+    if (this.currentConfigKey !== configKey || !this.transport) {
+      this.currentConfigKey = configKey;
+      this.state = {
+        usingDirect: transport === 'direct',
+        usingMailgun: transport === 'mailgun',
+      };
+      this.transport = nodemailer(transport, options);
     }
 
-    this.currentConfigKey = configKey;
-    this.state = {
-      usingDirect: transport === 'direct',
-      usingMailgun: transport === 'mailgun',
+    return {
+      transport: this.transport,
+      state: this.state,
     };
-    this.transport = nodemailer(transport, options);
   }
 
   /**
@@ -215,10 +226,10 @@ module.exports = class GhostMailer {
       });
     }
 
-    this.refreshTransport();
+    const { transport, state } = this.refreshTransport();
 
     const messageToSend = createMessage(message);
-    if (this.state.usingMailgun) {
+    if (state.usingMailgun) {
       const tags = this.getTags(message.tags);
       if (tags.length > 0) {
         messageToSend['o:tag'] = tags;
@@ -243,20 +254,20 @@ module.exports = class GhostMailer {
       }
     }
 
-    const response = await this.sendMail(messageToSend);
+    const response = await this.sendMail(messageToSend, transport, state);
 
-    if (this.state.usingDirect) {
+    if (state.usingDirect) {
       return this.handleDirectTransportResponse(response);
     }
 
     return response;
   }
 
-  async sendMail(message) {
+  async sendMail(message, transportInstance = this.transport, transportState = this.state) {
     const startTime = Date.now();
     try {
-      const response = await this.transport.sendMail(message);
-      if (this.state.usingMailgun) {
+      const response = await transportInstance.sendMail(message);
+      if (transportState.usingMailgun) {
         metrics.metric('mailgun-send-transactional-mail', {
           value: Date.now() - startTime,
           statusCode: 200,
@@ -265,7 +276,7 @@ module.exports = class GhostMailer {
 
       return response;
     } catch (err) {
-      if (this.state.usingMailgun) {
+      if (transportState.usingMailgun) {
         metrics.metric('mailgun-send-transactional-mail', {
           value: Date.now() - startTime,
           statusCode: err.status,

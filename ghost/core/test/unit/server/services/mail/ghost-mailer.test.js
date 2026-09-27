@@ -136,6 +136,7 @@ describe('Mail: Ghostmailer', function () {
   describe('Direct', function () {
     beforeEach(function () {
       configUtils.set({ mail: {} });
+      sinon.stub(console, 'warn');
 
       mailer = new mail.GhostMailer();
     });
@@ -496,6 +497,73 @@ describe('Mail: Ghostmailer', function () {
       assert.deepEqual(mailer.transport.transporter.options.auth, {
         api_key: 'key-123456',
         domain: 'mg.example.com',
+      });
+    });
+
+    it('should fallback to environment config when mail_transport is mailgun but domain or apiKey is missing', function () {
+      configUtils.set({
+        mail: {
+          transport: 'direct',
+        },
+      });
+      sandbox.stub(settingsCache, 'get').callsFake((key) => {
+        if (key === 'mail_transport') {
+          return 'mailgun';
+        }
+        if (key === 'mailgun_domain') {
+          return 'mg.example.com';
+        }
+        // mailgun_api_key is intentionally null/missing
+        return null;
+      });
+
+      mailer = new mail.GhostMailer();
+      assert.equal(mailer.state.usingDirect, true);
+      assert.equal(mailer.state.usingMailgun, false);
+    });
+
+    it('should fallback to environment config when mail_transport is smtp but host is missing', function () {
+      configUtils.set({
+        mail: {
+          transport: 'direct',
+        },
+      });
+      sandbox.stub(settingsCache, 'get').callsFake((key) => {
+        if (key === 'mail_transport') {
+          return 'smtp';
+        }
+        // mail_smtp_host is intentionally null/missing
+        return null;
+      });
+
+      mailer = new mail.GhostMailer();
+      assert.equal(mailer.state.usingDirect, true);
+      assert.equal(mailer.state.usingMailgun, false);
+    });
+
+    it('should pass per-send transport and state snapshot into sendMail', async function () {
+      configUtils.set({
+        mail: {
+          transport: 'direct',
+        },
+      });
+
+      mailer = new mail.GhostMailer();
+      const sendMailStub = sandbox.stub(mailer, 'sendMail').resolves({ direct: true });
+
+      await mailer.send({
+        subject: 'Snapshot test',
+        html: '<p>Snapshot</p>',
+        to: 'test@example.com',
+      });
+
+      sinon.assert.calledOnce(sendMailStub);
+      const passedTransport = sendMailStub.firstCall.args[1];
+      const passedState = sendMailStub.firstCall.args[2];
+      assert.ok(passedTransport);
+      assert.deepEqual(passedState, {
+        usingDirect: true,
+        usingMailgun: false,
       });
     });
 

@@ -12,7 +12,7 @@ import { searchKeywords } from './search-keywords';
 const EmailSettings: React.FC = () => {
   const { config } = useGlobalData();
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
-  const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
+  const hasMailgun = !config.mailgunIsConfigured;
   const visibleSearchKeywords = [
     searchKeywords.enableNewsletters,
     searchKeywords.mailTransport,
@@ -29,9 +29,9 @@ const EmailSettings: React.FC = () => {
         <>
           <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
           <Newsletters keywords={searchKeywords.newsletters} />
-          {hasMailgun && <MailGun keywords={searchKeywords.mailgun} />}
         </>
       )}
+      {hasMailgun && <MailGun keywords={searchKeywords.mailgun} />}
       <MailTransport keywords={searchKeywords.mailTransport} />
     </SearchableSection>
   );
