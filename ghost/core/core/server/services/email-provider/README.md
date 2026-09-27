@@ -156,7 +156,12 @@ A failure rolls back and returns HTTP 503. `EmailSuppressedEvent` is emitted aft
 both writes finish. Complaint cleanup runs after successful local suppression,
 including on webhook replay; cleanup failure propagates for redelivery.
 
-Newsletter polling preserves the former listeners' separate writes: the suppression
+Newsletter polling starts suppression in the background and logs failures without
+waiting for completion. The former 70 ms pause after each complaint or permanent
+bounce is retained to limit database connection pressure; it does not guarantee
+that background writes have completed. Webhooks continue to await safety writes.
+
+Polling preserves the former listeners' separate writes: the suppression
 is saved and `EmailSuppressedEvent` is emitted before attempting to disable the
 member. A member lookup or update failure is logged without rolling back the
 suppression. Complaint storage and provider cleanup happen before suppression;

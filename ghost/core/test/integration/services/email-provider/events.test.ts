@@ -133,6 +133,7 @@ describe('provider email events', () => {
         });
       }
       const emailEventProcessor = new EmailEventProcessor({
+        eventSource: 'webhook',
         domainEvents,
         db: { knex },
         eventStorage: new NewsletterEmailEventStorage({

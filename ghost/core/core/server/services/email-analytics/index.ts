@@ -129,6 +129,7 @@ export const init = ({
       config,
       eventSource: source.type,
       emailEventProcessor: new EmailEventProcessor({
+        eventSource: source.type,
         domainEvents,
         db,
         eventStorage: new NewsletterEmailEventStorage({

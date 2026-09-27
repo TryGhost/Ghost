@@ -11,6 +11,12 @@ const { EmailTemporaryBouncedEvent } = require('./events/email-temporary-bounced
 const { EmailUnsubscribedEvent } = require('./events/email-unsubscribed-event');
 const { SpamComplaintEvent } = require('./events/spam-complaint-event');
 
+async function waitForEvent() {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 70);
+  });
+}
+
 /**
  * @typedef EmailIdentification
  * @property {string} email
@@ -43,11 +49,13 @@ class EmailEventProcessor {
   #db;
   #eventStorage;
   #prometheusClient;
-  constructor({ domainEvents, db, eventStorage, prometheusClient }) {
+  #eventSource;
+  constructor({ domainEvents, db, eventStorage, prometheusClient, eventSource = 'poll' }) {
     this.#domainEvents = domainEvents;
     this.#db = db;
     this.#eventStorage = eventStorage;
     this.#prometheusClient = prometheusClient;
+    this.#eventSource = eventSource;
     // Avoid having to query email_batch by mailgun_message_id for every event
     this.providerIdEmailIdMap = Object.create(null);
 
@@ -157,6 +165,9 @@ class EmailEventProcessor {
       await this.#eventStorage.handlePermanentFailed(event);
 
       this.#domainEvents.dispatch(event);
+      if (this.#eventSource === 'poll') {
+        await waitForEvent(); // Avoids knex connection pool exhaustion from background suppression
+      }
     }
     return recipient;
   }
@@ -199,6 +210,9 @@ class EmailEventProcessor {
       await this.#eventStorage.handleComplained(event);
 
       this.#domainEvents.dispatch(event);
+      if (this.#eventSource === 'poll') {
+        await waitForEvent(); // Avoids knex connection pool exhaustion from background suppression
+      }
     }
     return recipient;
   }

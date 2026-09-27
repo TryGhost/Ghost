@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict');
 const EmailEventProcessor = require('../../../../../core/server/services/email-service/email-event-processor');
+const NewsletterEmailEventStorage = require('../../../../../core/server/services/email-service/newsletter-email-event-storage');
+const logging = require('@tryghost/logging');
 const { createDb, createPrometheusClient } = require('./utils');
 const sinon = require('sinon');
 
@@ -233,5 +235,89 @@ describe('Email Event Processor', function () {
       });
       assert.doesNotThrow(() => eventProcessor.recordEventProcessed('delivered'));
     });
+  });
+
+  describe('background polling suppression', function () {
+    for (const eventSource of ['poll', 'webhook']) {
+      for (const [method, suppressionMethod] of [
+        ['handleComplained', 'handleComplaint'],
+        ['handlePermanentFailed', 'handleBounce'],
+      ]) {
+        it(`${eventSource} ${method} preserves completion timing and handles late suppression failures`, async function () {
+          const clock = sinon.useFakeTimers();
+          const log = sinon.stub(logging, 'error');
+          const failure = new Error('delayed suppression write failure');
+          let failSuppression;
+          const suppression = new Promise((resolve, reject) => {
+            failSuppression = reject;
+          });
+          const suppress = sinon.stub().returns(suppression);
+          const cleanup = sinon.stub().resolves();
+          const storage = new NewsletterEmailEventStorage({
+            eventSource,
+            config: { get: () => true },
+            models: { EmailSpamComplaintEvent: { add: sinon.stub().resolves() } },
+            emailSuppressionList: {
+              [suppressionMethod]: suppress,
+              removeComplaint: cleanup,
+            },
+          });
+          sinon.stub(storage, 'saveFailure').resolves();
+          const processor = new EmailEventProcessor({
+            eventSource,
+            db,
+            domainEvents,
+            eventStorage: storage,
+          });
+          const timestamp = new Date();
+          let outcome;
+          const complete = processor[method](
+            { emailId: 'email-id', email: 'reader@example.com' },
+            method === 'handleComplained' ? timestamp : { timestamp, suppress: true },
+          ).then(
+            () => {
+              outcome = 'processed';
+            },
+            (error) => {
+              outcome = error;
+            },
+          );
+
+          try {
+            await clock.tickAsync(69);
+            sinon.assert.calledOnce(suppress);
+            assert.equal(outcome, undefined);
+            await clock.tickAsync(1);
+            if (eventSource === 'poll') {
+              // Polling continues after the old pacing delay, even with a write pending.
+              assert.equal(outcome, 'processed');
+              sinon.assert.calledOnce(domainEvents.dispatch);
+              if (method === 'handleComplained') {
+                sinon.assert.calledOnce(cleanup);
+                sinon.assert.callOrder(cleanup, suppress);
+              }
+            } else {
+              assert.equal(outcome, undefined);
+              sinon.assert.notCalled(domainEvents.dispatch);
+              sinon.assert.notCalled(cleanup);
+            }
+          } finally {
+            // Settle the background work before restoring stubs or timers.
+            failSuppression(failure);
+            await clock.tickAsync(70);
+            await complete;
+          }
+
+          if (eventSource === 'poll') {
+            assert.equal(outcome, 'processed');
+            sinon.assert.calledOnceWithExactly(log, failure);
+          } else {
+            assert.equal(outcome, failure);
+            sinon.assert.notCalled(log);
+          }
+          sinon.assert.calledOnce(suppress);
+        });
+      }
+    }
   });
 });

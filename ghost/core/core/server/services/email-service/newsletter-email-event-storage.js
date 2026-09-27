@@ -127,7 +127,10 @@ class NewsletterEmailEventStorage {
         });
     }
     await this.saveFailure('permanent', event);
-    await this.#handleSuppression('handleBounce', event);
+    const suppression = this.#handleSuppression('handleBounce', event);
+    if (this.#eventSource === 'webhook') {
+      await suppression;
+    }
   }
 
   async handleTemporaryFailed(event) {
@@ -271,7 +274,7 @@ class NewsletterEmailEventStorage {
     if (this.#eventSource !== 'webhook') {
       // Polling previously dispatched suppression after complaint storage/cleanup,
       // including when either of those operations failed.
-      await this.#handleSuppression('handleComplaint', event);
+      void this.#handleSuppression('handleComplaint', event);
     }
   }
 
