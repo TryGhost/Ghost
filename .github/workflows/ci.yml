@@ -222,6 +222,9 @@ jobs:
             # it — the break lands on main and surfaces in someone else's PR.
             tb-cli:
               - 'docker/tb-cli/**'
+            tinybird-slim:
+              - 'docker/tinybird-local-slim/**'
+              - 'compose.dev.analytics.yaml'
 
       - name: Define Node test matrix
         # Node lines the unit / legacy / acceptance suites must keep passing on.
@@ -310,6 +313,7 @@ jobs:
       changed_docs: ${{ steps.changed.outputs.docs }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
+      changed_tinybird_slim: ${{ steps.changed.outputs.tinybird-slim }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
       # filter above). A test-only / docs-only change keeps this false.
@@ -2013,10 +2017,12 @@ jobs:
       #
       # Its GHCR package is internal (the upstream licence only permits
       # distribution within our own organization), so it is unreadable from a
-      # cross-repo PR's scoped token — those runs stay on the upstream image.
+      # cross-repo PR's scoped token — those runs stay on the upstream image
+      # unless they change the slim image and build it locally below.
       # infra-up.sh falls back on a failed pull regardless, so an unexpected
       # permission gap degrades rather than breaks.
-      GHOST_E2E_TINYBIRD_SLIM: ${{ github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+      GHOST_E2E_TINYBIRD_SLIM: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' || (github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) }}
+      GHOST_E2E_TINYBIRD_SLIM_IMAGE: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' && 'tinybird-local-slim:e2e' || 'ghcr.io/tryghost/tinybird-local-slim:latest' }}
     strategy:
       fail-fast: true
       matrix:
@@ -2090,7 +2096,7 @@ jobs:
 
       - name: Log in to GitHub Container Registry
         # Needed to read the internal tinybird-local-slim package.
-        if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true'
+        if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true' && needs.job_setup.outputs.changed_tinybird_slim != 'true'
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         continue-on-error: true
         with:
@@ -2124,6 +2130,20 @@ jobs:
             echo "GHCR image not available, building from source"
           fi
           docker build --tag "$COMPOSE_IMAGE" --file docker/tb-cli/Dockerfile .
+          docker builder prune --all --force
+
+      - name: Build changed Tinybird slim image
+        if: matrix.analytics == 'true' && needs.job_setup.outputs.changed_tinybird_slim == 'true'
+        # Build before loading the Ghost image or installing dependencies: the
+        # upstream layers need several GB that can be reclaimed after flattening.
+        # This image stays on the runner; only the main publish workflow pushes it.
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          upstream_ref=$(grep -oE 'tinybirdco/tinybird-local:[^ ]+' compose.dev.analytics.yaml)
+          docker build --platform linux/amd64 \
+            --build-arg "TINYBIRD_LOCAL_REF=$upstream_ref" \
+            --file docker/tinybird-local-slim/Dockerfile \
+            --tag "$GHOST_E2E_TINYBIRD_SLIM_IMAGE" .
           docker builder prune --all --force
 
       - name: Load Image
