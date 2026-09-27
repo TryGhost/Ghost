@@ -7,6 +7,7 @@ import {
   zeroMilliseconds,
   type LeaveDecision,
   type PersistedIdentity,
+  type PendingSave,
   type PostStatus,
   type PrepareOutcome,
   type PublishOptions,
@@ -111,6 +112,7 @@ export interface EditorSessionOptions {
 /** The state React renders, published together after a session change. */
 export interface EditorSessionView {
   readonly state: SaveEngineState;
+  readonly pendingSave: PendingSave | null;
   readonly isDirty: boolean;
   /** The title the engine holds, which is DEFAULT_TITLE while the input is blank. */
   readonly title: string;
@@ -147,7 +149,7 @@ export interface EditorSession {
   editPublishedAt: (publishedAt: string) => void;
   /** The publish time the writer is looking at, staged edit included. */
   getPublishedAt: () => string | null;
-  /** The one save policy gate for settings fields; see the README. */
+  /** Requests a field save; the engine owns eligibility and pending work. */
   commitField: () => void;
   /** The slug the machine holds, which a title commit moves without a field patch. */
   getSlug: () => string;
@@ -159,7 +161,6 @@ export interface EditorSession {
   setBaseline: (lexical: LexicalInput) => void;
   baselineFailed: () => void;
   commitTitle: (title: string) => void;
-  dispatchField: () => void;
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
   dispatchPublish: (options?: PublishOptions) => Promise<SaveCompletion>;
@@ -277,6 +278,11 @@ export function createEditorSession({
       return;
     }
     const state = engine.getState();
+    const pending = engine.getPendingSave();
+    // getPendingSave() allocates per call; typing more body text must not
+    // republish an otherwise unchanged React snapshot.
+    const pendingSave =
+      view?.pendingSave?.blockedBy === pending?.blockedBy ? (view?.pendingSave ?? null) : pending;
     const isDirty = getSnapshot().isDirty;
     const currentSlug = machine.getState().slug;
     const currentPublishedAt = livePublishedAt();
@@ -296,6 +302,7 @@ export function createEditorSession({
     if (
       view &&
       view.state === state &&
+      view.pendingSave === pendingSave &&
       view.isDirty === isDirty &&
       view.title === live.title &&
       view.slug === currentSlug &&
@@ -304,7 +311,15 @@ export function createEditorSession({
     ) {
       return;
     }
-    view = { state, isDirty, title: live.title, slug: currentSlug, settings, publishTime };
+    view = {
+      state,
+      pendingSave,
+      isDirty,
+      title: live.title,
+      slug: currentSlug,
+      settings,
+      publishTime,
+    };
     for (const listener of changeListeners) {
       try {
         listener();
@@ -377,11 +392,6 @@ export function createEditorSession({
     }
     live = { ...live, ...patch };
     tracker.setLive(identity.id, patch);
-  }
-
-  /** The writer removed every author the post had; Ember's validator refuses it too. */
-  function authorsEmptied(): boolean {
-    return live.authors.length === 0 && tracker.isFieldDirty('authors');
   }
 
   function getSnapshot(): EditorSaveSnapshot {
@@ -609,18 +619,8 @@ export function createEditorSession({
   // Seed the external-store snapshot before the session is handed to React.
   notifyChanged();
 
-  // The one place the sidebar's save policy lives. A draft persists a settings
-  // field the way the body does; every other status stages it until Update.
+  // Every field commit enters the engine; it owns eligibility and pending work.
   function commitField(): void {
-    // Invalid settings stay staged rather than dispatching a field save.
-    if (
-      status !== 'draft' ||
-      settingsFieldError(validatedFieldsOf(live)) ||
-      authorsEmptied() ||
-      publishedAtInFuture(status, livePublishedAt())
-    ) {
-      return;
-    }
     void engine.dispatch('field');
   }
 
@@ -764,7 +764,6 @@ export function createEditorSession({
         slug.commitTitle(title);
       }
     },
-    dispatchField: () => void engine.dispatch('field'),
     dispatchAutosave: () => void engine.dispatch('autosave'),
     dispatchExplicit: () => engine.dispatch('explicit'),
     dispatchPublish: (options) => engine.dispatch('publish', options),
@@ -809,23 +808,28 @@ export function createEditorSession({
       ) {
         return false;
       }
-      if (engine.getState().kind !== 'conflict' || !engine.contentReloaded(updatedAt)) {
+      if (
+        !engine.contentReloaded(updatedAt, () => {
+          identity = { id: next.id, updatedAt };
+          status = next.status ?? 'draft';
+          publishedAt = next.published_at ?? null;
+          latestRevision = latestRevisionOf(next);
+          live = projectionOf(next);
+          stagedPublishedAt = null;
+          publishedAtEditedAt = 0;
+          pendingSlugEdits.clear();
+          writerEdits.clear();
+          inFlightSince = null;
+          version += 1;
+          tracker.load(identity.id, live);
+          slug.reset();
+          // The machine may notify subscribers, so the document boundary must be
+          // complete first and no later mutation may overwrite a subscriber edit.
+          machine.loaded({ slug: live.slug, title: live.title });
+        })
+      ) {
         return false;
       }
-      identity = { id: next.id, updatedAt };
-      status = next.status ?? 'draft';
-      publishedAt = next.published_at ?? null;
-      latestRevision = latestRevisionOf(next);
-      live = projectionOf(next);
-      stagedPublishedAt = null;
-      publishedAtEditedAt = 0;
-      pendingSlugEdits.clear();
-      writerEdits.clear();
-      inFlightSince = null;
-      version += 1;
-      tracker.load(identity.id, live);
-      machine.loaded({ slug: live.slug, title: live.title });
-      slug.reset();
       notifyChanged();
       return true;
     },

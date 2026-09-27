@@ -97,6 +97,31 @@ const buildImporterDeps = ({ stripeAPIService }) => {
   };
 };
 
+const countRecentEmailRecipients = async (since) => {
+  const result = await db
+    .knex('emails')
+    .sum('email_count', { as: 'count' })
+    .where('created_at', '>', since)
+    .first();
+
+  return Number(result?.count) || 0;
+};
+
+// Matched on address, not member id, so changing a member's email counts as removing them.
+// The limit lets a clear case stop early rather than scanning every recipient
+const countRemovedEmailRecipients = async (since, limit) => {
+  const rows = await db
+    .knex('email_recipients as er')
+    .distinct('er.member_email')
+    .join('emails as e', 'e.id', 'er.email_id')
+    .leftJoin('members as m', 'm.email', 'er.member_email')
+    .where('e.created_at', '>', since)
+    .whereNull('m.id')
+    .limit(limit);
+
+  return rows.length;
+};
+
 const initVerificationTrigger = () => {
   return new VerificationTrigger({
     getApiTriggerThreshold: () =>
@@ -105,6 +130,8 @@ const initVerificationTrigger = () => {
       _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
     getImportTriggerThreshold: () =>
       _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+    getRemovedRecipientsThreshold: () =>
+      _.get(config.get('hostSettings'), 'emailVerification.removedRecipientsThreshold'),
     isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
     isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
     setVerificationRequired: (value) => settingsCache.set('email_verification_required', { value }),
@@ -114,6 +141,8 @@ const initVerificationTrigger = () => {
     membersStats,
     Settings: models.Settings,
     eventRepository: membersApi.events,
+    countRecentEmailRecipients,
+    countRemovedEmailRecipients,
   });
 };
 

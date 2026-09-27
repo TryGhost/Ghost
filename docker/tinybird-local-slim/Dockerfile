@@ -29,8 +29,8 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     CLICKHOUSE_CLUSTER_INTERNAL_HTTP_PORT=8123 \
     CLICKHOUSE_INTERNAL_PORT=8123 \
     USE_GATHERER=False \
-    MINIO_ROOT_USER=admin \
-    MINIO_ROOT_PASSWORD=password
+    OBJECT_STORAGE_ROOT_USER=admin \
+    OBJECT_STORAGE_ROOT_PASSWORD=password
 WORKDIR /app
 EXPOSE 7181 7182
 # Copied verbatim from upstream, notably the licence pointers — the flatten drops

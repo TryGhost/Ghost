@@ -100,7 +100,10 @@ export function EditorHeaderActions({
     await requireSaved(session.saveExplicit());
   }, [session]);
 
-  const isSaving = session.state.kind === 'saving' || session.state.kind === 'pending-coalesced';
+  const isSaving =
+    session.state.kind === 'preparing' ||
+    session.state.kind === 'saving' ||
+    session.state.kind === 'pending-coalesced';
   const isContributor = !!currentUser && isContributorUser(currentUser);
 
   // A post the server has never seen can be neither published nor previewed.
@@ -119,9 +122,14 @@ export function EditorHeaderActions({
   };
 
   return (
-    <Inline data-testid={editorHeaderActions} gap="sm">
+    <Inline data-testid={editorHeaderActions} gap="md">
       {isDraft ? (
-        <PageHeader.Action fallbackSize="sm" label="Preview" onClick={openPreview}>
+        <PageHeader.Action
+          className="bg-background/80 backdrop-blur-sm"
+          fallbackSize="sm"
+          label="Preview"
+          onClick={openPreview}
+        >
           Preview
         </PageHeader.Action>
       ) : null}
@@ -232,14 +240,19 @@ function PublishActions({
           {inputs.error ? (
             <>
               <Text
-                className="text-destructive"
+                className="bg-background/80 text-destructive backdrop-blur-sm"
                 data-testid={editorPublishInputsError}
                 role="alert"
                 size="sm"
               >
                 {inputs.error.message}
               </Text>
-              <Button size={isAdmin7 ? 'default' : 'sm'} variant="ghost" onClick={inputs.retry}>
+              <Button
+                className="bg-background/80 backdrop-blur-sm"
+                size={isAdmin7 ? 'default' : 'sm'}
+                variant="ghost"
+                onClick={inputs.retry}
+              >
                 Retry
               </Button>
             </>
@@ -262,6 +275,7 @@ function PublishActions({
           {/* Ember routes a sent post to the update flow from its status line, not the header. */}
           {post.status === 'sent' ? null : (
             <Button
+              className="bg-background/80 backdrop-blur-sm"
               size={isAdmin7 ? 'default' : 'sm'}
               variant="outline"
               onClick={() => onOpenFlow('update')}

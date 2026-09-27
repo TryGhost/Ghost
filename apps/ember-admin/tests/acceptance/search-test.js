@@ -2,6 +2,7 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, find, findAll, settled, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {getPosts} from '../../mirage/config/posts';
 import {setupApplicationTest} from 'ember-mocha';
@@ -609,6 +610,28 @@ describe('Acceptance: Search', function () {
             await selectWithEnter();
 
             expect(currentURL()).to.equal(`/settings/staff/${testData.user.slug}`);
+        });
+    });
+
+    describe('with the globalSearchReact flag', function () {
+        const hooks = setupApplicationTest();
+        setupMirage(hooks);
+
+        beforeEach(async function () {
+            this.server.loadFixtures();
+            enableLabsFlag(this.server, 'globalSearchReact');
+            createTestData(this.server);
+            await authenticateSession();
+        });
+
+        it('leaves the Ctrl/Cmd+K shortcut action to React', async function () {
+            await visit('/analytics');
+            assertSearchShortcutRegistered(this.owner);
+
+            this.owner.lookup('route:application').send('openSearchModal');
+            await settled();
+
+            assertSearchModalClosed();
         });
     });
 });

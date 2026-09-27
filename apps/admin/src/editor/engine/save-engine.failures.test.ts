@@ -6,8 +6,10 @@ import {
   flush,
   FUTURE,
   hostLimit,
+  notFound,
   PAST,
   setup,
+  sessionInvalid,
   transport,
   unknown,
   validation,
@@ -49,7 +51,7 @@ describe('createSaveEngine', () => {
       expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'explicit', error: transport });
 
       void h.engine.dispatch('explicit');
-      expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'explicit' });
+      expect(h.engine.getState()).toEqual({ kind: 'preparing', intent: 'explicit' });
     });
 
     it('treats a rejected execute as an unknown error rather than swallowing it', async () => {
@@ -184,6 +186,138 @@ describe('createSaveEngine', () => {
 
       expect(h.engine.contentReloaded(FUTURE)).toBe(true);
       expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
+    it.each([true, false])(
+      'retains collision recovery after a retry fails with dirty=%s',
+      async (isDirty) => {
+        const h = setup({ isDirty });
+        const first = h.engine.dispatch('publish');
+        await h.fail(conflict);
+        await first;
+        const retry = h.engine.dispatch('explicit');
+        await h.fail(transport);
+        await expect(retry).resolves.toMatchObject({ kind: 'failed', error: transport });
+        expect(h.engine.getState()).toEqual({
+          kind: 'conflict',
+          intent: 'publish',
+          error: conflict,
+        });
+        await expect(h.engine.dispatch('field')).resolves.toEqual({
+          kind: 'dropped',
+          reason: 'conflict',
+        });
+        expect(h.engine.contentReloaded(FUTURE)).toBe(true);
+        h.patch({ updatedAt: FUTURE });
+        expect(h.engine.getState()).toEqual({ kind: 'idle' });
+      },
+    );
+
+    it('refuses reload during preparation, execution and reauth, then retains recovery on abandonment', async () => {
+      const h = setup({ isDirty: false });
+      const first = h.engine.dispatch('publish');
+      await h.fail(conflict);
+      await first;
+      const release = h.holdSlugWork();
+      const retry = h.engine.dispatch('explicit');
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+      await release();
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+      await h.fail(sessionInvalid);
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+      h.engine.reauthAbandoned();
+      await expect(retry).resolves.toMatchObject({ kind: 'failed', error: sessionInvalid });
+      expect(h.engine.getPendingSave()).toBeNull();
+      expect(h.engine.getState()).toEqual({ kind: 'conflict', intent: 'publish', error: conflict });
+      expect(h.engine.contentReloaded(FUTURE)).toBe(true);
+    });
+
+    it('retires a validation hold belonging to the document replaced after conflict', async () => {
+      const h = setup();
+      const first = h.engine.dispatch('explicit');
+      await h.fail(conflict);
+      await first;
+      h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
+      await expect(h.engine.dispatch('explicit')).resolves.toMatchObject({
+        kind: 'failed',
+        error: validation,
+      });
+      expect(h.engine.getState().kind).toBe('conflict');
+      expect(h.engine.contentReloaded(FUTURE)).toBe(true);
+      h.patch({ updatedAt: FUTURE });
+      expect(h.engine.getPendingSave()?.blockedBy).toBeNull();
+      const save = h.engine.dispatch('field');
+      await h.succeed();
+      await expect(save).resolves.toMatchObject({ kind: 'saved' });
+    });
+
+    it('does not reload a post deleted during a collision retry', async () => {
+      const h = setup();
+      const first = h.engine.dispatch('explicit');
+      await h.fail(conflict);
+      await first;
+      const retry = h.engine.dispatch('explicit');
+      await h.fail(notFound);
+      await retry;
+      const adopt = vi.fn();
+      expect(h.engine.contentReloaded(FUTURE, adopt)).toBe(false);
+      expect(adopt).not.toHaveBeenCalled();
+      expect(h.engine.getState()).toEqual({ kind: 'halted' });
+    });
+
+    it('adopts the replacement before recovery subscribers edit or dispatch', async () => {
+      const h = setup();
+      const first = h.engine.dispatch('explicit');
+      await h.fail(conflict);
+      await first;
+      let save: ReturnType<typeof h.engine.dispatch> | undefined;
+      const stop = h.engine.subscribe((state) => {
+        if (state.kind === 'idle') {
+          stop();
+          expect(h.snapshot.updatedAt).toBe(FUTURE);
+          h.edit();
+          save = h.engine.dispatch('explicit');
+        }
+      });
+      expect(
+        h.engine.contentReloaded(FUTURE, () => {
+          h.patch({ updatedAt: FUTURE, isDirty: false });
+          const nestedAdopt = vi.fn();
+          expect(h.engine.contentReloaded(FUTURE, nestedAdopt)).toBe(false);
+          expect(nestedAdopt).not.toHaveBeenCalled();
+        }),
+      ).toBe(true);
+      await h.succeed();
+      await expect(save).resolves.toMatchObject({ kind: 'saved' });
+      expect(h.requests[1].snapshot).toMatchObject({ version: 2, updatedAt: FUTURE });
+    });
+
+    it('preserves disposal and dispatches triggered inside document adoption', async () => {
+      for (const dispose of [true, false]) {
+        const h = setup();
+        const first = h.engine.dispatch('explicit');
+        await h.fail(conflict);
+        await first;
+        let save: ReturnType<typeof h.engine.dispatch> | undefined;
+        expect(
+          h.engine.contentReloaded(FUTURE, () => {
+            h.patch({ updatedAt: FUTURE });
+            if (dispose) {
+              h.engine.dispose();
+            } else {
+              save = h.engine.dispatch('explicit');
+            }
+          }),
+        ).toBe(!dispose);
+        if (dispose) {
+          expect(h.engine.getState()).toEqual({ kind: 'disposed' });
+        } else {
+          await h.succeed();
+          await expect(save).resolves.toMatchObject({ kind: 'saved' });
+          expect(h.requests[1].snapshot.updatedAt).toBe(FUTURE);
+          expect(h.maxConcurrent()).toBe(1);
+        }
+      }
     });
 
     it('drops queued background work on a conflict and keeps the content dirty', async () => {

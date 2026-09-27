@@ -12,15 +12,16 @@ members the sections read — rather than the whole editing handle.
 A settings field is staged as the writer changes it and committed on the gesture
 that ends the edit — a blur for a text field, the choice itself for a toggle or
 a picker. Committing is not saving: whether the value is persisted now or held
-until the writer asks for a save is the session's one save policy gate, and
+until the writer asks for a save is decided by the save engine, and
 [the session README](../session/README.md#staging-and-committing) describes it
-and the rules that hold a commit back.
+and its pending-work contract. Title, feature image, settings and body saves all
+reach the engine and use the same preparation validator.
 
 Two of the panel's sections write something that is not a settings field, so
 they have their own routes onto the session: the URL section edits the slug
 through the slug machine, and the Publish date section stages the publish time,
 which is the save engine's command target. Both are then subject to the same
-gate as everything else.
+engine policy as everything else.
 
 The meta and social-card text fields are held to the widths their columns give
 them, 300 characters for a title and 500 for a description. Past one of those

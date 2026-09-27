@@ -4,7 +4,7 @@
  * @typedef {object} Post
  * @typedef {object} Email
  * @typedef {object} LimitService
- * @typedef {{checkVerificationRequired(): Promise<boolean>}} VerificationTrigger
+ * @typedef {{checkVerificationRequired(options?: {newsletterSend?: boolean}): Promise<boolean>}} VerificationTrigger
  * @typedef {import ('./domain-warming-service').DomainWarmingService} DomainWarmingService
  *
  * @typedef {object} EmailPreflight - Validation result from a pre-save checkCanSendEmail call
@@ -114,7 +114,7 @@ class EmailService {
     }
 
     // Check if email verification is required
-    if (await this.#verificationTrigger.checkVerificationRequired()) {
+    if (await this.#verificationTrigger.checkVerificationRequired({ newsletterSend: true })) {
       const customMessage = this.#config?.get(
         'hostSettings:emailVerification:emailSendingDisabledMessage',
       );
