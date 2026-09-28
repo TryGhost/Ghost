@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import Mailgun from '../../../../../core/server/adapters/email/Mailgun';
+import MailgunEmail from '../../../../../core/server/adapters/email/MailgunEmail';
 import type { EmailEvent, SingleMessage } from '@tryghost/adapter-base-email';
 import config from '../../../../../core/shared/config';
 import { validateProvider } from '../../../../../core/server/services/email-provider';
 // @ts-expect-error This module lacks type definitions.
 import MailgunClient from '../../../../../core/server/services/lib/mailgun-client';
 
-describe('Mailgun email adapter', () => {
-  let adapter: Mailgun;
+describe('MailgunEmail email adapter', () => {
+  let adapter: MailgunEmail;
   let send: sinon.SinonStub;
   let configGet: sinon.SinonStub;
   const single: SingleMessage = {
@@ -24,7 +24,7 @@ describe('Mailgun email adapter', () => {
     configGet = sinon.stub(config, 'get').callThrough();
     configGet.withArgs('bulkEmail:mailgun:tag').returns('site-tag');
     send = sinon.stub(MailgunClient.prototype, 'send').resolves({ id: ' <mailgun-id> ' });
-    adapter = new Mailgun();
+    adapter = new MailgunEmail();
   });
   afterEach(() => sinon.restore());
   for (const batchSize of [1000, '1000']) {

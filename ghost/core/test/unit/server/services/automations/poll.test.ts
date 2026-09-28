@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import Mailgun from '../../../../../core/server/adapters/email/Mailgun';
+import MailgunEmail from '../../../../../core/server/adapters/email/MailgunEmail';
 // @ts-expect-error This module lacks type definitions.
 import MailgunClient from '../../../../../core/server/services/lib/mailgun-client';
 
@@ -660,7 +660,7 @@ describe('automations poll', function () {
   for (const attempts of [1, 10]) {
     it(`completes an unconfigured Mailgun automation without retrying on attempt ${attempts}`, async function () {
       sinon.stub(MailgunClient.prototype, 'getInstance').returns(null);
-      const adapter = new Mailgun();
+      const adapter = new MailgunEmail();
       memberWelcomeEmailService.api.sendAutomationEmail.callsFake(async ({ member, email }) =>
         adapter.sendSingle({
           family: 'automations',

@@ -43,7 +43,7 @@
   },
   "adapters": {
     "email": {
-      "active": "Mailgun"
+      "active": "MailgunEmail"
     },
     "sso": {
       "active": "DefaultSSOAdapter"

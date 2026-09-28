@@ -28,7 +28,7 @@ const tags: Record<EmailFamily, string> = {
 };
 
 /** Keeps Mailgun wire formats, envelopes, tags and error codes at the edge. */
-export default class Mailgun extends EmailProviderBase {
+export default class MailgunEmail extends EmailProviderBase {
   readonly source = 'mailgun';
   private readonly client = new MailgunClient({ config, settings });
   private readonly newsletters = new MailgunEmailProvider({ mailgunClient: this.client, config });

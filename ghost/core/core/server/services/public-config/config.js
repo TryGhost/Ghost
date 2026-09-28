@@ -69,7 +69,10 @@ module.exports = function getConfigProperties() {
   };
 
   // Older Admin releases use this legacy field as the bulk-email readiness gate.
-  if (config.get('adapters:email:active') && config.get('adapters:email:active') !== 'Mailgun') {
+  if (
+    config.get('adapters:email:active') &&
+    config.get('adapters:email:active') !== 'MailgunEmail'
+  ) {
     const provider = require('../email-provider').getProvider();
     configProperties.mailgunIsConfigured = provider.isConfigured();
   }
