@@ -182,7 +182,9 @@ describe('Acceptance: posts/pages React flag', function () {
 
                 await visitExpectingAbort(`/${resource}?tag=blog&order=published_at%20asc`);
 
-                expect(location.getURL(), 'filtered URL retained').to.include('tag=blog');
+                const finalQuery = new URL(location.getURL(), 'http://localhost').searchParams;
+                expect(finalQuery.get('tag'), 'filter retained in final URL').to.equal('blog');
+                expect(finalQuery.get('order'), 'sort retained in final URL').to.equal('published_at asc');
                 const writes = [...setURL.getCalls(), ...(replaceURL?.getCalls() ?? [])];
                 for (const call of writes) {
                     const query = new URL(call.args[0], 'http://localhost').searchParams;
