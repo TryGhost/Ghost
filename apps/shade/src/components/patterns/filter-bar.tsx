@@ -73,7 +73,13 @@ const FilterBarAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Button
         ref={ref}
-        className={cn(usePillFilterBarStyle && variant === 'outline' && 'bg-background', className)}
+        className={cn(
+          usePillFilterBarStyle && variant === 'outline' && 'bg-background',
+          usePillFilterBarStyle &&
+            variant === 'ghost' &&
+            'hover:bg-tab-active enabled:active:bg-tab-active',
+          className,
+        )}
         size={size ?? (usePillFilterBarStyle ? 'sm' : undefined)}
         variant={variant}
         {...props}
