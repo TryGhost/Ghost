@@ -1,3 +1,4 @@
+import { HeaderTooltipProvider } from '@/providers/header-tooltip-provider';
 import { useShade } from '@/providers/shade-provider';
 import {
   DropdownMenu,
@@ -6,7 +7,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { SelectTrigger } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Kbd } from '@/components/ui/kbd';
 import { H1 } from '@/components/layout/heading';
 import { Inline, Stack, Text } from '@/components/primitives';
@@ -339,17 +340,6 @@ function PageHeaderActionGroupMobileMenuContent({
   );
 }
 
-function PageHeaderTooltipProvider({ children }: React.PropsWithChildren) {
-  const { isAdmin7 } = useShade();
-  return isAdmin7 ? (
-    <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
-      {children}
-    </TooltipProvider>
-  ) : (
-    <>{children}</>
-  );
-}
-
 const DEFAULT_MOBILE_MENU_BREAKPOINT = 640;
 
 const isBelowBreakpoint = (breakpoint: number) => {
@@ -427,7 +417,7 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
 
     if (!mobileMenu) {
       return (
-        <PageHeaderTooltipProvider>
+        <HeaderTooltipProvider>
           <Inline
             align="center"
             className={className}
@@ -437,13 +427,13 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
           >
             {children}
           </Inline>
-        </PageHeaderTooltipProvider>
+        </HeaderTooltipProvider>
       );
     }
 
     if (!shouldCollapse) {
       return (
-        <PageHeaderTooltipProvider>
+        <HeaderTooltipProvider>
           <Inline
             align="center"
             className={className}
@@ -455,12 +445,12 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
               {desktopChildren}
             </Inline>
           </Inline>
-        </PageHeaderTooltipProvider>
+        </HeaderTooltipProvider>
       );
     }
 
     return (
-      <PageHeaderTooltipProvider>
+      <HeaderTooltipProvider>
         <Inline
           align="center"
           className={className}
@@ -483,7 +473,7 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
               ))}
           </Inline>
         </Inline>
-      </PageHeaderTooltipProvider>
+      </HeaderTooltipProvider>
     );
   },
   {
@@ -496,14 +486,16 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
 
 function PageHeaderActions({ className, children }: PropsWithChildrenAndClassName) {
   return (
-    <Inline
-      align="center"
-      className={cn('min-h-(--control-height) shrink-0', className)}
-      data-page-header="actions"
-      gap="lg"
-    >
-      {children}
-    </Inline>
+    <HeaderTooltipProvider>
+      <Inline
+        align="center"
+        className={cn('min-h-(--control-height) shrink-0', className)}
+        data-page-header="actions"
+        gap="lg"
+      >
+        {children}
+      </Inline>
+    </HeaderTooltipProvider>
   );
 }
 

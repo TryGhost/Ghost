@@ -102,12 +102,16 @@ Tooltips use the semantic white surface with a shadow. The first
 hover tooltip waits **1 second**. Moving between recently shown tooltips uses a
 **300ms skip-delay window**. Keyboard focus shows the tooltip immediately.
 
-Wrap header controls in `PageHeader.ActionGroup`, including in editor and modal
-headers, so they receive this timing rather than inheriting another surface's delay.
+`PageHeader.Actions`, standalone `PageHeader.ActionGroup` (including editor and
+modal headers), and `NavbarActions` share this timing in Shade. Nested action
+groups reuse the header's timing, so moving between groups does not restart the
+delay. Pages should not add their own tooltip providers or timing overrides.
 
 Selecting a dropdown item with the pointer closes the menu without reopening the
 trigger tooltip merely because focus returns. Keyboard navigation still restores
-focus and tooltip access. Disabled actions remain disabled and retain their size.
+focus and tooltip access. Returning to the browser window also does not reopen a
+tooltip on the focused control; hovering or deliberately navigating with the
+keyboard still works. Disabled actions remain disabled and retain their size.
 
 <Canvas of={PageHeaderStories.DisabledActions} />
 

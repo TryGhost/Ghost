@@ -17,29 +17,31 @@ function TooltipProvider({
   children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
-  const pointerInteraction = React.useRef(false);
+  const suppressFocusTooltip = React.useRef(false);
   const { isAdmin7 } = useShade();
 
   React.useEffect(() => {
     if (!isAdmin7) {
       return;
     }
-    const onPointerDown = () => {
-      pointerInteraction.current = true;
+    const suppressFocus = () => {
+      suppressFocusTooltip.current = true;
     };
     const onKeyDown = () => {
-      pointerInteraction.current = false;
+      suppressFocusTooltip.current = false;
     };
-    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('pointerdown', suppressFocus, true);
+    window.addEventListener('blur', suppressFocus);
     document.addEventListener('keydown', onKeyDown, true);
     return () => {
-      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('pointerdown', suppressFocus, true);
+      window.removeEventListener('blur', suppressFocus);
       document.removeEventListener('keydown', onKeyDown, true);
     };
   }, [isAdmin7]);
 
   return (
-    <TooltipInputContext.Provider value={isAdmin7 ? pointerInteraction : null}>
+    <TooltipInputContext.Provider value={isAdmin7 ? suppressFocusTooltip : null}>
       <TooltipPrimitive.Provider delayDuration={isAdmin7 ? 1000 : 700} {...props}>
         {children}
       </TooltipPrimitive.Provider>
@@ -53,7 +55,7 @@ const TooltipTrigger = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger>
 >(({ onFocus, ...props }, ref) => {
-  const pointerInteraction = React.useContext(TooltipInputContext);
+  const suppressFocusTooltip = React.useContext(TooltipInputContext);
 
   return (
     <TooltipPrimitive.Trigger
@@ -61,9 +63,9 @@ const TooltipTrigger = React.forwardRef<
       {...props}
       onFocus={(event) => {
         onFocus?.(event);
-        // Menus restore focus after selection. Pointer-driven restoration should
-        // not reveal a tooltip; keyboard focus and normal hover still should.
-        if (pointerInteraction?.current) {
+        // Menus and browser windows restore focus without a new interaction.
+        // Only deliberate keyboard focus or normal hover should show a tooltip.
+        if (suppressFocusTooltip?.current) {
           event.preventDefault();
         }
       }}
