@@ -63,11 +63,8 @@ export class FeatureImage {
     await this.unsplashHeading.waitFor({ state: 'visible' });
   }
 
-  /**
-   * Inserts the open search's photo whose alt text is `alt`. The tile's hover
-   * overlay covers the image and its insert control is not scoped per tile, so
-   * this expects a gallery holding that photo alone; the search closes on insert.
-   */
+  // Inserts the open search's photo with alt text `alt`; the search closes on insert.
+  // The insert control is not scoped per tile, so the gallery must hold that photo alone.
   async insertUnsplashPhoto(alt: string): Promise<void> {
     await this.unsplashSearch
       .getByRole('img', { name: alt, exact: true })
