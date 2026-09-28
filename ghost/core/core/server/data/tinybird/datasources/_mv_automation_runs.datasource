@@ -6,5 +6,9 @@ SCHEMA >
     `updated_at` DateTime64(3)
 
 ENGINE ReplacingMergeTree
-ENGINE_SORTING_KEY site_uuid, id
+ENGINE_SORTING_KEY site_uuid, automation_id, id
 ENGINE_VER updated_at
+
+# Preserve existing versions when rebuilding with the new sorting key.
+FORWARD_QUERY >
+    SELECT *

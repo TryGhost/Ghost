@@ -6,5 +6,14 @@ SCHEMA >
     `updated_at` DateTime64(3)
 
 ENGINE ReplacingMergeTree
-ENGINE_SORTING_KEY site_uuid, id
+ENGINE_SORTING_KEY site_uuid, automation_run_id, id
 ENGINE_VER updated_at
+
+# A step never changes runs; retain every version while changing physical order.
+FORWARD_QUERY >
+    SELECT
+        site_uuid,
+        id,
+        automation_run_id,
+        status,
+        updated_at
