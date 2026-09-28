@@ -1,6 +1,33 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const ReferrerTranslator = require('../../../../../core/server/services/member-attribution/referrer-translator');
+// @ts-expect-error JavaScript module has no type declarations
+import ReferrerTranslator from '../../../../../core/server/services/member-attribution/referrer-translator';
+
+type ReferrerHistoryItem = {
+  referrerSource?: string | null;
+  referrerMedium?: string | null;
+  referrerUrl?: string | null;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+};
+
+type ReferrerData = {
+  referrerSource?: string | null;
+  referrerMedium?: string | null;
+  referrerUrl?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
+  utmTerm?: string | null;
+  utmContent?: string | null;
+};
+
+type ReferrerTranslatorLike = {
+  getReferrerDetails(history: ReferrerHistoryItem[]): ReferrerData | null;
+};
 
 describe('ReferrerTranslator', function () {
   describe('Constructor', function () {
@@ -10,7 +37,7 @@ describe('ReferrerTranslator', function () {
   });
 
   describe('getReferrerDetails', function () {
-    let translator;
+    let translator: ReferrerTranslatorLike;
     beforeAll(function () {
       translator = new ReferrerTranslator({
         siteUrl: 'https://example.com',

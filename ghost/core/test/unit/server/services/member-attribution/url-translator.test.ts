@@ -1,10 +1,44 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const UrlTranslator = require('../../../../../core/server/services/member-attribution/url-translator');
+// @ts-expect-error JavaScript module has no type declarations
+import UrlTranslator from '../../../../../core/server/services/member-attribution/url-translator';
+
+type ResourceModel = {
+  id: string;
+  get(property: string): string | undefined;
+};
+type ResourceDetails = {
+  type: string;
+  id: string | null;
+  url: string;
+};
+type ModelForUrl = {
+  get(property: string): string | undefined;
+  toJSON(): Record<string, string>;
+};
+type UrlTranslatorLike = {
+  getResourceDetails(item: {
+    id?: string;
+    path?: string;
+    type?: string;
+    time: number;
+  }): Promise<ResourceDetails | null>;
+  getUrlTitle(url: string): string;
+  getTypeAndIdFromPath(path: string): Promise<{ type: string; id: string } | undefined>;
+  getResourceById(id: string, type: string): Promise<ResourceModel | null>;
+  getResourceUrl(
+    id: string,
+    type: string,
+    model: ModelForUrl,
+    options: { absolute: boolean },
+  ): string;
+  relativeToAbsolute(path: string): string;
+  stripSubdirectoryFromPath(path: string): string;
+};
 
 const models = {
   Post: {
-    findOne({ id }) {
+    findOne({ id }: { id: string }) {
       if (id === 'invalid') {
         return null;
       }
@@ -12,7 +46,7 @@ const models = {
     },
   },
   User: {
-    findOne({ id }) {
+    findOne({ id }: { id: string }) {
       if (id === 'invalid') {
         return null;
       }
@@ -20,7 +54,7 @@ const models = {
     },
   },
   Tag: {
-    findOne({ id }) {
+    findOne({ id }: { id: string }) {
       if (id === 'invalid') {
         return null;
       }
@@ -37,24 +71,24 @@ describe('UrlTranslator', function () {
   });
 
   describe('getResourceDetails', function () {
-    let translator;
+    let translator: UrlTranslatorLike;
     beforeAll(function () {
       translator = new UrlTranslator({
         urlUtils: {
-          relativeToAbsolute: (t) => {
+          relativeToAbsolute: (t: string) => {
             return 'https://absolute' + t;
           },
-          absoluteToRelative: (t) => {
+          absoluteToRelative: (t: string) => {
             return t
               .replace('https://absolute/with-subdirectory', '')
               .replace('https://absolute', '');
           },
         },
         urlService: {
-          getUrlForResource: (resource) => {
+          getUrlForResource: (resource: { id: string }) => {
             return '/path/' + resource.id;
           },
-          resolveUrl: async (path) => {
+          resolveUrl: async (path: string) => {
             switch (path) {
               case '/path/post':
                 return { type: 'posts', id: 'post' };
@@ -141,7 +175,7 @@ describe('UrlTranslator', function () {
   });
 
   describe('getUrlTitle', function () {
-    let translator;
+    let translator: UrlTranslatorLike;
     beforeAll(function () {
       translator = new UrlTranslator({});
     });
@@ -156,11 +190,11 @@ describe('UrlTranslator', function () {
   });
 
   describe('getTypeAndIdFromPath', function () {
-    let translator;
+    let translator: UrlTranslatorLike;
     beforeAll(function () {
       translator = new UrlTranslator({
         urlService: {
-          resolveUrl: async (path) => {
+          resolveUrl: async (path: string) => {
             switch (path) {
               case '/post':
                 return { type: 'posts', id: 'post' };
@@ -211,7 +245,7 @@ describe('UrlTranslator', function () {
   });
 
   describe('getResourceById', function () {
-    let translator;
+    let translator: UrlTranslatorLike;
     beforeAll(function () {
       translator = new UrlTranslator({
         urlService: {
@@ -223,21 +257,25 @@ describe('UrlTranslator', function () {
 
     it('returns for post', async function () {
       const result = await translator.getResourceById('id', 'post');
+      assert.ok(result);
       assert.equal(result.id, 'post_id');
     });
 
     it('returns for page', async function () {
       const result = await translator.getResourceById('id', 'page');
+      assert.ok(result);
       assert.equal(result.id, 'post_id');
     });
 
     it('returns for tag', async function () {
       const result = await translator.getResourceById('id', 'tag');
+      assert.ok(result);
       assert.equal(result.id, 'tag_id');
     });
 
     it('returns for user', async function () {
       const result = await translator.getResourceById('id', 'author');
+      assert.ok(result);
       assert.equal(result.id, 'user_id');
     });
 
@@ -267,13 +305,13 @@ describe('UrlTranslator', function () {
     // (slug, published_at, primary_tag, ...), so it needs the full resource
     // shape, not just `{id, type}`.
     it("passes the model's plain data (slug, etc.) to the URL service", function () {
-      let captured;
+      let captured: Record<string, string> | undefined;
       const translator = new UrlTranslator({
         urlUtils: {
-          relativeToAbsolute: (t) => 'https://abs' + t,
+          relativeToAbsolute: (t: string) => 'https://abs' + t,
         },
         urlService: {
-          getUrlForResource: (resource) => {
+          getUrlForResource: (resource: Record<string, string>) => {
             captured = resource;
             return '/' + resource.slug + '/';
           },
@@ -289,6 +327,7 @@ describe('UrlTranslator', function () {
       const url = translator.getResourceUrl('abc', 'tag', tag, { absolute: false });
 
       assert.equal(url, '/changelog/');
+      assert.ok(captured);
       assert.equal(captured.id, 'abc');
       assert.equal(captured.type, 'tags');
       assert.equal(captured.slug, 'changelog');
@@ -297,7 +336,7 @@ describe('UrlTranslator', function () {
     it('keeps the email-only short-circuit for sent posts', function () {
       const translator = new UrlTranslator({
         urlUtils: {
-          relativeToAbsolute: (t) => 'https://abs' + t,
+          relativeToAbsolute: (t: string) => 'https://abs' + t,
         },
         urlService: {
           getUrlForResource: () => {
@@ -308,7 +347,7 @@ describe('UrlTranslator', function () {
       });
 
       const post = {
-        get(k) {
+        get(k: string) {
           return k === 'status' ? 'sent' : 'uuid-123';
         },
         toJSON: () => ({ id: 'pid', uuid: 'uuid-123', status: 'sent' }),
@@ -322,11 +361,11 @@ describe('UrlTranslator', function () {
   });
 
   describe('relativeToAbsolute', function () {
-    let translator;
+    let translator: UrlTranslatorLike;
     beforeAll(function () {
       translator = new UrlTranslator({
         urlUtils: {
-          relativeToAbsolute: (t) => {
+          relativeToAbsolute: (t: string) => {
             return 'absolute/' + t;
           },
         },
@@ -339,14 +378,14 @@ describe('UrlTranslator', function () {
   });
 
   describe('stripSubdirectoryFromPath', function () {
-    let translator;
+    let translator: UrlTranslatorLike;
     beforeAll(function () {
       translator = new UrlTranslator({
         urlUtils: {
-          relativeToAbsolute: (t) => {
+          relativeToAbsolute: (t: string) => {
             return 'absolute' + t;
           },
-          absoluteToRelative: (t) => {
+          absoluteToRelative: (t: string) => {
             const prefix = 'absolute/dir/';
             if (t.startsWith(prefix)) {
               return t.substring(prefix.length - 1);

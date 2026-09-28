@@ -1,6 +1,7 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const UrlHistory = require('../../../../../core/server/services/member-attribution/url-history');
+// @ts-expect-error JavaScript module has no type declarations
+import UrlHistory from '../../../../../core/server/services/member-attribution/url-history';
 
 describe('UrlHistory', function () {
   it('sets history to empty array if invalid', function () {
