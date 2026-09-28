@@ -119,6 +119,17 @@ pnpm test:acceptance:watch                         # watch mode
 pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the browser
 ```
 
+CI splits this suite across two runners using Vitest's `--shard` option. To
+reproduce either shard from the repository root, including dependency builds:
+
+```bash
+pnpm nx run @tryghost/admin:test:acceptance --shard=1/2
+pnpm nx run @tryghost/admin:test:acceptance --shard=2/2
+```
+
+Each shard uploads its own failure screenshots. Running without `--shard` still
+runs the full suite.
+
 ## Debugging
 
 - Runs print a final summary and failure details, including console output from failing tests, locally and in CI. To see all console output and individual test results, run `pnpm test:acceptance --silent=false --reporter=verbose` (optionally add a test file path). The same flags work with `test:acceptance:watch`.

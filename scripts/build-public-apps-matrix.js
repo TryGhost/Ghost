@@ -4,7 +4,7 @@
 //
 // Matrix context isn't available in a job-level `if:`, so the affected gate
 // can't live on the publish job — instead we compute the set here in job_setup
-// (mirroring the affected_playwright_projects dynamic matrix) and the job skips
+// (mirroring the affected_playwright_matrix dynamic matrix) and the job skips
 // itself when the result is `[]`.
 //
 // public-apps.json says *which* apps are public (apps/ also holds admin, shade
