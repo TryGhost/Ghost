@@ -1,10 +1,16 @@
 import assert from 'node:assert/strict';
+import {
+  emailEventSchema,
+  type EmailEvent,
+  type EmailFamily,
+  type EmailProviderBase,
+} from '@tryghost/adapter-base-email';
+import logging from '@tryghost/logging';
+import type { BatchEventProcessor } from './batch-event-processor';
 import type { Knex } from 'knex';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
 import type { ConfigInstance } from '../../../shared/config/loader';
 import type { GhostMetrics } from '@tryghost/metrics';
-// @ts-expect-error This module lacks type definitions.
-import type SettingsCache from '../../../shared/settings-cache';
 import { EmailAnalyticsServiceWrapper } from './email-analytics-service-wrapper';
 // @ts-expect-error This module lacks type definitions.
 import { AGGREGATE_MEMBER_STATS_METRIC_NAME } from './newsletter-email-analytics-batch-processor';
@@ -24,13 +30,11 @@ import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
 import { StartEmailAnalyticsJobEvent } from './events/start-email-analytics-job-event';
 import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
-import { AUTOMATION_EMAIL_TAG } from '../member-welcome-emails/constants';
 import type * as AutomationsApi from '../automations/automations-api';
 import { AutomationEmailAnalyticsBatchProcessor } from './automation-email-analytics-batch-processor';
 import { GiftEmailAnalyticsBatchProcessor } from './gift-email-analytics-batch-processor';
 import { StartGiftEmailAnalyticsJobEvent } from './events/start-gift-email-analytics-job-event';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
-import { GIFT_DELIVERY_EMAIL_TAG } from '../gifts/constants';
 
 let newsletters: EmailAnalyticsServiceWrapper | undefined;
 let automations: EmailAnalyticsServiceWrapper | undefined;
@@ -52,6 +56,7 @@ export function getGifts(): EmailAnalyticsServiceWrapper {
 }
 
 export const init = ({
+  provider,
   automationsApi,
   config,
   db,
@@ -62,8 +67,8 @@ export const init = ({
   models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
   metrics,
   prometheusClient,
-  settingsCache,
 }: {
+  provider: Pick<EmailProviderBase, 'source' | 'getEventSource'>;
   automationsApi: Pick<
     typeof AutomationsApi,
     'getAutomatedEmailRecipientsByMailgunIds' | 'trackEmailDeliveredAndOpened'
@@ -81,41 +86,91 @@ export const init = ({
   };
   metrics: Pick<GhostMetrics, 'metric'>;
   prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
-  settingsCache: Pick<typeof SettingsCache, 'get'>;
 }) => {
   if (newsletters) {
     return;
   }
 
   const queries = new Queries(db.knex);
+  const source = provider.getEventSource();
 
-  const newsletterEmailEventProcessor = new EmailEventProcessor({
-    domainEvents,
-    db,
-    eventStorage: new NewsletterEmailEventStorage({
+  const createEventProcessor = (
+    family: EmailFamily,
+    aggregationQueries = queries,
+  ): BatchEventProcessor => {
+    if (family === 'automations') {
+      return new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+      });
+    }
+    if (family === 'gifts') {
+      return new GiftEmailAnalyticsBatchProcessor({
+        giftDeliveryService,
+      });
+    }
+    return new NewsletterEmailAnalyticsBatchProcessor({
       config,
-      db,
-      membersRepository,
-      models: {
-        Email,
-        EmailRecipientFailure,
-        EmailSpamComplaintEvent,
-      },
-      emailSuppressionList,
+      emailEventProcessor: new EmailEventProcessor({
+        domainEvents,
+        db,
+        eventStorage: new NewsletterEmailEventStorage({
+          config,
+          db,
+          membersRepository,
+          models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
+          emailSuppressionList,
+          prometheusClient,
+        }),
+        prometheusClient,
+      }),
       prometheusClient,
-    }),
-    prometheusClient,
-  });
+      queries: aggregationQueries,
+    });
+  };
 
-  const newsletterMailgunTags = ['bulk-email'];
-  const automationMailgunTags = [AUTOMATION_EMAIL_TAG];
-  const giftMailgunTags = [GIFT_DELIVERY_EMAIL_TAG];
-  const mailgunTagFromConfig = config.get('bulkEmail:mailgun:tag');
-  if (mailgunTagFromConfig) {
-    newsletterMailgunTags.push(mailgunTagFromConfig);
-    automationMailgunTags.push(mailgunTagFromConfig);
-    giftMailgunTags.push(mailgunTagFromConfig);
-  }
+  const eventSourceOptions = (family: EmailFamily) => ({
+    polling: source.type === 'poll',
+    fetchEvents: async (
+      options: Parameters<import('./email-analytics-service').FetchEvents>[0],
+    ) => {
+      if (source.type === 'poll') {
+        return await source.fetch({
+          ...options,
+          family,
+        });
+      }
+    },
+    createEventProcessor: (): BatchEventProcessor => {
+      const processor = createEventProcessor(family);
+      return {
+        async processBatch(events, result, fetchData) {
+          const validEvents: EmailEvent[] = [];
+          for (const event of events) {
+            const parsed = emailEventSchema.safeParse(event);
+            if (parsed.success && parsed.data.family === family) {
+              validEvents.push(parsed.data);
+              continue;
+            }
+            result.merge({ unprocessable: 1 });
+            const timestamp = emailEventSchema.shape.timestamp.safeParse(event?.timestamp);
+            if (
+              timestamp.success &&
+              (!fetchData.lastEventTimestamp || timestamp.data > fetchData.lastEventTimestamp)
+            ) {
+              fetchData.lastEventTimestamp = timestamp.data;
+            }
+          }
+          if (validEvents.length !== events.length) {
+            logging.warn(
+              `[EmailAnalytics] Skipped ${events.length - validEvents.length} invalid ${family} events`,
+            );
+          }
+          await processor.processBatch(validEvents, result, fetchData);
+        },
+        aggregate: processor.aggregate?.bind(processor),
+      };
+    },
+  });
 
   prometheusClient?.registerCounter({
     name: AGGREGATE_MEMBER_STATS_METRIC_NAME,
@@ -127,7 +182,7 @@ export const init = ({
     jobType: 'email-analytics-fetch-latest',
     config,
     queries,
-    mailgunTags: newsletterMailgunTags,
+    ...eventSourceOptions('newsletters'),
     jobNames: {
       latestNonOpened: 'email-analytics-latest-others',
       missing: 'email-analytics-missing',
@@ -143,14 +198,6 @@ export const init = ({
       },
     },
     metrics,
-    settingsCache,
-    createEventProcessor: () =>
-      new NewsletterEmailAnalyticsBatchProcessor({
-        config,
-        emailEventProcessor: newsletterEmailEventProcessor,
-        prometheusClient,
-        queries,
-      }),
   });
 
   automations = new EmailAnalyticsServiceWrapper({
@@ -158,7 +205,7 @@ export const init = ({
     jobType: 'email-analytics-automation-fetch-latest',
     config,
     queries,
-    mailgunTags: automationMailgunTags,
+    ...eventSourceOptions('automations'),
     jobNames: {
       latestNonOpened: 'email-analytics-automation-latest-others',
       missing: 'email-analytics-automation-missing',
@@ -173,11 +220,6 @@ export const init = ({
       },
     },
     metrics,
-    settingsCache,
-    createEventProcessor: () =>
-      new AutomationEmailAnalyticsBatchProcessor({
-        automationsApi,
-      }),
   });
 
   gifts = new EmailAnalyticsServiceWrapper({
@@ -185,7 +227,7 @@ export const init = ({
     jobType: 'email-analytics-gift-fetch-latest',
     config,
     queries,
-    mailgunTags: giftMailgunTags,
+    ...eventSourceOptions('gifts'),
     jobNames: {
       latestNonOpened: 'email-analytics-gifts-latest-others',
       missing: 'email-analytics-gifts-missing',
@@ -200,8 +242,6 @@ export const init = ({
       },
     },
     metrics,
-    settingsCache,
-    createEventProcessor: () => new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService }),
   });
 
   domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => newsletters!.startFetch());

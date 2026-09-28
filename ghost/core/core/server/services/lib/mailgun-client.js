@@ -407,7 +407,8 @@ module.exports = class MailgunClient {
         typeof (event['delivery-status'].message || event['delivery-status'].description) ===
           'string'
           ? {
-              code: event['delivery-status'].code,
+              // Mailgun may return null when no SMTP status code is available.
+              code: event['delivery-status'].code ?? undefined,
               message: (
                 event['delivery-status'].message || event['delivery-status'].description
               ).substring(0, 2000),

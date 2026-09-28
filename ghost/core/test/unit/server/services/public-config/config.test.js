@@ -97,6 +97,23 @@ describe('Public-config Service', function () {
       assert.equal(configProperties.mailgunIsConfigured, false);
     });
 
+    it('should expose alternate provider readiness through the existing config fields', function () {
+      configUtils.set('adapters:email:active', 'ExampleProvider');
+      const isConfigured = sinon.stub();
+      const providerPath = require.resolve('../../../../../core/server/services/email-provider');
+      require(providerPath);
+      sinon
+        .stub(require.cache[providerPath], 'exports')
+        .value({ getProvider: () => ({ isConfigured }) });
+
+      for (const configured of [true, false]) {
+        isConfigured.returns(configured);
+        const configProperties = getConfigProperties();
+        assert.equal(configProperties.mailgunIsConfigured, configured);
+        assert.deepEqual(Object.keys(configProperties), allowedKeys);
+      }
+    });
+
     it('should NOT return stats by default', function () {
       const configProperties = getConfigProperties();
 

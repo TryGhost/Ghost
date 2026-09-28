@@ -52,6 +52,32 @@ describe('Sending service', function () {
       sinon.restore();
     });
 
+    it('identifies untracked test sends to the provider with a null emailId', async function () {
+      const sendingService = new SendingService({
+        emailRenderer,
+        emailProvider,
+        emailAddressService,
+      });
+      await sendingService.send(
+        {
+          post: {},
+          newsletter: {},
+          segment: null,
+          emailId: null,
+          members: [{ email: 'reader@example.com', name: 'Reader' }],
+        },
+        { isTestEmail: true, clickTrackingEnabled: false, openTrackingEnabled: false },
+      );
+      sinon.assert.calledOnceWithMatch(
+        sendStub,
+        { emailId: null },
+        {
+          clickTrackingEnabled: false,
+          openTrackingEnabled: false,
+        },
+      );
+    });
+
     it('calls mailgun client with correct data', async function () {
       const sendingService = new SendingService({
         emailRenderer,

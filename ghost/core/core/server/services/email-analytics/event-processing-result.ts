@@ -8,6 +8,7 @@ export class EventProcessingResult {
   permanentFailed: number = 0;
   unsubscribed: number = 0;
   complained: number = 0;
+  ignored: number = 0;
   unhandled: number = 0;
   unprocessable: number = 0;
 
@@ -29,6 +30,7 @@ export class EventProcessingResult {
     this.permanentFailed = 0;
     this.unsubscribed = 0;
     this.complained = 0;
+    this.ignored = 0;
     this.unhandled = 0;
     this.unprocessable = 0;
     this.processingFailures = 0;
@@ -43,6 +45,7 @@ export class EventProcessingResult {
     this.permanentFailed += other.permanentFailed || 0;
     this.unsubscribed += other.unsubscribed || 0;
     this.complained += other.complained || 0;
+    this.ignored += other.ignored || 0;
     this.unhandled += other.unhandled || 0;
     this.unprocessable += other.unprocessable || 0;
 

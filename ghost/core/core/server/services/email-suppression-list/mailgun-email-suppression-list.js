@@ -1,9 +1,8 @@
 const { EmailSuppressionData, EmailSuppressedEvent } = require('./email-suppression-list');
-const { SpamComplaintEvent } = require('../email-service/events/spam-complaint-event');
-const { EmailBouncedEvent } = require('../email-service/events/email-bounced-event');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const models = require('../../models');
+const errors = require('@tryghost/errors');
+const assert = require('node:assert/strict');
 /** @import {IEmailSuppressionList} from './email-suppression-list' */
 
 /**
@@ -25,6 +24,7 @@ class MailgunEmailSuppressionList {
   constructor(deps) {
     this.Suppression = deps.Suppression;
     this.apiClient = deps.apiClient;
+    this.membersRepository = deps.membersRepository;
   }
 
   async removeEmail(email) {
@@ -51,20 +51,27 @@ class MailgunEmailSuppressionList {
     return true;
   }
 
-  async removeUnsubscribe(email) {
-    try {
-      await this.apiClient.removeUnsubscribe(email);
-    } catch (err) {
-      logging.error(err);
-      return false;
-    }
+  async removeUnsubscribe(email, { requireSuccess = false } = {}) {
+    return await this.#removeProviderSuppression(email, 'unsubscribe', requireSuccess);
   }
 
-  async removeComplaint(email) {
+  async removeComplaint(email, { requireSuccess = false } = {}) {
+    return await this.#removeProviderSuppression(email, 'complaint', requireSuccess);
+  }
+
+  async #removeProviderSuppression(email, reason, requireSuccess) {
+    const method = reason === 'complaint' ? 'removeComplaint' : 'removeUnsubscribe';
     try {
-      await this.apiClient.removeComplaint(email);
+      await this.apiClient[method](email);
     } catch (err) {
       logging.error(err);
+      if (requireSuccess) {
+        throw new errors.InternalServerError({
+          message: `Could not remove provider ${reason}`,
+          statusCode: 503,
+          err,
+        });
+      }
       return false;
     }
   }
@@ -117,48 +124,106 @@ class MailgunEmailSuppressionList {
     }
   }
 
-  async init() {
-    this.Suppression = models.Suppression;
-    const handleEvent = (reason) => async (event) => {
-      if (reason === 'bounce') {
-        if (!Number.isInteger(event.error?.code)) {
-          return;
+  async handleBounce(event, options) {
+    // Older callers use Mailgun error codes; adapters set suppress explicitly.
+    const suppress = event.suppress ?? [605, 607].includes(event.error?.code);
+    if (suppress) {
+      await this.suppressEmail(event, 'bounce', options);
+    }
+  }
+
+  async handleComplaint(event, options) {
+    await this.suppressEmail(event, 'spam', options);
+  }
+
+  async suppressEmail(event, reason, { eventSource = 'webhook' } = {}) {
+    assert(this.membersRepository, 'Email suppression must be initialized at boot');
+    if (eventSource === 'poll') {
+      await this.#suppressPolledEmail(event, reason);
+      return;
+    }
+    try {
+      await this.Suppression.transaction(async (transacting) => {
+        try {
+          await this.Suppression.add(
+            {
+              email: event.email,
+              email_id: event.emailId,
+              reason,
+              created_at: event.timestamp,
+            },
+            { transacting },
+          );
+        } catch (err) {
+          if (
+            !['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT'].includes(err.code) ||
+            !(await this.Suppression.findOne({ email: event.email }, { transacting }))
+          ) {
+            throw err;
+          }
         }
-        if (event.error.code !== 607 && event.error.code !== 605) {
-          return;
-        }
-      }
-      try {
-        await this.Suppression.add({
-          email: event.email,
-          email_id: event.emailId,
-          reason: reason,
-          created_at: event.timestamp,
-        });
-      } catch (err) {
-        if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
-          logging.error(err);
-          return;
-        }
-        // Suppression already exists — still dispatch so any drifted
-        // member state (e.g. email_disabled=false) gets corrected.
-        logging.info(
-          `Re-dispatching EmailSuppressedEvent for existing suppression (${reason}): ${event.email}`,
+        // Lock the original address to avoid disabling a replacement address.
+        const member = await this.membersRepository.get(
+          { email: event.email },
+          { transacting, forUpdate: true },
         );
+        if (member) {
+          await this.membersRepository.update(
+            { email_disabled: true },
+            { id: member.id, transacting },
+          );
+        }
+      });
+    } catch (err) {
+      throw new errors.InternalServerError({
+        message: 'Could not save email suppression',
+        statusCode: 503,
+        err,
+      });
+    }
+    // Notify subscribers only after suppression and member updates succeed.
+    this.#dispatchSuppressedEvent(event, reason);
+  }
+
+  async #suppressPolledEmail(event, reason) {
+    // Preserve polling behavior: a failed member update must not undo suppression.
+    try {
+      await this.Suppression.add({
+        email: event.email,
+        email_id: event.emailId,
+        reason,
+        created_at: event.timestamp,
+      });
+    } catch (err) {
+      if (!['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT'].includes(err.code)) {
+        throw err;
       }
-      DomainEvents.dispatch(
-        EmailSuppressedEvent.create(
-          {
-            emailAddress: event.email,
-            emailId: event.emailId,
-            reason: reason,
-          },
-          event.timestamp,
-        ),
+      logging.info(
+        `Re-dispatching EmailSuppressedEvent for existing suppression (${reason}): ${event.email}`,
       );
-    };
-    DomainEvents.subscribe(EmailBouncedEvent, handleEvent('bounce'));
-    DomainEvents.subscribe(SpamComplaintEvent, handleEvent('spam'));
+    }
+    this.#dispatchSuppressedEvent(event, reason);
+    const member = await this.membersRepository.get({ email: event.email });
+    if (member) {
+      await this.membersRepository.update({ email_disabled: true }, { id: member.id });
+    }
+  }
+
+  #dispatchSuppressedEvent(event, reason) {
+    DomainEvents.dispatch(
+      EmailSuppressedEvent.create(
+        {
+          emailAddress: event.email,
+          emailId: event.emailId,
+          reason,
+        },
+        event.timestamp,
+      ),
+    );
+  }
+
+  async init({ membersRepository }) {
+    this.membersRepository = membersRepository;
   }
 }
 

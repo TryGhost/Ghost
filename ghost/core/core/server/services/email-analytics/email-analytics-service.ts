@@ -69,7 +69,7 @@ export type EmailAnalyticsFetchResult = {
   result: EventProcessingResult;
 };
 
-type FetchEvents = (options: {
+export type FetchEvents = (options: {
   batchHandler: (events: any[]) => Promise<void>;
   begin: Date;
   end: Date;
@@ -512,6 +512,7 @@ export class EmailAnalyticsService {
         permanentFailed: processingResult.permanentFailed,
         unsubscribed: processingResult.unsubscribed,
         complained: processingResult.complained,
+        ignored: processingResult.ignored,
         unhandled: processingResult.unhandled,
         unprocessable: processingResult.unprocessable,
       };
@@ -530,6 +531,7 @@ export class EmailAnalyticsService {
         permanentFailed: processingResult.permanentFailed - beforeCounts.permanentFailed,
         unsubscribed: processingResult.unsubscribed - beforeCounts.unsubscribed,
         complained: processingResult.complained - beforeCounts.complained,
+        ignored: processingResult.ignored - beforeCounts.ignored,
         unhandled: processingResult.unhandled - beforeCounts.unhandled,
         unprocessable: processingResult.unprocessable - beforeCounts.unprocessable,
         emailIds: processingResult.emailIds.filter((id) => !beforeEmailIds.has(id)),

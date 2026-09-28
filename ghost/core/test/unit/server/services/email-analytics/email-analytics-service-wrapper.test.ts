@@ -34,7 +34,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
         get: (key?: string) => (key ? configOverrides[key] : undefined),
       },
       queries: sinon.createStubInstance(Queries),
-      mailgunTags: [],
+      fetchEvents: sinon.stub().resolves(),
       jobNames: {
         latestNonOpened: 'email-analytics-latest-others',
         missing: 'email-analytics-missing',
@@ -48,9 +48,6 @@ describe('EmailAnalyticsServiceWrapper', function () {
           opened: 'opened_at',
           failed: 'failed_at',
         },
-      },
-      settingsCache: {
-        get: sinon.stub(),
       },
       createEventProcessor: sinon.stub().returns({
         process: sinon.stub().resolves(),
@@ -345,7 +342,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
       jobType: jobTypes.gifts,
       config: { get: sinon.stub() },
       queries: sinon.createStubInstance(Queries),
-      mailgunTags: [],
+      fetchEvents: sinon.stub().resolves(),
       jobNames: {
         latestNonOpened: 'email-analytics-gifts-latest-others',
         missing: 'email-analytics-gifts-missing',
@@ -359,7 +356,6 @@ describe('EmailAnalyticsServiceWrapper', function () {
           failed: 'outcome_at',
         },
       },
-      settingsCache: { get: sinon.stub() },
       createEventProcessor: sinon.stub().returns({
         processBatch: sinon.stub().resolves(),
       }),

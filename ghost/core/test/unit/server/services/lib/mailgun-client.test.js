@@ -532,48 +532,52 @@ describe('MailgunClient', function () {
       assert(sendMock.isDone());
     });
 
-    it('sends an email with tracking opens enabled', async function () {
-      const configStub = sinon.stub(config, 'get');
-      configStub.withArgs('bulkEmail').returns({
-        mailgun: {
-          apiKey: 'apiKey',
-          domain: 'domain.com',
-          baseUrl: 'https://api.mailgun.net/v3',
-        },
-        batchSize: 1000,
-      });
-      const message = {
-        subject: 'Test Subject',
-        from: 'from@example.com',
-        replyTo: 'replyTo@example.com',
-        html: '<p>Test Content</p>',
-        plaintext: 'Test Content',
-        track_opens: true,
-      };
-      const recipientData = {
-        'test@example.com': {
-          name: 'Test User',
-          unsubscribe_url: 'https://example.com/unsubscribe',
-          list_unsubscribe: 'https://example.com/unsubscribe',
-        },
-      };
-      // Request body is multipart/form-data, so we need to check the body manually with some regex
-      // We can't use nock's JSON body matching because it doesn't support multipart/form-data
-      const sendMock = nock('https://api.mailgun.net')
-        // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
-        .post('/v3/domain.com/messages', function (body) {
-          const regexList = [/form-data; name="o:tracking-opens"[^]*yes/m];
-          return regexList.every((regex) => regex.test(body));
-        })
-        .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
-          'Content-Type': 'application/json',
+    for (const trackOpens of [true, false, undefined]) {
+      it(`preserves Mailgun open tracking options when track_opens is ${trackOpens}`, async function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('bulkEmail').returns({
+          mailgun: {
+            apiKey: 'apiKey',
+            domain: 'domain.com',
+            baseUrl: 'https://api.mailgun.net/v3',
+          },
+          batchSize: 1000,
         });
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          replyTo: 'replyTo@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          track_opens: trackOpens,
+        };
+        const recipientData = {
+          'test@example.com': {
+            name: 'Test User',
+            unsubscribe_url: 'https://example.com/unsubscribe',
+            list_unsubscribe: 'https://example.com/unsubscribe',
+          },
+        };
+        // Request body is multipart/form-data, so we need to check the body manually with some regex
+        // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+        const sendMock = nock('https://api.mailgun.net')
+          // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+          .post('/v3/domain.com/messages', function (body) {
+            if (trackOpens) {
+              return /form-data; name="o:tracking-opens"\r?\n\r?\nyes\r?\n--/m.test(body);
+            }
+            return !body.includes('name="o:tracking-opens"');
+          })
+          .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+            'Content-Type': 'application/json',
+          });
 
-      const mailgunClient = new MailgunClient({ config, settings });
-      const response = await mailgunClient.send(message, recipientData, []);
-      assert(response.id === 'message-id');
-      assert(sendMock.isDone());
-    });
+        const mailgunClient = new MailgunClient({ config, settings });
+        const response = await mailgunClient.send(message, recipientData, []);
+        assert(response.id === 'message-id');
+        assert(sendMock.isDone());
+      });
+    }
 
     it('sends an email with delivery time', async function () {
       const configStub = sinon.stub(config, 'get');
@@ -1173,6 +1177,27 @@ describe('MailgunClient', function () {
   });
 
   describe('normalizeEvent()', function () {
+    it('normalizes a null status code without discarding the event', async function () {
+      const { emailEventSchema } = await import('@tryghost/adapter-base-email');
+      const mailgunClient = new MailgunClient({ config, settings });
+      const event = mailgunClient.normalizeEvent({
+        id: 'event',
+        event: 'failed',
+        severity: 'permanent',
+        recipient: 'reader@example.com',
+        timestamp: 1614275662,
+        message: { headers: { 'message-id': 'message' } },
+        'user-variables': { 'email-id': '5fbe5d9607bdfa3765dc3819' },
+        'delivery-status': { code: null, description: 'Delivery status description' },
+      });
+
+      const parsed = emailEventSchema.parse({ ...event, family: 'newsletters' });
+      assert.equal(parsed.type, 'failed');
+      assert.equal(parsed.error.code, undefined);
+      assert.equal(parsed.error.message, 'Delivery status description');
+      assert.equal(parsed.providerId, 'message');
+    });
+
     it('works', function () {
       const event = {
         id: 'pl271FzxTTmGRW8Uj3dUWw',

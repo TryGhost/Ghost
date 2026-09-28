@@ -341,6 +341,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
+  const automationsApi = require('./server/services/automations/automations-api');
   const mentionsService = require('./server/services/mentions');
   const tagsPublic = require('./server/services/tags-public');
   const postsPublic = require('./server/services/posts-public');
@@ -356,7 +357,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const explorePingService = require('./server/services/explore-ping');
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
-  const automationsApi = require('./server/services/automations/automations-api');
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
@@ -370,6 +370,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
 
   // Initialize things that other services depend on first.
   emailAddressService.init();
+  require('./server/services/email-provider').init();
   const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
   schedulerAdapter.run();
@@ -387,12 +388,14 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     }, 'Stripe');
   }
 
+  // Members captures attribution during construction; email services need the members API.
+  memberAttribution.init();
+  await members.init();
+
   await Promise.all([
     identityTokens.init(),
-    memberAttribution.init(),
     mentionsService.init({ jobsService }),
     staffService.init(),
-    members.init(),
     tiers.init(),
     tagsPublic.init(),
     postsPublic.init(),
@@ -403,6 +406,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     audienceFeedback.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
+      provider: require('./server/services/email-provider').getProvider(),
       automationsApi,
       config,
       db,
@@ -413,12 +417,11 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       models,
       metrics,
       prometheusClient,
-      settingsCache,
     }),
     webhooks.listen(),
     comments.init(),
     linkTracking.init(),
-    emailSuppressionList.init(),
+    emailSuppressionList.init({ membersRepository: members.api.members }),
     slackNotifications.init(),
     mediaInliner.init(),
     contentImport.init(),

@@ -2,6 +2,7 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
 const { escapeExpression } = require('handlebars');
+const { getMailgunMessageId } = require('../lib/mailgun-message-id');
 
 /**
  * @typedef {object} Config
@@ -167,9 +168,14 @@ class MailgunEmailProvider {
       logging.info(`Sent message (${Date.now() - startTime}ms)`);
 
       // Return mailgun provider id, trim <> from response
-      return {
-        id: response.id === null ? null : response.id.trim().replace(/^<|>$/g, ''),
-      };
+      const id = response?.id === null ? null : getMailgunMessageId(response);
+      if (id === undefined) {
+        throw new errors.EmailError({
+          message: 'Mailgun did not return a message ID',
+          code: 'EMAIL_NOT_ACCEPTED',
+        });
+      }
+      return { id };
     } catch (e) {
       let ghostError;
       if (e.error && e.messageData) {
