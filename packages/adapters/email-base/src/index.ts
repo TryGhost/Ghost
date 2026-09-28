@@ -10,8 +10,7 @@ export const emailEventSchema = z
     family: emailFamilySchema,
     type: z.enum(['delivered', 'opened', 'failed', 'unsubscribed', 'complained']),
     severity: z.enum(['temporary', 'permanent']).optional(),
-    // Ghost validates member addresses. Provider events must also accept those
-    // addresses, including international characters and uncommon local parts.
+    // Accept all addresses allowed by Ghost's member validator.
     recipientEmail: z.string().min(1).max(191),
     providerId: z.string().max(1000).default(''),
     emailId: z.string().length(24).optional(),
@@ -24,8 +23,7 @@ export const emailEventSchema = z
       })
       .nullable()
       .optional(),
-    // A permanent rejection is not necessarily an invalid mailbox. Providers
-    // must classify this explicitly; transport (poll/webhook) is irrelevant.
+    // Providers decide which permanent failures require suppression.
     suppress: z.boolean().default(false),
   })
   .superRefine((event, ctx) => {

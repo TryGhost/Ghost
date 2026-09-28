@@ -7,7 +7,7 @@ import { EventProcessingResult } from './event-processing-result';
 
 const JOB_PREFIX = 'email-analytics-webhook-stats-';
 
-/** Durable, coalesced statistics work. Recipient and safety writes stay in the webhook. */
+/** Queues and batches newsletter statistics across webhook requests. */
 export class WebhookStatsAggregator {
   private running = false;
   private readonly deps: {
@@ -27,7 +27,7 @@ export class WebhookStatsAggregator {
       ]),
     ].sort();
 
-    // Fixed-size inserts bound SQL parameters even for a multi-event notification.
+    // Keep inserts within database parameter limits.
     for (let offset = 0; offset < names.length; offset += 100) {
       await this.deps
         .knex('jobs')
@@ -82,7 +82,7 @@ export class WebhookStatsAggregator {
               assert.equal(released, 1, 'Could not release webhook statistics lock');
             } catch (err) {
               logging.error(err);
-              // Never return a session with an uncertain advisory lock to the pool.
+              // Discard the connection if its lock may still be held.
               await knex.client.destroyRawConnection(connection);
             }
           }
@@ -96,8 +96,7 @@ export class WebhookStatsAggregator {
   }
 
   private async drain(connection: unknown): Promise<void> {
-    // The lock and all work use the same connection: losing the lock's session
-    // also stops its writes. Each batch commits before the next batch is read.
+    // Share the lock connection so losing the lock also stops these writes.
     for (const [kind, batchSize] of [
       ['email', 1],
       ['member', 100],
@@ -134,17 +133,14 @@ export class WebhookStatsAggregator {
               new EventProcessingResult(kind === 'email' ? { emailIds: ids } : { memberIds: ids }),
               transaction,
             );
-            // Queue rows are only locked for these final deletes, after counting.
-            // A newer enqueue changes its token and survives for the next run.
-            // Legacy rows with null metadata can also be drained safely.
+            // Delete after counting, retaining work re-enqueued with a newer token.
             for (const job of jobs) {
               await transaction('jobs').where({ id: job.id, metadata: job.metadata }).delete();
             }
           },
           { connection },
         );
-        // Re-enqueued IDs behind this cursor wait until the next scheduled run,
-        // so a busy newsletter cannot force repeated counts in the same run.
+        // Re-enqueued IDs wait for the next run, keeping this run bounded.
         after = jobs[jobs.length - 1].name;
       } while (after < end.name);
     }

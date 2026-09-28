@@ -491,23 +491,6 @@ describe('automations poll', function () {
     );
   });
 
-  it('records acceptance without open tracking for a response without a provider ID', async function () {
-    const step = buildEmailStep();
-    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({
-      messageId: '<smtp-message-id>',
-      response: '250 Message accepted',
-    });
-
-    await poll(options);
-
-    sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
-    sinon.assert.calledOnceWithMatch(automationsApi.recordEmailSent, { trackOpens: false });
-    assert.equal(automationsApi.recordEmailSent.firstCall.firstArg.mailgunMessageId, undefined);
-    sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-    sinon.assert.notCalled(automationsApi.retryStep);
-  });
-
   it('snapshots enabled click tracking on the recipient', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
@@ -583,6 +566,7 @@ describe('automations poll', function () {
 
   it('does not resend accepted emails for missing or malformed tracking IDs', async () => {
     const step = buildEmailStep();
+    settingsCacheGet.withArgs('email_track_opens').returns(true);
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     for (const response of [
       null,
@@ -595,6 +579,10 @@ describe('automations poll', function () {
       await poll(options);
     }
     assert.equal(automationsApi.recordEmailSent.callCount, 5);
+    for (const [recipient] of automationsApi.recordEmailSent.args) {
+      assert.equal(recipient.trackOpens, false);
+      assert.equal(recipient.mailgunMessageId, undefined);
+    }
     assert.equal(automationsApi.finishStepAndEnqueueNext.callCount, 5);
     sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
     sinon.assert.notCalled(automationsApi.retryStep);
@@ -657,35 +645,33 @@ describe('automations poll', function () {
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, retryAt);
   });
 
-  for (const attempts of [1, 10]) {
-    it(`completes an unconfigured Mailgun automation without retrying on attempt ${attempts}`, async function () {
-      sinon.stub(MailgunClient.prototype, 'getInstance').returns(null);
-      const adapter = new MailgunEmail();
-      memberWelcomeEmailService.api.sendAutomationEmail.callsFake(async ({ member, email }) =>
-        adapter.sendSingle({
-          family: 'automations',
-          to: member.email,
-          from: 'site@example.com',
-          subject: email.subject,
-          html: '<p>Automation</p>',
-          text: 'Automation',
-        }),
-      );
-      const step = buildEmailStep({ step_attempts: attempts });
-      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-      settingsCacheGet.withArgs('email_track_opens').returns(true);
+  it('completes an unconfigured Mailgun automation without retrying', async function () {
+    sinon.stub(MailgunClient.prototype, 'getInstance').returns(null);
+    const adapter = new MailgunEmail();
+    memberWelcomeEmailService.api.sendAutomationEmail.callsFake(async ({ member, email }) =>
+      adapter.sendSingle({
+        family: 'automations',
+        to: member.email,
+        from: 'site@example.com',
+        subject: email.subject,
+        html: '<p>Automation</p>',
+        text: 'Automation',
+      }),
+    );
+    const step = buildEmailStep();
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    settingsCacheGet.withArgs('email_track_opens').returns(true);
 
-      await poll(options);
+    await poll(options);
 
-      sinon.assert.calledOnceWithMatch(automationsApi.recordEmailSent, { trackOpens: false });
-      assert.equal(automationsApi.recordEmailSent.firstCall.firstArg.mailgunMessageId, undefined);
-      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-      sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
-      sinon.assert.notCalled(automationsApi.retryStep);
-      sinon.assert.notCalled(options.enqueueAnotherPollAt);
-      sinon.assert.notCalled(automationsApi.markStepTerminal);
-    });
-  }
+    sinon.assert.calledOnceWithMatch(automationsApi.recordEmailSent, { trackOpens: false });
+    assert.equal(automationsApi.recordEmailSent.firstCall.firstArg.mailgunMessageId, undefined);
+    sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+    sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
+    sinon.assert.notCalled(automationsApi.retryStep);
+    sinon.assert.notCalled(options.enqueueAnotherPollAt);
+    sinon.assert.notCalled(automationsApi.markStepTerminal);
+  });
 
   it('permanently fails email send failures at the attempt limit', async function () {
     const step = buildEmailStep({ step_attempts: 10 });

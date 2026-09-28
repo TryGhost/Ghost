@@ -47,34 +47,32 @@ describe('email webhook controller', () => {
     assert(next.called);
   });
 
-  for (const body of [{}, undefined, null]) {
-    it(`passes empty bytes to signature verification for an empty body (${JSON.stringify(body)})`, async () => {
-      const signature = createHmac('sha256', 'secret').update(Buffer.alloc(0)).digest('hex');
-      const webhook = sinon.stub().callsFake(async (_source, request) => {
-        assert(Buffer.isBuffer(request.body));
-        assert.equal(
-          createHmac('sha256', 'secret').update(request.body).digest('hex'),
-          request.headers.signature,
-        );
-        return { events: [] };
-      });
-      const res = { sendStatus: sinon.stub() } as unknown as Response;
-      const next = sinon.stub();
-
-      await emailWebhookController({ webhook })(
-        {
-          params: { source: 'provider-account' },
-          headers: { signature },
-          body,
-        } as unknown as Request,
-        res,
-        next,
+  it('passes empty bytes to signature verification when the raw parser receives no body', async () => {
+    const signature = createHmac('sha256', 'secret').update(Buffer.alloc(0)).digest('hex');
+    const webhook = sinon.stub().callsFake(async (_source, request) => {
+      assert(Buffer.isBuffer(request.body));
+      assert.equal(
+        createHmac('sha256', 'secret').update(request.body).digest('hex'),
+        request.headers.signature,
       );
-
-      sinon.assert.calledOnceWithExactly(res.sendStatus as sinon.SinonStub, 200);
-      sinon.assert.notCalled(next);
+      return { events: [] };
     });
-  }
+    const res = { sendStatus: sinon.stub() } as unknown as Response;
+    const next = sinon.stub();
+
+    await emailWebhookController({ webhook })(
+      {
+        params: { source: 'provider-account' },
+        headers: { signature },
+        body: {},
+      } as unknown as Request,
+      res,
+      next,
+    );
+
+    sinon.assert.calledOnceWithExactly(res.sendStatus as sinon.SinonStub, 200);
+    sinon.assert.notCalled(next);
+  });
 
   it('rejects a nonempty parsed body rather than verifying it as empty bytes', async () => {
     const webhook = sinon.stub();

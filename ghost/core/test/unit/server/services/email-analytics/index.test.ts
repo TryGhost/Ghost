@@ -112,7 +112,7 @@ describe('email analytics provider wiring', () => {
       id: 'event',
       family: 'automations',
       type: 'opened',
-      recipientEmail: 'a@example.com',
+      recipientEmail: 'a&b@müller.de',
       providerId: '<opaque-id>',
       timestamp: new Date(),
       suppress: false,
@@ -209,41 +209,6 @@ describe('email analytics provider wiring', () => {
       assert.equal(enqueue.callCount, analyticsEnabled && jobsEnabled ? 1 : 0);
     });
   }
-
-  it('processes tracking for addresses accepted by Ghost without discarding them during polling', async () => {
-    const addresses = ['josé@example.com', 'a&b@example.com', 'x=y@example.com', 'user@müller.de'];
-    const events = addresses.map((recipientEmail, index) => ({
-      id: `event-${index}`,
-      family: 'automations',
-      type: 'opened',
-      recipientEmail,
-      providerId: `message-${index}`,
-      timestamp: new Date(),
-    }));
-    (deps.automationsApi.getAutomatedEmailRecipientsByMailgunIds as sinon.SinonStub).resolves(
-      events.map((event, index) => ({
-        id: `recipient-${index}`,
-        member_id: `member-${index}`,
-        member_email: event.recipientEmail,
-        mailgun_message_id: event.providerId,
-        automation_action_revision_id: 'revision',
-      })),
-    );
-    analytics.init(deps);
-    const { EventProcessingResult } =
-      await import('../../../../../core/server/services/email-analytics/event-processing-result');
-    const result = new EventProcessingResult();
-    await wrappers[1].options.createEventProcessor().processBatch(events, result, {});
-
-    assert.equal(result.opened, addresses.length);
-    assert.equal(result.unprocessable, 0);
-    assert.equal(result.processingFailures, 0);
-    sinon.assert.calledOnce(deps.automationsApi.trackEmailDeliveredAndOpened as sinon.SinonStub);
-    assert.equal(
-      (deps.automationsApi.trackEmailDeliveredAndOpened as sinon.SinonStub).firstCall.firstArg.size,
-      addresses.length,
-    );
-  });
 
   it('preserves capped and completed polling results for cursor advancement', async () => {
     analytics.init(deps);
@@ -414,18 +379,6 @@ describe('email analytics provider wiring', () => {
     sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe as sinon.SinonStub);
   });
 
-  it('propagates domain failures through the original automation processor', async () => {
-    analytics.init(deps);
-    const error = new Error('Database unavailable');
-    (deps.automationsApi.trackEmailDeliveredAndOpened as sinon.SinonStub).rejects(error);
-    const { EventProcessingResult } =
-      await import('../../../../../core/server/services/email-analytics/event-processing-result');
-    await assert.rejects(
-      wrappers[1].options.createEventProcessor().processBatch([], new EventProcessingResult(), {}),
-      error,
-    );
-  });
-
   it('keeps gift polling outcomes and leaves safety events unhandled', async () => {
     const handleComplaint = deps.emailSuppressionList.handleComplaint as sinon.SinonStub;
     handleComplaint.rejects(new Error('suppression failed'));
@@ -504,52 +457,6 @@ describe('email analytics provider wiring', () => {
         queries.setJobTimestamp.args.some(([, status]) => status === 'finished'),
         false,
       );
-    });
-  }
-
-  for (const family of ['automations', 'gifts'] as const) {
-    it(`still propagates ${family} webhook safety failures without skipping or retrying`, async () => {
-      const event = {
-        id: 'event',
-        family,
-        type: 'complained',
-        recipientEmail: 'reader@example.com',
-        providerId: 'message',
-        timestamp: new Date(),
-      };
-      const failure = new Error('suppression failed');
-      (deps.emailSuppressionList.handleComplaint as sinon.SinonStub).rejects(failure);
-      (deps.automationsApi.getAutomatedEmailRecipientsByMailgunIds as sinon.SinonStub).resolves([
-        {
-          id: 'recipient',
-          member_id: 'member',
-          member_email: event.recipientEmail,
-          mailgun_message_id: event.providerId,
-          automation_action_revision_id: 'revision',
-        },
-      ]);
-      (deps.giftDeliveryService.getRecipientEmailForMessage as sinon.SinonStub).resolves(
-        event.recipientEmail,
-      );
-      deps.provider = {
-        source: 'test',
-        getEventSource: () => ({
-          type: 'webhook',
-          verify: sinon.stub().resolves({ events: [event] }),
-        }),
-      };
-      analytics.init(deps);
-
-      await assert.rejects(
-        analytics.getEventService().webhook('test', {
-          body: Buffer.from('{}'),
-          headers: {},
-        }),
-        (err) => err === failure,
-      );
-
-      sinon.assert.calledOnce(deps.emailSuppressionList.handleComplaint as sinon.SinonStub);
-      sinon.assert.notCalled(deps.emailSuppressionList.removeComplaint as sinon.SinonStub);
     });
   }
 

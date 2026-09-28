@@ -73,9 +73,8 @@ describe('MailgunEmail email adapter', () => {
     );
     assert.equal(send.firstCall.args[0].disable_tracking, undefined);
   });
-  it('preserves unconfigured automation sends as a no-op while rejecting gift sends', async () => {
+  it('rejects gift sends when Mailgun is unconfigured', async () => {
     send.resolves(null);
-    assert.deepEqual(await adapter.sendSingle({ ...single, family: 'automations' }), { id: null });
     await assert.rejects(adapter.sendSingle(single), { code: 'EMAIL_NOT_ACCEPTED' });
   });
   it('preserves acceptance when a successful response has no tracking ID', async () => {

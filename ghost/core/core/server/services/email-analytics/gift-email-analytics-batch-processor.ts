@@ -40,8 +40,7 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
   }
 
   private async processEvent(event: EmailAnalyticsEvent): Promise<EventProcessingResult> {
-    // Gifts have no marketing subscription scope and disable open tracking.
-    // Leave any provider unsubscribe in place; do not change newsletter consent.
+    // Gift emails disable open tracking and do not change marketing consent.
     if (event.type === 'opened' || event.type === 'unsubscribed') {
       return new EventProcessingResult(
         this.deps.eventSource === 'webhook' ? { ignored: 1 } : { unhandled: 1 },
@@ -77,7 +76,7 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
         });
         return new EventProcessingResult({ complained: 1 });
       }
-      // Stale delivery outcomes must still complete their safety writes on replay.
+      // A stale outcome can still carry a complaint or bounce that needs suppression.
       await this.deps.emailSuppressionList.handleBounce(suppressionEvent);
     }
 

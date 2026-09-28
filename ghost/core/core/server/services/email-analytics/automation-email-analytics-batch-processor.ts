@@ -140,7 +140,7 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
           case 'failed':
           case 'complained':
           case 'unsubscribed': {
-            // These events were unhandled by the polling automation processor.
+            // Polling only tracks deliveries and opens.
             if (this.deps.eventSource !== 'webhook') {
               eventResult = new EventProcessingResult({ unhandled: 1 });
               break;
@@ -151,7 +151,7 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
               break;
             }
             const recipientEmail = recipient.member_email;
-            // An existing message for a different address cannot be fixed by redelivery.
+            // Retrying cannot fix a recipient address mismatch.
             if (!recipientEmail || !isSameEmailAddress(recipientEmail, event.recipientEmail)) {
               logging.warn(
                 {
@@ -181,8 +181,7 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
                   email: recipientEmail,
                 });
               }
-              // Provider unsubscribes may cover shared tags or the whole domain.
-              // Updating this automation preference must not lift that protection.
+              // Keep provider protection: it may cover other email types or the whole domain.
               eventResult = new EventProcessingResult({ unsubscribed: 1 });
             } else {
               if (event.severity === 'permanent') {
@@ -202,7 +201,7 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
         result.merge(eventResult);
       }
     } catch (err) {
-      // Preserve completed delivery/open updates before retrying the failed event.
+      // Save earlier tracking updates even if a later event fails.
       if (this.deps.eventSource === 'webhook') {
         await this.deps.automationsApi
           .trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId)

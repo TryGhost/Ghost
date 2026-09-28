@@ -236,7 +236,7 @@ const processStep = async ({
           automationActionRevisionId: step.automation_action_revision_id,
           automationRunStepId: step.id,
         });
-        // Acceptance must not become a resend because tracking metadata is missing.
+        // A missing tracking ID must not cause a duplicate send.
         const parsed = z
           .object({
             id: z
@@ -247,7 +247,6 @@ const processStep = async ({
           })
           .safeParse(sendResult);
         const mailgunMessageId = parsed.success ? parsed.data.id : undefined;
-        // The bulk provider supplies the identity used to correlate events.
         const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
         try {
           await automationsApi.recordEmailSent({

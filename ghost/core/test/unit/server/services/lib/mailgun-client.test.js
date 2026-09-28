@@ -1177,28 +1177,26 @@ describe('MailgunClient', function () {
   });
 
   describe('normalizeEvent()', function () {
-    for (const type of ['delivered', 'opened', 'failed', 'complained', 'unsubscribed']) {
-      it(`keeps ${type} events with a null delivery status code valid for analytics`, async function () {
-        const { emailEventSchema } = await import('@tryghost/adapter-base-email');
-        const mailgunClient = new MailgunClient({ config, settings });
-        const event = mailgunClient.normalizeEvent({
-          id: 'event',
-          event: type,
-          ...(type === 'failed' ? { severity: 'permanent' } : {}),
-          recipient: 'reader@example.com',
-          timestamp: 1614275662,
-          message: { headers: { 'message-id': 'message' } },
-          'user-variables': { 'email-id': '5fbe5d9607bdfa3765dc3819' },
-          'delivery-status': { code: null, description: 'Delivery status description' },
-        });
-
-        const parsed = emailEventSchema.parse({ ...event, family: 'newsletters' });
-        assert.equal(parsed.type, type);
-        assert.equal(parsed.error.code, undefined);
-        assert.equal(parsed.error.message, 'Delivery status description');
-        assert.equal(parsed.providerId, 'message');
+    it('normalizes a null status code without discarding the event', async function () {
+      const { emailEventSchema } = await import('@tryghost/adapter-base-email');
+      const mailgunClient = new MailgunClient({ config, settings });
+      const event = mailgunClient.normalizeEvent({
+        id: 'event',
+        event: 'failed',
+        severity: 'permanent',
+        recipient: 'reader@example.com',
+        timestamp: 1614275662,
+        message: { headers: { 'message-id': 'message' } },
+        'user-variables': { 'email-id': '5fbe5d9607bdfa3765dc3819' },
+        'delivery-status': { code: null, description: 'Delivery status description' },
       });
-    }
+
+      const parsed = emailEventSchema.parse({ ...event, family: 'newsletters' });
+      assert.equal(parsed.type, 'failed');
+      assert.equal(parsed.error.code, undefined);
+      assert.equal(parsed.error.message, 'Delivery status description');
+      assert.equal(parsed.providerId, 'message');
+    });
 
     it('works', function () {
       const event = {

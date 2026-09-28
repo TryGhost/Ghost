@@ -111,8 +111,7 @@ export const init = ({
     config.get('emailAnalytics:enabled') && config.get('backgroundJobs:emailAnalytics'),
   );
 
-  // Each fetch or webhook owns its buffers; concurrent requests must not flush
-  // or clear another request's pending newsletter updates.
+  // Separate buffers prevent concurrent requests from flushing each other's updates.
   const createEventProcessor = (
     family: EmailFamily,
     aggregationQueries = queries,
@@ -196,8 +195,7 @@ export const init = ({
               continue;
             }
             result.merge({ unprocessable: 1 });
-            // Invalid rows still count towards the polling limit and cursor.
-            // Never let a malformed timestamp replace the last usable cursor.
+            // Count skipped rows without replacing the cursor with an invalid timestamp.
             const timestamp = emailEventSchema.shape.timestamp.safeParse(event?.timestamp);
             if (
               timestamp.success &&

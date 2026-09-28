@@ -27,7 +27,7 @@ const tags: Record<EmailFamily, string> = {
   gifts: 'gift-delivery',
 };
 
-/** Keeps Mailgun wire formats, envelopes, tags and error codes at the edge. */
+/** Translates between Mailgun and the shared email contract. */
 export default class MailgunEmail extends EmailProviderBase {
   readonly source = 'mailgun';
   private readonly client = new MailgunClient({ config, settings });
@@ -58,8 +58,7 @@ export default class MailgunEmail extends EmailProviderBase {
       },
       [],
     );
-    // Preserve the legacy automation no-op: an unconfigured client returns null
-    // and the step completes without a tracking ID. Gifts still require acceptance.
+    // Unconfigured Mailgun has always completed automation steps without sending.
     if (response === null && message.family !== 'automations') {
       throw new errors.EmailError({
         message: 'Mailgun is not configured',

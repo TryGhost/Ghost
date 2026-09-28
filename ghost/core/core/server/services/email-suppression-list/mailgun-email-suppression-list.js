@@ -125,8 +125,7 @@ class MailgunEmailSuppressionList {
   }
 
   async handleBounce(event, options) {
-    // Normalized provider events classify invalid mailboxes explicitly. Keep
-    // the legacy classification for callers that do not yet pass this field.
+    // Older callers use Mailgun error codes; adapters set suppress explicitly.
     const suppress = event.suppress ?? [605, 607].includes(event.error?.code);
     if (suppress) {
       await this.suppressEmail(event, 'bounce', options);
@@ -163,8 +162,7 @@ class MailgunEmailSuppressionList {
             throw err;
           }
         }
-        // Resolve and lock the original address, so an old callback cannot
-        // disable the member's replacement address. Repair drift on replay too.
+        // Lock the original address to avoid disabling a replacement address.
         const member = await this.membersRepository.get(
           { email: event.email },
           { transacting, forUpdate: true },
@@ -183,13 +181,12 @@ class MailgunEmailSuppressionList {
         err,
       });
     }
-    // Notifications follow the completed safety writes; they do not own them.
+    // Notify subscribers only after suppression and member updates succeed.
     this.#dispatchSuppressedEvent(event, reason);
   }
 
   async #suppressPolledEmail(event, reason) {
-    // Preserve the former polling listeners' separate writes: a member update
-    // failure must not roll back a saved suppression or its notification.
+    // Preserve polling behavior: a failed member update must not undo suppression.
     try {
       await this.Suppression.add({
         email: event.email,

@@ -71,11 +71,10 @@ export class EmailEventService {
           })
         : null;
       if (invalidError) {
-        // Report an adapter contract violation without logging recipient addresses or payloads.
+        // Log invalid indexes, not recipient addresses or payloads.
         logging.error(invalidError);
       }
-      // Valid siblings still run. A processing failure takes precedence so it can
-      // retry; otherwise reject malformed events explicitly rather than acknowledging them.
+      // Process valid events first; a retryable failure takes precedence over invalid input.
       await this.processEvents(valid);
       if (invalidError) {
         throw invalidError;
@@ -129,8 +128,7 @@ export class EmailEventService {
     try {
       let unmatched = await process(events);
       if (unmatched.length) {
-        // No transaction is held while waiting for the send to save its ID.
-        // Retry only unmatched events, once per notification.
+        // Give the send time to save its ID; retry only unmatched events, without a transaction.
         await new Promise<void>((resolve) => {
           setTimeout(resolve, WEBHOOK_LOOKUP_RETRY_MS);
         });
@@ -144,8 +142,7 @@ export class EmailEventService {
         }
       }
     } finally {
-      // Persist pending statistics before acknowledging, including completed
-      // events in a partly failed notification. Recalculation happens on schedule.
+      // Queue statistics for completed events even when another event fails.
       for (const { result } of processors.values()) {
         await this.deps.queueStats(result);
       }

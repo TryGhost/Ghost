@@ -251,8 +251,7 @@ class NewsletterEmailEventStorage {
           email_address: event.email,
         });
       } catch (err) {
-        // Polling historically skipped cleanup after any complaint insert error.
-        // Webhook redelivery must still finish cleanup after a duplicate insert.
+        // Polling skips cleanup on insert errors; webhooks retry cleanup for duplicates.
         if (
           this.#eventSource !== 'webhook' ||
           !['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT'].includes(err.code)
@@ -272,8 +271,7 @@ class NewsletterEmailEventStorage {
       }
     }
     if (this.#eventSource !== 'webhook') {
-      // Polling previously dispatched suppression after complaint storage/cleanup,
-      // including when either of those operations failed.
+      // Polling starts suppression even if complaint storage or cleanup failed.
       void this.#handleSuppression('handleComplaint', event);
     }
   }
@@ -285,7 +283,7 @@ class NewsletterEmailEventStorage {
       if (this.#eventSource === 'webhook') {
         throw err;
       }
-      // The former polling suppression listener logged errors independently of analytics.
+      // Background polling failures are logged independently of analytics.
       logging.error(err);
     }
   }

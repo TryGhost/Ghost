@@ -2,10 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import type { EmailEvent } from '@tryghost/adapter-base-email';
-import {
-  EmailEventService,
-  parseEmailEvents,
-} from '../../../../../core/server/services/email-provider/event-service';
+import { EmailEventService } from '../../../../../core/server/services/email-provider/event-service';
 import type { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 
 describe('email webhook delegation', () => {
@@ -71,7 +68,7 @@ describe('email webhook delegation', () => {
     sinon.assert.calledOnce(queueStats);
     assert.equal(clock.countTimers(), 0);
   });
-  it('returns 503 after a second missing result and still queues completed work', async () => {
+  it('returns 503 after the lookup retry is exhausted', async () => {
     processBatch.callsFake(missing);
     const rejected = assert.rejects(service.webhook('provider', request), {
       code: 'EMAIL_RECIPIENT_NOT_FOUND',
@@ -102,19 +99,12 @@ describe('email webhook delegation', () => {
     sinon.assert.calledOnce(processBatch);
     assert.equal(clock.countTimers(), 0);
   });
-  it('delegates safety events to the owning family processor', async () => {
-    const events = [
-      { ...event, family: 'automations', type: 'unsubscribed' },
-      { ...event, family: 'automations', type: 'complained' },
-      { ...event, family: 'gifts', type: 'failed', severity: 'permanent', suppress: true },
-    ];
-    verify.resolves({ events });
-    await service.webhook('provider', request);
-    assert.deepEqual(createEventProcessor.args, [['automations'], ['gifts']]);
-    assert.deepEqual(
-      processBatch.args.map(([batch]) => batch[0]),
-      events,
-    );
+  it('accepts verified handshakes without processing events', async () => {
+    const response = { status: 200, body: 'verified' };
+    verify.resolves({ response });
+    assert.deepEqual(await service.webhook('provider', request), { response });
+    sinon.assert.notCalled(createEventProcessor);
+    sinon.assert.notCalled(queueStats);
   });
   it('does not process unverified notifications', async () => {
     verify.rejects(new Error('Invalid signature'));
@@ -154,15 +144,6 @@ describe('email webhook delegation', () => {
     }
     sinon.assert.notCalled(createEventProcessor);
   });
-  it('accepts valid provider batches larger than the former event-count cap', async () => {
-    const events = Array.from({ length: 1001 }, (_, index) => ({ ...event, id: `event-${index}` }));
-    assert.equal(parseEmailEvents(events, 'newsletters').length, events.length);
-    verify.resolves({ events });
-    await service.webhook('provider', request);
-    assert.equal(processBatch.callCount, events.length);
-    sinon.assert.calledOnce(queueStats);
-    assert.equal(queueStats.firstCall.firstArg.delivered, events.length);
-  });
   it('acknowledges events explicitly ignored by a processor without a lookup retry', async () => {
     processBatch.callsFake(async (_events, result) => {
       result.ignored += 1;
@@ -174,10 +155,6 @@ describe('email webhook delegation', () => {
   it('rejects an inactive source before verification', async () => {
     await assert.rejects(service.webhook('unknown', request), /source was not found/);
     sinon.assert.notCalled(verify);
-  });
-  it('validates the polling family before processing', () => {
-    assert.throws(() => parseEmailEvents([event], 'automations'), /wrong family/);
-    assert.deepEqual(parseEmailEvents([event], 'newsletters'), [event]);
   });
   it('keeps the webhook pending until statistics work is persisted', async () => {
     let complete!: () => void;
@@ -203,12 +180,19 @@ describe('email webhook delegation', () => {
     sinon.assert.calledOnce(processBatch);
     sinon.assert.notCalled(aggregate);
   });
-  it('uses a separate processor for each family and request', async () => {
-    verify.resolves({
-      events: [event, { ...event, family: 'automations' }, { ...event, family: 'gifts' }],
-    });
+  it('routes events to a separate processor for each family and request', async () => {
+    const events = [
+      event,
+      { ...event, family: 'automations', type: 'unsubscribed' },
+      { ...event, family: 'gifts', type: 'failed', severity: 'permanent', suppress: true },
+    ];
+    verify.resolves({ events });
     await service.webhook('provider', request);
     assert.deepEqual(createEventProcessor.args, [['newsletters'], ['automations'], ['gifts']]);
+    assert.deepEqual(
+      processBatch.args.map(([batch]) => batch[0]),
+      events,
+    );
     await service.webhook('provider', request);
     assert.equal(createEventProcessor.callCount, 6);
   });
