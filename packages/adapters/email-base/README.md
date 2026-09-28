@@ -14,11 +14,14 @@ Preserve recipient substitutions, HTML escaping of untrusted replacements,
 List-Unsubscribe headers, tracking settings and newsletter correlation metadata.
 Ghost handles click tracking.
 
-Resolve on provider acceptance, not delivery. Return a message ID for tracking,
-or `id: null` if an accepted send has no usable ID. Newsletter batches can use
-`emailId` for event matching instead. Do not reject an accepted send because its
-tracking ID is missing: doing so can cause duplicate sends. Actual send failures
-must throw; a timeout can leave acceptance uncertain.
+Resolve on provider acceptance, not delivery. Actual send failures must throw;
+a timeout can leave acceptance uncertain.
+
+- Newsletters may return `id: null` and match events using `emailId` instead.
+- Automations may return `id: null` after acceptance; Ghost completes the step
+  without delivery/open tracking, avoiding a duplicate send.
+- Gifts require a non-empty tracking ID, up to 1000 characters. An adapter must
+  support this before sending gifts; Ghost treats a missing ID as a failed send.
 
 `NewsletterMessage.emailId` is null for test sends. Mark these in provider metadata
 and exclude their callbacks. Do not classify every callback without an email ID as

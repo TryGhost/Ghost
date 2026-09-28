@@ -34,6 +34,7 @@ describe('Member Welcome Emails Integration', function () {
 
   beforeAll(async function () {
     await testUtils.setup('default')();
+    require('../../../core/server/services/email-provider').init();
     membersService = require('../../../core/server/services/members');
     await membersService.init();
     defaultEmailDesignSettingId = await db
@@ -536,13 +537,13 @@ describe('Member Welcome Emails Integration', function () {
       );
     });
 
-    it('returns the mail transport response for automation emails', async function () {
+    it('returns the normalized provider ID for automation emails', async function () {
       const sendResponse = { id: '<mailgun-message-id>' };
       MailgunClient.prototype.send.resolves(sendResponse);
 
       const result = await sendAutomationEmail();
 
-      assert.equal(result, sendResponse);
+      assert.deepEqual(result, { id: 'mailgun-message-id' });
     });
 
     it('uses email design sender details for automation emails', async function () {

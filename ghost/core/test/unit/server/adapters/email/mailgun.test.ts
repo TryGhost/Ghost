@@ -77,9 +77,9 @@ describe('MailgunEmail email adapter', () => {
     send.resolves(null);
     await assert.rejects(adapter.sendSingle(single), { code: 'EMAIL_NOT_ACCEPTED' });
   });
-  it('preserves acceptance when a successful response has no tracking ID', async () => {
+  it('preserves automation acceptance when a successful response has no tracking ID', async () => {
     send.resolves({});
-    assert.deepEqual(await adapter.sendSingle(single), { id: null });
+    assert.deepEqual(await adapter.sendSingle({ ...single, family: 'automations' }), { id: null });
     send.rejects(new Error('send rejected'));
     for (const family of ['gifts', 'automations'] as const) {
       await assert.rejects(adapter.sendSingle({ ...single, family }), /send rejected/);

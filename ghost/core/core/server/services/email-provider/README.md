@@ -31,7 +31,9 @@ provider migrations.
 - Newsletters keep their rendering, recipient batching and retries in `email-service`.
 - Automations and gift delivery use the shared single-recipient transport.
   Automations keep their status and Updates & Announcements eligibility checks;
-  `email_disabled` alone does not end a step.
+  `email_disabled` alone does not end a step. Webhook providers check local
+  suppression before either kind of send; a blocked send uses the existing
+  failure/retry handling. Polling providers keep their existing sending behavior.
 - Gifts fall back to GhostMailer when bulk email is unconfigured. Buyer notices,
   login messages and the older welcome-email flow also use GhostMailer.
 
@@ -65,6 +67,8 @@ message with a different address is logged and ignored. Automation unsubscribes
 preserve newsletter subscriptions and provider protection; gift unsubscribes are
 ignored. Newsletter unsubscribes follow the member ID even after an address change,
 then remove the provider entry for the original address after saving preferences.
+Webhook newsletter unsubscribes lock the member while reading and saving subscriptions,
+so concurrent requests cannot restore each other's removed subscriptions.
 
 ### Webhooks
 
@@ -124,11 +128,10 @@ the same connection for the lock and writes. SQLite uses an in-process guard.
 ## Limitations
 
 - Provider acceptance and saving a message ID are separate. A crash between them
-  needs reconciliation; this is not exactly-once sending.
+  needs reconciliation; callbacks without a matching record continue returning 503.
+  The lookup retry cannot repair a permanently missing record.
 - Callbacks are not stored in an event inbox. Delayed unsubscribe or suppression
   events can undo a later resubscription or manual removal of suppression.
-- Providers without remote suppression need separate work to enforce local
-  suppression when sending automations.
 - A new provider must support redelivery and tolerate the synchronous processing
   of its payloads. Validate HTTP behavior and throughput before deployment.
 

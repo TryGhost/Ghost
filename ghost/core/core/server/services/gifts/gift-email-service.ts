@@ -4,6 +4,7 @@ import type { GiftCadence } from './gift-schema';
 import { Color } from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
 import type { EmailProviderBase } from '@tryghost/adapter-base-email';
+import { sendSingleEmail } from '../email-provider';
 import { GIFT_DELIVERY_EMAIL_TAG } from './constants';
 import type { ConfigInstance } from '../../../shared/config/loader';
 import { formatGiftDate } from './gift-date';
@@ -25,7 +26,10 @@ interface TransactionalMailer {
   }): Promise<unknown>;
 }
 
-type BulkMailer = Pick<EmailProviderBase, 'isConfigured' | 'sendSingle' | 'source'>;
+type BulkMailer = Pick<
+  EmailProviderBase,
+  'isConfigured' | 'sendSingle' | 'getEventSource' | 'source'
+>;
 
 interface SettingsCache {
   get(key: string, options?: unknown): string | undefined;
@@ -375,7 +379,7 @@ export class GiftEmailService {
       return { providerMessageId: null };
     }
 
-    const response = await this.bulkMailer.sendSingle({
+    const response = await sendSingleEmail(this.bulkMailer, {
       family: 'gifts',
       to: recipientEmail,
       subject,

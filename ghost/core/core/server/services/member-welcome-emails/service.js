@@ -9,7 +9,7 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const emailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-const { getProvider } = require('../email-provider');
+const { getProvider, sendSingleEmail } = require('../email-provider');
 const labs = require('../../../shared/labs');
 const { Automation, EmailDesignSetting, Newsletter } = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
@@ -549,7 +549,7 @@ class MemberWelcomeEmailService {
    * @returns {Promise<unknown>}
    */
   async #sendBulkEmail({ to, subject, html, text, from, replyTo, trackOpens, listUnsubscribe }) {
-    return await this.#bulkMailer.sendSingle({
+    return await sendSingleEmail(this.#bulkMailer, {
       family: 'automations',
       to,
       subject,

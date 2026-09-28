@@ -846,6 +846,8 @@ describe('Email Event Storage', function () {
 
   for (const eventSource of ['poll', 'webhook']) {
     describe(`${eventSource} error handling`, () => {
+      const transacting = {};
+      const transaction = async (callback) => callback(transacting);
       it('honours a newsletter unsubscribe after the member changes address', async () => {
         const member = {
           id: 'member',
@@ -862,7 +864,9 @@ describe('Email Event Storage', function () {
         const handler = createEventStorage({
           eventSource,
           membersRepository: { get, update },
-          models: { Email: { findOne: sinon.stub().resolves({ get: () => 'newsletter' }) } },
+          models: {
+            Email: { transaction, findOne: sinon.stub().resolves({ get: () => 'newsletter' }) },
+          },
           emailSuppressionList: { removeUnsubscribe: cleanup },
         });
 
@@ -878,7 +882,7 @@ describe('Email Event Storage', function () {
         sinon.assert.calledOnceWithExactly(
           update,
           { newsletters: [{ id: 'other-newsletter' }] },
-          { id: member.id },
+          { id: member.id, ...(eventSource === 'webhook' ? { transacting } : {}) },
         );
         sinon.assert.calledOnceWithExactly(cleanup, 'old@example.com', {
           requireSuccess: eventSource === 'webhook',
@@ -899,7 +903,9 @@ describe('Email Event Storage', function () {
           const handler = createEventStorage({
             eventSource,
             membersRepository: { get, update },
-            models: { Email: { findOne: sinon.stub().resolves({ get: () => 'newsletter' }) } },
+            models: {
+              Email: { transaction, findOne: sinon.stub().resolves({ get: () => 'newsletter' }) },
+            },
             emailSuppressionList: { removeUnsubscribe: cleanup },
           });
           const event = EmailUnsubscribedEvent.create({

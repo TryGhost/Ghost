@@ -7,6 +7,7 @@ import errors from '@tryghost/errors';
 import { EmailProviderBase, type EmailEvent, type EventSource } from '@tryghost/adapter-base-email';
 import { AdapterManager } from '../../../../core/server/services/adapter-manager/adapter-manager';
 import { EmailEventService } from '../../../../core/server/services/email-provider/event-service';
+import { sendSingleEmail } from '../../../../core/server/services/email-provider';
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import { AutomationEmailAnalyticsBatchProcessor } from '../../../../core/server/services/email-analytics/automation-email-analytics-batch-processor';
 import { GiftEmailAnalyticsBatchProcessor } from '../../../../core/server/services/email-analytics/gift-email-analytics-batch-processor';
@@ -602,6 +603,90 @@ describe('provider email events', () => {
       true,
     );
     sinon.assert.calledOnce(provider.removeSuppression);
+    const send = sinon.spy(provider, 'sendSingle');
+    for (const family of ['automations', 'gifts'] as const) {
+      await assert.rejects(
+        sendSingleEmail(provider, {
+          family,
+          to: event.recipientEmail,
+          from: 'site@example.com',
+          subject: 'Follow-up',
+          html: '<p>Follow-up</p>',
+          text: 'Follow-up',
+        }),
+        { code: 'EMAIL_SUPPRESSED' },
+      );
+    }
+    sinon.assert.notCalled(send);
+  });
+
+  it('keeps both newsletter unsubscribes when webhooks overlap for the same member', async () => {
+    const models = require('../../../../core/server/models');
+    const newsletter = await models.Newsletter.add({ name: 'Other newsletter', slug: 'other' });
+    await knex('members_newsletters').insert({
+      id: newId(),
+      member_id: memberId,
+      newsletter_id: newsletter.id,
+    });
+    const otherEmailId = newId();
+    const email = await knex('emails').where({ id: event.emailId }).first();
+    await knex('emails').insert({
+      ...email,
+      id: otherEmailId,
+      uuid: randomUUID(),
+      post_id: newId(),
+      newsletter_id: newsletter.id,
+    });
+    const recipient = await knex('email_recipients').where({ id: recipientId }).first();
+    await knex('email_recipients').insert({ ...recipient, id: newId(), email_id: otherEmailId });
+
+    let release!: () => void;
+    let read!: () => void;
+    let competing!: () => void;
+    const paused = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const firstRead = new Promise<void>((resolve) => {
+      read = resolve;
+    });
+    const secondStarted = new Promise<void>((resolve) => {
+      competing = resolve;
+    });
+    let hasSnapshot = false;
+    const get = membersRepository.get.bind(membersRepository);
+    sinon.stub(membersRepository, 'get').callsFake(async (...args: any[]) => {
+      if (hasSnapshot) {
+        competing();
+      }
+      const member = await get(...args);
+      if (!hasSnapshot && args[1]?.withRelated?.includes('newsletters')) {
+        hasSnapshot = true;
+        read();
+        await paused;
+      }
+      return member;
+    });
+    const edited = sinon
+      .spy(require('../../../../core/server/lib/common/events'), 'emit')
+      .withArgs('member.edited', sinon.match.has('id', memberId));
+    const unsubscribe = { ...event, type: 'unsubscribed' };
+    const first = service.webhook(provider.source, sign({ events: [unsubscribe] }));
+    await firstRead;
+    const second = service.webhook(
+      provider.source,
+      sign({
+        events: [{ ...unsubscribe, id: 'other-unsubscribe', emailId: otherEmailId }],
+      }),
+    );
+    try {
+      await secondStarted;
+    } finally {
+      release();
+      await Promise.all([first, second]);
+    }
+    assert.equal((await knex('members_newsletters').where({ member_id: memberId })).length, 0);
+    sinon.assert.calledTwice(edited);
+    sinon.assert.calledTwice(provider.removeSuppression);
   });
 
   it('rolls back suppression on a member update failure and safely retries a complaint', async () => {

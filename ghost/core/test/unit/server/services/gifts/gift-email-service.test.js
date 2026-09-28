@@ -76,6 +76,7 @@ describe('GiftEmailService', function () {
     bulkMailer = {
       isConfigured: sinon.stub().returns(true),
       source: 'test-provider',
+      getEventSource: () => ({ type: 'poll' }),
       sendSingle: sinon.stub().resolves({ id: 'provider-123' }),
     };
     service = new GiftEmailService({
@@ -706,7 +707,7 @@ describe('GiftEmailService', function () {
     });
 
     it('rejects delivery when bulk Mailgun does not return an acceptance ID', async function () {
-      bulkMailer.sendSingle.resolves('Message sent');
+      bulkMailer.sendSingle.resolves({ id: null });
 
       await assert.rejects(
         service.sendGiftDelivery({

@@ -118,6 +118,7 @@ export abstract class EmailProviderBase {
     message: NewsletterMessage,
     options: SendingOptions,
   ): Promise<{ id: string | null }>;
+  /** Gifts require a non-empty tracking ID; only automations allow an accepted send with id: null. */
   abstract sendSingle(message: SingleMessage): Promise<{ id: string | null }>;
   abstract getMaximumRecipients(): number;
   abstract getTargetDeliveryWindow(): number;

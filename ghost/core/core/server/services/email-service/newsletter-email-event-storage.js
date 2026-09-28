@@ -210,16 +210,29 @@ class NewsletterEmailEventStorage {
 
   async handleUnsubscribed(event) {
     try {
-      const result = await this.findNewslettersToKeep(event);
-      if (result.status === 'failed') {
-        // Polling leaves provider protection intact after a failed lookup.
+      const savePreferences = async (options = {}) => {
+        const result = await this.findNewslettersToKeep(event, options);
+        if (result.status === 'ok') {
+          await this.#membersRepository.update(
+            { newsletters: result.newsletters },
+            { id: event.memberId, ...options },
+          );
+        }
+        return result.status !== 'failed';
+      };
+      // Serialize webhook updates for a member before reading their subscriptions.
+      const saved =
+        this.#eventSource === 'webhook'
+          ? await this.#models.Email.transaction(async (transacting) => {
+              await this.#membersRepository.get(
+                { id: event.memberId },
+                { transacting, forUpdate: true },
+              );
+              return savePreferences({ transacting });
+            })
+          : await savePreferences();
+      if (!saved) {
         return;
-      }
-      if (result.status === 'ok') {
-        await this.#membersRepository.update(
-          { newsletters: result.newsletters },
-          { id: event.memberId },
-        );
       }
       // Only lift the provider's suppression after the local preference is saved.
       await this.#emailSuppressionList.removeUnsubscribe(event.email, {
@@ -296,15 +309,17 @@ class NewsletterEmailEventStorage {
 
   /**
    * @param {import('./events/email-unsubscribed-event').EmailUnsubscribedEvent} event
+   * @param {{transacting?: any}} options
    * @returns {Promise<FindNewslettersToKeepResult>}
    */
-  async findNewslettersToKeep(event) {
+  async findNewslettersToKeep(event, options = {}) {
     try {
       const member = await this.#membersRepository.get(
         // Newsletter preferences belong to the member, even after an address change.
         { id: event.memberId },
         {
           withRelated: ['newsletters'],
+          ...options,
         },
       );
 
@@ -314,7 +329,7 @@ class NewsletterEmailEventStorage {
 
       const existingNewsletters = member.related('newsletters');
 
-      const email = await this.#models.Email.findOne({ id: event.emailId });
+      const email = await this.#models.Email.findOne({ id: event.emailId }, options);
       const newsletterToRemove = email.get('newsletter_id');
 
       return {
