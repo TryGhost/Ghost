@@ -174,6 +174,12 @@ class PublishFlow extends BasePage {
     await this.closeButton.click();
   }
 
+  /** The complete step offers no Close button; Escape dismisses the dialog. */
+  async dismiss(): Promise<void> {
+    await this.page.keyboard.press('Escape');
+    await this.modal.waitFor({ state: 'hidden' });
+  }
+
   async selectPublishType(type: PublishType): Promise<void> {
     await this.publishTypeButton.click();
 
@@ -405,6 +411,13 @@ export class PostEditorPage extends AdminPage {
     // selection so the text is genuinely appended at the end
     await this.page.keyboard.press('ControlOrMeta+a');
     await this.page.keyboard.press('ArrowRight');
+    await this.page.keyboard.type(text);
+  }
+
+  /** Selects the whole body and types over it. */
+  async replaceBody(text: string): Promise<void> {
+    await this.lexicalEditor.click();
+    await this.page.keyboard.press('ControlOrMeta+a');
     await this.page.keyboard.type(text);
   }
 

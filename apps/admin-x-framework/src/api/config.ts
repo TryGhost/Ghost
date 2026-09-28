@@ -135,6 +135,10 @@ export type Config = {
       enabled?: boolean;
       sendingDomain?: string;
     };
+    emailVerification?: {
+      // Shown in place of the default hold copy while the host reviews the account
+      emailSendingDisabledMessage?: string;
+    };
     export?: {
       // Host archive webhook — when set, "Export data" delivers the
       // archive by email instead of a synchronous download

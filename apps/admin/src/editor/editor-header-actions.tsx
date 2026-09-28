@@ -19,6 +19,7 @@ import { UpdateFlowModal } from './publish/update-flow-modal';
 import { buildPublishFlowPost, type PublishFlowPost } from './publish/flow-post';
 import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
+import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
@@ -122,9 +123,14 @@ export function EditorHeaderActions({
   };
 
   return (
-    <Inline data-testid={editorHeaderActions} gap="sm">
+    <Inline data-testid={editorHeaderActions} gap="md">
       {isDraft ? (
-        <PageHeader.Action fallbackSize="sm" label="Preview" onClick={openPreview}>
+        <PageHeader.Action
+          className="bg-background/80 backdrop-blur-sm"
+          fallbackSize="sm"
+          label="Preview"
+          onClick={openPreview}
+        >
           Preview
         </PageHeader.Action>
       ) : null}
@@ -185,6 +191,7 @@ function PublishActions({
 }: PublishActionsProps) {
   const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
+  const limits = usePublishLimits();
   const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
   const paywallImprovements = useFeatureFlag('paywallImprovements', {
@@ -235,14 +242,19 @@ function PublishActions({
           {inputs.error ? (
             <>
               <Text
-                className="text-destructive"
+                className="bg-background/80 text-destructive backdrop-blur-sm"
                 data-testid={editorPublishInputsError}
                 role="alert"
                 size="sm"
               >
                 {inputs.error.message}
               </Text>
-              <Button size={isAdmin7 ? 'default' : 'sm'} variant="ghost" onClick={inputs.retry}>
+              <Button
+                className="bg-background/80 backdrop-blur-sm"
+                size={isAdmin7 ? 'default' : 'sm'}
+                variant="ghost"
+                onClick={inputs.retry}
+              >
                 Retry
               </Button>
             </>
@@ -265,6 +277,7 @@ function PublishActions({
           {/* Ember routes a sent post to the update flow from its status line, not the header. */}
           {post.status === 'sent' ? null : (
             <Button
+              className="bg-background/80 backdrop-blur-sm"
               size={isAdmin7 ? 'default' : 'sm'}
               variant="outline"
               onClick={() => onOpenFlow('update')}
@@ -278,6 +291,7 @@ function PublishActions({
       {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
           dispatch={session.dispatchPublish}
+          limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}
           site={inputs.site}

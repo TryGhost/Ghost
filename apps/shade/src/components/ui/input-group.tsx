@@ -4,6 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { inputSurfaceClasses } from '@/components/ui/input-surface';
+import { useShade } from '@/providers/shade-provider';
 
 const inputGroupVariants = cva(
   cn(
@@ -87,9 +88,19 @@ function InputGroupAddon({
   align = 'inline-start',
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
+  const { isAdmin7 } = useShade();
   return (
     <div
-      className={cn(inputGroupAddonVariants({ align }), className)}
+      className={cn(
+        inputGroupAddonVariants({ align }),
+        isAdmin7 &&
+          align === 'inline-end' &&
+          'has-[>button[data-size$=xs]]:mr-0 has-[>button[data-size$=xs]]:pr-[calc((var(--control-height)-24px)/2-1px)]',
+        isAdmin7 &&
+          align === 'inline-start' &&
+          'has-[>button[data-size$=xs]]:ml-0 has-[>button[data-size$=xs]]:pl-[calc((var(--control-height)-24px)/2-1px)]',
+        className,
+      )}
       data-align={align}
       data-slot="input-group-addon"
       role="group"
@@ -107,7 +118,7 @@ function InputGroupAddon({
   );
 }
 
-const inputGroupButtonVariants = cva('flex items-center gap-2 text-control shadow-none', {
+const inputGroupButtonVariants = cva('flex items-center gap-2 shadow-none', {
   variants: {
     size: {
       xs: "h-6 gap-1 px-2 has-[>svg]:px-2 data-[control-shape=rounded]:rounded-[calc(var(--input-group-radius)-5px)] [&>svg:not([class*='size-'])]:size-3.5",
@@ -125,16 +136,26 @@ const inputGroupButtonVariants = cva('flex items-center gap-2 text-control shado
 const InputGroupButton = React.forwardRef<
   HTMLButtonElement,
   Omit<React.ComponentProps<typeof Button>, 'size'> & VariantProps<typeof inputGroupButtonVariants>
->(({ className, type = 'button', variant = 'ghost', size = 'xs', ...props }, ref) => (
-  <Button
-    ref={ref}
-    className={cn(inputGroupButtonVariants({ size }), className)}
-    data-size={size}
-    type={type}
-    variant={variant}
-    {...props}
-  />
-));
+>(({ className, type = 'button', variant = 'ghost', size = 'xs', ...props }, ref) => {
+  const { isAdmin7 } = useShade();
+  return (
+    <Button
+      ref={ref}
+      className={cn(
+        inputGroupButtonVariants({ size }),
+        isAdmin7 ? 'text-(length:--text-control)' : 'text-control',
+        isAdmin7 &&
+          (size === 'xs' || size === 'icon-xs') &&
+          'data-[control-shape=rounded]:rounded-[calc(var(--radius-control)-(var(--control-height)-24px)/2)]',
+        className,
+      )}
+      data-size={size}
+      type={type}
+      variant={variant}
+      {...props}
+    />
+  );
+});
 InputGroupButton.displayName = 'InputGroupButton';
 
 function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {

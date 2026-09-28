@@ -95,6 +95,13 @@ async function openAndSearch(term: string) {
   await globalSearchScreen.search(term);
 }
 
+async function openWithShortcut() {
+  // The sidebar can render before config enables search and its effect registers the shortcut.
+  await expect.poll(() => globalSearchScreen.dispatchShortcut()).toBe(true);
+  // Handling the key starts a lazy import; wait for the dialog before sending another key.
+  await expect.element(globalSearchScreen.input()).toHaveFocus();
+}
+
 async function closeWithEscape() {
   await userEvent.keyboard('{Escape}');
   await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
@@ -258,8 +265,7 @@ describe('Cmd-K search', () => {
     fakeTags([firstTag]);
     fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, { tags: [firstTag] });
     await renderAdminApp('/tags/first-tag', flagOn);
-    await expect.element(globalSearchScreen.openButton()).toBeVisible();
-    expect(globalSearchScreen.dispatchShortcut()).toBe(true);
+    await openWithShortcut();
     await closeWithEscape();
 
     await tagDetailScreen.actionsButton().click();
@@ -272,9 +278,7 @@ describe('Cmd-K search', () => {
 
   it('closes and ignores the shortcut once the sidebar is hidden', async () => {
     await renderAdminApp('/tags', flagOn);
-    await expect.element(globalSearchScreen.openButton()).toBeVisible();
-    expect(globalSearchScreen.dispatchShortcut()).toBe(true);
-    await expect.element(globalSearchScreen.dialog()).toBeVisible();
+    await openWithShortcut();
 
     window.location.hash = '#/editor/post/p1';
 

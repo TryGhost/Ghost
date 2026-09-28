@@ -8,6 +8,7 @@ import {
   featureImageUnsplashButton,
   removeFeatureImageButton,
   toggleFeatureImageAltButton,
+  unsplashInsertImageButton,
   unsplashSearchHeading,
   unsplashSearchModal,
 } from '@tryghost/test-data/selectors/editor';
@@ -60,6 +61,16 @@ export class FeatureImage {
   async openUnsplash(): Promise<void> {
     await this.unsplashButton.click();
     await this.unsplashHeading.waitFor({ state: 'visible' });
+  }
+
+  // Inserts the open search's photo with alt text `alt`; the search closes on insert.
+  // The insert control is not scoped per tile, so the gallery must hold that photo alone.
+  async insertUnsplashPhoto(alt: string): Promise<void> {
+    await this.unsplashSearch
+      .getByRole('img', { name: alt, exact: true })
+      .waitFor({ state: 'visible' });
+    await this.unsplashSearch.getByText(unsplashInsertImageButton, { exact: true }).click();
+    await this.unsplashHeading.waitFor({ state: 'hidden' });
   }
 
   async remove(): Promise<void> {

@@ -30,7 +30,11 @@ import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
 import { membersRouteChildren } from './members/api';
 import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
-import { lazyPostAnalyticsRoot, postAnalyticsRouteChildren } from './posts/api';
+import {
+  lazyPostAnalyticsRoot,
+  lazyPostDebugScreen,
+  postAnalyticsRouteChildren,
+} from './posts/api';
 import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
 import { lazyTagDetailScreen, lazyTagsScreen } from './tags/api';
 import { lazyViewSiteScreen } from './view-site/api';
@@ -52,7 +56,6 @@ const EMBER_ROUTES: string[] = [
   '/signup/*',
   '/reset/*',
   '/pro/*',
-  '/posts/analytics/:postId/debug',
   '/restore',
 ];
 
@@ -122,6 +125,10 @@ const appRoutes: RouteObject[] = [
       ...emberFallbackHandle,
       requiresAccess: canManageMembers,
     } satisfies AccessRouteHandle & AdminRouteHandle,
+  },
+  {
+    path: '/posts/analytics/:postId/debug',
+    lazy: lazyComponent(lazyPostDebugScreen),
   },
   {
     path: '/posts/analytics/:postId',

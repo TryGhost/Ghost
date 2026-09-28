@@ -108,6 +108,27 @@ function wholeText(text: string): RegExp {
 /** Long enough for a section to render, short enough that a missing one fails before the test times out. */
 const PRESENCE_TIMEOUT = 5000;
 
+// react-day-picker's default English labels: the grid is "March 2026", a day
+// "Tuesday, March 10th, 2026", and the nav buttons are named below.
+const CALENDAR_MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+const CALENDAR_PREVIOUS_MONTH = 'Go to the Previous Month';
+const CALENDAR_NEXT_MONTH = 'Go to the Next Month';
+/** Ten years either way; a target further off is a mistake, not a long walk. */
+const MAX_CALENDAR_STEPS = 120;
+
 async function expectPresent(locator: Locator, message: string): Promise<void> {
   try {
     await locator.waitFor({ state: 'visible', timeout: PRESENCE_TIMEOUT });
@@ -257,6 +278,57 @@ class PublishDateSection extends InlineSection {
 
   protected anchor(): Locator {
     return this.dateInput;
+  }
+
+  /**
+   * Chooses `YYYY-MM-DD` in the calendar popover behind the read-only date
+   * field, paging month by month from wherever the calendar opens.
+   */
+  async setDate(day: string): Promise<void> {
+    const [year, month, date] = day.split('-').map(Number);
+    const monthName = CALENDAR_MONTHS[month - 1];
+
+    await this.dateInput.click();
+    const openInput = this.dateInput.and(this.page.locator('[aria-expanded="true"]'));
+    await openInput.waitFor({ state: 'visible' });
+    const calendarId = await openInput.getAttribute('aria-controls');
+    const calendar = this.page.locator(`[id="${calendarId}"]`);
+
+    const targetGrid = calendar.getByRole('grid', { name: `${monthName} ${year}`, exact: true });
+    for (let step = 0; step < MAX_CALENDAR_STEPS && !(await targetGrid.isVisible()); step++) {
+      const shown = await calendar.getByRole('grid').getAttribute('aria-label');
+      const [shownMonth, shownYear] = (shown ?? '').split(' ');
+      const shownIndex = Number(shownYear) * 12 + CALENDAR_MONTHS.indexOf(shownMonth);
+      const targetIndex = year * 12 + (month - 1);
+      await calendar
+        .getByRole('button', {
+          name: targetIndex < shownIndex ? CALENDAR_PREVIOUS_MONTH : CALENDAR_NEXT_MONTH,
+          exact: true,
+        })
+        .click();
+    }
+    await targetGrid.waitFor({ state: 'visible' });
+
+    const dayName = new RegExp(`\\b${monthName} ${date}(st|nd|rd|th), ${year}\\b`);
+    const dayButton = targetGrid.getByRole('button', { name: dayName });
+    await dayButton.waitFor({ state: 'visible' });
+    if (await dayButton.isDisabled()) {
+      throw new Error(
+        `The calendar does not offer ${day}: the Publish date section stops at today in the site timezone.`,
+      );
+    }
+
+    // react-day-picker deselects a re-clicked day and the picker then leaves
+    // the popover open, so the displayed day is closed over, not clicked.
+    const selectedDay = targetGrid.getByRole('gridcell', { selected: true }).getByRole('button', {
+      name: dayName,
+    });
+    if ((await selectedDay.count()) > 0) {
+      await this.page.keyboard.press('Escape');
+    } else {
+      await dayButton.click();
+    }
+    await calendar.waitFor({ state: 'hidden' });
   }
 
   /** Types `HH:mm` and commits it on blur. */
@@ -588,6 +660,31 @@ class CodeInjectionPane extends PaneSection {
     this.headCode = page.getByRole('textbox', { name: new RegExp(`^${codeInjectionHeadLabel}`) });
     this.footCode = page.getByRole('textbox', { name: new RegExp(`^${codeInjectionFootLabel}`) });
   }
+
+  /** Replaces the header code; an empty string clears it. */
+  async setHead(code: string): Promise<void> {
+    await replaceCode(this.headCode, code);
+  }
+
+  /** Replaces the footer code; an empty string clears it. */
+  async setFoot(code: string): Promise<void> {
+    await replaceCode(this.footCode, code);
+  }
+}
+
+/**
+ * Clears through CodeMirror's own keymap first: a fill writes to the DOM,
+ * which races its reconciliation. Blurs to commit, as the text fields do.
+ */
+async function replaceCode(field: Locator, code: string): Promise<void> {
+  await field.click();
+  const { keyboard } = field.page();
+  await keyboard.press('ControlOrMeta+a');
+  await keyboard.press('Backspace');
+  if (code) {
+    await field.fill(code);
+  }
+  await field.blur();
 }
 
 class MetaDataPane extends PaneSection {

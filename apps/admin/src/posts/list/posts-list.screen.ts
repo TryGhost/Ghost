@@ -118,6 +118,6 @@ export const postsListScreen = {
   /** A field in the add-filter popover, which renders into a portal. */
   filterFieldOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
   sortButton: () => page.getByTestId(postsSort),
-  /** Radio items, so the active sort is announced and visibly checked. */
-  sortOption: (label: string) => page.getByRole('menuitemradio', { name: label, exact: true }),
+  /** Select options, so the active sort is announced and visibly checked. */
+  sortOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
 };

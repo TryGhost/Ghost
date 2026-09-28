@@ -133,7 +133,7 @@
     "react-dom": "catalog:",
     "react-error-boundary": "3.1.4",
     "react-highlight": "0.15.0",
-    "react-router-dom": "7.18.1",
+    "react-router-dom": "7.18.4",
     "react-slider": "2.0.6",
     "storybook": "catalog:",
     "stylelint": "catalog:",

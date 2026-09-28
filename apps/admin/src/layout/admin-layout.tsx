@@ -12,8 +12,10 @@ import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
 const networkPageChrome = {
-  contentClassName: 'max-w-(--content-width)',
+  contentClassName: 'max-w-[1920px]',
   contentGutter: 'var(--page-gutter)',
+  // The floating sidebar already provides the cover's 8px left gap.
+  profileContentClassName: 'sidebar:pl-0',
 };
 
 const pageChromeClassName = [
@@ -93,7 +95,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="relative h-full bg-background">
         <main ref={mainRef} className="flex h-full flex-col overflow-y-auto">
           <DunningBanner />
-          <div className="flex-1">{children}</div>
+          <div className="min-h-0 flex-1">{children}</div>
         </main>
         <div
           ref={contributorMenuRef}
@@ -132,7 +134,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           )}
         >
           <DunningBanner />
-          <main ref={mainRef} className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
+          <main
+            ref={mainRef}
+            className={cn('flex-1', sidebarVisible ? pageChromeClassName : 'min-h-0')}
+          >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
               {children}
             </ActivityPubHostLayoutProvider>

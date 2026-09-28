@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Button, buttonVariants } from '@tryghost/shade/components';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
 import { focusKoenigEditorOnBottomClick } from '@tryghost/admin-x-framework';
@@ -16,6 +17,7 @@ import type { PostCardConfig, PostType } from './card-config';
 import { FeatureImage } from './feature-image';
 import { KoenigPostEditor } from './koenig-post-editor';
 import { textHasTk } from './tk';
+import { useOnscreenKeyboard } from './use-onscreen-keyboard';
 import type { FeatureImageBinding } from './session/feature-image-binding';
 
 export interface PostEditorProps {
@@ -109,7 +111,9 @@ export function PostEditor({
   registerSecondaryApi,
   onTkCountChange,
 }: PostEditorProps) {
-  const { darkMode } = useFocusContext();
+  const { darkMode, isAdmin7 } = useFocusContext();
+  const isKeyboardOpen = useOnscreenKeyboard();
+  const writingAreaRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const editorApiRef = useRef<KoenigInstance | null>(null);
@@ -120,6 +124,29 @@ export function PostEditor({
 
   useAutosize(titleRef, title);
   useAutosize(excerptRef, excerpt);
+
+  useLayoutEffect(() => {
+    const container = writingAreaRef.current;
+    if (!container) {
+      return;
+    }
+    // Koenig's breakout cards use viewport units; subtract the space outside
+    // the writing area, including its inset and the animated sidebar.
+    const measure = () => {
+      container.style.setProperty(
+        '--kg-breakout-adjustment',
+        `${Math.max(0, window.innerWidth - container.clientWidth)}px`,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
 
   const titleHasTk = textHasTk(title);
   const excerptHasTk = showExcerpt && textHasTk(excerpt);
@@ -258,9 +285,10 @@ export function PostEditor({
 
   return (
     <div className="relative h-full min-h-0" data-testid={postEditor}>
-      <div className="h-full overflow-y-auto">
+      <div className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto">
         <Stack
-          className="min-h-full px-6 pt-12 pb-24"
+          ref={writingAreaRef}
+          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))]"
           gap="none"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onPaneDrop}
@@ -337,19 +365,44 @@ export function PostEditor({
           />
         </Stack>
       </div>
-      <Inline className="absolute right-0 bottom-0 px-4 py-3" gap="sm">
-        <Text data-testid={editorWordCount} size="xs" tone="secondary">
-          {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
-        </Text>
-        <a
-          aria-label="Editor help"
-          className="text-text-secondary hover:text-foreground"
-          href="https://ghost.org/help/using-the-editor/"
-          rel="noopener noreferrer"
-          target="_blank"
+      <Inline
+        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20"
+        gap="sm"
+      >
+        {!isKeyboardOpen && (
+          <Text
+            as="span"
+            className={buttonVariants({
+              variant: null,
+              size: isAdmin7 ? 'default' : 'sm',
+              shape: 'pill',
+              isAdmin7,
+              className:
+                'bg-background/80 px-3 text-(length:--text-control) text-text-secondary backdrop-blur-sm',
+            })}
+            data-testid={editorWordCount}
+            tone="secondary"
+            weight="medium"
+          >
+            {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
+          </Text>
+        )}
+        <Button
+          className="bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground"
+          shape="pill"
+          size={isAdmin7 ? 'icon' : 'icon-sm'}
+          variant="ghost"
+          asChild
         >
-          <LucideIcon.CircleHelp className="size-4" />
-        </a>
+          <a
+            aria-label="Editor help"
+            href="https://ghost.org/help/using-the-editor/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <LucideIcon.CircleHelp />
+          </a>
+        </Button>
       </Inline>
     </div>
   );

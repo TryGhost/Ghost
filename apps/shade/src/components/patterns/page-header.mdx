@@ -56,6 +56,8 @@ The controls inherit the Admin 7 design. They do not need a pill shape, explicit
 stroke width, ghost variant, tooltip styling, or page-specific CSS. Secondary
 controls use the ghost treatment and **2px icon strokes**. Dropdown text has the
 same medium weight as Filter; header dropdown triggers hide their down chevrons.
+Header dropdowns use the shared button gap and clear extra right margins on their
+icons. Callers should not add icon margins.
 
 Use `PageHeader.SelectTrigger` inside Select for labelled header dropdowns; it
 provides the pill shape. Ordinary `SelectTrigger` form fields keep standard rounded
@@ -97,17 +99,24 @@ Icon-only actions and actions with keyboard shortcuts have tooltips. Static labe
 buttons omit them: repeating the visible label adds no information. Set `tooltip`
 on a labelled action when its text shows a changing value and the tooltip explains
 the action. Primary actions never have tooltips.
+`PageHeader.SelectTrigger` also accepts `tooltip={false}` when its visible value
+already makes the control clear, such as a date range.
 
 Tooltips use the semantic white surface with a shadow. The first
 hover tooltip waits **1 second**. Moving between recently shown tooltips uses a
 **300ms skip-delay window**. Keyboard focus shows the tooltip immediately.
 
-Wrap header controls in `PageHeader.ActionGroup`, including in editor and modal
-headers, so they receive this timing rather than inheriting another surface's delay.
+`PageHeader.Actions`, standalone `PageHeader.ActionGroup` (including editor and
+modal headers), and `NavbarActions` share this timing in Shade. Nested action
+groups reuse the header's timing, so moving between groups does not restart the
+delay. Pages should not add their own tooltip providers or timing overrides.
 
 Selecting a dropdown item with the pointer closes the menu without reopening the
 trigger tooltip merely because focus returns. Keyboard navigation still restores
-focus and tooltip access. Disabled actions remain disabled and retain their size.
+focus and tooltip access. Switching away from the browser closes open tooltips.
+Returning to the browser window also does not reopen a
+tooltip on the focused control; hovering or deliberately navigating with the
+keyboard still works. Disabled actions remain disabled and retain their size.
 
 <Canvas of={PageHeaderStories.DisabledActions} />
 

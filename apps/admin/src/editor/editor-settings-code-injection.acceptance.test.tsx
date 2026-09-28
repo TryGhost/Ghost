@@ -33,7 +33,7 @@ const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const PAGE_ROUTE = new RegExp(`^/pages/${POST_ID}/\\?`);
-// The panel's own width, and the width the wide pane widens it to.
+// The space reserved for the floating panel, including its outer padding.
 const PANEL_WIDTH = 350;
 const WIDE_PANEL_WIDTH = 500;
 
@@ -88,7 +88,7 @@ function fakeSavablePage() {
 }
 
 function sidebarWidthPx(): number {
-  return editorScreen.settingsSidebar().element().getBoundingClientRect().width;
+  return editorScreen.settingsSidebar().element().parentElement!.getBoundingClientRect().width;
 }
 
 function headEditor() {
@@ -136,7 +136,7 @@ describe('Post settings code injection', () => {
 
     // The pane replaces the list it was opened from, in a widened panel.
     await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
-    expect(sidebarWidthPx()).toBe(WIDE_PANEL_WIDTH);
+    await expect.poll(sidebarWidthPx).toBe(WIDE_PANEL_WIDTH);
 
     await editorScreen.settingsSubviewBack(settingsCodeInjectionBackButton).click();
 
