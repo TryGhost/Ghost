@@ -2,8 +2,8 @@ import { POST_VIEW_PARAMS } from '@/posts/list/post-view-params';
 import type { PostResource } from '@/posts/list/post-resource';
 
 /**
- * "Sticky filters": clicking Posts in the sidebar returns you to the filters
- * you last had, rather than a bare list.
+ * Remember the last list's filters for editor breadcrumbs and the Pages
+ * sidebar link. The Posts sidebar link always opens the full list.
  *
  * Ported from `state-bridge.js` `getRouteUrl`, which reads Ember's live
  * controller query params. React has no equivalent long-lived controller, so

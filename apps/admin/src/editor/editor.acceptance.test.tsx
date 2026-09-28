@@ -87,9 +87,14 @@ describe('Editor flag', () => {
 describe('Editor list breadcrumb', () => {
   afterEach(clearStickyPostFilters);
 
-  it.each(['post', 'page'] as const)(
-    'returns a %s to its filtered list with the same sort order',
-    async (postType) => {
+  it.each([
+    { postType: 'post', returnWith: 'breadcrumb' },
+    { postType: 'page', returnWith: 'breadcrumb' },
+    { postType: 'post', returnWith: 'back' },
+    { postType: 'page', returnWith: 'back' },
+  ] as const)(
+    'returns a $postType to its filtered list with the same sort order using $returnWith',
+    async ({ postType, returnWith }) => {
       const resource = postType === 'post' ? 'posts' : 'pages';
       const entry = post({ id: 'abc123', title: 'Engineering update', status: 'draft' });
       fakeEditorChrome();
@@ -106,7 +111,11 @@ describe('Editor list breadcrumb', () => {
       await postsListScreen.listItems().first().click();
       await expect.element(editorScreen.root()).toBeVisible();
       await expect.element(editorScreen.backLink(postType)).toHaveAttribute('href', `#${listUrl}`);
-      await editorScreen.backLink(postType).click();
+      if (returnWith === 'breadcrumb') {
+        await editorScreen.backLink(postType).click();
+      } else {
+        window.history.back();
+      }
 
       await expect.poll(currentRoute).toBe(listUrl);
       await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');

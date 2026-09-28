@@ -8,6 +8,8 @@ import {
   currentRoute,
   fakeAdminEndpoint,
   fakeEndpoint,
+  fakePosts,
+  fakePostsListScreen,
   fakeTags,
   renderAdminApp,
   currentUserResponse,
@@ -15,6 +17,8 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
+import { clearStickyPostFilters } from '@/posts/list/posts-sticky-filters';
 
 // The site fixture's URL roots the ActivityPub API (see use-activity-pub-queries.ts).
 const UNREAD_COUNT_URL = 'http://test.com/.ghost/activitypub/v1/notifications/unread/count';
@@ -53,6 +57,7 @@ function installStaleEmberRoute(activeRoute: 'members-activity' | 'pages' | 'pos
 
 afterEach(() => {
   delete window.EmberBridge;
+  clearStickyPostFilters();
 });
 
 describe('Sidebar navigation', () => {
@@ -186,6 +191,38 @@ describe('Sidebar navigation', () => {
 
     await sidebarScreen.navLink('Pages').click();
     await expect.poll(currentRoute).toBe('/pages');
+  });
+
+  it.each([false, true])(
+    'clears Posts filters and sorting after leaving the list: %s',
+    async (leaveList) => {
+      fakePostsListScreen();
+      fakePosts([]);
+      await renderAdminApp('/posts?tag=news&order=title+asc', { labs: { postsListReact: true } });
+      await expect.element(postsListScreen.filterBar()).toHaveTextContent('Unknown tag');
+
+      if (leaveList) {
+        await sidebarScreen.navLink('Tags').click();
+        await expect.poll(currentRoute).toBe('/tags');
+      }
+
+      await expect.element(sidebarScreen.navLink('Posts')).toHaveAttribute('href', '#/posts');
+      await sidebarScreen.navLink('Posts').click();
+
+      await expect.poll(currentRoute).toBe('/posts');
+      await expect.element(postsListScreen.filterBar()).not.toHaveTextContent('Unknown tag');
+    },
+  );
+
+  it('keeps Posts submenu filters and clears them with the main link', async () => {
+    fakePostsListScreen();
+    fakePosts([]);
+    await renderAdminApp('/posts', { labs: { postsListReact: true } });
+
+    await sidebarScreen.navLink('Drafts').click();
+    await expect.poll(currentRoute).toBe('/posts?type=draft');
+    await sidebarScreen.navLink('Posts').click();
+    await expect.poll(currentRoute).toBe('/posts');
   });
 
   it.each([
