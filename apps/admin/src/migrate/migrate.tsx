@@ -118,10 +118,10 @@ const Migrate = () => {
           title="Migrate"
         />
       )}
-      {/* The migration app is always light, so the button brings its own surface. */}
+      {/* Sits on the always-light migration app, so it keeps light-surface colours in both themes. */}
       <FullscreenCloseButton
         aria-label="Close"
-        className="bg-background"
+        className="text-gray-700 hover:bg-gray-100 hover:text-gray-900"
         onClick={() => navigate('/settings/migration')}
       />
     </div>
