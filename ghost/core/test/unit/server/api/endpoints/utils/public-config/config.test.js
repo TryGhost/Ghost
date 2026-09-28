@@ -1,12 +1,12 @@
 const assert = require('node:assert/strict');
-const configUtils = require('../../../../utils/config-utils');
-const settingsCache = require('../../../../../core/shared/settings-cache');
-const getConfigProperties = require('../../../../../core/server/services/public-config/config');
+const configUtils = require('../../../../../../utils/config-utils');
+const settingsCache = require('../../../../../../../core/shared/settings-cache');
+const getConfigProperties = require('../../../../../../../core/server/api/endpoints/utils/public-config/config');
 const sinon = require('sinon');
 
-// List of allowed keys to be returned by the public-config service
+// List of allowed keys to be returned by the public-config response builder
 // This is kind of a duplicate of the keys in the config.js output serializer in the api-framework
-// However the list of keys returned by the public-config service can differ based on flags and config set, so we want to keep this explicit
+// However the public-config keys can differ based on flags and config set, so we want to keep this explicit
 
 const allowedKeys = [
   'version',
@@ -27,7 +27,7 @@ const allowedKeys = [
   'security',
 ];
 
-describe('Public-config Service', function () {
+describe('Public-config response builders', function () {
   describe('Config Properties', function () {
     beforeEach(async function () {
       sinon

@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 
-const legacyApiPathMatch = require('../../../../../core/server/services/api-version-compatibility/legacy-api-path-match');
+const legacyApiPathMatch = require('../../../../../../../core/server/web/api/middleware/api-version-compatibility/legacy-api-path-match');
 
 describe('Legacy Path Match', function () {
   it('returns null, admin for all supported permutations', function () {

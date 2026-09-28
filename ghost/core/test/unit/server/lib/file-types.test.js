@@ -1,9 +1,7 @@
 const assert = require('node:assert/strict');
-const {
-  getStorageContentType,
-} = require('../../../../../core/server/services/files/file-type-utils');
+const { getStorageContentType } = require('../../../../core/server/lib/file-types');
 
-describe('file-type-utils', function () {
+describe('file-types', function () {
   describe('getStorageContentType', function () {
     describe('override extensions return text/plain', function () {
       it('.html', function () {
