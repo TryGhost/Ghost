@@ -74,7 +74,12 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
           <div className="flex w-48 flex-col">
             {(!allowDelete || layout === 'inbox') && (
               <PopoverClose asChild>
-                <Button className="justify-start" variant="ghost" onClick={handleCopyLinkClick}>
+                <Button
+                  className="justify-start rounded-menu-item"
+                  shape="rounded"
+                  variant="ghost"
+                  onClick={handleCopyLinkClick}
+                >
                   <LucideIcon.Link />
                   Copy link
                 </Button>
@@ -82,7 +87,12 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
             )}
             {!authoredByMe && (
               <PopoverClose asChild>
-                <Button className="justify-start" variant="ghost" onClick={handleFollowClick}>
+                <Button
+                  className="justify-start rounded-menu-item"
+                  shape="rounded"
+                  variant="ghost"
+                  onClick={handleFollowClick}
+                >
                   {followedByMe ? <LucideIcon.UserRoundMinus /> : <LucideIcon.UserRoundPlus />}
                   {followedByMe ? 'Unfollow' : 'Follow'}
                 </Button>
@@ -92,7 +102,8 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
               <AlertDialogTrigger asChild>
                 <PopoverClose asChild>
                   <Button
-                    className="justify-start text-red hover:bg-red/5 hover:text-red"
+                    className="justify-start rounded-menu-item text-red hover:bg-red/5 hover:text-red"
+                    shape="rounded"
                     variant="ghost"
                     onClick={(e) => e.stopPropagation()}
                   >
