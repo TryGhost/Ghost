@@ -40,7 +40,7 @@ export function shouldCreateInDevelopmentTables(): boolean {
 }
 
 /**
- * The in-development tables in `schema.js` order, which is dependency order
+ * The in-development tables, in the order they appear in `schema.js`
  */
 export function getInDevelopmentTables(): string[] {
   return Object.keys(schema).filter(isInDevelopmentTable);
@@ -93,6 +93,8 @@ export async function rebuildInDevelopmentTables(knex: Knex): Promise<void> {
 
   const tables = getInDevelopmentTables();
 
+  // schema.js lists each table after the tables it references, so drop in
+  // reverse to remove referencing tables before the tables they point to
   for (const tableName of tables.toReversed()) {
     logging.info(`Dropping in-development table: ${tableName}`);
     await commands.deleteTable(tableName, knex);
