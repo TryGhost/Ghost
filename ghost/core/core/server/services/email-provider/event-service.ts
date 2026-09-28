@@ -13,18 +13,7 @@ import type { BatchEventProcessor } from '../email-analytics/batch-event-process
 import { EventProcessingResult } from '../email-analytics/event-processing-result';
 
 const WEBHOOK_LOOKUP_RETRY_MS = 500;
-const eventsSchema = z.array(emailEventSchema);
 const notificationEventsSchema = z.array(z.unknown());
-
-export function parseEmailEvents(events: unknown[], family?: EmailFamily): EmailEvent[] {
-  const parsed = eventsSchema.parse(events);
-  if (family && parsed.some((event) => event.family !== family)) {
-    throw new errors.IncorrectUsageError({
-      message: 'Email provider returned events for the wrong family',
-    });
-  }
-  return parsed;
-}
 
 /** Authenticates webhooks and delegates outcomes to Ghost's existing processors. */
 export class EmailEventService {

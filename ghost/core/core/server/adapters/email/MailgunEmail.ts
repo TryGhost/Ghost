@@ -15,6 +15,8 @@ import config from '../../../shared/config';
 // @ts-expect-error This module lacks type definitions.
 import settings from '../../../shared/settings-cache';
 import { fetchMailgunEvents } from '../../services/email-analytics/fetch-mailgun-events';
+import { AUTOMATION_EMAIL_TAG } from '../../services/member-welcome-emails/constants';
+import { GIFT_DELIVERY_EMAIL_TAG } from '../../services/gifts/constants';
 import {
   getMailgunMessageId,
   normalizeMailgunMessageId,
@@ -23,8 +25,8 @@ import errors from '@tryghost/errors';
 
 const tags: Record<EmailFamily, string> = {
   newsletters: 'bulk-email',
-  automations: 'automation-email',
-  gifts: 'gift-delivery',
+  automations: AUTOMATION_EMAIL_TAG,
+  gifts: GIFT_DELIVERY_EMAIL_TAG,
 };
 
 /** Translates between Mailgun and the shared email contract. */
