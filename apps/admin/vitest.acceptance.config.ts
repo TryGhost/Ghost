@@ -43,10 +43,10 @@ export default defineConfig({
   resolve: sharedResolve,
   test: {
     name: 'acceptance',
-    // Keep passing runs compact locally and in CI, but replay console output
-    // for failures and retain GitHub annotations. Use --silent=false to debug.
+    // Print totals and failures, without per-test output that CI expands into
+    // separate lines. Use --silent=false --reporter=verbose to debug.
     silent: 'passed-only',
-    reporters: process.env.GITHUB_ACTIONS ? ['dot', 'github-actions'] : ['dot'],
+    reporters: process.env.GITHUB_ACTIONS ? ['minimal', 'github-actions'] : ['minimal'],
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
     setupFiles: ['./test-utils/acceptance/setup.ts'],

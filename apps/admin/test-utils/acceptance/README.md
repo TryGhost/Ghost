@@ -119,7 +119,7 @@ pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the bro
 
 ## Debugging
 
-- Runs use a compact dot reporter and only print console output from failing tests, locally and in CI. To see all console output and individual test results, run `pnpm test:acceptance --silent=false --reporter=verbose` (optionally add a test file path). The same flags work with `test:acceptance:watch`.
+- Runs print a final summary and failure details, including console output from failing tests, locally and in CI. To see all console output and individual test results, run `pnpm test:acceptance --silent=false --reporter=verbose` (optionally add a test file path). The same flags work with `test:acceptance:watch`.
 - **Failure screenshots** land in `__screenshots__/` (gitignored) — the fastest way to see what actually rendered.
 - **418 bodies** name the unhandled request and list what is faked.
 - There are **no Playwright traces** in this tier — a spec that needs trace-level debugging belongs in `e2e/`.
