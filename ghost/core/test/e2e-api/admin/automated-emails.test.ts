@@ -654,6 +654,44 @@ describe('Automated Emails API', function () {
   });
 
   describe('Edit', function () {
+    it.each(['member-welcome-email-paid', '', null])(
+      'Rejects changing the slug to %s on edit',
+      async function (slug) {
+        const automatedEmail = await createAutomatedEmail();
+
+        await agent
+          .put(`automated_emails/${automatedEmail.id}`)
+          .body({
+            automated_emails: [
+              {
+                name: automatedEmail.name,
+                slug,
+                subject: 'Must not be saved',
+              },
+            ],
+          })
+          .expectStatus(422)
+          .expect(({ body }) => {
+            assert.equal(body.errors[0].property, 'slug');
+          });
+
+        const stored = await models.Automation.findOne({ id: automatedEmail.id });
+        assert.equal(stored.get('slug'), automatedEmail.slug);
+      },
+    );
+
+    it('Allows an unchanged slug on edit', async function () {
+      const automatedEmail = await createAutomatedEmail();
+      await agent
+        .put(`automated_emails/${automatedEmail.id}`)
+        .body({ automated_emails: [{ ...automatedEmail, subject: 'Updated subject' }] })
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.automated_emails[0].slug, automatedEmail.slug);
+          assert.equal(body.automated_emails[0].subject, 'Updated subject');
+        });
+    });
+
     it('Can edit an automated email', async function () {
       const automatedEmail = await createAutomatedEmail();
 
