@@ -186,11 +186,7 @@ function PopoverBody({
                 Cancel
               </Button>
             )}
-            <Button
-              disabled={busy}
-              size={isEditing ? 'sm' : 'default'}
-              onClick={() => void handleSave()}
-            >
+            <Button disabled={busy} size="sm" onClick={() => void handleSave()}>
               {isEditing ? 'Save' : 'Save view'}
             </Button>
           </Inline>
