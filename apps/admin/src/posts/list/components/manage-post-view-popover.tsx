@@ -67,6 +67,7 @@ function PopoverBody({
   );
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const savePostView = useSavePostView();
   const deletePostView = useDeletePostView();
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ function PopoverBody({
   const isEditing = Boolean(activeView);
 
   const handleSave = async () => {
-    if (busy) {
+    if (busy || confirmingDelete) {
       return;
     }
 
@@ -142,33 +143,59 @@ function PopoverBody({
           {error}
         </Text>
       )}
-      <Inline gap="sm" justify={isEditing ? 'between' : 'end'}>
-        {isEditing && (
-          <Button
-            className="text-destructive hover:bg-destructive/5 hover:text-destructive"
-            disabled={busy}
-            size="sm"
-            variant="ghost"
-            onClick={() => void handleDelete()}
-          >
-            Delete
-          </Button>
-        )}
-        <Inline gap="sm">
-          {isEditing && (
-            <Button disabled={busy} size="sm" variant="outline" onClick={onClose}>
+      {confirmingDelete ? (
+        <Inline gap="sm" justify="between">
+          <Text size="sm" tone="secondary">
+            Delete view?
+          </Text>
+          <Inline gap="sm">
+            <Button
+              disabled={busy}
+              size="sm"
+              variant="outline"
+              onClick={() => setConfirmingDelete(false)}
+            >
               Cancel
             </Button>
-          )}
-          <Button
-            disabled={busy}
-            size={isEditing ? 'sm' : 'default'}
-            onClick={() => void handleSave()}
-          >
-            {isEditing ? 'Save' : 'Save view'}
-          </Button>
+            <Button
+              disabled={busy}
+              size="sm"
+              variant="destructive"
+              onClick={() => void handleDelete()}
+            >
+              {busy ? 'Deleting...' : 'Delete'}
+            </Button>
+          </Inline>
         </Inline>
-      </Inline>
+      ) : (
+        <Inline gap="sm" justify={isEditing ? 'between' : 'end'}>
+          {isEditing && (
+            <Button
+              className="text-destructive hover:bg-destructive/5 hover:text-destructive"
+              disabled={busy}
+              size="sm"
+              variant="ghost"
+              onClick={() => setConfirmingDelete(true)}
+            >
+              Delete
+            </Button>
+          )}
+          <Inline gap="sm">
+            {isEditing && (
+              <Button disabled={busy} size="sm" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+            )}
+            <Button
+              disabled={busy}
+              size={isEditing ? 'sm' : 'default'}
+              onClick={() => void handleSave()}
+            >
+              {isEditing ? 'Save' : 'Save view'}
+            </Button>
+          </Inline>
+        </Inline>
+      )}
     </Stack>
   );
 }
