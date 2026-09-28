@@ -93,7 +93,7 @@ export const OG_DESCRIPTION_TOO_LONG = `Facebook description cannot be longer th
 export const X_TITLE_TOO_LONG = `X title cannot be longer than ${X_TITLE_MAX} characters.`;
 export const X_DESCRIPTION_TOO_LONG = `X description cannot be longer than ${X_DESCRIPTION_MAX} characters.`;
 
-/** `visibility: 'tiers'` with no tiers: the write contract drops the visibility. */
+/** `visibility: 'tiers'` with no tiers: the write contract drops the pair. */
 export function tiersIncomplete(
   fields: Pick<EditorSettingsFields, 'visibility' | 'tiers'>,
 ): boolean {
@@ -172,9 +172,16 @@ export function settingsFieldErrorFor(
   return overLength(fields[key], max) ? message : null;
 }
 
-/** The first rule the settings fields break, in the post validator's order. */
-export function settingsFieldError(fields: ValidatedSettingsFields): string | null {
+/**
+ * The first rule the settings fields break, in the post validator's order. A
+ * post the server has not created yet is not held to the tier rule
+ * (validators/post.js `isNew`); its write leaves the pair out instead.
+ */
+export function settingsFieldError(fields: ValidatedSettingsFields, isNew: boolean): string | null {
   for (const key of VALIDATED_SETTINGS_FIELD_KEYS) {
+    if (isNew && key === 'tiers') {
+      continue;
+    }
     const error = settingsFieldErrorFor(key, fields);
     if (error) {
       return error;

@@ -17,6 +17,7 @@ import {
   overLength,
   settingsFieldError,
   settingsFieldErrorFor,
+  tiersIncomplete,
   validatedFieldsOf,
   type ValidatedSettingsFieldKey,
   type ValidatedSettingsFields,
@@ -59,65 +60,87 @@ describe('validatedFieldsOf', () => {
     const withoutMetaTitle = { ...validated };
     delete (withoutMetaTitle as Partial<ValidatedSettingsFields>).meta_title;
 
-    expect(settingsFieldError(validated)).toBe(META_TITLE_TOO_LONG);
-    expect(settingsFieldError(withoutMetaTitle)).toBeNull();
+    expect(settingsFieldError(validated, false)).toBe(META_TITLE_TOO_LONG);
+    expect(settingsFieldError(withoutMetaTitle, false)).toBeNull();
   });
 });
 
 describe('settingsFieldError', () => {
   it('passes fields that break no rule', () => {
-    expect(settingsFieldError(VALID)).toBeNull();
+    expect(settingsFieldError(VALID, false)).toBeNull();
   });
 
-  it('refuses specific-tier access without a tier', () => {
-    expect(settingsFieldError({ ...VALID, visibility: 'tiers' })).toBe(TIERS_REQUIRED);
+  it('refuses specific-tier access without a tier on a post that exists', () => {
+    expect(settingsFieldError({ ...VALID, visibility: 'tiers' }, false)).toBe(TIERS_REQUIRED);
   });
 
-  it('refuses a meta title past the column width', () => {
-    expect(settingsFieldError({ ...VALID, meta_title: 'a'.repeat(META_TITLE_MAX) })).toBeNull();
-    expect(settingsFieldError({ ...VALID, meta_title: 'a'.repeat(META_TITLE_MAX + 1) })).toBe(
+  it('lets a new post keep specific-tier access without a tier', () => {
+    expect(settingsFieldError({ ...VALID, visibility: 'tiers' }, true)).toBeNull();
+    // The pair is still incomplete: the section asks for a tier either way.
+    expect(tiersIncomplete({ ...VALID, visibility: 'tiers' })).toBe(true);
+  });
+
+  it('holds a new post to every other rule', () => {
+    expect(settingsFieldError({ ...VALID, meta_title: 'a'.repeat(META_TITLE_MAX + 1) }, true)).toBe(
       META_TITLE_TOO_LONG,
     );
   });
 
-  it('refuses a meta description past the column width', () => {
+  it('refuses a meta title past the column width', () => {
     expect(
-      settingsFieldError({ ...VALID, meta_description: 'a'.repeat(META_DESCRIPTION_MAX) }),
+      settingsFieldError({ ...VALID, meta_title: 'a'.repeat(META_TITLE_MAX) }, false),
     ).toBeNull();
     expect(
-      settingsFieldError({ ...VALID, meta_description: 'a'.repeat(META_DESCRIPTION_MAX + 1) }),
+      settingsFieldError({ ...VALID, meta_title: 'a'.repeat(META_TITLE_MAX + 1) }, false),
+    ).toBe(META_TITLE_TOO_LONG);
+  });
+
+  it('refuses a meta description past the column width', () => {
+    expect(
+      settingsFieldError({ ...VALID, meta_description: 'a'.repeat(META_DESCRIPTION_MAX) }, false),
+    ).toBeNull();
+    expect(
+      settingsFieldError(
+        { ...VALID, meta_description: 'a'.repeat(META_DESCRIPTION_MAX + 1) },
+        false,
+      ),
     ).toBe(META_DESCRIPTION_TOO_LONG);
   });
 
   it('refuses a Facebook title past the column width', () => {
-    expect(settingsFieldError({ ...VALID, og_title: 'a'.repeat(OG_TITLE_MAX) })).toBeNull();
-    expect(settingsFieldError({ ...VALID, og_title: 'a'.repeat(OG_TITLE_MAX + 1) })).toBe(
+    expect(settingsFieldError({ ...VALID, og_title: 'a'.repeat(OG_TITLE_MAX) }, false)).toBeNull();
+    expect(settingsFieldError({ ...VALID, og_title: 'a'.repeat(OG_TITLE_MAX + 1) }, false)).toBe(
       OG_TITLE_TOO_LONG,
     );
   });
 
   it('refuses a Facebook description past the column width', () => {
     expect(
-      settingsFieldError({ ...VALID, og_description: 'a'.repeat(OG_DESCRIPTION_MAX) }),
+      settingsFieldError({ ...VALID, og_description: 'a'.repeat(OG_DESCRIPTION_MAX) }, false),
     ).toBeNull();
     expect(
-      settingsFieldError({ ...VALID, og_description: 'a'.repeat(OG_DESCRIPTION_MAX + 1) }),
+      settingsFieldError({ ...VALID, og_description: 'a'.repeat(OG_DESCRIPTION_MAX + 1) }, false),
     ).toBe(OG_DESCRIPTION_TOO_LONG);
   });
 
   it('refuses an X title past the column width', () => {
-    expect(settingsFieldError({ ...VALID, twitter_title: 'a'.repeat(X_TITLE_MAX) })).toBeNull();
-    expect(settingsFieldError({ ...VALID, twitter_title: 'a'.repeat(X_TITLE_MAX + 1) })).toBe(
-      X_TITLE_TOO_LONG,
-    );
+    expect(
+      settingsFieldError({ ...VALID, twitter_title: 'a'.repeat(X_TITLE_MAX) }, false),
+    ).toBeNull();
+    expect(
+      settingsFieldError({ ...VALID, twitter_title: 'a'.repeat(X_TITLE_MAX + 1) }, false),
+    ).toBe(X_TITLE_TOO_LONG);
   });
 
   it('refuses an X description past the column width', () => {
     expect(
-      settingsFieldError({ ...VALID, twitter_description: 'a'.repeat(X_DESCRIPTION_MAX) }),
+      settingsFieldError({ ...VALID, twitter_description: 'a'.repeat(X_DESCRIPTION_MAX) }, false),
     ).toBeNull();
     expect(
-      settingsFieldError({ ...VALID, twitter_description: 'a'.repeat(X_DESCRIPTION_MAX + 1) }),
+      settingsFieldError(
+        { ...VALID, twitter_description: 'a'.repeat(X_DESCRIPTION_MAX + 1) },
+        false,
+      ),
     ).toBe(X_DESCRIPTION_TOO_LONG);
   });
 
@@ -173,7 +196,7 @@ describe('settingsFieldErrorFor', () => {
 
     for (const [key, fields] of overLimit) {
       expect(settingsFieldErrorFor(key, fields)).not.toBeNull();
-      expect(settingsFieldErrorFor(key, fields)).toBe(settingsFieldError(fields));
+      expect(settingsFieldErrorFor(key, fields)).toBe(settingsFieldError(fields, false));
     }
   });
 });
