@@ -373,8 +373,8 @@ patchedDependencies:
   '@elastic/elasticsearch@8.19.2': patches/@elastic__elasticsearch@8.19.2.patch
   # Radix modals call hideOthers from an effect; StrictMode's dev replay sets,
   # removes and re-sets aria-hidden on the whole page in one task, which stalls
-  # Safari for ~2s per open. The patch applies it in a microtask so the replayed
-  # undo cancels instead.
+  # Safari for ~2s per open. The patch defers the undo to a microtask, so the
+  # replayed re-apply finds the page still hidden and nothing is removed.
   aria-hidden@1.2.6: patches/aria-hidden@1.2.6.patch
   # The juice patch makes three changes:
   # - lib/cheerio.js imports cheerio's main entry, which eagerly loads parse5,

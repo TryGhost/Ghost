@@ -1,82 +1,64 @@
 diff --git a/dist/es2015/index.js b/dist/es2015/index.js
-index 00aa2ea9da07e8e1d5978a4abe6ce1c2e9ac8041..68c88ac67c0038d81835d73a0633e62dd5485b58 100644
+index 00aa2ea9da07e8e1d5978a4abe6ce1c2e9ac8041..819fd2ca9586f558b3c0648d1331b02d1f6161b6 100644
 --- a/dist/es2015/index.js
 +++ b/dist/es2015/index.js
-@@ -131,7 +131,22 @@ export var hideOthers = function (originalTarget, parentNode, markerName) {
+@@ -131,7 +131,16 @@ export var hideOthers = function (originalTarget, parentNode, markerName) {
      // we should not hide aria-live elements - https://github.com/theKashey/aria-hidden/issues/10
      // and script elements, as they have no impact on accessibility.
      targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll('[aria-live], script')));
 -    return applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
-+    // Applied in a microtask so an undo in the same task (React StrictMode replaying
-+    // effects) cancels it instead of toggling aria-hidden, which can stall WebKit for seconds.
-+    var undo;
-+    var cancelled = false;
-+    queueMicrotask(function () {
-+        if (!cancelled && targets[0].isConnected) {
-+            undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
-+        }
-+    });
++    var undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
++    // Undone in a microtask so a re-apply in the same task (React StrictMode replaying
++    // effects) finds the page still hidden instead of toggling aria-hidden, which can stall WebKit for seconds.
++    var undone = false;
 +    return function () {
-+        cancelled = true;
-+        if (undo) {
-+            undo();
-+            undo = undefined;
++        if (!undone) {
++            undone = true;
++            queueMicrotask(undo);
 +        }
 +    };
  };
  /**
   * Marks everything except given node(or nodes) as inert
 diff --git a/dist/es2019/index.js b/dist/es2019/index.js
-index 17404dae4afb4660e14921347404b6c0ca40cca3..a38394c681492d51e3c34f3a2cf8f7728f260eb1 100644
+index 17404dae4afb4660e14921347404b6c0ca40cca3..7f6cb3b65c7dd47fd703d658d1d04668914e1889 100644
 --- a/dist/es2019/index.js
 +++ b/dist/es2019/index.js
-@@ -126,7 +126,22 @@ export const hideOthers = (originalTarget, parentNode, markerName = 'data-aria-h
+@@ -126,7 +126,16 @@ export const hideOthers = (originalTarget, parentNode, markerName = 'data-aria-h
      // we should not hide aria-live elements - https://github.com/theKashey/aria-hidden/issues/10
      // and script elements, as they have no impact on accessibility.
      targets.push(...Array.from(activeParentNode.querySelectorAll('[aria-live], script')));
 -    return applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
-+    // Applied in a microtask so an undo in the same task (React StrictMode replaying
-+    // effects) cancels it instead of toggling aria-hidden, which can stall WebKit for seconds.
-+    var undo;
-+    var cancelled = false;
-+    queueMicrotask(function () {
-+        if (!cancelled && targets[0].isConnected) {
-+            undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
-+        }
-+    });
++    var undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
++    // Undone in a microtask so a re-apply in the same task (React StrictMode replaying
++    // effects) finds the page still hidden instead of toggling aria-hidden, which can stall WebKit for seconds.
++    var undone = false;
 +    return function () {
-+        cancelled = true;
-+        if (undo) {
-+            undo();
-+            undo = undefined;
++        if (!undone) {
++            undone = true;
++            queueMicrotask(undo);
 +        }
 +    };
  };
  /**
   * Marks everything except given node(or nodes) as inert
 diff --git a/dist/es5/index.js b/dist/es5/index.js
-index 1b86f56de25fb82f0627a2c5c087c4211f591a2a..45a0b05893222b2e6b9e5985f5c825d60a944ca2 100644
+index 1b86f56de25fb82f0627a2c5c087c4211f591a2a..75c607d2c6593d5ac3ac6074836afdca95a420b1 100644
 --- a/dist/es5/index.js
 +++ b/dist/es5/index.js
-@@ -134,7 +134,22 @@ var hideOthers = function (originalTarget, parentNode, markerName) {
+@@ -134,7 +134,16 @@ var hideOthers = function (originalTarget, parentNode, markerName) {
      // we should not hide aria-live elements - https://github.com/theKashey/aria-hidden/issues/10
      // and script elements, as they have no impact on accessibility.
      targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll('[aria-live], script')));
 -    return applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
-+    // Applied in a microtask so an undo in the same task (React StrictMode replaying
-+    // effects) cancels it instead of toggling aria-hidden, which can stall WebKit for seconds.
-+    var undo;
-+    var cancelled = false;
-+    queueMicrotask(function () {
-+        if (!cancelled && targets[0].isConnected) {
-+            undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
-+        }
-+    });
++    var undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
++    // Undone in a microtask so a re-apply in the same task (React StrictMode replaying
++    // effects) finds the page still hidden instead of toggling aria-hidden, which can stall WebKit for seconds.
++    var undone = false;
 +    return function () {
-+        cancelled = true;
-+        if (undo) {
-+            undo();
-+            undo = undefined;
++        if (!undone) {
++            undone = true;
++            queueMicrotask(undo);
 +        }
 +    };
  };
