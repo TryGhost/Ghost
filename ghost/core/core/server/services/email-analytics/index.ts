@@ -7,6 +7,7 @@ import {
 } from '@tryghost/adapter-base-email';
 import logging from '@tryghost/logging';
 import { EmailEventService } from '../email-provider/event-service';
+import { WebhookStatsAggregator } from './webhook-stats-aggregator';
 import type { BatchEventProcessor } from './batch-event-processor';
 import type { Knex } from 'knex';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
@@ -106,6 +107,10 @@ export const init = ({
 
   const queries = new Queries(db.knex);
   const source = provider.getEventSource();
+  const webhookStatsEnabled = Boolean(
+    config.get('emailAnalytics:enabled') && config.get('backgroundJobs:emailAnalytics'),
+  );
+
   // Separate buffers prevent concurrent requests from flushing each other's updates.
   const createEventProcessor = (
     family: EmailFamily,
@@ -148,11 +153,22 @@ export const init = ({
       queries: aggregationQueries,
     });
   };
+  const webhookStats = new WebhookStatsAggregator({
+    knex: db.knex,
+    aggregate: (processingResult, transaction) =>
+      createEventProcessor('newsletters', new Queries(transaction)).aggregate!({
+        processingResult,
+        includeOpenedEvents: true,
+        isFinal: true,
+      }),
+  });
   eventService = new EmailEventService({
     provider,
     createEventProcessor,
-    queueStats: async () => {
-      // Newsletter statistics queue arrives with webhook stats aggregation.
+    queueStats: async (result) => {
+      if (webhookStatsEnabled) {
+        await webhookStats.enqueue(result);
+      }
     },
   });
   const eventSourceOptions = (family: EmailFamily) => ({
@@ -272,7 +288,15 @@ export const init = ({
     metrics,
   });
 
-  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => newsletters!.startFetch());
+  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () =>
+    source.type === 'poll'
+      ? newsletters!.startFetch()
+      : webhookStats
+          .flush()
+          .catch((err) =>
+            logging.error(err, '[EmailAnalytics] Webhook statistics aggregation failed'),
+          ),
+  );
 
   domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, () => automations!.startFetch());
 

@@ -29,12 +29,14 @@ function buildScheduler({
   emailCount = 1,
   automatedEmailRecipient = null,
   giftDelivery = null,
+  polling = true,
 }: {
   emailAnalyticsEnabled?: boolean;
   backgroundJobEnabled?: boolean;
   emailCount?: string | number;
   automatedEmailRecipient?: unknown;
   giftDelivery?: unknown;
+  polling?: boolean;
 } = {}) {
   const newsletterQuery = buildNewsletterQuery(emailCount);
   const automationsQuery = buildAutomationsQuery(automatedEmailRecipient);
@@ -65,6 +67,7 @@ function buildScheduler({
       models,
       config,
       jobManager,
+      isPolling: () => polling,
     }),
     config,
     jobManager,
@@ -78,6 +81,46 @@ function buildScheduler({
 describe('EmailAnalyticsJobScheduler', function () {
   afterEach(function () {
     sinon.restore();
+  });
+
+  it('keeps the newsletter statistics worker but skips polling workers for webhook providers', async function () {
+    const { scheduler, jobManager, models, newsletterQuery } = buildScheduler({
+      polling: false,
+      emailCount: 0,
+      automatedEmailRecipient: { id: 'recipient-id' },
+      giftDelivery: { id: 'gift-id' },
+    });
+
+    // Boot checks recent sends; a successful send requests scheduling without that check.
+    for (const skipRecentSendsCheck of [false, true]) {
+      await scheduler.scheduleRecurringAutomationsJob(skipRecentSendsCheck);
+      await scheduler.scheduleRecurringGiftDeliveriesJob(skipRecentSendsCheck);
+    }
+    await scheduler.scheduleRecurringNewslettersJob(true);
+
+    sinon.assert.calledOnceWithMatch(jobManager.addJob, {
+      name: 'email-analytics-fetch-latest',
+    });
+    sinon.assert.notCalled(models.AutomatedEmailRecipient.query);
+    sinon.assert.notCalled(models.GiftDelivery.query);
+    sinon.assert.notCalled(newsletterQuery.count);
+  });
+
+  it('still schedules automation and gift polling workers after a send', async function () {
+    const { scheduler, jobManager, models } = buildScheduler();
+
+    await scheduler.scheduleRecurringAutomationsJob(true);
+    await scheduler.scheduleRecurringGiftDeliveriesJob(true);
+
+    sinon.assert.calledTwice(jobManager.addJob);
+    sinon.assert.calledWithMatch(jobManager.addJob, {
+      name: 'email-analytics-automation-fetch-latest',
+    });
+    sinon.assert.calledWithMatch(jobManager.addJob, {
+      name: 'email-analytics-gift-fetch-latest',
+    });
+    sinon.assert.notCalled(models.AutomatedEmailRecipient.query);
+    sinon.assert.notCalled(models.GiftDelivery.query);
   });
 
   it('adds a recurring job when conditions are met', async function () {
