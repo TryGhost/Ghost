@@ -1557,9 +1557,6 @@ importers:
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
-      '@tryghost/color-utils':
-        specifier: 'catalog:'
-        version: 0.2.21
       '@tryghost/ember-promise-modals':
         specifier: 2.0.1
         version: 2.0.1(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(postcss@8.5.26)(supports-color@10.2.2)

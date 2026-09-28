@@ -43,25 +43,6 @@
         <script src="{{this.showScriptExtension.src}}"></script>
     {{/if}}
 
-    {{#if this.settings.accentColor}}
-        <style>
-            :root {
-                --adjusted-accent-color: {{this.ui.adjustedAccentColor}};
-            }
-
-            .gh-btn-accent {
-                background-color: var(--adjusted-accent-color);
-                color: #fff;
-            }
-
-            .gh-btn-accent:hover {
-                background-color: {{hex-adjust this.ui.adjustedAccentColor l=-15}};
-                color: #fff;
-            }
-
-        </style>
-    {{/if}}
-
     <RenderInWormhole @elementId="ember-notifications-wormhole">
         <GhNotifications />
     </RenderInWormhole>
