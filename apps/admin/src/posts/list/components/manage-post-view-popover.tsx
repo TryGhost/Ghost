@@ -144,13 +144,30 @@ function PopoverBody({
       )}
       <Inline gap="sm" justify={isEditing ? 'between' : 'end'}>
         {isEditing && (
-          <Button disabled={busy} variant="destructive" onClick={() => void handleDelete()}>
+          <Button
+            className="text-destructive hover:bg-destructive/5 hover:text-destructive"
+            disabled={busy}
+            size="sm"
+            variant="ghost"
+            onClick={() => void handleDelete()}
+          >
             Delete
           </Button>
         )}
-        <Button disabled={busy} onClick={() => void handleSave()}>
-          {isEditing ? 'Save' : 'Save view'}
-        </Button>
+        <Inline gap="sm">
+          {isEditing && (
+            <Button disabled={busy} size="sm" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+          )}
+          <Button
+            disabled={busy}
+            size={isEditing ? 'sm' : 'default'}
+            onClick={() => void handleSave()}
+          >
+            {isEditing ? 'Save' : 'Save view'}
+          </Button>
+        </Inline>
       </Inline>
     </Stack>
   );
