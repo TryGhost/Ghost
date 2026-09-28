@@ -48,7 +48,7 @@ describe('ManagePostViewPopover deletion', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
 
     expect(screen.getByText('Delete view?')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Save', exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
     expect(deletePostView).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
@@ -77,7 +77,7 @@ describe('ManagePostViewPopover deletion', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(screen.queryByText('Delete view?')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save', exact: true })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'View name' })).toHaveValue('Renamed view');
     expect(deletePostView).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
@@ -90,7 +90,7 @@ describe('ManagePostViewPopover deletion', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit view' }));
 
     expect(screen.queryByText('Delete view?')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save', exact: true })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
     expect(deletePostView).not.toHaveBeenCalled();
   });
 
