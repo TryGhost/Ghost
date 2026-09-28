@@ -173,6 +173,28 @@ describe('Acceptance: posts/pages React flag', function () {
             expect(navigate.called, '_navigateToReactRoute called').to.be.false;
         });
 
+        for (const resource of ['posts', 'pages']) {
+            it(`never drops query params while handing ${resource} to React`, async function () {
+                await visitExpectingAbort('/analytics');
+                const location = this.owner.lookup('location:none');
+                const setURL = sinon.spy(location, 'setURL');
+                const replaceURL = location.replaceURL ? sinon.spy(location, 'replaceURL') : null;
+
+                await visitExpectingAbort(`/${resource}?tag=blog&order=published_at%20asc`);
+
+                expect(location.getURL(), 'filtered URL retained').to.include('tag=blog');
+                const writes = [...setURL.getCalls(), ...(replaceURL?.getCalls() ?? [])];
+                for (const call of writes) {
+                    const query = new URL(call.args[0], 'http://localhost').searchParams;
+                    expect(query.get('tag'), `tag in URL write: ${call.args[0]}`).to.equal('blog');
+                    expect(query.get('order'), `sort in URL write: ${call.args[0]}`).to.equal('published_at asc');
+                }
+                const router = this.owner.lookup('service:router');
+                expect(router.currentRouteName).to.equal('react-fallback');
+                expect(router.currentRoute.params.path).to.equal(resource);
+            });
+        }
+
         // Regression: aborting alone left the router still reporting the route
         // it came from, so returning to that same URL later was a no-op
         // transition that rendered nothing - the editor came back blank. Parking

@@ -28,7 +28,7 @@ describe('Unit: Route: posts', function () {
 
         const router = owner.lookup('service:router');
         sinon.stub(router, 'on');
-        sinon.stub(router, 'replaceWith').returns({finally: sinon.stub()});
+        sinon.stub(router, 'replaceWith').returns({method: sinon.stub()});
 
         const route = owner.lookup('route:posts');
         // Set by the router when it mounts the route; a bare unit lookup has
@@ -52,14 +52,14 @@ describe('Unit: Route: posts', function () {
         expect(router.replaceWith.calledWith('react-fallback', 'posts'), 'parked on react-fallback').to.be.true;
     });
 
-    it('restores the URL together with the history state react-router keeps', function () {
-        const {route} = setupRoute(this.owner, {flagValue: true});
+    it('parks without writing the URL or React Router history state', function () {
+        const {route, router} = setupRoute(this.owner, {flagValue: true});
         const replaceState = sinon.stub(window.history, 'replaceState');
-        const state = {usr: null, key: 'abc123', idx: 4};
 
-        route._restoreUrl('#/posts?type=draft', state);
+        route.beforeModel({abort: sinon.spy(), intent: {url: '/posts?type=draft'}});
 
-        expect(replaceState.calledOnceWith(state, '', '#/posts?type=draft'), 'state restored with URL').to.be.true;
+        expect(router.replaceWith.firstCall.returnValue.method.calledOnceWithExactly(null), 'URL updates disabled').to.be.true;
+        expect(replaceState.called, 'history state untouched').to.be.false;
     });
 
     it('keeps Ember ownership when the feature flag is not a boolean', function () {
