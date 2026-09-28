@@ -14,7 +14,8 @@ provider is included.
   single-recipient transport. Their accepted message ID is stored in the existing
   recipient record. As before, a missing tracking ID does not retry the accepted
   automation send: the recipient is recorded without provider open tracking.
-  Suppressed members cannot receive automation sends.
+  Automation eligibility keeps the existing member-status and Updates & Announcements
+  checks; `email_disabled` alone does not end a step.
   Unconfigured Mailgun retains the legacy automation no-op: no email is sent,
   but the recipient is recorded without a provider ID and the step completes
   without retrying. Actual send errors still use the existing retry policy.
@@ -174,6 +175,8 @@ existing statistics queries and member batching configuration. Webhook providers
 register that schedule even without recent sends, so late opens and pending work
 survive restarts. As with polling, the schedule requires `emailAnalytics:enabled`
 and `backgroundJobs:emailAnalytics`; displayed totals lag until it runs.
+Automation and gift polling workers are not scheduled for webhook providers,
+including scheduling requested after a send.
 
 Each newsletter or group of up to 100 members is recalculated in a transaction
 that locks its pending jobs and removes them only after the counts are saved.
@@ -221,6 +224,8 @@ automatically suppress.
 
 This is a draft foundation, not complete provider support. In particular:
 
+- Automation sending retains legacy eligibility. Enforcing local suppression during
+  sends for providers without their own suppression protection requires separate work.
 - Webhook newsletter and automation unsubscribe failures propagate. Replay protection
   against undoing a later deliberate resubscription still requires separate work
   in the owning service; there is no complete automation preference event history.

@@ -3,12 +3,14 @@ import sinon from 'sinon';
 import Mailgun from '../../../../../core/server/adapters/email/Mailgun';
 import type { EmailEvent, SingleMessage } from '@tryghost/adapter-base-email';
 import config from '../../../../../core/shared/config';
+import { validateProvider } from '../../../../../core/server/services/email-provider';
 // @ts-expect-error This module lacks type definitions.
 import MailgunClient from '../../../../../core/server/services/lib/mailgun-client';
 
 describe('Mailgun email adapter', () => {
   let adapter: Mailgun;
   let send: sinon.SinonStub;
+  let configGet: sinon.SinonStub;
   const single: SingleMessage = {
     family: 'gifts',
     to: 'reader@example.com',
@@ -19,11 +21,33 @@ describe('Mailgun email adapter', () => {
     disableTracking: true,
   };
   beforeEach(() => {
-    sinon.stub(config, 'get').callThrough().withArgs('bulkEmail:mailgun:tag').returns('site-tag');
+    configGet = sinon.stub(config, 'get').callThrough();
+    configGet.withArgs('bulkEmail:mailgun:tag').returns('site-tag');
     send = sinon.stub(MailgunClient.prototype, 'send').resolves({ id: ' <mailgun-id> ' });
     adapter = new Mailgun();
   });
   afterEach(() => sinon.restore());
+  for (const batchSize of [1000, '1000']) {
+    it(`accepts a ${typeof batchSize} Mailgun batch size during provider validation`, () => {
+      configGet.withArgs('bulkEmail').returns({ batchSize });
+      assert.doesNotThrow(() => validateProvider(adapter));
+      assert.equal(adapter.getMaximumRecipients(), 1000);
+    });
+  }
+  it('retains the default batch size when none is configured', () => {
+    configGet.withArgs('bulkEmail').returns({});
+    assert.doesNotThrow(() => validateProvider(adapter));
+    assert.equal(adapter.getMaximumRecipients(), 1000);
+  });
+  it('continues to reject invalid recipient limits during provider validation', () => {
+    for (const batchSize of [0, -1, 1.5, '1000invalid', '', 'Infinity', true]) {
+      configGet.withArgs('bulkEmail').returns({ batchSize });
+      assert.throws(
+        () => validateProvider(adapter),
+        /Email provider recipient limit must be positive/,
+      );
+    }
+  });
   it('adapts single-recipient gift delivery and disables all provider tracking', async () => {
     assert.deepEqual(await adapter.sendSingle(single), { id: 'mailgun-id' });
     sinon.assert.calledWithMatch(

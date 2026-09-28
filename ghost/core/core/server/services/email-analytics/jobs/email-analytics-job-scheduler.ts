@@ -48,19 +48,23 @@ export class EmailAnalyticsJobScheduler {
   readonly #models: Models;
   readonly #config: Config;
   readonly #jobManager: JobManager;
+  readonly #isPolling: () => boolean;
 
   constructor({
     models,
     config,
     jobManager,
+    isPolling,
   }: {
     models: Models;
     config: Config;
     jobManager: JobManager;
+    isPolling: () => boolean;
   }) {
     this.#models = models;
     this.#config = config;
     this.#jobManager = jobManager;
+    this.#isPolling = isPolling;
   }
 
   #isConfigured(): boolean {
@@ -90,6 +94,9 @@ export class EmailAnalyticsJobScheduler {
   }
 
   async scheduleRecurringAutomationsJob(skipAutomationEmailCheck: boolean = false): Promise<void> {
+    if (!this.#isPolling()) {
+      return;
+    }
     await this.#scheduleOnce(
       {
         name: 'email-analytics-automation-fetch-latest',
@@ -107,6 +114,9 @@ export class EmailAnalyticsJobScheduler {
   }
 
   async scheduleRecurringGiftDeliveriesJob(skipGiftDeliveryCheck: boolean = false): Promise<void> {
+    if (!this.#isPolling()) {
+      return;
+    }
     await this.#scheduleOnce(
       {
         name: 'email-analytics-gift-fetch-latest',

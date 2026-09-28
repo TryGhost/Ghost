@@ -39,7 +39,7 @@ type MemberWelcomeEmailService = {
 type MemberModel = {
   get(key: 'name'): string | null;
   get(key: 'email' | 'status' | 'uuid'): string;
-  get(key: 'enable_updates_and_announcements' | 'email_disabled'): boolean | null;
+  get(key: 'enable_updates_and_announcements'): boolean | null;
   related(key: 'newsletters'): {
     models: unknown[];
   };
@@ -210,7 +210,7 @@ const processStep = async ({
       case 'wait':
         break;
       case 'send_email': {
-        if (member.get('email_disabled') || !hasUpdatesAndAnnouncementsEnabled(member)) {
+        if (!hasUpdatesAndAnnouncementsEnabled(member)) {
           await automationsApi.markStepTerminal(step, 'member unsubscribed');
           return null;
         }

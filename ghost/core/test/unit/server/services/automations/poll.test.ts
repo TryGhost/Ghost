@@ -313,18 +313,16 @@ describe('automations poll', function () {
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
   });
 
-  it('does not send an automation to a suppressed member', async function () {
+  it('preserves automation sending when email_disabled is set but updates & announcements is enabled', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     Member.findOne.resolves(buildMember({ email_disabled: true }));
     await poll(options);
-    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-    sinon.assert.notCalled(automationsApi.recordEmailSent);
-    sinon.assert.calledOnceWithExactly(
-      automationsApi.markStepTerminal,
-      step,
-      'member unsubscribed',
-    );
+    sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnce(automationsApi.recordEmailSent);
+    sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+    sinon.assert.notCalled(automationsApi.markStepTerminal);
+    sinon.assert.notCalled(automationsApi.retryStep);
   });
 
   it('sends email if updates & announcements is unset and the member has newsletter subscriptions', async function () {

@@ -70,7 +70,8 @@ export default class Mailgun extends EmailProviderBase {
   }
 
   getMaximumRecipients(): number {
-    return this.newsletters.getMaximumRecipients();
+    const limit = this.newsletters.getMaximumRecipients();
+    return typeof limit === 'string' ? Number(limit) : limit;
   }
 
   getTargetDeliveryWindow(): number {

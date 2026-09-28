@@ -2,11 +2,14 @@ const config = require('../../../../shared/config');
 const models = require('../../../models');
 const jobsService = require('../../jobs');
 const { EmailAnalyticsJobScheduler } = require('./email-analytics-job-scheduler');
+const { getProvider } = require('../../email-provider');
 
 const emailAnalyticsJobScheduler = new EmailAnalyticsJobScheduler({
   models,
   config,
   jobManager: jobsService,
+  // Resolve at scheduling time, after boot has initialized the provider.
+  isPolling: () => getProvider().getEventSource().type === 'poll',
 });
 
 /**
