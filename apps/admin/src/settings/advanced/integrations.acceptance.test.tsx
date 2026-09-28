@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   configResponse,
@@ -121,7 +121,7 @@ describe('Advanced integrations', () => {
     await createModal.getByRole('button', { name: 'Add' }).click();
     await expect.element(createModal).toHaveTextContent(/Name is required/);
     await createModal.getByLabelText('Name').fill('My integration');
-    await createModal.getByRole('button', { name: 'Add' }).click();
+    await userEvent.keyboard('{Enter}');
     await expect.poll(() => createApi.requests.length).toBe(1);
 
     const modal = settingsScreen.section('custom-integration-modal');
