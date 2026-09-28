@@ -56,8 +56,6 @@ describe('DB version integrity', function () {
       'yamlSource',
     );
 
-    // In-development tables have no migrations yet, so changing them doesn't
-    // need a hash bump. Finalising one adds it here and changes the hash.
     const tablesNoValidation = _.cloneDeep(_.omit(schema, inDevelopment.IN_DEVELOPMENT_TABLES));
 
     _.each(tablesNoValidation, function (table) {

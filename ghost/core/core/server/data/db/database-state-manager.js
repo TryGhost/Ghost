@@ -30,13 +30,10 @@ const printState = ({ state }) => {
   }
 };
 
-/**
- * `knex-migrator init` only runs once per database, so in-development tables
- * added to schema.js later are created here instead
- */
 const createMissingInDevelopmentTables = async () => {
   const { inDevelopment } = require('../schema');
-  await inDevelopment.createMissingInDevelopmentTables();
+  const db = require('./index');
+  await inDevelopment.createMissingInDevelopmentTables(db.knex);
 };
 
 class DatabaseStateManager {

@@ -1,7 +1,6 @@
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import config from '../../../shared/config';
-import db from '../db';
 // @ts-expect-error This module lacks type definitions.
 import commands from './commands';
 // @ts-expect-error This module lacks type definitions.
@@ -20,8 +19,8 @@ import schema from './schema';
  * Once a table's definition is final, remove it from this list and add the
  * versioned migration that creates it.
  *
- * Code that reads or writes these tables must only run behind a feature flag
- * that is off wherever the tables are not created.
+ * Code that reads or writes these tables must stay dormant wherever the tables
+ * are not created.
  */
 export const IN_DEVELOPMENT_TABLES: string[] = [];
 
@@ -60,7 +59,7 @@ export function getTablesToCreate(): string[] {
 /**
  * Creates in-development tables missing from an already initialised database
  */
-export async function createMissingInDevelopmentTables(knex: Knex = db.knex): Promise<void> {
+export async function createMissingInDevelopmentTables(knex: Knex): Promise<void> {
   if (!shouldCreateInDevelopmentTables()) {
     return;
   }
@@ -84,7 +83,7 @@ export async function createMissingInDevelopmentTables(knex: Knex = db.knex): Pr
  * Drops and recreates every in-development table, discarding its data, so the
  * database picks up changes to their definitions in `schema.js`
  */
-export async function rebuildInDevelopmentTables(knex: Knex = db.knex): Promise<void> {
+export async function rebuildInDevelopmentTables(knex: Knex): Promise<void> {
   if (!shouldCreateInDevelopmentTables()) {
     logging.warn(
       'In-development tables are disabled in this environment (createInDevelopmentTables)',

@@ -90,17 +90,8 @@ A new table's shape often changes several times before its feature is ready.
 Rather than writing a migration for each change, list the table in
 `IN_DEVELOPMENT_TABLES` in
 [`core/server/data/schema/in-development.ts`](../../ghost/core/core/server/data/schema/in-development.ts)
-and define it only in `schema.js`. While it is listed:
-
-- `knex-migrator init` creates it only in the development and testing
-  environments, where `createInDevelopmentTables` is enabled in config. Other
-  environments ignore that setting, so production databases never contain the
-  table.
-- Booting Ghost creates it in an existing development database if it is
-  missing.
-- It needs no versioned migration, and it is left out of the schema integrity
-  hash.
-- Finalised tables must not reference it with a foreign key.
+and define it only in `schema.js`. It is only created in development and
+testing databases.
 
 To apply a changed definition to your local database, rebuild the listed
 tables. This drops them and discards their data:
@@ -110,9 +101,8 @@ cd ghost/core
 pnpm migrate:rebuild-in-development-tables
 ```
 
-Code that reads or writes the table must stay behind a feature flag that is off
-wherever the table is not created; see the
-[feature flags guide](feature-flags.md).
+Code that reads or writes the table must stay dormant wherever the table is not
+created, for example behind a [feature flag](feature-flags.md).
 The table still needs a classification in the exporter table lists.
 
 When the definition is final, remove the table from `IN_DEVELOPMENT_TABLES`,

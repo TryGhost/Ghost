@@ -24,8 +24,6 @@ describe('In-development schema tables', function () {
   });
 
   it('are never referenced by finalised tables', function () {
-    // A finalised table exists in every database, so a foreign key to a table
-    // that is only created in development would fail to create in production
     for (const [tableName, table] of Object.entries<Record<string, ColumnSpec>>(schema)) {
       if (inDevelopment.isInDevelopmentTable(tableName)) {
         continue;
