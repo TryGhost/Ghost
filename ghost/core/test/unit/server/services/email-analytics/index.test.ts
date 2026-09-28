@@ -475,8 +475,10 @@ describe('email analytics provider wiring', () => {
         )
       ).default;
       const log = sinon.stub(logging, 'error');
+      deps.models.Email.transaction = async (callback: (transacting: object) => Promise<unknown>) =>
+        callback({});
       const lookup = deps.membersRepository.get as sinon.SinonStub;
-      lookup.rejects(new Error('lookup failed'));
+      lookup.rejects(Object.assign(new Error('lookup failed'), { code: 'ER_LOCK_WAIT_TIMEOUT' }));
       (deps.config.get as sinon.SinonStub).withArgs('emailAnalytics:batchProcessing').returns(true);
       Object.assign(deps.domainEvents, { dispatch: sinon.stub() });
       sinon.stub(EmailEventProcessor.prototype, 'batchGetRecipients').resolves(new Map());
@@ -507,7 +509,7 @@ describe('email analytics provider wiring', () => {
       if (eventSource === 'webhook') {
         await assert.rejects(
           analytics.getEventService().webhook('test', { body: Buffer.from('{}'), headers: {} }),
-          { statusCode: 503 },
+          { statusCode: 503, code: 'ER_LOCK_WAIT_TIMEOUT' },
         );
       } else {
         const { EventProcessingResult } =
