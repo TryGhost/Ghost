@@ -1,6 +1,6 @@
-# CLAUDE.md
+# Limit Service agent guidance
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for coding agents working on this package.
 
 ## Common Development Commands
 
