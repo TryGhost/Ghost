@@ -302,6 +302,27 @@ const processStep = async ({
 
     nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
   } catch (err) {
+    if (err instanceof errors.EmailError && err.code === 'EMAIL_SUPPRESSED') {
+      try {
+        await automationsApi.markStepTerminal(step, 'failed');
+      } catch (persistenceError) {
+        return await handleStepExecutionFailure({
+          automationsApi,
+          err: persistenceError,
+          step,
+        });
+      }
+      logging.info(
+        {
+          system: {
+            event: 'automations.poll.email_suppressed',
+            step_id: step.id,
+          },
+        },
+        `[AUTOMATIONS] Stopped step ${step.id} because the email address is suppressed`,
+      );
+      return null;
+    }
     return await handleStepExecutionFailure({
       automationsApi,
       err,

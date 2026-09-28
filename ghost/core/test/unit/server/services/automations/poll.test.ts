@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import MailgunEmail from '../../../../../core/server/adapters/email/MailgunEmail';
 // @ts-expect-error This module lacks type definitions.
 import MailgunClient from '../../../../../core/server/services/lib/mailgun-client';
@@ -629,6 +631,56 @@ describe('automations poll', function () {
     await poll(options);
 
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, pendingReadyAt);
+  });
+
+  it('stops a suppressed email step without retrying or advancing the automation', async function () {
+    const step = buildEmailStep();
+    const infoLog = sinon.stub(logging, 'info');
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    memberWelcomeEmailService.api.sendAutomationEmail.rejects(
+      new errors.EmailError({
+        message: 'Email address is suppressed',
+        code: 'EMAIL_SUPPRESSED',
+      }),
+    );
+
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+    sinon.assert.notCalled(automationsApi.retryStep);
+    sinon.assert.notCalled(options.enqueueAnotherPollAt);
+    sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+    sinon.assert.notCalled(automationsApi.recordEmailSent);
+    sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
+    sinon.assert.calledOnceWithMatch(infoLog, {
+      system: { event: 'automations.poll.email_suppressed', step_id: step.id },
+    });
+  });
+
+  it('retries when a suppressed step cannot be marked terminal', async function () {
+    const step = buildEmailStep();
+    const pollStart = Date.now();
+    const persistenceError = new Error('database unavailable');
+    const errorLog = sinon.stub(logging, 'error');
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    memberWelcomeEmailService.api.sendAutomationEmail.rejects(
+      new errors.EmailError({
+        message: 'Email address is suppressed',
+        code: 'EMAIL_SUPPRESSED',
+      }),
+    );
+    automationsApi.markStepTerminal.rejects(persistenceError);
+
+    await poll(options);
+
+    const retryAt = automationsApi.retryStep.firstCall.args[1];
+    assert.ok(Math.abs(retryAt.getTime() - (pollStart + RETRY_DELAY_MS)) < 2000);
+    sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+    sinon.assert.calledOnceWithExactly(automationsApi.retryStep, step, retryAt);
+    sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, retryAt);
+    sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+    sinon.assert.notCalled(automationsApi.recordEmailSent);
+    sinon.assert.calledOnceWithMatch(errorLog, { err: persistenceError });
   });
 
   it('retries email send failures', async function () {

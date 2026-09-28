@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import logging from '@tryghost/logging';
+import errors from '@tryghost/errors';
 import sinon from 'sinon';
 import type { Knex } from 'knex';
 import { GiftDeliveryService } from '../../../../../core/server/services/gifts/gift-delivery-service';
@@ -580,12 +581,42 @@ describe('GiftDeliveryService', function () {
   });
 
   it('fails a delivery when the mail transport does not accept it', async function () {
-    sinon.stub(logging, 'error');
+    const errorLog = sinon.stub(logging, 'error');
     giftEmailService.sendGiftDelivery.rejects(new Error('421 Try again later'));
     const service = createService();
 
     assert.equal(await service.send('delivery_1'), 'failed');
     sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
+    sinon.assert.calledOnceWithExactly(
+      errorLog,
+      sinon.match({ event: { name: 'gift_delivery.acceptance_failed' } }),
+      'Mail transport did not accept gift delivery',
+    );
+  });
+
+  it('reports a suppressed delivery as blocked by Ghost', async function () {
+    const errorLog = sinon.stub(logging, 'error');
+    const suppressionError = new errors.EmailError({
+      message: 'Email address is suppressed',
+      code: 'EMAIL_SUPPRESSED',
+    });
+    giftEmailService.sendGiftDelivery.rejects(suppressionError);
+    const service = createService();
+
+    assert.equal(await service.send('delivery_1'), 'failed');
+
+    sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
+    sinon.assert.notCalled(giftDeliveryRepository.markSent);
+    sinon.assert.notCalled(giftEmailAnalytics.schedule);
+    sinon.assert.notCalled(giftEmailService.sendGiftSentConfirmation);
+    sinon.assert.calledOnceWithExactly(
+      errorLog,
+      sinon.match({
+        event: { name: 'gift_delivery.email_suppressed' },
+        err: suppressionError,
+      }),
+      'Ghost blocked gift delivery because the email address is suppressed',
+    );
   });
 
   it('logs only the underlying error when the bulk mailer rejects with the rendered message', async function () {

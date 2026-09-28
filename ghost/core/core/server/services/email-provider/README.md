@@ -32,8 +32,9 @@ provider migrations.
 - Automations and gift delivery use the shared single-recipient transport.
   Automations keep their status and Updates & Announcements eligibility checks;
   `email_disabled` alone does not end a step. Webhook providers check local
-  suppression before either kind of send; a blocked send uses the existing
-  failure/retry handling. Polling providers keep their existing sending behavior.
+  suppression before either kind of send. A blocked automation step or gift delivery
+  is marked failed without retrying the send. Polling providers keep their existing
+  sending behavior.
 - Gifts fall back to GhostMailer when bulk email is unconfigured. Buyer notices,
   login messages and the older welcome-email flow also use GhostMailer.
 
@@ -61,9 +62,10 @@ Each fetch or webhook gets its own buffers.
 | Automations | Delivery/open tracking                                  | Also suppresses complaints and qualifying bounces; unsubscribes disable Updates & Announcements             |
 | Gifts       | Delivery/failure outcomes                               | Also suppresses complaints and qualifying bounces, including stale outcomes; ignores opens and unsubscribes |
 
-Automation and gift safety events must match the original recipient address.
-Comparison ignores case and accepts equivalent Unicode/punycode domains. A known
-message with a different address is logged and ignored. Automation unsubscribes
+Webhook recipient and suppression lookups ignore case and accept equivalent
+Unicode/punycode domains. Safety writes use the stored recipient address.
+Automation and gift safety events must match that address; a known message with a
+different address is logged and ignored. Automation unsubscribes
 preserve newsletter subscriptions and provider protection; gift unsubscribes are
 ignored. Newsletter unsubscribes follow the member ID even after an address change,
 then remove the provider entry for the original address after saving preferences.

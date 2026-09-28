@@ -588,7 +588,14 @@ describe('provider email events', () => {
     });
     let acknowledged = false;
     const pending = service
-      .webhook(provider.source, sign({ events: [{ ...event, type: 'complained' }] }))
+      .webhook(
+        provider.source,
+        sign({
+          events: [
+            { ...event, type: 'complained', recipientEmail: event.recipientEmail.toUpperCase() },
+          ],
+        }),
+      )
       .then(() => {
         acknowledged = true;
       });
@@ -598,6 +605,10 @@ describe('provider email events', () => {
     complete();
     await pending;
     assert.equal((await knex('suppressions').where({ email: event.recipientEmail })).length, 1);
+    assert.equal(
+      (await knex('suppressions').where({ email: event.recipientEmail }).first()).email,
+      event.recipientEmail,
+    );
     assert.equal(
       Boolean((await knex('members').where({ id: memberId }).first()).email_disabled),
       true,

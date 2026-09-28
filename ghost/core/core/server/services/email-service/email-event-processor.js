@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const { emailAddressKey, findEmailAddressMatches } = require('../lib/email-address');
 const {
   whereProviderMessageId,
   whereProviderMessageIds,
@@ -29,6 +30,7 @@ async function waitForEvent() {
  * @property {string} emailRecipientId
  * @property {string} memberId
  * @property {string} emailId
+ * @property {string} [email] Original recipient address for webhook safety writes
  */
 
 /**
@@ -80,7 +82,7 @@ class EmailEventProcessor {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailDeliveredEvent.create({
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         emailRecipientId: recipient.emailRecipientId,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
@@ -103,7 +105,7 @@ class EmailEventProcessor {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailOpenedEvent.create({
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         emailRecipientId: recipient.emailRecipientId,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
@@ -127,7 +129,7 @@ class EmailEventProcessor {
       const event = EmailTemporaryBouncedEvent.create({
         id,
         error,
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
         emailRecipientId: recipient.emailRecipientId,
@@ -156,7 +158,7 @@ class EmailEventProcessor {
         id,
         suppress,
         error,
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
         emailRecipientId: recipient.emailRecipientId,
@@ -181,7 +183,7 @@ class EmailEventProcessor {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailUnsubscribedEvent.create({
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
         timestamp,
@@ -202,7 +204,7 @@ class EmailEventProcessor {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = SpamComplaintEvent.create({
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
         timestamp,
@@ -239,11 +241,28 @@ class EmailEventProcessor {
 
     // Check cache first if batched processing is enabled
     if (recipientCache) {
-      const key = `${emailIdentification.email}:${emailId}`;
+      const key = this.#recipientKey(emailIdentification.email, emailId);
       const cached = recipientCache.get(key);
       if (cached) {
         return cached;
       }
+    }
+
+    if (this.#eventSource === 'webhook') {
+      const recipients = await this.#getWebhookRecipients(emailId, [emailIdentification.email]);
+      if (recipients.length !== 1) {
+        return;
+      }
+      const recipient = recipients[0];
+      if (recipient.id && recipient.member_id) {
+        return {
+          emailRecipientId: recipient.id,
+          memberId: recipient.member_id,
+          emailId,
+          email: recipient.member_email,
+        };
+      }
+      return;
     }
 
     // Fall back to individual query for backwards compatibility
@@ -262,6 +281,21 @@ class EmailEventProcessor {
         emailId,
       };
     }
+  }
+
+  #recipientKey(email, emailId) {
+    return `${this.#eventSource === 'webhook' ? emailAddressKey(email) : email}:${emailId}`;
+  }
+
+  async #getWebhookRecipients(emailId, emails) {
+    return findEmailAddressMatches(
+      this.#db
+        .knex('email_recipients')
+        .select('id', 'member_id', 'member_email')
+        .where('email_id', emailId),
+      'member_email',
+      emails,
+    );
   }
 
   /**
@@ -347,6 +381,34 @@ class EmailEventProcessor {
     }
 
     if (lookups.length === 0) {
+      return recipientCache;
+    }
+
+    if (this.#eventSource === 'webhook') {
+      const byEmailId = new Map();
+      for (const { email, emailId } of lookups) {
+        const emails = byEmailId.get(emailId) ?? [];
+        emails.push(email);
+        byEmailId.set(emailId, emails);
+      }
+      for (const [emailId, emails] of byEmailId) {
+        const recipients = await this.#getWebhookRecipients(emailId, emails);
+        for (const recipient of recipients) {
+          const key = this.#recipientKey(recipient.member_email, emailId);
+          // Do not guess between distinct records with equivalent addresses.
+          recipientCache.set(
+            key,
+            recipientCache.has(key)
+              ? null
+              : {
+                  emailRecipientId: recipient.id,
+                  memberId: recipient.member_id,
+                  emailId,
+                  email: recipient.member_email,
+                },
+          );
+        }
+      }
       return recipientCache;
     }
 

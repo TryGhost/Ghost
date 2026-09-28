@@ -15,8 +15,19 @@ describe('single-recipient email sending', () => {
   };
   afterEach(() => sinon.restore());
 
+  function mockLookup() {
+    const query = {
+      client: { config: { client: 'mysql2' } },
+      select: sinon.stub().returnsThis(),
+      clone: sinon.stub().returnsThis(),
+      whereIn: sinon.stub().resolves([]),
+    };
+    sinon.stub(Suppression, 'getFilteredCollectionQuery').returns(query);
+    return query.whereIn;
+  }
+
   it('preserves polling sends without consulting local suppression', async () => {
-    const lookup = sinon.stub(Suppression, 'findOne').rejects(new Error('Do not query'));
+    const lookup = mockLookup().rejects(new Error('Do not query'));
     const provider = {
       getEventSource: (): EventSource => ({ type: 'poll', fetch: async () => {} }),
       sendSingle: sinon.stub().resolves({ id: null }),
@@ -27,7 +38,7 @@ describe('single-recipient email sending', () => {
   });
 
   it('allows an unsuppressed webhook send and preserves its response', async () => {
-    sinon.stub(Suppression, 'findOne').resolves(null);
+    mockLookup();
     const response = { id: '<Opaque-Id>' };
     const provider = {
       getEventSource: (): EventSource => ({
@@ -42,7 +53,7 @@ describe('single-recipient email sending', () => {
 
   it('does not send when the webhook suppression lookup fails', async () => {
     const failure = new Error('Suppression lookup failed');
-    sinon.stub(Suppression, 'findOne').rejects(failure);
+    mockLookup().rejects(failure);
     const provider = {
       getEventSource: (): EventSource => ({
         type: 'webhook',

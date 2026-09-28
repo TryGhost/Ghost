@@ -5,7 +5,7 @@ import type EmailSuppressionList from '../email-suppression-list';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
-import { isSameEmailAddress } from './lib/is-same-email-address';
+import { isSameEmailAddress } from '../lib/email-address';
 
 type EmailAnalyticsEvent = Pick<EmailEvent, 'type' | 'providerId' | 'timestamp'> &
   Partial<Pick<EmailEvent, 'recipientEmail' | 'severity' | 'suppress' | 'error'>>;

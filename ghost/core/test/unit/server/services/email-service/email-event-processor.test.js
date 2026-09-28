@@ -269,6 +269,12 @@ describe('Email Event Processor', function () {
             domainEvents,
             eventStorage: storage,
           });
+          sinon.stub(processor, 'getRecipient').resolves({
+            emailRecipientId: 'email-recipient-id',
+            memberId: 'member-id',
+            emailId: 'email-id',
+            email: 'reader@example.com',
+          });
           const timestamp = new Date();
           let outcome;
           const complete = processor[method](

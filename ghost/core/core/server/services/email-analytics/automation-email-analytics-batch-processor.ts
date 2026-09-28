@@ -10,7 +10,7 @@ import type {
 } from '../automations/automations-repository';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
-import { isSameEmailAddress } from './lib/is-same-email-address';
+import { isSameEmailAddress } from '../lib/email-address';
 
 type AutomationsApi = {
   getAutomatedEmailRecipientsByMailgunIds: typeof automationsApi.getAutomatedEmailRecipientsByMailgunIds;
