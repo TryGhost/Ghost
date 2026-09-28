@@ -3,6 +3,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class SetupRoute extends Route {
+    @service feature;
     @service ghostPaths;
     @service session;
     @service ajax;
@@ -11,8 +12,13 @@ export default class SetupRoute extends Route {
 
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.
-    beforeModel() {
+    beforeModel(transition) {
         super.beforeModel(...arguments);
+
+        if (this.feature.authReact) {
+            transition.abort();
+            return;
+        }
 
         if (this.session.isAuthenticated) {
             return this.transitionTo('index');

@@ -5,7 +5,12 @@ export default class ResetRoute extends UnauthenticatedRoute {
     @service notifications;
     @service session;
 
-    beforeModel() {
+    beforeModel(transition) {
+        if (this.feature.authReact) {
+            transition.abort();
+            return;
+        }
+
         if (this.session.isAuthenticated) {
             this.notifications.showAlert('You can\'t reset your password while you\'re signed in.', {type: 'warn', delayed: true, key: 'password.reset.signed-in'});
         }
