@@ -115,3 +115,30 @@ it('shows why the server refused the details', async () => {
     .toBeVisible();
   expect(reloadAdmin).not.toHaveBeenCalled();
 });
+
+it('sends the new owner to sign in when signing in right after setup fails', async () => {
+  let setupDone = false;
+  fakeAdminEndpoint('GET', '/authentication/setup/', () => ({ setup: [{ status: setupDone }] }));
+  const setupApi = fakeAdminEndpoint('POST', '/authentication/setup/', () => {
+    setupDone = true;
+    return { users: [{}] };
+  });
+  fakeAdminEndpoint(
+    'POST',
+    '/session/',
+    { errors: [{ type: 'UnauthorizedError', message: 'Access Denied.' }] },
+    { status: 401 },
+  );
+  await renderAdminApp('/setup', signedOut({ authReact: true }));
+
+  await authScreen.siteTitleInput().fill('The Daily Awesome');
+  await authScreen.fullNameInput().fill('Jamie Larson');
+  await authScreen.emailInput().fill('jamie@example.com');
+  await authScreen.passwordInput().fill('correct horse battery');
+  await authScreen.startPublishingButton().click();
+
+  await expect.element(authScreen.text('Access Denied.')).toBeVisible();
+  await expect.poll(currentRoute).toBe('/signin');
+  await expect.element(authScreen.signInButton()).toBeVisible();
+  expect(setupApi.requests).toHaveLength(1);
+});

@@ -1,11 +1,16 @@
 import { type ComponentProps, type FormEvent, useState } from 'react';
-import { Navigate, useNavigate } from '@tryghost/admin-x-framework';
+import { Navigate } from '@tryghost/admin-x-framework';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Field, FieldError, FieldLabel, GhostOrb, Input } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { toast } from 'sonner';
 import validator from 'validator';
-import { type SetupStatus, useAuthClient, useSetupStatus } from './client/auth-client';
+import {
+  describeUnexpectedError,
+  type SetupStatus,
+  useAuthClient,
+  useSetupStatus,
+} from './client/auth-client';
 import { AuthLayout, FlowMessage, SubmitButton, type SubmitState } from './auth-layout';
 import { passwordProblems } from './password-rules';
 import { reloadAdmin } from './reload';
@@ -14,7 +19,7 @@ type SetupField = 'blogTitle' | 'name' | 'email' | 'password';
 type SetupValues = Record<SetupField, string>;
 
 export default function Setup() {
-  const { data: status, isPending } = useSetupStatus();
+  const { data: status, isPending, refetch } = useSetupStatus();
 
   if (isPending) {
     return null;
@@ -22,16 +27,20 @@ export default function Setup() {
   if (status?.isSetup) {
     return <Navigate to="/signin" replace />;
   }
-  return <SetupForm prefill={status} />;
+  return <SetupForm prefill={status} onCreated={refetch} />;
 }
 
-const problemWith = (field: SetupField, values: SetupValues, siteUrl?: string) => {
+const problemWith = (
+  field: SetupField,
+  values: SetupValues,
+  site?: { title?: string; url?: string },
+) => {
   switch (field) {
     case 'blogTitle':
       if (!values.blogTitle) {
         return 'Please enter a site title.';
       }
-      return values.blogTitle.length > 150 ? 'Title is too long' : undefined;
+      return validator.isLength(values.blogTitle, { max: 150 }) ? undefined : 'Title is too long';
     case 'name':
       return values.name ? undefined : 'Please enter a name.';
     case 'email':
@@ -42,17 +51,23 @@ const problemWith = (field: SetupField, values: SetupValues, siteUrl?: string) =
     case 'password':
       return passwordProblems(values.password, {
         email: values.email,
-        siteTitle: values.blogTitle,
-        siteUrl,
+        siteTitle: values.blogTitle || site?.title,
+        siteUrl: site?.url,
       })[0];
   }
 };
 
 const FIELDS: SetupField[] = ['blogTitle', 'name', 'email', 'password'];
 
-function SetupForm({ prefill }: { prefill?: SetupStatus }) {
+function SetupForm({
+  prefill,
+  onCreated,
+}: {
+  prefill?: SetupStatus;
+  /** Re-reads the setup status, which sends a now set-up site on to sign in. */
+  onCreated: () => Promise<unknown>;
+}) {
   const authClient = useAuthClient();
-  const navigate = useNavigate();
   const { data: siteData } = useBrowseSite({ defaultErrorHandler: false });
 
   const [values, setValues] = useState<SetupValues>({
@@ -74,7 +89,7 @@ function SetupForm({ prefill }: { prefill?: SetupStatus }) {
     if (nextValues[field]) {
       setErrors((current) => ({
         ...current,
-        [field]: problemWith(field, nextValues, siteData?.site.url),
+        [field]: problemWith(field, nextValues, siteData?.site),
       }));
     }
   };
@@ -84,7 +99,7 @@ function SetupForm({ prefill }: { prefill?: SetupStatus }) {
     setFlowError('');
 
     const nextErrors = Object.fromEntries(
-      FIELDS.map((field) => [field, problemWith(field, values, siteData?.site.url)]),
+      FIELDS.map((field) => [field, problemWith(field, values, siteData?.site)]),
     );
     setErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) {
@@ -94,30 +109,46 @@ function SetupForm({ prefill }: { prefill?: SetupStatus }) {
 
     setSubmitState('running');
     const { blogTitle, name, email, password } = values;
+    let created = false;
     try {
-      const created = await authClient.setup.create({ blogTitle, name, email, password });
-      if (created.error) {
-        if (created.error.status === 422) {
-          setFlowError(created.error.message ?? '');
+      const { error: createError } = await authClient.setup.create({
+        blogTitle,
+        name,
+        email,
+        password,
+      });
+      if (createError) {
+        if (createError.status === 422) {
+          setFlowError(createError.message ?? '');
         } else {
-          toast.error(created.error.message ?? 'There was a problem setting up your site.');
+          toast.error(createError.message ?? 'An unexpected error occurred, please try again.', {
+            id: 'setup',
+          });
         }
         setSubmitState('idle');
         return;
       }
+      created = true;
 
       const { data, error } = await authClient.signIn.email({ email, password });
-      if (data && 'twoFactorRedirect' in data) {
-        navigate('/signin/verify', { state: { twoFactorReason: data.twoFactorReason } });
-      } else if (data) {
+      if (data && !('twoFactorRedirect' in data)) {
         reloadAdmin('/?firstStart=true');
+        return;
+      }
+      // The owner exists now, so what is left is signing in.
+      if (error) {
+        toast.error(error.message ?? 'There was a problem on the server.', { id: 'setup' });
+      }
+      await onCreated();
+    } catch (error) {
+      toast.error(describeUnexpectedError(error, 'There was a problem on the server.'), {
+        id: 'setup',
+      });
+      if (created) {
+        await onCreated();
       } else {
-        setFlowError(error.message ?? '');
         setSubmitState('idle');
       }
-    } catch {
-      toast.error('There was a problem on the server.');
-      setSubmitState('idle');
     }
   };
 

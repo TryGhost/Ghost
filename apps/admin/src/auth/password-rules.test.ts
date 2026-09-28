@@ -4,12 +4,18 @@ import { passwordProblems } from './password-rules';
 const context = {
   email: 'jamie@example.com',
   siteTitle: 'The Daily Awesome',
-  siteUrl: 'https://daily.example.com',
+  siteUrl: 'https://daily.example.com/',
 };
 
 describe('passwordProblems', () => {
   it('accepts a long, unrelated password', () => {
     expect(passwordProblems('correct horse battery', context)).toEqual([]);
+  });
+
+  it('counts characters, not UTF-16 units, for the length rule', () => {
+    expect(passwordProblems('🔒🔒🔒🔒🔒abcd', context)).toContain(
+      'Password must be at least 10 characters long.',
+    );
   });
 
   it('stops at the length rule', () => {

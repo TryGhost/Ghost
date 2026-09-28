@@ -4,7 +4,7 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Input } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { toast } from 'sonner';
-import { useAuthClient } from './client/auth-client';
+import { describeUnexpectedError, useAuthClient } from './client/auth-client';
 import { AuthHeader, AuthLayout, FlowMessage, SubmitButton, type SubmitState } from './auth-layout';
 import { leaveAuthNotice } from './auth-notice';
 import { passwordProblems } from './password-rules';
@@ -28,8 +28,9 @@ export default function Reset() {
   };
 
   const validate = () => {
-    const newPasswordErrors = newPassword ? [] : ['Please enter a password.'];
-    const mismatch = newPassword && newPassword !== confirmPassword;
+    const blank = !newPassword.trim();
+    const newPasswordErrors = blank ? ['Please enter a password.'] : [];
+    const mismatch = !blank && newPassword !== confirmPassword;
     newPasswordErrors.push(
       ...passwordProblems(newPassword, {
         email: authClient.getResetTokenEmail(token) ?? '',
@@ -56,7 +57,9 @@ export default function Reset() {
     try {
       const { data, error } = await authClient.resetPassword({ newPassword, token });
       if (error) {
-        toast.error(error.message ?? 'There was a problem resetting your password.');
+        toast.error(error.message ?? 'An unexpected error occurred, please try again.', {
+          id: 'password-reset',
+        });
         setSubmitState('failed');
         return;
       }
@@ -64,8 +67,11 @@ export default function Reset() {
         leaveAuthNotice(data.message);
       }
       reloadAdmin(takeSigninRedirect());
-    } catch {
-      toast.error('There was a problem on the server.');
+    } catch (error) {
+      toast.error(
+        describeUnexpectedError(error, 'An unexpected error occurred, please try again.'),
+        { id: 'password-reset' },
+      );
       setSubmitState('failed');
     }
   };

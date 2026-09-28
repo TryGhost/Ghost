@@ -3,7 +3,8 @@
  * BetterAuth client (`better-auth/react`): calls resolve to `{data, error}`
  * instead of throwing, transport failures still throw, and errors carry a
  * `code` the screens branch on. `invitation`, `setup` and the reads below are
- * Ghost extensions with no BetterAuth equivalent.
+ * Ghost extensions with no BetterAuth equivalent. `describeUnexpectedError`
+ * turns a thrown failure into the text to show.
  *
  * The implementation is chosen here; screens import only from this module.
  */
@@ -83,6 +84,10 @@ export interface QueryState<T> {
   isError: boolean;
 }
 
+export interface SetupStatusState extends QueryState<SetupStatus> {
+  refetch: () => Promise<unknown>;
+}
+
 export interface SetupStatus {
   isSetup: boolean;
   /** Prefill values configured for a new site. */
@@ -98,6 +103,7 @@ export interface Invitation {
 }
 
 export {
+  describeUnexpectedError,
   useGhostAuthClient as useAuthClient,
   useGhostInvitation as useInvitation,
   useGhostSetupStatus as useSetupStatus,

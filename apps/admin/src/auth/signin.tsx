@@ -14,7 +14,7 @@ import {
 import { Stack } from '@tryghost/shade/primitives';
 import { toast } from 'sonner';
 import validator from 'validator';
-import { useAuthClient } from './client/auth-client';
+import { describeUnexpectedError, useAuthClient } from './client/auth-client';
 import { AuthHeader, AuthLayout, FlowMessage, SubmitButton, type SubmitState } from './auth-layout';
 import { reloadAdmin } from './reload';
 import { takeSigninRedirect } from './signin-redirect';
@@ -38,8 +38,9 @@ export default function Signin() {
     setFlowError('');
 
     const emailInvalid = !email.trim() || !validator.isEmail(email);
-    if (emailInvalid || !password) {
-      setInvalid({ email: emailInvalid, password: !password });
+    const passwordBlank = !password.trim();
+    if (emailInvalid || passwordBlank) {
+      setInvalid({ email: emailInvalid, password: passwordBlank });
       setFlowError('Please fill out the form to sign in.');
       setSubmitState('failed');
       return;
@@ -59,8 +60,10 @@ export default function Signin() {
         setResetRequired(error.code === 'PASSWORD_RESET_REQUIRED');
         setSubmitState('failed');
       }
-    } catch {
-      toast.error('There was a problem on the server.');
+    } catch (error) {
+      toast.error(describeUnexpectedError(error, 'There was a problem on the server.'), {
+        id: 'signin',
+      });
       setSubmitState('failed');
     }
   };
@@ -85,8 +88,11 @@ export default function Signin() {
       } else {
         setFlowNotice('An email with password reset instructions has been sent.');
       }
-    } catch {
-      toast.error('There was a problem with the reset, please try again.');
+    } catch (error) {
+      toast.error(
+        describeUnexpectedError(error, 'There was a problem with the reset, please try again.'),
+        { id: 'forgot-password' },
+      );
     } finally {
       setIsSendingReset(false);
     }

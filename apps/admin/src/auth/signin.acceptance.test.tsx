@@ -232,3 +232,17 @@ it('marks the email when no staff user has it', async () => {
   await expect.element(authScreen.text('User not found.')).toBeVisible();
   await expect.element(authScreen.emailInput()).toHaveAttribute('aria-invalid', 'true');
 });
+
+it('reports a failure without an answer from Ghost as a server problem', async () => {
+  fakeSetupStatus();
+  fakeAdminEndpoint('POST', '/session/', plainText('<html>Bad Gateway</html>'), {
+    status: 502,
+    contentType: 'text/html',
+  });
+  await renderAdminApp('/signin', signedOut({ authReact: true }));
+
+  await authScreen.signIn('owner@example.com', 'correct horse battery');
+
+  await expect.element(authScreen.text('There was a problem on the server.')).toBeVisible();
+  await expect.element(authScreen.retryButton()).toBeVisible();
+});

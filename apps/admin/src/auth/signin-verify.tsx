@@ -10,7 +10,7 @@ import {
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { useAuthClient } from './client/auth-client';
+import { describeUnexpectedError, useAuthClient } from './client/auth-client';
 import { AuthHeader, AuthLayout, FlowMessage, SubmitButton, type SubmitState } from './auth-layout';
 import { reloadAdmin } from './reload';
 import { takeSigninRedirect } from './signin-redirect';
@@ -64,8 +64,11 @@ export default function SigninVerify() {
       } else {
         failWith(error.message ?? '', setFlowError);
       }
-    } catch {
-      failWith('There was a problem verifying the code. Please try again.', setFlowError);
+    } catch (error) {
+      failWith(
+        describeUnexpectedError(error, 'There was a problem verifying the code. Please try again.'),
+        setFlowError,
+      );
     }
   };
 
@@ -79,8 +82,10 @@ export default function SigninVerify() {
       } else {
         setResendState('sent');
       }
-    } catch {
-      setFlowError('There was a problem resending the verification token.');
+    } catch (error) {
+      setFlowError(
+        describeUnexpectedError(error, 'There was a problem resending the verification token.'),
+      );
       setResendState('idle');
     }
   };

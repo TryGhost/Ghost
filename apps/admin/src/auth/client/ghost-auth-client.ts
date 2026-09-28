@@ -18,6 +18,7 @@ import {
   APIError,
   type ErrorResponse,
   MaintenanceError,
+  UnauthorizedError,
   VersionMismatchError,
 } from '@tryghost/admin-x-framework/errors';
 import type {
@@ -27,7 +28,7 @@ import type {
   AuthResult,
   Invitation,
   QueryState,
-  SetupStatus,
+  SetupStatusState,
 } from './auth-client';
 
 type GhostError = Partial<ErrorResponse['errors'][number]>;
@@ -37,30 +38,44 @@ interface Translation {
   message?: string;
 }
 
-const firstGhostError = (error: APIError): GhostError => {
+const firstGhostError = (error: APIError): GhostError | undefined => {
   const { data } = error;
   if (data && typeof data === 'object' && 'errors' in data && Array.isArray(data.errors)) {
-    return (data.errors[0] as GhostError | undefined) ?? {};
+    return data.errors[0] as GhostError | undefined;
   }
-  return {};
+  return undefined;
 };
 
-// Requests that reached the server become an AuthError; anything without a
-// response, and the upgrade/maintenance states the app handles globally, throw.
+// Ghost's answers become an AuthError. Anything else throws: no response, a
+// response without Ghost's error body (e.g. a proxy's 502), and the
+// upgrade/maintenance states, which have their own copy.
 function toAuthError(
   error: unknown,
   translate: (ghostError: GhostError, status: number) => Translation,
 ): AuthError {
+  const ghostError = error instanceof APIError ? firstGhostError(error) : undefined;
   if (
     !(error instanceof APIError) ||
     !error.response ||
+    !ghostError ||
     error instanceof VersionMismatchError ||
     error instanceof MaintenanceError
   ) {
     throw error;
   }
   const { status, statusText } = error.response;
-  return { status, statusText, ...translate(firstGhostError(error), status) };
+  return { status, statusText, ...translate(ghostError, status) };
+}
+
+/** The text for a failure that never produced an AuthError, falling back to the caller's own. */
+export function describeUnexpectedError(error: unknown, fallback: string): string {
+  if (error instanceof VersionMismatchError) {
+    return 'Ghost has been upgraded, please copy any unsaved data and refresh the page to continue.';
+  }
+  if (error instanceof MaintenanceError) {
+    return 'Sorry, Ghost is currently undergoing maintenance, please wait a moment then try again.';
+  }
+  return fallback;
 }
 
 async function settle<T>(
@@ -142,12 +157,19 @@ export function useGhostAuthClient(): AuthClient {
       twoFactor: {
         sendOtp: () =>
           settle(sendVerification(null), () => ({ status: true as const }), messageOnly),
-        verifyOtp: ({ code }) =>
-          settle(
-            verifySession({ token: code }),
-            () => ({ redirect: false as const }),
-            (ghost, status) => (status === 401 ? { code: 'INVALID_CODE' } : messageOnly(ghost)),
-          ),
+        async verifyOtp({ code }) {
+          try {
+            await verifySession({ token: code });
+            return { data: { redirect: false }, error: null };
+          } catch (error) {
+            // A wrong or expired code is a bare 401 with a text body.
+            if (error instanceof UnauthorizedError && error.response?.status === 401) {
+              const { status, statusText } = error.response;
+              return { data: null, error: { status, statusText, code: 'INVALID_CODE' } };
+            }
+            return { data: null, error: toAuthError(error, messageOnly) };
+          }
+        },
       },
       requestPasswordReset: ({ email }) =>
         settle(
@@ -209,8 +231,8 @@ export function useGhostAuthClient(): AuthClient {
 
 const decodeApostrophes = (value?: string) => value?.replace(/&apos;/gi, "'");
 
-export function useGhostSetupStatus(): QueryState<SetupStatus> {
-  const { data, isLoading, isError } = useSetupStatusQuery({ defaultErrorHandler: false });
+export function useGhostSetupStatus(): SetupStatusState {
+  const { data, isLoading, isError, refetch } = useSetupStatusQuery({ defaultErrorHandler: false });
   const setup = data?.setup?.[0];
 
   return {
@@ -222,6 +244,7 @@ export function useGhostSetupStatus(): QueryState<SetupStatus> {
     },
     isPending: isLoading,
     isError,
+    refetch,
   };
 }
 

@@ -4,7 +4,7 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Field, FieldError, FieldLabel, Input } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { toast } from 'sonner';
-import { useAuthClient, useInvitation } from './client/auth-client';
+import { describeUnexpectedError, useAuthClient, useInvitation } from './client/auth-client';
 import { AuthHeader, AuthLayout, FlowMessage, SubmitButton, type SubmitState } from './auth-layout';
 import { passwordProblems } from './password-rules';
 import { reloadAdmin } from './reload';
@@ -54,11 +54,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
     if (field === 'name') {
       return values.name ? undefined : 'Please enter a name.';
     }
-    return passwordProblems(values.password, {
-      email,
-      siteTitle: siteData?.site.title,
-      siteUrl: siteData?.site.url,
-    })[0];
+    return passwordProblems(values.password, { email, siteTitle: siteData?.site.title })[0];
   };
 
   const validateField = (field: SignupField, values?: { name: string; password: string }) =>
@@ -77,6 +73,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
     }
 
     setSubmitState('running');
+    let accountCreated = false;
     try {
       const accepted = await authClient.invitation.accept({ token, name, password });
       if (accepted.error) {
@@ -84,6 +81,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
         setSubmitState('failed');
         return;
       }
+      accountCreated = true;
 
       const { data, error } = await authClient.signIn.email({ email, password });
       if (data && 'twoFactorRedirect' in data) {
@@ -91,13 +89,22 @@ function SignupForm({ email, token }: { email: string; token: string }) {
       } else if (data) {
         reloadAdmin(takeSigninRedirect());
       } else {
-        // The account exists now, so submitting again could only fail.
-        toast.error(error.message ?? 'There was a problem signing in.');
+        toast.error(error.message ?? 'An unexpected error occurred, please try again.', {
+          id: 'signup',
+        });
         navigate('/signin', { replace: true });
       }
-    } catch {
-      toast.error('There was a problem on the server.');
-      setSubmitState('failed');
+    } catch (error) {
+      toast.error(
+        describeUnexpectedError(error, 'An unexpected error occurred, please try again.'),
+        { id: 'signup' },
+      );
+      // The account exists now, so submitting again could only fail.
+      if (accountCreated) {
+        navigate('/signin', { replace: true });
+      } else {
+        setSubmitState('failed');
+      }
     }
   };
 
