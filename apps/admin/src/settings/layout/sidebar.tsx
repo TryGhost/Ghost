@@ -11,9 +11,9 @@ import {
   Separator,
   SidebarMenu,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Search, X } from 'lucide-react';
-import { Text } from '@tryghost/shade/primitives';
+import { Inline, Text } from '@tryghost/shade/primitives';
 import { useFocusContext } from '@tryghost/shade/app';
 
 import {
@@ -37,6 +37,10 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/use-scroll-section';
 import { useSearch } from '@/settings/providers/settings-app-context';
+import ExitSettingsButton from '@/settings/components/exit-settings-button';
+
+const NAV_ITEM_CLASS_NAME =
+  'mt-px flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-control font-medium text-sidebar-foreground transition-all hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground focus-visible:bg-sidebar-accent/70 focus-visible:text-sidebar-accent-foreground focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0';
 
 interface NavItemProps {
   icon?: React.ReactNode;
@@ -62,7 +66,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon, keywords, navid, onClick, title
       <a
         aria-current={isCurrent ? 'page' : undefined}
         className={clsx(
-          'mt-px flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-control font-medium text-sidebar-foreground transition-all hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground focus-visible:bg-sidebar-accent/70 focus-visible:text-sidebar-accent-foreground focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0',
+          NAV_ITEM_CLASS_NAME,
           isCurrent && 'bg-sidebar-accent text-sidebar-accent-foreground',
           !checkVisible(keywords) && 'hidden',
         )}
@@ -83,6 +87,8 @@ interface NavSectionProps {
 }
 
 const NavSection: React.FC<NavSectionProps> = ({ children, isVisible, title }) => {
+  const admin7Settings = useFeatureFlag('admin7settings');
+
   if (!isVisible) {
     return null;
   }
@@ -95,7 +101,7 @@ const NavSection: React.FC<NavSectionProps> = ({ children, isVisible, title }) =
       {children && (
         <>
           <SidebarMenu className="-mt-1 mb-7 gap-0">{children}</SidebarMenu>
-          <Separator className="mx-2 mb-7 w-auto bg-border-default" />
+          {!admin7Settings && <Separator className="mx-2 mb-7 w-auto bg-border-default" />}
         </>
       )}
     </>
@@ -112,7 +118,14 @@ const PrivateBadge: React.FC = () => (
   </Badge>
 );
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  /** Focus search on mount. Off in the mobile sheet, where it would pop the keyboard on every open. */
+  autoFocusSearch?: boolean;
+  /** Called after an item navigates, e.g. to close the mobile sheet. */
+  onNavigate?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ autoFocusSearch = true, onNavigate }) => {
   const { filter, setFilter, checkVisible, noResult, setNoResult } = useSearch();
   const { updateRoute } = useSettingsNavigation();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -125,6 +138,7 @@ const Sidebar: React.FC = () => {
   const paidMembersEnabled = usePaidMembersEnabled();
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
   const hasAutomations = useFeatureFlag('automations');
+  const admin7Settings = useFeatureFlag('admin7settings');
   const hasCustomFields = useCustomFieldsAvailable();
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const mailgunIsConfigured = Boolean(config.mailgunIsConfigured);
@@ -194,7 +208,7 @@ const Sidebar: React.FC = () => {
 
   // Auto-focus on searchfield on page load
   useEffect(() => {
-    if (searchInputRef.current) {
+    if (autoFocusSearch && searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, []);
@@ -247,6 +261,7 @@ const Sidebar: React.FC = () => {
       setFilter('');
       setNoResult(false);
       updateRoute(e.currentTarget.id);
+      onNavigate?.();
     }
   };
 
@@ -254,47 +269,85 @@ const Sidebar: React.FC = () => {
     setFilter(e.target.value);
 
     if (e.target.value) {
-      document.querySelector('.settings-app')?.scrollTo({ top: 0, left: 0 });
+      if (admin7Settings) {
+        document.getElementById('settings-scroller')?.scrollTo({ top: 0, left: 0 });
+      } else {
+        document.querySelector('.settings-app')?.scrollTo({ top: 0, left: 0 });
+      }
     }
   };
 
-  const navClasses = clsx('hidden pt-10 tablet:visible! tablet:block!');
+  const searchInput = (className: string) => (
+    <InputGroup
+      className={cn(
+        'rounded-full border-control-border bg-surface-elevated-2 shadow-sm has-[[data-slot=input-group-control]:focus-visible]:border-green! has-[[data-slot=input-group-control]:focus-visible]:bg-surface-elevated-2! has-[[data-slot=input-group-control]:focus-visible]:ring-green/25!',
+        className,
+      )}
+    >
+      <InputGroupAddon align="inline-start">
+        <Search aria-hidden="true" className="size-4" />
+      </InputGroupAddon>
+      <InputGroupInput
+        ref={searchInputRef}
+        aria-label="Search settings"
+        autoComplete="off"
+        autoCorrect="off"
+        placeholder="Search settings"
+        value={filter}
+        onChange={updateSearch}
+      />
+      <InputGroupAddon align="inline-end">
+        {filter ? (
+          <InputGroupButton
+            aria-label="Clear query"
+            size="icon-xs"
+            onClick={() => {
+              setFilter('');
+              searchInputRef.current?.focus();
+            }}
+          >
+            <X aria-hidden="true" />
+          </InputGroupButton>
+        ) : (
+          <Kbd className="hidden tablet:inline-flex">/</Kbd>
+        )}
+      </InputGroupAddon>
+    </InputGroup>
+  );
+
+  const navClasses = clsx(
+    // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
+    // bottom edge as the search row sits from the top.
+    admin7Settings
+      ? 'min-h-0 flex-1 overflow-y-auto pt-4 pb-5 [&>:last-child]:mb-0'
+      : 'hidden pt-10 tablet:visible! tablet:block!',
+  );
 
   return (
-    <div className="ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]" data-testid="sidebar">
-      <div className="sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-gray-50 xl:h-20 dark:bg-gray-950 dark:tablet:bg-[#101114]">
-        <InputGroup className="mr-8 rounded-full border-control-border bg-surface-elevated-2 shadow-sm has-[[data-slot=input-group-control]:focus-visible]:border-green! has-[[data-slot=input-group-control]:focus-visible]:bg-surface-elevated-2! has-[[data-slot=input-group-control]:focus-visible]:ring-green/25! tablet:mr-0">
-          <InputGroupAddon align="inline-start">
-            <Search aria-hidden="true" className="size-4" />
-          </InputGroupAddon>
-          <InputGroupInput
-            ref={searchInputRef}
-            aria-label="Search settings"
-            autoComplete="off"
-            autoCorrect="off"
-            placeholder="Search settings"
-            value={filter}
-            onChange={updateSearch}
-          />
-          <InputGroupAddon align="inline-end">
-            {filter ? (
-              <InputGroupButton
-                aria-label="Clear query"
-                size="icon-xs"
-                onClick={() => {
-                  setFilter('');
-                  searchInputRef.current?.focus();
-                }}
-              >
-                <X aria-hidden="true" />
-              </InputGroupButton>
-            ) : (
-              <Kbd className="hidden tablet:inline-flex">/</Kbd>
-            )}
-          </InputGroupAddon>
-        </InputGroup>
-      </div>
-      <nav className={navClasses} id="settings-sidebar">
+    <div
+      className={
+        admin7Settings
+          ? 'flex min-h-0 flex-1 flex-col'
+          : 'ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]'
+      }
+      data-testid="sidebar"
+    >
+      {admin7Settings ? (
+        <div className="shrink-0 bg-sidebar pb-2">
+          <Inline align="center" gap="sm">
+            <ExitSettingsButton onNavigate={onNavigate} />
+            {searchInput('flex-1')}
+          </Inline>
+        </div>
+      ) : (
+        <div className="sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-gray-50 xl:h-20 dark:bg-gray-950 dark:tablet:bg-[#101114]">
+          {searchInput('mr-8 tablet:mr-0')}
+        </div>
+      )}
+      <nav
+        className={navClasses}
+        id={admin7Settings ? 'settings-sidebar-scroller' : 'settings-sidebar'}
+      >
         {noResult && (
           <div className="ml-2 text-base text-gray-700">
             <h2 className="mb-2 text-base font-semibold tracking-normal text-black dark:text-white">
@@ -570,7 +623,30 @@ const Sidebar: React.FC = () => {
           />
         </NavSection>
 
-        {!filter && (
+        {!filter && admin7Settings && (
+          <a
+            className={NAV_ITEM_CLASS_NAME}
+            onClick={() => {
+              updateRoute('about');
+              onNavigate?.();
+            }}
+          >
+            {/* The orb PNG as a mask keeps its detail but takes the nav's text colour, so it
+                follows light and dark mode like the other nav icons. */}
+            <span
+              aria-hidden="true"
+              className="size-4 shrink-0 bg-current"
+              style={{
+                maskImage: `url(${GhostLogo})`,
+                maskPosition: 'center',
+                maskRepeat: 'no-repeat',
+                maskSize: 'contain',
+              }}
+            />
+            About Ghost
+          </a>
+        )}
+        {!filter && !admin7Settings && (
           <a
             className="mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-gray-800 transition-all hover:bg-gray-200 focus:bg-gray-100 dark:text-gray-600 dark:hover:bg-gray-950 dark:focus:bg-gray-900"
             onClick={() => {

@@ -10,6 +10,7 @@ const useIsEmberOwnedRouteMock = vi.fn<(pathname: string) => boolean>();
 const useMatchesMock = vi.fn<() => RouteMatch[]>();
 const useEmberSidebarVisibilityMock = vi.fn<() => boolean>();
 const syncEmberFullScreenMock = vi.fn<(isFullScreen: boolean) => () => void>();
+const useFeatureFlagMock = vi.fn<() => boolean>();
 
 vi.mock('@tryghost/admin-x-framework', () => ({
   useLocation: () => useLocationMock(),
@@ -25,12 +26,17 @@ vi.mock('@/ember-bridge', () => ({
   useSidebarVisibility: () => useEmberSidebarVisibilityMock(),
 }));
 
+vi.mock('@tryghost/admin-x-framework/hooks', () => ({
+  useFeatureFlag: () => useFeatureFlagMock(),
+}));
+
 describe('useAdminSidebarVisibility', () => {
   beforeEach(() => {
     useLocationMock.mockReturnValue({ pathname: '/posts' });
     useIsEmberOwnedRouteMock.mockReturnValue(false);
     useMatchesMock.mockReturnValue([]);
     useEmberSidebarVisibilityMock.mockReturnValue(true);
+    useFeatureFlagMock.mockReturnValue(false);
   });
 
   it('ignores stale Ember fullscreen state on a React screen', async () => {
@@ -106,6 +112,19 @@ describe('useAdminSidebarVisibility', () => {
 
     expect(result.current).toBe(true);
   });
+
+  it('uses the Settings sidebar only when admin7settings is enabled', async () => {
+    const { useAdminSidebarVisibility } = await import('./sidebar-visibility');
+
+    useMatchesMock.mockReturnValue([{ handle: { settingsSidebar: true } }]);
+
+    const { result, rerender } = renderHook(() => useAdminSidebarVisibility());
+    expect(result.current).toBe(false);
+
+    useFeatureFlagMock.mockReturnValue(true);
+    rerender();
+    expect(result.current).toBe(true);
+  });
 });
 
 describe('useSyncEmberFullScreen', () => {
@@ -124,6 +143,22 @@ describe('useSyncEmberFullScreen', () => {
 
     expect(stopSync).toHaveBeenCalledOnce();
     expect(syncEmberFullScreenMock).toHaveBeenCalledTimes(2);
+    expect(syncEmberFullScreenMock).toHaveBeenLastCalledWith(false);
+  });
+
+  it('keeps Settings fullscreen in Ember unless admin7settings is enabled', async () => {
+    const { useSyncEmberFullScreen } = await import('./sidebar-visibility');
+    syncEmberFullScreenMock.mockReturnValue(vi.fn());
+    useFeatureFlagMock.mockReturnValue(false);
+
+    useMatchesMock.mockReturnValue([{}, { handle: { settingsSidebar: true } }]);
+    const { rerender } = renderHook(() => useSyncEmberFullScreen());
+
+    expect(syncEmberFullScreenMock).toHaveBeenLastCalledWith(true);
+
+    useFeatureFlagMock.mockReturnValue(true);
+    rerender();
+
     expect(syncEmberFullScreenMock).toHaveBeenLastCalledWith(false);
   });
 });
