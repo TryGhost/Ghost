@@ -25,6 +25,10 @@ const getWorkerCount = () => Math.min(8, Math.max(2, availableParallelism() - 1)
 
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, react()],
+  server: {
+    // Vitest owns console reporting; Vite forwarding bypasses silent below.
+    forwardConsole: false,
+  },
   // Serves the MSW service worker script; scoped to the test config so it
   // never ends up in the production build's public assets.
   publicDir: './test-utils/acceptance/public',
@@ -39,6 +43,10 @@ export default defineConfig({
   resolve: sharedResolve,
   test: {
     name: 'acceptance',
+    // Keep passing runs compact locally and in CI, but replay console output
+    // for failures and retain GitHub annotations. Use --silent=false to debug.
+    silent: 'passed-only',
+    reporters: process.env.GITHUB_ACTIONS ? ['dot', 'github-actions'] : ['dot'],
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
     setupFiles: ['./test-utils/acceptance/setup.ts'],
