@@ -7,9 +7,8 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import type { UsersResponseType } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl, getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
-import { Button } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
 import { useEmberOwnedRouteMatcher } from '@/routes';
+import { FullscreenCloseButton } from '@/shared/fullscreen-close-button';
 
 const MIGRATE_ORIGIN = 'https://migrate.ghost.org';
 
@@ -119,15 +118,12 @@ const Migrate = () => {
           title="Migrate"
         />
       )}
-      <Button
+      {/* The migration app is always light, so the button brings its own surface. */}
+      <FullscreenCloseButton
         aria-label="Close"
-        className="absolute top-6 right-6"
-        size="icon"
-        variant="ghost"
+        className="bg-background"
         onClick={() => navigate('/settings/migration')}
-      >
-        <LucideIcon.X />
-      </Button>
+      />
     </div>
   );
 };
