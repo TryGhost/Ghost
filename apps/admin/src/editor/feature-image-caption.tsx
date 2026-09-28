@@ -6,7 +6,7 @@ import {
   loadKoenig,
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
-import { reportKoenigError } from './report-error';
+import { reportKoenigError, reportKoenigRenderError } from './report-error';
 
 export interface FeatureImageCaptionProps {
   /** Paragraph-wrapped caption HTML; the editor parses it as a document. */
@@ -76,7 +76,7 @@ export function FeatureImageCaption(props: FeatureImageCaptionProps) {
 
   return (
     <div className="koenig-react-editor koenig-lexical flex-1">
-      <ErrorBoundary name="the feature image caption">
+      <ErrorBoundary name="the feature image caption" onError={reportKoenigRenderError}>
         <Suspense fallback={null}>
           <CaptionMount {...props} editor={editor} />
         </Suspense>
