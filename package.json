@@ -69,8 +69,8 @@
     "preinstall": "node ./scripts/enforce-package-manager.js",
     "prepare": "husky .github/hooks",
     "query-parameter-policy:export": "pnpm --filter ghost query-parameter-policy:export",
-    "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
-    "tb:install": "curl https://tinybird.co | sh",
+    "tb": "docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml run --rm --no-deps --entrypoint tb tb-cli --local",
+    "tb:test": "pnpm tb test run",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
     "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node scripts/release.js"
