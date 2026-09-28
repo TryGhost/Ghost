@@ -1,5 +1,6 @@
 import ObjectID from 'bson-objectid';
 import logging from '@tryghost/logging';
+import errors from '@tryghost/errors';
 import type { GiftRepository, RepositoryTransactionOptions } from './gift-bookshelf-repository';
 import type {
   GiftDeliveryOutcomeRecordResult,
@@ -130,6 +131,12 @@ export class GiftDeliveryService {
   ): Promise<string | null> {
     const delivery = await this.deps.giftDeliveryRepository.getByGiftToken(giftToken, options);
 
+    return delivery?.recipientEmail ?? null;
+  }
+
+  async getRecipientEmailForMessage(providerMessageId: string): Promise<string | null> {
+    const delivery =
+      await this.deps.giftDeliveryRepository.getByProviderMessageId(providerMessageId);
     return delivery?.recipientEmail ?? null;
   }
 
@@ -318,16 +325,24 @@ export class GiftDeliveryService {
         expiresAt: gift.expiresAt!,
       });
     } catch (err) {
+      // The bulk mailer can include the rendered message; keep it out of the logs.
+      const sendError = isMailgunRejection(err) ? err.error : err;
+      const isSuppressed =
+        sendError instanceof errors.EmailError && sendError.code === 'EMAIL_SUPPRESSED';
       logging.error(
         {
-          event: { name: 'gift_delivery.acceptance_failed' },
-          // The bulk mailer rejects with {error, messageData}; the rendered
-          // message and recipient must stay out of the logs
-          err: isMailgunRejection(err) ? err.error : err,
+          event: {
+            name: isSuppressed
+              ? 'gift_delivery.email_suppressed'
+              : 'gift_delivery.acceptance_failed',
+          },
+          err: sendError,
           deliveryId: delivery.id,
           giftId: delivery.giftId,
         },
-        'Mail transport did not accept gift delivery',
+        isSuppressed
+          ? 'Ghost blocked gift delivery because the email address is suppressed'
+          : 'Mail transport did not accept gift delivery',
       );
       await this.deps.giftDeliveryRepository.markFailed(delivery.id);
       return 'failed';

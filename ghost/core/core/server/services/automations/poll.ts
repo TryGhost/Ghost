@@ -1,5 +1,5 @@
 import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
-import { getMailgunMessageId } from '../lib/mailgun-message-id';
+import { z } from 'zod';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import {
@@ -236,8 +236,17 @@ const processStep = async ({
           automationActionRevisionId: step.automation_action_revision_id,
           automationRunStepId: step.id,
         });
-        const mailgunMessageId = getMailgunMessageId(sendResult);
-        // Only Mailgun sends can produce open events for automation emails
+        // A missing tracking ID must not cause a duplicate send.
+        const parsed = z
+          .object({
+            id: z
+              .string()
+              .min(1)
+              .max(1000)
+              .refine((id) => id.trim().length > 0),
+          })
+          .safeParse(sendResult);
+        const mailgunMessageId = parsed.success ? parsed.data.id : undefined;
         const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
         try {
           await automationsApi.recordEmailSent({
@@ -293,6 +302,27 @@ const processStep = async ({
 
     nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
   } catch (err) {
+    if (err instanceof errors.EmailError && err.code === 'EMAIL_SUPPRESSED') {
+      try {
+        await automationsApi.markStepTerminal(step, 'failed');
+      } catch (persistenceError) {
+        return await handleStepExecutionFailure({
+          automationsApi,
+          err: persistenceError,
+          step,
+        });
+      }
+      logging.info(
+        {
+          system: {
+            event: 'automations.poll.email_suppressed',
+            step_id: step.id,
+          },
+        },
+        `[AUTOMATIONS] Stopped step ${step.id} because the email address is suppressed`,
+      );
+      return null;
+    }
     return await handleStepExecutionFailure({
       automationsApi,
       err,

@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
-import type { EmailProviderBase, EventSource } from '@tryghost/adapter-base-email';
+import type { EmailProviderBase, EventSource, SingleMessage } from '@tryghost/adapter-base-email';
+import errors from '@tryghost/errors';
 import adapterManager from '../adapter-manager';
+import { findEmailAddressMatches } from '../lib/email-address';
 
 const sourceSchema = z.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/);
 let active: EmailProviderBase | undefined;
@@ -42,4 +44,26 @@ export function init(): void {
 export function getProvider(): EmailProviderBase {
   assert(active, 'Email provider must be initialized at boot');
   return active;
+}
+
+/** Preserve existing polling sends; enforce local suppression for webhook providers. */
+export async function sendSingleEmail(
+  provider: Pick<EmailProviderBase, 'sendSingle' | 'getEventSource'>,
+  message: SingleMessage,
+): Promise<{ id: string | null }> {
+  if (provider.getEventSource().type === 'webhook') {
+    const { Suppression } = require('../../models');
+    const suppressions = await findEmailAddressMatches(
+      Suppression.getFilteredCollectionQuery({}).select('id', 'email'),
+      'email',
+      [message.to],
+    );
+    if (suppressions.length) {
+      throw new errors.EmailError({
+        message: 'Email address is suppressed',
+        code: 'EMAIL_SUPPRESSED',
+      });
+    }
+  }
+  return provider.sendSingle(message);
 }
