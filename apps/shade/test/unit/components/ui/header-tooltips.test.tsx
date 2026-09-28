@@ -38,6 +38,7 @@ it('does not reopen a header tooltip when the browser restores focus', () => {
   fireEvent.focus(trigger);
   expect(screen.queryByRole('tooltip')).not.toBeNull();
   fireEvent.blur(window);
+  expect(screen.queryByRole('tooltip')).toBeNull();
   fireEvent.blur(trigger);
   fireEvent.focus(window);
   fireEvent.focus(trigger);
@@ -58,6 +59,27 @@ function SeparateGroups({ children }: PropsWithChildren) {
     </PageHeader.Actions>
   );
 }
+
+it('does not show a pending hover tooltip after switching away from the browser', () => {
+  render(
+    <PageHeader.ActionGroup>
+      <PageHeader.Action label="Search" iconOnly>
+        Search icon
+      </PageHeader.Action>
+    </PageHeader.ActionGroup>,
+  );
+  const trigger = screen.getByRole('button', { name: 'Search' });
+  fireEvent.pointerMove(trigger);
+  advance(500);
+  fireEvent.blur(window);
+  fireEvent.focus(window);
+  advance(500);
+  expect(screen.queryByRole('tooltip')).toBeNull();
+  fireEvent.pointerLeave(trigger);
+  fireEvent.pointerMove(trigger);
+  advance(1000);
+  expect(screen.getByRole('tooltip').textContent).toBe('Search');
+});
 
 it.each([
   { name: 'PageHeader', Actions: PageHeader.ActionGroup },
@@ -117,6 +139,8 @@ it('preserves inherited timing and focus behavior with Admin 7 off', () => {
   const trigger = screen.getByRole('button', { name: 'Existing action' });
   fireEvent.pointerMove(trigger);
   advance(0);
+  expect(screen.getByRole('tooltip').textContent).toBe('Existing tooltip');
+  fireEvent.blur(window);
   expect(screen.getByRole('tooltip').textContent).toBe('Existing tooltip');
   fireEvent.pointerLeave(trigger);
   fireEvent.pointerMove(document.body, { clientX: 1000, clientY: 1000 });

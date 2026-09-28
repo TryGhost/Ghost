@@ -113,7 +113,8 @@ delay. Pages should not add their own tooltip providers or timing overrides.
 
 Selecting a dropdown item with the pointer closes the menu without reopening the
 trigger tooltip merely because focus returns. Keyboard navigation still restores
-focus and tooltip access. Returning to the browser window also does not reopen a
+focus and tooltip access. Switching away from the browser closes open tooltips.
+Returning to the browser window also does not reopen a
 tooltip on the focused control; hovering or deliberately navigating with the
 keyboard still works. Disabled actions remain disabled and retain their size.
 
