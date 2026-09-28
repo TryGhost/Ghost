@@ -1,0 +1,17 @@
+DESCRIPTION >
+    Daily automation entries in UTC. All-time requests include the complete run history.
+
+NODE entry_counts
+SQL >
+    %
+    SELECT
+        toString(toDate(runs.created_at, 'UTC')) AS date,
+        count() AS count
+    FROM _mv_automation_runs AS runs FINAL
+    WHERE
+        runs.site_uuid = {{ String(site_uuid, '00000000-0000-0000-0000-000000000000', required=True) }}
+        AND runs.automation_id = {{ String(automation_id, '', required=True) }}
+    GROUP BY date
+    ORDER BY date ASC
+
+TYPE ENDPOINT

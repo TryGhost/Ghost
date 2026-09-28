@@ -111,3 +111,18 @@ sources before adding test data to it.
 ### Architecture
 
 [See full documentation regarding analytics architecture in following document](ARCHITECTURE.md)
+
+### Automation statistics
+
+Run rows are sorted by `(site_uuid, automation_id, id)`. Ownership is immutable and
+the row ID remains in the key, preserving latest-version deduplication. The site
+prefix also supports the automation list. Queries use `FINAL` before aggregating.
+
+Changing sorting keys rebuilds the materialized table. Its `FORWARD_QUERY` copies
+existing rows so the migration does not depend on retained raw events. Keep it
+through deployment of the new layout, then remove it after every target environment
+has migrated. Deploy the related datafiles together.
+
+The entry pipe returns the full daily history. Core derives the total from that
+same result. Run `tb test run` to check the entry pipe against the committed
+fixtures, including duplicates, old versions, and site isolation.
