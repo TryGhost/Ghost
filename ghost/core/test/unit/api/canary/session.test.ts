@@ -1,11 +1,27 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const { UnauthorizedError } = require('@tryghost/errors');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import { UnauthorizedError } from '@tryghost/errors';
 
-const models = require('../../../../core/server/models');
+// @ts-expect-error This module lacks type definitions.
+import models = require('../../../../core/server/models');
+// @ts-expect-error This module lacks type definitions.
+import sessionController from '../../../../core/server/api/endpoints/session';
+// @ts-expect-error This module lacks type definitions.
+import sessionServiceMiddleware = require('../../../../core/server/services/auth/session');
 
-const sessionController = require('../../../../core/server/api/endpoints/session');
-const sessionServiceMiddleware = require('../../../../core/server/services/auth/session');
+type TestRequest = {
+  brute: {
+    reset: sinon.SinonStub;
+  };
+  user?: unknown;
+  skipVerification?: boolean;
+};
+
+type SessionMiddleware = (
+  req: unknown,
+  res: unknown,
+  next: (error?: unknown) => unknown,
+) => unknown;
 
 describe('Session controller', function () {
   afterEach(function () {
@@ -25,7 +41,7 @@ describe('Session controller', function () {
         () => {
           assert.fail('session.add did not throw');
         },
-        (err) => {
+        (err: unknown) => {
           assert.equal(err instanceof UnauthorizedError, true);
         },
       );
@@ -46,14 +62,14 @@ describe('Session controller', function () {
           () => {
             assert.fail('session.add did not throw');
           },
-          (err) => {
+          (err: unknown) => {
             assert.equal(err instanceof UnauthorizedError, true);
           },
         );
     });
 
     it('it returns a function that calls req.brute.reset, sets req.user and calls createSession if the check works', function () {
-      const fakeReq = {
+      const fakeReq: TestRequest = {
         brute: {
           reset: sinon.stub().callsArg(0),
         },
@@ -73,7 +89,7 @@ describe('Session controller', function () {
             password: 'qu33nRul35',
           },
         })
-        .then((fn) => {
+        .then((fn: SessionMiddleware) => {
           fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
@@ -89,7 +105,7 @@ describe('Session controller', function () {
 
     it('it returns a function that calls req.brute.reset and calls next if reset errors', function () {
       const resetError = new Error();
-      const fakeReq = {
+      const fakeReq: TestRequest = {
         brute: {
           reset: sinon.stub().callsArgWith(0, resetError),
         },
@@ -109,7 +125,7 @@ describe('Session controller', function () {
             password: 'qu33nRul35',
           },
         })
-        .then((fn) => {
+        .then((fn: SessionMiddleware) => {
           fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
@@ -120,7 +136,7 @@ describe('Session controller', function () {
     });
 
     it('it creates a verified session when the user has not logged in before', function () {
-      const fakeReq = {
+      const fakeReq: TestRequest = {
         brute: {
           reset: sinon.stub().callsArg(0),
         },
@@ -140,7 +156,7 @@ describe('Session controller', function () {
             password: 'qu33nRul35',
           },
         })
-        .then((fn) => {
+        .then((fn: SessionMiddleware) => {
           fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
@@ -157,7 +173,7 @@ describe('Session controller', function () {
     });
 
     it('it creates a non-verified session when the user has logged in before', function () {
-      const fakeReq = {
+      const fakeReq: TestRequest = {
         brute: {
           reset: sinon.stub().callsArg(0),
         },
@@ -177,7 +193,7 @@ describe('Session controller', function () {
             password: 'qu33nRul35',
           },
         })
-        .then((fn) => {
+        .then((fn: SessionMiddleware) => {
           fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
@@ -203,7 +219,7 @@ describe('Session controller', function () {
 
       return sessionController
         .delete()
-        .then((fn) => {
+        .then((fn: SessionMiddleware) => {
           fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
