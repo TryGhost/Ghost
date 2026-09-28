@@ -10,33 +10,57 @@ function isDevelopmentOrTesting() {
 }
 
 /**
- * Runs `fn` with foreign key checks off, so a table other tables reference can
- * be dropped and recreated
- *
  * @param {import('knex').Knex} connection
- * @param {(connection: import('knex').Knex) => Promise<void>} fn
+ * @param {string} table
+ * @returns {Promise<string[]>} the other tables with a foreign key to `table`
  */
-async function withoutForeignKeyChecks(connection, fn) {
+async function getReferencingTables(connection, table) {
   if (DatabaseInfo.isMySQL(connection)) {
-    // The setting is per session, so the transaction pins one connection
-    await connection.transaction(async (transaction) => {
-      await transaction.raw('SET FOREIGN_KEY_CHECKS = 0');
-      try {
-        await fn(transaction);
-      } finally {
-        await transaction.raw('SET FOREIGN_KEY_CHECKS = 1');
-      }
-    });
-    return;
+    const [rows] = await connection.raw(
+      `SELECT DISTINCT TABLE_NAME AS name
+        FROM information_schema.KEY_COLUMN_USAGE
+        WHERE REFERENCED_TABLE_SCHEMA = DATABASE()
+        AND REFERENCED_TABLE_NAME = ?
+        AND TABLE_NAME <> ?`,
+      [table, table],
+    );
+    return rows.map((/** @type {{name: string}} */ row) => row.name);
   }
 
-  // SQLite uses a single connection, and ignores this pragma inside a transaction
-  await connection.raw('PRAGMA foreign_keys = OFF');
-  try {
-    await fn(connection);
-  } finally {
-    await connection.raw('PRAGMA foreign_keys = ON');
+  const referencing = [];
+  for (const other of await commands.getTables(connection)) {
+    if (other === table) {
+      continue;
+    }
+    const foreignKeys = await connection.raw(`PRAGMA foreign_key_list('${other}');`);
+    if (
+      foreignKeys.some((/** @type {{table: string}} */ foreignKey) => foreignKey.table === table)
+    ) {
+      referencing.push(other);
+    }
   }
+  return referencing;
+}
+
+/**
+ * Drops a development copy of a table along with the tables that reference it,
+ * so no rows are left pointing at a table that no longer exists. Boot recreates
+ * the dropped tables that are still in development.
+ *
+ * @param {import('knex').Knex} connection
+ * @param {string} table
+ * @param {Set<string>} [dropped]
+ */
+async function dropDevelopmentCopy(connection, table, dropped = new Set()) {
+  dropped.add(table);
+  for (const referencing of await getReferencingTables(connection, table)) {
+    if (!dropped.has(referencing)) {
+      await dropDevelopmentCopy(connection, referencing, dropped);
+    }
+  }
+
+  logging.info(`Dropping development copy of table: ${table}`);
+  await commands.deleteTable(table, connection);
 }
 
 /**
@@ -46,7 +70,8 @@ async function withoutForeignKeyChecks(connection, fn) {
  * @param {Object} [options]
  * @param {boolean} [options.replaceDevelopmentCopy] - set when finalising a table that was in development (see
  *   schema/in-development.ts). Development and testing databases already have a copy built from an earlier
- *   definition, so there an existing table is replaced, discarding its data. Other environments skip it as usual.
+ *   definition, so there an existing table is replaced, discarding its data and dropping the tables that reference
+ *   it. Other environments skip it as usual.
  *
  * @returns {Object} migration object returning config/up/down properties
  */
@@ -55,14 +80,8 @@ function addTable(name, tableSpec, { replaceDevelopmentCopy = false } = {}) {
     async function up(connection) {
       const tableExists = await connection.schema.hasTable(name);
       if (tableExists && replaceDevelopmentCopy && isDevelopmentOrTesting()) {
-        logging.info(`Replacing development copy of table: ${name}`);
-        return withoutForeignKeyChecks(connection, async (knex) => {
-          await commands.deleteTable(name, knex);
-          await commands.createTable(name, knex, tableSpec);
-        });
-      }
-
-      if (tableExists) {
+        await dropDevelopmentCopy(connection, name);
+      } else if (tableExists) {
         logging.warn(`Skipping adding table: ${name} - table already exists`);
         return;
       }
@@ -75,6 +94,10 @@ function addTable(name, tableSpec, { replaceDevelopmentCopy = false } = {}) {
       if (!tableExists) {
         logging.warn(`Skipping dropping table: ${name} - table does not exist`);
         return;
+      }
+
+      if (replaceDevelopmentCopy && isDevelopmentOrTesting()) {
+        return dropDevelopmentCopy(connection, name);
       }
 
       logging.info(`Dropping table: ${name}`);

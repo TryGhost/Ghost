@@ -131,7 +131,7 @@ describe('In-development tables', function () {
       assert.deepEqual(await columns(PARENT), ['id', 'name']);
     });
 
-    it('replaces an existing copy that other tables reference', async function () {
+    it('replaces an existing copy, dropping the tables that reference it', async function () {
       await commands.createTable(PARENT, db.knex);
       await commands.createTable(CHILD, db.knex);
       await db.knex(PARENT).insert({ id: 'parent' });
@@ -142,7 +142,22 @@ describe('In-development tables', function () {
       });
 
       assert.deepEqual(await columns(PARENT), ['id', 'name']);
-      assert.deepEqual(await db.knex(CHILD).pluck('id'), ['child']);
+      assert.equal((await db.knex(PARENT).pluck('id')).length, 0);
+      assert.equal(await hasTable(CHILD), false);
+
+      await inDevelopment.createMissingInDevelopmentTables(db.knex);
+      assert.equal(await hasTable(CHILD), true);
+    });
+
+    it('rolls back while other tables reference it', async function () {
+      const migration = addTable(PARENT, finalParentSpec, { replaceDevelopmentCopy: true });
+      await migration.up({ connection: db.knex });
+      await commands.createTable(CHILD, db.knex);
+
+      await migration.down({ connection: db.knex });
+
+      assert.equal(await hasTable(PARENT), false);
+      assert.equal(await hasTable(CHILD), false);
     });
 
     it('leaves an existing table alone outside development and testing', async function () {

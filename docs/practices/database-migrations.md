@@ -110,8 +110,9 @@ add the versioned migration that creates it, and update the schema integrity
 hash. Create the table with
 `addTable(name, tableSpec, {replaceDevelopmentCopy: true})`: development and
 testing databases already have a copy built from an earlier definition, and the
-option replaces it with the final one, discarding its data. From then on the
-table follows the normal migration rules.
+option replaces it with the final one. This discards its data and drops the
+tables that reference it; Ghost recreates the ones still in development when it
+next boots. From then on the table follows the normal migration rules.
 
 ### Testing
 
