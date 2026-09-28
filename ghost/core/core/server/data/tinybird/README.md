@@ -64,7 +64,11 @@ from the repository root:
 pnpm tb:test
 ```
 
-To run a specific test file or test, append its name: `pnpm tb:test <name>`.
+To run a specific test file, pass its path relative to the Tinybird project:
+
+```bash
+pnpm tb:test tests/api_post_visitor_counts.yaml
+```
 
 ### Testing data
 
