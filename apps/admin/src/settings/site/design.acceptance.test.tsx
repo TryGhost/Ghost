@@ -117,6 +117,9 @@ describe('Design settings', () => {
     await expect.element(settingsScreen.toggleUnsplashButton()).toBeVisible();
     await modal.getByRole('button', { name: 'Save' }).click();
     await expect(settingsApi).toHaveEditedSettings([{ key: 'accent_color', value: '#cd5786' }]);
+    await expect
+      .poll(() => document.documentElement.style.getPropertyValue('--accent-color'))
+      .toBe('#cd5786');
   });
 
   it('confirms before discarding unsaved theme-tab changes', async () => {

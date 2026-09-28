@@ -47,7 +47,6 @@
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
     "@tryghost/admin-x-framework": "workspace:*",
-    "@tryghost/color-utils": "catalog:",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "catalog:",
     "@tryghost/kg-clean-basic-html": "workspace:*",
