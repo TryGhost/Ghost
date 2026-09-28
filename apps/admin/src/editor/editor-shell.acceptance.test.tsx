@@ -188,19 +188,15 @@ describe('Floating editor shell', () => {
     );
   });
 
-  it.each([
-    { admin7Pill: false, theme: 'light' },
-    { admin7Pill: true, theme: 'dark' },
-  ])(
-    'keeps controls in a narrow $theme viewport (Admin 7: $admin7Pill) and overlays settings',
-    async ({ admin7Pill, theme }) => {
+  it.each(['light', 'dark'])(
+    'keeps controls in a narrow %s viewport and overlays settings',
+    async (theme) => {
       await page.viewport(390, 844);
       fakeLongDocument('post');
       const me = currentUserResponse();
       me.users[0].accessibility = JSON.stringify({ nightShift: theme });
       await renderAdminApp('/editor/post/abc123', {
         ...FLAG_ON,
-        labs: { editorReact: true, admin7Pill },
         boot: { browseMe: { response: me } },
       });
       await expect.element(editorScreen.body()).toBeVisible();
@@ -412,7 +408,6 @@ describe('Floating editor shell', () => {
     fakeLongDocument('post');
     await renderAdminApp('/editor/post/abc123', {
       ...FLAG_ON,
-      labs: { editorReact: true, admin7Pill: true },
     });
     await expect.element(editorScreen.body()).toBeVisible();
     const toggle = editorScreen.settingsToggle().element();

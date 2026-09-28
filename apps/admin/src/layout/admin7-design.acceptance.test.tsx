@@ -6,42 +6,47 @@ import {
   renderAdminApp,
 } from '@test-utils/acceptance';
 
-// Protect the rollout boundary without prescribing the experimental appearance.
+// React pages use the current design even with older Core responses or stored flag values.
+// Ember-owned routes retain the compatibility appearance.
 it.each<{
   name: string;
   route: string;
   labs: Record<string, boolean>;
   enabled: boolean;
 }>([
-  { name: 'flag absent', route: '/members', labs: {}, enabled: false },
-  { name: 'flag disabled', route: '/members', labs: { admin7Pill: false }, enabled: false },
-  { name: 'flag enabled', route: '/members', labs: { admin7Pill: true }, enabled: true },
-  { name: 'Ember route excluded', route: '/site', labs: { admin7Pill: true }, enabled: false },
+  { name: 'older Core without the flag', route: '/members', labs: {}, enabled: true },
+  {
+    name: 'stored flag disabled is ignored',
+    route: '/members',
+    labs: { admin7Pill: false },
+    enabled: true,
+  },
+  {
+    name: 'stored flag enabled is ignored',
+    route: '/members',
+    labs: { admin7Pill: true },
+    enabled: true,
+  },
+  { name: 'Ember route excluded', route: '/site', labs: {}, enabled: false },
   {
     name: 'Ember editor excluded',
     route: '/editor/post/new',
-    labs: { admin7Pill: true },
+    labs: {},
     enabled: false,
   },
   {
     name: 'Ember editor excluded with React editor flag disabled',
     route: '/editor/post/new',
-    labs: { admin7Pill: true, editorReact: false },
+    labs: { editorReact: false },
     enabled: false,
   },
   {
-    name: 'React editor with pill flag disabled',
+    name: 'React editor enabled independently',
     route: '/editor/post/abc123',
-    labs: { admin7Pill: false, editorReact: true },
-    enabled: false,
-  },
-  {
-    name: 'React editor with pill flag enabled',
-    route: '/editor/post/abc123',
-    labs: { admin7Pill: true, editorReact: true },
+    labs: { editorReact: true },
     enabled: true,
   },
-])('selects the Admin 7 design only when allowed: $name', async ({ route, labs, enabled }) => {
+])('selects the design by route ownership: $name', async ({ route, labs, enabled }) => {
   fakeMembers([]);
   if (labs.editorReact) {
     fakeEditorChrome();
