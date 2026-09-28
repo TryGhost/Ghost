@@ -102,9 +102,16 @@ const handleStepExecutionFailure = async ({
   err: unknown;
   step: AutomationStepToRun;
 }>): Promise<Date | null> => {
+  // MailgunClient rejects with { error, messageData }; log the original error
+  // so its message and stack survive serialization without logging the email payload.
+  const error =
+    typeof err === 'object' && err !== null && 'error' in err && err.error instanceof Error
+      ? err.error
+      : err;
+
   logging.error(
     {
-      err,
+      err: error,
       system: {
         event: 'automations.poll.step_execution_failed',
         step_id: step.id,
