@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import { publishTypeError } from '@tryghost/test-data/selectors/editor';
 
 import {
   browseResponse,
+  configResponse,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeNewsletters,
@@ -34,19 +36,17 @@ const SITE_URL = 'http://test.com';
 const SAVE_POLL = { timeout: 10_000 };
 const CURRENT_USER_ID = String(currentUserResponse().users[0].id);
 
+const MAILGUN_SETTINGS = {
+  mailgun_domain: 'mail.test.com',
+  mailgun_api_key: 'key',
+  mailgun_base_url: 'https://api.mailgun.net/v3',
+};
+
 /** A site whose bulk email provider is configured, so the flow offers a send. */
 const MAILGUN_ON = {
   ...FLAG_ON,
   boot: {
-    browseSettings: {
-      response: settingsResponse({
-        settings: {
-          mailgun_domain: 'mail.test.com',
-          mailgun_api_key: 'key',
-          mailgun_base_url: 'https://api.mailgun.net/v3',
-        },
-      }),
-    },
+    browseSettings: { response: settingsResponse({ settings: MAILGUN_SETTINGS }) },
   },
 };
 
@@ -647,5 +647,165 @@ describe('Editor header actions', () => {
 
     await expect(publishScreen.updateFlow()).toHaveCount(0);
     await expect.element(editorScreen.unpublishButton()).toHaveFocus();
+  });
+
+  describe('host limits', () => {
+    const MEMBERS_LIMIT_MESSAGE =
+      'Your plan supports up to 500 members, please upgrade to add more.';
+    const EMAILS_LIMIT_MESSAGE =
+      'Your plan supports up to 300 email recipients a month, please upgrade to send more.';
+    const HOLD_MESSAGE = 'Sending is paused while we review your account.';
+
+    /** The `/config/` a host serves for a plan with a members cap and a monthly email cap. */
+    function hostConfig(hostSettings: Record<string, unknown> = {}) {
+      const config = configResponse();
+      config.config.hostSettings = {
+        subscription: { start: '2026-01-01T00:00:00.000Z' },
+        limits: {
+          members: { max: 500, error: MEMBERS_LIMIT_MESSAGE },
+          emails: { maxPeriodic: 300, error: EMAILS_LIMIT_MESSAGE },
+        },
+        ...hostSettings,
+      };
+      return config;
+    }
+
+    /** Boot as a mail-configured site on that plan, with the given site-wide member total. */
+    function onHostPlan({
+      members = 20,
+      hostSettings,
+      settings = {},
+    }: {
+      members?: number;
+      hostSettings?: Record<string, unknown>;
+      settings?: Record<string, boolean | string>;
+    } = {}) {
+      return {
+        ...MAILGUN_ON,
+        boot: {
+          browseSettings: {
+            response: settingsResponse({ settings: { ...MAILGUN_SETTINGS, ...settings } }),
+          },
+          browseConfig: { response: hostConfig(hostSettings) },
+          browseMembersCount: {
+            response: {
+              members: [],
+              meta: {
+                pagination: { page: 1, limit: 1, pages: 1, total: members, next: null, prev: null },
+              },
+            },
+          },
+        },
+      };
+    }
+
+    /** The emails sent this period, as the limiter counts their recipients. */
+    function fakeEmailsSent(recipients: number) {
+      return fakeAdminEndpoint('GET', /^\/emails\/\?/, {
+        emails: [
+          { id: 'email-a', email_count: recipients - 1 },
+          { id: 'email-b', email_count: 1 },
+        ],
+      });
+    }
+
+    async function openPublishFlow() {
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await editorScreen.publishButton().click();
+      await expect.element(publishScreen.options()).toBeVisible();
+    }
+
+    it('publishes and emails as usual while the site is under its limits', async () => {
+      publishChrome({ newsletters: 1 });
+      const emailsApi = fakeEmailsSent(100);
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, onHostPlan({ members: 20 }));
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await publishThroughFlow();
+
+      await expect.element(publishScreen.complete()).toBeVisible();
+      expect(saveApi.lastRequest?.url).toContain('newsletter=weekly');
+      // The count only covers the period the limit measures.
+      expect(emailsApi.lastRequest?.url).toContain('filter=created_at%3A%3E%3D%27');
+    });
+
+    it('refuses to publish while the site is over its members limit', async () => {
+      publishChrome({ newsletters: 1 });
+      fakeEmailsSent(100);
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, onHostPlan({ members: 600 }));
+
+      await openPublishFlow();
+
+      await expect.element(publishScreen.options()).toHaveTextContent(MEMBERS_LIMIT_MESSAGE);
+      await expect
+        .element(publishScreen.options().getByRole('link', { name: 'please upgrade' }))
+        .toHaveAttribute('href', '#/pro');
+      await expect(publishScreen.continueButton()).toHaveCount(0);
+      expect(saveApi.requests).toHaveLength(0);
+    });
+
+    it('offers no email while a send would exceed the monthly emails limit', async () => {
+      publishChrome({ newsletters: 1 });
+      fakeEmailsSent(300);
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, onHostPlan());
+
+      await openPublishFlow();
+      await expect.element(publishScreen.setting('publish-type')).toHaveTextContent('Publish');
+      await publishScreen.setting('publish-type').click();
+
+      await expect.element(page.getByRole('radio', { name: 'Publish and email' })).toBeDisabled();
+      await expect.element(page.getByRole('radio', { name: 'Email only' })).toBeDisabled();
+      await expect
+        .element(page.getByTestId(publishTypeError))
+        .toHaveTextContent(EMAILS_LIMIT_MESSAGE);
+
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      await expect.element(publishScreen.complete()).toBeVisible();
+      expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
+    });
+
+    it('holds email with the host copy while the account is under review', async () => {
+      publishChrome({ newsletters: 1 });
+      fakeEmailsSent(100);
+      fakeSavablePost();
+      await renderAdminApp(
+        `/editor/post/${POST_ID}`,
+        onHostPlan({
+          settings: { email_verification_required: true },
+          hostSettings: { emailVerification: { emailSendingDisabledMessage: HOLD_MESSAGE } },
+        }),
+      );
+
+      await openPublishFlow();
+      await publishScreen.setting('publish-type').click();
+
+      await expect.element(page.getByRole('radio', { name: 'Publish and email' })).toBeDisabled();
+      await expect.element(page.getByRole('radio', { name: 'Email only' })).toBeDisabled();
+      await expect.element(page.getByTestId(publishTypeError)).toHaveTextContent(HOLD_MESSAGE);
+    });
+
+    it('holds email with the default copy when the host supplies none', async () => {
+      publishChrome({ newsletters: 1 });
+      fakeEmailsSent(100);
+      fakeSavablePost();
+      await renderAdminApp(
+        `/editor/post/${POST_ID}`,
+        onHostPlan({ settings: { email_verification_required: true } }),
+      );
+
+      await openPublishFlow();
+      await publishScreen.setting('publish-type').click();
+
+      await expect
+        .element(page.getByTestId(publishTypeError))
+        .toHaveTextContent(
+          'Email sending is temporarily disabled because your account is currently',
+        );
+    });
   });
 });
