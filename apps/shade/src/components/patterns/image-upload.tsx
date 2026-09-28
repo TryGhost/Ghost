@@ -4,6 +4,8 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { Dropzone, type DropzoneProps } from '@/components/ui/dropzone';
 import { cn } from '@/lib/utils';
+import { imageOverlayButton } from '@/components/ui/image-overlay-button';
+import { useShade } from '@/providers/shade-provider';
 
 const ImageUpload = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
@@ -92,19 +94,20 @@ const ImageUploadActions = React.forwardRef<HTMLDivElement, React.HTMLAttributes
 ImageUploadActions.displayName = 'ImageUploadActions';
 
 const ImageUploadAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, size = 'icon', variant = 'ghost', ...props }, ref) => (
-    <Button
-      ref={ref}
-      className={cn(
-        'size-8 bg-surface-inverse text-surface-inverse-foreground hover:bg-surface-inverse/90 hover:text-surface-inverse-foreground',
-        className,
-      )}
-      data-slot="image-upload-action"
-      size={size}
-      variant={variant}
-      {...props}
-    />
-  ),
+  ({ className, size = 'icon', variant = 'ghost', ...props }, ref) => {
+    const { isAdmin7 } = useShade();
+
+    return (
+      <Button
+        ref={ref}
+        className={cn('size-8', imageOverlayButton(isAdmin7), className)}
+        data-slot="image-upload-action"
+        size={size}
+        variant={variant}
+        {...props}
+      />
+    );
+  },
 );
 ImageUploadAction.displayName = 'ImageUploadAction';
 
