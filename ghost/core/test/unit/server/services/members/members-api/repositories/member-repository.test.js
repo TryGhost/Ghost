@@ -3000,4 +3000,35 @@ describe('MemberRepository', function () {
       sinon.assert.notCalled(Member.destroy);
     });
   });
+  describe('unsubscribeFromUpdates', () => {
+    it('locks the original address and updates only announcements in the same transaction', async () => {
+      const repo = buildRepo();
+      const get = sinon.stub(repo, 'get').resolves({ id: 'member' });
+      const update = sinon.stub(repo, 'update').resolves();
+      await repo.unsubscribeFromUpdates({ id: 'member', email: 'original@example.com' });
+      sinon.assert.calledOnce(Member.transaction);
+      sinon.assert.calledOnceWithMatch(
+        get,
+        { id: 'member', email: 'original@example.com' },
+        { forUpdate: true },
+      );
+      sinon.assert.calledOnceWithExactly(
+        update,
+        { enable_updates_and_announcements: false },
+        { id: 'member', transacting: get.firstCall.args[1].transacting },
+      );
+    });
+    it('does not update a missing or replacement address and propagates persistence failures', async () => {
+      const repo = buildRepo();
+      const get = sinon.stub(repo, 'get').resolves(null);
+      const update = sinon.stub(repo, 'update').rejects(new Error('write failed'));
+      await repo.unsubscribeFromUpdates({ id: 'member', email: 'original@example.com' });
+      sinon.assert.notCalled(update);
+      get.resolves({ id: 'member' });
+      await assert.rejects(
+        repo.unsubscribeFromUpdates({ id: 'member', email: 'original@example.com' }),
+        /write failed/,
+      );
+    });
+  });
 });

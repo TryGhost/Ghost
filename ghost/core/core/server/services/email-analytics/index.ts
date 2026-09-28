@@ -114,11 +114,16 @@ export const init = ({
     if (family === 'automations') {
       return new AutomationEmailAnalyticsBatchProcessor({
         automationsApi,
+        emailSuppressionList,
+        membersRepository,
+        eventSource: source.type,
       });
     }
     if (family === 'gifts') {
       return new GiftEmailAnalyticsBatchProcessor({
         giftDeliveryService,
+        emailSuppressionList,
+        eventSource: source.type,
       });
     }
     return new NewsletterEmailAnalyticsBatchProcessor({

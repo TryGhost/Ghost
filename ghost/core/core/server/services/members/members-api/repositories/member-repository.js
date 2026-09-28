@@ -661,6 +661,19 @@ module.exports = class MemberRepository {
     return newsletters || [];
   }
 
+  async unsubscribeFromUpdates({ id, email }) {
+    await this._Member.transaction(async (transacting) => {
+      // Lock the original address so a delayed callback cannot change a replacement address.
+      const member = await this.get({ id, email }, { transacting, forUpdate: true });
+      if (member) {
+        await this.update(
+          { enable_updates_and_announcements: false },
+          { id: member.id, transacting },
+        );
+      }
+    });
+  }
+
   async update(data, options) {
     const sharedOptions = {
       transacting: options.transacting,

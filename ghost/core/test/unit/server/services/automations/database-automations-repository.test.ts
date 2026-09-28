@@ -2500,11 +2500,15 @@ describe('automations repository', function () {
         recipients.sort((left, right) => left.id.localeCompare(right.id)),
         [
           {
+            member_id: null,
+            member_email: null,
             id: 'matching-recipient-1',
             automation_action_revision_id: firstRevision.id,
             mailgun_message_id: 'matching-message-1',
           },
           {
+            member_id: null,
+            member_email: null,
             id: 'matching-recipient-2',
             automation_action_revision_id: secondRevision.id,
             mailgun_message_id: 'matching-message-2',

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 import sinon from 'sinon';
+import logging from '@tryghost/logging';
 
 import { AutomationEmailAnalyticsBatchProcessor } from '../../../../../core/server/services/email-analytics/automation-email-analytics-batch-processor';
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
@@ -11,6 +12,8 @@ function buildRecipient(
 ): AutomatedEmailRecipientWithMailgunId {
   return {
     id: 'recipient-1',
+    member_id: 'member-1',
+    member_email: 'reader@example.com',
     mailgun_message_id: 'message-1',
     automation_action_revision_id: 'revision-1',
     ...overrides,
@@ -24,6 +27,19 @@ function buildAutomationsApi(recipients: AutomatedEmailRecipientWithMailgunId[] 
   };
 }
 
+function safetyDeps() {
+  return {
+    eventSource: 'webhook' as const,
+    emailSuppressionList: {
+      handleBounce: sinon.stub().resolves(),
+      handleComplaint: sinon.stub().resolves(),
+      removeComplaint: sinon.stub().resolves(),
+      removeUnsubscribe: sinon.stub().resolves(),
+    },
+    membersRepository: { unsubscribeFromUpdates: sinon.stub().resolves() },
+  };
+}
+
 describe('AutomationEmailAnalyticsBatchProcessor', function () {
   afterEach(function () {
     sinon.restore();
@@ -32,7 +48,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
   describe('processBatch', function () {
     it('handles delivered', async function () {
       const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
@@ -64,7 +83,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
 
     it('handles opened', async function () {
       const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
@@ -100,7 +122,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
           automation_action_revision_id: 'revision-2',
         }),
       ]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
@@ -163,7 +188,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
           automation_action_revision_id: 'revision-2',
         }),
       ]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
 
       await processor.processBatch(
         [
@@ -200,7 +228,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
 
     it('keeps the earliest timestamp when a recipient has several events of the same type', async function () {
       const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
 
       await processor.processBatch(
         [
@@ -246,9 +277,14 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
       );
     });
 
-    it('normalizes provider ids before looking recipients up', async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+    it('preserves opaque provider ids when looking recipients up', async function () {
+      const automationsApi = buildAutomationsApi([
+        buildRecipient({ mailgun_message_id: '  <message-1>  ' }),
+      ]);
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const result = new EventProcessingResult();
 
       await processor.processBatch(
@@ -264,14 +300,17 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
       );
 
       sinon.assert.calledOnceWithExactly(automationsApi.getAutomatedEmailRecipientsByMailgunIds, [
-        'message-1',
+        '  <message-1>  ',
       ]);
       assert.deepEqual(result, new EventProcessingResult({ delivered: 1 }));
     });
 
     it('deduplicates provider ids before looking recipients up', async function () {
       const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
 
       await processor.processBatch(
         [
@@ -282,7 +321,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
           },
           {
             type: 'opened',
-            providerId: '<message-1>',
+            providerId: 'message-1',
             timestamp: new Date(2),
           },
         ],
@@ -297,7 +336,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
 
     it('counts events with no matching recipient as unprocessable', async function () {
       const automationsApi = buildAutomationsApi([]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const result = new EventProcessingResult();
 
       await processor.processBatch(
@@ -323,13 +365,17 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
 
     it(`doesn't handle other event types`, async function () {
       const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
       await processor.processBatch(
         [
           {
+            // @ts-expect-error Exercise the runtime fallback for an unsupported event.
             type: 'notstandard',
             providerId: 'message-1',
             timestamp: new Date(1),
@@ -346,7 +392,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
 
     it('merges into an existing result rather than replacing it', async function () {
       const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const result = new EventProcessingResult({ delivered: 2, opened: 1 });
 
       await processor.processBatch(
@@ -366,7 +415,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
 
     it('advances lastEventTimestamp to the latest event', async function () {
       const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const fetchData = { lastEventTimestamp: new Date(2) };
 
       await processor.processBatch(
@@ -391,7 +443,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
 
     it(`doesn't move lastEventTimestamp backwards`, async function () {
       const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const fetchData = { lastEventTimestamp: new Date(10) };
 
       await processor.processBatch(
@@ -411,7 +466,10 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
 
     it('handles an empty batch', async function () {
       const automationsApi = buildAutomationsApi([]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi,
+        ...safetyDeps(),
+      });
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
@@ -422,5 +480,198 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
       sinon.assert.notCalled(automationsApi.getAutomatedEmailRecipientsByMailgunIds);
       sinon.assert.calledOnce(automationsApi.trackEmailDeliveredAndOpened);
     });
+  });
+});
+
+describe('automation safety events', () => {
+  afterEach(() => sinon.restore());
+  const event = {
+    providerId: 'message-1',
+    recipientEmail: 'reader@example.com',
+    timestamp: new Date(),
+    suppress: false,
+  };
+  it('handles complaints and failures without suppressing temporary failures', async () => {
+    const deps = safetyDeps();
+    const processor = new AutomationEmailAnalyticsBatchProcessor({
+      automationsApi: buildAutomationsApi([buildRecipient()]),
+      ...deps,
+    });
+    const result = new EventProcessingResult();
+    const callback = { ...event, recipientEmail: event.recipientEmail.toUpperCase() };
+    await processor.processBatch(
+      [
+        { ...callback, type: 'complained' },
+        { ...callback, type: 'failed', severity: 'permanent', suppress: true },
+        { ...callback, type: 'failed', severity: 'temporary' },
+      ],
+      result,
+      {},
+    );
+    sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleComplaint, {
+      email: event.recipientEmail,
+    });
+    sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleBounce, {
+      email: event.recipientEmail,
+      suppress: true,
+    });
+    sinon.assert.callOrder(
+      deps.emailSuppressionList.handleComplaint,
+      deps.emailSuppressionList.removeComplaint,
+    );
+    assert.equal(result.complained, 1);
+    assert.equal(result.permanentFailed, 1);
+    assert.equal(result.temporaryFailed, 1);
+    deps.emailSuppressionList.handleComplaint.rejects(new Error('local failure'));
+    await assert.rejects(
+      processor.processBatch([{ ...event, type: 'complained' }], result, {}),
+      /local failure/,
+    );
+    sinon.assert.calledOnce(deps.emailSuppressionList.removeComplaint);
+  });
+  it('propagates unsubscribe failure and leaves provider protection intact on redelivery', async () => {
+    const deps = safetyDeps();
+    const processor = new AutomationEmailAnalyticsBatchProcessor({
+      automationsApi: buildAutomationsApi([buildRecipient()]),
+      ...deps,
+    });
+    deps.membersRepository.unsubscribeFromUpdates.rejects(new Error('local failure'));
+    const result = new EventProcessingResult();
+    const callback = {
+      ...event,
+      type: 'unsubscribed' as const,
+      recipientEmail: event.recipientEmail.toUpperCase(),
+    };
+    await assert.rejects(processor.processBatch([callback], result, {}), /local failure/);
+    sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe);
+    assert.equal(result.unsubscribed, 0);
+    deps.membersRepository.unsubscribeFromUpdates.resolves();
+    await processor.processBatch([callback], result, {});
+    sinon.assert.calledWithExactly(deps.membersRepository.unsubscribeFromUpdates, {
+      id: 'member-1',
+      email: event.recipientEmail,
+    });
+    sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe);
+    assert.equal(result.unsubscribed, 1);
+  });
+  it('saves earlier delivery and open tracking when a later safety write fails', async () => {
+    const deps = safetyDeps();
+    const automationsApi = buildAutomationsApi([buildRecipient()]);
+    const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi, ...deps });
+    const failure = new Error('preference write failed');
+    const flushFailure = new Error('tracking write failed');
+    const log = sinon.stub(logging, 'error');
+    deps.membersRepository.unsubscribeFromUpdates.rejects(failure);
+    const events = [
+      { ...event, type: 'delivered' as const },
+      { ...event, type: 'opened' as const },
+      { ...event, type: 'unsubscribed' as const },
+      { ...event, type: 'complained' as const },
+    ];
+    const result = new EventProcessingResult();
+    await assert.rejects(processor.processBatch(events, result, {}), (error) => error === failure);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.trackEmailDeliveredAndOpened,
+      new Map([
+        [
+          'recipient-1',
+          {
+            automationActionRevisionId: 'revision-1',
+            deliveredAt: event.timestamp,
+            openedAt: event.timestamp,
+          },
+        ],
+      ]),
+    );
+    assert.equal(result.delivered, 1);
+    assert.equal(result.opened, 1);
+    assert.equal(result.unsubscribed, 0);
+    sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe);
+    sinon.assert.notCalled(deps.emailSuppressionList.handleComplaint);
+
+    // A secondary flush failure must not hide the safety failure or acknowledge it.
+    automationsApi.trackEmailDeliveredAndOpened.rejects(flushFailure);
+    await assert.rejects(
+      processor.processBatch(events, new EventProcessingResult(), {}),
+      (error) => error === failure,
+    );
+    sinon.assert.calledOnceWithExactly(log, flushFailure);
+    automationsApi.trackEmailDeliveredAndOpened.resolves();
+    deps.membersRepository.unsubscribeFromUpdates.resolves();
+    const retried = new EventProcessingResult();
+    await processor.processBatch(events, retried, {});
+    assert.equal(retried.unsubscribed, 1);
+    assert.equal(retried.complained, 1);
+  });
+
+  it('does not apply safety events to another recipient address', async () => {
+    const warn = sinon.stub(logging, 'warn');
+    const deps = safetyDeps();
+    const processor = new AutomationEmailAnalyticsBatchProcessor({
+      automationsApi: buildAutomationsApi([buildRecipient()]),
+      ...deps,
+    });
+    const result = new EventProcessingResult();
+    await processor.processBatch(
+      [{ ...event, type: 'complained', recipientEmail: 'other@example.com' }],
+      result,
+      {},
+    );
+    sinon.assert.notCalled(deps.emailSuppressionList.handleComplaint);
+    assert.equal(result.unprocessable, 0);
+    assert.equal(result.ignored, 1);
+    sinon.assert.calledOnce(warn);
+  });
+  it('matches equivalent international domains and writes the original stored address', async () => {
+    for (const [stored, received] of [
+      ['josé@müller.de', 'JOSÉ@xn--mller-kva.de'],
+      ['josé@xn--mller-kva.de', 'josé@müller.de'],
+    ]) {
+      const deps = safetyDeps();
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi: buildAutomationsApi([buildRecipient({ member_email: stored })]),
+        ...deps,
+      });
+      const result = new EventProcessingResult();
+      await processor.processBatch(
+        [
+          { ...event, type: 'complained', recipientEmail: received },
+          {
+            ...event,
+            type: 'failed',
+            severity: 'permanent',
+            suppress: true,
+            recipientEmail: received,
+          },
+          { ...event, type: 'unsubscribed', recipientEmail: received },
+        ],
+        result,
+        {},
+      );
+      assert.equal(result.complained, 1);
+      assert.equal(result.permanentFailed, 1);
+      assert.equal(result.unsubscribed, 1);
+      sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleComplaint, {
+        email: stored,
+      });
+      sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleBounce, { email: stored });
+      sinon.assert.calledOnceWithMatch(deps.membersRepository.unsubscribeFromUpdates, {
+        email: stored,
+      });
+    }
+  });
+  it('leaves provider unsubscribe protection intact for deleted members', async () => {
+    const deps = safetyDeps();
+    const processor = new AutomationEmailAnalyticsBatchProcessor({
+      automationsApi: buildAutomationsApi([buildRecipient({ member_id: null })]),
+      ...deps,
+    });
+    await processor.processBatch(
+      [{ ...event, type: 'unsubscribed' }],
+      new EventProcessingResult(),
+      {},
+    );
+    sinon.assert.notCalled(deps.membersRepository.unsubscribeFromUpdates);
+    sinon.assert.notCalled(deps.emailSuppressionList.removeUnsubscribe);
   });
 });
