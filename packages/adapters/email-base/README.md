@@ -18,6 +18,10 @@ if an accepted single send has no usable ID, return `id: null`. Automations keep
 their existing behavior: record acceptance without provider delivery/open tracking
 and continue. Gift delivery retains its existing requirement for a tracking ID.
 Newsletter batches may return null when events carry the newsletter `emailId`.
+`NewsletterMessage.emailId` is null for untracked test sends. Webhook adapters
+must preserve that distinction in provider metadata and exclude those callbacks
+from their verified `events` array. Do not infer a test send merely because an
+incoming event lacks a Ghost email ID: tracked events may correlate by message ID.
 Rejected sends must throw. Unconfigured providers also throw, except for the
 legacy Mailgun automation path: it returns `id: null` without sending, and Ghost
 records the recipient and completes the step without retrying.
@@ -35,6 +39,14 @@ retry or skip policy. Webhook processing failures are returned to the provider
 for redelivery; provider protection is not removed after a failed safety write.
 Polling retains its existing event coverage. Extended automation/gift safety
 handling applies to webhooks.
+
+Ghost processes valid events in an authenticated notification even if a sibling
+fails schema validation. Invalid events are logged and the request returns HTTP
+400 after valid work finishes; retryable processing failures take precedence.
+HTTP responses apply to the whole notification, not individual events. Adapters
+must account for their provider's retry rules; some providers also retry 4xx
+responses. Invalid events are not stored for later replay. Verification and
+notification size checks still happen before any event is processed.
 
 All providers report the email family, original recipient address, message ID,
 event ID and event timestamp. Permanent failure does not automatically suppress

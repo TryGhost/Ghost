@@ -54,7 +54,8 @@ export interface NewsletterMessage {
   from: string;
   replyTo?: string;
   domainOverride?: string;
-  emailId: string;
+  /** Null for test sends. Webhook adapters must exclude callbacks for these untracked sends. */
+  emailId: string | null;
   recipients: { email: string; replacements: { id: string; value: string }[] }[];
   replacementDefinitions: { id: string; token: RegExp; trusted?: boolean }[];
 }

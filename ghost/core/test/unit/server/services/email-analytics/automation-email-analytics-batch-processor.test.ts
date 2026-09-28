@@ -605,6 +605,7 @@ describe('automation safety events', () => {
   });
 
   it('does not apply safety events to another recipient address', async () => {
+    const warn = sinon.stub(logging, 'warn');
     const deps = safetyDeps();
     const processor = new AutomationEmailAnalyticsBatchProcessor({
       automationsApi: buildAutomationsApi([buildRecipient()]),
@@ -617,7 +618,47 @@ describe('automation safety events', () => {
       {},
     );
     sinon.assert.notCalled(deps.emailSuppressionList.handleComplaint);
-    assert.equal(result.unprocessable, 1);
+    assert.equal(result.unprocessable, 0);
+    assert.equal(result.ignored, 1);
+    sinon.assert.calledOnce(warn);
+  });
+  it('matches equivalent international domains and writes the original stored address', async () => {
+    for (const [stored, received] of [
+      ['josé@müller.de', 'JOSÉ@xn--mller-kva.de'],
+      ['josé@xn--mller-kva.de', 'josé@müller.de'],
+    ]) {
+      const deps = safetyDeps();
+      const processor = new AutomationEmailAnalyticsBatchProcessor({
+        automationsApi: buildAutomationsApi([buildRecipient({ member_email: stored })]),
+        ...deps,
+      });
+      const result = new EventProcessingResult();
+      await processor.processBatch(
+        [
+          { ...event, type: 'complained', recipientEmail: received },
+          {
+            ...event,
+            type: 'failed',
+            severity: 'permanent',
+            suppress: true,
+            recipientEmail: received,
+          },
+          { ...event, type: 'unsubscribed', recipientEmail: received },
+        ],
+        result,
+        {},
+      );
+      assert.equal(result.complained, 1);
+      assert.equal(result.permanentFailed, 1);
+      assert.equal(result.unsubscribed, 1);
+      sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleComplaint, {
+        email: stored,
+      });
+      sinon.assert.calledOnceWithMatch(deps.emailSuppressionList.handleBounce, { email: stored });
+      sinon.assert.calledOnceWithMatch(deps.membersRepository.unsubscribeFromUpdates, {
+        email: stored,
+      });
+    }
   });
   it('leaves provider unsubscribe protection intact for deleted members', async () => {
     const deps = safetyDeps();

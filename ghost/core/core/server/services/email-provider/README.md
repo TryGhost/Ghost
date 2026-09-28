@@ -37,6 +37,11 @@ arrive first receive one delayed lookup retry during the webhook request. This d
 failure between acceptance and saving the ID still requires reconciliation, as
 with the existing sending workflows.
 
+Newsletter test sends have `emailId: null` and no recipient/batch tracking records.
+Webhook adapters must mark these sends in provider metadata and filter their
+callbacks before returning normalized events. A missing Ghost email ID on a
+callback alone does not identify a test send; message-ID correlation is also valid.
+
 ## Configuration
 
 Mailgun continues to read the existing bulk email configuration and settings.
@@ -95,22 +100,32 @@ The request limit is 2 MB and a notification may contain at most 1000 events.
 Adapters must authenticate the signature, account, site and replay window before
 returning events or a protocol handshake. They must not fetch an unvalidated URL.
 
-Ghost validates the whole notification first. If an existing processor cannot
+Ghost verifies the notification and its size before processing. It validates each
+event separately, processes valid siblings, and reports malformed events with
+HTTP 400 and an error log containing their indexes, without logging their payloads.
+Retryable processing failures take precedence over that client error. HTTP status
+applies to the whole notification; provider-specific retry rules still apply,
+including providers that retry 4xx responses. Invalid events are not stored for replay.
+If an existing processor cannot
 find a recipient, the webhook waits 500 ms and retries only unmatched events,
 once per notification. No transaction is held while waiting. A second missing
 result returns HTTP 503. Processing errors are not retried as lookup failures.
 Polling continues to skip missing recipients as before. Invalid polled rows are
 counted as unprocessable and logged without blocking valid rows on the same page.
-They remain included in page counts, and usable timestamps contribute to the cursor;
-webhooks still validate the entire notification before processing. The provider's `safeCursor`
+They remain included in page counts, and usable timestamps contribute to the cursor.
+The provider's `safeCursor`
 is returned unchanged, including when a capped multi-domain fetch stops early.
 Recipient addresses are checked for presence and storage length only; Ghost's
 member validator owns address syntax, including international addresses.
 
 All normalized event types are dispatched to the owning family processor. Automation
 and gift webhook safety handlers correlate the provider message ID and original recipient
-address before applying changes. Address matching ignores case and safety writes
+address before applying changes. Address matching ignores case and normalizes
+Unicode/punycode domains; safety writes
 use the original stored address; provider message IDs remain case-sensitive.
+An existing automation/gift message with a genuinely different recipient address
+is logged and ignored, leaving local preferences and provider protection untouched.
+Unknown messages still use the missing-recipient retry path.
 Automation lookups expose existing `member_id`
 and `member_email` columns; gift recipient lookup stays in `GiftDeliveryService`.
 A deleted member or changed address does not cause an automation unsubscribe to

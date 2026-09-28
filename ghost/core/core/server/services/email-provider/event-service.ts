@@ -8,11 +8,13 @@ import type {
 import { emailEventSchema } from '@tryghost/adapter-base-email';
 import { z } from 'zod';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import type { BatchEventProcessor } from '../email-analytics/batch-event-processor';
 import { EventProcessingResult } from '../email-analytics/event-processing-result';
 
 const WEBHOOK_LOOKUP_RETRY_MS = 500;
 const eventsSchema = z.array(emailEventSchema).max(1000);
+const notificationEventsSchema = z.array(z.unknown()).max(1000);
 
 export function parseEmailEvents(events: unknown[], family?: EmailFamily): EmailEvent[] {
   const parsed = eventsSchema.parse(events);
@@ -44,8 +46,40 @@ export class EmailEventService {
     }
     const verified = await events.verify(request);
     if ('events' in verified) {
-      // Validate the whole notification before passing any events to services.
-      await this.processEvents(parseEmailEvents(verified.events));
+      const notification = notificationEventsSchema.safeParse(verified.events);
+      if (!notification.success) {
+        throw new errors.BadRequestError({
+          message: 'Email webhook must contain an array of at most 1000 events',
+          code: 'EMAIL_EVENTS_INVALID',
+        });
+      }
+      const valid: EmailEvent[] = [];
+      const invalidIndexes: number[] = [];
+      for (const [index, event] of notification.data.entries()) {
+        const parsed = emailEventSchema.safeParse(event);
+        if (parsed.success) {
+          valid.push(parsed.data);
+        } else {
+          invalidIndexes.push(index);
+        }
+      }
+      const invalidError = invalidIndexes.length
+        ? new errors.BadRequestError({
+            message: 'Email provider returned invalid events',
+            code: 'EMAIL_EVENTS_INVALID',
+            context: `Invalid event indexes: ${invalidIndexes.join(', ')}`,
+          })
+        : null;
+      if (invalidError) {
+        // Report an adapter contract violation without logging recipient addresses or payloads.
+        logging.error(invalidError);
+      }
+      // Valid siblings still run. A processing failure takes precedence so it can
+      // retry; otherwise reject malformed events explicitly rather than acknowledging them.
+      await this.processEvents(valid);
+      if (invalidError) {
+        throw invalidError;
+      }
     } else {
       z.object({
         status: z.union([z.literal(200), z.literal(204)]),

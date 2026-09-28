@@ -261,14 +261,14 @@ describe('provider email events', () => {
       null,
     );
   });
-  it('validates a whole notification before applying any events', async () => {
+  it('processes valid siblings while rejecting invalid events with a client error', async () => {
     await assert.rejects(
       service.webhook(provider.source, sign({ events: [event, { ...event, id: '' }] })),
+      { code: 'EMAIL_EVENTS_INVALID', statusCode: 400 },
     );
-    assert.equal(
-      (await knex('email_recipients').where({ id: recipientId }).first()).delivered_at,
-      null,
-    );
+    assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
+    await stats.flush();
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
   });
   it('counts replayed newsletter opens once in the existing tables', async () => {
     event.type = 'opened';

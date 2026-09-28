@@ -7,7 +7,7 @@ const logging = require('@tryghost/logging');
  * @prop {string} plaintext
  * @prop {string} subject
  * @prop {string} from
- * @prop {string} emailId
+ * @prop {string|null} emailId Null for untracked test sends
  * @prop {string} [replyTo]
  * @prop {string} [domainOverride]
  * @prop {Recipient[]} recipients

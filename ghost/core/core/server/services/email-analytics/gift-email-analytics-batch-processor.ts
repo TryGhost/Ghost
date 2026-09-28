@@ -1,9 +1,11 @@
 import type { EmailEvent } from '@tryghost/adapter-base-email';
+import logging from '@tryghost/logging';
 // @ts-expect-error This module lacks type definitions.
 import type EmailSuppressionList from '../email-suppression-list';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
+import { isSameEmailAddress } from './lib/is-same-email-address';
 
 type EmailAnalyticsEvent = Pick<EmailEvent, 'type' | 'providerId' | 'timestamp'> &
   Partial<Pick<EmailEvent, 'recipientEmail' | 'severity' | 'suppress' | 'error'>>;
@@ -53,8 +55,15 @@ export class GiftEmailAnalyticsBatchProcessor implements BatchEventProcessor {
       const recipientEmail = await this.deps.giftDeliveryService.getRecipientEmailForMessage(
         event.providerId,
       );
-      if (!recipientEmail || recipientEmail.toLowerCase() !== event.recipientEmail?.toLowerCase()) {
+      if (!recipientEmail) {
         return new EventProcessingResult({ unprocessable: 1 });
+      }
+      if (!isSameEmailAddress(recipientEmail, event.recipientEmail)) {
+        logging.warn(
+          { code: 'EMAIL_RECIPIENT_MISMATCH', family: 'gifts', providerId: event.providerId },
+          'Ignored email safety event whose recipient does not match the stored message',
+        );
+        return new EventProcessingResult({ ignored: 1 });
       }
       const suppressionEvent = {
         email: recipientEmail,

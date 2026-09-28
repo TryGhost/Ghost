@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import logging from '@tryghost/logging';
 import type { EmailEvent } from '@tryghost/adapter-base-email';
 import {
   EmailEventService,
@@ -30,6 +31,7 @@ describe('email webhook delegation', () => {
   };
 
   beforeEach(() => {
+    sinon.stub(logging, 'error');
     clock = sinon.useFakeTimers();
     processBatch = sinon.stub().callsFake(async (_events, result) => {
       result.delivered += 1;
@@ -114,12 +116,51 @@ describe('email webhook delegation', () => {
       events,
     );
   });
-  it('does not process unverified or partly invalid notifications', async () => {
+  it('does not process unverified notifications', async () => {
     verify.rejects(new Error('Invalid signature'));
     await assert.rejects(service.webhook('provider', request), /Invalid signature/);
-    verify.resolves({ events: [event, { ...event, id: '' }] });
-    await assert.rejects(service.webhook('provider', request));
     sinon.assert.notCalled(createEventProcessor);
+  });
+  it('processes valid siblings before rejecting and reporting malformed events', async () => {
+    verify.resolves({ events: [{ ...event, id: '' }, event, { ...event, type: 'failed' }] });
+    await assert.rejects(service.webhook('provider', request), {
+      code: 'EMAIL_EVENTS_INVALID',
+      statusCode: 400,
+    });
+    sinon.assert.calledOnce(processBatch);
+    assert.deepEqual(processBatch.firstCall.firstArg, [event]);
+    assert.equal(queueStats.firstCall.firstArg.delivered, 1);
+    sinon.assert.calledOnce(logging.error as sinon.SinonStub);
+    assert.equal(clock.countTimers(), 0);
+  });
+  it('does not hide a retryable missing recipient behind an invalid sibling', async () => {
+    verify.resolves({ events: [{ ...event, id: '' }, event] });
+    processBatch.callsFake(missing);
+    const rejected = assert.rejects(service.webhook('provider', request), {
+      code: 'EMAIL_RECIPIENT_NOT_FOUND',
+      statusCode: 503,
+    });
+    await clock.tickAsync(500);
+    await rejected;
+    sinon.assert.calledTwice(processBatch);
+  });
+  it('rejects invalid envelopes before any events are processed', async () => {
+    for (const events of [null, {}, Array(1001).fill(event)]) {
+      verify.resolves({ events });
+      await assert.rejects(service.webhook('provider', request), {
+        code: 'EMAIL_EVENTS_INVALID',
+        statusCode: 400,
+      });
+    }
+    sinon.assert.notCalled(createEventProcessor);
+  });
+  it('acknowledges events explicitly ignored by a processor without a lookup retry', async () => {
+    processBatch.callsFake(async (_events, result) => {
+      result.ignored += 1;
+    });
+    await service.webhook('provider', request);
+    sinon.assert.calledOnce(processBatch);
+    assert.equal(clock.countTimers(), 0);
   });
   it('rejects an inactive source before verification', async () => {
     await assert.rejects(service.webhook('unknown', request), /source was not found/);

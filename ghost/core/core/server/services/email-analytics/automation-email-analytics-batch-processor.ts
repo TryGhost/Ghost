@@ -10,6 +10,7 @@ import type {
 } from '../automations/automations-repository';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
+import { isSameEmailAddress } from './lib/is-same-email-address';
 
 type AutomationsApi = {
   getAutomatedEmailRecipientsByMailgunIds: typeof automationsApi.getAutomatedEmailRecipientsByMailgunIds;
@@ -145,15 +146,22 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
               break;
             }
             const recipient = getRecipient();
-            const recipientEmail = recipient?.member_email;
-            // Safety and preference changes must match the original recipient address.
-            if (
-              !recipient ||
-              !recipientEmail ||
-              !event.recipientEmail ||
-              recipientEmail.toLowerCase() !== event.recipientEmail.toLowerCase()
-            ) {
+            if (!recipient) {
               eventResult = new EventProcessingResult({ unprocessable: 1 });
+              break;
+            }
+            const recipientEmail = recipient.member_email;
+            // An existing message for a different address cannot be fixed by redelivery.
+            if (!recipientEmail || !isSameEmailAddress(recipientEmail, event.recipientEmail)) {
+              logging.warn(
+                {
+                  code: 'EMAIL_RECIPIENT_MISMATCH',
+                  family: 'automations',
+                  providerId: event.providerId,
+                },
+                'Ignored email safety event whose recipient does not match the stored message',
+              );
+              eventResult = new EventProcessingResult({ ignored: 1 });
               break;
             }
             const suppressionEvent = {
