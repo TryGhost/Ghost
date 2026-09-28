@@ -325,7 +325,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                         `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                     </div>
                   )}
-                  <PostAnalyticsEmailSendingStatus />
+                  <PostAnalyticsEmailSendingStatus key={postId} />
                 </div>
               </div>
             )}
