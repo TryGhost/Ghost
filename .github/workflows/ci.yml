@@ -2393,7 +2393,9 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       - name: Output needs
-        run: echo "${{ toJson(needs) }}"
+        env:
+          NEEDS_JSON: ${{ toJson(needs) }}
+        run: printf '%s\n' "$NEEDS_JSON"
 
       - name: Check if any required jobs failed or been cancelled
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
