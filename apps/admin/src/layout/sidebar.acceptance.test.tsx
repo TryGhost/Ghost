@@ -112,6 +112,8 @@ describe('Sidebar navigation', () => {
 
   it('keeps the boot loader visible until React commits its mount marker', async () => {
     await renderAdminApp('/site');
+    // `/site` is a lazy route, so the shell commits after its chunk loads.
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
 
     const marker = document.querySelector<HTMLElement>('[data-react-admin-mounted]')!;
     const emberApp = document.getElementById('ember-app')!;
