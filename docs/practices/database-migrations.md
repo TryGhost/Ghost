@@ -90,8 +90,8 @@ A new table's shape often changes several times before its feature is ready.
 Rather than writing a migration for each change, list the table in
 `IN_DEVELOPMENT_TABLES` in
 [`core/server/data/schema/in-development.ts`](../../ghost/core/core/server/data/schema/in-development.ts)
-and define it only in `schema.js`. It is only created in development and
-testing databases.
+and define its schema in `schema.js` without adding a versioned migration. It
+is only created in development and testing databases.
 
 To apply a changed definition to your local database, rebuild the listed
 tables. This drops them and discards their data:
@@ -108,6 +108,11 @@ The table still needs a classification in the exporter table lists.
 When the definition is final, remove the table from `IN_DEVELOPMENT_TABLES`,
 add the versioned migration that creates it, and update the schema integrity
 hash. From then on it follows the normal migration rules.
+
+Development databases keep their copy of the table after it is finalised, and
+the migration skips a table that already exists. Drop your local copy before
+running the migration so it is recreated from the final definition, and mention
+this in the pull request so others do the same.
 
 ### Testing
 
