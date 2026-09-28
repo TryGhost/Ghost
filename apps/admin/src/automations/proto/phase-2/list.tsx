@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';
 import {
@@ -17,13 +17,11 @@ import { AutomationsTable } from '@/automations/proto/shared/automations-table';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { laneShowsTrigger } from '@/automations/proto/shared/capabilities';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
-import { needsStripe, triggerConfigFor } from '@/automations/proto/shared/trigger-config';
+import { needsStripe } from '@/automations/proto/shared/trigger-config';
 import type { ProtoAutomation } from '@/automations/proto/shared/store';
 import {
-  blankAutomation,
   canPublishAutomation,
   duplicateAutomation,
-  insertAutomation,
   isNameTaken,
   setAutomationArchived,
   setAutomationStatus,
@@ -37,9 +35,7 @@ import {
   TurnOffAutomationDialog,
   TurnOnAutomationDialog,
 } from '@/automations/proto/shared/lifecycle-dialogs';
-import { useProtoVariant } from '@/automations/proto/shared/proto-variants';
-import { ProtoVariantsProvider } from '@/automations/proto/shared/proto-variants-provider';
-import { CREATION_SLOT, NEW_AUTOMATION_ID } from './creation-variant';
+import { NEW_AUTOMATION_ID } from './creation-variant';
 import { DetailsDialog } from './details-dialog';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 
@@ -81,14 +77,9 @@ const AutomationsList: React.FC = () => {
   // The row waiting on the archive confirm. Held here rather than per row, so the list
   // has one dialog instead of one behind every menu.
   const [pendingArchive, setPendingArchive] = useState<ProtoAutomation | null>(null);
-  // The automation just created here, hidden from the list until this screen is gone.
-  // See handleCreate.
-  const creatingId = useRef<string | null>(null);
   // The row being renamed, and the name and description offered for it.
   const [pendingRename, setPendingRename] = useState<ProtoAutomation | null>(null);
   const [renameDraft, setRenameDraft] = useState({ name: '', description: '' });
-  // Which creation model is being demoed — see CREATION_SLOT.
-  const creationVariant = useProtoVariant(CREATION_SLOT);
   // The rows waiting on a lifecycle confirm — same one-dialog-per-list shape as
   // pendingArchive. Two states rather than one with a direction in it, because
   // each opens a different dialog.
@@ -96,75 +87,20 @@ const AutomationsList: React.FC = () => {
   const [pendingTurnOff, setPendingTurnOff] = useState<ProtoAutomation | null>(null);
   const stripeConnected = useStripeConnected();
 
-  // Makes the automation, then opens it. It used to do the opposite — navigate to a
-  // `/new` sentinel id, hold the whole thing locally, and write the record on the
-  // first Save.
+  // Creation is DEFERRED — eng confirmed fake-until-first-save is buildable, so
+  // this writes nothing: it navigates to the /new sentinel and the detail
+  // screen synthesizes a local baseline. The record exists from the first Save
+  // or Publish over there; backing out creates nothing, and no toast fires
+  // here because "Automation created" has to be true when it says it.
   //
-  // A team run-through didn't accept that model. Nothing on screen said the
-  // automation didn't exist yet, and Save meant two different things depending on
-  // whether it was the first press ("bring this into being") or any later one
-  // ("commit these edits"). Beehiiv, Kit and Resend all create on arrival, and the
-  // reason is that it's the only version where the screen can tell you the truth
-  // about what it is.
-  //
-  // So: create, land on a real id, and say so. The toast is the visible half; the
-  // half that matters is that it's true when it fires.
-  //
-  // No name-it-first dialog. The automation is named for you ("New automation",
-  // then numbered), and the first real decision — what starts it — is the trigger
-  // list waiting on the canvas.
-  //
-  // Unless the site has no Stripe. Then there's only one trigger worth offering,
-  // and a picker with one option is a question with one answer — so the canvas
-  // opens with "Member signs up" already in place and the first real decision
-  // becomes the flow itself. See availableTriggerOptions for the rest of the
-  // no-Stripe design.
+  // This settles a question that went back and forth: an earlier run-through
+  // chose create-on-arrival (Beehiiv, Kit and Resend all do), the design
+  // review called auto-create the wrong pattern, and for a while both — plus a
+  // create-button-on-the-trigger fallback — shipped as a switchable slot. The
+  // alternatives live in this branch's history (and the future lane still
+  // carries the switch) if the decision reopens.
   const handleCreate = () => {
-    // The deferred variants (see CREATION_SLOT) write NOTHING here: they
-    // navigate to the /new sentinel and the detail screen synthesizes a local
-    // baseline — the record exists from the first commit over there, not from
-    // this click. No toast either; "Automation created" has to be true when it
-    // fires. Everything below is the arrival variant's create-then-open.
-    if (creationVariant !== 'arrival') {
-      navigate(toVersioned(`${lanePath(LANE)}/${NEW_AUTOMATION_ID}`));
-      return;
-    }
-    const record = stripeConnected
-      ? blankAutomation()
-      : { ...blankAutomation(), trigger: triggerConfigFor('member_subscribes') };
-    // Held before the write, so the row never draws here.
-    //
-    // insertAutomation and navigate are both in this handler and React batches state
-    // updates — but the store is a useSyncExternalStore, and React flushes those
-    // synchronously to avoid tearing. So the list re-rendered WITH the new row before
-    // the route change had a chance to land, and you saw it appear for a frame on the
-    // screen you were leaving.
-    //
-    // A ref rather than state for exactly that reason: it's written now, not
-    // scheduled, so the forced re-render already reads the new value. Nothing resets
-    // it, because this list is on its way out — and if the navigation somehow doesn't
-    // happen, one hidden row on a screen you didn't leave is a better failure than a
-    // flash on every creation.
-    creatingId.current = record.automation.id;
-    insertAutomation(record);
-    navigate(toVersioned(`${lanePath(LANE)}/${record.automation.id}`));
-    // Past tense and no action. It reports something that already happened, and the
-    // screen it happened on is the one you're now looking at — there's nowhere for a
-    // "View" to take you.
-    //
-    // Bottom-left, with every other toast in the app, and nothing overriding it. Three
-    // positions were tried on this one — top-center over the canvas, `invert` in place,
-    // then top-right — and all of them were solving the same thing: the canvas's
-    // bottom-left corner holds the zoom controls, so a toast lands on top of them.
-    //
-    // That's a reason to move the CONTROLS, not the toasts. Ghost puts its help
-    // launcher bottom-right and its toasts bottom-left — the two far corners,
-    // deliberately opposite — so bottom-left isn't habit, it's reserved. A screen that
-    // answers "where do confirmations appear" differently from every other screen is a
-    // worse trade than a zoom pill somewhere less conventional.
-    //
-    // Parked rather than solved: the controls stay where they are for now.
-    toast.success('Automation created');
+    navigate(toVersioned(`${lanePath(LANE)}/${NEW_AUTOMATION_ID}`));
   };
 
   // Instant. It used to open the naming dialog first, which made a two-press act out
@@ -291,7 +227,6 @@ const AutomationsList: React.FC = () => {
 
   const visible = automations.filter(
     (entry) =>
-      entry.automation.id !== creatingId.current &&
       // No Stripe, no paid workflows — in ANY view, archived included: the list
       // shows what the site can run, and a site that can't take payments can't
       // run these. They aren't deleted; reconnecting Stripe brings every one of
@@ -442,14 +377,5 @@ const AutomationsList: React.FC = () => {
   );
 };
 
-// Wrapped in the variants provider so the creation slot is switchable from
-// this screen's lane menu too — the selection itself lives in localStorage,
-// which is how this screen and the detail screen agree on it.
-const AutomationsListScreen: React.FC = () => (
-  <ProtoVariantsProvider slots={[CREATION_SLOT]}>
-    <AutomationsList />
-  </ProtoVariantsProvider>
-);
-
-export default AutomationsListScreen;
-export const Component = AutomationsListScreen;
+export default AutomationsList;
+export const Component = AutomationsList;

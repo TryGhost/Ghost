@@ -22,7 +22,8 @@ import {
  * typing, and Cancel is a real cancel — a rename from the list has no draft to
  * ride, so the confirm here is the only commit in sight and should look like
  * one. (The DETAIL screen used this dialog too, in a buttonless write-through
- * mode, and left for a popover under its own title — see details-popover.)
+ * mode, then a popover under its title, and settled on the settings sheet —
+ * see settings-sheet for that lineage.)
  */
 interface DetailsDialogProps {
   open: boolean;

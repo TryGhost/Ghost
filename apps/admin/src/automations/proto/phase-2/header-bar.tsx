@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { StatusBadge } from '@/automations/proto/shared/status-badge';
@@ -19,10 +19,15 @@ import { StatusBadge } from '@/automations/proto/shared/status-badge';
 //
 // The buttons themselves live on the screen (see chromeActions in detail.tsx) —
 // the header only places them, so a header style can't change what the screen
-// lets you do. The LEFT side keeps everything the switch era added: the title
-// opens details directly (pencil on hover), and there's no overflow menu —
-// archiving belongs to the list, where the automation is a row among others
-// rather than the thing you're inside.
+// lets you do. There's no overflow menu — archiving belongs to the list, where
+// the automation is a row among others rather than the thing you're inside.
+//
+// The title is PLAIN TEXT with a persistent gear beside it. It's been a button
+// wearing a hover pencil (opening a dialog, then a popover from the title
+// itself) — retired with the settings sheet: a hidden affordance was the
+// standing complaint, and with a visible gear owning "open settings", a second
+// clickable thing doing the same job would be two controls for one act. The
+// gear is muted, always there, and sized like every icon control on this row.
 //
 // A centred "Automations / <name>" breadcrumb has now been tried here twice and
 // rejected twice, on the same ground both times: it puts the automation's name at
@@ -45,16 +50,11 @@ interface HeaderBarProps {
   // both header variants raise identical controls — a header style shouldn't
   // change what the screen lets you do.
   actions: React.ReactNode;
-  // The details editor, raised FROM the title as a popover — the title is the
-  // trigger, the editor lands just under it, and the retitling happens live
-  // right above the fields changing it. All three come together or not at all;
-  // without them the title is plain text, which is what the other lanes want —
-  // nothing there is editable from the header. The header owns where the
-  // popover sits; the screen owns what's in it and when it's open (it seeds
-  // the fields on open, and runs the name check on close).
-  detailsOpen?: boolean;
-  onDetailsOpenChange?: (open: boolean) => void;
-  detailsContent?: React.ReactNode;
+  // Toggles the settings sheet. The gear carries data-settings-toggle so the
+  // sheet's outside-press dismissal leaves its presses alone (the gear manages
+  // the sheet itself — see settings-sheet). Absent, no gear renders — the
+  // other lanes' headers have nothing to open.
+  onToggleSettings?: () => void;
   /**
    * A transient message about the automation as a whole. Currently unused: the
    * Stripe warning that lived here moved onto the trigger card (see triggerWarning
@@ -77,19 +77,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   status,
   onBack,
   actions,
-  detailsOpen,
-  onDetailsOpenChange,
-  detailsContent,
+  onToggleSettings,
   notice,
 }) => (
   // A column, not a row: the bar is one 64px row wide enough for the notice to
   // sit in, and two rows when it isn't. shrink-0 without a fixed height, so it
   // grows and everything below moves down rather than being covered.
   <header
-    // group/header: the pencil beside the title reveals on hover over the WHOLE
-    // bar, not just the title — see the note on the title button.
     className={cn(
-      'group/header relative z-30 flex shrink-0 flex-col',
+      'relative z-30 flex shrink-0 flex-col',
       'border-b border-border-default bg-surface-elevated',
     )}
   >
@@ -137,64 +133,27 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 text-md it was a step BELOW the pane heading beneath it, which inverted
                 the hierarchy — the region label outranking the thing it reports on.
 
-                Editable, it becomes a button carrying a pencil — a hover fill, a
-                pointer, and a glyph that says so.
-
-                The pencil has now been through three rounds. Faded in on TITLE hover
-                (cut: an invisible affordance still reserving its width pays rent
-                twice); always visible (worked, but a permanent glyph beside the
-                screen's subject was chrome the title carried everywhere); and now
-                revealed on hover over the whole HEADER — a target the size of the
-                bar, so it's on screen the moment the cursor is anywhere near the
-                thing it labels, while the title reads clean in a screenshot or at
-                rest. The width stays reserved either way, so nothing shifts.
-                Keyboard focus on the button also reveals it — an affordance that
-                only mouse users can discover isn't one.
-
-                Muted, and it doesn't brighten on hover — the title is the target and
-                the pencil is a label for it, not a second thing to aim at.
-
-                px-2 so the hover fill has room, and -ml-2 to take that padding back out
-                of the layout — otherwise turning the title into a button would shift the
-                text 8px right of where it sits when it isn't one. This inset cancels its
-                own padding; it isn't the column inset the back arrow just lost.
-
-                h-9 rather than py-1, which sized the fill to the TEXT and came out at
-                ~28px — visibly shorter than the 36px back arrow standing next to it, so
-                two controls on one line had two different hover targets. Shade's
-                size="icon" is 36, and matching the number directly is more honest than
-                arriving at it through padding that would drift the moment the title's
-                type scale moved. */}
-        {detailsContent && onDetailsOpenChange ? (
-          // The title as a popover TRIGGER rather than a button opening a
-          // dialog. Radix owns the toggle, so clicking the title while the
-          // editor is open closes it instead of racing the outside-click.
-          // modal={false}: the popover is an inline editor, and the screen
-          // behind it stays live the way it does for every canvas field.
-          <Popover modal={false} open={detailsOpen} onOpenChange={onDetailsOpenChange}>
-            <PopoverTrigger asChild>
-              <button
-                className="group/title -ml-2 flex h-9 min-w-0 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-                title="Edit details"
-                type="button"
-              >
-                <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
-                <LucideIcon.Pen
-                  className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/header:opacity-100 group-focus-visible/title:opacity-100 motion-reduce:transition-none"
-                  strokeWidth={2}
-                />
-              </button>
-            </PopoverTrigger>
-            {/* align="start" so the editor hangs from the title's left edge —
-                        under the words being edited, not centred on the button's
-                        hover fill. w-80: room for the description textarea without
-                        approaching dialog width. */}
-            <PopoverContent align="start" className="w-80" sideOffset={4}>
-              {detailsContent}
-            </PopoverContent>
-          </Popover>
-        ) : (
-          <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
+                Plain text again — the editing affordance is the gear beside it,
+                not the title. The title-as-button era (hover pencil, dialog, then
+                a popover hung from it) is in this file's history; it ended when
+                the head of UX asked for a real settings area and the hidden
+                affordance was the standing complaint. */}
+        <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
+        {onToggleSettings && (
+          // Persistent and muted: findable without hovering (the pencil's
+          // failure), quiet enough not to compete with the name it follows.
+          // data-settings-toggle — see the prop note.
+          <Button
+            aria-label="Automation settings"
+            className="text-muted-foreground"
+            size="icon"
+            type="button"
+            variant="ghost"
+            data-settings-toggle
+            onClick={onToggleSettings}
+          >
+            <LucideIcon.Settings strokeWidth={2} />
+          </Button>
         )}
       </Inline>
 

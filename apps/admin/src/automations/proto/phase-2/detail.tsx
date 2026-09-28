@@ -31,9 +31,7 @@ import {
   useProtoAutomation,
   useStripeConnected,
 } from '@/automations/proto/shared/store';
-import { useProtoVariant } from '@/automations/proto/shared/proto-variants';
-import { ProtoVariantsProvider } from '@/automations/proto/shared/proto-variants-provider';
-import { CREATION_SLOT, NEW_AUTOMATION_ID } from './creation-variant';
+import { NEW_AUTOMATION_ID } from './creation-variant';
 import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import {
   PublishChangesDialog,
@@ -61,7 +59,7 @@ import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
-import { DetailsPopoverContent } from './details-popover';
+import { SettingsSheet } from './settings-sheet';
 
 // PHASE 2 — per-tier automations. See shared/lanes for why each lane owns its
 // own copy of this screen.
@@ -114,33 +112,27 @@ const AutomationFloat: React.FC = () => {
   // and keyed by id — a created automation has none, which is the empty state
   // `emptyScenarioId` already designs for.
 
-  // Which creation model is being demoed — see CREATION_SLOT for the three.
-  const creationVariant = useProtoVariant(CREATION_SLOT);
   const stripeConnected = useStripeConnected();
-  // The /new sentinel is BACK, for the deferred-creation variants. It was here
-  // once, was removed when a team run-through chose create-on-arrival, and the
-  // removal note listed its costs: a second record shadowing the stored one, a
-  // branch in promoteDraft, a key the screen wrapper holds across the
-  // /new → /:id navigation. Eng now thinks fake-until-first-save may be
-  // possible, so those costs are knowingly re-paid — the old note's list is
-  // this implementation's checklist. The arrival variant never produces this
-  // state; a record it opens always exists.
+  // Creation is DEFERRED — the decided model, confirmed buildable by eng after
+  // a stretch as a three-way switchable slot (create-on-arrival, this, and a
+  // create-button fallback; the alternatives live in this branch's history and
+  // the future lane still carries the switch). /new is the sentinel: nothing
+  // exists until the first Save or Publish, and backing out creates nothing.
+  // The costs the old removal note listed — a record shadowing the store, a
+  // branch in promoteDraft, a key held across the /new → /:id navigation — are
+  // knowingly paid; that list is this implementation's checklist.
   const isNew = id === NEW_AUTOMATION_ID;
   // The synthesized baseline: a blank minted once per mount, carrying its REAL
   // id (the URL says /new until the first commit swaps it out). It stands in
   // for the saved record, so everything downstream — the diff, the details
-  // popover, the leave guard — works unmodified against it. In the draft
-  // variant a Stripe-less site lands with the free trigger already placed, the
-  // same landing the arrival variant gives; it goes on the BASELINE so
+  // popover, the leave guard — works unmodified against it. A Stripe-less site
+  // lands with the free trigger already placed; it goes on the BASELINE so
   // arriving and leaving untouched registers no changes.
   const newBase = useRef<ProtoAutomation | null>(null);
   if (isNew && newBase.current === null) {
     newBase.current = {
       ...blankAutomation(),
-      trigger:
-        creationVariant === 'draft' && !stripeConnected
-          ? triggerConfigFor('member_subscribes')
-          : null,
+      trigger: !stripeConnected ? triggerConfigFor('member_subscribes') : null,
     };
   }
   const record = useProtoAutomation(id) ?? (isNew ? (newBase.current ?? undefined) : undefined);
@@ -380,18 +372,6 @@ const AutomationFloat: React.FC = () => {
   // and explained instead), so this warning can't be provoked by building
   // something new. It stays because hiding can't answer the disconnect case:
   // an automation that exists has to say why it won't publish.
-  // The first decision, and the only thing on screen while it's open. Chrome that
-  // acts on an automation — its name, its status, Save, Publish — is chrome for
-  // something that doesn't exist yet, so the header stands down until there's an
-  // automation to act on. What's left is the canvas, one centred card, and the way
-  // back.
-
-  // BUTTON variant, before the press: the screen is the trigger question and
-  // the way back, nothing else — no header, no pane, no canvas controls. The
-  // chrome is all controls for an automation, and there isn't one yet; it
-  // arrives with the record, on Create.
-  const preCreate = isNew && creationVariant === 'button';
-
   const stripeMissing = !stripeConnected && triggerConfig !== null && needsStripe(triggerConfig);
 
   // A blank email in the draft that would be committed — no subject, or no
@@ -419,9 +399,7 @@ const AutomationFloat: React.FC = () => {
   // waiting on Stripe, carrying a blank email, or listening for tiers nobody
   // has named.
   const canGoLive = triggerConfig !== null && !stripeMissing && !blankEmails && !tiersOpen;
-  // preCreate folds in here rather than as its own render fork: the pane is
-  // simply held closed while there's nothing to report on.
-  const paneHidden = paneCollapsed || preCreate;
+  const paneHidden = paneCollapsed;
   // What's running (read canvas) vs what's being edited (edit canvas).
 
   // Nothing is written until Save or Publish, so an edit only has to be recorded.
@@ -434,23 +412,6 @@ const AutomationFloat: React.FC = () => {
   // the half nobody was looking at. A new automation is "New automation", numbered,
   // from creation until someone names it themselves.
   const handleTriggerConfigChange = (next: TriggerConfig) => setTriggerConfig(next);
-
-  // The button variant's create moment: the chosen trigger and the blank flow
-  // become the record in one insert, and the URL swaps to the real id. The
-  // trigger config is also set locally FIRST, so the canvas sees unset flip
-  // and plays the same creation sequence choosing a trigger always plays —
-  // the chrome arriving and the card growing its fields are one moment.
-  const handleCreateFromTrigger = (config: TriggerConfig) => {
-    setTriggerConfig(config);
-    insertAutomation({
-      automation: { ...flowToCommit, status: 'inactive' },
-      description: '',
-      trigger: config,
-    });
-    createdId.current = flowToCommit.id;
-    toast.success('Automation created');
-    navigate(toVersioned(`${lanePath(LANE)}/${flowToCommit.id}`), { replace: true });
-  };
 
   // Start — take a stopped automation live. Read mode only now, so there's no
   // edit state to settle here. No confirm dialog: going live is low-friction and
@@ -619,10 +580,10 @@ const AutomationFloat: React.FC = () => {
 
   // Whether the field text names another automation. Live per keystroke: the
   // guard below reads it to keep a colliding name off the draft, and the
-  // popover debounces what it SAYS about it (see details-popover).
+  // settings sheet debounces what it SAYS about it (see settings-sheet).
   const nameCollides = isNameTaken(settingsDraft.name, id);
 
-  // Closing the popover is just putting it away — never blocked, nothing
+  // Closing the sheet is just putting it away — never blocked, nothing
   // committed. The one exit worth a word is leaving a name in the field that
   // never applied: the guard kept the previous name, and a toast says so,
   // because a silently reverted rename reads as a rename that vanished. Blank
@@ -752,42 +713,18 @@ const AutomationFloat: React.FC = () => {
                 The Publish button still refuses via canGoLive (popover at the press),
                 so the header's half of the story is the control refusing, and the
                 card's half is why. */}
-      {preCreate ? (
-        // Before Create the header stands down entirely — what's left is the
-        // canvas, one centred card, and the way back (floating where the pane
-        // toggle otherwise sits; there's no pane to toggle yet).
-        <div className="absolute top-4 left-6 z-30">
-          <Button
-            aria-label="Back to automations"
-            className={CANVAS_HUD_BUTTON}
-            size="icon"
-            type="button"
-            variant="outline"
-            onClick={goBack}
-          >
-            <LucideIcon.ArrowLeft strokeWidth={2} />
-          </Button>
-        </div>
-      ) : (
-        <HeaderBar
-          actions={chromeActions}
-          detailsContent={
-            <DetailsPopoverContent
-              nameTaken={nameCollides}
-              values={settingsDraft}
-              onChange={handleDetailsChange}
-            />
-          }
-          detailsOpen={settingsOpen}
-          status={liveStatus}
-          // The pending name, not the saved one: a rename shows here the moment
-          // it's typed, the way a canvas edit shows on the canvas — on screen now,
-          // committed by Save.
-          title={draftDetails.name}
-          onBack={goBack}
-          onDetailsOpenChange={handleDetailsOpenChange}
-        />
-      )}
+      <HeaderBar
+        actions={chromeActions}
+        status={liveStatus}
+        // The pending name, not the saved one: a rename shows here the moment
+        // it's typed in the settings sheet, the way a canvas edit shows on the
+        // canvas — on screen now, committed by Save.
+        title={draftDetails.name}
+        onBack={goBack}
+        // Toggle, not open: the gear presses closed a sheet that's open, the
+        // same contract the email cards' analytics buttons keep with theirs.
+        onToggleSettings={() => handleDetailsOpenChange(!settingsOpen)}
+      />
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* Left pane docked flush to the edge. On entering edit it slides off the
                 left (negative margin collapses its flex footprint to 0) and the canvas
@@ -988,10 +925,6 @@ const AutomationFloat: React.FC = () => {
               // ZERO_EMAIL_STATS.)
               alwaysShowInserts={liveStatus === 'inactive'}
               draft={draftFlow}
-              // The button variant's pre-create dress: no zoom controls, and
-              // the trigger card asks with selections plus a Create button
-              // instead of applying a choice on click.
-              hideControls={preCreate}
               // Which triggers this screen may offer — see shared/capabilities.
               lane={LANE}
               revealWarningsSignal={revealSignal}
@@ -1014,7 +947,6 @@ const AutomationFloat: React.FC = () => {
                   : undefined
               }
               onChange={handleDraftChange}
-              onCreateAutomation={preCreate ? handleCreateFromTrigger : undefined}
               onTriggerConfigChange={handleTriggerConfigChange}
             />
           </div>
@@ -1057,23 +989,34 @@ const AutomationFloat: React.FC = () => {
                     One button that restyles, not two that swap: it never unmounts, so the
                     pane collapses out from under a control that stays exactly where it is
                     and the same press sends it back. */}
-        {/* Not while preCreate — the back button borrows this exact spot then,
-                    and there's no pane to toggle before the automation exists. */}
-        {!preCreate && (
-          <div className="absolute top-4 left-6 z-30">
-            <Button
-              aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
-              aria-pressed={!paneCollapsed}
-              className={paneCollapsed ? CANVAS_HUD_BUTTON : undefined}
-              size="icon"
-              type="button"
-              variant={paneCollapsed ? 'outline' : 'ghost'}
-              onClick={() => setPaneCollapsed(!paneCollapsed)}
-            >
-              <LucideIcon.PanelLeft strokeWidth={2} />
-            </Button>
-          </div>
-        )}
+        <div className="absolute top-4 left-6 z-30">
+          <Button
+            aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
+            aria-pressed={!paneCollapsed}
+            className={paneCollapsed ? CANVAS_HUD_BUTTON : undefined}
+            size="icon"
+            type="button"
+            variant={paneCollapsed ? 'outline' : 'ghost'}
+            onClick={() => setPaneCollapsed(!paneCollapsed)}
+          >
+            <LucideIcon.PanelLeft strokeWidth={2} />
+          </Button>
+        </div>
+
+        {/* The settings sheet, over the canvas's right edge like the analytics
+                    sheet below it in the tree — the screen's two sheets are one kind
+                    of surface. Mounted at ROW level rather than inside the canvas
+                    region so it can outlast canvas crossfades; the header above it
+                    stays live, which is where the retitling shows while the name
+                    field here changes it. Open/close and the collision toast are the
+                    screen's (see handleDetailsOpenChange). */}
+        <SettingsSheet
+          nameTaken={nameCollides}
+          open={settingsOpen}
+          values={settingsDraft}
+          onChange={handleDetailsChange}
+          onOpenChange={handleDetailsOpenChange}
+        />
       </div>
 
       {/* Lifecycle confirms — turning the automation on, and taking it off. */}
@@ -1085,9 +1028,9 @@ const AutomationFloat: React.FC = () => {
       />
       <TurnOffAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
 
-      {/* The details editor renders inside the HeaderBar now — a popover hung
-                from the title itself (see DetailsPopoverContent for why the dialog
-                and its three generations of footer buttons retired). */}
+      {/* The details editor is the settings sheet, rendered up in the canvas
+                row — see SettingsSheet for the whole container lineage (dialog,
+                three footers, a popover from the title, now a panel). */}
 
       {/* Where the delete confirm used to be. If Delete ever returns to the UI, its
                 dialog is worth writing again rather than reaching for "this can't be
@@ -1154,15 +1097,12 @@ const AutomationFloatScreen: React.FC = () => {
   // the next. Without it, React reuses the instance across a route change and the
   // previous automation's draft would follow you to the new one.
   //
-  // With ONE exception, and it's back: the deferred-creation variants save a
-  // /new automation and swap the URL to its real id — the same automation
-  // gaining an id, not a change of subject. Letting the key change there tore
-  // the screen down and rebuilt it mid-publish, header, pane and both React
-  // Flow canvases reassembling in full view: the first-publish flash. So the
-  // key holds across exactly that transition and follows the id on every
-  // other. (This exception was removed once, when a run-through settled on
-  // create-on-arrival; the creation slot reopened the question, so the fix
-  // returns with it.)
+  // With ONE exception: the first Save of a /new automation swaps the URL to
+  // its real id — the same automation gaining an id, not a change of subject.
+  // Letting the key change there tore the screen down and rebuilt it
+  // mid-publish, header, pane and both React Flow canvases reassembling in
+  // full view: the first-publish flash. So the key holds across exactly that
+  // transition and follows the id on every other.
   const current = id ?? NEW_AUTOMATION_ID;
   const [screenKey, setScreenKey] = useState(current);
   const [prevRouteId, setPrevRouteId] = useState(current);
@@ -1172,11 +1112,7 @@ const AutomationFloatScreen: React.FC = () => {
       setScreenKey(current);
     }
   }
-  return (
-    <ProtoVariantsProvider slots={[CREATION_SLOT]}>
-      <AutomationFloat key={screenKey} />
-    </ProtoVariantsProvider>
-  );
+  return <AutomationFloat key={screenKey} />;
 };
 
 export default AutomationFloatScreen;
