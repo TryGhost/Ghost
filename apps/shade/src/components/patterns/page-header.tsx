@@ -141,28 +141,31 @@ PageHeaderFilterTrigger.displayName = 'PageHeaderFilterTrigger';
 
 const PageHeaderSelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectTrigger>,
-  React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string }
->(({ label, className, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string; tooltip?: boolean }
+>(({ label, tooltip = true, className, ...props }, ref) => {
   const { controlShape, isAdmin7 } = useShade();
-  return (
+  const trigger = (
+    <SelectTrigger
+      ref={ref}
+      aria-label={label}
+      className={cn(
+        'w-auto',
+        isAdmin7 &&
+          'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2! [&>svg]:mr-0',
+        className,
+      )}
+      shape={controlShape}
+      showChevron={!isAdmin7}
+      variant={isAdmin7 ? 'ghost' : 'default'}
+      {...props}
+    />
+  );
+  return tooltip ? (
     <PageHeaderTooltip label={label}>
-      <PageHeaderTooltipTrigger asChild>
-        <SelectTrigger
-          ref={ref}
-          aria-label={label}
-          className={cn(
-            'w-auto',
-            isAdmin7 &&
-              'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2! [&>svg]:mr-0',
-            className,
-          )}
-          shape={controlShape}
-          showChevron={!isAdmin7}
-          variant={isAdmin7 ? 'ghost' : 'default'}
-          {...props}
-        />
-      </PageHeaderTooltipTrigger>
+      <PageHeaderTooltipTrigger asChild>{trigger}</PageHeaderTooltipTrigger>
     </PageHeaderTooltip>
+  ) : (
+    trigger
   );
 });
 PageHeaderSelectTrigger.displayName = 'PageHeaderSelectTrigger';

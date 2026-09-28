@@ -99,6 +99,8 @@ Icon-only actions and actions with keyboard shortcuts have tooltips. Static labe
 buttons omit them: repeating the visible label adds no information. Set `tooltip`
 on a labelled action when its text shows a changing value and the tooltip explains
 the action. Primary actions never have tooltips.
+`PageHeader.SelectTrigger` also accepts `tooltip={false}` when its visible value
+already makes the control clear, such as a date range.
 
 Tooltips use the semantic white surface with a shadow. The first
 hover tooltip waits **1 second**. Moving between recently shown tooltips uses a
