@@ -1,16 +1,43 @@
 DESCRIPTION >
-    Daily automation entries in UTC. All-time requests include the complete run history.
+    Daily entries and current outcomes from the same recorded runs.
 
-NODE entry_counts
+NODE selected_status_runs
+SQL >
+    %
+    SELECT id, created_at
+    FROM _mv_automation_runs FINAL
+    WHERE site_uuid = {{ String(site_uuid, required=True) }}
+        AND automation_id = {{ String(automation_id, required=True) }}
+
+NODE run_status_flags
 SQL >
     %
     SELECT
+        automation_run_id,
+        -- Combine categories after FINAL has selected each step's latest version.
+        groupBitOr(toUInt8(multiIf(
+            status = 'pending', 1,
+            status = 'finished', 2,
+            status IN ('automation disabled', 'failed', 'member changed status', 'member unsubscribed'), 4,
+            8
+        ))) AS status_flags
+    FROM _mv_automation_run_steps FINAL
+    WHERE site_uuid = {{ String(site_uuid, required=True) }}
+        AND automation_run_id IN (SELECT id FROM selected_status_runs)
+    GROUP BY automation_run_id
+
+NODE performance_counts
+SQL >
+    SELECT
         toString(toDate(runs.created_at, 'UTC')) AS date,
-        count() AS count
-    FROM _mv_automation_runs AS runs FINAL
-    WHERE
-        runs.site_uuid = {{ String(site_uuid, '00000000-0000-0000-0000-000000000000', required=True) }}
-        AND runs.automation_id = {{ String(automation_id, '', required=True) }}
+        -- Unknown statuses are reported to Core as an error, even alongside pending steps.
+        countIf(bitAnd(status_flags, 8) = 0 AND bitAnd(status_flags, 1) != 0) AS in_progress_run_count,
+        countIf(status_flags = 2) AS completed_run_count,
+        countIf(status_flags IN (4, 6)) AS exited_early_run_count,
+        countIf(bitAnd(status_flags, 8) != 0) AS invalid_run_count
+    FROM selected_status_runs AS runs
+    -- A run without recorded steps contributes to neither the chart nor the cards.
+    INNER JOIN run_status_flags AS steps ON steps.automation_run_id = runs.id
     GROUP BY date
     ORDER BY date ASC
 

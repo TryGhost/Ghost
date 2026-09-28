@@ -142,15 +142,12 @@ export async function read(automationId: string) {
   return automation;
 }
 
-async function requireAutomation(automationId: string) {
+export async function readPerformanceStats(automationId: string) {
   const exists = await repository.exists(automationId);
   if (!exists) {
     throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
   }
-}
 
-export async function readPerformanceStats(automationId: string) {
-  await requireAutomation(automationId);
   const client = getTinybirdClient();
   if (!client) {
     throw new errors.InternalServerError({
@@ -163,8 +160,13 @@ export async function readPerformanceStats(automationId: string) {
       message: tpl(messages.tinybirdPerformanceStatsFailed),
     });
   }
-  const window = getEntryStatsWindow(stats.entries);
-  return { automation_id: automationId, ...fillEntryStats(stats, window), entry_window: window };
+  const entryWindow = getEntryStatsWindow(stats.entries);
+  return {
+    automation_id: automationId,
+    ...stats,
+    ...fillEntryStats(stats, entryWindow),
+    entry_window: entryWindow,
+  };
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {

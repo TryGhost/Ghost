@@ -39,16 +39,24 @@ describe('Automation performance stats API', function () {
     await cleanupAutomationsFixture();
   });
 
-  it('fails with the flag disabled without querying SQL statistics', async function () {
+  async function requestStats(status: number) {
     const queries: string[] = [];
     const capture = (query: { sql: string }) => queries.push(query.sql);
     models.Base.knex.on('query', capture);
     try {
-      await agent.get(`automations/${automationId}/performance-stats`).expectStatus(500);
+      return await agent.get(`automations/${automationId}/performance-stats`).expectStatus(status);
     } finally {
       models.Base.knex.removeListener('query', capture);
+      assert.ok(
+        queries.every(
+          (sql) => !/\bautomation_runs\b|\bautomation_run_steps\b|\bautomation_actions\b/.test(sql),
+        ),
+      );
     }
-    assert.ok(queries.every((sql) => !/\bautomation_runs\b|\bautomation_run_steps\b/.test(sql)));
+  }
+
+  it('fails with the flag disabled without querying SQL statistics', async function () {
+    await requestStats(500);
   });
 
   it('returns 404 for an unknown automation even with Tinybird disabled', async function () {
@@ -126,25 +134,24 @@ describe('Automation performance stats API', function () {
     it('returns the full history and matching total from one Tinybird query', async function () {
       const requests = mockStats(200, {
         data: [
-          { date: '2026-09-14', count: '2' },
-          { date: '2020-01-01', count: 1 },
+          {
+            date: '2026-09-14',
+            in_progress_run_count: '1',
+            completed_run_count: '0',
+            exited_early_run_count: '1',
+            invalid_run_count: '0',
+          },
+          {
+            date: '2020-01-01',
+            in_progress_run_count: 0,
+            completed_run_count: 1,
+            exited_early_run_count: 0,
+            invalid_run_count: 0,
+          },
         ],
       });
-      const queries: string[] = [];
-      const capture = (query: { sql: string }) => queries.push(query.sql);
-      models.Base.knex.on('query', capture);
-      let body;
-      try {
-        ({ body } = await agent
-          .get(`automations/${automationId}/performance-stats`)
-          .expectStatus(200));
-      } finally {
-        models.Base.knex.removeListener('query', capture);
-      }
+      const { body } = await requestStats(200);
       assert.ok(requests.isDone());
-      assert.ok(
-        queries.every((sql) => !/automation_runs|automation_run_steps|automation_action/.test(sql)),
-      );
       const stats = body.automation_performance_stats[0];
       assert.equal(stats.automation_id, automationId);
       assert.deepEqual(stats.entry_window, {
@@ -155,6 +162,10 @@ describe('Automation performance stats API', function () {
       });
       assert.ok(stats.entries.length > 1000);
       assert.equal(stats.total_run_count, 3);
+      assert.equal(stats.in_progress_run_count, 1);
+      assert.equal(stats.completed_run_count, 1);
+      assert.equal(stats.exited_early_run_count, 1);
+      assert.equal(stats.unclassified_run_count, undefined);
       assert.equal(
         stats.entries.reduce((sum: number, day: { count: number }) => sum + day.count, 0),
         stats.total_run_count,
@@ -163,51 +174,36 @@ describe('Automation performance stats API', function () {
       assert.deepEqual(stats.entries.at(-1), { date: '2026-09-14', count: 2 });
     });
 
-    async function expectTinybirdFailure() {
-      const queries: string[] = [];
-      const capture = (query: { sql: string }) => queries.push(query.sql);
-      models.Base.knex.on('query', capture);
-      try {
-        await agent.get(`automations/${automationId}/performance-stats`).expectStatus(500);
-      } finally {
-        models.Base.knex.removeListener('query', capture);
-      }
-      assert.ok(
-        queries.every((sql) => !/automation_runs|automation_run_steps|automation_action/.test(sql)),
-      );
-    }
-
+    // Detailed invalid-value cases belong to fetchAutomationPerformanceStats unit tests.
     it.each([
-      [404, 'Missing pipe'],
-      [503, 'Unavailable'],
-      [200, { data: [{ date: 'invalid', count: 1 }] }],
-    ] as const)(
-      'fails for missing, failed, or invalid series (%s)',
-      async function (status, response) {
-        sinon.stub(require('@tryghost/logging'), 'error');
-        const requests = mockStats(status, response);
-        await expectTinybirdFailure();
-        assert.ok(requests.isDone());
-      },
-    );
+      { reason: 'missing pipe', status: 404, response: 'Missing pipe' },
+      { reason: 'service unavailable', status: 503, response: 'Unavailable' },
+      { reason: 'malformed data', status: 200, response: { data: [{ date: 'invalid' }] } },
+    ])('returns 500 without SQL fallback for $reason', async function ({ status, response }) {
+      sinon.stub(require('@tryghost/logging'), 'error');
+      const requests = mockStats(status, response);
+      await requestStats(500);
+      assert.ok(requests.isDone());
+    });
 
     it('fails when Tinybird configuration is missing', async function () {
       configUtils.set('tinybird:stats', null);
-      await expectTinybirdFailure();
+      await requestStats(500);
     });
 
     it('fails when the Tinybird token is unavailable', async function () {
       sinon.stub(TinybirdServiceWrapper.instance, 'getToken').returns(null);
-      await expectTinybirdFailure();
+      await requestStats(500);
     });
 
     it('preserves a successful empty Tinybird response', async function () {
       const requests = mockStats(200, { data: [] });
-      const { body } = await agent
-        .get(`automations/${automationId}/performance-stats`)
-        .expectStatus(200);
+      const { body } = await requestStats(200);
       assert.ok(requests.isDone());
       assert.equal(body.automation_performance_stats[0].total_run_count, 0);
+      assert.equal(body.automation_performance_stats[0].in_progress_run_count, 0);
+      assert.equal(body.automation_performance_stats[0].completed_run_count, 0);
+      assert.equal(body.automation_performance_stats[0].exited_early_run_count, 0);
       assert.deepEqual(body.automation_performance_stats[0].entries, [
         { date: '2026-09-14', count: 0 },
       ]);

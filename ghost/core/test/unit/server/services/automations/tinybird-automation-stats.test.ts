@@ -92,13 +92,24 @@ describe('fetchAutomationStats', function () {
 describe('fetchAutomationPerformanceStats', function () {
   afterEach(() => sinon.restore());
 
-  it('derives the total and ordered daily counts from one all-time query', async function () {
+  const row = (date: string, completed: unknown = 1) => ({
+    date,
+    in_progress_run_count: 0,
+    completed_run_count: completed,
+    exited_early_run_count: 0,
+    invalid_run_count: 0,
+  });
+
+  it('derives the ordered chart and all three totals from one query', async function () {
     const client = clientReturning([
-      { date: '2026-09-14', count: '11' },
-      { date: '2020-01-01', count: 2 },
+      { ...row('2026-09-14', '3'), in_progress_run_count: '2', exited_early_run_count: '6' },
+      row('2020-01-01', 2),
     ]);
     assert.deepEqual(await fetchAutomationPerformanceStats(client, 'selected'), {
       total_run_count: 13,
+      in_progress_run_count: 2,
+      completed_run_count: 5,
+      exited_early_run_count: 6,
       entries: [
         { date: '2020-01-01', count: 2 },
         { date: '2026-09-14', count: 11 },
@@ -113,31 +124,27 @@ describe('fetchAutomationPerformanceStats', function () {
   it('returns zero for a successful empty history', async function () {
     assert.deepEqual(await fetchAutomationPerformanceStats(clientReturning([]), 'selected'), {
       total_run_count: 0,
+      in_progress_run_count: 0,
+      completed_run_count: 0,
+      exited_early_run_count: 0,
       entries: [],
     });
   });
 
   it.each([
     { name: 'missing response', rows: null },
-    { name: 'invalid date', rows: [{ date: '2026-02-30', count: 1 }] },
-    { name: 'negative count', rows: [{ date: '2026-09-01', count: -1 }] },
-    { name: 'null count', rows: [{ date: '2026-09-01', count: null }] },
-    { name: 'fractional count', rows: [{ date: '2026-09-01', count: 1.5 }] },
+    { name: 'invalid date', rows: [row('2026-02-30')] },
+    { name: 'negative count', rows: [row('2026-09-01', -1)] },
+    { name: 'null count', rows: [row('2026-09-01', null)] },
+    { name: 'fractional count', rows: [row('2026-09-01', 1.5)] },
+    { name: 'duplicate day', rows: [row('2026-09-01'), row('2026-09-01', 2)] },
+    { name: 'unsafe total', rows: [row('2026-09-01', Number.MAX_SAFE_INTEGER), row('2026-09-02')] },
+    { name: 'unexpected step status', rows: [{ ...row('2026-09-01'), invalid_run_count: 1 }] },
     {
-      name: 'duplicate day',
-      rows: [
-        { date: '2026-09-01', count: 1 },
-        { date: '2026-09-01', count: 2 },
-      ],
+      name: 'unexpected status alongside pending',
+      rows: [{ ...row('2026-09-01'), in_progress_run_count: 1, invalid_run_count: 1 }],
     },
-    {
-      name: 'unsafe total',
-      rows: [
-        { date: '2026-09-01', count: Number.MAX_SAFE_INTEGER },
-        { date: '2026-09-02', count: 1 },
-      ],
-    },
-  ])('rejects and logs $name', async function ({ rows }) {
+  ])('rejects and logs $name instead of serving partial statistics', async function ({ rows }) {
     const error = sinon.stub(logging, 'error');
     assert.equal(await fetchAutomationPerformanceStats(clientReturning(rows), 'selected'), null);
     sinon.assert.calledOnce(error);

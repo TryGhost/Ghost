@@ -148,6 +148,13 @@ export type AutomationStepTerminalStatus =
   | 'member changed status'
   | 'member unsubscribed';
 
+export type AutomationStatusStats = {
+  in_progress_run_count: number;
+  completed_run_count: number;
+  exited_early_run_count: number;
+  unclassified_run_count: number;
+};
+
 export type BrowseOptions = Readonly<{
   /**
    * Should stats be included?
@@ -162,6 +169,7 @@ export type AutomationsRepository = {
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
   getEntryStats(id: string, window: EntryStatsWindow): Promise<EntryStatsData>;
+  getStatusStats(id: string): Promise<AutomationStatusStats>;
   getAutomationActionLinks(
     automationId: string,
     actionId: string,
