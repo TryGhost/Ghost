@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import { AdminLink } from '@/shared/admin-link';
+import { getPostListReturnUrl } from '@/posts/api';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
@@ -75,6 +76,9 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 
 function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
+  const reactOwnsList = useFeatureFlag('postsListReact');
+  const resource = postType === 'page' ? 'pages' : 'posts';
+  const listUrl = reactOwnsList ? getPostListReturnUrl(resource) : `/${resource}`;
 
   return (
     <Grid
@@ -89,7 +93,7 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
         label={listLabel}
         asChild
       >
-        <AdminLink to={postType === 'page' ? '/pages' : '/posts'}>
+        <AdminLink to={listUrl}>
           <LucideIcon.ArrowLeft />
           {listLabel}
         </AdminLink>
