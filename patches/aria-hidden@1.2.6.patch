@@ -1,5 +1,5 @@
 diff --git a/dist/es2015/index.js b/dist/es2015/index.js
-index 00aa2ea9da07e8e1d5978a4abe6ce1c2e9ac8041..1aae7ebca87c813dd1359587529133b765671523 100644
+index 00aa2ea9da07e8e1d5978a4abe6ce1c2e9ac8041..68c88ac67c0038d81835d73a0633e62dd5485b58 100644
 --- a/dist/es2015/index.js
 +++ b/dist/es2015/index.js
 @@ -131,7 +131,22 @@ export var hideOthers = function (originalTarget, parentNode, markerName) {
@@ -12,7 +12,7 @@ index 00aa2ea9da07e8e1d5978a4abe6ce1c2e9ac8041..1aae7ebca87c813dd1359587529133b7
 +    var undo;
 +    var cancelled = false;
 +    queueMicrotask(function () {
-+        if (!cancelled) {
++        if (!cancelled && targets[0].isConnected) {
 +            undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
 +        }
 +    });
@@ -27,7 +27,7 @@ index 00aa2ea9da07e8e1d5978a4abe6ce1c2e9ac8041..1aae7ebca87c813dd1359587529133b7
  /**
   * Marks everything except given node(or nodes) as inert
 diff --git a/dist/es2019/index.js b/dist/es2019/index.js
-index 17404dae4afb4660e14921347404b6c0ca40cca3..798850fe1cb934497d47b3670fbcb9a96eaac592 100644
+index 17404dae4afb4660e14921347404b6c0ca40cca3..a38394c681492d51e3c34f3a2cf8f7728f260eb1 100644
 --- a/dist/es2019/index.js
 +++ b/dist/es2019/index.js
 @@ -126,7 +126,22 @@ export const hideOthers = (originalTarget, parentNode, markerName = 'data-aria-h
@@ -40,7 +40,7 @@ index 17404dae4afb4660e14921347404b6c0ca40cca3..798850fe1cb934497d47b3670fbcb9a9
 +    var undo;
 +    var cancelled = false;
 +    queueMicrotask(function () {
-+        if (!cancelled) {
++        if (!cancelled && targets[0].isConnected) {
 +            undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
 +        }
 +    });
@@ -55,7 +55,7 @@ index 17404dae4afb4660e14921347404b6c0ca40cca3..798850fe1cb934497d47b3670fbcb9a9
  /**
   * Marks everything except given node(or nodes) as inert
 diff --git a/dist/es5/index.js b/dist/es5/index.js
-index 1b86f56de25fb82f0627a2c5c087c4211f591a2a..96491ccb3fe4394734d76dcc00841015d3eb779d 100644
+index 1b86f56de25fb82f0627a2c5c087c4211f591a2a..45a0b05893222b2e6b9e5985f5c825d60a944ca2 100644
 --- a/dist/es5/index.js
 +++ b/dist/es5/index.js
 @@ -134,7 +134,22 @@ var hideOthers = function (originalTarget, parentNode, markerName) {
@@ -68,7 +68,7 @@ index 1b86f56de25fb82f0627a2c5c087c4211f591a2a..96491ccb3fe4394734d76dcc00841015
 +    var undo;
 +    var cancelled = false;
 +    queueMicrotask(function () {
-+        if (!cancelled) {
++        if (!cancelled && targets[0].isConnected) {
 +            undo = applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
 +        }
 +    });

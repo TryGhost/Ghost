@@ -798,7 +798,7 @@ pnpmfileChecksum: sha256-fUIu4zcFUYGAp3jCvRqZ8zssQmWG4cCy4lRG7lA7cvQ=
 
 patchedDependencies:
   '@elastic/elasticsearch@8.19.2': 725142a9606e50dff3ed4c17fb9256d5457c7c75ce262898b87ef0ffff14dcc2
-  aria-hidden@1.2.6: ad786b02e27de75c93c75d5a46cf2e0165e8178838c9fd9474e2701a5a4dab55
+  aria-hidden@1.2.6: e908cacc729bc0b78f604ab7532fdfde3607a6b863eeeca2f1891ddcb972344e
   juice@11.1.1: 9b56fcd925d7de8dd73a700a918dcb387ef39410581a11d9ac683b3eed9790d0
 
 importers:
@@ -26756,7 +26756,7 @@ snapshots:
       '@radix-ui/react-primitive': 2.1.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot': 1.3.0(@types/react@18.3.31)(react@18.3.1)
       '@radix-ui/react-use-controllable-state': 1.2.3(@types/react@18.3.31)(react@18.3.1)
-      aria-hidden: 1.2.6(patch_hash=ad786b02e27de75c93c75d5a46cf2e0165e8178838c9fd9474e2701a5a4dab55)
+      aria-hidden: 1.2.6(patch_hash=e908cacc729bc0b78f604ab7532fdfde3607a6b863eeeca2f1891ddcb972344e)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-remove-scroll: 2.7.2(@types/react@18.3.31)(react@18.3.1)
@@ -26880,7 +26880,7 @@ snapshots:
       '@radix-ui/react-roving-focus': 1.1.14(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot': 1.3.0(@types/react@18.3.31)(react@18.3.1)
       '@radix-ui/react-use-callback-ref': 1.1.2(@types/react@18.3.31)(react@18.3.1)
-      aria-hidden: 1.2.6(patch_hash=ad786b02e27de75c93c75d5a46cf2e0165e8178838c9fd9474e2701a5a4dab55)
+      aria-hidden: 1.2.6(patch_hash=e908cacc729bc0b78f604ab7532fdfde3607a6b863eeeca2f1891ddcb972344e)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-remove-scroll: 2.7.2(@types/react@18.3.31)(react@18.3.1)
@@ -26903,7 +26903,7 @@ snapshots:
       '@radix-ui/react-primitive': 2.1.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot': 1.3.0(@types/react@18.3.31)(react@18.3.1)
       '@radix-ui/react-use-controllable-state': 1.2.3(@types/react@18.3.31)(react@18.3.1)
-      aria-hidden: 1.2.6(patch_hash=ad786b02e27de75c93c75d5a46cf2e0165e8178838c9fd9474e2701a5a4dab55)
+      aria-hidden: 1.2.6(patch_hash=e908cacc729bc0b78f604ab7532fdfde3607a6b863eeeca2f1891ddcb972344e)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-remove-scroll: 2.7.2(@types/react@18.3.31)(react@18.3.1)
@@ -27014,7 +27014,7 @@ snapshots:
       '@radix-ui/react-use-layout-effect': 1.1.2(@types/react@18.3.31)(react@18.3.1)
       '@radix-ui/react-use-previous': 1.1.2(@types/react@18.3.31)(react@18.3.1)
       '@radix-ui/react-visually-hidden': 1.2.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      aria-hidden: 1.2.6(patch_hash=ad786b02e27de75c93c75d5a46cf2e0165e8178838c9fd9474e2701a5a4dab55)
+      aria-hidden: 1.2.6(patch_hash=e908cacc729bc0b78f604ab7532fdfde3607a6b863eeeca2f1891ddcb972344e)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-remove-scroll: 2.7.2(@types/react@18.3.31)(react@18.3.1)
@@ -30595,7 +30595,7 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  aria-hidden@1.2.6(patch_hash=ad786b02e27de75c93c75d5a46cf2e0165e8178838c9fd9474e2701a5a4dab55):
+  aria-hidden@1.2.6(patch_hash=e908cacc729bc0b78f604ab7532fdfde3607a6b863eeeca2f1891ddcb972344e):
     dependencies:
       tslib: 2.8.1
 
