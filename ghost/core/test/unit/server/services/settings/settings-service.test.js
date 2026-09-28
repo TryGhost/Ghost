@@ -5,7 +5,7 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const logging = require('@tryghost/logging');
 const { Settings } = require('../../../../../core/server/models/settings');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
-const limits = require('../../../../../core/server/services/limits');
+const { limitService: limits } = require('../../../../../core/server/services/limits');
 
 describe('Settings Service', function () {
   let settingsService;
