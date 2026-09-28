@@ -1,10 +1,10 @@
-import $ from 'jquery';
 import Ember from 'ember';
 import EmberError from '@ember/error';
 import Service, {inject as service} from '@ember/service';
 import classic from 'ember-classic-decorator';
 import {computed, set} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
+import {tracked} from '@glimmer/tracking';
 
 const LABS_STORAGE_KEY = 'ghost-admin:labs-overrides';
 
@@ -57,7 +57,6 @@ export function feature(name, options = {}) {
 @classic
 export default class FeatureService extends Service {
     @service ghostPaths;
-    @service lazyLoader;
     @service notifications;
     @service session;
     @service settings;
@@ -68,25 +67,10 @@ export default class FeatureService extends Service {
     // features
     @feature('emailAnalytics') emailAnalytics;
 
-    // user-specific flags
-    @feature('nightShift', {user: true, onChange: '_setAdminTheme'})
-        _nightShiftPref;
+    // React owns the admin theme; Ember components follow the root `dark` class.
+    @tracked nightShift = document.documentElement.classList.contains('dark');
 
-    _osPrefersDark = false;
-
-    _systemThemeMediaQuery = null;
-    _systemThemeListener = null;
-
-    @computed('_nightShiftPref', '_osPrefersDark')
-    get nightShift() {
-        const preference = this._nightShiftPref;
-
-        if (preference === 'system') {
-            return this._osPrefersDark;
-        }
-
-        return preference === 'dark' || preference === true;
-    }
+    _darkClassObserver = null;
 
     // user-specific referral invitation
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
@@ -135,10 +119,23 @@ export default class FeatureService extends Service {
         }
     }
 
+    init() {
+        super.init(...arguments);
+
+        this._darkClassObserver = new MutationObserver(() => {
+            const isDark = document.documentElement.classList.contains('dark');
+
+            if (isDark !== this.nightShift) {
+                this.nightShift = isDark;
+            }
+        });
+        this._darkClassObserver.observe(document.documentElement, {attributes: true, attributeFilter: ['class']});
+    }
+
     fetch() {
         return this.settings.fetch().then(() => {
             this.set('_user', this.session.user);
-            return this._setAdminTheme().then(() => true);
+            return true;
         });
     }
 
@@ -179,91 +176,8 @@ export default class FeatureService extends Service {
         });
     }
 
-    _loadAdminThemeStylesheet() {
-        return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true);
-    }
-
-    _setAdminTheme(value) {
-        let mode = value;
-
-        if (typeof mode === 'undefined') {
-            mode = this._nightShiftPref;
-        }
-
-        this._removeSystemThemeListener();
-
-        if (mode === true) {
-            mode = 'dark';
-        } else if (mode === false) {
-            mode = 'light';
-        } else if (mode !== 'dark' && mode !== 'light' && mode !== 'system') {
-            mode = 'light';
-        }
-
-        let isDark = mode === 'dark';
-
-        // React owns the `dark` class on <html>; this only switches Ember's own
-        // dark stylesheet and the `nightShift` value Ember components read.
-        if (mode === 'system') {
-            const mediaQuery = this._getSystemThemeMediaQuery();
-            isDark = mediaQuery?.matches ?? false;
-            set(this, '_osPrefersDark', isDark);
-
-            if (mediaQuery) {
-                this._systemThemeMediaQuery = mediaQuery;
-                this._systemThemeListener = (event) => {
-                    $('link[title=dark]').prop('disabled', !event.matches);
-                    set(this, '_osPrefersDark', event.matches);
-                };
-                this._addSystemThemeListener();
-            }
-        } else {
-            set(this, '_osPrefersDark', false);
-        }
-
-        $('link[title=dark]').prop('disabled', !isDark);
-
-        return this._loadAdminThemeStylesheet().then(() => {
-            // In `system` mode the OS theme may have changed while the
-            // stylesheet was loading — re-read the current preference so we
-            // don't stomp the listener's update with a stale `isDark`.
-            const currentIsDark = mode === 'system' ? this._osPrefersDark : isDark;
-            $('link[title=dark]').prop('disabled', !currentIsDark);
-        }).catch(() => {
-            $('link[title=dark]').prop('disabled', true);
-        });
-    }
-
-    _getSystemThemeMediaQuery() {
-        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-            return null;
-        }
-
-        return window.matchMedia('(prefers-color-scheme: dark)');
-    }
-
-    _addSystemThemeListener() {
-        if (typeof this._systemThemeMediaQuery?.addEventListener === 'function') {
-            this._systemThemeMediaQuery.addEventListener('change', this._systemThemeListener);
-        } else if (typeof this._systemThemeMediaQuery?.addListener === 'function') {
-            this._systemThemeMediaQuery.addListener(this._systemThemeListener);
-        }
-    }
-
-    _removeSystemThemeListener() {
-        if (this._systemThemeListener) {
-            if (typeof this._systemThemeMediaQuery?.removeEventListener === 'function') {
-                this._systemThemeMediaQuery.removeEventListener('change', this._systemThemeListener);
-            } else if (typeof this._systemThemeMediaQuery?.removeListener === 'function') {
-                this._systemThemeMediaQuery.removeListener(this._systemThemeListener);
-            }
-            this._systemThemeMediaQuery = null;
-            this._systemThemeListener = null;
-        }
-    }
-
     willDestroy() {
         super.willDestroy(...arguments);
-        this._removeSystemThemeListener();
+        this._darkClassObserver.disconnect();
     }
 }

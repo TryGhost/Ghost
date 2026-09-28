@@ -51,16 +51,20 @@ export function emberAssetsPlugin() {
           const indexContent = fs.readFileSync(indexPath, 'utf-8');
           const base = config.base || '/';
 
-          // Extract stylesheets
+          // Extract stylesheets, keeping `media` and `id` so Admin can switch the dark one
           const styleRegex = /<link[^>]*rel="stylesheet"[^>]*href="([^"]*)"[^>]*>/g;
           const styles: HtmlTagDescriptor[] = [];
           let styleMatch;
           while ((styleMatch = styleRegex.exec(indexContent)) !== null) {
+            const media = /\smedia="([^"]*)"/.exec(styleMatch[0])?.[1];
+            const id = /\sid="([^"]*)"/.exec(styleMatch[0])?.[1];
             styles.push({
               tag: 'link',
               attrs: {
                 rel: 'stylesheet',
                 href: prefixUrl(styleMatch[1], base),
+                ...(media && { media }),
+                ...(id && { id }),
               },
             });
           }

@@ -156,7 +156,6 @@ module.exports = function (defaults) {
                 js: 'assets/ghost.js',
                 css: {
                     app: 'assets/ghost.css',
-                    // TODO: find a way to use the .min file with the lazyLoader
                     'app-dark': 'assets/ghost-dark.css'
                 }
             }

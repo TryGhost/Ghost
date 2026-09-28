@@ -12,13 +12,10 @@ export {
   useEmberRouting,
   useForceUpgrade,
   subscribeOpenGiftLinkModal,
-  preloadEmberAdminThemeStylesheet,
-  applyEmberAdminThemePreference,
   navigateEmberBillingSubRoute,
   emberMutationHandlers,
 } from './ember-bridge';
 export type {
-  AdminThemeMode,
   EmberDataChangeEvent,
   EmberRouting,
   OpenGiftLinkModalEvent,

@@ -17,16 +17,12 @@ export type StateBridgeEventMap = {
   featureFlagsChange: undefined;
 };
 
-export type AdminThemeMode = 'light' | 'dark' | 'system';
-
 export interface StateBridge {
   onUpdate: (dataType: string, response: unknown) => void;
   onInvalidate: (dataType: string) => void;
   onDelete: (dataType: string, id: string) => void;
   refreshFeatureFlagOverrides?: () => void;
   isFeatureEnabled?: (name: string) => boolean | undefined;
-  preloadAdminThemeStylesheet?: () => Promise<void>;
-  applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
   navigateToBillingSubRoute?: (subRoute: string) => void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
@@ -278,24 +274,6 @@ export function subscribeOpenGiftLinkModal(
   handler: (event: OpenGiftLinkModalEvent) => void,
 ): () => void {
   return onEmberStateBridgeEvent('openGiftLinkModal', handler);
-}
-
-/**
- * Preloads Ember's dark stylesheet so a subsequent theme switch lands without
- * a flash. Resolves immediately when no bridge (or an older Ember without the
- * method) is present.
- */
-export async function preloadEmberAdminThemeStylesheet(): Promise<void> {
-  await window.EmberBridge?.state.preloadAdminThemeStylesheet?.();
-}
-
-/**
- * Tells Ember the admin theme preference so it can switch its own dark
- * stylesheet. No-op when no bridge (or an older Ember without the method) is
- * present.
- */
-export function applyEmberAdminThemePreference(mode: AdminThemeMode): void {
-  void window.EmberBridge?.state.applyAdminThemePreference?.(mode);
 }
 
 /**

@@ -597,27 +597,7 @@ describe('useEmberRouting', () => {
   });
 });
 
-describe('theme bridge helpers', () => {
-  test('applyEmberAdminThemePreference calls Ember when the method exists', async () => {
-    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
-    const mock = createMockStateBridge();
-    const apply = vi.fn();
-    mock.stateBridge.applyAdminThemePreference = apply;
-    window.EmberBridge = { state: mock.stateBridge };
-
-    applyEmberAdminThemePreference('dark');
-    expect(apply).toHaveBeenCalledWith('dark');
-  });
-
-  test('applyEmberAdminThemePreference is a no-op without a bridge or method', async () => {
-    const { applyEmberAdminThemePreference } = await import('./ember-bridge');
-    expect(() => applyEmberAdminThemePreference('dark')).not.toThrow();
-
-    // Bridge present but from an older Ember without the method
-    window.EmberBridge = { state: createMockStateBridge().stateBridge };
-    expect(() => applyEmberAdminThemePreference('dark')).not.toThrow();
-  });
-
+describe('billing bridge helpers', () => {
   test('navigateEmberBillingSubRoute hands the sub-route to Ember and reports it', async () => {
     const { navigateEmberBillingSubRoute } = await import('./ember-bridge');
     const mock = createMockStateBridge();
@@ -635,18 +615,6 @@ describe('theme bridge helpers', () => {
 
     window.EmberBridge = { state: createMockStateBridge().stateBridge };
     expect(navigateEmberBillingSubRoute('/plans')).toBe(false);
-  });
-
-  test('preloadEmberAdminThemeStylesheet resolves with and without the bridge', async () => {
-    const { preloadEmberAdminThemeStylesheet } = await import('./ember-bridge');
-    await expect(preloadEmberAdminThemeStylesheet()).resolves.toBeUndefined();
-
-    const mock = createMockStateBridge();
-    const preload = vi.fn().mockResolvedValue(undefined);
-    mock.stateBridge.preloadAdminThemeStylesheet = preload;
-    window.EmberBridge = { state: mock.stateBridge };
-    await preloadEmberAdminThemeStylesheet();
-    expect(preload).toHaveBeenCalledTimes(1);
   });
 });
 

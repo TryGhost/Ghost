@@ -1,4 +1,4 @@
-import { test as baseTest, afterEach, describe, expect, vi } from 'vitest';
+import { test as baseTest, afterEach, beforeEach, describe, expect, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import type { QueryClient } from '@tanstack/react-query';
 import { useTheme } from './use-theme';
@@ -12,7 +12,6 @@ import type {
   UsersResponseType,
 } from '@tryghost/admin-x-framework/api/users';
 import type { SetupServer } from 'msw/node';
-import type { StateBridge } from '@/ember-bridge';
 
 // Constants
 const USERS_API_URL = '/ghost/api/admin/users/me/';
@@ -199,98 +198,51 @@ describe('useTheme (OS preference)', () => {
   );
 });
 
-describe('useTheme (with Ember mounted)', () => {
-  function mountEmberBridge(calls: string[], preload: Promise<void> = Promise.resolve()) {
-    window.EmberBridge = {
-      state: {
-        onUpdate: () => {},
-        onInvalidate: () => {},
-        onDelete: () => {},
-        on: () => {},
-        off: () => {},
-        sidebarVisible: true,
-        getRouteUrl: (routeName) => routeName,
-        isRouteActive: () => false,
-        preloadAdminThemeStylesheet: () => {
-          calls.push('preload');
-          return preload;
-        },
-        applyAdminThemePreference: (mode) => {
-          calls.push(`apply:${mode}`);
-        },
-      } satisfies StateBridge,
-    };
-  }
+describe("useTheme (with Ember's dark stylesheet)", () => {
+  let emberDarkStylesheet: HTMLLinkElement;
+
+  const isDark = () => ({
+    rootClass: document.documentElement.classList.contains('dark'),
+    stylesheet: emberDarkStylesheet.media === 'all',
+  });
+
+  beforeEach(() => {
+    emberDarkStylesheet = document.createElement('link');
+    emberDarkStylesheet.id = 'ember-dark-styles';
+    emberDarkStylesheet.rel = 'stylesheet';
+    emberDarkStylesheet.media = 'not all';
+    document.head.appendChild(emberDarkStylesheet);
+  });
 
   afterEach(() => {
-    delete window.EmberBridge;
+    emberDarkStylesheet.remove();
   });
 
   themeTest('applies the persisted theme on load', async ({ server, wrapper, animationFrames }) => {
     mockPreferences(server, 'dark');
-    mountEmberBridge([]);
 
     const { result } = renderHook(() => useTheme(), { wrapper });
     await waitFor(() => expect(result.current.isThemeReady).toBe(true));
 
-    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(isDark()).toEqual({ rootClass: true, stylesheet: true });
     flushAnimationFrames(animationFrames);
   });
 
   themeTest(
-    'flips the dark class only once Ember has loaded its stylesheet',
+    'switches the class and the stylesheet together, and restores both when saving fails',
     async ({ server, wrapper, animationFrames }) => {
       mockPreferences(server, 'light');
-      const calls: string[] = [];
-      let finishPreload = () => {};
-      mountEmberBridge(
-        calls,
-        new Promise<void>((resolve) => {
-          finishPreload = resolve;
-        }),
-      );
-
-      const { result } = renderHook(
-        () => ({
-          theme: useTheme(),
-          preferences: useUserPreferences(),
-        }),
-        { wrapper },
-      );
-      await waitFor(() => {
-        expect(result.current.preferences.data).toBeDefined();
+      let failSave = () => {};
+      const saveFailure = new Promise<void>((resolve) => {
+        failSave = resolve;
       });
-      flushAnimationFrames(animationFrames);
-
-      let switching: Promise<void> | undefined;
-      act(() => {
-        switching = result.current.theme.setTheme('dark');
-      });
-      expect(calls).toEqual(['preload']);
-      expect(document.documentElement.classList.contains('dark')).toBe(false);
-
-      await act(async () => {
-        finishPreload();
-        await switching;
-      });
-      expect(calls).toEqual(['preload', 'apply:dark']);
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-      flushAnimationFrames(animationFrames);
-    },
-  );
-
-  themeTest(
-    'restores the previous theme in React and Ember when saving fails',
-    async ({ server, wrapper, animationFrames }) => {
-      mockPreferences(server, 'light');
       server.use(
-        http.put(USER_UPDATE_API_URL, () =>
-          HttpResponse.json({ errors: [{ message: 'Validation error' }] }, { status: 422 }),
-        ),
+        http.put(USER_UPDATE_API_URL, async () => {
+          await saveFailure;
+          return HttpResponse.json({ errors: [{ message: 'Validation error' }] }, { status: 422 });
+        }),
       );
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const calls: string[] = [];
-      mountEmberBridge(calls);
 
       try {
         const { result } = renderHook(
@@ -304,20 +256,59 @@ describe('useTheme (with Ember mounted)', () => {
           expect(result.current.preferences.data).toBeDefined();
         });
         flushAnimationFrames(animationFrames);
+        expect(isDark()).toEqual({ rootClass: false, stylesheet: false });
+
+        let switching: Promise<void> | undefined;
+        act(() => {
+          switching = result.current.theme.setTheme('dark');
+        });
+        expect(isDark()).toEqual({ rootClass: true, stylesheet: true });
 
         await act(async () => {
-          await result.current.theme.setTheme('dark');
+          failSave();
+          await switching;
         });
-
-        expect(calls).toEqual(['preload', 'apply:dark', 'apply:light']);
-        expect(document.documentElement.classList.contains('dark')).toBe(false);
         expect(result.current.theme.theme).toBe('light');
+        expect(isDark()).toEqual({ rootClass: false, stylesheet: false });
         flushAnimationFrames(animationFrames);
       } finally {
         consoleErrorSpy.mockRestore();
       }
     },
   );
+
+  themeTest('follows OS changes in system mode', async ({ server, wrapper, animationFrames }) => {
+    mockPreferences(server, 'system');
+    const mediaQuery = Object.assign(new EventTarget(), { matches: false }) as MediaQueryList;
+    const mediaSpy = vi.spyOn(window, 'matchMedia').mockReturnValue(mediaQuery);
+    const removeListenerSpy = vi.spyOn(mediaQuery, 'removeEventListener');
+
+    try {
+      const { result, unmount } = renderHook(() => useTheme(), { wrapper });
+      await waitFor(() => expect(result.current.theme).toBe('system'));
+      expect(isDark()).toEqual({ rootClass: false, stylesheet: false });
+      flushAnimationFrames(animationFrames);
+
+      act(() => {
+        mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
+      });
+      expect(result.current.resolvedTheme).toBe('dark');
+      expect(isDark()).toEqual({ rootClass: true, stylesheet: true });
+
+      act(() => {
+        mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: false }));
+      });
+      expect(result.current.resolvedTheme).toBe('light');
+      expect(isDark()).toEqual({ rootClass: false, stylesheet: false });
+      flushAnimationFrames(animationFrames);
+
+      unmount();
+      expect(removeListenerSpy).toHaveBeenCalledWith('change', expect.any(Function));
+    } finally {
+      mediaSpy.mockRestore();
+      removeListenerSpy.mockRestore();
+    }
+  });
 
   themeTest(
     'rolls back to the current OS theme when saving fails after an OS change',
@@ -336,7 +327,6 @@ describe('useTheme (with Ember mounted)', () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const mediaQuery = Object.assign(new EventTarget(), { matches: false }) as MediaQueryList;
       const mediaSpy = vi.spyOn(window, 'matchMedia').mockReturnValue(mediaQuery);
-      mountEmberBridge([]);
 
       try {
         const { result } = renderHook(() => useTheme(), { wrapper });
@@ -344,14 +334,10 @@ describe('useTheme (with Ember mounted)', () => {
         flushAnimationFrames(animationFrames);
 
         let switching: Promise<void> | undefined;
-        await act(() => {
-          switching = result.current.setTheme('dark');
-          return Promise.resolve();
-        });
-        expect(document.documentElement.classList.contains('dark')).toBe(true);
-
         act(() => {
-          Object.assign(mediaQuery, { matches: true });
+          switching = result.current.setTheme('dark');
+        });
+        act(() => {
           mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
         });
         await act(async () => {
@@ -361,56 +347,11 @@ describe('useTheme (with Ember mounted)', () => {
 
         expect(result.current.theme).toBe('system');
         expect(result.current.resolvedTheme).toBe('dark');
-        expect(document.documentElement.classList.contains('dark')).toBe(true);
+        expect(isDark()).toEqual({ rootClass: true, stylesheet: true });
         flushAnimationFrames(animationFrames);
       } finally {
         mediaSpy.mockRestore();
         consoleErrorSpy.mockRestore();
-      }
-    },
-  );
-
-  themeTest(
-    'applies OS changes in system mode within the change event',
-    async ({ server, wrapper, animationFrames }) => {
-      mockPreferences(server, 'system');
-      mountEmberBridge([]);
-      const mediaQuery = Object.assign(new EventTarget(), { matches: false }) as MediaQueryList;
-      const mediaSpy = vi.spyOn(window, 'matchMedia').mockReturnValue(mediaQuery);
-      const removeListenerSpy = vi.spyOn(mediaQuery, 'removeEventListener');
-
-      try {
-        const { result, unmount } = renderHook(() => useTheme(), { wrapper });
-        await waitFor(() => expect(result.current.theme).toBe('system'));
-        expect(result.current.resolvedTheme).toBe('light');
-        flushAnimationFrames(animationFrames);
-
-        // Registered after the hook's listener, so it observes the class as it
-        // stands when the event hands over to Ember, before React re-renders.
-        let darkDuringEvent: boolean | undefined;
-        mediaQuery.addEventListener('change', () => {
-          darkDuringEvent = document.documentElement.classList.contains('dark');
-        });
-
-        act(() => {
-          mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
-        });
-        expect(darkDuringEvent).toBe(true);
-        expect(result.current.resolvedTheme).toBe('dark');
-        expect(document.documentElement.classList.contains('theme-switching')).toBe(true);
-
-        act(() => {
-          mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: false }));
-        });
-        expect(darkDuringEvent).toBe(false);
-        expect(result.current.resolvedTheme).toBe('light');
-        flushAnimationFrames(animationFrames);
-
-        unmount();
-        expect(removeListenerSpy).toHaveBeenCalledWith('change', expect.any(Function));
-      } finally {
-        mediaSpy.mockRestore();
-        removeListenerSpy.mockRestore();
       }
     },
   );

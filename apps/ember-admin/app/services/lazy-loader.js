@@ -12,12 +12,10 @@ export default class LazyLoaderService extends Service {
     testing = undefined;
 
     scriptPromises = null;
-    stylePromises = null;
 
     init() {
         super.init(...arguments);
         this.scriptPromises = {};
-        this.stylePromises = {};
 
         if (this.testing === undefined) {
             this.testing = config.environment === 'test';
@@ -54,59 +52,5 @@ export default class LazyLoaderService extends Service {
         this.scriptPromises[key] = scriptPromise;
 
         return scriptPromise;
-    }
-
-    loadStyle(key, url, alternate = false) {
-        if (this.testing) {
-            return RSVP.resolve();
-        }
-
-        // A caller arriving mid-load must wait for it: an alternate stylesheet
-        // is disabled when it finishes loading, undoing any earlier toggle.
-        if (this.stylePromises[key]) {
-            return this.stylePromises[key];
-        }
-
-        if (document.querySelector(`#${key}-styles`)) {
-            return RSVP.resolve();
-        }
-
-        const stylePromise = new RSVP.Promise((resolve, reject) => {
-            const link = document.createElement('link');
-            link.id = `${key}-styles`;
-            link.rel = alternate ? 'alternate stylesheet' : 'stylesheet';
-            link.href = prefixAssetUrl(url);
-            link.onload = () => {
-                link.onload = null;
-                if (alternate) {
-                    // If stylesheet is alternate and we disable the stylesheet before injecting into the DOM,
-                    // the onload handler never gets called. Thus, we should disable the link after it has finished loading
-                    link.disabled = true;
-                }
-                resolve();
-            };
-            link.onerror = reject;
-
-            if (alternate) {
-                link.title = key;
-            }
-
-            // Try to insert lazy loaded styles after the first set of links in
-            // the head to ensure any styles related to Ember are loaded before
-            // the React admin shell. 
-            let existingLink = document.querySelector('head link[rel="stylesheet"]:first-of-type');
-            if (existingLink) {
-                while (existingLink.nextElementSibling && existingLink.nextElementSibling.tagName === 'LINK') {
-                    existingLink = existingLink.nextElementSibling;
-                }
-                existingLink.insertAdjacentElement('afterend', link);
-            } else {
-                document.querySelector('head').appendChild(link);
-            }
-        });
-
-        this.stylePromises[key] = stylePromise;
-
-        return stylePromise;
     }
 }

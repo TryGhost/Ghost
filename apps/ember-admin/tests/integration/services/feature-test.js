@@ -82,30 +82,18 @@ describe('Integration: Service: feature', function () {
     setupTest();
 
     let server;
-    let originalMatchMedia;
 
     beforeEach(function () {
         server = new Pretender();
-        originalMatchMedia = window.matchMedia;
         sessionStorage.clear();
     });
 
     afterEach(function () {
         sinon.restore();
-        Object.defineProperty(window, 'matchMedia', {
-            configurable: true,
-            value: originalMatchMedia
-        });
+        document.documentElement.classList.remove('dark');
         sessionStorage.clear();
         server.shutdown();
     });
-
-    function stubMatchMedia(mediaQuery) {
-        Object.defineProperty(window, 'matchMedia', {
-            configurable: true,
-            value: sinon.stub().returns(mediaQuery)
-        });
-    }
 
     it('re-reads session overrides when requested by the state bridge', async function () {
         stubSettings(server, {testFlag: false});
@@ -243,139 +231,18 @@ describe('Integration: Service: feature', function () {
         expect(service.get('testUserFlag')).to.be.true;
     });
 
-    it('resolves system night shift from OS preference', async function () {
-        stubSettings(server, {});
-        stubUser(server, {nightShift: 'system'});
-
-        const session = this.owner.lookup('service:session');
-        await session.populateUser();
-
+    it('follows the root dark class as nightShift', async function () {
+        document.documentElement.classList.add('dark');
         const service = this.owner.lookup('service:feature');
-        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
-        stubMatchMedia({
-            matches: true,
-            addEventListener: sinon.stub(),
-            removeEventListener: sinon.stub()
-        });
+        expect(service.nightShift).to.be.true;
 
-        await service.fetch();
+        document.documentElement.classList.remove('dark');
+        await settled();
+        expect(service.nightShift).to.be.false;
 
-        expect(service.get('_nightShiftPref')).to.equal('system');
-        expect(service.get('nightShift')).to.be.true;
-    });
-
-    it('updates resolved night shift when OS preference changes in system mode', async function () {
-        stubSettings(server, {});
-        stubUser(server, {nightShift: 'system'});
-
-        const session = this.owner.lookup('service:session');
-        await session.populateUser();
-
-        const service = this.owner.lookup('service:feature');
-        let changeHandler;
-        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
-        stubMatchMedia({
-            matches: true,
-            addEventListener: (event, handler) => {
-                changeHandler = handler;
-            },
-            removeEventListener: sinon.stub()
-        });
-
-        await service.fetch();
-        expect(service.get('nightShift')).to.be.true;
-
-        changeHandler({matches: false});
-
-        expect(service.get('nightShift')).to.be.false;
-    });
-
-    it('switches its dark stylesheet with the resolved theme', async function () {
-        stubSettings(server, {});
-        stubUser(server, {nightShift: 'system'});
-
-        const session = this.owner.lookup('service:session');
-        await session.populateUser();
-
-        const service = this.owner.lookup('service:feature');
-        let changeHandler;
-        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
-        stubMatchMedia({
-            matches: true,
-            addEventListener: (event, handler) => {
-                changeHandler = handler;
-            },
-            removeEventListener: sinon.stub()
-        });
-
-        const darkStylesheet = document.createElement('link');
-        darkStylesheet.rel = 'alternate stylesheet';
-        darkStylesheet.title = 'dark';
-        document.head.appendChild(darkStylesheet);
-
-        try {
-            await service.fetch();
-            expect(darkStylesheet.disabled).to.be.false;
-
-            changeHandler({matches: false});
-            expect(darkStylesheet.disabled).to.be.true;
-        } finally {
-            darkStylesheet.remove();
-        }
-    });
-
-    it('resolves missing night shift preference to light mode', async function () {
-        stubSettings(server, {});
-        stubUser(server, {});
-
-        const session = this.owner.lookup('service:session');
-        await session.populateUser();
-
-        const service = this.owner.lookup('service:feature');
-        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
-        stubMatchMedia({
-            matches: true,
-            addEventListener: sinon.stub(),
-            removeEventListener: sinon.stub()
-        });
-
-        await service.fetch();
-
-        expect(service.get('_nightShiftPref')).to.be.undefined;
-        expect(service.get('nightShift')).to.be.false;
-    });
-
-    it('migrates legacy boolean night shift values when resolving theme', async function () {
-        stubSettings(server, {});
-        stubUser(server, {nightShift: true});
-
-        const session = this.owner.lookup('service:session');
-        await session.populateUser();
-
-        const service = this.owner.lookup('service:feature');
-        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
-
-        await service.fetch();
-
-        expect(service.get('_nightShiftPref')).to.be.true;
-        expect(service.get('nightShift')).to.be.true;
-    });
-
-    it('leaves the root dark class to React', async function () {
-        stubSettings(server, {});
-        stubUser(server, {nightShift: 'dark'});
-
-        const session = this.owner.lookup('service:session');
-        await session.populateUser();
-
-        const service = this.owner.lookup('service:feature');
-        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
-
-        await service.fetch();
-
-        expect(service.get('nightShift')).to.be.true;
-        expect(document.documentElement.classList.contains('dark')).to.be.false;
-        expect(document.documentElement.classList.contains('theme-switching')).to.be.false;
+        document.documentElement.classList.add('dark');
+        await settled();
+        expect(service.nightShift).to.be.true;
     });
 
     it('saves labs setting correctly', async function () {

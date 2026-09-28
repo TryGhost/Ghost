@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
-import { applyEmberAdminThemePreference, preloadEmberAdminThemeStylesheet } from '@/ember-bridge';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useEditUserPreferences, useUserPreferences } from '@/hooks/user-preferences';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ResolvedThemeMode = 'light' | 'dark';
+
+// Ember's dark stylesheet, linked from the page with `media="not all"` while Ember screens remain.
+const EMBER_DARK_STYLESHEET_ID = 'ember-dark-styles';
 
 function getSystemTheme(): ResolvedThemeMode {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -16,12 +17,17 @@ function getSystemTheme(): ResolvedThemeMode {
 
 let themeSwitchingFrame: number | undefined;
 
-function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
+function applyTheme(resolvedTheme: ResolvedThemeMode) {
   const html = document.documentElement;
   // `theme-switching` suppresses transitions (rule in shade/styles.css) so the
   // swap lands in one paint; the second frame releases it once that paint is done.
   html.classList.add('theme-switching');
   html.classList.toggle('dark', resolvedTheme === 'dark');
+
+  const emberDarkStylesheet = document.getElementById(EMBER_DARK_STYLESHEET_ID);
+  if (emberDarkStylesheet instanceof HTMLLinkElement) {
+    emberDarkStylesheet.media = resolvedTheme === 'dark' ? 'all' : 'not all';
+  }
 
   if (themeSwitchingFrame !== undefined) {
     cancelAnimationFrame(themeSwitchingFrame);
@@ -33,13 +39,6 @@ function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
       themeSwitchingFrame = undefined;
     });
   });
-}
-
-// Ember switches only its own dark stylesheet; the `dark` class is React's.
-// Resolves `system` live, as Ember does, so the two can't disagree after an await.
-function applyAdminTheme(mode: ThemeMode) {
-  applyEmberAdminThemePreference(mode);
-  applyThemeClass(mode === 'system' ? getSystemTheme() : mode);
 }
 
 // App code must consume this via ThemeProvider/useThemeContext (src/providers):
@@ -56,11 +55,6 @@ export function useTheme() {
   const persistedTheme: ThemeMode = preferences?.nightShift ?? 'light';
   const theme: ThemeMode = pendingTheme ?? persistedTheme;
   const resolvedTheme: ResolvedThemeMode = theme === 'system' ? systemTheme : theme;
-  const themeRef = useRef(theme);
-
-  useEffect(() => {
-    themeRef.current = theme;
-  }, [theme]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -69,13 +63,7 @@ export function useTheme() {
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (event: MediaQueryListEvent) => {
-      const nextSystemTheme = event.matches ? 'dark' : 'light';
-      // Ember swaps its stylesheet inside the same event; waiting for the
-      // re-render would paint one frame with the two halves out of step.
-      if (themeRef.current === 'system') {
-        applyThemeClass(nextSystemTheme);
-      }
-      setSystemTheme(nextSystemTheme);
+      setSystemTheme(event.matches ? 'dark' : 'light');
     };
 
     setSystemTheme(mediaQuery.matches ? 'dark' : 'light');
@@ -94,8 +82,10 @@ export function useTheme() {
     };
   }, []);
 
-  useEffect(() => {
-    applyThemeClass(resolvedTheme);
+  // A layout effect, so the class and stylesheet change in the same commit as
+  // components that read `resolvedTheme` in JS (Shade, Koenig, the code editor).
+  useLayoutEffect(() => {
+    applyTheme(resolvedTheme);
   }, [resolvedTheme]);
 
   // Clear the optimistic selection once the persisted preference catches up, so
@@ -115,22 +105,14 @@ export function useTheme() {
 
       pendingRef.current = true;
       setIsPendingTheme(true);
+      // Reflect the choice immediately; cleared on rollback (catch) or once the
+      // persisted preference matches (effect above).
+      setPendingTheme(mode);
 
       try {
-        await preloadEmberAdminThemeStylesheet().catch((error) => {
-          // eslint-disable-next-line no-console
-          console.error('[Theme] Failed to preload admin theme stylesheet:', error);
-        });
-        themeRef.current = mode;
-        applyAdminTheme(mode);
-        // Post-preload so the class effect can't beat Ember's stylesheet; synchronous so
-        // JS theme readers flip in the same paint. Cleared on rollback or once persisted.
-        flushSync(() => setPendingTheme(mode));
         await editPreferences({ nightShift: mode });
       } catch (error) {
         setPendingTheme(null);
-        themeRef.current = theme;
-        applyAdminTheme(theme);
         // eslint-disable-next-line no-console
         console.error('[Theme] Failed to update appearance preference:', error);
       } finally {
