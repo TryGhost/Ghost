@@ -41,7 +41,8 @@ import {
 import { type PostResource, getPostResourceCopy } from './post-resource';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { usePostsFilterState } from './hooks/use-posts-filter-state';
-import { rememberStickyPostFilters } from './posts-sticky-filters';
+import { getPostListReturnUrl, rememberStickyPostFilters } from './posts-sticky-filters';
+import { syncEmberPostListQueryParams } from '@/ember-bridge';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
@@ -66,11 +67,13 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const { data: settingsData } = useBrowseSettings();
   const improveSendingUI = useFeatureFlag('improveSendingUI');
 
-  // Report the current filters so the sidebar's Posts link can return here.
+  // Report the current filters so the sidebar and editor can return here.
   const location = useLocation();
 
   useEffect(() => {
     rememberStickyPostFilters(resource, location.search);
+    const search = getPostListReturnUrl(resource).split('?')[1];
+    return syncEmberPostListQueryParams(resource, Object.fromEntries(new URLSearchParams(search)));
   }, [resource, location.search]);
 
   // Scheduled times read in the site's timezone, not the browser's.

@@ -33,6 +33,12 @@ export function clearStickyPostFilters(): void {
   lastSeen.clear();
 }
 
+/** Editor breadcrumbs return to the last list, including saved views. */
+export function getPostListReturnUrl(resource: PostResource): string {
+  const search = lastSeen.get(resource);
+  return `/${resource}${search ? `?${search}` : ''}`;
+}
+
 /** Only the five params a view is made of; anything else isn't sticky. */
 function toViewParams(search: string): Record<string, string> {
   const source = new URLSearchParams(search);

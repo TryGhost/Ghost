@@ -16,6 +16,7 @@ export {
   preloadEmberAdminThemeStylesheet,
   applyEmberAdminThemePreference,
   navigateEmberBillingSubRoute,
+  syncEmberPostListQueryParams,
   emberMutationHandlers,
 } from './ember-bridge';
 export type {

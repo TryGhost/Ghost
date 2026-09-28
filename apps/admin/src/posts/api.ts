@@ -5,7 +5,7 @@
  */
 export { lazyPostAnalyticsRoot, postAnalyticsRouteChildren } from './analytics/routes';
 export { POST_VIEW_PARAMS } from './list/post-view-params';
-export { getStickyPostFilterUrl } from './list/posts-sticky-filters';
+export { getPostListReturnUrl, getStickyPostFilterUrl } from './list/posts-sticky-filters';
 export type { PostResource } from './list/post-resource';
 
 // Lazy route entries keep the posts and pages list chunks out of the shell
