@@ -107,12 +107,11 @@ The table still needs a classification in the exporter table lists.
 
 When the definition is final, remove the table from `IN_DEVELOPMENT_TABLES`,
 add the versioned migration that creates it, and update the schema integrity
-hash. From then on it follows the normal migration rules.
-
-Development databases keep their copy of the table after it is finalised, and
-the migration skips a table that already exists. Drop your local copy before
-running the migration so it is recreated from the final definition, and mention
-this in the pull request so others do the same.
+hash. Create the table with
+`addTable(name, tableSpec, {replaceDevelopmentCopy: true})`: development and
+testing databases already have a copy built from an earlier definition, and the
+option replaces it with the final one, discarding its data. From then on the
+table follows the normal migration rules.
 
 ### Testing
 

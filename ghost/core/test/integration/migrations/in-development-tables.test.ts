@@ -9,6 +9,7 @@ const configUtils = require('../../utils/config-utils');
 const db = require('../../../core/server/data/db');
 const commands = require('../../../core/server/data/schema/commands');
 const schema = require('../../../core/server/data/schema/schema');
+const { addTable } = require('../../../core/server/data/migrations/utils');
 const inDevelopment: typeof import('../../../core/server/data/schema/in-development') = require('../../../core/server/data/schema/in-development');
 
 const PARENT = 'in_dev_test_parents';
@@ -109,6 +110,50 @@ describe('In-development tables', function () {
       await inDevelopment.rebuildInDevelopmentTables(db.knex);
 
       assert.deepEqual(await db.knex(PARENT).pluck('id'), ['parent']);
+    });
+  });
+
+  describe('addTable with replaceDevelopmentCopy', function () {
+    const finalParentSpec = {
+      ...TEST_TABLES[PARENT],
+      name: { type: 'string', maxlength: 191, nullable: true },
+    };
+
+    async function columns(tableName: string): Promise<string[]> {
+      return Object.keys(await db.knex(tableName).columnInfo()).sort();
+    }
+
+    it('creates the table when there is no copy', async function () {
+      await addTable(PARENT, finalParentSpec, { replaceDevelopmentCopy: true }).up({
+        connection: db.knex,
+      });
+
+      assert.deepEqual(await columns(PARENT), ['id', 'name']);
+    });
+
+    it('replaces an existing copy that other tables reference', async function () {
+      await commands.createTable(PARENT, db.knex);
+      await commands.createTable(CHILD, db.knex);
+      await db.knex(PARENT).insert({ id: 'parent' });
+      await db.knex(CHILD).insert({ id: 'child', parent_id: 'parent' });
+
+      await addTable(PARENT, finalParentSpec, { replaceDevelopmentCopy: true }).up({
+        connection: db.knex,
+      });
+
+      assert.deepEqual(await columns(PARENT), ['id', 'name']);
+      assert.deepEqual(await db.knex(CHILD).pluck('id'), ['child']);
+    });
+
+    it('leaves an existing table alone outside development and testing', async function () {
+      await commands.createTable(PARENT, db.knex);
+      configUtils.set('env', 'production');
+
+      await addTable(PARENT, finalParentSpec, { replaceDevelopmentCopy: true }).up({
+        connection: db.knex,
+      });
+
+      assert.deepEqual(await columns(PARENT), ['id']);
     });
   });
 });
