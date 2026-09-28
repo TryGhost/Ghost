@@ -388,12 +388,12 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     }, 'Stripe');
   }
 
-  // Analytics and suppression need the members API, including completed migrations.
+  // Members captures attribution during construction; email services need the members API.
+  memberAttribution.init();
   await members.init();
 
   await Promise.all([
     identityTokens.init(),
-    memberAttribution.init(),
     mentionsService.init({ jobsService }),
     staffService.init(),
     tiers.init(),
