@@ -39,7 +39,10 @@ afterEach(async () => {
     resetDeclaredResources();
     sessionStorage.clear();
     window.location.hash = '';
-    verifyNoUnhandledRequests();
-    await resetFakeFrameOrigins();
+    try {
+      await resetFakeFrameOrigins();
+    } finally {
+      verifyNoUnhandledRequests();
+    }
   }
 });

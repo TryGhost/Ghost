@@ -110,19 +110,17 @@ const Migrate = () => {
     return () => window.removeEventListener('message', handleMessage);
   }, [csvContentImporter, fetchApi, ghostVersion, isEmberOwned, navigate, stripe]);
 
-  // The credentials reply reads settings, so the app only loads once they have.
-  if (!settingsData) {
-    return null;
-  }
-
   return (
     <div className="fixed inset-0 z-50 bg-background">
-      <iframe
-        ref={frameRef}
-        className="absolute inset-0 size-full border-0"
-        src={src}
-        title="Migrate"
-      />
+      {/* The credentials reply reads settings and config, so the app waits for both. */}
+      {settingsData && configData && (
+        <iframe
+          ref={frameRef}
+          className="absolute inset-0 size-full border-0"
+          src={src}
+          title="Migrate"
+        />
+      )}
       <Button
         aria-label="Close"
         className="absolute top-6 right-6"
