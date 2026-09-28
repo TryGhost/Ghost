@@ -147,7 +147,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "reframe.js": "4.0.2",
-    "semver": "7.7.4",
+    "semver": "catalog:",
     "sentry-testkit": "6.4.1",
     "sinon-chai": "4.0.1",
     "testem": "3.19.1",
