@@ -1,4 +1,8 @@
 const logging = require('@tryghost/logging');
+const {
+  whereProviderMessageId,
+  whereProviderMessageIds,
+} = require('../lib/where-provider-message-id');
 
 const { EmailDeliveredEvent } = require('./events/email-delivered-event');
 const { EmailOpenedEvent } = require('./events/email-opened-event');
@@ -274,7 +278,7 @@ class EmailEventProcessor {
       (await this.#db
         .knex('email_batches')
         .select('email_id as emailId')
-        .where('mailgun_message_id', providerId)
+        .modify(whereProviderMessageId, 'mailgun_message_id', providerId)
         .first()) || {};
 
     if (!emailId) {
@@ -308,7 +312,7 @@ class EmailEventProcessor {
       const providerIdMapping = await this.#db
         .knex('email_batches')
         .select('mailgun_message_id', 'email_id')
-        .whereIn('mailgun_message_id', providerIds);
+        .modify(whereProviderMessageIds, 'mailgun_message_id', providerIds);
 
       for (const row of providerIdMapping) {
         this.providerIdEmailIdMap[row.mailgun_message_id] = row.email_id;

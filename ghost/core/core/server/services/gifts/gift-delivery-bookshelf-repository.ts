@@ -1,3 +1,4 @@
+import { whereProviderMessageId } from '../lib/where-provider-message-id';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { fromDatabaseDate, toDatabaseDate } from '../../lib/db-types/date';
@@ -143,12 +144,11 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
   }
 
   async getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null> {
-    const model = await this.model.findOne(
-      { email_provider_message_id: providerMessageId },
-      { require: false },
-    );
+    const row = await this.knex('gift_deliveries')
+      .modify(whereProviderMessageId, 'email_provider_message_id', providerMessageId)
+      .first();
 
-    return model ? decodeGiftDeliveryRow(model.toJSON()) : null;
+    return row ? decodeGiftDeliveryRow(row) : null;
   }
 
   async findRecoverableForPurchasedGifts(
@@ -303,7 +303,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
           ? ['temporary_failed']
           : [];
     const updated = await this.knex('gift_deliveries')
-      .where({ email_provider_message_id: providerMessageId })
+      .modify(whereProviderMessageId, 'email_provider_message_id', providerMessageId)
       .whereNot({ outcome: 'permanent_failed' })
       .where((builder) => {
         builder.whereNull('outcome_at').orWhere('outcome_at', '<', outcomeAt);
@@ -330,7 +330,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
 
     const delivery = await this.knex('gift_deliveries')
       .select('id')
-      .where({ email_provider_message_id: providerMessageId })
+      .modify(whereProviderMessageId, 'email_provider_message_id', providerMessageId)
       .first();
 
     return delivery ? 'stale' : 'not_found';
