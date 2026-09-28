@@ -1,11 +1,14 @@
-const errors = require('@tryghost/errors');
-const config = require('../../shared/config');
-const db = require('../data/db');
-const logging = require('@tryghost/logging');
-const { LimitService } = require('@tryghost/limit-service');
-const limitService = new LimitService();
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import { LimitService } from '@tryghost/limit-service';
+import type { Subscription } from '@tryghost/limit-service';
+import type { RequestHandler } from 'express';
+import config from '../../shared/config';
+import db from '../data/db';
 
-const init = () => {
+export const limitService = new LimitService();
+
+export const init = () => {
   let helpLink;
 
   if (
@@ -18,7 +21,7 @@ const init = () => {
     helpLink = 'https://ghost.org/help/';
   }
 
-  let subscription;
+  let subscription: Subscription | undefined;
 
   if (config.get('hostSettings:subscription')) {
     subscription = {
@@ -52,8 +55,8 @@ const init = () => {
  * change it. Answers 403 with the host's own wording, which is a different thing to tell a
  * caller than the 404 a labs flag gives: the feature exists, this plan does not include it.
  */
-const requireFeature = (limitName) =>
-  async function requireFeatureMw(req, res, next) {
+export const requireFeature = (limitName: string): RequestHandler =>
+  async function requireFeatureMw(_req, _res, next) {
     try {
       await limitService.errorIfWouldGoOverLimit(limitName);
       next();
@@ -61,8 +64,3 @@ const requireFeature = (limitName) =>
       next(err);
     }
   };
-
-module.exports = limitService;
-
-module.exports.init = init;
-module.exports.requireFeature = requireFeature;
