@@ -138,6 +138,13 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const { items, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage, totalItems } =
     usePostsList({ resource, params, context: { ownAuthorSlug } });
 
+  // Snapshotted when the menu item is picked: Radix closes the menu at once,
+  // which clears a transient selection before the modal could read it.
+  const [pendingBulkAction, setPendingBulkAction] = useState<{
+    key: PostContextMenuKey;
+    snapshot: BulkActionSnapshot;
+  } | null>(null);
+
   // Selection is a bulk-edit affordance, and authors and contributors have no
   // bulk actions — Ember disables the whole SelectionList for them.
   const selection = usePostSelection({
@@ -146,6 +153,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     // filter rather than every id, so it covers rows never loaded.
     allFilter: buildAllFilter(params, { ownAuthorSlug }),
     enabled: Boolean(currentUser) && !isRestrictedAuthor,
+    suspended: pendingBulkAction !== null,
   });
 
   // The menu describes the selection, not the row under the cursor. Ember's
@@ -202,13 +210,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   // this reads it. The editor stays Ember on both sides of the flag.
   const celebration = usePostPublishCelebration();
   const { data: siteData } = useBrowseSite();
-
-  // Snapshotted when the menu item is picked: Radix closes the menu at once,
-  // which clears a transient selection before the modal could read it.
-  const [pendingBulkAction, setPendingBulkAction] = useState<{
-    key: PostContextMenuKey;
-    snapshot: BulkActionSnapshot;
-  } | null>(null);
 
   const bulkActions = usePostBulkActions({
     resource,
