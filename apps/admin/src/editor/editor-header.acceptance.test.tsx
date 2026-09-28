@@ -508,6 +508,7 @@ describe('Editor header actions', () => {
 
     await expect(previewScreen.modal()).toHaveCount(0);
     await expect.element(publishScreen.options()).toBeVisible();
+    await expect.element(publishScreen.previewButton()).toHaveFocus();
   });
 
   it('publishes from a preview opened by the header Preview button', async () => {
@@ -614,25 +615,67 @@ describe('Editor header actions', () => {
     await editorScreen.previewButton().click();
     await expect.element(previewScreen.modal()).toBeVisible();
 
+    await expect
+      .poll(() => previewScreen.modal().element().contains(document.activeElement))
+      .toBe(true);
+
     await userEvent.keyboard('{Escape}');
 
     await expect(previewScreen.modal()).toHaveCount(0);
     await expect.element(editorScreen.previewButton()).toHaveFocus();
   });
 
-  it('returns focus to the Publish button when the publish flow closes', async () => {
+  it.each(['Escape', 'Close button'] as const)(
+    'returns focus to Publish after closing with %s and reopening',
+    async (closeWith) => {
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      for (let opening = 0; opening < 2; opening += 1) {
+        await editorScreen.publishButton().click();
+        await expect.element(publishScreen.options()).toBeVisible();
+        await expect
+          .poll(() => publishScreen.root().element().contains(document.activeElement))
+          .toBe(true);
+
+        if (closeWith === 'Escape') {
+          await userEvent.keyboard('{Escape}');
+        } else {
+          await publishScreen.closeButton().click();
+        }
+
+        await expect(publishScreen.root()).toHaveCount(0);
+        await expect.element(editorScreen.publishButton()).toHaveFocus();
+      }
+    },
+  );
+
+  it('returns focus to Publish when closed during the publish settings refresh', async () => {
     publishChrome();
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-
     await expect.element(editorScreen.publishButton()).toBeEnabled();
-    await editorScreen.publishButton().click();
-    await expect.element(publishScreen.options()).toBeVisible();
 
-    await userEvent.keyboard('{Escape}');
+    const refreshedSettings = deferred<void>();
+    const settingsApi = fakeAdminEndpoint('GET', /^\/settings\//, async () => {
+      await refreshedSettings.promise;
+      return settingsResponse({ labs: FLAG_ON.labs });
+    });
 
-    await expect(publishScreen.root()).toHaveCount(0);
-    await expect.element(editorScreen.publishButton()).toHaveFocus();
+    try {
+      await editorScreen.publishButton().click();
+      await expect.element(publishScreen.options()).toBeVisible();
+      await expect.poll(() => settingsApi.requests.length).toBeGreaterThan(0);
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+      await userEvent.keyboard('{Escape}');
+      await expect(publishScreen.root()).toHaveCount(0);
+      await expect.element(editorScreen.publishButton()).toHaveFocus();
+    } finally {
+      refreshedSettings.resolve();
+    }
   });
 
   it('returns focus to the Unpublish button when the update flow closes', async () => {
@@ -642,6 +685,9 @@ describe('Editor header actions', () => {
 
     await editorScreen.unpublishButton().click();
     await expect.element(publishScreen.updateFlow()).toBeVisible();
+    await expect
+      .poll(() => publishScreen.updateFlow().element().contains(document.activeElement))
+      .toBe(true);
 
     await userEvent.keyboard('{Escape}');
 
