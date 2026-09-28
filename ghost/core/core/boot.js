@@ -101,6 +101,29 @@ async function initCore({ ghostServer, config }) {
   adapterManager.init();
   debug('End: adapters');
 
+  // Limit image processing to the configured image formats before anything
+  // can process an image
+  debug('Begin: image upload config');
+  const { restrictImageDecoders } = require('./server/lib/image/image-decoders');
+  const {
+    IMAGE_UPLOAD_TYPES,
+    getIgnoredImageContentTypes,
+  } = require('./server/lib/image/image-content');
+  const uploads = config.get('uploads');
+  restrictImageDecoders(IMAGE_UPLOAD_TYPES.flatMap((type) => uploads[type]?.extensions ?? []));
+
+  // Image uploads can only be stored as image types, so point out any
+  // configured types that will be ignored
+  for (const type of IMAGE_UPLOAD_TYPES) {
+    const ignored = getIgnoredImageContentTypes(uploads[type]?.contentTypes ?? []);
+    if (ignored.length > 0) {
+      require('@tryghost/logging').warn(
+        `Ignoring uploads.${type}.contentTypes that are not image types: ${ignored.join(', ')}`,
+      );
+    }
+  }
+  debug('End: image upload config');
+
   // URL Utils is a bit slow, put it here so the timing is visible separate from models
   debug('Begin: Load urlUtils');
   require('./shared/url-utils');

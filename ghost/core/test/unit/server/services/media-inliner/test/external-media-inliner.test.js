@@ -1161,6 +1161,80 @@ describe('ExternalMediaInliner', function () {
     });
   });
 
+  describe('storeMediaLocally', function () {
+    const imageFixture = (fixture) =>
+      fs.readFileSync(path.join(__dirname, '../../../../../utils/fixtures/images', fixture));
+
+    const createStorage = () => ({
+      storagePath: '/content/images',
+      getTargetDir: () => '/content/images',
+      getUniqueFileName: () => '/content/images/image.svg',
+      saveRaw: sinon.stub().resolves('/content/images/image.svg'),
+    });
+
+    it('passes the file contents when picking the storage', async function () {
+      const storage = createStorage();
+      const getMediaStorage = sinon.stub().resolves(storage);
+      const inliner = new ExternalMediaInliner({ getMediaStorage });
+
+      await inliner.storeMediaLocally({
+        fileBuffer: GIF1x1,
+        filename: 'image.gif',
+        extension: '.gif',
+      });
+
+      sinon.assert.calledOnceWithExactly(getMediaStorage, '.gif', GIF1x1);
+      sinon.assert.calledOnceWithExactly(storage.saveRaw, GIF1x1, 'image.svg');
+    });
+
+    it('sanitizes SVGs before storing them', async function () {
+      const storage = createStorage();
+      const getMediaStorage = sinon.stub().resolves(storage);
+      const inliner = new ExternalMediaInliner({ getMediaStorage });
+
+      await inliner.storeMediaLocally({
+        fileBuffer: imageFixture('svg-with-unsafe-script.svg'),
+        filename: 'image.svg',
+        extension: '.svg',
+      });
+
+      const storedSvg = storage.saveRaw.firstCall.args[0].toString();
+      assert.match(storedSvg, /<svg/);
+      assert.doesNotMatch(storedSvg, /<script/);
+      assert.equal(getMediaStorage.firstCall.args[1], storage.saveRaw.firstCall.args[0]);
+    });
+
+    it('does not store SVGs that cannot be sanitized', async function () {
+      const getMediaStorage = sinon.stub();
+      const inliner = new ExternalMediaInliner({ getMediaStorage });
+
+      const result = await inliner.storeMediaLocally({
+        fileBuffer: imageFixture('svg-malformed.svg'),
+        filename: 'image.svg',
+        extension: '.svg',
+      });
+
+      assert.equal(result, null);
+      sinon.assert.notCalled(getMediaStorage);
+      sinon.assert.calledOnce(logging.warn);
+    });
+
+    it('does not store files when picking the storage fails', async function () {
+      const getMediaStorage = sinon.stub().rejects(new Error('Detection failed'));
+      const inliner = new ExternalMediaInliner({ getMediaStorage });
+
+      const result = await inliner.storeMediaLocally({
+        fileBuffer: GIF1x1,
+        filename: 'image.gif',
+        extension: '.gif',
+      });
+
+      assert.equal(result, null);
+      sinon.assert.calledOnce(logging.warn);
+      sinon.assert.calledOnce(logging.error);
+    });
+  });
+
   describe('Find matches', function () {
     it('Finds with full domain', function () {
       const html =
