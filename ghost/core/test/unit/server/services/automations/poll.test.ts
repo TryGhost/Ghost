@@ -647,33 +647,56 @@ describe('automations poll', function () {
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, retryAt);
   });
 
-  for (const wrapped of [false, true]) {
-    it(`logs the original error for ${wrapped ? 'wrapped Mailgun' : 'native'} send failures`, async function () {
-      const step = buildEmailStep();
-      const error = new Error('Mailgun request timed out');
-      const logError = sinon.stub(logging, 'error');
-      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-      memberWelcomeEmailService.api.sendAutomationEmail.rejects(
-        wrapped ? { error, messageData: { html: 'Private email content' } } : error,
-      );
+  it('logs native send errors unchanged', async function () {
+    const step = buildEmailStep();
+    const error = new Error('Mailgun request timed out');
+    const logError = sinon.stub(logging, 'error');
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    memberWelcomeEmailService.api.sendAutomationEmail.rejects(error);
 
-      await poll(options);
+    await poll(options);
 
-      sinon.assert.calledOnceWithExactly(
-        logError,
-        {
-          err: sinon.match.same(error),
-          system: {
-            event: 'automations.poll.step_execution_failed',
-            step_id: step.id,
-          },
+    sinon.assert.calledOnceWithExactly(
+      logError,
+      {
+        err: sinon.match.same(error),
+        system: {
+          event: 'automations.poll.step_execution_failed',
+          step_id: step.id,
         },
-        `[AUTOMATIONS] Failed to execute automation step ${step.id}`,
-      );
-      sinon.assert.calledOnce(automationsApi.retryStep);
-      sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+      },
+      `[AUTOMATIONS] Failed to execute automation step ${step.id}`,
+    );
+    sinon.assert.calledOnce(automationsApi.retryStep);
+    sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+  });
+
+  it('logs the original Mailgun error without the email payload', async function () {
+    const step = buildEmailStep();
+    const error = new Error('Mailgun request timed out');
+    const logError = sinon.stub(logging, 'error');
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    memberWelcomeEmailService.api.sendAutomationEmail.rejects({
+      error,
+      messageData: { html: 'Private email content' },
     });
-  }
+
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(
+      logError,
+      {
+        err: sinon.match.same(error),
+        system: {
+          event: 'automations.poll.step_execution_failed',
+          step_id: step.id,
+        },
+      },
+      `[AUTOMATIONS] Failed to execute automation step ${step.id}`,
+    );
+    sinon.assert.calledOnce(automationsApi.retryStep);
+    sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+  });
 
   it('permanently fails email send failures at the attempt limit', async function () {
     const step = buildEmailStep({ step_attempts: 10 });
