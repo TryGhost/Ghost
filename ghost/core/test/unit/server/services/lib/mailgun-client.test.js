@@ -532,8 +532,8 @@ describe('MailgunClient', function () {
       assert(sendMock.isDone());
     });
 
-    for (const trackOpens of [true, false]) {
-      it(`sends an email with tracking opens ${trackOpens ? 'enabled' : 'disabled'}`, async function () {
+    for (const trackOpens of [true, false, undefined]) {
+      it(`preserves Mailgun open tracking options when track_opens is ${trackOpens}`, async function () {
         const configStub = sinon.stub(config, 'get');
         configStub.withArgs('bulkEmail').returns({
           mailgun: {
@@ -563,12 +563,10 @@ describe('MailgunClient', function () {
         const sendMock = nock('https://api.mailgun.net')
           // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
           .post('/v3/domain.com/messages', function (body) {
-            const regexList = [
-              trackOpens
-                ? /form-data; name="o:tracking-opens"[^]*yes/m
-                : /form-data; name="o:tracking-opens"[^]*no/m,
-            ];
-            return regexList.every((regex) => regex.test(body));
+            if (trackOpens) {
+              return /form-data; name="o:tracking-opens"\r?\n\r?\nyes\r?\n--/m.test(body);
+            }
+            return !body.includes('name="o:tracking-opens"');
           })
           .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
             'Content-Type': 'application/json',
