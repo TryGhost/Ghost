@@ -139,6 +139,56 @@ describe('Automations API', function () {
     await cleanupAutomationsFixture();
   });
 
+  describe('add', function () {
+    afterEach(async function () {
+      await agent.useStaffTokenForOwner();
+    });
+
+    for (const role of ['Owner', 'Admin']) {
+      // TODO(NY-1637): Remove this placeholder test once the endpoint is finished.
+      it(`${role} bypasses permissions checks`, async function () {
+        await agent[`useStaffTokenFor${role}`]();
+        const { body } = await agent
+          .post('automations')
+          .body({ automations: [{ name: 'Test automation' }] })
+          .expectStatus(501)
+          .expect(cacheInvalidateHeaderNotSet());
+
+        assert.equal(body.errors[0].code, 'NOT_IMPLEMENTED');
+      });
+    }
+
+    // TODO(NY-1637): Remove this placeholder test once the endpoint is finished.
+    it('Admin Integration bypasses permissions checks', async function () {
+      await agent.useZapierAdminAPIKey();
+      await agent
+        .post('automations')
+        .body({ automations: [{ name: 'Test automation' }] })
+        .expectStatus(501);
+    });
+
+    it('denies unauthenticated requests', async function () {
+      agent.resetAuthentication();
+      await agent
+        .post('automations')
+        .body({ automations: [{ name: 'Test automation' }] })
+        .expectStatus(403);
+    });
+
+    for (const role of ['Editor', 'Author', 'Contributor']) {
+      it(`denies ${role} permission to add automations`, async function () {
+        await agent[`useStaffTokenFor${role}`]();
+        const { body } = await agent
+          .post('automations')
+          .body({ automations: [{ name: 'Test automation' }] })
+          .expectStatus(403)
+          .expect(cacheInvalidateHeaderNotSet());
+
+        assert.equal(body.errors[0].type, 'NoPermissionError');
+      });
+    }
+  });
+
   describe('browse', function () {
     async function createAutomationRun(automationId, createdAt) {
       const runId = ObjectId().toHexString();
