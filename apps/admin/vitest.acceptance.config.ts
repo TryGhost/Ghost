@@ -69,6 +69,10 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
 
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, react()],
+  server: {
+    // Vitest owns console reporting; Vite forwarding bypasses silent below.
+    forwardConsole: false,
+  },
   // Serves the MSW service worker script; scoped to the test config so it
   // never ends up in the production build's public assets.
   publicDir: './test-utils/acceptance/public',
@@ -83,6 +87,10 @@ export default defineConfig({
   resolve: sharedResolve,
   test: {
     name: 'acceptance',
+    // Print totals and failures, without per-test output that CI expands into
+    // separate lines. Use --silent=false --reporter=verbose to debug.
+    silent: 'passed-only',
+    reporters: process.env.GITHUB_ACTIONS ? ['minimal', 'github-actions'] : ['minimal'],
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
     setupFiles: ['./test-utils/acceptance/setup.ts'],
