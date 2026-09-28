@@ -121,6 +121,8 @@ The provider's `safeCursor`
 is returned unchanged, including when a capped multi-domain fetch stops early.
 Recipient addresses are checked for presence and storage length only; Ghost's
 member validator owns address syntax, including international addresses.
+Mailgun's nullable delivery status code is normalized as an absent optional code,
+so it does not cause an otherwise valid polled event to be discarded.
 
 All normalized event types are dispatched to the owning family processor. Automation
 and gift webhook safety handlers correlate the provider message ID and original recipient
@@ -161,6 +163,10 @@ a later webhook event fails. The transport selects error handling at constructio
 
 There is no new per-event polling retry or skip policy.
 There is no event inbox, event-ID ledger, replay worker or schema migration.
+
+Newsletter unsubscribes resolve the member by ID, including after an address
+change. They save the newsletter preference before removing the provider's
+unsubscribe entry for the original recipient address.
 
 ### Webhook newsletter statistics
 

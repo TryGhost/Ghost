@@ -303,7 +303,8 @@ class NewsletterEmailEventStorage {
   async findNewslettersToKeep(event) {
     try {
       const member = await this.#membersRepository.get(
-        { id: event.memberId, email: event.email },
+        // Newsletter preferences belong to the member, even after an address change.
+        { id: event.memberId },
         {
           withRelated: ['newsletters'],
         },

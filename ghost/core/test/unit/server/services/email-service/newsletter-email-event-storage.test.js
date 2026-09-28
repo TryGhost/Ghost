@@ -846,6 +846,46 @@ describe('Email Event Storage', function () {
 
   for (const eventSource of ['poll', 'webhook']) {
     describe(`${eventSource} error handling`, () => {
+      it('honours a newsletter unsubscribe after the member changes address', async () => {
+        const member = {
+          id: 'member',
+          email: 'new@example.com',
+          related: () => ({ models: [{ id: 'newsletter' }, { id: 'other-newsletter' }] }),
+        };
+        const get = sinon.stub().callsFake(async (filter) => {
+          return filter.id === member.id && (!filter.email || filter.email === member.email)
+            ? member
+            : null;
+        });
+        const update = sinon.stub().resolves();
+        const cleanup = sinon.stub().resolves();
+        const handler = createEventStorage({
+          eventSource,
+          membersRepository: { get, update },
+          models: { Email: { findOne: sinon.stub().resolves({ get: () => 'newsletter' }) } },
+          emailSuppressionList: { removeUnsubscribe: cleanup },
+        });
+
+        await handler.handleUnsubscribed(
+          EmailUnsubscribedEvent.create({
+            email: 'old@example.com',
+            memberId: member.id,
+            emailId: 'email',
+            timestamp: new Date(),
+          }),
+        );
+
+        sinon.assert.calledOnceWithExactly(
+          update,
+          { newsletters: [{ id: 'other-newsletter' }] },
+          { id: member.id },
+        );
+        sinon.assert.calledOnceWithExactly(cleanup, 'old@example.com', {
+          requireSuccess: eventSource === 'webhook',
+        });
+        sinon.assert.callOrder(update, cleanup);
+      });
+
       for (const failurePoint of ['lookup', 'update', 'cleanup']) {
         it(`preserves unsubscribe ${failurePoint} failure handling`, async () => {
           const failure = new Error(`${failurePoint} failed`);
