@@ -56,6 +56,8 @@ The controls inherit the Admin 7 design. They do not need a pill shape, explicit
 stroke width, ghost variant, tooltip styling, or page-specific CSS. Secondary
 controls use the ghost treatment and **2px icon strokes**. Dropdown text has the
 same medium weight as Filter; header dropdown triggers hide their down chevrons.
+Header dropdowns use the shared button gap and clear extra right margins on their
+icons. Callers should not add icon margins.
 
 Use `PageHeader.SelectTrigger` inside Select for labelled header dropdowns; it
 provides the pill shape. Ordinary `SelectTrigger` form fields keep standard rounded

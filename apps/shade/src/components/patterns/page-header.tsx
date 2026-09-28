@@ -152,7 +152,8 @@ const PageHeaderSelectTrigger = React.forwardRef<
           aria-label={label}
           className={cn(
             'w-auto',
-            isAdmin7 && 'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2!',
+            isAdmin7 &&
+              'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2! [&>svg]:mr-0',
             className,
           )}
           shape={controlShape}
