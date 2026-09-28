@@ -37,6 +37,8 @@ const SETTINGS = {
 /** Publish and update flow locators and gestures for acceptance specs; no assertions. */
 export const publishScreen = {
   root: () => page.getByTestId(publishFlowModal),
+  closeButton: () =>
+    page.getByTestId(publishFlowModal).getByRole('button', { name: 'Close', exact: true }),
   options: () => page.getByTestId(publishFlowOptions),
   confirm: () => page.getByTestId(publishFlowConfirm),
   complete: () => page.getByTestId(publishFlowComplete),
