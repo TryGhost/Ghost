@@ -4,7 +4,6 @@ import {
   allowUnhandledRequests,
   configResponse,
   currentRoute,
-  emberScreenShown,
   fakeFrameOrigin,
   fakeIntegrations,
   fakeUsers,
@@ -18,7 +17,6 @@ import { sidebarScreen } from '@/layout/sidebar.screen';
 import { migrateScreen } from './migrate.screen';
 
 const MIGRATE_ORIGIN = 'https://migrate.ghost.org';
-const flagOn = { labs: { iframeRoutesReact: true } };
 
 // Stands in for the migration app: reports each load with its own id, echoes
 // pings with that id, relays every other message back to Admin's window, then
@@ -102,19 +100,10 @@ describe('Migrate', () => {
     delete document.body.dataset.externalNavigate;
   });
 
-  it.each([false, undefined])('leaves the page with Ember when the flag is %s', async (enabled) => {
-    await renderAdminApp('/migrate/substack', {
-      labs: enabled === undefined ? {} : { iframeRoutesReact: enabled },
-    });
-
-    await expect.poll(emberScreenShown).toBe(true);
-    await expect.element(migrateScreen.frame()).not.toBeInTheDocument();
-  });
-
   it('opens the migration app for the chosen platform', async () => {
     await fakeFrameOrigin(MIGRATE_ORIGIN, migrateStandIn());
     const messages = standInMessages();
-    await renderAdminApp('/migrate/substack', flagOn);
+    await renderAdminApp('/migrate/substack');
 
     await expect.poll(() => messages[0]?.loaded).toBe(`${MIGRATE_ORIGIN}/?platform=substack`);
     await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
@@ -129,7 +118,6 @@ describe('Migrate', () => {
     );
     const messages = standInMessages();
     await renderAdminApp('/migrate', {
-      ...flagOn,
       boot: {
         browseSettings: {
           response: settingsResponse({
@@ -168,7 +156,7 @@ describe('Migrate', () => {
       MIGRATE_ORIGIN,
       migrateStandIn(`parent.postMessage({ request: 'apiUrl' }, '*');`),
     );
-    await renderAdminApp('/migrate', flagOn);
+    await renderAdminApp('/migrate');
 
     await expect.poll(currentRoute).toBe('/settings/migration');
     await expect
@@ -182,7 +170,7 @@ describe('Migrate', () => {
       migrateStandIn(`parent.postMessage({ route: '/migrate/beehiiv' }, '*');`),
     );
     const messages = standInMessages();
-    await renderAdminApp('/migrate/substack', flagOn);
+    await renderAdminApp('/migrate/substack');
     await expect.poll(currentRoute).toBe('/migrate/beehiiv');
 
     const frame = migrateScreen.frame().element() as HTMLIFrameElement;
@@ -199,7 +187,7 @@ describe('Migrate', () => {
       MIGRATE_ORIGIN,
       migrateStandIn(`parent.postMessage({ route: '/pro' }, '*');`),
     );
-    await renderAdminApp('/migrate', flagOn);
+    await renderAdminApp('/migrate');
 
     await expect.poll(externalNavigation).toMatchObject({ route: '/pro', isExternal: true });
   });
@@ -207,7 +195,7 @@ describe('Migrate', () => {
   it('ignores messages from other origins', async () => {
     await fakeFrameOrigin(MIGRATE_ORIGIN, migrateStandIn());
     const messages = standInMessages();
-    await renderAdminApp('/migrate', flagOn);
+    await renderAdminApp('/migrate');
     await expect.poll(() => messages.length).toBeGreaterThan(0);
 
     // Handled in order, so honouring the second would supersede the first.
@@ -228,7 +216,7 @@ describe('Migrate', () => {
     // The settings app owns its request graph; this spec asserts the handoff.
     allowUnhandledRequests();
     await fakeFrameOrigin(MIGRATE_ORIGIN, migrateStandIn());
-    await renderAdminApp('/migrate/substack', flagOn);
+    await renderAdminApp('/migrate/substack');
 
     await migrateScreen.closeButton().click();
 

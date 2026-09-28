@@ -10,8 +10,7 @@ export class MigratePage extends AdminPage {
   constructor(page: Page) {
     super(page);
     this.pageUrl = '/ghost/#/migrate';
-    // Case-insensitive: the Ember frame is titled "migrate".
-    this.migrationAppFrame = page.getByTitle(migrateFrame);
+    this.migrationAppFrame = page.getByTitle(migrateFrame, { exact: true });
     this.migrationApp = this.migrationAppFrame.contentFrame();
     this.closeButton = page.getByRole('button', { name: closeMigrateButton, exact: true });
   }

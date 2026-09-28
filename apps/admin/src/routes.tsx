@@ -22,17 +22,18 @@ import { EmberListWithGiftLinks } from './gift-link-modal-host';
 import { EditorGate } from './editor-gate';
 import { PagesListGate, PostsListGate } from './posts-list-gate';
 import { MemberActivityGate } from './member-activity-gate';
-import { MigrateGate, ViewSiteGate } from './iframe-route-gates';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
+import { lazyMigrateScreen } from './migrate/api';
 import { membersRouteChildren } from './members/api';
 import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
 import { lazyPostAnalyticsRoot, postAnalyticsRouteChildren } from './posts/api';
 import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
 import { lazyTagDetailScreen, lazyTagsScreen } from './tags/api';
+import { lazyViewSiteScreen } from './view-site/api';
 import {
   canManageAutomations,
   canManageMembers,
@@ -197,13 +198,10 @@ const appRoutes: RouteObject[] = [
     Component: EditorGate,
     handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
   },
-  // Served by React or Ember depending on the `iframeRoutesReact` Labs flag.
-  // Neither allows force upgrade, which redirects both implementations to
-  // /pro.
-  { path: '/site', Component: ViewSiteGate },
+  { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
   {
     path: '/migrate/*',
-    Component: MigrateGate,
+    lazy: lazyComponent(lazyMigrateScreen),
     handle: {
       hideAdminSidebar: true,
       requiresAccess: hasAdminAccess,
@@ -245,7 +243,6 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
   const postsListOwner = useFlagGatedRouteOwner('postsListReact');
   const editorOwner = useFlagGatedRouteOwner('editorReact');
   const memberActivityOwner = useFlagGatedRouteOwner('membersActivityReact');
-  const iframeRoutesOwner = useFlagGatedRouteOwner('iframeRoutesReact');
 
   return useCallback(
     (pathname: string) => {
@@ -262,12 +259,9 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
       if (leaf.Component === MemberActivityGate) {
         return memberActivityOwner !== 'react';
       }
-      if (leaf.Component === ViewSiteGate || leaf.Component === MigrateGate) {
-        return iframeRoutesOwner !== 'react';
-      }
       return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
     },
-    [postsListOwner, editorOwner, memberActivityOwner, iframeRoutesOwner],
+    [postsListOwner, editorOwner, memberActivityOwner],
   );
 }
 
