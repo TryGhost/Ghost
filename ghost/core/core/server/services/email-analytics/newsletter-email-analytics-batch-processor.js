@@ -14,14 +14,16 @@ class NewsletterEmailAnalyticsBatchProcessor {
   #emailEventProcessor;
   #prometheusClient;
   #queries;
+  #eventSource;
 
   #lastAggregation = Date.now();
 
-  constructor({ config, emailEventProcessor, prometheusClient, queries }) {
+  constructor({ config, emailEventProcessor, prometheusClient, queries, eventSource = 'poll' }) {
     this.#config = config;
     this.#emailEventProcessor = emailEventProcessor;
     this.#prometheusClient = prometheusClient;
     this.#queries = queries;
+    this.#eventSource = eventSource;
   }
 
   /**
@@ -45,18 +47,29 @@ class NewsletterEmailAnalyticsBatchProcessor {
       const recipientCache =
         await this.#emailEventProcessor.batchGetRecipients(emailIdentifications);
 
-      for (const event of events) {
-        const batchResult = await this.#processEvent(event, recipientCache);
+      try {
+        for (const event of events) {
+          const batchResult = await this.#processEvent(event, recipientCache);
 
-        // Save last event timestamp
-        if (
-          !fetchData.lastEventTimestamp ||
-          (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)
-        ) {
-          fetchData.lastEventTimestamp = event.timestamp;
+          // Save last event timestamp
+          if (
+            !fetchData.lastEventTimestamp ||
+            (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)
+          ) {
+            fetchData.lastEventTimestamp = event.timestamp;
+          }
+
+          result.merge(batchResult);
         }
-
-        result.merge(batchResult);
+      } catch (err) {
+        // Keep earlier webhook updates before reporting a failure for redelivery.
+        // Polling retains its original failed-batch behavior.
+        if (this.#eventSource === 'webhook') {
+          await this.#emailEventProcessor
+            .flushBatchedUpdates()
+            .catch((flushError) => logging.error(flushError));
+        }
+        throw err;
       }
 
       // Flush all batched updates to the database
@@ -160,7 +173,12 @@ class NewsletterEmailAnalyticsBatchProcessor {
       if (event.severity === 'permanent') {
         const recipient = await this.#emailEventProcessor.handlePermanentFailed(
           { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
-          { id: event.id, timestamp: event.timestamp, error: event.error },
+          {
+            id: event.id,
+            timestamp: event.timestamp,
+            error: event.error,
+            suppress: event.suppress,
+          },
           recipientCache,
         );
 

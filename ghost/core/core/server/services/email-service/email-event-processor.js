@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const { emailAddressKey, findEmailAddressMatches } = require('../lib/email-address');
 const {
   whereProviderMessageId,
   whereProviderMessageIds,
@@ -29,6 +30,7 @@ async function waitForEvent() {
  * @property {string} emailRecipientId
  * @property {string} memberId
  * @property {string} emailId
+ * @property {string} [email] Original recipient address for webhook safety writes
  */
 
 /**
@@ -49,15 +51,20 @@ class EmailEventProcessor {
   #db;
   #eventStorage;
   #prometheusClient;
-  constructor({ domainEvents, db, eventStorage, prometheusClient }) {
+  #eventSource;
+  constructor({ domainEvents, db, eventStorage, prometheusClient, eventSource = 'poll' }) {
     this.#domainEvents = domainEvents;
     this.#db = db;
     this.#eventStorage = eventStorage;
     this.#prometheusClient = prometheusClient;
+    this.#eventSource = eventSource;
     // Avoid having to query email_batch by mailgun_message_id for every event
-    this.providerIdEmailIdMap = {};
+    this.providerIdEmailIdMap = Object.create(null);
 
-    if (this.#prometheusClient) {
+    if (
+      this.#prometheusClient &&
+      !this.#prometheusClient.getMetric('email_analytics_events_processed')
+    ) {
       this.#prometheusClient.registerCounter({
         name: 'email_analytics_events_processed',
         help: 'Number of email analytics events processed',
@@ -75,7 +82,7 @@ class EmailEventProcessor {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailDeliveredEvent.create({
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         emailRecipientId: recipient.emailRecipientId,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
@@ -98,7 +105,7 @@ class EmailEventProcessor {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailOpenedEvent.create({
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         emailRecipientId: recipient.emailRecipientId,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
@@ -122,7 +129,7 @@ class EmailEventProcessor {
       const event = EmailTemporaryBouncedEvent.create({
         id,
         error,
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
         emailRecipientId: recipient.emailRecipientId,
@@ -140,13 +147,18 @@ class EmailEventProcessor {
    * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
    * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
    */
-  async handlePermanentFailed(emailIdentification, { timestamp, error, id }, recipientCache) {
+  async handlePermanentFailed(
+    emailIdentification,
+    { timestamp, error, id, suppress },
+    recipientCache,
+  ) {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailBouncedEvent.create({
         id,
+        suppress,
         error,
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
         emailRecipientId: recipient.emailRecipientId,
@@ -155,7 +167,9 @@ class EmailEventProcessor {
       await this.#eventStorage.handlePermanentFailed(event);
 
       this.#domainEvents.dispatch(event);
-      await waitForEvent(); // Avoids knex connection pool to run dry
+      if (this.#eventSource === 'poll') {
+        await waitForEvent(); // Avoids knex connection pool exhaustion from background suppression
+      }
     }
     return recipient;
   }
@@ -169,7 +183,7 @@ class EmailEventProcessor {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = EmailUnsubscribedEvent.create({
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
         timestamp,
@@ -190,7 +204,7 @@ class EmailEventProcessor {
     const recipient = await this.getRecipient(emailIdentification, recipientCache);
     if (recipient) {
       const event = SpamComplaintEvent.create({
-        email: emailIdentification.email,
+        email: recipient.email ?? emailIdentification.email,
         memberId: recipient.memberId,
         emailId: recipient.emailId,
         timestamp,
@@ -198,7 +212,9 @@ class EmailEventProcessor {
       await this.#eventStorage.handleComplained(event);
 
       this.#domainEvents.dispatch(event);
-      await waitForEvent(); // Avoids knex connection pool to run dry
+      if (this.#eventSource === 'poll') {
+        await waitForEvent(); // Avoids knex connection pool exhaustion from background suppression
+      }
     }
     return recipient;
   }
@@ -225,11 +241,28 @@ class EmailEventProcessor {
 
     // Check cache first if batched processing is enabled
     if (recipientCache) {
-      const key = `${emailIdentification.email}:${emailId}`;
+      const key = this.#recipientKey(emailIdentification.email, emailId);
       const cached = recipientCache.get(key);
       if (cached) {
         return cached;
       }
+    }
+
+    if (this.#eventSource === 'webhook') {
+      const recipients = await this.#getWebhookRecipients(emailId, [emailIdentification.email]);
+      if (recipients.length !== 1) {
+        return;
+      }
+      const recipient = recipients[0];
+      if (recipient.id && recipient.member_id) {
+        return {
+          emailRecipientId: recipient.id,
+          memberId: recipient.member_id,
+          emailId,
+          email: recipient.member_email,
+        };
+      }
+      return;
     }
 
     // Fall back to individual query for backwards compatibility
@@ -248,6 +281,21 @@ class EmailEventProcessor {
         emailId,
       };
     }
+  }
+
+  #recipientKey(email, emailId) {
+    return `${this.#eventSource === 'webhook' ? emailAddressKey(email) : email}:${emailId}`;
+  }
+
+  async #getWebhookRecipients(emailId, emails) {
+    return findEmailAddressMatches(
+      this.#db
+        .knex('email_recipients')
+        .select('id', 'member_id', 'member_email')
+        .where('email_id', emailId),
+      'member_email',
+      emails,
+    );
   }
 
   /**
@@ -333,6 +381,34 @@ class EmailEventProcessor {
     }
 
     if (lookups.length === 0) {
+      return recipientCache;
+    }
+
+    if (this.#eventSource === 'webhook') {
+      const byEmailId = new Map();
+      for (const { email, emailId } of lookups) {
+        const emails = byEmailId.get(emailId) ?? [];
+        emails.push(email);
+        byEmailId.set(emailId, emails);
+      }
+      for (const [emailId, emails] of byEmailId) {
+        const recipients = await this.#getWebhookRecipients(emailId, emails);
+        for (const recipient of recipients) {
+          const key = this.#recipientKey(recipient.member_email, emailId);
+          // Do not guess between distinct records with equivalent addresses.
+          recipientCache.set(
+            key,
+            recipientCache.has(key)
+              ? null
+              : {
+                  emailRecipientId: recipient.id,
+                  memberId: recipient.member_id,
+                  emailId,
+                  email: recipient.member_email,
+                },
+          );
+        }
+      }
       return recipientCache;
     }
 

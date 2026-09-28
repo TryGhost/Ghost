@@ -1,0 +1,199 @@
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
+import type { EmailEvent } from '@tryghost/adapter-base-email';
+import { EmailEventService } from '../../../../../core/server/services/email-provider/event-service';
+import type { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
+
+describe('email webhook delegation', () => {
+  let clock: sinon.SinonFakeTimers;
+  let processBatch: sinon.SinonStub;
+  let aggregate: sinon.SinonStub;
+  let queueStats: sinon.SinonStub;
+  let verify: sinon.SinonStub;
+  let createEventProcessor: sinon.SinonStub;
+  let service: EmailEventService;
+  const event: EmailEvent = {
+    id: 'event-1',
+    family: 'newsletters',
+    type: 'delivered',
+    recipientEmail: 'reader@example.com',
+    providerId: '<Opaque-ID>',
+    timestamp: new Date('2026-09-01T12:00:00Z'),
+    suppress: false,
+  };
+  const request = { body: Buffer.from('{}'), headers: {} };
+  const missing = (_events: EmailEvent[], result: EventProcessingResult) => {
+    result.unprocessable += 1;
+  };
+
+  beforeEach(() => {
+    sinon.stub(logging, 'error');
+    clock = sinon.useFakeTimers();
+    processBatch = sinon.stub().callsFake(async (_events, result) => {
+      result.delivered += 1;
+    });
+    aggregate = sinon.stub().resolves(null);
+    queueStats = sinon.stub().resolves();
+    verify = sinon.stub().resolves({ events: [event] });
+    createEventProcessor = sinon.stub().returns({ processBatch, aggregate });
+    service = new EmailEventService({
+      provider: { source: 'provider', getEventSource: () => ({ type: 'webhook', verify }) },
+      createEventProcessor,
+      queueStats,
+    });
+  });
+  afterEach(() => sinon.restore());
+
+  it('delegates unchanged IDs and queues statistics without recalculating them', async () => {
+    await service.webhook('provider', request);
+    sinon.assert.calledOnceWithExactly(createEventProcessor, 'newsletters');
+    assert.deepEqual(processBatch.firstCall.firstArg, [event]);
+    assert.equal(queueStats.firstCall.firstArg.delivered, 1);
+    sinon.assert.notCalled(aggregate);
+    assert.equal(clock.countTimers(), 0);
+  });
+  it('retries only unmatched events once after 500 ms', async () => {
+    const late = { ...event, id: 'late' };
+    verify.resolves({ events: [event, late] });
+    processBatch.onSecondCall().callsFake(missing);
+    const pending = service.webhook('provider', request);
+    await clock.tickAsync(499);
+    sinon.assert.calledTwice(processBatch);
+    await clock.tickAsync(1);
+    await pending;
+    sinon.assert.calledThrice(processBatch);
+    assert.deepEqual(processBatch.thirdCall.firstArg, [late]);
+    sinon.assert.calledOnce(verify);
+    sinon.assert.calledOnce(queueStats);
+    assert.equal(clock.countTimers(), 0);
+  });
+  it('returns 503 after the lookup retry is exhausted', async () => {
+    processBatch.callsFake(missing);
+    const rejected = assert.rejects(service.webhook('provider', request), {
+      code: 'EMAIL_RECIPIENT_NOT_FOUND',
+      statusCode: 503,
+    });
+    await clock.tickAsync(500);
+    await rejected;
+    await clock.tickAsync(5000);
+    sinon.assert.calledTwice(processBatch);
+    sinon.assert.calledOnce(queueStats);
+    assert.equal(clock.countTimers(), 0);
+  });
+  it('rejects unhandled events instead of acknowledging them', async () => {
+    processBatch.callsFake(async (_events, result) => {
+      result.unhandled += 1;
+    });
+    await assert.rejects(service.webhook('provider', request), {
+      code: 'EMAIL_EVENT_NOT_HANDLED',
+      statusCode: 503,
+    });
+    sinon.assert.calledOnce(processBatch);
+    assert.equal(clock.countTimers(), 0);
+  });
+  it('does not retry processing errors', async () => {
+    const error = new Error('Database unavailable');
+    processBatch.rejects(error);
+    await assert.rejects(service.webhook('provider', request), error);
+    sinon.assert.calledOnce(processBatch);
+    assert.equal(clock.countTimers(), 0);
+  });
+  it('accepts verified handshakes without processing events', async () => {
+    const response = { status: 200, body: 'verified' };
+    verify.resolves({ response });
+    assert.deepEqual(await service.webhook('provider', request), { response });
+    sinon.assert.notCalled(createEventProcessor);
+    sinon.assert.notCalled(queueStats);
+  });
+  it('does not process unverified notifications', async () => {
+    verify.rejects(new Error('Invalid signature'));
+    await assert.rejects(service.webhook('provider', request), /Invalid signature/);
+    sinon.assert.notCalled(createEventProcessor);
+  });
+  it('processes valid siblings before rejecting and reporting malformed events', async () => {
+    verify.resolves({ events: [{ ...event, id: '' }, event, { ...event, type: 'failed' }] });
+    await assert.rejects(service.webhook('provider', request), {
+      code: 'EMAIL_EVENTS_INVALID',
+      statusCode: 400,
+    });
+    sinon.assert.calledOnce(processBatch);
+    assert.deepEqual(processBatch.firstCall.firstArg, [event]);
+    assert.equal(queueStats.firstCall.firstArg.delivered, 1);
+    sinon.assert.calledOnce(logging.error as sinon.SinonStub);
+    assert.equal(clock.countTimers(), 0);
+  });
+  it('does not hide a retryable missing recipient behind an invalid sibling', async () => {
+    verify.resolves({ events: [{ ...event, id: '' }, event] });
+    processBatch.callsFake(missing);
+    const rejected = assert.rejects(service.webhook('provider', request), {
+      code: 'EMAIL_RECIPIENT_NOT_FOUND',
+      statusCode: 503,
+    });
+    await clock.tickAsync(500);
+    await rejected;
+    sinon.assert.calledTwice(processBatch);
+  });
+  it('rejects invalid envelopes before any events are processed', async () => {
+    for (const events of [null, {}, 'events']) {
+      verify.resolves({ events });
+      await assert.rejects(service.webhook('provider', request), {
+        code: 'EMAIL_EVENTS_INVALID',
+        statusCode: 400,
+      });
+    }
+    sinon.assert.notCalled(createEventProcessor);
+  });
+  it('acknowledges events explicitly ignored by a processor without a lookup retry', async () => {
+    processBatch.callsFake(async (_events, result) => {
+      result.ignored += 1;
+    });
+    await service.webhook('provider', request);
+    sinon.assert.calledOnce(processBatch);
+    assert.equal(clock.countTimers(), 0);
+  });
+  it('rejects an inactive source before verification', async () => {
+    await assert.rejects(service.webhook('unknown', request), /source was not found/);
+    sinon.assert.notCalled(verify);
+  });
+  it('keeps the webhook pending until statistics work is persisted', async () => {
+    let complete!: () => void;
+    queueStats.callsFake(
+      () =>
+        new Promise<void>((resolve) => {
+          complete = resolve;
+        }),
+    );
+    let finished = false;
+    const pending = service.webhook('provider', request).then(() => {
+      finished = true;
+    });
+    await clock.tickAsync(0);
+    assert.equal(finished, false);
+    complete();
+    await pending;
+    assert.equal(finished, true);
+  });
+  it('propagates enqueue failures for provider redelivery without retrying processing', async () => {
+    queueStats.rejects(new Error('Could not save statistics work'));
+    await assert.rejects(service.webhook('provider', request), /Could not save statistics work/);
+    sinon.assert.calledOnce(processBatch);
+    sinon.assert.notCalled(aggregate);
+  });
+  it('routes events to a separate processor for each family and request', async () => {
+    const events = [
+      event,
+      { ...event, family: 'automations', type: 'unsubscribed' },
+      { ...event, family: 'gifts', type: 'failed', severity: 'permanent', suppress: true },
+    ];
+    verify.resolves({ events });
+    await service.webhook('provider', request);
+    assert.deepEqual(createEventProcessor.args, [['newsletters'], ['automations'], ['gifts']]);
+    assert.deepEqual(
+      processBatch.args.map(([batch]) => batch[0]),
+      events,
+    );
+    await service.webhook('provider', request);
+    assert.equal(createEventProcessor.callCount, 6);
+  });
+});

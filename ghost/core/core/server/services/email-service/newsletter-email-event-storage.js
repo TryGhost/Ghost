@@ -10,9 +10,19 @@ class NewsletterEmailEventStorage {
   #emailSuppressionList;
   #prometheusClient;
   #pendingUpdates;
+  #eventSource;
 
-  constructor({ config, db, models, membersRepository, emailSuppressionList, prometheusClient }) {
+  constructor({
+    config,
+    db,
+    models,
+    membersRepository,
+    emailSuppressionList,
+    prometheusClient,
+    eventSource = 'poll',
+  }) {
     this.#config = config;
+    this.#eventSource = eventSource;
     this.#db = db;
     this.#models = models;
     this.#membersRepository = membersRepository;
@@ -26,7 +36,10 @@ class NewsletterEmailEventStorage {
       failed: new Map(), // recipientId -> timestamp
     };
 
-    if (this.#prometheusClient) {
+    if (
+      this.#prometheusClient &&
+      !this.#prometheusClient.getMetric('email_analytics_events_stored')
+    ) {
       this.#prometheusClient.registerCounter({
         name: 'email_analytics_events_stored',
         help: 'Number of email analytics events stored',
@@ -114,6 +127,10 @@ class NewsletterEmailEventStorage {
         });
     }
     await this.saveFailure('permanent', event);
+    const suppression = this.#handleSuppression('handleBounce', event);
+    if (this.#eventSource === 'webhook') {
+      await suppression;
+    }
   }
 
   async handleTemporaryFailed(event) {
@@ -158,10 +175,10 @@ class NewsletterEmailEventStorage {
           email_recipient_id: event.emailRecipientId,
           severity,
           message: event.error.message || `Error ${event.error.enhancedCode ?? event.error.code}`,
-          code: event.error.code,
-          enhanced_code: event.error.enhancedCode,
+          code: Number.isInteger(event.error.code) && event.error.code >= 0 ? event.error.code : 0,
+          enhanced_code: event.error.enhancedCode?.slice(0, 50),
           failed_at: event.timestamp,
-          event_id: event.id,
+          event_id: event.id?.slice(0, 255),
         },
         { ...options, autoRefresh: false },
       );
@@ -181,10 +198,10 @@ class NewsletterEmailEventStorage {
         {
           severity,
           message: event.error.message || `Error ${event.error.enhancedCode ?? event.error.code}`,
-          code: event.error.code,
-          enhanced_code: event.error.enhancedCode ?? null,
+          code: Number.isInteger(event.error.code) && event.error.code >= 0 ? event.error.code : 0,
+          enhanced_code: event.error.enhancedCode?.slice(0, 50) ?? null,
           failed_at: event.timestamp,
-          event_id: event.id,
+          event_id: event.id?.slice(0, 255),
         },
         { ...options, patch: true, autoRefresh: false },
       );
@@ -193,43 +210,94 @@ class NewsletterEmailEventStorage {
 
   async handleUnsubscribed(event) {
     try {
-      const result = await this.findNewslettersToKeep(event);
-
-      if (result.status === 'failed') {
-        // Leave Mailgun's suppression in place: these events are fetched
-        // once and never retried, so it is the only remaining protection.
+      const savePreferences = async (options = {}) => {
+        const result = await this.findNewslettersToKeep(event, options);
+        if (result.status === 'ok') {
+          await this.#membersRepository.update(
+            { newsletters: result.newsletters },
+            { id: event.memberId, ...options },
+          );
+        }
+        return result.status !== 'failed';
+      };
+      // Serialize webhook updates for a member before reading their subscriptions.
+      const saved =
+        this.#eventSource === 'webhook'
+          ? await this.#models.Email.transaction(async (transacting) => {
+              await this.#membersRepository.get(
+                { id: event.memberId },
+                { transacting, forUpdate: true },
+              );
+              return savePreferences({ transacting });
+            })
+          : await savePreferences();
+      if (!saved) {
         return;
       }
-
-      if (result.status === 'ok') {
-        await this.#membersRepository.update(
-          { newsletters: result.newsletters },
-          { id: event.memberId },
-        );
-      }
-
-      // Remove member from Mailgun's suppression list, only once the local
-      // record reflects the unsubscribe or there is no member left to protect
-      await this.#emailSuppressionList.removeUnsubscribe(event.email);
+      // Only lift the provider's suppression after the local preference is saved.
+      await this.#emailSuppressionList.removeUnsubscribe(event.email, {
+        requireSuccess: this.#eventSource === 'webhook',
+      });
     } catch (err) {
-      logging.error(err);
+      if (this.#eventSource !== 'webhook') {
+        logging.error(err);
+        return;
+      }
+      throw new errors.InternalServerError({
+        message: 'Could not process email unsubscribe',
+        statusCode: 503,
+        err,
+      });
     }
   }
 
   async handleComplained(event) {
+    if (this.#eventSource === 'webhook') {
+      // Webhooks must finish local safety writes before lifting provider protection.
+      await this.#handleSuppression('handleComplaint', event);
+    }
     try {
-      await this.#models.EmailSpamComplaintEvent.add({
-        member_id: event.memberId,
-        email_id: event.emailId,
-        email_address: event.email,
+      try {
+        await this.#models.EmailSpamComplaintEvent.add({
+          member_id: event.memberId,
+          email_id: event.emailId,
+          email_address: event.email,
+        });
+      } catch (err) {
+        // Polling skips cleanup on insert errors; webhooks retry cleanup for duplicates.
+        if (
+          this.#eventSource !== 'webhook' ||
+          !['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT'].includes(err.code)
+        ) {
+          throw err;
+        }
+      }
+      await this.#emailSuppressionList.removeComplaint(event.email, {
+        requireSuccess: this.#eventSource === 'webhook',
       });
-
-      // Remove from Mailgun's suppression list so it doesn't affect other sites on the same domain
-      await this.#emailSuppressionList.removeComplaint(event.email);
     } catch (err) {
-      if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+      if (this.#eventSource === 'webhook') {
+        throw err;
+      }
+      if (!['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT'].includes(err.code)) {
         logging.error(err);
       }
+    }
+    if (this.#eventSource !== 'webhook') {
+      // Polling starts suppression even if complaint storage or cleanup failed.
+      void this.#handleSuppression('handleComplaint', event);
+    }
+  }
+
+  async #handleSuppression(method, event) {
+    try {
+      await this.#emailSuppressionList[method](event, { eventSource: this.#eventSource });
+    } catch (err) {
+      if (this.#eventSource === 'webhook') {
+        throw err;
+      }
+      // Background polling failures are logged independently of analytics.
+      logging.error(err);
     }
   }
 
@@ -241,14 +309,17 @@ class NewsletterEmailEventStorage {
 
   /**
    * @param {import('./events/email-unsubscribed-event').EmailUnsubscribedEvent} event
+   * @param {{transacting?: any}} options
    * @returns {Promise<FindNewslettersToKeepResult>}
    */
-  async findNewslettersToKeep(event) {
+  async findNewslettersToKeep(event, options = {}) {
     try {
       const member = await this.#membersRepository.get(
+        // Newsletter preferences belong to the member, even after an address change.
         { id: event.memberId },
         {
           withRelated: ['newsletters'],
+          ...options,
         },
       );
 
@@ -258,7 +329,7 @@ class NewsletterEmailEventStorage {
 
       const existingNewsletters = member.related('newsletters');
 
-      const email = await this.#models.Email.findOne({ id: event.emailId });
+      const email = await this.#models.Email.findOne({ id: event.emailId }, options);
       const newsletterToRemove = email.get('newsletter_id');
 
       return {
@@ -270,12 +341,15 @@ class NewsletterEmailEventStorage {
           }),
       };
     } catch (err) {
-      logging.error(
-        new errors.InternalServerError({
-          message: `Could not resolve newsletters to keep for unsubscribe event (member ${event.memberId}, email ${event.emailId})`,
-          err,
-        }),
-      );
+      const error = new errors.InternalServerError({
+        message: `Could not resolve newsletters to keep for unsubscribe event (member ${event.memberId}, email ${event.emailId})`,
+        statusCode: 503,
+        err,
+      });
+      if (this.#eventSource === 'webhook') {
+        throw error;
+      }
+      logging.error(error);
       return { status: 'failed' };
     }
   }

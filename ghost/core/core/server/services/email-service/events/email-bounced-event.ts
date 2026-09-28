@@ -10,6 +10,7 @@ export type EmailFailureData = {
   } | null;
   emailRecipientId: string;
   timestamp?: Date;
+  suppress?: boolean;
 };
 
 export class EmailBouncedEvent {
@@ -20,6 +21,7 @@ export class EmailBouncedEvent {
   readonly error: EmailFailureData['error'];
   readonly emailRecipientId: string;
   readonly timestamp: Date;
+  readonly suppress?: boolean;
 
   private constructor({
     id,
@@ -29,6 +31,7 @@ export class EmailBouncedEvent {
     error,
     emailRecipientId,
     timestamp,
+    suppress,
   }: EmailFailureData & { timestamp: Date }) {
     this.id = id;
     this.memberId = memberId;
@@ -37,6 +40,7 @@ export class EmailBouncedEvent {
     this.error = error;
     this.emailRecipientId = emailRecipientId;
     this.timestamp = timestamp;
+    this.suppress = suppress;
   }
 
   static create(data: EmailFailureData): EmailBouncedEvent {

@@ -6,6 +6,7 @@ import {
   type EmailProviderBase,
 } from '@tryghost/adapter-base-email';
 import logging from '@tryghost/logging';
+import { EmailEventService } from '../email-provider/event-service';
 import type { BatchEventProcessor } from './batch-event-processor';
 import type { Knex } from 'knex';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
@@ -35,6 +36,12 @@ import { AutomationEmailAnalyticsBatchProcessor } from './automation-email-analy
 import { GiftEmailAnalyticsBatchProcessor } from './gift-email-analytics-batch-processor';
 import { StartGiftEmailAnalyticsJobEvent } from './events/start-gift-email-analytics-job-event';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
+
+let eventService: EmailEventService | undefined;
+export function getEventService(): EmailEventService {
+  assert(eventService, 'Email event service should be initialized');
+  return eventService;
+}
 
 let newsletters: EmailAnalyticsServiceWrapper | undefined;
 let automations: EmailAnalyticsServiceWrapper | undefined;
@@ -76,9 +83,15 @@ export const init = ({
   config: Pick<ConfigInstance, 'get'>;
   db: { knex: Knex };
   domainEvents: Pick<DomainEvents, 'subscribe'>;
-  emailSuppressionList: Pick<typeof EmailSuppressionList, 'removeComplaint' | 'removeUnsubscribe'>;
-  giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome'>;
-  membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;
+  emailSuppressionList: Pick<
+    typeof EmailSuppressionList,
+    'removeComplaint' | 'removeUnsubscribe' | 'handleBounce' | 'handleComplaint'
+  >;
+  giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome' | 'getRecipientEmailForMessage'>;
+  membersRepository: Pick<
+    typeof membersService.api.members,
+    'get' | 'update' | 'unsubscribeFromUpdates'
+  >;
   models: {
     Email: Email;
     EmailRecipientFailure: EmailRecipientFailure;
@@ -93,7 +106,7 @@ export const init = ({
 
   const queries = new Queries(db.knex);
   const source = provider.getEventSource();
-
+  // Separate buffers prevent concurrent requests from flushing each other's updates.
   const createEventProcessor = (
     family: EmailFamily,
     aggregationQueries = queries,
@@ -110,7 +123,9 @@ export const init = ({
     }
     return new NewsletterEmailAnalyticsBatchProcessor({
       config,
+      eventSource: source.type,
       emailEventProcessor: new EmailEventProcessor({
+        eventSource: source.type,
         domainEvents,
         db,
         eventStorage: new NewsletterEmailEventStorage({
@@ -119,6 +134,7 @@ export const init = ({
           membersRepository,
           models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
           emailSuppressionList,
+          eventSource: source.type,
           prometheusClient,
         }),
         prometheusClient,
@@ -127,7 +143,13 @@ export const init = ({
       queries: aggregationQueries,
     });
   };
-
+  eventService = new EmailEventService({
+    provider,
+    createEventProcessor,
+    queueStats: async () => {
+      // Newsletter statistics queue arrives with webhook stats aggregation.
+    },
+  });
   const eventSourceOptions = (family: EmailFamily) => ({
     polling: source.type === 'poll',
     fetchEvents: async (
@@ -152,6 +174,7 @@ export const init = ({
               continue;
             }
             result.merge({ unprocessable: 1 });
+            // Count skipped rows without replacing the cursor with an invalid timestamp.
             const timestamp = emailEventSchema.shape.timestamp.safeParse(event?.timestamp);
             if (
               timestamp.success &&
