@@ -1,7 +1,7 @@
 import { PageHeader } from '@tryghost/shade/patterns';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
-import EmailSendingStatusBanner from '@/posts/analytics/email-sending-status/email-sending-status-banner';
+import PostAnalyticsEmailSendingStatus from '@/posts/analytics/email-sending-status/post-analytics-email-sending-status';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertDialog,
@@ -325,10 +325,10 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                         `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                     </div>
                   )}
+                  <PostAnalyticsEmailSendingStatus />
                 </div>
               </div>
             )}
-            <EmailSendingStatusBanner />
           </div>
         </div>
       </header>

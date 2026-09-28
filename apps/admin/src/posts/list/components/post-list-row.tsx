@@ -14,6 +14,7 @@ import {
 import { hasPostAnalyticsPage, type PostMetricsSettings } from '@/posts/list/post-metrics';
 import { PostMetricsCells } from '@/posts/list/components/post-metrics-cells';
 import { PostListRowEmailStatus } from '@/posts/list/components/post-list-row-email-status';
+import { EmailSendingStatusLine } from '@/posts/email-sending-status/email-sending-status-line';
 import {
   hasInProgressEmail,
   SETTLED_POST_LIST_ROW_EMAIL_STATUS,
@@ -268,12 +269,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               )}
 
               {emailSendingState.status === 'sending' ? (
-                <Text className="text-muted-foreground tabular-nums" size="sm">
-                  {emailSendingState.copy.title}
-                  {emailSendingState.copy.detail && (
-                    <span>{` · ${emailSendingState.copy.detail}`}</span>
-                  )}
-                </Text>
+                <EmailSendingStatusLine
+                  active={emailSendingState.line}
+                  announce={false}
+                  className="text-sm"
+                />
               ) : (
                 <Text className={statusTone(displayedPost, displayedIsFailed)} size="sm">
                   {displayedStatusLabel}

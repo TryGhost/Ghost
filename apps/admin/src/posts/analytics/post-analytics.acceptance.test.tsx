@@ -259,7 +259,7 @@ describe('Post analytics overview', () => {
     await expect
       .poll(() => statusRequestCount, { timeout: 3500 })
       .toBeGreaterThan(pendingStatusRequestCount);
-    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(0);
@@ -293,21 +293,21 @@ describe('Post analytics overview', () => {
     });
 
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .element(postAnalyticsScreen.emailSendingStatusLine())
       .not.toHaveTextContent('minute');
     estimate = 30;
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .element(postAnalyticsScreen.emailSendingStatusLine())
       .toHaveTextContent('Less than 1 minute left');
   });
 
-  it('moves a failed send and its retry action into the banner', async () => {
+  it('shows a failed send and its retry action under the title', async () => {
     const postOverrides = {
       email: {
         id: EMAIL_ID,
@@ -368,7 +368,7 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     // Keep submission visible until asserted, regardless of how many polls CI runs.
     hasCompleted = true;
-    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
   });
 
   it('shows a generic failure without retry when a batch has an unknown delivery outcome', async () => {
@@ -403,7 +403,7 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText(/only partially sent/)).toBeVisible();
     await expect
       .element(
-        postAnalyticsScreen.emailSendingStatusBanner().getByRole('button', { name: /send|retry/i }),
+        postAnalyticsScreen.emailSendingStatusLine().getByRole('button', { name: /send|retry/i }),
       )
       .not.toBeInTheDocument();
     await expect
@@ -471,10 +471,10 @@ describe('Post analytics overview', () => {
     });
 
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent(/Preparing emails\s*10% complete · 1,000 total/);
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Preparing emails · 10% complete · 1,000 total');
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .element(postAnalyticsScreen.emailSendingStatusLine())
       .not.toHaveTextContent('minute');
     // Advance the fake server only after the initial state is visible: extra
     // mount-time requests must not race the assertion straight into failure.
@@ -510,7 +510,7 @@ describe('Post analytics overview', () => {
 
     await expect.element(page.getByText('Newsletter performance')).toBeVisible();
     await expect.element(page.getByText('Your newsletter is being sent')).not.toBeInTheDocument();
-    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
     await expect.poll(() => statusApi.requests.length).toBe(1);
     await app.unmount();
   });
@@ -575,7 +575,7 @@ describe('Post analytics overview', () => {
       boot: webAnalyticsBootOverrides(),
     });
 
-    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.newsletterTab()).not.toBeInTheDocument();
     expect(statusApi.requests).toHaveLength(0);
   });
