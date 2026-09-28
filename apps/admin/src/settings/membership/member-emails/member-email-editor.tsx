@@ -6,9 +6,8 @@ import { cn } from '@tryghost/shade/utils';
 import { focusKoenigEditorOnBottomClick, useFramework } from '@tryghost/admin-x-framework';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import {
-  koenigFileUploadTypes,
+  createKoenigFileUploader,
   useKoenigFetchEmbed,
-  useKoenigFileUpload,
   usePinturaConfig,
 } from '@tryghost/admin-x-framework/hooks';
 import { useFocusContext } from '@tryghost/shade/app';
@@ -21,11 +20,6 @@ export interface MemberEmailsEditorProps {
   className?: string;
   onChange?: (value: string) => void;
 }
-
-const fileUploader = {
-  useFileUpload: useKoenigFileUpload,
-  fileTypes: koenigFileUploadTypes,
-};
 
 type EditorResource = ReturnType<typeof loadKoenig>;
 
@@ -102,6 +96,13 @@ const EmailEditorInner: React.FC<{
   onChange,
 }) => {
   const { EmailEditor } = editor.read();
+  const { config } = useGlobalData();
+  const maxUploadSize = config?.hostSettings?.limits?.uploads?.max;
+  const maxUploadError = config?.hostSettings?.limits?.uploads?.error;
+  const fileUploader = useMemo(
+    () => createKoenigFileUploader(maxUploadSize, maxUploadError),
+    [maxUploadError, maxUploadSize],
+  );
 
   return (
     <div className={cn('koenig-react-editor w-full', baseEditorStyles, className)}>
