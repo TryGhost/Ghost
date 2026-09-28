@@ -3,9 +3,11 @@ import React from 'react';
 import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
-import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
+import { useAdminSidebarVisibility, useIsSettingsSidebarRoute } from '@/layout/sidebar-visibility';
 import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
+import SettingsSidebar from './app-sidebar/settings-sidebar';
+import { SettingsNavigationSlotContext } from './settings-navigation';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
@@ -54,8 +56,12 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
   const sidebarVisible = useAdminSidebarVisibility();
+  const [settingsNavigationSlot, setSettingsNavigationSlot] = React.useState<HTMLElement | null>(
+    null,
+  );
   const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
+  const isSettingsRoute = useIsSettingsSidebarRoute();
 
   // The dunning takeover is positioned against the scrollable inset, so the
   // inset must not scroll (and must sit at the top) while the takeover is up —
@@ -116,13 +122,21 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         open={!!currentUser && sidebarVisible}
         style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
       >
-        {sidebarVisible && (
-          <AppSidebar
-            ref={sidebarRef}
-            className={cn(dunningLocked && 'opacity-40')}
-            variant="floating"
-          />
-        )}
+        {sidebarVisible &&
+          (isSettingsRoute ? (
+            <SettingsSidebar
+              ref={sidebarRef}
+              className={cn(dunningLocked && 'opacity-40')}
+              slotRef={setSettingsNavigationSlot}
+              variant="floating"
+            />
+          ) : (
+            <AppSidebar
+              ref={sidebarRef}
+              className={cn(dunningLocked && 'opacity-40')}
+              variant="floating"
+            />
+          ))}
         <SidebarInset
           ref={insetRef}
           className={cn(
@@ -134,10 +148,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <DunningBanner />
           <main
             ref={mainRef}
-            className={cn('flex-1', sidebarVisible ? pageChromeClassName : 'min-h-0')}
+            className={cn(
+              'flex-1',
+              sidebarVisible ? pageChromeClassName : 'min-h-0',
+              isSettingsRoute && 'min-h-0',
+            )}
           >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
-              {children}
+              <SettingsNavigationSlotContext.Provider value={settingsNavigationSlot}>
+                {children}
+              </SettingsNavigationSlotContext.Provider>
             </ActivityPubHostLayoutProvider>
           </main>
           {/* The mobile nav sits outside the takeover's cover (fixed, above the

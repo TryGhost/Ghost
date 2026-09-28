@@ -2,31 +2,43 @@ import React from 'react';
 import { Button } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { LucideIcon, useGlobalDirtyState } from '@tryghost/shade/utils';
-import { useNavigate } from '@tryghost/admin-x-framework';
+import { useExitSettings } from '@/settings/hooks/use-exit-settings';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
-const ExitSettingsButton: React.FC = () => {
+interface ExitSettingsButtonProps {
+  /** Called after leaving Settings, e.g. to close the mobile sheet the button sits in. */
+  onNavigate?: () => void;
+}
+
+const ExitSettingsButton: React.FC<ExitSettingsButtonProps> = ({ onNavigate }) => {
   const { isDirty } = useGlobalDirtyState();
   const { confirm, dialogProps } = useDirtyConfirmation();
-  const navigate = useNavigate();
+  const exitSettings = useExitSettings();
+  const admin7Settings = useFeatureFlag('admin7settings');
 
   const navigateAway = () => {
-    navigate('/');
+    exitSettings();
+    onNavigate?.();
   };
 
   return (
     <>
       <Button
-        aria-label="Close settings"
-        className="text-muted-foreground hover:text-foreground"
+        aria-label={admin7Settings ? 'Back to app' : 'Close settings'}
+        className={
+          admin7Settings
+            ? 'size-(--control-height) shrink-0 rounded-full'
+            : 'text-muted-foreground hover:text-foreground'
+        }
         data-testid="exit-settings"
-        id="done-button"
+        id={admin7Settings ? undefined : 'done-button'}
         size="icon"
-        title="Close (ESC)"
+        title={admin7Settings ? 'Back to app (ESC)' : 'Close (ESC)'}
         type="button"
-        variant="ghost"
+        variant={admin7Settings ? 'outline' : 'ghost'}
         onClick={() => confirm(isDirty, navigateAway)}
       >
-        <LucideIcon.X className="size-6!" />
+        {admin7Settings ? <LucideIcon.ArrowLeft /> : <LucideIcon.X className="size-6!" />}
       </Button>
       <DirtyConfirmDialog {...dialogProps} />
     </>

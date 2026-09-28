@@ -25,15 +25,20 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { UserMenuItem } from './user-menu-item';
 import { UserMenuAvatar } from './user-menu-avatar';
 import { UserMenuHeader } from './user-menu-header';
-import { Link } from '@tryghost/admin-x-framework';
+import { Link, useLocation } from '@tryghost/admin-x-framework';
 import { getAdminToolbarUrl } from '@/utils/admin-toolbar-url';
+import { settingsReturnToState } from '@/layout/settings-navigation';
 
 function UserMenuProfile() {
   const currentUser = useCurrentUser();
+  const location = useLocation();
 
   return (
     <UserMenuItem>
-      <Link to={`/settings/staff/${currentUser.data?.slug}`}>
+      <Link
+        state={settingsReturnToState(`${location.pathname}${location.search}${location.hash}`)}
+        to={`/settings/staff/${currentUser.data?.slug}`}
+      >
         <LucideIcon.User />
         <UserMenuItem.Label>Your profile</UserMenuItem.Label>
       </Link>

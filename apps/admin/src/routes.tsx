@@ -172,14 +172,14 @@ const appRoutes: RouteObject[] = [
     children: activityPubRoutes,
   },
   {
-    // hideAdminSidebar lives on the handle, not the lazy module, so the shell
-    // hides at first paint instead of waiting on the settings chunk.
+    // The shell swaps its primary navigation for the Settings navigation at
+    // first paint, before the lazy settings chunk has resolved.
     path: `settings`,
     lazy: lazyComponent(lazySettingsScreen),
     children: settingsRouteChildren,
     handle: {
       allowInForceUpgrade: true,
-      hideAdminSidebar: true,
+      settingsSidebar: true,
       requiresAccess: canAccessSettingsRoute,
     } satisfies AdminRouteHandle & AccessRouteHandle,
   },

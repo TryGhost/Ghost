@@ -49,6 +49,7 @@ const PRIVATE_FEATURES = [
   'csvContentImporter',
   'adminUIRefresh',
   'admin7Pill',
+  'admin7settings',
   'tagsX',
   'emailUniqueid',
   'improveSendingUI',

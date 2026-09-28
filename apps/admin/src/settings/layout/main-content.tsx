@@ -1,6 +1,6 @@
-import ExitSettingsButton from '@/settings/components/exit-settings-button';
 import Settings from './settings-sections';
 import Sidebar from './sidebar';
+import ExitSettingsButton from '@/settings/components/exit-settings-button';
 import Users from '@/settings/general/users';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { type ReactNode, useEffect } from 'react';
@@ -9,12 +9,15 @@ import { canAccessSettings, isEditorUser } from '@tryghost/admin-x-framework/api
 import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useGlobalDirtyState } from '@tryghost/shade/utils';
-import { useNavigate } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useExitSettings } from '@/settings/hooks/use-exit-settings';
 
 const EMPTY_KEYWORDS: string[] = [];
 const OPEN_SHADE_MODAL_SELECTOR = ':is([role="dialog"], [role="alertdialog"])[data-state="open"]';
+// The shell's mobile navigation sheet (which holds the Settings nav) closes on ESC itself.
+const OPEN_MOBILE_SIDEBAR_SELECTOR = '[data-mobile="true"][data-state="open"]';
 
-const Page: React.FC<{ children: ReactNode }> = ({ children }) => {
+const LegacyPage: React.FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <>
       <div
@@ -37,13 +40,17 @@ const MainContent: React.FC = () => {
   const { currentUser } = useGlobalData();
   const { isDirty } = useGlobalDirtyState();
   const { confirm, dialogProps } = useDirtyConfirmation();
-  const navigate = useNavigate();
+  const exitSettings = useExitSettings();
+  const admin7Settings = useFeatureFlag('admin7settings');
   const hasOpenModal = () => {
     if (document.getElementById('modal-backdrop')) {
       return true;
     }
 
-    return Boolean(document.querySelector(OPEN_SHADE_MODAL_SELECTOR));
+    return Boolean(
+      document.querySelector(OPEN_SHADE_MODAL_SELECTOR) ||
+      document.querySelector(OPEN_MOBILE_SIDEBAR_SELECTOR),
+    );
   };
 
   useEffect(() => {
@@ -59,9 +66,7 @@ const MainContent: React.FC = () => {
           return;
         }
 
-        confirm(isDirty, () => {
-          navigate('/');
-        });
+        confirm(isDirty, exitSettings);
       }
     };
 
@@ -70,7 +75,7 @@ const MainContent: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [confirm, isDirty, navigate]);
+  }, [confirm, exitSettings, isDirty]);
 
   // Contributors/Authors only see their profile modal (rendered via routing)
   // Don't render the main settings content for them
@@ -79,43 +84,70 @@ const MainContent: React.FC = () => {
   }
 
   if (isEditorUser(currentUser)) {
-    return (
-      <Page>
-        <div className="min-w-0 flex-1 bg-white dark:bg-gray-950">
-          <div className="h-full overflow-y-auto overscroll-y-contain" id="settings-scroller">
-            <div className="mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10">
-              <Text as="h1" className="mb-[5vmin] text-4xl" leading="supertight" weight="bold">
-                Settings
-              </Text>
-              <Users highlight={false} keywords={EMPTY_KEYWORDS} />
+    if (!admin7Settings) {
+      return (
+        <LegacyPage>
+          <div className="min-w-0 flex-1 bg-white dark:bg-gray-950">
+            <div className="h-full overflow-y-auto overscroll-y-contain" id="settings-scroller">
+              <div className="mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10">
+                <Text as="h1" className="mb-[5vmin] text-4xl" leading="supertight" weight="bold">
+                  Settings
+                </Text>
+                <Users highlight={false} keywords={EMPTY_KEYWORDS} />
+              </div>
             </div>
+          </div>
+          <DirtyConfirmDialog {...dialogProps} />
+        </LegacyPage>
+      );
+    }
+
+    return (
+      <>
+        <div className="h-full overflow-y-auto overscroll-y-contain" id="settings-scroller">
+          <div className="mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10">
+            <Text as="h1" className="mb-[5vmin] text-4xl" leading="supertight" weight="bold">
+              Settings
+            </Text>
+            <Users highlight={false} keywords={EMPTY_KEYWORDS} />
           </div>
         </div>
         <DirtyConfirmDialog {...dialogProps} />
-      </Page>
+      </>
+    );
+  }
+
+  if (!admin7Settings) {
+    return (
+      <LegacyPage>
+        <div
+          className="fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-16px)] flex-1 basis-[320px] overscroll-y-contain bg-white p-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-gray-50 tablet:py-0 dark:bg-gray-950 dark:tablet:bg-[#101114]"
+          id="settings-sidebar-scroller"
+        >
+          <div className="relative w-full">
+            <Sidebar />
+          </div>
+        </div>
+        <div className="h-full min-w-0 flex-1 bg-white tablet:basis-[800px] dark:bg-gray-950 dark:tablet:bg-black">
+          <div
+            className="relative h-full overflow-y-scroll overscroll-y-contain pt-13"
+            id="settings-scroller"
+          >
+            <Settings />
+          </div>
+        </div>
+        <DirtyConfirmDialog {...dialogProps} />
+      </LegacyPage>
     );
   }
 
   return (
-    <Page>
-      <div
-        className="fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-16px)] flex-1 basis-[320px] overscroll-y-contain bg-white p-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-gray-50 tablet:py-0 dark:bg-gray-950 dark:tablet:bg-[#101114]"
-        id="settings-sidebar-scroller"
-      >
-        <div className="relative w-full">
-          <Sidebar />
-        </div>
-      </div>
-      <div className="h-full min-w-0 flex-1 bg-white tablet:basis-[800px] dark:bg-gray-950 dark:tablet:bg-black">
-        <div
-          className="relative h-full overflow-y-scroll overscroll-y-contain pt-13"
-          id="settings-scroller"
-        >
-          <Settings />
-        </div>
+    <>
+      <div className="h-full overflow-y-auto overscroll-y-contain" id="settings-scroller">
+        <Settings />
       </div>
       <DirtyConfirmDialog {...dialogProps} />
-    </Page>
+    </>
   );
 };
 
