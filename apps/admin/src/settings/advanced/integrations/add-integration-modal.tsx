@@ -26,7 +26,7 @@ function AddIntegrationModal() {
   const upgradeRoute = useUpgradeRoute();
   const [name, setName] = useState('');
   const [errors, setErrors] = useState({ name: '' });
-  const { mutateAsync: createIntegration } = useCreateIntegration();
+  const { mutateAsync: createIntegration, isPending: isAdding } = useCreateIntegration();
   const limiter = useLimiter();
   const handleError = useHandleError();
   const { showLimit } = useConfirmation();
@@ -47,6 +47,10 @@ function AddIntegrationModal() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isAdding) {
+      return;
+    }
 
     if (!name) {
       setErrors({ name: 'Name is required' });
@@ -106,7 +110,9 @@ function AddIntegrationModal() {
             <Button type="button" variant="outline" onClick={() => updateRoute('integrations')}>
               Cancel
             </Button>
-            <Button type="submit">Add</Button>
+            <Button disabled={isAdding} type="submit">
+              Add
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
