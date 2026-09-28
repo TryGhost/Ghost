@@ -29,7 +29,7 @@ test.describe('Ghost Admin - Migration app handoff', () => {
     ghostAccountOwner,
   }) => {
     const response = await page.request.get('/ghost/api/admin/integrations/', {
-      params: { include: 'api_keys', limit: 'all' },
+      params: { include: 'api_keys' },
     });
     const { integrations } = (await response.json()) as IntegrationsResponse;
     const migrationKey = integrations.find(({ slug }) => slug === 'self-serve-migration')

@@ -50,9 +50,7 @@ const Migrate = () => {
     const sendInitialData = async () => {
       try {
         const [{ integrations }, { users }] = await Promise.all([
-          fetchApi<IntegrationsResponseType>(
-            apiUrl('/integrations/', { include: 'api_keys', limit: 'all' }),
-          ),
+          fetchApi<IntegrationsResponseType>(apiUrl('/integrations/', { include: 'api_keys' })),
           fetchApi<UsersResponseType>(
             apiUrl('/users/', { filter: "roles.name:'Owner'", limit: '1', include: 'roles' }),
           ),
