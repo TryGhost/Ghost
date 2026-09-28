@@ -504,6 +504,55 @@ describe('Posts list bulk actions', () => {
       expect(edit.requests[1].body).toEqual({ bulk: { action: 'feature', meta: {} } });
     });
 
+    it('shows the access success toast and closes before the list finishes refreshing', async () => {
+      const target = post({ title: 'Target', status: 'draft' });
+      fakePosts([target]);
+      fakeTiers([]);
+      let finishSave!: () => void;
+      const saveResponse = new Promise<void>((resolve) => {
+        finishSave = resolve;
+      });
+      let finishRefresh!: () => void;
+      const refreshResponse = new Promise<void>((resolve) => {
+        finishRefresh = resolve;
+      });
+      const edit = fakeAdminEndpoint('PUT', /^\/posts\/bulk/, async () => {
+        await saveResponse;
+        return {};
+      });
+
+      try {
+        await renderAdminApp('/posts?type=draft', FLAG_ON);
+        await expect.element(postsListScreen.listItems().first()).toBeVisible();
+        // Hold the subsequent list refresh independently of the save request.
+        const refresh = fakeAdminEndpoint('GET', /^\/posts\//, async () => {
+          await refreshResponse;
+          return {
+            posts: [target],
+            meta: {
+              pagination: { page: 1, pages: 1, limit: 30, total: 1, next: null, prev: null },
+            },
+          };
+        });
+
+        await postsListScreen.listItems().first().click({ button: 'right' });
+        await postsListScreen.contextMenuItem('Change access').click();
+        await postsListScreen.dialogButton('Save').click();
+        await expect.poll(() => edit.requests.length).toBe(1);
+        await expect.element(postsListScreen.dialogButton('Saving')).toBeDisabled();
+        await expect(postsListScreen.toastWithText('Post access updated')).toHaveCount(0);
+
+        finishSave();
+        await expect.poll(() => refresh.requests.length).toBeGreaterThan(0);
+        await expect(postsListScreen.dialogButton('Saving')).toHaveCount(0);
+        await expect(postsListScreen.dialogButton('Save')).toHaveCount(0);
+        await expect.element(postsListScreen.toastWithText('Post access updated')).toBeVisible();
+      } finally {
+        finishSave();
+        finishRefresh();
+      }
+    });
+
     it.each(['Cancel', 'Escape'])(
       'preserves an inverted selection through modal shortcuts and %s dismissal',
       async (dismiss) => {
