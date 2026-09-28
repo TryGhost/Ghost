@@ -532,8 +532,11 @@ async function initBackgroundServices({ config }) {
   // Load email analytics recurring jobs
   if (config.get('backgroundJobs:emailAnalytics')) {
     const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
+    const webhookProvider =
+      require('./server/services/email-provider').getProvider().getEventSource().type === 'webhook';
     await Promise.all([
-      emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
+      // Webhooks can update old sends, and queued statistics must resume after restart.
+      emailAnalyticsJobs.scheduleRecurringNewslettersJob(webhookProvider),
       emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
       emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
     ]);

@@ -11,6 +11,7 @@ import { createDatabaseAutomationsRepository } from '../../../../core/server/ser
 import { AutomationEmailAnalyticsBatchProcessor } from '../../../../core/server/services/email-analytics/automation-email-analytics-batch-processor';
 import { GiftEmailAnalyticsBatchProcessor } from '../../../../core/server/services/email-analytics/gift-email-analytics-batch-processor';
 import { EventProcessingResult } from '../../../../core/server/services/email-analytics/event-processing-result';
+import { WebhookStatsAggregator } from '../../../../core/server/services/email-analytics/webhook-stats-aggregator';
 const EmailEventProcessor = require('../../../../core/server/services/email-service/email-event-processor');
 const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
 const {
@@ -63,13 +64,14 @@ describe('provider email events', () => {
   let provider: FakeWebhookProvider;
   let service: EmailEventService;
   let queries: Queries;
+  let stats: WebhookStatsAggregator;
   let event: EmailEvent;
   let memberId: string;
   let recipientId: string;
   let newsletterId: string;
   let suppression: any;
   let membersRepository: any;
-  let createEventProcessor: (family: string) => any;
+  let createEventProcessor: (family: string, aggregationQueries?: Queries) => any;
   let giftDeliveryService: {
     recordOutcome: (options: any) => Promise<any>;
     getRecipientEmailForMessage: (id: string) => Promise<string | null>;
@@ -116,7 +118,7 @@ describe('provider email events', () => {
         removeUnsubscribe: (email: string) => provider.removeSuppression(email, 'unsubscribe'),
       },
     });
-    createEventProcessor = (family) => {
+    createEventProcessor = (family, aggregationQueries = queries) => {
       if (family === 'automations') {
         return new AutomationEmailAnalyticsBatchProcessor({
           eventSource: 'webhook',
@@ -148,11 +150,24 @@ describe('provider email events', () => {
       return new NewsletterEmailAnalyticsBatchProcessor({
         eventSource: 'webhook',
         config,
-        queries,
+        queries: aggregationQueries,
         emailEventProcessor,
       });
     };
-    service = new EmailEventService({ provider, createEventProcessor });
+    stats = new WebhookStatsAggregator({
+      knex,
+      aggregate: (processingResult, transaction) =>
+        createEventProcessor('newsletters', new Queries(transaction)).aggregate({
+          processingResult,
+          includeOpenedEvents: true,
+          isFinal: true,
+        }),
+    });
+    service = new EmailEventService({
+      provider,
+      createEventProcessor,
+      queueStats: (result) => stats.enqueue(result),
+    });
     memberId = newId();
     recipientId = newId();
     const emailId = newId();
@@ -233,6 +248,8 @@ describe('provider email events', () => {
     );
     await service.webhook(provider.source, request);
     assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 0);
+    await stats.flush();
     assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
   });
   it('accepts verified handshakes without processing events', async () => {
@@ -257,6 +274,7 @@ describe('provider email events', () => {
     event.type = 'opened';
     await service.webhook(provider.source, sign({ events: [event, event] }));
     await service.webhook(provider.source, sign({ events: [event] }));
+    await stats.flush();
     assert.equal((await knex('emails').where({ id: event.emailId }).first()).opened_count, 1);
     assert.equal((await knex('email_recipients').where({ id: recipientId })).length, 1);
   });
@@ -284,7 +302,7 @@ describe('provider email events', () => {
     sinon.assert.calledTwice(apply);
     assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
   });
-  it('returns 503 for a missing recipient and preserves completed events and aggregates', async () => {
+  it('returns 503 for a missing recipient and preserves completed events and queued statistics', async () => {
     const apply = sinon.spy(EmailEventProcessor.prototype, 'handleDelivered');
     await assert.rejects(
       service.webhook(provider.source, sign({ events: [event, { ...event, emailId: newId() }] })),
@@ -292,6 +310,7 @@ describe('provider email events', () => {
     );
     assert.equal(apply.callCount, 3);
     assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
+    await stats.flush();
     assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
   });
   it('rejects webhooks for a provider other than the active one', async () => {
@@ -422,16 +441,150 @@ describe('provider email events', () => {
     );
     assert.equal(await repository.getByProviderMessageId('Opaque-Message'), null);
   });
-  it('propagates aggregation failures and recomputes totals when the provider retries', async () => {
+  it('retains statistics work after aggregation fails without requiring provider redelivery', async () => {
     const aggregate = sinon
-      .stub(queries, 'aggregateEmailStats')
+      .stub(Queries.prototype, 'aggregateEmailStats')
       .rejects(new Error('Database unavailable'));
     const request = sign({ events: [event] });
-    await assert.rejects(service.webhook(provider.source, request), /Database unavailable/);
+    await service.webhook(provider.source, request);
+    sinon.assert.notCalled(aggregate);
+    await assert.rejects(stats.flush(), /Database unavailable/);
     assert((await knex('email_recipients').where({ id: recipientId }).first()).delivered_at);
     aggregate.restore();
-    await service.webhook(provider.source, request);
+    await stats.flush();
     assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
+  });
+
+  it('coalesces separate webhook requests into one newsletter and member recalculation', async () => {
+    const emailStats = sinon.spy(Queries.prototype, 'aggregateEmailStats');
+    const memberStats = sinon.spy(Queries.prototype, 'aggregateMemberStatsBatch');
+    const request = sign({ events: [event] });
+    for (let i = 0; i < 64; i++) {
+      await service.webhook(provider.source, request);
+    }
+    sinon.assert.notCalled(emailStats);
+    sinon.assert.notCalled(memberStats);
+    assert.equal(
+      (await knex('jobs').where('name', 'like', 'email-analytics-webhook-stats-%')).length,
+      2,
+    );
+
+    await stats.flush();
+    await stats.flush();
+    sinon.assert.calledOnce(emailStats);
+    sinon.assert.calledOnce(memberStats);
+    assert.equal((await knex('members').where({ id: memberId }).first()).email_count, 1);
+    assert.equal(
+      (await knex('jobs').where('name', 'like', 'email-analytics-webhook-stats-%')).length,
+      0,
+    );
+  });
+
+  it('rolls back a failed statistics write and resumes pending work in a new instance', async () => {
+    await service.webhook(provider.source, sign({ events: [event] }));
+    const failing = new WebhookStatsAggregator({
+      knex,
+      aggregate: async (result, transaction) => {
+        await new Queries(transaction).aggregateEmailStats(result.emailIds[0], true);
+        throw new Error('Failed after updating counts');
+      },
+    });
+    await assert.rejects(failing.flush(), /Failed after updating counts/);
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 0);
+    await stats.flush();
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
+  });
+
+  it('drains more than one batch of pending members without losing IDs', async () => {
+    const memberIds = Array.from({ length: 121 }, () => newId());
+    const aggregated: string[] = [];
+    const worker = new WebhookStatsAggregator({
+      knex,
+      aggregate: async (result) => {
+        assert(result.memberIds.length <= 100);
+        aggregated.push(...result.memberIds);
+      },
+    });
+    await worker.enqueue(new EventProcessingResult({ memberIds }));
+    await worker.enqueue(new EventProcessingResult({ memberIds }));
+    await worker.flush();
+    assert.deepEqual(aggregated.sort(), memberIds.sort());
+    assert.equal(
+      (await knex('jobs').where('name', 'like', 'email-analytics-webhook-stats-%')).length,
+      0,
+    );
+  });
+
+  it('retains an enqueue arriving while that newsletter is being aggregated', async () => {
+    const result = new EventProcessingResult({ emailIds: [event.emailId!] });
+    await stats.enqueue(result);
+    let started!: () => void;
+    const aggregating = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    let complete!: () => void;
+    const paused = new Promise<void>((resolve) => {
+      complete = resolve;
+    });
+    const aggregate = sinon.stub().callsFake(async () => {
+      started();
+      await paused;
+    });
+    const worker = new WebhookStatsAggregator({ knex, aggregate });
+    const flushing = worker.flush();
+    await aggregating;
+
+    // Observe submission of the INSERT; it must wait for the pending job lock.
+    let submitted!: () => void;
+    const inserting = new Promise<void>((resolve) => {
+      submitted = resolve;
+    });
+    const onQuery = (query: { sql: string }) => {
+      if (query.sql.startsWith('insert ignore into `jobs`')) {
+        submitted();
+      }
+    };
+    knex.on('query', onQuery);
+    const enqueue = stats.enqueue(result);
+    try {
+      await inserting;
+    } finally {
+      knex.removeListener('query', onQuery);
+      complete();
+    }
+    await Promise.all([flushing, enqueue]);
+    sinon.assert.calledOnce(aggregate);
+    assert.equal(
+      (await knex('jobs').where('name', 'like', 'email-analytics-webhook-stats-%')).length,
+      1,
+    );
+    await worker.flush();
+    sinon.assert.calledTwice(aggregate);
+  });
+
+  it('does not aggregate the same queued work concurrently across instances', async () => {
+    await stats.enqueue(new EventProcessingResult({ emailIds: [event.emailId!] }));
+    let started!: () => void;
+    const aggregating = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    let complete!: () => void;
+    const paused = new Promise<void>((resolve) => {
+      complete = resolve;
+    });
+    const aggregate = sinon.stub().callsFake(async () => {
+      started();
+      await paused;
+    });
+    const first = new WebhookStatsAggregator({ knex, aggregate });
+    const second = new WebhookStatsAggregator({ knex, aggregate });
+    const flushing = first.flush();
+    await aggregating;
+    const other = second.flush();
+    await first.flush(); // An overlapping tick on the same instance also skips work.
+    complete();
+    await Promise.all([flushing, other]);
+    sinon.assert.calledOnce(aggregate);
   });
   it('waits for suppression and member updates before acknowledging a complaint', async () => {
     let complete!: () => void;

@@ -127,8 +127,8 @@ failure-history storage is added. A processor reporting an unexpected unhandled
 event or processing failure still causes HTTP 503 instead of acknowledgement.
 
 Existing domain services commit independently; there is no transaction spanning
-the notification. Successfully processed events are retained and aggregated even
-if another recipient is missing. Provider redelivery can repeat completed events.
+the notification. Successfully processed events and their pending statistics work
+are retained even if another recipient is missing. Provider redelivery can repeat completed events.
 Newsletter and automation batches also save earlier buffered tracking updates when
 a later webhook event fails. The transport selects error handling at construction:
 
@@ -142,6 +142,27 @@ a later webhook event fails. The transport selects error handling at constructio
 
 There is no new per-event polling retry or skip policy.
 There is no event inbox, event-ID ledger, replay worker or schema migration.
+
+### Webhook newsletter statistics
+
+Webhooks save recipient outcomes and await safety writes immediately, then persist
+pending statistics work before acknowledging. They do not recalculate newsletter
+or member totals in the request. The existing `jobs` table holds one pending job
+per affected newsletter/member, coalescing notifications across requests. These
+jobs contain entity IDs, not webhook payloads or event history.
+
+The existing five-minute newsletter analytics schedule drains this work using the
+existing statistics queries and member batching configuration. Webhook providers
+register that schedule even without recent sends, so late opens and pending work
+survive restarts. As with polling, the schedule requires `emailAnalytics:enabled`
+and `backgroundJobs:emailAnalytics`; displayed totals lag until it runs.
+
+Each newsletter or group of up to 100 members is recalculated in a transaction
+that locks its pending jobs and removes them only after the counts are saved.
+Failures leave the jobs queued for the next run. Concurrent enqueues wait for
+those locks and preserve fresh work after a successful flush. Pagination prevents
+the same newsletter from being recalculated repeatedly within one run. Polling
+retains its existing aggregation lifecycle.
 
 ## Suppression completion
 
@@ -173,8 +194,8 @@ propagate for webhooks. Newsletter unsubscribe cleanup runs only after local
 success; automation unsubscribes retain provider protection regardless of local
 success. Polling logs remote cleanup failures and continues. Local polling failures
 can leave incomplete state and require operator reconciliation; complaint cleanup
-may already have removed provider protection. There is no durable retry queue or
-separate cleanup worker. Providers classify
+may already have removed provider protection. There is no durable queue for these
+safety writes or separate cleanup worker. Providers classify
 invalid-mailbox failures using `suppress`; ordinary permanent rejections do not
 automatically suppress.
 

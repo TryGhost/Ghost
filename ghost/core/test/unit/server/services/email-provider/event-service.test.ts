@@ -11,6 +11,7 @@ describe('email webhook delegation', () => {
   let clock: sinon.SinonFakeTimers;
   let processBatch: sinon.SinonStub;
   let aggregate: sinon.SinonStub;
+  let queueStats: sinon.SinonStub;
   let verify: sinon.SinonStub;
   let createEventProcessor: sinon.SinonStub;
   let service: EmailEventService;
@@ -34,20 +35,23 @@ describe('email webhook delegation', () => {
       result.delivered += 1;
     });
     aggregate = sinon.stub().resolves(null);
+    queueStats = sinon.stub().resolves();
     verify = sinon.stub().resolves({ events: [event] });
     createEventProcessor = sinon.stub().returns({ processBatch, aggregate });
     service = new EmailEventService({
       provider: { source: 'provider', getEventSource: () => ({ type: 'webhook', verify }) },
       createEventProcessor,
+      queueStats,
     });
   });
   afterEach(() => sinon.restore());
 
-  it('delegates unchanged IDs and aggregates through the family processor', async () => {
+  it('delegates unchanged IDs and queues statistics without recalculating them', async () => {
     await service.webhook('provider', request);
     sinon.assert.calledOnceWithExactly(createEventProcessor, 'newsletters');
     assert.deepEqual(processBatch.firstCall.firstArg, [event]);
-    assert.equal(aggregate.firstCall.firstArg.processingResult.delivered, 1);
+    assert.equal(queueStats.firstCall.firstArg.delivered, 1);
+    sinon.assert.notCalled(aggregate);
     assert.equal(clock.countTimers(), 0);
   });
   it('retries only unmatched events once after 500 ms', async () => {
@@ -62,10 +66,10 @@ describe('email webhook delegation', () => {
     sinon.assert.calledThrice(processBatch);
     assert.deepEqual(processBatch.thirdCall.firstArg, [late]);
     sinon.assert.calledOnce(verify);
-    sinon.assert.calledOnce(aggregate);
+    sinon.assert.calledOnce(queueStats);
     assert.equal(clock.countTimers(), 0);
   });
-  it('returns 503 after a second missing result and still aggregates completed work', async () => {
+  it('returns 503 after a second missing result and still queues completed work', async () => {
     processBatch.callsFake(missing);
     const rejected = assert.rejects(service.webhook('provider', request), {
       code: 'EMAIL_RECIPIENT_NOT_FOUND',
@@ -75,7 +79,7 @@ describe('email webhook delegation', () => {
     await rejected;
     await clock.tickAsync(5000);
     sinon.assert.calledTwice(processBatch);
-    sinon.assert.calledOnce(aggregate);
+    sinon.assert.calledOnce(queueStats);
     assert.equal(clock.countTimers(), 0);
   });
   it('rejects unhandled events instead of acknowledging them', async () => {
@@ -125,9 +129,9 @@ describe('email webhook delegation', () => {
     assert.throws(() => parseEmailEvents([event], 'automations'), /wrong family/);
     assert.deepEqual(parseEmailEvents([event], 'newsletters'), [event]);
   });
-  it('keeps the webhook pending until aggregates finish', async () => {
+  it('keeps the webhook pending until statistics work is persisted', async () => {
     let complete!: () => void;
-    aggregate.callsFake(
+    queueStats.callsFake(
       () =>
         new Promise<void>((resolve) => {
           complete = resolve;
@@ -142,6 +146,12 @@ describe('email webhook delegation', () => {
     complete();
     await pending;
     assert.equal(finished, true);
+  });
+  it('propagates enqueue failures for provider redelivery without retrying processing', async () => {
+    queueStats.rejects(new Error('Could not save statistics work'));
+    await assert.rejects(service.webhook('provider', request), /Could not save statistics work/);
+    sinon.assert.calledOnce(processBatch);
+    sinon.assert.notCalled(aggregate);
   });
   it('uses a separate processor for each family and request', async () => {
     verify.resolves({

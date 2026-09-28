@@ -5,6 +5,7 @@ import logging from '@tryghost/logging';
 import { vi } from 'vitest';
 import { EmailAnalyticsService } from '../../../../../core/server/services/email-analytics/email-analytics-service';
 import { Queries } from '../../../../../core/server/services/email-analytics/lib/queries';
+import { StartEmailAnalyticsJobEvent } from '../../../../../core/server/services/email-analytics/events/start-email-analytics-job-event';
 import type { EmailAnalyticsServiceWrapper } from '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper';
 
 type Options = ConstructorParameters<typeof EmailAnalyticsServiceWrapper>[0];
@@ -139,6 +140,21 @@ describe('email analytics provider wiring', () => {
     for (const wrapper of wrappers) {
       assert.equal(wrapper.options.polling, false);
     }
+  });
+
+  it('runs queued webhook statistics from the existing newsletter schedule', async () => {
+    const { WebhookStatsAggregator } =
+      await import('../../../../../core/server/services/email-analytics/webhook-stats-aggregator');
+    const flush = sinon.stub(WebhookStatsAggregator.prototype, 'flush').resolves();
+    deps.provider = {
+      source: 'test',
+      getEventSource: () => ({ type: 'webhook', verify: sinon.stub() }),
+    };
+    analytics.init(deps);
+    await subscribers.get(StartEmailAnalyticsJobEvent.name)!();
+    sinon.assert.calledOnce(flush);
+    sinon.assert.notCalled(wrappers[0].startFetch);
+    sinon.assert.notCalled(fetch);
   });
 
   it('processes tracking for addresses accepted by Ghost without discarding them during polling', async () => {

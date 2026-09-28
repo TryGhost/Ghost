@@ -29,6 +29,7 @@ export class EmailEventService {
   private readonly deps: {
     provider: Pick<EmailProviderBase, 'source' | 'getEventSource'>;
     createEventProcessor: (family: EmailFamily) => BatchEventProcessor;
+    queueStats: (result: EventProcessingResult) => Promise<void>;
   };
 
   constructor(deps: EmailEventService['deps']) {
@@ -109,14 +110,10 @@ export class EmailEventService {
         }
       }
     } finally {
-      // Existing services commit independently. Keep aggregates up to date for
-      // completed events even when another event cannot be correlated.
-      for (const { processor, result } of processors.values()) {
-        await processor.aggregate?.({
-          includeOpenedEvents: true,
-          processingResult: result,
-          isFinal: true,
-        });
+      // Persist pending statistics before acknowledging, including completed
+      // events in a partly failed notification. Recalculation happens on schedule.
+      for (const { result } of processors.values()) {
+        await this.deps.queueStats(result);
       }
     }
   }

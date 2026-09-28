@@ -7,6 +7,7 @@ import {
 } from '@tryghost/adapter-base-email';
 import logging from '@tryghost/logging';
 import { EmailEventService } from '../email-provider/event-service';
+import { WebhookStatsAggregator } from './webhook-stats-aggregator';
 import type { BatchEventProcessor } from './batch-event-processor';
 import type { Knex } from 'knex';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
@@ -109,7 +110,10 @@ export const init = ({
 
   // Each fetch or webhook owns its buffers; concurrent requests must not flush
   // or clear another request's pending newsletter updates.
-  const createEventProcessor = (family: EmailFamily): BatchEventProcessor => {
+  const createEventProcessor = (
+    family: EmailFamily,
+    aggregationQueries = queries,
+  ): BatchEventProcessor => {
     if (family === 'automations') {
       return new AutomationEmailAnalyticsBatchProcessor({
         automationsApi,
@@ -144,10 +148,23 @@ export const init = ({
         prometheusClient,
       }),
       prometheusClient,
-      queries,
+      queries: aggregationQueries,
     });
   };
-  eventService = new EmailEventService({ provider, createEventProcessor });
+  const webhookStats = new WebhookStatsAggregator({
+    knex: db.knex,
+    aggregate: (processingResult, transaction) =>
+      createEventProcessor('newsletters', new Queries(transaction)).aggregate!({
+        processingResult,
+        includeOpenedEvents: true,
+        isFinal: true,
+      }),
+  });
+  eventService = new EmailEventService({
+    provider,
+    createEventProcessor,
+    queueStats: (result) => webhookStats.enqueue(result),
+  });
   const eventSourceOptions = (family: EmailFamily) => ({
     polling: source.type === 'poll',
     fetchEvents: async (
@@ -266,7 +283,15 @@ export const init = ({
     metrics,
   });
 
-  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () => newsletters!.startFetch());
+  domainEvents.subscribe(StartEmailAnalyticsJobEvent, () =>
+    source.type === 'poll'
+      ? newsletters!.startFetch()
+      : webhookStats
+          .flush()
+          .catch((err) =>
+            logging.error(err, '[EmailAnalytics] Webhook statistics aggregation failed'),
+          ),
+  );
 
   domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, () => automations!.startFetch());
 
