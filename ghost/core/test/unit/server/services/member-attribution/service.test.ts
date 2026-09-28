@@ -1,10 +1,28 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const MemberAttributionService = require('../../../../../core/server/services/member-attribution/member-attribution-service');
+// @ts-expect-error JavaScript module has no type declarations
+import MemberAttributionService from '../../../../../core/server/services/member-attribution/member-attribution-service';
+
+type AttributionData = {
+  id?: string | null;
+  url?: string | null;
+  type?: string | null;
+  referrerSource?: string | null;
+  referrerMedium?: string | null;
+  referrerUrl?: string | null;
+};
+
+type EventAttributeKey =
+  | 'attribution_id'
+  | 'attribution_url'
+  | 'attribution_type'
+  | 'referrer_source'
+  | 'referrer_medium'
+  | 'referrer_url';
 
 // Mocks a Bookshelf model that is queried via `.where(...).query(...).fetch(...)`,
 // resolving the fetch to the given event (or null).
-function createEventModelMock(event) {
+function createEventModelMock<T>(event: T | null) {
   const chainable = {
     where: () => chainable,
     query: () => chainable,
@@ -98,7 +116,7 @@ describe('MemberAttributionService', function () {
     it('returns null if attribution_type is null', function () {
       const service = new MemberAttributionService({
         attributionBuilder: {
-          build(attribution) {
+          build(attribution: AttributionData) {
             return {
               ...attribution,
               getResource() {
@@ -132,7 +150,7 @@ describe('MemberAttributionService', function () {
     it('returns url attribution types', function () {
       const service = new MemberAttributionService({
         attributionBuilder: {
-          build(attribution) {
+          build(attribution: AttributionData) {
             return {
               ...attribution,
               getResource() {
@@ -148,7 +166,7 @@ describe('MemberAttributionService', function () {
       });
       const model = {
         id: 'event_id',
-        get(name) {
+        get(name: string) {
           if (name === 'attribution_type') {
             return 'url';
           }
@@ -172,7 +190,7 @@ describe('MemberAttributionService', function () {
     it('returns first loaded relation', function () {
       const service = new MemberAttributionService({
         attributionBuilder: {
-          build(attribution) {
+          build(attribution: AttributionData) {
             return {
               ...attribution,
               getResource() {
@@ -188,7 +206,7 @@ describe('MemberAttributionService', function () {
       });
       const model = {
         id: 'event_id',
-        get(name) {
+        get(name: string) {
           if (name === 'attribution_type') {
             return 'user';
           }
@@ -200,7 +218,7 @@ describe('MemberAttributionService', function () {
           }
           return 'test_user_id';
         },
-        related(name) {
+        related(name: string) {
           if (name === 'userAttribution') {
             return {
               id: 'test_user_id',
@@ -225,7 +243,7 @@ describe('MemberAttributionService', function () {
     it('returns attribution from builder with history', async function () {
       const service = new MemberAttributionService({
         attributionBuilder: {
-          getAttribution: async function (history) {
+          getAttribution: async function (history: { length: number }) {
             assert('length' in history);
             return { success: true };
           },
@@ -239,7 +257,7 @@ describe('MemberAttributionService', function () {
     it('returns empty history attribution when tracking disabled', async function () {
       const service = new MemberAttributionService({
         attributionBuilder: {
-          getAttribution: async function (history) {
+          getAttribution: async function (history: { length: number }) {
             assert.equal(history.length, 0);
             return { success: true };
           },
@@ -293,7 +311,7 @@ describe('MemberAttributionService', function () {
       const service = new MemberAttributionService({
         models: {
           MemberCreatedEvent: createEventModelMock({
-            get: function (key) {
+            get: function (key: EventAttributeKey) {
               const values = {
                 attribution_id: 'attr_123',
                 attribution_url: '/test',
@@ -307,7 +325,7 @@ describe('MemberAttributionService', function () {
           }),
         },
         attributionBuilder: {
-          build: function (attribution) {
+          build: function (attribution: AttributionData) {
             return {
               ...attribution,
               fetchResource: async function () {
@@ -347,7 +365,7 @@ describe('MemberAttributionService', function () {
       const service = new MemberAttributionService({
         models: {
           SubscriptionCreatedEvent: createEventModelMock({
-            get: function (key) {
+            get: function (key: EventAttributeKey) {
               const values = {
                 attribution_id: 'attr_123',
                 attribution_url: '/test',
@@ -361,7 +379,7 @@ describe('MemberAttributionService', function () {
           }),
         },
         attributionBuilder: {
-          build: function (attribution) {
+          build: function (attribution: AttributionData) {
             return {
               ...attribution,
               fetchResource: async function () {
@@ -395,7 +413,7 @@ describe('MemberAttributionService', function () {
     it('fetches resource using attribution builder', async function () {
       const service = new MemberAttributionService({
         attributionBuilder: {
-          build: function (attribution) {
+          build: function (attribution: AttributionData) {
             return {
               ...attribution,
               fetchResource: async function () {

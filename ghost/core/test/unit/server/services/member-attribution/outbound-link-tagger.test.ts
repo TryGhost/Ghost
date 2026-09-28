@@ -1,6 +1,7 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const OutboundLinkTagger = require('../../../../../core/server/services/member-attribution/outbound-link-tagger');
+// @ts-expect-error JavaScript module has no type declarations
+import OutboundLinkTagger from '../../../../../core/server/services/member-attribution/outbound-link-tagger';
 
 describe('OutboundLinkTagger', function () {
   describe('Constructor', function () {
@@ -40,7 +41,7 @@ describe('OutboundLinkTagger', function () {
       const url = new URL('https://example.com/');
       const newsletterName = 'used newsletter name';
       const newsletter = {
-        get: (t) => {
+        get: (t: string) => {
           if (t === 'name') {
             return newsletterName;
           }
@@ -63,7 +64,7 @@ describe('OutboundLinkTagger', function () {
       const url = new URL('https://example.com/');
       const newsletterName = 'Weekly newsletter';
       const newsletter = {
-        get: (t) => {
+        get: (t: string) => {
           if (t === 'name') {
             return newsletterName;
           }

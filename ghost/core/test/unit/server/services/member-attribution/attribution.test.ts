@@ -1,17 +1,51 @@
-const { assertObjectMatches } = require('../../../../utils/assertions');
+import { assertObjectMatches } from '../../../../utils/assertions';
+// @ts-expect-error JavaScript module has no type declarations
+import UrlHistory from '../../../../../core/server/services/member-attribution/url-history';
+// @ts-expect-error JavaScript module has no type declarations
+import AttributionBuilder from '../../../../../core/server/services/member-attribution/attribution-builder';
 
-const UrlHistory = require('../../../../../core/server/services/member-attribution/url-history');
-const AttributionBuilder = require('../../../../../core/server/services/member-attribution/attribution-builder');
+type HistoryItem = {
+  id?: string;
+  path?: string;
+  time: number;
+  type?: string;
+};
+
+type UrlHistoryLike = Iterable<HistoryItem> & { length: number };
+type AttributionData = {
+  id?: string | number | null;
+  type?: string | null;
+  url?: string | null;
+};
+type AttributionLike = {
+  fetchResource(): Promise<Record<string, unknown>>;
+};
+type AttributionBuilderLike = {
+  build(data: AttributionData): AttributionLike;
+  getAttribution(history: UrlHistoryLike): Promise<Record<string, unknown>>;
+};
+type ResourceModel = {
+  id: string;
+  get(property: string): string | undefined;
+};
+type UrlTranslatorMock = {
+  getResourceDetails(item: HistoryItem): AttributionData | null;
+  getResourceById(id: string, type: string): ResourceModel | null;
+  getUrlTitle(url: string): string;
+  getResourceUrl(): string;
+  relativeToAbsolute(path: string): string;
+  stripSubdirectoryFromPath(path: string): string;
+};
 
 describe('AttributionBuilder', function () {
-  let attributionBuilder;
-  let urlTranslator;
-  let now;
+  let attributionBuilder: AttributionBuilderLike;
+  let urlTranslator: UrlTranslatorMock;
+  let now: number;
 
   beforeAll(function () {
     now = Date.now();
     urlTranslator = {
-      getResourceDetails(item) {
+      getResourceDetails(item: HistoryItem) {
         if (!item.path) {
           if (item.id === 'invalid') {
             return null;
@@ -46,13 +80,13 @@ describe('AttributionBuilder', function () {
           url: path,
         };
       },
-      getResourceById(id, type) {
+      getResourceById(id: string, type: string) {
         if (id === 'invalid') {
           return null;
         }
         return {
           id,
-          get(prop) {
+          get(prop: string) {
             if (prop === 'title' && type === 'author') {
               // Simulate an author doesn't have a title
               return undefined;
@@ -65,16 +99,16 @@ describe('AttributionBuilder', function () {
           },
         };
       },
-      getUrlTitle(url) {
+      getUrlTitle(url: string) {
         return url;
       },
       getResourceUrl() {
         return 'https://absolute/dir/path';
       },
-      relativeToAbsolute(path) {
+      relativeToAbsolute(path: string) {
         return 'https://absolute/dir' + path;
       },
-      stripSubdirectoryFromPath(path) {
+      stripSubdirectoryFromPath(path: string) {
         if (path.startsWith('/dir/')) {
           return path.substring('/dir/'.length - 1);
         }
@@ -84,7 +118,7 @@ describe('AttributionBuilder', function () {
     attributionBuilder = new AttributionBuilder({
       urlTranslator,
       referrerTranslator: {
-        getReferrerDetails(history) {
+        getReferrerDetails(history: UrlHistoryLike) {
           if (history) {
             return {
               referrerSource: 'Ghost Explore',
