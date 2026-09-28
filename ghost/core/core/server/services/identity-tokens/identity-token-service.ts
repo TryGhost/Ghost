@@ -1,14 +1,15 @@
 import { sign } from 'jsonwebtoken';
+import type { SigningKeyProvider } from '../signing-keys/signing-key-service';
+
+type SigningKeys = Pick<SigningKeyProvider, 'getSigningKey'>;
 
 export class IdentityTokenService {
-  private privateKey: string;
+  private signingKeys: SigningKeys;
   private issuer: string;
-  private keyId: string;
 
-  constructor(privateKey: string, issuer: string, keyId: string) {
-    this.privateKey = privateKey;
+  constructor(signingKeys: SigningKeys, issuer: string) {
+    this.signingKeys = signingKeys;
     this.issuer = issuer;
-    this.keyId = keyId;
   }
 
   async getTokenForUser(email: string, role?: string) {
@@ -20,11 +21,13 @@ export class IdentityTokenService {
       claims.role = role;
     }
 
-    const token = sign(claims, this.privateKey, {
+    const { privateKey, kid } = await this.signingKeys.getSigningKey();
+
+    const token = sign(claims, privateKey, {
       issuer: this.issuer,
       expiresIn: '5m',
       algorithm: 'RS256',
-      keyid: this.keyId,
+      keyid: kid,
     });
 
     return token;

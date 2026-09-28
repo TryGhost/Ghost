@@ -12,12 +12,11 @@ module.exports = class IdentityTokenServiceWrapper {
     const urlUtils = require('../../../shared/url-utils').default;
     const issuer = urlUtils.urlFor('admin', true);
 
-    const settings = require('../../../shared/settings-cache');
-    const { getPublicKeyInfo } = require('../../lib/public-jwk');
+    const signingKeys = require('../signing-keys');
 
-    const privateKey = settings.get('ghost_private_key');
-    const { kid } = await getPublicKeyInfo(privateKey);
-
-    IdentityTokenServiceWrapper.instance = new IdentityTokenService(privateKey, issuer, kid);
+    IdentityTokenServiceWrapper.instance = new IdentityTokenService(
+      signingKeys.getInstance().forPurpose('staff'),
+      issuer,
+    );
   }
 };

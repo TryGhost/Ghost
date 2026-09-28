@@ -16,7 +16,7 @@ async function createMiddleware() {
     audience: siteOrigin,
     issuer: membersConfig.issuer,
     algorithms: ['RS512'],
-    secret: membersConfig.publicKey,
+    secret: (req, token) => membersConfig.getVerificationKey(token?.header.kid),
     getToken(req) {
       if (!req.get('authorization')) {
         return null;

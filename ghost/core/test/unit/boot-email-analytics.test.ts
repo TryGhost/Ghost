@@ -126,6 +126,7 @@ it('keeps starting background services when email analytics scheduling fails', a
       scheduleTokenCleanupJob: async () => {},
       scheduleExpiredCompCleanupJob: async () => {},
     },
+    './server/services/signing-keys': { scheduleCheckJob: async () => {} },
     './server/services/jobs-service': { getInstance: () => ({}) },
     './server/services/activitypub': { init: async () => {} },
     './server/services/tinybird-sync': { start() {} },
