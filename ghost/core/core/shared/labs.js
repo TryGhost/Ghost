@@ -65,6 +65,7 @@ const PRIVATE_FEATURES = [
   'postsListReact',
   'membersActivityReact',
   'editorReact',
+  'authReact',
   'globalSearchReact',
   'dunningWarnings',
 ];
