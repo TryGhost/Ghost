@@ -123,7 +123,7 @@ const tabsTriggerVariants = cva(
     },
     compoundVariants: [
       {
-        variant: 'button-sm',
+        variant: ['button', 'button-sm'],
         controlShape: 'pill',
         className: 'rounded-full',
       },
@@ -229,7 +229,9 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
       <div
         className={cn(
           'relative rounded-control hover:bg-tab-hover',
-          variant === 'button-sm' && controlShape === 'pill' && 'rounded-full',
+          (variant === 'button' || variant === 'button-sm') &&
+            controlShape === 'pill' &&
+            'rounded-full',
         )}
       >
         <TabsPrimitive.Trigger

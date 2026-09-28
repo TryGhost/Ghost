@@ -156,7 +156,7 @@ describe('createSaveEngine', () => {
     it('saves a new post immediately on its first edit', async () => {
       const h = setup({ id: null, updatedAt: null });
       void h.engine.dispatch('autosave');
-      expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'autosave' });
+      expect(h.engine.getState()).toEqual({ kind: 'preparing', intent: 'autosave' });
       await flush();
 
       expect(h.execute).toHaveBeenCalledTimes(1);
@@ -445,7 +445,7 @@ describe('createSaveEngine', () => {
       const release = h.holdSlugWork();
       const field = h.engine.dispatch('field');
       await flush();
-      expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'field' });
+      expect(h.engine.getState()).toEqual({ kind: 'preparing', intent: 'field' });
 
       h.patch({ isDirty: false });
       await release();
@@ -461,12 +461,16 @@ describe('createSaveEngine', () => {
 
       void h.engine.dispatch('explicit');
       await h.succeed();
-      expect(seen).toEqual([{ kind: 'saving', intent: 'explicit' }, { kind: 'idle' }]);
+      expect(seen).toEqual([
+        { kind: 'preparing', intent: 'explicit' },
+        { kind: 'saving', intent: 'explicit' },
+        { kind: 'idle' },
+      ]);
       expect(h.states).toEqual(seen);
 
       unsubscribe();
       void h.engine.dispatch('explicit');
-      expect(seen).toHaveLength(2);
+      expect(seen).toHaveLength(3);
     });
 
     it('dispose cancels timers and settles every outstanding dispatch', async () => {
@@ -598,7 +602,7 @@ describe('createSaveEngine', () => {
       const seen: string[] = [];
       const unsubscribe = h.engine.subscribe((state) => {
         seen.push(state.kind);
-        if (state.kind === 'saving') {
+        if (state.kind === 'preparing') {
           unsubscribe();
           void h.engine.dispatch('field');
         }
@@ -607,9 +611,9 @@ describe('createSaveEngine', () => {
 
       void h.engine.dispatch('explicit');
 
-      expect(seen).toEqual(['saving', 'other:pending-coalesced']);
+      expect(seen).toEqual(['preparing', 'other:preparing']);
       expect(h.engine.getState()).toEqual({
-        kind: 'pending-coalesced',
+        kind: 'preparing',
         intent: 'explicit',
         pending: 'field',
       });
@@ -627,7 +631,7 @@ describe('createSaveEngine', () => {
       void h.engine.dispatch('explicit');
 
       expect(h.listenerErrors).toEqual([failure]);
-      expect(seen).toEqual([{ kind: 'saving', intent: 'explicit' }]);
+      expect(seen).toEqual([{ kind: 'preparing', intent: 'explicit' }]);
     });
 
     it('still saves when the onStateChange port throws, and reports it', async () => {
@@ -652,7 +656,7 @@ describe('createSaveEngine', () => {
 
       await expect(engine.dispatch('explicit')).resolves.toMatchObject({ kind: 'saved' });
       expect(engine.getState()).toEqual({ kind: 'idle' });
-      expect(reported).toEqual([failure, failure]);
+      expect(reported).toEqual([failure, failure, failure]);
     });
 
     it('re-runs a frozen explicit after a superseded publish while the winning revert needs retry', async () => {

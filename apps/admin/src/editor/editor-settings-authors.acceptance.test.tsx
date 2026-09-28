@@ -27,6 +27,7 @@ const OWNER_ID = '1';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
+const UPLOADED_IMAGE = 'https://example.com/content/images/2026/09/hills.png';
 
 const POLL = { timeout: 10_000 };
 
@@ -185,7 +186,7 @@ describe('Post settings authors', () => {
 
     await editorScreen.removeAuthor('Owner User').click();
 
-    // Staged rather than saved: the field gate holds an empty list back.
+    // The preparation validator holds the whole document while authors are empty.
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
     await expect
       .element(editorScreen.settingsAuthorsInput())
@@ -207,6 +208,118 @@ describe('Post settings authors', () => {
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi).authors).toEqual([{ id: NADIA.id }]);
     await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
+  });
+
+  it('keeps the validation notice visible while unrelated edits await a save', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAuthors();
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+
+    // Keep focus in the title: no blur or successful preparation can clear the hold.
+    await editorScreen.titleInput().fill('Still waiting for an author');
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+    await editorScreen.body().fill('Body awaiting the same author correction');
+    // This test disables the debounce, so a second blocked attempt cannot restore
+    // a notice that disappeared on the keystroke.
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+    expect(saveApi.requests).toHaveLength(0);
+
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
+    await expect(saveApi).toHaveSavedFields({
+      title: 'Still waiting for an author',
+      authors: [{ id: NADIA.id }],
+    });
+    expect(submittedPost(saveApi).lexical).toContain('Body awaiting the same author correction');
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+  });
+
+  it('does not revive the authors warning after undoing their removal', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAuthors();
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Owner User').click();
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Keep the title focused: a later save must not hide a stale warning.
+    await editorScreen.titleInput().fill('Unrelated title edit');
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('holds a new feature image back while the author list is emptied', async () => {
+    const saveApi = fakeSavablePost({ feature_image: null });
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
+      images: [{ url: UPLOADED_IMAGE, ref: null }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, { labs: { editorReact: true } });
+    await openAuthors();
+
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+
+    await userEvent.upload(
+      editorScreen.featureImageInput().element(),
+      new File(['image'], 'hills.png', { type: 'image/png' }),
+    );
+
+    await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
+    await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    // Exercise a real body autosave too, with the normal production debounce.
+    await editorScreen.body().fill('Body edited while authors are invalid');
+    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Crediting someone again lets the staged image through with the authors.
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).lexical).toContain('Body edited while authors are invalid');
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    expect(submittedPost(saveApi)).toMatchObject({
+      authors: [{ id: NADIA.id }],
+      feature_image: UPLOADED_IMAGE,
+    });
+  });
+
+  it('holds a renamed title back while the author list is emptied', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAuthors();
+    await expect.element(editorScreen.settingsSlug()).toHaveValue('hello-from-react');
+
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+
+    await editorScreen.titleInput().fill('Brand New Name');
+    await editorScreen.body().click();
+
+    await expect.element(editorScreen.settingsSlug()).toHaveValue('brand-new-name');
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Crediting someone again lets the staged title and slug through with the authors.
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      title: 'Brand New Name',
+      slug: 'brand-new-name',
+      authors: [{ id: NADIA.id }],
+    });
   });
 
   it('stages a published post’s authors until Update', async () => {

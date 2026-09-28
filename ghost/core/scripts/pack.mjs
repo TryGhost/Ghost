@@ -243,6 +243,9 @@ for (const key of [
   }
 }
 buildWorkspace.minimumReleaseAge = 0;
+// Root patches can target packages the archive doesn't ship (admin-only deps). The
+// root install still fails on a stale patch, so here it only has to tolerate absence.
+buildWorkspace.allowUnusedPatches = true;
 
 // Force every component to resolve to its bundled tarball wherever it appears in
 // the graph. pnpm pack rewrote the components' own workspace: specs to registry

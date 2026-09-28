@@ -37,7 +37,7 @@ function FilterBarRoot({ className, children }: FilterBarProps) {
         className={cn(
           'relative w-full [&>[data-slot=filter-bar-actions]]:static',
           isAdmin7 &&
-            '-mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-filter-bar-item-hover!',
+            '-mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-tab-active!',
           className,
         )}
         data-control-shape={controlShape}
@@ -73,7 +73,13 @@ const FilterBarAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Button
         ref={ref}
-        className={cn(usePillFilterBarStyle && variant === 'outline' && 'bg-background', className)}
+        className={cn(
+          usePillFilterBarStyle && variant === 'outline' && 'bg-background',
+          usePillFilterBarStyle &&
+            variant === 'ghost' &&
+            'hover:bg-tab-active enabled:active:bg-tab-active',
+          className,
+        )}
         size={size ?? (usePillFilterBarStyle ? 'sm' : undefined)}
         variant={variant}
         {...props}

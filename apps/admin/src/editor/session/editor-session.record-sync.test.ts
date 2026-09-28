@@ -90,6 +90,63 @@ describe('createEditorSession', () => {
     expect(session.getLiveLexical()).toBe(reloaded.lexical);
   });
 
+  it('keeps a reload available after a collision retry fails with a transport error', async () => {
+    const hooks = { failUpdateWith: updateCollision() as Error };
+    const { session } = sessionHarness({ record: record(), baseline: record().lexical }, hooks);
+    session.patchTitle('My unsaved title');
+    await session.dispatchExplicit();
+    hooks.failUpdateWith = new TypeError('Failed to fetch');
+    await session.dispatchExplicit();
+
+    expect(session.getView().pendingSave?.blockedBy?.kind).toBe('conflict');
+    expect(
+      session.recordReloaded(
+        record({ title: 'Server title', updated_at: '2026-01-02T00:00:00.000Z' }),
+      ),
+    ).toBe(true);
+    expect(session.getView()).toMatchObject({
+      title: 'Server title',
+      isDirty: false,
+      pendingSave: null,
+    });
+    session.dispose();
+  });
+
+  it('publishes the recovered document before subscribers can edit it', async () => {
+    const { session } = sessionHarness(
+      { record: record(), baseline: record().lexical },
+      { failUpdateWith: updateCollision() },
+    );
+    session.patchTitle('Unsaved old title');
+    await session.dispatchExplicit();
+    const reloaded = record({
+      title: 'Recovered title',
+      slug: 'recovered-title',
+      status: 'published',
+      updated_at: '2026-01-02T00:00:00.000Z',
+    });
+    let recovered = false;
+    session.subscribe(() => {
+      if (recovered || session.getState().kind !== 'idle') {
+        return;
+      }
+      recovered = true;
+      expect(session.getSaveSnapshot()).toMatchObject({
+        title: reloaded.title,
+        status: reloaded.status,
+        updatedAt: reloaded.updated_at,
+      });
+      expect(session.getView().pendingSave).toBeNull();
+      session.patchTitle('Edited after recovery');
+    });
+
+    expect(session.recordReloaded(reloaded)).toBe(true);
+    expect(recovered).toBe(true);
+    expect(session.getFields().title).toBe('Edited after recovery');
+    expect(session.getView().pendingSave).toMatchObject({ blockedBy: null });
+    session.dispose();
+  });
+
   it('notifies leave-guard subscribers when a reload clears unsaved work', async () => {
     const { session } = sessionHarness({ record: record() }, { failUpdateWith: updateCollision() });
     session.patchTitle('My unsaved title');

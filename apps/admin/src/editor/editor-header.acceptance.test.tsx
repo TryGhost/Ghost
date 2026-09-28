@@ -16,6 +16,7 @@ import {
   settingsResponse,
   staffRole,
   submittedPost,
+  withoutAutosave,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -561,7 +562,8 @@ describe('Editor header actions', () => {
   it('saves unsaved work before the publish it carries', async () => {
     publishChrome();
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    // Only the publish flow's explicit save should win this race, not the autosave timer.
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await typeIntoBody(' and more');
