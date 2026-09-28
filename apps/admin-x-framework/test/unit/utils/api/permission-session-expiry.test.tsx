@@ -20,12 +20,30 @@ const readCurrentUser = (mock: { calls: unknown[][] }) =>
 // FrameworkProvider comes from the previous registry and its context is a
 // different object than the one the hooks module reads.
 const loadModules = async () => {
-  const [{ createInfiniteQuery, createQuery, createQueryWithId }, testUtils] = await Promise.all([
+  const [
+    { createInfiniteQuery, createQuery, createQueryWithId },
+    { apiUrl, useFetchApi },
+    testUtils,
+  ] = await Promise.all([
     import('../../../../src/utils/api/hooks'),
+    import('../../../../src/utils/api/fetch-api'),
     import('../../../../src/test/test-utils'),
   ]);
 
+  // The redirect only applies once the page has seen the session work
+  const confirmSession = () =>
+    withMockFetch(
+      { json: { users: [{ id: '1' }] }, headers: { 'content-type': 'application/json' } },
+      async () => {
+        const { result } = testUtils.renderHookWithProviders(() => useFetchApi(), {
+          queryClient: testUtils.createTestQueryClient(),
+        });
+        await result.current(apiUrl('/users/me/', { include: 'roles' }));
+      },
+    );
+
   return {
+    confirmSession,
     useTestQuery: createQuery<unknown>({ dataType: 'test', path: '/test/' }),
     useTestInfiniteQuery: createInfiniteQuery<unknown>({
       dataType: 'test-infinite',
@@ -52,7 +70,9 @@ describe('permission read session expiry', () => {
   });
 
   it('redirects on an expired session when a query omits the opt-out', async () => {
-    const { useTestQuery, createTestQueryClient, renderHookWithProviders } = await loadModules();
+    const { confirmSession, useTestQuery, createTestQueryClient, renderHookWithProviders } =
+      await loadModules();
+    await confirmSession();
 
     await withMockFetch(unauthorized, async (mock) => {
       const { result } = renderHookWithProviders(

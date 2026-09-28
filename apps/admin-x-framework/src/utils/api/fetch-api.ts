@@ -9,6 +9,7 @@ import {
   TimeoutError,
   UnauthorizedError,
 } from '../errors';
+import { isAuthPath } from '../auth-paths';
 import { getGhostPaths } from '../helpers';
 import handleResponse, { ResponseType } from './handle-response';
 
@@ -60,8 +61,11 @@ const xhrToFetchResponse = (xhr: Readonly<XMLHttpRequest>): Response =>
 
 const GHOST_API_REQUEST = /\/ghost\/api\//;
 const SESSION_API_REQUEST = /\/ghost\/api\/admin\/session([/?#]|$)/;
-const UNAUTHENTICATED_ADMIN_ROUTE = /^#\/(?:reset|setup|signin|signup)(?:[/?]|$)/;
+const CURRENT_USER_REQUEST = /\/ghost\/api\/admin\/users\/me\/([?#]|$)/;
 
+// A session can only expire once this page load has seen it work; failures
+// before that are the signed-out state, which the signin flow handles.
+let sessionConfirmed = false;
 let sessionExpiryHandled = false;
 
 const isUnauthenticatedAdminRoute = (adminRoot: string) => {
@@ -69,7 +73,7 @@ const isUnauthenticatedAdminRoute = (adminRoot: string) => {
     window.location.pathname === adminRoot &&
     (!window.location.hash ||
       window.location.hash === '#/' ||
-      UNAUTHENTICATED_ADMIN_ROUTE.test(window.location.hash))
+      isAuthPath(window.location.hash.slice(1)))
   );
 };
 
@@ -85,7 +89,7 @@ const isSessionExpiry = (endpoint: string | URL) => {
 const redirectOnSessionExpiry = () => {
   const { adminRoot } = getGhostPaths();
 
-  if (!sessionExpiryHandled && !isUnauthenticatedAdminRoute(adminRoot)) {
+  if (sessionConfirmed && !sessionExpiryHandled && !isUnauthenticatedAdminRoute(adminRoot)) {
     sessionExpiryHandled = true;
     window.location.replace(adminRoot);
   }
@@ -232,7 +236,11 @@ export const useFetchApi = () => {
           try {
             const response = await fetchFn(endpoint, requestInit);
             // Awaited so response errors reject inside the try/catch
-            return (await handleResponse(response, { responseType })) as ResponseData;
+            const data = (await handleResponse(response, { responseType })) as ResponseData;
+            if (CURRENT_USER_REQUEST.test(endpoint.toString())) {
+              sessionConfirmed = true;
+            }
+            return data;
           } catch (error) {
             retryingMs = Date.now() - startTime;
 
