@@ -1,4 +1,5 @@
 import ObjectId from 'bson-objectid';
+import { z } from 'zod';
 import { Meta, createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 import type { ReadonlyDeep } from 'type-fest';
 
@@ -111,6 +112,52 @@ export const useReadAutomation = createQueryWithId<AutomationDetailResponseType>
   dataType,
   path: (id) => `/automations/${id}/`,
 });
+
+export const AutomationPerformanceStatsSchema = z.object({
+  automation_id: z.string(),
+  total_run_count: z.number().int().nonnegative(),
+  in_progress_run_count: z.number().int().nonnegative(),
+  completed_run_count: z.number().int().nonnegative(),
+  exited_early_run_count: z.number().int().nonnegative(),
+  entries: z
+    .array(
+      z.object({
+        date: z.iso.date(),
+        count: z.number().int().nonnegative(),
+      }),
+    )
+    .min(1),
+  entry_window: z.object({
+    date_from: z.iso.date(),
+    date_to: z.iso.date(),
+    bucket: z.literal('day'),
+    timezone: z.string().min(1),
+  }),
+});
+
+const AutomationPerformanceStatsResponseSchema = z.object({
+  automation_performance_stats: z.array(AutomationPerformanceStatsSchema).length(1),
+});
+
+export type AutomationPerformanceStats = z.infer<typeof AutomationPerformanceStatsSchema>;
+
+export const useReadAutomationPerformanceStats = (
+  id: string,
+  options?: Parameters<
+    ReturnType<typeof createQuery<z.infer<typeof AutomationPerformanceStatsResponseSchema>>>
+  >[0],
+) => {
+  const useQuery = createQuery<z.infer<typeof AutomationPerformanceStatsResponseSchema>>({
+    dataType: 'AutomationPerformanceStatsResponseType',
+    path: `/automations/${id}/performance-stats/`,
+    parseResponse: (data) =>
+      AutomationPerformanceStatsResponseSchema.refine(
+        (response) => response.automation_performance_stats[0].automation_id === id,
+        { message: 'Performance statistics do not match the requested automation.' },
+      ).parse(data),
+  });
+  return useQuery(options);
+};
 
 const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({
   dataType: 'AutomationActionLinksResponseType',
