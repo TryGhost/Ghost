@@ -1,6 +1,7 @@
 import * as sidebarSel from '@tryghost/test-data/selectors/sidebar';
 import { AdminPage } from '@/admin-pages';
 import { Locator, Page } from '@playwright/test';
+import { searchSiteButton } from '@tryghost/test-data/selectors/global-search';
 import { whatsNewMenuItem } from '@tryghost/test-data/selectors/whats-new';
 
 export type UserRole = 'Administrator' | 'Editor' | 'Super Editor' | 'Author' | 'Contributor';
@@ -99,7 +100,7 @@ export class SidebarPage extends AdminPage {
     // the site search control, which only the sidebar contains.
     this.sidebar = page
       .getByRole('navigation')
-      .filter({ has: page.getByRole('button', { name: /Search site/ }) });
+      .filter({ has: page.getByRole('button', { name: searchSiteButton }) });
     // Container testid — for asserting the sidebar's absence (contributors
     // get a floating avatar menu instead of the sidebar).
     this.adminSidebar = page.getByTestId(sidebarSel.adminSidebar);

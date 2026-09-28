@@ -1,13 +1,14 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { editorConflictReloadConfirm } from '@tryghost/test-data/selectors/editor';
 import { toast } from 'sonner';
-import type { SaveEngineState, SaveError } from '@/editor/engine/save-engine';
+import type { PendingSave, SaveEngineState, SaveError } from '@/editor/engine/save-engine';
 import { SessionBanners } from './session-banners';
 import type { ReloadOutcome } from './use-editor-session';
 
 const noop = () => undefined;
 
 interface BannerOverrides {
+  pendingSave?: PendingSave;
   hasUnsavedContent?: () => boolean;
   contentText?: () => string;
   onReload?: () => Promise<ReloadOutcome>;
@@ -18,6 +19,7 @@ function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) 
     <SessionBanners
       contentText={overrides.contentText ?? (() => '')}
       hasUnsavedContent={overrides.hasUnsavedContent ?? (() => false)}
+      pendingSave={overrides.pendingSave}
       state={state}
       onDismissReauth={noop}
       onReload={overrides.onReload ?? (() => Promise.resolve('reloaded'))}
@@ -42,6 +44,19 @@ function errored(error: Partial<SaveError>): SaveEngineState {
 }
 
 describe('SessionBanners', () => {
+  it('keeps collision recovery available after a retry reports another error', () => {
+    renderBanners(
+      { kind: 'error', intent: 'explicit', error: { kind: 'transport', message: 'Offline' } },
+      {
+        pendingSave: {
+          blockedBy: { kind: 'conflict', message: 'Another writer changed this post.' },
+        },
+      },
+    );
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
@@ -61,6 +76,22 @@ describe('SessionBanners', () => {
     const { container } = renderBanners(state);
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('explains held validation without presenting a failed network save', () => {
+    renderBanners(
+      { kind: 'idle' },
+      {
+        pendingSave: {
+          blockedBy: { kind: 'validation', message: 'At least one author is required.' },
+        },
+      },
+    );
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Changes are waiting to save. At least one author is required.',
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
   });
 
   it('offers a retry in place when the session expired', () => {

@@ -29,6 +29,7 @@ const emberDataTypeMapping = {
 };
 
 export default class StateBridgeService extends Service.extend(Evented) {
+    @service billing;
     @service customViews;
     @service feature;
     @service membersUtils;
@@ -266,6 +267,13 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @action
     triggerOpenGiftLinkModal({id, resource}) {
         this.trigger('openGiftLinkModal', {id, resource});
+    }
+
+    // A billing search result for the billing route already showing is a no-op
+    // Ember transition, so React hands the sub-route to the billing app directly
+    @action
+    navigateToBillingSubRoute(subRoute) {
+        this.billing.navigateToSubRoute(subRoute);
     }
 
     get sidebarVisible() {

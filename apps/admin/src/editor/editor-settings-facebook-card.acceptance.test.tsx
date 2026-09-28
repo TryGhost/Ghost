@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import {
+  settingsFacebookCardBackButton,
+  settingsFacebookCardRow,
+} from '@tryghost/test-data/selectors/editor';
 
 import {
   UNSPLASH_PICKED,
@@ -25,7 +29,6 @@ const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
-const BACK_LABEL = 'Close Facebook card panel';
 const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';
 const FEATURE = 'https://example.com/content/images/2026/09/coast.png';
 // The site fixture's own description, which the card falls back to last.
@@ -69,7 +72,7 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 async function openFacebookCard() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-  await editorScreen.settingsSubviewRow('Facebook card').click();
+  await editorScreen.settingsSubviewRow(settingsFacebookCardRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }
 
@@ -105,9 +108,9 @@ describe('Post settings Facebook card', () => {
         );
         await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
         await expect.element(editorScreen.settingsFacebookImageInput()).toBeDisabled();
-        await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+        await editorScreen.settingsSubviewBack(settingsFacebookCardBackButton).click();
         await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-        await editorScreen.settingsSubviewRow('Facebook card').click();
+        await editorScreen.settingsSubviewRow(settingsFacebookCardRow).click();
         await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
         await expect.element(editorScreen.settingsFacebookImageInput()).toBeDisabled();
         await expect.element(editorScreen.settingsFacebookImageUnsplashButton()).toBeDisabled();
@@ -136,13 +139,13 @@ describe('Post settings Facebook card', () => {
     await expect.element(editorScreen.settingsFacebookTitle()).toBeVisible();
     await expect
       .element(editorScreen.settingsSidebar())
-      .toHaveAttribute('aria-label', 'Facebook card');
+      .toHaveAttribute('aria-label', settingsFacebookCardRow);
 
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsFacebookCardBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow('Facebook card')).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsFacebookCardRow)).toBeVisible();
   });
 
   it('saves an uploaded Facebook image as soon as it lands', async () => {

@@ -1,22 +1,16 @@
 import { AdminPage } from '@/admin-pages';
 import { BasePage } from '@/helpers/pages';
 import { DesktopPreviewFrame, PostPreviewModal } from '@/helpers/pages';
+import { EditorHeader } from './post-editor-header';
+import { FeatureImage } from './post-feature-image';
 import { Locator, Page } from '@playwright/test';
+import { PostSettingsSidebar } from './post-settings-sidebar';
 import {
   editorBody,
   editorConflictBanner,
-  editorHeaderActions,
-  editorPreviewButton,
-  editorPublishButton,
   editorReauthBanner,
-  editorSaveButton,
   editorSecondaryInstance,
-  editorStatus,
   editorTitleInput,
-  editorUnpublishButton,
-  editorUnscheduleButton,
-  editorUpdateButton,
-  postsBackLink,
   publishAtScheduleOption,
   publishCompleteBookmark,
   publishConfirm,
@@ -124,9 +118,7 @@ class PublishFlow extends BasePage {
       ? page.getByTestId(publishFlowModal)
       : page.locator('[data-test-modal="publish-flow"]');
     this.publishButton = react
-      ? page
-          .getByTestId(editorHeaderActions)
-          .getByRole('button', { name: editorPublishButton, exact: true })
+      ? new EditorHeader(page).publishButton
       : page.locator('[data-test-button="publish-flow"]').first();
     this.optionsStep = react
       ? page.getByTestId(publishFlowOptions)
@@ -180,6 +172,12 @@ class PublishFlow extends BasePage {
 
   async close(): Promise<void> {
     await this.closeButton.click();
+  }
+
+  /** The complete step offers no Close button; Escape dismisses the dialog. */
+  async dismiss(): Promise<void> {
+    await this.page.keyboard.press('Escape');
+    await this.modal.waitFor({ state: 'hidden' });
   }
 
   async selectPublishType(type: PublishType): Promise<void> {
@@ -293,8 +291,14 @@ export class PostEditorPage extends AdminPage {
   /** React's update-collision banner. */
   readonly conflictBanner: Locator;
 
+  /** Ember's settings menu. */
   readonly settingsMenu: SettingsMenu;
   readonly reauthenticateModal: ReAuthenticateModal;
+
+  /** React only: the header, the settings sidebar and the feature image. */
+  readonly header: EditorHeader;
+  readonly settings: PostSettingsSidebar;
+  readonly featureImage: FeatureImage;
 
   constructor(
     page: Page,
@@ -305,19 +309,15 @@ export class PostEditorPage extends AdminPage {
 
     const react = implementation === 'react';
 
-    const headerActions = page.getByTestId(editorHeaderActions);
+    this.header = new EditorHeader(page);
 
     this.titleInput = react
       ? page.getByTestId(editorTitleInput)
       : page.locator('[data-test-editor-title-input]');
     // Both chips settle on a "Saved" reading; only the attribute differs.
-    this.postStatus = react
-      ? page.getByTestId(editorStatus)
-      : page.locator('[data-test-editor-post-status]');
-    // The publish flow carries a Preview button of its own, so React's is
-    // scoped to the header.
+    this.postStatus = react ? this.header.status : page.locator('[data-test-editor-post-status]');
     this.previewButton = react
-      ? headerActions.getByRole('button', { name: editorPreviewButton, exact: true })
+      ? this.header.previewButton
       : page.getByRole('button', { name: 'Preview' });
     this.previewModal = new PostPreviewModal(page, { implementation });
     this.settingsToggleButton = page.getByTestId(settingsMenuToggle);
@@ -334,26 +334,23 @@ export class PostEditorPage extends AdminPage {
     // Ember labels one primary button Save or Update; React renders whichever
     // of the two the post's status calls for.
     this.publishSaveButton = react
-      ? headerActions.getByRole('button', {
-          name: new RegExp(`^(${editorSaveButton}|${editorUpdateButton})$`),
-        })
+      ? this.header.saveButton.or(this.header.updateButton)
       : page.locator('[data-test-button="publish-save"]').first();
     this.updateFlowButton = react
-      ? headerActions.getByRole('button', {
-          name: new RegExp(`^(${editorUnpublishButton}|${editorUnscheduleButton})$`),
-        })
+      ? this.header.unpublishButton.or(this.header.unscheduleButton)
       : page.locator('[data-test-button="update-flow"]').first();
     this.revertToDraftButton = react
       ? page.getByTestId(publishRevertToDraft)
       : page.locator('[data-test-button="revert-to-draft"]');
     // Ember's back link carries the inlined arrow icon's title in its
     // accessible name; React's is a plain link named for the list.
-    this.backButton = react
-      ? page.getByRole('link', { name: postsBackLink, exact: true })
-      : page.locator('[data-test-breadcrumb]');
+    this.backButton = react ? this.header.backLink : page.locator('[data-test-breadcrumb]');
 
     this.settingsMenu = new SettingsMenu(page);
     this.reauthenticateModal = new ReAuthenticateModal(page);
+
+    this.settings = new PostSettingsSidebar(page, this.settingsToggleButton);
+    this.featureImage = new FeatureImage(page);
 
     this.reauthPrompt = react
       ? page.getByTestId(editorReauthBanner)
@@ -414,6 +411,13 @@ export class PostEditorPage extends AdminPage {
     // selection so the text is genuinely appended at the end
     await this.page.keyboard.press('ControlOrMeta+a');
     await this.page.keyboard.press('ArrowRight');
+    await this.page.keyboard.type(text);
+  }
+
+  /** Selects the whole body and types over it. */
+  async replaceBody(text: string): Promise<void> {
+    await this.lexicalEditor.click();
+    await this.page.keyboard.press('ControlOrMeta+a');
     await this.page.keyboard.type(text);
   }
 

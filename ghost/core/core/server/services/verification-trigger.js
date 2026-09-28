@@ -13,33 +13,42 @@ class VerificationTrigger {
    * @param {() => number} deps.getApiTriggerThreshold Threshold for triggering API&Import sourced verifications
    * @param {() => number} deps.getAdminTriggerThreshold Threshold for triggering Admin sourced verifications
    * @param {() => number} deps.getImportTriggerThreshold Threshold for triggering Import sourced verifications
+   * @param {() => number} [deps.getRemovedRecipientsThreshold] Threshold for triggering on recent newsletter recipients who are no longer members
    * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
    * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
    * @param {(value: boolean) => void} deps.setVerificationRequired Directly update the settings cache for email_verification_required
    * @param {(content: {amountTriggered: number, threshold: number, method: string}) => Promise<boolean>} deps.sendVerificationWebhook Sends a webhook to the escalation service to confirm that customer needs to be verified
    * @param {any} deps.Settings Ghost Settings model
    * @param {any} deps.eventRepository For querying events
+   * @param {(since: string) => Promise<number>} [deps.countRecentEmailRecipients] Sums newsletter recipients since the given date
+   * @param {(since: string, limit: number) => Promise<number>} [deps.countRemovedEmailRecipients] Counts, up to the limit, recipients since the given date whose address no longer belongs to a member
    */
   constructor({
     getApiTriggerThreshold,
     getAdminTriggerThreshold,
     getImportTriggerThreshold,
+    getRemovedRecipientsThreshold,
     isVerified,
     isVerificationRequired,
     setVerificationRequired,
     sendVerificationWebhook,
     Settings,
     eventRepository,
+    countRecentEmailRecipients,
+    countRemovedEmailRecipients,
   }) {
     this._getApiTriggerThreshold = getApiTriggerThreshold;
     this._getAdminTriggerThreshold = getAdminTriggerThreshold;
     this._getImportTriggerThreshold = getImportTriggerThreshold;
+    this._getRemovedRecipientsThreshold = getRemovedRecipientsThreshold || (() => Infinity);
     this._isVerified = isVerified;
     this._isVerificationRequired = isVerificationRequired;
     this._setVerificationRequired = setVerificationRequired || (() => {});
     this._sendVerificationWebhook = sendVerificationWebhook || (async () => false);
     this._Settings = Settings;
     this._eventRepository = eventRepository;
+    this._countRecentEmailRecipients = countRecentEmailRecipients;
+    this._countRemovedEmailRecipients = countRemovedEmailRecipients;
 
     this._handleMemberCreatedEvent = this._handleMemberCreatedEvent.bind(this);
 
@@ -58,6 +67,10 @@ class VerificationTrigger {
 
   get _importTriggerThreshold() {
     return this._getImportTriggerThreshold();
+  }
+
+  get _removedRecipientsThreshold() {
+    return this._getRemovedRecipientsThreshold();
   }
 
   /**
@@ -167,11 +180,52 @@ class VerificationTrigger {
   /**
    * Returns false if email verification is required to send an email. It also updates the verification check and might activate email verification.
    * Use this when sending emails.
+   *
+   * @param {object} [options]
+   * @param {boolean} [options.newsletterSend] Also run the checks that are only worth their cost before a newsletter send
    */
-  async checkVerificationRequired() {
+  async checkVerificationRequired({ newsletterSend = false } = {}) {
     // Check if import threshold is reached (could happen that a long import is in progress and we didn't check the threshold yet)
     await this.testImportThreshold();
+    if (newsletterSend) {
+      await this.testRemovedRecipientsThreshold();
+    }
     return this._isVerificationRequired() && !this._isVerified();
+  }
+
+  /**
+   * Catches newsletters sent to members who are then deleted or have their address changed, which
+   * lets a site email far more people than it keeps as members without adding to any other count
+   */
+  async testRemovedRecipientsThreshold() {
+    const threshold = this._removedRecipientsThreshold;
+    if (!Number.isFinite(threshold)) {
+      return;
+    }
+
+    if (this._isVerified() || this._isVerificationRequired()) {
+      return;
+    }
+
+    const createdAt = new Date();
+    createdAt.setDate(createdAt.getDate() - 30);
+    const since = createdAt.toISOString().replace('T', ' ').substring(0, 19);
+
+    // Cheap bound first: fewer recipients in total than the threshold can't have enough removed ones
+    if ((await this._countRecentEmailRecipients(since)) <= threshold) {
+      return;
+    }
+
+    const removedRecipients = await this._countRemovedEmailRecipients(since, threshold + 1);
+    if (removedRecipients > threshold) {
+      await this._startVerificationProcess({
+        amount: removedRecipients,
+        threshold,
+        method: 'removed_recipients',
+        throwOnTrigger: false,
+        source: 'removed_recipients',
+      });
+    }
   }
 
   async testImportThreshold() {
@@ -237,7 +291,7 @@ class VerificationTrigger {
    * @param {object} config
    * @param {number} config.amount The amount of members that triggered the verification process
    * @param {number} [config.threshold] The threshold that was exceeded
-   * @param {string} [config.method] The source that triggered verification - 'api', 'admin', or 'import'
+   * @param {string} [config.method] The source that triggered verification - 'api', 'admin', 'import', or 'removed_recipients'
    * @param {boolean} config.throwOnTrigger Whether to throw if verification is needed
    * @param {string} [config.source] Source of the verification trigger
    * @returns {Promise<IVerificationResult>} Object containing property "needsVerification" - true when triggered

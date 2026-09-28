@@ -1,4 +1,4 @@
-const { getStorageContentType } = require('../../services/files/file-type-utils');
+const { getStorageContentType } = require('../../lib/file-types');
 const adapterManager = require('../../services/adapter-manager').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */

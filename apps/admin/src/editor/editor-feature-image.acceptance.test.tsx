@@ -177,6 +177,37 @@ describe('Post editor feature image', () => {
     });
   });
 
+  it('holds a new image on a published post until Update, then sends it once', async () => {
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: '2026-01-01T00:00:00.000Z',
+    });
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
+      images: [{ url: UPLOADED, ref: null }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+    await userEvent.upload(
+      editorScreen.featureImageInput().element(),
+      new File(['image'], 'hills.png', { type: 'image/png' }),
+    );
+
+    await expect.poll(() => uploadApi.requests.length, SAVE_POLL).toBe(1);
+    await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    expect(saveApi.requests).toHaveLength(0);
+
+    await editorScreen.updateButton().click();
+
+    await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      status: 'published',
+      feature_image: UPLOADED,
+    });
+  });
+
   it('saves an image picked from Unsplash with the credit it carries', async () => {
     const saveApi = fakeSavablePost();
     fakeUnsplashPhotos();
