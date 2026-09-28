@@ -13,8 +13,8 @@ import type { BatchEventProcessor } from '../email-analytics/batch-event-process
 import { EventProcessingResult } from '../email-analytics/event-processing-result';
 
 const WEBHOOK_LOOKUP_RETRY_MS = 500;
-const eventsSchema = z.array(emailEventSchema).max(1000);
-const notificationEventsSchema = z.array(z.unknown()).max(1000);
+const eventsSchema = z.array(emailEventSchema);
+const notificationEventsSchema = z.array(z.unknown());
 
 export function parseEmailEvents(events: unknown[], family?: EmailFamily): EmailEvent[] {
   const parsed = eventsSchema.parse(events);
@@ -49,7 +49,7 @@ export class EmailEventService {
       const notification = notificationEventsSchema.safeParse(verified.events);
       if (!notification.success) {
         throw new errors.BadRequestError({
-          message: 'Email webhook must contain an array of at most 1000 events',
+          message: 'Email provider must return an events array',
           code: 'EMAIL_EVENTS_INVALID',
         });
       }

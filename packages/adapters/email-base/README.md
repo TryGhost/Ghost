@@ -31,6 +31,9 @@ Polling calls and awaits `batchHandler` before advancing its cursor. It reports
 original bytes and headers, checks the account/site and replay window, and
 returns normalized events or a verified protocol handshake. Failed verification
 must throw. Never perform network requests to unvalidated URLs from a payload.
+The adapter translates its provider's payload into Ghost's internal `events`
+array; that array does not prescribe a provider wire format. Ghost imposes no
+fixed event-count limit. The HTTP route limits the raw request body to 2 MB.
 
 Ghost preserves each existing polling error path: newsletter unsubscribe,
 complaint-record and suppression errors are logged, while tracking/outcome write
@@ -46,7 +49,7 @@ fails schema validation. Invalid events are logged and the request returns HTTP
 HTTP responses apply to the whole notification, not individual events. Adapters
 must account for their provider's retry rules; some providers also retry 4xx
 responses. Invalid events are not stored for later replay. Verification and
-notification size checks still happen before any event is processed.
+HTTP body-size checks still happen before any event is processed.
 
 All providers report the email family, original recipient address, message ID,
 event ID and event timestamp. Permanent failure does not automatically suppress

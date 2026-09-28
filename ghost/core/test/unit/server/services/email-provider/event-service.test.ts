@@ -145,7 +145,7 @@ describe('email webhook delegation', () => {
     sinon.assert.calledTwice(processBatch);
   });
   it('rejects invalid envelopes before any events are processed', async () => {
-    for (const events of [null, {}, Array(1001).fill(event)]) {
+    for (const events of [null, {}, 'events']) {
       verify.resolves({ events });
       await assert.rejects(service.webhook('provider', request), {
         code: 'EMAIL_EVENTS_INVALID',
@@ -153,6 +153,15 @@ describe('email webhook delegation', () => {
       });
     }
     sinon.assert.notCalled(createEventProcessor);
+  });
+  it('accepts valid provider batches larger than the former event-count cap', async () => {
+    const events = Array.from({ length: 1001 }, (_, index) => ({ ...event, id: `event-${index}` }));
+    assert.equal(parseEmailEvents(events, 'newsletters').length, events.length);
+    verify.resolves({ events });
+    await service.webhook('provider', request);
+    assert.equal(processBatch.callCount, events.length);
+    sinon.assert.calledOnce(queueStats);
+    assert.equal(queueStats.firstCall.firstArg.delivered, events.length);
   });
   it('acknowledges events explicitly ignored by a processor without a lookup retry', async () => {
     processBatch.callsFake(async (_events, result) => {

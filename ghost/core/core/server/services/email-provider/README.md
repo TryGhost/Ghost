@@ -96,11 +96,14 @@ Message IDs are normalized at the provider edge, not by these shared consumers.
 
 Webhook providers receive raw bytes and headers at
 `POST /members/webhooks/email/:source` (under the site's configured subdirectory).
-The request limit is 2 MB and a notification may contain at most 1000 events.
+The HTTP request body limit is 2 MB. Each adapter translates its provider's payload
+into Ghost's internal `events` array; providers do not need to use that wire format.
+There is no fixed event-count limit.
 Adapters must authenticate the signature, account, site and replay window before
 returning events or a protocol handshake. They must not fetch an unvalidated URL.
 
-Ghost verifies the notification and its size before processing. It validates each
+Ghost verifies the notification before processing, and the HTTP route enforces the
+body-size limit. Ghost validates each
 event separately, processes valid siblings, and reports malformed events with
 HTTP 400 and an error log containing their indexes, without logging their payloads.
 Retryable processing failures take precedence over that client error. HTTP status
