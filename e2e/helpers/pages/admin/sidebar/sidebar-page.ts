@@ -147,6 +147,17 @@ export class SidebarPage extends AdminPage {
     }
   }
 
+  async selectAppearance(option: 'dark' | 'light' | 'system'): Promise<void> {
+    const options = {
+      dark: this.themeDarkOption,
+      light: this.themeLightOption,
+      system: this.themeSystemOption,
+    };
+    await this.userDropdownTrigger.click();
+    await this.appearanceMenuItem.click();
+    await options[option].click();
+  }
+
   async waitForDarkMode(enabled: boolean): Promise<void> {
     const locator = enabled ? this.page.locator('html.dark') : this.page.locator('html:not(.dark)');
     await locator.waitFor();
