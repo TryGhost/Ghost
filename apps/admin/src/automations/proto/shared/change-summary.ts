@@ -1,13 +1,15 @@
-import type {
-  AutomationAction,
-  AutomationDetail,
-} from '@tryghost/admin-x-framework/api/automations';
+import type {} from '@tryghost/admin-x-framework/api/automations';
+import type { ProtoAutomationDetail } from '@/automations/proto/shared/update-member';
 import {
   type TriggerConfig,
   audienceLabel,
   triggerLabel,
 } from '@/automations/proto/shared/trigger-config';
 import { type StepKind, formatWait, orderActions } from '@/automations/proto/canvas/flow-utils';
+import {
+  MEMBER_UPDATE_OPERATIONS,
+  type ProtoAction,
+} from '@/automations/proto/shared/update-member';
 
 // What's in the draft that isn't live yet, as a plain list.
 //
@@ -31,8 +33,8 @@ export interface ChangeEntry {
 }
 
 interface ChangeSummaryInput {
-  published: AutomationDetail;
-  draft: AutomationDetail;
+  published: ProtoAutomationDetail;
+  draft: ProtoAutomationDetail;
   // Nullable because a just-created automation has no trigger yet. Choosing the
   // first one is a change like any other — it's the edit that makes the
   // automation runnable, so it has to show up here or Save would stay disabled
@@ -52,13 +54,26 @@ interface ChangeSummaryInput {
 const emailLabel = (subject: string): string =>
   subject.trim() ? `“${subject.trim()}”` : 'an untitled email';
 
-const actionKind = (action: AutomationAction): StepKind =>
-  action.type === 'send_email' ? 'email' : 'wait';
+const actionKind = (action: ProtoAction): StepKind =>
+  action.type === 'send_email' ? 'email' : action.type === 'wait' ? 'wait' : 'update_member';
 
-const describe = (action: AutomationAction): string =>
-  action.type === 'send_email'
-    ? `email ${emailLabel(action.data.email_subject)}`
-    : `a ${formatWait(action.data.wait_hours)} wait`;
+// Lower case and article-led ("a 3 day wait"), because these land inside a
+// sentence — "Added …", "Removed …".
+//
+// The member update describes the OPERATION rather than its argument: a summary
+// that said "Added Add the label SEO guide" would be reading the card's own
+// sentence back inside another one. Which label it acts on shows up through the
+// in-place diff below, as a change to the step rather than as its name.
+const describe = (action: ProtoAction): string => {
+  if (action.type === 'send_email') {
+    return `email ${emailLabel(action.data.email_subject)}`;
+  }
+  if (action.type === 'wait') {
+    return `a ${formatWait(action.data.wait_hours)} wait`;
+  }
+  const operation = MEMBER_UPDATE_OPERATIONS.find((entry) => entry.value === action.data.operation);
+  return `a member update (${(operation?.label ?? 'update').toLowerCase()})`;
+};
 
 // Who the automation applies to, as one comparable string. audienceLabel is the
 // same phrase the trigger card shows, so a change entry names it in the words the

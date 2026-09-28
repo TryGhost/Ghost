@@ -4,6 +4,7 @@ import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { AutomationsTable } from '@/automations/proto/shared/automations-table';
 import { lanePath } from '@/automations/proto/shared/lanes';
+import { laneShowsTrigger } from '@/automations/proto/shared/capabilities';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
 import { useProtoAutomations } from '@/automations/proto/shared/store';
 
@@ -14,7 +15,12 @@ import { useProtoAutomations } from '@/automations/proto/shared/store';
 const LANE = 'exploration-2' as const;
 
 const AutomationsList: React.FC = () => {
-  const automations = useProtoAutomations();
+  // Only what this lane could have built — see shared/capabilities. The store is
+  // one list shared by every lane, so an automation on a trigger this lane
+  // doesn't offer isn't its business to show.
+  const automations = useProtoAutomations().filter((entry) =>
+    laneShowsTrigger(LANE, entry.trigger),
+  );
 
   return (
     <Box className="size-full">

@@ -1,9 +1,17 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import {
+  type ProtoAutomationDetail,
+  isUpdateMemberAction,
+  updateMemberIncomplete,
+} from './update-member';
 import { AUTOMATION_DESCRIPTIONS, mockAutomations } from './mock';
 import {
   type TriggerConfig,
   needsStripe,
+  changeUnanswered,
+  labelUnanswered,
+  segmentUnanswered,
   tiersUnanswered,
   triggerConfigFor,
 } from './trigger-config';
@@ -41,7 +49,7 @@ import { lexicalHasContent } from '@/automations/proto/canvas/flow-utils';
  * ever reachable on something you made.
  */
 export interface ProtoAutomation {
-  automation: AutomationDetail;
+  automation: ProtoAutomationDetail;
   /**
    * The line under the name in the automations list. Editable, and therefore
    * real data — it used to be a slug-keyed fixture map because the API type has
@@ -117,8 +125,50 @@ interface StoreState {
 // 19: TriggerConfig grew tierMode ('all' policy vs 'selected' list); stored
 // configs without it would read as selected-with-nothing, i.e. unanswered.
 // 20: the store grew archivedTierIds (site state, like stripeConnected).
-const VERSION = 20;
+// 21: TriggerConfig grew labelIds, and a third fixture (the lead magnet) joined
+// the seed — a stored list of two would leave the future lane with nothing to
+// show, and stored configs without labelIds would crash the label field.
+// 22: labelIds (a list) became labelId (one, or null) — the label trigger
+// watches a single label. A stored array would read as neither.
+// 23: TriggerConfig grew `change` (the lifecycle trigger's setting), and a
+// fourth fixture — the winback — joined the seed.
+// 24: TriggerConfig grew `segmentId`, and a fifth fixture — the engaged-reader
+// upsell — joined the seed.
+const VERSION = 24;
 const STORAGE_KEY = 'ghost-automations-proto-store';
+
+/**
+ * The trigger a fixture is seeded with, by slug — because which member a
+ * production flow is for IS its slug (see mock/automations). Both welcome flows
+ * used to seed the free-signup default, which put "Free member signs up" on the
+ * PAID welcome flow's trigger card.
+ *
+ * The paid fixture takes triggerConfigFor's own default, which is the 'all'
+ * policy — a general paid welcome watching every tier, future ones included, is
+ * exactly what that fixture is meant to be.
+ *
+ * The lead magnet names its label, and has to: a null labelId is the unanswered
+ * state, so a fixture seeded without one would arrive unpublishable and show a
+ * warning on a card that is supposed to be demonstrating a finished automation.
+ *
+ * Lifted out of the seed literal when the third case arrived — a two-branch
+ * ternary was readable, a three-branch one wasn't.
+ */
+const seedTrigger = (slug: string | undefined | null): TriggerConfig => {
+  if (slug === 'member-welcome-email-paid') {
+    return triggerConfigFor('paid_subscription_starts');
+  }
+  if (slug === 'lead-magnet-seo-guide') {
+    return { ...triggerConfigFor('label_added'), labelId: 'seo-guide' };
+  }
+  if (slug === 'winback-subscription-ended') {
+    return { ...triggerConfigFor('paid_subscription_changed'), change: 'ended' };
+  }
+  if (slug === 'segment-engaged-upsell') {
+    return { ...triggerConfigFor('segment_entered'), segmentId: 'engaged-free' };
+  }
+  return triggerConfigFor('member_subscribes');
+};
 
 const seed = (): StoreState => ({
   version: VERSION,
@@ -131,19 +181,7 @@ const seed = (): StoreState => ({
     // AutomationDetail as of the Sep '26 main merge, so the lookup guards it —
     // the fixtures themselves always carry one.
     description: (automation.slug && AUTOMATION_DESCRIPTIONS[automation.slug]) || '',
-    // By slug, because which member a production flow is for IS its slug (see
-    // mock/automations). Both used to seed the free-signup default, which put
-    // "Free member signs up" on the PAID welcome flow's trigger card.
-    //
-    // The paid fixture takes triggerConfigFor's own default, which is the
-    // 'all' policy — a general paid welcome watching every tier, future ones
-    // included, is exactly what this fixture is meant to be. (It used to spell
-    // every tier out by hand, back when all-tiers-checked was how "any tier"
-    // was stored.)
-    trigger:
-      automation.slug === 'member-welcome-email-paid'
-        ? triggerConfigFor('paid_subscription_starts')
-        : triggerConfigFor('member_subscribes'),
+    trigger: seedTrigger(automation.slug),
   })),
 });
 
@@ -432,7 +470,7 @@ export const insertAutomation = (record: ProtoAutomation): void =>
  * live against the same members without anyone deciding to.
  */
 export const duplicateAutomation = (
-  source: AutomationDetail,
+  source: ProtoAutomationDetail,
   trigger: TriggerConfig | null,
   description: string,
   name: string,
@@ -480,7 +518,7 @@ export const duplicateAutomation = (
  */
 export const saveAutomation = (
   id: string,
-  automation: AutomationDetail,
+  automation: ProtoAutomationDetail,
   trigger: TriggerConfig | null,
   description?: string,
 ): void => {
@@ -527,8 +565,9 @@ export const updateAutomationDetails = (id: string, name: string, description: s
  * record — the list's row menu, which offers Publish without a canvas on screen.
  *
  * The same four checks as the detail screen's canGoLive, minus the draft: no
- * trigger, missing Stripe, unanswered tiers, or an email with no subject or no
- * written body all mean an automation that cannot run. The detail screen keeps
+ * trigger, missing Stripe, an unanswered trigger field (tiers, label,
+ * subscription change or segment), or an email with no subject or no written
+ * body all mean an automation that cannot run. The detail screen keeps
  * its own copy because it validates the DRAFT (unsaved edits included), which a
  * record-level check can't see — if the checks change, change both.
  */
@@ -543,14 +582,23 @@ export const canPublishAutomation = (
   if (!stripeConnected && needsStripe(trigger)) {
     return false;
   }
-  if (tiersUnanswered(trigger)) {
+  if (
+    tiersUnanswered(trigger) ||
+    labelUnanswered(trigger) ||
+    changeUnanswered(trigger) ||
+    segmentUnanswered(trigger)
+  ) {
     return false;
   }
-  return !entry.automation.actions.some(
-    (action) =>
+  return !entry.automation.actions.some((action) => {
+    if (isUpdateMemberAction(action)) {
+      return updateMemberIncomplete(action);
+    }
+    return (
       action.type === 'send_email' &&
-      (!action.data.email_subject.trim() || !lexicalHasContent(action.data.email_lexical)),
-  );
+      (!action.data.email_subject.trim() || !lexicalHasContent(action.data.email_lexical))
+    );
+  });
 };
 
 /**

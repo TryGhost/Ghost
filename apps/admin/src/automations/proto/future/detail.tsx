@@ -18,7 +18,11 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
 import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
-import type { ProtoAutomationDetail } from '@/automations/proto/shared/update-member';
+import {
+  type ProtoAutomationDetail,
+  isUpdateMemberAction,
+  updateMemberIncomplete,
+} from '@/automations/proto/shared/update-member';
 import { getRunData } from '@/automations/proto/shared/mock';
 import {
   type ProtoAutomation,
@@ -47,6 +51,9 @@ import { LeftPanel } from './left-panel';
 import {
   type TriggerConfig,
   needsStripe,
+  changeUnanswered,
+  labelUnanswered,
+  segmentUnanswered,
   tiersUnanswered,
   triggerConfigFor,
 } from '@/automations/proto/shared/trigger-config';
@@ -63,15 +70,15 @@ import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
 import { DetailsPopoverContent } from './details-popover';
 
-// PHASE 2 — per-tier automations. See shared/lanes for why each lane owns its
-// own copy of this screen.
+// FUTURE — everything after the current release. See shared/lanes for why each
+// lane owns its own copy of this screen.
 //
-// Starts as a copy of the phase-1 screen and diverges from there: this lane adds
-// automation CRUD (create from the list, a trigger chosen on an empty canvas)
-// and is where per-tier triggers and explicit exit conditions land. Phase 1's
-// copy is not to be edited for any of that — the whole reason these are separate
-// files is that its engineer needs it to hold still.
-const LANE = 'phase-2' as const;
+// Starts as a byte-for-byte copy of the phase-2 screen, because phase 2 is what
+// will have shipped by the time any of this is built: the roadmap's Next and
+// Later columns are changes TO that screen, not to the one before it. Nothing
+// here diverges yet — that's the point of landing the lane empty. Phase 2's copy
+// is not to be edited for any of it; its engineer needs it to hold still.
+const LANE = 'future' as const;
 
 type LiveStatus = 'active' | 'inactive';
 
@@ -405,20 +412,43 @@ const AutomationFloat: React.FC = () => {
       action.type === 'send_email' &&
       (!action.data.email_subject.trim() || !lexicalHasContent(action.data.email_lexical)),
   );
+
+  // An Update member step that hasn't said what to update — no label chosen, or
+  // a custom field with no value. Same reasoning as blankEmails above: validated
+  // on the draft rather than on what the canvas is warning about, because grace
+  // is a display nicety and must never let an unfinished step through a publish.
+  const incompleteUpdates = draftFlow.actions.some(
+    (action) => isUpdateMemberAction(action) && updateMemberIncomplete(action),
+  );
   // A tiered trigger whose tiers question is open — "Select paid tiers" chosen
   // with nothing named, the field showing its placeholder. Same split as
   // blankEmails: the canvas grace-gates the gold on the card, this validates
   // the fact itself (via the shared predicate, so every validator agrees on
   // what unanswered means).
-  const tiersOpen = triggerConfig !== null && tiersUnanswered(triggerConfig);
+  // Or a label trigger with no label named, or a lifecycle trigger with no
+  // change named — the same open question one field over, and the same
+  // consequence: nobody can ever enter. Folded into one flag because every
+  // reader below asks "is the trigger's own question answered", not which field
+  // is asking it.
+  const triggerFieldOpen =
+    triggerConfig !== null &&
+    (tiersUnanswered(triggerConfig) ||
+      labelUnanswered(triggerConfig) ||
+      changeUnanswered(triggerConfig) ||
+      segmentUnanswered(triggerConfig));
 
   // Nothing can go live without something to start it, without the payments it
   // depends on, with an email that can't be sent, or with a trigger whose
   // audience is unanswered. An automation with no trigger isn't
   // half-configured, it's an automation that cannot run — and neither is one
-  // waiting on Stripe, carrying a blank email, or listening for tiers nobody
-  // has named.
-  const canGoLive = triggerConfig !== null && !stripeMissing && !blankEmails && !tiersOpen;
+  // waiting on Stripe, carrying a blank email, or watching for tiers, a label or
+  // a subscription change nobody has named.
+  const canGoLive =
+    triggerConfig !== null &&
+    !stripeMissing &&
+    !blankEmails &&
+    !incompleteUpdates &&
+    !triggerFieldOpen;
   // preCreate folds in here rather than as its own render fork: the pane is
   // simply held closed while there's nothing to report on.
   const paneHidden = paneCollapsed || preCreate;
@@ -689,7 +719,7 @@ const AutomationFloat: React.FC = () => {
   // "nothing to do", and the word stays what pressing it would mean.
   //
   // One deviation from phase 1, kept from the switch era: Publish is never
-  // disabled for validity. Phase 2 has states phase 1 can't reach — no trigger
+  // disabled for validity. This lane has states phase 1 can't reach — no trigger
   // chosen, tiers unanswered — and a greyed-out Publish is a dead end: it says
   // no without saying why. Pressing it while blocked answers at the point of
   // the press — the popover names the deal, and the canvas shows every warning

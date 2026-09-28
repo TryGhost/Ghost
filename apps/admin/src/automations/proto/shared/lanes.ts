@@ -24,7 +24,7 @@
 // flow mechanics. Mechanics are common; screens diverge.
 // ---------------------------------------------------------------------------
 
-export type LaneId = 'phase-1' | 'phase-2' | 'exploration' | 'exploration-2';
+export type LaneId = 'phase-1' | 'phase-2' | 'future' | 'exploration' | 'exploration-2';
 
 export interface Lane {
   id: LaneId;
@@ -38,6 +38,18 @@ export interface Lane {
 export const LANES: Lane[] = [
   { id: 'phase-1', label: 'Ph 1: Run analytics' },
   { id: 'phase-2', label: 'Ph 2: Per-tier' },
+  // Everything after the current release — the roadmap's Next and Later columns,
+  // through to the end of Feb 2027: new triggers (a label being added, a paid
+  // subscription changing, a member entering a segment), actions that aren't an
+  // email, a template library, and the still-open autosave question.
+  //
+  // A scheduled lane rather than a sandbox, hence the third "Ph"-style slot in
+  // the list — this is work with a date on it, not thinking. It starts as a copy
+  // of PHASE 2, because phase 2 is what will have shipped by the time any of it
+  // is built: every card in those columns is a change to that screen, so basing
+  // it on phase 1 would mean re-deriving per-tier triggers and CRUD before
+  // anything new could start.
+  { id: 'future', label: 'Future: Next & Later' },
   // "Full canvas": the disappearing-chrome concept — maximising takes the header
   // with it and the flow is the only thing on screen.
   { id: 'exploration', label: 'Sandbox: Full canvas' },

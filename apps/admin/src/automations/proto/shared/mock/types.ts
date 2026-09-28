@@ -1,4 +1,4 @@
-import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import type { ProtoAutomationDetail } from '@/automations/proto/shared/update-member';
 
 // ---------------------------------------------------------------------------
 // Net-new types for the automations run-analytics exploration.
@@ -87,7 +87,7 @@ export type MetricKey = 'enrollments' | 'in_progress' | 'completed' | 'exited_ea
 
 /** Everything the dashboard detail page needs for one automation. */
 export type AutomationScenario = {
-  automation: AutomationDetail;
+  automation: ProtoAutomationDetail;
   metrics: AutomationRunMetrics;
   runs: AutomationRun[];
 };

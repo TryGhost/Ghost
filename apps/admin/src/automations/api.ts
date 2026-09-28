@@ -14,6 +14,8 @@ export const lazyProtoPhase1List = () => import('./proto/phase-1/list');
 export const lazyProtoPhase1Detail = () => import('./proto/phase-1/detail');
 export const lazyProtoPhase2List = () => import('./proto/phase-2/list');
 export const lazyProtoPhase2Detail = () => import('./proto/phase-2/detail');
+export const lazyProtoFutureList = () => import('./proto/future/list');
+export const lazyProtoFutureDetail = () => import('./proto/future/detail');
 export const lazyProtoExplorationList = () => import('./proto/exploration/list');
 export const lazyProtoExplorationDetail = () => import('./proto/exploration/detail');
 export const lazyProtoExploration2List = () => import('./proto/exploration-2/list');

@@ -18,7 +18,6 @@ import {
   getSmoothStepPath,
 } from '@xyflow/react';
 import type {
-  AutomationDetail,
   AutomationEmailStats,
   InsertActionAnchor,
 } from '@tryghost/admin-x-framework/api/automations';
@@ -65,12 +64,13 @@ import { OptionPicker, type PickerOption } from '@/automations/proto/shared/opti
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import {
   DEFAULT_TRIGGER_CONFIG,
-  SIMPLE_TRIGGER_OPTIONS,
-  TRIGGER_PICKER_OPTIONS,
   type TriggerConfig,
   type TriggerType,
   availableTriggerOptions,
-  hasTiers,
+  changeUnanswered,
+  triggerHasField,
+  labelUnanswered,
+  segmentUnanswered,
   tiersUnanswered,
   triggerConfigFor,
   triggerExplanation,
@@ -78,6 +78,8 @@ import {
   triggerLabel,
   triggerSummary,
 } from '@/automations/proto/shared/trigger-config';
+import { laneOffersStep, laneTriggerOptions } from '@/automations/proto/shared/capabilities';
+import type { LaneId } from '@/automations/proto/shared/lanes';
 import { useStripeConnected } from '@/automations/proto/shared/store';
 import {
   CANVAS_HUD_INSET,
@@ -86,7 +88,9 @@ import {
   EDGE_STROKE,
   NODE_VISUAL_GAP,
   type StepKind,
-  formatWait,
+  stepKindOf,
+  stepSubtitle,
+  stepTitle,
   lexicalHasContent,
   orderActions,
   panTranslateExtent,
@@ -94,12 +98,56 @@ import {
   useCenteredColumn,
   useMeasuredColumn,
 } from './flow-utils';
+import {
+  type ProtoAutomationDetail,
+  type UpdateMemberAction,
+  asApiDetail,
+  insertUpdateMemberAction,
+  isUpdateMemberAction,
+} from '@/automations/proto/shared/update-member';
+import { UpdateMemberFields } from './update-member-fields';
 import { EmailAnalyticsSheet, type SheetEmail } from './email-analytics-sheet';
 import { EmailStatsFooter } from './email-analytics';
 import { NODE_BODY_PADDING, NODE_CARD_FRAME, NodeCard, NodeHeader } from './flow-node-shell';
 import { EmailPreview } from './email-preview';
 import { EMPTY_LEXICAL, SEEDED_LEXICAL } from '@/automations/proto/shared/mock';
 import { TriggerEmptyState, TriggerFieldsForm } from './trigger-config-form';
+
+// Which of the trigger's own questions is unanswered, as the card's warning.
+//
+// A list rather than the ternary chain this was: every trigger with a field has
+// exactly one question, and each new trigger added a rung until the chain was
+// four deep and the indentation was carrying the meaning. Adding a trigger is
+// now one entry.
+//
+// The predicates are the SHARED ones, so this can't disagree with the screen's
+// publish gate or the list's record-level check about what unanswered means.
+const UNANSWERED_FIELD_WARNINGS: {
+  unanswered: (config: TriggerConfig) => boolean;
+  message: string;
+}[] = [
+  {
+    unanswered: tiersUnanswered,
+    message: 'Choose tiers before this automation can be published.',
+  },
+  {
+    unanswered: labelUnanswered,
+    message: 'Choose a label before this automation can be published.',
+  },
+  {
+    unanswered: changeUnanswered,
+    message: 'Choose a subscription change before this automation can be published.',
+  },
+  {
+    unanswered: segmentUnanswered,
+    message: 'Choose a segment before this automation can be published.',
+  },
+];
+
+const unansweredFieldWarning = (config: TriggerConfig): NodeWarning | undefined => {
+  const match = UNANSWERED_FIELD_WARNINGS.find((entry) => entry.unanswered(config));
+  return match ? { message: match.message } : undefined;
+};
 
 // The trigger's node id — also its name in the grace system (graceStepId),
 // since choosing or configuring a trigger makes it the card being worked on
@@ -127,9 +175,16 @@ const ZERO_EMAIL_STATS: AutomationEmailStats = {
 };
 
 // The real editor's StepPicker speaks 'send_email' | 'wait'; the proto's graph
-// helpers here take 'email' | 'wait'.
-const toInsertKind = (type: StepPickerType): 'email' | 'wait' =>
-  type === 'send_email' ? 'email' : 'wait';
+// helpers here take 'email' | 'wait' | 'update_member'.
+//
+// StepPickerType is the SHIPPING editor's union and has no member for our third
+// step, which is the same reason the action type is proto-local (see
+// shared/update-member). So the picker's own value type is widened here rather
+// than there, and the row carries the id the API would use.
+type ProtoStepPickerType = StepPickerType | 'update_member';
+
+const toInsertKind = (type: ProtoStepPickerType): 'email' | 'wait' | 'update_member' =>
+  type === 'send_email' ? 'email' : type === 'wait' ? 'wait' : 'update_member';
 
 // Wait duration <-> {amount, unit} (mirrors the side panel; whole days when even).
 //
@@ -153,8 +208,16 @@ const INSERT_BUTTON_CLASSES = `border-dashed border-border-default ${CANVAS_SLOT
 // The steps you can add, in the shared icon/title/description shape. Same rows
 // the trigger picker uses, so "what starts this" and "what happens next" are
 // chosen the same way.
-const STEP_PICKER_OPTIONS: PickerOption<StepPickerType>[] = [
+// Filtered per lane below — the Update member row only exists where the lane
+// offers it, the same way the trigger rows are narrowed.
+const STEP_PICKER_OPTIONS: PickerOption<ProtoStepPickerType>[] = [
   { value: 'send_email', icon: LucideIcon.Mail, title: 'Email', description: 'Send an email' },
+  {
+    value: 'update_member',
+    icon: LucideIcon.UserPen,
+    title: 'Update member',
+    description: 'Change a label, a field, or their subscription',
+  },
   {
     value: 'wait',
     icon: LucideIcon.Clock,
@@ -165,14 +228,16 @@ const STEP_PICKER_OPTIONS: PickerOption<StepPickerType>[] = [
 
 const AddStepPopover: React.FC<{
   children: React.ReactNode;
-  onPick: (type: StepPickerType) => void;
+  onPick: (type: ProtoStepPickerType) => void;
+  // The lane's own rows — see laneStepOptions on the canvas.
+  options: PickerOption<ProtoStepPickerType>[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}> = ({ children, onPick, open, onOpenChange }) => (
+}> = ({ children, onPick, options, open, onOpenChange }) => (
   <OptionPicker
     align="center"
     open={open}
-    options={STEP_PICKER_OPTIONS}
+    options={options}
     side="top"
     sideOffset={12}
     onOpenChange={onOpenChange}
@@ -222,8 +287,14 @@ type StepNodeData = {
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   // Phase-1 concept: trigger fixed after creation (see float/trigger-card-model).
   triggerLocked?: boolean;
-  // Phase 1 names its triggers more plainly and drops their descriptions — see
-  // SIMPLE_TRIGGER_OPTIONS. Off everywhere else.
+  // The lane's trigger rows, already narrowed by shared/capabilities and passed
+  // down rather than derived here — the node has no business knowing which lane
+  // it's in. Phase 1's plainer names arrive the same way.
+  triggerOptions?: PickerOption<TriggerType>[];
+  // Phase 1's voice: plainer trigger names, and no exit sentence. It used to
+  // pick the option LIST too; that job moved to triggerOptions above when a
+  // second lane needed a different list for a reason that had nothing to do
+  // with how the names read.
   simpleTriggerNames?: boolean;
   // Nothing chosen to start this automation yet. Its own flag rather than an
   // absent triggerConfig, because the read canvas also passes no config and means
@@ -243,13 +314,17 @@ type StepNodeData = {
   // itself: swapping the trigger discards the settings and exits configured under
   // the old one, which is a warning the canvas owns.
   onRequestTriggerChange?: (type: TriggerType) => void;
-  // Increments when the tiers popover should open itself — the canvas owns the
+  // Increments when the trigger's field should open itself — the canvas owns the
   // clock (it knows when its sequence has settled), the form owns the popover.
-  tiersRevealSignal?: number;
+  fieldRevealSignal?: number;
   // The saved config's tiers — see the EditCanvas prop of the same name.
   savedTierIds?: string[];
   // The create-button variant's handler — see the EditCanvas prop.
   onCreateAutomation?: (config: TriggerConfig) => void;
+  // The Update member step's settings, and the handler that writes them —
+  // present only on that kind of card.
+  updateMember?: UpdateMemberAction['data'];
+  onUpdateMemberChange?: (next: UpdateMemberAction['data']) => void;
   // Always-visible inline edit form (non-trigger nodes).
   subject?: string;
   // Whether the email has anything written yet — a new one hasn't, and its body
@@ -297,13 +372,13 @@ export const INTRO_LEAVING_MS = 120;
 export const INTRO_GROWING_MS = 260;
 // The line, and the exit card starting just before the line finishes reaching it.
 export const INTRO_CONNECTING_MS = 300;
-// After the sequence settles, one more beat before the tiers popover opens on a
-// paid trigger chosen fresh (see tiersRevealPending). A beat rather than
+// After the sequence settles, one more beat before the trigger's field opens on
+// a trigger chosen fresh (see fieldRevealPending). A beat rather than
 // immediately: the popover is the nudge — "this is the question left to answer"
 // — and it lands as the sequence's closing move, after everything else has
 // stopped, which is what makes it the thing the eye ends on. Longer than a
 // reaction-shot pause would start to read as the canvas doing things on its own.
-const TIERS_REVEAL_DELAY_MS = 200;
+const FIELD_REVEAL_DELAY_MS = 200;
 
 // The proto's one easing curve — see shared/motion.
 const INTRO_EASE = PROTO_EASE;
@@ -372,6 +447,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   // gone (see the ReactFlow props below); every card's controls are on the card.
   const isAction = !isTrigger;
   const isEmail = d.kind === 'email';
+  const isUpdateMember = d.kind === 'update_member';
   const triggerConfig = d.triggerConfig ?? DEFAULT_TRIGGER_CONFIG;
   const configurable = isTrigger && Boolean(d.onTriggerConfigChange);
   // Site-level, read here for the Change-trigger picker's Stripe filter — see
@@ -491,10 +567,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
         // Same Stripe filter as the empty-state picker — the two lists offer the
         // same choices or they aren't the same control. A paid trigger already
         // ON the card still shows as the value; it just can't be re-chosen.
-        options={availableTriggerOptions(
-          d.simpleTriggerNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS,
-          stripeConnected,
-        )}
+        options={availableTriggerOptions(d.triggerOptions ?? [], stripeConnected)}
         value={triggerConfig.type}
         externalAnchor
         onOpenChange={setChangeTriggerOpen}
@@ -670,7 +743,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                   )}
                 >
                   <TriggerEmptyState
-                    simpleNames={d.simpleTriggerNames}
+                    options={d.triggerOptions ?? []}
                     onCreate={d.onCreateAutomation}
                     onSelect={d.onTriggerConfigChange}
                   />
@@ -692,10 +765,10 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                           the tiers) — a separate description above it was the same
                           fact twice. A trigger with no field keeps the written-out
                           sentence, or its card would be bare again. */}
-                  {hasTiers(triggerConfig) ? (
+                  {triggerHasField(triggerConfig) ? (
                     <TriggerFieldsForm
                       config={triggerConfig}
-                      revealTiersSignal={d.tiersRevealSignal}
+                      revealFieldSignal={d.fieldRevealSignal}
                       savedTierIds={d.savedTierIds}
                       // Phase 1's triggers stay simple: the exit sentence belongs to
                       // the general-model lanes, where exits are part of what's being
@@ -728,7 +801,9 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
           className={cn('nodrag nopan cursor-default', NODE_BODY_PADDING)}
           onClick={(e) => e.stopPropagation()}
         >
-          {isEmail ? (
+          {isUpdateMember && d.updateMember && d.onUpdateMemberChange ? (
+            <UpdateMemberFields data={d.updateMember} onChange={d.onUpdateMemberChange} />
+          ) : isEmail ? (
             // Shared email preview (editable: inline subject + floating edit button),
             // with metrics below.
             <div>
@@ -884,7 +959,10 @@ const ExitNode: React.FC<NodeProps> = ({ data }) => {
 const nodeTypes = { step: StepNode, exit: ExitNode };
 
 type PlusEdgeData = {
-  onPick: (type: StepPickerType) => void;
+  onPick: (type: ProtoStepPickerType) => void;
+  // The lane's step rows, carried on the edge because the popover that shows
+  // them hangs off it — see laneStepOptions.
+  stepOptions: PickerOption<ProtoStepPickerType>[];
   intro?: boolean;
   // Skip the hover reveal and keep the + on screen — see alwaysShowInserts.
   alwaysVisible?: boolean;
@@ -908,6 +986,7 @@ const PlusEdge: React.FC<EdgeProps> = ({
   const [edgeHovered, setEdgeHovered] = useState(false);
   const [labelHovered, setLabelHovered] = useState(false);
   const onPick = (data as PlusEdgeData | undefined)?.onPick;
+  const stepOptions = (data as PlusEdgeData | undefined)?.stepOptions ?? [];
   const alwaysVisible = Boolean((data as PlusEdgeData | undefined)?.alwaysVisible);
 
   // Drawing the line from the trigger card downward. A dash the length of the whole
@@ -971,7 +1050,12 @@ const PlusEdge: React.FC<EdgeProps> = ({
         >
           {/* Wider hit zone so the + reveals when the cursor is near the edge midpoint. */}
           <div className="flex h-10 w-16 items-center justify-center">
-            <AddStepPopover open={open} onOpenChange={setOpen} onPick={onPick}>
+            <AddStepPopover
+              open={open}
+              options={stepOptions}
+              onOpenChange={setOpen}
+              onPick={onPick}
+            >
               <button
                 aria-label="Insert step here"
                 className={cn(
@@ -994,8 +1078,8 @@ const PlusEdge: React.FC<EdgeProps> = ({
 const edgeTypes = { plus: PlusEdge };
 
 interface EditCanvasProps {
-  draft: AutomationDetail;
-  onChange: (next: AutomationDetail) => void;
+  draft: ProtoAutomationDetail;
+  onChange: (next: ProtoAutomationDetail) => void;
   // Trigger config lives with the screen (it isn't part of AutomationDetail yet).
   // Without a change handler the trigger renders as a read-only summary.
   //
@@ -1014,6 +1098,11 @@ interface EditCanvasProps {
   // wears it; whether Stripe is connected is the screen's business.
   triggerWarning?: NodeWarning;
   triggerLocked?: boolean;
+  // Which lane is drawing this canvas. Its only job here is to ask
+  // shared/capabilities which triggers to offer — the canvas is shared, the
+  // trigger vocabulary is shared, and this is the one line that says which
+  // subset of it this screen is allowed to show.
+  lane: LaneId;
   // Phase 1's plainer trigger names, with no descriptions — see
   // SIMPLE_TRIGGER_OPTIONS. Off everywhere else.
   simpleTriggerNames?: boolean;
@@ -1042,6 +1131,7 @@ interface EditCanvasProps {
 export const EditCanvas: React.FC<EditCanvasProps> = ({
   draft,
   onChange,
+  lane,
   triggerConfig,
   onTriggerConfigChange,
   savedTierIds,
@@ -1189,20 +1279,31 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // Armed here, alongside the sequence it trails, so it can only ever fire on
   // the choose-a-trigger flow: changing tiers later, or swapping triggers on a
   // built flow, never replays it.
-  const [tiersRevealPending, setTiersRevealPending] = useState(false);
+  // What this lane offers, computed once — both pickers read it, and they have
+  // to agree or they aren't the same control.
+  const laneOptions = laneTriggerOptions(lane, simpleTriggerNames);
+  // The steps this lane can add. Same rule as the triggers: shared code knows
+  // every kind, a lane declares which it offers, and phase 1 keeps showing what
+  // ships.
+  const laneStepOptions = STEP_PICKER_OPTIONS.filter(
+    (option) => option.value !== 'update_member' || laneOffersStep(lane, 'update_member'),
+  );
+  const [fieldRevealPending, setFieldRevealPending] = useState(false);
   // Incremented when the popover should open; the trigger card watches it. A
   // counter rather than a boolean so a second creation flow in one mount (the
   // canvas is keyed by automation, but cheap is cheap) reads as a new event.
-  const [tiersRevealSignal, setTiersRevealSignal] = useState(0);
+  const [fieldRevealSignal, setFieldRevealSignal] = useState(0);
   if (prevUnset !== unset) {
     setPrevUnset(unset);
     setIntroPhase(unset ? null : 'leaving');
-    // Any fresh tiered trigger arms the nudge now, not just an unanswered one:
-    // the config arrives on the 'all' default, and the popover opening is what
-    // puts that default in front of the publisher instead of leaving it
-    // answered in a field nobody looked at (see triggerConfigFor).
-    if (!unset && triggerConfig && hasTiers(triggerConfig)) {
-      setTiersRevealPending(true);
+    // Any fresh trigger WITH A FIELD arms the nudge, not just an unanswered
+    // one: the tier config arrives on the 'all' default, and the popover opening
+    // is what puts that default in front of the publisher instead of leaving it
+    // answered in a field nobody looked at (see triggerConfigFor). The label
+    // trigger arrives genuinely unanswered, so the same beat does more there —
+    // it's the only thing that tells you the trigger isn't finished.
+    if (!unset && triggerConfig && triggerHasField(triggerConfig)) {
+      setFieldRevealPending(true);
     }
   }
   // Each beat schedules only the one after it, so the sequence is a chain rather
@@ -1228,17 +1329,17 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
 
   // The sequence's true last beat, when one is owed: introPhase returning to
   // null is "the canvas has stopped moving", and the popover opens one beat
-  // after that — see TIERS_REVEAL_DELAY_MS for why it trails.
+  // after that — see FIELD_REVEAL_DELAY_MS for why it trails.
   useEffect(() => {
-    if (!tiersRevealPending || introPhase !== null) {
+    if (!fieldRevealPending || introPhase !== null) {
       return;
     }
     const timer = setTimeout(() => {
-      setTiersRevealPending(false);
-      setTiersRevealSignal((s) => s + 1);
-    }, TIERS_REVEAL_DELAY_MS);
+      setFieldRevealPending(false);
+      setFieldRevealSignal((s) => s + 1);
+    }, FIELD_REVEAL_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [tiersRevealPending, introPhase]);
+  }, [fieldRevealPending, introPhase]);
 
   // The card still asking its question: either nothing is chosen, or something just
   // was and the options haven't finished leaving.
@@ -1253,11 +1354,16 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // a card contains — see useMeasuredColumn.
   const { onNodesChange, layout } = useMeasuredColumn();
 
-  const insert = (anchor: InsertActionAnchor, kind: 'email' | 'wait') => {
-    const next =
-      kind === 'email'
-        ? insertSendEmailAction({ detail: draft, anchor })
-        : insertWaitAction({ detail: draft, anchor });
+  const insert = (anchor: InsertActionAnchor, kind: 'email' | 'wait' | 'update_member') => {
+    // The framework's helpers for the two it knows, ours for the third — see
+    // insertUpdateMemberAction for why it's a copy of their splice rather than a
+    // call into it, and asApiDetail for why the detail is cast on the way in.
+    const next: ProtoAutomationDetail =
+      kind === 'update_member'
+        ? insertUpdateMemberAction({ detail: asApiDetail(draft), anchor })
+        : kind === 'email'
+          ? insertSendEmailAction({ detail: asApiDetail(draft), anchor })
+          : insertWaitAction({ detail: asApiDetail(draft), anchor });
     // Which action is the new one, read off the result rather than returned by the
     // helpers — they hand back a whole detail, and its id is the one thing here that
     // needs to know which card just appeared.
@@ -1369,16 +1475,17 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         warning: showOptions
           ? undefined
           : (triggerWarning ??
-            (triggerConfig && tiersUnanswered(triggerConfig) && graceStepId !== TRIGGER_NODE_ID
-              ? { message: 'Choose tiers before this automation can be published.' }
+            (triggerConfig && graceStepId !== TRIGGER_NODE_ID
+              ? unansweredFieldWarning(triggerConfig)
               : undefined)),
         triggerLocked,
+        triggerOptions: laneOptions,
         simpleTriggerNames,
         triggerUnset: showOptions,
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),
         onRequestTriggerChange: requestTriggerChange,
-        tiersRevealSignal,
+        fieldRevealSignal,
         savedTierIds,
         onCreateAutomation,
       },
@@ -1397,7 +1504,6 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
       };
     }
     ordered.forEach((action, i) => {
-      const isEmail = action.type === 'send_email';
       // What this email is missing, as the sentence that fixes it. Subject and
       // message are both required to send, so both are watched; the message
       // check earned its way in when the content dialog's simulate switch made
@@ -1420,13 +1526,26 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         type: 'step',
         position: { x: 0, y: ys[i + 1] },
         data: {
-          kind: isEmail ? 'email' : 'wait',
+          kind: stepKindOf(action),
           enterDelay: enterDelay(i + 1),
           isNew: action.id === newStepId,
-          title: isEmail ? 'Send email' : 'Wait',
-          subtitle: isEmail
-            ? action.data.email_subject || 'Untitled'
-            : formatWait(action.data.wait_hours),
+          title: stepTitle(action),
+          subtitle: stepSubtitle(action),
+          updateMember: isUpdateMemberAction(action) ? action.data : undefined,
+          onUpdateMemberChange: isUpdateMemberAction(action)
+            ? (next: UpdateMemberAction['data']) => {
+                settleOthers(action.id);
+                // No framework helper for this one — see insertUpdateMemberAction
+                // for why. Rewriting the action in place keeps flow order, which
+                // mapping over the array preserves and a remove/re-add wouldn't.
+                onChange({
+                  ...draft,
+                  actions: draft.actions.map((entry) =>
+                    entry.id === action.id ? { ...action, data: next } : entry,
+                  ),
+                });
+              }
+            : undefined,
           // Blue only while its analytics sheet is open, so the sheet is
           // visibly tied to the card it's reporting on. Click-selection is gone:
           // it painted the same blue border with nothing behind it — every
@@ -1447,7 +1566,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
             settleOthers(action.id);
             onChange(
               updateSendEmailAction({
-                detail: draft,
+                detail: asApiDetail(draft),
                 actionId: action.id,
                 emailSubject: subject,
                 emailLexical: action.type === 'send_email' ? action.data.email_lexical : '',
@@ -1456,13 +1575,19 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           },
           onWaitChange: (hours: number) => {
             settleOthers(action.id);
-            onChange(updateWaitAction({ detail: draft, actionId: action.id, waitHours: hours }));
+            onChange(
+              updateWaitAction({
+                detail: asApiDetail(draft),
+                actionId: action.id,
+                waitHours: hours,
+              }),
+            );
           },
           onDelete: () => {
             // Deleting ends any grace outright: either the grace card itself just
             // went, or attention was demonstrably on another card.
             setGraceStepId(null);
-            onChange(removeAction({ detail: draft, actionId: action.id }));
+            onChange(removeAction({ detail: asApiDetail(draft), actionId: action.id }));
           },
           onEditContent: () => {
             settleOthers(action.id);
@@ -1507,7 +1632,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         target,
         type: 'plus',
         data: {
-          onPick: (type: StepPickerType) =>
+          stepOptions: laneStepOptions,
+          onPick: (type: ProtoStepPickerType) =>
             insert(
               {
                 previousActionId: source === TRIGGER_NODE_ID ? undefined : source,
@@ -1547,7 +1673,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     introPhase,
     requestTriggerChange,
     alwaysShowInserts,
-    tiersRevealSignal,
+    fieldRevealSignal,
     savedTierIds,
     onCreateAutomation,
   ]);
@@ -1716,7 +1842,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
                 onCheckedChange={(checked) =>
                   onChange(
                     updateSendEmailAction({
-                      detail: draft,
+                      detail: asApiDetail(draft),
                       actionId: dialogEmail.id,
                       emailSubject: dialogEmail.data.email_subject,
                       emailLexical: checked ? SEEDED_LEXICAL : EMPTY_LEXICAL,

@@ -6,10 +6,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import type {
-  AutomationAction,
-  AutomationDetail,
-} from '@tryghost/admin-x-framework/api/automations';
+import {
+  type ProtoAction,
+  type ProtoAutomationDetail,
+  updateMemberSummary,
+} from '@/automations/proto/shared/update-member';
+import { labelName } from '@/automations/proto/shared/labels';
 import type { NodeChange, ReactFlowInstance } from '@xyflow/react';
 import { LucideIcon } from '@tryghost/shade/utils';
 
@@ -214,15 +216,19 @@ export const useMeasuredColumn = () => {
   return { onNodesChange, layout };
 };
 
-// The three editable step kinds share one icon per kind across both canvases.
+// The editable step kinds share one icon per kind across both canvases.
 // (The read-only canvas's "terminal" marker renders its own chrome, so it isn't
 // part of this map.)
-export type StepKind = 'trigger' | 'email' | 'wait';
+export type StepKind = 'trigger' | 'email' | 'wait' | 'update_member';
 
 export const stepKindIcon: Record<StepKind, ElementType> = {
   trigger: LucideIcon.Zap,
   email: LucideIcon.Mail,
   wait: LucideIcon.Clock,
+  // A person being edited, not a gear: the step changes a MEMBER, and the
+  // distinction from the two that merely address one is the whole reason this
+  // kind exists.
+  update_member: LucideIcon.UserPen,
 };
 
 export const formatWait = (hours: number): string => {
@@ -233,8 +239,50 @@ export const formatWait = (hours: number): string => {
   return `${hours} hour${hours === 1 ? '' : 's'}`;
 };
 
+// ---------------------------------------------------------------------------
+// How a step presents itself, in one place.
+//
+// The two canvases both draw a card per action and both used to pick their title
+// and subtitle with `isEmail ? … : …` — fine while there were two kinds, wrong
+// the moment there were three, and wrong twice over since the ternaries were
+// duplicated. Adding a fourth kind is now one case in each function.
+// ---------------------------------------------------------------------------
+
+export const stepKindOf = (action: ProtoAction): Exclude<StepKind, 'trigger'> => {
+  if (action.type === 'send_email') {
+    return 'email';
+  }
+  return action.type === 'wait' ? 'wait' : 'update_member';
+};
+
+/** What kind of step this is — the card's header. */
+export const stepTitle = (action: ProtoAction): string => {
+  if (action.type === 'send_email') {
+    return 'Send email';
+  }
+  return action.type === 'wait' ? 'Wait' : 'Update member';
+};
+
+/**
+ * What this particular step does — the line under the header.
+ *
+ * Reads the label store directly rather than taking the names as an argument:
+ * both canvases call this from deep inside a node-building loop, and threading
+ * site state down two render paths to name one label is more plumbing than the
+ * fact is worth.
+ */
+export const stepSubtitle = (action: ProtoAction): string => {
+  if (action.type === 'send_email') {
+    return action.data.email_subject || 'Untitled';
+  }
+  if (action.type === 'wait') {
+    return formatWait(action.data.wait_hours);
+  }
+  return updateMemberSummary(action, labelName(action.data.label_id));
+};
+
 // Follow the edge chain from the head so actions come out in flow order.
-export const orderActions = (automation: AutomationDetail): AutomationAction[] => {
+export const orderActions = (automation: ProtoAutomationDetail): ProtoAction[] => {
   const { actions, edges } = automation;
   if (edges.length === 0) {
     return actions;
@@ -244,7 +292,7 @@ export const orderActions = (automation: AutomationDetail): AutomationAction[] =
   const nextOf = new Map(edges.map((e) => [e.source_action_id, e.target_action_id]));
   const head = actions.find((a) => !targets.has(a.id)) ?? actions[0];
 
-  const ordered: AutomationAction[] = [];
+  const ordered: ProtoAction[] = [];
   const seen = new Set<string>();
   let cursor: string | undefined = head?.id;
   while (cursor && byId.has(cursor) && !seen.has(cursor)) {

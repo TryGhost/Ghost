@@ -43,11 +43,11 @@ import { CREATION_SLOT, NEW_AUTOMATION_ID } from './creation-variant';
 import { DetailsDialog } from './details-dialog';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 
-// PHASE 2 — the automations list, with CRUD.
+// FUTURE — the automations list, carried forward from phase 2 with its CRUD.
 //
-// This is the lane where automations can be made and removed. Phase 1's list is
-// read-only and stays that way.
-const LANE = 'phase-2' as const;
+// Where the roadmap's list-level work lands when it's built (a template library,
+// import/export). Today it is phase 2's list unchanged.
+const LANE = 'future' as const;
 
 type ViewKey = 'active' | 'archived' | 'all';
 
@@ -303,7 +303,7 @@ const AutomationsList: React.FC = () => {
   return (
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
-        <ListPage data-testid="automations-proto-phase-2">
+        <ListPage data-testid="automations-proto-future">
           <ListPage.Header>
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>

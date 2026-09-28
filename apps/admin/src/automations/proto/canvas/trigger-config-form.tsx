@@ -12,21 +12,31 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Stack } from '@tryghost/shade/primitives';
 import {
   ALL_TIER_IDS,
+  CHANGE_FIELD_LABEL,
+  CHANGE_OPTIONS,
+  LABEL_FIELD_LABEL,
+  SEGMENT_FIELD_LABEL,
   PAID_TIERS_FIELD_LABEL,
   TIER_OPTIONS,
+  type SubscriptionChange,
   type TriggerConfig,
   type TriggerType,
   availableTriggerOptions,
+  hasChange,
+  hasLabels,
+  hasSegment,
   hasTiers,
   tierDisplayName,
-  SIMPLE_TRIGGER_OPTIONS,
-  TRIGGER_PICKER_OPTIONS,
   triggerConfigFor,
   exitSentence,
 } from '@/automations/proto/shared/trigger-config';
+import type { PickerOption } from '@/automations/proto/shared/option-picker';
 import { useArchivedTierIds, useStripeConnected } from '@/automations/proto/shared/store';
 import { PickerRow } from '@/automations/proto/shared/option-picker';
 import { CheckboxList, CheckboxRow } from '@/automations/proto/shared/checkbox-list';
+import { canCreateLabel, createLabel, useLabels } from '@/automations/proto/shared/labels';
+import { conditionsSentence, useSegments } from '@/automations/proto/shared/segments';
+import { SearchableSelectField } from '@/automations/proto/shared/searchable-select-field';
 import { useDismissOnPanePress } from './flow-utils';
 
 // The trigger's settings, rendered inside the node card alongside every other
@@ -65,23 +75,24 @@ import { useDismissOnPanePress } from './flow-utils';
  */
 export const TriggerEmptyState: React.FC<{
   onSelect: (config: TriggerConfig) => void;
-  // Phase 1's shorter names, with no second line — see SIMPLE_TRIGGER_OPTIONS.
-  simpleNames?: boolean;
+  // The lane's trigger rows, already narrowed by shared/capabilities — which is
+  // why this no longer takes a `simpleNames` boolean and builds the list itself.
+  // Two lanes' worth of difference (phase 1's shorter names, the future lane's
+  // extra trigger) can't be carried by one flag, and the caller is the only one
+  // that knows which lane it is.
+  options: PickerOption<TriggerType>[];
   // The create-button variant (see CREATION_SLOT): when present, the rows
   // become SELECTIONS — highlighted, applying nothing — and a "Create
   // automation" button beneath them is the commit, handing the chosen config
   // up. Without it a row's click IS the answer, as ever.
   onCreate?: (config: TriggerConfig) => void;
-}> = ({ onSelect, simpleNames = false, onCreate }) => {
+}> = ({ options: laneOptions, onSelect, onCreate }) => {
   // Without Stripe the paid trigger isn't offered at all — see
   // availableTriggerOptions for the whole design. Read from the store here
   // rather than threaded down as a prop: it's site-level state, and every
   // surface that lists triggers has to agree on it.
   const stripeConnected = useStripeConnected();
-  const options = availableTriggerOptions(
-    simpleNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS,
-    stripeConnected,
-  );
+  const options = availableTriggerOptions(laneOptions, stripeConnected);
   // Create-button mode's held choice. Pre-answered when there's only one
   // option (a Stripe-less site): a one-option question with nothing selected
   // would make Create a two-press act for people with no decision to make —
@@ -121,22 +132,18 @@ export const TriggerEmptyState: React.FC<{
 
 // A radio in a row, CheckboxRow's shape exactly — whole-row label target, the
 // same SelectItem metrics — so the two kinds of row in this popover read as one
-// list at two depths. The optional second line is the mode's consequence, in
-// the same dress as the exit sentence below: muted, smaller, part of the row's
-// click target.
+// list at two depths.
+//
+// It took an optional second line once, for the "any" mode's consequence. Both
+// rows are one line now (see the RadioGroup below), so the prop went with the
+// copy rather than sitting here unused waiting for someone to find a use for it.
 const RadioRow: React.FC<{
   value: string;
   label: string;
-  description?: string;
-}> = ({ value, label, description }) => (
-  <label className="flex cursor-pointer items-start gap-2.5 rounded-xs px-2 py-1.5 transition-colors hover:bg-interactive-hover">
-    {/* mt-0.5 seats the 16px control on the first line's cap height rather
-            than centring it against a row that may carry a second line. */}
-    <RadioGroupItem className="mt-0.5" value={value} />
-    <span className="flex min-w-0 flex-col gap-0.5">
-      <span className="text-control">{label}</span>
-      {description && <span className="text-xs text-muted-foreground">{description}</span>}
-    </span>
+}> = ({ value, label }) => (
+  <label className="flex cursor-pointer items-center gap-2.5 rounded-xs px-2 py-1.5 transition-colors hover:bg-interactive-hover">
+    <RadioGroupItem value={value} />
+    <span className="min-w-0 truncate text-control">{label}</span>
   </label>
 );
 
@@ -149,11 +156,14 @@ interface TriggerConfigFormProps {
   // and went when locked cards stopped rendering this form at all (the canvas
   // draws them header-only; see triggerBodyEmpty there).
   showExits?: boolean;
-  // Increments when the tiers popover should open itself — the canvas's nudge
-  // after the creation sequence settles on a paid trigger with no tiers chosen
-  // (see tiersRevealPending there). The canvas owns when; this form owns the
-  // popover, so the instruction crosses as a counter rather than shared state.
-  revealTiersSignal?: number;
+  // Increments when this trigger's field should open itself — the canvas's nudge
+  // after the creation sequence settles on a trigger that has a question to ask
+  // (see fieldRevealPending there). The canvas owns when; this form owns the
+  // popovers, so the instruction crosses as a counter rather than shared state.
+  //
+  // One signal for both fields because only one of them can be on screen: the
+  // trigger decides which question the card asks.
+  revealFieldSignal?: number;
   // The SAVED config's tiers. An archived tier is offered while it's in the
   // current selection OR here — so unticking one stays reversible for exactly
   // as long as the removal is unsaved, the same undo horizon as every other
@@ -166,7 +176,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   config,
   onChange,
   showExits = true,
-  revealTiersSignal,
+  revealFieldSignal,
   savedTierIds = [],
 }) => {
   const tierIds = config.tierIds;
@@ -180,20 +190,38 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   const selectedTiers = TIER_OPTIONS.filter((tier) => tierIds.includes(tier.id));
   const [tiersOpen, setTiersOpen] = useState(false);
   const showTiers = hasTiers(config);
+  // Label and segment: the same control, one with creation and one without —
+  // see shared/searchable-select-field, which owns their search and dropdown.
+  const showLabels = hasLabels(config);
+  const labels = useLabels();
+  const showSegment = hasSegment(config);
+  const segments = useSegments();
+  const selectedSegment = segments.find((segment) => segment.id === config.segmentId) ?? null;
+  // The lifecycle change — a closed set of three, so Shade's compound trigger
+  // with no search at all.
+  const showChange = hasChange(config);
+  const [changeOpen, setChangeOpen] = useState(false);
   // Compared against the mount-time value rather than watched in an effect, so
   // a form that MOUNTS with a signal already counted up (re-picking the paid
   // trigger later, a remount mid-session) doesn't fire a stale nudge — only a
   // signal that moves while the form is on screen opens the popover.
-  const [prevRevealSignal, setPrevRevealSignal] = useState(revealTiersSignal);
-  if (revealTiersSignal !== prevRevealSignal) {
-    setPrevRevealSignal(revealTiersSignal);
+  const [prevRevealSignal, setPrevRevealSignal] = useState(revealFieldSignal);
+  if (revealFieldSignal !== prevRevealSignal) {
+    setPrevRevealSignal(revealFieldSignal);
     if (showTiers) {
       setTiersOpen(true);
     }
+    if (showChange) {
+      setChangeOpen(true);
+    }
   }
   useDismissOnPanePress(tiersOpen, () => setTiersOpen(false));
+  useDismissOnPanePress(changeOpen, () => setChangeOpen(false));
 
   const setTiers = (next: string[]) => onChange({ ...config, tierIds: next });
+  const setLabel = (labelId: string | null) => onChange({ ...config, labelId });
+  const setChange = (change: SubscriptionChange | null) => onChange({ ...config, change });
+  const setSegment = (segmentId: string | null) => onChange({ ...config, segmentId });
 
   return (
     // gap="xl" (24px) between the blocks, double the usual md — each is a
@@ -328,14 +356,20 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
               updatePositionStrategy="always"
             >
               {/* Two modes as RADIOS, then the list — GitHub's install screen,
-                        which is where the review pointed. The old shape was one
+                        which is where the review pointed. The shape before it was one
                         checkbox list with "Any paid tier" locking the rows beneath it
-                        checked-and-disabled, and it had two faults the radios fix:
-                        nothing said the "any" answer follows tiers created LATER
-                        (the sub-copy now says exactly that), and a mode pretending
-                        to be a list item gave this field the one interaction nobody
-                        could predict. A mode choice and an item choice are different
-                        kinds of question, and now they look like it. */}
+                        checked-and-disabled: a mode pretending to be a list item, which
+                        gave this field the one interaction nobody could predict. A mode
+                        choice and an item choice are different kinds of question, and
+                        now they look like it.
+
+                        "Any paid tier" carried a second line for a while — that it
+                        follows tiers created later. It's gone as noise: two rows in a
+                        small popover don't need a paragraph between them, and the
+                        radio pair already draws the only distinction that matters
+                        (a policy vs a named list). The fact it stated is real and
+                        still true; if it needs saying, it belongs where someone is
+                        deciding, not permanently under one of two options. */}
               <div className="p-2">
                 <RadioGroup
                   className="flex flex-col gap-0"
@@ -350,11 +384,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                     onChange({ ...config, tierMode: mode as 'all' | 'selected', tierIds: [] })
                   }
                 >
-                  <RadioRow
-                    description="Includes all current and future paid tiers you create."
-                    label="Any paid tier"
-                    value="all"
-                  />
+                  <RadioRow label="Any paid tier" value="all" />
                   <RadioRow label="Select paid tiers" value="selected" />
                 </RadioGroup>
                 {/* Revealed by the second radio, indented under it the way
@@ -405,17 +435,173 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                   </div>
                 )}
               </div>
-              {/* The exit sentence, footered under the choice it follows from —
-                        same voice and size as the card captions. Ruled off because the
-                        rows above are controls and this is a consequence, not another
-                        row to press. */}
-              {showExits && (
-                <div className="border-t border-border-default px-4 py-3">
-                  <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
-                </div>
-              )}
             </PopoverContent>
           </Popover>
+          {/* The exits, on the CARD under the field — not footered inside the
+                    popover, where they lived until the label trigger arrived and put
+                    its own copy here.
+
+                    The popover's version was defensible on its own terms: the exits
+                    follow from the tiers, so reading them at the moment of choosing
+                    is when they're worth reading. What it couldn't survive was a
+                    second trigger with a field, because the label field's dropdown
+                    closes the instant you pick — a consequence stapled to the bottom
+                    of it would be read by nobody. So one of the two triggers was
+                    going to state its exits on the card, and the other inside a
+                    surface you have to open. Two placements for one sentence, on
+                    the same kind of card, decided by which control the field
+                    happened to use.
+
+                    On the card, for both. Whatever the popover gained by fusing
+                    the sentence to the choice, it cost more in making the trigger
+                    card mean different things depending on which trigger it held. */}
+          {showExits && (
+            <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
+          )}
+        </div>
+      )}
+
+      {/* LABEL, on the label trigger only — the lead-magnet field.
+
+                ONE label, and therefore a plain field-that-opens like the tiers
+                one above rather than the members area's token field. It WAS that
+                token field — chips, multi-select — until the product decision
+                came back singular, and chips for a value that can only ever be
+                one thing promise something the trigger can't do.
+
+                Shade's own Combobox, not a hand-rolled picker: the trigger is
+                the control chrome (inputSurface, value-or-placeholder, chevron)
+                and MultiSelectCombobox in single-select mode is the searchable
+                list. The hand-rolled copy of the members picker that lived here
+                is deleted — Shade had this, which is reason enough.
+
+                A chevron where the tiers field has a pencil, and deliberately:
+                a chevron says an option list drops out of this, which is what
+                happens, where the pencil says this opens an editing surface,
+                which is what the tiers popover with its radios and checkboxes
+                actually is. Same card, two affordances, because they open two
+                different kinds of thing.
+
+                CREATING lives in the footer render prop, which hands us the live
+                search text — so a publisher building the automation for a form
+                they haven't made yet can type the label's name and have it,
+                instead of leaving to go create it and coming back. Offered only
+                when the typed name isn't already a label (canCreateLabel, the
+                members picker's own rule), and it selects what it creates: typing
+                a name into a trigger's audience field means "watch this one".
+
+                Null is simply unanswered — see labelUnanswered, which the same
+                validators read as they do the tier version. No all-vs-selected
+                mode: "any label" would mean every labelled signup, which on a
+                site that labels its forms is very nearly every signup. */}
+      {showLabels && (
+        <div className="flex flex-col gap-2">
+          {/* The sentence that runs into the field — and the one place the
+                    card states the trigger's real scope. The header says "Label
+                    added to member"; this says when a label counts, which is at
+                    signup. */}
+          <span className="text-control">{LABEL_FIELD_LABEL}</span>
+          <SearchableSelectField
+            canCreate={(query) => canCreateLabel(labels, query)}
+            options={labels}
+            placeholder="Choose a label"
+            searchLabel="Search labels"
+            selectedId={config.labelId}
+            onCreate={(name) => createLabel(name).id}
+            onSelect={setLabel}
+          />
+          {/* The exits, on the card under the field — the same placement the
+                    tiers field uses, and see the note there for why both ended up
+                    here rather than inside their fields. */}
+          {showExits && (
+            <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
+          )}
+        </div>
+      )}
+
+      {/* THE SEGMENT, on the segment trigger only.
+
+                The label field exactly, minus the Create row — same control,
+                because it's the same question: one thing, chosen by name, from a
+                list long enough to want searching. See shared/searchable-select-field
+                for why the search sits in the field.
+
+                Its create row is present but DISABLED — see the field below for
+                why. A label can be made from its own name; a segment can't, and
+                the thing that would make one is the members filtering experience,
+                which isn't reachable from here yet. */}
+      {showSegment && (
+        <div className="flex flex-col gap-2">
+          <span className="text-control">{SEGMENT_FIELD_LABEL}</span>
+          <SearchableSelectField
+            // Disabled, deliberately. Creating a segment means reusing the
+            // members filtering experience, and that's blocked on
+            // useMemberFilterFields moving out of the members domain — the
+            // repo's dependency rules stop automations importing it. A builder
+            // was prototyped here and removed: a hand-rolled lookalike reads as
+            // a proposal for new UI when the plan is to reuse what exists.
+            //
+            // The row stays so the demo still says creation belongs HERE, which
+            // is the part the team reacted to — not having to leave automations,
+            // go build a segment, and find your place again.
+            newItem={{ label: 'New segment', disabled: true, onSelect: () => {} }}
+            options={segments}
+            placeholder="Choose a segment"
+            searchLabel="Search segments"
+            selectedId={config.segmentId}
+            onSelect={setSegment}
+          />
+          {/* The saved filter behind the chosen segment, so the card says what
+                    it actually watches rather than only what it's called. A segment's
+                    name is the publisher's own shorthand — "At-risk paid members"
+                    means whatever they saved — and the trigger card is exactly where
+                    you'd want reminding. Nothing when none is chosen: there's no
+                    filter to show, and the field's placeholder is already asking. */}
+          {selectedSegment && (
+            <p className="text-control text-muted-foreground">
+              {conditionsSentence(selectedSegment.conditions)}
+            </p>
+          )}
+          {showExits && (
+            <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
+          )}
+        </div>
+      )}
+
+      {/* THE SUBSCRIPTION CHANGE, on the lifecycle trigger only.
+
+                The label field's shape with the search and the Create row taken
+                out: three fixed options aren't worth a search box, and nobody
+                creates a fourth kind of subscription change. So it's back to
+                Shade's compound ComboboxTrigger, which is the same chrome the
+                label field draws by hand for the sake of holding an input.
+
+                The options complete the label's sentence rather than naming
+                nouns — "Triggered when a member's subscription:" / "Is upgraded"
+                — which is why the subject sits in the label and not in each row
+                (see CHANGE_FIELD_LABEL). It also lets "Ends" stay one word
+                without having to say whose doing it was, which for that change
+                is frequently nobody's. */}
+      {showChange && (
+        <div className="flex flex-col gap-2">
+          <span className="text-control">{CHANGE_FIELD_LABEL}</span>
+          <SearchableSelectField
+            options={CHANGE_OPTIONS.map((option) => ({
+              id: option.value,
+              name: option.label,
+            }))}
+            placeholder="Choose a change"
+            searchable={false}
+            searchLabel="Edit subscription change"
+            selectedId={config.change}
+            onSelect={(next) => setChange(next as SubscriptionChange | null)}
+          />
+          {/* The exits, on the card like the other two fields — and the one
+                    place the winback's defining behaviour is stated: a run ends
+                    when the member starts paying again. */}
+          {showExits && (
+            <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
+          )}
         </div>
       )}
 

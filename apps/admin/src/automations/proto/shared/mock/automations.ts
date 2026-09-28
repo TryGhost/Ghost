@@ -17,6 +17,9 @@ import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automatio
 export const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
   'member-welcome-email-free': 'Greet new free members with a short onboarding sequence.',
   'member-welcome-email-paid': 'Welcome members who have just started paying.',
+  'lead-magnet-seo-guide': 'Deliver the SEO guide to everyone who signs up for it.',
+  'winback-subscription-ended': 'Ask members who have lapsed whether they want to come back.',
+  'segment-engaged-upsell': 'Pitch a paid membership to free members who keep reading.',
 };
 
 // What phase 1 lists.
@@ -181,14 +184,205 @@ export const paidUpgradeNudge: AutomationDetail = {
   ],
 };
 
-// The whole fixture set: production's two real automations and nothing else.
+// Lead magnet — the FUTURE lane's fixture, and the first automation here that a
+// Ghost site cannot make today.
+//
+// It exists to answer "what is the label trigger FOR" without anyone having to
+// build one: a signup form on a landing page attaches the "SEO guide" label,
+// this delivers the guide, and a few days later asks whether it helped. That
+// second email is the part worth seeing — a lead magnet that only hands over the
+// file is a transaction, and the follow-up is where it becomes a sequence.
+//
+// Kept out of every other lane by its TRIGGER, not by a list of slugs: nothing
+// but the future lane offers `label_added`, so nothing else shows this. See
+// shared/capabilities.
+//
+// The slug is invented — production has no such automation — but it carries one
+// so the description map seeds it the way the other two are seeded.
+//
+// Numbers read like a lead magnet rather than a newsletter: the delivery email
+// is opened and clicked by almost everyone, because the click IS the download
+// and they asked for it a minute ago. The follow-up falls back to ordinary
+// rates. A flat 70% on both would be the giveaway that nobody thought about it.
+export const leadMagnetDelivery: AutomationDetail = {
+  id: 'auto_lead_magnet',
+  name: 'SEO guide delivery',
+  slug: 'lead-magnet-seo-guide',
+  status: 'active',
+  created_at: '2026-06-28T11:00:00Z',
+  updated_at: '2026-07-19T09:30:00Z',
+  actions: [
+    {
+      id: 'act_lm_deliver',
+      type: 'send_email',
+      data: {
+        email_subject: 'Your SEO guide is here',
+        email_lexical: SEEDED_LEXICAL,
+        email_design_setting_id: DESIGN,
+      },
+      stats: {
+        email_sent_count: 640,
+        email_opened_count: 585,
+        email_clicked_count: 470,
+        opened_rate: 91,
+        clicked_rate: 73,
+      },
+    },
+    { id: 'act_lm_wait', type: 'wait', data: { wait_hours: 72 } },
+    {
+      id: 'act_lm_followup',
+      type: 'send_email',
+      data: {
+        email_subject: 'Did the guide help?',
+        email_lexical: SEEDED_LEXICAL,
+        email_design_setting_id: DESIGN,
+      },
+      stats: {
+        email_sent_count: 598,
+        email_opened_count: 383,
+        email_clicked_count: 96,
+        opened_rate: 64,
+        clicked_rate: 16,
+      },
+    },
+  ],
+  edges: [
+    { source_action_id: 'act_lm_deliver', target_action_id: 'act_lm_wait' },
+    { source_action_id: 'act_lm_wait', target_action_id: 'act_lm_followup' },
+  ],
+};
+
+// Winback — the FUTURE lane's lifecycle fixture.
+//
+// Fires on a subscription ENDING, which is deliberately more than cancelling:
+// a card that stops working and a membership that lapses at period end both
+// land here, and they're most of who a winback is actually for (see
+// SubscriptionChange).
+//
+// A slow flow on purpose. The welcome flows wait 3 and 5 days because someone
+// who just arrived is still paying attention; a lapsed member is not, and
+// following them out the door the same afternoon reads as pleading. Two weeks,
+// then three more.
+//
+// The numbers are the bleakest in the fixture set, and should be: a winback that
+// converted like a welcome email would be a winback nobody needs. Opens hold up
+// (the subject is about them), clicks fall off a cliff, and the flow's real
+// result is the 11% who exit by starting to pay again — which is the run list's
+// job to show, not the email stats'.
+export const winbackLapsed: AutomationDetail = {
+  id: 'auto_winback',
+  name: 'Winback lapsed members',
+  slug: 'winback-subscription-ended',
+  status: 'active',
+  created_at: '2026-06-14T10:00:00Z',
+  updated_at: '2026-07-16T12:20:00Z',
+  actions: [
+    { id: 'act_wb_wait', type: 'wait', data: { wait_hours: 336 } },
+    {
+      id: 'act_wb_email',
+      type: 'send_email',
+      data: {
+        email_subject: 'Was it something we said?',
+        email_lexical: SEEDED_LEXICAL,
+        email_design_setting_id: DESIGN,
+      },
+      stats: {
+        email_sent_count: 287,
+        email_opened_count: 158,
+        email_clicked_count: 34,
+        opened_rate: 55,
+        clicked_rate: 12,
+      },
+    },
+    { id: 'act_wb_wait2', type: 'wait', data: { wait_hours: 504 } },
+    {
+      id: 'act_wb_offer',
+      type: 'send_email',
+      data: {
+        email_subject: "Here's 20% off if you come back",
+        email_lexical: SEEDED_LEXICAL,
+        email_design_setting_id: DESIGN,
+      },
+      stats: {
+        email_sent_count: 221,
+        email_opened_count: 109,
+        email_clicked_count: 41,
+        opened_rate: 49,
+        clicked_rate: 19,
+      },
+    },
+  ],
+  edges: [
+    { source_action_id: 'act_wb_wait', target_action_id: 'act_wb_email' },
+    { source_action_id: 'act_wb_email', target_action_id: 'act_wb_wait2' },
+    { source_action_id: 'act_wb_wait2', target_action_id: 'act_wb_offer' },
+  ],
+};
+
+// Engaged-reader upsell — the FUTURE lane's segment fixture.
+//
+// The canonical reason anyone wants segment triggers: not "who signed up" but
+// "who is behaving like someone about to pay". The segment ("Engaged free
+// members") is a saved filter another team will build; this automation is what
+// a publisher points at it.
+//
+// It waits a day before saying anything. Entering a segment is a threshold
+// crossing rather than an act — see the segment_entered stem — so there's no
+// moment the member would connect an instant email to, and arriving the second
+// they cross reads as surveillance rather than service.
+//
+// Stats sit between the lead magnet's and the winback's: better than cold
+// outreach because these people already read the thing, worse than a welcome
+// because nobody asked for this one.
+export const engagedUpsell: AutomationDetail = {
+  id: 'auto_segment_upsell',
+  name: 'Engaged reader upsell',
+  slug: 'segment-engaged-upsell',
+  status: 'active',
+  created_at: '2026-07-02T09:15:00Z',
+  updated_at: '2026-07-17T15:40:00Z',
+  actions: [
+    { id: 'act_seg_wait', type: 'wait', data: { wait_hours: 24 } },
+    {
+      id: 'act_seg_email',
+      type: 'send_email',
+      data: {
+        email_subject: 'You read a lot of these',
+        email_lexical: SEEDED_LEXICAL,
+        email_design_setting_id: DESIGN,
+      },
+      stats: {
+        email_sent_count: 508,
+        email_opened_count: 356,
+        email_clicked_count: 112,
+        opened_rate: 70,
+        clicked_rate: 22,
+      },
+    },
+  ],
+  edges: [{ source_action_id: 'act_seg_wait', target_action_id: 'act_seg_email' }],
+};
+
+// The whole fixture set: production's two real automations, plus one per future
+// trigger that needs something to demonstrate it.
 //
 // There were two more — an "Inactive win-back" and a "Cancellation survey" — invented
 // to give the analytics something varied to chew on. They went because a prototype
 // that shows automations nobody can make is answering questions about a product we
 // haven't designed, and every screen had to be read twice to work out which rows were
 // real.
-export const mockAutomations: AutomationDetail[] = [welcomeSeries, paidUpgradeNudge];
+//
+// The lead magnet is the exception that proves that rule rather than a return to
+// it: it's an automation nobody can make YET, it demonstrates a trigger that has
+// been scheduled rather than imagined, and no lane that can't make one can see
+// it. The old inventions failed all three tests.
+export const mockAutomations: AutomationDetail[] = [
+  welcomeSeries,
+  paidUpgradeNudge,
+  leadMagnetDelivery,
+  winbackLapsed,
+  engagedUpsell,
+];
 
 export function getAutomation(id: string): AutomationDetail | undefined {
   return mockAutomations.find((a) => a.id === id);

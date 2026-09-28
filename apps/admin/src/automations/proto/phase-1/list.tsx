@@ -24,6 +24,11 @@ import { useProtoAutomations } from '@/automations/proto/shared/store';
 // Filtered at the list rather than flagged on the record: it's a property of this
 // LANE, not of the automation, and a field on the stored record would have to be
 // versioned and would then be visible to every screen that reads one.
+//
+// The other lanes filter by CAPABILITY instead (laneShowsTrigger — show what this
+// lane could have built). This one doesn't need it: the two production slugs are
+// both on triggers phase 1 offers, so the slug list is the stricter of the two and
+// already excludes everything the capability rule would.
 const LANE = 'phase-1' as const;
 
 const AutomationsList: React.FC = () => {

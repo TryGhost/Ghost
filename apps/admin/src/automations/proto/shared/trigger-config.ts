@@ -1,6 +1,8 @@
 import type { ElementType } from 'react';
 import type { PickerOption } from '@/automations/proto/shared/option-picker';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { labelName } from './labels';
+import { segmentName } from './segments';
 
 // Trigger, audience and exit criteria for the proto. Proto-local on purpose: the
 // framework's AutomationDetail has none of this yet, so it lives beside the mock
@@ -41,7 +43,27 @@ import { LucideIcon } from '@tryghost/shade/utils';
 // an id that tracked them would invalidate every stored config for a copy change,
 // and mean nothing more than the stable one does. (Same reasoning as the phase
 // slot, which kept `future` when its label became "Exploration".)
-export type TriggerType = 'member_subscribes' | 'paid_subscription_starts';
+export type TriggerType =
+  | 'member_subscribes'
+  | 'paid_subscription_starts'
+  | 'label_added'
+  | 'paid_subscription_changed'
+  | 'segment_entered';
+
+/**
+ * What happened to a paid subscription, on `paid_subscription_changed`.
+ *
+ * ENDED, not "cancelled". Cancelling is one way out of a tier and not even the
+ * commonest — a card that stops working, a subscription that lapses at period
+ * end, a comp that expires, a publisher who removes it. A trigger named for the
+ * cancel button would miss every member who left by the other roads, which for a
+ * winback flow is most of the people it exists to reach.
+ *
+ * It also changes who the sentence is about. Upgrading and downgrading are
+ * things a member DOES; ending is often something that merely happens to them,
+ * which is why that option's stem is the one written passively.
+ */
+export type SubscriptionChange = 'upgraded' | 'downgraded' | 'ended';
 /**
  * WHAT ENDS A RUN — and why nobody chooses it.
  *
@@ -96,6 +118,44 @@ export interface TriggerConfig {
    * copy of it that could drift.
    */
   tierIds: string[];
+  /**
+   * The label the trigger watches, on `label_added`. ONE label — null until it's
+   * chosen, which is the unanswered state (see labelUnanswered).
+   *
+   * Singular because the product decision is singular, and the type should say
+   * so. It was `labelIds: string[]` first, with a multi-select picker; capping
+   * that array at one would leave every reader handling a second element that
+   * can never arrive, and would be the obvious place for multi-select to creep
+   * back in without anyone deciding it should.
+   *
+   * There's no all-vs-selected mode either, unlike tiers. "Any label" isn't an
+   * answer anyone would pick: on a site that labels its signup forms it means
+   * very nearly every signup.
+   *
+   * Null on every other trigger, held rather than optional for the same reason
+   * tierMode is: nothing has to check for the field's absence as well as its
+   * emptiness.
+   */
+  labelId: string | null;
+  /**
+   * Which change the trigger watches, on `paid_subscription_changed`. Null until
+   * it's chosen — the unanswered state (see changeUnanswered).
+   *
+   * Null rather than a default, unlike tierMode's 'all'. That default is a real
+   * policy answer someone might have given; none of these three is — an upgrade
+   * thank-you and a winback are opposite automations, and arriving pre-set to
+   * one of them would put an answer in a field nobody opened.
+   */
+  change: SubscriptionChange | null;
+  /**
+   * The segment the trigger watches, on `segment_entered`. Null until chosen —
+   * the unanswered state (see segmentUnanswered).
+   *
+   * One segment, like the label. Segments are themselves arbitrary filters, so
+   * "any of these two" is a segment somebody could have saved instead, and
+   * offering it here would be a filter builder wearing a multi-select.
+   */
+  segmentId: string | null;
 }
 
 // ONE sentence stem per trigger, and every surface derives its copy from it —
@@ -115,6 +175,54 @@ export interface TriggerConfig {
 const TRIGGER_SENTENCE_STEMS: Record<TriggerType, string> = {
   member_subscribes: 'someone signs up as a free member',
   paid_subscription_starts: 'someone signs up as a paid member or upgrades',
+  // The label trigger keeps the family's "someone signs up" opening on purpose.
+  //
+  // Its TITLE is "Label added", which is the event as engineering would name it
+  // and as the roadmap doc writes it — but a label can be added by a form, by an
+  // admin clicking one, by a CSV import, or by the API, and only the first of
+  // those fires this. (The project doc's open question, answered "I think only on
+  // signup".) So the title names the event and this sentence says when it
+  // actually happens, which is what every description under a trigger is for.
+  //
+  // It also means the trigger stays a thing the MEMBER did, like the two above
+  // it, rather than a thing the site did — which is what keeps the three reading
+  // as one family instead of two kinds of trigger sharing a picker.
+  label_added: 'someone signs up with the selected label',
+  // Generic, for the picker row — the option has to describe the whole trigger
+  // before a change has been chosen. Once one is, the card says the specific
+  // thing instead (see CHANGE_SENTENCE_STEMS).
+  paid_subscription_changed: "a member's subscription is upgraded, downgraded or ends",
+  // The first trigger that watches a STATE rather than an event.
+  //
+  // Everything above it fires on something that happened at a moment you could
+  // name: a signup, a subscription changing, a label arriving with a form
+  // submission. A segment is a saved filter, so entering one isn't an act at all
+  // — it's the consequence of some property crossing a line, and it can happen
+  // because the member did something, because time passed, or because the
+  // publisher edited the segment.
+  //
+  // Nothing in the proto depends on that distinction; it's here because it's the
+  // thing an engineer will ask about first, and because it's what makes
+  // re-entry (roadmap: Post 7.0) a real question for this trigger in a way it
+  // isn't for the others — you can leave a segment and come back next week
+  // without doing anything.
+  segment_entered: 'a member enters the selected segment',
+};
+
+/**
+ * One stem per change, the specific version of the trigger's generic one. The
+ * configured card and the read canvas say THIS, so an automation reads as the
+ * thing it actually watches rather than as all three possibilities.
+ *
+ * "is upgraded" rather than "upgrades" across all three: the ended case can't
+ * take an active verb without lying about who did it (see SubscriptionChange),
+ * and a set where one member of it reads differently from the others makes the
+ * odd one look like a mistake rather than a distinction.
+ */
+const CHANGE_SENTENCE_STEMS: Record<SubscriptionChange, string> = {
+  upgraded: "a member's subscription is upgraded",
+  downgraded: "a member's subscription is downgraded",
+  ended: "a member's subscription ends",
 };
 
 // Narrow list for now — the two triggers the team's proto covers. Adding a third
@@ -142,7 +250,42 @@ export const TRIGGER_OPTIONS: {
     description: `When ${TRIGGER_SENTENCE_STEMS.paid_subscription_starts}`,
     icon: LucideIcon.CreditCard,
   },
+  // Last, under the two membership triggers: those are about what someone became,
+  // this is about how they arrived. Offered in the FUTURE lane only — see
+  // shared/capabilities.
+  {
+    value: 'label_added',
+    label: 'Label added to member',
+    description: `When ${TRIGGER_SENTENCE_STEMS.label_added}`,
+    icon: LucideIcon.Tag,
+  },
+  // Beside the other paid trigger: one is about a subscription starting, this is
+  // about what happens to it afterwards.
+  {
+    value: 'paid_subscription_changed',
+    label: 'Paid subscription changed',
+    description: `When ${TRIGGER_SENTENCE_STEMS.paid_subscription_changed}`,
+    icon: LucideIcon.RefreshCw,
+  },
+  {
+    value: 'segment_entered',
+    label: 'Member enters segment',
+    description: `When ${TRIGGER_SENTENCE_STEMS.segment_entered}`,
+    icon: LucideIcon.Filter,
+  },
 ];
+
+// The three changes, as the field offers them. Sentence-completing labels, so
+// the field reads as the tail of CHANGE_FIELD_LABEL rather than as three nouns
+// under a heading.
+export const CHANGE_OPTIONS: { value: SubscriptionChange; label: string }[] = [
+  { value: 'upgraded', label: 'Is upgraded' },
+  { value: 'downgraded', label: 'Is downgraded' },
+  { value: 'ended', label: 'Ends' },
+];
+
+export const changeLabel = (change: SubscriptionChange | null): string | null =>
+  CHANGE_OPTIONS.find((option) => option.value === change)?.label ?? null;
 
 // The same list in the shared picker's icon/title/description shape, so the rows
 // read identically wherever the choice is offered — the empty trigger card, and
@@ -175,6 +318,13 @@ export const TRIGGER_PICKER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIO
 export const SIMPLE_TRIGGER_LABELS: Record<TriggerType, string> = {
   member_subscribes: 'Free member signs up',
   paid_subscription_starts: 'Paid member signs up',
+  // Unreachable — phase 1 doesn't offer this trigger (see shared/capabilities),
+  // and SIMPLE_TRIGGER_OPTIONS is built from that lane's list. Present because
+  // the record is keyed by TriggerType and a partial one would make every reader
+  // handle an undefined that can't occur.
+  label_added: 'Label added to member',
+  paid_subscription_changed: 'Paid subscription changed',
+  segment_entered: 'Member enters segment',
 };
 
 export const SIMPLE_TRIGGER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIONS.map(
@@ -195,6 +345,11 @@ export const TIER_OPTIONS: { id: string; name: string }[] = [
 ];
 
 export const ALL_TIER_IDS: string[] = TIER_OPTIONS.map((tier) => tier.id);
+
+// Labels live in shared/labels, not here — unlike tiers they can be CREATED
+// from the picker (the members area's behaviour), so they're a small store
+// rather than a frozen fixture list. This file imports the naming helper so
+// audienceLabel can still say who a label trigger watches.
 
 export const tierNames = (tierIds: string[]): string[] =>
   TIER_OPTIONS.filter((tier) => tierIds.includes(tier.id)).map((tier) => tier.name);
@@ -229,17 +384,74 @@ export const tierDisplayNames = (tierIds: string[], archivedTierIds: string[]): 
  * arrives this is the one line that has to know.
  */
 export const isPaidTrigger = (config: Pick<TriggerConfig, 'type'>): boolean =>
+  config.type === 'paid_subscription_starts' || config.type === 'paid_subscription_changed';
+
+/**
+ * Triggers that carry a tier list. NOT the same set as the paid ones any more.
+ *
+ * This was `isPaidTrigger` verbatim, kept separate on the argument that the two
+ * answer different questions and had come apart before. They have now: the
+ * lifecycle trigger is paid — it needs Stripe, and its exits are about money —
+ * and it carries no tiers at all. "Upgraded to Gold specifically" is a real
+ * thing someone will want one day; it isn't this, and giving the trigger a tier
+ * field before anyone has asked would be exactly the over-planning the audience
+ * model died of (see the block at the top of this file).
+ */
+export const hasTiers = (config: Pick<TriggerConfig, 'type'>): boolean =>
   config.type === 'paid_subscription_starts';
 
 /**
- * Triggers that carry a tier list. The same set as the paid ones today.
+ * Does this trigger ask a question of its own?
  *
- * Separate from isPaidTrigger because they answer different questions and have come
- * apart before: comping assigns a tier without a subscription, so a complimentary
- * audience used to have tiers and no money. That audience is gone, but the
- * distinction is the one that would come back with it.
+ * The canvas needs this twice — once to decide whether the card renders the
+ * fields form or just its written-out sentence, and once to decide whether to
+ * open that field after the creation sequence. It was the same four-way `||`
+ * written out in both places, which is how the segment trigger shipped with a
+ * card that rendered no field at all: one of the two lists got the new clause
+ * and the other didn't, and nothing could catch it, because the predicate was
+ * still imported by the list that HAD been updated.
+ *
+ * One list. A trigger that grows a field is now one entry here, and the two
+ * readers cannot disagree.
  */
-export const hasTiers = (config: Pick<TriggerConfig, 'type'>): boolean => isPaidTrigger(config);
+export const triggerHasField = (config: Pick<TriggerConfig, 'type'>): boolean =>
+  hasTiers(config) || hasLabels(config) || hasChange(config) || hasSegment(config);
+
+/** Triggers that carry a segment. The segment trigger, and only it. */
+export const hasSegment = (config: Pick<TriggerConfig, 'type'>): boolean =>
+  config.type === 'segment_entered';
+
+/** The segment question is open — the same shape as the other three. */
+export const segmentUnanswered = (config: Pick<TriggerConfig, 'type' | 'segmentId'>): boolean =>
+  hasSegment(config) && config.segmentId === null;
+
+/** Triggers that carry a subscription change. The lifecycle trigger, and only it. */
+export const hasChange = (config: Pick<TriggerConfig, 'type'>): boolean =>
+  config.type === 'paid_subscription_changed';
+
+/**
+ * The change question is open: the trigger watches a change and none is named.
+ * The lifecycle counterpart to tiersUnanswered and labelUnanswered, read by the
+ * same validators so they can't disagree about what unanswered means.
+ */
+export const changeUnanswered = (config: Pick<TriggerConfig, 'type' | 'change'>): boolean =>
+  hasChange(config) && config.change === null;
+
+/** Triggers that carry a label list. The label trigger, and only it. */
+export const hasLabels = (config: Pick<TriggerConfig, 'type'>): boolean =>
+  config.type === 'label_added';
+
+/**
+ * The label question is open: the trigger watches labels and none is named.
+ * The label counterpart to tiersUnanswered, and read by the same validators —
+ * the canvas card's warning, the detail screen's publish gate, the list's
+ * record-level check.
+ *
+ * Simpler than the tier version because there's no mode to exempt: with no
+ * label named, nothing can ever enter, so there is no valid empty state.
+ */
+export const labelUnanswered = (config: Pick<TriggerConfig, 'type' | 'labelId'>): boolean =>
+  hasLabels(config) && config.labelId === null;
 
 export const needsStripe = (config: Pick<TriggerConfig, 'type'>): boolean => isPaidTrigger(config);
 
@@ -340,7 +552,40 @@ const orList = (items: string[]): string =>
  * out which version they're looking at. One sentence for the paid trigger, one for
  * signup, both true, neither of them moving.
  */
-export const exitSentence = (config: Pick<TriggerConfig, 'type'>): string => {
+export const exitSentence = (config: Pick<TriggerConfig, 'type' | 'change'>): string => {
+  // The label trigger takes the signup sentence, not a third one. Losing the
+  // label looks like the tier clause's counterpart — but entry here happens at
+  // SIGNUP, so the label is how someone arrived rather than a state they hold,
+  // and a publisher removing it afterwards isn't the member leaving anything.
+  // Whether it should pull them out of a half-delivered sequence is a real
+  // question and not this demo's to answer.
+  if (hasChange(config)) {
+    // Derived from the change, the way the tier clause is derived from the
+    // tiers. The ENDED case is the interesting one: a winback's whole purpose is
+    // to bring someone back, so someone coming back is the run succeeding at the
+    // thing it was for — carrying on to send them "we miss you" afterwards is
+    // the one outcome nobody wants.
+    //
+    // Which is an exit this file's own history argues against: "stop when they
+    // upgrade to paid" was cut as a product opinion of ours rather than anything
+    // the configuration implied. The difference is that this one IS implied. It
+    // isn't an opt-in setting on a trigger with no others; it's what the chosen
+    // change means, the same way cancelling only exists as an exit because you
+    // picked a paid trigger.
+    const parts =
+      config.change === 'ended'
+        ? ['unsubscribe', 'start paying again']
+        : ['unsubscribe', 'stop paying'];
+    return `Members exit early if they ${orList(parts)}.`;
+  }
+  if (hasSegment(config)) {
+    // Leaving is the segment's own exit, and the only derived one in the set
+    // that can happen without the member doing anything — a filter they fall out
+    // of because a date moved, or because the publisher edited the segment. It's
+    // still right: an automation for people in a segment shouldn't keep running
+    // on people who aren't.
+    return 'Members exit early if they unsubscribe or leave the segment.';
+  }
   const parts = isPaidTrigger(config)
     ? ['unsubscribe', 'cancel their subscription', 'leave the selected tier(s)']
     : ['unsubscribe'];
@@ -368,6 +613,16 @@ export const triggerConfigFor = (type: TriggerType): TriggerConfig => ({
   // exists — it's choosing 'selected' and naming nothing.
   tierMode: 'all',
   tierIds: [],
+  // Null, and therefore unanswered, on a fresh label trigger — the opposite of
+  // tierMode's 'all' default, and deliberately so. There's no policy answer to
+  // arrive pre-selected: WHICH label is the entire question this trigger asks,
+  // and nobody but the publisher can answer it. The canvas opens the field on a
+  // fresh label trigger for the same reason it opens the tiers popover.
+  labelId: null,
+  // Unanswered on a fresh lifecycle trigger, same as labelId and for the same
+  // reason — the canvas opens the field to ask.
+  change: null,
+  segmentId: null,
 });
 
 export const DEFAULT_TRIGGER_CONFIG: TriggerConfig = triggerConfigFor('member_subscribes');
@@ -399,8 +654,16 @@ export const triggerDescription = (config: Pick<TriggerConfig, 'type'>): string 
  * fused its explanation into the tiers field's label (PAID_TIERS_FIELD_LABEL,
  * below), so a written-out copy above the field would say the same fact twice.
  */
-export const triggerExplanation = (config: Pick<TriggerConfig, 'type'>): string =>
-  `Triggered when ${TRIGGER_SENTENCE_STEMS[config.type]}.`;
+export const triggerExplanation = (config: Pick<TriggerConfig, 'type' | 'change'>): string => {
+  // The lifecycle trigger says the change it actually watches rather than the
+  // generic all-three sentence its picker row shows. Falls back to the generic
+  // one while nothing is chosen — which the read canvas can reach on an
+  // automation saved mid-answer.
+  if (hasChange(config) && config.change) {
+    return `Triggered when ${CHANGE_SENTENCE_STEMS[config.change]}.`;
+  }
+  return `Triggered when ${TRIGGER_SENTENCE_STEMS[config.type]}.`;
+};
 
 /**
  * The paid EDIT card's label, run into the tiers field: "…signs up or upgrades
@@ -413,6 +676,31 @@ export const triggerExplanation = (config: Pick<TriggerConfig, 'type'>): string 
  */
 export const PAID_TIERS_FIELD_LABEL = 'Triggered when someone signs up or upgrades to:';
 
+/**
+ * The label trigger's field label, built the same way: the stem's shape with its
+ * tail handed to the field, so the card reads as one sentence — "Triggered when
+ * someone signs up with:" completed by the labels themselves.
+ *
+ * This is also where the trigger's honest scope gets stated on the card. The
+ * header says "Label added"; this says when that counts. One sentence doing both
+ * jobs beats a caption explaining the title.
+ */
+export const LABEL_FIELD_LABEL = 'Triggered when someone signs up with:';
+
+/**
+ * The lifecycle field's label, built the same way — the sentence's opening, with
+ * its verb handed to the field. "Triggered when a member's subscription:"
+ * completed by "Is upgraded" / "Is downgraded" / "Ends".
+ *
+ * The subject sits in the label rather than the options so all three options can
+ * be short, and so the one that isn't about the member's own doing ("Ends")
+ * doesn't have to find a subject of its own.
+ */
+export const CHANGE_FIELD_LABEL = "Triggered when a member's subscription:";
+
+/** The segment field's label — the same sentence-into-field shape as the rest. */
+export const SEGMENT_FIELD_LABEL = 'Triggered when a member enters:';
+
 // Takes just the type, so it can label a bare choice as readily as a full config
 // — the trigger picker shows a label before there's a config to show it from.
 export const triggerLabel = (config: Pick<TriggerConfig, 'type'>, simple = false): string =>
@@ -424,8 +712,20 @@ export const triggerLabel = (config: Pick<TriggerConfig, 'type'>, simple = false
 // The trigger's title while reviewing a member's run, where every card narrates
 // what THIS member did — "Subscribed", not the configuration-voice "Member
 // subscribes" the edit and read canvases use.
-export const triggerReviewLabel = (config: TriggerConfig): string =>
-  config.type === 'paid_subscription_starts' ? 'Started paid subscription' : 'Signed up';
+export const triggerReviewLabel = (config: TriggerConfig): string => {
+  // What THIS member did, in the past tense the run review speaks in.
+  if (hasChange(config)) {
+    return config.change === 'ended'
+      ? 'Subscription ended'
+      : config.change === 'downgraded'
+        ? 'Downgraded'
+        : 'Upgraded';
+  }
+  if (hasSegment(config)) {
+    return 'Entered segment';
+  }
+  return config.type === 'paid_subscription_starts' ? 'Started paid subscription' : 'Signed up';
+};
 
 /**
  * Who this automation applies to, as one phrase — "Any member", "Bronze, Gold".
@@ -436,8 +736,26 @@ export const triggerReviewLabel = (config: TriggerConfig): string =>
  * trigger is either any tier or the tiers you named.
  */
 export const audienceLabel = (
-  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds'>,
+  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds' | 'labelId' | 'change' | 'segmentId'>,
 ): string => {
+  if (hasLabels(config)) {
+    // The named label, or the class it belongs to while the question is still
+    // open — the same shape as the paid trigger's "Paid members" fallback, and
+    // for the same reason: a trigger that can't run yet shouldn't claim an
+    // audience it doesn't have, and "Any member" would be a straight lie here.
+    return labelName(config.labelId) ?? 'Labelled members';
+  }
+  if (hasSegment(config)) {
+    // The segment names its own audience better than any class could — that's
+    // what a segment IS. Falls back to the class while the question is open.
+    return segmentName(config.segmentId) ?? 'Members in a segment';
+  }
+  if (hasChange(config)) {
+    // "Past members" on the ended change, because by the time the flow reaches
+    // them they aren't paying any more — calling a winback's audience "Paid
+    // members" would name the people it is specifically not for.
+    return config.change === 'ended' ? 'Past members' : 'Paid members';
+  }
   const tiers = tierNames(config.tierIds);
   if (hasTierFilter(config) && tiers.length > 0) {
     return tiers.join(', ');

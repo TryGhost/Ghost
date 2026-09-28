@@ -10,10 +10,8 @@ import {
   type NodeProps,
   ReactFlow,
 } from '@xyflow/react';
-import type {
-  AutomationDetail,
-  AutomationEmailStats,
-} from '@tryghost/admin-x-framework/api/automations';
+import type { AutomationEmailStats } from '@tryghost/admin-x-framework/api/automations';
+import type { ProtoAutomationDetail } from '@/automations/proto/shared/update-member';
 import { Button } from '@tryghost/shade/components';
 import { LucideIcon, cn, formatDisplayDate, formatDisplayTime } from '@tryghost/shade/utils';
 import type { AutomationRun, RunStepState } from '@/automations/proto/shared/mock';
@@ -35,7 +33,9 @@ import {
   CANVAS_HUD_INSET,
   EDGE_STROKE,
   type StepKind,
-  formatWait,
+  stepKindOf,
+  stepSubtitle,
+  stepTitle,
   orderActions,
   panTranslateExtent,
   stepKindIcon,
@@ -257,9 +257,16 @@ const FlowStepNode: React.FC<NodeProps> = ({ data }) => {
           : 'Received email'
     : d.kind === 'wait'
       ? `${current ? 'Waiting' : 'Waited'} ${d.subtitle}`
-      : d.focused
-        ? (d.reviewLabel ?? d.subtitle)
-        : d.subtitle;
+      : // A member update says what it does to them, the way a wait says how
+        // long it waits — the header carries the step's content, not its
+        // category, for every kind that has content worth a line. Same string
+        // in both states for now; a run-review past tense ("Added the label
+        // SEO guide") is a copy question for the content pass.
+        d.kind === 'update_member'
+        ? d.subtitle
+        : d.focused
+          ? (d.reviewLabel ?? d.subtitle)
+          : d.subtitle;
 
   const chip = d.focused && d.state ? STATE_CHIP[d.state] : undefined;
   // Far right of the header: when the step happened, when it will ("Resumes
@@ -327,7 +334,7 @@ const nodeTypes = { flowStep: FlowStepNode };
 const reachedStates: ReadonlySet<RunStepState> = new Set(['done', 'current']);
 
 interface FlowCanvasProps {
-  automation: AutomationDetail;
+  automation: ProtoAutomationDetail;
   selectedRun: AutomationRun | null;
   // Space to reserve on the left for a floating overlay (the performance card), so
   // the flow centres beside it and can't be panned underneath. 0 = full width.
@@ -421,7 +428,6 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
 
     ordered.forEach((action) => {
       const step = stepByAction.get(action.id);
-      const isEmail = action.type === 'send_email';
       const stats = action.type === 'send_email' ? action.stats : undefined;
       let stateDetail: string | null = null;
       let stateAt: string | null = null;
@@ -438,11 +444,9 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
       descriptors.push({
         id: action.id,
         data: {
-          kind: isEmail ? 'email' : 'wait',
-          title: isEmail ? 'Send email' : 'Wait',
-          subtitle: isEmail
-            ? action.data.email_subject || 'Untitled'
-            : formatWait(action.data.wait_hours),
+          kind: stepKindOf(action),
+          title: stepTitle(action),
+          subtitle: stepSubtitle(action),
           focused,
           // The step keeps its own (raw) state even where the run ended —
           // the email WAS received, the send DID go out. What ended the run

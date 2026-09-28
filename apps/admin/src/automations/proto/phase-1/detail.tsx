@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -16,6 +15,7 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
 import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import type { ProtoAutomationDetail } from '@/automations/proto/shared/update-member';
 import { getRunData } from '@/automations/proto/shared/mock';
 import {
   saveAutomation,
@@ -185,7 +185,7 @@ const AutomationFloat: React.FC = () => {
   //
   // The screen is keyed by automation id (see AutomationFloatScreen), so this
   // starts empty for each automation rather than needing to be reset.
-  const [draft, setDraft] = useState<AutomationDetail | null>(null);
+  const [draft, setDraft] = useState<ProtoAutomationDetail | null>(null);
   // Trigger + exit criteria. Separate from `draft` because AutomationDetail carries no
   // trigger config yet — the canvases take it as its own prop. `null` is the
   // just-created state: nothing has been chosen to start this automation, and the
@@ -276,7 +276,7 @@ const AutomationFloat: React.FC = () => {
 
   // Nothing is written until Save or Publish, so an edit only has to be recorded.
   // Whether anything actually differs is read back off the draft.
-  const handleDraftChange = (next: AutomationDetail) => setDraft(next);
+  const handleDraftChange = (next: ProtoAutomationDetail) => setDraft(next);
 
   const handleTriggerConfigChange = (next: TriggerConfig) => setTriggerConfig(next);
 
@@ -546,6 +546,7 @@ const AutomationFloat: React.FC = () => {
           >
             <EditCanvas
               draft={draftFlow}
+              lane={LANE}
               triggerConfig={triggerConfig}
               triggerLocked={triggerLocked}
               simpleTriggerNames

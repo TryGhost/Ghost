@@ -17,6 +17,8 @@ import {
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { ProtoVariantsContext, resolveVariantId } from './proto-variants';
 import { useVersionLink } from './use-version-link';
+import { resetLabels } from './labels';
+import { resetSegments } from './segments';
 import {
   resetProtoStore,
   setStripeConnected,
@@ -200,6 +202,12 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
             className="text-destructive focus:text-destructive"
             onClick={() => {
               resetProtoStore();
+              // Labels and segments are their own stores (see shared/labels,
+              // shared/segments) but the same prototype data — a reset that left
+              // a site's invented labels and segments behind would be a partial
+              // one.
+              resetLabels();
+              resetSegments();
               toast.success('Prototype data reset');
             }}
           >

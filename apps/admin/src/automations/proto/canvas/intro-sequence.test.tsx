@@ -28,6 +28,7 @@ const Harness: React.FC = () => {
     <ReactFlowProvider>
       <EditCanvas
         draft={draft}
+        lane="phase-2"
         triggerConfig={config}
         onChange={() => {}}
         onTriggerConfigChange={setConfig}
