@@ -107,6 +107,9 @@ export const init = ({
 
   const queries = new Queries(db.knex);
   const source = provider.getEventSource();
+  const webhookStatsEnabled = Boolean(
+    config.get('emailAnalytics:enabled') && config.get('backgroundJobs:emailAnalytics'),
+  );
 
   // Each fetch or webhook owns its buffers; concurrent requests must not flush
   // or clear another request's pending newsletter updates.
@@ -163,7 +166,11 @@ export const init = ({
   eventService = new EmailEventService({
     provider,
     createEventProcessor,
-    queueStats: (result) => webhookStats.enqueue(result),
+    queueStats: async (result) => {
+      if (webhookStatsEnabled) {
+        await webhookStats.enqueue(result);
+      }
+    },
   });
   const eventSourceOptions = (family: EmailFamily) => ({
     polling: source.type === 'poll',

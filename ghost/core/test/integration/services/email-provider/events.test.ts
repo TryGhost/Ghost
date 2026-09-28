@@ -515,9 +515,12 @@ describe('provider email events', () => {
     );
   });
 
-  it('retains an enqueue arriving while that newsletter is being aggregated', async () => {
+  it('allows an enqueue to finish during counting and retains its new token', async () => {
     const result = new EventProcessingResult({ emailIds: [event.emailId!] });
     await stats.enqueue(result);
+    const original = await knex('jobs')
+      .where('name', `email-analytics-webhook-stats-email:${event.emailId}`)
+      .first();
     let started!: () => void;
     const aggregating = new Promise<void>((resolve) => {
       started = resolve;
@@ -534,25 +537,20 @@ describe('provider email events', () => {
     const flushing = worker.flush();
     await aggregating;
 
-    // Observe submission of the INSERT; it must wait for the pending job lock.
-    let submitted!: () => void;
-    const inserting = new Promise<void>((resolve) => {
-      submitted = resolve;
+    let timeout: ReturnType<typeof setTimeout>;
+    const deadline = new Promise<never>((_, reject) => {
+      timeout = setTimeout(() => reject(new Error('Enqueue waited for aggregation')), 2000);
     });
-    const onQuery = (query: { sql: string }) => {
-      if (query.sql.startsWith('insert ignore into `jobs`')) {
-        submitted();
-      }
-    };
-    knex.on('query', onQuery);
     const enqueue = stats.enqueue(result);
     try {
-      await inserting;
+      await Promise.race([enqueue, deadline]);
+      const updated = await knex('jobs').where({ id: original.id }).first();
+      assert.notEqual(updated.metadata, original.metadata);
     } finally {
-      knex.removeListener('query', onQuery);
+      clearTimeout(timeout!);
       complete();
+      await Promise.all([flushing, enqueue]);
     }
-    await Promise.all([flushing, enqueue]);
     sinon.assert.calledOnce(aggregate);
     assert.equal(
       (await knex('jobs').where('name', 'like', 'email-analytics-webhook-stats-%')).length,
@@ -580,11 +578,65 @@ describe('provider email events', () => {
     const second = new WebhookStatsAggregator({ knex, aggregate });
     const flushing = first.flush();
     await aggregating;
+    let timeout: ReturnType<typeof setTimeout>;
+    const deadline = new Promise<never>((_, reject) => {
+      timeout = setTimeout(() => reject(new Error('Competing worker did not skip')), 2000);
+    });
     const other = second.flush();
-    await first.flush(); // An overlapping tick on the same instance also skips work.
-    complete();
-    await Promise.all([flushing, other]);
+    try {
+      await Promise.race([other, deadline]);
+      await first.flush(); // An overlapping tick on the same instance also skips work.
+    } finally {
+      clearTimeout(timeout!);
+      complete();
+      await Promise.all([flushing, other]);
+    }
     sinon.assert.calledOnce(aggregate);
+  });
+
+  it('replaces queue tokens even when enqueues share the same timestamp', async () => {
+    sinon.useFakeTimers({ toFake: ['Date'], now: Date.now() });
+    const result = new EventProcessingResult({ emailIds: [event.emailId!] });
+    await stats.enqueue(result);
+    const original = await knex('jobs')
+      .where('name', `email-analytics-webhook-stats-email:${event.emailId}`)
+      .first();
+    await stats.enqueue(result);
+    const updated = await knex('jobs').where({ id: original.id }).first();
+    assert.equal(updated.created_at.getTime(), original.created_at.getTime());
+    assert.notEqual(updated.metadata, original.metadata);
+  });
+
+  it('drains pending work written before queue tokens were introduced', async () => {
+    await service.webhook(provider.source, sign({ events: [event] }));
+    await knex('jobs')
+      .where('name', 'like', 'email-analytics-webhook-stats-%')
+      .update({ metadata: null });
+    await stats.flush();
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
+    assert.equal(
+      (await knex('jobs').where('name', 'like', 'email-analytics-webhook-stats-%')).length,
+      0,
+    );
+  });
+
+  it('recovers pending work after losing the connection holding the named lock', async () => {
+    await service.webhook(provider.source, sign({ events: [event] }));
+    const worker = new WebhookStatsAggregator({
+      knex,
+      aggregate: async (result, transaction) => {
+        const [[{ id }]] = await transaction.raw('SELECT CONNECTION_ID() AS id');
+        await knex.raw('KILL CONNECTION ?', [id]);
+        await new Queries(transaction).aggregateEmailStats(result.emailIds[0], true);
+      },
+    });
+    await assert.rejects(worker.flush());
+    await stats.flush();
+    assert.equal((await knex('emails').where({ id: event.emailId }).first()).delivered_count, 1);
+    assert.equal(
+      (await knex('jobs').where('name', 'like', 'email-analytics-webhook-stats-%')).length,
+      0,
+    );
   });
   it('waits for suppression and member updates before acknowledging a complaint', async () => {
     let complete!: () => void;

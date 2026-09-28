@@ -175,13 +175,25 @@ existing statistics queries and member batching configuration. Webhook providers
 register that schedule even without recent sends, so late opens and pending work
 survive restarts. As with polling, the schedule requires `emailAnalytics:enabled`
 and `backgroundJobs:emailAnalytics`; displayed totals lag until it runs.
+When either setting is disabled, webhooks still save recipient outcomes and
+process suppression, but do not enqueue statistics work. Re-enabling the jobs
+does not rebuild totals for those skipped events; automatic catch-up is not
+implemented. Previously queued work remains available to drain.
 Automation and gift polling workers are not scheduled for webhook providers,
 including scheduling requested after a send.
 
-Each newsletter or group of up to 100 members is recalculated in a transaction
-that locks its pending jobs and removes them only after the counts are saved.
-Failures leave the jobs queued for the next run. Concurrent enqueues wait for
-those locks and preserve fresh work after a successful flush. Pagination prevents
+Every enqueue replaces the pending job's token. Each newsletter or group of up
+to 100 members is read without locking queue rows, then recalculated in a short
+transaction. Only rows with unchanged tokens are deleted, after the counts are
+saved. Concurrent enqueues can complete during counting; changed tokens retain
+work for the next run. Failures roll back the batch and keep its work queued.
+Existing pending rows without tokens also drain safely.
+
+A database-scoped MySQL advisory lock permits one flush at a time. The worker
+uses the same pinned connection for the lock and each batch transaction, and
+explicitly releases the lock before returning the connection. Losing that
+connection stops its writes and releases the lock. SQLite retains the single
+instance's in-process guard. Pagination prevents
 the same newsletter from being recalculated repeatedly within one run. Polling
 retains its existing aggregation lifecycle.
 

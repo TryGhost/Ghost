@@ -157,6 +157,59 @@ describe('email analytics provider wiring', () => {
     sinon.assert.notCalled(fetch);
   });
 
+  for (const [analyticsEnabled, jobsEnabled] of [
+    [true, true],
+    [true, false],
+    [false, true],
+    [false, false],
+  ]) {
+    it(`records webhook tracking and suppression with analytics=${analyticsEnabled}, jobs=${jobsEnabled}`, async () => {
+      const { WebhookStatsAggregator } =
+        await import('../../../../../core/server/services/email-analytics/webhook-stats-aggregator');
+      const enqueue = sinon.stub(WebhookStatsAggregator.prototype, 'enqueue').resolves();
+      const get = deps.config.get as sinon.SinonStub;
+      get.withArgs('emailAnalytics:enabled').returns(analyticsEnabled);
+      get.withArgs('backgroundJobs:emailAnalytics').returns(jobsEnabled);
+      const event = {
+        id: 'opened',
+        family: 'automations',
+        type: 'opened',
+        recipientEmail: 'reader@example.com',
+        providerId: 'message',
+        timestamp: new Date(),
+      };
+      deps.provider = {
+        source: 'test',
+        getEventSource: () => ({
+          type: 'webhook',
+          verify: async () => ({
+            events: [event, { ...event, id: 'complaint', type: 'complained', suppress: true }],
+          }),
+        }),
+      } as typeof deps.provider;
+      (deps.automationsApi.getAutomatedEmailRecipientsByMailgunIds as sinon.SinonStub).resolves([
+        {
+          id: 'recipient',
+          member_id: 'member',
+          member_email: event.recipientEmail,
+          mailgun_message_id: event.providerId,
+          automation_action_revision_id: 'revision',
+        },
+      ]);
+      analytics.init(deps);
+      await analytics.getEventService().webhook('test', { body: Buffer.from('{}'), headers: {} });
+      assert.deepEqual(
+        (
+          deps.automationsApi.trackEmailDeliveredAndOpened as sinon.SinonStub
+        ).firstCall.firstArg.get('recipient'),
+        { automationActionRevisionId: 'revision', openedAt: event.timestamp },
+      );
+      sinon.assert.calledOnce(deps.emailSuppressionList.handleComplaint as sinon.SinonStub);
+      sinon.assert.calledOnce(deps.emailSuppressionList.removeComplaint as sinon.SinonStub);
+      assert.equal(enqueue.callCount, analyticsEnabled && jobsEnabled ? 1 : 0);
+    });
+  }
+
   it('processes tracking for addresses accepted by Ghost without discarding them during polling', async () => {
     const addresses = ['josé@example.com', 'a&b@example.com', 'x=y@example.com', 'user@müller.de'];
     const events = addresses.map((recipientEmail, index) => ({
