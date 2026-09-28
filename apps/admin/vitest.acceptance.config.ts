@@ -1,6 +1,7 @@
 import { availableParallelism } from 'node:os';
 
 import { defineConfig } from 'vitest/config';
+import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -22,6 +23,49 @@ import { sharedDefine, sharedResolve } from './vite.shared';
  * the top end; the floor keeps 2-core runners on their current two workers.
  */
 const getWorkerCount = () => Math.min(8, Math.max(2, availableParallelism() - 1));
+
+// MSW cannot see iframe navigations; these route them per page (test-utils/acceptance/frames.ts).
+type BrowserPage = BrowserCommandContext['page'];
+type FrameRouteHandler = Parameters<BrowserPage['route']>[1];
+const frameFakes = new WeakMap<
+  BrowserPage,
+  Array<{ matcher: (url: URL) => boolean; handler: FrameRouteHandler }>
+>();
+const guardedPages = new WeakSet<BrowserPage>();
+
+const isExternal = (url: URL) => url.hostname !== 'localhost' && url.hostname !== '127.0.0.1';
+
+const guardFrameNavigations: BrowserCommand<[]> = async ({ page }) => {
+  if (guardedPages.has(page)) {
+    return;
+  }
+  guardedPages.add(page);
+  // Registered first, so later fakes take precedence.
+  await page.route(isExternal, (route) =>
+    route.request().resourceType() === 'document'
+      ? route.fulfill({ status: 418, contentType: 'text/plain', body: 'Unfaked frame' })
+      : route.fallback(),
+  );
+};
+
+const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
+  { page },
+  origin,
+  html,
+) => {
+  const fakedOrigin = new URL(origin).origin;
+  const matcher = (url: URL) => url.origin === fakedOrigin;
+  const handler: FrameRouteHandler = (route) =>
+    route.fulfill({ contentType: 'text/html', body: html });
+  await page.route(matcher, handler);
+  frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
+};
+
+const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
+  const fakes = frameFakes.get(page) ?? [];
+  frameFakes.delete(page);
+  await Promise.all(fakes.map(({ matcher, handler }) => page.unroute(matcher, handler)));
+};
 
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, react()],
@@ -54,6 +98,7 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
+      commands: { fakeFrameOrigin, guardFrameNavigations, resetFakeFrameOrigins },
       instances: [{ browser: 'chromium' }],
       // Failure screenshots land in __screenshots__/ (gitignored).
       screenshotFailures: true,

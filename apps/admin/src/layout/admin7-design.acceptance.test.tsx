@@ -16,7 +16,7 @@ it.each<{
   { name: 'flag absent', route: '/members', labs: {}, enabled: false },
   { name: 'flag disabled', route: '/members', labs: { admin7Pill: false }, enabled: false },
   { name: 'flag enabled', route: '/members', labs: { admin7Pill: true }, enabled: true },
-  { name: 'Ember route excluded', route: '/site', labs: { admin7Pill: true }, enabled: false },
+  { name: 'Ember route excluded', route: '/restore', labs: { admin7Pill: true }, enabled: false },
   {
     name: 'Ember editor excluded',
     route: '/editor/post/new',
