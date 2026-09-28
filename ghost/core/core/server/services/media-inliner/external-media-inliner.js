@@ -5,6 +5,8 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');
 const path = require('path');
+const { isSvgExtension } = require('../../lib/image/image-content');
+const { sanitizeSvgBuffer } = require('../../lib/image/svg-sanitizer');
 const vm = require('node:vm');
 
 // Domains are regular expression patterns (migration tooling sends wildcards
@@ -64,7 +66,7 @@ class ExternalMediaInliner {
    * @param {Object} deps.PostMetaModel - PostMeta model
    * @param {Object} deps.TagModel - Tag model
    * @param {Object} deps.UserModel - User model
-   * @param {(extension) => import('ghost-storage-base').StorageBase} deps.getMediaStorage - getMediaStorage
+   * @param {(extension: string, fileBuffer: Buffer) => Promise<import('ghost-storage-base').StorageBase | null>} deps.getMediaStorage - picks the storage for a file, or null if no storage accepts it
    */
   constructor(deps) {
     this.#PostModel = deps.PostModel;
@@ -183,7 +185,29 @@ class ExternalMediaInliner {
    * @returns {Promise<string>} - path to stored media
    */
   async storeMediaLocally(media) {
-    const storage = this.getMediaStorage(media.extension);
+    // The extension can come from the response's Content-Type or the URL
+    // when the contents aren't a recognised binary format, so SVGs get the
+    // same sanitizing as SVG uploads
+    if (isSvgExtension(media.extension)) {
+      const sanitized = await sanitizeSvgBuffer(media.fileBuffer, media.extension === '.svgz');
+
+      if (!sanitized) {
+        logging.warn(`Could not sanitize SVG file: ${media.filename}`);
+        return null;
+      }
+
+      media = { ...media, fileBuffer: sanitized };
+    }
+
+    // A failed content check skips this file rather than the rest of the post
+    let storage;
+    try {
+      storage = await this.getMediaStorage(media.extension, media.fileBuffer);
+    } catch (error) {
+      logging.warn(`Could not determine storage adapter for file: ${media.filename}`);
+      logging.error(error);
+      return null;
+    }
 
     if (!storage) {
       logging.warn(`No storage adapter found for file extension: ${media.extension}`);
