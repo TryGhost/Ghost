@@ -495,6 +495,33 @@ describe('Editor header actions', () => {
     await expect(editorScreen.publishInputsError()).toHaveCount(0);
   });
 
+  it('offers a retry when the publish inputs fail to load for a failed send', async () => {
+    publishChrome();
+    fakeSavablePost({
+      status: 'published',
+      published_at: '2026-02-01T10:00:00.000Z',
+      email: {
+        id: 'email-1',
+        status: 'failed',
+        error: 'The email service was unavailable.',
+        email_count: 20,
+        opened_count: 0,
+      },
+    });
+    failNewsletters();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
+    await expect.element(editorScreen.publishInputsError()).toHaveAttribute('role', 'alert');
+    await expect.element(editorScreen.viewNewsletterDetails()).toBeDisabled();
+
+    restoreNewsletters();
+    await editorScreen.retryPublishInputs().click();
+
+    await expect.element(editorScreen.viewNewsletterDetails()).toBeEnabled();
+    await expect(editorScreen.publishInputsError()).toHaveCount(0);
+  });
+
   it('returns to the publish flow when the preview it opened is closed', async () => {
     publishChrome();
     fakeSavablePost();

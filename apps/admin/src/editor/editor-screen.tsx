@@ -45,6 +45,8 @@ import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
+import { buildPublishFlowPost } from './publish/flow-post';
+import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
 import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
@@ -160,7 +162,20 @@ function EditorContent({
   const [tkCount, setTkCount] = useState(0);
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
   const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
-  const isContributor = !!currentUser && isContributorUser(currentUser);
+  const publishPost = buildPublishFlowPost({
+    snapshot: {
+      id: session.persistedId,
+      status: session.publishTime.status,
+      publishedAt: session.publishTime.publishedAt,
+      title: session.title,
+    },
+    record: session.loadedRecord,
+    displayName: postType,
+    lexical: session.getLiveLexical(),
+  });
+  // Core refuses an email retry to Authors and Contributors.
+  const offersEmailRetry =
+    !!currentUser && !isAuthorOrContributor(currentUser) && !!initialEmailError(publishPost);
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
@@ -278,12 +293,14 @@ function EditorContent({
               isDirty={session.isDirty()}
               record={statusRecordOf(session.loadedRecord ?? record, createdId)}
               state={session.state}
-              onOpenPublishFlow={isContributor ? undefined : openPublishFlow}
+              onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
             />
             <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
               <EditorHeaderActions
                 currentUser={currentUser}
+                offersEmailRetry={offersEmailRetry}
                 openFlow={openFlow}
+                post={publishPost}
                 postType={postType}
                 session={session}
                 siteUrl={cardConfig.siteUrl}

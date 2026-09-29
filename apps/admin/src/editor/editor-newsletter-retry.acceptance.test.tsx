@@ -3,7 +3,6 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   browseResponse,
-  currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeNewsletters,
@@ -42,8 +41,23 @@ function publishChrome() {
   });
 }
 
-/** A post whose newsletter failed; once a retry is accepted, every read reports it sent. */
+/** The publish flow's email confirmation reads the post with its email alone. */
+function isConfirmationRead(url: string): boolean {
+  return new URL(url).searchParams.get('include') === 'email';
+}
+
+/**
+ * A post whose newsletter failed, answering a retry as Core does: the retry
+ * leaves the email pending, and it is sent by the time the flow polls for it.
+ */
 function fakeFailedSend(overrides: Partial<Post>) {
+  const failedEmail: NonNullable<Post['email']> = {
+    id: EMAIL_ID,
+    status: 'failed',
+    error: SEND_ERROR,
+    email_count: 20,
+    opened_count: 0,
+  };
   const failed = post({
     id: POST_ID,
     title: 'Hello from React',
@@ -54,19 +68,22 @@ function fakeFailedSend(overrides: Partial<Post>) {
     published_at: '2026-01-01T00:00:00.000Z',
     tags: [],
     authors: [{ id: CURRENT_USER_ID }],
-    email: { id: EMAIL_ID, status: 'failed', error: SEND_ERROR, email_count: 20, opened_count: 0 },
+    email: failedEmail,
     ...overrides,
   });
-  let current = failed;
+  let email = failedEmail;
 
-  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({ posts: [current] }));
+  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), ({ url }) => {
+    if (email.status === 'pending' && isConfirmationRead(url)) {
+      email = { ...email, status: 'submitted', error: null };
+    }
+    return { posts: [{ ...failed, email }] };
+  });
 
   return fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, () => {
-    current = {
-      ...failed,
-      email: { id: EMAIL_ID, status: 'submitted', error: null, email_count: 20, opened_count: 0 },
-    };
-    return { emails: [current.email] };
+    // Core patches only the status, so the pending email keeps its last error.
+    email = { ...failedEmail, status: 'pending' };
+    return { emails: [email] };
   });
 }
 
@@ -159,15 +176,29 @@ describe('Editor newsletter retry', () => {
     await expect.element(publishScreen.emailError()).toBeVisible();
   });
 
-  it('never offers a Contributor the retry', async () => {
+  it('offers no retry on a past-scheduled post carrying an earlier failed send', async () => {
     publishChrome();
-    const retryApi = fakeFailedSend({ status: 'sent', email_only: true });
-    await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
+    fakeFailedSend({ status: 'scheduled' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    // A Contributor is returned to the list from any post that is no longer a draft.
-    await expect.poll(currentRoute).toBe('/posts');
-    await expect(editorScreen.status()).toHaveCount(0);
-    await expect(editorScreen.retryNewsletter()).toHaveCount(0);
-    expect(retryApi.requests).toHaveLength(0);
+    // The flow would open this post at its options, not at the failed send.
+    await expect
+      .element(editorScreen.status())
+      .toHaveTextContent('Published but failed to send newsletter.');
+    await expect.element(editorScreen.unscheduleButton()).toBeVisible();
+    await expect(editorScreen.viewNewsletterDetails()).toHaveCount(0);
+  });
+
+  it('shows an Author the failed send without a retry, which Core refuses them', async () => {
+    publishChrome();
+    fakeFailedSend({ status: 'published' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Author'));
+
+    await expect
+      .element(editorScreen.status())
+      .toHaveTextContent('Published but failed to send newsletter.');
+    // Authors keep the header's publish controls; only the retry is withheld.
+    await expect.element(editorScreen.unpublishButton()).toBeVisible();
+    await expect(editorScreen.viewNewsletterDetails()).toHaveCount(0);
   });
 });

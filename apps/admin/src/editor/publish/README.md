@@ -154,9 +154,7 @@ The stateful journey is keyed by post id. If a mounted caller replaces the post,
 
 ## Opening the flow
 
-The editor opens the flow from two places. A draft opens it from the header's Publish button, its keyboard shortcut, or the preview's Publish. A published or sent post whose newsletter failed opens it from the status line — "View details" on a published post, "Retry now" on an email-only send — and the flow starts at its email-failure step, where the send is retried. The opener does nothing to choose that step: the flow starts there for any published or sent post whose email failed.
-
-Every opener is unavailable until `usePublishInputs()` reports the inputs ready, because the machine is built from them once, and every opener is offered only to the roles that get the header's publish controls, which Contributors do not. A retry invalidates the editor's post reads, so once the post is read back the status line describes the send the retry started.
+The flow opens at its email-failure step for a published or sent post whose email failed, and at the options step for anything else. `initialEmailError()` is that test, exported so a caller can tell whether opening the flow leads to a retry. A caller must not open the flow before `usePublishInputs()` reports the inputs ready: the machine is built from them once.
 
 ## Steps
 
@@ -199,6 +197,8 @@ A `failed` outcome moves to the email-error step with the message the API stored
 A reload that throws — a transport failure, or the 401 the redirect opt-out below turns into a rejection — completes the flow with a note instead. The post is published by that point and only the email's fate is unknown, so the alternatives are both wrong: claiming the email failed would invent a fact, and leaving the button running would strand the user on a disabled control for a publish that already succeeded.
 
 The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately. Closing the flow cancels the poll and marks every pending pre-save, save, confirmation and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
+
+The poller reads the post around the query cache, so the cached post reads never see what it found. Once a confirmation settles with any outcome but `cancelled`, after a publish or a retry, the flow invalidates the post reads so whatever is drawn from them catches up with the send. A reload that throws leaves them alone, since a refetch would most likely fail the same way.
 
 ## Requests
 

@@ -158,7 +158,7 @@ export interface EditorStatusProps {
   state: SaveEngineState;
   record?: EditorStatusRecord;
   isDirty: boolean;
-  /** Offers a failed send's way back into the publish flow; omitted for roles that cannot publish. */
+  /** Opens the publish flow at a failed send; omitted unless the role may retry it. */
   onOpenPublishFlow?: () => void;
 }
 

@@ -1,4 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createElement, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { usePublishFlow, type PublishFlowOptions } from './use-publish-flow';
 import type { NewsletterInput } from './publish-options';
@@ -41,6 +43,10 @@ function options(): PublishFlowOptions {
   };
 }
 
+function wrapper({ children }: { children: ReactNode }) {
+  return createElement(QueryClientProvider, { client: new QueryClient() }, children);
+}
+
 afterEach(() => {
   localStorage.clear();
   vi.clearAllMocks();
@@ -49,7 +55,7 @@ afterEach(() => {
 describe('publish option actions', () => {
   it('renders changed options and confirms the same command without a caller refresh', async () => {
     const inputs = options();
-    const { result } = renderHook(() => usePublishFlow(inputs));
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
 
     act(() => result.current.setPublishType('send'));
@@ -87,6 +93,7 @@ describe('publish option actions', () => {
     const inputs = options();
     const { result, rerender } = renderHook((props) => usePublishFlow(props), {
       initialProps: inputs,
+      wrapper,
     });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
     const setNewsletter = result.current.setNewsletter;

@@ -28,6 +28,25 @@ a component reading a query key it shares with a screen outside the editor opts
 out too. `layering.ts` carries the z-index a confirmation dialog opened from
 inside another editor surface needs in order to paint above it.
 
+## Opening the publish flow
+
+A draft opens the publish flow from three places: the header's Publish button,
+its keyboard shortcut and the preview's Publish. A published or sent post whose
+newsletter failed opens it from the status line instead, which offers "Retry
+now" on an email-only send and "View details" on a published post; the flow
+then starts at its email-failure step. Whether a post qualifies is decided by
+the flow's own `initialEmailError()`, and the button is offered only to roles
+Core lets retry an email, so an Author or a Contributor sees the failure
+without it.
+
+Every opener stays unavailable until the publish inputs have loaded. When they
+fail to load, the header shows the error with a Retry wherever an opener is
+waiting on them, for a draft and a failed send alike. After a retry, or a
+publish that emails, a published post's status line reads "Published and
+sending to N members" while the email is on its way and "Published and sent to
+N members" once the flow's email confirmation finds it submitted; an email-only
+send reads "Sent to N members" throughout.
+
 ## Adding a settings section
 
 1. Add the section's id to `SETTINGS_SECTION_ORDER` in `settings/sections.ts`,
