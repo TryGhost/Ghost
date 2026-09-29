@@ -84,6 +84,31 @@ const shouldRasterize = (buffer, ext) => {
   return looksLikeSvg(buffer, SVG_SNIFF_BYTES);
 };
 
+const YOUTUBE_MAXRES_THUMBNAIL_WIDTH = 1280;
+const YOUTUBE_MAXRES_THUMBNAIL_HEIGHT = 720;
+
+/**
+ * YouTube's oEmbed thumbnail is a letterboxed 4:3 `hqdefault.jpg`. Videos with
+ * an HD upload also have a 1280x720 `maxresdefault.jpg` without the borders.
+ *
+ * @param {string} thumbnailUrl
+ * @returns {string|undefined}
+ */
+const getYouTubeMaxResThumbnailUrl = (thumbnailUrl) => {
+  if (!URL.canParse(thumbnailUrl)) {
+    return;
+  }
+
+  const url = new URL(thumbnailUrl);
+  const isYouTubeImage = url.hostname === 'ytimg.com' || url.hostname.endsWith('.ytimg.com');
+  if (!isYouTubeImage || !url.pathname.endsWith('/hqdefault.jpg')) {
+    return;
+  }
+
+  url.pathname = url.pathname.replace(/hqdefault\.jpg$/, 'maxresdefault.jpg');
+  return url.href;
+};
+
 /**
  * @param {string} url
  * @returns {{url: string, provider: boolean}}
@@ -126,6 +151,13 @@ const findUrlWithProvider = (url) => {
 
 /**
  * @typedef {import('got').GotRequestFunction} IExternalRequest
+ */
+
+/**
+ * @typedef {object} EmbedThumbnail
+ * @prop {string} url
+ * @prop {number|string|null} [width]
+ * @prop {number|string|null} [height]
  */
 
 /**
@@ -272,18 +304,35 @@ class OEmbedService {
   }
 
   /**
-   * Stores a provider's thumbnail, falling back to the provider's URL if the
-   * image can't be stored.
+   * Stores a provider's thumbnail, preferring YouTube's un-letterboxed max
+   * resolution image. Falls back to the provider's thumbnail if the image
+   * can't be stored.
    *
-   * @param {string} thumbnailUrl
-   * @returns {Promise<string>} - URL of the stored thumbnail
+   * @param {EmbedThumbnail} thumbnail
+   * @returns {Promise<EmbedThumbnail>}
    */
-  async storeThumbnail(thumbnailUrl) {
+  async storeThumbnail(thumbnail) {
+    const maxResUrl = getYouTubeMaxResThumbnailUrl(thumbnail.url);
+    if (maxResUrl) {
+      try {
+        return {
+          url: await this.processImageFromUrl(maxResUrl, 'thumbnail'),
+          width: YOUTUBE_MAXRES_THUMBNAIL_WIDTH,
+          height: YOUTUBE_MAXRES_THUMBNAIL_HEIGHT,
+        };
+      } catch {
+        // YouTube 404s for videos without a max resolution thumbnail
+      }
+    }
+
     try {
-      return await this.processImageFromUrl(thumbnailUrl, 'thumbnail');
+      return {
+        ...thumbnail,
+        url: await this.processImageFromUrl(thumbnail.url, 'thumbnail'),
+      };
     } catch (err) {
       logging.error(err);
-      return thumbnailUrl;
+      return thumbnail;
     }
   }
 
@@ -778,9 +827,17 @@ class OEmbedService {
       return data;
     }
 
+    const thumbnail = await this.storeThumbnail({
+      url: data.thumbnail_url,
+      width: data.thumbnail_width,
+      height: data.thumbnail_height,
+    });
+
     return {
       ...data,
-      thumbnail_url: await this.storeThumbnail(data.thumbnail_url),
+      thumbnail_url: thumbnail.url,
+      thumbnail_width: thumbnail.width,
+      thumbnail_height: thumbnail.height,
       thumbnail_url_original: data.thumbnail_url,
     };
   }
