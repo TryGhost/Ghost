@@ -108,6 +108,24 @@ describe('Adapter Cache Redis', function () {
     });
   });
 
+  it('reads event logs with one prefix lookup per batch and sees prefix changes', async function () {
+    const cacheStub = createCacheStub({ keyPrefix: 'presence:' });
+    const client = cacheStub.store.getClient();
+    client.zrangebyscore = sinon.stub();
+    client.zrangebyscore.withArgs(`presence:${PREFIX_HASH}post`, 100, '+inf').resolves(['opened']);
+    client.zrangebyscore.withArgs(`presence:${PREFIX_HASH}page`, 100, '+inf').resolves(['editing']);
+    const cache = new RedisCache({ cache: cacheStub, keyPrefix: 'presence:' });
+
+    assert.deepEqual(await cache.readEventsMany(['post', 'page'], 100), [['opened'], ['editing']]);
+    sinon.assert.calledOnceWithExactly(client.get, 'presence:prefix_hash');
+    sinon.assert.calledTwice(client.zrangebyscore);
+
+    client.get.withArgs('presence:prefix_hash').resolves('rotated:');
+    client.zrangebyscore.withArgs('presence:rotated:post', 100, '+inf').resolves([]);
+    assert.deepEqual(await cache.readEventsMany(['post'], 100), [[]]);
+    sinon.assert.calledTwice(client.get);
+  });
+
   describe('get', function () {
     it('can get a value from the cache', async function () {
       const cacheStub = createCacheStub();

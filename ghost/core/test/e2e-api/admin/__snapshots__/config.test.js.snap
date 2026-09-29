@@ -5,6 +5,7 @@ Object {
   "config": Object {
     "clientExtensions": Object {},
     "database": "mysql8",
+    "editorPresence": true,
     "emailAnalytics": true,
     "enableDeveloperExperiments": false,
     "environment": "testing-mysql",

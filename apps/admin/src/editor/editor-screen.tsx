@@ -10,6 +10,8 @@ import {
   useState,
 } from 'react';
 import { AdminLink } from '@/shared/admin-link';
+import { usePresence } from '@/shared/presence/use-presence';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import { getPostListReturnUrl } from '@/posts/api';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
@@ -158,6 +160,14 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
+  const presenceResource = session.persistedId
+    ? { id: session.persistedId, type: postType }
+    : undefined;
+  const presence = usePresence(
+    presenceResource ? [presenceResource] : [],
+    currentUser?.id,
+    presenceResource,
+  );
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
@@ -277,6 +287,7 @@ function EditorContent({
               state={session.state}
             />
             <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
+              <PresenceAvatars {...presence} limit={2} />
               <EditorHeaderActions
                 currentUser={currentUser}
                 postType={postType}

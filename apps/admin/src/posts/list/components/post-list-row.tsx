@@ -1,4 +1,6 @@
 import { Button } from '@tryghost/shade/components';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import type { PresenceEvent } from '@/shared/presence/use-presence';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
@@ -27,6 +29,8 @@ import { useShade } from '@tryghost/shade/app';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
+  presenceEvents?: PresenceEvent[];
+  presenceUserId?: string;
   resource: PostResource;
   timezone?: string;
   /**
@@ -124,6 +128,8 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
   function PostListRowComponent(
     {
       post,
+      presenceEvents = [],
+      presenceUserId,
       resource,
       timezone,
       isContributor,
@@ -211,6 +217,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           // the row under the cursor look deselected.
           isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
         )}
+        data-presence-id={post.id}
         data-selected={isSelected ? 'true' : undefined}
         data-testid="posts-list-item"
         onClickCapture={onSelectClick}
@@ -288,6 +295,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               )}
             </Stack>
           </a>
+          <PresenceAvatars currentUserId={presenceUserId} events={presenceEvents} />
           <PostMetricsCells
             className="py-4"
             hideEmailMetrics={emailSendingState.status === 'sending'}

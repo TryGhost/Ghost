@@ -17,6 +17,7 @@ module.exports = {
       'stripeDirect',
       'mailgunIsConfigured',
       'emailAnalytics',
+      'editorPresence',
       'hostSettings',
       'klipy',
       'pintura',

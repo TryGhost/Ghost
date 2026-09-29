@@ -67,6 +67,27 @@ to its constructor:
 }
 ```
 
+## Optional event logs
+
+Adapters can also implement the exported `EventLogCache` interface for features
+such as editor presence. Ordinary caches do not need these methods, and they
+are not part of `CacheBase.requiredFns`.
+
+- `appendEvent(key, value, timestamp, ttl, limit)` adds a unique string value,
+  removes old events, keeps the newest `limit` entries and refreshes expiry.
+  These steps must be atomic across writers. It returns the remaining count.
+- `readEvents(key, since)` returns values at or after `since`, oldest first.
+- `readEventsMany(keys, since)` optionally batches reads, returning one event
+  array per key in the same order. Callers can use `readEvents` when unavailable.
+
+Timestamps are Unix milliseconds; `ttl` is in seconds. Failed operations must
+throw or reject rather than returning an empty result.
+
+TypeScript adapters can declare `implements EventLogCache`; JavaScript adapters
+can use `@implements {import('@tryghost/adapter-base-cache').EventLogCache}`.
+The exported `supportsEventLog(adapter)` checks for both methods at runtime,
+including on JavaScript and custom adapters.
+
 ## Develop
 
 This is a workspace package in the Ghost monorepo. From the repo root:

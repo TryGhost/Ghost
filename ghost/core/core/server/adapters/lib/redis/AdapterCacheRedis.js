@@ -9,6 +9,7 @@ const redisStoreFactory = require('./redis-store-factory');
 
 const PREFIX_HASH_KEY = 'prefix_hash';
 
+/** @implements {import('@tryghost/adapter-base-cache').EventLogCache} */
 class AdapterCacheRedis extends CacheBase {
   /**
    *
@@ -375,6 +376,69 @@ class AdapterCacheRedis extends CacheBase {
     // Raw client: cache-manager would JSON-wrap, and reset needs an unconditional overwrite (no NX).
     await this.redisClient.set(this._keyPrefix + PREFIX_HASH_KEY, value);
     return value;
+  }
+
+  // Append, trim and expire in one atomic operation, including on Redis Cluster.
+  async appendEvent(key, value, timestamp, ttl, limit) {
+    return await this._eventOperation(async () => {
+      const internalKey = await this._buildKey(key);
+      return await this.redisClient.eval(
+        `
+      redis.call('ZADD', KEYS[1], ARGV[1], ARGV[2])
+      redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[3])
+      redis.call('ZREMRANGEBYRANK', KEYS[1], 0, -tonumber(ARGV[4])-1)
+      redis.call('EXPIRE', KEYS[1], ARGV[5])
+      return redis.call('ZCARD', KEYS[1])
+      `,
+        1,
+        internalKey,
+        timestamp,
+        value,
+        timestamp - ttl * 1000,
+        limit,
+        ttl,
+      );
+    });
+  }
+
+  async readEvents(key, since) {
+    return await this._eventOperation(async () =>
+      this.redisClient.zrangebyscore(await this._buildKey(key), since, '+inf'),
+    );
+  }
+
+  async readEventsMany(keys, since) {
+    if (keys.length === 0) {
+      return [];
+    }
+    return await this._eventOperation(async () => {
+      // Resolve once per batch so resets still take effect on the next read.
+      const prefix = await this.keyPrefix();
+      return await Promise.all(
+        keys.map((key) => this.redisClient.zrangebyscore(`${prefix}${key}`, since, '+inf')),
+      );
+    });
+  }
+
+  async _eventOperation(operation) {
+    // Fail promptly if Redis is unavailable; each replica must use the shared store.
+    let timer;
+    try {
+      return await Promise.race([
+        operation(),
+        new Promise((resolve, reject) => {
+          timer = setTimeout(
+            () =>
+              reject(
+                new errors.InternalServerError({ message: 'Cache event operation timed out' }),
+              ),
+            1000,
+          );
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   async reset() {

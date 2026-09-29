@@ -242,6 +242,8 @@ const controller = {
         },
       });
 
+      void require('../../services/post-presence/record-save').recordSave(frame, model);
+
       return model;
     },
   },

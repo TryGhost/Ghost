@@ -56,6 +56,7 @@ module.exports = function getConfigProperties() {
     mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
     useGravatar: !config.isPrivacyDisabled('useGravatar'),
     labs: labs.getAll(),
+    editorPresence: Boolean(require('../../../../services/post-presence').getService()),
     clientExtensions: config.get('clientExtensions') || {},
     enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
     stripeDirect: config.get('stripeDirect'),

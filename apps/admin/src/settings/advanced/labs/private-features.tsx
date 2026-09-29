@@ -14,6 +14,11 @@ type Feature = {
 
 const features: Feature[] = [
   {
+    title: 'Editor presence',
+    description: 'Show active staff in the React editor and posts and pages lists.',
+    flag: 'editorPresence',
+  },
+  {
     title: 'Automations',
     description:
       'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',

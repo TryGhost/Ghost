@@ -392,6 +392,10 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const internalKeys = require('./server/services/internal-keys').default;
 
   // Initialize things that other services depend on first.
+  require('./server/services/post-presence').init({
+    cache: adapterManager.getAdapter('cache:presence'),
+    siteId: settingsCache.get('site_uuid'),
+  });
   emailAddressService.init();
   const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
