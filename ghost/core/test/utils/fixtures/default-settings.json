@@ -36,11 +36,27 @@
             "defaultValue": null,
             "type": "string"
         },
+        "ghost_next_private_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "ghost_previous_public_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "members_public_key": {
             "defaultValue": null,
             "type": "string"
         },
         "members_private_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "members_next_private_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "members_previous_public_key": {
             "defaultValue": null,
             "type": "string"
         },

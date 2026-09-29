@@ -15,6 +15,7 @@ const SETTINGS: ValidatedSettingsFields = {
   tiers: [],
   meta_title: null,
   meta_description: null,
+  canonical_url: null,
   og_title: null,
   og_description: null,
   twitter_title: null,

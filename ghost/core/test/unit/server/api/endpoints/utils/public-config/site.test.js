@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const configUtils = require('../../../../../../utils/config-utils');
 const getSiteProperties = require('../../../../../../../core/server/api/endpoints/utils/public-config/site');
 const settingsCache = require('../../../../../../../core/shared/settings-cache');
+const labs = require('../../../../../../../core/shared/labs');
 
 describe('Public-config response builders', function () {
   describe('Site Properties', function () {
@@ -25,6 +26,17 @@ describe('Public-config response builders', function () {
 
       assert.equal(siteProperties.locale, 'en-GB');
       assert.equal(siteProperties.timezone, 'America/Los_Angeles');
+    });
+
+    it('exposes whether Admin serves the React auth screens', function () {
+      const isSet = sinon.stub(labs, 'isSet').returns(false);
+      isSet.withArgs('authReact').returns(true);
+
+      assert.equal(getSiteProperties().authReact, true);
+
+      isSet.withArgs('authReact').returns(false);
+
+      assert.equal(getSiteProperties().authReact, false);
     });
 
     describe('Sentry', function () {

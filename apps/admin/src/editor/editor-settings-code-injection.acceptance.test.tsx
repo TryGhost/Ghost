@@ -35,7 +35,6 @@ const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const PAGE_ROUTE = new RegExp(`^/pages/${POST_ID}/\\?`);
 // The space reserved for the floating panel, including its outer padding.
 const PANEL_WIDTH = 350;
-const WIDE_PANEL_WIDTH = 500;
 
 const POLL = { timeout: 10_000 };
 
@@ -134,16 +133,16 @@ describe('Post settings code injection', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openCodeInjection();
 
-    // The pane replaces the list it was opened from, in a widened panel.
+    // The pane replaces the list it was opened from, without resizing the panel.
     await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
-    await expect.poll(sidebarWidthPx).toBe(WIDE_PANEL_WIDTH);
+    await expect.poll(sidebarWidthPx).toBe(PANEL_WIDTH);
 
     await editorScreen.settingsSubviewBack(settingsCodeInjectionBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
     await expect.element(editorScreen.settingsSubviewRow(settingsCodeInjectionRow)).toBeVisible();
-    // The panel goes back to the width the section list is shown at.
+    // Returning to the section list keeps the same width.
     await expect.poll(sidebarWidthPx).toBe(PANEL_WIDTH);
   });
 

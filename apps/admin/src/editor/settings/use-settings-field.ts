@@ -5,7 +5,7 @@ import {
 } from '@/editor/session/settings-fields';
 import type { EditorSettingsPort } from './editor-settings-port';
 
-/** The settings keys a plain text field writes: the ones held to a length. */
+/** The settings keys a plain text field writes: including canonical URL validation. */
 export type SettingsTextFieldKey = Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers'>;
 
 export interface SettingsFieldBinding {

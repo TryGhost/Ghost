@@ -1,5 +1,5 @@
-import React from 'react';
-import { MemoryRouter, useSearchParams } from 'react-router';
+import React, { useLayoutEffect } from 'react';
+import { MemoryRouter, useNavigate, useSearchParams } from 'react-router';
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { ReactNode } from 'react';
@@ -66,6 +66,32 @@ describe('useVirtualListWindow', () => {
       canLoadMore: true,
       visibleItemCount: 1000,
     });
+  });
+
+  it('commits the reset window before layout effects run for a fresh sidebar entry', () => {
+    const committedCounts: number[] = [];
+    const { result } = renderHook(
+      () => {
+        const state = useVirtualListWindow(5000);
+        const navigate = useNavigate();
+        useLayoutEffect(() => {
+          committedCounts.push(state.visibleItemCount);
+        });
+        return { ...state, navigate };
+      },
+      { wrapper: createWrapper('/members') },
+    );
+
+    act(() => result.current.loadMore());
+    expect(result.current.visibleItemCount).toBe(2000);
+    committedCounts.length = 0;
+
+    act(() => {
+      window.history.replaceState({}, '');
+      void result.current.navigate('/members');
+    });
+
+    expect(committedCounts).toEqual([1000]);
   });
 
   it('shows all items when the total is below the cap', () => {

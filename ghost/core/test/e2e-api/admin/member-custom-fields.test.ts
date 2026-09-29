@@ -5,6 +5,7 @@ const {
   fixtureManager,
   mockManager,
   configUtils,
+  dbUtils,
   hostLimits,
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -2381,6 +2382,49 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(actions.length, 1);
       assert.equal(parseContext(actions[0]).action_name, 'custom_fields_edited');
     });
+  });
+
+  // Every definition route, and the member routes that carry values, as each kind of
+  // credential the Admin API accepts. Definitions are served by a mounted router, and
+  // mounting changes what the integration-key check sees of the path, so a route that
+  // works from a session can still refuse a key.
+  describe('Credentials', function () {
+    const credentials: Record<string, () => Promise<void>> = {
+      'a staff session': () => agent.loginAsOwner(),
+      'a staff access token': () => agent.useStaffTokenForOwner(),
+      "an integration's Admin API key": () => agent.useZapierAdminAPIKey(),
+    };
+
+    // Switching back to a session means logging in again, and this file already logs in
+    // close to the limit on login attempts, so clear the count before the later blocks do.
+    afterAll(async function () {
+      await dbUtils.truncate('brute');
+      await agent.loginAsOwner();
+    });
+
+    it.each(Object.entries(credentials))(
+      'reaches every definition and value route with %s',
+      async function (_credential, useCredential) {
+        await useCredential();
+
+        const company = await createField({ name: 'Company' });
+        const shirtSize = await createField({ name: 'Shirt size' });
+        await agent.get('members/metafields/custom/').expectStatus(200);
+        await agent.get(`members/metafields/custom/${company.key}/`).expectStatus(200);
+        await agent
+          .put('members/metafields/custom/')
+          .body({ members_metafields: [{ key: shirtSize.key }, { key: company.key }] })
+          .expectStatus(200);
+
+        const memberId = await createMember();
+        await setValues(memberId, { [company.key]: 'Ghost' });
+        assert.deepEqual(await readValues(memberId), { [company.key]: 'Ghost' });
+        await agent.get('members/').expectStatus(200);
+
+        await setStatus(shirtSize.key, 'archived');
+        await agent.delete(`members/metafields/custom/${shirtSize.key}/`).expectStatus(204);
+      },
+    );
   });
 
   describe('Authorization', function () {

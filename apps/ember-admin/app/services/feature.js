@@ -106,6 +106,17 @@ export default class FeatureService extends Service {
     @feature('globalSearchReact') globalSearchReact;
     @feature('improveSendingUI') improveSendingUI;
     @feature('dunningWarnings') dunningWarnings;
+
+    // React's auth screens decide before anyone signs in, so both shells read
+    // the public /site/ field (copied onto config) and URL overrides, never Labs.
+    // Decided once (first asked after /site/ loads), as React holds its answer.
+    isAuthReact() {
+        if (this._authReact === undefined) {
+            this._authReact = getStoredFeatureFlagOverrides().includes('authReact') || this.config.authReact === true;
+        }
+        return this._authReact;
+    }
+
     _user = null;
     _featureFlagOverridesRevision = 0;
 
