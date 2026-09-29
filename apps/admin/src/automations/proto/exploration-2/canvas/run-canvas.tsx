@@ -52,12 +52,14 @@ import { useLabels } from '@/automations/proto/shared/labels';
 import { useSegments } from '@/automations/proto/shared/segments';
 import {
   COLUMN_WRAPPER,
+  ENTER_CLASS,
   EmailThumbnail,
   NODE_CARD_WIDTH,
   PANE_SLIDE_MS,
   StepNodeFace,
 } from './edit-canvas';
 import { useMeasuredColumn } from './measured-column';
+import { MODE_STAGGER_MS, resetColumnToTop, useModeEntrance } from './mode-entrance';
 
 // ---------------------------------------------------------------------------
 // The member-run review canvas, forked for the right-panel lane.
@@ -96,6 +98,8 @@ type RunNodeData = {
   // The muted line under the title — a timestamp, or "Resumes Jul 24".
   stateLine?: string | null;
   emailHasContent?: boolean;
+  enterDelay?: number;
+  enterKey?: number;
 };
 
 type EventNodeData = {
@@ -103,6 +107,8 @@ type EventNodeData = {
   variant: 'exited' | 'failed';
   // When they left — the step it follows is the closest moment the data has.
   at?: string | null;
+  enterDelay?: number;
+  enterKey?: number;
 };
 
 // The run glyphs, coloured, in the shape StepNodeFace's icon slot takes. The
@@ -128,6 +134,13 @@ const STATE_A11Y: Record<RunStepState, string> = {
   upcoming: 'Not reached',
 };
 
+// The mode-switch cascade on a card's wrapper — see mode-entrance.
+const entrance = (d: { enterDelay?: number; enterKey?: number }) => ({
+  key: d.enterKey,
+  className: d.enterDelay !== undefined ? ENTER_CLASS : undefined,
+  style: d.enterDelay === undefined ? undefined : { animationDelay: `${d.enterDelay}ms` },
+});
+
 const isUnreached = (d: RunNodeData) =>
   d.focused && (d.state === 'skipped' || d.state === 'upcoming');
 
@@ -138,8 +151,9 @@ const RunStepNode: React.FC<NodeProps> = ({ data }) => {
   const face = (
     <StepNodeFace icon={icon} subtitle={d.stateLine ?? undefined} title={d.title} warning={false} />
   );
+  const enter = entrance(d);
   return (
-    <div className={COLUMN_WRAPPER}>
+    <div key={enter.key} className={cn(COLUMN_WRAPPER, enter.className)} style={enter.style}>
       <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
       <div
         className={cn(
@@ -183,8 +197,13 @@ const ExitedIcon: React.FC<{ className?: string }> = ({ className }) => (
 const RunEventNode: React.FC<NodeProps> = ({ data }) => {
   const d = data as EventNodeData;
   const failed = d.variant === 'failed';
+  const enter = entrance(d);
   return (
-    <div className={cn(COLUMN_WRAPPER, 'pointer-events-none')}>
+    <div
+      key={enter.key}
+      className={cn(COLUMN_WRAPPER, 'pointer-events-none', enter.className)}
+      style={enter.style}
+    >
       <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
       {/* The nodes' own face — icon, title, and the timestamp as a muted line
           under it — so the pill says "when" the same way every step does. */}
@@ -280,6 +299,8 @@ interface RunCanvasProps {
   // The pane card's cover on the right — the flow centres in what's left, and
   // pans across as the card slides. Same contract as the lane's edit canvas.
   rightInset?: number;
+  // Bumped on switching into or out of review — see mode-entrance.
+  enterSignal?: number;
 }
 
 export const RunCanvas: React.FC<RunCanvasProps> = ({
@@ -287,10 +308,12 @@ export const RunCanvas: React.FC<RunCanvasProps> = ({
   selectedRun,
   triggerConfig = DEFAULT_TRIGGER_CONFIG,
   rightInset = 0,
+  enterSignal,
 }) => {
   // Centring and the pane pan, as the edit canvas does them — see its notes.
   const initialLeftInset = useRef(-rightInset).current;
-  const { canvasRef, onInit, size } = useCenteredColumn(initialLeftInset);
+  const { canvasRef, onInit, size, contentHeightRef, recenter } =
+    useCenteredColumn(initialLeftInset);
   const flowRef = useRef<ReactFlowInstance | null>(null);
   const handleInit = useCallback(
     (instance: ReactFlowInstance) => {
@@ -315,6 +338,12 @@ export const RunCanvas: React.FC<RunCanvasProps> = ({
   }, [rightInset]);
 
   const run = selectedRun;
+
+  // Entering review: back to the top, cards cascading in. Moving between members
+  // doesn't bump the signal, so the nodes just update.
+  const modeEpoch = useModeEntrance(enterSignal, () =>
+    resetColumnToTop(flowRef.current, canvasRef, rightInsetRef.current, recenter),
+  );
   const focused = Boolean(run);
 
   const { data: settingsData } = useBrowseSettings();
@@ -432,7 +461,10 @@ export const RunCanvas: React.FC<RunCanvasProps> = ({
       id: item.id,
       type: item.type,
       position: { x: 0, y: ys[i] },
-      data: item.data,
+      data:
+        modeEpoch === null
+          ? item.data
+          : { ...item.data, enterDelay: i * MODE_STAGGER_MS, enterKey: modeEpoch },
       draggable: false,
       connectable: false,
       selectable: false,
@@ -460,7 +492,8 @@ export const RunCanvas: React.FC<RunCanvasProps> = ({
     }
 
     return { nodes: built, edges: builtEdges, contentBottom: bottom };
-  }, [automation, run, focused, triggerConfig, layout, labels, segments, siteTimezone]);
+  }, [automation, run, focused, triggerConfig, layout, labels, segments, siteTimezone, modeEpoch]);
+  contentHeightRef.current = contentBottom;
 
   const translateExtent = useMemo(
     () => panTranslateExtent(contentBottom, size, -rightInset),
@@ -488,7 +521,10 @@ export const RunCanvas: React.FC<RunCanvasProps> = ({
         {/* No dot grid and (above) no card shadows: reviewing a run is reading,
             not building, so the canvas drops the edit view's working surface —
             flat cards on a plain fill — and the change of mode shows at a glance.
-            The fill itself still comes from the region (canvasTheme). */}
+            The fill is the edit canvas's own, from the region (canvasTheme): a
+            darker review fill was tried and flashed on the switch — the whole
+            surface changing colour in one frame while the cards were still
+            fading in. The dots going is enough. */}
         <AutomationCanvasControls style={CANVAS_HUD_INSET} />
       </ReactFlow>
     </div>

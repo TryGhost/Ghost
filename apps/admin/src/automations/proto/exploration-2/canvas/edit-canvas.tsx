@@ -129,6 +129,7 @@ import { useLabels } from '@/automations/proto/shared/labels';
 import { useSegments } from '@/automations/proto/shared/segments';
 import EMAIL_SNAPSHOT_HTML from './email-snapshot.html?raw';
 import { STEP_GAP, useMeasuredColumn } from './measured-column';
+import { MODE_STAGGER_MS, resetColumnToTop, useModeEntrance } from './mode-entrance';
 import { EMPTY_LEXICAL, SEEDED_LEXICAL } from '@/automations/proto/shared/mock';
 import {
   TriggerEmptyState,
@@ -338,6 +339,9 @@ type StepNodeData = {
   // This card's place in the canvas's entrance, in ms. Undefined once the entrance
   // is over, so inserting a step later doesn't replay it.
   enterDelay?: number;
+  // The mode-switch entrance's epoch, keyed onto the animated wrapper so each
+  // switch restarts the cascade — see mode-entrance.
+  enterKey?: number;
   // Just added by the step picker. Cleared shortly after, so the card doesn't
   // animate again the next time anything re-renders it.
   isNew?: boolean;
@@ -460,7 +464,7 @@ const STEP_CENTER_MIN_SHIFT = 24;
 // have to survive into the runtime string; and a `${...}` is not a name the scanner
 // can see. Keep the curve in step with shared/motion.
 const NODE_SETTLE_CLASS = String.raw`[&_.react-flow\_\_node]:transition-transform [&_.react-flow\_\_node]:duration-300 [&_.react-flow\_\_node]:ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:[&_.react-flow\_\_node]:transition-none`;
-const ENTER_CLASS = `animate-in duration-320 ${INTRO_EASE} fade-in-0 fill-mode-backwards slide-in-from-bottom-2 motion-reduce:animate-none`;
+export const ENTER_CLASS = `animate-in duration-320 ${INTRO_EASE} fade-in-0 fill-mode-backwards slide-in-from-bottom-2 motion-reduce:animate-none`;
 
 // The connector drawing itself down to the exit card. A transition rather than
 // keyframes, and a class rather than inline style, so motion-reduce can switch it
@@ -1325,6 +1329,7 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
 
   return (
     <div
+      key={d.enterKey}
       className={cn(
         COLUMN_WRAPPER,
         d.enterDelay !== undefined ? ENTER_CLASS : d.isNew && NEW_STEP_CLASS,
@@ -1548,6 +1553,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
 // nothing to click, and muted, because it reports rather than offers.
 const ExitNode: React.FC<NodeProps> = ({ data }) => {
   const enterDelay = (data as { enterDelay?: number } | undefined)?.enterDelay;
+  const enterKey = (data as { enterKey?: number } | undefined)?.enterKey;
   // Lands after the connector has drawn down to it — see the shared canvas.
   const intro = useRef(Boolean((data as { intro?: boolean } | undefined)?.intro)).current;
   const [shown, setShown] = useState(!intro);
@@ -1560,6 +1566,7 @@ const ExitNode: React.FC<NodeProps> = ({ data }) => {
   }, [shown]);
   return (
     <div
+      key={enterKey}
       className={cn(
         COLUMN_WRAPPER,
         enterDelay !== undefined && ENTER_CLASS,
@@ -1705,6 +1712,9 @@ const edgeTypes = { plus: PlusEdge };
 
 interface EditCanvasProps {
   draft: ProtoAutomationDetail;
+  // Bumped by the screen on switching into or out of reviewing a run: the canvas
+  // goes back to the top and its cards cascade in. See mode-entrance.
+  enterSignal?: number;
   onChange: (next: ProtoAutomationDetail) => void;
   // Trigger config lives with the screen (it isn't part of AutomationDetail yet).
   // Without a change handler the trigger renders as a read-only summary.
@@ -1773,6 +1783,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   onCreateAutomation,
   hideControls = false,
   rightInset = 0,
+  enterSignal,
 }) => {
   // The shared hook centres the column in [leftInset, width]; a NEGATIVE left
   // inset of the right-hand cover centres it in [0, width - cover] instead.
@@ -1946,7 +1957,17 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     return () => clearTimeout(timer);
   }, [entered, entranceOver]);
   const staggering = staggerOnEntry && entered && !entranceOver;
-  const enterDelay = (index: number) => (staggering ? index * ENTER_STAGGER_MS : undefined);
+  // Switching modes replays a quicker cascade from the top.
+  const modeEpoch = useModeEntrance(enterSignal, () =>
+    resetColumnToTop(flowRef.current, canvasRef, rightInsetRef.current, recenter),
+  );
+  const enterDelay = (index: number) =>
+    staggering
+      ? index * ENTER_STAGGER_MS
+      : modeEpoch !== null
+        ? index * MODE_STAGGER_MS
+        : undefined;
+  const enterKey = modeEpoch ?? undefined;
 
   // The creation sequence, run once, when a canvas that had no trigger gets one.
   // Not on "Change trigger" — the flow below is already built, and animating it away
@@ -2220,6 +2241,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         triggerUnset: showOptions,
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),
+        enterKey,
         onRequestTriggerChange: requestTriggerChange,
         fieldRevealSignal,
         savedTierIds,
@@ -2264,6 +2286,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         data: {
           kind: stepKindOf(action),
           enterDelay: enterDelay(i + 1),
+          enterKey,
           isNew: action.id === newStepId,
           title: stepTitle(action),
           subtitle: stepSubtitle(action),
@@ -2348,7 +2371,11 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
       id: '__exit__',
       type: 'exit',
       position: { x: 0, y: ys[ys.length - 1] },
-      data: { intro: introPhase === 'connecting', enterDelay: enterDelay(ordered.length + 1) },
+      data: {
+        intro: introPhase === 'connecting',
+        enterDelay: enterDelay(ordered.length + 1),
+        enterKey,
+      },
       draggable: false,
       connectable: false,
       selectable: false,

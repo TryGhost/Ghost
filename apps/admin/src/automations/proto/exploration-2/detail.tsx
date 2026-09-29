@@ -288,6 +288,18 @@ const AutomationFloat: React.FC = () => {
     toast.success('Automation archived');
   };
 
+  // Counts switches between building and reviewing a run, and each canvas
+  // replays its entrance when it changes — see canvas/mode-entrance. Adjusted
+  // during render rather than in an effect, so the canvases get the new value in
+  // the same commit that swaps them. Keyed on whether a member is selected, not
+  // which, so moving between members doesn't replay it. Up here, above the
+  // not-found guard, because hooks can't run conditionally.
+  const reviewing = selectedMemberId !== null;
+  const [modeSwitch, setModeSwitch] = useState({ reviewing, count: 0 });
+  if (modeSwitch.reviewing !== reviewing) {
+    setModeSwitch({ reviewing, count: modeSwitch.count + 1 });
+  }
+
   if (!scenario || !record || !id) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background">
@@ -542,6 +554,7 @@ const AutomationFloat: React.FC = () => {
                   as a member's run. The shared FlowCanvas stays with the other lanes. */}
               <RunCanvas
                 automation={publishedFlow}
+                enterSignal={modeSwitch.count}
                 rightInset={paneCollapsed ? 0 : 480}
                 selectedRun={selectedRun}
                 triggerConfig={savedTrigger ?? undefined}
@@ -563,6 +576,7 @@ const AutomationFloat: React.FC = () => {
                   the flow centres in what's left, and pans across as it slides. */}
               <EditCanvas
                 draft={draftFlow}
+                enterSignal={modeSwitch.count}
                 lane={LANE}
                 rightInset={paneCollapsed ? 0 : 480}
                 triggerConfig={triggerConfig}

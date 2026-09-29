@@ -63,7 +63,7 @@ export const HIDDEN_HANDLE_STYLE: CSSProperties = {
 // a library internal.
 export type CanvasRelease = 'phase-1' | 'exploration' | 'exploration-2';
 
-// review is optional, and only exploration-2 sets it — elsewhere, selecting a member
+// review is optional, and neither release currently sets it — selecting a member
 // leaves the canvas exactly as it was. Repainting the largest surface on screen (and,
 // before that, framing it) announced a change of mode when all that happened was a row
 // being clicked; the member button in the canvas corner names who's in focus, which is
@@ -119,12 +119,6 @@ const CANVAS_THEMES: Record<CanvasRelease, { base: string; review?: string }> = 
   // Its own entry so Exploration 1 keeps gray-100. Dark is unchanged.
   'exploration-2': {
     base: '[--canvas-fill:var(--color-gray-200)] [--canvas-dots:var(--color-gray-600)] [--canvas-edge:var(--color-gray-500)] dark:[--canvas-fill:#000] dark:[--canvas-dots:var(--color-gray-900)] dark:[--canvas-edge:var(--color-gray-800)]',
-    // Reviewing a member's run: the fill a step darker (gray-300), alongside the
-    // review canvas's flat cards and missing dots, so reading a run and building
-    // the flow don't look like the same surface. The first lane to use the
-    // review slot. Dark is unchanged.
-    review:
-      '[--canvas-fill:var(--color-gray-300)] [--canvas-dots:var(--color-gray-600)] [--canvas-edge:var(--color-gray-500)] dark:[--canvas-fill:#000] dark:[--canvas-dots:var(--color-gray-900)] dark:[--canvas-edge:var(--color-gray-800)]',
   },
 };
 
