@@ -7,10 +7,10 @@ const SIGNIN_REDIRECT_KEY = 'ghost-signin-redirect';
 const isRedirectTarget = (route: string | null): route is string =>
   Boolean(route) && route !== '/' && !isAuthPath(route!);
 
-/** Remembers where a signed-out visitor was going, unless something already has. */
+/** Remembers where a signed-out visitor was going; the latest attempt wins. */
 export function rememberSigninRedirect(route: string): void {
   try {
-    if (isRedirectTarget(route) && !window.sessionStorage.getItem(SIGNIN_REDIRECT_KEY)) {
+    if (isRedirectTarget(route)) {
       window.sessionStorage.setItem(SIGNIN_REDIRECT_KEY, route);
     }
   } catch {

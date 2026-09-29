@@ -60,6 +60,15 @@ it('sends a signed-out visitor to sign in and remembers where they were going', 
   );
 });
 
+it('remembers the latest route a signed-out visitor asked for', async () => {
+  fakeSetupStatus();
+  window.sessionStorage.setItem(SIGNIN_REDIRECT_KEY, '/tags');
+  await renderAdminApp('/members', signedOut({ authReact: true }));
+
+  await expect.poll(currentRoute).toBe('/signin');
+  expect(window.sessionStorage.getItem(SIGNIN_REDIRECT_KEY)).toBe('/members');
+});
+
 it('sends every auth screen to setup on a site that is not set up', async () => {
   fakeSetupStatus({ status: false });
   await renderAdminApp('/signin', signedOut({ authReact: true }));

@@ -30,23 +30,6 @@ test.describe('Ghost Admin - React auth screens', () => {
     return code;
   };
 
-  test('a cold signed-out deep link to an Ember screen returns there after sign in', async ({
-    page,
-    ghostAccountOwner,
-  }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.logout();
-
-    const postsPage = new PostsPage(page);
-    await page.goto('/ghost/#/posts');
-    await page.reload();
-
-    await expect(loginPage.signInButton).toBeVisible();
-    await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
-
-    await postsPage.waitForPageToFullyLoad();
-  });
-
   test('signs in with a resent 2FA code', async ({ page, browser, baseURL, ghostAccountOwner }) => {
     await page.waitForLoadState();
 
@@ -118,3 +101,29 @@ test.describe('Ghost Admin - React auth screens', () => {
     });
   });
 });
+
+// The same round trip with either implementation of the auth screens: a
+// cold load of a deep link while signed out, sign in, and back to the link
+// (an Ember-owned screen, with its query string).
+for (const { screens, authReact } of [
+  { screens: 'Ember', authReact: false },
+  { screens: 'React', authReact: true },
+] as const) {
+  test.describe(`Ghost Admin - signed-out deep link (${screens} auth screens)`, () => {
+    test.use({ labs: { authReact } });
+
+    test('returns to the link after signing in', async ({ page, ghostAccountOwner }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.logout();
+
+      await page.goto('/ghost/#/posts?type=draft');
+      await page.reload();
+
+      await expect(loginPage.signInButton).toBeVisible();
+      await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
+
+      await new PostsPage(page).waitForPageToFullyLoad();
+      expect(page.url()).toContain('type=draft');
+    });
+  });
+}
