@@ -757,6 +757,33 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
       });
     }
 
+    it('drops replayed ids mid-fetch and keeps a later stored window for the final aggregation', async function () {
+      configUtils.set('emailAnalytics:batchProcessing', false);
+      const processor = createProcessor();
+      const processingResult = new EventProcessingResult({
+        emailIds: ['e-1'],
+        memberIds: ['m-1'],
+      });
+      const aggregate = (isFinal) =>
+        processor.aggregate({
+          includeOpenedEvents: false,
+          skipUnchanged: true,
+          processingResult,
+          isFinal,
+        });
+
+      assert.equal(await aggregate(false), null);
+      assert.deepEqual(processingResult, new EventProcessingResult());
+
+      processingResult.merge({ storedDelivered: 1, emailIds: ['e-2'], memberIds: ['m-2'] });
+      assert.equal(await aggregate(false), null);
+      assert.deepEqual(processingResult.memberIds, ['m-2']);
+
+      assert.notEqual(await aggregate(true), null);
+      sinon.assert.calledOnceWithExactly(queries.aggregateEmailStats, 'e-2', false);
+      sinon.assert.calledOnceWithExactly(queries.aggregateMemberStats, 'm-2');
+    });
+
     describe('final aggregation', function () {
       it('aggregates stats from the processing result', async function () {
         configUtils.set('emailAnalytics:batchProcessing', false);
@@ -876,7 +903,6 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         configUtils.set('emailAnalytics:batchProcessing', false);
         const processor = createProcessor();
         const processingResult = new EventProcessingResult({
-          storedDelivered: 1,
           emailIds: ['e-1'],
           memberIds: ['m-1'],
         });
@@ -886,7 +912,6 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         await assert.rejects(
           processor.aggregate({
             includeOpenedEvents: true,
-            skipUnchanged: true,
             processingResult,
             isFinal: false,
           }),
@@ -900,7 +925,6 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         queries.aggregateEmailStats.resolves();
         const timings = await processor.aggregate({
           includeOpenedEvents: true,
-          skipUnchanged: true,
           processingResult,
           isFinal: true,
         });

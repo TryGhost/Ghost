@@ -21,6 +21,7 @@ const EmailAnalyticsAutomationFetchLatestJob =
 const EmailAnalyticsGiftFetchLatestJob =
   require('../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job').default;
 const models = require('../../../../core/server/models');
+const { Queries } = require('../../../../core/server/services/email-analytics/lib/queries');
 
 type MailgunEvent = {
   id: string;
@@ -282,5 +283,85 @@ describe('email analytics JobsService delivery', function () {
       await knex('gift_deliveries').where('id', delivery.id).del();
       await knex('gifts').where('id', gift.id).del();
     }
+  });
+
+  describe('newsletter aggregation recovery', function () {
+    const openedAt = [eventDate, new Date(eventDate.getTime() + 60 * 1000)];
+    let recipients: Array<{ id: string; member_id: string; member_email: string }>;
+    let emailId: string;
+
+    beforeEach(async function () {
+      const batch = fixtureManager.get('email_batches', 0);
+      emailId = batch.email_id;
+      recipients = [0, 1].map((index) => fixtureManager.get('email_recipients', index));
+      await knex('email_recipients')
+        .whereIn(
+          'id',
+          recipients.map((recipient) => recipient.id),
+        )
+        .update({ opened_at: null });
+      await knex('members')
+        .whereIn(
+          'id',
+          recipients.map((recipient) => recipient.member_id),
+        )
+        .update({ email_opened_count: 0 });
+      await knex('emails').where('id', emailId).update({ opened_count: 0 });
+      events = recipients.map((recipient, index) => ({
+        ...mailgunEvent('opened', batch.mailgun_message_id, recipient.member_email, 'bulk-email'),
+        timestamp: openedAt[index].getTime() / 1000,
+        'user-variables': { 'email-id': emailId },
+      }));
+    });
+
+    async function assertMemberOpenCountsAggregated() {
+      for (const recipient of recipients) {
+        const [{ count }] = await knex('email_recipients')
+          .count('id as count')
+          .where('member_id', recipient.member_id)
+          .whereNotNull('opened_at');
+        const member = await knex('members').where('id', recipient.member_id).first();
+        assert.equal(member.email_opened_count, Number(count));
+      }
+    }
+
+    function failFirstMemberAggregation() {
+      const aggregateMemberStats = sinon.stub(Queries.prototype, 'aggregateMemberStats');
+      aggregateMemberStats.callThrough();
+      aggregateMemberStats.onFirstCall().rejects(new Error('aggregation failed'));
+    }
+
+    it('aggregates opens whose fetchLatest aggregation failed', async function () {
+      const newsletters = emailAnalytics.getNewsletters();
+      failFirstMemberAggregation();
+
+      await assert.rejects(newsletters.fetchLatestOpenedEvents(), /aggregation failed/);
+      await newsletters.fetchLatestOpenedEvents();
+      await newsletters.fetchMissing();
+
+      await assertMemberOpenCountsAggregated();
+    });
+
+    it('aggregates opens whose missing-sweep aggregation failed', async function () {
+      const newsletters = emailAnalytics.getNewsletters();
+      failFirstMemberAggregation();
+
+      await assert.rejects(newsletters.fetchMissing(), /aggregation failed/);
+      await newsletters.fetchMissing();
+
+      await assertMemberOpenCountsAggregated();
+    });
+
+    it('updates the email open count for opens recovered by the missing sweep', async function () {
+      await emailAnalytics.getNewsletters().fetchMissing();
+
+      const [{ count }] = await knex('email_recipients')
+        .count('id as count')
+        .where('email_id', emailId)
+        .whereNotNull('opened_at');
+      const email = await knex('emails').where('id', emailId).first();
+      assert.ok(Number(count) >= recipients.length);
+      assert.equal(email.opened_count, Number(count));
+    });
   });
 });
