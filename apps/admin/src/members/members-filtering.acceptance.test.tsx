@@ -152,6 +152,8 @@ describe('Members list', () => {
     await renderAdminApp('/members');
 
     await expect(membersScreen.memberRows()).toHaveCount(2);
+    // The list doesn't wait for the definitions lookup, so let it land before counting.
+    await expect.poll(() => definitionsApi.requests.length).toBeGreaterThan(0);
     const requestsBeforeFilter = definitionsApi.requests.length;
 
     await membersScreen.addFilter('Name', 'Alice');

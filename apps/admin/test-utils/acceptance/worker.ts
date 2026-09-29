@@ -113,15 +113,85 @@ export function verifyNoUnhandledRequests(): void {
   }
 }
 
-// In-flight ledger (requestId → "METHOD path") for requests the worker owns;
-// drained in afterEach so stragglers can't cross test boundaries.
+// In-flight ledger (key → "METHOD path") for requests the worker owns;
+// drained in afterEach so stragglers can't cross test boundaries. MSW only
+// hears of a request once the service worker has relayed it, so the page also
+// records each request from the moment it issues one (trackIssuedRequests) —
+// otherwise a request still inside the service worker slips past the drain
+// and lands in the next test.
 const inFlightRequests = new Map<string, string>();
+
+function describeRequest(method: string, url: string): string {
+  const path = ADMIN_API_PATTERN.test(url) ? toAdminApiPath(url) : url;
+  return `${method.toUpperCase()} ${path}`;
+}
+
+let issuedRequestCount = 0;
+
+/** Records a request the page issues, until the returned callback settles it. */
+function recordIssuedRequest(method: string, url: string): () => void {
+  if (!isTrackedUrl(url)) {
+    return () => {};
+  }
+  issuedRequestCount += 1;
+  const key = `issued:${issuedRequestCount}`;
+  inFlightRequests.set(key, describeRequest(method, url));
+  return () => {
+    inFlightRequests.delete(key);
+  };
+}
+
+function absoluteUrl(url: string | URL): string | undefined {
+  try {
+    return new URL(url, document.baseURI).href;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The app reaches the fake API through fetch, and through XHR for uploads with progress. */
+function trackIssuedRequests(): void {
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = input instanceof Request ? input.url : absoluteUrl(input);
+    const method = init?.method ?? (input instanceof Request ? input.method : 'GET');
+    const settle = url ? recordIssuedRequest(method, url) : () => {};
+    return originalFetch(input, init).finally(settle);
+  };
+
+  // Unbound on purpose: each is re-applied to the request instance it wraps.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const { open, send } = XMLHttpRequest.prototype;
+  const opened = new WeakMap<XMLHttpRequest, { method: string; url: string | undefined }>();
+  XMLHttpRequest.prototype.open = function (
+    this: XMLHttpRequest,
+    method: string,
+    url: string | URL,
+    ...rest: unknown[]
+  ) {
+    opened.set(this, { method, url: absoluteUrl(url) });
+    Reflect.apply(open, this, [method, url, ...rest]);
+  };
+  XMLHttpRequest.prototype.send = function (
+    this: XMLHttpRequest,
+    body?: Document | XMLHttpRequestBodyInit | null,
+  ) {
+    const request = opened.get(this);
+    const settle = request?.url ? recordIssuedRequest(request.method, request.url) : () => {};
+    this.addEventListener('loadend', settle, { once: true });
+    try {
+      send.call(this, body);
+    } catch (error) {
+      settle();
+      throw error;
+    }
+  };
+}
 
 function trackInFlightRequests(worker: SetupWorker): void {
   worker.events.on('request:start', ({ request, requestId }) => {
     if (isTrackedUrl(request.url)) {
-      const path = ADMIN_API_PATTERN.test(request.url) ? toAdminApiPath(request.url) : request.url;
-      inFlightRequests.set(requestId, `${request.method} ${path}`);
+      inFlightRequests.set(requestId, describeRequest(request.method, request.url));
     }
   });
   // msw 2.x emits "request:end" for completed requests but only
@@ -177,7 +247,8 @@ export async function settleRequests({
   throw new Error(
     [
       `Request(s) still in flight ${timeoutMs}ms after the test finished:`,
-      ...[...inFlightRequests.values()].map((description) => `  - ${description}`),
+      // The page and MSW can both hold the same request.
+      ...[...new Set(inFlightRequests.values())].map((description) => `  - ${description}`),
     ].join('\n'),
   );
 }
@@ -466,6 +537,7 @@ export async function startFakeApi({
     ),
   );
 
+  trackIssuedRequests();
   trackInFlightRequests(worker);
 
   // MSW stops its service worker on `beforeunload`. Nothing here ever unloads

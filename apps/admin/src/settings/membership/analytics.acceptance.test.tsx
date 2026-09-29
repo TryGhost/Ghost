@@ -8,6 +8,7 @@ import {
   renderAdminApp,
   settingsResponse,
 } from '@test-utils/acceptance';
+import { deferred } from '@/utils/deferred';
 import { settingsScreen } from '@/settings/settings.screen';
 
 type AnalyticsSetting = { key: string; value: boolean; is_read_only?: boolean };
@@ -172,14 +173,11 @@ describe('Analytics settings', () => {
 
   it('disables the post analytics export while downloading from the expected endpoint', async () => {
     fakeSettingsScreens();
-    let finishExport!: () => void;
+    const pendingExport = deferred<object>();
     const exportApi = fakeAdminEndpoint(
       'GET',
       '/posts/export/?limit=1000',
-      () =>
-        new Promise<object>((resolve) => {
-          finishExport = () => resolve({});
-        }),
+      () => pendingExport.promise,
     );
     await renderAdminApp('/settings');
 
@@ -188,11 +186,14 @@ describe('Analytics settings', () => {
     const button = migrationTools.getByTestId('post-analytics-export-button');
     await button.click();
 
-    expect(exportApi.requests).toHaveLength(1);
-    await expect.element(button).toBeDisabled();
-    await expect.element(button).toHaveTextContent('Loading...');
-
-    finishExport();
+    try {
+      await expect.poll(() => exportApi.requests.length).toBe(1);
+      await expect.element(button).toBeDisabled();
+      await expect.element(button).toHaveTextContent('Loading...');
+    } finally {
+      // Settle the held export even when an assertion fails.
+      pendingExport.resolve({});
+    }
 
     await expect.element(button).toBeEnabled();
     expect(exportApi.lastRequest?.url).toContain('/posts/export/?limit=1000');

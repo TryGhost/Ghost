@@ -15,6 +15,7 @@ import {
   renderAdminApp,
   settingsResponse,
   webAnalyticsBootOverrides,
+  type TinybirdPipeCapture,
 } from '@test-utils/acceptance';
 import { membersScreen } from '@/members/members.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
@@ -740,24 +741,18 @@ describe('Post analytics web', () => {
     await renderAdminApp(`/posts/analytics/${POST_ID}/web`, { boot: webAnalyticsBootOverrides() });
 
     await expect.element(postAnalyticsScreen.locationRow('US')).toHaveTextContent('United States');
-    const initialKpiRequestCount = kpisApi.requests.length;
-    const initialLocationsRequestCount = topLocationsApi.requests.length;
-    const initialSourcesRequestCount = topSourcesApi.requests.length;
 
     await postAnalyticsScreen.locationRow('US').click();
 
     await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/web?location=US`);
     await expect.element(postAnalyticsScreen.filterContainer()).toHaveTextContent('Location');
-    await expect.poll(() => kpisApi.requests.length).toBeGreaterThan(initialKpiRequestCount);
-    await expect
-      .poll(() => topLocationsApi.requests.length)
-      .toBeGreaterThan(initialLocationsRequestCount);
-    await expect
-      .poll(() => topSourcesApi.requests.length)
-      .toBeGreaterThan(initialSourcesRequestCount);
-    expect(kpisApi.lastRequest?.params.get('location')).toBe('US');
-    expect(topLocationsApi.lastRequest?.params.get('location')).toBe('US');
-    expect(topSourcesApi.lastRequest?.params.get('location')).toBe('US');
+    // The applied filter looks up its location options on the same pipe, deliberately
+    // without the location it filters by, so the filtered request need not come last.
+    const sentLocation = (pipeApi: TinybirdPipeCapture) =>
+      pipeApi.requests.some(({ params }) => params.get('location') === 'US');
+    await expect.poll(() => sentLocation(kpisApi)).toBe(true);
+    await expect.poll(() => sentLocation(topLocationsApi)).toBe(true);
+    await expect.poll(() => sentLocation(topSourcesApi)).toBe(true);
   });
 });
 
