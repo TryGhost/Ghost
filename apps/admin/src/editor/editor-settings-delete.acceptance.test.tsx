@@ -7,6 +7,7 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
+  fakePages,
   fakePosts,
   fakePostsListScreen,
   post,
@@ -324,6 +325,8 @@ describe('Post settings delete', () => {
 
   it('deletes a page through the pages API and returns to the pages list', async () => {
     editorChrome();
+    // The list the delete returns to.
+    fakePages([]);
     const current = post({
       id: POST_ID,
       title: 'A page',

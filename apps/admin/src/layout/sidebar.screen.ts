@@ -3,6 +3,7 @@ import {
   adminSidebar,
   appearanceMenuItem,
   darkAppearanceOption,
+  ghostProLink,
   lightAppearanceOption,
   networkNotificationBadge,
   postsToggle,
@@ -29,6 +30,14 @@ export const sidebarScreen = {
   // Scoped to the shell sidebar: in-content navigation (e.g. the tag
   // detail breadcrumb) repeats the same link names.
   navLink: (name: string) => sidebarScreen.shellNav().getByRole('link', { name, exact: true }),
+  ghostProLink: () => sidebarScreen.navLink(ghostProLink),
+  /** A saved view's colour, from the dot beside its name; `undefined` when it has none. */
+  viewColor: (name: string) =>
+    sidebarScreen
+      .navLink(name)
+      .query()
+      ?.querySelector('[data-color]')
+      ?.getAttribute('data-color') ?? undefined,
   postsToggle: () => page.getByRole('button', { name: postsToggle }),
   networkBadge: () => page.getByTestId(networkNotificationBadge),
   userMenuTrigger: () => page.getByRole('button', { name: userMenuTrigger }),

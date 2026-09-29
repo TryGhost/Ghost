@@ -17,7 +17,7 @@ import { siteData } from './data/site';
  * Each accessor returns a freshly-minted object graph, so callers can mutate
  * the result without poisoning the canned data.
  *
- * Labs flags default to off; pass `{labs}` to `settingsResponse`/
+ * Labs flags default to off (GA flags on); pass `{labs}` to `settingsResponse`/
  * `configResponse` to flip flags for a test (they must flip in both — the
  * admin client reads labs from settings and config).
  */
@@ -49,7 +49,7 @@ export interface ActiveThemeResponse {
 }
 
 export interface LabsOverrides {
-  /** Labs flags merged over the labs defaults (all off). */
+  /** Labs flags merged over the labs defaults (off, except GA flags). */
   labs?: Record<string, boolean>;
 }
 

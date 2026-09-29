@@ -2,14 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   configResponse,
-  fakePages,
-  fakePosts,
-  fakePostsListScreen,
+  fakeEditorChrome,
   renderAdminApp,
   settingsResponse,
 } from '@test-utils/acceptance';
 import { composeLabsBootOverrides, type BootOverrides } from '@test-utils/acceptance/boot';
-import { postsListScreen } from '@/posts/list/posts-list.screen';
+import { editorScreen } from '@/editor/editor.screen';
 
 /** Resolve an override's response the way the boot table serves it. */
 async function bodyOf(override: BootOverrides[keyof BootOverrides]): Promise<unknown> {
@@ -107,20 +105,18 @@ describe('labs/boot composition', () => {
 });
 
 describe('renderAdminApp labs + boot', () => {
-  // postsListReact gates which implementation serves /posts, so the React
-  // screen appearing proves the flag survived the boot overrides.
+  // editorReact defaults off and gates which implementation serves /editor,
+  // so the React editor appearing proves the flag survived the boot overrides.
   it('applies labs flags alongside browseConfig and browseSettings overrides', async () => {
-    fakePostsListScreen();
-    fakePosts([]);
-    fakePages([]);
-    await renderAdminApp('/posts', {
-      labs: { postsListReact: true },
+    fakeEditorChrome();
+    await renderAdminApp('/editor/post', {
+      labs: { editorReact: true },
       boot: {
         browseConfig: { response: configResponse() },
         browseSettings: { response: settingsResponse() },
       },
     });
 
-    await expect.element(postsListScreen.page('posts')).toBeVisible();
+    await expect.element(editorScreen.root()).toBeVisible();
   });
 });

@@ -10,6 +10,7 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeNewsletters,
+  fakePages,
   fakePosts,
   fakeSnippets,
   post,
@@ -315,6 +316,8 @@ describe('Post editor', () => {
     'returns a %s to the list for a %s %s they cannot edit',
     async (_role, role, type, status, authorId, listPath) => {
       fakeEditorChrome();
+      // The list the redirect lands on.
+      fakePages([]);
       fakeAdminEndpoint('GET', new RegExp(`^/${type}s/${POST_ID}/\\?`), {
         [`${type}s`]: [
           post({

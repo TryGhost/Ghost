@@ -5,6 +5,7 @@ import {
   fakeAdminEndpoint,
   fakeNewsletters,
   fakePosts,
+  fakePostsListScreen,
   fakeSnippets,
   post,
   renderAdminApp,
@@ -64,6 +65,8 @@ describe('Editor chrome', () => {
   // ...and still shows it everywhere else, or this would be a worse bug than
   // the one it fixes.
   it('leaves the sidebar alone on the posts list', async () => {
+    fakePostsListScreen();
+    fakePosts([]);
     await renderAdminApp('/posts');
 
     await expect.element(sidebar()).toBeVisible();

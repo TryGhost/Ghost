@@ -21,10 +21,13 @@ const NEW_POST_ID = 'new789';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CREATED_AT = '2026-01-01T00:00:05.000Z';
 // The posts list is React-owned here so the back link is a router link and the
-// blocker sees the navigation; the hash-anchor path has its own test below.
+// blocker sees the navigation; the hash-anchor path pins it to Ember below.
 // Each test names its own autosave regime, since the debounce decides whether a write
 // came from the exit or from an autosave; naming none leaves the editor's real 3s.
 const FLAG_ON: RenderAdminAppOptions = { labs: { editorReact: true, postsListReact: true } };
+const EMBER_POSTS_LIST: RenderAdminAppOptions = {
+  labs: { editorReact: true, postsListReact: false },
+};
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -254,7 +257,7 @@ describe('Post editor leave guard', () => {
 
   it.each([
     { name: 'router link', options: withFastAutosave(FLAG_ON) },
-    { name: 'native hash link', options: { labs: { editorReact: true } } },
+    { name: 'native hash link', options: EMBER_POSTS_LIST },
   ])('keeps the dialog open until leaving through a $name', async ({ options }) => {
     const saveApi = fakeEditablePost({
       status: 'published',
@@ -311,7 +314,7 @@ describe('Post editor leave guard', () => {
       status: 'published',
       published_at: '2026-01-01T00:00:00.000Z',
     });
-    await openDirtyEditor(withFastAutosave({ labs: { editorReact: true } }));
+    await openDirtyEditor(withFastAutosave(EMBER_POSTS_LIST));
 
     await editorScreen.backLink('post').click();
 
