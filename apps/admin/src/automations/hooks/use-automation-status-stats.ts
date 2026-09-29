@@ -1,10 +1,14 @@
+import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { performanceQueryOptions } from './performance-query-options';
 import { useMemo } from 'react';
 import { useReadAutomationPerformanceStats } from '@tryghost/admin-x-framework/api/automations';
 import { mapAutomationStatusStats } from '@/automations/utils/automation-status-stats';
 
-export const useAutomationStatusStats = (automationId: string) => {
-  const query = useReadAutomationPerformanceStats(automationId, performanceQueryOptions);
+export const useAutomationStatusStats = (automationId: string, dateRange: PerformanceDateRange) => {
+  const query = useReadAutomationPerformanceStats(automationId, {
+    ...performanceQueryOptions,
+    searchParams: dateRange.searchParams,
+  });
   const stats = query.data?.automation_performance_stats[0];
   const data = useMemo(() => (stats ? mapAutomationStatusStats(stats) : undefined), [stats]);
   const failed = !query.isFetching && query.isError;

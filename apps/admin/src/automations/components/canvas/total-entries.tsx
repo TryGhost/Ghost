@@ -1,3 +1,4 @@
+import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import React, { useId } from 'react';
 import { Button, Skeleton } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -5,8 +6,11 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { useAutomationEntryStats } from '@/automations/hooks/use-automation-entry-stats';
 import { TotalEntriesChart } from './total-entries-chart';
 
-export const TotalEntries: React.FC<{ automationId: string }> = ({ automationId }) => {
-  const { chart, isLoading, isError, retry } = useAutomationEntryStats(automationId);
+export const TotalEntries: React.FC<{ automationId: string; dateRange: PerformanceDateRange }> = ({
+  automationId,
+  dateRange,
+}) => {
+  const { chart, isLoading, isError, retry } = useAutomationEntryStats(automationId, dateRange);
   const headingId = useId();
 
   return (
