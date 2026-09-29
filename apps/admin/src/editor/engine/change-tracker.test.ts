@@ -74,6 +74,7 @@ function post(overrides: Partial<EditablePostProjection> = {}): EditablePostProj
     visibility: 'public',
     tiers: [],
     authors: [{ id: 'author-1' }],
+    email_subject: null,
     meta_title: null,
     meta_description: null,
     canonical_url: null,
