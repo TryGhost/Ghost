@@ -447,7 +447,7 @@ export function PostPreviewModal({
         align="start"
         className={cn(
           'min-h-0 overflow-auto',
-          showEmail ? 'bg-muted' : 'bg-surface-panel',
+          showEmail || device === 'mobile' ? 'bg-muted' : 'bg-surface-panel',
           (showEmail || device === 'mobile') && 'p-6',
         )}
         gap="none"
