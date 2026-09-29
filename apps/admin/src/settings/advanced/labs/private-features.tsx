@@ -55,6 +55,11 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
+    title: 'Admin 7 · Settings navigation',
+    description: 'Preview Settings in the Admin navigation shell.',
+    flag: 'admin7settings',
+  },
+  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',

@@ -14,6 +14,7 @@ import {
   renderAdminApp,
   currentUserResponse,
   settingsResponse,
+  staffRole,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
@@ -289,6 +290,50 @@ describe('Sidebar navigation', () => {
     // sidebar that appears on that later paint slips past the assertion.
     await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
     await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
+  });
+
+  it('swaps the shell navigation for settings navigation', async () => {
+    // The settings app owns its request graph; this spec asserts only the shell navigation.
+    allowUnhandledRequests();
+    await renderAdminApp('/site', { labs: { admin7settings: true } });
+
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
+    await sidebarScreen.navLink('Settings').click();
+
+    await expect.poll(currentRoute).toMatch(/^\/settings/);
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
+    await expect
+      .element(sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }))
+      .toBeVisible();
+  });
+
+  it('shows the settings navigation when a settings route is loaded directly', async () => {
+    // The settings app owns its request graph; this spec asserts only the shell navigation.
+    allowUnhandledRequests();
+    await renderAdminApp('/settings/staff', { labs: { admin7settings: true } });
+
+    await expect.poll(currentRoute).toMatch(/^\/settings\/staff/);
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
+    await expect
+      .element(sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }))
+      .toBeVisible();
+  });
+
+  it('keeps the app navigation for editors, who only see Staff in settings', async () => {
+    // The settings app owns its request graph; this spec asserts only the shell navigation.
+    allowUnhandledRequests();
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Editor' })];
+    await renderAdminApp('/settings/staff', {
+      labs: { admin7settings: true },
+      boot: { browseMe: { response: me } },
+    });
+
+    await expect.poll(currentRoute).toMatch(/^\/settings\/staff/);
+    await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+    await expect(sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' })).toHaveCount(
+      0,
+    );
   });
 });
 

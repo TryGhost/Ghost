@@ -1,9 +1,15 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { ScrollSectionContext } from './use-scroll-section';
 
-const scrollMargin = 193;
+const LEGACY_SCROLL_MARGIN = 193;
+const ADMIN7_SETTINGS_SCROLL_MARGIN = 96;
 
-const scrollToSection = (element: HTMLDivElement, doneInitialScroll: boolean) => {
+const scrollToSection = (
+  element: HTMLDivElement,
+  doneInitialScroll: boolean,
+  scrollMargin: number,
+) => {
   const root = document.getElementById('settings-scroller')!;
   const top = element.getBoundingClientRect().top + root.scrollTop;
 
@@ -14,7 +20,13 @@ const scrollToSection = (element: HTMLDivElement, doneInitialScroll: boolean) =>
 };
 
 const scrollSidebarNav = (navElement: HTMLLIElement, doneInitialScroll: boolean) => {
-  const sidebar = document.getElementById('settings-sidebar-scroller')!;
+  const sidebar = document.getElementById('settings-sidebar-scroller');
+
+  // With admin7settings on mobile, the nav only exists while its sheet is open,
+  // so the registered element can be detached and the scroller missing.
+  if (!sidebar || !navElement.isConnected) {
+    return;
+  }
 
   const bounds = navElement.getBoundingClientRect();
 
@@ -54,6 +66,25 @@ const scrollSidebarNav = (navElement: HTMLLIElement, doneInitialScroll: boolean)
       behavior,
     });
   }
+};
+
+const isScrolledToBottom = (root: HTMLElement) =>
+  root.scrollHeight - root.scrollTop - root.clientHeight <= 1;
+
+/**
+ * Sections whose anchor is inside the scroller's viewport, in document order.
+ * Section anchors are zero-size, so hidden (search-filtered) ones are detected
+ * by having no client rects.
+ */
+const getSectionsInView = (root: HTMLElement, sectionElements: Record<string, HTMLDivElement>) => {
+  const bounds = root.getBoundingClientRect();
+
+  return Object.entries(sectionElements)
+    .filter(([, element]) => element.isConnected && element.getClientRects().length > 0)
+    .map(([id, element]) => ({ id, top: element.getBoundingClientRect().top }))
+    .filter(({ top }) => top >= bounds.top && top < bounds.bottom)
+    .sort((first, second) => first.top - second.top)
+    .map(({ id }) => id);
 };
 
 const getIntersectingSections = (
@@ -96,6 +127,8 @@ const getIntersectingSections = (
 export const ScrollSectionProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
+  const admin7Settings = useFeatureFlag('admin7settings');
+  const scrollMargin = admin7Settings ? ADMIN7_SETTINGS_SCROLL_MARGIN : LEGACY_SCROLL_MARGIN;
   const [navigatedSection, _setNavigatedSection] = useState<string | null>(null);
   const sectionElements = useRef<Record<string, HTMLDivElement>>({});
   const intersectionObserver = useRef<IntersectionObserver | null>(null);
@@ -103,6 +136,7 @@ export const ScrollSectionProvider: React.FC<{
   const [lastIntersectedSection, setLastIntersectedSection] = useState<string | null>(null);
 
   const [hasUpdatedNavigatedSection, setHasUpdatedNavigatedSection] = useState(false);
+  const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const [doneInitialScroll, setDoneInitialScroll] = useState(false);
   const [, setDoneSidebarScroll] = useState(false);
 
@@ -114,6 +148,8 @@ export const ScrollSectionProvider: React.FC<{
   const navElements = useRef<Record<string, HTMLLIElement>>({});
 
   const setupIntersectionObserver = useCallback(() => {
+    intersectionObserver.current?.disconnect();
+
     const observer = new IntersectionObserver(
       (entries) => {
         setIntersectingSections((sections) => {
@@ -133,8 +169,8 @@ export const ScrollSectionProvider: React.FC<{
 
     Object.values(sectionElements.current).forEach((element) => observer.observe(element));
 
-    return observer;
-  }, []);
+    intersectionObserver.current = observer;
+  }, [scrollMargin]);
 
   const updateSection = useCallback(
     (id: string, element: HTMLDivElement) => {
@@ -150,24 +186,58 @@ export const ScrollSectionProvider: React.FC<{
       intersectionObserver.current?.observe(element);
 
       if (!doneInitialScroll && id === navigatedSection) {
-        scrollToSection(element, false);
+        scrollToSection(element, false, scrollMargin);
         setDoneInitialScroll(true);
       }
     },
-    [intersectionObserver, navigatedSection, doneInitialScroll],
+    [intersectionObserver, navigatedSection, doneInitialScroll, scrollMargin],
   );
 
   const updateNav = useCallback((id: string, element: HTMLLIElement) => {
     navElements.current[id] = element;
   }, []);
 
-  const scrollTo = useCallback((id: string) => {
-    if (sectionElements.current[id]) {
-      scrollToSection(sectionElements.current[id], true);
+  const scrollTo = useCallback(
+    (id: string) => {
+      if (sectionElements.current[id]) {
+        scrollToSection(sectionElements.current[id], true, scrollMargin);
+      }
+    },
+    [scrollMargin],
+  );
+
+  // Without the legacy 60vh bottom spacer, the last sections can't scroll into
+  // the observer's zone, so at the bottom the spy falls back to what's in view.
+  useEffect(() => {
+    if (!admin7Settings) {
+      return;
     }
-  }, []);
+
+    const handleScroll = (event: Event) => {
+      if (event.target instanceof HTMLElement && event.target.id === 'settings-scroller') {
+        setScrolledToBottom(isScrolledToBottom(event.target));
+      }
+    };
+
+    // Capture on the document, since the scroller remounts with the settings content.
+    document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+    return () => document.removeEventListener('scroll', handleScroll, { capture: true });
+  }, [admin7Settings]);
 
   const currentSection = useMemo(() => {
+    const root = scrolledToBottom ? document.getElementById('settings-scroller') : null;
+    if (root && isScrolledToBottom(root)) {
+      const sectionsInView = getSectionsInView(root, sectionElements.current);
+
+      if (navigatedSection && sectionsInView.includes(navigatedSection)) {
+        return navigatedSection;
+      }
+
+      if (sectionsInView.length) {
+        return sectionsInView[sectionsInView.length - 1];
+      }
+    }
+
     if (navigatedSection && intersectingSections.includes(navigatedSection)) {
       return navigatedSection;
     }
@@ -177,7 +247,7 @@ export const ScrollSectionProvider: React.FC<{
     }
 
     return lastIntersectedSection;
-  }, [intersectingSections, lastIntersectedSection, navigatedSection]);
+  }, [intersectingSections, lastIntersectedSection, navigatedSection, scrolledToBottom]);
 
   useEffect(() => {
     if (!hasUpdatedNavigatedSection) {
@@ -186,7 +256,7 @@ export const ScrollSectionProvider: React.FC<{
 
     if (navigatedSection && sectionElements.current[navigatedSection]) {
       setDoneInitialScroll((done) => {
-        scrollToSection(sectionElements.current[navigatedSection], done);
+        scrollToSection(sectionElements.current[navigatedSection], done, scrollMargin);
         return true;
       });
     } else {
@@ -195,7 +265,13 @@ export const ScrollSectionProvider: React.FC<{
     }
 
     // Wait for the initial scroll so that the intersecting sections are correct
-    setTimeout(() => setupIntersectionObserver());
+    const setupTimeout = setTimeout(() => setupIntersectionObserver());
+
+    return () => {
+      clearTimeout(setupTimeout);
+      intersectionObserver.current?.disconnect();
+      intersectionObserver.current = null;
+    };
   }, [hasUpdatedNavigatedSection, navigatedSection, setupIntersectionObserver]);
 
   useEffect(() => {
