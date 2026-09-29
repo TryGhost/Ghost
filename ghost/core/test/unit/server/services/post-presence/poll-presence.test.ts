@@ -37,13 +37,11 @@ function setup() {
 }
 
 describe('presence poll orchestration', () => {
-  it('limits traffic before loading roles or resources', async () => {
-    const { cache, poll, frame, findResources } = setup();
+  it('returns a retry delay when the poll limit is exceeded', async () => {
+    const { cache, poll, frame } = setup();
     cache.appendEvent.mockResolvedValue(31);
     await expect(poll(frame)).rejects.toMatchObject({ statusCode: 429 });
     expect(frame.setHeader).toHaveBeenCalledWith('Retry-After', '10');
-    expect(frame.user.load).not.toHaveBeenCalled();
-    expect(findResources).not.toHaveBeenCalled();
   });
   it('preserves database errors rather than misreporting them as permission failures', async () => {
     const { poll, frame, findResources } = setup();

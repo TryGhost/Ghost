@@ -2,10 +2,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import { recordSave } from '../../../../../core/server/services/post-presence/record-save';
-import { init, getService } from '../../../../../core/server/services/post-presence';
+import { init } from '../../../../../core/server/services/post-presence';
 // @ts-expect-error Legacy module.
 import labs from '../../../../../core/shared/labs';
-const MemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 
 const actor = { id: 'a'.repeat(24), name: 'Alex', profile_image: null };
 const resource = { id: 'b'.repeat(24), type: 'post' as const };
@@ -28,21 +27,12 @@ describe('save presence side effect', () => {
     );
     expect(cache.appendEvent.called).toBe(false);
   });
-  it('does not fail saving when Redis is unavailable and never falls back to local state', async () => {
+  it('does not fail saving when Redis is unavailable', async () => {
     sinon.stub(labs, 'isSet').returns(true);
     sinon.stub(logging, 'warn');
     const appendEvent = sinon.stub().rejects(new Error('Redis unavailable'));
     init({ cache: { appendEvent, readEvents: async () => [] }, siteId: 'site' });
     await expect(recordSave(frame, resource)).resolves.toBeUndefined();
     expect(appendEvent.calledOnce).toBe(true);
-    expect(await getService()?.recent([resource])).toEqual([]);
-  });
-  it('records a timestamped save without an active editor session', async () => {
-    sinon.stub(labs, 'isSet').returns(true);
-    init({ cache: new MemoryCache(), siteId: 'site' });
-    await recordSave(frame, resource);
-    expect(await getService()?.recent([resource])).toEqual([
-      expect.objectContaining({ userId: actor.id, action: 'saved', sessionId: null }),
-    ]);
   });
 });

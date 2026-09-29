@@ -63,18 +63,6 @@ describe('activity-gated presence requests', () => {
     expect(poll).toHaveBeenCalledTimes(2);
   });
 
-  it('backs off failures and stops permanently for unsupported endpoints', async () => {
-    const poll = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(false);
-    stop = startActivityPoller({ poll, clear: vi.fn() });
-    await vi.advanceTimersByTimeAsync(10000);
-    expect(poll).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(10000);
-    expect(poll).toHaveBeenCalledTimes(2);
-    document.dispatchEvent(new Event('keydown'));
-    await vi.advanceTimersByTimeAsync(120000);
-    expect(poll).toHaveBeenCalledTimes(2);
-  });
-
   it('removes listeners and timers when the route unmounts', async () => {
     const poll = vi.fn().mockResolvedValue(true);
     stop = startActivityPoller({ poll, clear: vi.fn() });

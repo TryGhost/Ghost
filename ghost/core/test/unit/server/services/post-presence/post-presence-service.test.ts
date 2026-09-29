@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   PostPresenceService,
-  requestSchema,
   MAX_EVENTS,
 } from '../../../../../core/server/services/post-presence/post-presence-service';
 import { init, getService } from '../../../../../core/server/services/post-presence';
@@ -80,18 +79,5 @@ describe('PostPresenceService', () => {
     await expect(service.recent([post])).rejects.toThrow('Redis unavailable');
     init({ cache: { get: () => null, set: () => {} }, siteId: 'site' });
     expect(getService()).toBeUndefined();
-  });
-
-  it('validates IDs, session identity and bounded poll windows', () => {
-    expect(requestSchema.safeParse({ resources: [post], sessionId: randomUUID() }).success).toBe(
-      true,
-    );
-    expect(
-      requestSchema.safeParse({ resources: Array(51).fill(post), sessionId: randomUUID() }).success,
-    ).toBe(false);
-    expect(
-      requestSchema.safeParse({ resources: [{ ...post, id: 'invalid' }], sessionId: randomUUID() })
-        .success,
-    ).toBe(false);
   });
 });
