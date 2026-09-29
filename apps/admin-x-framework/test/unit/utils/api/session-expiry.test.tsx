@@ -53,6 +53,16 @@ const forbidden = () =>
   );
 
 const server = setupServer(
+  http.get('http://localhost:3000/ghost/api/admin/users/me/', () =>
+    HttpResponse.json({ users: [{ id: '1' }] }),
+  ),
+  http.get('http://localhost:3000/blog/ghost/api/admin/users/me/', () =>
+    HttpResponse.json({ users: [{ id: '1' }] }),
+  ),
+  http.get('http://localhost:3000/ghost/api/admin/site/', () => HttpResponse.json({ site: {} })),
+  http.get('http://localhost:3000/ghost/api/admin/users/me/token/', () =>
+    HttpResponse.json({ apiKey: {} }),
+  ),
   http.get('http://localhost:3000/ghost/api/admin/posts/', expiredSession),
   http.get('http://localhost:3000/ghost/api/admin/posts/401/', unauthorized),
   http.get('http://localhost:3000/ghost/api/admin/members/', forbidden),
@@ -77,6 +87,12 @@ const loadModules = async () => {
   return { useFetchApi, SessionExpiredError, UnauthorizedError, ValidationError };
 };
 
+type FetchApi = ReturnType<Awaited<ReturnType<typeof loadModules>>['useFetchApi']>;
+
+// The redirect only applies once the page has seen the session work
+const confirmSession = (fetchApi: FetchApi) =>
+  fetchApi('http://localhost:3000/ghost/api/admin/users/me/?include=roles', { retry: false });
+
 describe('session expiry handling', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -90,6 +106,7 @@ describe('session expiry handling', () => {
   it('redirects to the admin root when an API request returns 403 Authorization failed', async () => {
     const { useFetchApi, SessionExpiredError } = await loadModules();
     const { result } = renderHook(() => useFetchApi());
+    await confirmSession(result.current);
 
     await expect(
       result.current('http://localhost:3000/ghost/api/admin/posts/', { retry: false }),
@@ -101,6 +118,7 @@ describe('session expiry handling', () => {
   it('redirects to the admin root when an API request returns 401', async () => {
     const { useFetchApi, SessionExpiredError } = await loadModules();
     const { result } = renderHook(() => useFetchApi());
+    await confirmSession(result.current);
 
     const error = await result
       .current('http://localhost:3000/ghost/api/admin/posts/401/', { retry: false })
@@ -114,6 +132,7 @@ describe('session expiry handling', () => {
   it('redirects only once when multiple in-flight requests return session expiry errors', async () => {
     const { useFetchApi, SessionExpiredError } = await loadModules();
     const { result } = renderHook(() => useFetchApi());
+    await confirmSession(result.current);
 
     const results = await Promise.allSettled([
       result.current('http://localhost:3000/ghost/api/admin/posts/', { retry: false }),
@@ -129,18 +148,75 @@ describe('session expiry handling', () => {
     expect(window.location.replace).toHaveBeenCalledTimes(1);
   });
 
+  it('does not redirect while signed out before the page has seen the session work', async () => {
+    server.use(http.get('http://localhost:3000/ghost/api/admin/users/me/', expiredSession));
+    const { useFetchApi, SessionExpiredError } = await loadModules();
+    const { result } = renderHook(() => useFetchApi());
+
+    await expect(confirmSession(result.current)).rejects.toBeInstanceOf(SessionExpiredError);
+    await expect(
+      result.current('http://localhost:3000/ghost/api/admin/posts/', { retry: false }),
+    ).rejects.toBeInstanceOf(SessionExpiredError);
+
+    expect(window.location.replace).not.toHaveBeenCalled();
+  });
+
+  it('does not treat a successful request to a public endpoint as a confirmed session', async () => {
+    const { useFetchApi, SessionExpiredError } = await loadModules();
+    const { result } = renderHook(() => useFetchApi());
+
+    await result.current('http://localhost:3000/ghost/api/admin/site/', { retry: false });
+    await result.current('http://localhost:3000/ghost/api/admin/users/me/token/', { retry: false });
+    await expect(
+      result.current('http://localhost:3000/ghost/api/admin/posts/', { retry: false }),
+    ).rejects.toBeInstanceOf(SessionExpiredError);
+
+    expect(window.location.replace).not.toHaveBeenCalled();
+  });
+
+  it('confirms the session from the current user under a subdirectory install', async () => {
+    const { useFetchApi, SessionExpiredError } = await loadModules();
+    const { result } = renderHook(() => useFetchApi());
+
+    await result.current('http://localhost:3000/blog/ghost/api/admin/users/me/?include=roles', {
+      retry: false,
+    });
+    await expect(
+      result.current('http://localhost:3000/ghost/api/admin/posts/', { retry: false }),
+    ).rejects.toBeInstanceOf(SessionExpiredError);
+
+    expect(window.location.replace).toHaveBeenCalledExactlyOnceWith('/ghost/');
+  });
+
+  it('redirects from the signed-in onboarding route under /setup', async () => {
+    (window as any).location.hash = '#/setup/onboarding?returnTo=/analytics';
+    const { useFetchApi, SessionExpiredError } = await loadModules();
+    const { result } = renderHook(() => useFetchApi());
+    await confirmSession(result.current);
+
+    await expect(
+      result.current('http://localhost:3000/ghost/api/admin/posts/', { retry: false }),
+    ).rejects.toBeInstanceOf(SessionExpiredError);
+
+    expect(window.location.replace).toHaveBeenCalledExactlyOnceWith('/ghost/');
+  });
+
   it.each([
     '',
     '#/',
     '#/signin',
     '#/signin/verify',
+    '#/signin?labs=authReact',
+    '#/signout',
     '#/signup/invitation-token',
-    '#/setup/one',
+    '#/setup',
     '#/reset/reset-token',
+    '#/reset/reset-token/',
   ])('does not redirect from unauthenticated Admin route %s', async (hash) => {
     (window as any).location.hash = hash;
     const { useFetchApi, SessionExpiredError } = await loadModules();
     const { result } = renderHook(() => useFetchApi());
+    await confirmSession(result.current);
 
     await expect(
       result.current('http://localhost:3000/ghost/api/admin/posts/', { retry: false }),
@@ -152,6 +228,7 @@ describe('session expiry handling', () => {
   it('does not redirect when the session endpoint returns 401', async () => {
     const { useFetchApi, SessionExpiredError, UnauthorizedError } = await loadModules();
     const { result } = renderHook(() => useFetchApi());
+    await confirmSession(result.current);
 
     await expect(
       result.current('http://localhost:3000/ghost/api/admin/session/', {
@@ -192,6 +269,7 @@ describe('session expiry handling', () => {
   it('does not redirect when a non-Ghost API request returns 401', async () => {
     const { useFetchApi, SessionExpiredError, UnauthorizedError } = await loadModules();
     const { result } = renderHook(() => useFetchApi());
+    await confirmSession(result.current);
 
     const error = await result
       .current('http://localhost:3000/external/data/', { retry: false })
@@ -205,6 +283,7 @@ describe('session expiry handling', () => {
   it('does not redirect for other 403 permission errors', async () => {
     const { useFetchApi, SessionExpiredError, ValidationError } = await loadModules();
     const { result } = renderHook(() => useFetchApi());
+    await confirmSession(result.current);
 
     const error = await result
       .current('http://localhost:3000/ghost/api/admin/members/', { retry: false })
