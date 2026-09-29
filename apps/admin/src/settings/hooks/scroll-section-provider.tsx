@@ -148,6 +148,8 @@ export const ScrollSectionProvider: React.FC<{
   const navElements = useRef<Record<string, HTMLLIElement>>({});
 
   const setupIntersectionObserver = useCallback(() => {
+    intersectionObserver.current?.disconnect();
+
     const observer = new IntersectionObserver(
       (entries) => {
         setIntersectingSections((sections) => {
@@ -167,7 +169,7 @@ export const ScrollSectionProvider: React.FC<{
 
     Object.values(sectionElements.current).forEach((element) => observer.observe(element));
 
-    return observer;
+    intersectionObserver.current = observer;
   }, [scrollMargin]);
 
   const updateSection = useCallback(
@@ -263,7 +265,13 @@ export const ScrollSectionProvider: React.FC<{
     }
 
     // Wait for the initial scroll so that the intersecting sections are correct
-    setTimeout(() => setupIntersectionObserver());
+    const setupTimeout = setTimeout(() => setupIntersectionObserver());
+
+    return () => {
+      clearTimeout(setupTimeout);
+      intersectionObserver.current?.disconnect();
+      intersectionObserver.current = null;
+    };
   }, [hasUpdatedNavigatedSection, navigatedSection, setupIntersectionObserver]);
 
   useEffect(() => {
