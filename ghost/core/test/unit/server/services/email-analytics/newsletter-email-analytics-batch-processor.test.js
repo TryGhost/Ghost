@@ -691,22 +691,36 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
     });
   }
 
-  it('flushes queued updates when a batched event fails before the flush', async function () {
-    configUtils.set('emailAnalytics:batchProcessing', true);
-    try {
-      const flushBatchedUpdates = sinon
-        .stub()
-        .resolves({ storedDelivered: 1, storedOpened: 0, storedPermanentFailed: 0 });
-      const processor = new NewsletterEmailAnalyticsBatchProcessor({
+  describe('batched processing failures', function () {
+    let emailEventProcessor;
+    let processor;
+
+    beforeEach(function () {
+      configUtils.set('emailAnalytics:batchProcessing', true);
+      emailEventProcessor = {
+        batchGetRecipients: sinon.stub().resolves(new Map()),
+        handlePermanentFailed: sinon.stub(),
+        flushBatchedUpdates: sinon.stub(),
+      };
+      processor = new NewsletterEmailAnalyticsBatchProcessor({
         config: createMockConfig(),
-        emailEventProcessor: {
-          batchGetRecipients: sinon.stub().resolves(new Map()),
-          handleDelivered: sinon
-            .stub()
-            .resolves({ emailId: 'e-1', memberId: 'm-1', storedCount: 0 }),
-          handlePermanentFailed: sinon.stub().rejects(new Error('failure not saved')),
-          flushBatchedUpdates,
-        },
+        emailEventProcessor,
+      });
+    });
+
+    afterEach(async function () {
+      await configUtils.restore();
+    });
+
+    it('flushes queued updates when a batched event fails before the flush', async function () {
+      emailEventProcessor.handleDelivered = sinon
+        .stub()
+        .resolves({ emailId: 'e-1', memberId: 'm-1', storedCount: 0 });
+      emailEventProcessor.handlePermanentFailed.rejects(new Error('failure not saved'));
+      emailEventProcessor.flushBatchedUpdates.resolves({
+        storedDelivered: 1,
+        storedOpened: 0,
+        storedPermanentFailed: 0,
       });
       const result = new EventProcessingResult();
 
@@ -719,27 +733,16 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         /failure not saved/,
       );
 
-      sinon.assert.calledOnce(flushBatchedUpdates);
+      sinon.assert.calledOnce(emailEventProcessor.flushBatchedUpdates);
       assert.equal(result.storedDelivered, 1);
       assert.deepEqual(result.memberIds, ['m-1']);
-    } finally {
-      configUtils.restore();
-    }
-  });
+    });
 
-  it('rethrows the event error when the flush after it also fails', async function () {
-    configUtils.set('emailAnalytics:batchProcessing', true);
-    const logError = sinon.stub(logging, 'error');
-    try {
+    it('rethrows the event error when the flush after it also fails', async function () {
+      const logError = sinon.stub(logging, 'error');
       const flushError = new Error('flush failed');
-      const processor = new NewsletterEmailAnalyticsBatchProcessor({
-        config: createMockConfig(),
-        emailEventProcessor: {
-          batchGetRecipients: sinon.stub().resolves(new Map()),
-          handlePermanentFailed: sinon.stub().rejects(new Error('failure not saved')),
-          flushBatchedUpdates: sinon.stub().rejects(flushError),
-        },
-      });
+      emailEventProcessor.handlePermanentFailed.rejects(new Error('failure not saved'));
+      emailEventProcessor.flushBatchedUpdates.rejects(flushError);
 
       await assert.rejects(
         processor.processBatch(
@@ -751,9 +754,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
       );
 
       sinon.assert.calledWith(logError, flushError);
-    } finally {
-      configUtils.restore();
-    }
+    });
   });
 
   describe('aggregate', function () {

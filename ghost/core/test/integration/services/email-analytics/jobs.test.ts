@@ -293,10 +293,14 @@ describe('email analytics JobsService delivery', function () {
     let recipients: Array<{ id: string; member_id: string; member_email: string }>;
     let emailId: string;
 
-    beforeEach(async function () {
+    beforeEach(function () {
       const batch = fixtureManager.get('email_batches', 0);
       emailId = batch.email_id;
       recipients = [0, 1].map((index) => fixtureManager.get('email_recipients', index));
+    });
+
+    async function prepareOpenedRecipients() {
+      const batch = fixtureManager.get('email_batches', 0);
       await knex('email_recipients')
         .whereIn(
           'id',
@@ -315,7 +319,7 @@ describe('email analytics JobsService delivery', function () {
         timestamp: openedAt[index].getTime() / 1000,
         'user-variables': { 'email-id': emailId },
       }));
-    });
+    }
 
     async function assertMemberOpenCountsAggregated() {
       for (const recipient of recipients) {
@@ -335,17 +339,18 @@ describe('email analytics JobsService delivery', function () {
     }
 
     it('aggregates opens whose fetchLatest aggregation failed', async function () {
+      await prepareOpenedRecipients();
       const newsletters = emailAnalytics.getNewsletters();
       failFirstMemberAggregation();
 
       await assert.rejects(newsletters.fetchLatestOpenedEvents(), /aggregation failed/);
       await newsletters.fetchLatestOpenedEvents();
-      await newsletters.fetchMissing();
 
       await assertMemberOpenCountsAggregated();
     });
 
     it('aggregates opens whose missing-sweep aggregation failed', async function () {
+      await prepareOpenedRecipients();
       const newsletters = emailAnalytics.getNewsletters();
       failFirstMemberAggregation();
 
@@ -386,6 +391,7 @@ describe('email analytics JobsService delivery', function () {
     });
 
     it('updates the email open count for opens recovered by the missing sweep', async function () {
+      await prepareOpenedRecipients();
       await emailAnalytics.getNewsletters().fetchMissing();
 
       const [{ count }] = await knex('email_recipients')
