@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Badge,
+  tokenFieldClasses,
   type ComboboxOptionSource,
   Command,
   CommandEmpty,
@@ -198,7 +199,7 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
           key={label.id}
           className={cn(
             'cursor-pointer gap-1 pr-1',
-            isAdmin7 && 'h-6 rounded-full border-transparent bg-secondary px-2 pr-1.5 text-sm',
+            isAdmin7 && cn(tokenFieldClasses.chip, 'bg-secondary'),
           )}
           variant="outline"
           onClick={(e) => {
@@ -336,8 +337,9 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     <div ref={containerRef} className="relative">
       <div
         className={cn(
-          'flex min-h-9 w-full cursor-text flex-wrap items-center border border-control-border bg-surface-elevated text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent',
-          isAdmin7 ? 'gap-1 rounded-control p-1' : 'gap-1.5 rounded-md px-3 py-1',
+          isAdmin7
+            ? tokenFieldClasses.field
+            : 'flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-control-surface px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25',
         )}
         role="combobox"
         onClick={() => {
@@ -349,8 +351,9 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
         <input
           ref={inputRef}
           className={cn(
-            'min-w-[80px] flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
-            isAdmin7 && 'px-2',
+            isAdmin7
+              ? tokenFieldClasses.input
+              : 'min-w-20 flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
           )}
           placeholder={selectedLabels.length === 0 ? placeholder : ''}
           value={search}

@@ -76,6 +76,41 @@ function countdownIsOver(): boolean {
  * given instead of the post's own, and the result they produce.
  */
 describe('Post settings meta data', () => {
+  it('saves and clears the canonical URL and uses it in the search preview', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openMetaData();
+    const canonical = page.getByRole('textbox', { name: 'Canonical URL' });
+    await canonical.fill('https://original.example.com/story/');
+    await userEvent.tab();
+    await expect(saveApi).toHaveSavedFields({
+      canonical_url: 'https://original.example.com/story/',
+    });
+    await expect
+      .element(editorScreen.settingsSerpPreview())
+      .toHaveTextContent('original.example.com › story');
+    await canonical.fill('');
+    await userEvent.tab();
+    await expect(saveApi).toHaveSavedFields({ canonical_url: null });
+  });
+
+  it('keeps invalid canonical URLs unsaved until corrected', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openMetaData();
+    const canonical = page.getByRole('textbox', { name: 'Canonical URL' });
+    await canonical.fill('not a url');
+    await userEvent.tab();
+    await expect.element(canonical).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(page.getByText('Please enter a valid URL', { exact: true })).toBeVisible();
+    expect(saveApi.requests).toHaveLength(0);
+    await canonical.fill('https://original.example.com/story/');
+    await userEvent.tab();
+    await expect(saveApi).toHaveSavedFields({
+      canonical_url: 'https://original.example.com/story/',
+    });
+  });
+
   it('opens the pane over the section list and comes back from it', async () => {
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);

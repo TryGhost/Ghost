@@ -1,7 +1,6 @@
 import { Fragment, memo, type ReactNode, useEffect, useId } from 'react';
-import { Label, Switch, Textarea } from '@tryghost/shade/components';
+import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Box, Inline, Text } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
 import {
   canAccessSettings,
   isAuthorOrContributor,
@@ -187,12 +186,7 @@ export function PostSettingsSidebar({
 
   return (
     <SubviewContext.Provider value={subviews}>
-      <Box
-        className={cn(
-          'absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw] lg:static lg:shrink-0',
-          open?.wide && '[--editor-settings-width:500px]',
-        )}
-      >
+      <Box className="absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw] lg:static lg:shrink-0">
         <aside
           aria-label={open?.title ?? panelLabel}
           className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-x-hidden overflow-y-auto rounded-xl border border-border bg-sidebar"
@@ -202,7 +196,7 @@ export function PostSettingsSidebar({
             {open ? null : (
               <Box className="sticky top-0 z-10 bg-sidebar">
                 <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
-                  <Text as="h2" className="pl-1" size="md" weight="semibold">
+                  <Text as="h2" className="pl-1" size="lg" weight="semibold">
                     {panelLabel}
                   </Text>
                   <Box
@@ -213,7 +207,10 @@ export function PostSettingsSidebar({
               </Box>
             )}
             {SETTINGS_SECTION_ORDER.map((id) => (
-              <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
+              <Fragment key={id}>
+                {!open && id === 'post-history' ? <Separator className="my-3" /> : null}
+                {open && open.id !== id ? null : sections[id]}
+              </Fragment>
             ))}
           </Box>
         </aside>
