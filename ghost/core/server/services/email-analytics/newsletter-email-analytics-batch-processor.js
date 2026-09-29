@@ -45,22 +45,25 @@ class NewsletterEmailAnalyticsBatchProcessor {
       const recipientCache =
         await this.#emailEventProcessor.batchGetRecipients(emailIdentifications);
 
-      for (const event of events) {
-        const batchResult = await this.#processEvent(event, recipientCache);
+      try {
+        for (const event of events) {
+          const batchResult = await this.#processEvent(event, recipientCache);
 
-        // Save last event timestamp
-        if (
-          !fetchData.lastEventTimestamp ||
-          (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)
-        ) {
-          fetchData.lastEventTimestamp = event.timestamp;
+          // Save last event timestamp
+          if (
+            !fetchData.lastEventTimestamp ||
+            (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)
+          ) {
+            fetchData.lastEventTimestamp = event.timestamp;
+          }
+
+          result.merge(batchResult);
         }
-
-        result.merge(batchResult);
+      } finally {
+        // Flush even when an event fails, so updates queued by earlier events are stored
+        // before this run aggregates them instead of by whichever run flushes next
+        result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
       }
-
-      // Flush all batched updates to the database
-      result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
@@ -82,7 +85,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
   /**
    * @param {object} options
    * @param {boolean} options.includeOpenedEvents
-   * @param {boolean} [options.skipUnchanged] Skip replayed events during the missing sweep
+   * @param {boolean} [options.skipUnchanged] Skip aggregation when no new recipient timestamps were stored
    * @param {EventProcessingResult} options.processingResult
    * @param {boolean} options.isFinal
    * @returns {Promise<null | {
