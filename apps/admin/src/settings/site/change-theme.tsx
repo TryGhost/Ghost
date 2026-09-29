@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import {
   Button,
@@ -19,8 +19,6 @@ import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  const [themeLimitError, setThemeLimitError] = useState<string | null>(null);
-  const [isCheckingLimit, setIsCheckingLimit] = useState(false);
   const { checkThemeLimitError } = useCheckThemeLimitError();
   const { route, updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();
@@ -28,31 +26,18 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const { data: themesData } = useBrowseThemes();
   const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
 
-  useEffect(() => {
-    const checkIfThemeChangeAllowed = async () => {
-      setIsCheckingLimit(true);
-      const error = await checkThemeLimitError();
-      setThemeLimitError(error);
-      setIsCheckingLimit(false);
-    };
+  const openPreviewModal = async () => {
+    const limitError = await checkThemeLimitError();
 
-    void checkIfThemeChangeAllowed();
-  }, [checkThemeLimitError]);
-
-  const openPreviewModal = () => {
-    // Wait for limit check if still in progress
-    if (isCheckingLimit) {
+    if (limitError) {
+      showLimit({
+        prompt: limitError,
+        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+      });
       return;
     }
 
-    if (themeLimitError) {
-      showLimit({
-        prompt: themeLimitError,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
-      });
-    } else {
-      updateRoute('design/change-theme');
-    }
+    updateRoute('design/change-theme');
   };
 
   const openThemeEditor = async () => {
@@ -129,7 +114,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           size="sm"
           type="button"
           variant="ghost"
-          onClick={openPreviewModal}
+          onClick={() => void openPreviewModal()}
         >
           Change theme
         </Button>
