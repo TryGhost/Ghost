@@ -5,6 +5,7 @@ import type { AddressInfo } from 'node:net';
 import express from 'express';
 import type { Request, Response } from 'express';
 import nock from 'nock';
+import sinon from 'sinon';
 
 import { queueRequest } from '../../../../../../core/server/web/parent/middleware/queue-request';
 
@@ -98,44 +99,46 @@ describe('Queue request middleware', function () {
     }
   });
 
-  it('drains a deep queue of handlers that respond synchronously', async function () {
-    const middleware = queueRequest({ concurrencyLimit: 1 });
-    const fakeRequest = () => {
-      const res = Object.assign(new EventEmitter(), { end: () => res });
-      return { req: { path: '/sync' } as Request, res: res as unknown as Response };
-    };
-
-    const first = fakeRequest();
-    middleware(first.req, first.res, () => {});
-
+  it('drains a deep queue of handlers that respond synchronously', function () {
     const depth = 50000;
-    let completed = 0;
-    for (let i = 0; i < depth; i++) {
-      const { req, res } = fakeRequest();
-      middleware(req, res, () => {
-        completed += 1;
-        res.end();
-      });
-    }
+    // Exercise every scheduled pass without waiting for 50,000 real event-loop turns.
+    const clock = sinon.useFakeTimers({ toFake: ['setImmediate'], loopLimit: depth * 2 });
+    try {
+      const middleware = queueRequest({ concurrencyLimit: 1 });
+      const fakeRequest = () => {
+        const res = Object.assign(new EventEmitter(), { end: () => res });
+        return { req: { path: '/sync' } as Request, res: res as unknown as Response };
+      };
 
-    // a synchronous drain would recurse once per queued request and overflow the stack
-    first.res.end();
-    let completedWhenOtherWorkRan = -1;
-    setImmediate(() => {
-      completedWhenOtherWorkRan = completed;
-    });
-    while (completed < depth) {
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
-    }
+      const first = fakeRequest();
+      middleware(first.req, first.res, () => {});
 
-    assert.equal(completed, depth);
-    // the drain yields between passes, so other queued work gets to run part-way through
-    assert.ok(
-      completedWhenOtherWorkRan < depth,
-      `other work only ran after ${completedWhenOtherWorkRan} requests had completed`,
-    );
+      let completed = 0;
+      for (let i = 0; i < depth; i++) {
+        const { req, res } = fakeRequest();
+        middleware(req, res, () => {
+          completed += 1;
+          res.end();
+        });
+      }
+
+      // a synchronous drain would recurse once per queued request and overflow the stack
+      first.res.end();
+      let completedWhenOtherWorkRan = -1;
+      setImmediate(() => {
+        completedWhenOtherWorkRan = completed;
+      });
+      clock.runAll();
+
+      assert.equal(completed, depth);
+      // the drain yields between passes, so other queued work gets to run part-way through
+      assert.ok(
+        completedWhenOtherWorkRan >= 0 && completedWhenOtherWorkRan < depth,
+        `other work only ran after ${completedWhenOtherWorkRan} requests had completed`,
+      );
+    } finally {
+      clock.restore();
+    }
   });
 
   it('does not queue requests for static assets', async function () {
