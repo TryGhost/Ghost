@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const configUtils = require('../../../../utils/config-utils');
 
 const {
@@ -721,6 +722,35 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
       sinon.assert.calledOnce(flushBatchedUpdates);
       assert.equal(result.storedDelivered, 1);
       assert.deepEqual(result.memberIds, ['m-1']);
+    } finally {
+      configUtils.restore();
+    }
+  });
+
+  it('rethrows the event error when the flush after it also fails', async function () {
+    configUtils.set('emailAnalytics:batchProcessing', true);
+    const logError = sinon.stub(logging, 'error');
+    try {
+      const flushError = new Error('flush failed');
+      const processor = new NewsletterEmailAnalyticsBatchProcessor({
+        config: createMockConfig(),
+        emailEventProcessor: {
+          batchGetRecipients: sinon.stub().resolves(new Map()),
+          handlePermanentFailed: sinon.stub().rejects(new Error('failure not saved')),
+          flushBatchedUpdates: sinon.stub().rejects(flushError),
+        },
+      });
+
+      await assert.rejects(
+        processor.processBatch(
+          [{ type: 'failed', severity: 'permanent' }],
+          new EventProcessingResult(),
+          {},
+        ),
+        /failure not saved/,
+      );
+
+      sinon.assert.calledWith(logError, flushError);
     } finally {
       configUtils.restore();
     }
