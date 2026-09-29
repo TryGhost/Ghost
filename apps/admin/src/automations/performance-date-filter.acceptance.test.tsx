@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
+import { run } from './run-list.test-utils';
 import { QueryCache } from '@tanstack/react-query';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
@@ -16,7 +17,7 @@ const presets = [
   { days: 90, start: '2023-12-12', counts: [7, 8, 9] },
 ] as const;
 const entries = () => page.getByRole('region', { name: 'Total entries' });
-const card = (name: string) => page.getByRole('group', { name, exact: true });
+const card = (name: string) => page.getByRole('button', { name, exact: true });
 const labels = ['In progress', 'Completed', 'Exited early'] as const;
 
 // Freeze only Date so network, polling, and UI timers still run normally.
@@ -53,8 +54,10 @@ const response = (start: string, counts: readonly [number, number, number]) => {
   return { automation_performance_stats: [stats] };
 };
 const allTime = () => response('2023-12-01', [10, 20, 30]);
-const render = async () => {
-  fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, { automation_runs: [] });
+const render = async (withRuns = false) => {
+  if (!withRuns) {
+    fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, { automation_runs: [] });
+  }
   fakeAdminEndpoint('GET', '/automations/dates/', {
     automations: [
       {
@@ -127,6 +130,79 @@ describe('Automation performance date filter', () => {
       });
     }
     expect(requests.requests).toHaveLength(4);
+  });
+
+  it('keeps run dates and status filters together, including clearing either filter', async () => {
+    fakeAdminEndpoint('GET', endpoint, ({ url }) =>
+      params(url).date_from ? response('2024-03-04', [1, 2, 3]) : allTime(),
+    );
+    const requests = fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, ({ url }) => {
+      const selected = params(url);
+      const name = `${selected.date_from ?? 'all'} ${selected.status ?? 'any'}`;
+      return {
+        automation_runs: [run({ member: { id: 'member', name, email: 'member@example.com' } })],
+      };
+    });
+    await render(true);
+    const runs = () => page.getByRole('region', { name: 'Automation runs', exact: true });
+    await expect.element(runs()).toHaveTextContent('all any');
+    await selectRange('Last 7 days');
+    await expect.element(runs()).toHaveTextContent('2024-03-04 any');
+    await card('Completed').click();
+    await expect.element(runs()).toHaveTextContent('2024-03-04 completed');
+    expect(params(requests.requests.at(-1)!.url)).toEqual({
+      date_from: '2024-03-04',
+      date_to: '2024-03-10',
+      timezone,
+      status: 'completed',
+    });
+    await page.getByRole('button', { name: 'Clear date filter' }).click();
+    await expect.element(runs()).toHaveTextContent('all completed');
+    expect(params(requests.requests.at(-1)!.url)).toEqual({ timezone, status: 'completed' });
+    await card('Completed').click();
+    await expect.element(runs()).toHaveTextContent('all any');
+    expect(params(requests.requests.at(-1)!.url)).toEqual({ timezone });
+    expect(requests.requests).toHaveLength(5);
+  });
+
+  it('clears the previous rows and loads the whole panel when the date range changes', async () => {
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    fakeAdminEndpoint('GET', endpoint, async ({ url }) => {
+      if (!params(url).date_from) {
+        return allTime();
+      }
+      await pending;
+      return response('2024-03-04', [1, 2, 3]);
+    });
+    fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, async ({ url }) => {
+      if (params(url).date_from) {
+        await pending;
+        return { automation_runs: [] };
+      }
+      return { automation_runs: [run()] };
+    });
+    await render(true);
+    const runs = () => page.getByRole('region', { name: 'Automation runs', exact: true });
+    await expectCounts([10, 20, 30]);
+    await expect.element(runs()).toHaveTextContent('Noah Bennett');
+    try {
+      await selectRange('Last 7 days');
+      await expect
+        .element(entries().getByRole('status'))
+        .toHaveTextContent('Loading total entries');
+      await expect.element(runs().getByRole('status')).toHaveTextContent('Loading automation runs');
+      await expect.element(runs()).not.toHaveTextContent('Noah Bennett');
+      for (const label of labels) {
+        await expect.element(card(label)).toHaveAccessibleDescription('Loading');
+      }
+    } finally {
+      finish();
+    }
+    await expectCounts([1, 2, 3]);
+    await expect.element(runs().getByRole('status')).toHaveTextContent('No entries yet.');
   });
 
   it('retains the selected period on reopening and clears back to all time', async () => {

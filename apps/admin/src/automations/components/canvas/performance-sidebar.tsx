@@ -1,6 +1,7 @@
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
 import React, { useId, useState } from 'react';
+import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
 import { Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -17,7 +18,10 @@ const PerformanceContent: React.FC<{
   automationId: string;
   dateRange: PerformanceDateRange;
   queryScope: string;
-}> = ({ automationId, dateRange, queryScope }) => {
+  runQueryScope: string;
+  selectedStatus: AutomationRunStatusFilter | null;
+  onStatusChange: (status: AutomationRunStatusFilter) => void;
+}> = ({ automationId, dateRange, queryScope, runQueryScope, selectedStatus, onStatusChange }) => {
   const { chart, counts, isLoading, isError, retry } = useAutomationPerformanceStats(
     automationId,
     dateRange,
@@ -46,8 +50,19 @@ const PerformanceContent: React.FC<{
   return (
     <>
       <TotalEntries chart={chart} isLoading={isLoading} />
-      <StatusCounts data={counts} isLoading={isLoading} />
-      <RunList automationId={automationId} dateRange={dateRange} queryScope={queryScope} />
+      <StatusCounts
+        data={counts}
+        isLoading={isLoading}
+        selectedStatus={selectedStatus}
+        onStatusChange={onStatusChange}
+      />
+      <RunList
+        key={`${automationId}:${JSON.stringify(dateRange.searchParams)}`}
+        automationId={automationId}
+        dateRange={dateRange}
+        queryScope={runQueryScope}
+        status={selectedStatus}
+      />
     </>
   );
 };
@@ -55,12 +70,14 @@ const PerformanceContent: React.FC<{
 export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automationId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
+  const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
+  const [queryRevision, setQueryRevision] = useState(0);
   const [dateRange, setDateRange] = useState(() => createPerformanceDateRange('all'));
   const rangeLabel = PERFORMANCE_RANGES.find((range) => range.value === dateRange.value)!.label;
   const panelId = useId();
   const headingId = useId();
-  // Each sidebar visit owns its cached results, including requests still in flight.
-  const queryScope = panelId;
+  // List selections refetch runs without invalidating the date-range summary.
+  const runQueryScope = `${panelId}:${queryRevision}`;
 
   return (
     <>
@@ -128,7 +145,13 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
               <PerformanceContent
                 automationId={automationId}
                 dateRange={dateRange}
-                queryScope={queryScope}
+                queryScope={panelId}
+                runQueryScope={runQueryScope}
+                selectedStatus={status}
+                onStatusChange={(selected) => {
+                  setStatus(status === selected ? null : selected);
+                  setQueryRevision((revision) => revision + 1);
+                }}
               />
             </Stack>
           )}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
+import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
 import {
   Button,
   Table,
@@ -10,7 +11,7 @@ import {
   TableRow,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useAutomationRuns } from '@/automations/hooks/use-automation-runs';
 import { CompletedGlyph, ExitedGlyph, InProgressGlyph } from './run-status-icons';
 
@@ -24,9 +25,11 @@ export const RunList: React.FC<{
   automationId: string;
   queryScope: string;
   dateRange: PerformanceDateRange;
-}> = ({ automationId, queryScope, dateRange }) => {
+  status: AutomationRunStatusFilter | null;
+}> = ({ automationId, queryScope, status, dateRange }) => {
   const { data, isLoading, isError, retry } = useAutomationRuns(
     automationId,
+    status,
     queryScope,
     dateRange,
   );
@@ -46,7 +49,15 @@ export const RunList: React.FC<{
         <TableHeader>
           <TableRow>
             <TableHead className="px-4" scope="col">
-              Member
+              <Inline gap="xs">
+                Member
+                {loadingVisible && !!data?.length && (
+                  <LucideIcon.LoaderCircle
+                    aria-hidden="true"
+                    className="size-3 animate-spin motion-reduce:animate-none"
+                  />
+                )}
+              </Inline>
             </TableHead>
             <TableHead aria-sort="descending" className="w-28 px-4" scope="col">
               <Inline gap="xs">
@@ -58,7 +69,7 @@ export const RunList: React.FC<{
             </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className={cn(loadingVisible && !!data?.length && 'opacity-50')}>
           {isLoading && !data?.length && (
             <TableRow>
               <TableCell className="h-[72px] px-4 text-center" colSpan={3}>
@@ -119,9 +130,14 @@ export const RunList: React.FC<{
           })}
         </TableBody>
       </Table>
+      {loadingVisible && !!data?.length && (
+        <Text className="sr-only" role="status">
+          Updating automation runs
+        </Text>
+      )}
       {!isLoading && data?.length === 0 && (
         <Text className="px-4 py-6 text-center" role="status" size="sm" tone="secondary">
-          No entries yet.
+          {status ? 'No matching entries.' : 'No entries yet.'}
         </Text>
       )}
       {isError && (
