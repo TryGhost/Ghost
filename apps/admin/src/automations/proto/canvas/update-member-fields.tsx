@@ -8,12 +8,7 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import {
-  CUSTOM_FIELDS,
-  MEMBER_UPDATE_OPERATIONS,
-  type MemberUpdateOperation,
-  type UpdateMemberAction,
-} from '@/automations/proto/shared/update-member';
+import { CUSTOM_FIELDS, type UpdateMemberAction } from '@/automations/proto/shared/update-member';
 import { SearchableSelectField } from '@/automations/proto/shared/searchable-select-field';
 import { canCreateLabel, createLabel, useLabels } from '@/automations/proto/shared/labels';
 
@@ -25,10 +20,41 @@ import { canCreateLabel, createLabel, useLabels } from '@/automations/proto/shar
 // there; what sits under it depends on the answer, and for unsubscribing that's
 // nothing at all.
 //
-// Two selects and sometimes an input, matching the Wait card's metrics (h-9,
+// One select and then a picker or an input, matching the Wait card's metrics (h-9,
 // the base Input height) so a flow of mixed steps reads as one form rather than
 // as cards from different screens.
 // ---------------------------------------------------------------------------
+
+// The operation select's choices. Adding and removing a label are two choices
+// here rather than one "Add or remove a label" with a second Add / Remove
+// select beside the label — the direction is the first thing you decide, and
+// a second dropdown for it made the row two questions deep. The data keeps its
+// shape (operation 'label' + label_mode), so this only changes how it's asked.
+type OperationChoice = 'label_add' | 'label_remove' | 'custom_field' | 'unsubscribe';
+
+const OPERATION_CHOICES: { value: OperationChoice; label: string }[] = [
+  { value: 'label_add', label: 'Add a label' },
+  { value: 'label_remove', label: 'Remove a label' },
+  { value: 'custom_field', label: 'Update a custom field' },
+  { value: 'unsubscribe', label: 'Unsubscribe from emails' },
+];
+
+const choiceOf = (data: UpdateMemberAction['data']): OperationChoice =>
+  data.operation === 'label'
+    ? data.label_mode === 'add'
+      ? 'label_add'
+      : 'label_remove'
+    : data.operation;
+
+const applyChoice = (
+  data: UpdateMemberAction['data'],
+  choice: OperationChoice,
+): UpdateMemberAction['data'] => {
+  if (choice === 'label_add' || choice === 'label_remove') {
+    return { ...data, operation: 'label', label_mode: choice === 'label_add' ? 'add' : 'remove' };
+  }
+  return { ...data, operation: choice };
+};
 
 export const UpdateMemberFields: React.FC<{
   data: UpdateMemberAction['data'];
@@ -41,13 +67,13 @@ export const UpdateMemberFields: React.FC<{
       {/* No field label: the card's header already says "Update member", and
           this select is the sentence that finishes it. */}
       <Select
-        value={data.operation}
+        value={choiceOf(data)}
         onValueChange={(next) =>
           // Switching operation keeps whatever the other operations had been
           // set to — the fields are all held on one data bag for exactly this
           // reason. Someone flipping to unsubscribe to see what it looks like
           // shouldn't lose the label they'd picked.
-          onChange({ ...data, operation: next as MemberUpdateOperation })
+          onChange(applyChoice(data, next as OperationChoice))
         }
       >
         <SelectTrigger className="h-9 w-full">
@@ -55,31 +81,16 @@ export const UpdateMemberFields: React.FC<{
         </SelectTrigger>
         {/* Track the card while the canvas moves, like every menu out here. */}
         <SelectContent updatePositionStrategy="always">
-          {MEMBER_UPDATE_OPERATIONS.map((operation) => (
-            <SelectItem key={operation.value} value={operation.value}>
-              {operation.label}
+          {OPERATION_CHOICES.map((choice) => (
+            <SelectItem key={choice.value} value={choice.value}>
+              {choice.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       {data.operation === 'label' && (
-        <div className="flex gap-2">
-          {/* Add-vs-remove is a direction on the label answer rather than its
-              own operation — see MEMBER_UPDATE_OPERATIONS. Narrow, because the
-              label beside it is the part that varies. */}
-          <Select
-            value={data.label_mode}
-            onValueChange={(next) => onChange({ ...data, label_mode: next as 'add' | 'remove' })}
-          >
-            <SelectTrigger className="h-9 w-32 shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent updatePositionStrategy="always">
-              <SelectItem value="add">Add</SelectItem>
-              <SelectItem value="remove">Remove</SelectItem>
-            </SelectContent>
-          </Select>
+        <div>
           <div className="min-w-0 flex-1">
             {/* The same field the label TRIGGER uses, creation included: a
                 publisher automating "tag them once they've read the welcome"
