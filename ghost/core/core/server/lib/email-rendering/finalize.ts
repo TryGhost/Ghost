@@ -1,12 +1,9 @@
-const cheerio = require('cheerio/slim');
-const juice = require('juice');
-const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+import cheerio from 'cheerio/slim';
+import juice from 'juice';
+// @ts-expect-error This module currently lacks type definitions.
+import htmlToPlaintext from '@tryghost/html-to-plaintext';
 
-/**
- * @param {string} html
- * @returns {string}
- */
-const finalizeHtml = (html) => {
+const finalizeHtml = (html: string): string => {
   // Add a class to each figcaption so we can style them in the email.
   let $ = cheerio.load(html, null, false);
   $('figcaption').addClass('kg-card-figcaption');
@@ -40,13 +37,7 @@ const finalizeHtml = (html) => {
   return html;
 };
 
-module.exports = {
-  /**
-   * @param {string} html
-   * @returns {{html: string, plaintext: string}}
-   */
-  finalize(html) {
-    const resultHtml = finalizeHtml(html);
-    return { html: resultHtml, plaintext: htmlToPlaintext.email(resultHtml) };
-  },
+export const finalize = (html: string): { html: string; plaintext: string } => {
+  const resultHtml = finalizeHtml(html);
+  return { html: resultHtml, plaintext: htmlToPlaintext.email(resultHtml) };
 };
