@@ -1,3 +1,4 @@
+import { readListReturnState, rememberListReturnState } from './list-return-state';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 
@@ -117,21 +118,37 @@ export function useVirtualListWindow(
   const effectiveResetKey = resetKey ?? search;
   const historyKey = getVirtualListWindowHistoryKey(pathname, effectiveResetKey);
   const [unlockedItemCount, setUnlockedItemCount] = useState(() => {
-    return getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, windowSize);
+    return getStoredUnlockedItemCount(
+      getCurrentHistoryState(),
+      historyKey,
+      readListReturnState(getCurrentHistoryState(), pathname + search)?.unlockedItemCount ??
+        windowSize,
+    );
   });
   const previousHistoryKeyRef = useRef(historyKey);
+  const previousEntryKeyRef = useRef(locationEntryKey);
 
   useEffect(() => {
-    if (previousHistoryKeyRef.current !== historyKey) {
+    if (
+      previousHistoryKeyRef.current !== historyKey ||
+      (resetKey === undefined && previousEntryKeyRef.current !== locationEntryKey)
+    ) {
+      previousEntryKeyRef.current = locationEntryKey;
       previousHistoryKeyRef.current = historyKey;
       setUnlockedItemCount(
-        getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, windowSize),
+        getStoredUnlockedItemCount(
+          getCurrentHistoryState(),
+          historyKey,
+          readListReturnState(getCurrentHistoryState(), pathname + search)?.unlockedItemCount ??
+            windowSize,
+        ),
       );
       return;
     }
 
     setStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, unlockedItemCount);
-  }, [historyKey, locationEntryKey, unlockedItemCount, windowSize]);
+    rememberListReturnState(pathname + search, { unlockedItemCount });
+  }, [historyKey, locationEntryKey, unlockedItemCount, windowSize, pathname, search, resetKey]);
 
   const { visibleItemCount, canLoadMore } = getVirtualListWindowState({
     totalItems,

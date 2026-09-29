@@ -1,3 +1,4 @@
+import { readListReturnState, rememberListReturnState } from './list-return-state';
 import { getScrollParent } from '@tryghost/shade/utils';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
@@ -94,6 +95,8 @@ interface UseScrollRestorationOptions {
   enabled?: boolean;
   /** Whether data is currently loading. Restoration will be deferred until loading is false */
   isLoading?: boolean;
+  /** Start fresh list entries at the top; leave in-place navigation alone by default. */
+  resetOnNavigation?: boolean;
   /**
    * Resolve the scrollable element from `parentRef.current`. Defaults to
    * walking up the DOM to the nearest scroll parent.
@@ -117,17 +120,19 @@ export function useScrollRestoration({
   parentRef,
   enabled = true,
   isLoading = false,
+  resetOnNavigation = false,
   getScrollElement = getScrollParent,
 }: UseScrollRestorationOptions) {
   const location = useLocation();
   const [scrollContainer, setScrollContainer] = useState<HTMLElement | null>(null);
-  const previousPathRef = useRef<string | null>(null);
+  const previousEntryRef = useRef<string | null>(null);
   const latestScrollPositionRef = useRef(0);
   const lastPersistedAtRef = useRef(0);
   const lastPersistedPositionRef = useRef(0);
   const pendingPersistTimeoutRef = useRef<number | null>(null);
   const restoreTimeoutIdsRef = useRef<Set<number>>(new Set());
   const key = location.pathname + location.search;
+  const entryKey = `${location.key}::${key}`;
 
   // Find the scroll container once the parent element is mounted
   useEffect(() => {
@@ -159,6 +164,7 @@ export function useScrollRestoration({
     };
 
     const persistScrollPosition = (position: number) => {
+      rememberListReturnState(key, { scrollPosition: position });
       if (entryScopedScrollPositionKey) {
         scrollPositions.set(entryScopedScrollPositionKey, position);
       }
@@ -221,6 +227,7 @@ export function useScrollRestoration({
 
     const handleScroll = () => {
       latestScrollPositionRef.current = scrollContainer.scrollTop;
+      rememberListReturnState(key, { scrollPosition: scrollContainer.scrollTop });
       queuePersistScrollPosition();
     };
     const handlePageHide = () => {
@@ -236,7 +243,7 @@ export function useScrollRestoration({
       scrollContainer.removeEventListener('scroll', handleScroll);
       window.removeEventListener('pagehide', handlePageHide);
     };
-  }, [enabled, key, scrollContainer]);
+  }, [enabled, key, entryKey, scrollContainer]);
 
   // Restore scroll position when location changes and data has loaded
   useEffect(() => {
@@ -245,15 +252,17 @@ export function useScrollRestoration({
     const savedPosition =
       (entryScopedScrollPositionKey
         ? scrollPositions.get(entryScopedScrollPositionKey)
-        : undefined) ?? getStoredScrollPosition(historyState, key);
+        : undefined) ??
+      getStoredScrollPosition(historyState, key) ??
+      readListReturnState(historyState, key)?.scrollPosition;
 
     if (!enabled || !scrollContainer || isLoading) {
       return;
     }
 
     // Only restore if we're navigating to a different location and have a saved position
-    if (savedPosition !== undefined && previousPathRef.current !== key) {
-      previousPathRef.current = key;
+    if (savedPosition !== undefined && previousEntryRef.current !== entryKey) {
+      previousEntryRef.current = entryKey;
 
       // Delay to ensure content is rendered and scroll height is correct
       // For virtual scrolling, we may need multiple attempts as the virtualizer measures items
@@ -301,12 +310,21 @@ export function useScrollRestoration({
           const targetPosition = Math.min(savedPosition, maxScroll);
           scrollContainer.scrollTop = targetPosition;
         }
+        rememberListReturnState(key, { scrollPosition: scrollContainer.scrollTop });
       };
 
       scheduleRestore(attemptRestore, 150);
       return () => clearRestoreTimeouts();
     }
 
-    previousPathRef.current = key;
-  }, [enabled, key, scrollContainer, isLoading]);
+    // A sidebar link creates a fresh entry, even when its URL matches a list
+    // visited earlier. Only Back and explicit breadcrumb state restore it.
+    if (savedPosition === undefined && previousEntryRef.current !== entryKey) {
+      if (resetOnNavigation) {
+        scrollContainer.scrollTop = 0;
+      }
+      rememberListReturnState(key, { scrollPosition: scrollContainer.scrollTop });
+    }
+    previousEntryRef.current = entryKey;
+  }, [enabled, key, entryKey, scrollContainer, isLoading, resetOnNavigation]);
 }

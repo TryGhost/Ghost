@@ -3,7 +3,7 @@ import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { EmberProvider, EmberFallback, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
-import { useEmberAuthSync, useEmberDataSync } from './ember-bridge';
+import { useEmberAuthSync, useEmberDataSync, useEmberListReturnSync } from './ember-bridge';
 import { DocsBotWidgetHost } from './docsbot-widget-host';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 
@@ -16,6 +16,7 @@ function App() {
   useAccentColorProperties();
   useEmberAuthSync();
   useEmberDataSync();
+  useEmberListReturnSync();
 
   return (
     <EmberProvider>

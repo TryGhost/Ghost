@@ -71,4 +71,22 @@ describe('Unit: Route: posts', function () {
         expect(transition.abort.called, 'transition not aborted').to.be.false;
         expect(router.replaceWith.called, 'no parking').to.be.false;
     });
+
+    it('restores list state after the editor breadcrumb writes its destination', function () {
+        const {route} = setupRoute(this.owner, {flagValue: true});
+        const navigate = sinon.stub(route, '_navigateToReactRoute');
+        const trigger = sinon.stub(this.owner.lookup('service:state-bridge'), 'trigger');
+
+        route.beforeModel({
+            abort: sinon.spy(),
+            from: {name: 'lexical-editor.edit'},
+            to: {queryParams: {tag: 'news', order: 'title asc'}}
+        });
+
+        expect(navigate.calledOnceWithExactly('/posts?tag=news&order=title%20asc')).to.be.true;
+        const restoreCalls = trigger.getCalls().filter(call => call.args[0] === 'restoreListState');
+        expect(restoreCalls).to.have.length(1);
+        expect(restoreCalls[0].args).to.deep.equal(['restoreListState', {path: '/posts?tag=news&order=title%20asc'}]);
+        expect(restoreCalls[0].calledAfter(navigate.firstCall)).to.be.true;
+    });
 });

@@ -36,6 +36,7 @@ class PostsWithAnalytics extends InfinityModel {
 }
 
 export default class PostsRoute extends AuthenticatedRoute {
+    @service stateBridge;
     @service infinity;
     @service router;
     @service feature;
@@ -106,7 +107,11 @@ export default class PostsRoute extends AuthenticatedRoute {
         // `<LinkTo @route="posts">` breadcrumb) has no URL yet, so we supply
         // one.
         if (!transition.intent?.url) {
-            this._navigateToReactRoute(this._reactRouteUrl(transition));
+            const url = this._reactRouteUrl(transition);
+            this._navigateToReactRoute(url);
+            if (transition.from?.name?.startsWith('lexical-editor')) {
+                this.stateBridge.trigger('restoreListState', {path: url});
+            }
         }
 
         this._parkOnReactFallback();
