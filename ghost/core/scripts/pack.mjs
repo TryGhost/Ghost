@@ -327,6 +327,13 @@ if (!packagedWorkspace?.catalog || Object.keys(packagedWorkspace.catalog).length
 if (!packagedWorkspace?.overrides || Object.keys(packagedWorkspace.overrides).length === 0) {
   throw new Error('Packaged pnpm-workspace.yaml is missing overrides');
 }
+// npm rejects tarballs containing symlinks. Exclude them via ghost/core `files`.
+const symlinks = (await fs.readdir(BUILD_DIR, { withFileTypes: true, recursive: true }))
+  .filter((entry) => entry.isSymbolicLink())
+  .map((entry) => path.relative(BUILD_DIR, path.join(entry.parentPath, entry.name)));
+if (symlinks.length > 0) {
+  throw new Error(`Build output contains symlinks: ${symlinks.join(', ')}`);
+}
 
 // 6. Create the tarballs. Same tree, two layouts — see the header.
 const version = pkg.version;
