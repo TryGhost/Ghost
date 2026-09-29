@@ -88,7 +88,7 @@ export function SendTestEmail({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button disabled={disabled} variant="outline">
+        <Button className="shrink-0" disabled={disabled} variant="outline">
           <LucideIcon.Send />
           Test
         </Button>

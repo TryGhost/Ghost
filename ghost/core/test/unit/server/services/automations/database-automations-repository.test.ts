@@ -64,12 +64,18 @@ const createDatabase = async (): Promise<Knex> => {
   const fakeEmailDesignSettingId = id();
   const defaultEmailDesignSettingId = id();
 
+  await database.schema.createTable('members', (table) => {
+    table.text('id').primary();
+  });
+  await database('members').insert({ id: 'member_123' });
+
   await database.schema.createTable('automations', (table) => {
     table.text('id').primary();
     table.text('created_at').notNullable();
     table.text('updated_at').notNullable();
     table.text('slug').notNullable().unique();
     table.text('name').notNullable();
+    table.text('description').notNullable();
     table.text('status').notNullable();
   });
 
@@ -217,6 +223,7 @@ const createDatabase = async (): Promise<Knex> => {
       updated_at: now(),
       slug: 'member-welcome-email-free',
       name: 'Free member welcome flow',
+      description: 'Welcome new free members after they sign up.',
       status: 'active',
     },
     {
@@ -225,6 +232,7 @@ const createDatabase = async (): Promise<Knex> => {
       updated_at: now(),
       slug: 'member-welcome-email-paid',
       name: 'Paid member welcome flow',
+      description: 'Welcome new paid members after they start their subscription.',
       status: 'active',
     },
   ]);
@@ -711,6 +719,7 @@ describe('automations repository', function () {
         updated_at: toDatabaseDate(new Date()),
         slug: 'alpha-flow',
         name: 'Alpha flow',
+        description: '',
         status: 'inactive',
       });
 
@@ -722,6 +731,12 @@ describe('automations repository', function () {
         'Alpha flow',
         'Free member welcome flow',
         'Paid member welcome flow',
+      ]);
+      const descriptions = await knex('automations').orderBy('name').pluck('description');
+      assert.deepEqual(descriptions, [
+        '',
+        'Welcome new free members after they sign up.',
+        'Welcome new paid members after they start their subscription.',
       ]);
     });
 
@@ -1364,6 +1379,41 @@ describe('automations repository', function () {
 
       assert.equal(await getRunByMemberEmail('free-no-actions@example.com'), undefined);
       assert.equal(await getRunCountByAutomationId(freeAutomation.id), 0);
+    });
+
+    it('does not enter the same automation twice for a member', async function () {
+      const options = {
+        memberEmail: 'free@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free' as const,
+      };
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+
+      await repo.trigger(options);
+      await repo.trigger({ ...options, memberEmail: 'changed@example.com' });
+
+      assert.equal(await getRunCountByAutomationId(automation.id), 1);
+      const runs = await knex('automation_runs').where('member_id', options.memberId);
+      assert.equal(runs[0].member_email, options.memberEmail);
+      const steps = await knex('automation_run_steps').where('automation_run_id', runs[0].id);
+      assert.equal(steps.length, 1);
+    });
+
+    it('members can still enter different automations', async function () {
+      await repo.trigger({
+        memberEmail: 'member@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+      });
+      await repo.trigger({
+        memberEmail: 'member@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+      });
+
+      const runs = await knex('automation_runs').where('member_id', 'member_123');
+      assert.equal(runs.length, 2);
+      assert.notEqual(runs[0].automation_id, runs[1].automation_id);
     });
   });
 

@@ -1,4 +1,5 @@
 import { EmptyIndicator, PreviewChrome } from '@tryghost/shade/components';
+import { Box } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
   postPreviewBrowser,
@@ -19,7 +20,7 @@ export function BrowserPreview({ previewUrl, audience, device }: BrowserPreviewP
   if (!previewUrl) {
     return (
       <EmptyIndicator
-        className="grow justify-center"
+        className="grow justify-center self-center"
         data-testid={postPreviewUnavailable}
         description="A post gets its preview link the first time it is saved."
         title="Nothing to preview yet"
@@ -29,14 +30,20 @@ export function BrowserPreview({ previewUrl, audience, device }: BrowserPreviewP
     );
   }
 
+  const Frame = device === 'mobile' ? PreviewChrome : Box;
+
   return (
-    <PreviewChrome data-testid={postPreviewBrowser} device={device}>
+    <Frame
+      className={device === 'desktop' ? 'size-full' : 'max-w-full shrink-0'}
+      data-testid={postPreviewBrowser}
+      {...(device === 'mobile' ? { device } : {})}
+    >
       <iframe
         className="size-full border-0"
         data-testid={postPreviewBrowserFrame}
         src={browserPreviewUrl(previewUrl, audience)}
         title="Post preview"
       />
-    </PreviewChrome>
+    </Frame>
   );
 }
