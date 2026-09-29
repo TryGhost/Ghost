@@ -36,16 +36,15 @@ newsletter failed opens it from the status line instead, which offers "Retry
 now" on an email-only send and "View details" on a published post; the flow
 then starts at its email-failure step. Whether a post qualifies is decided by
 the flow's own `initialEmailError()`, and the button is offered only to roles
-Core lets retry an email, so an Author or a Contributor sees the failure
-without it.
+Core lets retry an email, so an Author sees the failure without it.
 
 Every opener stays unavailable until the publish inputs have loaded. When they
-fail to load, the header shows the error with a Retry wherever an opener is
-waiting on them, for a draft and a failed send alike. After a retry, or a
-publish that emails, a published post's status line reads "Published and
-sending to N members" while the email is on its way and "Published and sent to
-N members" once the flow's email confirmation finds it submitted; an email-only
-send reads "Sent to N members" throughout.
+fail to load, the header shows the error with a Retry for a draft, and for a
+post whose status line offers the retry. After a retry, or a publish that
+emails, a published post's status line reads "Published and sending to N
+members" while the email is on its way and "Published and sent to N members"
+once the flow's email confirmation finds it submitted; an email-only send reads
+"Sent to N members" throughout.
 
 ## Adding a settings section
 

@@ -3,12 +3,29 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createElement, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { usePublishFlow, type PublishFlowOptions } from './use-publish-flow';
+import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { NewsletterInput } from './publish-options';
 
 const transport = vi.hoisted(() => ({ fetchApi: vi.fn(), retryEmail: vi.fn() }));
 vi.mock('@tryghost/admin-x-framework/hooks', () => ({ useFetchApi: () => transport.fetchApi }));
 vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
   useRetryEmail: () => ({ mutateAsync: transport.retryEmail }),
+}));
+
+// A confirmation each spec settles itself; tearing the flow down settles it as cancelled.
+const confirmation = vi.hoisted(() => ({
+  settle: undefined as ((outcome: EmailConfirmationOutcome) => void) | undefined,
+}));
+vi.mock('./email-confirmation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./email-confirmation')>()),
+  createEmailConfirmation: () => ({
+    confirm: () =>
+      new Promise<EmailConfirmationOutcome>((resolve) => {
+        confirmation.settle = resolve;
+      }),
+    retryAndConfirm: vi.fn(),
+    cancel: () => confirmation.settle?.({ kind: 'cancelled' }),
+  }),
 }));
 
 const NOW = new Date('2026-09-02T10:00:00.000Z');
@@ -50,6 +67,7 @@ function wrapper({ children }: { children: ReactNode }) {
 afterEach(() => {
   localStorage.clear();
   vi.clearAllMocks();
+  confirmation.settle = undefined;
 });
 
 describe('publish option actions', () => {
@@ -105,5 +123,51 @@ describe('publish option actions', () => {
     act(() => setNewsletter(WEEKLY));
     expect(result.current.state.newsletter?.slug).toBe('weekly');
     expect(inputs.dispatch).not.toHaveBeenCalled();
+  });
+});
+
+describe('post reads after an emailed publish', () => {
+  /** Publishes and emails, leaving the flow waiting on its email confirmation. */
+  async function publishAndEmail() {
+    const client = new QueryClient();
+    const invalidateQueries = vi.spyOn(client, 'invalidateQueries');
+    const inputs = options();
+    const { result } = renderHook(() => usePublishFlow(inputs), {
+      wrapper: ({ children }: { children: ReactNode }) =>
+        createElement(QueryClientProvider, { client }, children),
+    });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    expect(result.current.state.willEmailImmediately).toBe(true);
+
+    act(() => result.current.toConfirm());
+    let publishing: Promise<void> = Promise.resolve();
+    act(() => {
+      publishing = result.current.confirmPublish();
+    });
+    await waitFor(() => expect(confirmation.settle).toBeDefined());
+
+    return { result, invalidateQueries, publishing };
+  }
+
+  it('refreshes them once the send is confirmed', async () => {
+    const { invalidateQueries, publishing } = await publishAndEmail();
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'submitted' });
+      await publishing;
+    });
+
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
+  });
+
+  it('leaves them alone when the flow is closed before the send is confirmed', async () => {
+    const { result, invalidateQueries, publishing } = await publishAndEmail();
+
+    await act(async () => {
+      result.current.cancel();
+      await publishing;
+    });
+
+    expect(invalidateQueries).not.toHaveBeenCalled();
   });
 });

@@ -105,6 +105,11 @@ function restoreNewsletters() {
   fakeAdminEndpoint('GET', /^\/newsletters\//, browseResponse('newsletters', [], { limit: 'all' }));
 }
 
+/** The publish flow's email confirmation reads the post with its email alone. */
+function isEmailConfirmationRead(url: string): boolean {
+  return new URL(url).searchParams.get('include') === 'email';
+}
+
 /**
  * A post that answers saves the way Ghost does: the response carries the
  * submitted fields back with a fresh collision token, and the read endpoint
@@ -134,7 +139,13 @@ function fakeSavablePost(
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));
 
-  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({ posts: [current] }));
+  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), ({ url }) => {
+    // The send has gone out by the time the flow's email confirmation reads the post.
+    if (current.email?.status === 'pending' && isEmailConfirmationRead(url)) {
+      current.email = { ...current.email, status: 'submitted', error: null };
+    }
+    return { posts: [current] };
+  });
 
   const saveApi = fakeAdminEndpoint(
     'PUT',
@@ -153,9 +164,9 @@ function fakeSavablePost(
       const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
       current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
 
-      // A send hands the email over asynchronously; the flow polls until it settles.
+      // Core creates a send's email pending and hands it over in the background.
       if (url.includes('newsletter=')) {
-        current.email = { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 };
+        current.email = { id: 'email-1', status: 'pending', email_count: 20, opened_count: 0 };
       }
 
       return { posts: [current] };
@@ -256,6 +267,27 @@ describe('Editor header actions', () => {
     expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
     expect(saveApi.lastRequest?.url).toContain('newsletter=weekly');
     expect(saveApi.lastRequest?.url).toContain('email_segment=all');
+  });
+
+  it('follows an emailed publish to sent once the flow confirms the send', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await expect
+      .element(publishScreen.setting('publish-type'))
+      .toHaveTextContent('Publish and email');
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeVisible();
+    expect(saveApi.lastRequest?.url).toContain('newsletter=weekly');
+    // The editor's own reads saw the email pending; only the confirmation found it sent.
+    await expect
+      .element(editorScreen.status())
+      .toHaveTextContent('Published and sent to 20 members');
   });
 
   it('schedules a draft for the time the flow chose', async () => {

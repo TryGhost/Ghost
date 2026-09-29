@@ -230,7 +230,7 @@ function PublishActions({
   // button is the only way into the flow from there.
   usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
 
-  // Shown wherever an opener waits on the inputs, so it is never disabled unexplained.
+  // A draft's Publish and the status line's retry stay disabled until these inputs load.
   const inputsError =
     (isDraft || offersEmailRetry) && inputs.error ? (
       <>
