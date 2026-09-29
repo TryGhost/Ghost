@@ -20,31 +20,26 @@ export class EventProcessingResult {
   processingFailures: number = 0;
 
   // ids seen whilst processing ready for passing to stats aggregator.
-  // The arrays are append-only in first-seen order; merge() is the only write path,
-  // so the membership sets can never drift from them. The getters return the
-  // backing arrays (not copies) so hot-path `.length` reads stay O(1); `readonly`
-  // is the only guard, so never mutate them from untyped callers.
+  // The arrays are append-only in first-seen order and must only be written through
+  // merge() and reset(), or they drift from the membership sets. They are exposed as
+  // the backing arrays (not copies) so hot-path `.length` reads stay O(1); `readonly`
+  // is a type-only guard, so JS processors must not push to or clear them directly.
+  declare readonly emailIds: readonly string[];
+  declare readonly memberIds: readonly string[];
+
   #emailIds: string[] = [];
   #memberIds: string[] = [];
   #emailIdSet = new Set<string>();
   #memberIdSet = new Set<string>();
 
   constructor(result: EventProcessingResultInput = {}) {
-    // Keep IDs visible to object equality, spreading, and serialization as they
-    // were when they were public fields, while merge() remains the write path.
+    // Own enumerable accessors keep IDs visible to object equality, spreading, and
+    // serialization as they were when they were public fields.
     Object.defineProperties(this, {
       emailIds: { enumerable: true, get: () => this.#emailIds },
       memberIds: { enumerable: true, get: () => this.#memberIds },
     });
     this.merge(result);
-  }
-
-  get emailIds(): readonly string[] {
-    return this.#emailIds;
-  }
-
-  get memberIds(): readonly string[] {
-    return this.#memberIds;
   }
 
   reset(): void {
@@ -60,8 +55,8 @@ export class EventProcessingResult {
     this.storedOpened = 0;
     this.storedPermanentFailed = 0;
     this.processingFailures = 0;
-    // Reassign rather than clear in place: an aggregation may still be iterating
-    // the previous arrays across awaits when the result is reset.
+    // Reassign rather than clear in place so callers holding the previous arrays keep
+    // what they had. merge() appends in place, so aggregating and merging must not overlap.
     this.#emailIds = [];
     this.#memberIds = [];
     this.#emailIdSet.clear();
