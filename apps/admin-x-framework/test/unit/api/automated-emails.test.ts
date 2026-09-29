@@ -48,9 +48,11 @@ describe('automated email APIs', () => {
         const request = mock.calls.find(
           ([, options]: [unknown, RequestInit]) => options.method === 'PUT',
         );
+        const expectedEmail: Partial<AutomatedEmail> = { ...email };
+        delete expectedEmail.slug;
         expect(request[0]).toBe('http://localhost:3000/ghost/api/admin/automated_emails/email-id/');
         expect(JSON.parse(request[1].body)).toEqual({
-          automated_emails: [email],
+          automated_emails: [expectedEmail],
         });
       });
     });
