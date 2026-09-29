@@ -43,7 +43,7 @@
     #ember-basic-dropdown-wormhole,
     #ember-modal-wormhole,
     #ember-liquid-wormhole,
-    #ember-alerts-wormhole,
+    #admin-alerts,
     #ember-notifications-wormhole
   ) {
   --font-sans:
@@ -68,7 +68,7 @@
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
         #ember-liquid-wormhole,
-        #ember-alerts-wormhole,
+        #admin-alerts,
         #ember-notifications-wormhole
       )
   )
@@ -86,7 +86,7 @@
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
         #ember-liquid-wormhole,
-        #ember-alerts-wormhole,
+        #admin-alerts,
         #ember-notifications-wormhole
       )
   )
@@ -106,7 +106,7 @@
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
         #ember-liquid-wormhole,
-        #ember-alerts-wormhole,
+        #admin-alerts,
         #ember-notifications-wormhole
       )
   )
@@ -260,7 +260,7 @@ body.react-admin {
 }
 
 /* Alerts show at the top and push content down */
-body.react-admin #ember-alerts-wormhole {
+body.react-admin #admin-alerts {
   grid-row: 1;
   grid-column: 1;
   z-index: 0; /* Hide alerts when settings app modal is open */

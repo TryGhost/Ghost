@@ -66,6 +66,40 @@ declare global {
   }
 }
 
+describe('connectEmberNotificationsHost', () => {
+  const host = { show: vi.fn(), remove: vi.fn(), clearAll: vi.fn() };
+
+  baseTest('connects once Ember loads after React and disconnects on cleanup', async () => {
+    vi.useFakeTimers();
+    const { connectEmberNotificationsHost } = await import('./ember-bridge');
+    const disconnectEmber = vi.fn();
+    const mock = createMockStateBridge();
+    mock.stateBridge.connectNotificationsHost = vi.fn(() => disconnectEmber);
+
+    const disconnect = connectEmberNotificationsHost(host);
+    window.EmberBridge = { state: mock.stateBridge };
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(mock.stateBridge.connectNotificationsHost).toHaveBeenCalledExactlyOnceWith(host);
+
+    disconnect();
+    expect(disconnectEmber).toHaveBeenCalledOnce();
+  });
+
+  baseTest('never connects when cleaned up before Ember loads', async () => {
+    vi.useFakeTimers();
+    const { connectEmberNotificationsHost } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    mock.stateBridge.connectNotificationsHost = vi.fn();
+
+    connectEmberNotificationsHost(host)();
+    window.EmberBridge = { state: mock.stateBridge };
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(mock.stateBridge.connectNotificationsHost).not.toHaveBeenCalled();
+  });
+});
+
 let useEmberDataSync: typeof import('./ember-bridge').useEmberDataSync;
 let useEmberAuthSync: typeof import('./ember-bridge').useEmberAuthSync;
 let useEmberFeatureFlag: typeof import('./ember-bridge').useEmberFeatureFlag;

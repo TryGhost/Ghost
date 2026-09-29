@@ -126,7 +126,8 @@ const HIDE_DYNAMIC_CONTENT = `
     /* Notifications and toasts */
     .gh-notification,
     .gh-alerts,
-    [data-testid="toast"] {
+    [data-testid="admin-alerts"],
+    [data-sonner-toast] {
         display: none !important;
     }
 

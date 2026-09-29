@@ -190,6 +190,7 @@ test.describe('Ghost Admin - Publishing', () => {
 
     await postsPage.getPostByTitle(title).click();
     await editor.revertToDraft();
+    await expect(editor.toast('Post reverted to a draft.')).toBeVisible();
     await expect(editor.postStatus.first()).toContainText('Draft - Saved');
     await expectFrontendStatus(frontendPage, slug, 404);
   });

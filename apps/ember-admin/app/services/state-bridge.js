@@ -34,6 +34,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @service customViews;
     @service feature;
     @service membersUtils;
+    @service notifications;
     @service router;
     @service search;
     @service session;
@@ -63,6 +64,15 @@ export default class StateBridgeService extends Service.extend(Evented) {
         }
 
         return this.feature[name] === true;
+    }
+
+    /**
+     * React renders Ember's alerts and toasts while connected. Returns the
+     * disconnect, which only clears the connection if it is still current.
+     */
+    @action
+    connectNotificationsHost(host) {
+        return this.notifications.connectHost(host);
     }
 
     @action

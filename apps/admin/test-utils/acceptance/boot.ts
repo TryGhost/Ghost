@@ -68,6 +68,11 @@ export function defaultBootRequests() {
       path: /^\/members\/metafields\/custom\/(\?|$)/,
       response: browseResponse('members_metafields', []),
     },
+    browseNotifications: {
+      method: 'GET',
+      path: '/notifications/',
+      response: { notifications: [] },
+    },
     browseActiveTheme: {
       method: 'GET',
       path: '/themes/active/',

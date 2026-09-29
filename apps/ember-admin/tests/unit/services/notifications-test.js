@@ -5,6 +5,7 @@ import {ServerUnreachableError} from 'ghost-admin/services/ajax';
 import {describe, it} from 'mocha';
 import {A as emberA} from '@ember/array';
 import {expect} from 'chai';
+import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 
@@ -463,5 +464,126 @@ describe('Unit: Service: notifications', function () {
         expect(notifications.alerts.length).to.equal(1);
         expect(notifications.alerts.firstObject.message).to.equal('Second alert');
         expect(notifications.notifications.length).to.equal(1);
+    });
+
+    describe('with a connected host', function () {
+        function createHost() {
+            return {
+                show: sinon.spy(),
+                remove: sinon.spy(),
+                clearAll: sinon.spy()
+            };
+        }
+
+        it('forwards shown messages instead of rendering them', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.showNotification('Saved', {type: 'success', key: 'post.save.success'});
+
+            expect(notifications.content).to.be.empty;
+            expect(host.show.calledOnce).to.be.true;
+            expect(host.show.firstCall.args[0]).to.deep.equal({
+                status: 'notification',
+                type: 'success',
+                key: 'post.save.success',
+                message: 'Saved',
+                description: undefined,
+                actions: undefined
+            });
+        });
+
+        it('serializes html-safe text as markup and everything else as plain text', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.showNotification('Post published', {
+                description: htmlSafe('to <strong>2</strong> members'),
+                actions: htmlSafe('<a href="/p/">View on site</a>')
+            });
+            notifications.showAlert('<b>Plain</b>');
+
+            const [toast] = host.show.firstCall.args;
+            expect(toast.description).to.deep.equal({html: 'to <strong>2</strong> members'});
+            expect(toast.actions).to.deep.equal({html: '<a href="/p/">View on site</a>'});
+
+            const [alert] = host.show.secondCall.args;
+            expect(alert.status).to.equal('alert');
+            expect(alert.message).to.equal('<b>Plain</b>');
+        });
+
+        it('still scrubs raw JS error messages before forwarding', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.showAPIError(new TypeError('Cannot read property of undefined'));
+
+            expect(host.show.firstCall.args[0].message).to.equal(GENERIC_ERROR_MESSAGE);
+            expect(host.show.firstCall.args[0].key).to.equal('api-error');
+        });
+
+        it('holds delayed messages until they are displayed', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.showAlert('Invalid token.', {type: 'error', delayed: true, key: 'signup.create.invalid-token'});
+
+            expect(host.show.called).to.be.false;
+
+            notifications.displayDelayed();
+
+            expect(host.show.calledOnce).to.be.true;
+            expect(host.show.firstCall.args[0].message).to.equal('Invalid token.');
+            expect(notifications.delayedNotifications).to.be.empty;
+        });
+
+        it('forwards removals and clears', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const host = createHost();
+            notifications.connectHost(host);
+
+            notifications.closeAlerts('post.save');
+            notifications.closeNotifications();
+            notifications.clearAll();
+
+            expect(host.remove.firstCall.args).to.deep.equal(['alert', 'post.save']);
+            expect(host.remove.secondCall.args).to.deep.equal(['notification', undefined]);
+            expect(host.clearAll.calledOnce).to.be.true;
+        });
+
+        it('moves alerts shown before connecting to the host and leaves toasts to expire', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            notifications.showAlert('Early alert', {type: 'error'});
+            notifications.showNotification('Early toast');
+
+            const host = createHost();
+            notifications.connectHost(host);
+
+            expect(host.show.calledOnce).to.be.true;
+            expect(host.show.firstCall.args[0].message).to.equal('Early alert');
+            expect(notifications.alerts).to.be.empty;
+            expect(notifications.notifications.length).to.equal(1);
+        });
+
+        it('only disconnects the host that is still current', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const first = createHost();
+            const second = createHost();
+
+            const disconnectFirst = notifications.connectHost(first);
+            const disconnectSecond = notifications.connectHost(second);
+            disconnectFirst();
+
+            notifications.showNotification('Still forwarded');
+            expect(second.show.calledOnce).to.be.true;
+
+            disconnectSecond();
+            notifications.showNotification('Rendered here');
+            expect(notifications.notifications.length).to.equal(1);
+        });
     });
 });
