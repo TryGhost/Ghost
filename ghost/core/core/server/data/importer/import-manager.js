@@ -30,7 +30,7 @@ const defaults = {
 
 class ImportManager {
   constructor({
-    jobManager,
+    jobsService,
     importsStorage,
     handlers,
     importers,
@@ -39,7 +39,7 @@ class ImportManager {
     urlUtils,
     logging,
   }) {
-    this.jobManager = jobManager;
+    this.jobsService = jobsService;
 
     /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default | import('../../adapters/storage/S3Storage').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
     this.importsStorage = importsStorage;
@@ -423,10 +423,7 @@ class ImportManager {
 
       try {
         this.logging.info('[Background Job] site-content-import queued');
-        return await this.jobManager.addJob({
-          job: () => this.executeImport(job),
-          offloaded: false,
-        });
+        return await this.jobsService.dispatch(job);
       } catch (err) {
         await this.cleanUpUpload(job.uploadKey);
         throw err;
@@ -559,11 +556,22 @@ class ImportManager {
       if (!env?.startsWith('testing')) {
         // processImport swallows its own failures and returns undefined,
         // so an absent result is the only signal that the import failed.
-        this.logging.info(
-          result === undefined
-            ? `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`
-            : `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
-        );
+        if (result === undefined) {
+          this.logging.info(
+            `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+          );
+        } else {
+          this.logging.info(
+            {
+              system: {
+                event: 'site_content_import.completed',
+                import_groups: Object.keys(result).length,
+                duration_ms: Date.now() - startedAt,
+              },
+            },
+            'Site content import completed',
+          );
+        }
       }
       return result;
     } catch (err) {

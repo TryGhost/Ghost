@@ -319,7 +319,7 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
+async function initServices({ ghostServer, config, prometheusClient, jobsService, siteImporter }) {
   debug('Begin: initServices');
 
   debug('Begin: Services');
@@ -452,6 +452,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     mentionsSendingService: mentionsService.sendingService,
     membersService,
     emailService: emailService.service,
+    siteImporter,
   });
   await jobsService.start();
   debug('End: Register job handlers');
@@ -711,8 +712,10 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       initFrontend();
     }
     // The Admin API resolves the site importer on each import request, so the
-    // importer has to exist before the API is loaded.
-    require('./server/data/importer').init();
+    // importer, and the jobs service it dispatches to, have to exist before the
+    // API is loaded.
+    const jobsService = require('./server/services/jobs-service').init();
+    const siteImporter = require('./server/data/importer').init({ jobsService });
 
     const ghostApp = await initExpressApps({ frontend, backend, config });
 
@@ -722,9 +725,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       await initAppService();
     }
 
-    const jobsService = require('./server/services/jobs-service').init();
-
-    await initServices({ ghostServer, config, prometheusClient, jobsService });
+    await initServices({ ghostServer, config, prometheusClient, jobsService, siteImporter });
 
     debug('End: Load Ghost Services & Apps');
 

@@ -39,7 +39,7 @@ describe('Uploaded site imports', function () {
   function subject() {
     const deps = {
       importsStorage: storage,
-      jobManager: { addJob: sinon.stub().resolves() },
+      jobsService: { dispatch: sinon.stub().resolves() },
       importers: [],
       mailer: { send: sinon.stub().resolves() },
       config: { get: sinon.stub().returns('production') },
@@ -58,13 +58,8 @@ describe('Uploaded site imports', function () {
     return { manager, deps };
   }
 
-  // The queued job is only reachable through the closure the legacy queue holds,
-  // so run that closure with execution stubbed out to read the payload.
-  async function queuedJob({ manager, deps }: any) {
-    const captured = sinon.stub(manager, 'executeImport').resolves();
-    await deps.jobManager.addJob.firstCall.args[0].job();
-    captured.restore();
-    return JSON.parse(JSON.stringify(captured.firstCall.args[0]));
+  function queuedJob({ deps }: any) {
+    return JSON.parse(JSON.stringify(deps.jobsService.dispatch.firstCall.args[0]));
   }
   async function archive(entries: Record<string, string>, name = 'upload.zip') {
     const target = path.join(directory, name);
@@ -86,7 +81,7 @@ describe('Uploaded site imports', function () {
     const extract = sinon.spy(manager, 'extractZip');
     assert.equal(await manager.validateFile(file), undefined);
     sinon.assert.notCalled(unique);
-    sinon.assert.notCalled(deps.jobManager.addJob);
+    sinon.assert.notCalled(deps.jobsService.dispatch);
     sinon.assert.notCalled(deps.mailer.send);
     const extracted = await extract.firstCall.returnValue;
     assert.equal(await fs.pathExists(extracted), false);
@@ -110,7 +105,7 @@ describe('Uploaded site imports', function () {
         },
       );
       assert.equal(await fs.pathExists(await extract.firstCall.returnValue), false);
-      sinon.assert.notCalled(deps.jobManager.addJob);
+      sinon.assert.notCalled(deps.jobsService.dispatch);
       sinon.assert.notCalled(deps.mailer.send);
     });
   }
@@ -144,10 +139,10 @@ describe('Uploaded site imports', function () {
       importPersistUser: false,
     };
     await manager.importFromFile(file, options);
-    sinon.assert.calledOnce(deps.jobManager.addJob);
+    sinon.assert.calledOnce(deps.jobsService.dispatch);
     sinon.assert.calledOnce(save);
     sinon.assert.notCalled(raw);
-    const job = await queuedJob({ manager, deps });
+    const job = queuedJob({ deps });
     assert.match(
       job.uploadKey,
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
@@ -186,7 +181,7 @@ describe('Uploaded site imports', function () {
       await fs.writeFile(source.path, content);
       const { data: expected } = await manager.loadFile(source);
       await manager.importFromFile(source, { user: { email: 'owner@example.com' } });
-      const job = await queuedJob({ manager, deps });
+      const job = queuedJob({ deps });
       assert.deepEqual(Object.keys(job).sort(), ['emailRecipient', 'uploadKey']);
       await fs.remove(source.path);
       const later = subject();
@@ -220,7 +215,7 @@ describe('Uploaded site imports', function () {
       user: { email: 'owner@example.com' },
     });
 
-    const job = await queuedJob({ manager, deps });
+    const job = queuedJob({ deps });
     assert.match(job.uploadKey, /^renamed-/);
     assert.deepEqual(await fs.readdir(storage.storagePath), [job.uploadKey]);
 
@@ -250,7 +245,7 @@ describe('Uploaded site imports', function () {
     );
 
     sinon.assert.notCalled(manager.importsStorage.save);
-    sinon.assert.notCalled(deps.jobManager.addJob);
+    sinon.assert.notCalled(deps.jobsService.dispatch);
     sinon.assert.notCalled(deps.mailer.send);
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
   });
@@ -271,7 +266,7 @@ describe('Uploaded site imports', function () {
         return url;
       });
       if (stage === 'enqueue') {
-        deps.jobManager.addJob.rejects(failure);
+        deps.jobsService.dispatch.rejects(failure);
       }
       await assert.rejects(
         manager.importFromFile(file, { user: { email: 'owner@example.com' } }),
@@ -285,7 +280,7 @@ describe('Uploaded site imports', function () {
   it('preserves enqueue errors when deleting the saved upload also fails', async function () {
     const { manager, deps } = subject();
     const failure = new Error('enqueue failed');
-    deps.jobManager.addJob.rejects(failure);
+    deps.jobsService.dispatch.rejects(failure);
     sinon.stub(storage, 'delete').rejects(new Error('delete failed'));
     await assert.rejects(
       manager.importFromFile(await archive({ 'data.json': json }), {
@@ -317,11 +312,11 @@ describe('Uploaded site imports', function () {
       user: { email: 'owner@example.com' },
     });
     await started;
-    sinon.assert.notCalled(deps.jobManager.addJob);
+    sinon.assert.notCalled(deps.jobsService.dispatch);
     release();
     await pending;
-    sinon.assert.calledOnce(deps.jobManager.addJob);
-    await manager.executeImport(await queuedJob({ manager, deps }));
+    sinon.assert.calledOnce(deps.jobsService.dispatch);
+    await manager.executeImport(queuedJob({ deps }));
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
   });
   for (const stage of ['missing object', 'read', 'write', 'extraction', 'parsing', 'import']) {
@@ -330,7 +325,7 @@ describe('Uploaded site imports', function () {
       await manager.importFromFile(await archive({ 'data.json': json }), {
         user: { email: 'owner@example.com' },
       });
-      const job = await queuedJob({ manager, deps });
+      const job = queuedJob({ deps });
       const local = sinon.spy(fs, 'mkdtemp');
       const extract = sinon.spy(manager, 'extractZip');
       const failure = new Error(`${stage} failed`);
@@ -386,7 +381,7 @@ describe('Uploaded site imports', function () {
       await manager.importFromFile(await archive({ 'data.json': json }), {
         user: { email: 'owner@example.com' },
       });
-      const job = await queuedJob({ manager, deps });
+      const job = queuedJob({ deps });
       const extract = sinon.spy(manager, 'extractZip');
       const downloads = sinon.spy(fs, 'mkdtemp');
       const remove = fs.remove.bind(fs);
@@ -424,7 +419,7 @@ describe('Uploaded site imports', function () {
     await manager.importFromFile(await archive({ 'data.json': json }), {
       user: { email: 'owner@example.com' },
     });
-    const job = await queuedJob({ manager, deps });
+    const job = queuedJob({ deps });
     const failure = new Error('email failed');
     deps.mailer.send.rejects(failure);
     await assert.rejects(manager.executeImport(job), failure);
@@ -456,7 +451,7 @@ describe('Uploaded site imports', function () {
       const raw = sinon.spy(storage, 'saveRaw');
       const buffered = sinon.spy(storage, 'read');
       await manager.importFromFile(file, { user: { email: 'owner@example.com' } });
-      const job = await queuedJob({ manager, deps });
+      const job = queuedJob({ deps });
       assert.equal(job.uploadKey.length, 36);
       assert.deepEqual(await fs.readdir(storage.storagePath), [job.uploadKey]);
       sinon.assert.calledOnce(save);
@@ -502,7 +497,7 @@ describe('Uploaded site imports', function () {
     await manager.importFromFile(await archive({ 'data.json': json }), {
       user: { email: 'owner@example.com' },
     });
-    const job = await queuedJob({ manager, deps });
+    const job = queuedJob({ deps });
     const primary = new Error('extract interrupted');
     const cleanup = new Error('partial directory busy');
     const logged = sinon.spy(require('@tryghost/logging'), 'error');
