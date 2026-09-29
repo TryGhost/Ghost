@@ -70,7 +70,10 @@ describe('Oembed API', function () {
 
     assert.equal(requestMock.isDone(), true);
     assertExists(res.body.html);
-    assert.equal(res.body.thumbnail_url, '/content/images/thumbnail/image-01.png');
+    assert.equal(
+      res.body.thumbnail_url,
+      `${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`,
+    );
     assert.equal(res.body.thumbnail_width, 1280);
     assert.equal(res.body.thumbnail_height, 720);
     assert.equal(
