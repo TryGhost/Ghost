@@ -22,6 +22,7 @@ import type {
   AutomationSummary,
   AutomationStepTerminalStatus,
   AutomationStepToRun,
+  AutomationTriggerTierScope,
   AutomationsRepository,
   BrowseOptions,
   EditAutomationData,
@@ -510,7 +511,7 @@ async function ensureAutomation(
     name: string;
     description: string;
     slug: string;
-    trigger_tier_scope: 'free' | 'all_paid';
+    trigger_tier_scope: AutomationTriggerTierScope;
   }>,
 ): Promise<AutomationRow> {
   const now = toDatabaseDate(new Date());
