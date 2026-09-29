@@ -413,7 +413,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       paidMembersEnabled={paidMembersEnabled}
                       post={item}
                       presenceEvents={presenceForResource(item.id)}
-                      presenceUserId={presence.currentUserId}
                       resource={resource}
                       showGiftLink={menuGiftLinkPostId === item.id}
                       timezone={timezone}

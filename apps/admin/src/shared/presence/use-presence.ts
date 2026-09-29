@@ -165,5 +165,5 @@ export function usePresence(
     startRef.current?.();
   }, [resourceKey]);
 
-  return { events: enabled ? events : EMPTY_EVENTS, currentUserId };
+  return { events: enabled ? events : EMPTY_EVENTS };
 }

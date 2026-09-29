@@ -10,11 +10,9 @@ import type { PresenceEvent } from './use-presence';
 
 export function PresenceAvatars({
   events,
-  currentUserId,
   limit = 3,
 }: {
   events: PresenceEvent[];
-  currentUserId?: string;
   limit?: number;
 }) {
   const users = [
@@ -25,10 +23,7 @@ export function PresenceAvatars({
   if (users.length === 0) {
     return null;
   }
-  const label = (user: PresenceEvent) =>
-    user.userId === currentUserId
-      ? `${user.name} is active in another editor session`
-      : `${user.name} is active in the editor`;
+  const label = (user: PresenceEvent) => `${user.name} is active in the editor`;
   return (
     <TooltipProvider>
       <Inline

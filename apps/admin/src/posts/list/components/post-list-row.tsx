@@ -30,7 +30,6 @@ import { useShade } from '@tryghost/shade/app';
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
   presenceEvents?: PresenceEvent[];
-  presenceUserId?: string;
   resource: PostResource;
   timezone?: string;
   /**
@@ -129,7 +128,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     {
       post,
       presenceEvents = [],
-      presenceUserId,
       resource,
       timezone,
       isContributor,
@@ -295,7 +293,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               )}
             </Stack>
           </a>
-          <PresenceAvatars currentUserId={presenceUserId} events={presenceEvents} />
+          <PresenceAvatars events={presenceEvents} />
           <PostMetricsCells
             className="py-4"
             hideEmailMetrics={emailSendingState.status === 'sending'}
