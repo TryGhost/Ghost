@@ -61,6 +61,10 @@ export const settingsRouteChildren: RouteObject[] = [
     lazy: lazyComponent(() => import('./membership/tiers/tier-detail-modal')),
   },
   {
+    path: 'tiers/checkout',
+    lazy: lazyComponent(() => import('./membership/checkout/checkout-modal')),
+  },
+  {
     path: 'stripe-connect',
     lazy: lazyComponent(() => import('./membership/stripe/stripe-connect-modal')),
   },

@@ -1,5 +1,6 @@
 const { VersionMismatchError } = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('stripe');
+const logging = require('@tryghost/logging');
 const ghostConfig = require('../../../shared/config');
 const stripe = require('stripe');
 const i18n = require('../i18n');
@@ -75,6 +76,80 @@ module.exports = class StripeAPI {
     this._stripe = null;
     this._configured = false;
     this.labs = deps.labs;
+  }
+
+  /**
+   * POC: site-level checkout branding (Settings → Tiers → Customize checkout), sent as
+   * `branding_settings` on every Checkout Session, but only while "Customize checkout
+   * design" is on. Otherwise nothing is sent, and Stripe uses the design from the
+   * publisher's own dashboard. Behind the stripeCheckoutCollection flag.
+   *
+   * @param {object} [override] draft branding from the admin preview; replaces the saved one
+   * @returns {{branding_settings?: object}}
+   */
+  _checkoutBranding(override) {
+    if (!this.labs.isSet('stripeCheckoutCollection')) {
+      return {};
+    }
+    if (override) {
+      return Object.keys(override).length ? { branding_settings: override } : {};
+    }
+    const settingsCache = require('../../../shared/settings-cache');
+    if (!settingsCache.get('stripe_checkout_customize')) {
+      return {};
+    }
+    const branding = {};
+    const buttonColor = settingsCache.get('stripe_checkout_accent_color');
+    if (buttonColor) {
+      branding.button_color = buttonColor;
+    }
+    const backgroundColor = settingsCache.get('stripe_checkout_background_color');
+    if (backgroundColor) {
+      branding.background_color = backgroundColor;
+    }
+    // Stripe's enum spells families in snake case, e.g. "Roboto Slab" → "roboto_slab".
+    // "System default" is stored empty and is Stripe's `default`, sent so it also
+    // replaces a font chosen in the Stripe dashboard.
+    const font = settingsCache.get('stripe_checkout_font');
+    branding.font_family = font ? font.toLowerCase().replace(/ /g, '_') : 'default';
+    const borderStyle = settingsCache.get('stripe_checkout_border_style');
+    if (borderStyle) {
+      branding.border_style = borderStyle;
+    }
+    return Object.keys(branding).length ? { branding_settings: branding } : {};
+  }
+
+  /**
+   * POC: the publisher's own Checkout design, as set in the Stripe dashboard (Branding →
+   * Checkout styling). The Account API doesn't expose it, but a session created without
+   * `branding_settings` reports the design it resolved. So this creates one for an
+   * existing price, reads it and expires it straight away. Checked on a sandbox (API
+   * 2020-08-27 and 2025-09-30): no customer, PaymentIntent, SetupIntent, subscription or
+   * invoice; one `checkout.session.expired` event, which Ghost's webhook doesn't subscribe to.
+   *
+   * @param {string} priceId an existing recurring price
+   * @returns {Promise<object|null>} Stripe's `branding_settings`
+   */
+  async getCheckoutBranding(priceId) {
+    await this._rateLimitBucket.throttle();
+    const session = await this._stripe.checkout.sessions.create({
+      mode: 'subscription',
+      managed_payments: MANAGED_PAYMENTS_DISABLED,
+      payment_method_types: this.PAYMENT_METHOD_TYPES,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: this._config.checkoutSessionSuccessUrl,
+    });
+
+    try {
+      await this._rateLimitBucket.throttle();
+      await this._stripe.checkout.sessions.expire(session.id);
+    } catch (err) {
+      // Not fatal: an unpaid session lapses on its own after 24 hours.
+      logging.warn(`Could not expire checkout branding session ${session.id}: ${err.message}`);
+    }
+
+    // `branding_settings` is newer than the SDK's 2020-08-27 types, but Stripe returns it.
+    return /** @type {any} */ (session).branding_settings ?? null;
   }
 
   /**
@@ -607,6 +682,7 @@ module.exports = class StripeAPI {
     }
 
     const stripeSessionOptions = {
+      ...this._checkoutBranding(options.brandingOverride),
       payment_method_types: this.PAYMENT_METHOD_TYPES,
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
@@ -707,6 +783,7 @@ module.exports = class StripeAPI {
     };
 
     const stripeSessionOptions = {
+      ...this._checkoutBranding(),
       mode: 'payment',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: successUrl || this._config.checkoutSessionSuccessUrl,
@@ -789,6 +866,7 @@ module.exports = class StripeAPI {
         : i18n.t('{count} month', { count: duration });
 
     const stripeSessionOptions = {
+      ...this._checkoutBranding(),
       mode: 'payment',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: successUrl,
@@ -839,6 +917,7 @@ module.exports = class StripeAPI {
   async createCheckoutSetupSession(customer, options) {
     await this._rateLimitBucket.throttle();
     const session = await this._stripe.checkout.sessions.create({
+      ...this._checkoutBranding(),
       mode: 'setup',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       payment_method_types: this.PAYMENT_METHOD_TYPES,

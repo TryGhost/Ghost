@@ -80,3 +80,46 @@ export const useEditTierCheckoutConfig = createMutation<
   body: ({ config }) => ({ tiers_checkout_config: [config] }),
   invalidateQueries: { dataType },
 });
+
+export interface TierCheckoutPreviewResponseType {
+  tiers_checkout_preview: Array<{ url: string }>;
+}
+
+// POC: a real, hosted Stripe Checkout Session for a tier from an unsaved configuration
+// and branding, for the checkout customisation preview. Saves no checkout settings, but
+// resolving the price can create the tier's Stripe product/price.
+export const useCreateTierCheckoutPreview = createMutation<
+  TierCheckoutPreviewResponseType,
+  {
+    tierId: string;
+    config: TierCheckoutConfigInput;
+    branding: Record<string, string>;
+    cadence?: 'month' | 'year';
+  }
+>({
+  method: 'POST',
+  path: ({ tierId }) => `/tiers/${tierId}/checkout_preview/`,
+  body: ({ config, branding, cadence }) => ({ config, branding, cadence }),
+});
+
+export type TierCheckoutBranding = {
+  background_color: string;
+  button_color: string;
+  border_style: 'rounded' | 'rectangular' | 'pill';
+  /** Stripe's enum: `default` for the system font, otherwise snake case, e.g. `roboto_slab`. */
+  font_family: string;
+  display_name: string;
+};
+
+export interface TiersCheckoutBrandingResponseType {
+  /** Empty when Stripe isn't connected or there's no active paid tier. */
+  tiers_checkout_branding: TierCheckoutBranding[];
+}
+
+// POC: the Checkout design set in the publisher's Stripe dashboard. Each request creates a
+// Stripe Checkout Session and expires it straight away, so it relies on the client's
+// defaults: no refetch on focus, no retries, and cached for five minutes.
+export const useReadTiersCheckoutBranding = createQuery<TiersCheckoutBrandingResponseType>({
+  dataType: 'TiersCheckoutBrandingResponseType',
+  path: '/tiers/checkout_branding/',
+});

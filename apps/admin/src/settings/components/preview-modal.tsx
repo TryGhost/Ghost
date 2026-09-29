@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { ChevronDown, ExternalLink } from 'lucide-react';
 
 import {
   Box,
@@ -9,7 +9,15 @@ import {
   type TextLeading,
   type TextSize,
 } from '@tryghost/shade/primitives';
-import { Button, type ButtonProps, Separator } from '@tryghost/shade/components';
+import {
+  Button,
+  type ButtonProps,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Separator,
+} from '@tryghost/shade/components';
 import {
   DirtyConfirmDialog,
   SettingsModal,
@@ -19,6 +27,9 @@ import {
 import { cn, useGlobalDirtyState } from '@tryghost/shade/utils';
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+const siteLinkClassName =
+  'inline-flex items-center gap-1 rounded-sm text-control font-medium text-foreground transition-colors hover:text-primary focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden';
 
 const headingSizes: Record<HeadingLevel, TextSize> = {
   1: '3xl',
@@ -70,6 +81,10 @@ export interface PreviewModalProps {
   rightToolbar?: boolean;
   deviceSelector?: React.ReactNode;
   siteLink?: string;
+  /** Replaces "View site" in the toolbar link. */
+  siteLinkLabel?: string;
+  /** Turns the toolbar link into a button that opens a menu of options. */
+  siteLinkMenu?: Array<{ label: string; onSelect: () => void }>;
   previewToolbarURLs?: React.ReactNode;
   previewToolbarBreadcrumbs?: React.ReactNode;
   previewBgColor?: 'grey' | 'white' | 'greygradient';
@@ -107,6 +122,8 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
   rightToolbar = true,
   deviceSelector,
   siteLink,
+  siteLinkLabel = 'View site',
+  siteLinkMenu,
   previewToolbarURLs,
   previewBgColor = 'grey',
   previewToolbarTabs,
@@ -186,18 +203,42 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             {rightToolbar && (
               <Inline align="center" className="absolute right-8 h-full" gap="md">
                 {deviceSelector}
-                {siteLink && (
+                {(siteLink || siteLinkMenu) && (
                   <>
                     {deviceSelector && <Separator className="h-5!" orientation="vertical" />}
-                    <a
-                      className="inline-flex items-center gap-1 rounded-sm text-control font-medium text-foreground transition-colors hover:text-primary focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-                      href={siteLink}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      View site
-                      <ExternalLink className="size-3" />
-                    </a>
+                    {siteLinkMenu ? (
+                      // One default-size button that opens the menu: where it goes (a new
+                      // tab), what it does, and a chevron saying there's a choice to make.
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button type="button" variant="outline">
+                            <ExternalLink />
+                            {siteLinkLabel}
+                            <ChevronDown />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
+                        >
+                          {siteLinkMenu.map((item) => (
+                            <DropdownMenuItem key={item.label} onSelect={item.onSelect}>
+                              {item.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <a
+                        className={siteLinkClassName}
+                        href={siteLink}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {siteLinkLabel}
+                        <ExternalLink className="size-3" />
+                      </a>
+                    )}
                   </>
                 )}
               </Inline>
