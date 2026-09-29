@@ -22,6 +22,7 @@ const EmailAnalyticsGiftFetchLatestJob =
   require('../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job').default;
 const models = require('../../../../core/server/models');
 const { Queries } = require('../../../../core/server/services/email-analytics/lib/queries');
+const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
 
 type MailgunEvent = {
   id: string;
@@ -30,6 +31,8 @@ type MailgunEvent = {
   tags: string[];
   timestamp: number;
   message: { headers: { 'message-id': string } };
+  severity?: string;
+  'delivery-status'?: { code: number; message: string };
   'user-variables'?: { 'email-id': string };
 };
 
@@ -350,6 +353,36 @@ describe('email analytics JobsService delivery', function () {
       await newsletters.fetchMissing();
 
       await assertMemberOpenCountsAggregated();
+    });
+
+    it('aggregates a failure stored by a missing-sweep batch that then errored', async function () {
+      const batch = fixtureManager.get('email_batches', 0);
+      const [recipient] = recipients;
+      await knex('email_recipients').where('id', recipient.id).update({ failed_at: null });
+      await knex('emails').where('id', emailId).update({ failed_count: 0 });
+      events = [
+        {
+          ...mailgunEvent('failed', batch.mailgun_message_id, recipient.member_email, 'bulk-email'),
+          severity: 'permanent',
+          'delivery-status': { code: 550, message: 'Mailbox does not exist' },
+          'user-variables': { 'email-id': emailId },
+        },
+      ];
+      const saveFailure = sinon.stub(NewsletterEmailEventStorage.prototype, 'saveFailure');
+      saveFailure.callThrough();
+      saveFailure.onFirstCall().rejects(new Error('failure not saved'));
+      const newsletters = emailAnalytics.getNewsletters();
+
+      await assert.rejects(newsletters.fetchMissing(), /failure not saved/);
+      await newsletters.fetchMissing();
+
+      const [{ count }] = await knex('email_recipients')
+        .count('id as count')
+        .where('email_id', emailId)
+        .whereNotNull('failed_at');
+      const email = await knex('emails').where('id', emailId).first();
+      assert.ok(Number(count) > 0);
+      assert.equal(email.failed_count, Number(count));
     });
 
     it('updates the email open count for opens recovered by the missing sweep', async function () {
