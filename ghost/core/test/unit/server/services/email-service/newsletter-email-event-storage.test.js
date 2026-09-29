@@ -147,6 +147,29 @@ describe('Email Event Storage', function () {
     }
   });
 
+  it('drops pending updates when a flush fails so a later flush does not store them', async function () {
+    const db = createDb();
+    const raw = sinon.stub(db.knex, 'raw');
+    raw.onFirstCall().resolves([{ affectedRows: 1 }]);
+    raw.onSecondCall().rejects(new Error('flush failed'));
+    const storage = createEventStorage({ db, config: { get: () => true } });
+    sinon.stub(storage, 'saveFailure').resolves();
+    const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
+    await storage.handleDelivered(event);
+    await storage.handleOpened(event);
+    await storage.handlePermanentFailed(event);
+
+    await assert.rejects(storage.flushBatchedUpdates(), /flush failed/);
+    raw.resetHistory();
+
+    assert.deepEqual(await storage.flushBatchedUpdates(), {
+      storedDelivered: 0,
+      storedOpened: 0,
+      storedPermanentFailed: 0,
+    });
+    sinon.assert.notCalled(raw);
+  });
+
   describe('Constructor', function () {
     it("doesn't throw", function () {
       createEventStorage({});

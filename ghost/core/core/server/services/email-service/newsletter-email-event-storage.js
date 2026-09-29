@@ -325,16 +325,19 @@ class NewsletterEmailEventStorage {
    * @returns {Promise<StoredEventCounts>}
    */
   async flushBatchedUpdates() {
-    const counts = {
-      storedDelivered: await this.#flushDeliveredUpdates(),
-      storedOpened: await this.#flushOpenedUpdates(),
-      storedPermanentFailed: await this.#flushFailedUpdates(),
-    };
-
-    this.#pendingUpdates.delivered.clear();
-    this.#pendingUpdates.opened.clear();
-    this.#pendingUpdates.failed.clear();
-    return counts;
+    try {
+      return {
+        storedDelivered: await this.#flushDeliveredUpdates(),
+        storedOpened: await this.#flushOpenedUpdates(),
+        storedPermanentFailed: await this.#flushFailedUpdates(),
+      };
+    } finally {
+      // A failed fetch replays its window, so dropped updates are queued again by the
+      // run that re-stores them rather than being counted by an unrelated later run.
+      this.#pendingUpdates.delivered.clear();
+      this.#pendingUpdates.opened.clear();
+      this.#pendingUpdates.failed.clear();
+    }
   }
 
   /**
