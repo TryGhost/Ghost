@@ -8,11 +8,16 @@ import { mapAutomationEntryStats } from '@/automations/utils/automation-entry-st
 export const useAutomationPerformanceStats = (
   automationId: string,
   dateRange: PerformanceDateRange,
+  queryScope = '',
 ) => {
-  const query = useReadAutomationPerformanceStats(automationId, {
-    ...performanceQueryOptions,
-    searchParams: dateRange.searchParams,
-  });
+  const query = useReadAutomationPerformanceStats(
+    automationId,
+    {
+      ...performanceQueryOptions,
+      searchParams: dateRange.searchParams,
+    },
+    queryScope,
+  );
   const stats = query.data?.automation_performance_stats[0];
   const chart = useMemo(
     () =>

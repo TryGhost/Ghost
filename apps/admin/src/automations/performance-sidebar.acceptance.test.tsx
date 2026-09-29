@@ -53,8 +53,10 @@ const response = (id: string, counts = { inProgress: 118, completed: 1260, exite
   };
   return { automation_performance_stats: [data] };
 };
-const read = (id: string) =>
-  fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [detail(id)] });
+const read = (id: string) => {
+  fakeAdminEndpoint('GET', new RegExp(`/automations/${id}/runs/\\?`), { automation_runs: [] });
+  return fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [detail(id)] });
+};
 const statsUrl = (id: string) =>
   `/automations/${id}/performance-stats/?${new URLSearchParams({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}`;
 const prepare = (id = 'first') => {

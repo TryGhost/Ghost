@@ -5,6 +5,8 @@ import { createTestQueryClient, renderHookWithProviders } from '../../../src/tes
 import { withMockFetch } from '../../utils/mock-fetch';
 import {
   AutomationAction,
+  AutomationRunsResponseSchema,
+  type AutomationRun,
   AutomationDetail,
   AutomationSendEmailAction,
   InsertActionAnchor,
@@ -520,5 +522,50 @@ describe('automations api helpers', () => {
         }),
       ).toThrow(/is not a send_email action/);
     });
+  });
+});
+
+describe('automation run response validation', () => {
+  const run: AutomationRun = {
+    id: 'one',
+    created_at: '2026-09-15T12:00:00.000Z',
+    status: 'completed',
+    failed: false,
+    member: { id: 'member', name: ' Alex ', email: 'alex@example.com' },
+  };
+
+  it('accepts empty history and separate runs for the same member', () => {
+    expect(AutomationRunsResponseSchema.parse({ automation_runs: [] }).automation_runs).toEqual([]);
+    expect(
+      AutomationRunsResponseSchema.safeParse({ automation_runs: [run, { ...run, id: 'two' }] })
+        .success,
+    ).toBe(true);
+  });
+
+  it.each(['in_progress', 'completed', 'unclassified'] as const)(
+    'rejects a failure flag on a %s run',
+    (status) => {
+      expect(
+        AutomationRunsResponseSchema.safeParse({
+          automation_runs: [{ ...run, status, failed: true }],
+        }).success,
+      ).toBe(false);
+    },
+  );
+
+  it.each([
+    { name: 'missing envelope', body: {} },
+    { name: 'missing failure flag', body: { automation_runs: [{ ...run, failed: undefined }] } },
+    { name: 'invalid failure flag', body: { automation_runs: [{ ...run, failed: 'true' }] } },
+    { name: 'unknown status', body: { automation_runs: [{ ...run, status: 'future' }] } },
+    { name: 'invalid timestamp', body: { automation_runs: [{ ...run, created_at: 'invalid' }] } },
+    { name: 'missing member', body: { automation_runs: [{ ...run, member: undefined }] } },
+    { name: 'duplicate run', body: { automation_runs: [run, run] } },
+    {
+      name: 'more than fifty runs',
+      body: { automation_runs: Array.from({ length: 51 }, (_, i) => ({ ...run, id: String(i) })) },
+    },
+  ])('rejects $name', ({ body }) => {
+    expect(AutomationRunsResponseSchema.safeParse(body).success).toBe(false);
   });
 });

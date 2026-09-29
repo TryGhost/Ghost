@@ -54,6 +54,7 @@ const response = (start: string, counts: readonly [number, number, number]) => {
 };
 const allTime = () => response('2023-12-01', [10, 20, 30]);
 const render = async () => {
+  fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, { automation_runs: [] });
   fakeAdminEndpoint('GET', '/automations/dates/', {
     automations: [
       {
