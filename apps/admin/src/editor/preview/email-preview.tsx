@@ -26,6 +26,7 @@ import {
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { SendTestEmail } from './send-test-email';
+import { EmailSubject, type EmailSubjectEditor } from './email-subject';
 import {
   audienceDescription,
   emailPreviewAudience,
@@ -62,6 +63,7 @@ function withPreviewDocumentStyles(html: string): string {
 }
 
 interface EmailPreviewProps {
+  subjectEditor?: EmailSubjectEditor;
   postId: string;
   audience: PreviewAudience;
   /** The selected tier's name, for the test-email audience description. */
@@ -81,6 +83,7 @@ interface EmailPreviewProps {
 }
 
 export function EmailPreview({
+  subjectEditor,
   postId,
   audience,
   tierName,
@@ -176,7 +179,13 @@ export function EmailPreview({
               <SendTestEmail
                 audience={audience}
                 audienceLabel={audienceDescription(audience, tierName)}
-                disabled={newsletterLookupError || newsletterLookupPending || newsletterMissing}
+                disabled={
+                  newsletterLookupError ||
+                  newsletterLookupPending ||
+                  newsletterMissing ||
+                  subjectEditor?.hasUnsavedChanges ||
+                  subjectEditor?.isSaving
+                }
                 newsletterSlug={newsletterSlug}
                 postId={postId}
               />
@@ -184,9 +193,15 @@ export function EmailPreview({
           </Inline>
           <Inline className="min-w-0" gap="md">
             <span className="shrink-0 text-sm text-muted-foreground">Subject</span>
-            <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailSubject}>
-              {!isFetching && preview?.subject}
-            </p>
+            {subjectEditor && device === 'desktop' ? (
+              <EmailSubject editor={subjectEditor} />
+            ) : (
+              <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailSubject}>
+                {subjectEditor
+                  ? subjectEditor.value || subjectEditor.fallback
+                  : !isFetching && preview?.subject}
+              </p>
+            )}
           </Inline>
         </Stack>
         {newsletterLookupPending || isFetching ? (

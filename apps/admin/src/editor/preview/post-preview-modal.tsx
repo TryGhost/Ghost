@@ -46,6 +46,7 @@ import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
+import type { EmailSubjectEditor } from './email-subject';
 import {
   browserPreviewUrl,
   type PreviewAudience,
@@ -63,6 +64,7 @@ interface SegmentOption {
 }
 
 export interface PostPreviewModalProps {
+  subjectEditor?: EmailSubjectEditor;
   open: boolean;
   postId: string;
   /** The post's public preview URL (`/p/:uuid/`), empty until the post has a uuid. */
@@ -81,6 +83,7 @@ export interface PostPreviewModalProps {
 }
 
 export function PostPreviewModal({
+  subjectEditor,
   open,
   postId,
   previewUrl,
@@ -495,6 +498,7 @@ export function PostPreviewModal({
             newsletters={newsletters}
             newsletterSlug={selectedNewsletterSlug}
             postId={postId}
+            subjectEditor={subjectEditor}
             tierName={selectedTier?.name}
             onNewsletterChange={setPickedNewsletterSlug}
             onRetryNewsletterLookup={retryNewsletterLookup}
