@@ -13,9 +13,10 @@ const { createContentFileHandlers, createContentFileImporters } = require('./con
 
 /**
  * Assemble the site importer from its production collaborators
+ * @param {Object} [overrides] collaborators to use instead of the production ones
  * @returns {ImportManager}
  */
-function createImportManager() {
+function createImportManager(overrides = {}) {
   return new ImportManager({
     jobManager,
     handlers: [...createContentFileHandlers(), RevueHandler, JSONHandler, MarkdownHandler],
@@ -24,6 +25,7 @@ function createImportManager() {
     config,
     urlUtils,
     logging,
+    ...overrides,
   });
 }
 
