@@ -57,6 +57,16 @@ export function useEditorLeaveGuard(
     };
   }, []);
 
+  // An accepted exit that lands without unmounting the editor is over. Runs before the ID
+  // swap below, which waits for it.
+  useEffect(() => {
+    if (!isLeavingRef.current) {
+      return;
+    }
+    isLeavingRef.current = false;
+    setIsConfirmingLeave(false);
+  }, [location]);
+
   const isUrlSwapBlocked = guard.interceptedNavigation.isBlocked;
 
   // Wait for a real exit to settle before replacing a new post's URL. React

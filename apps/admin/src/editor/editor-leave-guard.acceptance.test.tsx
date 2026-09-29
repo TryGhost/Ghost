@@ -559,6 +559,27 @@ describe('Post editor leave guard on history pops', () => {
     expect(saveApi.requests.length).toBe(0);
   });
 
+  it('stays put when the URL only drops its trailing slash', async () => {
+    const saveApi = fakeEditablePost({ status: 'published', published_at: LOADED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}/`, withFastAutosave(EDITOR_ONLY));
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    const dialogInsertions = watchLeaveDialog();
+
+    window.location.replace(`#/editor/post/${POST_ID}`);
+
+    await expect.poll(currentRoute).toBe(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    // A real exit afterwards is still held, and is the first to ask.
+    window.history.back();
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    expect(dialogInsertions()).toBe(1);
+    await editorScreen.stayInEditor().click();
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+    expect(saveApi.requests.length).toBe(0);
+  });
+
   it('holds Back at a created post URL while the writer decides', async () => {
     const { createApi, resolveCreate } = fakeNewPost({ failUpdates: true });
     await openByHashChange('/editor/post', withoutAutosave(EDITOR_ONLY));

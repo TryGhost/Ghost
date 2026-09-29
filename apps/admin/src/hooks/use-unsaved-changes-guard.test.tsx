@@ -1,8 +1,12 @@
 import React from 'react';
-import { RouterProvider, createMemoryRouter } from 'react-router';
+import { RouterProvider, createHashRouter, createMemoryRouter } from 'react-router';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { hashPathname, installHistoryPopGate } from './use-history-pop-navigation-guard';
+import {
+  hashPathname,
+  installHistoryPopGate,
+  restoredState,
+} from './use-history-pop-navigation-guard';
 import { useUnsavedChangesGuard } from './use-unsaved-changes-guard';
 import type {
   UnsavedChangesGuard,
@@ -259,9 +263,13 @@ describe('useUnsavedChangesGuard with guardHistoryPops', () => {
   const reached: string[] = [];
   beforeAll(() => {
     // Ahead of the gate, so it also sees where the pops the gate holds went.
-    window.addEventListener('popstate', () => {
-      reached.push(window.location.hash);
-    });
+    window.addEventListener(
+      'popstate',
+      () => {
+        reached.push(window.location.hash);
+      },
+      { capture: true },
+    );
     installHistoryPopGate();
   });
 
@@ -272,13 +280,15 @@ describe('useUnsavedChangesGuard with guardHistoryPops', () => {
     window.history.pushState(null, '', '#/guarded');
   });
 
-  const popBack = async (target = '#/elsewhere') => {
+  const traverse = async (move: () => void, target: string) => {
     const before = reached.length;
     await act(async () => {
-      window.history.back();
+      move();
       await waitFor(() => expect(reached.slice(before)).toContain(target));
     });
   };
+  const popBack = (target = '#/elsewhere') => traverse(() => window.history.back(), target);
+  const popForward = (target: string) => traverse(() => window.history.forward(), target);
 
   it('holds a pop out of the screen at its URL, then completes it on confirm', async () => {
     renderGuarded({ when: true, guardHistoryPops: true });
@@ -335,6 +345,58 @@ describe('useUnsavedChangesGuard with guardHistoryPops', () => {
     }
   });
 
+  it('hides a held pop from capture listeners added after the gate', async () => {
+    const seen: string[] = [];
+    const onPop = () => seen.push(window.location.hash);
+    window.addEventListener('popstate', onPop, { capture: true });
+    try {
+      renderGuarded({ when: true, guardHistoryPops: true });
+
+      await popBack();
+
+      expect(seen).toEqual([]);
+    } finally {
+      window.removeEventListener('popstate', onPop, { capture: true });
+    }
+  });
+
+  it('forgets the URL of a held pop once a pop goes through', async () => {
+    const heard: string[] = [];
+    const onHashChange = (event: HashChangeEvent) => heard.push(new URL(event.newURL).hash);
+    window.addEventListener('hashchange', onHashChange);
+    try {
+      renderGuarded({ when: true, guardHistoryPops: true });
+      // A held pop whose hash change never follows, as when the URL is back on it first.
+      window.history.replaceState(null, '', '#/elsewhere');
+      act(() => {
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      expect(window.location.hash).toBe('#/guarded');
+      act(() => {
+        latestGuard.dialogProps.onOpenChange(false);
+        setOptions({ when: false, guardHistoryPops: true });
+      });
+
+      window.location.hash = '/elsewhere';
+      window.location.hash = '/third';
+
+      await waitFor(() => expect(heard).toEqual(['#/elsewhere', '#/third']));
+    } finally {
+      window.removeEventListener('hashchange', onHashChange);
+    }
+  });
+
+  it("puts the screen's own entry back above the entry the pop reached", async () => {
+    window.history.replaceState({ key: 'before', idx: 3 }, '', '#/elsewhere');
+    window.history.pushState({ usr: { from: 'list' }, key: 'screen', idx: 4 }, '', '#/guarded');
+    renderGuarded({ when: true, guardHistoryPops: true });
+
+    await popBack();
+
+    expect(window.location.hash).toBe('#/guarded');
+    expect(window.history.state).toEqual({ usr: { from: 'list' }, key: 'screen', idx: 4 });
+  });
+
   it('keeps the destination of an exit that is already awaiting a decision', async () => {
     const router = renderGuarded({ when: true, guardHistoryPops: true });
     await act(async () => {
@@ -389,6 +451,17 @@ describe('useUnsavedChangesGuard with guardHistoryPops', () => {
     expect(dialogOpen()).toBe('false');
   });
 
+  it('lets a pop that only drops the trailing slash through', async () => {
+    window.history.replaceState(null, '', '#/guarded');
+    window.history.pushState(null, '', '#/guarded/');
+    renderGuarded({ when: true, guardHistoryPops: true }, { initialEntries: ['/guarded/'] });
+
+    await popBack('#/guarded');
+
+    expect(window.location.hash).toBe('#/guarded');
+    expect(dialogOpen()).toBe('false');
+  });
+
   it('leaves pops alone without the option', async () => {
     renderGuarded({ when: true });
 
@@ -396,6 +469,81 @@ describe('useUnsavedChangesGuard with guardHistoryPops', () => {
 
     expect(window.location.hash).toBe('#/elsewhere');
     expect(dialogOpen()).toBe('false');
+  });
+
+  it('leaves the router able to undo a later pop onto the entry a cancelled Forward restored', async () => {
+    const screens: Record<
+      string,
+      { guard: UnsavedChangesGuard; setWhen: (when: boolean) => void }
+    > = {};
+    function Screen({ name, guardHistoryPops }: { name: string; guardHistoryPops?: boolean }) {
+      const [when, setWhen] = React.useState(false);
+      screens[name] = { guard: useUnsavedChangesGuard({ when, guardHistoryPops }), setWhen };
+      return null;
+    }
+    window.history.replaceState(null, '', '#/start');
+    const router = createHashRouter([
+      { path: '/start', element: null },
+      { path: '/editor', element: <Screen name="editor" guardHistoryPops /> },
+      { path: '/tag', element: <Screen name="tag" /> },
+    ]);
+    render(<RouterProvider router={router} />);
+    try {
+      await act(async () => {
+        await router.navigate('/editor');
+      });
+      const editorState: unknown = window.history.state;
+      await act(async () => {
+        await router.navigate('/tag');
+      });
+      await popBack('#/editor');
+      await waitFor(() => expect(router.state.location.pathname).toBe('/editor'));
+      act(() => screens.editor.setWhen(true));
+
+      await popForward('#/tag');
+      expect(window.location.hash).toBe('#/editor');
+      expect(window.history.state).toEqual({ ...(editorState as object), idx: 3 });
+      act(() => {
+        screens.editor.guard.dialogProps.onOpenChange(false);
+        screens.editor.setWhen(false);
+      });
+
+      await popBack('#/tag');
+      await waitFor(() => expect(router.state.location.pathname).toBe('/tag'));
+      act(() => screens.tag.setWhen(true));
+
+      await popForward('#/editor');
+
+      await waitFor(() => expect(window.location.hash).toBe('#/tag'));
+      expect(screens.tag.guard.dialogProps.open).toBe(true);
+      act(() => {
+        screens.tag.guard.dialogProps.onConfirm();
+        screens.tag.guard.dialogProps.onOpenChange(false);
+      });
+      await waitFor(() => expect(router.state.location.pathname).toBe('/editor'));
+      expect(window.location.hash).toBe('#/editor');
+    } finally {
+      router.dispose();
+    }
+  });
+});
+
+describe('restoredState', () => {
+  const screenState = { usr: { from: 'list' }, key: 'screen', idx: 4 };
+
+  it.each([
+    ['a Back reached', { idx: 3 }, screenState],
+    ['a Forward reached', { idx: 5 }, { ...screenState, idx: 6 }],
+  ])('sits directly above the entry %s', (_move, reachedState, restored) => {
+    expect(restoredState(screenState, reachedState)).toEqual(restored);
+  });
+
+  it('keeps its own index when the entry reached has none', () => {
+    expect(restoredState(screenState, null)).toEqual(screenState);
+  });
+
+  it('keeps a state that has no router index', () => {
+    expect(restoredState(null, { idx: 3 })).toBeNull();
   });
 });
 

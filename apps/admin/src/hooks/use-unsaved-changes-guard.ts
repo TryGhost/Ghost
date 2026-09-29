@@ -13,7 +13,10 @@ import type { BlockerFunction } from '@tryghost/admin-x-framework';
 type BlockerFunctionArgs = Parameters<BlockerFunction>[0];
 
 export interface UseUnsavedChangesGuardOptions {
-  /** Guards in-router navigations and raw `<a href="#/…">` anchors while true. */
+  /**
+   * Guards in-router navigations and raw `<a href="#/…">` anchors while true, and history pops
+   * too with `guardHistoryPops`.
+   */
   when: boolean;
   /** `beforeunload` guard condition; defaults to `when`. */
   confirmUnloadWhen?: boolean;
@@ -63,6 +66,8 @@ export interface UnsavedChangesGuard {
  * `useBlocker` (in-router navigations), and `useHashLinkNavigationGuard`
  * (native hash anchors that reach the router as untracked POPs it cannot
  * block) — plus the proceed/reset choreography behind the discard dialog.
+ * With `guardHistoryPops` it also holds Back, Forward and other history pops
+ * through `useHistoryPopNavigationGuard`.
  *
  * Settings uses a different exit-point model (`useGlobalDirtyState` +
  * `useDirtyConfirmation`); this hook is for screens that own their routes.
