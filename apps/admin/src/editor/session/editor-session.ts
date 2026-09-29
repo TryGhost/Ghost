@@ -213,6 +213,7 @@ const BODY_WORK_REASONS: ReadonlySet<ChangeReasonCode> = new Set([
 /** What a local copy carries besides the body. */
 const COPIED_FIELD_KEYS = [
   'title',
+  'slug',
   'tags',
   'custom_excerpt',
   'feature_image',
@@ -506,23 +507,27 @@ export function createEditorSession({
     }
   }
 
-  function keepLocalRevision(write: (writer: LocalRevisionWriter) => void): void {
+  // True when the draft held work and was handed to the writer.
+  function keepLocalRevision(write: (writer: LocalRevisionWriter) => void): boolean {
     if (disposed || restoringRevision || status !== 'draft') {
-      return;
+      return false;
     }
+    let kept = false;
     withLocalRevisions((writer) => {
       if (holdsUnsavedWork()) {
         write(writer);
+        kept = true;
       }
     });
+    return kept;
   }
 
   function recordLocalRevision(): void {
     keepLocalRevision((writer) => writer.record(localRevisionDraft()));
   }
 
-  function flushLocalRevision(): void {
-    keepLocalRevision((writer) => writer.flush(localRevisionDraft()));
+  function flushLocalRevision(): boolean {
+    return keepLocalRevision((writer) => writer.flush(localRevisionDraft()));
   }
 
   // A title commit and a load move the machine's slug without a field patch, so
@@ -751,9 +756,11 @@ export function createEditorSession({
       }
       if (STUCK_ENGINE_STATES.has(next.kind)) {
         const heldConflict = next.kind === 'conflict' ? next.error : null;
-        if (heldConflict === null || heldConflict !== flushedConflictError) {
-          flushedConflictError = heldConflict;
+        if (heldConflict === null) {
+          flushedConflictError = null;
           flushLocalRevision();
+        } else if (heldConflict !== flushedConflictError && flushLocalRevision()) {
+          flushedConflictError = heldConflict;
         }
       }
       // A save error also moves dirtiness without going through a field patch.

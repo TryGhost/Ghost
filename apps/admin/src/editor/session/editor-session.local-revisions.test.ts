@@ -384,6 +384,75 @@ describe('Editor session local revisions', () => {
     expect(localRevisions.record).not.toHaveBeenCalled();
   });
 
+  it('records a manual slug edit', async () => {
+    const localRevisions = writerSpy();
+    const { session } = sessionHarness({ record: record(), baseline: LOADED_BODY, localRevisions });
+
+    await session.editSlug('my-own-slug');
+
+    expect(localRevisions.record).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: 'my-own-slug' }),
+    );
+  });
+
+  it('records a body once the hidden instance fails, compared with the saved copy alone', () => {
+    const localRevisions = writerSpy();
+    const { session } = sessionHarness({ record: record(), localRevisions });
+    session.patchLexical(body('Typed straight away'));
+    expect(localRevisions.record).not.toHaveBeenCalled();
+
+    session.baselineFailed();
+
+    expect(localRevisions.record).toHaveBeenCalledWith(
+      expect.objectContaining({ lexical: JSON.stringify(body('Typed straight away')) }),
+    );
+  });
+
+  it('copies a conflict whose first flush held nothing to copy once there is work', async () => {
+    const localRevisions = writerSpy();
+    const hooks: Parameters<typeof sessionHarness>[1] = { failUpdateWith: updateCollision() };
+    const { session } = sessionHarness(
+      { record: record(), baseline: LOADED_BODY, localRevisions },
+      hooks,
+    );
+    session.patchFields({ meta_title: 'Only the meta title' });
+    await session.dispatchExplicit();
+    expect(session.getState().kind).toBe('conflict');
+    expect(localRevisions.flush).not.toHaveBeenCalled();
+
+    session.recordRefetched(record({ updated_at: '2026-01-01T00:00:09.000Z' }));
+    hooks.failUpdateWith = new Error('Server exploded');
+    session.patchLexical(body('Hello there'));
+    await session.dispatchExplicit();
+
+    expect(session.getState().kind).toBe('conflict');
+    expect(localRevisions.flush).toHaveBeenCalledTimes(1);
+  });
+
+  it('copies a new conflict after the writer recovered from the last one', async () => {
+    const localRevisions = writerSpy();
+    const hooks: Parameters<typeof sessionHarness>[1] = { failUpdateWith: updateCollision() };
+    const { session } = sessionHarness(
+      { record: record(), baseline: LOADED_BODY, localRevisions },
+      hooks,
+    );
+    session.patchLexical(body('Hello there'));
+    await session.dispatchExplicit();
+    expect(localRevisions.flush).toHaveBeenCalledTimes(1);
+
+    hooks.failUpdateWith = undefined;
+    session.recordRefetched(record({ updated_at: '2026-01-01T00:00:09.000Z' }));
+    await session.dispatchExplicit();
+    expect(session.getState().kind).not.toBe('conflict');
+
+    hooks.failUpdateWith = updateCollision();
+    session.patchLexical(body('Hello there, again'));
+    await session.dispatchExplicit();
+
+    expect(session.getState().kind).toBe('conflict');
+    expect(localRevisions.flush).toHaveBeenCalledTimes(2);
+  });
+
   it('keeps editing when the writer throws', () => {
     const onError = vi.fn();
     const failure = new Error('No storage');
