@@ -149,8 +149,19 @@ function absoluteUrl(url: string | URL): string | undefined {
   }
 }
 
-/** The app reaches the fake API through fetch, and through XHR for uploads with progress. */
-function trackIssuedRequests(): void {
+let issuedRequestsTracked = false;
+
+/**
+ * Wraps fetch and XHR (the framework's upload path, for progress) so the
+ * ledger sees each request from the call. Install before any spec module
+ * loads, so nothing holds the unwrapped fetch.
+ */
+export function trackIssuedRequests(): void {
+  if (issuedRequestsTracked) {
+    return;
+  }
+  issuedRequestsTracked = true;
+
   const originalFetch = window.fetch.bind(window);
   window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
     const url = input instanceof Request ? input.url : absoluteUrl(input);
@@ -537,7 +548,6 @@ export async function startFakeApi({
     ),
   );
 
-  trackIssuedRequests();
   trackInFlightRequests(worker);
 
   // MSW stops its service worker on `beforeunload`. Nothing here ever unloads

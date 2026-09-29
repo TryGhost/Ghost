@@ -3,9 +3,18 @@ import { cleanup } from 'vitest-browser-react';
 
 import './matchers';
 import { defaultBootResolver, defaultBootRoutes } from './boot';
-import { resetFakeApi, settleRequests, startFakeApi, verifyNoUnhandledRequests } from './worker';
+import {
+  resetFakeApi,
+  settleRequests,
+  startFakeApi,
+  trackIssuedRequests,
+  verifyNoUnhandledRequests,
+} from './worker';
 import { resetDeclaredResources } from './resources';
 import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
+
+// At import, before the spec module (and the app) loads.
+trackIssuedRequests();
 
 beforeAll(async () => {
   // Playwright waits for an element to stop moving before it acts on it, so every
