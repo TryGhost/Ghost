@@ -27,6 +27,7 @@ module.exports = {
 
     cacheStub.withArgs('active_theme').returns(options.theme || 'casper');
     cacheStub.withArgs('timezone').returns('Etc/UTC');
+    cacheStub.withArgs('site_uuid').returns('931ade9e-a4f1-4217-8625-34bd34250c16');
     cacheStub.withArgs('permalinks').returns('/:slug/');
     cacheStub
       .withArgs('ghost_private_key')
