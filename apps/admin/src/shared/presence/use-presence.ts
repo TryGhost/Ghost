@@ -121,7 +121,7 @@ export function usePresence(
             const fresh = response.events.filter(
               (event) =>
                 event.action !== 'saved' &&
-                event.sessionId !== sessionId &&
+                event.userId !== currentUserId &&
                 event.ts > response.serverTime - 30000,
             );
             // Account for clock differences so avatars expire at the right time.

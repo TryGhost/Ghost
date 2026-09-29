@@ -15,9 +15,9 @@ timer or error backoff. List polls only read events. Editor polls also record
 an `opened` event, followed by `editing` heartbeats. Successful saves record
 `saved` events without waiting for the cache write. Failures are logged.
 
-Avatars show activity from the last 30 seconds, grouped by user. The current
-browser session is excluded; another session belonging to the same user is
-shown. Sessions expire naturally after the editor stops sending heartbeats.
+Avatars show activity from the last 30 seconds, grouped by user. Your own user
+is excluded, including activity from other tabs or browsers. Sessions expire
+naturally after the editor stops sending heartbeats.
 
 ## API
 

@@ -60,11 +60,20 @@ describe('presence transport', () => {
     hook.unmount();
   });
 
-  it('combines an editor heartbeat with reads and suppresses its own session', async () => {
+  it('combines an editor heartbeat with reads and hides the current user across sessions', async () => {
     mocks.fetch.mockImplementation((_url, options) => {
       const request = requestSchema.parse(JSON.parse(options.body)).presence[0];
       return Promise.resolve({
-        presence: [{ serverTime: 0, events: [event, { ...event, sessionId: request.sessionId }] }],
+        presence: [
+          {
+            serverTime: 0,
+            events: [
+              event,
+              { ...event, userId: 'me', sessionId: request.sessionId },
+              { ...event, userId: 'me', sessionId: 'another-browser' },
+            ],
+          },
+        ],
       });
     });
     const hook = renderHook(() => usePresence([resource], 'me', resource));
