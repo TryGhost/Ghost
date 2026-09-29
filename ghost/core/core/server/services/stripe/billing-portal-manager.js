@@ -77,7 +77,7 @@ class BillingPortalManager {
    * Setup the Stripe Billing Portal Configuration.
    * - If no configuration exists, create a new one
    * - If a configuration exists, update it with current settings
-   * - If update fails (resource_missing), create a new one
+   * - If the configuration is missing or cannot be modified, create a new one
    * @param {string|null} id
    * @returns {Promise<string>}
    */
@@ -96,18 +96,30 @@ class BillingPortalManager {
       );
       return configuration.id;
     } catch (err) {
-      if (err && typeof err === 'object' && 'code' in err && err.code === 'resource_missing') {
-        const configuration = await this.api.createBillingPortalConfiguration(
-          this.getConfigurationOptions(),
-        );
-        return configuration.id;
+      const isMissing = err?.code === 'resource_missing';
+      // Stripe does not provide an error code for default or other-application configurations.
+      const isUnmodifiable =
+        err?.type === 'StripeInvalidRequestError' &&
+        typeof err.message === 'string' &&
+        err.message.startsWith('You cannot make any changes to a PortalConfiguration');
+
+      if (isMissing || isUnmodifiable) {
+        try {
+          const configuration = await this.api.createBillingPortalConfiguration(
+            this.getConfigurationOptions(),
+          );
+          return configuration.id;
+        } catch (createError) {
+          // Keep startup working even if a replacement cannot be created.
+          logging.error('Failed to replace the billing portal configuration', { err: createError });
+          return id;
+        }
       }
 
       logging.error('Failed to update the billing portal configuration', {
         err,
       });
 
-      // Couldn't modify configuration, means it's likely the default config
       return id;
     }
   }
