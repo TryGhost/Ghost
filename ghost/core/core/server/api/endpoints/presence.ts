@@ -11,6 +11,7 @@ import labs from '../../../shared/labs';
 // @ts-expect-error Legacy CommonJS module.
 import permissions from '../../services/permissions';
 import db from '../../data/db';
+import { setIsRoles } from '../../models/role-utils';
 
 const poll = createPresencePoll({
   getService,
@@ -24,9 +25,8 @@ const poll = createPresencePoll({
         'posts.id',
         resources.map((resource) => resource.id),
       );
-    const elevated = user.roles.some((role) =>
-      ['Owner', 'Administrator', 'Editor', 'Super Editor'].includes(role.name),
-    );
+    const { isOwner, isAdmin, isEitherEditor } = setIsRoles({ user });
+    const elevated = isOwner || isAdmin || isEitherEditor;
     if (!elevated) {
       query.whereIn(
         'posts.id',
