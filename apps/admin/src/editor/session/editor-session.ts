@@ -28,6 +28,7 @@ import type {
 } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import { pick } from '@/editor/engine/pick';
+import type { LocalRevisionDraft, LocalRevisionWriter } from '@/editor/local-revisions';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
 import type { EditorErrorContext } from '@/editor/report-error';
 import { toSaveError } from './error-mapping';
@@ -129,6 +130,8 @@ export interface EditorSessionOptions {
   onSaveFailed?: (failure: EditorSaveFailure) => void;
   /** Called when a leave request answers `confirm`. */
   onLeaveConfirmed?: (leave: EditorLeaveConfirmation) => void;
+  /** Keeps local copies of a draft that holds unsaved work. */
+  localRevisions?: LocalRevisionWriter;
 }
 
 /** The state React renders, published together after a session change. */
@@ -195,8 +198,18 @@ export interface EditorSession {
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   leaveRequested: () => Promise<LeaveDecision>;
+  /** Writes the draft's local copy now if it holds unsaved work, for a page that is going away. */
+  flushLocalRevision: () => void;
   dispose: () => void;
 }
+
+/** States a save stays stuck in until the writer acts. `error` is re-entered by every retry. */
+const STUCK_ENGINE_STATES: ReadonlySet<SaveEngineState['kind']> = new Set([
+  'reauth-pending',
+  'conflict',
+  'halted',
+  'crashed',
+]);
 
 /** Stages one dirty settings field into both the submitted projection and the payload. */
 function stageSettingsField<Key extends SettingsFieldKey>(
@@ -247,6 +260,7 @@ export function createEditorSession({
   onError,
   onSaveFailed,
   onLeaveConfirmed,
+  localRevisions,
 }: EditorSessionOptions): EditorSession {
   let identity: PersistedIdentity = record
     ? { id: record.id, updatedAt: record.updated_at ?? '' }
@@ -366,6 +380,7 @@ export function createEditorSession({
     }
     tracker.setLive(identity.id, patch);
     notifyChanged();
+    recordLocalRevision();
   }
 
   // A save writes a title and slug the writer never typed: the request's own
@@ -432,6 +447,61 @@ export function createEditorSession({
       changedSinceLastRevision: tracker.hasChangedSinceRevision(latestRevision),
       version,
     });
+  }
+
+  // Koenig's load-time normalization reads as a pending baseline, not as writer work.
+  function holdsUnsavedWork(): boolean {
+    return tracker
+      .verdict()
+      .reasons.some(
+        (reason) => reason.code !== 'POST_HAS_ERROR' && reason.code !== 'BASELINE_PENDING',
+      );
+  }
+
+  function localRevisionDraft(): LocalRevisionDraft {
+    return {
+      id: identity.id,
+      status,
+      title: live.title,
+      slug: machine.getState().slug,
+      lexical: live.lexical,
+      custom_excerpt: live.custom_excerpt,
+      feature_image: live.feature_image,
+      feature_image_alt: live.feature_image_alt,
+      feature_image_caption: live.feature_image_caption,
+      authors: live.authors.map(({ id }) => ({ id })),
+      tags: live.tags.map(({ id, name, slug: tagSlug }) => ({ id, name, slug: tagSlug })),
+    };
+  }
+
+  function withLocalRevisions(act: (writer: LocalRevisionWriter) => void): void {
+    if (!localRevisions) {
+      return;
+    }
+    try {
+      act(localRevisions);
+    } catch (error) {
+      onError(error);
+    }
+  }
+
+  function keepLocalRevision(write: (writer: LocalRevisionWriter) => void): void {
+    if (disposed || status !== 'draft') {
+      return;
+    }
+    withLocalRevisions((writer) => {
+      if (holdsUnsavedWork()) {
+        write(writer);
+      }
+    });
+  }
+
+  function recordLocalRevision(): void {
+    keepLocalRevision((writer) => writer.record(localRevisionDraft()));
+  }
+
+  function flushLocalRevision(): void {
+    keepLocalRevision((writer) => writer.flush(localRevisionDraft()));
   }
 
   // A title commit and a load move the machine's slug without a field patch, so
@@ -632,8 +702,15 @@ export function createEditorSession({
     live = { ...live, updated_at: result.updatedAt };
 
     if (created) {
+      withLocalRevisions((writer) => writer.created());
       onIdAcquired(result.id);
     }
+    // A copy still waiting for the minute is stale once the save left nothing unsaved.
+    withLocalRevisions((writer) => {
+      if (!holdsUnsavedWork()) {
+        writer.discard();
+      }
+    });
     notifyChanged();
   }
 
@@ -647,6 +724,9 @@ export function createEditorSession({
     onStateChange: (next) => {
       if (next.kind === 'error' || next.kind === 'conflict') {
         tracker.markSaveError();
+      }
+      if (STUCK_ENGINE_STATES.has(next.kind)) {
+        flushLocalRevision();
       }
       // A save error also moves dirtiness without going through a field patch.
       notifyChanged();
@@ -755,6 +835,8 @@ export function createEditorSession({
         ...restored,
         title: restored.title.trim() ? restored.title : DEFAULT_TITLE,
       };
+      // The revision replaces whatever copy was waiting, so the unsaved draft is kept first.
+      flushLocalRevision();
       const previous: RestoredRevision = {
         lexical: live.lexical,
         title: live.title,
@@ -885,10 +967,15 @@ export function createEditorSession({
       return decision;
     },
 
+    flushLocalRevision,
+
     dispose: () => {
       if (disposed) {
         return;
       }
+      // Whatever still holds unsaved work leaves a copy behind before the engine drops it.
+      flushLocalRevision();
+      withLocalRevisions((writer) => writer.discard());
       // A draft leaving with a title but a slug still derived from the default title.
       if (
         status === 'draft' &&
