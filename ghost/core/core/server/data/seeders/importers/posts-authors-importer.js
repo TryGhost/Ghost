@@ -14,7 +14,7 @@ class PostsAuthorsImporter extends TableImporter {
     const posts = await this.transaction.select('id').from('posts');
     this.users = await this.transaction.select('id').from('users');
 
-    await this.importForEach(posts, quantity ? quantity / posts.length : 1);
+    await this.importForEach(posts, quantity !== undefined ? quantity / posts.length : 1);
   }
 
   generate() {

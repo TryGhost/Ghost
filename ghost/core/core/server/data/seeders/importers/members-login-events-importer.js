@@ -30,7 +30,7 @@ class MembersLoginEventsImporter extends TableImporter {
         break;
       }
 
-      await this.importForEach(members, quantity ? quantity / members.length : 5);
+      await this.importForEach(members, quantity !== undefined ? quantity / members.length : 5);
 
       offset += limit;
     }

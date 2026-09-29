@@ -35,7 +35,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
 
       await this.importForEach(
         members,
-        quantity ? quantity / members.length : this.newsletters.length,
+        quantity !== undefined ? quantity / members.length : this.newsletters.length,
       );
       offset += limit;
     }

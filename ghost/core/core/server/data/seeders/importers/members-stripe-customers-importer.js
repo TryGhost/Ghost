@@ -29,7 +29,7 @@ class MembersStripeCustomersImporter extends TableImporter {
         break;
       }
 
-      await this.importForEach(members, quantity ? quantity / members.length : 1);
+      await this.importForEach(members, quantity !== undefined ? quantity / members.length : 1);
       offset += limit;
     }
   }
