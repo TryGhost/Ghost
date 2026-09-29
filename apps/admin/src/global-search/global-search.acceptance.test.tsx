@@ -68,8 +68,6 @@ function installEmberBridge() {
       dataChangeHandlers.delete(callback);
     },
     sidebarVisible: true,
-    getRouteUrl: (routeName: string) => routeName,
-    isRouteActive: () => false,
     navigateToBillingSubRoute,
   };
   window.EmberBridge = { state } as unknown as typeof window.EmberBridge;

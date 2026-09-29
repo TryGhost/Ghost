@@ -6,7 +6,7 @@ import {
   rememberStickyPostFilters,
 } from './posts-sticky-filters';
 
-// Ported from state-bridge.js `getRouteUrl`. Three rules, in order:
+// Three rules, in order:
 //   1. already on the route -> bare URL ("click again to go home")
 //   2. otherwise reuse the last params seen for that route
 //   3. unless those match a saved view, or clicking "Posts" would silently

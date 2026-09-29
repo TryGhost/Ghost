@@ -34,7 +34,7 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
 
-**What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Examples: nav active states from the routing bridge (`useEmberRouting`), the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
+**What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Example: the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
 
 ## The 418 loop
 

@@ -49,8 +49,6 @@ function createMockStateBridge(sidebarVisible = true) {
     on,
     off,
     sidebarVisible,
-    getRouteUrl: vi.fn(),
-    isRouteActive: vi.fn(),
   };
 
   return {
@@ -70,7 +68,6 @@ let useEmberDataSync: typeof import('./ember-bridge').useEmberDataSync;
 let useEmberAuthSync: typeof import('./ember-bridge').useEmberAuthSync;
 let useEmberFeatureFlag: typeof import('./ember-bridge').useEmberFeatureFlag;
 let useSidebarVisibility: typeof import('./ember-bridge').useSidebarVisibility;
-let useEmberRouting: typeof import('./ember-bridge').useEmberRouting;
 
 describe('syncEmberPostListQueryParams', () => {
   baseTest('delivers filters when Ember loads after the React list', async () => {
@@ -112,13 +109,8 @@ describe('syncEmberPostListQueryParams', () => {
 beforeEach(async () => {
   vi.resetModules();
   vi.useRealTimers();
-  ({
-    useEmberDataSync,
-    useEmberAuthSync,
-    useEmberFeatureFlag,
-    useSidebarVisibility,
-    useEmberRouting,
-  } = await import('./ember-bridge'));
+  ({ useEmberDataSync, useEmberAuthSync, useEmberFeatureFlag, useSidebarVisibility } =
+    await import('./ember-bridge'));
   delete window.EmberBridge;
 });
 
@@ -541,96 +533,6 @@ describe('useSidebarVisibility', () => {
     await vi.advanceTimersByTimeAsync(200);
 
     expect(mock.onSpy).not.toHaveBeenCalled();
-  });
-});
-
-describe('useEmberRouting', () => {
-  baseTest('returns default no-op routing when EmberBridge is not available', () => {
-    const { result } = renderHook(() => useEmberRouting());
-
-    // Should return default routing with no-op functions
-    expect(result.current).toHaveProperty('getRouteUrl');
-    expect(result.current).toHaveProperty('isRouteActive');
-
-    // Default getRouteUrl just returns the route name
-    expect(result.current.getRouteUrl('posts')).toBe('posts');
-
-    // Default isRouteActive always returns false
-    expect(result.current.isRouteActive('posts')).toBe(false);
-  });
-
-  baseTest('returns bridge routing methods when bridge is available', () => {
-    const mock = createMockStateBridge();
-    mock.stateBridge.isRouteActive = vi.fn(() => true);
-    window.EmberBridge = { state: mock.stateBridge };
-
-    const { result } = renderHook(() => useEmberRouting());
-
-    expect(result.current).toHaveProperty('getRouteUrl');
-    expect(result.current).toHaveProperty('isRouteActive');
-
-    // Should be using bridge methods, not defaults. The active-state method is
-    // wrapped so the app can ignore stale Ember state on React-owned routes.
-    expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive('posts')).toBe(true);
-    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
-  });
-
-  baseTest('switches to bridge methods when bridge becomes available', async () => {
-    vi.useFakeTimers();
-
-    const { result } = renderHook(() => useEmberRouting());
-
-    // Initially using default routing
-    expect(result.current.getRouteUrl('posts')).toBe('posts');
-    expect(result.current.isRouteActive('posts')).toBe(false);
-
-    // Bridge becomes available
-    const mock = createMockStateBridge();
-    mock.stateBridge.isRouteActive = vi.fn(() => true);
-    window.EmberBridge = { state: mock.stateBridge };
-
-    // Wait for the subscription interval to fire
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(150);
-    });
-
-    // Now should be using bridge methods
-    expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive('posts')).toBe(true);
-    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
-  });
-
-  baseTest('re-renders when route changes', async () => {
-    const mock = createMockStateBridge();
-    window.EmberBridge = { state: mock.stateBridge };
-
-    let renderCount = 0;
-    const { result } = renderHook(() => {
-      renderCount += 1;
-      return useEmberRouting();
-    });
-
-    // Initial render
-    expect(renderCount).toBe(1);
-    expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-
-    await waitFor(() => {
-      expect(mock.onSpy).toHaveBeenCalledWith('routeChange', expect.any(Function));
-    });
-
-    // Trigger route change
-    act(() => {
-      mock.emit('routeChange', {
-        routeName: 'posts',
-        queryParams: {},
-      });
-    });
-
-    // Should have re-rendered
-    await waitFor(() => {
-      expect(renderCount).toBe(2);
-    });
   });
 });
 

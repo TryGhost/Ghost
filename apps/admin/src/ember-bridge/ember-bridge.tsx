@@ -1,7 +1,6 @@
-import { useCallback, useContext, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { EmberContext } from './ember-context';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -12,7 +11,6 @@ export type StateBridgeEventMap = {
   emberAuthChange: EmberAuthChangeEvent;
   subscriptionChange: SubscriptionState;
   sidebarVisibilityChange: SidebarVisibilityChangeEvent;
-  routeChange: RouteChangeEvent;
   openGiftLinkModal: OpenGiftLinkModalEvent;
   featureFlagsChange: undefined;
 };
@@ -38,11 +36,6 @@ export interface StateBridge {
     callback: (event: StateBridgeEventMap[K]) => void,
   ): void;
   sidebarVisible: boolean;
-  getRouteUrl: (routeName: string, queryParams?: Record<string, string | null> | null) => string;
-  isRouteActive: (
-    routeNames: string | string[],
-    queryParams?: Record<string, string | null> | null,
-  ) => boolean;
 }
 
 declare global {
@@ -74,17 +67,10 @@ export interface SidebarVisibilityChangeEvent {
   isVisible: boolean;
 }
 
-export interface RouteChangeEvent {
-  routeName: string;
-  queryParams: Record<string, unknown>;
-}
-
 export interface OpenGiftLinkModalEvent {
   id: string;
   resource: 'posts' | 'pages';
 }
-
-export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
 
 /**
  * Maps Ember Data model names to React ResponseType strings.
@@ -386,60 +372,6 @@ export function useSidebarVisibility(): boolean {
     getSidebarVisibility,
     getSidebarVisibility, // Server snapshot (same as client for now)
   );
-}
-
-// Default no-op routing for when the bridge isn't available yet
-const defaultRouting: EmberRouting = {
-  getRouteUrl: (routeName) => routeName,
-  isRouteActive: () => false,
-};
-
-/**
- * Hook to access Ember routing state.
- * Returns routing methods that re-render when Ember's route changes.
- *
- * @example
- * ```tsx
- * const routing = useEmberRouting();
- * const postsUrl = routing.getRouteUrl('posts');
- * const customUrl = routing.getRouteUrl('posts', {type: 'draft'});
- * const isActive = routing.isRouteActive('posts', {type: 'draft'});
- * ```
- */
-export function useEmberRouting(): EmberRouting {
-  const emberContext = useContext(EmberContext);
-  const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
-  const [, forceUpdate] = useState(0);
-
-  useEffect(() => {
-    // Wait for bridge to be available
-    if (!bridge) {
-      return waitForStateBridge(setBridge);
-    }
-
-    // Subscribe to route changes to force re-renders
-    const handleRouteChange = () => {
-      forceUpdate((n) => n + 1);
-    };
-
-    bridge.on('routeChange', handleRouteChange);
-    return () => bridge.off('routeChange', handleRouteChange);
-  }, [bridge]);
-
-  // Return default no-op routing until bridge is available
-  if (!bridge) {
-    return defaultRouting;
-  }
-
-  return {
-    getRouteUrl: bridge.getRouteUrl,
-    // React-owned navigations use pushState, which Ember does not observe.
-    // Only trust Ember's route state while the current route is actually
-    // rendering an Ember fallback. Outside EmberProvider (mainly unit tests
-    // and standalone consumers), preserve the bridge's original behaviour.
-    isRouteActive: (...args) =>
-      (emberContext?.isFallbackPresent ?? true) && bridge.isRouteActive(...args),
-  };
 }
 
 /**

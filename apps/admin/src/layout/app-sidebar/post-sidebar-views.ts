@@ -1,13 +1,8 @@
 import { POST_VIEW_PARAMS, type PostResource } from '@/posts/api';
 
 /**
- * Sidebar saved views for posts and pages.
- *
- * Resolved from React's own location rather than the Ember routing bridge:
- * once the `postsListReact` flag hands `/posts` to React, the Ember route
- * aborts and its `currentRouteName` is never `posts`, so every bridge-derived
- * active state silently goes dead. Modelled on `member-sidebar-views.ts`,
- * which solved the same problem for members.
+ * Sidebar saved views for posts and pages, resolved from the router location
+ * like `member-sidebar-views.ts`.
  */
 
 export type PostViewFilter = Record<string, string | null>;

@@ -9,7 +9,6 @@ export {
   useEmberFeatureFlag,
   useSidebarVisibility,
   useSubscriptionStatus,
-  useEmberRouting,
   useForceUpgrade,
   subscribeOpenGiftLinkModal,
   isEmberThemeManaged,
@@ -22,7 +21,6 @@ export {
 export type {
   AdminThemeMode,
   EmberDataChangeEvent,
-  EmberRouting,
   OpenGiftLinkModalEvent,
   StateBridge,
 } from './ember-bridge';
