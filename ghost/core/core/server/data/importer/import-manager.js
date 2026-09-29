@@ -154,14 +154,15 @@ class ImportManager {
    * Takes a reference to a zip file, extracts it and reads it, returning the content to import
    * alongside the extracted directory, which the caller owns from here on
    * @param {File} file
+   * @param {boolean} [validateOnly] true to skip the work only an actual import needs
    * @returns {Promise<LoadedImport>}
    */
-  async processZip(file) {
+  async processZip(file, validateOnly = false) {
     const cleanupDirectory = await this.extractZip(file.path);
 
     try {
       return {
-        data: await this.readExtractedZip(cleanupDirectory),
+        data: await this.readExtractedZip(cleanupDirectory, validateOnly),
         cleanupDirectory,
       };
     } catch (err) {
@@ -176,9 +177,10 @@ class ImportManager {
    * The data key contains JSON representing any data that should be imported
    * The image key contains references to images that will be stored (and where they will be stored)
    * @param {string} zipDirectory
+   * @param {boolean} [validateOnly] true to skip the work only an actual import needs
    * @returns {Promise<ImportData>}
    */
-  async readExtractedZip(zipDirectory) {
+  async readExtractedZip(zipDirectory, validateOnly = false) {
     /**
      * @type {ImportData}
      */
@@ -200,7 +202,12 @@ class ImportManager {
           });
         }
 
-        const data = await handler.loadFile(files, baseDir);
+        // Asset destination preparation belongs to execution. Validation still
+        // extracts the archive and parses content to preserve request errors.
+        const data =
+          validateOnly && handler.directories.length
+            ? undefined
+            : await handler.loadFile(files, baseDir);
         importData[handler.type] = data;
       }
     }
@@ -254,14 +261,26 @@ class ImportManager {
    * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
    * A zip also yields the extracted directory, which the caller owns from here on.
    * @param {File} file
+   * @param {boolean} [validateOnly] true to skip the work only an actual import needs
    * @returns {Promise<LoadedImport>}
    */
-  async loadFile(file) {
+  async loadFile(file, validateOnly = false) {
     const ext = path.extname(file.name).toLowerCase();
 
     return this.isZip(ext)
-      ? this.processZip(file)
+      ? this.processZip(file, validateOnly)
       : { data: await this.processFile(file, ext) };
+  }
+
+  /**
+   * Read an upload the way execution will read it, so that a malformed upload still fails the
+   * request that uploaded it. The parsed content is of no use here and is dropped with its files.
+   * @param {File} file
+   * @returns {Promise<void>}
+   */
+  async validateFile(file) {
+    const { cleanupDirectory } = await this.loadFile(file, true);
+    await this.cleanUp(cleanupDirectory);
   }
 
   /**
