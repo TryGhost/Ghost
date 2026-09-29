@@ -362,6 +362,68 @@ describe('Data Generator', function () {
     assert.equal(new Set(minimumSteps.map((step) => step.automation_run_id)).size, runs.length);
   });
 
+  it('Generates no rows for an explicit quantity of 0', async function () {
+    const dataGenerator = new DataGenerator({
+      knex: db,
+      schema,
+      schemaTables,
+      logger: {
+        info: () => {},
+        ok: () => {},
+        warn: () => {},
+      },
+      tables: [
+        {
+          name: 'posts',
+          quantity: 5,
+        },
+        {
+          name: 'posts_authors',
+          quantity: 0,
+        },
+        {
+          name: 'redirects',
+          quantity: 0,
+        },
+      ],
+    });
+    await dataGenerator.importData();
+
+    const posts = await db.select('id').from('posts');
+    assert.equal(posts.length, 5);
+    assert.equal((await db.select('id').from('posts_authors')).length, 0);
+    assert.equal((await db.select('id').from('redirects')).length, 0);
+  });
+
+  it('Uses the default per-model quantity when none is given', async function () {
+    const dataGenerator = new DataGenerator({
+      knex: db,
+      schema,
+      schemaTables,
+      logger: {
+        info: () => {},
+        ok: () => {},
+        warn: () => {},
+      },
+      tables: [
+        {
+          name: 'posts',
+          quantity: 5,
+        },
+        {
+          name: 'posts_authors',
+        },
+      ],
+    });
+    await dataGenerator.importData();
+
+    const posts = await db.select('id').from('posts');
+    const postsAuthors = await db.select('post_id').from('posts_authors');
+    assert.equal(posts.length, 5);
+    assert.equal(postsAuthors.length, posts.length);
+    assert.equal(new Set(postsAuthors.map((row) => row.post_id)).size, posts.length);
+  });
+
   it('Can import explicit offer redemptions', async function () {
     const dataGenerator = new DataGenerator({
       knex: db,

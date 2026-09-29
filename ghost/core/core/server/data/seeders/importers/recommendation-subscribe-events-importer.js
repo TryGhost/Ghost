@@ -19,7 +19,9 @@ class RecommendationSubscribeEventsImporter extends TableImporter {
 
     await this.importForEach(
       recommendations,
-      quantity ? quantity / recommendations.length : () => faker.number.int({ min: 0, max: 50 }),
+      quantity !== undefined
+        ? quantity / recommendations.length
+        : () => faker.number.int({ min: 0, max: 50 }),
     );
   }
 

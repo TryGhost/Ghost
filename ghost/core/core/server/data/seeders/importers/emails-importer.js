@@ -34,7 +34,7 @@ class EmailsImporter extends TableImporter {
     // Only generate emails for last 25% of posts, and only generate emails for 50% of those
     await this.importForEach(
       posts.slice(0, Math.ceil(posts.length / 4)),
-      quantity ? quantity / posts.length : 0.5,
+      quantity !== undefined ? quantity / posts.length : 0.5,
     );
   }
 
