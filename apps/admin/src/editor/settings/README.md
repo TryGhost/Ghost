@@ -346,9 +346,10 @@ are a recommendation rather than a limit: 60 for the title, 145 for the descript
 counted as symbols so a multibyte character counts once, and coloured once the
 writer is past the recommendation.
 
-The optional canonical URL follows the same URL and 2,000-character validation
-as Ember. Invalid values stay staged and block saves until corrected. Clearing
-the field stores no canonical override.
+The optional canonical URL accepts root-relative paths or absolute URLs with a
+valid host, rejects whitespace, and keeps Ember's 2,000-character limit. Invalid
+values stay staged and block saves until corrected. Clearing the field stores
+no canonical override.
 
 The preview under them is the result the post would produce, with a Google logo,
 search bar and blue result title. Each line falls back rather than emptying: the title is the meta title, else the title the

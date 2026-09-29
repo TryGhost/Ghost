@@ -174,9 +174,18 @@ export function settingsFieldErrorFor(
     if (!url) {
       return null;
     }
-    // Matches Ember: an absolute scheme or root-relative URL, with no whitespace.
-    if (/\s/.test(url) || !/^(\/|[a-zA-Z0-9-]+:)/.test(url)) {
+    if (/\s/.test(url)) {
       return 'Please enter a valid URL';
+    }
+    // Root-relative paths are supported; absolute URLs must have a valid host.
+    if (!url.startsWith('/')) {
+      try {
+        if (!new URL(url).hostname) {
+          return 'Please enter a valid URL';
+        }
+      } catch {
+        return 'Please enter a valid URL';
+      }
     }
     return overLength(url, 2000) ? 'Canonical URL is too long, max 2000 chars' : null;
   }

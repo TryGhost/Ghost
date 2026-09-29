@@ -203,12 +203,21 @@ describe('settingsFieldErrorFor', () => {
 });
 
 describe('canonical URL validation', () => {
-  it.each(['https://example.com/original/', '/original/', ''])('accepts %s', (canonicalUrl) => {
-    expect(
-      settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: canonicalUrl }),
-    ).toBeNull();
-  });
-  it.each(['example.com/path', 'https://example.com/a b'])('refuses %s', (canonicalUrl) => {
+  it.each(['https://example.com/original/', 'http://localhost:2368/story/', '/original/', ''])(
+    'accepts %s',
+    (canonicalUrl) => {
+      expect(
+        settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: canonicalUrl }),
+      ).toBeNull();
+    },
+  );
+  it.each([
+    'example.com/path',
+    'https://example.com/a b',
+    'https://',
+    'https://[invalid]',
+    'https://example.com:invalid',
+  ])('refuses %s', (canonicalUrl) => {
     expect(settingsFieldErrorFor('canonical_url', { ...VALID, canonical_url: canonicalUrl })).toBe(
       'Please enter a valid URL',
     );
