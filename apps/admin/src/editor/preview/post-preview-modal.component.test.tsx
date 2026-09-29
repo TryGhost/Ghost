@@ -408,6 +408,7 @@ describe('Post preview modal', () => {
   );
 
   it('limits desktop emails to 720px on a muted canvas', async () => {
+    await previewViewport(1440, 900);
     fakePreviewWorld();
     fakeEmailPreview();
     await renderPreviewModal();
