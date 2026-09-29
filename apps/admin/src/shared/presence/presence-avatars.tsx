@@ -35,14 +35,19 @@ export function PresenceAvatars({
         aria-label="Active editors"
         className="pointer-events-auto shrink-0"
         data-testid="presence-avatars"
-        gap="xs"
+        gap="none"
       >
         {users.slice(0, limit).map((user) => (
           <Tooltip key={user.userId}>
             <TooltipTrigger asChild>
-              <span aria-label={label(user)} role="img" tabIndex={0}>
+              <span
+                aria-label={label(user)}
+                className="relative -ml-2 first:ml-0"
+                role="img"
+                tabIndex={0}
+              >
                 <Avatar
-                  className="size-7"
+                  className="size-7 border-2 border-white"
                   initials={user.name
                     .trim()
                     .split(/\s+/)
@@ -61,6 +66,7 @@ export function PresenceAvatars({
             <TooltipTrigger asChild>
               <Text
                 aria-label={`${users.length - limit} more active ${users.length - limit === 1 ? 'editor' : 'editors'}`}
+                className="ml-1.5"
                 size="sm"
                 tabIndex={0}
               >
