@@ -30,6 +30,8 @@ export interface UseUnsavedChangesGuardOptions {
 export interface UnsavedChangesGuard {
   /** A guarded navigation is currently blocked awaiting the discard dialog. */
   isBlocked: boolean;
+  /** Reads a blocked exit synchronously, before the router has necessarily rerendered. */
+  hasBlockedNavigation: () => boolean;
   /** Wiring for Shade's `DirtyConfirmDialog`: `<DirtyConfirmDialog {...dialogProps} />`. */
   dialogProps: {
     open: boolean;
@@ -115,9 +117,6 @@ export function useUnsavedChangesGuard({
   const isBlockedByIntercept = blocker.state === 'blocked' && blockedByInterceptRef.current;
   const isBlocked =
     (blocker.state === 'blocked' && !blockedByInterceptRef.current) || anchorGuard.isBlocked;
-  if (isBlocked) {
-    blockedNavigationRef.current = true;
-  }
 
   // One-shot state is scoped to the current route target.
   React.useEffect(() => {
@@ -143,6 +142,8 @@ export function useUnsavedChangesGuard({
     bypassRef.current = true;
   }, []);
 
+  const hasBlockedNavigation = React.useCallback(() => blockedNavigationRef.current, []);
+
   const resumeBlockedNavigationAfterSave = React.useCallback(() => {
     if (!blockedNavigationRef.current) {
       return false;
@@ -153,6 +154,7 @@ export function useUnsavedChangesGuard({
 
   return {
     isBlocked,
+    hasBlockedNavigation,
     dialogProps: {
       open: isBlocked && !isSaving,
       onConfirm: () => {

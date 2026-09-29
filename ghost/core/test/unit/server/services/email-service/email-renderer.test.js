@@ -3009,7 +3009,7 @@ describe('Email renderer', function () {
       customSettings.locale = 'pt-PT';
       const post = createModel(
         Object.assign({}, basePost, {
-          published_at: new Date(2026, 2, 19),
+          published_at: new Date('2026-03-19T00:00:00.000Z'),
           authors: [createModel({ name: "Author/Name O'Brien & Co." })],
         }),
       );

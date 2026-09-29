@@ -122,6 +122,33 @@ describe('ContentFileImporter', function () {
     assert.equal(output.data.data.posts[0].html, '<img src="/content/images/image-1.jpg">');
   });
 
+  it('treats regex metacharacters in archive paths literally', function () {
+    const imageImporter = new ContentFileImporter({ type: 'images', store: {} });
+    const backtrackingInput = `/images/${'a'.repeat(40)}c`;
+    const inputData = {
+      images: [
+        {
+          originalPath: 'images/(a+)+b.jpg',
+          newPath: '/content/images/a-b.jpg',
+        },
+      ],
+      data: {
+        data: {
+          posts: [{ html: `<p>${backtrackingInput}</p><img src="/images/(a+)+b.jpg">` }],
+          tags: [],
+          users: [],
+        },
+      },
+    };
+
+    const output = imageImporter.preProcess(inputData);
+
+    assert.equal(
+      output.data.data.posts[0].html,
+      `<p>${backtrackingInput}</p><img src="/content/images/a-b.jpg">`,
+    );
+  });
+
   it('does import the images correctly', async function () {
     const inputData = require('../../../../../utils/fixtures/import/import-data-1.json');
     const storageApi = {

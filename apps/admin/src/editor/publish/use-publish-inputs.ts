@@ -201,8 +201,9 @@ export function usePublishInputs(): PublishInputs {
     [settingsData, configData, newslettersData, currentUser, memberCount],
   );
   const isLoading =
+    // Opening the flow refreshes settings for its limit checks. Keep validated
+    // cached settings usable so its Publish opener can receive focus on close.
     settingsQuery.isLoading ||
-    settingsQuery.isFetching ||
     configQuery.isLoading ||
     configQuery.isFetching ||
     newslettersQuery.isLoading ||

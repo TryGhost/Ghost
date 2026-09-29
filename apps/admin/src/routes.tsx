@@ -27,6 +27,7 @@ import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
+import { lazyMigrateScreen } from './migrate/api';
 import { membersRouteChildren } from './members/api';
 import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
 import {
@@ -36,27 +37,20 @@ import {
 } from './posts/api';
 import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
 import { lazyTagDetailScreen, lazyTagsScreen } from './tags/api';
+import { lazyViewSiteScreen } from './view-site/api';
 import {
   canManageAutomations,
   canManageMembers,
   canManageTags,
+  hasAdminAccess,
 } from '@tryghost/admin-x-framework/api/users';
 
 import { NotFound } from './shared/not-found';
+import { type AuthRouteHandle, authRoutes, useAuthScreensOwner } from './auth/api';
 
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
-const EMBER_ROUTES: string[] = [
-  '/site',
-  '/setup',
-  '/signin/*',
-  '/signout',
-  '/signup/*',
-  '/reset/*',
-  '/pro/*',
-  '/restore',
-  '/migrate/*',
-];
+const EMBER_ROUTES: string[] = ['/pro/*', '/restore'];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
 
@@ -204,6 +198,15 @@ const appRoutes: RouteObject[] = [
     Component: EditorGate,
     handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
   },
+  { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
+  {
+    path: '/migrate/*',
+    lazy: lazyComponent(lazyMigrateScreen),
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: hasAdminAccess,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+  },
   // Ember-handled routes
   ...emberFallbackRoutes,
   {
@@ -214,6 +217,8 @@ const appRoutes: RouteObject[] = [
 ];
 
 export const routes: RouteObject[] = [
+  // Outside the guards: signed-out visitors have no user or settings to check.
+  ...authRoutes,
   {
     // ForceUpgradeGuard wraps all routes to redirect to /pro when in force upgrade mode.
     // Routes with handle.allowInForceUpgrade: true bypass this protection.
@@ -240,6 +245,7 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
   const postsListOwner = useFlagGatedRouteOwner('postsListReact');
   const editorOwner = useFlagGatedRouteOwner('editorReact');
   const memberActivityOwner = useFlagGatedRouteOwner('membersActivityReact');
+  const authScreensOwner = useAuthScreensOwner();
 
   return useCallback(
     (pathname: string) => {
@@ -256,9 +262,12 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
       if (leaf.Component === MemberActivityGate) {
         return memberActivityOwner !== 'react';
       }
+      if ((leaf.handle as AuthRouteHandle | undefined)?.authScreen) {
+        return authScreensOwner !== 'react';
+      }
       return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
     },
-    [postsListOwner, editorOwner, memberActivityOwner],
+    [postsListOwner, editorOwner, memberActivityOwner, authScreensOwner],
   );
 }
 

@@ -5,6 +5,7 @@ import InMemoryJobsBackend from '../../../../../core/server/adapters/jobs/InMemo
 
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
+const later = require('@breejs/later');
 
 runJobsBackendContractTests(() => new InMemoryJobsBackend(), { describe, it });
 
@@ -387,7 +388,10 @@ describe('InMemoryJobsBackend', function () {
       const backend = new InMemoryJobsBackend();
       backend.start({
         processor: async () => {
-          fireDays.push(new Date().getUTCDay());
+          // Bree configures the shared scheduler to use local time when loaded.
+          // Assert the cron weekday in the calendar the scheduler actually uses.
+          const now = new Date();
+          fireDays.push(later.date.isUTC ? now.getUTCDay() : now.getDay());
         },
       });
 

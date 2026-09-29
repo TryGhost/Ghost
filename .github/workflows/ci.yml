@@ -247,7 +247,7 @@ jobs:
             echo 'typecheck_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
-            echo 'affected_playwright_projects=[]' >> "$GITHUB_OUTPUT"
+            echo 'affected_playwright_matrix=[]' >> "$GITHUB_OUTPUT"
             echo 'publish_public_apps_matrix=[]' >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -290,7 +290,12 @@ jobs:
             --withTarget test:acceptance \
             --projects 'tag:playwright' \
             --json)
-          echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
+          # Split Admin across two runners; every other app keeps a single shard.
+          PLAYWRIGHT_MATRIX=$(jq -c '[.[] | . as $app |
+            (if $app == "@tryghost/admin" then 2 else 1 end) as $total |
+            range(1; $total + 1) | {app: $app, shardIndex: ., shardTotal: $total}
+          ]' <<< "$PLAYWRIGHT_PROJECTS")
+          echo "affected_playwright_matrix=$PLAYWRIGHT_MATRIX" >> "$GITHUB_OUTPUT"
 
           # Build the publish matrix for affected public apps. Matrix context
           # isn't available in a job-level `if:`, so the publish job can't filter
@@ -305,7 +310,7 @@ jobs:
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
       typecheck_projects_str: ${{ steps.affected.outputs.typecheck_projects_str }}
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
-      affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
+      affected_playwright_matrix: ${{ steps.affected.outputs.affected_playwright_matrix }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
@@ -704,8 +709,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -832,8 +840,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -942,8 +953,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set env vars (MySQL)
         run: |
@@ -979,12 +993,12 @@ jobs:
     # are not starved on the default runner. See job_acceptance-tests above.
     runs-on: ${{ (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost' && matrix.app == '@tryghost/admin') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
     needs: [job_setup]
-    if: needs.job_setup.outputs.affected_playwright_projects != '[]'
-    name: App Playwright Acceptance Tests
+    if: needs.job_setup.outputs.affected_playwright_matrix != '[]'
+    name: App Playwright Acceptance Tests (${{ matrix.app }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     strategy:
       fail-fast: false
       matrix:
-        app: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_projects) }}
+        include: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_matrix) }}
     env:
       CI: true
     steps:
@@ -1057,7 +1071,7 @@ jobs:
         run: pnpm exec playwright install-deps firefox
 
       - name: Run Playwright tests
-        run: pnpm nx run ${{ matrix.app }}:test:acceptance
+        run: pnpm nx run ${{ matrix.app }}:test:acceptance --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Get App Name
         if: always()
@@ -1081,7 +1095,7 @@ jobs:
         if: always() && steps.app_name.outputs.has_report == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ${{ steps.app_name.outputs.name }}-playwright-report
+          name: ${{ steps.app_name.outputs.name }}-playwright-report-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
@@ -1092,7 +1106,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ${{ steps.app_name.outputs.name }}-failure-screenshots
+          name: ${{ steps.app_name.outputs.name }}-failure-screenshots-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/**/__screenshots__/**
           if-no-files-found: ignore
           retention-days: 30
@@ -2379,7 +2393,9 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       - name: Output needs
-        run: echo "${{ toJson(needs) }}"
+        env:
+          NEEDS_JSON: ${{ toJson(needs) }}
+        run: printf '%s\n' "$NEEDS_JSON"
 
       - name: Check if any required jobs failed or been cancelled
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')

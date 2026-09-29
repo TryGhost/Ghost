@@ -74,12 +74,19 @@ command in the runnable queue, so navigating away does not wait indefinitely.
 The live document remains the source of truth: Update enables, the post stays
 dirty, and leaving requires a save or confirmation.
 
-All saves use the same preparation validator. An incomplete tier pairing, an
-over-long meta/social field, an emptied author list, or a newly staged future
-publish time holds a background save with a validation blocker. Body autosave,
-title and image commits follow the same rule, including an already armed timer
-or queued request. The editor explains why changes are waiting even when the
-settings panel is closed. A saved future publish time is not itself invalid.
+All saves use the same preparation validator. An incomplete tier pairing on a
+post that exists, an over-long meta/social field, an emptied author list, or a
+newly staged future publish time holds a background save with a validation
+blocker. Body autosave, title and image commits follow the same rule, including
+an already armed timer or queued request. The editor explains why changes are
+waiting even when the settings panel is closed. A saved future publish time is
+not itself invalid.
+
+A post the server has not created yet is not held to the tier rule. Its saves
+go ahead with the incomplete pair left out of the write and of the submitted
+projection, so the acknowledgement is not authoritative for either field: the
+pair stays the writer's edit across the create, whatever visibility and tier
+relations the server answered with, and the next complete pair sends both.
 
 An explicit save returns a validation failure promptly and shows the save error.
 Its content stays pending; its publish/schedule/email target is not retained for
@@ -198,8 +205,8 @@ and caption into the live document and saves them explicitly, so the server
 keeps a version of what was replaced. The tracker is told about the restore only
 once that save lands. A save that is refused puts the post back as it was —
 content, title and slug — and reports the failure. A restore that meets an
-expired session is rolled back rather than left frozen, because the re-auth
-controls are behind the history modal.
+expired session waits behind the sign-in dialog, which sits above the history
+modal, and lands once the session is back; abandoning the sign-in rolls it back.
 
 A restore is a document boundary for the slug: the restored title is not a title
 the writer typed, so the slug is kept rather than moved to it, and whether it
@@ -227,6 +234,20 @@ What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
 way back in and the content stays untouched.
 
+## Signing in again without leaving
+
+A save that finds the session gone freezes the queue and opens a sign-in dialog
+over the editor (`reauth-dialog.tsx`); the content stays on screen behind it and
+nothing navigates. The writer's email is already filled in and only the password
+is asked for; the credentials go to the session endpoint and nowhere else. A site
+that requires a sign-in code turns the dialog into a second step that asks for
+the emailed code. A wrong password or code is named inside the dialog and nothing
+else changes. Once the session is back the held save goes out on its own; a
+status change it was carrying, such as a publish, is re-confirmed rather than
+sent unasked. Clicking outside the dialog does nothing; Escape or Cancel abandons
+it, which moves the queue to the save-error banner with the content kept, and the
+banner's retry brings the dialog back.
+
 ## The view React subscribes to
 
 The session publishes one cached view — the engine state, pending-save
@@ -237,6 +258,29 @@ tracker changes, including save errors that make a clean document dirty. The nes
 references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
 for `useSyncExternalStore` and lets it stand in for those values as a dependency.
+
+## What the session reports
+
+Failures never reach the writer as thrown errors; the session reports them. Every
+request that ran and failed is reported once, with the command it ran, the
+error, whether the post already had a server id, the post's persisted status,
+the id, and how long the request took. Queued work a failure dropped is not
+reported on its own. An expired session is reported only when re-authentication
+is abandoned, not when it is retried. A leave the writer has to
+confirm is reported with the reason codes the tracker holds the post dirty for.
+A draft disposed with a title but a slug still derived from the default title is
+reported as an error. A throwing subscriber or slug listener is reported as an
+error, and so is a slug edit the generator rejected.
+
+Sentry receives these through the editor's own reporter, with the response
+status and URL when the transport answered. Validation failures, host limits and
+an unreachable server are not sent: they are the writer's or the host's to act
+on. A failed request that took more than two seconds is sent as a second event
+with its timing. Every error banner the writer is shown — a failed save, a
+collision, a deleted post — is also sent once as a message carrying the text
+they read. A Koenig instance that crashes its error boundary is reported as a
+Lexical failure. Sentry stays optional: without a DSN the calls are no-ops, and
+an error is still logged to the console.
 
 ## The autosave debounce
 

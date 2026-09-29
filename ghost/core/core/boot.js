@@ -101,6 +101,29 @@ async function initCore({ ghostServer, config }) {
   adapterManager.init();
   debug('End: adapters');
 
+  // Limit image processing to the configured image formats before anything
+  // can process an image
+  debug('Begin: image upload config');
+  const { restrictImageDecoders } = require('./server/lib/image/image-decoders');
+  const {
+    IMAGE_UPLOAD_TYPES,
+    getIgnoredImageContentTypes,
+  } = require('./server/lib/image/image-content');
+  const uploads = config.get('uploads');
+  restrictImageDecoders(IMAGE_UPLOAD_TYPES.flatMap((type) => uploads[type]?.extensions ?? []));
+
+  // Image uploads can only be stored as image types, so point out any
+  // configured types that will be ignored
+  for (const type of IMAGE_UPLOAD_TYPES) {
+    const ignored = getIgnoredImageContentTypes(uploads[type]?.contentTypes ?? []);
+    if (ignored.length > 0) {
+      require('@tryghost/logging').warn(
+        `Ignoring uploads.${type}.contentTypes that are not image types: ${ignored.join(', ')}`,
+      );
+    }
+  }
+  debug('End: image upload config');
+
   // URL Utils is a bit slow, put it here so the timing is visible separate from models
   debug('Begin: Load urlUtils');
   require('./shared/url-utils');
@@ -441,6 +464,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   assert(membersService.handleImportJob, 'Members service should be initialized');
   assert(emailService.service, 'Email service should be initialized');
   registerJobHandlers({
+    gifts: emailAnalytics.getGifts(),
+    automations: emailAnalytics.getAutomations(),
+    newsletters: emailAnalytics.getNewsletters(),
     jobsService,
     memberJobs,
     giftService: giftService.service,
@@ -550,14 +576,22 @@ async function initBackgroundServices({ config }) {
   }
 
   // Load email analytics recurring jobs. Runs before activitypub.init for the
-  // same reason as the schedules above.
+  // same reason as the schedules above. Each failure is logged rather than
+  // thrown so one failed registration cannot hide a sibling's or stop the
+  // remaining background services from starting.
   if (config.get('backgroundJobs:emailAnalytics')) {
     const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-    await Promise.all([
+    const results = await Promise.allSettled([
       emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
       emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
       emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
     ]);
+    const logging = require('@tryghost/logging');
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        logging.error(result.reason);
+      }
+    }
   }
 
   const activitypub = require('./server/services/activitypub');

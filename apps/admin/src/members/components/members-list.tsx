@@ -84,7 +84,7 @@ function MembersList({
   }, [activeColumns.length, showEmailOpenRate]);
   const { tableStyle, columnStyles } = useMemo(() => getMemberTableLayoutStyles(layout), [layout]);
 
-  useScrollRestoration({ parentRef, isLoading });
+  useScrollRestoration({ parentRef, isLoading, resetOnNavigation: true });
 
   useEffect(() => {
     const scrollElement = horizontalScrollRef.current;

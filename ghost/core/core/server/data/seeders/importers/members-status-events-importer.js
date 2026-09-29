@@ -25,7 +25,7 @@ class MembersStatusEventsImporter extends TableImporter {
         break;
       }
 
-      await this.importForEach(members, quantity ? quantity / members.length : 2);
+      await this.importForEach(members, quantity !== undefined ? quantity / members.length : 2);
       offset += limit;
     }
   }

@@ -2,6 +2,7 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
+import logging from '@tryghost/logging';
 import { dequal } from 'dequal';
 import { type Knex } from 'knex';
 // @ts-expect-error This module currently lacks type definitions.
@@ -577,6 +578,25 @@ async function ensureWelcomeEmailAction(
   ]);
 }
 
+async function lockMemberForTriggering(trx: Knex.Transaction, memberId: string): Promise<void> {
+  await trx('members').where('id', memberId).forUpdate().first('id');
+}
+
+async function hasMemberAlreadyEnteredAutomation(
+  trx: Knex.Transaction,
+  automationId: string,
+  memberId: string,
+): Promise<boolean> {
+  const [{ hasAlreadyEntered }] = await trx.select<{ hasAlreadyEntered: number }[]>(
+    trx.raw('EXISTS ? AS hasAlreadyEntered', [
+      trx('automation_runs')
+        .select('id')
+        .where({ automation_id: automationId, member_id: memberId }),
+    ]),
+  );
+  return Boolean(hasAlreadyEntered);
+}
+
 async function trigger(
   trx: Knex.Transaction,
   options: Readonly<{
@@ -588,8 +608,19 @@ async function trigger(
 ): Promise<void> {
   const { memberEmail, memberId, memberStatus, fakeWaitHoursMultiplier } = options;
 
+  await lockMemberForTriggering(trx, memberId);
+
   const firstAction = await findFirstActionRevision(trx, memberStatus);
   if (!firstAction) {
+    return;
+  }
+
+  const automationId = firstAction.automation_id;
+
+  if (await hasMemberAlreadyEnteredAutomation(trx, automationId, memberId)) {
+    logging.info(
+      `Skipping automation ${automationId} for member ${memberId} because they have already run it`,
+    );
     return;
   }
 
@@ -602,7 +633,7 @@ async function trigger(
     id: ObjectId().toHexString(),
     created_at: nowString,
     updated_at: nowString,
-    automation_id: firstAction.automation_id,
+    automation_id: automationId,
     member_id: memberId,
     member_email: memberEmail,
   };

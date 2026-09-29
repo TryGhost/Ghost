@@ -16,7 +16,7 @@ describe('email analytics service', function () {
     trackEmailDeliveredAndOpened: sinon.stub(),
   };
   const config = { get: sinon.stub() };
-  const domainEvents = { subscribe: sinon.stub() };
+  const domainEvents = { dispatch: sinon.stub() };
   const metrics = { metric: sinon.stub() };
   const settingsCache = { get: sinon.stub() };
   const giftDeliveryService = { recordOutcome: sinon.stub() };
@@ -49,7 +49,6 @@ describe('email analytics service', function () {
     );
     analytics = await import('../../../../../core/server/services/email-analytics');
     init = analytics.init;
-    domainEvents.subscribe.resetHistory();
 
     dependencies = {
       automationsApi,
@@ -107,11 +106,6 @@ describe('email analytics service', function () {
     sinon.assert.calledOnce(newslettersInit);
     sinon.assert.calledOnce(automationsInit);
     sinon.assert.calledOnce(giftsInit);
-    sinon.assert.calledThrice(domainEvents.subscribe);
-    for (const [index, call] of domainEvents.subscribe.getCalls().entries()) {
-      await call.args[1]();
-      sinon.assert.calledOnce(wrappers[index].startFetch as sinon.SinonStub);
-    }
   });
 
   it('initializes newsletter, automation, and gift analytics with configured Mailgun tags', function () {

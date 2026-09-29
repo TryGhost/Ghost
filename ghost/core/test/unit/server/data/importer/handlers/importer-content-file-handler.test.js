@@ -96,6 +96,29 @@ describe('ImporterContentFileHandler', function () {
       assert.equal(files[0].newPath, '//blog/content/media/1.mp4');
     });
 
+    it('treats regex metacharacters in the base directory literally', async function () {
+      const contentFileImporter = new ImporterContentFileHandler({
+        storage: {
+          staticFileURLPrefix: 'content/media',
+          getUniqueFileName: (file, targetDir) =>
+            Promise.resolve(path.join(targetDir, path.basename(file.name))),
+        },
+        urlUtils: {
+          getSubdir: () => '',
+          urlJoin: (...args) => args.join('/'),
+        },
+      });
+
+      const backtrackingName = `${'a'.repeat(40)}c/content/media/2.mp4`;
+      const files = [{ name: '(a+)+b/content/media/1.mp4' }, { name: backtrackingName }];
+
+      await contentFileImporter.loadFile(files, '(a+)+b');
+
+      assert.equal(files[0].originalPath, 'content/media/1.mp4');
+      assert.equal(files[0].name, '1.mp4');
+      assert.equal(files[1].originalPath, backtrackingName);
+    });
+
     it('preserves date subdirectories in targetDir', async function () {
       const contentFileImporter = new ImporterContentFileHandler({
         storage: {

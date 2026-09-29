@@ -61,8 +61,7 @@ describe('Config API', function () {
             labsValues.every((value) => typeof value === 'boolean'),
             'expected all labs flags to be booleans',
           );
-          // Fixture setup enables every registered writable flag. Keep an
-          // explicit assertion while this private rollout uses dynamic snapshots.
+          // Older Admin builds still read this GA value during independent deployments.
           assert.equal(labs.admin7Pill, true);
         })
         .matchHeaderSnapshot({

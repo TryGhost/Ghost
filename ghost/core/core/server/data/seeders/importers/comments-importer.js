@@ -19,7 +19,7 @@ class CommentsImporter extends TableImporter {
       .where('status', 'published');
     this.members = await this.transaction.select('id', 'created_at').from('members');
 
-    this.commentsPerPost = quantity ? quantity / posts.length : 10;
+    this.commentsPerPost = quantity !== undefined ? quantity / posts.length : 10;
 
     await this.importForEach(posts, this.commentsPerPost);
   }

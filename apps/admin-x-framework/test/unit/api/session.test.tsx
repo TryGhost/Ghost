@@ -5,6 +5,7 @@ import {
   isTwoFactorRequiredError,
   useAddSession,
   useDeleteSession,
+  useSendSessionVerification,
   useVerifySession,
 } from '../../../src/api/session';
 import {
@@ -14,6 +15,8 @@ import {
   ValidationError,
 } from '../../../src/utils/errors';
 import { withMockFetch } from '../../utils/mock-fetch';
+
+const originalFetch = globalThis.fetch;
 
 const passwordIncorrectResponse = {
   errors: [
@@ -196,5 +199,42 @@ describe('session api', () => {
       expect(mock.calls[0][1].credentials).toBe('include');
       expect(response).toBeUndefined();
     });
+  });
+  it('emails a new sign-in code via POST to the verify endpoint', async () => {
+    await withMockFetch(
+      { status: 200, headers: { 'content-type': 'text/plain; charset=utf-8' } },
+      async (mock) => {
+        const { result } = renderHookWithProviders(() => useSendSessionVerification());
+
+        await act(async () => {
+          await result.current.mutateAsync(null);
+        });
+
+        expect(mock.calls[0][0]).toBe('http://localhost:3000/ghost/api/admin/session/verify/');
+        expect(mock.calls[0][1].method).toBe('POST');
+        expect(mock.calls[0][1].body).toBeUndefined();
+      },
+    );
+  });
+
+  it('does not replay a sign-in whose response was lost', async () => {
+    const mockFetch = vi.fn<typeof globalThis.fetch>(() =>
+      Promise.reject(new TypeError('offline')),
+    );
+    globalThis.fetch = mockFetch;
+
+    try {
+      const { result } = renderHookWithProviders(() => useAddSession());
+
+      await act(async () => {
+        await expect(
+          result.current.mutateAsync({ username: 'owner@example.com', password: 'hunter22' }),
+        ).rejects.toBeDefined();
+      });
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });

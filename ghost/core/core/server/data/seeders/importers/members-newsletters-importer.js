@@ -25,7 +25,7 @@ class MembersNewslettersImporter extends TableImporter {
 
       await this.importForEach(
         membersSubscribeEvents,
-        quantity ? quantity / membersSubscribeEvents.length : 1,
+        quantity !== undefined ? quantity / membersSubscribeEvents.length : 1,
       );
 
       offset += limit;

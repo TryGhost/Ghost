@@ -1,4 +1,4 @@
-import { type Locator, page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import {
   noResultsText,
   searchDialog,
@@ -42,11 +42,11 @@ export const globalSearchScreen = {
     return event.defaultPrevented;
   },
 
-  /** Clicks the page at the centre of `locator`'s box, landing on whatever is on top there. */
-  async clickAt(locator: Locator): Promise<void> {
-    const box = locator.element().getBoundingClientRect();
+  /** Clicks the overlay just below the dialog. */
+  async clickBelowDialog(): Promise<void> {
+    const box = globalSearchScreen.dialog().element().getBoundingClientRect();
     await userEvent.click(page.elementLocator(document.body), {
-      position: { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+      position: { x: box.x + box.width / 2, y: box.bottom + 20 },
     });
   },
 

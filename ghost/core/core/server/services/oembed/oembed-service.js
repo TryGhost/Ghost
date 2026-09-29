@@ -10,6 +10,11 @@ const iconv = require('iconv-lite');
 const path = require('path');
 const crypto = require('crypto');
 const imageTransform = require('@tryghost/image-transform');
+const {
+  detectFileExtension,
+  isAllowedImageExtension,
+  isSvgExtension,
+} = require('../../lib/image/image-content');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
@@ -50,7 +55,6 @@ const SVG_RASTER_TIMEOUT_SECONDS = 10;
 const MAX_SVG_BYTES = 32 * 1024;
 const GZIP_MAGIC = [0x1f, 0x8b];
 
-const SVG_EXTENSIONS = new Set(['.svg', '.svgz']);
 const SVG_SNIFF_BYTES = 1024;
 
 const toBuffer = (bytes) => {
@@ -59,24 +63,25 @@ const toBuffer = (bytes) => {
     : Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 };
 
-const shouldRasterize = (buffer, ext) => {
-  if (SVG_EXTENSIONS.has(ext.toLowerCase())) {
-    return true;
-  }
+const isGzip = (buffer) => {
+  return GZIP_MAGIC.every((byte, index) => buffer[index] === byte);
+};
 
-  const head = buffer.subarray(0, SVG_SNIFF_BYTES).toString('utf8').trimStart();
+const looksLikeSvg = (buffer, sniffBytes) => {
+  const head = buffer.subarray(0, sniffBytes).toString('utf8').trimStart();
 
   return head.startsWith('<') && /<svg[\s:>]/i.test(head);
 };
 
-let fileTypeFromBuffer;
-
-const detectFileType = async (buffer) => {
-  if (!fileTypeFromBuffer) {
-    ({ fileTypeFromBuffer } = await import('file-type'));
+// sharp picks its decoder from the contents rather than the file name, so an
+// SVG extension alone isn't enough to rasterize. Gzipped files still count so
+// they are rejected as unconvertible below instead of as an unknown type.
+const shouldRasterize = (buffer, ext) => {
+  if (isSvgExtension(ext)) {
+    return isGzip(buffer) || looksLikeSvg(buffer, MAX_SVG_BYTES);
   }
 
-  return fileTypeFromBuffer(buffer);
+  return looksLikeSvg(buffer, SVG_SNIFF_BYTES);
 };
 
 /**
@@ -227,10 +232,7 @@ class OEmbedService {
     const name = this.imageStore.getSanitizedFileName(baseName);
 
     if (shouldRasterize(imageBuffer, ext)) {
-      if (
-        imageBuffer.length > MAX_SVG_BYTES ||
-        GZIP_MAGIC.every((byte, index) => imageBuffer[index] === byte)
-      ) {
+      if (imageBuffer.length > MAX_SVG_BYTES || isGzip(imageBuffer)) {
         throw new errors.ValidationError({
           message: tpl(messages.unconvertibleSvg),
           context: imageUrl,
@@ -253,10 +255,9 @@ class OEmbedService {
       // Content-Type the stored file is later served with, so name the
       // file after its contents and hold it to the same allowlist as image
       // uploads. `file-type` never reports SVG, which is handled above.
-      const fileType = await detectFileType(imageBuffer);
-      ext = fileType ? `.${fileType.ext}` : '';
+      ext = (await detectFileExtension(imageBuffer)) ?? '';
 
-      if (!this.config.get('uploads').images.extensions.includes(ext)) {
+      if (!isAllowedImageExtension(ext, this.config.get('uploads').images.extensions)) {
         throw new errors.ValidationError({
           message: tpl(messages.unsupportedImage),
           context: imageUrl,

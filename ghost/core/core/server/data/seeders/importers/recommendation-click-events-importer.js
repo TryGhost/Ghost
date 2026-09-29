@@ -18,7 +18,9 @@ class RecommendationClickEventsImporter extends TableImporter {
 
     await this.importForEach(
       recommendations,
-      quantity ? quantity / recommendations.length : () => faker.number.int({ min: 0, max: 30 }),
+      quantity !== undefined
+        ? quantity / recommendations.length
+        : () => faker.number.int({ min: 0, max: 30 }),
     );
   }
 

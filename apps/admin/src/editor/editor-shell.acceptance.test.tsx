@@ -188,19 +188,15 @@ describe('Floating editor shell', () => {
     );
   });
 
-  it.each([
-    { admin7Pill: false, theme: 'light' },
-    { admin7Pill: true, theme: 'dark' },
-  ])(
-    'keeps controls in a narrow $theme viewport (Admin 7: $admin7Pill) and overlays settings',
-    async ({ admin7Pill, theme }) => {
+  it.each(['light', 'dark'])(
+    'keeps controls in a narrow %s viewport and overlays settings',
+    async (theme) => {
       await page.viewport(390, 844);
       fakeLongDocument('post');
       const me = currentUserResponse();
       me.users[0].accessibility = JSON.stringify({ nightShift: theme });
       await renderAdminApp('/editor/post/abc123', {
         ...FLAG_ON,
-        labs: { editorReact: true, admin7Pill },
         boot: { browseMe: { response: me } },
       });
       await expect.element(editorScreen.body()).toBeVisible();
@@ -412,7 +408,6 @@ describe('Floating editor shell', () => {
     fakeLongDocument('post');
     await renderAdminApp('/editor/post/abc123', {
       ...FLAG_ON,
-      labs: { editorReact: true, admin7Pill: true },
     });
     await expect.element(editorScreen.body()).toBeVisible();
     const toggle = editorScreen.settingsToggle().element();
@@ -425,7 +420,7 @@ describe('Floating editor shell', () => {
     await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
     const sidebar = editorScreen.settingsSidebar().element();
     await expect.poll(() => sidebar.getBoundingClientRect().right).toBe(window.innerWidth - 8);
-    expect(sidebar.getBoundingClientRect().width).toBe(492);
+    expect(sidebar.getBoundingClientRect().width).toBe(342);
     await expect(editorScreen.settingsToggle()).toHaveCount(1);
     expect(editorScreen.settingsToggle().element()).toBe(toggle);
     expect(toggle.getBoundingClientRect()).toEqual(toggleBefore);
@@ -438,7 +433,7 @@ describe('Floating editor shell', () => {
     expect(document.activeElement).toBe(editorScreen.settingsToggle().element());
   });
 
-  it('keeps a full-width image inside the writing pane beside normal and wide settings', async () => {
+  it('keeps a full-width image inside the writing pane beside the settings list and its subpanels', async () => {
     const imageUrl = URL.createObjectURL(
       new Blob(
         [
@@ -481,7 +476,7 @@ describe('Floating editor shell', () => {
       expect(pane.getBoundingClientRect().right).toBe(sidebar.getBoundingClientRect().left);
 
       await editorScreen.settingsSubviewRow('Code injection').click();
-      await expect.poll(() => sidebar.parentElement!.getBoundingClientRect().width).toBe(500);
+      await expect.poll(() => sidebar.parentElement!.getBoundingClientRect().width).toBe(350);
       await expect
         .poll(() => image.element().getBoundingClientRect().right)
         .toBeCloseTo(pane.getBoundingClientRect().right - 12, 0);
@@ -609,9 +604,11 @@ describe('Floating editor shell', () => {
       await editorScreen.body().click();
       await userEvent.keyboard('{End} more');
       await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.element(editorScreen.reauthBanner()).toBeVisible();
+      await expect.element(editorScreen.reauthDialog()).toBeVisible();
+      await userEvent.keyboard('{Escape}');
+      await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
 
-      const banner = editorScreen.reauthBanner().element().getBoundingClientRect();
+      const banner = editorScreen.saveErrorBanner().element().getBoundingClientRect();
       expect(banner.top).toBeGreaterThanOrEqual(headerBefore.bottom);
       expect(pane.getBoundingClientRect().top).toBeGreaterThanOrEqual(banner.bottom);
       expect(pane.clientHeight).toBeLessThan(paneHeight);
@@ -624,7 +621,7 @@ describe('Floating editor shell', () => {
 
       pane.scrollTo({ top: 700 });
       await expect.poll(() => pane.scrollTop).toBe(700);
-      expect(editorScreen.reauthBanner().element().getBoundingClientRect().top).toBe(banner.top);
+      expect(editorScreen.saveErrorBanner().element().getBoundingClientRect().top).toBe(banner.top);
       expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
       expect(banner.left).toBeGreaterThanOrEqual(0);

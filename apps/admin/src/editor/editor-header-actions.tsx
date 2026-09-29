@@ -19,6 +19,7 @@ import { UpdateFlowModal } from './publish/update-flow-modal';
 import { buildPublishFlowPost, type PublishFlowPost } from './publish/flow-post';
 import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
+import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
@@ -190,6 +191,7 @@ function PublishActions({
 }: PublishActionsProps) {
   const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
+  const limits = usePublishLimits();
   const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
   const paywallImprovements = useFeatureFlag('paywallImprovements', {
@@ -230,13 +232,6 @@ function PublishActions({
     <>
       {isDraft ? (
         <>
-          <Button
-            disabled={!inputs.isReady}
-            size={isAdmin7 ? 'default' : 'sm'}
-            onClick={openPublishFlow}
-          >
-            Publish
-          </Button>
           {inputs.error ? (
             <>
               <Text
@@ -257,6 +252,13 @@ function PublishActions({
               </Button>
             </>
           ) : null}
+          <Button
+            disabled={!inputs.isReady}
+            size={isAdmin7 ? 'default' : 'sm'}
+            onClick={openPublishFlow}
+          >
+            Publish
+          </Button>
           <PostPreviewModal
             {...preview}
             publishDisabled={!inputs.isReady}
@@ -265,6 +267,18 @@ function PublishActions({
         </>
       ) : (
         <>
+          {/* Ember routes a sent post to the update flow from its status line, not the header. */}
+          {post.status === 'sent' ? null : (
+            <PageHeader.Action
+              className="bg-background/80 backdrop-blur-sm"
+              fallbackSize="sm"
+              fallbackVariant="ghost"
+              label={post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
+              onClick={() => onOpenFlow('update')}
+            >
+              {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
+            </PageHeader.Action>
+          )}
           <Button
             disabled={!session.isDirty() || isSaving}
             size={isAdmin7 ? 'default' : 'sm'}
@@ -272,23 +286,13 @@ function PublishActions({
           >
             Update
           </Button>
-          {/* Ember routes a sent post to the update flow from its status line, not the header. */}
-          {post.status === 'sent' ? null : (
-            <Button
-              className="bg-background/80 backdrop-blur-sm"
-              size={isAdmin7 ? 'default' : 'sm'}
-              variant="outline"
-              onClick={() => onOpenFlow('update')}
-            >
-              {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
-            </Button>
-          )}
         </>
       )}
 
       {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
           dispatch={session.dispatchPublish}
+          limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}
           site={inputs.site}

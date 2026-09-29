@@ -531,6 +531,45 @@ describe('MemberRepository', function () {
     });
   });
 
+  describe('subscription methods with a missing member', function () {
+    let repo;
+
+    beforeEach(function () {
+      Member.findOne = sinon.stub().resolves(null);
+      repo = buildRepo({ stripeAPIService: { configured: true } });
+    });
+
+    const subscription = { id: 'sub_123', subscription_id: 'sub_123', customer: 'cus_123' };
+
+    it('linkSubscription throws NotFoundError', async function () {
+      await assert.rejects(
+        repo.linkSubscription({ id: 'missing', subscription }, { transacting: {} }),
+        errors.NotFoundError,
+      );
+    });
+
+    it('getSubscription throws NotFoundError', async function () {
+      await assert.rejects(
+        repo.getSubscription({ email: 'missing@example.com', subscription }),
+        errors.NotFoundError,
+      );
+    });
+
+    it('cancelSubscription throws NotFoundError', async function () {
+      await assert.rejects(
+        repo.cancelSubscription({ id: 'missing', subscription }),
+        errors.NotFoundError,
+      );
+    });
+
+    it('updateSubscription throws NotFoundError', async function () {
+      await assert.rejects(
+        repo.updateSubscription({ email: 'missing@example.com', subscription }),
+        errors.NotFoundError,
+      );
+    });
+  });
+
   describe('linkSubscription', function () {
     let subscriptionData;
     let subscriptionCreatedNotifySpy;

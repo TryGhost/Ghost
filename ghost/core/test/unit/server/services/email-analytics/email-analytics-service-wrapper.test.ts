@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { vi } from 'vitest';
 import logging from '@tryghost/logging';
 import { EmailAnalyticsServiceWrapper } from '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper';
 import type { EmailAnalyticsFetchResult } from '../../../../../core/server/services/email-analytics/email-analytics-service';
@@ -139,7 +140,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
     sinon.assert.calledOnce(fetch.scheduled);
   });
 
-  it('completes the returned invocation while its detached continuation is pending', async function () {
+  it('awaits its continuation before completing the returned invocation', async function () {
     const wrapper = initWrapper('newsletters');
     const fetch = stubFetch(wrapper);
     let release!: () => void;
@@ -149,17 +150,16 @@ describe('EmailAnalyticsServiceWrapper', function () {
         release = () => resolve(0);
       }),
     );
-    const finished = new Promise<void>((resolve) => {
-      fetch.scheduled.callsFake(async () => {
-        resolve();
-        return 0;
-      });
+    let completed = false;
+    const invocation = wrapper.startFetch().then(() => {
+      completed = true;
     });
-    await wrapper.startFetch();
-    sinon.assert.calledTwice(fetch.opened);
+    await vi.waitFor(() => sinon.assert.calledTwice(fetch.opened));
     sinon.assert.notCalled(fetch.latest);
+    assert.equal(completed, false);
     release();
-    await finished;
+    await invocation;
+    sinon.assert.calledOnce(fetch.scheduled);
   });
 
   it('uses existing open throughput metric name for newsletters', function () {
@@ -211,6 +211,40 @@ describe('EmailAnalyticsServiceWrapper', function () {
       }),
       sinon.match('[Background Job] email-analytics-fetch-latest processed'),
     );
+  });
+
+  it('logs newly stored recipient events separately from fetched events in the missing pass', async function () {
+    const infoLog = sinon.stub(logging, 'info');
+    const wrapper = initWrapper('newsletters');
+    const fetch = sinon.stub(wrapper.service, 'fetchMissing');
+    fetch.onFirstCall().resolves(
+      createFetchResult({
+        eventCount: 100,
+        result: new EventProcessingResult({
+          opened: 60,
+          delivered: 30,
+          permanentFailed: 10,
+          storedOpened: 2,
+          storedDelivered: 1,
+          storedPermanentFailed: 1,
+        }),
+      }),
+    );
+    fetch.onSecondCall().resolves(createFetchResult({ eventCount: 100 }));
+
+    assert.equal(await wrapper.fetchMissing(), 100);
+    assert.equal(await wrapper.fetchMissing(), 100);
+
+    const [[first, message], [replay, replayMessage]] = jobCompletionLogs(infoLog);
+    assert.equal(first.system.task, 'missing');
+    assert.equal(first.system.event_count, 100);
+    assert.equal(first.system.new_recipient_event_count, 4);
+    assert.equal(first.system.new_opened_count, 2);
+    assert.equal(first.system.new_delivered_count, 1);
+    assert.equal(first.system.new_permanent_failed_count, 1);
+    assert.match(message, /New recipient events: 4/);
+    assert.equal(replay.system.new_recipient_event_count, 0);
+    assert.match(replayMessage, /New recipient events: 0/);
   });
 
   it('logs and preserves initial schedule restoration failures', async function () {

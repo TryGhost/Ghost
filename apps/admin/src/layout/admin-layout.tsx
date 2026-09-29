@@ -12,8 +12,10 @@ import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
 const networkPageChrome = {
-  contentClassName: 'max-w-(--content-width)',
+  contentClassName: 'max-w-[1920px]',
   contentGutter: 'var(--page-gutter)',
+  // The floating sidebar already provides the cover's 8px left gap.
+  profileContentClassName: 'sidebar:pl-0',
 };
 
 const pageChromeClassName = [

@@ -1,3 +1,4 @@
+import { getListReturnNavigationState } from '@/shared/virtual-list';
 import {
   type CSSProperties,
   type ReactNode,
@@ -9,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { AdminLink } from '@/shared/admin-link';
+import { getPostListReturnUrl } from '@/posts/api';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
@@ -44,6 +46,7 @@ import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
+import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
@@ -75,6 +78,9 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 
 function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
+  const reactOwnsList = useFeatureFlag('postsListReact');
+  const resource = postType === 'page' ? 'pages' : 'posts';
+  const listUrl = reactOwnsList ? getPostListReturnUrl(resource) : `/${resource}`;
 
   return (
     <Grid
@@ -89,7 +95,7 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
         label={listLabel}
         asChild
       >
-        <AdminLink to={postType === 'page' ? '/pages' : '/posts'}>
+        <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
           <LucideIcon.ArrowLeft />
           {listLabel}
         </AdminLink>
@@ -291,10 +297,14 @@ function EditorContent({
             hasUnsavedContent={session.hasUnsavedContent}
             pendingSave={session.pendingSave}
             state={session.state}
-            onDismissReauth={session.reauthAbandoned}
             onReload={session.reload}
-            onRetryReauth={session.reauthSucceeded}
             onRetrySave={session.dispatchExplicit}
+          />
+          <ReauthDialog
+            email={currentUser?.email ?? ''}
+            open={session.state.kind === 'reauth-pending'}
+            onAbandoned={session.reauthAbandoned}
+            onSucceeded={session.reauthSucceeded}
           />
         </Box>
         {/* Session warnings reserve space; otherwise the document reaches behind the header. */}
