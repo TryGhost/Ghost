@@ -20,7 +20,7 @@ export function BrowserPreview({ previewUrl, audience, device }: BrowserPreviewP
   if (!previewUrl) {
     return (
       <EmptyIndicator
-        className="grow justify-center"
+        className="grow justify-center self-center"
         data-testid={postPreviewUnavailable}
         description="A post gets its preview link the first time it is saved."
         title="Nothing to preview yet"

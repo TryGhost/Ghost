@@ -395,7 +395,13 @@ export function PostPreviewModal({
           )}
           {showTierSelect && (
             <Select value={tierSlug} onValueChange={setPickedTierSlug}>
-              <PageHeader.SelectTrigger label="Tier" shape="pill" variant="ghost">
+              <PageHeader.SelectTrigger
+                className="max-w-[240px] min-w-0 [&>span]:min-w-0 [&>span]:truncate"
+                label="Tier"
+                shape="pill"
+                title={selectedTier?.name}
+                variant="ghost"
+              >
                 <SelectValue />
               </PageHeader.SelectTrigger>
               <SelectContent>
@@ -440,7 +446,14 @@ export function PostPreviewModal({
         justify="center"
       >
         {prepareState === 'preparing' ? (
-          <Inline align="center" className="grow" gap="none" justify="center">
+          <Inline
+            align="center"
+            aria-label="Preparing preview"
+            className="grow self-center"
+            gap="none"
+            justify="center"
+            role="status"
+          >
             <LoadingIndicator size="lg" />
           </Inline>
         ) : prepareState === 'failed' ? (
@@ -456,7 +469,7 @@ export function PostPreviewModal({
                 Retry
               </Button>
             }
-            className="grow justify-center"
+            className="grow justify-center self-center"
             data-testid={postPreviewSaveFailed}
             description="Saving the post failed, so there is nothing new to preview."
             title="Couldn’t preview this post"

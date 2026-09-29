@@ -176,6 +176,11 @@ describe('Post preview modal', () => {
     await expect.element(previewScreen.shareButton()).toBeDisabled();
     await expect(previewScreen.openInNewTabLink()).toHaveCount(0);
     expect(frames.stop()).toEqual([]);
+    const status = previewScreen.preparingStatus().element();
+    const bounds = status.getBoundingClientRect();
+    const canvas = status.parentElement!.getBoundingClientRect();
+    expect((bounds.top + bounds.bottom) / 2).toBeCloseTo((canvas.top + canvas.bottom) / 2, 0);
+    expect((bounds.left + bounds.right) / 2).toBeCloseTo((canvas.left + canvas.right) / 2, 0);
 
     releaseSave();
 
@@ -333,6 +338,61 @@ describe('Post preview modal', () => {
       expect(bounds.left).toBeGreaterThanOrEqual(0);
       expect(bounds.right).toBeLessThanOrEqual(390);
     }
+  });
+
+  it.each([1440, 390])('keeps a long tier name clear of header actions at %ipx', async (width) => {
+    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
+    await page.viewport(width, 844);
+    const name = 'Premium annual membership for independent publishers and supporters';
+    fakePreviewWorld({ tiers: [tier({ name, slug: 'premium' })] });
+    await renderInApp(
+      <PostPreviewModal
+        postId={POST_ID}
+        previewUrl={PREVIEW_URL}
+        open
+        onOpenChange={() => {}}
+        onPublish={() => {}}
+      />,
+    );
+    await previewScreen.previewAs('Specific tier');
+    await expect.element(previewScreen.tierSelect()).toHaveTextContent(name);
+
+    const modal = previewScreen.modal().element();
+    expect(modal.scrollWidth).toBeLessThanOrEqual(modal.clientWidth);
+    const controls = [
+      previewScreen.webTab(),
+      previewScreen.emailTab(),
+      previewScreen.desktopToggle(),
+      previewScreen.mobileToggle(),
+      previewScreen.segmentSelect(),
+      previewScreen.tierSelect(),
+    ];
+    const actions = [
+      previewScreen.shareButton(),
+      previewScreen.closeButton(),
+      previewScreen.publishButton(),
+    ];
+    for (const control of controls) {
+      const bounds = control.element().getBoundingClientRect();
+      expect(bounds.left).toBeGreaterThanOrEqual(0);
+      expect(bounds.right).toBeLessThanOrEqual(width);
+      for (const action of actions) {
+        const other = action.element().getBoundingClientRect();
+        const overlaps =
+          bounds.left < other.right &&
+          bounds.right > other.left &&
+          bounds.top < other.bottom &&
+          bounds.bottom > other.top;
+        expect(overlaps).toBe(false);
+      }
+    }
+    if (width === 1440) {
+      const group = previewScreen.tierSelect().element().parentElement!.getBoundingClientRect();
+      expect((group.left + group.right) / 2).toBeCloseTo(width / 2, 0);
+    }
+    await previewScreen.tierSelect().click();
+    await expect.element(previewScreen.option(name)).toBeVisible();
   });
 
   it('limits desktop emails to 720px on a muted canvas', async () => {

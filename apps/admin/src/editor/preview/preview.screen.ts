@@ -1,6 +1,7 @@
 import { page } from 'vitest/browser';
 import {
   closePreviewButton,
+  preparingPreviewLabel,
   sharePreviewButton,
   copyPreviewLinkButton,
   editorPublishButton,
@@ -39,6 +40,7 @@ export const previewScreen = {
   tierSelect: () => page.getByRole('combobox', { name: previewTierSelectLabel }),
   newsletterSelect: () => page.getByRole('combobox', { name: previewNewsletterSelectLabel }),
   option: (name: string) => page.getByRole('option', { name }),
+  preparingStatus: () => page.getByRole('status', { name: preparingPreviewLabel }),
   shareButton: () => page.getByRole('button', { name: sharePreviewButton, exact: true }),
   copyLinkButton: () => page.getByRole('menuitem', { name: copyPreviewLinkButton }),
   openInNewTabLink: () => page.getByRole('menuitem', { name: openPreviewInNewTabLink }),
