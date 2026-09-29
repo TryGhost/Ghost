@@ -140,9 +140,17 @@ jobs:
           if [ "$COUNT" -eq 1 ]; then
             # Shape only, not a list of names — the names stay Ghost-Moya's to
             # own. This rejects a malformed label here, with a message that says
-            # what is wrong, rather than dispatching it to fail further away, and
-            # keeps anything odd out of GITHUB_OUTPUT.
-            if ! echo "$PROFILE" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+            # what is wrong, rather than dispatching it to fail further away.
+            #
+            # Matched with [[ =~ ]] rather than grep. grep works a line at a
+            # time, so ^ and $ bound a line, not the string, and `grep -q`
+            # succeeds if any one line matches: a label containing a newline
+            # would pass on its first line and then write a second line into
+            # GITHUB_OUTPUT, which becomes a step output of its own. This
+            # workflow is pull_request_target and carries a dispatch token, so
+            # that is worth closing rather than noting. bash anchors to the
+            # whole string, so a newline cannot match at all.
+            if ! [[ "$PROFILE" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
               echo "::error::Malformed profile label 'preview:${PROFILE}' — expected lowercase words separated by hyphens"
               echo "skip=true" >> "$GITHUB_OUTPUT"
               exit 1
