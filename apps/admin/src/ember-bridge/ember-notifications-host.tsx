@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Stack } from '@tryghost/shade/primitives';
 import { type AlertsStore, type RichText, RichTextContent, richTextValue } from '@/alerts';
 import { connectEmberNotificationsHost } from './ember-bridge';
 
@@ -44,9 +44,9 @@ function showToast(notification: EmberNotification, id: string, onGone: () => vo
             </p>
           )}
           {actions && (
-            <Inline className="text-text-secondary" gap="sm">
+            <span className="text-text-secondary">
               <RichTextContent value={actions} />
-            </Inline>
+            </span>
           )}
         </Stack>
       ) : undefined,
@@ -66,11 +66,7 @@ function showToast(notification: EmberNotification, id: string, onGone: () => vo
   }
 }
 
-/**
- * Applies the Ember notifications service's rules on top of React's alerts
- * store and Sonner: alerts go to the store, toasts ("notifications") to
- * Sonner. Only toasts shown through this host are ever dismissed by it.
- */
+/** Ember's duplicate and key rules over the alerts store and Sonner; dismisses only toasts it showed. */
 export function createEmberNotificationsHost(alerts: AlertsStore): EmberNotificationsHost {
   const toasts = new Map<string, { key?: string; text: string }>();
 

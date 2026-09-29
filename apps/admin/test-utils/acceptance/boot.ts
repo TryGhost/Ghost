@@ -71,7 +71,7 @@ export function defaultBootRequests() {
     browseNotifications: {
       method: 'GET',
       path: '/notifications/',
-      response: { notifications: [] },
+      response: browseResponse('notifications', []),
     },
     browseActiveTheme: {
       method: 'GET',

@@ -6,12 +6,7 @@ import {
 } from '@tryghost/admin-x-framework/api/notifications';
 import type { AlertsStore } from './alerts-store';
 
-/**
- * Shows custom server notifications (e.g. security and release notices) as
- * alerts, the last one per location. Each is shown once per page load, so
- * programmatic clears and refetches never bring a notice back; closing one
- * deletes it, which marks it seen for this user.
- */
+/** Each notice shows once per page load, so clears and refetches never revive it; only a user close deletes it. */
 export function useServerNotifications(store: AlertsStore) {
   const { data } = useBrowseNotifications({ defaultErrorHandler: false });
   const { mutate: deleteNotification } = useDeleteNotification();

@@ -1,9 +1,9 @@
 # Alerts
 
 Full-width bars at the top of Admin for messages that must stay visible until
-someone closes them: failed saves, billing problems, and notices sent by the
-server. Short-lived feedback belongs in a toast (`toast` from `sonner`)
-instead.
+someone closes them. Today they come from server notices and from the Ember
+host in `ember-bridge`; the store is only reachable from `App`. Short-lived
+feedback belongs in a toast (`toast` from `sonner`) instead.
 
 ## Pieces
 
@@ -18,9 +18,9 @@ instead.
   row of the page grid (see `index.html` and `index.css`), so alerts push the
   whole shell down. It renders nothing when that element is missing.
 - `useServerNotifications()` loads `/notifications/` for staff who can read
-  them and shows each custom notice once per page load, keeping the last one
-  per location. Closing a notice deletes it, which marks it seen for that
-  user; programmatic removal does not.
+  them and shows custom notices, one per location: the one the server lists
+  last. Each shows once per page load. Closing a notice deletes it, which
+  marks it seen for that user; programmatic removal does not.
 
 ## Message text
 
