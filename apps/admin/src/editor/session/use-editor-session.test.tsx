@@ -11,6 +11,7 @@ import type { EditorRecord } from './projection';
 import { useEditorSession } from './use-editor-session';
 
 type SaveEngineModule = typeof import('@/editor/engine/save-engine');
+type EditorSessionModule = typeof import('./editor-session');
 
 vi.mock('@/editor/engine/save-engine', async (importOriginal) => {
   const spy = await import('@/editor/session/__test-utils__/save-engine-spy');
@@ -23,10 +24,29 @@ const postApi = vi.hoisted(() => ({
   edit: vi.fn(),
 }));
 
+// Every read the screen offers the session, in order.
+const offeredReads = vi.hoisted((): EditorRecord[] => []);
+
+vi.mock('./editor-session', async (importOriginal) => {
+  const actual = await importOriginal<EditorSessionModule>();
+  const createEditorSession: EditorSessionModule['createEditorSession'] = (options) => {
+    const session = actual.createEditorSession(options);
+    return {
+      ...session,
+      recordRefetched: (read) => {
+        offeredReads.push(read);
+        return session.recordRefetched(read);
+      },
+    };
+  };
+  return { ...actual, createEditorSession };
+});
+
 beforeEach(() => {
   dispatchedIntents.length = 0;
   postApi.read = undefined;
   postApi.edit.mockReset();
+  offeredReads.length = 0;
 });
 
 vi.mock('@tryghost/admin-x-framework', () => ({
@@ -217,6 +237,22 @@ describe('useEditorSession reporting', () => {
 });
 
 describe('useEditorSession refetched record', () => {
+  it('offers an accepted read only once, however the engine moves on', async () => {
+    const loaded = record();
+    postApi.read = { posts: [loaded] };
+    postApi.edit.mockResolvedValue({
+      posts: [record({ title: 'A new title', updated_at: '2026-01-01T00:00:01.000Z' })],
+    });
+    const { result } = setup(loaded);
+    expect(offeredReads).toEqual([loaded]);
+
+    act(() => result.current.bind.onTitleChange('A new title'));
+    await act(() => result.current.saveExplicit());
+
+    expect(postApi.edit).toHaveBeenCalledTimes(1);
+    expect(offeredReads).toEqual([loaded]);
+  });
+
   it('keeps describing its own version when a read brings another writer’s', () => {
     const { result, rerender } = setup();
     const loaded = result.current.loadedRecord;

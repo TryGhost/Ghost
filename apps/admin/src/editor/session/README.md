@@ -147,16 +147,25 @@ the request submitted and the full record the server acknowledged, so the
 tracker's three-way rebase has a stable base for every field the request
 carried.
 
-A read is adopted only at the collision token the session holds: the read of its
-own last save, or a read that found nothing new. A newer version is another
-writer's, or the session's own save read before its acknowledgement landed; its
-content is not in the document, so the session keeps its token and its saved
-copy, marks nothing dirty and starts no save. The next save carries the token
-the writer's content was built on, and the server refuses it with a collision
-instead of letting it overwrite the newer version; reloading the document is
-the way onto that version. A refused read is offered again whenever the engine
-moves on, so a read of a save that was in flight is adopted once that save's
-acknowledgement has landed and the session holds its token.
+A read is adopted only at the collision token the session holds. Core leaves the
+token alone unless a column of the posts row changes, so such a read can still
+carry another writer's tags, authors or tiers, or fields Core stores beside the
+post: the meta and social fields and the feature image's alt text and caption.
+The session takes the read as its saved copy, and the settings rules below
+decide which settings fields the document adopts from it. A read at any other
+token is another writer's version, or the session's own save read before its
+acknowledgement landed; its content is not in the document, so the session keeps
+its token and its saved copy, marks nothing dirty and starts no save. The next
+save carries the token the writer's content was built on, and the server refuses
+it with a collision instead of letting it overwrite the newer version; reloading
+the document is the way onto that version. A refused read is offered again
+whenever the engine moves on, so a read of a save that was in flight is adopted
+once that save's acknowledgement has landed and the session holds its token.
+
+Opening the post again before the read that follows its last save has landed
+starts from the cached copy that predates that save. That read then carries a
+newer token than the session opened with and is refused, so the next save
+collides with the writer's own earlier save and shows the conflict banner.
 
 A save writes a title and slug the writer never typed — the request's own
 default title, the slug derived from the title — and the server may normalize
@@ -178,8 +187,8 @@ ownership, so a later read or acknowledgement adopts the server's value and an
 unrelated save cannot overwrite it. An outstanding edit keeps the writer's value
 through a refetch or a rejected save, and an acknowledgement adopts the server's
 normalized value only where the writer has not edited past the submitted value.
-Undoing a field while its save is in flight also stays staged, even if that
-save's refetch arrives before its acknowledgement: the next save persists the
+Undoing a field while its save is in flight also stays staged, even if a read
+at the held token carries another value meanwhile: the next save persists the
 undo. Ownership is decided by which fields the writer moved and when, never by
 comparing the live document against a pre-save snapshot, so adopting one refetch
 inside a save window does not stop a later one from being adopted too, and

@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
+  editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
   post,
@@ -33,8 +34,8 @@ const UPDATE_COLLISION = {
 };
 
 /**
- * A post two writers share: reads serve the stored copy, and a save carrying a stale
- * collision token is refused, as Core refuses one that changes a field.
+ * A post two writers share: reads serve the stored copy and a save on a stale token is refused.
+ * Core is laxer: it refuses one only when a posts-row column or its tags, authors or tiers change.
  */
 function fakeSharedPost(overrides: Partial<Post> = {}) {
   fakeEditorChrome();
@@ -62,10 +63,8 @@ function fakeSharedPost(overrides: Partial<Post> = {}) {
   };
 
   let readsHeld = Promise.resolve();
-  let served = 0;
   const readApi = fakeAdminEndpoint('GET', READ_ROUTE, async () => {
     await readsHeld;
-    served += 1;
     return { posts: [stored] };
   });
   const saveApi = fakeAdminEndpoint('PUT', READ_ROUTE, ({ body }) => {
@@ -88,14 +87,6 @@ function fakeSharedPost(overrides: Partial<Post> = {}) {
       const gate = deferred<void>();
       readsHeld = gate.promise;
       return () => gate.resolve();
-    },
-    /** Resolves once `count` reads have been answered and the editor has had them. */
-    readsHandled: async (count: number) => {
-      await expect.poll(() => served).toBe(count);
-      // A refused read changes nothing on screen, so only time says it was handled.
-      await new Promise((resolve) => {
-        setTimeout(resolve, 100);
-      });
     },
   };
 }
@@ -133,11 +124,11 @@ const saveShortcut = () => userEvent.keyboard('{Meta>}s{/Meta}');
 describe('Post editor refetch', () => {
   it('saves a draft against its own version after a refetch brings another writer’s', async () => {
     const shared = fakeSharedPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     const releaseReads = await saveThenTheySave(shared, saveShortcut);
     releaseReads();
-    await shared.readsHandled(2);
+    await editorReadLanded(queryClient, shared.stored());
 
     await appendToBody(' and mine');
     await saveShortcut();
@@ -157,12 +148,12 @@ describe('Post editor refetch', () => {
       status: 'published',
       published_at: '2025-12-01T00:00:00.000Z',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     const releaseReads = await saveThenTheySave(shared, () => editorScreen.updateButton().click());
     await editorScreen.titleInput().fill('My staged title');
     releaseReads();
-    await shared.readsHandled(2);
+    await editorReadLanded(queryClient, shared.stored());
 
     await editorScreen.updateButton().click();
 
@@ -178,12 +169,12 @@ describe('Post editor refetch', () => {
 
   it('leaves a clean writer clean and unsaved when a refetch brings another writer’s version', async () => {
     const shared = fakeSharedPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     const releaseReads = await saveThenTheySave(shared, saveShortcut);
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
     releaseReads();
-    await shared.readsHandled(2);
+    await editorReadLanded(queryClient, shared.stored());
 
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
     expect(unsavedChangesGuarded()).toBe(false);
@@ -194,13 +185,13 @@ describe('Post editor refetch', () => {
 
   it('saves again without a conflict once the refetch of its own save has landed', async () => {
     const shared = fakeSharedPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
 
     await editorScreen.titleInput().fill('My title');
     await saveShortcut();
     await expect.poll(() => shared.saveApi.requests.length).toBe(1);
-    await shared.readsHandled(2);
+    await editorReadLanded(queryClient, shared.stored());
 
     await appendToBody(' and more');
     await saveShortcut();

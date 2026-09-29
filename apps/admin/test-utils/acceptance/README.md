@@ -30,7 +30,7 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 **Unsaved-changes guards.** Typing into a dirty screen arms its navigation guard through a chain of passive effects, so a spec that navigates straight after a `fill` races the guard and an unguarded navigation just goes through. Wait for the guard itself, never for a frame count: `await expect.poll(unsavedChangesGuarded).toBe(true)` before the click or `window.history.back()`.
 
-**One render per test.** Each `renderAdminApp` gets a fresh QueryClient and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
+**One render per test.** Each `renderAdminApp` gets a fresh QueryClient, which it resolves with for a wait nothing on screen can show, and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
 
@@ -77,7 +77,7 @@ For a **browse endpoint** (`GET /<resource>/`), add a resource fake in `resource
 - `{kind: "passthrough"}` — serves exactly the declared entities, never interprets the query. Right for NQL-filtered lists; per-request responses are declared with a function of the parsed query.
 - `{kind: "declared-query", covers, select}` — implements _trivial declared_ behaviors only (a field match, page/limit slicing); any filter component outside `covers` 418s instead of silently serving the full world.
 
-For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo). A function that returns a `Response` has it served as it is, for a status that depends on the request.
+For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo). A `Response`, given or returned by the function, is served as it is, so a status can depend on the request.
 
 ## Faking Tinybird (web analytics)
 

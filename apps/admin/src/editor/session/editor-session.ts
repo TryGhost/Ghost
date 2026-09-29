@@ -233,8 +233,12 @@ export function isOlderToken(candidate: string, held: string | null): boolean {
 }
 
 /** Whether a record's collision token names the version already held. */
-function isHeldToken(candidate: string, held: string | null): boolean {
-  return isCollisionToken(held) && Date.parse(candidate) === Date.parse(held);
+function isHeldToken(candidate: string | null | undefined, held: string | null): boolean {
+  return (
+    isCollisionToken(candidate) &&
+    isCollisionToken(held) &&
+    Date.parse(candidate) === Date.parse(held)
+  );
 }
 
 /**
@@ -809,18 +813,13 @@ export function createEditorSession({
     getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
-      const updatedAt = next.updated_at ?? '';
+      // Another version's content is not in this document: holding its token
+      // would let the next save overwrite it instead of colliding.
       if (
         disposed ||
         identity.id !== next.id ||
-        !isCollisionToken(updatedAt) ||
-        isOlderToken(updatedAt, identity.updatedAt)
+        !isHeldToken(next.updated_at, identity.updatedAt)
       ) {
-        return false;
-      }
-      // A newer version's content is not in this document: holding its token
-      // would let the next save overwrite it instead of colliding.
-      if (!isHeldToken(updatedAt, identity.updatedAt)) {
         return false;
       }
       // Decide against the old saved copy before the refetch replaces it.
@@ -828,7 +827,6 @@ export function createEditorSession({
       const projection = projectionOf(next);
       tracker.setSaved(next.id, projection);
       adoptSettings(projection, (key) => adoptable.has(key));
-      identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
       releaseSavedPublishTime();

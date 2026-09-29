@@ -5,6 +5,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentRoute,
   currentUserResponse,
+  editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
@@ -319,41 +320,62 @@ describe('Post editor saving', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
-  it('keeps the status it saved when a refetch finds the post published elsewhere', async () => {
+  it('saves its own version when a refetch finds the post published elsewhere, and collides', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
 
     // A later handler for the same route wins: from here the read answers
     // with the post as someone else has just published it.
-    const readApi = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-      posts: [
-        post({
-          id: POST_ID,
-          title: 'Hello from React',
-          slug: 'hello-from-react',
-          status: 'published',
-          lexical: buildLexicalParagraph('Hello from React'),
-          updated_at: '2026-01-01T00:01:00.000Z',
-          published_at: '2026-01-01T00:01:00.000Z',
-          tags: [],
-        }),
-      ],
+    const publishedElsewhere = post({
+      id: POST_ID,
+      title: 'Hello from React',
+      slug: 'hello-from-react',
+      status: 'published',
+      lexical: buildLexicalParagraph('Hello from React'),
+      updated_at: '2026-01-01T00:01:00.000Z',
+      published_at: '2026-01-01T00:01:00.000Z',
+      tags: [],
     });
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), { posts: [publishedElsewhere] });
     await appendToBody(' and more');
     await expect.poll(() => saveApi.requests.length).toBe(1);
-    await expect.poll(() => readApi.requests.length).toBe(1);
+    await editorReadLanded(queryClient, publishedElsewhere);
 
-    // Their version was never loaded here, so the next save carries this tab's own.
+    // The server holds their version now, so a save on any other token collides.
+    const collidingSaveApi = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      ({ body }) =>
+        (body as { posts: Array<{ updated_at?: string }> }).posts[0].updated_at ===
+        publishedElsewhere.updated_at
+          ? { posts: [publishedElsewhere] }
+          : Response.json(
+              {
+                errors: [
+                  {
+                    code: 'UPDATE_COLLISION',
+                    type: 'UpdateCollisionError',
+                    message: 'Saving failed! Someone else is editing this post.',
+                  },
+                ],
+              },
+              { status: 409 },
+            ),
+    );
     await appendToBody(' again');
-    await expect.poll(() => saveApi.requests.length).toBe(2);
-    expect(submittedPost(saveApi)).toMatchObject({
+
+    await expect.poll(() => collidingSaveApi.requests.length).toBe(1);
+    expect(submittedPost(collidingSaveApi)).toMatchObject({
       status: 'draft',
       updated_at: '2026-01-01T00:00:01.000Z',
     });
-    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect
+      .element(editorScreen.conflictBanner())
+      .toHaveTextContent('Someone else is editing this post');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more again');
   });
 
   it('leaves tags alone when it saves', async () => {

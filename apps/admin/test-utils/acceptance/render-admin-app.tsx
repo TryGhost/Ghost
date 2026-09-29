@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query';
 import { render } from 'vitest-browser-react';
 
 import '@/index.css';
@@ -42,12 +43,13 @@ export function currentRoute(): string {
  * Boots the real admin app (the same provider stack as src/main.tsx) at the
  * given hash route, e.g. "/tags" or "/members?filter=label:VIP". Cross-app
  * (Ember-owned) navigations are recorded on
- * `document.body.dataset.externalNavigate` instead of navigating.
+ * `document.body.dataset.externalNavigate` instead of navigating. Resolves
+ * with the render and the `queryClient` it booted.
  */
 export async function renderAdminApp(
   route: string = '/',
   { labs, boot, autosaveDebounceMs }: RenderAdminAppOptions = {},
-): Promise<Awaited<ReturnType<typeof render>>> {
+): Promise<Awaited<ReturnType<typeof render>> & { queryClient: QueryClient }> {
   let overrides: BootOverrides = labs ? composeLabsBootOverrides(labs, boot) : { ...boot };
   if (autosaveDebounceMs !== undefined) {
     overrides = composeConfigBootOverrides(
@@ -89,5 +91,6 @@ export async function renderAdminApp(
     },
   });
 
-  return await render(<AdminAppRoot framework={framework} />, { container: rootElement });
+  const rendered = await render(<AdminAppRoot framework={framework} />, { container: rootElement });
+  return Object.assign(rendered, { queryClient: framework.queryClient });
 }

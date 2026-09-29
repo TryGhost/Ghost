@@ -68,6 +68,10 @@ specific to the editor lives in `apps/admin/test-utils/acceptance/editor.ts`:
   server that rewrites what it was sent.
 - `submittedPost(capture, index)` reads the fields of a captured save, the most
   recent one by default.
+- `editorReadLanded(queryClient, version)` resolves once a read of `version` at
+  its `updated_at` is in the query cache and the editor has handled it, which is
+  the only sign of a read the editor refuses. `renderAdminApp` resolves with the
+  `queryClient`.
 - `fakeUnsplashPhotos()` serves one photo in the shape the picker lays out and
   inserts, and `UNSPLASH_PICKED` is the rendition the picker asks for.
 

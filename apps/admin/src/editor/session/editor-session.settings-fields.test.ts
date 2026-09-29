@@ -3,6 +3,7 @@ import { capturedPorts, dispatchedIntents } from '@/editor/session/__test-utils_
 import {
   body,
   record,
+  serializedFields,
   sessionHarness,
   updateCollision,
 } from '@/editor/session/__test-utils__/session-harness';
@@ -198,6 +199,29 @@ describe('createEditorSession', () => {
         hook();
       };
     };
+
+    it('keeps an undo made during a save from another writer’s value in a read at the held version', async () => {
+      const built = sessionHarness(
+        { record: record({ meta_title: 'Loaded' }) },
+        {
+          applied: serializedFields,
+          duringSave: once(() => {
+            built.session.patchFields({ meta_title: 'Loaded' });
+            // Core stores the meta fields beside the post, so their edit leaves the token.
+            built.session.recordRefetched(record({ meta_title: 'Theirs' }));
+          }),
+        },
+      );
+
+      built.session.patchFields({ meta_title: 'Mine' });
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().meta_title).toBe('Loaded');
+      expect(built.session.isDirty()).toBe(true);
+
+      await built.session.dispatchExplicit();
+      expect(built.state.updates[1].payload).toMatchObject({ meta_title: 'Loaded' });
+    });
 
     it('adopts the last of two refetches that arrive inside one save', async () => {
       const built = sessionHarness(
