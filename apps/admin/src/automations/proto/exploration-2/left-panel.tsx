@@ -426,11 +426,12 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
         {/* The screen's top-right cluster — the sidebar toggle and the
             automation's actions — sits over this: it's pinned to the right of the
             screen at the pane's width, and the pane's first row is left empty for
-            it: 24 + 36 + 24, the header's height, so the cluster and the header
+            it: 16 + 36 + 16, the header's height, so the cluster and the header
             share a line. Its bottom 24px is the gap above what follows. */}
-        <div className="h-[84px] shrink-0" aria-hidden />
-        {/* Shade's underline tabs. */}
-        <TabsList className="mx-6 mb-6 shrink-0">
+        <div className="h-[68px] shrink-0" aria-hidden />
+        {/* Shade's underline tabs, 24px under the header band's edge — the band
+            now draws a line across the pane, so the tabs need air below it. */}
+        <TabsList className="m-6 shrink-0">
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>

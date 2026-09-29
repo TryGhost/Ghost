@@ -690,16 +690,59 @@ const ChangeTriggerAction: React.FC<{ d: StepNodeData }> = ({ d }) => {
 // The render is a snapshot. Ghost's automation email preview endpoint
 // (POST /automations/:id/email_preview) turns a subject and lexical into the
 // finished HTML with the site's email design — header image, colours, fonts,
-// footer — and the shipping email modal already shows it in an iframe. The
+// footer — and the shipping email modal already shows it. The
 // proto has no saved automations for it to find, so one response was captured
 // from a dev site (email-snapshot.html) and every email with content shows it.
 // In production each node would fetch its own, cached, and refetch on save.
 //
-// Live HTML at a scale rather than an image, so it stays sharp at any zoom.
-// Sandboxed with no permissions (no scripts, no navigation) and inert to the
-// pointer, so a press lands on the node. The subject isn't in an email's body,
-// so it doesn't vary here — the node's header carries it.
+// Live HTML at a scale rather than an image, so it stays sharp at any zoom,
+// and inert to the pointer, so a press lands on the node. The subject isn't in
+// an email's body, so it doesn't vary here — the node's header carries it.
 const EMAIL_RENDER_WIDTH = 600;
+
+// The snapshot as markup for a shadow root: the document's <style> blocks, then
+// its body as a div carrying the body's own inline style (a body tag inside a
+// shadow root is dropped, and with it the email's background and type). Built
+// once, on first use.
+let emailSnapshotMarkup: string | null = null;
+const getEmailSnapshotMarkup = (): string => {
+  if (emailSnapshotMarkup === null) {
+    const doc = new DOMParser().parseFromString(EMAIL_SNAPSHOT_HTML, 'text/html');
+    const styles = Array.from(doc.head.querySelectorAll('style'))
+      .map((style) => style.outerHTML)
+      .join('');
+    const bodyStyle = doc.body.getAttribute('style') ?? '';
+    emailSnapshotMarkup = `${styles}<div style="${bodyStyle}">${doc.body.innerHTML}</div>`;
+  }
+  return emailSnapshotMarkup;
+};
+
+// The email, drawn into a shadow root rather than an iframe.
+//
+// An iframe loads its document AFTER it's on screen, so every fresh one shows
+// white for a beat before the email paints — which the open panel, mounting its
+// own preview each time, turned into a flash on every open. A shadow root is
+// filled synchronously, before the frame is painted, so the email is simply
+// there. It keeps the one thing the iframe was also for: the email's
+// stylesheet stays inside it, and the admin's stays out.
+//
+// The snapshot is a fixed file from this repo, not user content, so there's
+// nothing to sandbox that the iframe was protecting against.
+const EmailRender: React.FC<{ className?: string; style?: React.CSSProperties }> = ({
+  className,
+  style,
+}) => {
+  const hostRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const host = hostRef.current;
+    if (!host) {
+      return;
+    }
+    const root = host.shadowRoot ?? host.attachShadow({ mode: 'open' });
+    root.innerHTML = getEmailSnapshotMarkup();
+  }, []);
+  return <div ref={hostRef} className={className} style={style} aria-hidden />;
+};
 
 // Two ways the email sits. On the node it fills the card edge to edge below
 // the header, cut off by the card's bottom edge so it reads as continuing
@@ -713,9 +756,13 @@ const EMAIL_RENDER_WIDTH = 600;
 // inside scaling with it. `expanded` is the panel's own flag, so the two run
 // on one clock and reverse together.
 //
-// 5:6, just taller than wide — enough to get past the header image into the
-// email itself, which a short strip never did, without 2:3 or 3:4 making one
-// email as tall as several steps.
+// Square — tall enough to get past the header image into the email itself,
+// which a short strip never did, without a portrait ratio making one email as
+// tall as several steps. (2:3, 3:4 and 5:6 were all tried, each shorter.)
+// Height over width; the class below has to say the same thing, since Tailwind
+// can't read a ratio built at runtime.
+const EMAIL_PREVIEW_RATIO = 1;
+const EMAIL_PREVIEW_ASPECT = 'aspect-square';
 const EMAIL_NODE_THUMBNAIL_WIDTH = 300;
 // The panel's 380 less 24 either side.
 const EMAIL_INSET_THUMBNAIL_WIDTH = 332;
@@ -723,7 +770,7 @@ const EMAIL_INSET_MARGIN = 24;
 // What the inset adds to the preview's height — the grow has to be measured
 // before it happens, so this is added to the measurement rather than read.
 const EMAIL_INSET_EXTRA_HEIGHT =
-  ((EMAIL_INSET_THUMBNAIL_WIDTH - EMAIL_NODE_THUMBNAIL_WIDTH) * 6) / 5;
+  (EMAIL_INSET_THUMBNAIL_WIDTH - EMAIL_NODE_THUMBNAIL_WIDTH) * EMAIL_PREVIEW_RATIO;
 const thumbnailTransition = (closing: boolean) =>
   `${closing ? 'duration-140' : 'duration-180'} ${PROTO_EASE} motion-reduce:transition-none`;
 
@@ -735,15 +782,18 @@ const EmailThumbnail: React.FC<{
   closing?: boolean;
 }> = ({ d, inset = false, expanded = false, closing = false }) => {
   const grown = inset && expanded;
+  const editable = inset ? grown : true;
   const width = grown ? EMAIL_INSET_THUMBNAIL_WIDTH : EMAIL_NODE_THUMBNAIL_WIDTH;
   const scale = width / EMAIL_RENDER_WIDTH;
   // Rendered tall enough for the grown size, so growing never uncovers blank.
   const renderHeight =
-    (EMAIL_INSET_THUMBNAIL_WIDTH * 6) / 5 / (EMAIL_NODE_THUMBNAIL_WIDTH / EMAIL_RENDER_WIDTH);
+    (EMAIL_INSET_THUMBNAIL_WIDTH * EMAIL_PREVIEW_RATIO) /
+    (EMAIL_NODE_THUMBNAIL_WIDTH / EMAIL_RENDER_WIDTH);
   return (
     <span
       className={cn(
-        'group/preview relative block aspect-[5/6] overflow-hidden border bg-white',
+        'group/preview relative block overflow-hidden border bg-white',
+        EMAIL_PREVIEW_ASPECT,
         inset &&
           `transition-[margin,width,border-radius,border-color] ${thumbnailTransition(closing)}`,
         grown ? 'rounded-lg border-border-default' : 'rounded-none border-transparent',
@@ -753,21 +803,16 @@ const EmailThumbnail: React.FC<{
       style={{ width, marginLeft: grown ? EMAIL_INSET_MARGIN : 0 }}
     >
       {d.emailHasContent ? (
-        <iframe
+        <EmailRender
           className={cn(
-            'pointer-events-none origin-top-left border-0',
+            'pointer-events-none origin-top-left overflow-hidden',
             inset && `transition-transform ${thumbnailTransition(closing)}`,
           )}
-          sandbox=""
-          srcDoc={EMAIL_SNAPSHOT_HTML}
           style={{
             width: EMAIL_RENDER_WIDTH,
             height: renderHeight,
             transform: `scale(${scale})`,
           }}
-          tabIndex={-1}
-          title="Email preview"
-          aria-hidden
         />
       ) : (
         <span className="flex h-full flex-col items-center justify-center gap-1.5 bg-background pb-5 text-muted-foreground">
@@ -775,27 +820,32 @@ const EmailThumbnail: React.FC<{
           <span className="text-xs">Nothing written yet</span>
         </span>
       )}
-      {inset && (
-        // Revealed by hovering the preview, or by focusing the button itself.
-        // Only once grown: mid-morph it would be a control arriving before
-        // the thing it acts on has settled.
-        <span
-          className={cn(
-            'absolute inset-0 flex items-center justify-center opacity-0 transition-opacity',
-            grown && 'group-hover/preview:opacity-100 focus-within:opacity-100',
-          )}
+      {/* Revealed by hovering the preview, or by focusing the button itself —
+          on the node as well as in the panel, so the way into the editor is
+          one press from the canvas. It stops the press there: on the node, the
+          click would otherwise also open the node's panel. In the panel, only
+          once grown: mid-morph it would be a control arriving before the thing
+          it acts on has settled. */}
+      <span
+        className={cn(
+          'absolute inset-0 flex items-center justify-center opacity-0 transition-opacity',
+          editable && 'group-hover/preview:opacity-100 focus-within:opacity-100',
+        )}
+      >
+        <Button
+          className="shadow-md"
+          tabIndex={editable ? 0 : -1}
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            d.onEditContent?.();
+          }}
+          onKeyDown={(event) => event.stopPropagation()}
         >
-          <Button
-            className="shadow-md"
-            tabIndex={grown ? 0 : -1}
-            type="button"
-            onClick={() => d.onEditContent?.()}
-          >
-            <LucideIcon.PenLine />
-            {d.emailHasContent ? 'Edit email' : 'Write email'}
-          </Button>
-        </span>
-      )}
+          <LucideIcon.PenLine />
+          {d.emailHasContent ? 'Edit email' : 'Write email'}
+        </Button>
+      </span>
     </span>
   );
 };
@@ -883,17 +933,45 @@ const StepNodeFace: React.FC<{
 // above the preview — the email's first line, read in the order an inbox shows
 // it. There's no body field: the preview below IS the body, and opens the
 // editor.
-const EmailSubjectField: React.FC<{ d: StepNodeData }> = ({ d }) => (
-  <InputGroup>
-    <InputGroupAddon align="inline-start">
-      <InputGroupText>Subject</InputGroupText>
-    </InputGroupAddon>
-    <InputGroupInput
-      value={d.subject ?? ''}
-      onChange={(event) => d.onSubjectChange?.(event.target.value)}
-    />
-  </InputGroup>
-);
+//
+// The field holds its own text while it's being typed in. Bound straight to
+// `d.subject`, every keystroke rendered the input once with the OLD subject —
+// React Flow hands node data down a tick after the draft changes — and React
+// wrote that stale value back into the DOM, which throws the caret to the end.
+// Local text can't lag; the draft still gets every keystroke, and an outside
+// change (the draft resetting, say) is picked up whenever the field isn't
+// being typed in.
+const EmailSubjectField: React.FC<{ d: StepNodeData }> = ({ d }) => {
+  const subject = d.subject ?? '';
+  const [text, setText] = useState(subject);
+  const [editing, setEditing] = useState(false);
+  const [prevSubject, setPrevSubject] = useState(subject);
+  if (prevSubject !== subject) {
+    setPrevSubject(subject);
+    if (!editing) {
+      setText(subject);
+    }
+  }
+  return (
+    <InputGroup>
+      <InputGroupAddon align="inline-start">
+        <InputGroupText>Subject</InputGroupText>
+      </InputGroupAddon>
+      <InputGroupInput
+        value={text}
+        onBlur={() => {
+          setEditing(false);
+          setText(subject);
+        }}
+        onChange={(event) => {
+          setText(event.target.value);
+          d.onSubjectChange?.(event.target.value);
+        }}
+        onFocus={() => setEditing(true)}
+      />
+    </InputGroup>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // Morph: the node grows into its own form.
@@ -1033,7 +1111,12 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
   // The form's full height, measured once it's mounted.
   const [toHeight, setToHeight] = useState<number | null>(null);
 
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  // The node itself — a <button>, or for an email a div acting as one — held
+  // by a callback ref so either element fits.
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const setTrigger = useCallback((el: HTMLElement | null) => {
+    triggerRef.current = el;
+  }, []);
   const outerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -1188,10 +1271,16 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
   // The header's controls, fading in as the node grows. Pulled into the
   // padding so a 36px button doesn't make the row taller than the node's. The
   // trigger can't be deleted — its action is changing it.
+  //
+  // ml-auto: the title is capped at the node's text width (matchNode) so it
+  // wraps where the node's did, which means it no longer fills the row — left
+  // to flow, the controls sat right after it, mid-panel. self-start + the -8px
+  // top pull centres a 36px button on the title's FIRST line, the same line
+  // the step icon sits on, so a wrapped title doesn't drag it down.
   const headerActions = (
     <span
       className={cn(
-        '-my-2 -mr-2 flex',
+        '-my-2 -mr-2 ml-auto flex self-start',
         expanded ? `opacity-100 ${MORPH_FADE_IN}` : `opacity-0 ${MORPH_FADE_OUT}`,
       )}
     >
@@ -1235,6 +1324,16 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
         ? { width: MORPH_WIDTH, height: toHeight ?? undefined }
         : { width: from.width, height: from.height };
 
+  const nodeClassName = cn(
+    'nodrag nopan flex cursor-pointer rounded-xl border bg-surface-elevated text-left shadow-xs transition-colors hover:border-border-strong',
+    isEmail ? 'flex-col overflow-hidden' : 'items-center gap-3 px-6 py-5',
+    NODE_CARD_WIDTH,
+    d.warning ? 'border-state-warning' : 'border-border-default',
+    // The panel is this node, grown; while it's out, the node isn't also
+    // here. Invisible rather than gone so it still anchors.
+    active && 'invisible',
+  );
+
   return (
     <div
       className={cn(
@@ -1249,27 +1348,37 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
         open={active}
         onOpenChange={(next) => (next ? requestOpen() : requestClose())}
       >
-        <PopoverTrigger asChild>
-          <button
-            ref={triggerRef}
-            className={cn(
-              'nodrag nopan flex cursor-pointer rounded-xl border bg-surface-elevated text-left shadow-xs transition-colors hover:border-border-strong',
-              isEmail ? 'flex-col overflow-hidden' : 'items-center gap-3 px-6 py-5',
-              NODE_CARD_WIDTH,
-              d.warning ? 'border-state-warning' : 'border-border-default',
-              // The panel is this node, grown; while it's out, the node isn't
-              // also here. Invisible rather than gone so it still anchors.
-              active && 'invisible',
-            )}
-            type="button"
-          >
-            {isEmail ? (
+        {isEmail ? (
+          // A div acting as the button rather than a <button>: the email's
+          // preview carries an "Edit email" button of its own, and a button
+          // can't hold another. So it's an anchor with the button's behaviour
+          // — focusable, Enter / Space — and opens the panel itself.
+          <PopoverAnchor asChild>
+            <div
+              ref={setTrigger}
+              aria-expanded={active}
+              aria-haspopup="dialog"
+              className={nodeClassName}
+              role="button"
+              tabIndex={0}
+              onClick={requestOpen}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  requestOpen();
+                }
+              }}
+            >
               <EmailNodeFace d={d} />
-            ) : (
+            </div>
+          </PopoverAnchor>
+        ) : (
+          <PopoverTrigger asChild>
+            <button ref={setTrigger} className={nodeClassName} type="button">
               <StepNodeFace icon={icon} title={title} warning={Boolean(d.warning)} />
-            )}
-          </button>
-        </PopoverTrigger>
+            </button>
+          </PopoverTrigger>
+        )}
         <PopoverContent
           ref={outerRef}
           align="center"

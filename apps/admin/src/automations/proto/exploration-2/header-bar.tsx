@@ -33,11 +33,12 @@ const StatusAction: React.FC<{
             Filled rather than ghost, from review: the header's actions read too
             quiet to find. (Which retires the editor-green text this used to
             borrow — the primary fill is the emphasis now.) Once it's on, this
-            is Turn off, secondary beside Update. */}
+            is Turn off, a ghost button beside Update: only the primary is
+            filled, so the one press that matters is the one that stands out. */}
         <Button
           className={HEADER_ACTION}
           type="button"
-          variant={on ? 'secondary' : 'default'}
+          variant={on ? 'ghost' : 'default'}
           onClick={() => {
             if (!on && !canGoLive) {
               setBlockedOpen(true);
@@ -97,13 +98,14 @@ interface HeaderBarProps {
 export const HeaderBar: React.FC<HeaderBarProps> = ({ title, onBack }) => (
   <header
     className={cn(
-      // 24px on every side, the way the post editor's header does it, rather than a
-      // fixed height with only horizontal padding: the row is as tall as the tallest
-      // control in it plus its margins, so changing a control's size changes the
-      // header instead of leaving it centred in a number that no longer means
-      // anything. The 24px is also the column the rail and the canvas controls use,
-      // so every leading control on the screen starts on one line.
-      'relative z-30 flex shrink-0 items-center justify-between p-6',
+      // 24px either side — the column the rail and the canvas controls use, so
+      // every leading control starts on one line — and 16px above and below, for
+      // a 68px bar. Padding rather than a fixed height, so the row is as tall as
+      // its tallest control plus its margins. Everything pinned to the header's
+      // line keys off these numbers: the full-width band and the pane's empty
+      // first row (68px), the top-right cluster and the maximised HUD pills
+      // (controls at 16px from the top).
+      'relative z-30 flex shrink-0 items-center justify-between px-6 py-4',
       // No surface or rule of its own: the canvas below is an inset window, and
       // the header sits on the page around it, the same ground as the pane.
       'bg-background',
@@ -131,15 +133,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ title, onBack }) => (
       >
         <LucideIcon.ArrowLeft strokeWidth={2} />
       </Button>
-      {/* text-lg (15px), matching the shipping automation header's own name
-                verbatim. The screen's subject should be the largest thing on it; at
-                text-md it was a step BELOW the pane heading beneath it, which inverted
-                the hierarchy — the region label outranking the thing it reports on. */}
+      {/* text-md (14px) — a step under the shipping automation header's
+                text-lg, from review. The visible name is the pinned copy in the
+                screen's top-left cluster (see detail); this one only holds the
+                row's height, so the two are kept the same size. */}
       {/* Plain text. It was a button with a trailing cog, opening the name and
                 description in a dialog — that moved into the pane's Settings panel, and a
                 second way in would be two places to change one thing. The title is a label
                 again, which is all it was ever claiming to be. */}
-      <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
+      <span className="min-w-0 truncate text-md font-semibold">{title}</span>
     </Inline>
   </header>
 );

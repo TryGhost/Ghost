@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -36,6 +36,7 @@ import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
+import { StatusBadge } from '@/automations/proto/shared/status-badge';
 
 // EXPLORATION — not scheduled. See shared/lanes for why each lane owns its own
 // copy of this screen.
@@ -47,27 +48,19 @@ import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
 // window, so the flow is the only bounded object on screen.
 const LANE = 'exploration-2' as const;
 
-// Maximising, borrowed from the full-canvas lane and mirrored: the canvas is a
-// window inset on the page, and the sidebar toggle grows that window to fill
-// the screen — the header closing up above it, the pane narrowing beside it —
-// rather than a sheet sliding off the right. The header's identity half (the
-// way back and the name) comes back as HUD floating over the canvas once it's
-// settled; the actions never leave — they're in the top-right cluster, which
-// holds its place in both states. The pane stays on the right, where this lane
-// has it.
+// Maximising, borrowed from the full-canvas lane and mirrored: the sidebar
+// toggle grows the canvas to fill the screen — the header row closing up above
+// it, the pane narrowing beside it — rather than a sheet sliding off the right.
+// The screen's controls never leave or move: the way back and the name are
+// pinned top-left, the actions and the toggle top-right, and maximising only
+// fades a card in behind each. The pane stays on the right, where this lane
+// has it. Every geometric part of it runs on the one duration in `chrome`
+// (300ms), because it's one gesture.
 //
-// One duration for every geometric part of it — the header's height, the
-// pane's width, the window's margin and radius — because they're one gesture.
-const CHROME_MS = 300;
-// 4px around 36px controls — the same inset as the top-right card, so both
-// corners are one material at one spacing. rounded-lg, a step rounder than the
+// 4px around 36px controls — the same inset as the corner cards, so everything
+// floating is one material at one spacing. rounded-lg, a step rounder than the
 // controls' own rounded-md, so the corners nest instead of running parallel.
 const HUD_PILL = 'flex items-center rounded-lg bg-surface-elevated p-1 shadow-sm';
-// size="icon" is 36px, the number the zoom controls use.
-const HUD_CONTROL = 'size-9';
-// Mounted after the geometry has settled, so it fades in where it will stay
-// rather than riding the canvas as it grows.
-const HUD_ENTER = `animate-in duration-200 ${PROTO_EASE} fade-in-0 motion-reduce:animate-none`;
 
 type LiveStatus = 'active' | 'inactive';
 
@@ -223,19 +216,6 @@ const AutomationFloat: React.FC = () => {
   // The trigger stays editable here — nothing is fixed after creation.
   // The canvas is always editable, so hiding the pane is the user's call.
   const [paneCollapsed, setPaneCollapsed] = useState(false);
-  // The HUD mounts once the canvas has finished growing rather than fading in
-  // place — held in the layout the whole time, it would reserve room in the
-  // corners while the header was still there. On the way back it goes at once:
-  // what should be watched then is the header returning.
-  const [hudVisible, setHudVisible] = useState(false);
-  useEffect(() => {
-    if (!paneCollapsed) {
-      setHudVisible(false);
-      return;
-    }
-    const timer = setTimeout(() => setHudVisible(true), CHROME_MS);
-    return () => clearTimeout(timer);
-  }, [paneCollapsed]);
 
   // What's running vs what's being edited. Derived up here, before the early
   // return, because the leave guards below need to know whether anything differs
@@ -462,12 +442,12 @@ const AutomationFloat: React.FC = () => {
                 you're deciding whether to press it, and its absence is a worse way of
                 saying "nothing to commit" than the disabled state is: absent could mean
                 anything, disabled means the thing exists and has nothing to do. */}
-      {/* Primary once live, where pushing edits is the main job; secondary while
-          off, where Publish beside it is. See StatusAction. */}
+      {/* Primary once live, where pushing edits is the main job; ghost while
+          off, where Publish beside it is the primary. See StatusAction. */}
       <Button
         className={HEADER_ACTION}
         disabled={!hasChanges}
-        variant={liveStatus === 'active' ? 'default' : 'secondary'}
+        variant={liveStatus === 'active' ? 'default' : 'ghost'}
         onClick={handlePublishClick}
       >
         {liveStatus === 'active' ? 'Update' : 'Save'}
@@ -487,6 +467,20 @@ const AutomationFloat: React.FC = () => {
       className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background"
       data-testid="float-detail"
     >
+      {/* The header's band, full width — behind the header on the left AND the
+          top-right cluster over the pane — with a soft shadow under it. The
+          header itself only spans the canvas column, so without this the
+          cluster sat in the pane's first row looking unattached; one band
+          makes the header a single bar across the screen, and gives the pane's
+          content a top edge to sit under. Fades with the header when the canvas
+          is maximised. */}
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-x-0 top-0 z-20 h-[68px] bg-background shadow-xs transition-opacity',
+          paneCollapsed ? leaves : arrives,
+        )}
+        aria-hidden
+      />
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* The canvas and the header above it, as one column.
 
@@ -509,7 +503,12 @@ const AutomationFloat: React.FC = () => {
             )}
           >
             <div className="overflow-hidden">
-              <div className={cn('transition-opacity', paneCollapsed ? leaves : arrives)}>
+              {/* A stand-in, holding the header's height: the back arrow and the
+                  name themselves live in the pinned top-left cluster (see the
+                  root), which never moves — so this row is only the space they
+                  sit in, and closing it is what lets the canvas grow up.
+                  Invisible, so nothing in it can be focused or read twice. */}
+              <div className="invisible" aria-hidden>
                 <HeaderBar title={automation.name} onBack={goBack} />
               </div>
             </div>
@@ -536,14 +535,10 @@ const AutomationFloat: React.FC = () => {
               // completely different without either canvas knowing which one it is.
               CANVAS_SLOT_FILL,
               canvasTheme('exploration', Boolean(selectedRun)),
-              // A window on the page — inset on the header's 24px at the left and
-              // bottom, flush against the pane on its right — until maximised, when
-              // it grows to the screen's edges. (This lane used to be full bleed,
-              // the post editor's shape; it now shares the full-canvas lane's
-              // window, with the pane kept on this side.)
-              'transition-[margin,border-radius]',
-              chrome,
-              paneCollapsed ? 'm-0 rounded-none' : 'mb-6 ml-6 rounded-2xl',
+              // Flush in both states — no inset, no radius. The header band above
+              // (see the root) is what bounds it while the pane is open, and the
+              // pane's edge is the canvas's edge; maximising only takes the header
+              // and the pane away.
             )}
           >
             {/* The header's action half, floating, on the same 24px inset as everything
@@ -585,49 +580,33 @@ const AutomationFloat: React.FC = () => {
                 aria-label rather than the bare name, since "Marcus Chen" doesn't say what
                 pressing it does; it contains the visible text, so the label-in-name rule
                 still holds. */}
-            {/* One top-left cluster: the header's identity half while maximised,
-                and the member whose run is open. Both can be present at once,
-                so they sit in a row and neither has to know about the other. */}
-            {/* Pulled out by the pill's 4px padding, so the controls inside land
-                on the 24px line and the pill's edge on 20 — the same geometry as
-                the top-right card, whose controls never move off 24. */}
-            <div className="absolute top-5 left-5 z-20">
-              <Inline align="center" gap="sm">
-                {hudVisible && (
-                  <div className={cn(HUD_PILL, 'gap-1 pr-2', HUD_ENTER)}>
-                    <Button
-                      aria-label="Back to automations"
-                      className={HUD_CONTROL}
-                      size="icon"
-                      type="button"
-                      variant="ghost"
-                      onClick={goBack}
-                    >
-                      <LucideIcon.ArrowLeft strokeWidth={2} />
-                    </Button>
-                    {/* A step down from the header's text-lg: floating chrome
-                        stands in for the page title rather than claiming to be it. */}
-                    <span className="max-w-56 truncate px-1 text-md font-medium">
-                      {automation.name}
-                    </span>
-                  </div>
+            {/* The member whose run is open. It stays at one spot on SCREEN in
+                both states — just under the header's line — so as the canvas grows
+                up beneath it (its top moving from 68px to 0), it moves down by the
+                same amount over the same curve, and clears the pinned name that
+                takes the corner once the header's gone. */}
+            {selectedRun && !showEditCanvas && (
+              <div
+                className={cn(
+                  'absolute left-5 z-20 transition-[top]',
+                  chrome,
+                  paneCollapsed ? 'top-20' : 'top-3',
                 )}
-                {selectedRun && !showEditCanvas && (
-                  <div className={HUD_PILL}>
-                    <Button
-                      aria-label={`Close ${selectedRun.member.name}'s run`}
-                      className="h-9"
-                      type="button"
-                      variant="ghost"
-                      onClick={() => setSelectedMemberId(null)}
-                    >
-                      <LucideIcon.X strokeWidth={2} />
-                      {selectedRun.member.name}
-                    </Button>
-                  </div>
-                )}
-              </Inline>
-            </div>
+              >
+                <div className={HUD_PILL}>
+                  <Button
+                    aria-label={`Close ${selectedRun.member.name}'s run`}
+                    className="h-9"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setSelectedMemberId(null)}
+                  >
+                    <LucideIcon.X strokeWidth={2} />
+                    {selectedRun.member.name}
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div
               className={cn(
@@ -767,6 +746,48 @@ const AutomationFloat: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* The way back and the name, pinned to the top-left and never anywhere
+          else — the top-right cluster's twin. With the pane open they read as the
+          header's left half; maximised, the header row closes up and a card
+          fades in behind them, and they float over the canvas. They don't move,
+          change size or remount either way: only the card arrives, so the
+          toggle is one continuous thing rather than a header fading out and a
+          copy of it fading in. The full-canvas lane does the same with its pill.
+
+          16px down and 24px in, the header's own padding; the card is drawn 4px
+          out around them, as the top-right one is. */}
+      <div className="pointer-events-none absolute top-0 left-0 z-40 flex max-w-[50%] px-6 py-4">
+        <div className="pointer-events-auto relative flex min-w-0 items-center">
+          <div
+            className={cn(
+              'absolute -inset-1 rounded-lg bg-surface-elevated shadow-sm transition-opacity',
+              paneCollapsed
+                ? 'opacity-100 [transition-delay:150ms] duration-200'
+                : 'pointer-events-none opacity-0 duration-100',
+            )}
+          />
+          <Inline align="center" className="relative min-w-0" gap="sm">
+            <Button
+              aria-label="Back to automations"
+              size="icon"
+              type="button"
+              variant="ghost"
+              onClick={goBack}
+            >
+              <LucideIcon.ArrowLeft strokeWidth={2} />
+            </Button>
+            <span className="min-w-0 truncate text-md font-semibold">{automation.name}</span>
+            {/* On / Off beside the name — the same badge the other lanes' headers
+                and the list use. shrink-0 so a long name truncates before the
+                status does. mr-2 is the card's breathing room past it; with no
+                card showing it's just space. */}
+            <span className="mr-2 flex shrink-0">
+              <StatusBadge status={liveStatus} />
+            </span>
+          </Inline>
+        </div>
+      </div>
+
       {/* The screen's controls — the sidebar toggle and the automation's actions —
           as one cluster pinned to the top-right at the pane's width, and never
           anywhere else. Loops' arrangement: with the pane open it's the pane's
@@ -777,7 +798,7 @@ const AutomationFloat: React.FC = () => {
 
           The actions lead and the toggle ends the row, in the screen's corner —
           the one control that acts on the layout rather than the automation. */}
-      <div className="pointer-events-none absolute top-0 right-0 z-40 flex w-[420px] justify-end p-6">
+      <div className="pointer-events-none absolute top-0 right-0 z-40 flex w-[420px] justify-end px-6 py-4">
         <div className="pointer-events-auto relative flex items-center gap-2">
           {/* The card hugs the controls, in the same material as the top-left
               pill (HUD_PILL — surface, radius, shadow, no border) and the same
