@@ -1,8 +1,10 @@
 import React from 'react';
 import type { Address } from '@tryghost/metafield-types';
+import { FIELD_PARTS } from '@tryghost/metafield-types/structure';
 import type { FieldType } from '@tryghost/metafield-types/structure';
 
 import InputForm from './input-form';
+import { countryOptions } from '../../utils/countries';
 import { t } from '../../utils/i18n';
 import { compositeValue, scalarValue } from '../../utils/custom-fields';
 import type { CustomFieldValue, DrawableCustomField } from '../../utils/custom-fields';
@@ -32,10 +34,6 @@ const addressLabels = (): Record<keyof Address, string> => ({
   postal_code: t('Postal code'),
   country: t('Country'),
 });
-
-interface RowProps {
-  parts: (keyof Address)[];
-}
 
 interface FieldProps {
   field: DrawableCustomField;
@@ -67,6 +65,32 @@ function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps) 
   );
 }
 
+interface AddressRowProps {
+  parts: (keyof Address)[];
+  input: (part: keyof Address) => Record<string, unknown>;
+  onChange: (part: string | null, value: string) => void;
+  onKeyDown: (event: React.KeyboardEvent) => void;
+}
+
+/**
+ * One row of an address. Declared here rather than inside the field: a component made
+ * afresh on every render is a new type each time, so React would replace the row's
+ * inputs on every keystroke and take the member's focus with them.
+ */
+function AddressRow({ parts, input, onChange, onKeyDown }: AddressRowProps) {
+  return (
+    <div className="gh-portal-input-group-row">
+      <InputForm
+        fields={parts.map(input)}
+        onChange={(event: { target: { value: string } }, changed: { part?: string }) =>
+          onChange(changed.part ?? null, event.target.value)
+        }
+        onKeyDown={onKeyDown}
+      />
+    </div>
+  );
+}
+
 /**
  * An address: several inputs drawn as one field, their borders merged so the group reads
  * as a single thing.
@@ -83,43 +107,41 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
   const errorsId = `custom-${field.key}-errors`;
   const nameOf = (part: keyof Address) => `custom:${field.key}:${part}`;
 
-  const input = (part: keyof Address) => ({
-    type: 'text',
-    value: held?.[part] ?? '',
-    // The part's label is read by assistive tech and shown as the placeholder; the
-    // field's own name labels the group.
-    label: labels[part],
-    hideLabel: true,
-    placeholder: labels[part],
-    name: nameOf(part),
-    invalid: Boolean(errors[nameOf(part)]),
-    // A refused part is read out with the reasons listed under the field, since its own
-    // reason is not printed beside it.
-    describedBy: errors[nameOf(part)] ? errorsId : undefined,
-    readOnly,
-    part,
-  });
+  const input = (part: keyof Address) => {
+    const isCountry = FIELD_PARTS.address[part] === 'country_code';
+    return {
+      type: isCountry ? 'select' : 'text',
+      options: isCountry ? countryOptions(held?.[part]) : undefined,
+      value: held?.[part] ?? '',
+      // The part's label is read by assistive tech and shown as the placeholder; the
+      // field's own name labels the group.
+      label: labels[part],
+      hideLabel: true,
+      placeholder: labels[part],
+      name: nameOf(part),
+      invalid: Boolean(errors[nameOf(part)]),
+      // A refused part is read out with the reasons listed under the field, since its own
+      // reason is not printed beside it.
+      describedBy: errors[nameOf(part)] ? errorsId : undefined,
+      readOnly,
+      part,
+    };
+  };
 
-  const Row = ({ parts }: RowProps) => (
-    <div className="gh-portal-input-group-row">
-      <InputForm
-        fields={parts.map(input)}
-        onChange={(event: { target: { value: string } }, changed: { part?: string }) =>
-          onChange(field, changed.part ?? null, event.target.value)
-        }
-        onKeyDown={onKeyDown}
-      />
-    </div>
-  );
+  const rowProps = {
+    input,
+    onChange: (part: string | null, changed: string) => onChange(field, part, changed),
+    onKeyDown,
+  };
 
   // The form, written out. Nothing else states how an address is laid out, and the
   // reasons below read their order from these same rows, so the order a member sees and
   // the order they are listed in cannot come apart.
-  const rows: React.ReactElement<RowProps>[] = [
-    <Row key="line1" parts={['line1']} />,
-    <Row key="line2" parts={['line2']} />,
-    <Row key="city" parts={['city', 'state']} />,
-    <Row key="postal_code" parts={['postal_code', 'country']} />,
+  const rows: React.ReactElement<AddressRowProps>[] = [
+    <AddressRow {...rowProps} key="line1" parts={['line1']} />,
+    <AddressRow {...rowProps} key="line2" parts={['line2']} />,
+    <AddressRow {...rowProps} key="city" parts={['city', 'state']} />,
+    <AddressRow {...rowProps} key="postal_code" parts={['postal_code', 'country']} />,
   ];
 
   const refused = rows

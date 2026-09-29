@@ -7,11 +7,11 @@ export default class UnauthenticatedRoute extends Route {
     @service session;
 
     beforeModel() {
-        let authUrl = this.ghostPaths.url.api('authentication', 'setup');
+        const authUrl = this.ghostPaths.url.api('authentication', 'setup');
 
         // check the state of the setup process via the API
         return this.ajax.request(authUrl).then((result) => {
-            let [setup] = result.setup;
+            const [setup] = result.setup;
 
             if (setup.status !== true) {
                 this.transitionTo('setup');

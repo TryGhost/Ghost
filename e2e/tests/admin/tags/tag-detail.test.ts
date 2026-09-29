@@ -4,10 +4,8 @@ import { expect, test } from '@/helpers/playwright';
 import { usePerTestIsolation } from '@/helpers/playwright/isolation';
 
 /**
- * Behaviour contract for `/tags/:slug` and `/tags/new`. The React screen is
- * generally available (`tagDetailsReact` sits in GA_FEATURES), so every site
- * serves it; the assertions describe what the screen does rather than how it
- * is built.
+ * Behaviour contract for `/tags/:slug` and `/tags/new`. The assertions
+ * describe what the screen does rather than how it is built.
  */
 
 usePerTestIsolation();

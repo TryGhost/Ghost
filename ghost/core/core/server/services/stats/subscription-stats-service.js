@@ -25,12 +25,12 @@ class SubscriptionStatsService {
     });
 
     /** @type {SubscriptionHistoryEntry[]} */
-    let subscriptionHistoryEntries = [];
+    const subscriptionHistoryEntries = [];
 
     /** @type {string[]} */
-    let cadences = [];
+    const cadences = [];
     /** @type {string[]} */
-    let tiers = [];
+    const tiers = [];
 
     for (let index = subscriptionDeltaEntries.length - 1; index >= 0; index -= 1) {
       const entry = subscriptionDeltaEntries[index];

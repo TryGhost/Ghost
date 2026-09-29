@@ -114,6 +114,11 @@ export class JobsService {
     return queue === undefined ? undefined : { queue };
   }
 
+  /**
+   * Resolves when the backend's enqueue call completes, without waiting for the
+   * handler to run. Enqueue errors reject this promise. Resolution does not
+   * guarantee execution: the backend controls what happens to work during shutdown.
+   */
   async dispatch(job: Job): Promise<void> {
     const envelope = this.#buildEnvelope(job);
     await this.#backend.enqueue(envelope, this.#routingFor(envelope.type));

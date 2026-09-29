@@ -28,18 +28,15 @@ function addTableColumn(
   let column;
 
   // creation distinguishes between text with fieldtype, string with maxlength and all others
-  if (columnSpec.type === 'text' && Object.prototype.hasOwnProperty.call(columnSpec, 'fieldtype')) {
+  if (columnSpec.type === 'text' && Object.hasOwn(columnSpec, 'fieldtype')) {
     column = tableBuilder[columnSpec.type](columnName, columnSpec.fieldtype);
-  } else if (
-    columnSpec.type === 'binary' &&
-    Object.prototype.hasOwnProperty.call(columnSpec, 'maxlength')
-  ) {
+  } else if (columnSpec.type === 'binary' && Object.hasOwn(columnSpec, 'maxlength')) {
     // knex emits an unbounded `blob` for a length-less binary column, which
     // MySQL can only index with a prefix. Passing the length gives us
     // `varbinary(N)`, which is indexable in full.
     column = tableBuilder[columnSpec.type](columnName, columnSpec.maxlength);
   } else if (columnSpec.type === 'string') {
-    if (Object.prototype.hasOwnProperty.call(columnSpec, 'maxlength')) {
+    if (Object.hasOwn(columnSpec, 'maxlength')) {
       column = tableBuilder[columnSpec.type](columnName, columnSpec.maxlength);
     } else {
       column = tableBuilder[columnSpec.type](columnName, 191);
@@ -48,51 +45,39 @@ function addTableColumn(
     column = tableBuilder[columnSpec.type](columnName);
   }
 
-  if (
-    Object.prototype.hasOwnProperty.call(columnSpec, 'nullable') &&
-    columnSpec.nullable === true
-  ) {
+  if (Object.hasOwn(columnSpec, 'nullable') && columnSpec.nullable === true) {
     column.nullable();
   } else {
     column.nullable(false);
   }
-  if (Object.prototype.hasOwnProperty.call(columnSpec, 'primary') && columnSpec.primary === true) {
+  if (Object.hasOwn(columnSpec, 'primary') && columnSpec.primary === true) {
     column.primary();
   }
-  if (Object.prototype.hasOwnProperty.call(columnSpec, 'unique') && columnSpec.unique) {
+  if (Object.hasOwn(columnSpec, 'unique') && columnSpec.unique) {
     column.unique();
   }
-  if (Object.prototype.hasOwnProperty.call(columnSpec, 'unsigned') && columnSpec.unsigned) {
+  if (Object.hasOwn(columnSpec, 'unsigned') && columnSpec.unsigned) {
     column.unsigned();
   }
-  if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {
+  if (Object.hasOwn(columnSpec, 'references')) {
     // check if table exists?
     column.references(columnSpec.references);
   }
-  if (Object.prototype.hasOwnProperty.call(columnSpec, 'constraintName')) {
+  if (Object.hasOwn(columnSpec, 'constraintName')) {
     column.withKeyName(columnSpec.constraintName);
   }
 
-  if (
-    Object.prototype.hasOwnProperty.call(columnSpec, 'cascadeDelete') &&
-    columnSpec.cascadeDelete === true
-  ) {
+  if (Object.hasOwn(columnSpec, 'cascadeDelete') && columnSpec.cascadeDelete === true) {
     column.onDelete('CASCADE');
-  } else if (
-    Object.prototype.hasOwnProperty.call(columnSpec, 'restrictDelete') &&
-    columnSpec.restrictDelete === true
-  ) {
+  } else if (Object.hasOwn(columnSpec, 'restrictDelete') && columnSpec.restrictDelete === true) {
     column.onDelete('RESTRICT');
-  } else if (
-    Object.prototype.hasOwnProperty.call(columnSpec, 'setNullDelete') &&
-    columnSpec.setNullDelete === true
-  ) {
+  } else if (Object.hasOwn(columnSpec, 'setNullDelete') && columnSpec.setNullDelete === true) {
     column.onDelete('SET NULL');
   }
-  if (Object.prototype.hasOwnProperty.call(columnSpec, 'defaultTo')) {
+  if (Object.hasOwn(columnSpec, 'defaultTo')) {
     column.defaultTo(columnSpec.defaultTo);
   }
-  if (Object.prototype.hasOwnProperty.call(columnSpec, 'index') && columnSpec.index === true) {
+  if (Object.hasOwn(columnSpec, 'index') && columnSpec.index === true) {
     column.index();
   }
 }
@@ -195,7 +180,7 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec, o
  * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
 async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}, options = {}) {
-  if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {
+  if (Object.hasOwn(columnSpec, 'references')) {
     const [toTable, toColumn] = columnSpec.references.split('.');
     await dropForeign({
       fromTable: tableName,

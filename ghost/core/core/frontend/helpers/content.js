@@ -29,15 +29,15 @@ function restrictedCta(options) {
 }
 
 module.exports = function content(options = {}) {
-  let self = this;
-  let args = arguments;
+  const self = this;
+  const args = arguments;
 
   const hash = options.hash || {};
   const truncateOptions = {};
   let runTruncate = false;
 
   for (const key of ['words', 'characters']) {
-    if (Object.prototype.hasOwnProperty.call(hash, key)) {
+    if (Object.hasOwn(hash, key)) {
       runTruncate = true;
       truncateOptions[key] = parseInt(hash[key], 10);
     }

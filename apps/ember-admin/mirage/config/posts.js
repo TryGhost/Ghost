@@ -38,12 +38,12 @@ export function getPostsOrPages(modelName, db, {queryParams}) {
     page = +page || 1;
     limit = +limit || 15;
 
-    let statusFilter = extractFilterParam('status', filter);
-    let authorsFilter = extractFilterParam('authors', filter);
-    let visibilityFilter = extractFilterParam('visibility', filter);
-    let tags = extractFilterParam('tag', filter);
+    const statusFilter = extractFilterParam('status', filter);
+    const authorsFilter = extractFilterParam('authors', filter);
+    const visibilityFilter = extractFilterParam('visibility', filter);
+    const tags = extractFilterParam('tag', filter);
 
-    let collection = model.all().filter((post) => {
+    const collection = model.all().filter((post) => {
         let matchesStatus = true;
         let matchesAuthors = true;
         let matchesVisibility = true;
@@ -79,7 +79,7 @@ export function getPostsOrPages(modelName, db, {queryParams}) {
 
 export default function mockPosts(server) {
     server.post('/posts', function ({posts, users, tags}) {
-        let attrs = this.normalizedRequestAttrs();
+        const attrs = this.normalizedRequestAttrs();
 
         attrs.authors = extractAuthors(attrs, users);
         attrs.tags = extractTags(attrs, tags);
@@ -98,8 +98,8 @@ export default function mockPosts(server) {
     server.get('/posts/', getPosts);
 
     server.get('/posts/:id/', function ({posts}, {params}) {
-        let {id} = params;
-        let post = posts.find(id);
+        const {id} = params;
+        const post = posts.find(id);
 
         return post || new Response(404, {}, {
             errors: [{
@@ -134,14 +134,14 @@ export default function mockPosts(server) {
     server.del('/posts/:id/');
 
     server.del('/posts/', function ({posts}, {queryParams}) {
-        let ids = extractFilterParam('id', queryParams.filter);
+        const ids = extractFilterParam('id', queryParams.filter);
 
         posts.find(ids).destroy();
     });
 
     server.post('/posts/:id/copy/', function ({posts}, {params}) {
-        let post = posts.find(params.id);
-        let attrs = post.attrs;
+        const post = posts.find(params.id);
+        const attrs = post.attrs;
 
         return posts.create(attrs);
     });

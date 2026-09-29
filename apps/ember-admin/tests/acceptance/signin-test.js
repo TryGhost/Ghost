@@ -12,7 +12,7 @@ import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
 describe('Acceptance: Signin', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     async function setupSigninFlow(server, {role = 'Administrator', fillForm = true} = {}) {
@@ -23,11 +23,11 @@ describe('Acceptance: Signin', function () {
             server.loadFixtures('settings');
         }
 
-        let roleObj = server.create('role', {name: role});
+        const roleObj = server.create('role', {name: role});
         server.create('user', {roles: [roleObj], slug: 'test-user'});
 
         server.post('/session', function (schema, {requestBody}) {
-            let {
+            const {
                 username,
                 password
             } = JSON.parse(requestBody);
@@ -56,7 +56,7 @@ describe('Acceptance: Signin', function () {
     }
 
     it('redirects if already authenticated', async function () {
-        let role = this.server.create('role', {name: 'Author'});
+        const role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
@@ -69,11 +69,11 @@ describe('Acceptance: Signin', function () {
 
     describe('when attempting to signin', function () {
         beforeEach(function () {
-            let role = this.server.create('role', {name: 'Administrator'});
+            const role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role], slug: 'test-user'});
 
             this.server.post('/session', function (schema, {requestBody}) {
-                let {
+                const {
                     username,
                     password
                 } = JSON.parse(requestBody);

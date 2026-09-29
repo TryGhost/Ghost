@@ -34,6 +34,51 @@ describe('InputField', () => {
     expect(mockOnChangeFn).toHaveBeenCalled();
   });
 
+  test('renders a select for the select type, with an empty option for no value', () => {
+    const { inputEl, mockOnChangeFn } = setup({
+      type: 'select',
+      placeholder: 'Country',
+      options: [
+        { value: 'DE', label: 'Germany' },
+        { value: 'FI', label: 'Finland' },
+      ],
+    });
+
+    expect(inputEl.tagName).toBe('SELECT');
+    expect(Array.from(inputEl.options).map((option) => option.textContent)).toEqual([
+      'Country',
+      'Germany',
+      'Finland',
+    ]);
+    // Nothing chosen reads as a placeholder, without claiming the field is required. The
+    // placeholder is what the closed control shows, not a choice, so it cannot be picked
+    // and is hidden from the open list where the browser honours that (Safari shows it
+    // greyed instead).
+    expect(inputEl).toHaveClass('placeholder');
+    expect(inputEl).not.toBeRequired();
+    expect(inputEl.options[0]).toBeDisabled();
+    expect(inputEl.options[0]).toHaveAttribute('hidden');
+    fireEvent.change(inputEl, { target: { value: 'FI' } });
+    expect(mockOnChangeFn).toHaveBeenCalled();
+  });
+
+  test('a select with a value is not styled as a placeholder, and offers a way to clear it', () => {
+    const { inputEl, mockOnChangeFn } = setup({
+      type: 'select',
+      value: 'FI',
+      placeholder: 'Country',
+      options: [{ value: 'FI', label: 'Finland' }],
+    });
+    expect(inputEl).not.toHaveClass('placeholder');
+    expect(Array.from(inputEl.options).map((option) => option.textContent)).toEqual([
+      '(None)',
+      'Finland',
+    ]);
+    expect(inputEl.options[0]).not.toBeDisabled();
+    fireEvent.change(inputEl, { target: { value: '' } });
+    expect(mockOnChangeFn).toHaveBeenCalled();
+  });
+
   test('renders a textarea for the textarea type, where Enter does not submit', () => {
     const mockOnKeyDownFn = vi.fn();
     const { inputEl, mockOnChangeFn } = setup({ type: 'textarea', onKeyDown: mockOnKeyDownFn });

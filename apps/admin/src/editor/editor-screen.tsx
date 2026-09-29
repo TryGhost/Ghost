@@ -1,10 +1,21 @@
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { getListReturnNavigationState } from '@/shared/virtual-list';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { AdminLink } from '@/shared/admin-link';
+import { getPostListReturnUrl } from '@/posts/api';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
-import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
+import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -35,6 +46,7 @@ import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
+import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
@@ -66,17 +78,30 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 
 function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
+  const reactOwnsList = useFeatureFlag('postsListReact');
+  const resource = postType === 'page' ? 'pages' : 'posts';
+  const listUrl = reactOwnsList ? getPostListReturnUrl(resource) : `/${resource}`;
 
   return (
-    <Inline className="shrink-0 px-4 py-3" gap="sm">
-      <Button size="sm" variant="ghost" asChild>
-        <AdminLink to={postType === 'page' ? '/pages' : '/posts'}>
+    <Grid
+      align="center"
+      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      gap="sm"
+    >
+      <PageHeader.Action
+        className="bg-background/80 backdrop-blur-sm"
+        fallbackSize="sm"
+        fallbackVariant="ghost"
+        label={listLabel}
+        asChild
+      >
+        <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
           <LucideIcon.ArrowLeft />
           {listLabel}
         </AdminLink>
-      </Button>
+      </PageHeader.Action>
       {children}
-    </Inline>
+    </Grid>
   );
 }
 
@@ -135,7 +160,63 @@ function EditorContent({
   const [tkCount, setTkCount] = useState(0);
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const toggleSettings = useCallback(() => setSettingsOpen((open) => !open), []);
+  const [settingsPresent, setSettingsPresent] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const settingsToggleRef = useRef<HTMLButtonElement>(null);
+  const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
+  useLayoutEffect(() => {
+    const toggle = settingsToggleRef.current;
+    if (!toggle) {
+      return;
+    }
+    const measure = () => setSettingsToggleWidth(toggle.getBoundingClientRect().width);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(toggle);
+    return () => observer.disconnect();
+  }, []);
+  // Keep the panel's fields and subview mounted until the closing transition ends.
+  // Reading animations also handles reduced motion (no animation) and reversals.
+  useLayoutEffect(() => {
+    if (settingsOpen || !settingsPresent) {
+      return;
+    }
+    const finishClosing = () => {
+      setSettingsPresent(false);
+    };
+    const animations = shellRef.current?.getAnimations() ?? [];
+    if (!animations.length) {
+      finishClosing();
+      return;
+    }
+    let cancelled = false;
+    void Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+      if (!cancelled) {
+        finishClosing();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [settingsOpen, settingsPresent]);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    if (!header) {
+      return;
+    }
+    const measure = () => setHeaderHeight(header.getBoundingClientRect().height);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+  const toggleSettings = useCallback(() => {
+    settingsToggleRef.current?.focus();
+    setSettingsPresent(true);
+    setSettingsOpen((open) => !open);
+  }, []);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
@@ -151,73 +232,115 @@ function EditorContent({
 
   useSaveShortcut(session.dispatchExplicit);
 
+  const settingsToggle = (
+    <PageHeader.Action
+      ref={settingsToggleRef}
+      aria-expanded={settingsOpen}
+      className={
+        settingsOpen
+          ? 'bg-transparent enabled:aria-expanded:bg-transparent enabled:aria-expanded:shadow-none enabled:aria-expanded:hover:bg-sidebar-accent'
+          : 'bg-background/80 backdrop-blur-sm'
+      }
+      data-testid={settingsMenuToggle}
+      fallbackSize="sm"
+      fallbackVariant="ghost"
+      label="Settings"
+      tooltip={false}
+      iconOnly
+      onClick={toggleSettings}
+    >
+      <LucideIcon.PanelRight />
+    </PageHeader.Action>
+  );
+
   return (
-    <Stack className="h-full" gap="none">
-      <EditorHeader postType={postType}>
-        <EditorStatus
-          isDirty={session.isDirty()}
-          record={statusRecordOf(session.loadedRecord ?? record, createdId)}
-          state={session.state}
+    <Inline
+      ref={shellRef}
+      align="stretch"
+      className="relative h-full min-h-0 transition-[--editor-settings-progress] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+      gap="none"
+      style={
+        {
+          '--editor-header-height': `${headerHeight}px`,
+          '--editor-overlap': '0px',
+          '--editor-settings-progress': settingsOpen ? 1 : 0,
+          '--editor-settings-toggle-width': `${settingsToggleWidth}px`,
+        } as CSSProperties
+      }
+    >
+      <Stack className="min-h-0 min-w-0 flex-1" gap="none">
+        <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
+          <EditorHeader postType={postType}>
+            <EditorStatus
+              isDirty={session.isDirty()}
+              record={statusRecordOf(session.loadedRecord ?? record, createdId)}
+              state={session.state}
+            />
+            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
+              <EditorHeaderActions
+                currentUser={currentUser}
+                postType={postType}
+                session={session}
+                siteUrl={cardConfig.siteUrl}
+                tkCount={tkCount}
+              />
+              <Box
+                aria-hidden="true"
+                className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0"
+              />
+            </PageHeader.ActionGroup>
+          </EditorHeader>
+        </Box>
+        <Box className="peer shrink-0">
+          <SessionBanners
+            contentText={session.contentText}
+            hasUnsavedContent={session.hasUnsavedContent}
+            pendingSave={session.pendingSave}
+            state={session.state}
+            onReload={session.reload}
+            onRetrySave={session.dispatchExplicit}
+          />
+          <ReauthDialog
+            email={currentUser?.email ?? ''}
+            open={session.state.kind === 'reauth-pending'}
+            onAbandoned={session.reauthAbandoned}
+            onSucceeded={session.reauthSucceeded}
+          />
+        </Box>
+        {/* Session warnings reserve space; otherwise the document reaches behind the header. */}
+        <Box className="relative min-h-0 flex-1 peer-empty:[--editor-overlap:var(--editor-header-height)]">
+          <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
+            <PostEditor
+              key={session.contentKey}
+              {...session.bind}
+              autofocusTitle={!record}
+              cardConfig={currentCardConfig}
+              featureImage={featureImage}
+              postType={postType}
+              showExcerpt={showExcerpt}
+              onExcerptBlur={session.commitSettings}
+              onTkCountChange={setTkCount}
+            />
+          </div>
+        </Box>
+      </Stack>
+      <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40">
+        {settingsToggle}
+      </Box>
+      {settingsPresent ? (
+        <PostSettingsSidebar
+          cardConfig={currentCardConfig}
+          currentUser={currentUser}
+          featureImage={featureImage.featureImage}
+          hasInlineExcerpt={showExcerpt}
+          postType={postType}
+          session={session}
+          siteUrl={cardConfig.siteUrl}
         />
-        {/* One right-aligned group: two `ml-auto` siblings would split the free space. */}
-        <Inline className="ml-auto" gap="sm">
-          <EditorHeaderActions
-            currentUser={currentUser}
-            postType={postType}
-            session={session}
-            siteUrl={cardConfig.siteUrl}
-            tkCount={tkCount}
-          />
-          <Button
-            aria-expanded={settingsOpen}
-            aria-label="Settings"
-            data-testid={settingsMenuToggle}
-            size="sm"
-            variant="ghost"
-            onClick={toggleSettings}
-          >
-            <LucideIcon.PanelRight />
-          </Button>
-        </Inline>
-      </EditorHeader>
-      <SessionBanners
-        contentText={session.contentText}
-        hasUnsavedContent={session.hasUnsavedContent}
-        state={session.state}
-        onDismissReauth={session.reauthAbandoned}
-        onReload={session.reload}
-        onRetryReauth={session.reauthSucceeded}
-        onRetrySave={session.dispatchExplicit}
-      />
-      <Inline align="stretch" className="relative min-h-0 flex-1" gap="none">
-        <div className="min-h-0 min-w-0 flex-1">
-          <PostEditor
-            key={session.contentKey}
-            {...session.bind}
-            autofocusTitle={!record}
-            cardConfig={currentCardConfig}
-            featureImage={featureImage}
-            postType={postType}
-            showExcerpt={showExcerpt}
-            onExcerptBlur={session.commitSettings}
-            onTkCountChange={setTkCount}
-          />
-        </div>
-        {settingsOpen ? (
-          <PostSettingsSidebar
-            cardConfig={currentCardConfig}
-            currentUser={currentUser}
-            featureImage={featureImage.featureImage}
-            hasInlineExcerpt={showExcerpt}
-            postType={postType}
-            session={session}
-            siteUrl={cardConfig.siteUrl}
-          />
-        ) : null}
-      </Inline>
+      ) : null}
       {snippetDialog}
       <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
-    </Stack>
+    </Inline>
   );
 }
 

@@ -31,7 +31,7 @@ pnpm data:analytics:clear
 pnpm dev:analytics
 
 # 2. (Optional) Reset Ghost data if needed
-pnpm docker:reset:data
+pnpm reset:data
 
 # 3. Generate analytics data
 pnpm data:analytics:generate
@@ -43,8 +43,7 @@ pnpm data:analytics:generate
 pnpm data:analytics:clear
 ```
 
-**Note:** Use `pnpm docker:reset:data` when the Docker environment is running.
-Use `pnpm reset:data` when running Ghost locally without Docker.
+**Note:** `pnpm reset:data` runs inside the `ghost-dev` container, so the Docker environment must be running.
 
 ## Configuration
 

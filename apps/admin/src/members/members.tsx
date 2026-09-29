@@ -225,7 +225,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 </PageHeader.Left>
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                    {isAdmin7 && headerFilters}
                     {headerSearch}
                     {!isAdmin7 && headerFilters}
                     <MembersActions
@@ -239,7 +238,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
                       onImportComplete={() => {
                         void refetch();
                       }}
-                    />
+                    >
+                      {isAdmin7 && headerFilters}
+                    </MembersActions>
                   </PageHeader.ActionGroup>
                 </PageHeader.Actions>
               </PageHeader>

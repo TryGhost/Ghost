@@ -18,9 +18,9 @@ describe('Permissions', function () {
 
     findPostSpy = sinon.stub(models.Post, 'findOne').callsFake(function () {
       // @TODO: the test env has no concept of including relations
-      let post = models.Post.forge(testUtils.DataGenerator.Content.posts[0]);
+      const post = models.Post.forge(testUtils.DataGenerator.Content.posts[0]);
 
-      let authors = [testUtils.DataGenerator.Content.users[0]];
+      const authors = [testUtils.DataGenerator.Content.users[0]];
 
       post.related('authors').set(authors);
       return Promise.resolve(post);

@@ -44,10 +44,9 @@ const EditRecommendationModal: React.FC<EditRecommendationModalProps> = ({
 
   const leftButton = (
     <Button
-      className="text-destructive hover:text-destructive"
       size="sm"
       type="button"
-      variant="ghost"
+      variant="destructive-ghost"
       onClick={() => {
         onClose();
         confirm({

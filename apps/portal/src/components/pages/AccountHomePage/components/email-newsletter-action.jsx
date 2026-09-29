@@ -6,10 +6,10 @@ import { t } from '../../../../utils/i18n';
 
 function EmailNewsletterAction() {
   const { member, site, doAction } = useContext(AppContext);
-  let { newsletters } = member;
+  const { newsletters } = member;
 
   const subscribed = !!newsletters?.length;
-  let label = subscribed ? t('Subscribed') : t('Unsubscribed');
+  const label = subscribed ? t('Subscribed') : t('Unsubscribed');
   const onToggleSubscription = () => {
     const siteNewsletters = getSiteNewsletters({ site });
     const subscribedNewsletters = !member?.newsletters?.length ? siteNewsletters : [];

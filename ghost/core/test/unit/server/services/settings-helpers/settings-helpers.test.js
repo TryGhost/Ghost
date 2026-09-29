@@ -387,7 +387,7 @@ describe('Settings Helpers', function () {
     const config = configUtils.config;
     let settingsCache;
     let urlUtils;
-    let labs = {};
+    const labs = {};
 
     beforeEach(function () {
       settingsCache = {

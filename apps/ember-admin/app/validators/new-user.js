@@ -10,7 +10,7 @@ export default BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     name(model) {
-        let name = model.name;
+        const name = model.name;
 
         if (!validator.isLength(name || '', {min: 1})) {
             model.errors.add('name', 'Please enter a name.');
@@ -20,7 +20,7 @@ export default BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     email(model) {
-        let email = model.email;
+        const email = model.email;
 
         if (isBlank(email)) {
             model.errors.add('email', 'Please enter an email.');

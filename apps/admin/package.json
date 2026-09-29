@@ -52,11 +52,11 @@
     "clsx": "catalog:",
     "dequal": "catalog:",
     "dompurify": "catalog:",
+    "flexsearch": "catalog:",
     "i18n-iso-countries": "7.14.0",
     "jszip": "3.10.1",
     "lucide-react": "catalog:",
     "luxon": "catalog:",
-    "microdiff": "catalog:",
     "mingo": "catalog:",
     "moment": "catalog:",
     "moment-timezone": "catalog:",
@@ -89,6 +89,7 @@
     "@typescript/native": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/browser-playwright": "catalog:",
+    "d3-geo": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "ghost-admin": "workspace:*",
@@ -155,7 +156,8 @@
         ],
         "outputs": [
           "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin"
+          "{workspaceRoot}/ghost/core/core/built/admin",
+          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
         ],
         "dependsOn": [
           "^build",

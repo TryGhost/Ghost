@@ -19,6 +19,7 @@ describe('Member Custom Fields Admin API', function () {
     loginAsOwner: () => Promise<void>;
     loginAsEditor: () => Promise<void>;
     useZapierAdminAPIKey: () => Promise<void>;
+    useStaffTokenForOwner: () => Promise<void>;
   };
 
   // The key is minted server-side from the name, so callers pass just a name
@@ -1618,6 +1619,71 @@ describe('Member Custom Fields Admin API', function () {
       assert.notEqual(secondWrite[0].written_by_id, owner, 'the integration is identified too');
       assert.ok(secondWrite[0].written_by_id);
       assert.equal(secondWrite[1].written_by_id, owner);
+
+      // Each write also shows on the member's activity feed, saying where it was made.
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      const { body } = await agent.get(`members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }: { data: { source: string; written_by_type: string } }) => ({
+          source: data.source,
+          writer: data.written_by_type,
+        })),
+        [
+          { source: 'admin_api', writer: 'integration' },
+          { source: 'admin', writer: 'user' },
+        ],
+      );
+    });
+
+    // A staff token belongs to a person rather than an integration, but whoever holds it is
+    // calling the API rather than using Admin, and the feed has to say so.
+    it('says a change made with a staff token was made through the Admin API', async function () {
+      const field = await createField({ name: 'Company' });
+      const memberId = await createMember();
+
+      await agent.useStaffTokenForOwner();
+      try {
+        await setValues(memberId, { [field.key]: 'Acme' });
+      } finally {
+        await agent.loginAsOwner();
+      }
+
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      const { body } = await agent.get(`members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }: { data: { source: string; written_by_type: string } }) => ({
+          source: data.source,
+          writer: data.written_by_type,
+        })),
+        [{ source: 'admin_api', writer: 'user' }],
+      );
+    });
+
+    // No API writes an entry the feed can't read, so the only way to show what happens to
+    // one is to put it in the table directly.
+    it('shows an unreadable activity entry as naming no fields rather than failing the feed', async function () {
+      const field = await createField({ name: 'Department' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Sales' });
+
+      await models.Base.knex('members_metafield_change_events').insert({
+        id: '0123456789abcdef01234567',
+        member_id: memberId,
+        written_by_type: 'import',
+        written_by_id: null,
+        source: 'import',
+        metafields: '{not json',
+        created_at: '2020-01-01 00:00:00',
+      });
+
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      const { body } = await agent.get(`members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }: { data: { metafields: Array<{ name: string }> } }) =>
+          data.metafields.map(({ name }) => name),
+        ),
+        [['Department'], []],
+      );
     });
 
     it("drops a field's values when the field is permanently deleted", async function () {

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 
 import {
+  browseResponse,
   configResponse,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -371,6 +372,37 @@ describe('Post preview modal', () => {
     await expect.poll(() => previewApi.lastRequest?.url).toContain('newsletter=monthly-roundup');
   });
 
+  it('offers every newsletter, past the first page of the browse', async () => {
+    fakeTiers([]);
+    const first = newsletter({ name: 'Weekly digest', slug: 'weekly-digest' });
+    const second = newsletter({ name: 'Monthly roundup', slug: 'monthly-roundup' });
+    // `limit=all` is capped by Core, so the site's newsletters can span several pages.
+    const newslettersApi = fakeAdminEndpoint('GET', /^\/newsletters\/\?/, ({ url }) => {
+      const params = new URL(url).searchParams;
+      if (params.get('filter')) {
+        return browseResponse('newsletters', [], { limit: 1 });
+      }
+
+      return browseResponse('newsletters', [first, second], {
+        page: Number(params.get('page') ?? '1'),
+        limit: 1,
+      });
+    });
+    const previewApi = fakeEmailPreview();
+    await renderPreviewModal({ newsletterSlug: 'monthly-roundup' });
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect.poll(() => newslettersApi.requests.length).toBe(2);
+    expect(new URL(newslettersApi.requests[1].url).searchParams.get('page')).toBe('2');
+    // A newsletter past the first page must not be taken for one that has been archived.
+    expect(
+      newslettersApi.requests.some((request) => new URL(request.url).searchParams.get('filter')),
+    ).toBe(false);
+    await expect.poll(() => previewApi.lastRequest?.url).toContain('newsletter=monthly-roundup');
+  });
+
   it('preselects the post’s own newsletter', async () => {
     fakePreviewWorld({
       newsletters: [
@@ -464,11 +496,11 @@ describe('Post preview modal', () => {
     await expect.poll(() => previewApi.requests.length).toBe(1);
   });
 
-  it('reports and retries a failed active-newsletter lookup', async () => {
+  it('reports and retries a failed newsletter lookup', async () => {
     fakePreviewWorld();
     const lookupApi = fakeAdminEndpoint(
       'GET',
-      /^\/newsletters\/\?.*filter=status(?:%3A|:)active/,
+      /^\/newsletters\/\?limit=all/,
       { errors: [{ message: 'Could not load newsletters' }] },
       { status: 500 },
     );
@@ -648,6 +680,27 @@ describe('Post preview modal', () => {
 
     await expect.element(previewScreen.browserFrame()).toBeVisible();
     await expect(previewScreen.emailTab()).toHaveCount(0);
+  });
+
+  it('never asks a contributor, who cannot read tiers, for them', async () => {
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Contributor' })];
+    installBootOverrides({ browseMe: { response: me } });
+    fakeNewsletters([]);
+    const tiersApi = fakeAdminEndpoint(
+      'GET',
+      /^\/tiers\//,
+      { errors: [{ message: 'You do not have permission to browse tiers' }] },
+      { status: 403 },
+    );
+    await renderPreviewModal();
+
+    await expect.element(previewScreen.browserFrame()).toBeVisible();
+    await previewScreen.segmentSelect().click();
+    await expect.element(previewScreen.option('Paid member')).toBeVisible();
+    await expect(previewScreen.option('Specific tier')).toHaveCount(0);
+    await expect(previewScreen.toastWithText(/permission to browse tiers/)).toHaveCount(0);
+    expect(tiersApi.requests).toHaveLength(0);
   });
 
   it('lets an author preview email without offering a test send', async () => {

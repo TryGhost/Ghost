@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../utils/assertions');
-const _ = require('lodash');
+const { waitForEmailStatus } = require('../../../utils/batch-email-utils');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment-timezone');
@@ -209,7 +209,7 @@ describe('Posts API', function () {
           },
         });
       } catch (err) {
-        if (_.isArray(err)) {
+        if (Array.isArray(err)) {
           throw err[0];
         }
         throw err;
@@ -603,6 +603,8 @@ describe('Posts API', function () {
     });
 
     it('publishes a post with email_only and sends email to all', async function () {
+      mockManager.mockMailgun();
+
       const res = await request
         .post(localUtils.API.getApiQuery('posts/'))
         .set('Origin', config.get('url'))
@@ -655,9 +657,14 @@ describe('Posts API', function () {
 
       assertExists(publishedRes.body.posts[0].email);
       assert.equal(publishedRes.body.posts[0].email.email_count, 4);
+
+      const sentEmail = await waitForEmailStatus(publishedRes.body.posts[0].email.id);
+      assert.equal(sentEmail.get('status'), 'submitted');
     });
 
     it('publishes a post while setting email_only flag sends an email to paid', async function () {
+      mockManager.mockMailgun();
+
       const res = await request
         .post(localUtils.API.getApiQuery('posts/'))
         .set('Origin', config.get('url'))
@@ -709,9 +716,14 @@ describe('Posts API', function () {
 
       assertExists(publishedRes.body.posts[0].email);
       assert.equal(publishedRes.body.posts[0].email.email_count, 2);
+
+      const sentEmail = await waitForEmailStatus(publishedRes.body.posts[0].email.id);
+      assert.equal(sentEmail.get('status'), 'submitted');
     });
 
     it('only send an email to paid subscribed members of the selected newsletter', async function () {
+      mockManager.mockMailgun();
+
       const res = await request
         .post(localUtils.API.getApiQuery('posts/'))
         .set('Origin', config.get('url'))
@@ -763,6 +775,9 @@ describe('Posts API', function () {
 
       assertExists(publishedRes.body.posts[0].email);
       assert.equal(publishedRes.body.posts[0].email.email_count, 2);
+
+      const sentEmail = await waitForEmailStatus(publishedRes.body.posts[0].email.id);
+      assert.equal(sentEmail.get('status'), 'submitted');
     });
 
     it('read-only value do not cause errors when edited', function () {

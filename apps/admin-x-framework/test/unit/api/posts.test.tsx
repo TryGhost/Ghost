@@ -8,6 +8,7 @@ import {
   useImportContentCSV,
   usePost,
 } from '../../../src/api/posts';
+import { tagsDataType } from '../../../src/api/tags';
 import { withMockFetch } from '../../utils/mock-fetch';
 
 // The Ember editor's exact include list — writes must re-request everything
@@ -303,6 +304,35 @@ describe('posts api', () => {
         email_segment: 'all',
         include: ALL_INCLUDES,
       });
+    });
+  });
+
+  it('invalidates tag queries after a create or an edit, either of which can create a tag', async () => {
+    const queryClient = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await withMockFetch({}, async () => {
+      const { result } = renderHookWithProviders(
+        () => ({ add: useAddPost(), edit: useEditPost() }),
+        {
+          queryClient,
+        },
+      );
+
+      await act(async () => {
+        await result.current.add.mutateAsync({
+          post: { title: '(Untitled)', tags: [{ name: 'New' }] },
+        });
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: [tagsDataType] });
+
+      invalidateSpy.mockClear();
+      await act(async () => {
+        await result.current.edit.mutateAsync({
+          post: { id: 'post-1', tags: [{ name: 'New' }], updated_at: '2026-01-01T00:00:00.000Z' },
+        });
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: [tagsDataType] });
     });
   });
 

@@ -7,7 +7,7 @@ import {
   settingsTagsToken,
 } from '@tryghost/test-data/selectors/editor';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { TagPicker } from '@/shared/tags/tag-picker';
 import { addTag, removeTag, type TagLike } from '@/shared/tags/tag-selection';
 import { SettingsSection } from './settings-section';
@@ -19,7 +19,7 @@ const TAG_NAME_MAX_LENGTH = 191;
  * The post's tags in order, which is the `sort_order` Ghost stores. The field
  * holds the records the chips are drawn from; the save writes identities.
  */
-export function TagsSection({ session }: { session: EditorSessionHandle }) {
+export function TagsSection({ session }: { session: EditorSettingsPort }) {
   const inputId = useId();
   const tags = session.settings.tags;
 

@@ -36,6 +36,11 @@
       "source": "./src/identity.ts",
       "types": "./build/identity.d.ts",
       "default": "./build/identity.js"
+    },
+    "./countries": {
+      "source": "./src/countries.ts",
+      "types": "./build/countries.d.ts",
+      "default": "./build/countries.js"
     }
   },
   "scripts": {

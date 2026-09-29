@@ -8,8 +8,8 @@ module.exports = {
   async fetchPosts(models, apiConfig, frame) {
     debug('fetchPosts');
 
-    let posts = [];
-    let keys = [];
+    const posts = [];
+    const keys = [];
 
     if (utils.isContentAPI(frame)) {
       keys.push('id', 'slug', 'title', 'excerpt', 'url', 'updated_at', 'visibility');
@@ -17,7 +17,7 @@ module.exports = {
       keys.push('id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility');
     }
 
-    for (let model of models.data) {
+    for (const model of models.data) {
       let post = await mappers.posts(model, frame, {});
       post = _.pick(post, keys);
       posts.push(post);
@@ -31,11 +31,11 @@ module.exports = {
   async fetchPages(models, apiConfig, frame) {
     debug('fetchPages');
 
-    let pages = [];
+    const pages = [];
 
     const keys = ['id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility'];
 
-    for (let model of models.data) {
+    for (const model of models.data) {
       let page = await mappers.pages(model, frame, {});
       page = _.pick(page, keys);
       pages.push(page);
@@ -49,11 +49,11 @@ module.exports = {
   async fetchTags(models, apiConfig, frame) {
     debug('fetchTags');
 
-    let tags = [];
+    const tags = [];
 
     const keys = ['id', 'slug', 'name', 'url'];
 
-    for (let model of models.data) {
+    for (const model of models.data) {
       let tag = await mappers.tags(model, frame);
       tag = _.pick(tag, keys);
       tags.push(tag);
@@ -67,11 +67,11 @@ module.exports = {
   async fetchAuthors(models, apiConfig, frame) {
     debug('fetchAuthors');
 
-    let authors = [];
+    const authors = [];
 
     const keys = ['id', 'slug', 'name', 'url', 'profile_image'];
 
-    for (let model of models.data) {
+    for (const model of models.data) {
       let author = await mappers.authors(model, frame);
       author = _.pick(author, keys);
       authors.push(author);
@@ -85,11 +85,11 @@ module.exports = {
   async fetchUsers(models, apiConfig, frame) {
     debug('fetchUsers');
 
-    let users = [];
+    const users = [];
 
     const keys = ['id', 'slug', 'name', 'url', 'profile_image'];
 
-    for (let model of models.data) {
+    for (const model of models.data) {
       let user = await mappers.users(model, frame);
       user = _.pick(user, keys);
       users.push(user);

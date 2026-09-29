@@ -113,6 +113,13 @@ Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
 
+The pill-controls milestone is generally available on React Admin routes. Admin
+no longer reads `admin7Pill`; route ownership alone determines Shade's
+`isAdmin7` value. Ember-owned routes retain the legacy appearance, and standalone
+ActivityPub uses Shade's current default. Core temporarily retains `admin7Pill`
+in `GA_FEATURES` so older Admin builds receive an enabled value during independent
+deployments. Remove that GA entry once those older builds are no longer supported.
+
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:

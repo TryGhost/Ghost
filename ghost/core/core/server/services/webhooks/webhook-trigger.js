@@ -10,7 +10,7 @@ class WebhookTrigger {
    * @param {Object} options
    * @param {Object} options.models - Ghost models
    * @param {Function} options.payload - Function to generate payload
-   * @param {import('../../services/limits')} options.limitService - Function to generate payload
+   * @param {typeof import('../../services/limits').limitService} options.limitService - Limit service
    * @param {Object} [options.request] - HTTP request handling library
    */
   constructor({ models, payload, request, limitService }) {

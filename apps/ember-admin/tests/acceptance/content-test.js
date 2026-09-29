@@ -22,7 +22,7 @@ const findButton = (text, buttons) => {
 // NOTE: With accommodations for faster loading of posts in the UI, the requests to fetch the posts have been split into separate requests based
 //  on the status of the post. This means that the tests for filtering by status will have multiple requests to check against.
 describe('Acceptance: Posts / Pages', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
@@ -44,7 +44,7 @@ describe('Acceptance: Posts / Pages', function () {
 
         describe('as contributor', function () {
             beforeEach(async function () {
-                let contributorRole = this.server.create('role', {name: 'Contributor'});
+                const contributorRole = this.server.create('role', {name: 'Contributor'});
                 this.server.create('user', {roles: [contributorRole]});
 
                 await authenticateSession();
@@ -90,7 +90,7 @@ describe('Acceptance: Posts / Pages', function () {
 
                     await triggerEvent(post, 'contextmenu');
 
-                    let contextMenu = find('.gh-posts-context-menu');
+                    const contextMenu = find('.gh-posts-context-menu');
                     expect(contextMenu, 'context menu').to.not.be.visible;
                 });
             });
@@ -100,10 +100,10 @@ describe('Acceptance: Posts / Pages', function () {
             let author, authorPost;
 
             beforeEach(async function () {
-                let authorRole = this.server.create('role', {name: 'Author'});
+                const authorRole = this.server.create('role', {name: 'Author'});
                 author = this.server.create('user', {roles: [authorRole]});
-                let adminRole = this.server.create('role', {name: 'Administrator'});
-                let admin = this.server.create('user', {roles: [adminRole]});
+                const adminRole = this.server.create('role', {name: 'Administrator'});
+                const admin = this.server.create('user', {roles: [adminRole]});
 
                 // create posts
                 authorPost = this.server.create('post', {authors: [author], status: 'published', title: 'Author Post'});
@@ -119,8 +119,8 @@ describe('Acceptance: Posts / Pages', function () {
 
                 // API request includes author filter
                 // Find the posts API request
-                let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
-                let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                const postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                const lastPostsRequest = postsRequests[postsRequests.length - 1];
                 expect(lastPostsRequest.queryParams.filter).to.have.string(`authors:${author.slug}`);
 
                 // only author's post is shown
@@ -138,7 +138,7 @@ describe('Acceptance: Posts / Pages', function () {
 
                     await triggerEvent(post, 'contextmenu');
 
-                    let contextMenu = find('.gh-posts-context-menu');
+                    const contextMenu = find('.gh-posts-context-menu');
                     expect(contextMenu, 'context menu').to.not.be.visible;
                 });
             });
@@ -148,7 +148,7 @@ describe('Acceptance: Posts / Pages', function () {
             let editor, editorPost;
 
             beforeEach(async function () {
-                let editorRole = this.server.create('role', {name: 'Editor'});
+                const editorRole = this.server.create('role', {name: 'Editor'});
                 editor = this.server.create('user', {roles: [editorRole]});
                 editorPost = this.server.create('post', {authors: [editor], status: 'published', title: 'Editor Post'});
 
@@ -188,9 +188,9 @@ describe('Acceptance: Posts / Pages', function () {
             beforeEach(async function () {
                 this.server.loadFixtures('tiers');
 
-                let adminRole = this.server.create('role', {name: 'Administrator'});
+                const adminRole = this.server.create('role', {name: 'Administrator'});
                 admin = this.server.create('user', {roles: [adminRole]});
-                let editorRole = this.server.create('role', {name: 'Editor'});
+                const editorRole = this.server.create('role', {name: 'Editor'});
                 editor = this.server.create('user', {roles: [editorRole]});
 
                 publishedPost = this.server.create('post', {authors: [admin], status: 'published', title: 'Published Post', visibility: 'paid'});
@@ -219,7 +219,7 @@ describe('Acceptance: Posts / Pages', function () {
                     expect(posts[3].querySelector('.gh-content-entry-title').textContent, 'post 4 title').to.contain('Editor Published Post');
 
                     // check API requests
-                    let lastRequests = this.server.pretender.handledRequests.filter(request => request.url.includes('/posts/'));
+                    const lastRequests = this.server.pretender.handledRequests.filter(request => request.url.includes('/posts/'));
                     expect(lastRequests[0].queryParams.filter, 'scheduled request filter').to.have.string('status:scheduled');
                     expect(lastRequests[1].queryParams.filter, 'drafts request filter').to.have.string('status:draft');
                     expect(lastRequests[2].queryParams.filter, 'published request filter').to.have.string('status:[published,sent]');
@@ -255,8 +255,8 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-type-select]', 'Scheduled posts');
 
                     // API request is correct
-                    let scheduledPostsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
-                    let lastScheduledRequest = scheduledPostsRequests[scheduledPostsRequests.length - 1];
+                    const scheduledPostsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    const lastScheduledRequest = scheduledPostsRequests[scheduledPostsRequests.length - 1];
                     expect(lastScheduledRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
                     // Displays scheduled post
                     expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
@@ -270,8 +270,8 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-author-select]', editor.name);
 
                     // API request is correct
-                    let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
-                    let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    const postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    const lastPostsRequest = postsRequests[postsRequests.length - 1];
                     expect(lastPostsRequest.queryParams.allFilter, '"editor" request status filter')
                         .to.have.string('status:[draft,scheduled,published,sent]');
                     expect(lastPostsRequest.queryParams.allFilter, '"editor" request filter param')
@@ -380,7 +380,7 @@ describe('Acceptance: Posts / Pages', function () {
                     // select one
                     await selectChoose('[data-test-tag-select]', 'B - Second');
                     // affirm request
-                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                     expect(lastRequest.queryParams.allFilter, '"posts" request filter param').to.have.string('tag:second');
                 });
 
@@ -392,13 +392,13 @@ describe('Acceptance: Posts / Pages', function () {
 
                     await selectSearch('[data-test-tag-select]', 'Last');
 
-                    let options = findAll('.ember-power-select-option');
+                    const options = findAll('.ember-power-select-option');
                     expect(options.length, 'options count').to.equal(1);
                     expect(options[0].textContent.trim()).to.equal('Z - Last');
 
                     await selectChoose('[data-test-tag-select]', 'Z - Last');
 
-                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                     expect(lastRequest.queryParams.allFilter, '"posts" request filter param').to.have.string('tag:last');
                 });
 
@@ -430,9 +430,9 @@ describe('Acceptance: Posts / Pages', function () {
 
                         await triggerEvent(post, 'contextmenu');
 
-                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                        const contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
 
-                        let buttons = contextMenu.querySelectorAll('button');
+                        const buttons = contextMenu.querySelectorAll('button');
 
                         expect(contextMenu, 'context menu').to.exist;
                         expect(buttons.length, 'context menu buttons').to.equal(7);
@@ -449,7 +449,7 @@ describe('Acceptance: Posts / Pages', function () {
 
                         const posts = findAll('[data-test-post-id]');
                         expect(posts.length, 'all posts count').to.equal(5);
-                        let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
                     });
 
@@ -553,9 +553,9 @@ describe('Acceptance: Posts / Pages', function () {
 
                         await triggerEvent(post, 'contextmenu');
 
-                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                        const contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
 
-                        let buttons = contextMenu.querySelectorAll('button');
+                        const buttons = contextMenu.querySelectorAll('button');
 
                         expect(contextMenu, 'context menu').to.exist;
                         expect(buttons.length, 'context menu buttons').to.equal(7);
@@ -589,9 +589,9 @@ describe('Acceptance: Posts / Pages', function () {
 
                         await triggerEvent(post, 'contextmenu');
 
-                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                        const contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
 
-                        let buttons = contextMenu.querySelectorAll('button');
+                        const buttons = contextMenu.querySelectorAll('button');
 
                         expect(contextMenu, 'context menu').to.exist;
                         expect(buttons.length, 'context menu buttons').to.equal(5);
@@ -694,12 +694,12 @@ describe('Acceptance: Posts / Pages', function () {
                         //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
                         await triggerEvent(postFourContainer, 'contextmenu');
 
-                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                        const contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
                         expect(contextMenu, 'context menu').to.exist;
 
                         // add a tag to the posts
-                        let buttons = contextMenu.querySelectorAll('button');
-                        let addTagButton = findButton('Add a tag', buttons);
+                        const buttons = contextMenu.querySelectorAll('button');
+                        const addTagButton = findButton('Add a tag', buttons);
                         expect(addTagButton, 'add tag button').to.exist;
                         await click(addTagButton);
 
@@ -713,7 +713,7 @@ describe('Acceptance: Posts / Pages', function () {
                         await click('[data-test-button="confirm"]');
 
                         // API request is correct - note, we don't mock the actual model updates
-                        let [lastRequest] = this.server.pretender.handledRequests.slice(-2);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-2);
                         expect(lastRequest.queryParams.filter, 'add tag request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'add tag request action').to.equal('addTag');
                     });
@@ -745,8 +745,8 @@ describe('Acceptance: Posts / Pages', function () {
                         const settingsService = this.owner.lookup('service:settings');
                         await settingsService.set('membersEnabled', true);
 
-                        let posts = findAll('[data-test-post-id]');
-                        let postThreeContainer = posts[2].parentElement; // published post
+                        const posts = findAll('[data-test-post-id]');
+                        const postThreeContainer = posts[2].parentElement; // published post
                         let postFourContainer = posts[3].parentElement; // author post
 
                         await click(postThreeContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
@@ -766,7 +766,7 @@ describe('Acceptance: Posts / Pages', function () {
                         await click('[data-test-button="confirm"]');
 
                         // check API request
-                        let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.queryParams.filter, 'change access request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'change access request action').to.equal('access');
 
@@ -817,7 +817,7 @@ describe('Acceptance: Posts / Pages', function () {
                         await click(`${modalSelector} [data-test-button="confirm"]`);
 
                         // check API request
-                        let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.queryParams.filter, 'change access request id').to.equal(`id:['${publishedPost.id}']`);
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'change access request action').to.equal('access');
                         expect(JSON.parse(lastRequest.requestBody).bulk.meta.visibility, 'change access request visibility').to.equal('tiers');
@@ -851,12 +851,12 @@ describe('Acceptance: Posts / Pages', function () {
                         //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
                         await triggerEvent(postFourContainer, 'contextmenu');
 
-                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                        const contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
                         expect(contextMenu, 'context menu').to.exist;
 
                         // unpublish the posts
-                        let buttons = contextMenu.querySelectorAll('button');
-                        let unpublishButton = findButton('Unpublish', buttons);
+                        const buttons = contextMenu.querySelectorAll('button');
+                        const unpublishButton = findButton('Unpublish', buttons);
                         expect(unpublishButton, 'unpublish button').to.exist;
                         await click(unpublishButton);
 
@@ -866,7 +866,7 @@ describe('Acceptance: Posts / Pages', function () {
                         await click('[data-test-button="confirm"]');
 
                         // API request is correct - note, we don't mock the actual model updates
-                        let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.queryParams.filter, 'unpublish request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'unpublish request action').to.equal('unpublish');
 
@@ -892,12 +892,12 @@ describe('Acceptance: Posts / Pages', function () {
                         //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
                         await triggerEvent(postOneContainer, 'contextmenu');
 
-                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                        const contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
                         expect(contextMenu, 'context menu').to.exist;
 
                         // unschedule the post
-                        let buttons = contextMenu.querySelectorAll('button');
-                        let unscheduleButton = findButton('Unschedule', buttons);
+                        const buttons = contextMenu.querySelectorAll('button');
+                        const unscheduleButton = findButton('Unschedule', buttons);
                         expect(unscheduleButton, 'unschedule button').to.exist;
                         await click(unscheduleButton);
 
@@ -907,7 +907,7 @@ describe('Acceptance: Posts / Pages', function () {
                         await click('[data-test-button="confirm"]');
 
                         // API request is correct - note, we don't mock the actual model updates
-                        let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.queryParams.filter, 'unschedule request id').to.equal(`id:['${scheduledPost.id}']`);
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'unschedule request action').to.equal('unschedule');
 
@@ -935,12 +935,12 @@ describe('Acceptance: Posts / Pages', function () {
                         //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
                         await triggerEvent(postFourContainer, 'contextmenu');
 
-                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                        const contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
                         expect(contextMenu, 'context menu').to.exist;
 
                         // delete the posts
-                        let buttons = contextMenu.querySelectorAll('button');
-                        let deleteButton = findButton('Delete', buttons);
+                        const buttons = contextMenu.querySelectorAll('button');
+                        const deleteButton = findButton('Delete', buttons);
                         expect(deleteButton, 'delete button').to.exist;
                         await click(deleteButton);
 
@@ -950,7 +950,7 @@ describe('Acceptance: Posts / Pages', function () {
                         await click('[data-test-button="confirm"]');
 
                         // API request is correct - note, we don't mock the actual model updates
-                        let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.queryParams.filter, 'delete request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                         expect(lastRequest.method, 'delete request method').to.equal('DELETE');
 
@@ -965,7 +965,7 @@ describe('Acceptance: Posts / Pages', function () {
             let publishedPost;
 
             beforeEach(async function () {
-                let adminRole = this.server.create('role', {name: 'Administrator'});
+                const adminRole = this.server.create('role', {name: 'Administrator'});
                 this.server.create('user', {roles: [adminRole]});
 
                 publishedPost = this.server.create('post', {
@@ -990,7 +990,7 @@ describe('Acceptance: Posts / Pages', function () {
                 await visit('/posts');
 
                 // Check that visitor count column is not visible
-                let visitorsText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'visitors');
+                const visitorsText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'visitors');
                 expect(visitorsText, 'visitor count column').to.not.exist;
             });
 
@@ -1001,7 +1001,7 @@ describe('Acceptance: Posts / Pages', function () {
                 await visit('/posts');
 
                 // Check that member conversions column is not visible
-                let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
+                const membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
                 expect(membersText, 'member conversions column').to.not.exist;
             });
 
@@ -1024,8 +1024,8 @@ describe('Acceptance: Posts / Pages', function () {
                 await visit('/posts');
 
                 // Check that neither analytics column is visible
-                let visitorsText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'visitors');
-                let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
+                const visitorsText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'visitors');
+                const membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
                 expect(visitorsText, 'visitor count column').to.not.exist;
                 expect(membersText, 'member conversions column').to.not.exist;
             });
@@ -1060,7 +1060,7 @@ describe('Acceptance: Posts / Pages', function () {
             // in the test environment, but that's beyond the scope of this template change.
 
             beforeEach(async function () {
-                let adminRole = this.server.create('role', {name: 'Administrator'});
+                const adminRole = this.server.create('role', {name: 'Administrator'});
                 this.server.create('user', {roles: [adminRole]});
 
                 await authenticateSession();
@@ -1068,7 +1068,7 @@ describe('Acceptance: Posts / Pages', function () {
 
             it('shows/hides email analytics section based on post.email', async function () {
                 // Create a post with email data
-                let email1 = this.server.create('email', {
+                const email1 = this.server.create('email', {
                     emailCount: 1500
                 });
                 
@@ -1087,23 +1087,23 @@ describe('Acceptance: Posts / Pages', function () {
 
                 await visit('/posts');
                 
-                let postElements = findAll('.gh-posts-list-item');
+                const postElements = findAll('.gh-posts-list-item');
                 expect(postElements.length).to.equal(2);
                 
                 // First post should show email analytics section
-                let firstPost = postElements[0];
-                let emailSection = firstPost.querySelector('.gh-post-analytics-email-metrics');
+                const firstPost = postElements[0];
+                const emailSection = firstPost.querySelector('.gh-post-analytics-email-metrics');
                 expect(emailSection, 'email analytics section for post with email').to.exist;
                 
                 // Second post should not show email analytics section
-                let secondPost = postElements[1];
-                let noEmailSection = secondPost.querySelector('.gh-post-analytics-email-metrics');
+                const secondPost = postElements[1];
+                const noEmailSection = secondPost.querySelector('.gh-post-analytics-email-metrics');
                 expect(noEmailSection, 'email analytics section for post without email').to.not.exist;
             });
 
             it('displays newsletter columns based on email tracking settings', async function () {
                 // Test 1: When both tracking options are disabled, show sent column
-                let email1 = this.server.create('email', {
+                const email1 = this.server.create('email', {
                     emailCount: 15000,
                     trackOpens: false,
                     trackClicks: false
@@ -1138,9 +1138,9 @@ describe('Acceptance: Posts / Pages', function () {
             let admin, editor;
 
             beforeEach(async function () {
-                let adminRole = this.server.create('role', {name: 'Administrator'});
+                const adminRole = this.server.create('role', {name: 'Administrator'});
                 admin = this.server.create('user', {roles: [adminRole]});
-                let editorRole = this.server.create('role', {name: 'Editor'});
+                const editorRole = this.server.create('role', {name: 'Editor'});
                 editor = this.server.create('user', {roles: [editorRole]});
 
                 // posts shouldn't show in the pages list
@@ -1228,7 +1228,7 @@ describe('Acceptance: Posts / Pages', function () {
                 // select one
                 await selectChoose('[data-test-tag-select]', 'B - Second');
                 // affirm request
-                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                 expect(lastRequest.queryParams.allFilter, '"pages" request filter param').to.have.string('tag:second');
             });
 
@@ -1240,13 +1240,13 @@ describe('Acceptance: Posts / Pages', function () {
 
                 await selectSearch('[data-test-tag-select]', 'Last');
 
-                let options = findAll('.ember-power-select-option');
+                const options = findAll('.ember-power-select-option');
                 expect(options.length, 'options count').to.equal(1);
                 expect(options[0].textContent.trim()).to.equal('Z - Last');
 
                 await selectChoose('[data-test-tag-select]', 'Z - Last');
 
-                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                 expect(lastRequest.queryParams.allFilter, '"pages" request filter param').to.have.string('tag:last');
             });
 

@@ -186,7 +186,7 @@ function getSearchHelper(frontendKey) {
     locale: settingsCache.get('locale') || 'en',
   };
   const dataAttrs = getDataAttributes(attrs);
-  let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
+  const helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 
   return helper;
 }
@@ -226,7 +226,7 @@ function getAnnouncementBarHelper(data) {
   }
 
   const dataAttrs = getDataAttributes(attrs);
-  let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
+  const helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 
   return helper;
 }

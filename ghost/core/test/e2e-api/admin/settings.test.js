@@ -14,7 +14,7 @@ const {
 const { stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion } = matchers;
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
-const limits = require('../../../core/server/services/limits');
+const { limitService: limits } = require('../../../core/server/services/limits');
 const { anyErrorId } = matchers;
 
 // Updated to reflect current total based on test output
@@ -918,7 +918,7 @@ describe('Settings API', function () {
   describe('publicSiteAccess limit', function () {
     function stubPublicSiteAccessDisabled(disabled) {
       // Stub the singleton directly rather than driving the limit through configUtils +
-      // limits.init(). The hostSettings.limits config is registered once at boot from the
+      // service initialization. The hostSettings.limits config is registered once at boot from the
       // `@tryghost/limit-service` allowlist; bumps of that package are owned by Renovate
       // so this PR cannot rely on `publicSiteAccess` being a recognised name yet.
       sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(disabled);

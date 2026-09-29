@@ -3,8 +3,8 @@ import {pluralize} from 'ember-inflector';
 
 export default class Setting extends ApplicationAdapter {
     updateRecord(store, type, record) {
-        let data = {};
-        let serializer = store.serializerFor(type.modelName);
+        const data = {};
+        const serializer = store.serializerFor(type.modelName);
 
         // remove the fake id that we added onto the model.
         delete record.id;
@@ -16,7 +16,7 @@ export default class Setting extends ApplicationAdapter {
         // Do not send empty data to the API
         // This can probably be removed then this is fixed:
         // https://github.com/TryGhost/Ghost/blob/main/ghost/api-framework/lib/validators/input/all.js#L128
-        let root = pluralize(type.modelName);
+        const root = pluralize(type.modelName);
         if (data[root].length === 0) {
             return Promise.resolve();
         }

@@ -482,11 +482,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -1193,11 +1188,6 @@ table.body h2 span {
   .kg-card-figcaption p,
 .kg-card-figcaption p span {
     font-size: 13px!important;
-  }
-}
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
   }
 }
 </style>
@@ -1908,11 +1898,6 @@ table.body h2 span {
     font-size: 13px!important;
   }
 }
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
-  }
-}
 </style>
         <!--[if mso]>
         <style type=\\"text/css\\">
@@ -2620,11 +2605,6 @@ table.body h2 span {
   .kg-card-figcaption p,
 .kg-card-figcaption p span {
     font-size: 13px!important;
-  }
-}
-@media all {
-  .subscription-details p.hidden {
-    display: none !important;
   }
 }
 </style>

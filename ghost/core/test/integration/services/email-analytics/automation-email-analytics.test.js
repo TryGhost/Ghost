@@ -20,7 +20,7 @@ const automationsApi = require('../../../../core/server/services/automations/aut
 const EVENT_DATE = new Date('2024-01-01T00:00:00.000Z');
 
 function clearInMemoryCursors() {
-  for (const fetchData of Object.values(emailAnalytics.automations.service.getStatus())) {
+  for (const fetchData of Object.values(emailAnalytics.getAutomations().service.getStatus())) {
     delete fetchData.lastEventTimestamp;
     delete fetchData.lastBegin;
   }
@@ -246,7 +246,7 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    const eventCount = await emailAnalytics.automations.fetchLatestNonOpenedEvents();
+    const eventCount = await emailAnalytics.getAutomations().fetchLatestNonOpenedEvents();
     assert.equal(eventCount, 1);
 
     const updated = await readRecipient(recipient.id);
@@ -271,7 +271,7 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    const eventCount = await emailAnalytics.automations.fetchLatestOpenedEvents();
+    const eventCount = await emailAnalytics.getAutomations().fetchLatestOpenedEvents();
     assert.equal(eventCount, 1);
 
     const updated = await readRecipient(recipient.id);
@@ -308,7 +308,7 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    const eventCount = await emailAnalytics.automations.fetchLatestOpenedEvents();
+    const eventCount = await emailAnalytics.getAutomations().fetchLatestOpenedEvents();
     assert.equal(eventCount, 2);
 
     const updated = await readRecipient(recipient.id);
@@ -346,7 +346,7 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    await emailAnalytics.automations.fetchLatestOpenedEvents();
+    await emailAnalytics.getAutomations().fetchLatestOpenedEvents();
 
     const updatedRevision = await readRevision(revision.id);
     assert.equal(updatedRevision.email_opened_count, 2);
@@ -365,12 +365,12 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    await emailAnalytics.automations.fetchLatestOpenedEvents();
+    await emailAnalytics.getAutomations().fetchLatestOpenedEvents();
     assert.equal((await readRevision(revision.id)).email_opened_count, 1);
 
     // fetchMissing keeps its own cursor and sweeps a window overlapping the
     // one the opened job already covered, so it sees this open a second time.
-    const refetchedCount = await emailAnalytics.automations.fetchMissing();
+    const refetchedCount = await emailAnalytics.getAutomations().fetchMissing();
     assert.equal(refetchedCount, 1, 'the missing-events job should see the same open again');
 
     assert.equal(
@@ -407,7 +407,7 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    const eventCount = await emailAnalytics.automations.fetchLatestNonOpenedEvents();
+    const eventCount = await emailAnalytics.getAutomations().fetchLatestNonOpenedEvents();
     assert.equal(eventCount, 2, 'the unprocessable event is still counted as fetched');
 
     const updatedFirst = await readRecipient(first.id);
@@ -435,7 +435,7 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    const eventCount = await emailAnalytics.automations.fetchLatestNonOpenedEvents();
+    const eventCount = await emailAnalytics.getAutomations().fetchLatestNonOpenedEvents();
     assert.equal(eventCount, 0);
 
     const updated = await readRecipient(recipient.id);

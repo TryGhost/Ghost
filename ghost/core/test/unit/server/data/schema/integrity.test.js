@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const { config } = require('../../../../utils/config-utils');
 const schema = require('../../../../../core/server/data/schema/schema');
+const inDevelopment = require('../../../../../core/server/data/schema/in-development');
 const fixtures = require('../../../../../core/server/data/schema/fixtures/fixtures.json');
 const defaultSettings = require('../../../../../core/server/data/schema/default-settings/default-settings.json');
 
@@ -37,7 +38,7 @@ const parseYaml = require('../../../../../core/server/services/route-settings/ya
  */
 describe('DB version integrity', function () {
   // Only these variables should need updating
-  const currentSchemaHash = '5309c65de16da6833fc799828233fa7e';
+  const currentSchemaHash = 'b3467bb26d2c4ef862382718ca6ed6e8';
   const currentFixturesHash = '5718e0d4eb037f159c312369e949829a';
   const currentSettingsHash = '6ea42a00cca61a1ba87f66eb6e25a78a';
   const currentRoutesHash = 'd8c25fa01bf6d22a2bcb05ba0de70dc1';
@@ -55,11 +56,7 @@ describe('DB version integrity', function () {
       'yamlSource',
     );
 
-    const tablesNoValidation = _.cloneDeep(schema);
-    let schemaHash;
-    let fixturesHash;
-    let settingsHash;
-    let routesHash;
+    const tablesNoValidation = _.cloneDeep(_.omit(schema, inDevelopment.IN_DEVELOPMENT_TABLES));
 
     _.each(tablesNoValidation, function (table) {
       return _.each(table, function (column, name) {
@@ -67,19 +64,19 @@ describe('DB version integrity', function () {
       });
     });
 
-    schemaHash = crypto
+    const schemaHash = crypto
       .createHash('md5')
       .update(JSON.stringify(tablesNoValidation), 'binary')
       .digest('hex');
-    fixturesHash = crypto
+    const fixturesHash = crypto
       .createHash('md5')
       .update(JSON.stringify(fixtures), 'binary')
       .digest('hex');
-    settingsHash = crypto
+    const settingsHash = crypto
       .createHash('md5')
       .update(JSON.stringify(defaultSettings), 'binary')
       .digest('hex');
-    routesHash = crypto
+    const routesHash = crypto
       .createHash('md5')
       .update(JSON.stringify(defaultRoutes), 'binary')
       .digest('hex');

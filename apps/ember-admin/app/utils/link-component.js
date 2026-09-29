@@ -5,7 +5,7 @@ LinkComponent.reopen({
     attributeBindings: ['ariaCurrent:aria-current'],
 
     active: computed('attrs.params', '_routing.currentState', function () {
-        let isActive = this._super(...arguments);
+        const isActive = this._super(...arguments);
 
         if (typeof this.alternateActive === 'function') {
             this.alternateActive(isActive);

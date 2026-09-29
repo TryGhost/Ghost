@@ -17,7 +17,7 @@ const controller = {
     data: ['id'],
     permissions: true,
     async query(frame) {
-      let model = await membersService.api.members.get(frame.data, frame.options);
+      const model = await membersService.api.members.get(frame.data, frame.options);
 
       if (!model) {
         throw new errors.NotFoundError({

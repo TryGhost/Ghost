@@ -91,6 +91,7 @@ describe('Members import — custom fields', function () {
   afterEach(async function () {
     mockManager.restore();
     await models.Base.knex('members_metafield_values').del();
+    await models.Base.knex('members_metafield_change_events').del();
     await models.Base.knex('members_metafields').del();
     // Every test file in this suite runs against one shared database, so a member left behind
     // here changes counts and listings that later files assert on. The imported members have
@@ -437,6 +438,31 @@ describe('Members import — custom fields', function () {
 
   // Recorded at the moment of the write because it cannot be reconstructed afterwards.
   // Asserted per row, since that is the granularity a write touches.
+  it("puts one entry on each imported member's activity feed", async function () {
+    const key = await createField('Shipping Address', 'address');
+    const email = 'cf-import-activity@example.com';
+    const columns = ['line1', 'city'].map((sub) => `metafields.custom.${key}.${sub}`).join(',');
+
+    await importCSV(`email,${columns}\n${email},1 High Street,London\n`);
+
+    const member = await findMember(email);
+    const filter = encodeURIComponent(`data.member_id:'${member.id}'+type:metafield_change_event`);
+    const res = await (
+      request.get(localUtils.API.getApiQuery(`members/events/?filter=${filter}`)) as any
+    )
+      .set('Origin', config.get('url'))
+      .expect(200);
+
+    // One entry for the row, naming the field once however many of its parts it filled.
+    assert.equal(res.body.events.length, 1);
+    const [event] = res.body.events;
+    assert.equal(event.data.source, 'import');
+    assert.equal(event.data.written_by_type, 'import');
+    assert.deepEqual(event.data.metafields, [
+      { namespace: 'custom', key, name: 'Shipping Address' },
+    ]);
+  });
+
   it('records that the import wrote each value', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-import-source@example.com';

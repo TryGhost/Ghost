@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import DOMPurify from 'dompurify';
 import RestoreRevisionModal from '../components/modals/restore-revision';
 import {action, set} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 import {waitFor} from '@ember/test-waiters';
@@ -9,7 +10,7 @@ import {waitFor} from '@ember/test-waiters';
 function checkFinishedRendering(element, done) {
     let last = element.innerHTML;
     function check() {
-        let html = element.innerHTML;
+        const html = element.innerHTML;
         if (html === last) {
             done();
         } else {
@@ -25,6 +26,9 @@ export default class ModalPostHistory extends Component {
     @service notifications;
     @service modals;
     @service ghostPaths;
+
+    @inject config;
+
     @tracked selectedHTML = null;
     @tracked selectedRevisionIndex = 0;
 
@@ -155,23 +159,24 @@ export default class ModalPostHistory extends Component {
 
     get cardConfig() {
         return {
-            post: this.args.model
+            post: this.args.model,
+            embedPreviewUrl: this.config.security?.embedPreviewUrl || undefined
         };
     }
 
     updateSelectedHTML() {
         return new Promise((resolve) => {
             if (this.selectedEditor) {
-                let selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
+                const selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
 
                 this.selectedEditor.editorInstance.setEditorState(selectedState);
             }
 
-            let current = document.querySelector('.gh-post-history-hidden-lexical.current');
+            const current = document.querySelector('.gh-post-history-hidden-lexical.current');
 
             let currentDone = false;
 
-            let updateIfDone = () => {
+            const updateIfDone = () => {
                 if (currentDone) {
                     this.selectedHTML = this.stripInitialPlaceholder(current.innerHTML);
                 }

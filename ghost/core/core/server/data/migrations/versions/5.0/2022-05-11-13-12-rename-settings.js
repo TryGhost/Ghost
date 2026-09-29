@@ -27,7 +27,7 @@ module.exports = createTransactionalMigration(
         _.find(settings, { key: renameMapping.to }) &&
         _.find(settings, { key: renameMapping.from })
       ) {
-        let updatedValue = _.find(settings, { key: renameMapping.from }).value;
+        const updatedValue = _.find(settings, { key: renameMapping.from }).value;
         // CASE: default settings were added already, update them with old values & remove old settings
         logging.info(`Updating ${renameMapping.to} with value from ${renameMapping.from}`);
         await knex('settings').where('key', renameMapping.to).update('value', updatedValue);

@@ -17,13 +17,13 @@ const FullScreenModalComponent = Component.extend({
     }),
 
     modalClasses: computed('modifier', function () {
-        let modalClass = 'fullscreen-modal';
-        let modifiers = (this.modifier || '').split(' ');
-        let modalClasses = emberA([modalClass]);
+        const modalClass = 'fullscreen-modal';
+        const modifiers = (this.modifier || '').split(' ');
+        const modalClasses = emberA([modalClass]);
 
         modifiers.forEach((modifier) => {
             if (!isBlank(modifier)) {
-                let className = `${modalClass}-${modifier}`;
+                const className = `${modalClass}-${modifier}`;
                 modalClasses.push(className);
             }
         });

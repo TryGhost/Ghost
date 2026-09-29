@@ -7,7 +7,7 @@ import {scheduleOnce} from '@ember/runloop';
 
 export default class NewRoute extends AuthenticatedRoute {
     model(params) {
-        let {type: modelName} = params;
+        const {type: modelName} = params;
 
         if (!['post','page'].includes(modelName)) {
             throw new NotFoundError();
@@ -25,7 +25,7 @@ export default class NewRoute extends AuthenticatedRoute {
             console.error('New post route did not generate a new model'); // eslint-disable-line no-console
         }
 
-        let editor = this.controllerFor('lexical-editor');
+        const editor = this.controllerFor('lexical-editor');
         editor.setPost(newPost);
     }
 

@@ -275,7 +275,7 @@ class ajaxService extends AjaxService {
         let success = false;
         let errorName = null;
         let attempts = 0;
-        let startTime = new Date();
+        const startTime = new Date();
         let retryingMs = 0;
         const maxRetryingMs = 15_000;
         const retryPeriods = [500, 1000];
@@ -361,10 +361,10 @@ class ajaxService extends AjaxService {
             return new AcceptedResponse(payload);
         }
 
-        let isGhostRequest = GHOST_REQUEST.test(request.url);
-        let isAuthenticated = this.get('session.isAuthenticated');
-        let isUnauthorized = this.isUnauthorizedError(status, headers, payload);
-        let isForbidden = isForbiddenError(status, headers, payload);
+        const isGhostRequest = GHOST_REQUEST.test(request.url);
+        const isAuthenticated = this.get('session.isAuthenticated');
+        const isUnauthorized = this.isUnauthorizedError(status, headers, payload);
+        const isForbidden = isForbiddenError(status, headers, payload);
 
         // used when reporting connection errors, helps distinguish CDN
         if (isGhostRequest) {

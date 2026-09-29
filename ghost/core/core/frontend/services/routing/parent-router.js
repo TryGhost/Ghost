@@ -83,7 +83,7 @@ class ParentRouter {
    * @private
    */
   _respectDominantRouter(req, res, next, slug) {
-    let siteRouter = this._getSiteRouter(req);
+    const siteRouter = this._getSiteRouter(req);
     let targetRoute = null;
 
     // CASE: iterate over routers and check whether a router has a redirect for the target slug enabled.

@@ -662,7 +662,7 @@ describe('Settings API', function () {
         throw new Error('Invalid key or unchanged value');
       }
 
-      let jsonResponse = await api.settings.edit(
+      const jsonResponse = await api.settings.edit(
         {
           settings: [{ key: 'email_verification_required', value: true }],
         },

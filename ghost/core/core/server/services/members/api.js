@@ -76,7 +76,7 @@ function createApiInstance(config) {
           if (process.env.NODE_ENV !== 'production') {
             logging.warn(message.text);
           }
-          let msg = Object.assign(
+          const msg = Object.assign(
             {
               from: config.getEmailSupportAddress(),
               subject: 'Signin',

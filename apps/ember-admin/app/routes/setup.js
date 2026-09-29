@@ -18,17 +18,17 @@ export default class SetupRoute extends Route {
             return this.transitionTo('index');
         }
 
-        let authUrl = this.ghostPaths.url.api('authentication', 'setup');
+        const authUrl = this.ghostPaths.url.api('authentication', 'setup');
 
         // check the state of the setup process via the API
         return this.ajax.request(authUrl)
             .then((result) => {
-                let [setup] = result.setup;
+                const [setup] = result.setup;
 
                 if (setup.status) {
                     return this.transitionTo('signin');
                 } else {
-                    let controller = this.controllerFor('setup');
+                    const controller = this.controllerFor('setup');
                     if (setup.title) {
                         controller.set('blogTitle', setup.title.replace(/&apos;/gim, '\''));
                     }

@@ -12,7 +12,7 @@ export default function () {
 
     return wormhole.apply(this, arguments).finally(() => {
         if (this.newElement && newWormholeElement) {
-            let autofocusElem = newWormholeElement[0].querySelector('[autofocus]');
+            const autofocusElem = newWormholeElement[0].querySelector('[autofocus]');
             if (autofocusElem) {
                 autofocusElem.focus();
             }

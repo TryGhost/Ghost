@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import {
+  browseResponse,
+  currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
@@ -14,9 +16,11 @@ import {
   submittedPost,
   tier,
   unsavedChangesGuarded,
+  withFastAutosave,
   withoutAutosave,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new123';
@@ -140,23 +144,84 @@ describe('Post settings access', () => {
     await expect(editorScreen.settingsTiersError()).toHaveCount(0);
   });
 
-  it('refuses the first save until an explicitly selected tier access has a tier', async () => {
+  it('creates a new post with specific-tier access before a tier is picked, then sends the pair', async () => {
     editorChrome();
-    const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, {
-      posts: [post({ id: NEW_POST_ID, visibility: 'public' })],
+    // A Public read carries every site tier, the free one included.
+    let created = post({
+      id: NEW_POST_ID,
+      title: '(Untitled)',
+      status: 'draft',
+      visibility: 'public',
+      tiers: SITE_TIERS,
+      tags: [],
     });
-    await renderAdminApp('/editor/post', FLAG_ON);
+    const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+      const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+      created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: LOADED_AT };
+      return { posts: [created] };
+    });
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+      posts: [created],
+    }));
+    const updateApi = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${NEW_POST_ID}/\\?`),
+      ({ body }) => {
+        const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+        created = {
+          ...created,
+          ...submitted,
+          updated_at: new Date(Date.parse(created.updated_at) + 1000).toISOString(),
+        };
+        return { posts: [created] };
+      },
+    );
+
+    await renderAdminApp('/editor/post', withFastAutosave({ labs: { editorReact: true } }));
     await openAccess();
 
     await chooseVisibility('Specific tier(s)');
-    await userEvent.keyboard('{Meta>}s{/Meta}');
 
+    // The pair is staged and asks for a tier, but it does not save on its own:
+    // the write would carry nothing of it.
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.settingsTiersError())
       .toHaveTextContent('Please select at least one tier.');
+    await expect.element(editorScreen.settingsTier('Gold')).toBeVisible();
     expect(createApi.requests).toHaveLength(0);
-    await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
     await expect.poll(unsavedChangesGuarded).toBe(true);
+
+    await typeIntoBody('First words');
+
+    // The content creates the post with the pair left out of the write.
+    await expect.poll(() => createApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(createApi)).not.toHaveProperty('visibility');
+    expect(submittedPost(createApi)).not.toHaveProperty('tiers');
+    await expect.poll(currentRoute, POLL).toBe(`/editor/post/${NEW_POST_ID}`);
+
+    // The pair was never acknowledged, so the server's default visibility and
+    // the tiers its read carries do not replace the writer's choice.
+    await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
+    await expect
+      .element(editorScreen.settingsTiersError())
+      .toHaveTextContent('Please select at least one tier.');
+    await expect.element(editorScreen.settingsTiers()).toHaveAttribute('aria-invalid', 'true');
+    await expect
+      .element(editorScreen.settingsTier('Gold'))
+      .toHaveAttribute('data-state', 'unchecked');
+    // A save that follows the create leaves the pair out as well.
+    for (let index = 0; index < updateApi.requests.length; index += 1) {
+      expect(submittedPost(updateApi, index)).not.toHaveProperty('visibility');
+      expect(submittedPost(updateApi, index)).not.toHaveProperty('tiers');
+    }
+
+    await editorScreen.settingsTier('Gold').click();
+
+    await expect(updateApi).toHaveSavedFields({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
+    await expect(editorScreen.settingsTiersError()).toHaveCount(0);
+    expect(created).toMatchObject({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
+    // Body typed after the create waits for the tier and lands with it.
+    await expect.poll(() => String(created.lexical ?? ''), POLL).toContain('First words');
   });
 
   it('sends the visibility and the tiers together once a tier is picked', async () => {
@@ -272,6 +337,51 @@ describe('Post settings access', () => {
     });
   });
 
+  it('follows the tier browse to its last page', async () => {
+    fakeSavablePost({ visibility: 'tiers', tiers: [{ id: SILVER.id }] });
+    // `limit=all` is capped by Core, so the site's paid tiers can span several pages.
+    const tiersApi = fakeAdminEndpoint('GET', /^\/tiers\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      return browseResponse('tiers', [GOLD, SILVER], { page: pageNumber, limit: 1 });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await expect
+      .element(editorScreen.settingsTier('Silver'))
+      .toHaveAttribute('data-state', 'checked');
+    await expect.element(editorScreen.settingsTier('Gold')).toBeVisible();
+    await expect.poll(() => tiersApi.requests.length).toBe(2);
+    expect(new URL(tiersApi.requests[1].url).searchParams.get('page')).toBe('2');
+  });
+
+  it('shows no tiers until the last page of the browse arrives', async () => {
+    fakeSavablePost({ visibility: 'tiers', tiers: [{ id: SILVER.id }] });
+    const secondPage = deferred<void>();
+    const tiersApi = fakeAdminEndpoint('GET', /^\/tiers\/\?/, async ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      if (pageNumber === 2) {
+        await secondPage.promise;
+      }
+      return browseResponse('tiers', [GOLD, SILVER], { page: pageNumber, limit: 1 });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await expect.poll(() => tiersApi.requests.length).toBe(2);
+    await expect.element(editorScreen.settingsTiers()).toBeInTheDocument();
+    expect(editorScreen.settingsTiers().getByRole('checkbox').elements()).toHaveLength(0);
+
+    secondPage.resolve();
+
+    await expect
+      .element(editorScreen.settingsTier('Gold'))
+      .toHaveAttribute('data-state', 'unchecked');
+    await expect
+      .element(editorScreen.settingsTier('Silver'))
+      .toHaveAttribute('data-state', 'checked');
+  });
+
   it('reports a failed tier lookup and lets the writer retry', async () => {
     fakeSavablePost({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
     const tiersApi = fakeAdminEndpoint(
@@ -343,6 +453,19 @@ describe('Post settings access', () => {
       .toHaveTextContent('Please select at least one tier.');
     expect(saveApi.requests).toHaveLength(0);
     await expect.element(editorScreen.updateButton()).toBeEnabled();
+  });
+
+  it('browses paid tiers at the URL the publish flow and preview also send', async () => {
+    fakeSavablePost({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
+    const tiersApi = fakeTiers(SITE_TIERS);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openAccess();
+
+    await expect.element(editorScreen.settingsTier('Gold')).toBeVisible();
+    // A differently spelled param order would be a second cache entry and a second browse.
+    await expect
+      .poll(() => new URL(tiersApi.lastRequest?.url ?? '', window.location.origin).search)
+      .toBe('?filter=type%3Apaid&limit=all');
   });
 
   it('leaves Access out for a role that cannot set it', async () => {

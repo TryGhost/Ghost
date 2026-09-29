@@ -15,7 +15,7 @@ export default class ConfigManagerService extends Service {
     isConfigLoaded = false;
 
     fetch() {
-        let promises = [];
+        const promises = [];
 
         promises.push(this.fetchUnauthenticated());
 

@@ -12,6 +12,7 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import type { StaffRoleName } from '@tryghost/test-data';
+import { migrateScreen } from '@/migrate/migrate.screen';
 
 function asRole(name: StaffRoleName): RenderAdminAppOptions {
   const me = currentUserResponse();
@@ -78,6 +79,25 @@ describe('Route access', () => {
         expect(events.requests).toHaveLength(0);
       },
     );
+  });
+
+  it.each(['Super Editor', 'Editor', 'Author', 'Contributor'] as const)(
+    'redirects %s away from migrate',
+    async (role) => {
+      await renderAdminApp('/migrate/substack', asRole(role));
+
+      await expect.poll(currentRoute).toBe('/');
+      await expect.element(migrateScreen.frame()).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(['/site', '/migrate'])('redirects %s to billing during a force upgrade', async (path) => {
+    const config = configResponse();
+    config.config.hostSettings = { forceUpgrade: true };
+
+    await renderAdminApp(path, { boot: { browseConfig: { response: config } } });
+
+    await expect.poll(currentRoute).toBe('/pro');
   });
 
   it('redirects members to billing during a force upgrade', async () => {

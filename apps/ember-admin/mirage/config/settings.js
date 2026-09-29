@@ -1,8 +1,8 @@
 export default function mockSettings(server) {
     server.get('/settings/', function ({db}, {queryParams}) {
-        let {group} = queryParams;
-        let filters = group.split(',');
-        let settings = [];
+        const {group} = queryParams;
+        const filters = group.split(',');
+        const settings = [];
 
         if (!db.settings.length) {
             server.loadFixtures('settings');
@@ -19,10 +19,10 @@ export default function mockSettings(server) {
     });
 
     server.put('/settings/', function ({db}, {requestBody}) {
-        let newSettings = JSON.parse(requestBody).settings;
+        const newSettings = JSON.parse(requestBody).settings;
 
         newSettings.forEach((newSetting) => {
-            let {key} = newSetting;
+            const {key} = newSetting;
 
             if (db.settings.where({key}).length > 0) {
                 db.settings.update({key}, newSetting);

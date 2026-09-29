@@ -56,9 +56,9 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
       <ScrollRestoration containerRef={containerRef} />
       <div
         className={cn(
-          'relative mx-auto flex max-w-page flex-col',
+          'relative mx-auto flex flex-col',
           className,
-          hostLayout?.contentClassName,
+          hostLayout?.contentClassName ?? 'max-w-page',
         )}
         style={{ ...style, '--network-gutter': hostLayout?.contentGutter } as React.CSSProperties}
         {...props}
@@ -73,7 +73,15 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
                   }
                   onToggleMobileSidebar={toggleMobileSidebar}
                 />
-                <div className="px-[var(--network-gutter,min(4vw,24px))]">{children}</div>
+                <div
+                  className={
+                    currentPage === 'profile'
+                      ? cn('px-2 pt-2', hostLayout?.profileContentClassName)
+                      : 'px-[var(--network-gutter,min(4vw,24px))]'
+                  }
+                >
+                  {children}
+                </div>
               </div>
               <Sidebar
                 isMobileSidebarOpen={isMobileSidebarOpen}

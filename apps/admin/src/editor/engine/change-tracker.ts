@@ -1,14 +1,9 @@
 import { dequal } from 'dequal';
-import {
-  humanizeLexicalDiff,
-  lexicalEquals,
-  type HumanizedDiffEntry,
-  type LexicalInput,
-} from '@/editor/engine/lexical-compare';
+import { lexicalEquals, type LexicalInput } from '@/editor/engine/lexical-compare';
 import { pick } from '@/editor/engine/pick';
 import { sameTag, type TagLike } from '@/shared/tags/tag-selection';
 
-// Codes are reported to Sentry when the leave modal opens; keep them stable.
+// Codes identify each dirty cause and callers match on them; nothing reports them.
 export type ChangeReasonCode =
   | 'POST_HAS_ERROR'
   | 'POST_TAGS_DIVERGED'
@@ -22,14 +17,11 @@ export type ChangeReasonCode =
 
 export interface ChangeReason {
   code: ChangeReasonCode;
-  reason: string;
-  context: Record<string, unknown>;
 }
 
 export interface ChangeVerdict {
   dirty: boolean;
   reasons: ChangeReason[];
-  diff?: HumanizedDiffEntry[];
 }
 
 /** null until the create request has been acknowledged. */
@@ -92,10 +84,6 @@ export interface RevisionProjection {
   feature_image?: string | null;
 }
 
-export interface VerdictOptions {
-  includeDiff?: boolean;
-}
-
 export interface ChangeTrackerOptions {
   siteUrl?: string;
 }
@@ -109,12 +97,12 @@ export interface ChangeTracker {
     acknowledged: EditablePostProjection,
   ): void;
   setBaseline(postId: PostId, lexical: LexicalInput): void;
-  baselineFailed(postId: PostId, error: unknown): void;
+  baselineFailed(postId: PostId): void;
   setLive(postId: PostId, patch: EditablePostPatch): void;
-  markSaveError(messages?: unknown): void;
+  markSaveError(): void;
   clearSaveError(): void;
   revisionRestored(postId: PostId, restored: RestoredRevision): void;
-  verdict(options?: VerdictOptions): ChangeVerdict;
+  verdict(): ChangeVerdict;
   /** Compares one editable field with the latest saved value using the dirty-check rules. */
   isFieldDirty(key: keyof EditablePostProjection): boolean;
   hasChangedSinceRevision(latestRevision: RevisionProjection | null | undefined): boolean;
@@ -160,11 +148,7 @@ const RUNG_KEYS: ReadonlySet<ProjectionKey> = new Set(['title', 'lexical', 'tags
 type Baseline =
   | { status: 'pending' }
   | { status: 'ready'; lexical: string | null }
-  | { status: 'failed'; error: string };
-
-interface SaveError {
-  messages: unknown;
-}
+  | { status: 'failed' };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -191,19 +175,11 @@ function pickPatch(patch: EditablePostPatch): EditablePostPatch {
   return clonePlain(pick(patch, keys));
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
 function serializeLexical(lexical: LexicalInput): string | null {
   if (lexical === null || lexical === undefined) {
     return null;
   }
   return typeof lexical === 'string' ? lexical : JSON.stringify(lexical);
-}
-
-function tagNames(tags: ReadonlyArray<TagLike> | undefined): string[] {
-  return (tags ?? []).map((tag) => tag.name ?? '');
 }
 
 // Order counts: it is the `sort_order` Ghost stores for the relation.
@@ -216,6 +192,11 @@ function sameTags(
   return left.length === right.length && left.every((tag, index) => sameTag(tag, right[index]));
 }
 
+// The server trims the title on save, so surrounding whitespace never persists.
+function sameTitle(a: string, b: string): boolean {
+  return a.trim() === b.trim();
+}
+
 function relationIds(related: ReadonlyArray<PostRelationLike> | undefined): string[] {
   return (related ?? []).map((entry) => entry.id ?? '');
 }
@@ -225,6 +206,9 @@ function relationIds(related: ReadonlyArray<PostRelationLike> | undefined): stri
  * needs the site url the tracker was built with.
  */
 export function sameFieldValue(key: ProjectionKey, a: unknown, b: unknown): boolean {
+  if (key === 'title') {
+    return sameTitle(a as string, b as string);
+  }
   if (key === 'tags') {
     return sameTags(a as ReadonlyArray<TagLike>, b as ReadonlyArray<TagLike>);
   }
@@ -254,7 +238,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
   let saved: EditablePostProjection | null = null;
   let live: EditablePostProjection | null = null;
   let baseline: Baseline = { status: 'pending' };
-  let saveError: SaveError | null = null;
+  let saveError = false;
   let disposed = false;
 
   function sameLexical(a: string | null, b: string | null): boolean {
@@ -281,17 +265,10 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
     return isCurrent(id) || (id === null && idAdopted && !disposed && saved !== null);
   }
 
-  function changedAttributes(): Record<string, [unknown, unknown]> {
-    const changed: Record<string, [unknown, unknown]> = {};
-    if (!saved || !live) {
-      return changed;
-    }
-    for (const key of PROJECTION_KEYS) {
-      if (!RUNG_KEYS.has(key) && !sameField(key, saved[key], live[key])) {
-        changed[key] = [saved[key], live[key]];
-      }
-    }
-    return changed;
+  function hasChangedAttribute(from: EditablePostProjection, to: EditablePostProjection): boolean {
+    return PROJECTION_KEYS.some(
+      (key) => !RUNG_KEYS.has(key) && !sameField(key, from[key], to[key]),
+    );
   }
 
   function collectReasons(): ChangeReason[] {
@@ -302,79 +279,36 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
     const reasons: ChangeReason[] = [];
 
     if (saveError) {
-      reasons.push({
-        code: 'POST_HAS_ERROR',
-        reason: 'isError',
-        context: { messages: saveError.messages },
-      });
+      reasons.push({ code: 'POST_HAS_ERROR' });
     }
 
     if (!sameTags(saved.tags, live.tags)) {
-      const currentTags = tagNames(live.tags);
-      const previousTags = tagNames(saved.tags);
-      reasons.push({
-        code: 'POST_TAGS_DIVERGED',
-        reason: 'tags are different',
-        context: { currentTags, previousTags },
-      });
+      reasons.push({ code: 'POST_TAGS_DIVERGED' });
     }
 
-    if (live.title.trim() !== saved.title.trim()) {
-      reasons.push({
-        code: 'POST_TITLE_DIVERGED',
-        reason: 'title is different',
-        context: { current: saved.title, scratch: live.title },
-      });
+    if (!sameTitle(saved.title, live.title)) {
+      reasons.push({ code: 'POST_TITLE_DIVERGED' });
     }
 
     const scratch = live.lexical;
     try {
       if (!sameLexical(saved.lexical, scratch)) {
         if (baseline.status === 'pending') {
-          reasons.push({
-            code: 'BASELINE_PENDING',
-            reason:
-              'main editor content has diverged from saved content before the hidden editor reported',
-            context: { lexical: saved.lexical, scratch },
-          });
+          reasons.push({ code: 'BASELINE_PENDING' });
         } else if (baseline.status === 'failed') {
-          reasons.push({
-            code: 'BASELINE_FAILED',
-            reason:
-              'main editor content has diverged from saved content and the hidden editor failed',
-            context: { lexical: saved.lexical, scratch, error: baseline.error },
-          });
+          reasons.push({ code: 'BASELINE_FAILED' });
         } else if (!sameLexical(baseline.lexical, scratch)) {
-          reasons.push({
-            code: 'SCRATCH_DIVERGED_FROM_SECONDARY',
-            reason: 'main editor content has diverged from both hidden editor and saved content',
-            context: { secondaryLexical: baseline.lexical, lexical: saved.lexical, scratch },
-          });
+          reasons.push({ code: 'SCRATCH_DIVERGED_FROM_SECONDARY' });
         }
       }
-    } catch (error) {
-      reasons.push({
-        code: 'LEXICAL_PARSE_FAILED',
-        reason: 'lexical state could not be parsed for comparison',
-        context: { error: errorMessage(error) },
-      });
+    } catch {
+      reasons.push({ code: 'LEXICAL_PARSE_FAILED' });
     }
 
-    const changed = changedAttributes();
-    if (Object.keys(changed).length > 0) {
-      reasons.push(
-        postId === null
-          ? {
-              code: 'NEW_POST_HAS_CHANGED_ATTRIBUTES',
-              reason: 'post.changedAttributes.length > 0',
-              context: changed,
-            }
-          : {
-              code: 'POST_HAS_DIRTY_ATTRIBUTES',
-              reason: 'post.hasDirtyAttributes === true',
-              context: changed,
-            },
-      );
+    if (hasChangedAttribute(saved, live)) {
+      reasons.push({
+        code: postId === null ? 'NEW_POST_HAS_CHANGED_ATTRIBUTES' : 'POST_HAS_DIRTY_ATTRIBUTES',
+      });
     }
 
     return reasons;
@@ -393,7 +327,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       saved = pickProjection(post);
       live = pickProjection(post);
       baseline = { status: 'pending' };
-      saveError = null;
+      saveError = false;
     },
 
     // Query data (load, refetch) never moves the baseline or the live state;
@@ -441,7 +375,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       }
       saved = next;
       live = { ...live, ...pick(next, rebasedKeys) };
-      saveError = null;
+      saveError = false;
     },
 
     setBaseline(id, lexical) {
@@ -451,11 +385,11 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       baseline = { status: 'ready', lexical: serializeLexical(lexical) };
     },
 
-    baselineFailed(id, error) {
+    baselineFailed(id) {
       if (!isCurrentOrAlias(id)) {
         return;
       }
-      baseline = { status: 'failed', error: errorMessage(error) };
+      baseline = { status: 'failed' };
     },
 
     setLive(id, patch) {
@@ -467,18 +401,18 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       live = { ...live, ...defined };
     },
 
-    markSaveError(messages) {
+    markSaveError() {
       if (disposed) {
         return;
       }
-      saveError = { messages };
+      saveError = true;
     },
 
     clearSaveError() {
       if (disposed) {
         return;
       }
-      saveError = null;
+      saveError = false;
     },
 
     // Call only after the restore save is acknowledged; a failed restore never reaches here.
@@ -497,22 +431,12 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       saved = { ...saved, ...adopted };
       live = { ...live, ...adopted };
       baseline = { status: 'pending' };
-      saveError = null;
+      saveError = false;
     },
 
-    verdict({ includeDiff = false } = {}) {
+    verdict() {
       const reasons = collectReasons();
-      const result: ChangeVerdict = { dirty: reasons.length > 0, reasons };
-
-      if (
-        includeDiff &&
-        baseline.status === 'ready' &&
-        reasons.some((r) => r.code === 'SCRATCH_DIVERGED_FROM_SECONDARY')
-      ) {
-        result.diff = humanizeLexicalDiff(baseline.lexical, live?.lexical, siteUrl);
-      }
-
-      return result;
+      return { dirty: reasons.length > 0, reasons };
     },
 
     isFieldDirty(key) {
@@ -530,7 +454,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
         return false;
       }
       if (
-        saved.title !== latestRevision.title ||
+        !sameTitle(saved.title, latestRevision.title) ||
         saved.custom_excerpt !== (latestRevision.custom_excerpt ?? null) ||
         saved.feature_image !== (latestRevision.feature_image ?? null)
       ) {
@@ -551,7 +475,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       saved = null;
       live = null;
       baseline = { status: 'pending' };
-      saveError = null;
+      saveError = false;
     },
   };
 }

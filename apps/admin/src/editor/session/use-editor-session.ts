@@ -34,7 +34,11 @@ import {
 import type { RestoredRevision } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
-import { reportEditorError } from '@/editor/report-error';
+import {
+  reportEditorError,
+  reportLeaveConfirmation,
+  reportSaveFailure,
+} from '@/editor/report-error';
 import { contentToText } from './content-text';
 import {
   createEditorSession,
@@ -80,12 +84,13 @@ export interface EditorSessionBinding {
   onExcerptChange: (excerpt: string) => void;
   onLexicalChange: (lexical: unknown) => void;
   onSecondaryChange: (lexical: unknown) => void;
-  onSecondaryError: (error: unknown) => void;
+  onSecondaryError: () => void;
 }
 
 export interface EditorSessionHandle {
   bind: EditorSessionBinding;
   state: SaveEngineState;
+  pendingSave: EditorSessionView['pendingSave'];
   /** The server ID the post holds, once a create has acknowledged one. */
   persistedId: string | null;
   /** The server ID acquired by this session's first create, if it began new. */
@@ -106,13 +111,13 @@ export interface EditorSessionHandle {
   patchFeatureImage: EditorSession['patchFeatureImage'];
   /** The live settings fields, re-read on every sidebar edit. */
   settings: EditorSettingsFields;
-  /** Stages a settings field, then applies the sidebar's save policy. */
+  /** Stages a settings field, then asks the engine to save it. */
   editSettings: (patch: EditorSettingsPatch) => void;
   /** Stages a settings field the writer is still typing into, committing nothing. */
   stageSettings: (patch: EditorSettingsPatch) => void;
   /**
-   * Applies the sidebar's save policy to what is staged, on the blur that ends
-   * an edit. The excerpt is a settings field wherever it is rendered.
+   * Requests a field save from the engine on the blur that ends
+   * an edit. The excerpt and the feature image go through it wherever they render.
    */
   commitSettings: () => void;
   /** The title the engine holds, which is the default title while the input is blank. */
@@ -129,7 +134,6 @@ export interface EditorSessionHandle {
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
   getLiveLexical: EditorSession['getLiveLexical'];
-  dispatchField: () => void;
   dispatchExplicit: () => void;
   /** An explicit save whose completion the caller acts on, such as before a publish or preview. */
   saveExplicit: () => Promise<SaveCompletion>;
@@ -196,6 +200,8 @@ export function useEditorSession({
     autosaveDebounceMs.current = bootedDebounceMs(configData?.config.editorAutosaveDebounceMs);
   });
 
+  // Construction must start no timer, request or outside subscription:
+  // StrictMode may call this twice and discard the first session undisposed.
   const [session] = useState<EditorSession>(() =>
     createEditorSession({
       record,
@@ -205,6 +211,8 @@ export function useEditorSession({
       autosaveDebounceMs: () => autosaveDebounceMs.current,
       onIdAcquired: setPersistedId,
       onError: reportEditorError,
+      onSaveFailed: (failure) => reportSaveFailure(failure, postType),
+      onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, postType),
       transport: {
         create: async (payload: EditorCreatePayload) => {
           const current = transport.current;
@@ -260,9 +268,9 @@ export function useEditorSession({
   }, [session]);
 
   const view = useSyncExternalStore(session.subscribe, session.getView);
-  const { state, title: engineTitle, slug, settings, publishTime } = view;
+  const { state, pendingSave, title: engineTitle, slug, settings, publishTime } = view;
 
-  // The view keeps its identity until one of the six values it publishes
+  // The view keeps its identity until one of the values it publishes
   // changes, so it stands in for all of them as a dependency.
   const isDirtyNow = useCallback(() => view.isDirty, [view]);
 
@@ -414,7 +422,7 @@ export function useEditorSession({
 
   const onTitleBlur = useCallback(() => {
     session.commitTitle(title);
-    session.dispatchField();
+    session.commitField();
   }, [session, title]);
 
   const onLexicalChange = useCallback(
@@ -430,10 +438,7 @@ export function useEditorSession({
     [session],
   );
 
-  const onSecondaryError = useCallback(
-    (error: unknown) => session.baselineFailed(error),
-    [session],
-  );
+  const onSecondaryError = useCallback(() => session.baselineFailed(), [session]);
 
   const dispatchPublish = useMemo(
     () =>
@@ -479,6 +484,7 @@ export function useEditorSession({
     () => ({
       bind,
       state,
+      pendingSave,
       persistedId,
       createdId: isNew ? persistedId : null,
       isDirty: isDirtyNow,
@@ -500,7 +506,6 @@ export function useEditorSession({
       editPublishedAt,
       getSaveSnapshot: session.getSaveSnapshot,
       getLiveLexical: session.getLiveLexical,
-      dispatchField: session.dispatchField,
       dispatchExplicit,
       saveExplicit: session.dispatchExplicit,
       dispatchPublish,
@@ -531,6 +536,7 @@ export function useEditorSession({
       slug,
       stageSettings,
       state,
+      pendingSave,
     ],
   );
 }

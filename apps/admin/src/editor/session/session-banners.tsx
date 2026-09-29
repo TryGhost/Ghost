@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -16,25 +16,26 @@ import { Inline, Text } from '@tryghost/shade/primitives';
 import {
   editorConflictBanner,
   editorConflictReloadConfirm,
-  editorReauthBanner,
   editorSaveErrorBanner,
 } from '@tryghost/test-data/selectors/editor';
-import type { SaveError, SaveEngineState } from '@/editor/engine/save-engine';
+import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
+import { reportShownAlert } from '@/editor/report-error';
 import type { ReloadOutcome } from './use-editor-session';
 
-const SESSION_EXPIRED = 'Your session expired. Sign in again in a new tab, then retry.';
+const SESSION_EXPIRED = 'Your session expired. Retry to sign in again and save.';
 const CONFLICT =
   'Someone else is editing this post. Reloading replaces what you have with their version, so copy your content first if you need it.';
 const GONE =
   'This post has been deleted. Copy your content and paste it into a new post to keep it.';
+// A halt carries no error of its own; the banner reports it as the not-found it is.
+const NOT_FOUND: SaveError = { kind: 'not-found', message: GONE };
 
 export interface SessionBannersProps {
   state: SaveEngineState;
+  pendingSave?: PendingSave | null;
   hasUnsavedContent: () => boolean;
   contentText: () => string;
-  onRetryReauth: () => void;
-  onDismissReauth: () => void;
   onRetrySave: () => void;
   onReload: () => Promise<ReloadOutcome>;
 }
@@ -50,10 +51,20 @@ function saveErrorMessage(error: SaveError): string {
   }
 }
 
+// Once per banner the writer reads, not per render of it.
+function useShownAlert(message: string | null, error: SaveError | null): void {
+  useEffect(() => {
+    if (message !== null && error !== null) {
+      reportShownAlert(message, error);
+    }
+  }, [message, error]);
+}
+
 type ConflictBannerProps = Pick<
   SessionBannersProps,
   'hasUnsavedContent' | 'contentText' | 'onReload'
 > & {
+  error: SaveError;
   deleted?: boolean;
 };
 
@@ -61,12 +72,14 @@ function ConflictBanner({
   hasUnsavedContent,
   contentText,
   onReload,
+  error,
   deleted = false,
 }: ConflictBannerProps) {
   const [confirming, setConfirming] = useState(false);
   const [reloading, setReloading] = useState(false);
   const [reloadFoundDeleted, setReloadFoundDeleted] = useState(false);
   const gone = deleted || reloadFoundDeleted;
+  useShownAlert(gone ? GONE : CONFLICT, gone ? NOT_FOUND : error);
 
   const reload = async () => {
     setConfirming(false);
@@ -155,40 +168,29 @@ function ConflictBanner({
 
 export function SessionBanners({
   state,
+  pendingSave,
   hasUnsavedContent,
   contentText,
-  onRetryReauth,
-  onDismissReauth,
   onRetrySave,
   onReload,
 }: SessionBannersProps) {
-  if (state.kind === 'reauth-pending') {
-    return (
-      <Banner
-        className="mx-4 mb-2 shrink-0"
-        data-testid={editorReauthBanner}
-        role="alert"
-        size="sm"
-        variant="warning"
-      >
-        <Inline align="center" gap="sm">
-          <Text>{SESSION_EXPIRED}</Text>
-          <Button size="sm" variant="outline" onClick={onRetryReauth}>
-            Retry
-          </Button>
-          <Button size="sm" variant="ghost" onClick={onDismissReauth}>
-            Dismiss
-          </Button>
-        </Inline>
-      </Banner>
-    );
-  }
+  const saveError = state.kind === 'error' ? state.error : null;
+  useShownAlert(saveError && saveErrorMessage(saveError), saveError);
 
-  if (state.kind === 'conflict' || state.kind === 'halted') {
+  const conflict =
+    state.kind === 'conflict'
+      ? state.error
+      : state.kind === 'halted'
+        ? NOT_FOUND
+        : pendingSave?.blockedBy?.kind === 'conflict'
+          ? pendingSave.blockedBy
+          : null;
+  if (conflict) {
     return (
       <ConflictBanner
         contentText={contentText}
         deleted={state.kind === 'halted'}
+        error={conflict}
         hasUnsavedContent={hasUnsavedContent}
         onReload={onReload}
       />
@@ -211,6 +213,14 @@ export function SessionBanners({
             Retry
           </Button>
         </Inline>
+      </Banner>
+    );
+  }
+
+  if (pendingSave?.blockedBy?.kind === 'validation') {
+    return (
+      <Banner className="mx-4 mb-2 shrink-0" role="status" size="sm" variant="warning">
+        <Text>Changes are waiting to save. {pendingSave.blockedBy.message}</Text>
       </Banner>
     );
   }

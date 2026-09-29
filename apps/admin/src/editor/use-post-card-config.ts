@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useFramework } from '@tryghost/admin-x-framework';
-import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import {
   useFetchApi,
   useKoenigFetchEmbed,
@@ -18,6 +17,7 @@ import {
   buildCardConfigPost,
   buildPostCardConfig,
 } from './card-config';
+import { type LabelsPage, fetchAllLabelNames } from './card-labels';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorSettings, useSiteTimezone } from './use-editor-settings';
 import { usePostLinkSuggestions } from './use-post-link-suggestions';
@@ -55,15 +55,12 @@ export function usePostCardConfig({
 
   const labelsRequest = useRef<Promise<string[]> | null>(null);
   const fetchLabels = useCallback(() => {
-    labelsRequest.current ??= fetchApi<{ labels: { name: string }[] }>(
-      apiUrl('/labels/', { limit: 'all', fields: 'id,name' }),
-      EDITOR_REQUEST_OPTIONS,
-    )
-      .then((response) => response.labels.map((label) => label.name))
-      .catch((error: unknown) => {
-        labelsRequest.current = null;
-        throw error;
-      });
+    labelsRequest.current ??= fetchAllLabelNames((url) =>
+      fetchApi<LabelsPage>(url, EDITOR_REQUEST_OPTIONS),
+    ).catch((error: unknown) => {
+      labelsRequest.current = null;
+      throw error;
+    });
 
     return labelsRequest.current;
   }, [fetchApi]);

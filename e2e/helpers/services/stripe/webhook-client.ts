@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import manifest from './fixtures/manifest.json' with { type: 'json' };
 import type { StripeEvent } from './builders';
 
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'DEFAULT_WEBHOOK_SECRET';
@@ -11,7 +12,7 @@ export class WebhookClient {
   }
 
   async sendWebhook(event: StripeEvent): Promise<Response> {
-    const payload = JSON.stringify(event);
+    const payload = JSON.stringify({ ...event, api_version: manifest.api_version });
     const timestamp = Math.floor(Date.now() / 1000);
     const signature = crypto
       .createHmac('sha256', WEBHOOK_SECRET)

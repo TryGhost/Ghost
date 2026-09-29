@@ -55,11 +55,11 @@ class FixtureManager {
    * @returns {Function} matching function
    */
   static matchFunc(match, key, value) {
-    if (_.isArray(match)) {
+    if (Array.isArray(match)) {
       return function (item) {
         let valueTest = true;
 
-        if (_.isArray(value)) {
+        if (Array.isArray(value)) {
           valueTest = value.indexOf(item.get(match[1])) > -1;
         } else if (value !== 'all') {
           valueTest = item.get(match[1]) === value;
@@ -78,7 +78,7 @@ class FixtureManager {
   static matchObj(match, item) {
     const matchedObj = {};
 
-    if (_.isArray(match)) {
+    if (Array.isArray(match)) {
       _.each(match, (matchProp) => {
         matchedObj[matchProp] = item.get(matchProp);
       });
@@ -281,7 +281,7 @@ class FixtureManager {
         const result = {};
 
         for (const key in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          if (Object.hasOwn(obj, key)) {
             // Process the key itself for placeholders
             const newKey = processString(key, replacements);
 

@@ -22,6 +22,7 @@ import {
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { Inline } from '@tryghost/shade/primitives';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
@@ -35,6 +36,7 @@ import {
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
 
+import { NEWSLETTERS_SEARCH_PARAMS, PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
 import { useEditorSettings } from '@/editor/use-editor-settings';
@@ -57,7 +59,7 @@ interface SegmentOption {
   value: PreviewSegment;
 }
 
-interface PostPreviewModalProps {
+export interface PostPreviewModalProps {
   open: boolean;
   postId: string;
   /** The post's public preview URL (`/p/:uuid/`), empty until the post has a uuid. */
@@ -68,8 +70,10 @@ interface PostPreviewModalProps {
   newsletterSlug?: string;
   /** Awaited before the preview renders, so the caller can save the draft first. */
   onBeforeOpen?: () => Promise<void>;
-  /** Supplied while a publish flow is open behind the preview, which this returns to. */
-  onReturnToPublish?: () => void;
+  /** Renders a Publish button; supplied for users who can publish. */
+  onPublish?: () => void;
+  /** Keeps the Publish button disabled while the caller cannot open its publish flow. */
+  publishDisabled?: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
@@ -80,7 +84,8 @@ export function PostPreviewModal({
   isPost = true,
   newsletterSlug,
   onBeforeOpen,
-  onReturnToPublish,
+  onPublish,
+  publishDisabled = false,
   onOpenChange,
 }: PostPreviewModalProps) {
   const [format, setFormat] = useState<PreviewFormat>('browser');
@@ -109,26 +114,52 @@ export function PostPreviewModal({
   const testEmailAvailable =
     !!currentUser &&
     (isOwnerUser(currentUser) || isAdminUser(currentUser) || isEditorUser(currentUser));
+  // Contributors have no permission to read tiers.
+  const tiersAvailable =
+    paidMembersEnabled === true && !!currentUser && !isContributorUser(currentUser);
 
   const { data: tiersData } = useBrowseTiers({
-    searchParams: { filter: 'type:paid', limit: 'all' },
-    enabled: open && prepareState === 'ready' && paidMembersEnabled === true,
+    searchParams: PAID_TIERS_SEARCH_PARAMS,
+    enabled: open && prepareState === 'ready' && tiersAvailable,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const tiers = useMemo(() => tiersData?.tiers ?? [], [tiersData]);
 
   const {
     data: newslettersData,
+    fetchNextPage: fetchNextNewsletterPage,
+    hasNextPage: hasNextNewsletterPage,
     isError: activeNewslettersError,
-    isFetching: activeNewslettersFetching,
+    isFetching: newslettersFetching,
+    isFetchingNextPage: isFetchingNextNewsletterPage,
     refetch: refetchActiveNewsletters,
   } = useBrowseNewsletters({
-    searchParams: { filter: 'status:active', limit: 'all' },
+    searchParams: NEWSLETTERS_SEARCH_PARAMS,
     enabled: open && prepareState === 'ready' && emailAvailable,
     requestOptions: EDITOR_REQUEST_OPTIONS,
-    staleTime: 0,
   });
-  const activeNewsletters = useMemo(() => newslettersData?.newsletters ?? [], [newslettersData]);
+
+  // Core caps `limit=all`, so the response can still contain a next page. A
+  // newsletter past the cap would otherwise be taken for an archived one.
+  useEffect(() => {
+    if (hasNextNewsletterPage && !isFetchingNextNewsletterPage && !activeNewslettersError) {
+      void fetchNextNewsletterPage();
+    }
+  }, [
+    activeNewslettersError,
+    fetchNextNewsletterPage,
+    hasNextNewsletterPage,
+    isFetchingNextNewsletterPage,
+  ]);
+  const activeNewslettersFetching =
+    newslettersFetching || hasNextNewsletterPage || isFetchingNextNewsletterPage;
+  // The browse carries every newsletter, which is also the publish flow's list;
+  // narrowing here shares that one cache entry instead of asking for a subset.
+  const activeNewsletters = useMemo(
+    () =>
+      (newslettersData?.newsletters ?? []).filter((newsletter) => newsletter.status === 'active'),
+    [newslettersData],
+  );
 
   // The post's newsletter is what its email renders as, so it stays selectable
   // even once it has left the active list.
@@ -295,6 +326,7 @@ export function PostPreviewModal({
               </Tabs>
             )}
             <ToggleGroup
+              shape="rounded"
               type="single"
               value={device}
               onValueChange={(value) => {
@@ -357,36 +389,37 @@ export function PostPreviewModal({
               </Select>
             )}
           </Inline>
-          <Inline gap="sm">
-            <Button
-              aria-label="Copy preview link"
+          <PageHeader.ActionGroup>
+            <PageHeader.Action
               disabled={!previewActionsAvailable}
-              variant="outline"
+              label="Copy preview link"
+              iconOnly
               onClick={() => void copyPreviewLink()}
             >
               <LucideIcon.Link />
-            </Button>
+            </PageHeader.Action>
             {previewActionsAvailable ? (
-              <Button variant="outline" asChild>
+              <PageHeader.Action label="Open in new tab" asChild>
                 <a href={audienceUrl} rel="noopener noreferrer" target="_blank">
                   <LucideIcon.ExternalLink />
                   Open in new tab
                 </a>
-              </Button>
+              </PageHeader.Action>
             ) : (
-              <Button variant="outline" disabled>
+              <PageHeader.Action label="Open in new tab" disabled>
                 <LucideIcon.ExternalLink />
                 Open in new tab
-              </Button>
+              </PageHeader.Action>
             )}
-            <Button
-              variant={onReturnToPublish ? 'outline' : 'default'}
-              onClick={() => onOpenChange(false)}
-            >
+            <Button variant={onPublish ? 'outline' : 'default'} onClick={() => onOpenChange(false)}>
               Close
             </Button>
-            {onReturnToPublish ? <Button onClick={onReturnToPublish}>Publish</Button> : null}
-          </Inline>
+            {onPublish ? (
+              <Button disabled={publishDisabled} onClick={onPublish}>
+                Publish
+              </Button>
+            ) : null}
+          </PageHeader.ActionGroup>
         </>
       }
       layout="header"

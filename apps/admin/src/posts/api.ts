@@ -5,7 +5,7 @@
  */
 export { lazyPostAnalyticsRoot, postAnalyticsRouteChildren } from './analytics/routes';
 export { POST_VIEW_PARAMS } from './list/post-view-params';
-export { getStickyPostFilterUrl } from './list/posts-sticky-filters';
+export { getPostListReturnUrl, getStickyPostFilterUrl } from './list/posts-sticky-filters';
 export type { PostResource } from './list/post-resource';
 
 // Lazy route entries keep the posts and pages list chunks out of the shell
@@ -16,3 +16,5 @@ export const lazyPagesListRoute = () => import('./list/pages-route');
 // Lazy entry, not a component re-export: the shell's host loads the modal on
 // demand, so a static re-export would pull the chunk into the shell bundle.
 export const lazyGiftLinkModal = () => import('./analytics/modals/gift-link-modal');
+
+export const lazyPostDebugScreen = () => import('./debug/post-debug');

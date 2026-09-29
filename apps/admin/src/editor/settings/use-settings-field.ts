@@ -3,7 +3,7 @@ import {
   settingsFieldErrorFor,
   type ValidatedSettingsFieldKey,
 } from '@/editor/session/settings-fields';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 
 /** The settings keys a plain text field writes: the ones held to a length. */
 export type SettingsTextFieldKey = Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers'>;
@@ -30,7 +30,7 @@ export interface SettingsFieldBinding {
  * is a hint's id, which the field points at alongside any error.
  */
 export function useSettingsField(
-  session: EditorSessionHandle,
+  session: EditorSettingsPort,
   key: SettingsTextFieldKey,
   describedBy?: string,
 ): SettingsFieldBinding {

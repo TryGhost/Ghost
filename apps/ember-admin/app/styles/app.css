@@ -64,7 +64,6 @@
 @import "layouts/post-preview.css";
 @import "layouts/tiers.css";
 @import "layouts/mentions.css";
-@import "layouts/migrate.css";
 
 
 /* Suppress transitions/animations during a light/dark mode swap so the

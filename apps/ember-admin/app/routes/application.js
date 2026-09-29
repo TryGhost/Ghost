@@ -36,7 +36,6 @@ function isAutomationsUrl(url) {
 }
 
 function setupAutomationsSessionReplay(replay, shouldStartRecording) {
-    let initialRouteCheck;
     let removeNavigationListener;
     let recordingStarted = false;
 
@@ -95,12 +94,12 @@ function setupAutomationsSessionReplay(replay, shouldStartRecording) {
 
     // Replay defers its sampling initialization during Sentry.init(). Queue the
     // initial route check behind it to avoid starting a second rrweb recorder.
-    initialRouteCheck = setTimeout(() => maybeStartRecording(window.location.href));
+    const initialRouteCheck = setTimeout(() => maybeStartRecording(window.location.href));
 
     return teardown;
 }
 
-let shortcuts = {};
+const shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
@@ -118,6 +117,7 @@ window.ReactDOM = ReactDOM;
 export default Route.extend(ShortcutsRoute, {
     ajax: service(),
     configManager: service(),
+    feature: service(),
     ghostPaths: service(),
     notifications: service(),
     router: service(),
@@ -244,6 +244,11 @@ export default Route.extend(ShortcutsRoute, {
         },
 
         openSearchModal() {
+            // React owns Cmd-K search while this flag is on
+            if (this.feature.globalSearchReact) {
+                return;
+            }
+
             // Don't open the search modal if the sidebar is hidden
             // e.g. in the editor or settings screens
             if (this.ui.isFullScreen) {

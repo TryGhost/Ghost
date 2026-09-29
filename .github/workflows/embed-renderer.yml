@@ -1,0 +1,59 @@
+name: Embed renderer
+
+# Deploys the embed renderer to public.ghostembeds.com, which serves
+# self-hosted Ghost. See .github/embed-renderer/README.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'koenig/koenig-lexical/public/embed-renderer/**'
+      - '.github/embed-renderer/**'
+      - '.github/workflows/embed-renderer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 22.23.3
+
+concurrency:
+  group: embed-renderer
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy public renderer
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: 'false'
+          store-cache: 'false'
+
+      # every version ships on every deploy: a Netlify deploy replaces the site,
+      # and editors request the renderer version they were built against
+      - name: Build upload directory
+        run: .github/embed-renderer/build.sh "$RUNNER_TEMP/embed-renderer"
+
+      # --ignore-scripts: a static --no-build deploy needs none of netlify-cli's
+      # dependency build scripts, which pnpm otherwise refuses to skip.
+      # Runs outside the checkout: from the repo root netlify-cli sees the pnpm
+      # workspace and refuses to deploy until one of its packages is picked
+      - name: Deploy to Netlify
+        working-directory: ${{ runner.temp }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_EMBEDS_PUBLIC_SITE_ID }}
+        run: |
+          pnpm --ignore-scripts --package=netlify-cli@27.8.0 dlx netlify deploy \
+            --prod \
+            --no-build \
+            --dir="$RUNNER_TEMP/embed-renderer" \
+            --message "${GITHUB_SHA:0:7} via ${GITHUB_WORKFLOW}"

@@ -46,7 +46,7 @@ describe('Integration: Service: slug-generator', function () {
     });
 
     it('returns empty if no slug is provided', function (done) {
-        let service = this.owner.lookup('service:slug-generator');
+        const service = this.owner.lookup('service:slug-generator');
 
         service.generateSlug('post', '').then(function (slug) {
             expect(slug).to.equal('');
@@ -55,10 +55,10 @@ describe('Integration: Service: slug-generator', function () {
     });
 
     it('calls correct endpoint and returns correct data', function (done) {
-        let rawSlug = 'a test post';
+        const rawSlug = 'a test post';
         stubSlugEndpoint(server, 'post', 'a-test-post');
 
-        let service = this.owner.lookup('service:slug-generator');
+        const service = this.owner.lookup('service:slug-generator');
 
         service.generateSlug('post', rawSlug).then(function (slug) {
             expect(slug).to.equal(dasherize(rawSlug));
@@ -67,10 +67,10 @@ describe('Integration: Service: slug-generator', function () {
     });
 
     it('calls correct endpoint and returns correct data when passed an id', function (done) {
-        let rawSlug = 'a test post';
+        const rawSlug = 'a test post';
         stubSlugEndpoint(server, 'post', 'a-test-post', 'a-test-id');
 
-        let service = this.owner.lookup('service:slug-generator');
+        const service = this.owner.lookup('service:slug-generator');
 
         service.generateSlug('post', rawSlug, 'a-test-id').then(function (slug) {
             expect(slug).to.equal(dasherize(rawSlug));

@@ -6,7 +6,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const sentry = require('../../../shared/sentry');
-const MagicLink = require('../lib/magic-link/magic-link');
+const MagicLink = require('../../lib/magic-link/magic-link');
 
 const messages = {
   nameAlreadyExists: 'A newsletter with the same name already exists',
@@ -391,7 +391,7 @@ class NewslettersService {
         if (process.env.NODE_ENV !== 'production') {
           logging.warn(message.text);
         }
-        let msg = Object.assign(
+        const msg = Object.assign(
           {
             from: fromEmail,
             subject: 'Verify email address',

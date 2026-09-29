@@ -1,11 +1,7 @@
 const _ = require('lodash');
 const path = require('node:path');
-let replaceImage;
-let preProcessPosts;
-let preProcessTags;
-let preProcessUsers;
 
-replaceImage = function (markdown, image) {
+const replaceImage = function (markdown, image) {
   if (!markdown) {
     return;
   }
@@ -34,7 +30,7 @@ replaceImage = function (markdown, image) {
  * @param {string} contentFile.originalPath
  * @param {string} contentFile.newPath
  */
-preProcessPosts = function (data, contentFile) {
+const preProcessPosts = function (data, contentFile) {
   _.each(data.posts, function (post) {
     post.markdown = replaceImage(post.markdown, contentFile);
     if (post.html) {
@@ -52,7 +48,7 @@ preProcessPosts = function (data, contentFile) {
   });
 };
 
-preProcessTags = function (data, image) {
+const preProcessTags = function (data, image) {
   _.each(data.tags, function (tag) {
     if (tag.feature_image) {
       tag.feature_image = replaceImage(tag.feature_image, image);
@@ -60,7 +56,7 @@ preProcessTags = function (data, image) {
   });
 };
 
-preProcessUsers = function (data, image) {
+const preProcessUsers = function (data, image) {
   _.each(data.users, function (user) {
     if (user.cover_image) {
       user.cover_image = replaceImage(user.cover_image, image);

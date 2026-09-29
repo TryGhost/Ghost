@@ -389,7 +389,7 @@ export default class App extends React.Component {
       : linkData;
     const { site: previewSiteData, ...restPreviewData } = this.fetchPreviewData();
     const { site: notificationSiteData, ...restNotificationData } = this.fetchNotificationData();
-    let page = '';
+    const page = '';
     return {
       member,
       offers,
@@ -435,7 +435,7 @@ export default class App extends React.Component {
     const qsParams = new URLSearchParams(qs);
     const data = {};
     // Handle the query params key/value pairs
-    for (let pair of qsParams.entries()) {
+    for (const pair of qsParams.entries()) {
       const key = pair[0];
       const value = decodeURIComponent(pair[1]);
       if (key === 'name') {
@@ -502,7 +502,7 @@ export default class App extends React.Component {
     let portalProducts = null;
     let monthlyPrice, yearlyPrice, currency;
     // Handle the query params key/value pairs
-    for (let pair of qsParams.entries()) {
+    for (const pair of qsParams.entries()) {
       const key = pair[0];
 
       // Note: this needs to be cleaned up, there is no reason why we need to double encode/decode
@@ -973,7 +973,7 @@ export default class App extends React.Component {
       fpScript.async = !0;
       fpScript.src = 'https://cdn.firstpromoter.com/fprom.js';
       fpScript.onload = fpScript.onreadystatechange = function () {
-        let _t = this.readyState;
+        const _t = this.readyState;
         if (!_t || 'complete' === _t || 'loaded' === _t) {
           try {
             window.$FPROM.init(firstPromoterId, siteDomain);

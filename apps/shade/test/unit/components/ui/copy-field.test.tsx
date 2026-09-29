@@ -2,7 +2,6 @@ import assert from 'assert/strict';
 import { describe, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 
-import { Button } from '../../../../src/components/ui/button';
 import {
   CopyField,
   CopyFieldActions,
@@ -44,49 +43,6 @@ describe('CopyField Components', () => {
     assert.equal(value.textContent, 'https://example.com');
     assert.equal(value.getAttribute('aria-readonly'), 'true');
     assert.equal(value.getAttribute('tabindex'), '0');
-  });
-
-  it('insets its actions by one pixel and uses compact button radii', () => {
-    render(
-      <CopyField value="https://example.com">
-        <CopyFieldContent>
-          <CopyFieldValue />
-          <CopyFieldActions data-testid="copy-field-actions">
-            <Button data-testid="secondary-action" size="sm" variant="ghost">
-              Preview
-            </Button>
-            <CopyFieldCopyButton data-testid="copy-action" />
-          </CopyFieldActions>
-        </CopyFieldContent>
-      </CopyField>,
-    );
-
-    const actions = screen.getByTestId('copy-field-actions');
-
-    assert.match(actions.className, /right-\[1px\]/);
-    assert.match(actions.className, /gap-px/);
-    assert.match(actions.className, /\[&_button\]:h-7/);
-    assert.match(actions.className, /\[&_button\]:rounded-sm/);
-    assert.match(
-      actions.className,
-      /\[&_button:not\(\[data-slot=copy-field-copy-button\]\)\]:bg-control-readonly-surface/,
-    );
-    assert.match(
-      actions.className,
-      /\[&_button:not\(\[data-slot=copy-field-copy-button\]\)\]:hover:bg-secondary/,
-    );
-    assert.match(actions.className, /bg-control-readonly-surface/);
-    assert.doesNotMatch(actions.className, /\[&_button\]:bg-surface-elevated/);
-    assert.match(screen.getByTestId('copy-action').className, /border-control-border/);
-    assert.match(screen.getByTestId('copy-action').className, /hover:border-border-strong\/40/);
-    assert.match(screen.getByTestId('copy-action').className, /bg-surface-elevated/);
-    assert.match(screen.getByTestId('copy-action').className, /hover:bg-surface-elevated/);
-    assert.equal(
-      screen.getByTestId('copy-action').getAttribute('data-slot'),
-      'copy-field-copy-button',
-    );
-    assert.match(screen.getByTestId('secondary-action').className, /hover:bg-accent/);
-    assert.doesNotMatch(screen.getByTestId('secondary-action').className, /bg-surface-elevated/);
   });
 
   it('copies the value and shows clipboard feedback', async () => {

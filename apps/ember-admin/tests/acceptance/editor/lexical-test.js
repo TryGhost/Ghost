@@ -8,7 +8,7 @@ import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Lexical editor', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {

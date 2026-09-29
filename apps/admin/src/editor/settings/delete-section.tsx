@@ -24,11 +24,11 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
 import { DEFAULT_TITLE } from '@/editor/engine/save-engine';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';
 
 export interface DeleteSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
 }
 
@@ -72,7 +72,7 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
     } catch (deleteError) {
       setError(
         deleteError instanceof SessionExpiredError
-          ? 'Your session expired. Sign in again in a new tab, then try deleting again.'
+          ? 'Your session expired. Delete again to sign in and continue.'
           : getErrorMessage(deleteError, `Couldn’t delete this ${noun}.`),
       );
       setIsDeleting(false);

@@ -61,7 +61,7 @@ class CmEditorComponent extends Component {
         // an error that occurs if codemirror hasn't finished loading before
         // the component is destroyed.
         if (this._editor) {
-            let editor = this._editor.getWrapperElement();
+            const editor = this._editor.getWrapperElement();
             editor.parentNode.removeChild(editor);
             this._editor = null;
         }
@@ -73,7 +73,7 @@ class CmEditorComponent extends Component {
     }
 
     @task(function* () {
-        let loader = this.lazyLoader;
+        const loader = this.lazyLoader;
         yield loader.loadScript('codemirror', 'assets/codemirror/codemirror.js');
 
         scheduleOnce('afterRender', this, this._initCodeMirror);
@@ -81,10 +81,10 @@ class CmEditorComponent extends Component {
         initCodeMirror;
 
     _initCodeMirror() {
-        let options = this.getProperties('lineNumbers', 'lineWrapping', 'indentUnit', 'mode', 'theme', 'autofocus');
+        const options = this.getProperties('lineNumbers', 'lineWrapping', 'indentUnit', 'mode', 'theme', 'autofocus');
         assign(options, {value: this._value});
 
-        let textarea = this.element.querySelector('textarea');
+        const textarea = this.element.querySelector('textarea');
         if (textarea && textarea === document.activeElement) {
             options.autofocus = true;
         }
@@ -104,7 +104,7 @@ class CmEditorComponent extends Component {
     }
 
     _setupCodeMirrorEventHandler(event, target, method) {
-        let callback = bind(target, method);
+        const callback = bind(target, method);
 
         this._editor.on(event, callback);
 

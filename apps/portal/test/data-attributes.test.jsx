@@ -158,7 +158,7 @@ describe('Member Data attributes:', () => {
     });
 
     // Mock window.location
-    let locationMock = vi.fn();
+    const locationMock = vi.fn();
     delete window.location;
     window.location = { assign: locationMock };
     window.location.href = new URL('https://portal.localhost').href;
@@ -424,6 +424,27 @@ describe('Member Data attributes:', () => {
           method: 'POST',
         },
       );
+    });
+
+    test('shows an error instead of crashing when no paid tier is available', async () => {
+      const { event, errorEl, siteUrl, member, element } = getMockData();
+      const site = FixturesSite.singleTier.onlyFreePlan;
+      const clickHandler = () => {};
+      element.addEventListener = vi.fn();
+
+      window.fetch.mockImplementation((url) => {
+        if (url.includes('api/session')) {
+          return Promise.resolve({ ok: true, text: async () => 'session-identity' });
+        }
+        return Promise.resolve({ ok: false });
+      });
+
+      await planClickHandler({ event, errorEl, siteUrl, clickHandler, site, member, el: element });
+
+      const [, checkoutOptions] = window.fetch.mock.calls[1];
+      expect(JSON.parse(checkoutOptions.body)).not.toHaveProperty('tierId');
+      expect(errorEl.innerText).toBe('Could not create Stripe checkout session');
+      expect(element.addEventListener).toHaveBeenCalledWith('click', clickHandler);
     });
   });
 
@@ -881,7 +902,7 @@ describe('Portal Data attributes:', () => {
     });
 
     // Mock window.location
-    let locationMock = vi.fn();
+    const locationMock = vi.fn();
     delete window.location;
     window.location = { assign: locationMock };
     window.location.href = new URL('https://portal.localhost').href;
@@ -1010,7 +1031,7 @@ describe('Portal Data attributes:', () => {
                 <button data-portal="offers/${FixtureOffer.id}">Offer</button>
             `;
 
-      let { ghostApi, popupFrame, ...utils } = await setup({
+      const { ghostApi, popupFrame, ...utils } = await setup({
         site: FixturesSite.singleTier.basic,
         member: FixtureMember.paid,
         showPopup: false,

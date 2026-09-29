@@ -222,7 +222,7 @@ describe('Signin', () => {
     });
 
     test('with only free plan', async () => {
-      let {
+      const {
         ghostApi,
         popupFrame,
         triggerButtonFrame,
@@ -351,7 +351,7 @@ describe('Signin', () => {
     });
 
     test('with only free plan available', async () => {
-      let {
+      const {
         ghostApi,
         popupFrame,
         triggerButtonFrame,

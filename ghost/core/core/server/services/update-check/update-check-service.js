@@ -19,10 +19,10 @@ function normalizeNotifications(response) {
   if (!response) {
     return [];
   }
-  if (_.isArray(response.notifications)) {
+  if (Array.isArray(response.notifications)) {
     return response.notifications;
   }
-  if (_.isArray(response)) {
+  if (Array.isArray(response)) {
     return response;
   }
   if (response.messages) {
@@ -230,7 +230,7 @@ class UpdateCheckService {
    * @return {Promise}
    */
   async updateCheckResponse(response) {
-    let notificationGroups = (this.config.notificationGroups || []).concat(['all']);
+    const notificationGroups = (this.config.notificationGroups || []).concat(['all']);
 
     debug('Notification Groups', notificationGroups);
     debug('Response Update Check Service', response);
@@ -305,9 +305,7 @@ class UpdateCheckService {
         status: message.status || 'alert',
         type: message.type || 'info',
         id: message.id,
-        dismissible: Object.prototype.hasOwnProperty.call(message, 'dismissible')
-          ? message.dismissible
-          : true,
+        dismissible: Object.hasOwn(message, 'dismissible') ? message.dismissible : true,
         top: !!message.top,
         message: message.content,
       };

@@ -8,7 +8,6 @@ export default class ApplicationController extends Controller {
     @service billing;
     @service router;
     @service session;
-    @service settings;
     @service ui;
     @service upgradeStatus;
     @service ghostPaths;
@@ -41,7 +40,7 @@ export default class ApplicationController extends Controller {
     }
 
     get ownerUserNameOrEmail() {
-        let user = this.store.peekAll('user').findBy('isOwnerOnly', true);
+        const user = this.store.peekAll('user').findBy('isOwnerOnly', true);
 
         if (user) {
             if (user.name) {

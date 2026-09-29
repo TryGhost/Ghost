@@ -34,7 +34,7 @@ module.exports = function (...attrs) {
 
   const timeNow = moment().tz(timezone);
   // Our date might be user input
-  let testDateInput = Date.parse(date);
+  const testDateInput = Date.parse(date);
   let dateMoment;
   if (isNaN(testDateInput) === false) {
     dateMoment = moment.parseZone(date);

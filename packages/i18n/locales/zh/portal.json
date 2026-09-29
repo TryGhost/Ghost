@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "可省{highestYearlyDiscount}%",
     "{amount} days free": "{amount}天免费",
     "{amount} off": "减免{amount}",

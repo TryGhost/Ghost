@@ -63,7 +63,7 @@ async function testPagination(skippedTypes, postId, totalExpected, limit) {
         'Expected total of ' + totalExpected + ' at limit ' + limit,
       );
     });
-  let previousPage = firstPage;
+  const previousPage = firstPage;
   let page = 1;
 
   const allEvents = previousPage.events;
@@ -72,8 +72,8 @@ async function testPagination(skippedTypes, postId, totalExpected, limit) {
     page += 1;
 
     // Calculate next page
-    let lastId = previousPage.events[previousPage.events.length - 1].data.id;
-    let lastCreatedAt = moment(
+    const lastId = previousPage.events[previousPage.events.length - 1].data.id;
+    const lastCreatedAt = moment(
       previousPage.events[previousPage.events.length - 1].data.created_at,
     ).format('YYYY-MM-DD HH:mm:ss');
 
