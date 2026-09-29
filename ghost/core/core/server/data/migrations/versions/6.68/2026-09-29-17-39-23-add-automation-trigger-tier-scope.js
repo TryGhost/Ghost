@@ -12,8 +12,8 @@ const {
  * - Creates `automations.trigger_tier_scope` column with backfill
  * - Creates the `automation_trigger_tiers` table
  *
- * Databases should either have no automations, or exactly two.
- * That makes this migration simpler.
+ * Databases should have at most two automations, making this migration
+ * simpler.
  */
 module.exports = combineNonTransactionalMigrations(
   createAddColumnMigration('automations', 'trigger_tier_scope', {
