@@ -1,7 +1,7 @@
 import {Response} from 'miragejs';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentRouteName, fillIn, find, findAll, visit} from '@ember/test-helpers';
+import {blur, click, fillIn, find, findAll, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -20,37 +20,6 @@ describe('Acceptance: Error Handling', function () {
     setupMirage(hooks);
 
     describe('VersionMismatch errors', function () {
-        describe('logged in', function () {
-            beforeEach(async function () {
-                const role = this.server.create('role', {name: 'Administrator'});
-                this.server.create('user', {roles: [role]});
-
-                await authenticateSession();
-            });
-
-            // TODO: can't replicate this with the Lexical editor... skip for now
-            it.skip('displays an alert and disables navigation when saving', async function () {
-                this.server.createList('post', 3);
-
-                // mock the post save endpoint to return version mismatch
-                this.server.put('/posts/:id', versionMismatchResponse);
-
-                await visit('/posts');
-                await click('.posts-list li:nth-of-type(1) a'); // select first draft post (otherwise no automatic saving on blur)
-                await fillIn('[data-test-editor-title-input]', 'Updated post');
-                await blur('[data-test-editor-title-input]');
-
-                // has the refresh to update alert
-                expect(findAll('.gh-alert').length).to.equal(1);
-                expect(find('.gh-alert').textContent).to.match(/refresh/);
-
-                // try navigating back to the content list
-                await click('[data-test-link="posts"]');
-
-                expect(currentRouteName()).to.equal('lexical-editor.edit');
-            });
-        });
-
         describe('logged out', function () {
             it('displays alert', async function () {
                 this.server.post('/session', versionMismatchResponse);

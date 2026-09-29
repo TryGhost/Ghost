@@ -1715,9 +1715,6 @@ importers:
       ember-could-get-used-to-this:
         specifier: 1.0.1
         version: 1.0.1(supports-color@10.2.2)
-      ember-css-transitions:
-        specifier: 4.4.1
-        version: 4.4.1(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)
       ember-data:
         specifier: 3.24.0
         version: 3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2)
@@ -1739,9 +1736,6 @@ importers:
       ember-in-viewport:
         specifier: 4.1.0
         version: 4.1.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@4.1.10)(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3))
-      ember-infinity:
-        specifier: 2.3.0
-        version: 2.3.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@4.1.10)(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3))
       ember-keyboard:
         specifier: 8.2.1
         version: 8.2.1(@babel/core@7.29.7(supports-color@10.2.2))(@ember/test-helpers@2.9.6(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)
@@ -13707,9 +13701,6 @@ packages:
     resolution: {integrity: sha512-+BXc8NbJJ/DoUXZk4e3qeRvADw9ThMEW7jm+Nz+QX9jRY/5QYodnFeUEfsC4Sw3Ti2m1+RzI2Lyq0QWpgOqFYg==}
     engines: {node: 8.* || >= 10.*}
 
-  ember-css-transitions@4.4.1:
-    resolution: {integrity: sha512-QSUc+bDNMU/3vbJZuSWz14a4V/wQbHDq/zY37pzqzZRMXBANGwpjy+KXTyWqDqi1XeXvnMf2BX/nbjYSC3ycbg==}
-
   ember-data@3.24.0:
     resolution: {integrity: sha512-DdoJ573ucwXBBx3mR3eYwSCBChDGv3cDWaCu4x6lGmvHjropvoOVJmuXDhCuxtI17Zly7ATlXarfPZdmPA95QQ==}
     engines: {node: 10.* || >= 12.*}
@@ -13788,10 +13779,6 @@ packages:
   ember-in-viewport@4.1.0:
     resolution: {integrity: sha512-3y6qWXuJPPc6vX2GfxWgtr+sDjb+bdZF9babstr0lTd8t8c1b42gJ13GaJqlylZIyZz2dEXFCimX9WAeudPv9g==}
     engines: {node: 12.* || 14.* || >= 16}
-
-  ember-infinity@2.3.0:
-    resolution: {integrity: sha512-WDTBtL04g7y3OaCHvRRaGl9c6ZKDpm1rpFVnlWWBC4GZY7kDDs4WxTbngdHjWZb9BRJ3u0ltLEe3ncYDioiSyA==}
-    engines: {node: 10.* || >= 12.*}
 
   ember-inflector@3.0.1:
     resolution: {integrity: sha512-fngrwMsnhkBt51KZgwNwQYxgURwV4lxtoHdjxf7RueGZ5zM7frJLevhHw7pbQNGqXZ3N+MRkhfNOLkdDK9kFdA==}
@@ -34769,17 +34756,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-css-transitions@4.4.1(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2):
-    dependencies:
-      '@ember/test-waiters': 3.1.0(supports-color@10.2.2)
-      '@embroider/addon-shim': 1.10.3(supports-color@10.2.2)
-      decorator-transforms: 2.3.2(@babel/core@7.29.7(supports-color@10.2.2))
-      ember-modifier: 4.2.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - ember-source
-      - supports-color
-
   ember-data@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
       '@ember-data/adapter': 3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2)
@@ -34962,19 +34938,6 @@ snapshots:
       fast-deep-equal: 2.0.1
       intersection-observer-admin: 0.3.4
       raf-pool: 0.1.4
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@glint/template'
-      - ember-source
-      - supports-color
-      - webpack
-
-  ember-infinity@2.3.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@4.1.10)(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3)):
-    dependencies:
-      '@ember/render-modifiers': 2.1.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)
-      ember-cli-babel: 7.26.11(supports-color@10.2.2)
-      ember-cli-htmlbars: 5.7.2(supports-color@10.2.2)
-      ember-in-viewport: 4.1.0(@babel/core@7.29.7(supports-color@10.2.2))(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(supports-color@10.2.2)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@4.1.10)(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3))
     transitivePeerDependencies:
       - '@babel/core'
       - '@glint/template'

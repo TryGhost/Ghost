@@ -247,14 +247,6 @@ export default class StateBridgeService extends Service.extend(Evented) {
         });
     }
 
-    // The gift-link modal lives in React. Ember surfaces (the posts/pages
-    // context menu) ask React to open it for a given post/page rather than
-    // duplicating the modal — see subscribeOpenGiftLinkModal on the React side.
-    @action
-    triggerOpenGiftLinkModal({id, resource}) {
-        this.trigger('openGiftLinkModal', {id, resource});
-    }
-
     // A billing search result for the billing route already showing is a no-op
     // Ember transition, so React hands the sub-route to the billing app directly
     @action

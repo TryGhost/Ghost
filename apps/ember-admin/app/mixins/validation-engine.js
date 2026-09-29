@@ -1,5 +1,4 @@
 // TODO: remove usage of Ember Data's private `Errors` class when refactoring validations
-import CustomViewValidator from 'ghost-admin/validators/custom-view';
 import DS from 'ember-data'; // eslint-disable-line
 import IntegrationValidator from 'ghost-admin/validators/integration';
 import InviteUserValidator from 'ghost-admin/validators/invite-user';
@@ -54,7 +53,6 @@ export default Mixin.create({
         this.set('hasValidated', emberA());
 
         this.validators = {
-            customView: CustomViewValidator,
             inviteUser: InviteUserValidator,
             navItem: NavItemValidator,
             tierBenefitItem: TierBenefitItemValidator,
