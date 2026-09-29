@@ -68,7 +68,9 @@ export class PostsPage extends AdminPage {
 
   async waitForPageToFullyLoad() {
     await this.page.waitForURL(this.pageUrl);
-    await this.postsList.waitFor({ state: 'visible' });
+    // The screen heading, not the list: with no posts the screen renders an
+    // empty state instead of the list.
+    await this.pageTitle.waitFor({ state: 'visible' });
   }
 
   /**
