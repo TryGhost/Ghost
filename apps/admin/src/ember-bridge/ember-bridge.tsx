@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useState, useSyncExternalStore } fr
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { EmberContext } from './ember-context';
+import { getListReturnNavigationState } from '@/shared/virtual-list';
 import type { EmberNotificationsHost } from './ember-notifications-host';
 
 export interface EmberBridge {
@@ -16,6 +17,7 @@ export type StateBridgeEventMap = {
   routeChange: RouteChangeEvent;
   openGiftLinkModal: OpenGiftLinkModalEvent;
   featureFlagsChange: undefined;
+  restoreListState: { path: string };
 };
 
 export type AdminThemeMode = 'light' | 'dark' | 'system';
@@ -233,6 +235,32 @@ export function useEmberAuthSync() {
 
     return onEmberStateBridgeEvent('emberAuthChange', handleEmberAuthChange);
   }, [queryClient]);
+}
+
+/** Ember writes the destination hash before asking React to restore list state. */
+export function useEmberListReturnSync() {
+  useEffect(
+    () =>
+      onEmberStateBridgeEvent('restoreListState', ({ path }) => {
+        const returnState = getListReturnNavigationState(path);
+        if (!returnState) {
+          return;
+        }
+        const state = window.history.state as Record<string, unknown> | null;
+        const userState = state?.usr;
+        window.history.replaceState(
+          {
+            ...state,
+            usr: {
+              ...(userState && typeof userState === 'object' ? userState : {}),
+              ...returnState,
+            },
+          },
+          '',
+        );
+      }),
+    [],
+  );
 }
 
 export function useSubscriptionStatus() {

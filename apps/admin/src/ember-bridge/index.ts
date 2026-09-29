@@ -6,6 +6,7 @@ export { ForceUpgradeGuard } from './force-upgrade-guard';
 export { useEmberNotificationsHost } from './ember-notifications-host';
 export {
   useEmberAuthSync,
+  useEmberListReturnSync,
   useEmberDataSync,
   useEmberFeatureFlag,
   useSidebarVisibility,

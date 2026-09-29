@@ -88,7 +88,7 @@ export function PostHistorySection({
           restoreError={
             (state.kind === 'error' && state.error.kind === 'session-invalid') ||
             state.kind === 'reauth-pending'
-              ? 'Your session expired. Sign in again in a new tab, then try restoring again.'
+              ? 'Your session expired. Restore again to sign in and continue.'
               : undefined
           }
           revisions={revisions}
