@@ -88,7 +88,9 @@ describe('permission read session expiry', () => {
   });
 
   it('leaves an expired session to the caller when a query opts out', async () => {
-    const { useTestQuery, createTestQueryClient, renderHookWithProviders } = await loadModules();
+    const { confirmSession, useTestQuery, createTestQueryClient, renderHookWithProviders } =
+      await loadModules();
+    await confirmSession();
 
     await withMockFetch(unauthorized, async (mock) => {
       const { result } = renderHookWithProviders(() => useTestQuery(optedOut), {
@@ -103,8 +105,9 @@ describe('permission read session expiry', () => {
   });
 
   it('leaves an expired session to the caller when an infinite query opts out', async () => {
-    const { useTestInfiniteQuery, createTestQueryClient, renderHookWithProviders } =
+    const { confirmSession, useTestInfiniteQuery, createTestQueryClient, renderHookWithProviders } =
       await loadModules();
+    await confirmSession();
 
     await withMockFetch(unauthorized, async (mock) => {
       const { result } = renderHookWithProviders(() => useTestInfiniteQuery(optedOut), {
@@ -119,8 +122,9 @@ describe('permission read session expiry', () => {
   });
 
   it('leaves an expired session to the caller when a query by id opts out', async () => {
-    const { useTestQueryWithId, createTestQueryClient, renderHookWithProviders } =
+    const { confirmSession, useTestQueryWithId, createTestQueryClient, renderHookWithProviders } =
       await loadModules();
+    await confirmSession();
 
     await withMockFetch(unauthorized, async (mock) => {
       const { result } = renderHookWithProviders(() => useTestQueryWithId('abc123', optedOut), {
