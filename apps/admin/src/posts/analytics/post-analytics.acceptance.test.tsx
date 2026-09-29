@@ -242,6 +242,8 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     await expect.element(page.getByText(/500 of 1,000/)).toBeVisible();
     await expect.element(page.getByText('Your newsletter is being sent')).toBeVisible();
+    await expect.element(page.getByText(/^Published on your site on/)).toBeVisible();
+    await expect.element(page.getByText(/^Published and sent/)).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
 
     await postAnalyticsScreen.newsletterTab().click();
@@ -268,6 +270,8 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText('1,000').first()).toBeVisible();
     await expect.element(page.getByText('400').first()).toBeVisible();
     await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeEnabled();
+    await expect.element(page.getByText(/^Published and sent to 1,000 members on/)).toBeVisible();
+    await expect.element(page.getByText(/^Published on your site on/)).not.toBeInTheDocument();
   });
 
   it('shows only recipient counts until a sending estimate is available', async () => {
@@ -608,6 +612,8 @@ describe('Post analytics overview', () => {
     });
 
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
+    // The recipient count in the byline is part of the improveSendingUI work.
+    await expect.element(page.getByText(/^Published and sent on/)).toBeVisible();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
     const overviewKpiRequestCount = kpisApi.requests.length;
 
