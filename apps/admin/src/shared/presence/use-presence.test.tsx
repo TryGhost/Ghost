@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { usePresence } from './use-presence';
+import { usePresence, usePresenceEnabled } from './use-presence';
+import { useVisibleResources } from './use-visible-resources';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { z } from 'zod';
 
@@ -46,7 +47,10 @@ describe('presence transport', () => {
     mocks.fetch.mockReset().mockResolvedValue({ presence: [{ events: [event], serverTime: 0 }] });
     Object.defineProperty(document, 'hidden', { configurable: true, value: false });
   });
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
 
   it.each(['flag', 'capability'])('sends no requests without the %s', async (missing) => {
     if (missing === 'flag') {
@@ -54,8 +58,15 @@ describe('presence transport', () => {
     } else {
       mocks.supported = false;
     }
-    const hook = renderHook(() => usePresence([resource], 'me', resource));
+    const observer = vi.fn();
+    vi.stubGlobal('IntersectionObserver', observer);
+    const hook = renderHook(() => {
+      const enabled = usePresenceEnabled('me');
+      useVisibleResources({ current: null }, [resource], enabled);
+      return usePresence([resource], 'me', resource);
+    });
     await act(() => vi.advanceTimersByTimeAsync(60000));
+    expect(observer).not.toHaveBeenCalled();
     expect(mocks.fetch).not.toHaveBeenCalled();
     hook.unmount();
   });

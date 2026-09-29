@@ -42,9 +42,11 @@ export const controller = {
   poll: {
     headers: { cacheInvalidate: false },
     validation(frame: PresenceFrame) {
-      if (!bodySchema.safeParse(frame.data).success) {
+      const result = bodySchema.safeParse(frame.data);
+      if (!result.success) {
         throw new errors.ValidationError({ message: 'Invalid presence request.' });
       }
+      frame.data = result.data;
     },
     async permissions(frame: PresenceFrame) {
       if (!labs.isSet('editorPresence')) {

@@ -73,6 +73,7 @@ class AdapterCacheRedis extends CacheBase {
     this._keyPrefix = config.keyPrefix || '';
     this._featureName = config.featureName;
     this._prefixHashInitInFlight = null;
+    this._timedOutEventOperations = 0;
     this.redisClient.on('error', this.handleRedisError);
   }
 
@@ -380,8 +381,9 @@ class AdapterCacheRedis extends CacheBase {
 
   // Append, trim and expire in one atomic operation, including on Redis Cluster.
   async appendEvent(key, value, timestamp, ttl, limit) {
-    return await this._eventOperation(async () => {
+    return await this._eventOperation(async (checkDeadline) => {
       const internalKey = await this._buildKey(key);
+      checkDeadline();
       return await this.redisClient.eval(
         `
       redis.call('ZADD', KEYS[1], ARGV[1], ARGV[2])
@@ -402,38 +404,64 @@ class AdapterCacheRedis extends CacheBase {
   }
 
   async readEvents(key, since) {
-    return await this._eventOperation(async () =>
-      this.redisClient.zrangebyscore(await this._buildKey(key), since, '+inf'),
-    );
+    return await this._eventOperation(async (checkDeadline) => {
+      const internalKey = await this._buildKey(key);
+      checkDeadline();
+      return this.redisClient.zrangebyscore(internalKey, since, '+inf');
+    });
   }
 
   async readEventsMany(keys, since) {
     if (keys.length === 0) {
       return [];
     }
-    return await this._eventOperation(async () => {
+    return await this._eventOperation(async (checkDeadline) => {
       // Resolve once per batch so resets still take effect on the next read.
       const prefix = await this.keyPrefix();
-      return await Promise.all(
+      checkDeadline();
+      const results = await Promise.allSettled(
         keys.map((key) => this.redisClient.zrangebyscore(`${prefix}${key}`, since, '+inf')),
       );
+      return results.map((result) => {
+        if (result.status === 'rejected') {
+          throw result.reason;
+        }
+        return result.value;
+      });
     });
   }
 
   async _eventOperation(operation) {
-    // Fail promptly if Redis is unavailable; each replica must use the shared store.
+    const timeoutError = () =>
+      new errors.InternalServerError({ message: 'Cache event operation timed out' });
+    if (this._timedOutEventOperations > 0) {
+      throw timeoutError();
+    }
+    let timedOut = false;
     let timer;
+    const pending = Promise.resolve().then(() =>
+      operation(() => {
+        if (timedOut) {
+          throw timeoutError();
+        }
+      }),
+    );
+    // Already-sent commands cannot be cancelled on a shared Redis connection.
+    // Stop accepting more event work until timed-out operations settle.
+    const settled = pending.finally(() => {
+      if (timedOut) {
+        this._timedOutEventOperations -= 1;
+      }
+    });
     try {
       return await Promise.race([
-        operation(),
+        settled,
         new Promise((resolve, reject) => {
-          timer = setTimeout(
-            () =>
-              reject(
-                new errors.InternalServerError({ message: 'Cache event operation timed out' }),
-              ),
-            1000,
-          );
+          timer = setTimeout(() => {
+            timedOut = true;
+            this._timedOutEventOperations += 1;
+            reject(timeoutError());
+          }, 1000);
         }),
       ]);
     } finally {

@@ -17,8 +17,8 @@ export const bodySchema = z.object({ presence: z.array(requestSchema).length(1) 
 const userSchema = actorSchema.extend({ roles: z.array(z.object({ name: z.string() })) });
 export type PresenceUser = z.infer<typeof userSchema>;
 export type PresenceFrame = {
-  data: unknown;
-  options: { context: unknown };
+  data: z.infer<typeof bodySchema>;
+  options: { context: z.infer<typeof contextSchema> };
   user: { load: (relations: string[]) => Promise<unknown>; toJSON: () => unknown };
   setHeader: (name: string, value: string) => void;
 };
@@ -38,12 +38,12 @@ export function createPresencePoll({ getService, findResources, canEdit }: Depen
         message: 'Presence is unavailable with this cache adapter.',
       });
     }
-    const context = contextSchema.parse(frame.options.context);
+    const context = frame.options.context;
     if (!(await service.allowPoll(context.user))) {
       frame.setHeader('Retry-After', '10');
       throw new errors.TooManyRequestsError({ message: 'Too many presence requests.' });
     }
-    const request = bodySchema.parse(frame.data).presence[0];
+    const request = frame.data.presence[0];
     await frame.user.load(['roles']);
     const user = userSchema.parse(frame.user.toJSON());
     const posts = z.array(resourceSchema).parse(await findResources(request.resources, user));

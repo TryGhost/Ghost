@@ -20,7 +20,7 @@ function setup() {
         {
           resources: [resource],
           sessionId: randomUUID(),
-          editing: { ...resource, action: 'editing' },
+          editing: { ...resource, action: 'editing' as const },
         },
       ],
     },

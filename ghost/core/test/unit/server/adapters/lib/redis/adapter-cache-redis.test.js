@@ -126,6 +126,34 @@ describe('Adapter Cache Redis', function () {
     sinon.assert.calledTwice(client.get);
   });
 
+  it('stops adding event work after a timeout and recovers when pending work settles', async function () {
+    const clock = sinon.useFakeTimers();
+    const cacheStub = createCacheStub({ keyPrefix: 'presence:' });
+    const client = cacheStub.store.getClient();
+    client.zrangebyscore = sinon.stub().resolves(['opened']);
+    let finishPrefix;
+    client.get
+      .withArgs('presence:prefix_hash')
+      .onFirstCall()
+      .returns(
+        new Promise((resolve) => {
+          finishPrefix = resolve;
+        }),
+      );
+    const cache = new RedisCache({ cache: cacheStub, keyPrefix: 'presence:' });
+
+    const failedRead = assert.rejects(cache.readEventsMany(['post'], 0), /timed out/);
+    await clock.tickAsync(1000);
+    await failedRead;
+    await assert.rejects(cache.readEventsMany(['post'], 0), /timed out/);
+    sinon.assert.calledOnce(client.get);
+
+    finishPrefix(PREFIX_HASH);
+    await clock.tickAsync(0);
+    sinon.assert.notCalled(client.zrangebyscore);
+    assert.deepEqual(await cache.readEventsMany(['post'], 0), [['opened']]);
+  });
+
   describe('get', function () {
     it('can get a value from the cache', async function () {
       const cacheStub = createCacheStub();

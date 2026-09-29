@@ -5,10 +5,14 @@ import type { PresenceResource } from './use-presence';
 export function useVisibleResources(
   root: RefObject<HTMLElement | null>,
   resources: PresenceResource[],
+  enabled: boolean,
 ) {
   const key = JSON.stringify(resources);
   const [visible, setVisible] = useState<PresenceResource[]>([]);
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     const byId = new Map(resources.map((resource) => [resource.id, resource]));
     const ids = new Set<string>();
     let debounce: ReturnType<typeof setTimeout> | undefined;
@@ -41,6 +45,8 @@ export function useVisibleResources(
       clearTimeout(debounce);
     };
     // Recreate the observer only when the resources change.
-  }, [root, key]);
-  return visible.filter((resource) => resources.some((current) => current.id === resource.id));
+  }, [root, key, enabled]);
+  return enabled
+    ? visible.filter((resource) => resources.some((current) => current.id === resource.id))
+    : [];
 }

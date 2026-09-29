@@ -6,8 +6,8 @@ import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { startActivityPoller } from './activity-poller';
+import { mergeLiveEvents, type LiveEvent } from './live-events';
 
-const resourceSchema = z.object({ id: z.string(), type: z.enum(['post', 'page']) });
 const eventSchema = z.object({
   eventId: z.string(),
   userId: z.string(),
@@ -30,7 +30,7 @@ const responseSchema = z.object({
     .length(1),
 });
 export type PresenceEvent = z.infer<typeof eventSchema>;
-export type PresenceResource = z.infer<typeof resourceSchema>;
+export type PresenceResource = { id: string; type: 'post' | 'page' };
 const EMPTY_EVENTS: PresenceEvent[] = [];
 // Keep the ID across route changes. Avoid sessionStorage: duplicated tabs copy it.
 let tabSessionId: string | undefined;
@@ -46,18 +46,23 @@ function getSessionId() {
   return tabSessionId;
 }
 
+export function usePresenceEnabled(currentUserId: string | undefined) {
+  const flag = useFeatureFlag('editorPresence');
+  const { data: config } = useBrowseConfig();
+  return flag && config?.config.editorPresence === true && Boolean(currentUserId);
+}
+
 export function usePresence(
   resources: PresenceResource[],
   currentUserId: string | undefined,
   editing?: PresenceResource,
 ) {
-  const flag = useFeatureFlag('editorPresence');
-  const { data: config } = useBrowseConfig();
-  const enabled = flag && config?.config.editorPresence === true && Boolean(currentUserId);
+  const enabled = usePresenceEnabled(currentUserId);
   const fetchApi = useFetchApi();
   const [events, setEvents] = useState<PresenceEvent[]>(EMPTY_EVENTS);
   const resourceKey = JSON.stringify(resources);
-  const editingKey = JSON.stringify(editing ?? null);
+  const editingId = editing?.id;
+  const editingType = editing?.type;
   const resourcesRef = useRef(resources);
   resourcesRef.current = resources;
   const startRef = useRef<(() => void) | undefined>(undefined);
@@ -66,11 +71,11 @@ export function usePresence(
     if (!enabled) {
       return;
     }
-    const current = resourceSchema.nullable().parse(JSON.parse(editingKey));
+    const current = editingId && editingType ? { id: editingId, type: editingType } : undefined;
     const sessionId = getSessionId();
     let opened = false;
     let expire: ReturnType<typeof setTimeout> | undefined;
-    let live: { event: PresenceEvent; expiresAt: number }[] = [];
+    let live: LiveEvent[] = [];
     const updateEvents = (next: PresenceEvent[]) =>
       setEvents((previous) => (dequal(previous, next) ? previous : next));
     const clear = () => {
@@ -92,7 +97,7 @@ export function usePresence(
     const options = {
       clear,
       async poll(isCurrent: () => boolean) {
-        const window = z.array(resourceSchema).parse(resourcesRef.current);
+        const window = resourcesRef.current;
         if (window.length === 0) {
           return;
         }
@@ -118,22 +123,7 @@ export function usePresence(
           ).presence[0];
           if (isCurrent()) {
             opened = true;
-            const fresh = response.events.filter(
-              (event) =>
-                event.action !== 'saved' &&
-                event.userId !== currentUserId &&
-                event.ts > response.serverTime - 30000,
-            );
-            // Account for clock differences so avatars expire at the right time.
-            const offset = Date.now() - response.serverTime;
-            const requested = new Set(window.map(({ type, id }) => `${type}:${id}`));
-            // Keep fresh avatars for rows scrolled out of this request.
-            live = [
-              ...live.filter(
-                ({ event }) => !requested.has(`${event.resourceType}:${event.resourceId}`),
-              ),
-              ...fresh.map((event) => ({ event, expiresAt: event.ts + offset + 30000 })),
-            ];
+            live = mergeLiveEvents(live, response, window, currentUserId, Date.now());
             refresh();
           }
           return true;
@@ -159,7 +149,7 @@ export function usePresence(
       stop?.();
       clearTimeout(expire);
     };
-  }, [enabled, fetchApi, editingKey, currentUserId]);
+  }, [enabled, fetchApi, editingId, editingType, currentUserId]);
 
   useEffect(() => {
     startRef.current?.();
