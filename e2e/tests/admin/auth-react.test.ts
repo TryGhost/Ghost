@@ -116,14 +116,15 @@ for (const { screens, authReact } of [
       const loginPage = new LoginPage(page);
       await loginPage.logout();
 
+      // Leave the admin first, so opening the link is a cold load.
+      await page.goto('about:blank');
       await page.goto('/ghost/#/posts?type=draft');
-      await page.reload();
 
       await expect(loginPage.signInButton).toBeVisible();
       await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
 
-      await new PostsPage(page).waitForPageToFullyLoad();
-      expect(page.url()).toContain('type=draft');
+      await new PostsPage(page).waitForList();
+      await expect(page).toHaveURL(/#\/posts\/?\?type=draft$/);
     });
   });
 }

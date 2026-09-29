@@ -142,3 +142,48 @@ it('sends the new owner to sign in when signing in right after setup fails', asy
   await expect.element(authScreen.signInButton()).toBeVisible();
   expect(setupApi.requests).toHaveLength(1);
 });
+
+it('moves on to sign in when the server reports the site is already set up', async () => {
+  let setupDone = false;
+  fakeAdminEndpoint('GET', '/authentication/setup/', () => ({ setup: [{ status: setupDone }] }));
+  fakeAdminEndpoint(
+    'POST',
+    '/authentication/setup/',
+    () => {
+      setupDone = true;
+      return {
+        errors: [{ type: 'NoPermissionError', message: 'Setup has already been completed.' }],
+      };
+    },
+    { status: 403 },
+  );
+  await renderAdminApp('/setup', signedOut({ authReact: true }));
+
+  await authScreen.siteTitleInput().fill('The Daily Awesome');
+  await authScreen.fullNameInput().fill('Jamie Larson');
+  await authScreen.emailInput().fill('jamie@example.com');
+  await authScreen.passwordInput().fill('correct horse battery');
+  await authScreen.startPublishingButton().click();
+
+  await expect.element(authScreen.text('Setup has already been completed.')).toBeVisible();
+  await expect.poll(currentRoute).toBe('/signin');
+});
+
+it('lets the owner submit again when neither setup nor the server answered', async () => {
+  fakeSetupStatus({ status: false });
+  fakeAdminEndpoint('POST', '/authentication/setup/', plainText('<html>Bad Gateway</html>'), {
+    status: 502,
+    contentType: 'text/html',
+  });
+  await renderAdminApp('/setup', signedOut({ authReact: true }));
+
+  await authScreen.siteTitleInput().fill('The Daily Awesome');
+  await authScreen.fullNameInput().fill('Jamie Larson');
+  await authScreen.emailInput().fill('jamie@example.com');
+  await authScreen.passwordInput().fill('correct horse battery');
+  await authScreen.startPublishingButton().click();
+
+  await expect.element(authScreen.text('There was a problem on the server.')).toBeVisible();
+  await expect.element(authScreen.startPublishingButton()).toBeEnabled();
+  expect(currentRoute()).toBe('/setup');
+});

@@ -8,7 +8,7 @@ export default class SignoutRoute extends AuthenticatedRoute {
     // React signs out when it owns the auth screens; a second DELETE here
     // would race its reload.
     beforeModel(transition) {
-        if (this.feature.authReact) {
+        if (this.feature.isAuthReact()) {
             transition.abort();
             return;
         }

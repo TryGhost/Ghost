@@ -15,7 +15,7 @@ export default class SetupRoute extends Route {
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
-        if (this.feature.authReact) {
+        if (this.feature.isAuthReact()) {
             transition.abort();
             return;
         }

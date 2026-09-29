@@ -6,7 +6,7 @@ export default class ResetRoute extends UnauthenticatedRoute {
     @service session;
 
     beforeModel(transition) {
-        if (this.feature.authReact) {
+        if (this.feature.isAuthReact()) {
             transition.abort();
             return;
         }

@@ -1,5 +1,5 @@
 import { type ComponentProps, type FormEvent, useState } from 'react';
-import { Navigate } from '@tryghost/admin-x-framework';
+import { Navigate, useNavigate } from '@tryghost/admin-x-framework';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Field, FieldError, FieldLabel, GhostOrb, Input } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
@@ -27,7 +27,7 @@ export default function Setup() {
   if (status?.isSetup) {
     return <Navigate to="/signin" replace />;
   }
-  return <SetupForm prefill={status} onCreated={refetch} />;
+  return <SetupForm prefill={status} recheckSetup={refetch} />;
 }
 
 const problemWith = (
@@ -61,13 +61,14 @@ const FIELDS: SetupField[] = ['blogTitle', 'name', 'email', 'password'];
 
 function SetupForm({
   prefill,
-  onCreated,
+  recheckSetup,
 }: {
   prefill?: SetupStatus;
   /** Re-reads the setup status, which sends a now set-up site on to sign in. */
-  onCreated: () => Promise<unknown>;
+  recheckSetup: () => Promise<unknown>;
 }) {
   const authClient = useAuthClient();
+  const navigate = useNavigate();
   const { data: siteData } = useBrowseSite({ defaultErrorHandler: false });
 
   const [values, setValues] = useState<SetupValues>({
@@ -109,7 +110,6 @@ function SetupForm({
 
     setSubmitState('running');
     const { blogTitle, name, email, password } = values;
-    let created = false;
     try {
       const { error: createError } = await authClient.setup.create({
         blogTitle,
@@ -117,18 +117,19 @@ function SetupForm({
         email,
         password,
       });
-      if (createError) {
-        if (createError.status === 422) {
-          setFlowError(createError.message ?? '');
-        } else {
-          toast.error(createError.message ?? 'An unexpected error occurred, please try again.', {
-            id: 'setup',
-          });
-        }
+      if (createError?.status === 422) {
+        setFlowError(createError.message ?? '');
         setSubmitState('idle');
         return;
       }
-      created = true;
+      if (createError) {
+        toast.error(createError.message ?? 'An unexpected error occurred, please try again.', {
+          id: 'setup',
+        });
+        await recheckSetup();
+        setSubmitState('idle');
+        return;
+      }
 
       const { data, error } = await authClient.signIn.email({ email, password });
       if (data && !('twoFactorRedirect' in data)) {
@@ -136,19 +137,20 @@ function SetupForm({
         return;
       }
       // The owner exists now, so what is left is signing in.
-      if (error) {
-        toast.error(error.message ?? 'There was a problem on the server.', { id: 'setup' });
+      await recheckSetup();
+      if (data) {
+        navigate('/signin/verify', { state: { twoFactorReason: data.twoFactorReason } });
+        return;
       }
-      await onCreated();
+      toast.error(error.message ?? 'There was a problem on the server.', { id: 'setup' });
+      setSubmitState('idle');
     } catch (error) {
       toast.error(describeUnexpectedError(error, 'There was a problem on the server.'), {
         id: 'setup',
       });
-      if (created) {
-        await onCreated();
-      } else {
-        setSubmitState('idle');
-      }
+      // The server may have finished setting up before the failure reached us.
+      await recheckSetup();
+      setSubmitState('idle');
     }
   };
 

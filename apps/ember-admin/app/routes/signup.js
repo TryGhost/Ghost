@@ -28,7 +28,7 @@ export default class SignupRoute extends UnauthenticatedRoute {
     @inject config;
 
     beforeModel(transition) {
-        if (this.feature.authReact) {
+        if (this.feature.isAuthReact()) {
             transition.abort();
             return;
         }

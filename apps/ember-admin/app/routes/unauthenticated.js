@@ -11,7 +11,7 @@ export default class UnauthenticatedRoute extends Route {
         // React owns the auth screens when the flag is on. Aborting keeps this
         // hidden app from checking setup or redirecting signed-in users over
         // the URL React is navigating.
-        if (this.feature.authReact) {
+        if (this.feature.isAuthReact()) {
             transition.abort();
             return;
         }

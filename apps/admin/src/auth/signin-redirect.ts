@@ -5,7 +5,7 @@ import { isAuthPath } from '@tryghost/admin-x-framework/helpers';
 const SIGNIN_REDIRECT_KEY = 'ghost-signin-redirect';
 
 const isRedirectTarget = (route: string | null): route is string =>
-  Boolean(route) && route !== '/' && !isAuthPath(route!);
+  Boolean(route) && route!.split('?')[0] !== '/' && !isAuthPath(route!);
 
 /** Remembers where a signed-out visitor was going; the latest attempt wins. */
 export function rememberSigninRedirect(route: string): void {

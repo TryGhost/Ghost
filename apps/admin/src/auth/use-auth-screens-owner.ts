@@ -21,10 +21,11 @@ export function useAuthScreensOwner(): AuthScreensOwner {
   if (!decisions.has(queryClient)) {
     if (enabledFlags.includes('authReact') || data?.site.authReact === true) {
       decisions.set(queryClient, 'react');
-    } else if (data || isError) {
+    } else if (data) {
       decisions.set(queryClient, 'ember');
     }
   }
 
-  return decisions.get(queryClient) ?? 'pending';
+  // A failed read defers to Ember without deciding, so a later success can still decide.
+  return decisions.get(queryClient) ?? (isError ? 'ember' : 'pending');
 }
