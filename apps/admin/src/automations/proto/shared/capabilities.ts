@@ -71,11 +71,22 @@ export const LANE_CAPABILITIES: Record<LaneId, LaneCapabilities> = {
     // member rather than sending to one.
     extraSteps: ['update_member'],
   },
-  // The sandboxes explore the SHAPE of the screen, not the feature set, so they
-  // stay on the shipping triggers — a sandbox picking up a future trigger for
-  // free would muddy what each one is actually asking about.
+  // The full-canvas sandbox explores the SHAPE of the screen, not the feature
+  // set, so it stays on the shipping triggers — picking up a future trigger for
+  // free would muddy what it's actually asking about.
   exploration: { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
-  'exploration-2': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
+  // The right-panel sandbox is future-leaning — a shape for the screen the
+  // roadmap is heading to — so it carries the future lane's full vocabulary,
+  // and every node design here has to hold up against all of it.
+  'exploration-2': {
+    triggers: [
+      ...MEMBERSHIP_TRIGGERS,
+      'label_added',
+      'paid_subscription_changed',
+      'segment_entered',
+    ],
+    extraSteps: ['update_member'],
+  },
 };
 
 export const laneOffersTrigger = (lane: LaneId, type: TriggerType): boolean =>

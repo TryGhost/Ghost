@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -10,6 +10,7 @@ import {
   Button,
   EmptyIndicator,
 } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
@@ -26,11 +27,11 @@ import {
 import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
-import { HEADER_ACTION, HeaderBar } from './header-bar';
+import { HEADER_ACTION, HeaderActions, HeaderBar } from './header-bar';
 import { LeftPanel } from './left-panel';
 import type { TriggerConfig } from '@/automations/proto/shared/trigger-config';
 import { CANVAS_SLOT_FILL, canvasTheme } from '@/automations/proto/canvas/flow-utils';
-import { EditCanvas } from '@/automations/proto/canvas/edit-canvas';
+import { EditCanvas } from './canvas/edit-canvas';
 import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 import { lanePath } from '@/automations/proto/shared/lanes';
@@ -45,6 +46,28 @@ import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
 // header and pane sit unbordered on the page and the canvas becomes an inset
 // window, so the flow is the only bounded object on screen.
 const LANE = 'exploration-2' as const;
+
+// Maximising, borrowed from the full-canvas lane and mirrored: the canvas is a
+// window inset on the page, and the sidebar toggle grows that window to fill
+// the screen — the header closing up above it, the pane narrowing beside it —
+// rather than a sheet sliding off the right. The header's identity half (the
+// way back and the name) comes back as HUD floating over the canvas once it's
+// settled; the actions never leave — they're in the top-right cluster, which
+// holds its place in both states. The pane stays on the right, where this lane
+// has it.
+//
+// One duration for every geometric part of it — the header's height, the
+// pane's width, the window's margin and radius — because they're one gesture.
+const CHROME_MS = 300;
+// 4px around 36px controls — the same inset as the top-right card, so both
+// corners are one material at one spacing. rounded-lg, a step rounder than the
+// controls' own rounded-md, so the corners nest instead of running parallel.
+const HUD_PILL = 'flex items-center rounded-lg bg-surface-elevated p-1 shadow-sm';
+// size="icon" is 36px, the number the zoom controls use.
+const HUD_CONTROL = 'size-9';
+// Mounted after the geometry has settled, so it fades in where it will stay
+// rather than riding the canvas as it grows.
+const HUD_ENTER = `animate-in duration-200 ${PROTO_EASE} fade-in-0 motion-reduce:animate-none`;
 
 type LiveStatus = 'active' | 'inactive';
 
@@ -200,6 +223,19 @@ const AutomationFloat: React.FC = () => {
   // The trigger stays editable here — nothing is fixed after creation.
   // The canvas is always editable, so hiding the pane is the user's call.
   const [paneCollapsed, setPaneCollapsed] = useState(false);
+  // The HUD mounts once the canvas has finished growing rather than fading in
+  // place — held in the layout the whole time, it would reserve room in the
+  // corners while the header was still there. On the way back it goes at once:
+  // what should be watched then is the header returning.
+  const [hudVisible, setHudVisible] = useState(false);
+  useEffect(() => {
+    if (!paneCollapsed) {
+      setHudVisible(false);
+      return;
+    }
+    const timer = setTimeout(() => setHudVisible(true), CHROME_MS);
+    return () => clearTimeout(timer);
+  }, [paneCollapsed]);
 
   // What's running vs what's being edited. Derived up here, before the early
   // return, because the leave guards below need to know whether anything differs
@@ -426,16 +462,24 @@ const AutomationFloat: React.FC = () => {
                 you're deciding whether to press it, and its absence is a worse way of
                 saying "nothing to commit" than the disabled state is: absent could mean
                 anything, disabled means the thing exists and has nothing to do. */}
+      {/* Primary once live, where pushing edits is the main job; secondary while
+          off, where Publish beside it is. See StatusAction. */}
       <Button
         className={HEADER_ACTION}
         disabled={!hasChanges}
-        variant="ghost"
+        variant={liveStatus === 'active' ? 'default' : 'secondary'}
         onClick={handlePublishClick}
       >
         {liveStatus === 'active' ? 'Update' : 'Save'}
       </Button>
     </>
   );
+
+  // The maximise gesture's timing — see CHROME_MS. The header's contents leave
+  // quickly and come back only once there's room for them again.
+  const chrome = `duration-300 ${PROTO_EASE} motion-reduce:transition-none`;
+  const leaves = 'opacity-0 duration-150';
+  const arrives = 'opacity-100 duration-200 [transition-delay:220ms]';
 
   return (
     // One column: the header row, then the canvas-and-rail row under it.
@@ -452,22 +496,24 @@ const AutomationFloat: React.FC = () => {
                     things act on, and the pane gets its own top row instead of starting
                     below a bar that was never about it. */}
         <div className="flex min-w-0 flex-1 flex-col">
-          {/* Always here. This lane keeps the post editor's shape, where the header
-                      is a fixed white bar and only the right rail comes and goes — the
-                      disappearing-chrome idea is what Exploration 1 is for, and having both
-                      lanes do it would waste one of them.
-                      
-                      Which takes a fair amount out: no height collapse, no fading contents,
-                      and no floating pills standing in for a header that isn't there. */}
-          <HeaderBar
-            actions={chromeActions}
-            canGoLive={canGoLive}
-            reserveToggle={paneCollapsed}
-            status={liveStatus}
-            title={automation.name}
-            onBack={goBack}
-            onStatusChange={handleStatusToggle}
-          />
+          {/* Closes by height rather than unmounting, so nothing below jumps a
+              row before the animation has started — a grid row from 1fr to 0fr,
+              which animates to a height nobody has to name. Its contents fade
+              first: a header cut in half on the way out is worse than one
+              that has already gone. */}
+          <div
+            className={cn(
+              'grid shrink-0 transition-[grid-template-rows]',
+              chrome,
+              paneCollapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]',
+            )}
+          >
+            <div className="overflow-hidden">
+              <div className={cn('transition-opacity', paneCollapsed ? leaves : arrives)}>
+                <HeaderBar title={automation.name} onBack={goBack} />
+              </div>
+            </div>
+          </div>
           {/* Canvas first in the row, so the pane sits to its RIGHT — this lane's whole
                   difference from Exploration 1 so far.
                 
@@ -490,18 +536,14 @@ const AutomationFloat: React.FC = () => {
               // completely different without either canvas knowing which one it is.
               CANVAS_SLOT_FILL,
               canvasTheme('exploration', Boolean(selectedRun)),
-              // Full bleed. No inset, no radius, no border, nothing to animate: this
-              // region simply IS the page under the header, the way the post editor's
-              // body is, and its edges are the window's edges.
-              //
-              // Exploration 1 does the opposite — a rounded window inset 24px from the
-              // page, which reads as an object you can maximise. That bet needs chrome
-              // that gets out of its way; this one needs chrome that stays put. Running
-              // both is how we find out which the flow actually wants.
-              //
-              // Worth knowing what full bleed costs in DARK: the flow fill and the page
-              // background are the same token there by design, so the only thing marking
-              // where the canvas begins is the header's rule and the rail's.
+              // A window on the page — inset on the header's 24px at the left and
+              // bottom, flush against the pane on its right — until maximised, when
+              // it grows to the screen's edges. (This lane used to be full bleed,
+              // the post editor's shape; it now shares the full-canvas lane's
+              // window, with the pane kept on this side.)
+              'transition-[margin,border-radius]',
+              chrome,
+              paneCollapsed ? 'm-0 rounded-none' : 'mb-6 ml-6 rounded-2xl',
             )}
           >
             {/* The header's action half, floating, on the same 24px inset as everything
@@ -543,20 +585,49 @@ const AutomationFloat: React.FC = () => {
                 aria-label rather than the bare name, since "Marcus Chen" doesn't say what
                 pressing it does; it contains the visible text, so the label-in-name rule
                 still holds. */}
-            {selectedRun && !showEditCanvas && (
-              <div className="absolute top-6 left-6 z-20 rounded-lg border bg-surface-elevated p-1 shadow-xs">
-                <Button
-                  aria-label={`Close ${selectedRun.member.name}'s run`}
-                  className="h-9"
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setSelectedMemberId(null)}
-                >
-                  <LucideIcon.X strokeWidth={2} />
-                  {selectedRun.member.name}
-                </Button>
-              </div>
-            )}
+            {/* One top-left cluster: the header's identity half while maximised,
+                and the member whose run is open. Both can be present at once,
+                so they sit in a row and neither has to know about the other. */}
+            {/* Pulled out by the pill's 4px padding, so the controls inside land
+                on the 24px line and the pill's edge on 20 — the same geometry as
+                the top-right card, whose controls never move off 24. */}
+            <div className="absolute top-5 left-5 z-20">
+              <Inline align="center" gap="sm">
+                {hudVisible && (
+                  <div className={cn(HUD_PILL, 'gap-1 pr-2', HUD_ENTER)}>
+                    <Button
+                      aria-label="Back to automations"
+                      className={HUD_CONTROL}
+                      size="icon"
+                      type="button"
+                      variant="ghost"
+                      onClick={goBack}
+                    >
+                      <LucideIcon.ArrowLeft strokeWidth={2} />
+                    </Button>
+                    {/* A step down from the header's text-lg: floating chrome
+                        stands in for the page title rather than claiming to be it. */}
+                    <span className="max-w-56 truncate px-1 text-md font-medium">
+                      {automation.name}
+                    </span>
+                  </div>
+                )}
+                {selectedRun && !showEditCanvas && (
+                  <div className={HUD_PILL}>
+                    <Button
+                      aria-label={`Close ${selectedRun.member.name}'s run`}
+                      className="h-9"
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setSelectedMemberId(null)}
+                    >
+                      <LucideIcon.X strokeWidth={2} />
+                      {selectedRun.member.name}
+                    </Button>
+                  </div>
+                )}
+              </Inline>
+            </div>
 
             <div
               className={cn(
@@ -591,7 +662,7 @@ const AutomationFloat: React.FC = () => {
         <aside
           className={cn(
             // Collapses by WIDTH, not by sliding out on a negative margin. Both
-            // animate the same 480px, but a slide takes the pane's contents with it,
+            // animate the same 420px, but a slide takes the pane's contents with it,
             // which reads as the pane escaping rather than closing. Narrowing holds
             // every child exactly where it is and lets overflow-hidden wipe them as the
             // canvas edge advances, so nothing moves that isn't supposed to.
@@ -600,27 +671,15 @@ const AutomationFloat: React.FC = () => {
             // the right while the pane's left edge travels — which is why the child below
             // stays pinned to its full width.
             //
-            // This only works because the child below is pinned to w-[480px]: left
+            // This only works because the child below is pinned to w-[420px]: left
             // to itself the content would reflow as the pane narrowed, wrapping the
             // title and crushing the table for the length of the animation.
             'relative flex shrink-0 flex-col overflow-hidden transition-[width]',
-            `duration-300 ${PROTO_EASE} motion-reduce:transition-none`,
-            // Page content on the page's own background, not a raised panel — but with
-            // a rule down its leading edge, running the full height of the viewport.
-            //
-            // The rule is doing real work here. The header is on --surface-elevated and
-            // this is on --background, which in light are close enough that the two read
-            // as one continuous white band across the top of the screen — the header
-            // appearing to extend over the pane, with its own border-b stopping in the
-            // middle of nowhere. Full height rather than starting under the header,
-            // because the boundary it marks is the whole column split, and a rule that
-            // began 84px down would be describing the pane's contents instead.
-            //
-            // border-l, not border-r: the pane's edge is the one facing the canvas, and
-            // on this side that's its left. It goes with the width — at w-0 a rule would
-            // still paint, a stray hairline down the right edge of the screen.
+            chrome,
+            // Page content on the page's own background, with no rule of its own:
+            // the canvas window's edge is what divides them.
             'bg-background',
-            paneCollapsed ? 'w-0 border-l-0' : 'w-[480px] border-l',
+            paneCollapsed ? 'w-0' : 'w-[420px]',
           )}
         >
           {/* onCollapse is future only — that release puts the toggle on the
@@ -628,7 +687,7 @@ const AutomationFloat: React.FC = () => {
                     header bar, so its pane doesn't carry a control of its own. */}
           {/* Pinned to the pane's full width so it never reflows while the
                     aside narrows around it — see the note above. */}
-          <div className="flex min-h-0 w-[480px] flex-1 flex-col">
+          <div className="flex min-h-0 w-[420px] flex-1 flex-col">
             <LeftPanel
               query={query}
               scenario={scenario}
@@ -636,9 +695,8 @@ const AutomationFloat: React.FC = () => {
               settings={{
                 name: automation.name,
                 description: record?.description ?? '',
-                // Written straight through, like the status is. This lane has no
-                // Save between you and the store for these — they're properties of
-                // the automation rather than of the flow, and the flow is the thing
+                // Written straight through, like the status is — properties of the
+                // automation rather than of the flow, and the flow is the thing
                 // Publish commits.
                 onDetailsChange: ({ name, description }) =>
                   updateAutomationDetails(id, name, description),
@@ -660,7 +718,7 @@ const AutomationFloat: React.FC = () => {
         onOpenChange={setStartOpen}
       />
       <TurnOffAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
-      {/* Opened from Settings, not the header — see the panel. */}
+      {/* Opened from the Settings tab — see the pane. */}
       <ArchiveAutomationDialog
         live={liveStatus === 'active'}
         name={automation.name}
@@ -709,39 +767,51 @@ const AutomationFloat: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* The pane toggle, pinned to the screen's top-right and never anywhere else.
-                
-                It belonged to the header, which now ends where the canvas ends — so it would
-                have sat at the canvas's right edge with the switch, in the middle of the
-                screen. And it belonged to the floating pill in hidden mode, which meant two
-                of them in two places depending on state.
-                
-                Above both regions instead: it's the one control that acts on the LAYOUT
-                rather than on the automation, so it doesn't belong to either half of it. And
-                it's the same corner in every state, which is the point of a control you
-                reach for when you can't find anything else.
-                
-                top-6 right-6 is the 24px the header pads by, so it sits on the header's own
-                line while there is one — and only while there is one. Expanded, that corner
-                belongs to the HUD pill, which takes the toggle in as its last item rather
-                than having it hover over the top. */}
-      <div
-        // Pinned to the screen's corner, and there in both states. It used to fade out
-        // as the interface went and hand off to a copy of itself in a floating pill;
-        // there's no hiding gesture in this lane to hand off to, so it simply stays —
-        // one button, never moving, that opens and closes the rail beneath it.
-        className="absolute top-6 right-6 z-40"
-      >
-        <Button
-          aria-label={paneCollapsed ? 'Show sidebar' : 'Hide sidebar'}
-          aria-pressed={paneCollapsed}
-          size="icon"
-          type="button"
-          variant="ghost"
-          onClick={() => setPaneCollapsed(!paneCollapsed)}
-        >
-          <LucideIcon.PanelRight strokeWidth={2} />
-        </Button>
+      {/* The screen's controls — the sidebar toggle and the automation's actions —
+          as one cluster pinned to the top-right at the pane's width, and never
+          anywhere else. Loops' arrangement: with the pane open it's the pane's
+          top row (the pane leaves that row empty for it); maximised, the same row
+          floats over the canvas as a card. Nothing in it moves either way — only
+          the card arrives behind it — so the controls are where your hand already
+          is, whichever state you're in.
+
+          The actions lead and the toggle ends the row, in the screen's corner —
+          the one control that acts on the layout rather than the automation. */}
+      <div className="pointer-events-none absolute top-0 right-0 z-40 flex w-[420px] justify-end p-6">
+        <div className="pointer-events-auto relative flex items-center gap-2">
+          {/* The card hugs the controls, in the same material as the top-left
+              pill (HUD_PILL — surface, radius, shadow, no border) and the same
+              4px around them, so the two corners read as one set of floating
+              chrome. It fades in once the pane has mostly gone — before that the
+              pane IS its background — and out at once on the way back. */}
+          <div
+            className={cn(
+              'absolute -inset-1 rounded-lg bg-surface-elevated shadow-sm transition-opacity',
+              paneCollapsed
+                ? 'opacity-100 [transition-delay:150ms] duration-200'
+                : 'pointer-events-none opacity-0 duration-100',
+            )}
+          />
+          {/* 4px between controls, matching the card's 4px around them. */}
+          <Inline align="center" className="relative" gap="xs">
+            <HeaderActions
+              canGoLive={canGoLive}
+              commit={chromeActions}
+              status={liveStatus}
+              onStatusChange={handleStatusToggle}
+            />
+            <Button
+              aria-label={paneCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+              aria-pressed={paneCollapsed}
+              size="icon"
+              type="button"
+              variant="ghost"
+              onClick={() => setPaneCollapsed(!paneCollapsed)}
+            >
+              <LucideIcon.PanelRight strokeWidth={2} />
+            </Button>
+          </Inline>
+        </div>
       </div>
 
       {/* Prototype-only: which lane this is, and the way to the others. */}

@@ -59,6 +59,7 @@ export interface SettingsPanelProps {
   allowReentry: boolean;
   onAllowReentryChange: (next: boolean) => void;
   onArchive: () => void;
+  className?: string;
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -68,13 +69,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   allowReentry,
   onAllowReentryChange,
   onArchive,
+  className,
 }) => {
   // Local, and it goes when the panel unmounts. Nothing else on this screen can see
   // it, which is the point — see the field.
   const [chosenExits, setChosenExits] = useState<string[]>(EXIT_SPECIMEN);
   const [exitsOpen, setExitsOpen] = useState(false);
   return (
-    <Stack className="px-6 pb-8" gap="xl">
+    <Stack className={cn('px-6 pb-8', className)} gap="xl">
       <Stack gap="md">
         <Label htmlFor="automation-title">Title</Label>
         <Input
