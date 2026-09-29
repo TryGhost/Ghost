@@ -183,11 +183,7 @@ export function useGhostAuthClient(): AuthClient {
       resetPassword: ({ newPassword, token }) =>
         settle(
           completeReset({ token, newPassword, ne2Password: newPassword }),
-          (response) => ({
-            status: true as const,
-            message: (response as { password_reset?: Array<{ message?: string }> })
-              ?.password_reset?.[0]?.message,
-          }),
+          () => ({ status: true as const }),
           (ghost) => ({
             message:
               ghost.context === ghost.message

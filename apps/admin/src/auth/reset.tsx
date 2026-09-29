@@ -55,7 +55,7 @@ export default function Reset() {
 
     setSubmitState('running');
     try {
-      const { data, error } = await authClient.resetPassword({ newPassword, token });
+      const { error } = await authClient.resetPassword({ newPassword, token });
       if (error) {
         toast.error(error.message ?? 'An unexpected error occurred, please try again.', {
           id: 'password-reset',
@@ -63,9 +63,7 @@ export default function Reset() {
         setSubmitState('failed');
         return;
       }
-      if (data.message) {
-        leaveAuthNotice(data.message);
-      }
+      leaveAuthNotice('password-updated');
       reloadAdmin(takeSigninRedirect());
     } catch (error) {
       toast.error(

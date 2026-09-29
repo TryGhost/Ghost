@@ -55,7 +55,7 @@ export interface AuthClient {
   resetPassword(body: {
     newPassword: string;
     token: string;
-  }): Promise<AuthResult<{ status: true; message?: string }>>;
+  }): Promise<AuthResult<{ status: true }>>;
   signOut(): Promise<AuthResult<{ success: true }>>;
   invitation: {
     /** Creates the invited staff user without signing in. */

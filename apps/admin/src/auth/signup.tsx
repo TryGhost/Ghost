@@ -85,7 +85,7 @@ function SignupForm({ email, token }: { email: string; token: string }) {
 
       const { data, error } = await authClient.signIn.email({ email, password });
       if (data && 'twoFactorRedirect' in data) {
-        navigate('/signin/verify');
+        navigate('/signin/verify', { state: { twoFactorReason: data.twoFactorReason } });
       } else if (data) {
         reloadAdmin(takeSigninRedirect());
       } else {

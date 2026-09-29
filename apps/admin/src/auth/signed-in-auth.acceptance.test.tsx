@@ -72,7 +72,7 @@ it('leaves signed-in auth routes to Ember when the flag is off', async () => {
 });
 
 it('confirms a password reset once the admin has reloaded', async () => {
-  window.sessionStorage.setItem('ghost-admin:auth-notice', 'Password updated');
+  window.sessionStorage.setItem('ghost-admin:auth-notice', 'password-updated');
   await renderAdminApp('/tags', withAuthReact(true));
   fakeAdminEndpoint('GET', /^\/tags\//, { tags: [], meta: { pagination: { next: null } } });
 

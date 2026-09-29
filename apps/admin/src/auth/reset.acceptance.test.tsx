@@ -58,7 +58,7 @@ it('saves the password and reloads signed in, confirming once loaded', async () 
       { token, newPassword: 'correct horse battery', ne2Password: 'correct horse battery' },
     ],
   });
-  expect(window.sessionStorage.getItem('ghost-admin:auth-notice')).toBe('Password updated');
+  expect(window.sessionStorage.getItem('ghost-admin:auth-notice')).toBe('password-updated');
 });
 
 it.each([
