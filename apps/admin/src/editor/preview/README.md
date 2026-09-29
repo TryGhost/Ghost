@@ -53,7 +53,9 @@ The newsletters offered are the site's active ones, read from the same full brow
 
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
 
-The desktop subject field stages edits in the session and saves on blur or Enter.
+The sender and subject controls share a label column and a local 28px height;
+the subject input keeps its visible outline. The desktop subject field stages edits
+in the session and saves on blur or Enter.
 An empty subject falls back to the post title. The session enforces the 300-character
 limit on every save; validation and save errors appear beside the field. Test sending
 stays disabled while edits are unsaved or a save is pending. The mobile frame displays

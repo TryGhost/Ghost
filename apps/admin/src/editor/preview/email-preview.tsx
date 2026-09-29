@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
-import { Box, Inline, Stack } from '@tryghost/shade/primitives';
+import { Box, Grid, Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useEmailPreview } from '@tryghost/admin-x-framework/api/email-previews';
@@ -128,9 +128,14 @@ export function EmailPreview({
       {...(device === 'mobile' ? { device } : {})}
     >
       <Stack className="size-full bg-background" gap="none">
-        <Stack className="border-b border-border-default p-4" gap="md">
-          <Inline gap="lg" justify="between">
-            <Inline className="min-w-0 flex-1" gap="md">
+        <Grid
+          align="center"
+          className="grid-cols-[auto_minmax(0,1fr)] border-b border-border-default p-4 [--control-height:28px]"
+          gap="md"
+        >
+          <span className="text-sm text-muted-foreground">From</span>
+          <Inline className="min-w-0" gap="lg" justify="between">
+            <Box className="min-w-0 flex-1">
               {newsletterLookupPending ? (
                 <LoadingIndicator size="sm" />
               ) : newsletterLookupError ? (
@@ -144,37 +149,32 @@ export function EmailPreview({
                 >
                   This newsletter no longer exists
                 </p>
+              ) : newsletters.length > 1 ? (
+                <Select value={selectedNewsletter?.slug} onValueChange={onNewsletterChange}>
+                  <SelectTrigger
+                    aria-label="Newsletter"
+                    className="w-auto max-w-full min-w-0 [&>span]:min-w-0 [&>span]:truncate [&>svg]:shrink-0"
+                    title={`${selectedNewsletter?.name ?? ''} <${senderAddress(selectedNewsletter?.sender_email ?? null)}>`}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {newsletters.map((newsletter) => (
+                      <SelectItem key={newsletter.id} value={newsletter.slug}>
+                        {newsletter.name} &lt;{senderAddress(newsletter.sender_email)}&gt;
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               ) : (
-                <>
-                  <span className="shrink-0 text-sm text-muted-foreground">From</span>
-                  {newsletters.length > 1 ? (
-                    <Select value={selectedNewsletter?.slug} onValueChange={onNewsletterChange}>
-                      <SelectTrigger
-                        aria-label="Newsletter"
-                        className="w-auto min-w-0 [&>span]:min-w-0 [&>span]:truncate [&>svg]:shrink-0"
-                        title={`${selectedNewsletter?.name ?? ''} <${senderAddress(selectedNewsletter?.sender_email ?? null)}>`}
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {newsletters.map((newsletter) => (
-                          <SelectItem key={newsletter.id} value={newsletter.slug}>
-                            {newsletter.name} &lt;{senderAddress(newsletter.sender_email)}&gt;
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailFrom}>
-                      {selectedNewsletter?.name}{' '}
-                      <span className="text-muted-foreground">
-                        &lt;{senderAddress(selectedNewsletter?.sender_email ?? null)}&gt;
-                      </span>
-                    </p>
-                  )}
-                </>
+                <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailFrom}>
+                  {selectedNewsletter?.name}{' '}
+                  <span className="text-muted-foreground">
+                    &lt;{senderAddress(selectedNewsletter?.sender_email ?? null)}&gt;
+                  </span>
+                </p>
               )}
-            </Inline>
+            </Box>
             {canSendTestEmail && (
               <SendTestEmail
                 audience={audience}
@@ -191,19 +191,19 @@ export function EmailPreview({
               />
             )}
           </Inline>
-          <Inline className="min-w-0" gap="md">
-            <span className="shrink-0 text-sm text-muted-foreground">Subject</span>
-            {subjectEditor && device === 'desktop' ? (
-              <EmailSubject editor={subjectEditor} />
-            ) : (
-              <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailSubject}>
-                {subjectEditor
-                  ? subjectEditor.value || subjectEditor.fallback
-                  : !isFetching && preview?.subject}
-              </p>
-            )}
-          </Inline>
-        </Stack>
+          <span className="self-start text-sm leading-(--control-height) text-muted-foreground">
+            Subject
+          </span>
+          {subjectEditor && device === 'desktop' ? (
+            <EmailSubject editor={subjectEditor} />
+          ) : (
+            <p className="min-w-0 truncate text-sm" data-testid={postPreviewEmailSubject}>
+              {subjectEditor
+                ? subjectEditor.value || subjectEditor.fallback
+                : !isFetching && preview?.subject}
+            </p>
+          )}
+        </Grid>
         {newsletterLookupPending || isFetching ? (
           <Inline className="grow" gap="none" justify="center">
             <LoadingIndicator size="md" />

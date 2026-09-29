@@ -52,7 +52,7 @@ export function EmailSubject({ editor }: { editor: EmailSubjectEditor }) {
         aria-describedby={error ? errorId : undefined}
         aria-invalid={!!error}
         aria-label="Email subject"
-        className="h-auto min-w-0 border-transparent bg-transparent px-1 py-0 shadow-none hover:border-control-border"
+        className="min-w-0"
         data-testid={postPreviewEmailSubject}
         placeholder={editor.fallback}
         value={editor.value ?? editor.fallback}
