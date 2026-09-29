@@ -1573,7 +1573,7 @@ class BatchSendingService {
    * @returns {Promise<MemberLike[]>}
    */
   async getBatchMembers(batchId, expectedCount) {
-    let models = await this.#models.EmailRecipient.findAll({
+    const models = await this.#models.EmailRecipient.findAll({
       filter: `batch_id:'${batchId}'`,
       withRelated: ['member', 'member.stripeSubscriptions', 'member.products'],
     });
