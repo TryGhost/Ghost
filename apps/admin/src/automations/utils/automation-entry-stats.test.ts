@@ -95,6 +95,6 @@ describe('automation entry chart mapping', () => {
     stats.entries[0].count = 0;
     stats.total_run_count = 0;
     stats.completed_run_count = 0;
-    expect(mapAutomationEntryStats(stats)).toMatchObject({ total: '0', max: 1, empty: true });
+    expect(mapAutomationEntryStats(stats)).toMatchObject({ total: '0', max: 1 });
   });
 });

@@ -6,19 +6,22 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
+import { RunList } from './run-list';
 import { PerformanceDateFilter } from './performance-date-filter';
 import {
   createPerformanceDateRange,
   PERFORMANCE_RANGES,
 } from '@/automations/utils/performance-date-range';
 
-const PerformanceContent: React.FC<{ automationId: string; dateRange: PerformanceDateRange }> = ({
-  automationId,
-  dateRange,
-}) => {
+const PerformanceContent: React.FC<{
+  automationId: string;
+  dateRange: PerformanceDateRange;
+  queryScope: string;
+}> = ({ automationId, dateRange, queryScope }) => {
   const { chart, counts, isLoading, isError, retry } = useAutomationPerformanceStats(
     automationId,
     dateRange,
+    queryScope,
   );
 
   if (isError) {
@@ -31,7 +34,7 @@ const PerformanceContent: React.FC<{ automationId: string; dateRange: Performanc
         role="alert"
       >
         <Text size="sm" tone="secondary">
-          Could not load performance data.
+          Could not load performance data
         </Text>
         <Button size="sm" variant="outline" onClick={retry}>
           Retry
@@ -44,6 +47,7 @@ const PerformanceContent: React.FC<{ automationId: string; dateRange: Performanc
     <>
       <TotalEntries chart={chart} isLoading={isLoading} />
       <StatusCounts data={counts} isLoading={isLoading} />
+      <RunList automationId={automationId} dateRange={dateRange} queryScope={queryScope} />
     </>
   );
 };
@@ -55,6 +59,8 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
   const rangeLabel = PERFORMANCE_RANGES.find((range) => range.value === dateRange.value)!.label;
   const panelId = useId();
   const headingId = useId();
+  // Each sidebar visit owns its cached results, including requests still in flight.
+  const queryScope = panelId;
 
   return (
     <>
@@ -119,7 +125,11 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
                   <LucideIcon.X strokeWidth={2} />
                 </Button>
               )}
-              <PerformanceContent automationId={automationId} dateRange={dateRange} />
+              <PerformanceContent
+                automationId={automationId}
+                dateRange={dateRange}
+                queryScope={queryScope}
+              />
             </Stack>
           )}
         </Stack>

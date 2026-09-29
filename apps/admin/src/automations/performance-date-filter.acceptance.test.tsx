@@ -54,6 +54,7 @@ const response = (start: string, counts: readonly [number, number, number]) => {
 };
 const allTime = () => response('2023-12-01', [10, 20, 30]);
 const render = async () => {
+  fakeAdminEndpoint('GET', /\/automations\/dates\/runs\/\?/, { automation_runs: [] });
   fakeAdminEndpoint('GET', '/automations/dates/', {
     automations: [
       {
@@ -203,15 +204,21 @@ describe('Automation performance date filter', () => {
     }
   });
 
-  it('shows a period-specific empty state', async () => {
+  it('shows one empty message in the list for all time and a period', async () => {
     fakeAdminEndpoint('GET', endpoint, ({ url }) =>
       response(params(url).date_from ? '2024-03-04' : '2023-12-01', [0, 0, 0]),
     );
     await render();
-    await expect.element(entries()).toHaveTextContent('No entries yet');
+    const runs = () => page.getByRole('region', { name: 'Automation runs', exact: true });
+    const expectEmpty = async (message: string) => {
+      await expect.element(runs().getByRole('status')).toHaveTextContent(message);
+      await expect(page.getByText(message, { exact: true })).toHaveCount(1);
+      await expect.element(entries()).not.toHaveTextContent('No entries');
+      await expectCounts([0, 0, 0]);
+    };
+    await expectEmpty('No entries yet');
     await selectRange('Last 7 days');
-    await expect.element(entries()).toHaveTextContent('No entries in this period');
-    await expectCounts([0, 0, 0]);
+    await expectEmpty('No entries in this period');
   });
 
   it('rejects a backend that ignores the date range and retries the selected range', async () => {
@@ -221,7 +228,7 @@ describe('Automation performance date filter', () => {
     await selectRange('Last 7 days');
     await expect
       .element(page.getByRole('alert'))
-      .toHaveTextContent('Could not load performance data.');
+      .toHaveTextContent('Could not load performance data');
     await expect.element(entries()).not.toBeInTheDocument();
     const retry = fakeAdminEndpoint('GET', endpoint, response('2024-03-04', [1, 2, 3]));
     await page.getByRole('button', { name: 'Retry' }).click();
