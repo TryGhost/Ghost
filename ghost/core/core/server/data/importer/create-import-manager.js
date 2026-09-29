@@ -2,6 +2,7 @@ const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
 const { GhostMailer } = require('../../services/mail');
+const adapterManager = require('../../services/adapter-manager').default;
 const jobManager = require('../../services/jobs');
 const ImportManager = require('./import-manager');
 const RevueHandler = require('./handlers/revue');
@@ -19,6 +20,7 @@ const { createContentFileHandlers, createContentFileImporters } = require('./con
 function createImportManager(overrides = {}) {
   return new ImportManager({
     jobManager,
+    importsStorage: adapterManager.getAdapter('storage:imports'),
     handlers: [...createContentFileHandlers(), RevueHandler, JSONHandler, MarkdownHandler],
     importers: [...createContentFileImporters(), RevueImporter, DataImporter],
     mailer: new GhostMailer(),

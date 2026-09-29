@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
+const createImportManager = require('../../../../../core/server/data/importer/create-import-manager');
 const importerPath = require.resolve('../../../../../core/server/data/importer');
 
 describe('Site importer lifecycle', function () {
@@ -21,5 +22,13 @@ describe('Site importer lifecycle', function () {
         require.cache[importerPath] = previous;
       }
     }
+  });
+
+  // Streaming reads are not part of the storage base contract, so a third-party
+  // imports adapter without one still has to boot and serve the site.
+  it('builds with an imports storage adapter that only implements the base contract', function () {
+    const manager = createImportManager({ importsStorage: { save() {}, read() {}, delete() {} } });
+
+    assert.equal(typeof manager.importFromFile, 'function');
   });
 });
