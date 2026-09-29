@@ -319,15 +319,16 @@ describe('Post editor saving', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
-  it('reports a status the post reached elsewhere once a save refetches it', async () => {
+  it('keeps the status it saved when a refetch finds the post published elsewhere', async () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
 
     // A later handler for the same route wins: from here the read answers
     // with the post as someone else has just published it.
-    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+    const readApi = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
       posts: [
         post({
           id: POST_ID,
@@ -343,8 +344,16 @@ describe('Post editor saving', () => {
     });
     await appendToBody(' and more');
     await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(() => readApi.requests.length).toBe(1);
 
-    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+    // Their version was never loaded here, so the next save carries this tab's own.
+    await appendToBody(' again');
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+    expect(submittedPost(saveApi)).toMatchObject({
+      status: 'draft',
+      updated_at: '2026-01-01T00:00:01.000Z',
+    });
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
   it('leaves tags alone when it saves', async () => {

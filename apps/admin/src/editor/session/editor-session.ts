@@ -232,6 +232,11 @@ export function isOlderToken(candidate: string, held: string | null): boolean {
   return !Number.isNaN(candidateTime) && !Number.isNaN(heldTime) && candidateTime < heldTime;
 }
 
+/** Whether a record's collision token names the version already held. */
+function isHeldToken(candidate: string, held: string | null): boolean {
+  return isCollisionToken(held) && Date.parse(candidate) === Date.parse(held);
+}
+
 /**
  * Composes the change tracker, slug machine and save engine into one editing
  * session: one per opened post, never shared between two new posts.
@@ -811,6 +816,11 @@ export function createEditorSession({
         !isCollisionToken(updatedAt) ||
         isOlderToken(updatedAt, identity.updatedAt)
       ) {
+        return false;
+      }
+      // A newer version's content is not in this document: holding its token
+      // would let the next save overwrite it instead of colliding.
+      if (!isHeldToken(updatedAt, identity.updatedAt)) {
         return false;
       }
       // Decide against the old saved copy before the refetch replaces it.

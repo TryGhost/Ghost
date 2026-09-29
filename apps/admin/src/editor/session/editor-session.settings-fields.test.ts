@@ -68,18 +68,14 @@ describe('createEditorSession', () => {
       expect(session.isDirty()).toBe(false);
     });
 
-    it('adopts remote settings after the local edit was saved without resending it', async () => {
+    it('adopts the server’s settings after the local edit was saved without resending it', async () => {
       const { session, state } = sessionHarness({ record: record({ featured: false }) });
 
       session.patchFields({ featured: true });
       await session.dispatchExplicit();
       expect(session.isDirty()).toBe(false);
 
-      state.acknowledged = {
-        ...state.acknowledged,
-        featured: false,
-        updated_at: '2026-01-01T00:00:01.500Z',
-      };
+      state.acknowledged = { ...state.acknowledged, featured: false };
       session.recordRefetched(state.acknowledged);
 
       expect(session.getFields().featured).toBe(false);
@@ -96,7 +92,7 @@ describe('createEditorSession', () => {
 
       session.patchFields({ featured: true });
       session.patchFields({ featured: false });
-      session.recordRefetched(record({ featured: true, updated_at: '2026-01-02T00:00:00.000Z' }));
+      session.recordRefetched(record({ featured: true }));
 
       expect(session.getFields().featured).toBe(true);
       expect(session.isDirty()).toBe(false);
@@ -107,10 +103,7 @@ describe('createEditorSession', () => {
 
       session.patchExcerpt('Temporary');
       session.patchExcerpt('Original');
-      state.acknowledged = record({
-        custom_excerpt: 'Remote',
-        updated_at: '2026-01-01T00:00:00.500Z',
-      });
+      state.acknowledged = record({ custom_excerpt: 'Remote' });
       session.recordRefetched(state.acknowledged);
 
       expect(session.getFields().custom_excerpt).toBe('Remote');
@@ -131,12 +124,7 @@ describe('createEditorSession', () => {
         { record: record({ tags: [{ id: 'tag1', name: 'News' }] }) },
         {
           duringSave: () => {
-            built.session.recordRefetched(
-              record({
-                tags: [{ id: 'tag3', name: 'Notice' }],
-                updated_at: '2026-01-01T00:00:01.000Z',
-              }),
-            );
+            built.session.recordRefetched(record({ tags: [{ id: 'tag3', name: 'Notice' }] }));
           },
         },
       );
@@ -168,29 +156,28 @@ describe('createEditorSession', () => {
 
       session.patchFields({ authors: [{ id: 'author-2' }] });
       session.patchFields({ authors: [{ id: 'author-1' }] });
-      session.recordRefetched(
-        record({ authors: [{ id: 'author-3' }], updated_at: '2026-01-02T00:00:00.000Z' }),
-      );
+      session.recordRefetched(record({ authors: [{ id: 'author-3' }] }));
 
       expect(session.getFields().authors).toEqual([{ id: 'author-3' }]);
       expect(session.isDirty()).toBe(false);
     });
 
     it('keeps an undo made during a save even when its refetch arrives before the acknowledgement', async () => {
+      const ownSave = record({ featured: true, updated_at: '2026-01-01T00:00:01.000Z' });
       const built = sessionHarness(
         { record: record({ featured: false }) },
         {
           duringSave: () => {
             built.session.patchFields({ featured: false });
-            built.session.recordRefetched(
-              record({ featured: true, updated_at: '2026-01-01T00:00:01.000Z' }),
-            );
+            built.session.recordRefetched(ownSave);
           },
         },
       );
 
       built.session.patchFields({ featured: true });
       await built.session.dispatchExplicit();
+      // The screen offers the read again once the save has landed.
+      expect(built.session.recordRefetched(ownSave)).toBe(true);
 
       expect(built.session.getFields().featured).toBe(false);
       expect(built.session.isDirty()).toBe(true);
@@ -217,12 +204,8 @@ describe('createEditorSession', () => {
         { record: record({ visibility: 'public' }) },
         {
           duringSave: once(() => {
-            built.session.recordRefetched(
-              record({ visibility: 'members', updated_at: '2026-01-01T00:00:00.500Z' }),
-            );
-            built.session.recordRefetched(
-              record({ visibility: 'paid', updated_at: '2026-01-01T00:00:00.700Z' }),
-            );
+            built.session.recordRefetched(record({ visibility: 'members' }));
+            built.session.recordRefetched(record({ visibility: 'paid' }));
           }),
           acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }),
         },
@@ -258,12 +241,8 @@ describe('createEditorSession', () => {
           { record: record({ [field]: [] }) },
           {
             duringSave: once(() => {
-              built.session.recordRefetched(
-                record({ [field]: first, updated_at: '2026-01-01T00:00:00.500Z' }),
-              );
-              built.session.recordRefetched(
-                record({ [field]: second, updated_at: '2026-01-01T00:00:00.700Z' }),
-              );
+              built.session.recordRefetched(record({ [field]: first }));
+              built.session.recordRefetched(record({ [field]: second }));
             }),
             acknowledge: (acknowledged) => ({ ...acknowledged, [field]: second }),
           },
@@ -286,11 +265,7 @@ describe('createEditorSession', () => {
       const built = sessionHarness(
         { record: record({ visibility: 'public' }) },
         {
-          duringSave: once(() =>
-            built.session.recordRefetched(
-              record({ visibility: 'paid', updated_at: '2026-01-01T00:00:00.500Z' }),
-            ),
-          ),
+          duringSave: once(() => built.session.recordRefetched(record({ visibility: 'paid' }))),
           acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'members' }),
         },
       );
@@ -307,9 +282,7 @@ describe('createEditorSession', () => {
         { record: record({ visibility: 'public' }) },
         {
           duringSave: once(() => {
-            built.session.recordRefetched(
-              record({ visibility: 'paid', updated_at: '2026-01-01T00:00:00.500Z' }),
-            );
+            built.session.recordRefetched(record({ visibility: 'paid' }));
             built.session.patchFields({ visibility: 'members' });
           }),
           acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }),
@@ -348,9 +321,7 @@ describe('createEditorSession', () => {
           {
             duringSave: once(() => {
               built.session.patchFields({ [field]: edited });
-              built.session.recordRefetched(
-                record({ [field]: edited, updated_at: '2026-01-01T00:00:00.500Z' }),
-              );
+              built.session.recordRefetched(record({ [field]: edited }));
             }),
             acknowledge: (acknowledged, count) => ({
               ...acknowledged,
@@ -400,9 +371,7 @@ describe('createEditorSession', () => {
         {
           duringSave: once(() => {
             built.session.patchFields({ visibility: 'public' });
-            built.session.recordRefetched(
-              record({ visibility: 'paid', updated_at: '2026-01-01T00:00:00.500Z' }),
-            );
+            built.session.recordRefetched(record({ visibility: 'paid' }));
           }),
           acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }),
         },
@@ -427,12 +396,7 @@ describe('createEditorSession', () => {
         {
           duringSave: once(() => {
             built.session.patchFields({ tags: loaded.map((tag) => ({ ...tag })) });
-            built.session.recordRefetched(
-              record({
-                tags: [{ id: 'tag-2', name: 'Tech' }],
-                updated_at: '2026-01-01T00:00:00.500Z',
-              }),
-            );
+            built.session.recordRefetched(record({ tags: [{ id: 'tag-2', name: 'Tech' }] }));
           }),
           acknowledge: (acknowledged) => ({
             ...acknowledged,
@@ -610,12 +574,24 @@ describe('createEditorSession', () => {
         record: record({ visibility: 'public', featured: false }),
       });
 
+      const accepted = session.recordRefetched(record({ visibility: 'paid', featured: true }));
+
+      expect(accepted).toBe(true);
+      expect(session.getFields()).toMatchObject({ visibility: 'paid', featured: true });
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('adopts no settings from a refetch of a version it did not load', () => {
+      const { session } = sessionHarness({
+        record: record({ visibility: 'public', featured: false }),
+      });
+
       const accepted = session.recordRefetched(
         record({ visibility: 'paid', featured: true, updated_at: '2026-01-02T00:00:00.000Z' }),
       );
 
-      expect(accepted).toBe(true);
-      expect(session.getFields()).toMatchObject({ visibility: 'paid', featured: true });
+      expect(accepted).toBe(false);
+      expect(session.getFields()).toMatchObject({ visibility: 'public', featured: false });
       expect(session.isDirty()).toBe(false);
     });
 
@@ -625,9 +601,7 @@ describe('createEditorSession', () => {
       });
 
       session.patchFields({ featured: true });
-      session.recordRefetched(
-        record({ visibility: 'paid', featured: false, updated_at: '2026-01-02T00:00:00.000Z' }),
-      );
+      session.recordRefetched(record({ visibility: 'paid', featured: false }));
 
       expect(session.getFields()).toMatchObject({ visibility: 'paid', featured: true });
       expect(session.isDirty()).toBe(true);
@@ -637,9 +611,7 @@ describe('createEditorSession', () => {
       const { session } = sessionHarness({ record: record({ custom_excerpt: 'Opened with' }) });
 
       session.patchExcerpt('typing…');
-      session.recordRefetched(
-        record({ custom_excerpt: 'From elsewhere', updated_at: '2026-01-02T00:00:00.000Z' }),
-      );
+      session.recordRefetched(record({ custom_excerpt: 'From the server' }));
 
       expect(session.getFields().custom_excerpt).toBe('typing…');
     });
@@ -730,9 +702,7 @@ describe('createEditorSession', () => {
             duringSave: once(() => {
               built.session.patchFields({ authors: [AUTHORS[0]] });
               // The server has not seen the removal yet, so its copy still has both.
-              built.session.recordRefetched(
-                record({ authors: AUTHORS, updated_at: '2026-01-01T00:00:00.500Z' }),
-              );
+              built.session.recordRefetched(record({ authors: AUTHORS }));
             }),
             acknowledge: (acknowledged) => ({ ...acknowledged, authors: AUTHORS }),
           },

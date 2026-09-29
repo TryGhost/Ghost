@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import { dispatchedIntents } from './__test-utils__/save-engine-spy';
 import { record } from './__test-utils__/session-harness';
 import { reportLeaveConfirmation, reportSaveFailure } from '@/editor/report-error';
+import type { SaveCompletion } from '@/editor/engine/save-engine';
+import { deferred } from '@/utils/deferred';
 import type { EditorRecord } from './projection';
 import { useEditorSession } from './use-editor-session';
 
@@ -15,8 +17,16 @@ vi.mock('@/editor/engine/save-engine', async (importOriginal) => {
   return spy.spiedSaveEngine(await importOriginal<SaveEngineModule>());
 });
 
+// The screen's read of the post and the update the session sends, driven by each spec.
+const postApi = vi.hoisted(() => ({
+  read: undefined as { posts: EditorRecord[] } | undefined,
+  edit: vi.fn(),
+}));
+
 beforeEach(() => {
   dispatchedIntents.length = 0;
+  postApi.read = undefined;
+  postApi.edit.mockReset();
 });
 
 vi.mock('@tryghost/admin-x-framework', () => ({
@@ -47,8 +57,8 @@ vi.mock('@tryghost/admin-x-framework/api/slugs', () => ({
 
 vi.mock('@tryghost/admin-x-framework/api/posts', () => ({
   useAddPost: () => ({ mutateAsync: vi.fn() }),
-  useEditPost: () => ({ mutateAsync: vi.fn() }),
-  useEditorPost: () => ({ data: undefined }),
+  useEditPost: () => ({ mutateAsync: postApi.edit }),
+  useEditorPost: () => ({ data: postApi.read }),
   postsDataType: 'PostsResponseType',
 }));
 
@@ -203,5 +213,48 @@ describe('useEditorSession reporting', () => {
     expect(leave).toMatchObject({ postId: 'abc123' });
     expect(leave.reasons).toContain('POST_HAS_ERROR');
     expect(postType).toBe('post');
+  });
+});
+
+describe('useEditorSession refetched record', () => {
+  it('keeps describing its own version when a read brings another writer’s', () => {
+    const { result, rerender } = setup();
+    const loaded = result.current.loadedRecord;
+
+    postApi.read = {
+      posts: [record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' })],
+    };
+    rerender();
+
+    expect(result.current.loadedRecord).toBe(loaded);
+    expect(result.current.isDirty()).toBe(false);
+  });
+
+  it('describes a read of its own save once that save has landed', async () => {
+    const answer = deferred<{ posts: EditorRecord[] }>();
+    postApi.edit.mockReturnValueOnce(answer.promise);
+    const { result, rerender } = setup();
+    const loaded = result.current.loadedRecord;
+
+    act(() => result.current.bind.onTitleChange('A new title'));
+    let saving!: Promise<SaveCompletion>;
+    act(() => {
+      saving = result.current.saveExplicit();
+    });
+    await waitFor(() => expect(postApi.edit).toHaveBeenCalledTimes(1));
+
+    // The read reached the server after the write, and this tab before its answer.
+    const ownSave = record({ title: 'A new title', updated_at: '2026-01-01T00:00:01.000Z' });
+    postApi.read = { posts: [ownSave] };
+    rerender();
+    expect(result.current.loadedRecord).toBe(loaded);
+
+    await act(async () => {
+      answer.resolve({ posts: [ownSave] });
+      await saving;
+    });
+
+    expect(result.current.loadedRecord).toBe(ownSave);
+    expect(result.current.isDirty()).toBe(false);
   });
 });

@@ -314,16 +314,18 @@ export function useEditorSession({
   });
   const saved = postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
 
+  // Only the version the session holds may replace what the screen describes. A
+  // refused read is offered again as the engine moves on: a landing save may claim it.
+  const acceptedRead = useRef<EditorRecord | undefined>(undefined);
   useEffect(() => {
-    if (!saved) {
+    if (!saved || saved === acceptedRead.current) {
       return;
     }
-    // The screen's query and a reload both answer with the post; only a valid,
-    // non-older collision token may replace what the screen describes.
     if (session.recordRefetched(saved)) {
+      acceptedRead.current = saved;
       setLoadedRecord(saved);
     }
-  }, [saved, session]);
+  }, [saved, session, state]);
 
   // Its own request: a failed refetch of the screen's query replaces the editor.
   const reload = useCallback(async (): Promise<ReloadOutcome> => {

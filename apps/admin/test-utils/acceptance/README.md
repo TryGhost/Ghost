@@ -77,7 +77,7 @@ For a **browse endpoint** (`GET /<resource>/`), add a resource fake in `resource
 - `{kind: "passthrough"}` — serves exactly the declared entities, never interprets the query. Right for NQL-filtered lists; per-request responses are declared with a function of the parsed query.
 - `{kind: "declared-query", covers, select}` — implements _trivial declared_ behaviors only (a field match, page/limit slicing); any filter component outside `covers` 418s instead of silently serving the full world.
 
-For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo).
+For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo). A function that returns a `Response` has it served as it is, for a status that depends on the request.
 
 ## Faking Tinybird (web analytics)
 

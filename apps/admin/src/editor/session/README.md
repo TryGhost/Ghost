@@ -37,8 +37,9 @@ A blank title is held in the projection as the default title while the input
 stays empty, so a post persisted under that title does not read as permanently
 diverged from what the writer sees. The title input never shows it; substituting
 it on the way to the server is the save engine's own duty. The persisted
-identity — the id and the collision token — is replaced from every
-acknowledgement, so the next request carries the token the server just issued.
+identity — the id and the collision token — is moved by every acknowledgement
+and every reload and never by a read, so the next request carries the token of
+the version the session's content was built on.
 
 The snapshot the engine reads is that projection reduced to what the queue
 reasons about: the id with its collision token, both `null` until the create is
@@ -146,6 +147,17 @@ the request submitted and the full record the server acknowledged, so the
 tracker's three-way rebase has a stable base for every field the request
 carried.
 
+A read is adopted only at the collision token the session holds: the read of its
+own last save, or a read that found nothing new. A newer version is another
+writer's, or the session's own save read before its acknowledgement landed; its
+content is not in the document, so the session keeps its token and its saved
+copy, marks nothing dirty and starts no save. The next save carries the token
+the writer's content was built on, and the server refuses it with a collision
+instead of letting it overwrite the newer version; reloading the document is
+the way onto that version. A refused read is offered again whenever the engine
+moves on, so a read of a save that was in flight is adopted once that save's
+acknowledgement has landed and the session holds its token.
+
 A save writes a title and slug the writer never typed — the request's own
 default title, the slug derived from the title — and the server may normalize
 both again. The live document adopts each, before the acknowledgement is
@@ -162,9 +174,9 @@ slug behavior.
 
 Settings fields follow the same rule. A field a section does not own is carried
 in the projection but never sent. Successful saves and reverted edits release
-ownership, so a later refetch can adopt someone else's change and an unrelated
-save cannot overwrite it. An outstanding edit keeps the writer's value through a
-refetch or a rejected save, and an acknowledgement adopts the server's
+ownership, so a later read or acknowledgement adopts the server's value and an
+unrelated save cannot overwrite it. An outstanding edit keeps the writer's value
+through a refetch or a rejected save, and an acknowledgement adopts the server's
 normalized value only where the writer has not edited past the submitted value.
 Undoing a field while its save is in flight also stays staged, even if that
 save's refetch arrives before its acknowledgement: the next save persists the
