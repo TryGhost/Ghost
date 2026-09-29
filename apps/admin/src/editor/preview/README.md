@@ -26,7 +26,8 @@ and stays disabled until the post has been saved successfully.
 
 Desktop Web previews fill the space below the header without gutters or device
 chrome. Desktop Email previews are centered at a maximum width of 720px on a
-muted canvas. Mobile previews retain their phone frame in either format.
+muted canvas, with the sidebar's corner radius and the mobile frame's shadow.
+Mobile previews retain their phone frame in either format.
 
 ## Audience
 

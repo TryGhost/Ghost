@@ -116,7 +116,11 @@ export function EmailPreview({
 
   return (
     <Frame
-      className={device === 'desktop' ? 'size-full max-w-[720px]' : 'max-w-full shrink-0'}
+      className={
+        device === 'desktop'
+          ? 'size-full max-w-[720px] overflow-hidden rounded-xl shadow-xl'
+          : 'max-w-full shrink-0'
+      }
       data-testid={postPreviewEmail}
       {...(device === 'mobile' ? { device } : {})}
     >
