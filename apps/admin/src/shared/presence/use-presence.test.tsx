@@ -107,6 +107,26 @@ describe('presence transport', () => {
     hook.unmount();
   });
 
+  it('keeps fresh avatars when scrolling to other rows without extending their expiry', async () => {
+    mocks.fetch.mockImplementation(() =>
+      Promise.resolve({ presence: [{ events: [], serverTime: Date.now() }] }),
+    );
+    mocks.fetch.mockResolvedValueOnce({ presence: [{ events: [event], serverTime: 0 }] });
+    const hook = renderHook(({ resources }) => usePresence(resources, 'me'), {
+      initialProps: { resources: [resource] },
+    });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    hook.rerender({ resources: [{ ...resource, id: 'c'.repeat(24) }] });
+    await act(() => vi.advanceTimersByTimeAsync(20000));
+    expect(hook.result.current.events).toEqual([event]);
+    hook.rerender({ resources: [resource] });
+    expect(hook.result.current.events).toEqual([event]);
+    hook.rerender({ resources: [] });
+    await act(() => vi.advanceTimersByTimeAsync(10000));
+    expect(hook.result.current.events).toEqual([]);
+    hook.unmount();
+  });
+
   it('stops on an older backend response rather than repeatedly hitting a missing endpoint', async () => {
     mocks.fetch.mockRejectedValue(new APIError(new Response(null, { status: 404 })));
     const hook = renderHook(() => usePresence([resource], 'me'));

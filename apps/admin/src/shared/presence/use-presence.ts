@@ -70,11 +70,24 @@ export function usePresence(
     const sessionId = getSessionId();
     let opened = false;
     let expire: ReturnType<typeof setTimeout> | undefined;
+    let live: { event: PresenceEvent; expiresAt: number }[] = [];
     const updateEvents = (next: PresenceEvent[]) =>
       setEvents((previous) => (dequal(previous, next) ? previous : next));
     const clear = () => {
       clearTimeout(expire);
+      live = [];
       updateEvents(EMPTY_EVENTS);
+    };
+    const refresh = () => {
+      clearTimeout(expire);
+      live = live.filter(({ expiresAt }) => expiresAt > Date.now());
+      updateEvents(live.map(({ event }) => event));
+      if (live.length > 0) {
+        expire = setTimeout(
+          refresh,
+          Math.max(1, Math.min(...live.map(({ expiresAt }) => expiresAt - Date.now()))),
+        );
+      }
     };
     const options = {
       clear,
@@ -105,28 +118,22 @@ export function usePresence(
           ).presence[0];
           if (isCurrent()) {
             opened = true;
-            const live = response.events.filter(
+            const fresh = response.events.filter(
               (event) =>
                 event.action !== 'saved' &&
                 event.sessionId !== sessionId &&
                 event.ts > response.serverTime - 30000,
             );
-            clearTimeout(expire);
             // Account for clock differences so avatars expire at the right time.
             const offset = Date.now() - response.serverTime;
-            const refresh = () => {
-              const remaining = live.filter((event) => event.ts + offset + 30000 > Date.now());
-              updateEvents(remaining);
-              if (remaining.length > 0) {
-                expire = setTimeout(
-                  refresh,
-                  Math.max(
-                    1,
-                    Math.min(...remaining.map((event) => event.ts + offset + 30000 - Date.now())),
-                  ),
-                );
-              }
-            };
+            const requested = new Set(window.map(({ type, id }) => `${type}:${id}`));
+            // Keep fresh avatars for rows scrolled out of this request.
+            live = [
+              ...live.filter(
+                ({ event }) => !requested.has(`${event.resourceType}:${event.resourceId}`),
+              ),
+              ...fresh.map((event) => ({ event, expiresAt: event.ts + offset + 30000 })),
+            ];
             refresh();
           }
           return true;
