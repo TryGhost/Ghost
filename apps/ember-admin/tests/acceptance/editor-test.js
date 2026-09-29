@@ -118,10 +118,12 @@ describe('Acceptance: Editor', function () {
             'tags input'
         ).to.not.exist;
 
-        // post id 2 is published, we should be redirected to index
+        // post id 2 is published, we should be redirected to the posts list
+        const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
         await visit('/editor/post/2');
 
-        expect(currentURL(), 'currentURL').to.equal('/posts');
+        expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+        expect(currentRouteName(), 'currentRouteName').to.equal('react-fallback');
     });
 
     describe('when logged in', function () {
@@ -596,7 +598,6 @@ describe('Acceptance: Editor', function () {
 
         for (const resource of ['posts', 'pages']) {
             it(`returns the breadcrumb to the React ${resource} filters`, async function () {
-                enableLabsFlag(this.server, 'postsListReact');
                 const postType = resource === 'pages' ? 'page' : 'post';
                 const post = this.server.create(postType, {authors: [author]});
                 const bridge = this.owner.lookup('service:state-bridge');

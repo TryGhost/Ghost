@@ -14,20 +14,15 @@ describe('Unit: Route: posts', function () {
     // The router and ui services are stubbed per-method on the real instances:
     // wholesale service stubs miss the surface other injected services touch
     // during the route's own instantiation.
-    function setupRoute(owner, {flagValue}) {
+    function setupRoute(owner) {
         class SessionStub extends Service {
             isAuthenticated = true;
             user = {isAuthorOrContributor: false};
             requireAuthentication = sinon.spy();
         }
-        class FeatureStub extends Service {
-            postsListReact = flagValue;
-        }
         owner.register('service:session', SessionStub);
-        owner.register('service:feature', FeatureStub);
 
         const router = owner.lookup('service:router');
-        sinon.stub(router, 'on');
         sinon.stub(router, 'replaceWith').returns({method: sinon.stub()});
 
         const route = owner.lookup('route:posts');
@@ -40,8 +35,8 @@ describe('Unit: Route: posts', function () {
         return {route, router, ui};
     }
 
-    it('aborts the Ember transition when React owns the posts list', function () {
-        const {route, router, ui} = setupRoute(this.owner, {flagValue: true});
+    it('aborts the Ember transition and hands the posts list to React', function () {
+        const {route, router, ui} = setupRoute(this.owner);
         // A URL intent, so beforeModel does not rewrite the hash itself.
         const transition = {abort: sinon.spy(), intent: {url: '/posts'}};
 
@@ -53,7 +48,7 @@ describe('Unit: Route: posts', function () {
     });
 
     it('parks without writing the URL or React Router history state', function () {
-        const {route, router} = setupRoute(this.owner, {flagValue: true});
+        const {route, router} = setupRoute(this.owner);
         const replaceState = sinon.stub(window.history, 'replaceState');
 
         route.beforeModel({abort: sinon.spy(), intent: {url: '/posts?type=draft'}});
@@ -62,18 +57,21 @@ describe('Unit: Route: posts', function () {
         expect(replaceState.called, 'history state untouched').to.be.false;
     });
 
-    it('keeps Ember ownership when the feature flag is not a boolean', function () {
-        const {route, router} = setupRoute(this.owner, {flagValue: 'true'});
-        const transition = {abort: sinon.spy(), intent: {url: '/posts'}};
+    it('writes the React URL for a named transition', function () {
+        const {route} = setupRoute(this.owner);
+        const navigate = sinon.stub(route, '_navigateToReactRoute');
 
-        route.beforeModel(transition);
+        route.beforeModel({
+            abort: sinon.spy(),
+            intent: {name: 'posts'},
+            to: {queryParams: {type: 'draft', tag: null}}
+        });
 
-        expect(transition.abort.called, 'transition not aborted').to.be.false;
-        expect(router.replaceWith.called, 'no parking').to.be.false;
+        expect(navigate.calledOnceWithExactly('/posts?type=draft'), 'navigated to React').to.be.true;
     });
 
     it('restores list state after the editor breadcrumb writes its destination', function () {
-        const {route} = setupRoute(this.owner, {flagValue: true});
+        const {route} = setupRoute(this.owner);
         const navigate = sinon.stub(route, '_navigateToReactRoute');
         const trigger = sinon.stub(this.owner.lookup('service:state-bridge'), 'trigger');
 

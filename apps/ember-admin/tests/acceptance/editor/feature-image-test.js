@@ -1,5 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {click, currentURL, find} from '@ember/test-helpers';
+import sinon from 'sinon';
+import {click, currentRouteName, find} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -43,8 +44,10 @@ describe('Acceptance: Feature Image', function () {
 
         await click('[data-test-psm-trigger]');
         await click('[data-test-button="delete-post"]');
+        const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
         await click('[data-test-button="delete-post-confirm"]');
 
-        expect(currentURL()).to.equal('/posts');
+        expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+        expect(currentRouteName()).to.equal('react-fallback');
     });
 });

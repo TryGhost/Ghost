@@ -178,10 +178,6 @@ export default class LexicalEditorController extends Controller {
     fromAnalytics = false;
 
     get listQueryParams() {
-        if (this.feature.postsListReact !== true) {
-            return {};
-        }
-
         const resource = this.post?.displayName === 'page' ? 'pages' : 'posts';
         // Explicit nulls clear any stale query params retained by Ember.
         return {

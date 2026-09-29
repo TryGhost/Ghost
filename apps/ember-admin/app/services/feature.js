@@ -99,8 +99,6 @@ export default class FeatureService extends Service {
     @feature('paywallImprovements') paywallImprovements;
     @feature('automations') automations;
     @feature('csvContentImporter') csvContentImporter;
-    @feature('postsListReact') postsListReact;
-    @feature('membersActivityReact') membersActivityReact;
     @feature('membersCustomFields') membersCustomFields;
     @feature('editorReact') editorReact;
     @feature('globalSearchReact') globalSearchReact;

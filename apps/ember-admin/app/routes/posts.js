@@ -1,49 +1,14 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import InfinityModel from 'ember-infinity/lib/infinity-model';
-import RSVP from 'rsvp';
-import classic from 'ember-classic-decorator';
-import {action} from '@ember/object';
-import {assign} from '@ember/polyfills';
-import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
-
-@classic
-class PostsWithAnalytics extends InfinityModel {
-    @service postAnalytics;
-    @service feature;
-    @service settings;
-
-    afterInfinityModel(posts) {
-        const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
-        if (publishedPosts.length === 0) {
-            return posts;
-        }
-
-        // Analytics loads are deliberately not awaited so a slow or
-        // unavailable analytics service can't block rendering the list -
-        // counts fill in reactively when the requests complete
-        if (this.settings.webAnalyticsEnabled) {
-            const postUuids = publishedPosts.map(post => post.uuid);
-            this.postAnalytics.loadVisitorCounts(postUuids);
-        }
-
-        if (this.settings.membersTrackSources) {
-            this.postAnalytics.loadMemberCounts(publishedPosts);
-        }
-
-        return posts;
-    }
-}
 
 export default class PostsRoute extends AuthenticatedRoute {
     @service stateBridge;
-    @service infinity;
     @service router;
-    @service feature;
-    @service postAnalytics;
-    @service settings;
     @service ui;
 
+    // Declared on the route so Ember's generated controller has them without
+    // a posts controller. The editor's `<LinkTo @query>` back link needs them
+    // declared to carry the list's filters through to React.
     queryParams = {
         type: {refreshModel: true},
         visibility: {refreshModel: true},
@@ -52,38 +17,11 @@ export default class PostsRoute extends AuthenticatedRoute {
         order: {refreshModel: true}
     };
 
-    modelName = 'post';
-    perPage = 30;
-
-    constructor() {
-        super(...arguments);
-
-        // if we're already on this route and we're transiting _to_ this route
-        // then the filters are being changed and we shouldn't create a new
-        // browser history entry
-        // see https://github.com/TryGhost/Ghost/issues/11057
-        this.router.on('routeWillChange', (transition) => {
-            if (transition.to && (this.routeName === 'posts' || this.routeName === 'pages')) {
-                const toThisRoute = transition.to.find(route => route.name === this.routeName);
-                if (transition.from && transition.from.name === this.routeName && toThisRoute) {
-                    transition.method('replace');
-                }
-            }
-        });
-    }
-
-    // React owns /posts and /pages when the flag is on. Aborting keeps the
-    // Ember subtree unrendered, so `data-testid` attributes exist in only one
-    // tree and none of the three infinity models below fire for a screen
-    // nobody sees. Inherited by PagesRoute, so this covers both URLs.
+    // React owns /posts and /pages. Aborting keeps Ember from rendering
+    // anything for them, and the navigation is handed to React instead.
+    // Inherited by PagesRoute, so this covers both URLs.
     beforeModel(transition) {
         super.beforeModel(...arguments);
-
-        // Strictly boolean, matching the tag route: a non-boolean labs value
-        // must not hand the route to React.
-        if (this.feature.postsListReact !== true) {
-            return;
-        }
 
         transition.abort();
 
@@ -103,8 +41,8 @@ export default class PostsRoute extends AuthenticatedRoute {
         // URL pointing here, so React renders and there is nothing to do -
         // and leaving it alone is what keeps query params like ?type=draft,
         // which is how saved views are addressed, intact. A named intent
-        // (`transitionTo('posts')` from the publish flow, or a
-        // `<LinkTo @route="posts">` breadcrumb) has no URL yet, so we supply
+        // (`transitionTo('posts')` from the publish flow, or the editor's
+        // `<LinkTo @route="posts">` back link) has no URL yet, so we supply
         // one.
         if (!transition.intent?.url) {
             const url = this._reactRouteUrl(transition);
@@ -173,182 +111,5 @@ export default class PostsRoute extends AuthenticatedRoute {
     // Ember acceptance tests run with `location: 'none'`.
     _navigateToReactRoute(url) {
         window.location.hash = url;
-    }
-
-    model(params) {
-        // Reset analytics cache every time we load the posts index to ensure fresh data
-        if (this.settings.webAnalyticsEnabled || this.settings.membersTrackSources) {
-            this.postAnalytics.reset();
-        }
-
-        const user = this.session.user;
-        const filterParams = {tag: params.tag, visibility: params.visibility};
-        const paginationParams = {
-            perPageParam: 'limit',
-            totalPagesParam: 'meta.pagination.pages'
-        };
-
-        // type filters are actually mapping statuses
-        assign(filterParams, this._getTypeFilters(params.type));
-
-        if (params.type === 'featured') {
-            filterParams.featured = true;
-        }
-
-        // authors and contributors can only view their own posts
-        if (user.isAuthor) {
-            filterParams.authors = user.slug;
-        } else if (user.isContributor) {
-            filterParams.authors = user.slug;
-            // otherwise we need to filter by author if present
-        } else if (params.author) {
-            filterParams.authors = params.author;
-        }
-
-        const perPage = this.perPage;
-
-        const filterStatuses = filterParams.status;
-        const queryParams = {allFilter: this._filterString({...filterParams})}; // pass along the parent filter so it's easier to apply the params filter to each infinity model
-        const models = {};
-
-        if (filterStatuses.includes('scheduled')) {
-            const scheduledInfinityModelParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: 'scheduled'})};
-            models.scheduledInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, scheduledInfinityModelParams));
-        }
-        if (filterStatuses.includes('draft')) {
-            const draftInfinityModelParams = {...queryParams, order: params.order || 'updated_at desc', filter: this._filterString({...filterParams, status: 'draft'})};
-            models.draftInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, draftInfinityModelParams));
-        }
-        if (filterStatuses.includes('published') || filterStatuses.includes('sent')) {
-            let publishedAndSentInfinityModelParams;
-            if (filterStatuses.includes('published') && filterStatuses.includes('sent')) {
-                publishedAndSentInfinityModelParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: '[published,sent]'})};
-            } else {
-                publishedAndSentInfinityModelParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: filterStatuses.includes('published') ? 'published' : 'sent'})};
-            }
-            models.publishedAndSentInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, publishedAndSentInfinityModelParams), PostsWithAnalytics);
-        }
-
-        return RSVP.hash(models);
-    }
-
-    // trigger a background load of any filtered tag/author that isn't already
-    // in the store so the filter dropdown triggers can display their names
-    setupController(controller, model) {
-        super.setupController(...arguments);
-
-        if (!this.session.user.isAuthorOrContributor && controller.selectedAuthor?.slug === '!unknown') {
-            this.store.queryRecord('user', {slug: controller.author});
-        }
-
-        if (controller.tag && !controller.selectedTag?.slug || controller.selectedTag?.slug === '!unknown') {
-            this.store.queryRecord('tag', {slug: controller.tag});
-        }
-
-        if (controller.selectionList) {
-            if (this.session.user.isAuthorOrContributor) {
-                controller.selectionList.enabled = false;
-            }
-            controller.selectionList.infinityModel = model;
-            controller.selectionList.clearSelection();
-        }
-
-        // Fetch analytics data for visible posts
-        this._fetchAnalyticsForPosts(model);
-    }
-
-    /**
-     * Fetch analytics data for all visible posts
-     * @param {Object} model - The posts model containing infinity models
-     */
-    async _fetchAnalyticsForPosts(model) {
-        // Early return if neither analytics feature is enabled
-        if (!this.settings.webAnalyticsEnabled && !this.settings.membersTrackSources) {
-            return;
-        }
-
-        const posts = [];
-        if (model.publishedAndSentInfinityModel?.content) {
-            posts.push(...model.publishedAndSentInfinityModel.content);
-        }
-        
-        if (posts.length === 0) {
-            return;
-        }
-
-        const promises = [];
-        
-        // Fetch visitor counts if web analytics is enabled
-        if (this.settings.webAnalyticsEnabled) {
-            const postUuids = posts.map(post => post.uuid);
-            promises.push(this.postAnalytics.loadVisitorCounts(postUuids));
-        }
-        
-        // Fetch member counts if member tracking is enabled
-        if (this.settings.membersTrackSources) {
-            promises.push(this.postAnalytics.loadMemberCounts(posts));
-        }
-
-        if (promises.length > 0) {
-            await Promise.all(promises);
-        }
-    }
-
-    @action
-    queryParamsDidChange() {
-        // scroll back to the top
-        const contentList = document.querySelector('.content-list');
-        if (contentList) {
-            contentList.scrollTop = 0;
-        }
-
-        super.actions.queryParamsDidChange.call(this, ...arguments);
-    }
-
-    buildRouteInfoMetadata() {
-        return {
-            titleToken: 'Posts'
-        };
-    }
-
-    /**
-     * Returns an object containing the status filter based on the given type.
-     *
-     * @param {string} type - The type of filter to generate (draft, published, scheduled, sent).
-     * @returns {Object} - An object containing the status filter.
-     */
-    _getTypeFilters(type) {
-        let status = '[draft,scheduled,published,sent]';
-
-        switch (type) {
-        case 'draft':
-            status = 'draft';
-            break;
-        case 'published':
-            status = 'published';
-            break;
-        case 'scheduled':
-            status = 'scheduled';
-            break;
-        case 'sent':
-            status = 'sent';
-            break;
-        }
-
-        return {
-            status
-        };
-    }
-
-    _filterString(filter) {
-        return Object.keys(filter).map((key) => {
-            const value = filter[key];
-
-            if (!isBlank(value)) {
-                return `${key}:${filter[key]}`;
-            }
-
-            return undefined;
-        }).compact().join('+');
     }
 }

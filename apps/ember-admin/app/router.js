@@ -31,8 +31,6 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('members-activity');
-
     this.route('react-fallback', {path: '/*path'});
 });
 

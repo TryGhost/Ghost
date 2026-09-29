@@ -1,6 +1,7 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
+import sinon from 'sinon';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
@@ -224,25 +225,22 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-button="confirm-publish"]'), 'publish button text')
             .to.have.rendered.trimmed.text('Publish post, right now');
 
+        const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
+
         await click('[data-test-button="confirm-publish"]');
 
         expect(post.status, 'post status after publish').to.equal('published');
 
-        expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom! It\'s out there.\nThat\'s 1 post published.');
-        expect(find('[data-test-complete-bookmark]'), 'bookmark card').to.exist;
+        // publishing hands over to the React posts list
+        expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
+        expect(currentRouteName(), 'route after publishing').to.equal('react-fallback');
 
         await visit(`/editor/post/${post.id}`);
 
         // "revert to draft" only shown for scheduled posts
         expect(find('[data-test-button="revert-to-draft"]'), 'revert-to-draft button').to.not.exist;
 
-        // publish/preview buttons are hidden on complete step
-        expect(find('[data-test-button="publish-flow-preview"]'), 'preview button on complete step').to.not.exist;
-        expect(find('[data-test-button="publish-flow-publish"]'), 'publish button on complete step').to.not.exist;
-
-        await click('[data-test-button="close-publish-flow"]');
-
+        expect(find('[data-test-modal="publish-flow"]'), 'publish flow modal after publishing').to.not.exist;
         expect(find('[data-test-button="publish-flow"]'), 'publish button after publishing').to.not.exist;
         expect(find('[data-test-button="update-flow"]'), 'update button after publishing').to.exist;
 
@@ -376,11 +374,12 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text('Publish & send, right now');
 
+            const navigate = sinon.stub(this.owner.lookup('route:posts'), '_navigateToReactRoute');
+
             await click('[data-test-button="confirm-publish"]');
 
-            // complete text has right count
-            expect(find('[data-test-complete-title]')).to.contain.rendered
-                .text('Boom! It\'s out there.\nThat\'s 1 post published.');
+            expect(post.status, 'post status after publish').to.equal('published');
+            expect(navigate.calledOnceWith('/posts'), 'navigated to the React posts list').to.be.true;
         });
 
         it('can publish+send with multiple newsletters', async function () {
