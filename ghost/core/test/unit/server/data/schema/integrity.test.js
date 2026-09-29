@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const { config } = require('../../../../utils/config-utils');
 const schema = require('../../../../../core/server/data/schema/schema');
+const inDevelopment = require('../../../../../core/server/data/schema/in-development');
 const fixtures = require('../../../../../core/server/data/schema/fixtures/fixtures.json');
 const defaultSettings = require('../../../../../core/server/data/schema/default-settings/default-settings.json');
 
@@ -55,7 +56,7 @@ describe('DB version integrity', function () {
       'yamlSource',
     );
 
-    const tablesNoValidation = _.cloneDeep(schema);
+    const tablesNoValidation = _.cloneDeep(_.omit(schema, inDevelopment.IN_DEVELOPMENT_TABLES));
 
     _.each(tablesNoValidation, function (table) {
       return _.each(table, function (column, name) {

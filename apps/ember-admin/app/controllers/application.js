@@ -8,7 +8,6 @@ export default class ApplicationController extends Controller {
     @service billing;
     @service router;
     @service session;
-    @service settings;
     @service ui;
     @service upgradeStatus;
     @service ghostPaths;

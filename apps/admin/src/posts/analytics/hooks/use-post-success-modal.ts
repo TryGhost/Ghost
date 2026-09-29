@@ -160,7 +160,7 @@ export const usePostSuccessModal = () => {
       author: getAuthorsText(post.authors),
       onClose: handleClose,
     };
-  }, [post, isModalOpen, postCount, site?.title, improveSendingUI]);
+  }, [post, isModalOpen, postCount, site?.title, site?.icon, improveSendingUI]);
 
   useEffect(() => {
     const checkForPublishedPost = () => {

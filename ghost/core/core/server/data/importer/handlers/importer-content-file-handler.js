@@ -36,12 +36,12 @@ class ImporterContentFileHandler {
   }
 
   async loadFile(files, baseDir) {
-    const baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp('');
+    const baseDirRegex = baseDir ? new RegExp('^' + _.escapeRegExp(baseDir) + '/') : new RegExp('');
 
     const contentFilesFolderRegexes = _.map(
       this.storage.staticFileURLPrefix.split('/'),
       function (dir) {
-        return new RegExp('^' + dir + '/');
+        return new RegExp('^' + _.escapeRegExp(dir) + '/');
       },
     );
 

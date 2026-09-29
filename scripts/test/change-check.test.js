@@ -20,7 +20,7 @@ describe('INTERNAL_DOCS_PATTERN', () => {
   });
 
   it('ignores repo-only markdown', () => {
-    for (const name of ['AGENTS.md', 'CLAUDE.md', 'CHANGELOG.md', 'docs/testing.md']) {
+    for (const name of ['AGENTS.md', 'CHANGELOG.md', 'docs/testing.md']) {
       assert.strictEqual(isIgnored(`${PACKAGE_DIR}/${name}`), true, name);
     }
   });

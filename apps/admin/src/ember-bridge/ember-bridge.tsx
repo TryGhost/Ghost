@@ -28,6 +28,7 @@ export interface StateBridge {
   preloadAdminThemeStylesheet?: () => Promise<void>;
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
   navigateToBillingSubRoute?: (subRoute: string) => void;
+  setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -327,6 +328,16 @@ export function navigateEmberBillingSubRoute(subRoute: string): boolean {
   }
   stateBridge.navigateToBillingSubRoute(subRoute);
   return true;
+}
+
+/** Keep the Ember editor's breadcrumb in sync with the React list. */
+export function syncEmberPostListQueryParams(
+  resource: 'posts' | 'pages',
+  params: Record<string, string>,
+): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setPostListQueryParams?.(resource, params);
+  });
 }
 
 /**

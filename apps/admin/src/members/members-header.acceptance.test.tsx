@@ -19,17 +19,12 @@ afterEach(async () => {
   await page.viewport(1280, 800);
 });
 
-it.each([
-  { width: 320, admin7Pill: true },
-  { width: 375, admin7Pill: true },
-  { width: 1023, admin7Pill: true },
-  { width: 375, admin7Pill: false },
-])(
-  'keeps member actions reachable while searching at $width px (Admin 7: $admin7Pill)',
-  async ({ width, admin7Pill }) => {
+it.each([320, 375, 1023])(
+  'keeps member actions reachable while searching at %s px',
+  async (width) => {
     await page.viewport(width, 800);
     const membersApi = fakeMembers([member({ name: 'Review Member' })]);
-    await renderAdminApp('/members', { labs: { admin7Pill } });
+    await renderAdminApp('/members');
 
     await page.getByRole('button', { name: 'Show member search', exact: true }).click();
     await expect.element(mobileSearch()).toHaveFocus();
@@ -47,9 +42,7 @@ it.each([375, 768])(
   async (width) => {
     await page.viewport(width, 800);
     fakeMembers([member({ name: 'Review Member' })]);
-    await renderAdminApp('/members?search=Review&filter=status:free', {
-      labs: { admin7Pill: true },
-    });
+    await renderAdminApp('/members?search=Review&filter=status:free');
 
     await expect.element(mobileSearch()).toHaveValue('Review');
     await expectPrimaryInViewport();
@@ -71,7 +64,7 @@ it.each([375, 768])(
 it('preserves desktop expansion, Escape focus and the query when resizing to mobile', async () => {
   await page.viewport(1024, 800);
   const membersApi = fakeMembers([member({ name: 'Review Member' })]);
-  await renderAdminApp('/members', { labs: { admin7Pill: true } });
+  await renderAdminApp('/members');
 
   const searchTrigger = page.getByRole('button', { name: 'Search members', exact: true });
   await searchTrigger.click();

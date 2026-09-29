@@ -9,7 +9,7 @@ import {
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { editorFileUploader } from './koenig-file-uploader';
-import { reportKoenigError } from './report-error';
+import { reportKoenigError, reportKoenigRenderError } from './report-error';
 
 const NOOP = () => {};
 
@@ -99,7 +99,7 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
 
   return (
     <div className="koenig-react-editor koenig-lexical mx-auto w-full max-w-[740px]">
-      <ErrorBoundary name="the editor">
+      <ErrorBoundary name="the editor" onError={reportKoenigRenderError}>
         <Suspense
           fallback={
             <div className="flex justify-center py-10">

@@ -27,6 +27,7 @@ import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
+import { lazyMigrateScreen } from './migrate/api';
 import { membersRouteChildren } from './members/api';
 import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
 import {
@@ -36,10 +37,12 @@ import {
 } from './posts/api';
 import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
 import { lazyTagDetailScreen, lazyTagsScreen } from './tags/api';
+import { lazyViewSiteScreen } from './view-site/api';
 import {
   canManageAutomations,
   canManageMembers,
   canManageTags,
+  hasAdminAccess,
 } from '@tryghost/admin-x-framework/api/users';
 
 import { NotFound } from './shared/not-found';
@@ -47,7 +50,6 @@ import { NotFound } from './shared/not-found';
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
 const EMBER_ROUTES: string[] = [
-  '/site',
   '/setup',
   '/signin/*',
   '/signout',
@@ -55,7 +57,6 @@ const EMBER_ROUTES: string[] = [
   '/reset/*',
   '/pro/*',
   '/restore',
-  '/migrate/*',
 ];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
@@ -203,6 +204,15 @@ const appRoutes: RouteObject[] = [
     path: '/editor/*',
     Component: EditorGate,
     handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
+  },
+  { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
+  {
+    path: '/migrate/*',
+    lazy: lazyComponent(lazyMigrateScreen),
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: hasAdminAccess,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
   },
   // Ember-handled routes
   ...emberFallbackRoutes,

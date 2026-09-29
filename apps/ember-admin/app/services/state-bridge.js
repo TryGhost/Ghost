@@ -4,6 +4,7 @@ import {action} from '@ember/object';
 import {getOwner} from '@ember/application';
 import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
+import {tracked} from '@glimmer/tracking';
 
 const emberDataTypeMapping = {
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
@@ -42,6 +43,13 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @service ui;
 
     @inject config;
+
+    @tracked postListQueryParams = {posts: {}, pages: {}};
+
+    @action
+    setPostListQueryParams(resource, params) {
+        this.postListQueryParams = {...this.postListQueryParams, [resource]: params};
+    }
 
     /**
      * Gives React the same synchronous Labs route-ownership decision Ember

@@ -20,12 +20,7 @@ const OPEN_MOBILE_SIDEBAR_SELECTOR = '[data-mobile="true"][data-state="open"]';
 const LegacyPage: React.FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <>
-      <div
-        className="fixed top-2 right-0 z-50 m-8 flex justify-end bg-transparent tablet:fixed tablet:top-0"
-        id="done-button-container"
-      >
-        <ExitSettingsButton />
-      </div>
+      <ExitSettingsButton />
       <div
         className="fixed top-0 left-0 flex size-full bg-gray-50 dark:bg-gray-950 dark:tablet:bg-[#101114]"
         id="settings-content"

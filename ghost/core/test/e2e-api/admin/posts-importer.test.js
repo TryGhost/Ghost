@@ -29,6 +29,10 @@ const { compress } = require('@tryghost/zip');
 const sinon = require('sinon');
 
 const csvPath = path.join(__dirname, '../../utils/fixtures/csv/valid-posts-import.csv');
+// Imported images must have image contents, not just an image extension
+const imageBytes = require('node:fs').readFileSync(
+  path.join(__dirname, '../../utils/fixtures/images/ghosticon.jpg'),
+);
 
 // Test CSVs are written inline to a temp dir rather than committed as fixtures.
 let tmpDir;
@@ -657,7 +661,7 @@ describe('Posts Importer API', function () {
       'ZIP short asset path,"<p><img src=""/images/csv-zip-photo.jpg""></p>",,,,\n';
     const zipPath = await zipFile('posts-with-assets.zip', {
       'export/posts.csv': csv,
-      'export/content/images/csv-zip-photo.jpg': 'image bytes',
+      'export/content/images/csv-zip-photo.jpg': imageBytes,
       'export/content/media/csv-zip-movie.mp4': 'media bytes',
       'export/content/files/csv-zip-guide.pdf': 'file bytes',
     });
@@ -718,7 +722,7 @@ describe('Posts Importer API', function () {
       'Canonical ZIP assets,"<p><img src=""__GHOST_URL__/content/images/canonical-image.jpg""></p><a href=""__GHOST_URL__/content/media/canonical-media.mp4"">Media</a><a href=""__GHOST_URL__/content/files/canonical-file.pdf"">File</a>",__GHOST_URL__/content/images/canonical-image.jpg,__GHOST_URL__/content/images/canonical-image.jpg,__GHOST_URL__/content/images/canonical-image.jpg\n';
     const zipPath = await zipFile('posts-with-canonical-assets.zip', {
       'posts.csv': csv,
-      'images/canonical-image.jpg': 'image bytes',
+      'images/canonical-image.jpg': imageBytes,
       'media/canonical-media.mp4': 'media bytes',
       'files/canonical-file.pdf': 'file bytes',
     });
@@ -810,7 +814,7 @@ describe('Posts Importer API', function () {
       .rejects(new Error('file storage failed'));
     const zipPath = await zipFile('posts-with-cross-group-failure.zip', {
       'posts.csv': 'title,html\nZIP cross-group failure,<p>Must not import</p>\n',
-      'content/images/rollback-cross-image.jpg': 'image bytes',
+      'content/images/rollback-cross-image.jpg': imageBytes,
       'content/files/rollback-cross-file.pdf': 'file bytes',
     });
 

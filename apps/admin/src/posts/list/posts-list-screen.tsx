@@ -41,7 +41,8 @@ import {
 import { type PostResource, getPostResourceCopy } from './post-resource';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { usePostsFilterState } from './hooks/use-posts-filter-state';
-import { rememberStickyPostFilters } from './posts-sticky-filters';
+import { getPostListReturnUrl, rememberStickyPostFilters } from './posts-sticky-filters';
+import { syncEmberPostListQueryParams } from '@/ember-bridge';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
@@ -66,11 +67,13 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const { data: settingsData } = useBrowseSettings();
   const improveSendingUI = useFeatureFlag('improveSendingUI');
 
-  // Report the current filters so the sidebar's Posts link can return here.
+  // Report the current filters so the sidebar and editor can return here.
   const location = useLocation();
 
   useEffect(() => {
     rememberStickyPostFilters(resource, location.search);
+    const search = getPostListReturnUrl(resource).split('?')[1];
+    return syncEmberPostListQueryParams(resource, Object.fromEntries(new URLSearchParams(search)));
   }, [resource, location.search]);
 
   // Scheduled times read in the site's timezone, not the browser's.
@@ -135,6 +138,13 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const { items, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage, totalItems } =
     usePostsList({ resource, params, context: { ownAuthorSlug } });
 
+  // Snapshotted when the menu item is picked: Radix closes the menu at once,
+  // which clears a transient selection before the modal could read it.
+  const [pendingBulkAction, setPendingBulkAction] = useState<{
+    key: PostContextMenuKey;
+    snapshot: BulkActionSnapshot;
+  } | null>(null);
+
   // Selection is a bulk-edit affordance, and authors and contributors have no
   // bulk actions — Ember disables the whole SelectionList for them.
   const selection = usePostSelection({
@@ -143,6 +153,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     // filter rather than every id, so it covers rows never loaded.
     allFilter: buildAllFilter(params, { ownAuthorSlug }),
     enabled: Boolean(currentUser) && !isRestrictedAuthor,
+    suspended: pendingBulkAction !== null,
   });
 
   // The menu describes the selection, not the row under the cursor. Ember's
@@ -199,13 +210,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   // this reads it. The editor stays Ember on both sides of the flag.
   const celebration = usePostPublishCelebration();
   const { data: siteData } = useBrowseSite();
-
-  // Snapshotted when the menu item is picked: Radix closes the menu at once,
-  // which clears a transient selection before the modal could read it.
-  const [pendingBulkAction, setPendingBulkAction] = useState<{
-    key: PostContextMenuKey;
-    snapshot: BulkActionSnapshot;
-  } | null>(null);
 
   const bulkActions = usePostBulkActions({
     resource,
@@ -461,6 +465,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
           <PostCelebrationModal
             post={celebration.post}
             postCount={celebration.postCount}
+            siteIcon={siteData?.site.icon}
             siteTitle={siteData?.site.title ?? ''}
             type={celebration.celebration.type}
             wasPublished={celebration.celebration.wasPublished}

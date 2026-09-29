@@ -34,7 +34,11 @@ import {
 import type { RestoredRevision } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
-import { reportEditorError } from '@/editor/report-error';
+import {
+  reportEditorError,
+  reportLeaveConfirmation,
+  reportSaveFailure,
+} from '@/editor/report-error';
 import { contentToText } from './content-text';
 import {
   createEditorSession,
@@ -207,6 +211,8 @@ export function useEditorSession({
       autosaveDebounceMs: () => autosaveDebounceMs.current,
       onIdAcquired: setPersistedId,
       onError: reportEditorError,
+      onSaveFailed: (failure) => reportSaveFailure(failure, postType),
+      onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, postType),
       transport: {
         create: async (payload: EditorCreatePayload) => {
           const current = transport.current;

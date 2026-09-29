@@ -9,7 +9,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const ghostBookshelf = require('./base');
 const config = require('../../shared/config');
 const settingsCache = require('../../shared/settings-cache');
-const limitService = require('../services/limits');
+const { limitService } = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const lexicalLib = require('../lib/lexical');
 const relations = require('./relations');
@@ -754,7 +754,14 @@ Post = ghostBookshelf.Model.extend(
           (!this.get('html') && (options.migrating || options.importing)))
       ) {
         try {
-          this.set('lexical', mobiledocToLexical(this.get('mobiledoc')));
+          let lexical = mobiledocToLexical(this.get('mobiledoc'));
+
+          // an empty mobiledoc converts to an empty root, which lexical refuses to render
+          if (!JSON.parse(this.get('mobiledoc')).sections?.length) {
+            lexical = JSON.stringify(lexicalLib.blankDocument);
+          }
+
+          this.set('lexical', lexical);
           this.set('mobiledoc', null);
         } catch (err) {
           throw new errors.ValidationError({

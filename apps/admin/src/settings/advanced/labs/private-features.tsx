@@ -55,12 +55,6 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
-    title: 'Admin 7 · Milestone 2 · Pill controls',
-    description:
-      'Preview Admin 7 controls and page headers on React pages, including the React editor.',
-    flag: 'admin7Pill',
-  },
-  {
     title: 'Admin 7 · Settings navigation',
     description: 'Preview Settings in the Admin navigation shell.',
     flag: 'admin7settings',
