@@ -21,10 +21,20 @@ const VARIANTS = {
     empty: 'h-14',
     dropzone: 'group/dropzone w-auto border-0 bg-transparent px-0 shadow-none hover:bg-transparent',
     prompt: 'transition-colors group-hover/dropzone:text-foreground',
+    icon: LucideIcon.Plus,
+    iconClassName: 'size-4',
     label: 'text-base',
     unsplash: 'static',
   },
-  panel: { empty: 'h-[120px]', dropzone: '', prompt: '', label: 'text-sm', unsplash: '' },
+  panel: {
+    empty: 'h-[120px]',
+    dropzone: 'group/dropzone bg-surface-elevated transition-colors',
+    prompt: 'transition-colors group-hover/dropzone:text-foreground',
+    icon: LucideIcon.Upload,
+    iconClassName: 'size-6 stroke-[1.5px]',
+    label: 'text-sm',
+    unsplash: '',
+  },
 };
 
 export type ImageFieldVariant = keyof typeof VARIANTS;
@@ -70,6 +80,8 @@ export function ImageField({
   const { isUploading, onUpload } = upload;
   const styles = VARIANTS[variant];
   const EmptyContainer = variant === 'bar' ? Inline : ImageUpload;
+  const PromptContainer = variant === 'bar' ? Inline : Stack;
+  const PromptIcon = styles.icon;
   const addLabel = `Add ${subject}`;
 
   if (!src) {
@@ -91,15 +103,15 @@ export function ImageField({
           {isUploading ? (
             <LoadingIndicator size="sm" />
           ) : (
-            <Inline gap="sm">
-              <LucideIcon.Plus
+            <PromptContainer align="center" gap="sm">
+              <PromptIcon
                 aria-hidden="true"
-                className={cn('size-4 text-muted-foreground', styles.prompt)}
+                className={cn('text-muted-foreground', styles.iconClassName, styles.prompt)}
               />
               <span className={cn('text-muted-foreground', styles.prompt, styles.label)}>
                 {addLabel}
               </span>
-            </Inline>
+            </PromptContainer>
           )}
         </ImageUploadDropzone>
         <UnsplashPicker
