@@ -710,6 +710,10 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     if (frontend) {
       initFrontend();
     }
+    // The Admin API resolves the site importer on each import request, so the
+    // importer has to exist before the API is loaded.
+    require('./server/data/importer').init();
+
     const ghostApp = await initExpressApps({ frontend, backend, config });
 
     await initDynamicRouting({ frontend });
