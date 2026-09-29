@@ -438,6 +438,9 @@ const STEP_CENTER_MS = 450;
 // Below this the canvas doesn't bother: a card that already sits near the middle
 // doesn't need correcting by a few pixels, and a move that small reads as the canvas
 // slipping rather than as anything being done.
+// The pane card's slide, which the flow's re-centring pan runs alongside. Keep
+// in step with the detail screen's chrome duration.
+const PANE_SLIDE_MS = 300;
 const STEP_CENTER_MIN_SHIFT = 24;
 
 // The column opening to make room for an insertion, and closing up after a delete.
@@ -833,7 +836,6 @@ const EmailThumbnail: React.FC<{
         )}
       >
         <Button
-          className="shadow-md"
           tabIndex={editable ? 0 : -1}
           type="button"
           onClick={(event) => {
@@ -1790,6 +1792,10 @@ interface EditCanvasProps {
   // Same variant, same moment: no zoom controls while the screen is one card
   // and a question — HUD is chrome for a flow, and there isn't one yet.
   hideControls?: boolean;
+  // Width covered on the canvas's right by something floating over it — the
+  // pane card. The flow centres in what's left, and pans across when it
+  // changes. 0 when nothing covers it.
+  rightInset?: number;
 }
 
 export const EditCanvas: React.FC<EditCanvasProps> = ({
@@ -1806,8 +1812,35 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   alwaysShowInserts = false,
   onCreateAutomation,
   hideControls = false,
+  rightInset = 0,
 }) => {
-  const { canvasRef, onInit, size, contentHeightRef, recenter } = useCenteredColumn();
+  // The shared hook centres the column in [leftInset, width]; a NEGATIVE left
+  // inset of the right-hand cover centres it in [0, width - cover] instead.
+  // Only the value at mount goes in: the hook re-centres outright (y included)
+  // whenever its inset changes, and a pane opening mid-session should pan the
+  // flow across, not reset where you'd scrolled to — see the effect below.
+  const initialLeftInset = useRef(-rightInset).current;
+  const { canvasRef, onInit, size, contentHeightRef, recenter } =
+    useCenteredColumn(initialLeftInset);
+  // The pane opening or closing: pan across by half the change, on the pane's
+  // own curve and duration, so the flow re-centres in the space that's left as
+  // the card slides. A shift rather than a re-centre, so a sideways pan of your
+  // own is kept.
+  const rightInsetRef = useRef(rightInset);
+  useEffect(() => {
+    const previous = rightInsetRef.current;
+    rightInsetRef.current = rightInset;
+    const instance = flowRef.current;
+    if (previous === rightInset || !instance) {
+      return;
+    }
+    const { x, y, zoom } = instance.getViewport();
+    void instance.setViewport(
+      { x: x + (previous - rightInset) / 2, y, zoom },
+      // PROTO_EASE is an ease-out; cubic ease-out is its close cousin in JS.
+      { duration: PANE_SLIDE_MS, ease: (t) => 1 - (1 - t) ** 3 },
+    );
+  }, [rightInset]);
   // This lane centres a new step on the canvas's true middle rather than the
   // shared centerOn's 40%. Kept here so the shared hook is untouched; it needs
   // the flow instance, so onInit is wrapped to catch it.
@@ -1827,7 +1860,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         return;
       }
       const { zoom, x: currentX, y: currentY } = instance.getViewport();
-      const x = Math.round((el.clientWidth - NODE_WIDTH * zoom) / 2);
+      const x = Math.round((el.clientWidth - rightInsetRef.current - NODE_WIDTH * zoom) / 2);
       const targetY = el.clientHeight / 2 - y * zoom;
       if (Math.abs(targetY - currentY) < minShift && Math.abs(x - currentX) < minShift) {
         return;
@@ -2449,8 +2482,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   contentHeightRef.current = contentBottom;
 
   const translateExtent = useMemo(
-    () => panTranslateExtent(contentBottom, size),
-    [contentBottom, size],
+    () => panTranslateExtent(contentBottom, size, -rightInset),
+    [contentBottom, size, rightInset],
   );
 
   return (

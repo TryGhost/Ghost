@@ -20,7 +20,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tryghost/shade/components';
-import { Box, Inline, Stack } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import {
   FilterBar,
   GhAreaChart,
@@ -38,7 +38,7 @@ export interface ExplorationLeftPanelProps extends LeftPanelProps {
   settings: SettingsPanelProps;
 }
 
-type PaneTab = 'performance' | 'members' | 'settings';
+type PaneTab = 'performance' | 'settings';
 import {
   EXIT_REASONS,
   exitReasonLabel,
@@ -229,11 +229,13 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   // five times. Tried at 32px and came back to 24.
   const gutter = 'px-4';
 
-  // Three tabs: Performance (how it's doing — the chart and the status counts),
-  // Members (who — the searchable list), and Settings (the automation itself). They used to be one long scroll
-  // with a sticky bar at the seam; as tabs, each gets the whole pane, and the
-  // list's controls stay put above it without any stuck/unstuck choreography.
+  // Two tabs: Performance — how it's doing (the chart and status counts) and
+  // who (the searchable members list), in one scroll — and Settings, the
+  // automation itself. Members had a tab of its own for a while; review put it
+  // back under the numbers it breaks down.
   const [tab, setTab] = useState<PaneTab>('performance');
+  // Search collapses to a magnifier in the Members heading until pressed.
+  const [searchOpen, setSearchOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusKey | null>(null);
   // Why someone left, filtered separately from the status. Deliberately not a
   // fourth status card: the three statuses are mutually exclusive outcomes, and
@@ -338,9 +340,10 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   const filterMenu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        {/* h-9 to sit level with the 36px search field beside it. The word is
-            the label, so no aria-label. */}
-        <Button className="h-9 shrink-0" type="button" variant="outline">
+        {/* Ghost with its word, as on the members page. h-9 to sit level with
+            the search button and field beside it. The word is the label, so no
+            aria-label. */}
+        <Button className="h-9 shrink-0" type="button" variant="ghost">
           <LucideIcon.ListFilter strokeWidth={2} />
           Filter
         </Button>
@@ -402,11 +405,11 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
       <InputGroupAddon>
         <LucideIcon.Search />
       </InputGroupAddon>
-      {/* No autoFocus: it's mounted with the tab, and taking focus on arrival would
-                take it from wherever the reader was. */}
+      {/* Focused on arrival: it only mounts because the magnifier was pressed. */}
       <InputGroupInput
         placeholder="Search members…"
         value={query}
+        autoFocus
         onChange={(e) => onQueryChange(e.target.value)}
       />
     </InputGroup>
@@ -427,7 +430,6 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
             so it's left clear. */}
         <TabsList className="mx-4 mt-3 mb-6 shrink-0">
           <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         <TabsContent className="min-h-0 flex-1 overflow-y-auto" value="performance">
@@ -481,7 +483,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
               </div>
             </div>
 
-            {/* Three counts in a row. Each opens the Members tab filtered to it. */}
+            {/* Three counts in a row. Each filters the members list below to it. */}
             <div className="grid grid-cols-3 gap-3">
               {STATUS_FACETS.map((facet) => {
                 const active = statusFilter === facet.key;
@@ -496,12 +498,11 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                         : 'border-border-default hover:bg-interactive-hover',
                     )}
                     type="button"
-                    // Straight to the list, filtered to that status: on this tab
-                    // the cards report, and pressing one asks "who are they?".
+                    // Filters the list below to that status — pressing one asks
+                    // "who are they?" — and pressing it again clears it.
                     onClick={() => {
-                      setStatusFilter(facet.key);
+                      setStatusFilter(active ? null : facet.key);
                       setExitFilter(null);
-                      setTab('members');
                     }}
                   >
                     <Stack gap="sm">
@@ -516,22 +517,50 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
               })}
             </div>
           </div>
-        </TabsContent>
-        {/* data-[state=inactive]:hidden: Radix hides an inactive tab with the
-            hidden attribute, and `flex` outranks it — so without this, the
-            empty Members panel held its space above whichever tab was showing. */}
-        <TabsContent
-          className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
-          value="members"
-        >
-          {/* The controls, held above the list rather than scrolling with it:
-              search and the filters on one row, then what's narrowing the list
-              as removable chips. Status is filtered from the filter menu (or a
-              Performance card) — no separate row of status pills. Only the
-              table scrolls. */}
-          <div className={cn('shrink-0 pb-4', gutter)}>
-            <div className="flex gap-2 pb-3">
-              {searchField}
+          {/* Who — the members list, under the summary in the same scroll. A
+              heading marks where "how is it doing" ends and the roster begins.
+              Its controls (search, Filter, and what's narrowing the list as
+              chips) stick to the top of the tab as the table scrolls beneath,
+              so they're in reach all the way down. Status is filtered from the
+              Filter menu or a card above — no separate row of status pills. */}
+          {/* The heading row, the members page's shape: the title at the left,
+              search and Filter at the right. Search is a magnifier until
+              pressed, then takes the title's place as a field (closing it
+              clears it). The whole row sticks to the top of the tab. */}
+          <div className={cn('sticky top-0 z-20 bg-background pb-3', gutter)}>
+            <div className="flex h-9 items-center gap-1">
+              {searchOpen ? (
+                <>
+                  {searchField}
+                  <Button
+                    aria-label="Close search"
+                    size="icon"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      onQueryChange('');
+                      setSearchOpen(false);
+                    }}
+                  >
+                    <LucideIcon.X strokeWidth={2} />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Text as="h3" className="min-w-0 flex-1" size="md" weight="semibold">
+                    Members
+                  </Text>
+                  <Button
+                    aria-label="Search members"
+                    size="icon"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setSearchOpen(true)}
+                  >
+                    <LucideIcon.Search strokeWidth={2} />
+                  </Button>
+                </>
+              )}
               {filterMenu}
             </div>
             {/* What's narrowing the list, stated below the controls rather than hidden
@@ -570,11 +599,10 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
               </FilterBar>
             )}
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            {/* Member table. table-fixed keeps the Entered/Status widths steady. */}
-            <div className={cn('pb-6', gutter)}>
-              <Table className="table-fixed" data-testid="float-entries-table">
-                {/* No header row. Three columns, and not one of them needed naming:
+          {/* Member table. table-fixed keeps the Entered/Status widths steady. */}
+          <div className={cn('pb-6', gutter)}>
+            <Table className="table-fixed" data-testid="float-entries-table">
+              {/* No header row. Three columns, and not one of them needed naming:
                           the dot is explained by the count cards and chips above, the names
                           are obviously names, and the dates now say "Entered" in the cell
                           itself. A header of one blank cell and two labels restating what
@@ -582,59 +610,57 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
 
                           It went with sorting, which lived in those heads — see the fixed
                           order above. */}
-                <TableBody>
-                  {sorted.length === 0 && (
-                    <TableRow className="hover:bg-transparent">
-                      <TableCell
-                        className="py-6 text-center text-sm text-muted-foreground"
-                        colSpan={3}
-                      >
-                        No members match.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {sorted.map(({ run, status }) => {
-                    const isSelected = run.id === selectedMemberId;
-                    return (
-                      <TableRow
-                        key={run.id}
-                        aria-selected={isSelected}
-                        // Selection is Shade's own: TableRow ships
-                        // data-[state=selected]:bg-muted, so the state goes through
-                        // data-state and the fill comes from the component rather
-                        // than from a class here. Hover matches the interactive
-                        // controls above it.
-                        //
-                        // Plain grey either way. A rounded blue ring was tried via a
-                        // tr::before overlay (radius doesn't work on collapsed table
-                        // rows directly) and broke row layout — positioned table rows
-                        // aren't dependable. The canvas's blue review ring carries the
-                        // "you're in this member's run" signal on its own.
-                        className="cursor-pointer transition-colors hover:bg-interactive-hover"
-                        data-state={isSelected ? 'selected' : undefined}
-                        // Toggle: clicking the selected row again de-selects it.
-                        onClick={() => onSelectMember(isSelected ? null : run.id)}
-                      >
-                        {/* w-10 and no horizontal padding: the dot centres in a column
+              <TableBody>
+                {sorted.length === 0 && (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell
+                      className="py-6 text-center text-sm text-muted-foreground"
+                      colSpan={3}
+                    >
+                      No members match.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {sorted.map(({ run, status }) => {
+                  const isSelected = run.id === selectedMemberId;
+                  return (
+                    <TableRow
+                      key={run.id}
+                      aria-selected={isSelected}
+                      // Selection is Shade's own: TableRow ships
+                      // data-[state=selected]:bg-muted, so the state goes through
+                      // data-state and the fill comes from the component rather
+                      // than from a class here. Hover matches the interactive
+                      // controls above it.
+                      //
+                      // Plain grey either way. A rounded blue ring was tried via a
+                      // tr::before overlay (radius doesn't work on collapsed table
+                      // rows directly) and broke row layout — positioned table rows
+                      // aren't dependable. The canvas's blue review ring carries the
+                      // "you're in this member's run" signal on its own.
+                      className="cursor-pointer transition-colors hover:bg-interactive-hover"
+                      data-state={isSelected ? 'selected' : undefined}
+                      // Toggle: clicking the selected row again de-selects it.
+                      onClick={() => onSelectMember(isSelected ? null : run.id)}
+                    >
+                      {/* w-10 and no horizontal padding: the dot centres in a column
                                   just wide enough to hold it, so the member names still start
                                   near the pane's own gutter rather than indented behind a
                                   column of mostly air. */}
-                        <TableCell
-                          className="w-10 px-0 py-4 text-center align-middle group-hover:bg-transparent"
-                          title={
-                            runFailed(run) ? `${status} — ${exitReasonLabel('failed')}` : status
-                          }
+                      <TableCell
+                        className="w-10 px-0 py-4 text-center align-middle group-hover:bg-transparent"
+                        title={runFailed(run) ? `${status} — ${exitReasonLabel('failed')}` : status}
+                      >
+                        <StatusMark run={run} status={status} />
+                      </TableCell>
+                      <TableCell className="min-w-0 py-4 pr-4 pl-0 group-hover:bg-transparent">
+                        <span
+                          className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}
                         >
-                          <StatusMark run={run} status={status} />
-                        </TableCell>
-                        <TableCell className="min-w-0 py-4 pr-4 pl-0 group-hover:bg-transparent">
-                          <span
-                            className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}
-                          >
-                            {run.member.name}
-                          </span>
-                        </TableCell>
-                        {/* The bare relative time — "3 days ago", "Yesterday". It briefly
+                          {run.member.name}
+                        </span>
+                      </TableCell>
+                      {/* The bare relative time — "3 days ago", "Yesterday". It briefly
                                   read "Entered 3 days ago", which said the same word down every
                                   row to answer a question asked once.
 
@@ -648,17 +674,16 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                                   name, then the dot, and the date only if you're already
                                   interested — so it recedes rather than lining up at full
                                   strength beside the name. */}
-                        <TableCell className="w-28 p-4 align-middle group-hover:bg-transparent">
-                          <span className="block truncate text-base text-muted-foreground">
-                            {startedLabel(run.enrolled_at)}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                      <TableCell className="w-28 p-4 align-middle group-hover:bg-transparent">
+                        <span className="block truncate text-base text-muted-foreground">
+                          {startedLabel(run.enrolled_at)}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
         </TabsContent>
         <TabsContent className="min-h-0 flex-1 overflow-y-auto" value="settings">

@@ -572,9 +572,12 @@ const AutomationFloat: React.FC = () => {
                   into an inline-analytics variant (stats as a bar on the card);
                   that concept was deleted when the card was consolidated — the
                   right-hand sheet is how analytics open everywhere. */}
+              {/* The pane card covers the canvas's right 420px while it's open —
+                  the flow centres in what's left, and pans across as it slides. */}
               <EditCanvas
                 draft={draftFlow}
                 lane={LANE}
+                rightInset={paneCollapsed ? 0 : 420}
                 triggerConfig={triggerConfig}
                 onChange={handleDraftChange}
                 onTriggerConfigChange={handleTriggerConfigChange}
