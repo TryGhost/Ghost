@@ -19,10 +19,9 @@ import type { ImageFieldUpload } from './use-image-field-upload';
 const VARIANTS = {
   bar: {
     empty: 'h-14',
-    dropzone:
-      'group/dropzone border-transparent bg-transparent transition-colors hover:bg-interactive-hover',
+    dropzone: 'group/dropzone w-auto border-0 bg-transparent px-0 shadow-none hover:bg-transparent',
     prompt: 'transition-colors group-hover/dropzone:text-foreground',
-    unsplash: 'top-1/2 right-2 -translate-y-1/2',
+    unsplash: 'static',
   },
   panel: { empty: 'h-[120px]', dropzone: '', prompt: '', unsplash: '' },
 };
@@ -69,11 +68,12 @@ export function ImageField({
 }: ImageFieldProps) {
   const { isUploading, onUpload } = upload;
   const styles = VARIANTS[variant];
+  const EmptyContainer = variant === 'bar' ? Inline : ImageUpload;
   const addLabel = `Add ${subject}`;
 
   if (!src) {
     return (
-      <ImageUpload className={cn(styles.empty, className)} data-testid={testId}>
+      <EmptyContainer className={cn(styles.empty, className)} data-testid={testId}>
         <ImageUploadDropzone
           accept={ACCEPTED_IMAGE_TYPES}
           className={styles.dropzone}
@@ -104,7 +104,7 @@ export function ImageField({
             onUnsplashSelect ? onUnsplashSelect(picked) : onChange(picked.src)
           }
         />
-      </ImageUpload>
+      </EmptyContainer>
     );
   }
 
