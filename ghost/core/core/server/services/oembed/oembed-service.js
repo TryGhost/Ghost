@@ -272,6 +272,22 @@ class OEmbedService {
   }
 
   /**
+   * Stores a provider's thumbnail, falling back to the provider's URL if the
+   * image can't be stored.
+   *
+   * @param {string} thumbnailUrl
+   * @returns {Promise<string>} - URL of the stored thumbnail
+   */
+  async storeThumbnail(thumbnailUrl) {
+    try {
+      return await this.processImageFromUrl(thumbnailUrl, 'thumbnail');
+    } catch (err) {
+      logging.error(err);
+      return thumbnailUrl;
+    }
+  }
+
+  /**
    * Fetch bookmark enrichment from an allowlisted oEmbed provider without
    * exposing provider-supplied HTML.
    *
@@ -754,6 +770,29 @@ class OEmbedService {
    * @returns {Promise<Object>}
    */
   async fetchOembedDataFromUrl(url, type, options = {}) {
+    const data = await this.#fetchOembedDataFromUrl(url, type, options);
+
+    // Mentions aren't stored in content and can be triggered by third
+    // parties sending webmentions, so their images are never downloaded
+    if (type === 'mention' || !data?.thumbnail_url) {
+      return data;
+    }
+
+    return {
+      ...data,
+      thumbnail_url: await this.storeThumbnail(data.thumbnail_url),
+      thumbnail_url_original: data.thumbnail_url,
+    };
+  }
+
+  /**
+   * @param {string} url
+   * @param {string} type
+   * @param {Object} options
+   *
+   * @returns {Promise<Object>}
+   */
+  async #fetchOembedDataFromUrl(url, type, options) {
     const { shouldRethrowFetchError, ...fetchOptions } = options;
 
     try {

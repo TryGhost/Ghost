@@ -70,6 +70,16 @@ describe('Oembed API', function () {
 
     assert.equal(requestMock.isDone(), true);
     assertExists(res.body.html);
+    assert.equal(res.body.thumbnail_url, '/content/images/thumbnail/image-01.png');
+    assert.equal(
+      res.body.thumbnail_url_original,
+      'https://i.ytimg.com/vi/E5yFcdPAGv0/hqdefault.jpg',
+    );
+    sinon.assert.calledOnceWithExactly(
+      processImageFromUrlStub,
+      'https://i.ytimg.com/vi/E5yFcdPAGv0/hqdefault.jpg',
+      'thumbnail',
+    );
   });
 
   it('does not use http preferentially to https', async function () {

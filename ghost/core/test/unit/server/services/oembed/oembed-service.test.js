@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const http = require('http');
 const nock = require('nock');
 const got = require('got').default;
+const logging = require('@tryghost/logging');
 const sinon = require('sinon');
 const sharp = require('sharp');
 const zlib = require('zlib');
@@ -616,6 +617,108 @@ describe('oembed-service', function () {
         });
 
       await oembedService.fetchOembedDataFromUrl('https://youtube.com/live/1234?param=existing');
+    });
+
+    describe('embed thumbnails', function () {
+      const thumbnailUrl = 'https://i.ytimg.com/vi/1234/hqdefault.jpg';
+
+      afterEach(function () {
+        sinon.restore();
+      });
+
+      it('stores the thumbnail and returns the provider URL alongside', async function () {
+        const processImageFromUrlStub = sinon
+          .stub(oembedService, 'processImageFromUrl')
+          .resolves('/content/images/thumbnail/youtube.jpg');
+
+        nock('https://www.youtube.com').get('/oembed').query(true).reply(200, {
+          type: 'video',
+          version: '1.0',
+          html: '<iframe src="https://www.youtube.com/embed/1234"></iframe>',
+          width: 200,
+          height: 113,
+          thumbnail_url: thumbnailUrl,
+        });
+
+        const response = await oembedService.fetchOembedDataFromUrl(
+          'https://www.youtube.com/watch?v=1234',
+        );
+
+        assert.equal(response.thumbnail_url, '/content/images/thumbnail/youtube.jpg');
+        assert.equal(response.thumbnail_url_original, thumbnailUrl);
+        sinon.assert.calledOnceWithExactly(processImageFromUrlStub, thumbnailUrl, 'thumbnail');
+      });
+
+      it('keeps the provider thumbnail when it cannot be stored', async function () {
+        sinon.stub(oembedService, 'processImageFromUrl').rejects(new Error('fetch failed'));
+        const loggingStub = sinon.stub(logging, 'error');
+
+        nock('https://www.youtube.com').get('/oembed').query(true).reply(200, {
+          type: 'video',
+          version: '1.0',
+          html: '<iframe src="https://www.youtube.com/embed/1234"></iframe>',
+          width: 200,
+          height: 113,
+          thumbnail_url: thumbnailUrl,
+        });
+
+        const response = await oembedService.fetchOembedDataFromUrl(
+          'https://www.youtube.com/watch?v=1234',
+        );
+
+        assert.equal(response.thumbnail_url, thumbnailUrl);
+        assert.equal(response.thumbnail_url_original, thumbnailUrl);
+        sinon.assert.calledOnce(loggingStub);
+      });
+
+      it('leaves embeds without a thumbnail unchanged', async function () {
+        const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl');
+
+        nock('https://www.youtube.com').get('/oembed').query(true).reply(200, {
+          type: 'video',
+          version: '1.0',
+          html: '<iframe src="https://www.youtube.com/embed/1234"></iframe>',
+          width: 200,
+          height: 113,
+        });
+
+        const response = await oembedService.fetchOembedDataFromUrl(
+          'https://www.youtube.com/watch?v=1234',
+        );
+
+        assert.equal('thumbnail_url' in response, false);
+        assert.equal('thumbnail_url_original' in response, false);
+        sinon.assert.notCalled(processImageFromUrlStub);
+      });
+
+      it('does not store thumbnails for mentions', async function () {
+        const service = new OembedService({
+          config: {
+            get() {
+              return true;
+            },
+          },
+          externalRequest: requestExternal,
+        });
+        service.registerProvider({
+          async canSupportRequest() {
+            return true;
+          },
+          async getOEmbedData() {
+            return { type: 'video', version: '1.0', thumbnail_url: thumbnailUrl };
+          },
+        });
+        const processImageFromUrlStub = sinon.stub(service, 'processImageFromUrl');
+
+        const response = await service.fetchOembedDataFromUrl(
+          'https://www.example.com/video',
+          'mention',
+        );
+
+        assert.equal(response.thumbnail_url, thumbnailUrl);
+        assert.equal('thumbnail_url_original' in response, false);
+        sinon.assert.notCalled(processImageFromUrlStub);
+      });
     });
 
     it('keeps unknown provider fallback by default when the page fetch fails', async function () {
