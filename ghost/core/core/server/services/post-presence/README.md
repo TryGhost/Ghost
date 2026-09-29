@@ -1,8 +1,12 @@
 # Editor presence
 
+Presence avatars show other staff working on the same post or page.
+
 Enable the private `editorPresence` flag alongside `editorReact` and/or
 `postsListReact`. Ember editors do not send heartbeats. Admin also checks the
 Core capability flag, so older backends and unsupported adapters disable presence.
+To try it, open the same post with two different staff users in active browser
+sessions. Disabled presence does not poll or observe list-row visibility.
 
 ## Polling
 
@@ -18,18 +22,20 @@ an `opened` event, followed by `editing` heartbeats. Successful saves record
 Avatars show activity from the last 30 seconds, grouped by user. Your own user
 is excluded, including activity from other tabs or browsers. Sessions expire
 naturally after the editor stops sending heartbeats.
+The editor shows up to two overlapping avatars and the list shows up to three,
+with a `+N` indicator for additional users.
 
 ## API
 
 `POST /ghost/api/admin/presence/` accepts one entry in a `presence` array:
 
-- `resources`: up to 50 `{id, type}` pairs, where type is `post` or `page`.
+- `resources`: 1–50 `{id, type}` pairs, where type is `post` or `page`.
 - `sessionId`: a UUID unique to the browser document.
 - `editing`: optional `{id, type, action: opened|editing}`.
 
 The response contains `events` and `serverTime`. Only staff sessions can use the
 endpoint; permissions are checked on every request. The limit is 30 polls per
-user per 10 seconds. Rejected requests receive 429 and `Retry-After`.
+user per 10 seconds. Requests over that limit receive 429 and `Retry-After`.
 Failures back off; 401, 403 and 404 stop polling.
 
 ## Storage
@@ -54,6 +60,10 @@ prefix. A Redis failure does not switch presence to memory.
 
 Redis resolves the cache prefix once per batch, then reads the requested resource
 logs concurrently. Adapters without batch reads use `readEvents` for each resource.
+Redis event operations time out after one second. Commands already sent may
+still finish, but timed-out operations do not start subsequent event commands.
+New event operations fail immediately until the timed-out work settles; ordinary
+cache operations continue using the shared connection.
 
 Both adapters implement the optional `EventLogCache` interface from
 `@tryghost/adapter-base-cache`. Writes append, trim and expire events atomically.

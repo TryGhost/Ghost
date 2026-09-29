@@ -85,8 +85,9 @@ throw or reject rather than returning an empty result.
 
 TypeScript adapters can declare `implements EventLogCache`; JavaScript adapters
 can use `@implements {import('@tryghost/adapter-base-cache').EventLogCache}`.
-The exported `supportsEventLog(adapter)` checks for both methods at runtime,
-including on JavaScript and custom adapters.
+The exported `supportsEventLog(adapter)` checks for `appendEvent` and `readEvents`
+at runtime, including on JavaScript and custom adapters. `readEventsMany` remains
+optional.
 
 ## Develop
 
