@@ -81,6 +81,7 @@ describe('Member Welcome Emails Integration', function () {
       id: freeAutomationId,
       status: 'active',
       name: 'Free Member Welcome Email',
+      description: 'Welcome new free members after they sign up.',
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
       created_at: new Date(),
     });
@@ -99,6 +100,7 @@ describe('Member Welcome Emails Integration', function () {
       id: paidAutomationId,
       status: 'active',
       name: 'Paid Member Welcome Email',
+      description: 'Welcome new paid members after they start their subscription.',
       slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
       created_at: new Date(),
     });
