@@ -19,12 +19,12 @@ import type { ImageFieldUpload } from './use-image-field-upload';
 const VARIANTS = {
   bar: {
     empty: 'h-14',
-    dropzone:
-      'group/dropzone border-transparent bg-transparent transition-colors hover:bg-interactive-hover',
+    dropzone: 'group/dropzone w-auto border-0 bg-transparent px-0 shadow-none hover:bg-transparent',
     prompt: 'transition-colors group-hover/dropzone:text-foreground',
-    unsplash: 'top-1/2 right-2 -translate-y-1/2',
+    label: 'text-base',
+    unsplash: 'static',
   },
-  panel: { empty: 'h-[120px]', dropzone: '', prompt: '', unsplash: '' },
+  panel: { empty: 'h-[120px]', dropzone: '', prompt: '', label: 'text-sm', unsplash: '' },
 };
 
 export type ImageFieldVariant = keyof typeof VARIANTS;
@@ -69,11 +69,16 @@ export function ImageField({
 }: ImageFieldProps) {
   const { isUploading, onUpload } = upload;
   const styles = VARIANTS[variant];
+  const EmptyContainer = variant === 'bar' ? Inline : ImageUpload;
   const addLabel = `Add ${subject}`;
 
   if (!src) {
     return (
-      <ImageUpload className={cn(styles.empty, className)} data-testid={testId}>
+      <EmptyContainer
+        className={cn(styles.empty, className)}
+        data-testid={testId}
+        {...(variant === 'bar' ? { gap: 'lg' as const } : {})}
+      >
         <ImageUploadDropzone
           accept={ACCEPTED_IMAGE_TYPES}
           className={styles.dropzone}
@@ -91,7 +96,9 @@ export function ImageField({
                 aria-hidden="true"
                 className={cn('size-4 text-muted-foreground', styles.prompt)}
               />
-              <span className={cn('text-sm text-muted-foreground', styles.prompt)}>{addLabel}</span>
+              <span className={cn('text-muted-foreground', styles.prompt, styles.label)}>
+                {addLabel}
+              </span>
             </Inline>
           )}
         </ImageUploadDropzone>
@@ -100,11 +107,12 @@ export function ImageField({
           disabled={isUploading}
           enabled={unsplashEnabled}
           label={`Select ${subject} from Unsplash`}
+          variant={variant === 'bar' ? 'inline' : 'overlay'}
           onSelect={(picked) =>
             onUnsplashSelect ? onUnsplashSelect(picked) : onChange(picked.src)
           }
         />
-      </ImageUpload>
+      </EmptyContainer>
     );
   }
 
@@ -121,7 +129,10 @@ export function ImageField({
 
   if (!children) {
     return (
-      <ImageUpload className={cn('max-h-[480px]', className)} data-testid={testId}>
+      <ImageUpload
+        className={cn(variant === 'panel' && 'max-h-[480px]', className)}
+        data-testid={testId}
+      >
         {preview}
       </ImageUpload>
     );
@@ -129,7 +140,7 @@ export function ImageField({
 
   return (
     <Stack className={className} data-testid={testId} gap="sm">
-      <ImageUpload className="max-h-[480px]">{preview}</ImageUpload>
+      <ImageUpload className={cn(variant === 'panel' && 'max-h-[480px]')}>{preview}</ImageUpload>
       {children}
     </Stack>
   );

@@ -1,5 +1,5 @@
 import { readListReturnState, rememberListReturnState } from './list-return-state';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 
 const DEFAULT_VIRTUAL_LIST_WINDOW_SIZE = 1000;
@@ -117,38 +117,35 @@ export function useVirtualListWindow(
   const { key: locationEntryKey, pathname, search } = useLocation();
   const effectiveResetKey = resetKey ?? search;
   const historyKey = getVirtualListWindowHistoryKey(pathname, effectiveResetKey);
-  const [unlockedItemCount, setUnlockedItemCount] = useState(() => {
-    return getStoredUnlockedItemCount(
+  const readUnlockedItemCount = () =>
+    getStoredUnlockedItemCount(
       getCurrentHistoryState(),
       historyKey,
       readListReturnState(getCurrentHistoryState(), pathname + search)?.unlockedItemCount ??
         windowSize,
     );
-  });
-  const previousHistoryKeyRef = useRef(historyKey);
-  const previousEntryKeyRef = useRef(locationEntryKey);
+  const [windowState, setWindowState] = useState(() => ({
+    historyKey,
+    entryKey: locationEntryKey,
+    unlockedItemCount: readUnlockedItemCount(),
+  }));
+  let { unlockedItemCount } = windowState;
+
+  // Commit the new window together with navigation. Resetting it in an effect
+  // lets the virtualizer measure old rows after scroll restoration, which can
+  // move a fresh sidebar entry back down the list.
+  if (
+    windowState.historyKey !== historyKey ||
+    (resetKey === undefined && windowState.entryKey !== locationEntryKey)
+  ) {
+    unlockedItemCount = readUnlockedItemCount();
+    setWindowState({ historyKey, entryKey: locationEntryKey, unlockedItemCount });
+  }
 
   useEffect(() => {
-    if (
-      previousHistoryKeyRef.current !== historyKey ||
-      (resetKey === undefined && previousEntryKeyRef.current !== locationEntryKey)
-    ) {
-      previousEntryKeyRef.current = locationEntryKey;
-      previousHistoryKeyRef.current = historyKey;
-      setUnlockedItemCount(
-        getStoredUnlockedItemCount(
-          getCurrentHistoryState(),
-          historyKey,
-          readListReturnState(getCurrentHistoryState(), pathname + search)?.unlockedItemCount ??
-            windowSize,
-        ),
-      );
-      return;
-    }
-
     setStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, unlockedItemCount);
     rememberListReturnState(pathname + search, { unlockedItemCount });
-  }, [historyKey, locationEntryKey, unlockedItemCount, windowSize, pathname, search, resetKey]);
+  }, [historyKey, locationEntryKey, unlockedItemCount, pathname, search]);
 
   const { visibleItemCount, canLoadMore } = getVirtualListWindowState({
     totalItems,
@@ -159,6 +156,9 @@ export function useVirtualListWindow(
     visibleItemCount,
     canLoadMore,
     loadMore: () =>
-      setUnlockedItemCount((current) => getNextUnlockedItemCount(current, windowSize)),
+      setWindowState((current) => ({
+        ...current,
+        unlockedItemCount: getNextUnlockedItemCount(current.unlockedItemCount, windowSize),
+      })),
   };
 }
