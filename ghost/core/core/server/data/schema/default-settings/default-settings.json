@@ -146,6 +146,10 @@
       "defaultValue": "",
       "type": "string"
     },
+    "robots_txt": {
+      "defaultValue": "",
+      "type": "string"
+    },
     "facebook": {
       "defaultValue": "ghost",
       "type": "string"

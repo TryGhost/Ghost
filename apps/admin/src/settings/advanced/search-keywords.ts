@@ -43,6 +43,9 @@ export const searchKeywords = {
     'translation',
     'editor',
     'portal',
+    'robots.txt',
+    'robots',
+    'crawlers',
   ],
   history: ['advanced', 'history', 'log', 'events', 'user events', 'staff', 'audit', 'action'],
   dangerzone: [

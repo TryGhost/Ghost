@@ -429,6 +429,27 @@ describe('Default Frontend routing', function () {
       );
     });
 
+    it('should serve a custom robots.txt from the robots_txt setting', async function () {
+      sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+        if (key === 'robots_txt') {
+          return 'User-agent: *\nSitemap: {{blog-url}}/sitemap.xml\nDisallow: /secret/\n';
+        }
+        return origCache.get(key, options);
+      });
+
+      const res = await request
+        .get('/robots.txt')
+        .expect('Cache-Control', testUtils.cacheRules.hour)
+        .expect('ETag', /[0-9a-f]{32}/i)
+        .expect(200)
+        .expect(assertCorrectFrontendHeaders);
+
+      assert.equal(
+        res.text,
+        `User-agent: *\nSitemap: ${config.get('url')}/sitemap.xml\nDisallow: /secret/\n`,
+      );
+    });
+
     it('should retrieve default favicon.ico', async function () {
       await request
         .get('/favicon.ico')

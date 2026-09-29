@@ -19,6 +19,7 @@ export const settingsDefaults: Record<string, SettingValue> = {
   timezone: 'Etc/UTC',
   codeinjection_head: '',
   codeinjection_foot: '',
+  robots_txt: '',
   facebook: 'ghost',
   twitter: '@ghost',
   threads: null,

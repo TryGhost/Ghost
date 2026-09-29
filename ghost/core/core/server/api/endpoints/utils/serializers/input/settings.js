@@ -14,6 +14,7 @@ const EDITABLE_SETTINGS = [
   'timezone',
   'codeinjection_head',
   'codeinjection_foot',
+  'robots_txt',
   'facebook',
   'twitter',
   'threads',
