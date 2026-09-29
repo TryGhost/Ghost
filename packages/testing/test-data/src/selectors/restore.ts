@@ -8,6 +8,7 @@ export const restoreHeading = 'Restore posts';
 export const localRevisionsTable = 'Local revisions';
 export const restoreRevisionButton = 'Restore';
 export const openRestoredPostLink = 'Open restored post';
+export const openRestoredPageLink = 'Open restored page';
 
 // text
 export const noLocalRevisionsText = 'No local revisions found.';

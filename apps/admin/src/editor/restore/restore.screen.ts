@@ -2,6 +2,7 @@ import { page, type Locator } from 'vitest/browser';
 import {
   localRevisionsTable,
   noLocalRevisionsText,
+  openRestoredPageLink,
   openRestoredPostLink,
   restoreHeading,
   restoreRevisionButton,
@@ -16,7 +17,10 @@ export type RevisionRowScope = Locator & {
 function rowScope(row: Locator): RevisionRowScope {
   return Object.assign(row, {
     restoreButton: () => row.getByRole('button', { name: restoreRevisionButton, exact: true }),
-    openLink: () => row.getByRole('link', { name: openRestoredPostLink }),
+    openLink: () =>
+      row
+        .getByRole('link', { name: openRestoredPostLink })
+        .or(row.getByRole('link', { name: openRestoredPageLink })),
   });
 }
 

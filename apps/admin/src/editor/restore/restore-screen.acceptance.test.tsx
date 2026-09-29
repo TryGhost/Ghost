@@ -175,6 +175,9 @@ describe('Restore posts', () => {
     });
     await expect
       .element(restoreScreen.revisionRow('About us').openLink())
+      .toHaveAccessibleName('Open restored page');
+    await expect
+      .element(restoreScreen.revisionRow('About us').openLink())
       .toHaveAttribute('href', expect.stringContaining('/editor/page/restored-page'));
   });
 
@@ -202,6 +205,7 @@ describe('Restore posts', () => {
       .element(page.getByText('Value in [posts.title] exceeds maximum length of 255 characters.'))
       .toBeVisible();
     await expect.element(restoreScreen.revisionRow('Lost words').restoreButton()).toBeEnabled();
+    await expect.element(restoreScreen.revisionRow('Lost words').restoreButton()).toHaveFocus();
     expect(localStorage.getItem(`${LOCAL_REVISION_PREFIX}-post-1-${NEWER}`)).not.toBeNull();
   });
 });

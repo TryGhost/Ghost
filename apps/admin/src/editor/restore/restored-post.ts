@@ -1,8 +1,9 @@
 import type { PostAuthorInput, PostTagInput } from '@tryghost/admin-x-framework/api/posts';
 import type { LocalRevision, LocalRevisionTag } from '@/editor/local-revisions';
 
-// Core refuses a title longer than this, counted in characters.
+// Core refuses a longer title or custom excerpt, counted in characters.
 const MAX_TITLE_LENGTH = 255;
+const MAX_EXCERPT_LENGTH = 300;
 
 /** The draft a restore creates from a local copy. */
 export interface RestoredPost {
@@ -33,7 +34,10 @@ function tagInput({ id, name, slug }: LocalRevisionTag): PostTagInput[] {
   if (typeof id === 'string' && id) {
     return [{ id, ...known }];
   }
-  return known.name ? [{ ...known, name: known.name }] : [];
+  if (known.name) {
+    return [{ ...known, name: known.name }];
+  }
+  return known.slug ? [{ slug: known.slug }] : [];
 }
 
 function listOf<T extends object>(value: unknown): T[] {
@@ -49,9 +53,15 @@ function text(value: unknown): string | undefined {
   return typeof value === 'string' && value ? value : undefined;
 }
 
+function clipped(value: string, length: number): string {
+  return Array.from(value).slice(0, length).join('');
+}
+
 function restoredTitle(title: unknown): string {
-  const restored = `(Restored) ${typeof title === 'string' ? title : ''}`.trimEnd();
-  return Array.from(restored).slice(0, MAX_TITLE_LENGTH).join('');
+  return clipped(
+    `(Restored) ${typeof title === 'string' ? title : ''}`.trimEnd(),
+    MAX_TITLE_LENGTH,
+  );
 }
 
 /** A copy becomes a new draft, marked as restored; the post it was taken from is left alone. */
@@ -64,8 +74,9 @@ export function restoredPost(
     : listOf<{ id?: unknown }>(revision.authors).flatMap(({ id }) =>
         typeof id === 'string' && id ? [{ id }] : [],
       );
+  const excerpt = text(revision.custom_excerpt);
   const optional = {
-    custom_excerpt: text(revision.custom_excerpt),
+    custom_excerpt: excerpt === undefined ? undefined : clipped(excerpt, MAX_EXCERPT_LENGTH),
     feature_image: text(revision.feature_image),
     feature_image_alt: text(revision.feature_image_alt),
     feature_image_caption: text(revision.feature_image_caption),

@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useAddPage } from '@tryghost/admin-x-framework/api/pages';
@@ -60,6 +60,10 @@ function previewOf(revision: StoredLocalRevision): string {
 
 export default function RestoreScreen() {
   const [revisions] = useState(readCopies);
+  const previews = useMemo(
+    () => new Map(revisions.map((revision) => [revision.key, previewOf(revision)])),
+    [revisions],
+  );
   const [restoring, setRestoring] = useState<string | null>(null);
   const [restored, setRestored] = useState<Record<string, Restored>>({});
   const [justRestored, setJustRestored] = useState<string | null>(null);
@@ -78,6 +82,9 @@ export default function RestoreScreen() {
   }, [justRestored]);
 
   const restore = async (revision: StoredLocalRevision) => {
+    if (restoring !== null) {
+      return;
+    }
     setRestoring(revision.key);
     try {
       const soleAuthorId =
@@ -131,7 +138,7 @@ export default function RestoreScreen() {
                 <TableBody>
                   {revisions.map((revision, index) => {
                     const done = restored[revision.key];
-                    const preview = previewOf(revision);
+                    const preview = previews.get(revision.key);
                     const titleId = `${titleIdPrefix}-${index}`;
                     return (
                       <TableRow key={revision.key}>
@@ -168,13 +175,14 @@ export default function RestoreScreen() {
                               asChild
                             >
                               <AdminLink to={`/editor/${done.type}/${done.id}`}>
-                                Open restored post
+                                Open restored {done.type}
                               </AdminLink>
                             </Button>
                           ) : (
                             <Button
                               aria-describedby={titleId}
-                              disabled={restoring !== null}
+                              // The pressed button stays enabled so focus stays on it if the restore fails.
+                              disabled={restoring !== null && restoring !== revision.key}
                               size="sm"
                               variant="outline"
                               onClick={() => void restore(revision)}

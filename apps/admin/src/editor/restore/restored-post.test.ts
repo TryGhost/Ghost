@@ -111,6 +111,16 @@ describe('restoredPost', () => {
     expect(restored.title.startsWith('(Restored) éé')).toBe(true);
   });
 
+  it('shortens an excerpt the server would refuse', () => {
+    const restored = restoredPost(copy({ custom_excerpt: 'é'.repeat(301) }));
+
+    expect(Array.from(restored.custom_excerpt ?? '')).toHaveLength(300);
+  });
+
+  it('keeps a tag the copy names only by its slug', () => {
+    expect(restoredPost(copy({ tags: [{ slug: 'news' }] })).tags).toEqual([{ slug: 'news' }]);
+  });
+
   it('ignores authors and tags a damaged copy holds in the wrong shape', () => {
     const damaged = { ...copy(), authors: 'user-1', tags: [null, 'News', { name: 7 }] };
 
