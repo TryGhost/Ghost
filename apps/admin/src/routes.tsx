@@ -20,6 +20,7 @@ import { EmberFallback, ForceUpgradeGuard } from './ember-bridge';
 import HomeRedirect from './home-redirect';
 import { EmberListWithGiftLinks } from './gift-link-modal-host';
 import { EditorGate } from './editor-gate';
+import { lazyRestoreScreen } from './editor/api';
 import { PagesListGate, PostsListGate } from './posts-list-gate';
 import { MemberActivityGate } from './member-activity-gate';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
@@ -56,7 +57,6 @@ const EMBER_ROUTES: string[] = [
   '/signup/*',
   '/reset/*',
   '/pro/*',
-  '/restore',
 ];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
@@ -206,6 +206,7 @@ const appRoutes: RouteObject[] = [
     handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
   },
   { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
+  { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },
   {
     path: '/migrate/*',
     lazy: lazyComponent(lazyMigrateScreen),

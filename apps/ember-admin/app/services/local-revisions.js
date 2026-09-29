@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/ember';
-import Service, {inject as service} from '@ember/service';
+import Service from '@ember/service';
 import config from 'ghost-admin/config/environment';
 import {task, timeout} from 'ember-concurrency';
 
@@ -16,8 +16,6 @@ export default class LocalRevisionsService extends Service {
         this.performSave = this.performSave.bind(this);
         this.storage = window.localStorage;
     }
-
-    @service store;
 
     // base key prefix to avoid collisions in localStorage
     _prefix = 'post-revision';
@@ -178,80 +176,6 @@ export default class LocalRevisionsService extends Service {
             }
         }
         return allKeys;
-    }
-
-    /**
-     * Logs all revisions to the console
-     * 
-     * Currently this is the only UI for local revisions
-     */
-    list() {
-        const revisions = this.findAll();
-        const data = {};
-        for (const [key, revision] of Object.entries(revisions)) {
-            if (!data[revision.title]) {
-                data[revision.title] = [];
-            }
-            data[revision.title].push({
-                key,
-                timestamp: revision.revisionTimestamp,
-                time: new Date(revision.revisionTimestamp).toLocaleString(),
-                title: revision.title,
-                type: revision.type,
-                id: revision.id
-            });
-        }
-        /* eslint-disable no-console */
-        console.groupCollapsed('Local revisions');
-        for (const [title, row] of Object.entries(data)) {
-            console.groupCollapsed(`${title}`);
-            for (const item of row.sort((a, b) => b.timestamp - a.timestamp)) {
-                console.groupCollapsed(`${item.time}`);
-                console.log('Revision ID: ', item.key);
-                console.groupEnd();
-            }
-            console.groupEnd();
-        }
-        console.groupEnd();
-        /* eslint-enable no-console */
-    }
-
-    /**
-     * Creates a new post from the specified revision
-     * 
-     * @param {string} key 
-     * @returns {Promise} - the new post model
-     */
-    async restore(key) {
-        try {
-            const revision = this.find(key);
-            const authors = [];
-            if (revision.authors) {
-                for (const author of revision.authors) {
-                    const authorModel = await this.store.queryRecord('user', {id: author.id});
-                    authors.push(authorModel);
-                }
-            }
-            const post = this.store.createRecord('post', {
-                title: `(Restored) ${revision.title}`,
-                lexical: revision.lexical,
-                authors,
-                type: revision.type,
-                slug: revision.slug || 'untitled',
-                status: 'draft',
-                tags: revision.tags || [],
-                post_revisions: []
-            });
-            await post.save();
-            const location = window.location;
-            const url = `${location.origin}${location.pathname}#/editor/${post.get('type')}/${post.id}`;
-            // eslint-disable-next-line no-console
-            console.log('Post restored: ', url);
-            return post;
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.warn(err);
-        }
     }
 
     /**

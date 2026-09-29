@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/ember';
-import Service from '@ember/service';
 import sentryTestKit from 'sentry-testkit/browser';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
@@ -379,37 +378,6 @@ describe('Unit: Service: local-revisions', function () {
             const updatedKeys = this.service.keys();
             expect(updatedKeys).to.have.lengthOf(2);
             expect(this.service.find(keyToRemove)).to.be.null;
-        });
-    });
-
-    describe('restore', function () {
-        it('creates a new post based on the revision data', async function () {
-            // stub out the store service
-            const saveStub = sinon.stub().resolves({id: 'test-id'});
-            const setStub = sinon.stub();
-            const getStub = sinon.stub().returns('post');
-            const queryRecordStub = sinon.stub().resolves({id: '1'});
-            this.owner.register('service:store', Service.extend({
-                createRecord: () => {
-                    return {
-                        id: 'new-id',
-                        save: saveStub,
-                        set: setStub,
-                        get: getStub
-                    };
-                },
-                queryRecord: queryRecordStub
-            }));
-            // create a post to restore
-            const key = this.service.performSave('post', {id: 'test-id', status: 'draft', authors: [{id: '1'}], lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"\\"{\\\\\\"root\\\\\\":{\\\\\\"children\\\\\\":[{\\\\\\"children\\\\\\":[{\\\\\\"detail\\\\\\":0,\\\\\\"format\\\\\\":0,\\\\\\"mode\\\\\\":\\\\\\"normal\\\\\\",\\\\\\"style\\\\\\":\\\\\\"\\\\\\",\\\\\\"text\\\\\\":\\\\\\"T\\\\\\",\\\\\\"type\\\\\\":\\\\\\"extended-text\\\\\\",\\\\\\"version\\\\\\":1}],\\\\\\"direction\\\\\\":\\\\\\"ltr\\\\\\",\\\\\\"format\\\\\\":\\\\\\"\\\\\\",\\\\\\"indent\\\\\\":0,\\\\\\"type\\\\\\":\\\\\\"paragraph\\\\\\",\\\\\\"version\\\\\\":1}],\\\\\\"direction\\\\\\":\\\\\\"ltr\\\\\\",\\\\\\"format\\\\\\":\\\\\\"\\\\\\",\\\\\\"indent\\\\\\":0,\\\\\\"type\\\\\\":\\\\\\"root\\\\\\",\\\\\\"version\\\\\\":1}}\\"","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'});
-            // restore the post
-            const post = await this.service.restore(key);
-
-            // Ensure the post is saved
-            expect(saveStub.calledOnce).to.be.true;
-
-            // Restore should return the post object
-            expect(post.id).to.equal('new-id');
         });
     });
 });

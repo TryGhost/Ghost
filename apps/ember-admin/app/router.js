@@ -22,7 +22,6 @@ Router.map(function () {
     });
 
     this.route('posts');
-    this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
 

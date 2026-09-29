@@ -2,8 +2,9 @@
 
 `apps/admin/src/editor/` is the React post and page editor: the screen, the
 Koenig surface it wraps, the settings sidebar beside it, and the publish and
-preview flows it opens. `api.ts` is the domain's public surface — the shell
-mounts the screen lazily through it and everything else here is internal.
+preview flows it opens, plus the restore screen that turns a local copy of a
+lost draft back into a post. `api.ts` is the domain's public surface — the shell
+mounts both screens lazily through it and everything else here is internal.
 
 ## The modules
 
@@ -19,6 +20,7 @@ mounts the screen lazily through it and everything else here is internal.
 | `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands                                 |
 | `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                    |
 | `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                      |
+| `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                    |
 
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
