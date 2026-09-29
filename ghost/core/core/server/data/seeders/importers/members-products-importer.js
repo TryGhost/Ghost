@@ -15,7 +15,7 @@ class MembersProductsImporter extends TableImporter {
     const members = await this.transaction.select('id').from('members').whereNot('status', 'free');
     this.products = await this.transaction.select('id').from('products').whereNot('type', 'fee');
 
-    await this.importForEach(members, quantity ? quantity / members.length : 1);
+    await this.importForEach(members, quantity !== undefined ? quantity / members.length : 1);
   }
 
   getProduct() {

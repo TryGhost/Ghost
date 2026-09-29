@@ -2,6 +2,7 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
+import logging from '@tryghost/logging';
 import { dequal } from 'dequal';
 import { type Knex } from 'knex';
 // @ts-expect-error This module currently lacks type definitions.
@@ -21,6 +22,7 @@ import type {
   AutomationSummary,
   AutomationStepTerminalStatus,
   AutomationStepToRun,
+  AutomationTriggerTierScope,
   AutomationsRepository,
   BrowseOptions,
   EditAutomationData,
@@ -34,13 +36,17 @@ const HOUR_MS = 60 * 60 * 1000;
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
   {
     name: 'Free member welcome flow',
+    description: 'Welcome new free members after they sign up.',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+    trigger_tier_scope: 'free',
   },
   {
     name: 'Paid member welcome flow',
+    description: 'Welcome new paid members after they start their subscription.',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+    trigger_tier_scope: 'all_paid',
   },
-];
+] as const;
 
 const messages = {
   invalidAutomationActionRevision:
@@ -58,6 +64,7 @@ type AutomationRow = {
   id: string;
   slug: null | string;
   name: string;
+  description: string;
   status: string;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
@@ -500,7 +507,12 @@ async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
 
 async function ensureAutomation(
   trx: Knex.Transaction,
-  defaults: Readonly<{ name: string; slug: string }>,
+  defaults: Readonly<{
+    name: string;
+    description: string;
+    slug: string;
+    trigger_tier_scope: AutomationTriggerTierScope;
+  }>,
 ): Promise<AutomationRow> {
   const now = toDatabaseDate(new Date());
   const id = ObjectId().toHexString();
@@ -510,7 +522,9 @@ async function ensureAutomation(
       id,
       status: 'inactive',
       name: defaults.name,
+      description: defaults.description,
       slug: defaults.slug,
+      trigger_tier_scope: defaults.trigger_tier_scope,
       created_at: now,
       updated_at: now,
     })
@@ -573,6 +587,25 @@ async function ensureWelcomeEmailAction(
   ]);
 }
 
+async function lockMemberForTriggering(trx: Knex.Transaction, memberId: string): Promise<void> {
+  await trx('members').where('id', memberId).forUpdate().first('id');
+}
+
+async function hasMemberAlreadyEnteredAutomation(
+  trx: Knex.Transaction,
+  automationId: string,
+  memberId: string,
+): Promise<boolean> {
+  const [{ hasAlreadyEntered }] = await trx.select<{ hasAlreadyEntered: number }[]>(
+    trx.raw('EXISTS ? AS hasAlreadyEntered', [
+      trx('automation_runs')
+        .select('id')
+        .where({ automation_id: automationId, member_id: memberId }),
+    ]),
+  );
+  return Boolean(hasAlreadyEntered);
+}
+
 async function trigger(
   trx: Knex.Transaction,
   options: Readonly<{
@@ -584,8 +617,19 @@ async function trigger(
 ): Promise<void> {
   const { memberEmail, memberId, memberStatus, fakeWaitHoursMultiplier } = options;
 
+  await lockMemberForTriggering(trx, memberId);
+
   const firstAction = await findFirstActionRevision(trx, memberStatus);
   if (!firstAction) {
+    return;
+  }
+
+  const automationId = firstAction.automation_id;
+
+  if (await hasMemberAlreadyEnteredAutomation(trx, automationId, memberId)) {
+    logging.info(
+      `Skipping automation ${automationId} for member ${memberId} because they have already run it`,
+    );
     return;
   }
 
@@ -598,7 +642,7 @@ async function trigger(
     id: ObjectId().toHexString(),
     created_at: nowString,
     updated_at: nowString,
-    automation_id: firstAction.automation_id,
+    automation_id: automationId,
     member_id: memberId,
     member_email: memberEmail,
   };

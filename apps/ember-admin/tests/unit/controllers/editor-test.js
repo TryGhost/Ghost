@@ -24,7 +24,7 @@ describe('Unit: Controller: lexical-editor', function () {
 
     describe('generateSlug', function () {
         it('should generate a slug and set it on the post, passing the id if it exists', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str, id) {
                     if (id !== 'fake-id') {
@@ -46,7 +46,7 @@ describe('Unit: Controller: lexical-editor', function () {
         });
 
         it('should generate a slug and set it on the post', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
                     return RSVP.resolve(`${str}-slug`);
@@ -65,7 +65,7 @@ describe('Unit: Controller: lexical-editor', function () {
         });
 
         it('should not set the destination if the title is "(Untitled)" and the post already has a slug', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
                     return RSVP.resolve(`${str}-slug`);
@@ -82,7 +82,7 @@ describe('Unit: Controller: lexical-editor', function () {
         });
 
         it('should generate a new slug if the previous title was (Untitled)', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
                     return RSVP.resolve(`${str}-slug`);
@@ -100,7 +100,7 @@ describe('Unit: Controller: lexical-editor', function () {
         });
 
         it('should generate a new slug if the previous title ended with (Copy)', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
                     return RSVP.resolve(`${str}-slug`);
@@ -119,7 +119,7 @@ describe('Unit: Controller: lexical-editor', function () {
         });
 
         it('should not generate a new slug if it appears a custom slug was set', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
                     return RSVP.resolve(`${str}-slug`);
@@ -141,7 +141,7 @@ describe('Unit: Controller: lexical-editor', function () {
         });
 
         it('should generate new slugs if the title changes', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
                     return RSVP.resolve(`${str}-slug`);
@@ -169,7 +169,7 @@ describe('Unit: Controller: lexical-editor', function () {
         });
 
         it('should invoke generateSlug if the post is not published', async function () {
-            let {controller} = this;
+            const {controller} = this;
 
             controller.set('target', {send() {}});
             defineProperty(controller, 'generateSlugTask', task(function * () {
@@ -190,7 +190,7 @@ describe('Unit: Controller: lexical-editor', function () {
         });
 
         it('should not invoke generateSlug if the post is published', async function () {
-            let {controller} = this;
+            const {controller} = this;
 
             controller.set('target', {send() {}});
             controller.set('post', createPost({
@@ -212,7 +212,7 @@ describe('Unit: Controller: lexical-editor', function () {
 
     describe('TK count in title', function () {
         it('should have count 0 for no TK', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
 
             controller.set('post', createPost({titleScratch: 'this is a title'}));
 
@@ -220,7 +220,7 @@ describe('Unit: Controller: lexical-editor', function () {
         });
 
         it('should count TK reminders in the title', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
 
             controller.set('post', createPost({titleScratch: 'this is a TK'}));
 
@@ -232,7 +232,7 @@ describe('Unit: Controller: lexical-editor', function () {
         it('detects new post with changed attributes as dirty (autosave)', async function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content updated","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('post', createPost({
                 title: '',
                 titleScratch: '',
@@ -242,7 +242,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 secondaryLexicalState: initialLexicalString
             }));
 
-            let isDirty = controller.hasDirtyAttributes;
+            const isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.true;
         });
 
@@ -253,14 +253,14 @@ describe('Unit: Controller: lexical-editor', function () {
             post.lexicalScratch = post.lexical;
             controller.set('post', post);
 
-            let isDirty = controller.hasDirtyAttributes;
+            const isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.false;
         });
 
         it('marks isNew post as dirty when lexicalScratch differs from lexical and secondaryLexical', async function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content scratch","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('post', createPost({
                 title: '',
                 titleScratch: '',
@@ -271,12 +271,12 @@ describe('Unit: Controller: lexical-editor', function () {
                 changedAttributes: () => ({title: ['', 'New Title']})
             }));
 
-            let isDirty = controller.hasDirtyAttributes;
+            const isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.true;
         });
 
         it('Changes in the direction field in the lexical string are not considered dirty', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
 
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const lexicalStringNoNullDirection = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
@@ -320,7 +320,7 @@ describe('Unit: Controller: lexical-editor', function () {
             const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
 
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
 
             const post = createPost({
                 title: 'this is a title',
@@ -340,7 +340,7 @@ describe('Unit: Controller: lexical-editor', function () {
             savedPost.secondaryLexicalState = secondLexicalInstance;
             controller.set('post', savedPost);
 
-            let isDirty = controller.hasDirtyAttributes;
+            const isDirty = controller.hasDirtyAttributes;
 
             expect(isDirty).to.be.false;
         });
@@ -350,7 +350,7 @@ describe('Unit: Controller: lexical-editor', function () {
             const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content1234","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
 
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
 
             const post = createPost({
                 title: 'this is a title',
@@ -372,22 +372,22 @@ describe('Unit: Controller: lexical-editor', function () {
 
             controller.send('updateScratch',JSON.parse(lexicalScratch));
 
-            let isDirty = controller.hasDirtyAttributes;
+            const isDirty = controller.hasDirtyAttributes;
 
             expect(isDirty).to.be.true;
         });
 
         it('dirty is false if no Post', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             controller.set('post', null);
 
-            let isDirty = controller.hasDirtyAttributes;
+            const isDirty = controller.hasDirtyAttributes;
 
             expect(isDirty).to.be.false;
         });
 
         it('returns true if current tags differ from previous tags', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             const tag1 = this.owner.lookup('service:store').createRecord('tag', {id: 1, name: 'test'});
             const tag2 = this.owner.lookup('service:store').createRecord('tag', {id: 2, name: 'changed'});
             const post = createPost({
@@ -404,13 +404,13 @@ describe('Unit: Controller: lexical-editor', function () {
 
             savedPost.tags = [tag1, tag2];
 
-            let isDirty = controller.hasDirtyAttributes;
+            const isDirty = controller.hasDirtyAttributes;
 
             expect(isDirty).to.be.true;
         });
 
         it('returns false when the post is new but has no changed attributes', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             // no attrs = defaults = empty changedAttributes
             const post = createPost({});
             controller.set('post', post);
@@ -418,12 +418,12 @@ describe('Unit: Controller: lexical-editor', function () {
             post.titleScratch = post.title;
             post.lexicalScratch = post.lexical;
 
-            let isDirty = controller.hasDirtyAttributes;
+            const isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.false;
         });
 
         it('skips new post check if post is not new', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
+            const controller = this.owner.lookup('controller:lexical-editor');
             const post = createPost({
                 title: 'Sample Title',
                 status: 'draft',
@@ -442,7 +442,7 @@ describe('Unit: Controller: lexical-editor', function () {
             savedPost.secondaryLexicalState = '';
             controller.set('post', savedPost);
 
-            let isDirty = controller.hasDirtyAttributes;
+            const isDirty = controller.hasDirtyAttributes;
             // The test passes if no errors occur and it doesn't return true for new post condition
             expect(isDirty).to.be.false;
         });

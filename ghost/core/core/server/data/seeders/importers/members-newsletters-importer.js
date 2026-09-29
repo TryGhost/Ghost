@@ -10,7 +10,7 @@ class MembersNewslettersImporter extends TableImporter {
 
   async import(quantity) {
     let offset = 0;
-    let limit = 100000;
+    const limit = 100000;
 
     while (true) {
       const membersSubscribeEvents = await this.transaction
@@ -25,7 +25,7 @@ class MembersNewslettersImporter extends TableImporter {
 
       await this.importForEach(
         membersSubscribeEvents,
-        quantity ? quantity / membersSubscribeEvents.length : 1,
+        quantity !== undefined ? quantity / membersSubscribeEvents.length : 1,
       );
 
       offset += limit;

@@ -9,7 +9,7 @@ describe('Integration: Component: gh-image-uploader-with-preview', function () {
     setupRenderingTest();
 
     it('renders image if provided', async function () {
-        let remove = sinon.spy();
+        const remove = sinon.spy();
         this.set('remove', remove);
         this.set('image', 'http://example.com/test.png');
 
@@ -26,7 +26,7 @@ describe('Integration: Component: gh-image-uploader-with-preview', function () {
     });
 
     it('triggers remove action when delete icon is clicked', async function () {
-        let remove = sinon.spy();
+        const remove = sinon.spy();
         this.set('remove', remove);
         this.set('image', 'http://example.com/test.png');
 

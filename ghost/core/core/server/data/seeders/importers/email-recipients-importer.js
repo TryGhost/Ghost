@@ -18,7 +18,7 @@ function findFirstHigherIndex(arr, target) {
   let result = -1;
 
   while (start <= end) {
-    let mid = Math.floor((start + end) / 2);
+    const mid = Math.floor((start + end) / 2);
 
     if (arr[mid] >= target) {
       result = mid;
@@ -129,7 +129,10 @@ class EmailRecipientsImporter extends TableImporter {
         .push(fromDatabaseDate(memberSubscribeEvent.created_at).getTime());
     }
 
-    await this.importForEach(this.emailBatches, quantity ? quantity / emails.length : 1000);
+    await this.importForEach(
+      this.emailBatches,
+      quantity !== undefined ? quantity / emails.length : 1000,
+    );
   }
 
   setReferencedModel(model) {
@@ -162,7 +165,7 @@ class EmailRecipientsImporter extends TableImporter {
       failedCount: this.model.failed_count,
     };
 
-    let offset = this.batchIndex * 1000;
+    const offset = this.batchIndex * 1000;
 
     // We always first create the failures, then the opened, then the delivered, so we need to remove those from the meta so we don't generate them multiple times
     this.emailMeta = {

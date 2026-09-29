@@ -17,7 +17,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A read-only value row with hover-revealed actions and intrinsic clipboard feedback.',
+          'A read-only value row with hover-revealed actions and intrinsic clipboard feedback. Admin 7 uses 24px-tall pill buttons inside the field.',
       },
     },
   },

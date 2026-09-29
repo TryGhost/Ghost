@@ -178,7 +178,15 @@ export class MemberDetailsPage extends AdminPage {
     await this.customFieldEditButton(fieldName).click();
 
     for (const [partLabel, value] of Object.entries(parts)) {
-      await this.customFieldModal.getByLabel(partLabel, { exact: true }).fill(value);
+      const picker = this.customFieldModal.getByRole('combobox', { name: partLabel, exact: true });
+      if (await picker.count()) {
+        // A country is picked by name from a searchable list rather than typed.
+        await picker.click();
+        await this.page.getByPlaceholder('Search countries...').fill(value);
+        await this.page.getByRole('option', { name: value, exact: true }).click();
+      } else {
+        await this.customFieldModal.getByLabel(partLabel, { exact: true }).fill(value);
+      }
     }
 
     await this.customFieldModal.getByRole('button', { name: 'Save', exact: true }).click();

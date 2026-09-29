@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@tryghost/shade/components';
+import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@tryghost/shade/components';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useIsActiveLink } from './use-is-active-link';
 import { AdminLink } from '@/shared/admin-link';
@@ -59,21 +59,20 @@ function NavMenuCollapsibleItem({ ariaLabel, children }: NavMenuCollapsibleItemP
 
   return (
     <NavMenuItem>
-      <Button
+      <button
         aria-controls={id}
         aria-expanded={expanded}
         aria-label={ariaLabel}
-        className="hover:text-gray-black absolute top-0 left-3 h-(--control-height) w-auto p-0 text-md text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
-        shape="rounded"
-        size="icon"
-        variant="ghost"
+        className="hover:text-gray-black absolute top-0 left-3 inline-flex h-(--control-height) w-auto items-center justify-center rounded-control bg-transparent p-0 text-md text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden sidebar:opacity-0"
+        type="button"
         onClick={() => void onExpandedChange(!expanded)}
       >
         <LucideIcon.ChevronRight
           className={`transition-all ${expanded ? 'rotate-[90deg]' : ''}`}
           size={16}
+          strokeWidth={1.5}
         />
-      </Button>
+      </button>
       {children}
     </NavMenuItem>
   );

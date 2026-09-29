@@ -104,7 +104,7 @@ export function normalizeCalendarDay(day) {
 export function withLocale(locale, fn) {
     let returnValue;
     if (locale) {
-        let previousLocale = moment.locale();
+        const previousLocale = moment.locale();
         moment.locale(locale);
         returnValue = fn();
         moment.locale(previousLocale);
@@ -143,9 +143,9 @@ export function getDefaultLocale() {
 }
 
 export function localeStartOfWeek(locale) {
-    let now = new Date();
-    let day = withLocale(locale, () => formatDate(startOf(now, 'week'), 'dddd'));
-    let idx = withLocale(locale, getWeekdays).indexOf(day);
+    const now = new Date();
+    const day = withLocale(locale, () => formatDate(startOf(now, 'week'), 'dddd'));
+    const idx = withLocale(locale, getWeekdays).indexOf(day);
     return idx >= 0 ? idx : 0;
 }
 
@@ -157,7 +157,7 @@ export function startOfWeek(day, _startOfWeek) {
 }
 
 export function endOfWeek(day, _startOfWeek) {
-    let eow = (_startOfWeek + 6) % 7;
+    const eow = (_startOfWeek + 6) % 7;
     while (isoWeekday(day) % 7 !== eow) {
         day = add(day, 1, 'day');
     }

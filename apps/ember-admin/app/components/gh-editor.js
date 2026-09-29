@@ -36,7 +36,7 @@ export default class GhEditor extends Component {
     uploadImages(fileList, resetInput) {
         // convert FileList to an array so that resetting the input doesn't
         // clear the file references before upload actions can be triggered
-        let files = Array.from(fileList);
+        const files = Array.from(fileList);
         this.set('droppedFiles', files);
         resetInput();
     }
@@ -54,7 +54,7 @@ export default class GhEditor extends Component {
 
     _setHeaderHeight() {
         if (this.headerClass && this._editorTitleElement) {
-            let height = this._editorTitleElement.offsetHeight;
+            const height = this._editorTitleElement.offsetHeight;
             return this.set('headerHeight', height);
         }
 
@@ -70,7 +70,7 @@ export default class GhEditor extends Component {
         // this is needed to work around inconsistencies with dropping files
         // from Chrome's downloads bar
         if (navigator.userAgent.indexOf('Chrome') > -1) {
-            let eA = event.dataTransfer.effectAllowed;
+            const eA = event.dataTransfer.effectAllowed;
             event.dataTransfer.dropEffect = (eA === 'move' || eA === 'linkMove') ? 'move' : 'copy';
         }
 

@@ -473,13 +473,13 @@ export default class PostsContextMenu extends Component {
 
     async performBulkDestroy() {
         const filter = this.selectionList.filter;
-        let bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts' : 'pages') + `?filter=${encodeURIComponent(filter)}`;
+        const bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts' : 'pages') + `?filter=${encodeURIComponent(filter)}`;
         return await this.ajax.delete(bulkUpdateUrl);
     }
 
     async performBulkEdit(_action, meta = {}) {
         const filter = this.selectionList.filter;
-        let bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts/bulk' : 'pages/bulk') + `?filter=${encodeURIComponent(filter)}`;
+        const bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts/bulk' : 'pages/bulk') + `?filter=${encodeURIComponent(filter)}`;
         return await this.ajax.put(bulkUpdateUrl, {
             data: {
                 bulk: {

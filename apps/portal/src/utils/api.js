@@ -231,7 +231,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
 
   api.recommendations = {
     trackClicked({ recommendationId }) {
-      let url = endpointFor({
+      const url = endpointFor({
         type: 'members',
         resource: 'recommendations/' + recommendationId + '/clicked',
       });
@@ -239,7 +239,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     },
 
     trackSubscribed({ recommendationId }) {
-      let url = endpointFor({
+      const url = endpointFor({
         type: 'members',
         resource: 'recommendations/' + recommendationId + '/subscribed',
       });
@@ -1062,7 +1062,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
   };
 
   api.init = async () => {
-    let [member] = await Promise.all([api.member.sessionData()]);
+    const [member] = await Promise.all([api.member.sessionData()]);
     let site = {};
     let newsletters = [];
     let tiers = [];

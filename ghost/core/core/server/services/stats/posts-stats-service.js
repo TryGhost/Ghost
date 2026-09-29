@@ -355,7 +355,7 @@ class PostsStatsService {
         .groupBy('source');
 
       // Now join all the data
-      let query = this.knex
+      const query = this.knex
         .with('free_referrers', freeReferrersCTE)
         .with('paid_referrers', paidReferrersCTE)
         .with('mrr_referrers', mrrReferrersCTE)
@@ -657,7 +657,7 @@ class PostsStatsService {
     const { dateFrom, dateTo } = getDateBoundaries(options);
 
     // Simpler approach mirroring _buildFreeMembersSubquery
-    let subquery = knex('members_created_events as mce')
+    const subquery = knex('members_created_events as mce')
       .select('mce.referrer_source as source')
       .countDistinct('mce.member_id as free_members')
       .leftJoin('members_subscription_created_events as msce', function () {
@@ -686,7 +686,7 @@ class PostsStatsService {
   _buildPaidReferrersSubquery(postId, options) {
     const knex = this.knex;
     const { dateFrom, dateTo } = getDateBoundaries(options);
-    let subquery = knex('members_subscription_created_events as msce')
+    const subquery = knex('members_subscription_created_events as msce')
       .select('msce.referrer_source as source')
       .countDistinct('msce.member_id as paid_members')
       .where('msce.attribution_id', postId)
@@ -708,7 +708,7 @@ class PostsStatsService {
   _buildMrrReferrersSubquery(postId, options) {
     const knex = this.knex;
     const { dateFrom, dateTo } = getDateBoundaries(options);
-    let subquery = knex('members_subscription_created_events as msce')
+    const subquery = knex('members_subscription_created_events as msce')
       .select('msce.referrer_source as source')
       .sum('mpse.mrr_delta as mrr')
       .join('members_paid_subscription_events as mpse', function () {
@@ -744,7 +744,7 @@ class PostsStatsService {
       const { dateFrom, dateTo } = getDateBoundaries(options);
 
       // Parse order field and direction
-      let [orderField, orderDirection = 'desc'] = order.split(' ');
+      const [orderField, orderDirection = 'desc'] = order.split(' ');
 
       // Map frontend order fields to database fields (simplified for ORDER BY)
       const orderFieldMap = {
@@ -834,7 +834,7 @@ class PostsStatsService {
       const { dateFrom, dateTo } = getDateBoundaries(options);
 
       // Parse order field and direction
-      let [orderField, orderDirection = 'desc'] = order.split(' ');
+      const [orderField, orderDirection = 'desc'] = order.split(' ');
 
       // Map frontend order fields to database fields (simplified for ORDER BY)
       const orderFieldMap = {
@@ -1095,7 +1095,7 @@ class PostsStatsService {
     const { dateFrom, dateTo } = getDateBoundaries(options);
 
     // Build optimized deltas query - avoid expensive JOIN
-    let deltasQuery = this.knex('members_subscribe_events as mse')
+    const deltasQuery = this.knex('members_subscribe_events as mse')
       .select(
         this.knex.raw(`DATE(mse.created_at) as date`),
         this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`),
@@ -1150,7 +1150,7 @@ class PostsStatsService {
     // Build complete time series with all dates
     const completeValues = [];
     let lastValue = startingValue; // Use provided starting value
-    let currentDate = rangeStart.clone();
+    const currentDate = rangeStart.clone();
 
     while (currentDate.isSameOrBefore(rangeEnd)) {
       const dateKey = currentDate.format('YYYY-MM-DD');
@@ -1507,7 +1507,7 @@ class PostsStatsService {
     try {
       // Build free members query (modeled after _buildFreeMembersSubquery)
       // Members who signed up on post but paid elsewhere/never
-      let freeMembersQuery = this.knex('members_created_events as mce')
+      const freeMembersQuery = this.knex('members_created_events as mce')
         .select('mce.attribution_id as post_id')
         .countDistinct('mce.member_id as free_members')
         .leftJoin('members_subscription_created_events as msce', function () {
@@ -1525,7 +1525,7 @@ class PostsStatsService {
 
       // Build paid members query (modeled after _buildPaidMembersSubquery)
       // Members whose paid conversion was attributed to this post
-      let paidMembersQuery = this.knex('members_subscription_created_events as msce')
+      const paidMembersQuery = this.knex('members_subscription_created_events as msce')
         .select('msce.attribution_id as post_id')
         .countDistinct('msce.member_id as paid_members')
         .whereIn('msce.attribution_type', ['post', 'page'])

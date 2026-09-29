@@ -16,6 +16,7 @@ describe('createTinybirdSyncService', () => {
     const dependencies = {
       config: { get: vi.fn((key: string) => values[key]) },
       settingsCache: { get: vi.fn(() => 'settings-site-uuid') },
+      labs: { isSet: vi.fn(() => true) },
       knex: {} as Knex,
       logging: { info: vi.fn(), error: vi.fn() },
       sleep: vi.fn(async () => {}),
@@ -126,6 +127,40 @@ describe('createTinybirdSyncService', () => {
         { event: 'tinybird.sync.completed', table: 'automation_run_steps', sent: 0 },
       ],
     );
+  });
+
+  it('skips sync when labs flag is disabled', async () => {
+    const failure = new Error('stop loop');
+    const sleep = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(failure);
+    const database = await createEmptyDatabase();
+    const { dependencies, service } = createService({
+      knex: database,
+      sleep,
+      random: () => 0,
+      labs: { isSet: vi.fn(() => false) },
+    });
+
+    service.start();
+    await vi.waitFor(() => assert.equal(dependencies.logging.error.mock.calls.length, 1));
+
+    assert.deepEqual(dependencies.logging.info.mock.calls, [
+      [
+        { system: { event: 'tinybird.sync.started' } },
+        '[Tinybird sync] Started: sync disabled by labs flag (but may change)',
+      ],
+    ]);
+  });
+
+  it('logs that sync is enabled by labs flag', () => {
+    const sleep = vi.fn().mockRejectedValue(new Error('stop loop'));
+    const { dependencies, service } = createService({ sleep });
+
+    service.start();
+
+    assert.deepEqual(dependencies.logging.info.mock.calls[0], [
+      { system: { event: 'tinybird.sync.started' } },
+      '[Tinybird sync] Started: sync enabled by labs flag (but may change)',
+    ]);
   });
 
   it('limits Traffic Analytics requests to 1000 messages', async () => {

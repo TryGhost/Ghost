@@ -169,6 +169,30 @@ describe('Member activity', () => {
       .toContain('comment_event');
   });
 
+  it("asks for the same events on a member's page as on their full activity page", async () => {
+    const { eventsApi } = world([]);
+    fakeAdminEndpoint('GET', /^\/members\/ada\/\?include=tiers/, { members: [ada] });
+    const settings = {
+      browseSettings: {
+        response: settingsResponse({ settings: { comments_enabled: 'off' } }),
+      },
+    };
+    const excludedTypes = () =>
+      new URL(eventsApi.lastRequest!.url).searchParams
+        .get('filter')
+        ?.match(/type:-\[([^\]]*)\]/)?.[1]
+        ?.replaceAll("'", '');
+
+    await renderAdminApp('/members/ada', { labs, boot: settings });
+    await expect.poll(excludedTypes).toBeDefined();
+    const preview = excludedTypes()!.split(',').sort();
+    expect(preview).toContain('comment_event');
+    expect(preview).toContain('metafield_change_event');
+
+    await renderAdminApp('/members-activity?member=ada', { labs, boot: settings });
+    await expect.poll(() => excludedTypes()?.split(',').sort()).toEqual(preview);
+  });
+
   it('renders absent members and unknown event types without unsafe links', async () => {
     const unknown = event('future', 'future_event', null);
     const signup = event('unsafe');

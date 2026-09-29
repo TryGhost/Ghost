@@ -14,7 +14,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     name(model) {
-        let name = model.name;
+        const name = model.name;
 
         if (this.isActive(model)) {
             if (isBlank(name)) {
@@ -28,7 +28,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     bio(model) {
-        let bio = model.bio;
+        const bio = model.bio;
 
         if (this.isActive(model)) {
             if (!validator.isLength(bio || '', {max: 250})) {
@@ -39,7 +39,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     email(model) {
-        let email = model.email;
+        const email = model.email;
 
         if (!validator.isEmail(email || '')) {
             model.errors.add('email', 'Please supply a valid email address');
@@ -53,7 +53,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     location(model) {
-        let location = model.location;
+        const location = model.location;
 
         if (this.isActive(model)) {
             if (!validator.isLength(location || '', {max: 150})) {
@@ -64,8 +64,8 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     website(model) {
-        let website = model.website;
-        let isInvalidWebsite = !validator.isURL(website || '', {require_protocol: false})
+        const website = model.website;
+        const isInvalidWebsite = !validator.isURL(website || '', {require_protocol: false})
                           || !validator.isLength(website || '', {max: 2000});
 
         if (this.isActive(model)) {
@@ -78,7 +78,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
 
     roles(model) {
         if (!this.isActive(model)) {
-            let roles = model.roles;
+            const roles = model.roles;
 
             if (roles.length < 1) {
                 model.errors.add('role', 'Please select a role');
@@ -88,8 +88,8 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     passwordChange(model) {
-        let newPassword = model.newPassword;
-        let ne2Password = model.ne2Password;
+        const newPassword = model.newPassword;
+        const ne2Password = model.ne2Password;
 
         // validation only marks the requested property as validated so we
         // have to add properties manually
@@ -110,7 +110,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     ownPasswordChange(model) {
-        let oldPassword = model.password;
+        const oldPassword = model.password;
 
         this.passwordChange(model);
 

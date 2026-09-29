@@ -20,7 +20,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
   collapsible = false,
   ariaLabel = 'Search members',
 }) => {
-  const { isAdmin7 } = useShade();
+  const { controlShape, isAdmin7 } = useShade();
   const [expanded, setExpanded] = useState(false);
   const restoreTriggerFocus = useRef(false);
   const isExpanded = !collapsible || expanded || search.length > 0;
@@ -33,6 +33,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
         'h-(--control-height) min-w-0',
         collapsible ? 'w-full' : 'basis-full lg:w-[180px] lg:basis-auto xl:w-[240px]',
       )}
+      shape={controlShape}
       variant={isAdmin7 ? 'secondary' : 'default'}
     >
       <InputGroupAddon>

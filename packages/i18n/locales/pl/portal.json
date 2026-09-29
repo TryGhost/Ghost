@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "(oszczędzasz {highestYearlyDiscount}%)",
     "{amount} days free": "{amount} dni za darmo",
     "{amount} off": "Rabat {amount}",

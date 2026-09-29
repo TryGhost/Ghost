@@ -1,3 +1,4 @@
+import ObjectId from 'bson-objectid';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import {
@@ -241,6 +242,27 @@ describe('Automated Emails API', function () {
           assert.equal(body.automated_emails[0].sender_reply_to, null);
         });
     });
+
+    it('Does not list automations that are not member welcome emails', async function () {
+      const automatedEmail = await createAutomatedEmail();
+
+      await models.Base.knex('automations').insert({
+        id: ObjectId().toHexString(),
+        name: 'Some other automation',
+        slug: 'some-other-automation',
+        status: 'active',
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+
+      await agent
+        .get('automated_emails')
+        .expectStatus(200)
+        .expect(({ body }) => {
+          const ids = body.automated_emails.map((email) => email.id);
+          assert.deepEqual(ids, [automatedEmail.id]);
+        });
+    });
   });
 
   describe('Read', function () {
@@ -336,6 +358,23 @@ describe('Automated Emails API', function () {
           etag: anyEtag,
           location: anyLocationFor('automated_emails'),
         });
+
+      const automation = await models.Base.knex('automations')
+        .where('slug', 'member-welcome-email-free')
+        .first('trigger_tier_scope');
+      assert.equal(automation.trigger_tier_scope, 'free');
+    });
+
+    it('Sets all paid tier scope for paid welcome email', async function () {
+      const automatedEmail = await createAutomatedEmail({
+        name: 'Paid member welcome flow',
+        slug: 'member-welcome-email-paid',
+      });
+
+      const automation = await models.Base.knex('automations')
+        .where('id', automatedEmail.id)
+        .first('trigger_tier_scope');
+      assert.equal(automation.trigger_tier_scope, 'all_paid');
     });
 
     it('Writes sender settings to email design settings on add', async function () {
@@ -632,6 +671,44 @@ describe('Automated Emails API', function () {
   });
 
   describe('Edit', function () {
+    it.each(['member-welcome-email-paid', '', null])(
+      'Rejects changing the slug to %s on edit',
+      async function (slug) {
+        const automatedEmail = await createAutomatedEmail();
+
+        await agent
+          .put(`automated_emails/${automatedEmail.id}`)
+          .body({
+            automated_emails: [
+              {
+                name: automatedEmail.name,
+                slug,
+                subject: 'Must not be saved',
+              },
+            ],
+          })
+          .expectStatus(422)
+          .expect(({ body }) => {
+            assert.equal(body.errors[0].property, 'slug');
+          });
+
+        const stored = await models.Automation.findOne({ id: automatedEmail.id });
+        assert.equal(stored.get('slug'), automatedEmail.slug);
+      },
+    );
+
+    it('Allows an unchanged slug on edit', async function () {
+      const automatedEmail = await createAutomatedEmail();
+      await agent
+        .put(`automated_emails/${automatedEmail.id}`)
+        .body({ automated_emails: [{ ...automatedEmail, subject: 'Updated subject' }] })
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.automated_emails[0].slug, automatedEmail.slug);
+          assert.equal(body.automated_emails[0].subject, 'Updated subject');
+        });
+    });
+
     it('Can edit an automated email', async function () {
       const automatedEmail = await createAutomatedEmail();
 

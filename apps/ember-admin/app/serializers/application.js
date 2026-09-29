@@ -8,7 +8,7 @@ export default class Application extends RESTSerializer {
     // TODO: review once the record links and meta RFC lands
     // https://github.com/emberjs/rfcs/blob/master/text/0332-ember-data-record-links-and-meta.md
     extractMeta(store, typeClass) {
-        let meta = super.extractMeta(...arguments);
+        const meta = super.extractMeta(...arguments);
         typeClass.___meta = meta;
         return meta;
     }
@@ -19,8 +19,8 @@ export default class Application extends RESTSerializer {
         options.includeId = true;
 
         // We have a plural root in the API
-        let root = pluralize(type.modelName);
-        let data = this.serialize(record, options);
+        const root = pluralize(type.modelName);
+        const data = this.serialize(record, options);
 
         hash[root] = [data];
     }
@@ -30,10 +30,10 @@ export default class Application extends RESTSerializer {
     }
 
     keyForRelationship(key, typeClass, method) {
-        let transform = method === 'serialize' ? underscore : camelize;
+        const transform = method === 'serialize' ? underscore : camelize;
 
         if (typeClass === 'belongsTo' && !key.match(/(Id|By)$/)) {
-            let transformed = `${transform(key)}_id`;
+            const transformed = `${transform(key)}_id`;
             return transformed;
         }
 

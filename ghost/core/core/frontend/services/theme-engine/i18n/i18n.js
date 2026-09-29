@@ -62,10 +62,9 @@ class I18n {
    * @returns {string}
    */
   t(translationPath, bindings) {
-    let string;
     let msg;
 
-    string = this._findString(translationPath);
+    const string = this._findString(translationPath);
 
     // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
     // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -153,7 +152,7 @@ class I18n {
    */
   _findString(msgPath, opts) {
     const options = merge({ log: true }, opts || {});
-    let candidateString;
+
     let matchingString;
 
     // no path? no string
@@ -167,7 +166,7 @@ class I18n {
       this._handleUninitialisedError(msgPath);
     }
 
-    candidateString = this._getCandidateString(msgPath);
+    const candidateString = this._getCandidateString(msgPath);
 
     matchingString = candidateString || {};
 
@@ -219,7 +218,7 @@ class I18n {
    * @param {Object} bindings
    */
   _formatMessage(string, bindings) {
-    let currentLocale = this.locale();
+    const currentLocale = this.locale();
     let msg = new MessageFormat(string, currentLocale);
 
     try {

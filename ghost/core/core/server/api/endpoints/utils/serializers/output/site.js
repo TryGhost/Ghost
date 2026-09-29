@@ -21,6 +21,7 @@ module.exports = {
         'sentry_dsn',
         'sentry_env',
         'site_uuid',
+        'authReact',
       ]),
     };
   },

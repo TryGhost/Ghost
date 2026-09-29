@@ -40,7 +40,6 @@ describe('GhostServer', function () {
           host: otherServerInfo.address,
           port: otherServerInfo.port,
           shutdownTimeout: 1,
-          testmode: false,
         },
       });
 
@@ -58,7 +57,6 @@ describe('GhostServer', function () {
           host: '192.0.2.1',
           port: 0,
           shutdownTimeout: 1,
-          testmode: false,
         },
       });
 
@@ -78,7 +76,6 @@ describe('GhostServer', function () {
           host: '127.0.0.1',
           port: 0,
           shutdownTimeout: 1,
-          testmode: false,
         },
       });
 
@@ -107,7 +104,6 @@ describe('GhostServer', function () {
           host: '127.0.0.1',
           port: 0,
           shutdownTimeout: 1,
-          testmode: false,
         },
       });
     });
@@ -159,7 +155,6 @@ describe('GhostServer', function () {
           host: '127.0.0.1',
           port: 0,
           shutdownTimeout: 1,
-          testmode: false,
         },
       });
 

@@ -4,6 +4,7 @@ import {action} from '@ember/object';
 import {getOwner} from '@ember/application';
 import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
+import {tracked} from '@glimmer/tracking';
 
 const emberDataTypeMapping = {
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
@@ -29,6 +30,7 @@ const emberDataTypeMapping = {
 };
 
 export default class StateBridgeService extends Service.extend(Evented) {
+    @service billing;
     @service customViews;
     @service feature;
     @service membersUtils;
@@ -41,6 +43,13 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @service ui;
 
     @inject config;
+
+    @tracked postListQueryParams = {posts: {}, pages: {}};
+
+    @action
+    setPostListQueryParams(resource, params) {
+        this.postListQueryParams = {...this.postListQueryParams, [resource]: params};
+    }
 
     /**
      * Gives React the same synchronous Labs route-ownership decision Ember
@@ -268,6 +277,13 @@ export default class StateBridgeService extends Service.extend(Evented) {
         this.trigger('openGiftLinkModal', {id, resource});
     }
 
+    // A billing search result for the billing route already showing is a no-op
+    // Ember transition, so React hands the sub-route to the billing app directly
+    @action
+    navigateToBillingSubRoute(subRoute) {
+        this.billing.navigateToSubRoute(subRoute);
+    }
+
     get sidebarVisible() {
         // Sidebar is visible when NOT in fullscreen mode
         return !this.ui.isFullScreen;
@@ -316,7 +332,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     isRouteActive(routeNames, queryParams) {
-        let currentRouteName = this.router.currentRouteName?.replace(/_loading$/, '') || '';
+        const currentRouteName = this.router.currentRouteName?.replace(/_loading$/, '') || '';
         
         // Normalize routeNames to an array
         const routes = Array.isArray(routeNames) ? routeNames : routeNames.split(' ');
@@ -363,7 +379,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
         }
 
         const params = {};
-        for (let param of controller.queryParams) {
+        for (const param of controller.queryParams) {
             let controllerKey, urlKey;
             
             if (typeof param === 'string') {

@@ -50,7 +50,7 @@ const selectTriggerVariants = cva(
     ],
     defaultVariants: {
       variant: 'default',
-      shape: 'pill',
+      shape: 'rounded',
       isAdmin7: true,
     },
   },
@@ -72,8 +72,8 @@ const SelectTrigger = React.forwardRef<
     { className, children, shape, variant, showChevron = variant !== 'secondary', ...props },
     ref,
   ) => {
-    const { controlShape, isAdmin7 } = useShade();
-    const resolvedShape = shape ?? controlShape;
+    const { isAdmin7 } = useShade();
+    const resolvedShape = shape ?? 'rounded';
     return (
       <SelectPrimitive.Trigger
         ref={ref}
@@ -81,6 +81,7 @@ const SelectTrigger = React.forwardRef<
           inputSurface('self'),
           inputSurfaceClasses.disabledFieldSelf,
           selectTriggerVariants({ shape: resolvedShape, variant, isAdmin7 }),
+          showChevron && 'pr-2',
           className,
         )}
         data-control-shape={resolvedShape}
@@ -90,7 +91,7 @@ const SelectTrigger = React.forwardRef<
         {children}
         {showChevron && (
           <SelectPrimitive.Icon asChild>
-            <ChevronDown className="-mr-0.5 ml-1 size-4 opacity-50" />
+            <ChevronDown className="-mr-0.5 size-4 opacity-50" />
           </SelectPrimitive.Icon>
         )}
       </SelectPrimitive.Trigger>

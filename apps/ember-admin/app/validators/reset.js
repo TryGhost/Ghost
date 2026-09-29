@@ -10,8 +10,8 @@ const resetValidator = BaseValidator.extend(PasswordValidatorMixin, {
     },
 
     newPassword(model) {
-        let p1 = model.newPassword;
-        let p2 = model.ne2Password;
+        const p1 = model.newPassword;
+        const p2 = model.ne2Password;
 
         if (isBlank(p1)) {
             model.errors.add('newPassword', 'Please enter a password.');

@@ -10,10 +10,15 @@ const iconv = require('iconv-lite');
 const path = require('path');
 const crypto = require('crypto');
 const imageTransform = require('@tryghost/image-transform');
+const {
+  detectFileExtension,
+  isAllowedImageExtension,
+  isSvgExtension,
+} = require('../../lib/image/image-content');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
-const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
+const { USER_AGENT } = require('./user-agent');
 const DEFAULT_BOOKMARK_ICON = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
 const DEFAULT_REQUEST_TIMEOUT = 5000;
 
@@ -50,7 +55,6 @@ const SVG_RASTER_TIMEOUT_SECONDS = 10;
 const MAX_SVG_BYTES = 32 * 1024;
 const GZIP_MAGIC = [0x1f, 0x8b];
 
-const SVG_EXTENSIONS = new Set(['.svg', '.svgz']);
 const SVG_SNIFF_BYTES = 1024;
 
 const toBuffer = (bytes) => {
@@ -59,24 +63,25 @@ const toBuffer = (bytes) => {
     : Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 };
 
-const shouldRasterize = (buffer, ext) => {
-  if (SVG_EXTENSIONS.has(ext.toLowerCase())) {
-    return true;
-  }
+const isGzip = (buffer) => {
+  return GZIP_MAGIC.every((byte, index) => buffer[index] === byte);
+};
 
-  const head = buffer.subarray(0, SVG_SNIFF_BYTES).toString('utf8').trimStart();
+const looksLikeSvg = (buffer, sniffBytes) => {
+  const head = buffer.subarray(0, sniffBytes).toString('utf8').trimStart();
 
   return head.startsWith('<') && /<svg[\s:>]/i.test(head);
 };
 
-let fileTypeFromBuffer;
-
-const detectFileType = async (buffer) => {
-  if (!fileTypeFromBuffer) {
-    ({ fileTypeFromBuffer } = await import('file-type'));
+// sharp picks its decoder from the contents rather than the file name, so an
+// SVG extension alone isn't enough to rasterize. Gzipped files still count so
+// they are rejected as unconvertible below instead of as an unknown type.
+const shouldRasterize = (buffer, ext) => {
+  if (isSvgExtension(ext)) {
+    return isGzip(buffer) || looksLikeSvg(buffer, MAX_SVG_BYTES);
   }
 
-  return fileTypeFromBuffer(buffer);
+  return looksLikeSvg(buffer, SVG_SNIFF_BYTES);
 };
 
 /**
@@ -90,15 +95,15 @@ const findUrlWithProvider = (url) => {
 
   // build up a list of URL variations to test against because the oembed
   // providers list is not always up to date with scheme or www vs non-www
-  let baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
-  let testUrls = [
+  const baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
+  const testUrls = [
     `https://${baseUrl}`,
     `https://www.${baseUrl}`,
     `http://${baseUrl}`,
     `http://www.${baseUrl}`,
   ];
 
-  for (let testUrl of testUrls) {
+  for (const testUrl of testUrls) {
     provider = hasProvider(testUrl);
     if (provider) {
       url = testUrl;
@@ -171,10 +176,13 @@ class OEmbedService {
    * @param {Object} [options]
    */
   async knownProvider(url, options = {}) {
-    const { extract } = require('@extractus/oembed-extractor');
+    const { extractOembed } = require('./extract-oembed');
 
     try {
-      return await extract(url, {}, options);
+      return await extractOembed(url, {
+        fetch: this.externalRequest.fetch,
+        signal: options.signal,
+      });
     } catch (err) {
       if (
         err.message === 'Request failed with error code 401' ||
@@ -224,10 +232,7 @@ class OEmbedService {
     const name = this.imageStore.getSanitizedFileName(baseName);
 
     if (shouldRasterize(imageBuffer, ext)) {
-      if (
-        imageBuffer.length > MAX_SVG_BYTES ||
-        GZIP_MAGIC.every((byte, index) => imageBuffer[index] === byte)
-      ) {
+      if (imageBuffer.length > MAX_SVG_BYTES || isGzip(imageBuffer)) {
         throw new errors.ValidationError({
           message: tpl(messages.unconvertibleSvg),
           context: imageUrl,
@@ -250,10 +255,9 @@ class OEmbedService {
       // Content-Type the stored file is later served with, so name the
       // file after its contents and hold it to the same allowlist as image
       // uploads. `file-type` never reports SVG, which is handled above.
-      const fileType = await detectFileType(imageBuffer);
-      ext = fileType ? `.${fileType.ext}` : '';
+      ext = (await detectFileExtension(imageBuffer)) ?? '';
 
-      if (!this.config.get('uploads').images.extensions.includes(ext)) {
+      if (!isAllowedImageExtension(ext, this.config.get('uploads').images.extensions)) {
         throw new errors.ValidationError({
           message: tpl(messages.unsupportedImage),
           context: imageUrl,
@@ -395,6 +399,80 @@ class OEmbedService {
   }
 
   /**
+   * Requests a URL through this.externalRequest and resolves with the response
+   * and at most the first chunk of its body, aborting the rest of the download.
+   *
+   * @param {string} url
+   * @returns {Promise<{response: import('got').Response, chunk?: Buffer}>}
+   */
+  fetchFirstChunk(url) {
+    return new Promise((resolve, reject) => {
+      const stream = this.externalRequest.stream(url, {
+        headers: {
+          'user-agent': USER_AGENT,
+          range: 'bytes=0-0',
+        },
+        timeout: {
+          request: DEFAULT_REQUEST_TIMEOUT,
+        },
+        decompress: false,
+        throwHttpErrors: false,
+      });
+      let response;
+
+      stream.on('response', (res) => {
+        response = res;
+      });
+      stream.once('data', (chunk) => {
+        stream.destroy();
+        resolve({ response, chunk });
+      });
+      stream.once('end', () => resolve({ response }));
+      stream.on('error', reject);
+    });
+  }
+
+  /**
+   * Checks that a favicon candidate is reachable and looks like an image.
+   *
+   * Replaces metascraper-logo-favicon's default resolver, which probes via
+   * reachable-url. reachable-url bundles got 11, which ignores the `dnsLookup`
+   * externalRequest installs to validate the resolved IP at connection time,
+   * leaving those probes open to DNS rebinding. Mirrors the default resolver's
+   * checks otherwise.
+   *
+   * @param {string} faviconUrl
+   * @param {Array<string|string[]>} [contentTypes] - allowed content types for the icon's extension
+   * @returns {Promise<{url: string} | undefined>}
+   */
+  async resolveFaviconUrl(faviconUrl, contentTypes) {
+    let result;
+    try {
+      result = await this.fetchFirstChunk(faviconUrl);
+    } catch {
+      return undefined;
+    }
+
+    const { response, chunk } = result;
+    if (!response || response.statusCode < 200 || response.statusCode >= 300) {
+      return undefined;
+    }
+
+    if (contentTypes) {
+      const contentType = response.headers['content-type']?.split(';')[0].toLowerCase();
+      if (!contentType || !contentTypes.some((ct) => contentType.includes(ct))) {
+        return undefined;
+      }
+      // An empty body or one starting with '<' (60) is markup, not an image
+      if (!chunk?.length || chunk[0] === 60) {
+        return undefined;
+      }
+    }
+
+    return { url: response.url };
+  }
+
+  /**
    * @param {string} url
    * @param {string} html
    * @param {string} type
@@ -477,6 +555,8 @@ class OEmbedService {
       require('metascraper-logo-favicon')({
         gotOpts,
         pickFn,
+        resolveFaviconUrl: (faviconUrl, contentTypes) =>
+          this.resolveFaviconUrl(faviconUrl, contentTypes),
       }),
       require('metascraper-logo')(),
     ];

@@ -105,7 +105,7 @@ function createMailError({ message, err, ignoreDefaultMessage } = { message: '' 
   const defaultErrorMessage = tpl(messages.failedSendingEmailError);
 
   const fullErrorMessage = defaultErrorMessage + message;
-  let statusCode = err && err.name === 'RecipientError' ? 400 : 500;
+  const statusCode = err && err.name === 'RecipientError' ? 400 : 500;
   return new errors.EmailError({
     message: ignoreDefaultMessage ? message : fullErrorMessage,
     err: err,

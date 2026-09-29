@@ -1,10 +1,10 @@
 const slugFilterOrder = (table, filter) => {
-  let orderMatch = filter.match(/slug:\s?\[(.*)\]/);
+  const orderMatch = filter.match(/slug:\s?\[(.*)\]/);
 
   if (orderMatch) {
-    let orderSlugs = orderMatch[1].split(',');
-    let caseParts = [];
-    let bindings = [];
+    const orderSlugs = orderMatch[1].split(',');
+    const caseParts = [];
+    const bindings = [];
 
     orderSlugs.forEach((slug, index) => {
       caseParts.push(`WHEN \`${table}\`.\`slug\` = ? THEN ?`);

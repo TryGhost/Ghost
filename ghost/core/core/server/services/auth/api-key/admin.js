@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 const url = require('url');
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
-const limitService = require('../../../services/limits');
-const { legacyApiPathMatch } = require('../../../services/api-version-compatibility');
+const { limitService } = require('../../../services/limits');
+const { legacyApiPathMatch } = require('../../../web/api/middleware/api-version-compatibility');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 
@@ -16,7 +16,7 @@ const messages = {
   invalidApiKeyType: 'Invalid API Key type',
 };
 
-let JWT_OPTIONS_DEFAULTS = {
+const JWT_OPTIONS_DEFAULTS = {
   /** @type import('jsonwebtoken').Algorithm[] */
   algorithms: ['HS256'],
   maxAge: '5m',
@@ -202,7 +202,7 @@ const authenticateWithToken = async function apiKeyAuthenticateWithToken(
   }
 
   // authenticated OK
-  let result = {
+  const result = {
     user: null,
     apiKey: apiKey,
   };

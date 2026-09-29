@@ -19,16 +19,16 @@ export default class GhUrlPreview extends Component {
     @computed('slug')
     get url() {
         // Get the blog URL and strip the scheme
-        let blogUrl = this.config.blogUrl;
+        const blogUrl = this.config.blogUrl;
         // Remove `http[s]://`
-        let noSchemeBlogUrl = blogUrl.substr(blogUrl.indexOf('://') + 3);
+        const noSchemeBlogUrl = blogUrl.substr(blogUrl.indexOf('://') + 3);
 
         // Get the prefix and slug values
-        let prefix = this.prefix ? `${this.prefix}/` : '';
-        let slug = this.slug ? `${this.slug}/` : '';
+        const prefix = this.prefix ? `${this.prefix}/` : '';
+        const slug = this.slug ? `${this.slug}/` : '';
 
         // Join parts of the URL together with slashes
-        let theUrl = `${noSchemeBlogUrl}/${prefix}${slug}`;
+        const theUrl = `${noSchemeBlogUrl}/${prefix}${slug}`;
 
         return theUrl;
     }

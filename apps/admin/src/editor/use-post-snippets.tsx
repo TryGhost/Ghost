@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -34,7 +34,18 @@ export interface PostSnippets {
 // Snippets for the card menu plus the create/update/delete flows and their
 // confirmation dialogs
 export function usePostSnippets({ canManage }: { canManage: boolean }): PostSnippets {
-  const { data } = useBrowseSnippets({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data, fetchNextPage, hasNextPage, isError, isFetchingNextPage } = useBrowseSnippets({
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+
+  // Core caps `limit=all`, so the response can still contain a next page. Koenig
+  // takes the list as the whole menu, so it gets none until every page has arrived.
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage && !isError) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isError]);
+  const browsed = hasNextPage ? undefined : data?.snippets;
   const addSnippet = useAddSnippet();
   const editSnippet = useEditSnippet();
   const removeSnippet = useDeleteSnippet();
@@ -43,10 +54,10 @@ export function usePostSnippets({ canManage }: { canManage: boolean }): PostSnip
 
   const records = useMemo(
     () =>
-      (data?.snippets ?? [])
+      (browsed ?? [])
         .filter((snippet) => snippet.lexical !== null)
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [data?.snippets],
+    [browsed],
   );
 
   const snippets = useMemo<CardConfigSnippet[]>(

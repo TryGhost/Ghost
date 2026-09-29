@@ -16,3 +16,8 @@
 # Inbox Links
 ghost/core/core/server/lib/get-inbox-links.ts @EvanHahn
 ghost/core/test/unit/server/lib/get-inbox-links.test.ts @EvanHahn
+
+# Automations
+ghost/core/core/server/api/endpoints/automations.ts @EvanHahn
+ghost/core/core/server/models/automation.js @EvanHahn
+ghost/core/core/server/services/automations/ @EvanHahn

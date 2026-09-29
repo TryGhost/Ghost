@@ -136,10 +136,9 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
   // newsletters pattern) — they change what every collection surface shows.
   const archiveButton = (
     <Button
-      className="text-destructive hover:text-destructive"
       size="sm"
       type="button"
-      variant="ghost"
+      variant="destructive-ghost"
       onClick={() => {
         onClose();
         confirm({

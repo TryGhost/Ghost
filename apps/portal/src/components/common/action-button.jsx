@@ -76,7 +76,7 @@ export const ActionButtonStyles = `
 `;
 
 const Styles = ({ brandColor, disabled, style = {}, isPrimary }) => {
-  let backgroundColor = brandColor || '#3eb0ef';
+  const backgroundColor = brandColor || '#3eb0ef';
   let opacity = '1.0';
   let pointerEvents = 'auto';
 
@@ -109,7 +109,7 @@ function ActionButton({
   tabIndex = undefined,
   dataTestId,
 }) {
-  let Style = Styles({ disabled, retry, brandColor, style, isPrimary });
+  const Style = Styles({ disabled, retry, brandColor, style, isPrimary });
 
   let className = 'gh-portal-btn';
   if (isPrimary) {

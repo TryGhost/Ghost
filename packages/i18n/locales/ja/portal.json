@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "({highestYearlyDiscount}%オフ)",
     "{amount} days free": "{amount}日間無料",
     "{amount} off": "{amount}オフ",

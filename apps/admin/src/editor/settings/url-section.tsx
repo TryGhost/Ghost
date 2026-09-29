@@ -1,14 +1,21 @@
 import { type KeyboardEvent, useCallback, useId, useState } from 'react';
-import { FieldError, Input, Label } from '@tryghost/shade/components';
-import { Text } from '@tryghost/shade/primitives';
+import {
+  FieldError,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  Label,
+} from '@tryghost/shade/components';
+import { Inline, Text } from '@tryghost/shade/primitives';
 import {
   settingsSlugError,
   settingsSlugInput,
   settingsUrlPreview,
 } from '@tryghost/test-data/selectors/editor';
+import { LucideIcon } from '@tryghost/shade/utils';
 import type { PostType } from '@/editor/card-config';
 import { normalizeManualSlug } from '@/editor/engine/slug-machine';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';
 import { formatUrlPreview } from './url-preview';
 
@@ -23,7 +30,7 @@ export function UrlSection({
   postType,
   siteUrl,
 }: {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
   siteUrl: string;
 }) {
@@ -61,18 +68,36 @@ export function UrlSection({
 
   return (
     <SettingsSection>
-      <Label htmlFor={inputId}>{postType === 'page' ? 'Page' : 'Post'} URL</Label>
-      <Input
-        aria-describedby={failed ? errorId : undefined}
-        aria-invalid={failed}
-        data-testid={settingsSlugInput}
-        disabled={pending}
-        id={inputId}
-        value={value}
-        onBlur={commit}
-        onChange={(event) => setDraft(event.target.value)}
-        onKeyDown={onKeyDown}
-      />
+      <Inline gap="sm" justify="between">
+        <Label htmlFor={inputId}>{postType === 'page' ? 'Page' : 'Post'} URL</Label>
+        {session.loadedRecord?.status === 'published' && session.loadedRecord.url ? (
+          <a
+            className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-foreground"
+            href={session.loadedRecord.url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            View {postType}
+            <LucideIcon.ArrowUpRight className="size-3.5" />
+          </a>
+        ) : null}
+      </Inline>
+      <InputGroup data-disabled={pending}>
+        <InputGroupAddon>
+          <LucideIcon.Link />
+        </InputGroupAddon>
+        <InputGroupInput
+          aria-describedby={failed ? errorId : undefined}
+          aria-invalid={failed}
+          data-testid={settingsSlugInput}
+          disabled={pending}
+          id={inputId}
+          value={value}
+          onBlur={commit}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={onKeyDown}
+        />
+      </InputGroup>
       {failed ? (
         <FieldError data-testid={settingsSlugError} id={errorId}>
           {EDIT_FAILED}

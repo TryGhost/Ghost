@@ -111,18 +111,31 @@ jobs:
             PR_CAP=10
           fi
 
-          # Exclude `needs:review` PRs: Renovate cannot merge them itself, so
-          # counting them lets a handful of parked updates hold the cap shut
-          # forever — the cap is only released by Renovate merging something.
-          open_count=$(gh pr list \
+          # Count only the PRs Renovate can merge itself. Renovate states that
+          # per PR in the body ("Automerge: Enabled" / "Disabled by config"),
+          # which is the only live signal for it — `needs:review` was a proxy
+          # that missed every other automerge exclusion, letting parked PRs
+          # hold the cap shut forever. The cap is only released by Renovate
+          # merging something, so a PR it will never merge must not count.
+          # A body without the marker counts, so an unparseable PR tightens
+          # the cap rather than loosening it. `--limit` is well above any real
+          # backlog for the same reason: a truncated list undercounts, which
+          # would loosen the cap.
+          prs=$(gh pr list \
             --repo "${{ github.repository }}" \
             --author "app/tryghost-renovate" \
             --state open \
-            --limit 100 \
-            --json number,labels \
-            --jq '[.[] | select(any(.labels[].name; . == "needs:review") | not)] | length')
+            --limit 1000 \
+            --json number,body)
+
+          open_count=$(jq '[.[] | select((.body // "") | test("\\*\\*Automerge\\*\\*: Disabled") | not)] | length' <<<"$prs")
+          parked=$(jq -r '[.[] | select((.body // "") | test("\\*\\*Automerge\\*\\*: Disabled")) | .number | tostring] | join(", ")' <<<"$prs")
 
           echo "Renovate has $open_count open PRs it can merge itself (cap: $PR_CAP)"
+
+          if [ -n "$parked" ]; then
+            echo "Parked PRs excluded from the cap, each needs a human merge: $parked"
+          fi
 
           if [ "$MAINTENANCE_ONLY" = "true" ]; then
             force='{"dependencyDashboardApproval":true,"prCreation":"approval","vulnerabilityAlerts":{"dependencyDashboardApproval":false}}'
@@ -165,4 +178,7 @@ jobs:
           # Renovate refuses to run any post-upgrade command that isn't matched
           # by one of these regexes — arbitrary command execution is opt-in. Both
           # the dep install and the generator command must be matched.
-          RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS: '["^pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts$", "^node scripts/generate-changeset\\.js$"]'
+          # `allowedCommands` is the current name; the old
+          # `allowedPostUpgradeCommands` is silently ignored on Renovate >= 41,
+          # which left every npm PR with a failed `renovate/artifacts` status.
+          RENOVATE_ALLOWED_COMMANDS: '["^pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts$", "^node scripts/generate-changeset\\.js$"]'

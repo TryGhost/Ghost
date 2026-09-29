@@ -36,6 +36,7 @@ class PostsWithAnalytics extends InfinityModel {
 }
 
 export default class PostsRoute extends AuthenticatedRoute {
+    @service stateBridge;
     @service infinity;
     @service router;
     @service feature;
@@ -63,7 +64,7 @@ export default class PostsRoute extends AuthenticatedRoute {
         // see https://github.com/TryGhost/Ghost/issues/11057
         this.router.on('routeWillChange', (transition) => {
             if (transition.to && (this.routeName === 'posts' || this.routeName === 'pages')) {
-                let toThisRoute = transition.to.find(route => route.name === this.routeName);
+                const toThisRoute = transition.to.find(route => route.name === this.routeName);
                 if (transition.from && transition.from.name === this.routeName && toThisRoute) {
                     transition.method('replace');
                 }
@@ -106,7 +107,11 @@ export default class PostsRoute extends AuthenticatedRoute {
         // `<LinkTo @route="posts">` breadcrumb) has no URL yet, so we supply
         // one.
         if (!transition.intent?.url) {
-            this._navigateToReactRoute(this._reactRouteUrl(transition));
+            const url = this._reactRouteUrl(transition);
+            this._navigateToReactRoute(url);
+            if (transition.from?.name?.startsWith('lexical-editor')) {
+                this.stateBridge.trigger('restoreListState', {path: url});
+            }
         }
 
         this._parkOnReactFallback();
@@ -143,21 +148,11 @@ export default class PostsRoute extends AuthenticatedRoute {
             return;
         }
 
-        const url = window.location.hash;
-        const state = window.history.state;
-
-        this.router.replaceWith('react-fallback', this.routeName)
-            .finally(() => this._restoreUrl(url, state));
-    }
-
-    // Parking writes the fallback route's own path, dropping the query string
-    // that addresses saved views - so the captured URL goes back afterwards.
-    // `replaceState`: no history entry, and no `hashchange` to re-enter
-    // routing. The captured history state goes back too, unconditionally:
-    // react-router keeps `{usr, key, idx}` there, and the parking navigation
-    // resets it - a `null` state breaks its back/forward index and useBlocker.
-    _restoreUrl(url, state) {
-        window.history.replaceState(state, '', url);
+        // Never write the fallback's queryless URL. On refresh React can read
+        // that temporary URL before a silent replaceState restores it, leaving
+        // the list and sidebar unfiltered. Suppressing the write also preserves
+        // React Router's history state and back/forward index.
+        this.router.replaceWith('react-fallback', this.routeName).method(null);
     }
 
     // Built by hand rather than with `router.urlFor`, whose output depends on
@@ -187,8 +182,8 @@ export default class PostsRoute extends AuthenticatedRoute {
         }
 
         const user = this.session.user;
-        let filterParams = {tag: params.tag, visibility: params.visibility};
-        let paginationParams = {
+        const filterParams = {tag: params.tag, visibility: params.visibility};
+        const paginationParams = {
             perPageParam: 'limit',
             totalPagesParam: 'meta.pagination.pages'
         };
@@ -210,18 +205,18 @@ export default class PostsRoute extends AuthenticatedRoute {
             filterParams.authors = params.author;
         }
 
-        let perPage = this.perPage;
+        const perPage = this.perPage;
 
         const filterStatuses = filterParams.status;
-        let queryParams = {allFilter: this._filterString({...filterParams})}; // pass along the parent filter so it's easier to apply the params filter to each infinity model
-        let models = {};
+        const queryParams = {allFilter: this._filterString({...filterParams})}; // pass along the parent filter so it's easier to apply the params filter to each infinity model
+        const models = {};
 
         if (filterStatuses.includes('scheduled')) {
-            let scheduledInfinityModelParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: 'scheduled'})};
+            const scheduledInfinityModelParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: 'scheduled'})};
             models.scheduledInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, scheduledInfinityModelParams));
         }
         if (filterStatuses.includes('draft')) {
-            let draftInfinityModelParams = {...queryParams, order: params.order || 'updated_at desc', filter: this._filterString({...filterParams, status: 'draft'})};
+            const draftInfinityModelParams = {...queryParams, order: params.order || 'updated_at desc', filter: this._filterString({...filterParams, status: 'draft'})};
             models.draftInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, draftInfinityModelParams));
         }
         if (filterStatuses.includes('published') || filterStatuses.includes('sent')) {
@@ -302,7 +297,7 @@ export default class PostsRoute extends AuthenticatedRoute {
     @action
     queryParamsDidChange() {
         // scroll back to the top
-        let contentList = document.querySelector('.content-list');
+        const contentList = document.querySelector('.content-list');
         if (contentList) {
             contentList.scrollTop = 0;
         }
@@ -347,7 +342,7 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     _filterString(filter) {
         return Object.keys(filter).map((key) => {
-            let value = filter[key];
+            const value = filter[key];
 
             if (!isBlank(value)) {
                 return `${key}:${filter[key]}`;

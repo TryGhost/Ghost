@@ -18,7 +18,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Dropdown selection component built on Radix UI. Provides accessible keyboard navigation, search, and customizable styling. Ghost and secondary pill triggers share the button inset shadow while pressed and while their list is open. The open appearance follows aria-expanded and resets on selection or dismissal.',
+          'Dropdown selection component built on Radix UI. Form selects use standard rounded corners by default. Use PageHeader.SelectTrigger for pill-shaped header selectors. Provides accessible keyboard navigation, search, and customizable styling. Ghost and secondary pill triggers share the button inset shadow while pressed and while their list is open. The open appearance follows aria-expanded and resets on selection or dismissal.',
       },
     },
   },
@@ -52,7 +52,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Basic select dropdown with simple options.',
+        story:
+          'Basic select dropdown with simple options. The chevron has no left margin; triggers with a chevron reduce right padding by one spacing step (4px).',
       },
     },
   },
@@ -61,7 +62,7 @@ export const Default: Story = {
 export const Pill: Story = {
   render: () => (
     <Select defaultValue="banana">
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[180px]" shape="pill">
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
@@ -83,7 +84,7 @@ export const Pill: Story = {
 export const GhostPill: Story = {
   render: () => (
     <Select defaultValue="banana">
-      <SelectTrigger className="w-[180px]" variant="ghost">
+      <SelectTrigger className="w-[180px]" shape="pill" variant="ghost">
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
@@ -105,7 +106,7 @@ export const GhostPill: Story = {
 export const SecondaryPill: Story = {
   render: () => (
     <Select defaultValue="banana">
-      <SelectTrigger className="w-[180px]" variant="secondary">
+      <SelectTrigger className="w-[180px]" shape="pill" variant="secondary">
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
@@ -272,6 +273,7 @@ export const WithoutChevron: Story = {
         aria-label="Date range"
         className="w-[180px]"
 
+        shape="pill"
         showChevron={false}
         variant="ghost"
       >

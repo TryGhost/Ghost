@@ -23,7 +23,7 @@ export default Factory.extend({
     publishedAt: '2015-12-19T16:25:07.000Z',
     publishedBy: 1,
     status(i) {
-        let statuses = ['draft', 'published', 'scheduled','sent'];
+        const statuses = ['draft', 'published', 'scheduled','sent'];
         return statuses[i % statuses.length];
     },
     title(i) { return `Post ${i}`; },
@@ -43,7 +43,7 @@ export default Factory.extend({
             let user = server.schema.users.find(1);
 
             if (!user) {
-                let role = server.schema.roles.find({name: 'Administrator'}) || server.create('role', {name: 'Administrator'});
+                const role = server.schema.roles.find({name: 'Administrator'}) || server.create('role', {name: 'Administrator'});
                 user = server.create('user', {roles: [role]});
             }
 

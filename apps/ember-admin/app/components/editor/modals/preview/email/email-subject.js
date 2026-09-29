@@ -17,9 +17,9 @@ export default class EmailSubject extends Component {
         }
 
         // Grab the post and current stored email subject
-        let emailSubject = event.target.value;
-        let post = this.args.post;
-        let currentEmailSubject = post.get('emailSubject');
+        const emailSubject = event.target.value;
+        const post = this.args.post;
+        const currentEmailSubject = post.get('emailSubject');
 
         // If the subject entered matches the stored email subject, do nothing
         if (currentEmailSubject === emailSubject) {

@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "(caomhain {highestYearlyDiscount}%)",
     "{amount} days free": "{amount}l an-asgaidh",
     "{amount} off": "{amount} dheth",

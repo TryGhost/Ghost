@@ -7,10 +7,7 @@ const messages = {
   tagNotFound: 'Tag not found.',
 };
 
-let Tag;
-let Tags;
-
-Tag = ghostBookshelf.Model.extend(
+const Tag = ghostBookshelf.Model.extend(
   {
     tableName: 'tags',
 
@@ -221,7 +218,7 @@ Tag = ghostBookshelf.Model.extend(
   },
 );
 
-Tags = ghostBookshelf.Collection.extend({
+const Tags = ghostBookshelf.Collection.extend({
   model: Tag,
 });
 

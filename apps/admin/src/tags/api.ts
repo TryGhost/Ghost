@@ -1,7 +1,6 @@
 /**
  * Public surface of the tags domain, consumed by the admin shell
- * (apps/admin/src/routes.tsx and the tag detail gate). Everything else in
- * this domain is internal.
+ * (apps/admin/src/routes.tsx). Everything else in this domain is internal.
  */
 
 // Lazy entries, not component re-exports: the shell mounts these behind

@@ -933,6 +933,32 @@ module.exports = {
     },
     created_at: { type: 'dateTime', nullable: false },
   },
+  // A member's metafields changing, as an entry in their activity feed. Which fields,
+  // not what they now hold: the values are on the member already, and an old address
+  // has no business outliving the member's change of it in a history table.
+  members_metafield_change_events: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    member_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'members.id',
+      cascadeDelete: true,
+    },
+    // Who made the change, in the vocabulary `members_metafield_values` uses for who
+    // wrote a value, so an entry can name any writer that table can.
+    written_by_type: { type: 'string', maxlength: 50, nullable: false },
+    written_by_id: { type: 'string', maxlength: 24, nullable: true },
+    // Where the change was made, such as `portal`. Separate from who made it: a member
+    // can supply their own values somewhere other than their account.
+    source: { type: 'string', maxlength: 50, nullable: false },
+    // The fields changed, as a JSON list of each field's namespace, key and the name it had at the
+    // time. Names are copied rather than joined so an entry still reads after a field is
+    // renamed or deleted. MEDIUMTEXT because a write can name every field a site
+    // defines, and that many names can outgrow TEXT's 65,535 bytes.
+    metafields: { type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+  },
   members_status_events: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     member_id: {
@@ -2144,9 +2170,32 @@ module.exports = {
       validations: { isIn: [['active', 'inactive']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    trigger_tier_scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['free', 'all_paid', 'selected_paid']] },
+    },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+  },
+  automation_trigger_tiers: {
+    automation_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'automations.id',
+      cascadeDelete: true,
+    },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'products.id',
+    },
+    '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'product_id']],
   },
   automation_actions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

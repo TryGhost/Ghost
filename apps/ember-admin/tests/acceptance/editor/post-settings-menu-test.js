@@ -7,7 +7,7 @@ import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Editor / Post Settings Menu', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     let author;
@@ -15,7 +15,7 @@ describe('Acceptance: Editor / Post Settings Menu', function () {
     beforeEach(async function () {
         this.server.loadFixtures();
 
-        let role = this.server.create('role', {name: 'Administrator'});
+        const role = this.server.create('role', {name: 'Administrator'});
         author = this.server.create('user', {roles: [role]});
 
         await authenticateSession();
@@ -23,7 +23,7 @@ describe('Acceptance: Editor / Post Settings Menu', function () {
 
     it('displays publish time converted to site timezone', async function () {
         // Create a published post at 12:00 UTC on Jan 15
-        let post = this.server.create('post', {
+        const post = this.server.create('post', {
             authors: [author],
             status: 'published',
             publishedAt: '2024-01-15T12:00:00.000Z'

@@ -17,6 +17,7 @@ Object {
     "mailgunIsConfigured": false,
     "security": Object {
       "allowWebhookInternalIPs": true,
+      "embedPreviewUrl": "https://public.ghostembeds.com/",
       "staffDeviceVerification": false,
     },
     "signupForm": Object {

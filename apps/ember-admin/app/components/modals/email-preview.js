@@ -82,18 +82,18 @@ export default class EmailPreviewModal extends Component {
         // data is a post or has no html, try fetching email preview
         } else {
             const id = this.args.data.post_id || this.args.data.id;
-            let url = this.ghostPaths.url.api('/email_previews/posts', id);
-            let response = await this.ajax.request(url);
-            let [emailPreview] = response.email_previews;
+            const url = this.ghostPaths.url.api('/email_previews/posts', id);
+            const response = await this.ajax.request(url);
+            const [emailPreview] = response.email_previews;
             html = emailPreview.html;
             subject = emailPreview.subject;
         }
 
         // inject extra CSS into the html for disabling links and scrollbars etc
-        let domParser = new DOMParser();
-        let htmlDoc = domParser.parseFromString(html, 'text/html');
-        let stylesheet = htmlDoc.querySelector('style');
-        let originalCss = stylesheet.innerHTML;
+        const domParser = new DOMParser();
+        const htmlDoc = domParser.parseFromString(html, 'text/html');
+        const stylesheet = htmlDoc.querySelector('style');
+        const originalCss = stylesheet.innerHTML;
         stylesheet.innerHTML = `${originalCss}\n\n${INJECTED_CSS}`;
 
         const doctype = new XMLSerializer().serializeToString(htmlDoc.doctype);

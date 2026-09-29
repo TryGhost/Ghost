@@ -9,7 +9,7 @@ import {inject as service} from '@ember/service';
  * @returns {string} Query string including the leading `?`, or an empty string.
  */
 function buildQueryString(queryParams = {}) {
-    let searchParams = new URLSearchParams();
+    const searchParams = new URLSearchParams();
 
     Object.entries(queryParams).forEach(([key, value]) => {
         if (value === undefined || value === null || value === '') {
@@ -26,7 +26,7 @@ function buildQueryString(queryParams = {}) {
         searchParams.append(key, `${value}`);
     });
 
-    let queryString = searchParams.toString();
+    const queryString = searchParams.toString();
     return queryString ? `?${queryString}` : '';
 }
 
@@ -37,24 +37,24 @@ function buildQueryString(queryParams = {}) {
  * @returns {string|false} Analytics path when available, otherwise `false`.
  */
 function buildAnalyticsSourcePath(transition, model) {
-    let fromPath = transition?.from?.params?.path;
-    let queryString = buildQueryString(transition?.from?.queryParams);
+    const fromPath = transition?.from?.params?.path;
+    const queryString = buildQueryString(transition?.from?.queryParams);
 
-    let postMatch = fromPath?.match(/^posts\/analytics\/([^/]+)(?:\/(.+))?$/);
+    const postMatch = fromPath?.match(/^posts\/analytics\/([^/]+)(?:\/(.+))?$/);
     if (postMatch) {
-        let postId = postMatch[1] || model?.id;
+        const postId = postMatch[1] || model?.id;
         if (!postId) {
             return false;
         }
-        let sub = postMatch[2];
-        let basePath = sub ? `/posts/analytics/${postId}/${sub}` : `/posts/analytics/${postId}`;
+        const sub = postMatch[2];
+        const basePath = sub ? `/posts/analytics/${postId}/${sub}` : `/posts/analytics/${postId}`;
         return `${basePath}${queryString}`;
     }
 
-    let statsMatch = fromPath?.match(/^analytics(?:\/(.+))?$/);
+    const statsMatch = fromPath?.match(/^analytics(?:\/(.+))?$/);
     if (statsMatch) {
-        let sub = statsMatch[1];
-        let basePath = sub ? `/analytics/${sub}` : '/analytics';
+        const sub = statsMatch[1];
+        const basePath = sub ? `/analytics/${sub}` : '/analytics';
         return `${basePath}${queryString}`;
     }
 
@@ -218,7 +218,7 @@ export default AuthenticatedRoute.extend({
     },
 
     _blurAndScheduleAction(func) {
-        let selectedElement = $(document.activeElement);
+        const selectedElement = $(document.activeElement);
 
         // TODO: we should trigger a blur for textareas as well as text inputs
         if (selectedElement.is('input[type="text"]')) {

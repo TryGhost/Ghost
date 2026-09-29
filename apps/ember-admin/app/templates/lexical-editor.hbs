@@ -24,7 +24,7 @@
                                     <span>Analytics</span>
                                 </a>
                             {{else}}
-                                <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}} data-test-breadcrumb>
+                                <LinkTo @route={{pluralize this.post.displayName }} @query={{this.listQueryParams}} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}} data-test-breadcrumb>
                                     {{svg-jar "arrow-left"}}
                                     <span>{{capitalize (pluralize this.post.displayName)}}</span>
                                 </LinkTo>

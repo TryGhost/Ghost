@@ -11,6 +11,11 @@ export class EventProcessingResult {
   unhandled: number = 0;
   unprocessable: number = 0;
 
+  // Newly populated newsletter recipient timestamps, excluding repeated events.
+  storedDelivered: number = 0;
+  storedOpened: number = 0;
+  storedPermanentFailed: number = 0;
+
   // processing failures are counted separately in addition to event type counts
   processingFailures: number = 0;
 
@@ -31,6 +36,9 @@ export class EventProcessingResult {
     this.complained = 0;
     this.unhandled = 0;
     this.unprocessable = 0;
+    this.storedDelivered = 0;
+    this.storedOpened = 0;
+    this.storedPermanentFailed = 0;
     this.processingFailures = 0;
     this.emailIds = [];
     this.memberIds = [];
@@ -45,6 +53,10 @@ export class EventProcessingResult {
     this.complained += other.complained || 0;
     this.unhandled += other.unhandled || 0;
     this.unprocessable += other.unprocessable || 0;
+
+    this.storedDelivered += other.storedDelivered || 0;
+    this.storedOpened += other.storedOpened || 0;
+    this.storedPermanentFailed += other.storedPermanentFailed || 0;
 
     this.processingFailures += other.processingFailures || 0;
 

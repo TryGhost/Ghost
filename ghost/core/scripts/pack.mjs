@@ -166,6 +166,20 @@ if (!ghostTgz) {
 await execFileAsync('tar', ['xzf', path.join(ghostPackDir, ghostTgz), '-C', CORE_DIR]);
 await fs.rm(ghostPackDir, { recursive: true, force: true });
 
+// pnpm pack keeps symlinks inside the package (pnpm 12.7+), but the npm registry
+// rejects any tarball containing one (E415). Drop them, as older pnpm did — today
+// that's the bundled themes' CLAUDE.md -> AGENTS.md.
+const symlinks = (await fs.readdir(BUILD_DIR, { recursive: true, withFileTypes: true })).filter(
+  (entry) => entry.isSymbolicLink(),
+);
+await Promise.all(
+  symlinks.map(async (entry) => {
+    const file = path.join(entry.parentPath, entry.name);
+    await fs.rm(file);
+    console.log(`  Removed symlink ${path.relative(BUILD_DIR, file)}`);
+  }),
+);
+
 // Carry the root packageManager over — ghost/core's own manifest doesn't declare one.
 const pkgPath = path.join(BUILD_DIR, 'package.json');
 const pkg = await readJson(pkgPath);
@@ -243,6 +257,9 @@ for (const key of [
   }
 }
 buildWorkspace.minimumReleaseAge = 0;
+// Root patches can target packages the archive doesn't ship (admin-only deps). The
+// root install still fails on a stale patch, so here it only has to tolerate absence.
+buildWorkspace.allowUnusedPatches = true;
 
 // Force every component to resolve to its bundled tarball wherever it appears in
 // the graph. pnpm pack rewrote the components' own workspace: specs to registry

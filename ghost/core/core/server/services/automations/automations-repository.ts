@@ -108,6 +108,8 @@ export type RecordEmailSentOptions = Readonly<{
   trackOpens: boolean;
 }>;
 
+export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
+
 type AutomationStepBase = {
   id: string;
   locked_by: string;

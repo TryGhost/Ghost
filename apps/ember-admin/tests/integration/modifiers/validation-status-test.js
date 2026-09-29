@@ -12,7 +12,7 @@ describe('Integration: Modifier: validation-status', function () {
     setupRenderingTest();
 
     this.beforeEach(function () {
-        let testObject = EmberObject.create();
+        const testObject = EmberObject.create();
         testObject.name = 'Test';
         testObject.hasValidated = [];
         testObject.errors = Errors.create();

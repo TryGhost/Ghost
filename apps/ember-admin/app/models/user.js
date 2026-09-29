@@ -98,15 +98,15 @@ export default BaseModel.extend(ValidationEngine, {
 
     profileImageUrl: computed('profileImage', function () {
         // keep path separate so asset rewriting correctly picks it up
-        let defaultImage = '/img/user-image.png';
-        let defaultPath = prefixAssetUrl(`assets${defaultImage}`);
+        const defaultImage = '/img/user-image.png';
+        const defaultPath = prefixAssetUrl(`assets${defaultImage}`);
         return this.profileImage || defaultPath;
     }),
 
     coverImageUrl: computed('coverImage', function () {
         // keep path separate so asset rewriting correctly picks it up
-        let defaultImage = '/img/user-cover.png';
-        let defaultPath = prefixAssetUrl(`assets${defaultImage}`);
+        const defaultImage = '/img/user-cover.png';
+        const defaultPath = prefixAssetUrl(`assets${defaultImage}`);
         return this.coverImage || defaultPath;
     }),
 
@@ -121,7 +121,7 @@ export default BaseModel.extend(ValidationEngine, {
         }
 
         try {
-            let url = this.ghostPaths.url.api('users', 'password');
+            const url = this.ghostPaths.url.api('users', 'password');
 
             yield this.ajax.put(url, {
                 data: {

@@ -1,6 +1,5 @@
 const sinon = require('sinon');
 const nock = require('nock');
-const { deferred } = require('../../../../utils/deferred');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
@@ -82,7 +81,7 @@ describe('Mail: Ghostmailer', function () {
   });
 
   it('sends valid message successfully ', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve, reject } = Promise.withResolvers();
     configUtils.set({ mail: { transport: 'stub' } });
 
     mailer = new mail.GhostMailer();
@@ -96,14 +95,14 @@ describe('Mail: Ghostmailer', function () {
         assertExists(response.envelope);
         assert(response.envelope.to.includes('joe@example.com'));
 
-        done();
+        resolve();
       })
-      .catch(done);
+      .catch(reject);
     return promise;
   });
 
   it('handles failure', function () {
-    const { promise, done } = deferred();
+    const { promise, resolve, reject } = Promise.withResolvers();
     configUtils.set({ mail: { transport: 'stub', options: { error: 'Stub made a boo boo :(' } } });
 
     mailer = new mail.GhostMailer();
@@ -113,13 +112,13 @@ describe('Mail: Ghostmailer', function () {
     mailer
       .send(mailDataNoServer)
       .then(function () {
-        done(new Error('Stub did not error'));
+        reject(new Error('Stub did not error'));
       })
       .catch(function (error) {
         assert(error.message.includes('Stub made a boo boo :('));
-        done();
+        resolve();
       })
-      .catch(done);
+      .catch(reject);
     return promise;
   });
 

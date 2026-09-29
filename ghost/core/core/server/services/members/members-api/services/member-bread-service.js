@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const { ADMIN } = require('../../../members-metafields');
+const { ADMIN, adminWriteOrigin } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -641,16 +641,13 @@ module.exports = class MemberBREADService {
       // The only route to this branch is the authenticated Admin API, so an anonymous
       // request is a mistake somewhere upstream rather than a writer to invent a name
       // for. Refusing keeps every stored writer resolvable.
-      const context = options.context || {};
-      if (!context.integration && !context.user) {
+      const origin = adminWriteOrigin(options.context);
+      if (!origin) {
         throw new errors.IncorrectUsageError({
           message: tpl(messages.metafieldsWithoutWriter),
         });
       }
-      const writtenBy = context.integration
-        ? { type: 'integration', id: context.integration.id }
-        : { type: 'user', id: context.user };
-      await this.metafieldValues.applyWrite(model.id, plannedMetafields, { writtenBy });
+      await this.metafieldValues.applyWrite(model.id, plannedMetafields, origin);
 
       // Metafields aren't a member column or relation, so an edit touching
       // only them leaves `model._changed` empty and the save fires nothing.

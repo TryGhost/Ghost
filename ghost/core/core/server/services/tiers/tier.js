@@ -251,21 +251,21 @@ module.exports = class Tier {
       });
     }
 
-    let name = validateName(data.name);
+    const name = validateName(data.name);
 
-    let slug = validateSlug(data.slug);
-    let description = validateDescription(data.description);
-    let welcomePageURL = validateWelcomePageURL(data.welcomePageURL);
-    let status = validateStatus(data.status || 'active');
-    let visibility = validateVisibility(data.visibility || 'public');
-    let type = validateType(data.type || 'paid');
-    let currency = validateCurrency(data.currency || null, type);
-    let trialDays = validateTrialDays(data.trialDays || 0, type);
-    let monthlyPrice = validateMonthlyPrice(data.monthlyPrice || null, type);
-    let yearlyPrice = validateYearlyPrice(data.yearlyPrice || null, type);
-    let createdAt = validateCreatedAt(data.createdAt);
-    let updatedAt = validateUpdatedAt(data.updatedAt);
-    let benefits = validateBenefits(data.benefits);
+    const slug = validateSlug(data.slug);
+    const description = validateDescription(data.description);
+    const welcomePageURL = validateWelcomePageURL(data.welcomePageURL);
+    const status = validateStatus(data.status || 'active');
+    const visibility = validateVisibility(data.visibility || 'public');
+    const type = validateType(data.type || 'paid');
+    const currency = validateCurrency(data.currency || null, type);
+    const trialDays = validateTrialDays(data.trialDays || 0, type);
+    const monthlyPrice = validateMonthlyPrice(data.monthlyPrice || null, type);
+    const yearlyPrice = validateYearlyPrice(data.yearlyPrice || null, type);
+    const createdAt = validateCreatedAt(data.createdAt);
+    const updatedAt = validateUpdatedAt(data.updatedAt);
+    const benefits = validateBenefits(data.benefits);
 
     const tier = new Tier({
       id,

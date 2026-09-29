@@ -1,3 +1,5 @@
+import BrandIcon from '@/shared/brand-icon/brand-icon';
+import { useShade } from '@tryghost/shade/app';
 import '@/settings/custom-fonts.css';
 import ColorPickerField from '@/settings/components/color-picker-field';
 import React, { useState } from 'react';
@@ -7,6 +9,7 @@ import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { CUSTOM_FONTS } from '@tryghost/custom-fonts';
 import {
+  Button,
   Field,
   FieldDescription,
   FieldGroup,
@@ -99,6 +102,8 @@ const GlobalSettings: React.FC<{
   values: GlobalSettingValues;
   updateSetting: (key: string, value: SettingValue) => void;
 }> = ({ values, updateSetting }) => {
+  const { isAdmin7 } = useShade();
+  const CoverSearchButton = isAdmin7 ? Button : ImageUploadAction;
   const { mutateAsync: uploadImage } = useUploadImage();
   const { settings } = useGlobalData();
   const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
@@ -360,13 +365,15 @@ const GlobalSettings: React.FC<{
                 </ImageUploadDropzone>
                 {unsplashEnabled && (
                   <ImageUploadActions className="top-1 right-1 opacity-100">
-                    <ImageUploadAction
+                    <CoverSearchButton
                       aria-label="Select publication cover from Unsplash"
                       data-testid="toggle-unsplash-button"
+                      size="icon"
+                      variant="ghost"
                       onClick={() => setShowUnsplash(true)}
                     >
-                      <Images />
-                    </ImageUploadAction>
+                      {isAdmin7 ? <BrandIcon name="unsplash" size={16} /> : <Images />}
+                    </CoverSearchButton>
                   </ImageUploadActions>
                 )}
               </>

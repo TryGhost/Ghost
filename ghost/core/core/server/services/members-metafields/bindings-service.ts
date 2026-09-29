@@ -3,7 +3,7 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
 import { INTERNAL } from './access';
-import { DbBoundField, FIELD_STATUS, type WrittenBy } from './schema';
+import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
 import type { MetafieldValuesService, PlannedWrite } from './values-service';
 
 const FIELDS_TABLE = 'members_metafields';
@@ -17,8 +17,13 @@ export interface BoundField {
   type: FieldType;
 }
 
-/** What a value's provenance is, once the port it came through has been resolved. */
-type Attribution = (binding: BoundField) => WrittenBy;
+/**
+ * What a value's provenance is, once the port it came through has been resolved.
+ *
+ * An intersection rather than `Extract`: a member writes from more than one place, so only
+ * narrowing each pairing to checkout keeps the member among the writers here.
+ */
+type Attribution = (binding: BoundField) => WriteOrigin & { source: 'checkout' };
 
 /**
  * Where a source sends what it collected: a `port` is the name that source uses for a
@@ -81,8 +86,8 @@ export class MetafieldBindingsService {
     collected: Array<{ port: string; value: unknown }>,
   ): Promise<void> {
     return this.writeThrough(memberId, productId, collected, (binding) => ({
-      type: 'binding',
-      id: binding.bindingId,
+      writtenBy: { type: 'binding', id: binding.bindingId },
+      source: 'checkout',
     }));
   }
 
@@ -99,8 +104,8 @@ export class MetafieldBindingsService {
     supplied: Array<{ port: string; value: unknown }>,
   ): Promise<void> {
     return this.writeThrough(memberId, productId, supplied, () => ({
-      type: 'member',
-      id: memberId,
+      writtenBy: { type: 'member', id: memberId },
+      source: 'checkout',
     }));
   }
 
@@ -158,7 +163,7 @@ export class MetafieldBindingsService {
       INTERNAL,
     );
 
-    await this.values.applyWrite(memberId, planned, { writtenBy: attribute(into) });
+    await this.values.applyWrite(memberId, planned, attribute(into));
   }
 
   private async resolve(productId: string, port: string): Promise<BoundField | null> {

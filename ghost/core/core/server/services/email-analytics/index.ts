@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
 import type { ConfigInstance } from '../../../shared/config/loader';
@@ -21,27 +22,34 @@ import type { EmailRecipientFailure, EmailSpamComplaintEvent, Email } from '../.
 // @ts-expect-error This module lacks type definitions.
 import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
-import { StartEmailAnalyticsJobEvent } from './events/start-email-analytics-job-event';
-import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
 import { AUTOMATION_EMAIL_TAG } from '../member-welcome-emails/constants';
 import type * as AutomationsApi from '../automations/automations-api';
 import { AutomationEmailAnalyticsBatchProcessor } from './automation-email-analytics-batch-processor';
 import { GiftEmailAnalyticsBatchProcessor } from './gift-email-analytics-batch-processor';
-import { StartGiftEmailAnalyticsJobEvent } from './events/start-gift-email-analytics-job-event';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import { GIFT_DELIVERY_EMAIL_TAG } from '../gifts/constants';
+import EmailAnalyticsFetchLatestJob from './jobs/email-analytics-fetch-latest-job';
+import EmailAnalyticsAutomationFetchLatestJob from './jobs/email-analytics-automation-fetch-latest-job';
+import EmailAnalyticsGiftFetchLatestJob from './jobs/email-analytics-gift-fetch-latest-job';
 
-export const newsletters = new EmailAnalyticsServiceWrapper({
-  logName: 'newsletters',
-});
+let newsletters: EmailAnalyticsServiceWrapper | undefined;
+let automations: EmailAnalyticsServiceWrapper | undefined;
+let gifts: EmailAnalyticsServiceWrapper | undefined;
 
-export const automations = new EmailAnalyticsServiceWrapper({
-  logName: 'automations',
-});
+export function getNewsletters(): EmailAnalyticsServiceWrapper {
+  assert(newsletters, 'Newsletter email analytics should be initialized');
+  return newsletters;
+}
 
-export const gifts = new EmailAnalyticsServiceWrapper({
-  logName: 'gifts',
-});
+export function getAutomations(): EmailAnalyticsServiceWrapper {
+  assert(automations, 'Automation email analytics should be initialized');
+  return automations;
+}
+
+export function getGifts(): EmailAnalyticsServiceWrapper {
+  assert(gifts, 'Gift email analytics should be initialized');
+  return gifts;
+}
 
 export const init = ({
   automationsApi,
@@ -62,7 +70,7 @@ export const init = ({
   >;
   config: Pick<ConfigInstance, 'get'>;
   db: { knex: Knex };
-  domainEvents: Pick<DomainEvents, 'subscribe'>;
+  domainEvents: Pick<DomainEvents, 'dispatch'>;
   emailSuppressionList: Pick<typeof EmailSuppressionList, 'removeComplaint' | 'removeUnsubscribe'>;
   giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome'>;
   membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;
@@ -75,6 +83,10 @@ export const init = ({
   prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
   settingsCache: Pick<typeof SettingsCache, 'get'>;
 }) => {
+  if (newsletters) {
+    return;
+  }
+
   const queries = new Queries(db.knex);
 
   const newsletterEmailEventProcessor = new EmailEventProcessor({
@@ -110,10 +122,10 @@ export const init = ({
     help: 'Count of member stats aggregations',
   });
 
-  newsletters.init({
+  newsletters = new EmailAnalyticsServiceWrapper({
+    logName: 'newsletters',
+    jobType: EmailAnalyticsFetchLatestJob.type,
     config,
-    domainEvents,
-    event: StartEmailAnalyticsJobEvent,
     queries,
     mailgunTags: newsletterMailgunTags,
     jobNames: {
@@ -141,10 +153,10 @@ export const init = ({
       }),
   });
 
-  automations.init({
+  automations = new EmailAnalyticsServiceWrapper({
+    logName: 'automations',
+    jobType: EmailAnalyticsAutomationFetchLatestJob.type,
     config,
-    domainEvents,
-    event: StartAutomationEmailAnalyticsJobEvent,
     queries,
     mailgunTags: automationMailgunTags,
     jobNames: {
@@ -168,10 +180,10 @@ export const init = ({
       }),
   });
 
-  gifts.init({
+  gifts = new EmailAnalyticsServiceWrapper({
+    logName: 'gifts',
+    jobType: EmailAnalyticsGiftFetchLatestJob.type,
     config,
-    domainEvents,
-    event: StartGiftEmailAnalyticsJobEvent,
     queries,
     mailgunTags: giftMailgunTags,
     jobNames: {

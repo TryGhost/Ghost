@@ -33,8 +33,8 @@ export default RESTAdapter.extend(AjaxServiceSupport, {
 
     buildURL() {
         // Ensure trailing slashes
-        let url = this._super(...arguments);
-        let parsedUrl = new URL(url);
+        const url = this._super(...arguments);
+        const parsedUrl = new URL(url);
 
         if (!parsedUrl.pathname.endsWith('/')) {
             parsedUrl.pathname += '/';

@@ -3,6 +3,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class SetupRoute extends Route {
+    @service feature;
     @service ghostPaths;
     @service session;
     @service ajax;
@@ -11,24 +12,29 @@ export default class SetupRoute extends Route {
 
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.
-    beforeModel() {
+    beforeModel(transition) {
         super.beforeModel(...arguments);
+
+        if (this.feature.isAuthReact()) {
+            transition.abort();
+            return;
+        }
 
         if (this.session.isAuthenticated) {
             return this.transitionTo('index');
         }
 
-        let authUrl = this.ghostPaths.url.api('authentication', 'setup');
+        const authUrl = this.ghostPaths.url.api('authentication', 'setup');
 
         // check the state of the setup process via the API
         return this.ajax.request(authUrl)
             .then((result) => {
-                let [setup] = result.setup;
+                const [setup] = result.setup;
 
                 if (setup.status) {
                     return this.transitionTo('signin');
                 } else {
-                    let controller = this.controllerFor('setup');
+                    const controller = this.controllerFor('setup');
                     if (setup.title) {
                         controller.set('blogTitle', setup.title.replace(/&apos;/gim, '\''));
                     }

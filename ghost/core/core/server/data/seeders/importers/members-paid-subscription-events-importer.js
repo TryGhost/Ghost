@@ -10,7 +10,7 @@ class MembersPaidSubscriptionEventsImporter extends TableImporter {
 
   async import() {
     let offset = 0;
-    let limit = 1000;
+    const limit = 1000;
 
     while (true) {
       const subscriptions = await this.transaction

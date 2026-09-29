@@ -3,7 +3,7 @@ const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const config = require('../../../shared/config');
 
-type VerificationTriggerMethod = 'admin' | 'api' | 'import';
+type VerificationTriggerMethod = 'admin' | 'api' | 'import' | 'removed_recipients';
 
 type VerificationWebhookBody = {
   type: string;

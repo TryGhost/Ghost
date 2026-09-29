@@ -838,6 +838,36 @@ describe('EmailAnalyticsService', function () {
         assert.equal(result.aggregationTimeMs, 0);
       });
 
+      it('preserves stored counts across intermediate aggregation resets', async function () {
+        const eventProcessor = createStubEventProcessor();
+        eventProcessor.processBatch.callsFake(async (_events, result) => {
+          result.storedOpened += 2;
+          result.storedDelivered += 1;
+          result.storedPermanentFailed += 1;
+        });
+        eventProcessor.aggregate.callsFake(async ({ processingResult }) => {
+          processingResult.reset();
+          return null;
+        });
+        const service = createService({
+          queries: {
+            getLastEventTimestamp: sinon.stub().resolves(),
+            setJobTimestamp: sinon.stub().resolves(),
+            setJobStatus: sinon.stub().resolves(),
+          },
+          fetchEvents: async ({ batchHandler }: { batchHandler: BatchHandler }) => {
+            await batchHandler([{ type: 'opened' }]);
+            await batchHandler([{ type: 'opened' }]);
+          },
+          createEventProcessor: () => eventProcessor,
+        });
+
+        const { result } = await service.fetchLatestOpenedEvents();
+        assert.equal(result.storedOpened, 4);
+        assert.equal(result.storedDelivered, 2);
+        assert.equal(result.storedPermanentFailed, 2);
+      });
+
       it('preserves new email and member IDs in the cumulative result', async function () {
         const eventProcessor = createStubEventProcessor();
         eventProcessor.processBatch.callsFake(async (_events, result) => {

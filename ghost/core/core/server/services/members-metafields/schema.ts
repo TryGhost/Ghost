@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
-import { FieldTypeSchema } from '@tryghost/metafield-types';
+import {
+  FieldTypeSchema,
+  MetafieldChangeEventFieldSchema,
+  type MetafieldChangeEntry,
+  type MetafieldChangeSource,
+} from '@tryghost/metafield-types';
 import { DbDate } from '../../lib/db-types/date';
 import { MemberAccessSchema } from './access';
 
@@ -99,6 +104,96 @@ export const DbBoundField = z.object({
   type: FieldTypeSchema,
 });
 
+/**
+ * Where a write was made (`MetafieldChangeSource`, shared with Admin): the entry point,
+ * where `WrittenBy` is who answers for it.
+ *
+ * Mostly the writer settles it: an integration writes through the Admin API, an import
+ * from a file and a binding at checkout. Staff and members are the exceptions: a member of
+ * staff writes in Admin or, with a staff token, through the Admin API, and a member writes
+ * from their account or at checkout. That is why the two are kept apart rather than one
+ * derived from the other.
+ */
+type WriterOf<T extends WrittenBy['type']> = Extract<WrittenBy, { type: T }>;
+
+/**
+ * Who made a write and where, as the pairs that can happen. Every write names both, so the
+ * activity feed can say where a change came from, and a pair that cannot happen, such as
+ * an import made in Portal, does not compile.
+ */
+export type WriteOrigin =
+  | { writtenBy: WriterOf<'user'>; source: Extract<MetafieldChangeSource, 'admin' | 'admin_api'> }
+  | { writtenBy: WriterOf<'integration'>; source: Extract<MetafieldChangeSource, 'admin_api'> }
+  | { writtenBy: WriterOf<'import'>; source: Extract<MetafieldChangeSource, 'import'> }
+  | { writtenBy: WriterOf<'binding'>; source: Extract<MetafieldChangeSource, 'checkout'> }
+  | {
+      writtenBy: WriterOf<'member'>;
+      source: Extract<MetafieldChangeSource, 'portal' | 'checkout'>;
+    };
+
+/** The fields an entry names. */
+export const MetafieldChangeEventFields = z.array(MetafieldChangeEventFieldSchema);
+
+/**
+ * The field list as the table holds it, JSON text, against the list itself. A codec rather
+ * than a parse on the way out, so the write stores what the read accepts. Zod validates
+ * JSON-compatible values (`z.json()`) but has no built-in for parsing JSON text, so decoding
+ * the text is this codec's job.
+ */
+export const StoredFieldList = z.codec(z.string(), MetafieldChangeEventFields, {
+  decode: (text, ctx) => {
+    try {
+      return JSON.parse(text);
+    } catch {
+      ctx.issues.push({
+        code: 'custom',
+        message: 'The stored field list is not JSON.',
+        input: text,
+      });
+      return z.NEVER;
+    }
+  },
+  encode: (fields) => JSON.stringify(fields),
+});
+
+/** An entry as the table holds it. Writer and source are plain strings, as on the values table. */
+export const DbMetafieldChangeEvent = z.object({
+  id: z.string(),
+  member_id: z.string(),
+  written_by_type: z.string(),
+  written_by_id: z.string().nullable(),
+  source: z.string(),
+  metafields: StoredFieldList,
+  created_at: DbDate,
+});
+
+/**
+ * An entry as the table holds it, derived from the schema that reads it. The pairing of
+ * writer and source is held by `WriteOrigin` at the write rather than by this row type.
+ */
+export type MetafieldChangeEventRow = z.input<typeof DbMetafieldChangeEvent>;
+
+/** The member columns an entry is shown with: only what a feed row needs. */
+export const DbChangeEventMember = z.object({
+  id: z.string(),
+  uuid: z.string(),
+  name: z.string().nullable(),
+  email: z.string(),
+});
+
+/** An activity feed entry with its member, as the metafields domain reads it. */
+export type MetafieldChangeEvent = MetafieldChangeEntry<Date> & {
+  member: z.output<typeof DbChangeEventMember>;
+};
+
+/**
+ * An entry and its member read back together. Parses and nothing else: what to do with an
+ * entry that doesn't parse is the reading service's decision.
+ */
+export const DbMetafieldChangeEventWithMember = z
+  .object({ event: DbMetafieldChangeEvent, member: DbChangeEventMember })
+  .transform(({ event, member }): MetafieldChangeEvent => ({ ...event, member }));
+
 declare module 'knex/types/tables' {
   interface Tables {
     members_metafields: Knex.CompositeTableType<
@@ -112,6 +207,12 @@ declare module 'knex/types/tables' {
       MetafieldValueRow,
       Omit<z.input<typeof DbMetafieldValue>, 'updated_at'>,
       Partial<MetafieldValueRow>
+    >;
+    // Read as the schema reads it; written with the date already in the string form SQLite
+    // orders against the feed's time filters, which a `Date` would silently break.
+    members_metafield_change_events: Knex.CompositeTableType<
+      MetafieldChangeEventRow,
+      Omit<MetafieldChangeEventRow, 'created_at'> & { created_at: string }
     >;
     members_metafield_bindings: Knex.CompositeTableType<
       MetafieldBindingRow,

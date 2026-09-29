@@ -12,6 +12,10 @@ class CommentReportsImporter extends TableImporter {
   }
 
   async import(quantity) {
+    if (quantity === 0) {
+      return;
+    }
+
     const comments = await this.transaction
       .select('id', 'member_id', 'created_at')
       .from('comments');
@@ -24,7 +28,7 @@ class CommentReportsImporter extends TableImporter {
 
     // When quantity is explicit, we want to generate exactly that many reports
     // distributed across comments. When not specified, use probabilistic generation.
-    if (quantity) {
+    if (quantity !== undefined) {
       this.explicitQuantity = true;
       const perComment = Math.max(1, Math.ceil(quantity / comments.length));
       await this.importForEach(comments, perComment);

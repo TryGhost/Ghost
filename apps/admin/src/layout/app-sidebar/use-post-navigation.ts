@@ -72,9 +72,10 @@ function useReactPostNavigation(route: PostResource): PostNavigation {
     const allViews = [...defaultViews, ...customViews];
 
     return {
-      // Sticky filters: returns you to the filters you last had, unless
-      // you are already here or those filters are just a view.
-      mainUrl: getStickyPostFilterUrl(route, location.pathname, viewFilters),
+      // Posts opens the full list, matching Members. Editor breadcrumbs
+      // separately preserve the last list's filters.
+      mainUrl:
+        route === 'posts' ? route : getStickyPostFilterUrl(route, location.pathname, viewFilters),
       // Ember highlights the parent only when no view underneath is.
       isMainActive: location.pathname === `/${route}` && !allViews.some((view) => view.isActive),
       defaultViews,
@@ -99,7 +100,7 @@ function useEmberPostNavigation(route: PostResource): PostNavigation {
         : [];
 
     return {
-      mainUrl: routing.getRouteUrl(route),
+      mainUrl: route === 'posts' ? route : routing.getRouteUrl(route),
       isMainActive: routing.isRouteActive(route),
       defaultViews,
       customViews: sharedViews.map((view) => {
