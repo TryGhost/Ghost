@@ -3,7 +3,7 @@ import sinon from 'sinon';
 
 import { poll } from '../../../../../core/server/services/automations/poll';
 import type { AutomationStepToRun } from '../../../../../core/server/services/automations/automations-repository';
-import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../../core/server/services/member-welcome-emails/constants';
+import logging from '@tryghost/logging';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../../../../core/server/models';
 
@@ -93,7 +93,7 @@ function buildStep(attrs: Partial<StepBase> = {}): StepBase {
     locked_by: 'lock-id',
     automation_run_id: 'run-id',
     automation_id: 'automation-id',
-    automation_slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+    automation_trigger_tier_scope: 'free',
     automation_status: 'active',
     member_id: 'member-id',
     member_email: 'member@example.com',
@@ -274,7 +274,7 @@ describe('automations poll', function () {
   });
 
   it('bails if the member status changed', async function () {
-    const step = buildEmailStep();
+    const step = buildEmailStep({ automation_trigger_tier_scope: 'free' });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     Member.findOne.resolves(buildMember({ status: 'paid' }));
 
@@ -348,22 +348,97 @@ describe('automations poll', function () {
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
   });
 
-  it('gift members run through paid automations', async function () {
-    const step = buildEmailStep({
-      automation_slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
-    });
+  it('sends free-scoped automation emails to free members', async function () {
+    const step = buildEmailStep({ automation_trigger_tier_scope: 'free' });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    Member.findOne.resolves(buildMember({ status: 'gift' }));
+    Member.findOne.resolves(buildMember({ status: 'free' }));
 
     await poll(options);
 
     sinon.assert.calledOnceWithExactly(
       memberWelcomeEmailService.api.sendAutomationEmail,
-      sinon.match({
-        memberStatus: 'paid',
-      }),
+      sinon.match({ memberStatus: 'free' }),
     );
+    sinon.assert.notCalled(automationsApi.markStepTerminal);
     sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+  });
+
+  for (const memberStatus of ['paid', 'gift']) {
+    it(`sends all-paid-scoped automation emails to ${memberStatus} members`, async function () {
+      const step = buildEmailStep({ automation_trigger_tier_scope: 'all_paid' });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      Member.findOne.resolves(buildMember({ status: memberStatus }));
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(
+        memberWelcomeEmailService.api.sendAutomationEmail,
+        sinon.match({ memberStatus: 'paid' }),
+      );
+      sinon.assert.notCalled(automationsApi.markStepTerminal);
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+    });
+  }
+
+  it('bails if a free member is in an all-paid-scoped automation', async function () {
+    const step = buildEmailStep({ automation_trigger_tier_scope: 'all_paid' });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    Member.findOne.resolves(buildMember({ status: 'free' }));
+
+    await poll(options);
+
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      step,
+      'member changed status',
+    );
+    sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+  });
+
+  for (const triggerTierScope of ['selected_paid', null, 'unexpected_scope']) {
+    it(`fails steps whose automation has an unsupported trigger tier scope (${triggerTierScope})`, async function () {
+      const loggingError = sinon.stub(logging, 'error');
+      const step = buildEmailStep({ automation_trigger_tier_scope: triggerTierScope });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+
+      await poll(options);
+
+      sinon.assert.notCalled(Member.findOne);
+      sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+      sinon.assert.notCalled(automationsApi.recordEmailSent);
+      sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+      sinon.assert.notCalled(automationsApi.retryStep);
+      sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+      sinon.assert.notCalled(options.enqueueAnotherPollAt);
+      sinon.assert.calledOnceWithExactly(
+        loggingError,
+        {
+          system: {
+            event: 'automations.poll.unsupported_trigger_tier_scope',
+            trigger_tier_scope: triggerTierScope,
+            step_id: step.id,
+          },
+        },
+        `[AUTOMATIONS] Unsupported trigger tier scope for step ${step.id}: ${triggerTierScope}`,
+      );
+    });
+  }
+
+  it('marks inactive automations disabled before checking the trigger tier scope', async function () {
+    const step = buildEmailStep({
+      automation_status: 'inactive',
+      automation_trigger_tier_scope: 'selected_paid',
+    });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      step,
+      'automation disabled',
+    );
   });
 
   it('sends email revision content and enqueues the next step', async function () {

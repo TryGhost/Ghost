@@ -226,6 +226,7 @@ const createDatabase = async (): Promise<Knex> => {
       name: 'Free member welcome flow',
       description: 'Welcome new free members after they sign up.',
       status: 'active',
+      trigger_tier_scope: 'free',
     },
     {
       id: paidAutomationId,
@@ -235,6 +236,7 @@ const createDatabase = async (): Promise<Knex> => {
       name: 'Paid member welcome flow',
       description: 'Welcome new paid members after they start their subscription.',
       status: 'active',
+      trigger_tier_scope: 'all_paid',
     },
   ]);
 
@@ -739,6 +741,10 @@ describe('automations repository', function () {
         'Welcome new free members after they sign up.',
         'Welcome new paid members after they start their subscription.',
       ]);
+      assert.deepEqual(
+        result.data.map((automation) => automation.slug),
+        ['alpha-flow', 'member-welcome-email-free', 'member-welcome-email-paid'],
+      );
     });
 
     it('can omit stats', async function () {
@@ -1234,6 +1240,81 @@ describe('automations repository', function () {
   });
 
   describe('trigger', function () {
+    const setTriggerTierScope = async (slug: string, triggerTierScope: string | null) => {
+      await knex('automations')
+        .update({ trigger_tier_scope: triggerTierScope })
+        .where('slug', slug);
+    };
+
+    const insertAutomation = async ({
+      slug,
+      triggerTierScope,
+      status = 'active',
+      createdAt,
+      waitHours = [5],
+    }: {
+      slug: string;
+      triggerTierScope: string | null;
+      status?: 'active' | 'inactive';
+      createdAt: Date;
+      waitHours?: number[];
+    }) => {
+      const automationId = ObjectId().toHexString();
+      await knex('automations').insert({
+        id: automationId,
+        created_at: toDatabaseDate(createdAt),
+        updated_at: toDatabaseDate(createdAt),
+        slug,
+        name: slug,
+        description: '',
+        status,
+        trigger_tier_scope: triggerTierScope,
+      });
+
+      // These actions have no edges between them, so every one is a candidate entry action.
+      const actionIds: string[] = [];
+      const revisionIds: string[] = [];
+      for (const [index, hours] of waitHours.entries()) {
+        const actionCreatedAt = toDatabaseDate(new Date(createdAt.getTime() + index * 1000));
+        const actionId = ObjectId().toHexString();
+        const revisionId = ObjectId().toHexString();
+        await knex('automation_actions').insert({
+          id: actionId,
+          created_at: actionCreatedAt,
+          updated_at: actionCreatedAt,
+          automation_id: automationId,
+          type: 'wait',
+        });
+        await knex('automation_action_revisions').insert({
+          id: revisionId,
+          created_at: actionCreatedAt,
+          action_id: actionId,
+          wait_hours: hours,
+        });
+        actionIds.push(actionId);
+        revisionIds.push(revisionId);
+      }
+
+      return { id: automationId, actionIds, revisionIds };
+    };
+
+    const getRunsWithStepsForMember = async (memberId: string) =>
+      await knex('automation_runs as runs')
+        .select(
+          'runs.id as run_id',
+          'automations.slug as automation_slug',
+          'steps.automation_action_revision_id as automation_action_revision_id',
+        )
+        .innerJoin('automations', 'automations.id', 'runs.automation_id')
+        .leftJoin('automation_run_steps as steps', 'steps.automation_run_id', 'runs.id')
+        .where('runs.member_id', memberId)
+        .orderBy('automations.slug');
+
+    const getTriggeredSlugs = async (memberId: string) =>
+      (await getRunsWithStepsForMember(memberId)).map((row) => row.automation_slug);
+
+    const later = (hours: number) => new Date(Date.now() + hours * HOUR_MS);
+
     it('can trigger an automation for a free member', async function () {
       await repo.trigger({
         memberEmail: 'free@example.com',
@@ -1303,6 +1384,229 @@ describe('automations repository', function () {
       assert(step);
       assert.equal(step.automation_run_id, run.id);
       assert.equal(step.action_type, 'wait');
+    });
+
+    it('starts free-scoped automations for free members, regardless of slug', async function () {
+      await setTriggerTierScope('member-welcome-email-free', null);
+      await insertAutomation({
+        slug: 'arbitrary-flow',
+        triggerTierScope: 'free',
+        createdAt: later(1),
+      });
+
+      await repo.trigger({
+        memberEmail: 'a@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+      });
+
+      assert.deepEqual(await getTriggeredSlugs('member_123'), ['arbitrary-flow']);
+    });
+
+    it('starts all-paid-scoped automations for paid members, regardless of slug', async function () {
+      await setTriggerTierScope('member-welcome-email-paid', null);
+      await insertAutomation({
+        slug: 'arbitrary-flow',
+        triggerTierScope: 'all_paid',
+        createdAt: later(1),
+      });
+
+      await repo.trigger({
+        memberEmail: 'a@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+      });
+
+      assert.deepEqual(await getTriggeredSlugs('member_123'), ['arbitrary-flow']);
+    });
+
+    it('follows the trigger tier scope when it conflicts with the slug', async function () {
+      await setTriggerTierScope('member-welcome-email-free', 'all_paid');
+      await setTriggerTierScope('member-welcome-email-paid', 'free');
+
+      await repo.trigger({
+        memberEmail: 'a@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+      });
+      assert.deepEqual(await getTriggeredSlugs('member_123'), ['member-welcome-email-paid']);
+
+      await knex('members').insert({ id: 'member_456' });
+      await repo.trigger({
+        memberEmail: 'b@example.com',
+        memberId: 'member_456',
+        memberStatus: 'paid',
+      });
+      assert.deepEqual(await getTriggeredSlugs('member_456'), ['member-welcome-email-free']);
+    });
+
+    it('does not start automations with a null, selected_paid, or unsupported trigger tier scope', async function () {
+      await setTriggerTierScope('member-welcome-email-free', null);
+      await setTriggerTierScope('member-welcome-email-paid', null);
+      await insertAutomation({
+        slug: 'selected-paid-flow',
+        triggerTierScope: 'selected_paid',
+        createdAt: later(1),
+      });
+      await insertAutomation({
+        slug: 'unsupported-flow',
+        triggerTierScope: 'unsupported',
+        createdAt: later(2),
+      });
+
+      await repo.trigger({
+        memberEmail: 'a@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+      });
+      await repo.trigger({
+        memberEmail: 'a@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+      });
+
+      assert.deepEqual(await getRunsWithStepsForMember('member_123'), []);
+    });
+
+    it('starts every matching active automation exactly once', async function () {
+      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const freeFirstAction = await getActionByIndex(freeAutomation.id, 0);
+      const multipleEntries = await insertAutomation({
+        slug: 'multiple-entries-flow',
+        triggerTierScope: 'free',
+        createdAt: later(1),
+        waitHours: [3, 7],
+      });
+      await insertAutomation({
+        slug: 'inactive-flow',
+        triggerTierScope: 'free',
+        status: 'inactive',
+        createdAt: later(2),
+      });
+      await insertAutomation({
+        slug: 'actionless-flow',
+        triggerTierScope: 'free',
+        createdAt: later(3),
+        waitHours: [],
+      });
+
+      await repo.trigger({
+        memberEmail: 'a@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+      });
+
+      assert.deepEqual(
+        (await getRunsWithStepsForMember('member_123')).map(
+          ({ automation_slug, automation_action_revision_id }) => ({
+            automation_slug,
+            automation_action_revision_id,
+          }),
+        ),
+        [
+          {
+            automation_slug: 'member-welcome-email-free',
+            automation_action_revision_id: freeFirstAction.revision_id,
+          },
+          {
+            automation_slug: 'multiple-entries-flow',
+            automation_action_revision_id: multipleEntries.revisionIds[0],
+          },
+        ],
+      );
+
+      const run = await knex('automation_runs')
+        .where({ automation_id: multipleEntries.id, member_id: 'member_123' })
+        .first();
+      const step = await getStepByRunId(run.id);
+      assert.equal(step.ready_at, toDatabaseDate(addHours(run.created_at, 3)));
+    });
+
+    it('enrolls members in newly matching automations but skips ones they already entered', async function () {
+      const options = {
+        memberEmail: 'a@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free' as const,
+      };
+
+      await repo.trigger(options);
+      assert.deepEqual(await getTriggeredSlugs('member_123'), ['member-welcome-email-free']);
+
+      await insertAutomation({
+        slug: 'new-free-flow',
+        triggerTierScope: 'free',
+        createdAt: later(1),
+      });
+
+      await repo.trigger(options);
+      await repo.trigger(options);
+
+      assert.deepEqual(await getTriggeredSlugs('member_123'), [
+        'member-welcome-email-free',
+        'new-free-flow',
+      ]);
+      const stepCount = await knex('automation_run_steps').count({ count: '*' }).first();
+      assert.equal(Number(stepCount?.count), 2);
+    });
+
+    it('starts the latest revision of the first action', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const firstAction = automation.actions[0];
+      assert(firstAction);
+      await repo.edit(automation.id, {
+        status: 'active',
+        actions: [changeWaitHours(firstAction, 12), ...automation.actions.slice(1)],
+        edges: automation.edges,
+      });
+      const latestRevision = await getLatestActionRevisionByActionId(firstAction.id);
+      assert.equal(latestRevision.wait_hours, 12);
+
+      await repo.trigger({
+        memberEmail: 'a@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+      });
+
+      const [row] = await getRunsWithStepsForMember('member_123');
+      assert.equal(row.automation_action_revision_id, latestRevision.revision_id);
+    });
+
+    it('rolls back every new run and step when any enrollment fails', async function () {
+      await repo.trigger({
+        memberEmail: 'a@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+      });
+      const runsBefore = await knex('automation_runs').select('*').orderBy('id');
+      const stepsBefore = await knex('automation_run_steps').select('*').orderBy('id');
+      assert.equal(runsBefore.length, 1);
+      assert.equal(stepsBefore.length, 1);
+
+      // This automation is created after the default free automation, so it's processed after that one is inserted.
+      const failing = await insertAutomation({
+        slug: 'failing-flow',
+        triggerTierScope: 'free',
+        createdAt: later(1),
+      });
+      await knex.raw(`
+        CREATE TRIGGER fail_step_insert BEFORE INSERT ON automation_run_steps
+        WHEN NEW.automation_action_revision_id = '${failing.revisionIds[0]}'
+        BEGIN
+          SELECT RAISE(ABORT, 'simulated step insert failure');
+        END
+      `);
+
+      await assert.rejects(
+        repo.trigger({
+          memberEmail: 'a@example.com',
+          memberId: 'member_123',
+          memberStatus: 'free',
+        }),
+        /simulated step insert failure/,
+      );
+
+      assert.deepEqual(await knex('automation_runs').select('*').orderBy('id'), runsBefore);
+      assert.deepEqual(await knex('automation_run_steps').select('*').orderBy('id'), stepsBefore);
     });
 
     it('inserts the first non-deleted step', async function () {
@@ -1844,6 +2148,29 @@ describe('automations repository', function () {
       const skippedRecentlyLocked = await getStepById(recentlyLockedStep.id);
       assert.equal(skippedRecentlyLocked.step_attempts, 0);
       assert.equal(skippedRecentlyLocked.locked_by, 'fresh-lock');
+    });
+
+    it("returns each step's current automation trigger tier scope", async function () {
+      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+      const freeStep = await insertStepForRevision(
+        (await getActionByIndex(freeAutomation.id, 0)).revision_id,
+      );
+      const paidStep = await insertStepForRevision(
+        (await getActionByIndex(paidAutomation.id, 0)).revision_id,
+      );
+      // Scope is read from the automation when the step is fetched, not snapshotted.
+      await knex('automations').update({ trigger_tier_scope: null }).where('id', paidAutomation.id);
+
+      const { steps } = await repo.fetchAndLockSteps(10);
+
+      assert.deepEqual(
+        Object.fromEntries(steps.map((step) => [step.id, step.automation_trigger_tier_scope])),
+        {
+          [freeStep.id]: 'free',
+          [paidStep.id]: null,
+        },
+      );
     });
 
     it('returns the next future pending ready_at when no steps can be locked', async function () {

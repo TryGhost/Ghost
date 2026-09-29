@@ -6,9 +6,9 @@ Automations run a series of actions for a member after signup. Each automation i
 
 The member repository calls `trigger()` after signup.
 
-The database repository creates run(s) and queues their first step. Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
+The database repository starts every active automation whose `trigger_tier_scope` matches the member: `free` for free members, `all_paid` for paid members. It creates a run and queues the first step for each one the member hasn't entered before, all in one transaction. `selected_paid` isn't supported yet. Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
 
-Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
+Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. Each step checks the member's current status against its automation's current scope (`free` accepts free members; `all_paid` accepts paid and gift members). Steps for automations with any other scope fail. A `send_email` action also checks the member's email preference before sending. Disabled automations and ineligible members stop.
 
 ## Where to look
 

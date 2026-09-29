@@ -2,10 +2,7 @@ import type { AutomationStepToRun, AutomationsRepository } from './automations-r
 import { getMailgunMessageId } from '../lib/mailgun-message-id';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
-import {
-  MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES,
-  MEMBER_WELCOME_EMAIL_SLUGS,
-} from '../member-welcome-emails/constants';
+import { MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES } from '../member-welcome-emails/constants';
 import { MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS } from './constants';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../models';
@@ -59,12 +56,11 @@ type PollOptions = {
   memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
-const slugToMemberStatus = new Map<string, 'free' | 'paid'>(
-  Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(([status, slug]) => [
-    slug as string,
-    status as 'free' | 'paid',
-  ]),
-);
+// `selected_paid` isn't supported yet.
+const triggerTierScopeToMemberStatus = new Map<string, 'free' | 'paid'>([
+  ['free', 'free'],
+  ['all_paid', 'paid'],
+]);
 
 const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
   const preference = member.get('enable_updates_and_announcements');
@@ -149,20 +145,19 @@ const processStep = async ({
     return null;
   }
 
-  // NOTE: This will change once we support additional automation triggers.
-  const memberStatus = step.automation_slug
-    ? slugToMemberStatus.get(step.automation_slug)
-    : undefined;
+  const triggerTierScope = step.automation_trigger_tier_scope;
+  const memberStatus =
+    triggerTierScope === null ? undefined : triggerTierScopeToMemberStatus.get(triggerTierScope);
   if (!memberStatus) {
     logging.error(
       {
         system: {
-          event: 'automations.poll.unknown_slug',
-          slug: step.automation_slug,
+          event: 'automations.poll.unsupported_trigger_tier_scope',
+          trigger_tier_scope: triggerTierScope,
           step_id: step.id,
         },
       },
-      `[AUTOMATIONS] Unknown automation slug: ${step.automation_slug}`,
+      `[AUTOMATIONS] Unsupported trigger tier scope for step ${step.id}: ${triggerTierScope}`,
     );
     await automationsApi.markStepTerminal(step, 'failed');
     return null;
