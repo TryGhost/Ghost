@@ -518,16 +518,12 @@ export class EmailAnalyticsService {
         unhandled: processingResult.unhandled,
         unprocessable: processingResult.unprocessable,
       };
-      // IDs are appended in first-seen order, so everything past these offsets is new to this batch
-      const beforeEmailIdCount = processingResult.emailIds.length;
-      const beforeMemberIdCount = processingResult.memberIds.length;
-
       await eventProcessor.processBatch(events, processingResult, fetchData);
       processingTimeMs += Date.now() - processingStart;
       eventCount += events.length;
 
       // Calculate delta (only new counts from this batch) and accumulate for final reporting
-      const batchDelta = new EventProcessingResult({
+      cumulativeResult.merge({
         storedDelivered: processingResult.storedDelivered - beforeCounts.storedDelivered,
         storedOpened: processingResult.storedOpened - beforeCounts.storedOpened,
         storedPermanentFailed:
@@ -540,10 +536,7 @@ export class EmailAnalyticsService {
         complained: processingResult.complained - beforeCounts.complained,
         unhandled: processingResult.unhandled - beforeCounts.unhandled,
         unprocessable: processingResult.unprocessable - beforeCounts.unprocessable,
-        emailIds: processingResult.emailIds.slice(beforeEmailIdCount),
-        memberIds: processingResult.memberIds.slice(beforeMemberIdCount),
       });
-      cumulativeResult.merge(batchDelta);
 
       // Offer the event processor a chance to aggregate mid-fetch.
       try {

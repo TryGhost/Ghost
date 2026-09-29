@@ -51,6 +51,16 @@ describe('EventProcessingResult', function () {
     assert.deepEqual(result.memberIds, ['4', '5']);
   });
 
+  it('includes IDs in object equality and serialization', function () {
+    const result = new EventProcessingResult({ emailIds: ['email-1'], memberIds: ['member-1'] });
+    const other = new EventProcessingResult({ emailIds: ['email-2'], memberIds: ['member-1'] });
+
+    assert.notDeepEqual(result, other);
+    assert.ok(Object.keys(result).includes('emailIds'));
+    assert.deepEqual(Object.entries(result).find(([key]) => key === 'emailIds')?.[1], ['email-1']);
+    assert.deepEqual(JSON.parse(JSON.stringify(result)).memberIds, ['member-1']);
+  });
+
   it('resets all values', function () {
     const result = new EventProcessingResult({
       delivered: 1,

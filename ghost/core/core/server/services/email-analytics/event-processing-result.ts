@@ -30,6 +30,12 @@ export class EventProcessingResult {
   #memberIdSet = new Set<string>();
 
   constructor(result: EventProcessingResultInput = {}) {
+    // Keep IDs visible to object equality, spreading, and serialization as they
+    // were when they were public fields, while merge() remains the write path.
+    Object.defineProperties(this, {
+      emailIds: { enumerable: true, get: () => this.#emailIds },
+      memberIds: { enumerable: true, get: () => this.#memberIds },
+    });
     this.merge(result);
   }
 
