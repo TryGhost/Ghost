@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { EventEmitter } from 'node:events';
+import { EventEmitter, once } from 'node:events';
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import express from 'express';
@@ -30,9 +30,7 @@ describe('Queue request middleware', function () {
     });
 
     server = app.listen(0, '127.0.0.1');
-    await new Promise((resolve) => {
-      server.once('listening', resolve);
-    });
+    await once(server, 'listening');
     port = (server.address() as AddressInfo).port;
   }
 
@@ -45,6 +43,16 @@ describe('Queue request middleware', function () {
   }
 
   function get(path: string) {
+    const serverReceivedRequest = new Promise<http.ServerResponse>((resolve) => {
+      const onRequest = (request: http.IncomingMessage, res: http.ServerResponse) => {
+        if (request.url === path) {
+          server.off('request', onRequest);
+          resolve(res);
+        }
+      };
+      server.on('request', onRequest);
+    });
+
     // URL string: host/port options throw Invalid URL once another file has loaded Sentry's http wrapper
     const req = http.get(`http://127.0.0.1:${port}${path}`, { agent: false });
     const response = new Promise<{ status?: number; body: string }>((resolve, reject) => {
@@ -61,7 +69,7 @@ describe('Queue request middleware', function () {
     // callers that abort the request don't await the response
     response.catch(() => {});
 
-    return { req, response };
+    return { req, serverReceivedRequest, response };
   }
 
   beforeEach(function () {
@@ -144,15 +152,12 @@ describe('Queue request middleware', function () {
   it('limits concurrency and starts queued requests in arrival order', async function () {
     await listen(2);
     get('/hold/1');
+    await heldCount(1);
     get('/hold/2');
     await heldCount(2);
 
-    get('/hold/3');
-    get('/hold/4');
-    // give the queued requests time to arrive
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
+    await get('/hold/3').serverReceivedRequest;
+    await get('/hold/4').serverReceivedRequest;
     assert.equal(held.length, 2);
     assert.equal(held[0].req.queueDepth, 0);
 
@@ -175,6 +180,7 @@ describe('Queue request middleware', function () {
     await heldCount(1);
 
     const queued = get('/instant');
+    await queued.serverReceivedRequest;
     await new Promise((resolve) => {
       setTimeout(resolve, 50);
     });
@@ -193,17 +199,12 @@ describe('Queue request middleware', function () {
     await heldCount(1);
 
     const abandoned = get('/hold/abandoned');
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
+    const abandonedRes = await abandoned.serverReceivedRequest;
     const next = get('/instant');
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
+    await next.serverReceivedRequest;
+    const abandonedClosed = once(abandonedRes, 'close');
     abandoned.req.destroy();
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
+    await abandonedClosed;
 
     held[0].res.end();
     const { status, body } = await next.response;
@@ -233,17 +234,16 @@ describe('Queue request middleware', function () {
     const first = get('/hold/1');
     await heldCount(1);
 
-    get('/hold/2');
-    get('/hold/3');
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
+    await get('/hold/2').serverReceivedRequest;
+    await get('/hold/3').serverReceivedRequest;
+    const firstClosed = once(held[0].res, 'close');
 
     held[0].res.end('done');
     await first.response;
+    await firstClosed;
     await heldCount(2);
     await new Promise((resolve) => {
-      setTimeout(resolve, 50);
+      setImmediate(resolve);
     });
 
     // a double release would have started request 3 alongside request 2

@@ -133,6 +133,16 @@ export type SaveOutcome<R extends SaveResult = SaveResult> =
 /** Local validation holds background work; other failures use the normal error handling. */
 export type PrepareOutcome<P> = { ok: true; prepared: P } | { ok: false; error: SaveError };
 
+/** A request that settled as `failed`, once per request. */
+export interface SaveFailure {
+  readonly command: SaveCommand;
+  readonly error: SaveError;
+  /** Whether the post carried a server id when the request ran. */
+  readonly persisted: boolean;
+  /** Milliseconds `execute` took before failing; null when the request never reached it. */
+  readonly durationMs: number | null;
+}
+
 /** Unsaved content is independent of the commands currently allowed to execute. */
 export interface PendingSave {
   blockedBy: SaveError | null;
@@ -202,6 +212,8 @@ export interface SaveEnginePorts<
   onStateChange?: (state: SaveEngineState) => void;
   /** A throwing state callback or subscriber is reported here instead of interrupting the save. */
   onListenerError?: (error: unknown) => void;
+  /** Called after a failed request has settled; a throw is reported like a listener's. */
+  onSaveFailed?: (failure: SaveFailure) => void;
 }
 
 export interface SaveEngine {
@@ -311,6 +323,8 @@ interface Timer {
 interface Frozen {
   slot: Slot;
   error: SaveError;
+  persisted: boolean;
+  durationMs: number | null;
 }
 
 const AUTOSAVE: SaveCommand = {
@@ -582,10 +596,41 @@ export function createSaveEngine<
       : { kind: 'error', intent, error };
   }
 
-  function failSlot(slot: Slot, error: SaveError): void {
+  function failSlot(
+    slot: Slot,
+    error: SaveError,
+    snapshot: S | null,
+    durationMs: number | null,
+  ): void {
     settle(slot.waiters, failed(error, slot.command.kind));
     setState(failureState(slot.command.kind, error));
+    reportFailure(slot, error, snapshot, durationMs);
     drain();
+  }
+
+  function reportFailure(
+    slot: Slot,
+    error: SaveError,
+    snapshot: S | null,
+    durationMs: number | null,
+  ): void {
+    report({
+      command: slot.command,
+      error,
+      persisted: snapshot !== null && snapshot.id !== null,
+      durationMs,
+    });
+  }
+
+  function report(failure: SaveFailure): void {
+    if (!ports.onSaveFailed) {
+      return;
+    }
+    try {
+      ports.onSaveFailed(failure);
+    } catch (cause) {
+      reportListenerError(cause);
+    }
   }
 
   function blankToDefault(title: string): string {
@@ -655,7 +700,7 @@ export function createSaveEngine<
     try {
       snapshot = ports.getSnapshot();
     } catch (cause) {
-      failSlot(slot, toSaveError(cause));
+      failSlot(slot, toSaveError(cause), readSnapshot(), null);
       return;
     }
     const early = dropReason(slot, snapshot);
@@ -671,6 +716,7 @@ export function createSaveEngine<
     setState(deriveState());
 
     let outcome: SaveOutcome<R>;
+    let executeStartedAt: number | null = null;
     try {
       await ports.slug.settled();
       if (disposed) {
@@ -717,6 +763,7 @@ export function createSaveEngine<
           );
           if (!isBackgroundIntent(slot.command.kind)) {
             setState(failureState(slot.command.kind, preparation.error));
+            reportFailure(slot, preparation.error, snapshot, null);
           }
           drain();
           return;
@@ -731,6 +778,7 @@ export function createSaveEngine<
         if (disposed) {
           return;
         }
+        executeStartedAt = Date.now();
         outcome = await ports.execute(preparation.prepared, abort.signal);
         if (disposed) {
           return;
@@ -760,14 +808,19 @@ export function createSaveEngine<
       drain();
       return;
     }
-    handleError(slot, snapshot, outcome.error);
+    handleError(
+      slot,
+      snapshot,
+      outcome.error,
+      executeStartedAt === null ? null : Date.now() - executeStartedAt,
+    );
   }
 
-  function handleError(slot: Slot, snapshot: S, error: SaveError): void {
+  function handleError(slot: Slot, snapshot: S, error: SaveError, durationMs: number | null): void {
     const intent = slot.command.kind;
 
     if (error.kind === 'session-invalid') {
-      frozen = { slot, error };
+      frozen = { slot, error, persisted: snapshot.id !== null, durationMs };
       setState({ kind: 'reauth-pending', intent });
       return;
     }
@@ -782,6 +835,7 @@ export function createSaveEngine<
       settle(dropWaiters, dropped('halted'));
       settle(slot.waiters, failed(error, intent));
       setState({ kind: snapshot.id ? 'halted' : 'crashed' });
+      reportFailure(slot, error, snapshot, durationMs);
       return;
     }
 
@@ -797,6 +851,7 @@ export function createSaveEngine<
       settle(dropWaiters, dropped('conflict'));
       settle(slot.waiters, failed(error, intent));
       setState({ kind: 'conflict', intent, error });
+      reportFailure(slot, error, snapshot, durationMs);
       return;
     }
 
@@ -807,7 +862,7 @@ export function createSaveEngine<
     ) {
       hold = { version: snapshot.version, source: 'server', error };
     }
-    failSlot(slot, error);
+    failSlot(slot, error, snapshot, durationMs);
   }
 
   function captureCommand(kind: DispatchIntent, snapshot: S | null, options?: PublishOptions) {
@@ -947,7 +1002,7 @@ export function createSaveEngine<
     if (!frozen || disposed) {
       return;
     }
-    const { slot, error } = frozen;
+    const { slot, error, persisted, durationMs } = frozen;
     frozen = null;
     settle(slot.waiters, failed(error, slot.command.kind));
     const waiters: Waiter[] = [];
@@ -960,6 +1015,7 @@ export function createSaveEngine<
       waiter.resolve(failed(error, waiter.command.kind));
     }
     setState(failureState(slot.command.kind, error));
+    report({ command: slot.command, error, persisted, durationMs });
   }
 
   // A server document that no longer carries the rejected updated_at ends the

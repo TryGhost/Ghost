@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { dispatchedIntents } from './__test-utils__/save-engine-spy';
 import { record } from './__test-utils__/session-harness';
+import { reportLeaveConfirmation, reportSaveFailure } from '@/editor/report-error';
 import type { EditorRecord } from './projection';
 import { useEditorSession } from './use-editor-session';
 
@@ -20,6 +21,12 @@ beforeEach(() => {
 
 vi.mock('@tryghost/admin-x-framework', () => ({
   useLocation: () => ({ key: 'editor', state: null }),
+}));
+
+vi.mock('@/editor/report-error', () => ({
+  reportEditorError: vi.fn(),
+  reportLeaveConfirmation: vi.fn(),
+  reportSaveFailure: vi.fn(),
 }));
 
 // The real hooks hand back one stable function per mount; a fresh mock per
@@ -161,5 +168,40 @@ describe('useEditorSession title blur', () => {
     await waitFor(() =>
       expect(result.current.pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } }),
     );
+  });
+});
+
+describe('useEditorSession reporting', () => {
+  beforeEach(() => {
+    vi.mocked(reportSaveFailure).mockClear();
+    vi.mocked(reportLeaveConfirmation).mockClear();
+  });
+
+  it('reports a failed save for the post type the session edits', async () => {
+    const { result } = setup();
+    act(() => result.current.bind.onTitleChange('A new title'));
+
+    await act(() => result.current.saveExplicit());
+
+    expect(reportSaveFailure).toHaveBeenCalledTimes(1);
+    const [failure, postType] = vi.mocked(reportSaveFailure).mock.calls[0];
+    expect(failure).toMatchObject({ postId: 'abc123', persisted: true, status: 'draft' });
+    expect(postType).toBe('post');
+  });
+
+  it('reports a leave the writer has to confirm', async () => {
+    const { result } = setup();
+    act(() => result.current.bind.onTitleChange('A new title'));
+    await act(() => result.current.saveExplicit());
+
+    await act(async () => {
+      await expect(result.current.leaveRequested()).resolves.toBe('confirm');
+    });
+
+    expect(reportLeaveConfirmation).toHaveBeenCalledTimes(1);
+    const [leave, postType] = vi.mocked(reportLeaveConfirmation).mock.calls[0];
+    expect(leave).toMatchObject({ postId: 'abc123' });
+    expect(leave.reasons).toContain('POST_HAS_ERROR');
+    expect(postType).toBe('post');
   });
 });

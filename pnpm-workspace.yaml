@@ -32,7 +32,7 @@ allowBuilds:
   'nx@23.2.0': true
   'protobufjs@7.6.6': true
   're2@1.26.1': true
-  'sharp@0.35.4': true
+  'sharp@0.35.5': true
   ssh2: false
 
 catalog:
@@ -173,7 +173,7 @@ catalog:
   react-dom: 18.3.1
   react-router: 7.18.4
   semver: 7.8.5
-  sharp: 0.35.4
+  sharp: 0.35.5
   should: 13.2.3
   sinon: 22.1.0
   sonner: 2.0.7
@@ -350,6 +350,34 @@ minimumReleaseAgeExclude:
   - 'knex-migrator'
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+  # sharp 0.35.5 bundles libvips 8.18.7 with updated librsvg and libheif
+  - sharp@0.35.5
+  - '@img/sharp-darwin-arm64@0.35.5'
+  - '@img/sharp-darwin-x64@0.35.5'
+  - '@img/sharp-freebsd-wasm32@0.35.5'
+  - '@img/sharp-linux-arm@0.35.5'
+  - '@img/sharp-linux-arm64@0.35.5'
+  - '@img/sharp-linux-ppc64@0.35.5'
+  - '@img/sharp-linux-riscv64@0.35.5'
+  - '@img/sharp-linux-s390x@0.35.5'
+  - '@img/sharp-linux-x64@0.35.5'
+  - '@img/sharp-linuxmusl-arm64@0.35.5'
+  - '@img/sharp-linuxmusl-x64@0.35.5'
+  - '@img/sharp-wasm32@0.35.5'
+  - '@img/sharp-webcontainers-wasm32@0.35.5'
+  - '@img/sharp-win32-arm64@0.35.5'
+  - '@img/sharp-win32-ia32@0.35.5'
+  - '@img/sharp-win32-x64@0.35.5'
+  - '@img/sharp-libvips-darwin-arm64@1.3.4'
+  - '@img/sharp-libvips-darwin-x64@1.3.4'
+  - '@img/sharp-libvips-linux-arm@1.3.4'
+  - '@img/sharp-libvips-linux-arm64@1.3.4'
+  - '@img/sharp-libvips-linux-ppc64@1.3.4'
+  - '@img/sharp-libvips-linux-riscv64@1.3.4'
+  - '@img/sharp-libvips-linux-s390x@1.3.4'
+  - '@img/sharp-libvips-linux-x64@1.3.4'
+  - '@img/sharp-libvips-linuxmusl-arm64@1.3.4'
+  - '@img/sharp-libvips-linuxmusl-x64@1.3.4'
 
 # configuration for pnpm's changeset functionality
 versioning:

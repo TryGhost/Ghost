@@ -1,17 +1,37 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const sinon = require('sinon');
 const _ = require('lodash');
+const logging = require('@tryghost/logging');
 
 const ImageHandler = require('../../../../../../core/server/data/importer/handlers/image');
 const adapterManager = require('../../../../../../core/server/services/adapter-manager').default;
 const configUtils = require('../../../../../utils/config-utils');
 
+const imageFixturePath = path.join(__dirname, '../../../../../utils/fixtures/images');
+
 describe('ImageHandler', function () {
   const store = adapterManager.getAdapter('storage:images');
+  let tmpDir;
+
+  // Copies an image fixture into the extracted import at the given path
+  const fixture = (name, fixtureName = 'ghosticon.jpg') => {
+    const filePath = path.join(tmpDir, name);
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.copyFileSync(path.join(imageFixturePath, fixtureName), filePath);
+    return filePath;
+  };
+
+  beforeEach(function () {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-image-import-'));
+  });
 
   afterEach(async function () {
     sinon.restore();
     await configUtils.restore();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
   it('has the correct interface', function () {
@@ -43,7 +63,7 @@ describe('ImageHandler', function () {
 
     const file = [
       {
-        path: '/my/test/' + filename,
+        path: fixture(filename),
         name: filename,
       },
     ];
@@ -62,7 +82,7 @@ describe('ImageHandler', function () {
 
     const file = [
       {
-        path: '/my/test/' + filename,
+        path: fixture(filename),
         name: filename,
       },
     ];
@@ -81,7 +101,7 @@ describe('ImageHandler', function () {
 
     const file = [
       {
-        path: '/my/test/content/images/' + filename,
+        path: fixture('content/images/' + filename),
         name: filename,
       },
     ];
@@ -102,7 +122,7 @@ describe('ImageHandler', function () {
 
     const file = [
       {
-        path: '/my/test/' + filename,
+        path: fixture(filename),
         name: filename,
       },
     ];
@@ -119,19 +139,19 @@ describe('ImageHandler', function () {
   it('can load multiple files', async function () {
     const files = [
       {
-        path: '/my/test/testing.png',
+        path: fixture('testing.png', 'ghost-logo.png'),
         name: 'testing.png',
       },
       {
-        path: '/my/test/photo/kitten.jpg',
+        path: fixture('photo/kitten.jpg'),
         name: 'photo/kitten.jpg',
       },
       {
-        path: '/my/test/content/images/animated/bunny.gif',
+        path: fixture('content/images/animated/bunny.gif', 'loadingcat.gif'),
         name: 'content/images/animated/bunny.gif',
       },
       {
-        path: '/my/test/images/puppy.jpg',
+        path: fixture('images/puppy.jpg'),
         name: 'images/puppy.jpg',
       },
     ];
@@ -155,5 +175,46 @@ describe('ImageHandler', function () {
     assert.equal(storeSpy.lastCall.args[0].originalPath, 'images/puppy.jpg');
     assert.match(storeSpy.lastCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
     assert.equal(storeSpy.lastCall.args[0].newPath, '/content/images/puppy.jpg');
+  });
+
+  it('skips files whose contents are not an allowed image format', async function () {
+    const warn = sinon.stub(logging, 'warn');
+    const files = [
+      { path: fixture('photo.jpg'), name: 'photo.jpg' },
+      { path: fixture('avif.jpg', 'ghosticon.avif'), name: 'avif.jpg' },
+      { path: fixture('text.png', 'svg-malformed.svg'), name: 'text.png' },
+    ];
+
+    const storeSpy = sinon.spy(store, 'getUniqueFileName');
+
+    const loaded = await ImageHandler.loadFile(_.clone(files));
+    assert.deepEqual(
+      loaded.map((file) => file.originalPath),
+      ['photo.jpg'],
+    );
+    sinon.assert.calledOnce(storeSpy);
+    sinon.assert.calledTwice(warn);
+  });
+
+  it('sanitizes SVG files', async function () {
+    const svgPath = fixture('unsafe.svg', 'svg-with-unsafe-script.svg');
+
+    const loaded = await ImageHandler.loadFile([{ path: svgPath, name: 'unsafe.svg' }]);
+
+    assert.equal(loaded.length, 1);
+    const svg = fs.readFileSync(svgPath, 'utf8');
+    assert.match(svg, /<svg/);
+    assert.doesNotMatch(svg, /<script/);
+  });
+
+  it('skips SVG files that cannot be sanitized', async function () {
+    const warn = sinon.stub(logging, 'warn');
+    sinon.stub(logging, 'error');
+    const svgPath = fixture('malformed.svg', 'svg-malformed.svg');
+
+    const loaded = await ImageHandler.loadFile([{ path: svgPath, name: 'malformed.svg' }]);
+
+    assert.deepEqual(loaded, []);
+    sinon.assert.calledOnce(warn);
   });
 });

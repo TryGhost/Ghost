@@ -72,6 +72,43 @@ let useEmberFeatureFlag: typeof import('./ember-bridge').useEmberFeatureFlag;
 let useSidebarVisibility: typeof import('./ember-bridge').useSidebarVisibility;
 let useEmberRouting: typeof import('./ember-bridge').useEmberRouting;
 
+describe('syncEmberPostListQueryParams', () => {
+  baseTest('delivers filters when Ember loads after the React list', async () => {
+    vi.useFakeTimers();
+    const { syncEmberPostListQueryParams } = await import('./ember-bridge');
+    const stop = syncEmberPostListQueryParams('posts', { tag: 'news', order: 'title asc' });
+    const mock = createMockStateBridge();
+    const setPostListQueryParams = vi.fn();
+    mock.stateBridge.setPostListQueryParams = setPostListQueryParams;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setPostListQueryParams).toHaveBeenCalledWith('posts', {
+      tag: 'news',
+      order: 'title asc',
+    });
+    stop();
+  });
+
+  baseTest('cancels stale pending filters when the list changes', async () => {
+    vi.useFakeTimers();
+    const { syncEmberPostListQueryParams } = await import('./ember-bridge');
+    const stop = syncEmberPostListQueryParams('posts', { tag: 'news' });
+    stop();
+    const mock = createMockStateBridge();
+    const setPostListQueryParams = vi.fn();
+    mock.stateBridge.setPostListQueryParams = setPostListQueryParams;
+    window.EmberBridge = { state: mock.stateBridge };
+    const stopCurrent = syncEmberPostListQueryParams('posts', {});
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setPostListQueryParams).toHaveBeenCalledExactlyOnceWith('posts', {});
+    stopCurrent();
+  });
+});
+
 beforeEach(async () => {
   vi.resetModules();
   vi.useRealTimers();

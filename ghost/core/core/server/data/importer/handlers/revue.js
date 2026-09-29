@@ -17,7 +17,9 @@ const RevueHandler = {
 
   loadFile: function (files, startDir) {
     debug('loadFile', files);
-    const startDirRegex = startDir ? new RegExp('^' + startDir + '/') : new RegExp('');
+    const startDirRegex = startDir
+      ? new RegExp('^' + _.escapeRegExp(startDir) + '/')
+      : new RegExp('');
     const idRegex = /_.*?\./;
     const ops = [];
     const revue = {};

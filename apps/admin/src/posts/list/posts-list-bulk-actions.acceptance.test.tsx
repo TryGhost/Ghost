@@ -446,5 +446,152 @@ describe('Posts list bulk actions', () => {
         bulk: { action: 'access', meta: { visibility: 'public', tiers: [] } },
       });
     });
+
+    it('preserves the selected posts while choosing and saving bulk access', async () => {
+      const first = post({
+        title: 'First',
+        status: 'draft',
+        visibility: 'public',
+        featured: false,
+      });
+      const second = post({
+        title: 'Second',
+        status: 'draft',
+        visibility: 'public',
+        featured: false,
+      });
+      fakePosts([first, second, post({ title: 'Untouched', status: 'draft' })]);
+      fakeTiers([]);
+      const edit = fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
+      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await expect.element(postsListScreen.listItems().nth(2)).toBeVisible();
+
+      await postsListScreen
+        .listItems()
+        .nth(0)
+        .click({ modifiers: ['Meta'] });
+      await postsListScreen
+        .listItems()
+        .nth(1)
+        .click({ modifiers: ['Meta'] });
+      await postsListScreen.listItems().first().click({ button: 'right' });
+      await postsListScreen.contextMenuItem('Change access').click();
+      await expect.poll(postsListScreen.selectedTitles).toEqual(['First', 'Second']);
+
+      await postsListScreen.accessSelect().click();
+      await expect.poll(postsListScreen.selectedTitles).toEqual(['First', 'Second']);
+      await postsListScreen.accessOption('Members only').click();
+      await expect.poll(postsListScreen.selectedTitles).toEqual(['First', 'Second']);
+      await postsListScreen.dialogButton('Save').click();
+
+      await expect.poll(() => edit.requests.length).toBe(1);
+      expect(new URL(edit.requests[0].url).searchParams.get('filter')).toBe(
+        `id:['${first.id}','${second.id}']`,
+      );
+      expect(edit.requests[0].body).toEqual({
+        bulk: { action: 'access', meta: { visibility: 'members', tiers: [] } },
+      });
+      await expect(postsListScreen.dialogButton('Save')).toHaveCount(0);
+      await expect.poll(postsListScreen.selectedTitles).toEqual(['First', 'Second']);
+
+      // A second bulk action must reuse the selection without selecting rows again.
+      await postsListScreen.listItems().first().click({ button: 'right' });
+      await postsListScreen.contextMenuItem('Feature').click();
+      await expect.poll(() => edit.requests.length).toBe(2);
+      expect(new URL(edit.requests[1].url).searchParams.get('filter')).toBe(
+        `id:['${first.id}','${second.id}']`,
+      );
+      expect(edit.requests[1].body).toEqual({ bulk: { action: 'feature', meta: {} } });
+    });
+
+    it('shows the access success toast and closes before the list finishes refreshing', async () => {
+      const target = post({ title: 'Target', status: 'draft' });
+      fakePosts([target]);
+      fakeTiers([]);
+      let finishSave!: () => void;
+      const saveResponse = new Promise<void>((resolve) => {
+        finishSave = resolve;
+      });
+      let finishRefresh!: () => void;
+      const refreshResponse = new Promise<void>((resolve) => {
+        finishRefresh = resolve;
+      });
+      const edit = fakeAdminEndpoint('PUT', /^\/posts\/bulk/, async () => {
+        await saveResponse;
+        return {};
+      });
+
+      try {
+        await renderAdminApp('/posts?type=draft', FLAG_ON);
+        await expect.element(postsListScreen.listItems().first()).toBeVisible();
+        // Hold the subsequent list refresh independently of the save request.
+        const refresh = fakeAdminEndpoint('GET', /^\/posts\//, async () => {
+          await refreshResponse;
+          return {
+            posts: [target],
+            meta: {
+              pagination: { page: 1, pages: 1, limit: 30, total: 1, next: null, prev: null },
+            },
+          };
+        });
+
+        await postsListScreen.listItems().first().click({ button: 'right' });
+        await postsListScreen.contextMenuItem('Change access').click();
+        await postsListScreen.dialogButton('Save').click();
+        await expect.poll(() => edit.requests.length).toBe(1);
+        await expect.element(postsListScreen.dialogButton('Saving')).toBeDisabled();
+        await expect(postsListScreen.toastWithText('Post access updated')).toHaveCount(0);
+
+        finishSave();
+        await expect.poll(() => refresh.requests.length).toBeGreaterThan(0);
+        await expect(postsListScreen.dialogButton('Saving')).toHaveCount(0);
+        await expect(postsListScreen.dialogButton('Save')).toHaveCount(0);
+        await expect.element(postsListScreen.toastWithText('Post access updated')).toBeVisible();
+      } finally {
+        finishSave();
+        finishRefresh();
+      }
+    });
+
+    it.each(['Cancel', 'Escape'])(
+      'preserves an inverted selection through modal shortcuts and %s dismissal',
+      async (dismiss) => {
+        fakePosts([
+          post({ title: 'First', status: 'draft' }),
+          post({ title: 'Second', status: 'draft' }),
+          post({ title: 'Excluded', status: 'draft' }),
+        ]);
+        fakeTiers([]);
+        await renderAdminApp('/posts?type=draft', FLAG_ON);
+        await expect.element(postsListScreen.listItems().nth(2)).toBeVisible();
+
+        await userEvent.keyboard('{Meta>}a{/Meta}');
+        await postsListScreen
+          .listItems()
+          .nth(2)
+          .click({ modifiers: ['Meta'] });
+        await postsListScreen.listItems().first().click({ button: 'right' });
+        await postsListScreen.contextMenuItem('Change access').click();
+        await postsListScreen.accessSelect().click();
+        await expect.poll(postsListScreen.selectedTitles).toEqual(['First', 'Second']);
+
+        await userEvent.keyboard('{Escape}');
+        await expect.element(postsListScreen.dialogButton('Save')).toBeVisible();
+        await userEvent.keyboard('{Meta>}a{/Meta}');
+        await expect.poll(postsListScreen.selectedTitles).toEqual(['First', 'Second']);
+        if (dismiss === 'Cancel') {
+          await postsListScreen.dialogButton('Cancel').click();
+        } else {
+          await userEvent.keyboard('{Escape}');
+        }
+        await expect(postsListScreen.dialogButton('Save')).toHaveCount(0);
+        await expect.poll(postsListScreen.selectedTitles).toEqual(['First', 'Second']);
+        expect(postsListScreen.listRoot().getAttribute('data-selection')).toBe('inverted');
+
+        // Once back on the list, Escape should clear selection as usual.
+        await userEvent.keyboard('{Escape}');
+        await expect.poll(postsListScreen.selectedTitles).toEqual([]);
+      },
+    );
   });
 });

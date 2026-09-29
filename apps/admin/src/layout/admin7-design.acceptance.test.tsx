@@ -27,7 +27,7 @@ it.each<{
     labs: { admin7Pill: true },
     enabled: true,
   },
-  { name: 'Ember route excluded', route: '/site', labs: {}, enabled: false },
+  { name: 'Ember route excluded', route: '/restore', labs: {}, enabled: false },
   {
     name: 'Ember editor excluded',
     route: '/editor/post/new',

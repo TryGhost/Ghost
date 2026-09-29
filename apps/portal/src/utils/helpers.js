@@ -218,13 +218,13 @@ export function getCheckoutSessionDataFromPlanAttribute(site, plan) {
   if (plan === 'monthly') {
     return {
       cadence: 'month',
-      tierId: defaultTier.id,
+      tierId: defaultTier?.id,
     };
   }
   if (plan === 'yearly') {
     return {
       cadence: 'year',
-      tierId: defaultTier.id,
+      tierId: defaultTier?.id,
     };
   }
   return {

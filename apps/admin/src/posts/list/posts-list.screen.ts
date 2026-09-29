@@ -79,6 +79,8 @@ export const postsListScreen = {
   /** A button inside a non-destructive modal (Add a tag, Change access). */
   dialogButton: (label: string) =>
     page.getByRole('dialog').getByRole('button', { name: label, exact: true }),
+  accessSelect: () => page.getByRole('combobox', { name: 'Access' }),
+  accessOption: (name: string) => page.getByRole('option', { name, exact: true }),
   /** A row in the tag picker's listbox. */
   tagOption: (name: string | RegExp) => page.getByRole('dialog').getByRole('option', { name }),
   tagSearchInput: () => page.getByRole('dialog').getByLabelText('Search tags'),
