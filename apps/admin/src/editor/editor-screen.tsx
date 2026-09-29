@@ -1,3 +1,4 @@
+import { getListReturnNavigationState } from '@/shared/virtual-list';
 import {
   type CSSProperties,
   type ReactNode,
@@ -94,7 +95,7 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
         label={listLabel}
         asChild
       >
-        <AdminLink to={listUrl}>
+        <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
           <LucideIcon.ArrowLeft />
           {listLabel}
         </AdminLink>

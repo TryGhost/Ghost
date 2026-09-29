@@ -1,7 +1,7 @@
 import { Box, Container, Stack, Text } from '@tryghost/shade/primitives';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import { ListPage } from '@tryghost/shade/page-templates';
-import { LoadMoreButton } from '@/shared/virtual-list';
+import { LoadMoreButton, useScrollRestoration } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { PostListRow } from './components/post-list-row';
@@ -61,6 +61,7 @@ const GiftLinkModal = lazy(() => import('@/posts/analytics/modals/gift-link-moda
 
 export function PostsListScreen({ resource }: { resource: PostResource }) {
   const copy = getPostResourceCopy(resource);
+  const listRef = useRef<HTMLDivElement>(null);
   const { params, filters, order, setFilters, setOrder, hasFilters, clearFilters } =
     usePostsFilterState();
   const { data: currentUser } = useCurrentUser();
@@ -137,6 +138,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
 
   const { items, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage, totalItems } =
     usePostsList({ resource, params, context: { ownAuthorSlug } });
+
+  useScrollRestoration({ parentRef: listRef, isLoading, resetOnNavigation: true });
 
   // Snapshotted when the menu item is picked: Radix closes the menu at once,
   // which clears a transient selection before the modal could read it.
@@ -267,7 +270,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   });
 
   return (
-    <Box className="size-full">
+    <Box ref={listRef} className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
         <ListPage data-testid={`${resource}-page`}>
           <ListPage.Header>
