@@ -231,6 +231,31 @@ describe('source-utils', () => {
       });
     });
 
+    it('returns mapped domains for display names without a dot', () => {
+      expect(getFaviconDomain('GitHub')).toEqual({
+        domain: 'github.com',
+        isDirectTraffic: false,
+      });
+      expect(getFaviconDomain('Yandex')).toEqual({
+        domain: 'yandex.com',
+        isDirectTraffic: false,
+      });
+    });
+
+    it('does not treat unmapped single words as domains', () => {
+      expect(getFaviconDomain('SomeNewsletter')).toEqual({
+        domain: null,
+        isDirectTraffic: false,
+      });
+    });
+
+    it('maps every normalized source name to a domain', () => {
+      const unmapped = [...new Set(SOURCE_NORMALIZATION_MAP.values())].filter(
+        (name) => !SOURCE_DOMAIN_MAP[name],
+      );
+      expect(unmapped).toEqual([]);
+    });
+
     it('returns null for invalid inputs', () => {
       expect(getFaviconDomain(null as any)).toEqual({
         domain: null,
@@ -246,9 +271,9 @@ describe('source-utils', () => {
       });
     });
 
-    it('treats non-domain strings as domains', () => {
+    it('returns null for non-domain strings', () => {
       expect(getFaviconDomain('not-a-domain')).toEqual({
-        domain: 'not-a-domain',
+        domain: null,
         isDirectTraffic: false,
       });
       expect(getFaviconDomain('invalid url string')).toEqual({
