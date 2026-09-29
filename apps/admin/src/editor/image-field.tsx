@@ -28,7 +28,8 @@ const VARIANTS = {
   },
   panel: {
     empty: 'h-[120px]',
-    dropzone: 'group/dropzone bg-surface-elevated transition-colors',
+    dropzone:
+      'group/dropzone border-dashed border-border-default bg-surface-elevated transition-colors',
     prompt: 'transition-colors group-hover/dropzone:text-foreground',
     icon: LucideIcon.Upload,
     iconClassName: 'size-6 stroke-[1.5px]',
