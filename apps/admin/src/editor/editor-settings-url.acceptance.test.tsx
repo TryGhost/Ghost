@@ -81,7 +81,7 @@ describe('Post settings URL', () => {
       lexical: null,
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, {
-      labs: { editorReact: true, postsListReact: true },
+      labs: { editorReact: true },
     });
     await openSidebar();
 

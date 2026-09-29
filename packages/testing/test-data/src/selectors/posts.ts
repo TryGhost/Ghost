@@ -1,10 +1,6 @@
 /**
  * Posts/pages list selector strings, consumed by the admin screen helpers and
  * the e2e page objects. Source of truth: apps/admin/src/posts/list.
- *
- * The testids are shared with the Ember list deliberately — the two
- * implementations can never both be mounted (the Ember route aborts when the
- * React screen serves the URL), so the same vocabulary drives both.
  */
 
 // testids

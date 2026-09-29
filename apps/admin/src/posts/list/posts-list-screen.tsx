@@ -50,8 +50,8 @@ import { usePostsList } from './hooks/use-posts-list';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 /**
- * The React posts and pages list screens, served behind the `postsListReact`
- * Labs flag. One implementation, two resources — see `post-resource.ts`.
+ * The posts and pages list screens. One implementation, two resources — see
+ * `post-resource.ts`.
  */
 /** The three that ask before acting. Feature and unfeature do not. */
 const CONFIRMABLE_ACTIONS: PostContextMenuKey[] = ['delete', 'unpublish', 'unschedule'];

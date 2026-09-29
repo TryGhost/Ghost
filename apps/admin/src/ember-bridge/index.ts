@@ -11,7 +11,6 @@ export {
   useSidebarVisibility,
   useSubscriptionStatus,
   useForceUpgrade,
-  subscribeOpenGiftLinkModal,
   isEmberThemeManaged,
   preloadEmberAdminThemeStylesheet,
   applyEmberAdminThemePreference,
@@ -19,9 +18,4 @@ export {
   syncEmberPostListQueryParams,
   emberMutationHandlers,
 } from './ember-bridge';
-export type {
-  AdminThemeMode,
-  EmberDataChangeEvent,
-  OpenGiftLinkModalEvent,
-  StateBridge,
-} from './ember-bridge';
+export type { AdminThemeMode, EmberDataChangeEvent, StateBridge } from './ember-bridge';

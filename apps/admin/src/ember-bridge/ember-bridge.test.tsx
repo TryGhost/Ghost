@@ -127,7 +127,7 @@ describe('useEmberFeatureFlag', () => {
     mock.stateBridge.isFeatureEnabled = vi.fn(() => enabled);
     window.EmberBridge = { state: mock.stateBridge };
 
-    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('editorReact'));
     expect(result.current).toBe(false);
 
     enabled = true;
@@ -141,7 +141,7 @@ describe('useEmberFeatureFlag', () => {
     const mock = createMockStateBridge();
     mock.stateBridge.isFeatureEnabled = vi.fn(() => true);
 
-    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('editorReact'));
     expect(result.current).toBeUndefined();
 
     window.EmberBridge = { state: mock.stateBridge };
@@ -158,7 +158,7 @@ describe('useEmberFeatureFlag', () => {
     mock.stateBridge.isFeatureEnabled = vi.fn(() => undefined);
     window.EmberBridge = { state: mock.stateBridge };
 
-    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('editorReact'));
 
     expect(result.current).toBeNull();
   });

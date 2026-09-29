@@ -12,7 +12,6 @@ export type StateBridgeEventMap = {
   emberAuthChange: EmberAuthChangeEvent;
   subscriptionChange: SubscriptionState;
   sidebarVisibilityChange: SidebarVisibilityChangeEvent;
-  openGiftLinkModal: OpenGiftLinkModalEvent;
   featureFlagsChange: undefined;
   restoreListState: { path: string };
 };
@@ -67,11 +66,6 @@ export interface SubscriptionState {
 
 export interface SidebarVisibilityChangeEvent {
   isVisible: boolean;
-}
-
-export interface OpenGiftLinkModalEvent {
-  id: string;
-  resource: 'posts' | 'pages';
 }
 
 /**
@@ -279,20 +273,6 @@ export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
   }, [flag]);
 
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-}
-
-/**
- * Subscribes to Ember's request to open the (React-owned) gift-link modal.
- *
- * Ember surfaces — the posts/pages list context menu — fire `openGiftLinkModal`
- * over the bridge instead of rendering their own modal. The consumer owns the
- * modal's open/close state and just reacts to each request. Returns an
- * unsubscribe function.
- */
-export function subscribeOpenGiftLinkModal(
-  handler: (event: OpenGiftLinkModalEvent) => void,
-): () => void {
-  return onEmberStateBridgeEvent('openGiftLinkModal', handler);
 }
 
 /**

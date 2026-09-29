@@ -206,7 +206,7 @@ describe('Sidebar navigation', () => {
     async (leaveList) => {
       fakePostsListScreen();
       fakePosts([]);
-      await renderAdminApp('/posts?tag=news&order=title+asc', { labs: { postsListReact: true } });
+      await renderAdminApp('/posts?tag=news&order=title+asc');
       await expect.element(postsListScreen.filterBar()).toHaveTextContent('Unknown tag');
 
       if (leaveList) {
@@ -225,7 +225,7 @@ describe('Sidebar navigation', () => {
   it('keeps Posts submenu filters and clears them with the main link', async () => {
     fakePostsListScreen();
     fakePosts([]);
-    await renderAdminApp('/posts', { labs: { postsListReact: true } });
+    await renderAdminApp('/posts');
 
     await sidebarScreen.navLink('Drafts').click();
     await expect.poll(currentRoute).toBe('/posts?type=draft');

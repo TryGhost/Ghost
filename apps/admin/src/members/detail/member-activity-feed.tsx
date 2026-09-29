@@ -79,11 +79,7 @@ export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
   }
 };
 
-/**
- * "View all member activity →" link. The membersActivityReact experiment
- * chooses the full feed's owner. A native hash link also notifies Ember when
- * the experiment is off, while React handles the same URL when it is on.
- */
+/** "View all member activity →" link to the member's full activity feed. */
 const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
   const { isAdmin7 } = useShade();
   const link = (

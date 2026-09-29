@@ -12,10 +12,7 @@ export interface PostDefaultView {
   filter: PostViewFilter;
 }
 
-/**
- * Hardcoded in Ember too (`services/custom-views.js`), and always `route:
- * 'posts'` — there are no default views for pages.
- */
+/** Posts only — there are no default views for pages. */
 export const POST_DEFAULT_VIEWS: PostDefaultView[] = [
   { name: 'Drafts', filter: { type: 'draft' } },
   { name: 'Scheduled', filter: { type: 'scheduled' } },

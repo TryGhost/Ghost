@@ -690,10 +690,7 @@ describe('Post analytics delete', () => {
     const listBrowses = () =>
       postsApi.requests.filter(({ filter }) => filter === PUBLISHED_BUCKET).length;
 
-    await renderAdminApp('/posts', {
-      labs: { postsListReact: true },
-      boot: webAnalyticsBootOverrides(),
-    });
+    await renderAdminApp('/posts', { boot: webAnalyticsBootOverrides() });
     await expect
       .element(postsListScreen.listItems().first())
       .toHaveTextContent('Attack of the Clones');
