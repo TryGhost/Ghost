@@ -117,7 +117,7 @@ export function FeatureImage({
         {isEditingAlt ? (
           <input
             aria-label="Alt text for feature image"
-            className="flex-1 border-0 bg-transparent p-0 font-serif text-base leading-6 text-text-secondary outline-none placeholder:text-muted-foreground"
+            className="flex-1 border-0 bg-transparent p-0 font-sans text-base leading-6 text-text-secondary outline-none placeholder:text-muted-foreground"
             maxLength={ALT_MAX_LENGTH}
             name="alt"
             placeholder="Add alt text to the feature image"

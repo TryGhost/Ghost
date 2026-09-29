@@ -51,12 +51,12 @@ function CaptionMount({
       onError={reportKoenigError}
     >
       <KoenigComposableEditor
-        className="koenig-lexical-editor-input font-serif! text-base! leading-6 [&_.kg-prose]:text-base! [&_.kg-prose_p]:m-0 [&_.kg-prose_p]:text-base! [&_.kg-prose_p]:leading-6"
+        className="koenig-lexical-editor-input font-sans! text-base! leading-6 [&_.kg-prose]:text-base! [&_.kg-prose_p]:m-0 [&_.kg-prose_p]:font-sans! [&_.kg-prose_p]:text-base! [&_.kg-prose_p]:leading-6"
         darkMode={darkMode}
         inheritStyles={true}
         isSnippetsEnabled={false}
         markdownTransformers={MINIMAL_TRANSFORMERS}
-        placeholderClassName="koenig-lexical-editor-input-placeholder font-serif! text-base! leading-6"
+        placeholderClassName="koenig-lexical-editor-input-placeholder font-sans! text-base! leading-6"
         placeholderText={placeholder}
         registerAPI={registerAPI}
         singleParagraph={true}
