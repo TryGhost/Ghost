@@ -61,7 +61,7 @@ export function SettingsSubview({
             <Button
               ref={backRef}
               aria-label={closeLabel}
-              className="hover:bg-interactive-hover"
+              className="hover:bg-sidebar-accent [&_svg]:stroke-2!"
               shape="pill"
               size="icon"
               variant="ghost"
