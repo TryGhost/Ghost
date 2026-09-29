@@ -65,7 +65,7 @@ describe('Tag detail', () => {
     await renderAdminApp(`/tags/${t.slug}`);
 
     await expect.element(tagDetailScreen.title()).toHaveTextContent('#News');
-    await expect.element(tagDetailScreen.internalBadge()).toHaveTextContent('INTERNAL');
+    await expect.element(tagDetailScreen.internalBadge()).toHaveTextContent('Internal');
   });
 
   it('shows metadata in Search, X card, and Facebook card tabs', async () => {

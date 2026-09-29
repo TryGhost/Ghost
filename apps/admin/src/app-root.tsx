@@ -5,9 +5,7 @@ import {
   type TopLevelFrameworkProps,
   useLocation,
 } from '@tryghost/admin-x-framework';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { ShadeApp } from '@tryghost/shade/app';
-import { cn } from '@tryghost/shade/utils';
 
 import App from './app.tsx';
 import { routes, useIsEmberOwnedRoute } from './routes.tsx';
@@ -18,13 +16,12 @@ function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
   const { pathname } = useLocation();
   const isEmberOwnedRoute = useIsEmberOwnedRoute(pathname);
-  const isAdmin7 = useFeatureFlag('admin7Pill') && !isEmberOwnedRoute;
 
   return (
     <ShadeApp
-      className={cn('shade-admin', isAdmin7 && 'admin7-pill')}
+      className="shade-admin"
       darkMode={resolvedTheme === 'dark'}
-      isAdmin7={isAdmin7}
+      isAdmin7={!isEmberOwnedRoute}
       data-react-admin-mounted
     >
       <App />

@@ -91,7 +91,7 @@ labelled add buttons; the default `"list"` preserves the consolidated icon-only
 add button. `collapseLabel` preserves the previous icon-only header below `lg`.
 These compatibility choices are ignored by the Admin 7 header. A unique previous
 surface override can use `fallbackClassName`; repeated rules belong in the shared
-trigger. Remove fallback props when the rollout ends.
+trigger. Retain fallback props while legacy surfaces still require them.
 
 ## Tooltips and focus
 
@@ -144,9 +144,9 @@ Expanded search must not push the primary off-screen.
 
 ## Compatibility and rollout
 
-New headers use the pill milestone design by default. During the experiment,
-the Admin root passes `isAdmin7={false}` to ShadeApp when the private flag
-is off or the route is excluded. Shade owns visual differences;
+React Admin headers use the pill design by default without a Labs flag.
+The Admin root passes `isAdmin7={false}` to ShadeApp on Ember-owned routes
+to preserve their compatibility appearance. Shade owns visual differences;
 features retain only historical structural differences that cannot be expressed
 through shared controls. Existing consumers may supply `fallbackVariant` and
 `fallbackSize` to preserve their prior controls. New consumers should use defaults.
@@ -162,7 +162,7 @@ defaults.
 Verify action order, the optional single primary, and spacing at desktop and
 mobile widths. Exercise search expansion, active filters, open dropdowns, pointer
 selection, keyboard focus and disabled controls in both themes. While compatibility
-exists, compare flag-off appearance and interactions against the previous Admin,
-including menus rendered through portals. Check flag-on behavior on every tab that
+exists, compare legacy-mode appearance and interactions against the previous Admin,
+including menus rendered through portals. Check the current design on every tab that
 uses the shared header. For ListPage, its header owns stickiness; use
 `sticky={false}` and `blurredBackground={false}` on the nested PageHeader.
