@@ -61,7 +61,7 @@ with zero from the first included entry through today. Empty histories
 return a zero total and one zero bucket for today. `date_from` is inclusive and
 `date_to` is exclusive. The optional `timezone` parameter accepts an IANA timezone and defaults to UTC.
 It controls daily grouping and today’s date. Admin should pass the browser
-timezone, consistent with web analytics. This endpoint has no date-filter parameters yet.
+timezone, consistent with web analytics. Optional date filters are described below.
 
 Admin uses the shared analytics grouping rules: daily under 91 days, weekly for
 91–270 days, and monthly for longer spans. Grouping does not limit the history to
@@ -82,3 +82,20 @@ empty Tinybird response still returns zero counts rather than falling back.
 The `automationRunAnalytics` flag controls presentation. See the
 [Tinybird storage notes](../../data/tinybird/README.md#automation-statistics)
 for sorting keys, migration behavior, and query tests.
+
+### Performance date ranges
+
+The performance endpoint accepts `date_from` and `date_to` as inclusive
+`YYYY-MM-DD` calendar dates, plus an optional `timezone` (UTC by default).
+Supply both dates or neither. Invalid dates, reversed or incomplete ranges,
+and unknown timezones return 422 before querying Tinybird.
+
+The range selects runs by entry time. Daily entries, totals, and current status
+counts all describe those same runs; step status is not restricted to the entry
+dates. Tinybird uses local midnight boundaries, including 23- and 25-hour DST
+days. The response `entry_window.date_to` is exclusive. Tinybird fills every requested
+day, including empty ranges and zero counts at the boundaries. Core rejects
+out-of-range response buckets.
+
+Without dates, all recorded history is included through today in the requested
+timezone. The all-time query has no fixed lookback limit.
