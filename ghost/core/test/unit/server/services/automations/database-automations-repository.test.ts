@@ -75,6 +75,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('updated_at').notNullable();
     table.text('slug').notNullable().unique();
     table.text('name').notNullable();
+    table.text('description').notNullable();
     table.text('status').notNullable();
     table.text('trigger_tier_scope');
   });
@@ -223,6 +224,7 @@ const createDatabase = async (): Promise<Knex> => {
       updated_at: now(),
       slug: 'member-welcome-email-free',
       name: 'Free member welcome flow',
+      description: 'Welcome new free members after they sign up.',
       status: 'active',
     },
     {
@@ -231,6 +233,7 @@ const createDatabase = async (): Promise<Knex> => {
       updated_at: now(),
       slug: 'member-welcome-email-paid',
       name: 'Paid member welcome flow',
+      description: 'Welcome new paid members after they start their subscription.',
       status: 'active',
     },
   ]);
@@ -717,6 +720,7 @@ describe('automations repository', function () {
         updated_at: toDatabaseDate(new Date()),
         slug: 'alpha-flow',
         name: 'Alpha flow',
+        description: '',
         status: 'inactive',
       });
 
@@ -728,6 +732,12 @@ describe('automations repository', function () {
         'Alpha flow',
         'Free member welcome flow',
         'Paid member welcome flow',
+      ]);
+      const descriptions = await knex('automations').orderBy('name').pluck('description');
+      assert.deepEqual(descriptions, [
+        '',
+        'Welcome new free members after they sign up.',
+        'Welcome new paid members after they start their subscription.',
       ]);
     });
 

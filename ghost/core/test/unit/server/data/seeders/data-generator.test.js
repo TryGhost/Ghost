@@ -524,7 +524,8 @@ describe('Importer', function () {
       table.string('status');
       table.string('name').unique();
       table.string('slug').unique();
-      table.string('trigger_tier_scope').notNullable();
+      table.string('description', 2000);
+      table.string('trigger_tier_scope');
       table.dateTime('created_at');
       table.dateTime('updated_at');
     });
@@ -567,25 +568,28 @@ describe('Importer', function () {
     await transaction.commit();
 
     const automations = await db
-      .select('id', 'status', 'name', 'slug', 'trigger_tier_scope')
+      .select('id', 'status', 'name', 'description', 'slug', 'trigger_tier_scope')
       .from('automations');
 
     assert.equal(automations.length, 3);
     assert.deepEqual(
-      automations.slice(0, 2).map(({ name, slug }) => ({ name, slug })),
+      automations.slice(0, 2).map(({ name, description, slug }) => ({ name, description, slug })),
       [
         {
           name: 'Free member welcome flow',
+          description: 'Welcome new free members after they sign up.',
           slug: 'member-welcome-email-free',
         },
         {
           name: 'Paid member welcome flow',
+          description: 'Welcome new paid members after they start their subscription.',
           slug: 'member-welcome-email-paid',
         },
       ],
     );
     assert.equal(new Set(automations.map((automation) => automation.name)).size, 3);
     assert.equal(new Set(automations.map((automation) => automation.slug)).size, 3);
+    assert.equal(automations[2].description, '');
     assert.deepEqual(
       automations.map((automation) => automation.trigger_tier_scope),
       ['free', 'all_paid', 'all_paid'],

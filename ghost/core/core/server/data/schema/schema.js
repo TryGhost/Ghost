@@ -2170,6 +2170,7 @@ module.exports = {
       validations: { isIn: [['active', 'inactive']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
     trigger_tier_scope: {
       type: 'string',

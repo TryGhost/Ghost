@@ -13,6 +13,7 @@ const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const messages = {
   automatedEmailNotFound: 'Automated email not found.',
+  slugCannotBeChanged: 'Automated email slug cannot be changed.',
 };
 
 // NOTE: This file is in a transitionary state. The `automated_emails` database table was split into
@@ -223,6 +224,12 @@ const controller = {
         if (!automation) {
           throw new errors.NotFoundError({
             message: tpl(messages.automatedEmailNotFound),
+          });
+        }
+        if (Object.hasOwn(data, 'slug') && data.slug !== automation.get('slug')) {
+          throw new errors.ValidationError({
+            message: tpl(messages.slugCannotBeChanged),
+            property: 'slug',
           });
         }
         let email = automation.related('welcomeEmailAutomatedEmail');

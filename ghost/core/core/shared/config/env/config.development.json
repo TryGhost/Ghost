@@ -33,6 +33,7 @@
     }
   },
   "security": {
-    "staffDeviceVerification": false
+    "staffDeviceVerification": false,
+    "embedPreviewUrl": ""
   }
 }

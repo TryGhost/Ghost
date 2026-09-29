@@ -39,6 +39,7 @@ export interface EditablePostProjection {
   lexical: string | null;
   tags: ReadonlyArray<TagLike>;
   custom_excerpt: string | null;
+  email_subject: string | null;
   feature_image: string | null;
   feature_image_alt: string | null;
   feature_image_caption: string | null;
@@ -117,6 +118,7 @@ const PROJECTION_KEYS: ReadonlyArray<ProjectionKey> = [
   'lexical',
   'tags',
   'custom_excerpt',
+  'email_subject',
   'feature_image',
   'feature_image_alt',
   'feature_image_caption',

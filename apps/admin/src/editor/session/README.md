@@ -3,7 +3,7 @@
 `apps/admin/src/editor/session/` composes the three modules described in
 [the engine README](../engine/README.md) — the save engine, the change tracker
 and the slug machine — into one editing session, and is the editor's only
-writer. Every title, excerpt, body, feature-image and settings change goes
+writer. Every title, excerpt, body, feature-image, email-subject and settings change goes
 through it, and it owns everything those three modules deliberately do not:
 what a save sends and what an acknowledgement may change. The save engine owns
 pending work and scheduling.
