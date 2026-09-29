@@ -17,9 +17,11 @@ import {
   editorHelpLink,
   editorLeaveDialog,
   editorLoadError,
+  editorNewsletterDetailsButton,
   editorPreviewButton,
   editorPublishButton,
   editorPublishInputsError,
+  editorRetryNewsletterButton,
   editorSaveButton,
   editorUnpublishButton,
   editorUnscheduleButton,
@@ -162,6 +164,11 @@ export const editorScreen = {
       .getByTestId(editorConflictReloadConfirm)
       .getByRole('button', { name: conflictCancelReloadButton }),
   status: () => page.getByTestId(editorStatus),
+  /** The status line's ways back into the publish flow once a newsletter failed. */
+  retryNewsletter: () =>
+    page.getByTestId(editorStatus).getByRole('button', { name: editorRetryNewsletterButton }),
+  viewNewsletterDetails: () =>
+    page.getByTestId(editorStatus).getByRole('button', { name: editorNewsletterDetailsButton }),
   pendingSaveNotice: () =>
     page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 

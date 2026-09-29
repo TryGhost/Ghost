@@ -25,7 +25,7 @@ import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
 import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
 
-type OpenFlow = 'none' | 'publish' | 'update';
+export type OpenFlow = 'none' | 'publish' | 'update';
 
 /** The preview's props short of Publish, which only the publish controls can supply. */
 type HeaderPreviewProps = Omit<PostPreviewModalProps, 'onPublish' | 'publishDisabled'>;
@@ -52,6 +52,9 @@ export interface EditorHeaderActionsProps {
   siteUrl: string;
   /** Unresolved TK markers in the title, excerpt, body and feature image. */
   tkCount: number;
+  /** Held by the screen, because the status line opens the publish flow too. */
+  openFlow: OpenFlow;
+  onOpenFlow: (flow: OpenFlow) => void;
 }
 
 /**
@@ -64,12 +67,13 @@ export function EditorHeaderActions({
   currentUser,
   siteUrl,
   tkCount,
+  openFlow,
+  onOpenFlow,
 }: EditorHeaderActionsProps) {
   const { isAdmin7 } = useShade();
   const { persistedId, publishTime, title } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
 
   const openPreview = useCallback(() => setPreviewOpen(true), []);
 
@@ -154,7 +158,7 @@ export function EditorHeaderActions({
           preview={preview}
           session={session}
           tkCount={tkCount}
-          onOpenFlow={setOpenFlow}
+          onOpenFlow={onOpenFlow}
           onPreview={openPreview}
         />
       )}

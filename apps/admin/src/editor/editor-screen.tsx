@@ -41,7 +41,7 @@ import {
   type PostType,
   withLiveSettings,
 } from './card-config';
-import { EditorHeaderActions } from './editor-header-actions';
+import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
@@ -158,6 +158,9 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
+  const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
+  const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
+  const isContributor = !!currentUser && isContributorUser(currentUser);
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
@@ -275,14 +278,17 @@ function EditorContent({
               isDirty={session.isDirty()}
               record={statusRecordOf(session.loadedRecord ?? record, createdId)}
               state={session.state}
+              onOpenPublishFlow={isContributor ? undefined : openPublishFlow}
             />
             <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
               <EditorHeaderActions
                 currentUser={currentUser}
+                openFlow={openFlow}
                 postType={postType}
                 session={session}
                 siteUrl={cardConfig.siteUrl}
                 tkCount={tkCount}
+                onOpenFlow={setOpenFlow}
               />
               <Box
                 aria-hidden="true"

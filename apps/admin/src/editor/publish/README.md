@@ -152,6 +152,12 @@ It is self-contained: the caller supplies the post projection, the site and user
 
 The stateful journey is keyed by post id. If a mounted caller replaces the post, the gates, options machine, limits readiness, failures and completion state all start again for the new post.
 
+## Opening the flow
+
+The editor opens the flow from two places. A draft opens it from the header's Publish button, its keyboard shortcut, or the preview's Publish. A published or sent post whose newsletter failed opens it from the status line — "View details" on a published post, "Retry now" on an email-only send — and the flow starts at its email-failure step, where the send is retried. The opener does nothing to choose that step: the flow starts there for any published or sent post whose email failed.
+
+Every opener is unavailable until `usePublishInputs()` reports the inputs ready, because the machine is built from them once, and every opener is offered only to the roles that get the header's publish controls, which Contributors do not. A retry invalidates the editor's post reads, so once the post is read back the status line describes the send the retry started.
+
 ## Steps
 
 The flow is a four-way branch, taken in this order:
