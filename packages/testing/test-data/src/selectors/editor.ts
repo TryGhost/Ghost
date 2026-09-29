@@ -146,6 +146,7 @@ export const mobilePreviewToggle = 'Mobile';
 export const previewAsSelectLabel = 'Preview as';
 export const previewTierSelectLabel = 'Tier';
 export const previewNewsletterSelectLabel = 'Newsletter';
+export const sharePreviewButton = 'Share';
 export const copyPreviewLinkButton = 'Copy preview link';
 export const openPreviewInNewTabLink = 'Open in new tab';
 export const closePreviewButton = 'Close';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, onTestFinished, vi } from 'vitest';
 import { page } from 'vitest/browser';
 
 import {
@@ -173,14 +173,15 @@ describe('Post preview modal', () => {
 
     await expect.element(previewScreen.modal()).toBeVisible();
     await expect.poll(() => onBeforeOpen.mock.calls.length).toBe(1);
-    await expect.element(previewScreen.copyLinkButton()).toBeDisabled();
+    await expect.element(previewScreen.shareButton()).toBeDisabled();
     await expect(previewScreen.openInNewTabLink()).toHaveCount(0);
     expect(frames.stop()).toEqual([]);
 
     releaseSave();
 
     await expect.element(previewScreen.browserFrame()).toBeVisible();
-    await expect.element(previewScreen.copyLinkButton()).toBeEnabled();
+    await expect.element(previewScreen.shareButton()).toBeEnabled();
+    await previewScreen.shareButton().click();
     await expect.element(previewScreen.openInNewTabLink()).toBeVisible();
   });
 
@@ -217,7 +218,7 @@ describe('Post preview modal', () => {
 
     await expect.element(previewScreen.saveFailed()).toBeVisible();
     await expect(previewScreen.browserFrame()).toHaveCount(0);
-    await expect.element(previewScreen.copyLinkButton()).toBeDisabled();
+    await expect.element(previewScreen.shareButton()).toBeDisabled();
     await expect(previewScreen.openInNewTabLink()).toHaveCount(0);
     expect(onBeforeOpen).toHaveBeenCalledTimes(1);
 
@@ -284,7 +285,114 @@ describe('Post preview modal', () => {
     await expect(previewScreen.option('Specific tier')).toHaveCount(0);
   });
 
-  it('switches the frame to a mobile viewport', async () => {
+  it('centers the view controls and fills the desktop viewport without gutters', async () => {
+    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
+    await page.viewport(1440, 900);
+    fakePreviewWorld();
+    await renderPreviewModal();
+    await expect.element(previewScreen.browserFrame()).toBeVisible();
+
+    const modal = previewScreen.modal().element().getBoundingClientRect();
+    const frame = previewScreen.browserFrame().element().getBoundingClientRect();
+    const controls = previewScreen.segmentSelect().element().parentElement!.getBoundingClientRect();
+    const title = page
+      .getByRole('heading', { name: 'Preview', exact: true })
+      .element()
+      .getBoundingClientRect();
+    const close = previewScreen.closeButton().element().getBoundingClientRect();
+    expect((controls.top + controls.bottom) / 2).toBeCloseTo((title.top + title.bottom) / 2, 0);
+    expect((controls.top + controls.bottom) / 2).toBeCloseTo((close.top + close.bottom) / 2, 0);
+    expect(frame.left).toBeCloseTo(modal.left, 0);
+    expect(frame.right).toBeCloseTo(modal.right, 0);
+    expect(frame.bottom).toBeCloseTo(modal.bottom, 0);
+    expect((controls.left + controls.right) / 2).toBeCloseTo((modal.left + modal.right) / 2, 0);
+  });
+
+  it('wraps the view controls without overflowing a narrow screen', async () => {
+    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
+    await page.viewport(390, 844);
+    fakePreviewWorld({ tiers: [tier({ name: 'Gold', slug: 'gold' })] });
+    await renderPreviewModal();
+    await previewScreen.previewAs('Specific tier');
+    await expect.element(previewScreen.tierSelect()).toBeVisible();
+
+    const modal = previewScreen.modal().element();
+    expect(modal.scrollWidth).toBeLessThanOrEqual(modal.clientWidth);
+    const controls = previewScreen.segmentSelect().element().parentElement!.getBoundingClientRect();
+    expect(controls.top).toBeGreaterThan(
+      previewScreen.closeButton().element().getBoundingClientRect().bottom,
+    );
+    for (const control of [
+      previewScreen.tierSelect(),
+      previewScreen.closeButton(),
+      previewScreen.mobileToggle(),
+    ]) {
+      const bounds = control.element().getBoundingClientRect();
+      expect(bounds.left).toBeGreaterThanOrEqual(0);
+      expect(bounds.right).toBeLessThanOrEqual(390);
+    }
+  });
+
+  it('limits desktop emails to 720px on a muted canvas', async () => {
+    fakePreviewWorld();
+    fakeEmailPreview();
+    await renderPreviewModal();
+    await previewScreen.emailTab().click();
+    await expect.element(previewScreen.emailFrame()).toBeVisible();
+
+    const email = previewScreen.emailChrome().element();
+    expect(email.getBoundingClientRect().width).toBe(720);
+    expect(getComputedStyle(email.parentElement!).backgroundColor).not.toBe(
+      getComputedStyle(previewScreen.modal().element()).backgroundColor,
+    );
+  });
+
+  it('keeps long newsletter names clear of the test button on narrow screens', async () => {
+    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
+    await page.viewport(390, 844);
+    fakePreviewWorld({
+      newsletters: [
+        newsletter({
+          name: 'Weekly roundup',
+          slug: 'weekly-roundup',
+          sender_email: 'zimo@ghost.org',
+        }),
+        newsletter({ name: 'Monthly roundup', slug: 'monthly-roundup' }),
+      ],
+    });
+    fakeEmailPreview();
+    await renderPreviewModal();
+    await previewScreen.emailTab().click();
+    await expect.element(previewScreen.emailFrame()).toBeVisible();
+    await expect
+      .element(previewScreen.newsletterSelect())
+      .toHaveTextContent('Weekly roundup <zimo@ghost.org>');
+
+    const trigger = previewScreen.newsletterSelect().element();
+    const label = trigger.querySelector('span')!;
+    const testButton = previewScreen.testEmailButton().element();
+    expect(trigger.getBoundingClientRect().right).toBeLessThan(
+      testButton.getBoundingClientRect().left,
+    );
+    expect(label.getBoundingClientRect().right).toBeLessThanOrEqual(
+      trigger.getBoundingClientRect().right,
+    );
+    expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
+    expect(getComputedStyle(label).overflow).toBe('hidden');
+    expect(testButton.scrollWidth).toBeLessThanOrEqual(testButton.clientWidth);
+    expect(testButton.getBoundingClientRect().right).toBeLessThanOrEqual(390);
+
+    await previewScreen.newsletterSelect().click();
+    await expect.element(previewScreen.option('Weekly roundup <zimo@ghost.org>')).toBeVisible();
+  });
+
+  it('switches the frame to a mobile viewport without clipping its top', async () => {
+    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
+    await page.viewport(390, 844);
     fakePreviewWorld();
     await renderPreviewModal();
 
@@ -293,6 +401,16 @@ describe('Post preview modal', () => {
     await previewScreen.mobileToggle().click();
 
     await expect.element(previewScreen.browserChrome()).toHaveClass('w-[380px]');
+    const chrome = previewScreen.browserChrome().element();
+    const canvas = chrome.parentElement!;
+    expect(chrome.getBoundingClientRect().top).toBeCloseTo(
+      canvas.getBoundingClientRect().top + parseFloat(getComputedStyle(canvas).paddingTop),
+      0,
+    );
+    expect(canvas.scrollTop).toBe(0);
+    expect(chrome.getBoundingClientRect().bottom).toBeGreaterThan(
+      canvas.getBoundingClientRect().bottom,
+    );
   });
 
   it('has nothing to preview, copy or open before the post is first saved', async () => {
@@ -301,7 +419,7 @@ describe('Post preview modal', () => {
 
     await expect.element(previewScreen.unavailable()).toBeVisible();
     await expect(previewScreen.browserFrame()).toHaveCount(0);
-    await expect.element(previewScreen.copyLinkButton()).toBeDisabled();
+    await expect.element(previewScreen.shareButton()).toBeDisabled();
     await expect(previewScreen.openInNewTabLink()).toHaveCount(0);
   });
 
@@ -311,11 +429,14 @@ describe('Post preview modal', () => {
     await renderPreviewModal();
 
     await previewScreen.previewAs('Paid member');
+    await previewScreen.shareButton().click();
+    await expect.element(previewScreen.openInNewTabLink()).toHaveAttribute('target', '_blank');
     await previewScreen.copyLinkButton().click();
 
     await expect
       .poll(() => writeText.mock.calls.at(-1)?.[0])
       .toBe(`${PREVIEW_URL}?member_status=paid`);
+    await previewScreen.shareButton().click();
     await expect
       .element(previewScreen.openInNewTabLink())
       .toHaveAttribute('href', `${PREVIEW_URL}?member_status=paid`);

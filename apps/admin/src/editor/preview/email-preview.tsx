@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useEmailPreview } from '@tryghost/admin-x-framework/api/email-previews';
@@ -112,12 +112,18 @@ export function EmailPreview({
   const selectedNewsletter = newsletters.find((newsletter) => newsletter.slug === newsletterSlug);
   const senderAddress = (sender: string | null) => sender ?? defaultEmailAddress ?? '';
 
+  const Frame = device === 'mobile' ? PreviewChrome : Box;
+
   return (
-    <PreviewChrome data-testid={postPreviewEmail} device={device}>
+    <Frame
+      className={device === 'desktop' ? 'size-full max-w-[720px]' : 'max-w-full shrink-0'}
+      data-testid={postPreviewEmail}
+      {...(device === 'mobile' ? { device } : {})}
+    >
       <Stack className="size-full bg-background" gap="none">
         <Stack className="border-b border-border-default p-4" gap="md">
           <Inline gap="lg" justify="between">
-            <Inline className="min-w-0" gap="md">
+            <Inline className="min-w-0 flex-1" gap="md">
               {newsletterLookupPending ? (
                 <LoadingIndicator size="sm" />
               ) : newsletterLookupError ? (
@@ -136,7 +142,11 @@ export function EmailPreview({
                   <span className="shrink-0 text-sm text-muted-foreground">From</span>
                   {newsletters.length > 1 ? (
                     <Select value={selectedNewsletter?.slug} onValueChange={onNewsletterChange}>
-                      <SelectTrigger aria-label="Newsletter" className="w-auto">
+                      <SelectTrigger
+                        aria-label="Newsletter"
+                        className="w-auto min-w-0 [&>span]:min-w-0 [&>span]:truncate [&>svg]:shrink-0"
+                        title={`${selectedNewsletter?.name ?? ''} <${senderAddress(selectedNewsletter?.sender_email ?? null)}>`}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -224,6 +234,6 @@ export function EmailPreview({
           />
         )}
       </Stack>
-    </PreviewChrome>
+    </Frame>
   );
 }

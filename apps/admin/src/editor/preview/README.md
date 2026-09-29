@@ -15,6 +15,18 @@
 
 The modal never writes to the post. `onBeforeOpen` exists because a draft must be persisted before the site or the email renderer can see the latest content; what that means — dirty checks, a save in flight — belongs to the caller.
 
+## Layout and controls
+
+View controls are centered in the header on wide screens and wrap below the title
+and actions on narrow screens. Format and device controls use pill groups; audience
+and tier selectors use the ghost header treatment. The icon-only Share menu keeps
+copying the audience-specific preview link and opening it in a new tab together,
+and stays disabled until the post has been saved successfully.
+
+Desktop Web previews fill the space below the header without gutters or device
+chrome. Desktop Email previews are centered at a maximum width of 720px on a
+muted canvas. Mobile previews retain their phone frame in either format.
+
 ## Audience
 
 One audience drives both formats, held as a segment plus an optional tier slug and translated by `preview-url.ts`:
