@@ -86,6 +86,23 @@ describe('Email Event Storage', function () {
     });
   }
 
+  for (const batched of [false, true]) {
+    it(`stores no failed_at when saving a permanent failure fails with batching ${batched}`, async function () {
+      const db = createDb();
+      db.update.resolves(1);
+      const raw = sinon.stub(db.knex, 'raw').resolves([{ affectedRows: 1 }]);
+      const storage = createEventStorage({ db, config: { get: () => batched } });
+      sinon.stub(storage, 'saveFailure').rejects(new Error('failure not saved'));
+      const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
+
+      await assert.rejects(storage.handlePermanentFailed(event), /failure not saved/);
+      await storage.flushBatchedUpdates();
+
+      sinon.assert.notCalled(db.update);
+      sinon.assert.notCalled(raw);
+    });
+  }
+
   it('flushes SQLite batches, counts only new timestamps, and clears pending updates', async function () {
     const knex = createKnex({
       client: 'better-sqlite3',

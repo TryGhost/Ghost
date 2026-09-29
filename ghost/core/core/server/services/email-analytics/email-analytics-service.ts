@@ -109,7 +109,7 @@ export class EmailAnalyticsService {
   #fetchLatestOpenedData: FetchData;
   #fetchScheduledData: FetchDataScheduled;
 
-  /** Ids a job's failed run could not aggregate, handed to its next run. */
+  /** Ids from a job's run whose final aggregation failed, retried by its next run. */
   #unaggregated = new WeakMap<FetchData, EventProcessingResult>();
 
   constructor({
@@ -507,7 +507,8 @@ export class EmailAnalyticsService {
       const start = Date.now();
       const timings = await eventProcessor.aggregate({
         includeOpenedEvents,
-        // A failed batch may have stored events before returning their counts or ids
+        // A failed batch may have stored events before returning its counts, and
+        // retried ids must be aggregated even though their events are already stored
         skipUnchanged: skipUnchanged && !error && !unaggregated,
         processingResult,
         isFinal,
@@ -623,14 +624,7 @@ export class EmailAnalyticsService {
       logging.error('[EmailAnalytics] Error while aggregating stats');
       logging.error(err);
 
-      if (!error) {
-        error = err;
-      }
-    }
-
-    if (error) {
-      // Events this run stored look unchanged when replayed, so the next run must not skip
-      // aggregation and also retries any ids this run could not aggregate
+      // Replays of these events store nothing new, so no later run would aggregate them
       this.#unaggregated.set(
         fetchData,
         new EventProcessingResult({
@@ -638,6 +632,10 @@ export class EmailAnalyticsService {
           memberIds: processingResult.memberIds,
         }),
       );
+
+      if (!error) {
+        error = err;
+      }
     }
 
     // When we've consumed all available events (eventCount < maxEvents), advance the cursor by 1 second
