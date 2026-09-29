@@ -81,6 +81,7 @@ const SelectTrigger = React.forwardRef<
           inputSurface('self'),
           inputSurfaceClasses.disabledFieldSelf,
           selectTriggerVariants({ shape: resolvedShape, variant, isAdmin7 }),
+          showChevron && 'pr-2',
           className,
         )}
         data-control-shape={resolvedShape}
