@@ -14,7 +14,6 @@ import {
   TableBody,
   TableCell,
   TableRow,
-  Indicator,
   Tabs,
   TabsContent,
   TabsList,
@@ -30,6 +29,11 @@ import {
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import type { AutomationRun, ExitReason } from '@/automations/proto/shared/mock';
 import type { LeftPanelProps } from '@/automations/proto/shared/left-panel-types';
+import {
+  CompletedGlyph,
+  ExitedGlyph,
+  InProgressGlyph,
+} from '@/automations/proto/shared/run-glyphs';
 import { SettingsPanel, type SettingsPanelProps } from './settings-panel';
 
 // The shared contract plus what only this lane's pane needs — settings live here,
@@ -54,7 +58,7 @@ import { toAreaData } from '@/automations/proto/shared/chart';
 // - All time by default. Coming in pre-filtered to 30 days meant the totals here
 //   silently disagreed with the automations list, which is the first thing anyone
 //   checks. The timeframe is still there, it just isn't applied for you.
-// - Three statuses instead of four. "Exited" absorbs every early ending —
+// - Three statuses instead of four. "Exited early" absorbs every early ending —
 //   unsubscribed, upgraded, failed — because from the flow's point of view they
 //   are one outcome: the member stopped before the end. Why they left is a
 //   property of that member, not a column in this table. The three match the
@@ -65,113 +69,41 @@ import { toAreaData } from '@/automations/proto/shared/chart';
 
 const CHART_HEIGHT = 'h-44';
 
-type StatusKey = 'Active' | 'Done' | 'Exited';
+type StatusKey = 'In progress' | 'Completed' | 'Exited early';
 
 const statusOf = (run: AutomationRun): StatusKey => {
   if (run.status === 'in_progress') {
-    return 'Active';
+    return 'In progress';
   }
-  return run.status === 'completed' ? 'Done' : 'Exited';
+  return run.status === 'completed' ? 'Completed' : 'Exited early';
 };
 
-// Each status carries one mark, used identically by the count cards, the collapsed
-// chips and the table's Status column, so the three always read as the same thing.
+// Each status carries one mark, used identically by the count cards, the filter
+// menu and the table's Status column, so the three always read as the same thing.
 //
-// EXPLORATION 2 draws them with Shade's Indicator rather than the hand-drawn glyphs
-// in shared/run-glyphs, which the other lanes keep. Three dots that differ by colour
-// and by STATE read as one scale with three positions on it; three different icons
-// read as three unrelated things you have to learn separately. It's also a component
-// the design system already owns, so the states come with their semantics attached:
-//
-//   Active  info + active     — blue, pulsing. The pulse is the point: this is
-//                                     the only status that is still happening, and it's
-//                                     the only one that moves. Blue rather than the
-//                                     green this started as, because green reads as
-//                                     "went well" — a verdict on a run that hasn't
-//                                     finished, and one the row next to it (Done)
-//                                     has a better claim to.
-//   Done    neutral + idle    — pale grey, filled. A run reaching the end is the
-//                                     expected outcome and the one nobody needs to act
-//                                     on, so it gets the quietest mark on the scale.
-//
-// Filled and hollow do real work across the set: filled means the run went to plan —
-// still going, or finished — and hollow means it stopped short. Colour then says which
-// kind. Two questions on two channels, so the four marks fall out of the pair rather
-// than having to be learned one at a time.
-//
-// COLOUR IS NEVER THE ONLY CHANNEL, which matters most for the two that appear on
-// nearly every row. Active and Done are told apart by lightness (see the
-// note on Done's shade) and by the pulse, which no colour vision affects; the
-// two early endings are told apart from those by being hollow. And the cell carries
-// the status name for screen readers either way.
-//   Exited warning + inactive — yellow, outline. Hollow because something is
-//                                     missing: the member left before the end. Not
-//                                     red — an early exit is normal and often the
-//                                     member's own doing, not a fault.
-//
-// Colour now lives inside the Indicator's variant, so there's no separate `color`
-// class to keep in step with the mark — the pairing can't drift.
-const STATUS_FACETS: { key: StatusKey; mark: React.ReactNode }[] = [
-  { key: 'Active', mark: <Indicator state="active" variant="info" /> },
-  {
-    key: 'Done',
-    // gray-400, over the neutral variant's own bg-muted (gray-100, which vanished).
-    //
-    // The shade is chosen against the BLUE, not against the background. Active is
-    // --state-info, blue-500, at oklch L 74%. gray-500 is L 77.5% — three points apart,
-    // which is no distance at all once hue is gone, so to a colourblind reader the two
-    // commonest marks in the column were the same dot. gray-400 is L 87%: thirteen
-    // points lighter, and separable in greyscale. It holds in dark too, where the blue
-    // steps to blue-400 (L 78%).
-    //
-    // Lighter is also just right for what it means. Nobody needs to act on a run that
-    // finished, and these are the bulk of the rows.
-    mark: <Indicator className="bg-gray-400" state="idle" variant="neutral" />,
-  },
-  { key: 'Exited', mark: <Indicator state="inactive" variant="warning" /> },
+// The hand-drawn glyphs from shared/run-glyphs, the same ones Phase 1 uses — this
+// lane briefly drew them with Shade's Indicator dots instead, and is back on the
+// shared set so the two concepts can be compared on layout alone. The glyph is
+// also what the canvas prints on a member's step, so the mark beside a name here
+// is the mark on the step they're waiting at.
+const STATUS_FACETS: { key: StatusKey; color: string; glyph: React.ReactNode }[] = [
+  { key: 'In progress', color: 'text-blue-600 dark:text-blue', glyph: <InProgressGlyph /> },
+  { key: 'Completed', color: 'text-green-600 dark:text-green', glyph: <CompletedGlyph /> },
+  { key: 'Exited early', color: 'text-muted-foreground', glyph: <ExitedGlyph /> },
 ];
 
-// Failed is a fourth MARK but not a fourth status. It's a reason for exiting early,
-// so it isn't counted or filtered on its own — a failed run is inside the Exited
-// early card and answers that chip. What it gets is its own dot and its own word in
-// the table, because that's the one place a row has to explain itself.
-//
-// This replaces a red pip in the corner of the Exited dot. The pip was trying
-// to say "and also failed" without claiming a fourth state, and what it actually
-// said was nothing legible at 4px — a smudge you had to hover to decode. A row that
-// reads "Failed" needs no decoding, and the status it belongs to is one press away
-// on the chips above.
-//
-// Red, and hollow like Exited, because it IS an early exit — the outline is
-// the shared shape, the colour is what separates a fault from a choice.
-const FAILED_MARK = <Indicator state="inactive" variant="error" />;
+const facetColor = (status: StatusKey): string =>
+  STATUS_FACETS.find((facet) => facet.key === status)?.color ?? '';
+const facetGlyph = (status: StatusKey): React.ReactNode =>
+  STATUS_FACETS.find((facet) => facet.key === status)?.glyph ?? null;
 
-// The status as it appears in the table: the dot, and nothing else.
-//
-// It has been a tinted pill and then a dot beside its word, both in a column at the
-// far right. Both put the status where you had to cross the whole row to reach it,
-// and the pill version turned the list into a stack of coloured blocks with the
-// member's name — the thing you're actually scanning — coming second to them.
-//
-// Leading the row instead, as a bare mark: it's the first thing on the line and the
-// last thing you have to read, because at a glance the colour alone sorts the rows
-// into kinds. The word is redundant three times over — the count cards above name
-// each state, the filter chips repeat them, and the marks are only four.
-//
-// The same dot those cards and chips print beside their own labels, which is what
-// makes reading it wordless possible: you learn the vocabulary up there and spend it
-// down here.
-const StatusMark: React.FC<{ run: AutomationRun; status: StatusKey }> = ({ run, status }) => {
-  const failed = runFailed(run);
-  return (
-    <>
-      {failed ? FAILED_MARK : STATUS_FACETS.find((item) => item.key === status)?.mark}
-      {/* The mark is the cell's only content, so the name goes in for anyone colour
-              and shape don't reach — and for the rest, the title on the cell. */}
-      <span className="sr-only">{failed ? exitReasonLabel('failed') : status}</span>
-    </>
-  );
-};
+// A run that ended on a system fault keeps the Exited early glyph and takes a red dot in
+// its corner — failure is a reason for exiting, not a fourth status. A corner badge
+// rather than a dot beside the glyph, so every row's icon stays on the same centre
+// line. Phase 1's mark, carried over with the glyphs.
+const FailureDot: React.FC = () => (
+  <span className="absolute -top-1 -right-1 size-1.5 rounded-full bg-state-danger" />
+);
 
 // The exit-reason filter was hidden here for a while, because none of the places it
 // could go was right: in the search field's trailing slot it competed with search for
@@ -240,7 +172,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   // Why someone left, filtered separately from the status. Deliberately not a
   // fourth status card: the three statuses are mutually exclusive outcomes, and
   // a failure is a REASON for exiting rather than a different kind of exit.
-  // Selecting one implies Exited, so it doesn't need the card as well.
+  // Selecting one implies Exited early, so it doesn't need the card as well.
   const [exitFilter, setExitFilter] = useState<ExitReason | null>(null);
   // The summary (Total entries + chart) answers "how many are entering, over
   // time", and only the timeframe changes that. Searching or filtering by exit
@@ -371,12 +303,12 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
           </DropdownMenuItem>
         ))}
         {/* The reasons run straight on from the statuses, in one list. They were a
-                    section of their own under "Exited, because", which was accurate and
+                    section of their own under "Exited early, because", which was accurate and
                     read as a second question — you had to notice a heading to understand that
                     picking from it also set the status above.
                     
                     As one list it's what it always was: what happened to this run, in
-                    descending specificity. "Exited" is the general answer and each
+                    descending specificity. "Exited early" is the general answer and each
                     reason is a more particular one, so choosing a reason sets the status with
                     it and the list never offers a combination with no runs in it. */}
         {EXIT_REASONS.map((reason) => (
@@ -384,7 +316,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
             key={reason.id}
             onSelect={() => {
               const on = exitFilter === reason.id;
-              setStatusFilter(on ? null : 'Exited');
+              setStatusFilter(on ? null : 'Exited early');
               setExitFilter(on ? null : reason.id);
             }}
           >
@@ -491,12 +423,11 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                   <button
                     key={facet.key}
                     aria-pressed={active}
-                    className={cn(
-                      'rounded-lg border px-4 py-3 text-left transition-colors',
-                      active
-                        ? 'border-foreground bg-muted-foreground/10'
-                        : 'border-border-default hover:bg-interactive-hover',
-                    )}
+                    // No pressed look — the filter chip that appears below the
+                    // Members heading already says the list is narrowed, and says
+                    // it where the list is. aria-pressed stays for screen readers,
+                    // which don't get the chip's position as a cue.
+                    className="rounded-lg border border-border-default px-4 py-3 text-left transition-colors hover:bg-interactive-hover"
                     type="button"
                     // Filters the list below to that status — pressing one asks
                     // "who are they?" — and pressing it again clears it.
@@ -507,7 +438,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                   >
                     <Stack gap="sm">
                       <KpiCardHeaderLabel>
-                        {facet.mark}
+                        <span className={facet.color}>{facet.glyph}</span>
                         {facet.key}
                       </KpiCardHeaderLabel>
                       <KpiCardHeaderValue value={formatNumber(counts[facet.key] ?? 0)} />
@@ -643,41 +574,39 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                       // Toggle: clicking the selected row again de-selects it.
                       onClick={() => onSelectMember(isSelected ? null : run.id)}
                     >
-                      {/* w-10 and no horizontal padding: the dot centres in a column
-                                  just wide enough to hold it, so the member names still start
-                                  near the pane's own gutter rather than indented behind a
-                                  column of mostly air. */}
-                      <TableCell
-                        className="w-10 px-0 py-4 text-center align-middle group-hover:bg-transparent"
-                        title={runFailed(run) ? `${status} — ${exitReasonLabel('failed')}` : status}
-                      >
-                        <StatusMark run={run} status={status} />
-                      </TableCell>
-                      <TableCell className="min-w-0 py-4 pr-4 pl-0 group-hover:bg-transparent">
+                      {/* Phase 1's row: member, entered, status — the glyph at the
+                                  right in its own centred column, the date at full strength. */}
+                      <TableCell className="min-w-0 p-4 group-hover:bg-transparent">
                         <span
                           className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}
                         >
                           {run.member.name}
                         </span>
                       </TableCell>
-                      {/* The bare relative time — "3 days ago", "Yesterday". It briefly
-                                  read "Entered 3 days ago", which said the same word down every
-                                  row to answer a question asked once.
-
-                                  Unlabelled works because there is exactly one date per row and
-                                  one event a row can represent: a run is a member entering. A
-                                  trailing muted timestamp is also the convention for activity
-                                  lists everywhere, so it reads as "when this happened" without
-                                  being told.
-
-                                  Muted: this is the row's least important fact — you read the
-                                  name, then the dot, and the date only if you're already
-                                  interested — so it recedes rather than lining up at full
-                                  strength beside the name. */}
                       <TableCell className="w-28 p-4 align-middle group-hover:bg-transparent">
-                        <span className="block truncate text-base text-muted-foreground">
+                        <span className="block truncate text-base">
                           {startedLabel(run.enrolled_at)}
                         </span>
+                      </TableCell>
+                      <TableCell className="w-20 p-4 text-center align-middle group-hover:bg-transparent">
+                        {/* Icon only — the cards above name each state. The title is
+                                    the one place the exit reason surfaces in the table, and
+                                    only for failures, where the dot has raised a question the
+                                    row otherwise can't answer. */}
+                        <div
+                          className={cn('flex justify-center', facetColor(status))}
+                          title={
+                            runFailed(run) ? `${status} — ${exitReasonLabel('failed')}` : status
+                          }
+                        >
+                          <span className="relative flex">
+                            {facetGlyph(status)}
+                            {runFailed(run) && <FailureDot />}
+                          </span>
+                          <span className="sr-only">
+                            {runFailed(run) ? exitReasonLabel('failed') : status}
+                          </span>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
   Button,
   EmptyIndicator,
+  Indicator,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { useShade } from '@tryghost/shade/app';
@@ -34,11 +35,10 @@ import { LeftPanel } from './left-panel';
 import type { TriggerConfig } from '@/automations/proto/shared/trigger-config';
 import { CANVAS_SLOT_FILL, canvasTheme } from '@/automations/proto/canvas/flow-utils';
 import { EditCanvas } from './canvas/edit-canvas';
-import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
+import { RunCanvas } from './canvas/run-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
-import { StatusBadge } from '@/automations/proto/shared/status-badge';
 
 // EXPLORATION — not scheduled. See shared/lanes for why each lane owns its own
 // copy of this screen.
@@ -57,8 +57,6 @@ const LANE = 'exploration-2' as const;
 // moves only the lifecycle buttons, which keep clear of it. Both run on the
 // one curve in `chrome`.
 //
-// The member-run pill's material: 4px around 36px controls, rounded-lg.
-const HUD_PILL = 'flex items-center rounded-lg bg-surface-elevated p-1 shadow-sm';
 
 type LiveStatus = 'active' | 'inactive';
 
@@ -313,8 +311,8 @@ const AutomationFloat: React.FC = () => {
   // Editing is never gated on stopping the automation — you can edit a live one
   // freely; publishing is where the consequences get decided. There's no edit
   // mode: the canvas is editable unless a member's run is in focus, which is the
-  // one thing that genuinely wants a read-only view. The crossfade between the
-  // two canvases is what handles that.
+  // one thing that genuinely wants a read-only view. Swapping between the two
+  // canvases is what handles that.
   const showEditCanvas = !selectedRun;
   // Nothing can go live without something to start it. This is the only gate the
   // create flow adds: an automation with no trigger isn't half-configured, it's
@@ -462,6 +460,19 @@ const AutomationFloat: React.FC = () => {
   // gesture.
   const chrome = `duration-300 ${PROTO_EASE} motion-reduce:transition-none`;
 
+  // The top-left cards — the name, and the status beside it — built like the
+  // buttons around them: their height, Shade's ghost-button padding (12px under
+  // Admin 7, 10px otherwise), 13px type and Shade's control shape (pill under
+  // Admin 7, rounded otherwise), on the same floating surface. So floating, the
+  // pieces read as one family.
+  const headerCard = cn(
+    'flex h-8 min-w-0 items-center gap-2',
+    isAdmin7 ? 'px-3' : 'px-2.5',
+    controlShape === 'pill' ? 'rounded-full' : 'rounded-control',
+    HEADER_ACTION,
+    floatingControl(true),
+  );
+
   return (
     // One column: the header row, then the canvas-and-rail row under it.
     <div
@@ -498,7 +509,7 @@ const AutomationFloat: React.FC = () => {
               // edge colour from here by inheritance, so the two releases can look
               // completely different without either canvas knowing which one it is.
               CANVAS_SLOT_FILL,
-              canvasTheme('exploration', Boolean(selectedRun)),
+              canvasTheme('exploration-2', Boolean(selectedRun)),
               // Flush in both states — no inset, no radius. The header band above
               // (see the root) is what bounds it while the pane is open, and the
               // pane's edge is the canvas's edge; maximising only takes the header
@@ -510,74 +521,50 @@ const AutomationFloat: React.FC = () => {
                       they were at opposite ends of the header and should stay at opposite ends
                       of the screen; sliding them together would be a different layout, not a
                       hidden one. */}
-            {/* Both canvases stay mounted and crossfade on mode change. No remount
-                      means the incoming flow is already centred — no first-frame node flash.
-                      The inactive one is opacity-0 + pointer-events-none so clicks fall to
-                      the active canvas beneath/above it. */}
+            {/* Both canvases stay mounted and swap instantly on mode change — no
+                      dissolve, the switch is a cut. No remount means the incoming flow is
+                      already centred — no first-frame node flash.
+                      The inactive one is opacity-0 and INERT, so clicks and focus fall to
+                      the active canvas. pointer-events-none alone wasn't enough: React Flow
+                      sets pointer-events: all on interactive nodes, which overrides an
+                      ancestor's none — the hidden edit canvas's nodes and + buttons kept
+                      catching clicks through the run canvas (whose own nodes are
+                      pointer-events: none, being unselectable). inert has no such hole.
+                      Spread because React 18's types don't know the attribute yet. */}
             <div
               className={cn(
-                'absolute inset-0 transition-opacity duration-150',
+                'absolute inset-0',
                 showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100',
               )}
+              {...{ inert: showEditCanvas ? '' : undefined }}
             >
-              <FlowCanvas
+              {/* This lane's own run canvas — the edit canvas's light nodes, read
+                  as a member's run. The shared FlowCanvas stays with the other lanes. */}
+              <RunCanvas
                 automation={publishedFlow}
+                rightInset={paneCollapsed ? 0 : 480}
                 selectedRun={selectedRun}
                 triggerConfig={savedTrigger ?? undefined}
               />
             </div>
-            {/* The one thing that still floats over this canvas. Everything else that
-                used to live up here moved into the persistent header — this can't,
-                because it isn't about the automation, it's about the run you happen to
-                have open, and it comes and goes while the header stays put.
-
-                top-6 left-6 is the same 24px inset the header's own padding uses, so it
-                sits on the header's left edge rather than near it.
-
-                Who you're looking at, and the way out, as one control: clicking the
-                member's name closes their run. This replaced a bare X, which said
-                nothing about whose run it was — you could see you were inside something
-                without being told what, and the only thing naming the member was a
-                highlighted row in a pane you might have collapsed. The close icon leads,
-                because what the control DOES should be read before whose name it carries.
-
-                aria-label rather than the bare name, since "Marcus Chen" doesn't say what
-                pressing it does; it contains the visible text, so the label-in-name rule
-                still holds. */}
-            {/* The member whose run is open, under the top-left controls. */}
-            {selectedRun && !showEditCanvas && (
-              <div className="absolute top-[68px] left-5 z-20">
-                <div className={HUD_PILL}>
-                  <Button
-                    aria-label={`Close ${selectedRun.member.name}'s run`}
-                    className="h-9"
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setSelectedMemberId(null)}
-                  >
-                    <LucideIcon.X strokeWidth={2} />
-                    {selectedRun.member.name}
-                  </Button>
-                </div>
-              </div>
-            )}
 
             <div
               className={cn(
-                'absolute inset-0 transition-opacity duration-150',
+                'absolute inset-0',
                 showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0',
               )}
+              {...{ inert: showEditCanvas ? undefined : '' }}
             >
               {/* The same email card as every other lane. This lane used to opt
                   into an inline-analytics variant (stats as a bar on the card);
                   that concept was deleted when the card was consolidated — the
                   right-hand sheet is how analytics open everywhere. */}
-              {/* The pane card covers the canvas's right 420px while it's open —
+              {/* The pane card covers the canvas's right 480px while it's open —
                   the flow centres in what's left, and pans across as it slides. */}
               <EditCanvas
                 draft={draftFlow}
                 lane={LANE}
-                rightInset={paneCollapsed ? 0 : 420}
+                rightInset={paneCollapsed ? 0 : 480}
                 triggerConfig={triggerConfig}
                 onChange={handleDraftChange}
                 onTriggerConfigChange={handleTriggerConfigChange}
@@ -601,7 +588,7 @@ const AutomationFloat: React.FC = () => {
             // never re-lays or re-centres for the pane; the pane slides in on top
             // of it from the right, and back out. Transparent itself — the card
             // inside carries the surface, so the canvas shows in the 8px around it.
-            'absolute inset-y-0 right-0 z-30 flex w-[420px] flex-col transition-transform',
+            'absolute inset-y-0 right-0 z-30 flex w-[480px] flex-col transition-transform',
             chrome,
             paneCollapsed ? 'pointer-events-none translate-x-full' : 'translate-x-0',
           )}
@@ -610,7 +597,7 @@ const AutomationFloat: React.FC = () => {
               page around it, rounded, ruled. Its first row is its own header —
               the tabs — level with the header's buttons, with the sidebar toggle
               (pinned to the screen's corner, see below) at its right end. */}
-          <div className="flex min-h-0 w-[420px] flex-1 flex-col p-2">
+          <div className="flex min-h-0 w-[480px] flex-1 flex-col p-2">
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-default bg-background shadow-sm">
               <LeftPanel
                 query={query}
@@ -698,7 +685,7 @@ const AutomationFloat: React.FC = () => {
           button, the name and status as a small card built like one. 20px down,
           24px in. */}
       <div className="pointer-events-none absolute top-0 left-0 z-40 flex max-w-[50%] px-6 py-5">
-        <Inline align="center" className="pointer-events-auto min-w-0" gap="md">
+        <Inline align="center" className="pointer-events-auto min-w-0" gap="sm">
           <Button
             aria-label="Back to automations"
             className={cn(HEADER_ACTION, HEADER_ICON_BUTTON, floatingControl(true))}
@@ -709,29 +696,22 @@ const AutomationFloat: React.FC = () => {
           >
             <LucideIcon.ArrowLeft strokeWidth={2} />
           </Button>
-          {/* The name's card is built like the buttons beside it — their height,
-              padding, type (13px medium) and corner shape — so floating, the
-              pieces read as one family. The shape follows Shade's control shape
-              (pill under Admin 7, rounded otherwise), the same setting the
-              buttons read. The padding is there docked too — it's only the
-              surface that comes and goes. */}
-          <span
-            className={cn(
-              // Shade's ghost-button padding, which is what this card sits beside:
-              // 12px under Admin 7, 10px (the default size's px-2.5) otherwise.
-              'flex h-8 min-w-0 items-center gap-2',
-              isAdmin7 ? 'px-3' : 'px-2.5',
-              controlShape === 'pill' ? 'rounded-full' : 'rounded-control',
-              HEADER_ACTION,
-              floatingControl(true),
-            )}
-          >
+          {/* The name, in a card built like the buttons beside it — see headerCard. */}
+          <span className={headerCard}>
             <span className="min-w-0 truncate text-control font-medium">{automation.name}</span>
-            {/* On / Off beside the name — the same badge the other lanes'
-                headers and the list use. shrink-0 so a long name truncates
-                before the status does. */}
-            <span className="flex shrink-0">
-              <StatusBadge status={liveStatus} />
+          </span>
+          {/* The status, calmed down to how the post editor does it: plain muted
+              text — "Live" or "Off" — rather than the list's coloured, uppercase
+              badge, in its own card beside the name, in review as well as while
+              building. shrink-0 so a long name truncates before the status does.
+              Live leads with the list badge's pulsing dot (green-600 in light for
+              contrast, see StatusBadge); Off has no dot, the muted word is enough. */}
+          <span className={cn(headerCard, 'shrink-0')}>
+            {liveStatus === 'active' && (
+              <Indicator className="bg-green-600 dark:bg-green" state="active" variant="success" />
+            )}
+            <span className="text-control text-muted-foreground">
+              {liveStatus === 'active' ? 'Live' : 'Off'}
             </span>
           </span>
         </Inline>
@@ -740,25 +720,52 @@ const AutomationFloat: React.FC = () => {
       {/* The automation's actions, floating top-right — the post editor's
           Preview / Publish. They belong to the canvas, not the pane, so they
           keep clear of the pane card: with it open they stop 24px short of it
-          (its left edge is 412px from the right — the pane's 420 less its 8px
+          (its left edge is 472px from the right — the pane's 480 less its 8px
           inset), and as it slides away they slide right with it, on the same
-          curve, to sit 12px from the sidebar toggle. Only the toggle holds
+          curve, to sit 8px from the sidebar toggle — the same gap-2 as between the header controls. Only the toggle holds
           still. */}
+      {/* The top-right cluster, in the actions' place and on their curve.
+
+          Building, it's the lifecycle actions. Reviewing a member's run, it's
+          the run's own control instead: Save and Update act on the draft — the
+          edit canvas, hidden in review — so publishing from here would ship
+          changes you can't see, and on/off goes with them for now. The draft is
+          untouched; close the run and they're back.
+
+          The member chip is the primary button here, the one filled control on
+          screen while you review: the way back to building is the thing to do
+          next. Who you're looking at, and the way out, as one control; the
+          aria-label says what pressing it does and contains the visible name. */}
       <div
         className={cn(
           'pointer-events-none absolute top-5 z-40 flex transition-[right]',
           chrome,
-          paneCollapsed ? 'right-[68px]' : 'right-[436px]',
+          paneCollapsed ? 'right-[64px]' : 'right-[496px]',
+          // Caps a long member name in review; the actions never need it.
+          selectedRun && 'max-w-[40%]',
         )}
       >
-        <Inline align="center" className="pointer-events-auto" gap="md">
-          <HeaderActions
-            canGoLive={canGoLive}
-            commit={chromeActions}
-            status={liveStatus}
-            floating
-            onStatusChange={handleStatusToggle}
-          />
+        <Inline align="center" className="pointer-events-auto min-w-0" gap="sm">
+          {selectedRun ? (
+            <Button
+              aria-label={`Close ${selectedRun.member.name}'s run`}
+              className={cn('min-w-0 shrink', HEADER_ACTION)}
+              type="button"
+              onClick={() => setSelectedMemberId(null)}
+            >
+              <span className="min-w-0 truncate">{selectedRun.member.name}</span>
+              {/* Trailing X, always — the chip is the way out, and says so. */}
+              <LucideIcon.X strokeWidth={2} />
+            </Button>
+          ) : (
+            <HeaderActions
+              canGoLive={canGoLive}
+              commit={chromeActions}
+              status={liveStatus}
+              floating
+              onStatusChange={handleStatusToggle}
+            />
+          )}
         </Inline>
       </div>
 

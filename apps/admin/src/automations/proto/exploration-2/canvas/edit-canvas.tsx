@@ -12,7 +12,6 @@ import {
   type EdgeProps,
   Handle,
   type Node,
-  type NodeChange,
   type ReactFlowInstance,
   type NodeProps,
   Position,
@@ -129,6 +128,7 @@ import {
 import { useLabels } from '@/automations/proto/shared/labels';
 import { useSegments } from '@/automations/proto/shared/segments';
 import EMAIL_SNAPSHOT_HTML from './email-snapshot.html?raw';
+import { STEP_GAP, useMeasuredColumn } from './measured-column';
 import { EMPTY_LEXICAL, SEEDED_LEXICAL } from '@/automations/proto/shared/mock';
 import {
   TriggerEmptyState,
@@ -440,7 +440,7 @@ const STEP_CENTER_MS = 450;
 // slipping rather than as anything being done.
 // The pane card's slide, which the flow's re-centring pan runs alongside. Keep
 // in step with the detail screen's chrome duration.
-const PANE_SLIDE_MS = 300;
+export const PANE_SLIDE_MS = 300;
 const STEP_CENTER_MIN_SHIFT = 24;
 
 // The column opening to make room for an insertion, and closing up after a delete.
@@ -475,54 +475,6 @@ const INTRO_DRAW_CLASS = `transition-[stroke-dashoffset] duration-180 ${INTRO_EA
 // and this is a transition.
 const INTRO_EXIT_CLASS = `transition-[opacity,translate] duration-180 [transition-delay:120ms] ${INTRO_EASE} motion-reduce:transition-none`;
 
-// Visible space between one card and the next. The shared canvas's 112 was
-// sized for 400px cards carrying whole forms; light nodes want the flow to read
-// as one short column, closer to Loops' spacing — enough for the + to sit on
-// the connector with air either side.
-const STEP_GAP = 64;
-const UNMEASURED_NODE_HEIGHT = 80;
-
-// The shared useMeasuredColumn (flow-utils), with this lane's gap. Copied rather
-// than parameterised there so the shared file — and every other lane — stays
-// exactly as it is.
-const useMeasuredColumn = () => {
-  const [heights, setHeights] = useState<Record<string, number>>({});
-  const onNodesChange = useCallback((changes: NodeChange[]) => {
-    setHeights((current) => {
-      let next = current;
-      for (const change of changes) {
-        if (change.type !== 'dimensions' || !change.dimensions) {
-          continue;
-        }
-        const height = Math.round(change.dimensions.height);
-        if (!height || current[change.id] === height) {
-          continue;
-        }
-        if (next === current) {
-          next = { ...current };
-        }
-        next[change.id] = height;
-      }
-      return next;
-    });
-  }, []);
-  const layout = useCallback(
-    (ids: string[]) => {
-      const measured = ids.map((id) => heights[id] ?? UNMEASURED_NODE_HEIGHT);
-      let cursor = 0;
-      const ys = measured.map((height) => {
-        const y = cursor;
-        cursor += height + STEP_GAP;
-        return y;
-      });
-      const bottom = measured.length ? ys[ys.length - 1] + measured[measured.length - 1] : 0;
-      return { ys, bottom };
-    },
-    [heights],
-  );
-  return { onNodesChange, layout };
-};
-
 // ---------------------------------------------------------------------------
 // Light nodes.
 //
@@ -540,9 +492,9 @@ const useMeasuredColumn = () => {
 // The layout still thinks in a NODE_WIDTH column (flow-utils centres the
 // viewport on it), so each card centres inside a column-width wrapper — the
 // same trick the exit node already used for being narrower than the rest.
-const COLUMN_WRAPPER = 'flex w-[400px] justify-center';
+export const COLUMN_WRAPPER = 'flex w-[400px] justify-center';
 // One width for every node, email or not — the column reads as one strip.
-const NODE_CARD_WIDTH = 'w-[300px]';
+export const NODE_CARD_WIDTH = 'w-[300px]';
 // Wide enough that the forms the cards used to carry (sized for a 400px card's
 // inner width) fit without reflowing.
 
@@ -777,8 +729,10 @@ const EMAIL_INSET_EXTRA_HEIGHT =
 const thumbnailTransition = (closing: boolean) =>
   `${closing ? 'duration-140' : 'duration-180'} ${PROTO_EASE} motion-reduce:transition-none`;
 
-const EmailThumbnail: React.FC<{
-  d: StepNodeData;
+export const EmailThumbnail: React.FC<{
+  // Only what the preview reads, so the run canvas can draw one without a whole
+  // edit node's data. No onEditContent = read-only: no "Edit email" on hover.
+  d: Pick<StepNodeData, 'emailHasContent' | 'onEditContent'>;
   // The panel's preview, and whether the panel has grown / is shrinking.
   inset?: boolean;
   expanded?: boolean;
@@ -829,25 +783,27 @@ const EmailThumbnail: React.FC<{
           click would otherwise also open the node's panel. In the panel, only
           once grown: mid-morph it would be a control arriving before the thing
           it acts on has settled. */}
-      <span
-        className={cn(
-          'absolute inset-0 flex items-center justify-center opacity-0 transition-opacity',
-          editable && 'group-hover/preview:opacity-100 focus-within:opacity-100',
-        )}
-      >
-        <Button
-          tabIndex={editable ? 0 : -1}
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            d.onEditContent?.();
-          }}
-          onKeyDown={(event) => event.stopPropagation()}
+      {d.onEditContent && (
+        <span
+          className={cn(
+            'absolute inset-0 flex items-center justify-center opacity-0 transition-opacity',
+            editable && 'group-hover/preview:opacity-100 focus-within:opacity-100',
+          )}
         >
-          <LucideIcon.PenLine />
-          {d.emailHasContent ? 'Edit email' : 'Write email'}
-        </Button>
-      </span>
+          <Button
+            tabIndex={editable ? 0 : -1}
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              d.onEditContent?.();
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            <LucideIcon.PenLine />
+            {d.emailHasContent ? 'Edit email' : 'Write email'}
+          </Button>
+        </span>
+      )}
     </span>
   );
 };
@@ -905,7 +861,7 @@ const EmailNodeFace: React.FC<{
 const NODE_TEXT_WIDTH = 224; // 300 − 2×24 padding − 16 icon − 12 gap
 const WARNING_ICON_SPACE = 28; // 16 icon + 12 gap
 
-const StepNodeFace: React.FC<{
+export const StepNodeFace: React.FC<{
   icon?: React.ElementType;
   title: string;
   subtitle?: string;
@@ -1328,8 +1284,12 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
               <LucideIcon.ChartNoAxesColumn />
             </Button>
           )}
+          {/* Muted at rest, full strength on hover: a destructive control shouldn't
+              be the loudest thing in the panel's header. Same as the settings
+              panel's row deletes. */}
           <Button
             aria-label="Delete step"
+            className="text-muted-foreground hover:text-foreground"
             size="icon"
             type="button"
             variant="ghost"
@@ -1354,7 +1314,7 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
     frozenHeight === null ? undefined : { height: frozenHeight, overflow: 'hidden' };
 
   const nodeClassName = cn(
-    'nodrag nopan flex cursor-pointer rounded-xl border bg-surface-elevated text-left shadow-xs transition-colors hover:border-border-strong',
+    'nodrag nopan flex cursor-pointer rounded-xl border bg-surface-elevated text-left shadow-sm transition-colors hover:border-border-strong',
     isEmail ? 'flex-col overflow-hidden' : 'items-center gap-3 px-6 py-5',
     NODE_CARD_WIDTH,
     d.warning ? 'border-state-warning' : 'border-border-default',
@@ -1446,7 +1406,7 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
               'overflow-hidden rounded-xl border bg-surface-elevated',
               d.warning ? 'border-state-warning' : 'border-border-default',
               phase === 'closing' ? MORPH_CLOSE_CLASS : MORPH_OPEN_CLASS,
-              expanded ? '-translate-y-0.5 shadow-lg' : 'shadow-xs',
+              expanded ? '-translate-y-0.5 shadow-lg' : 'shadow-sm',
             )}
             style={panelStyle}
           >
@@ -1546,8 +1506,8 @@ const UnsetTriggerNode: React.FC<{ d: StepNodeData }> = ({ d }) => (
     <NodeCard
       className={cn(
         NODE_CARD_WIDTH,
-        // xs to match the light nodes; NodeCard's own frame is shadow-sm.
-        'shadow-xs',
+        // sm to match the light nodes (NodeCard's own frame is also shadow-sm).
+        'shadow-sm',
         d.enterDelay !== undefined && ENTER_CLASS,
         `animate-in duration-300 ${INTRO_EASE} fade-in-0 slide-in-from-top-2 motion-reduce:animate-none`,
       )}
@@ -1612,7 +1572,7 @@ const ExitNode: React.FC<NodeProps> = ({ data }) => {
       <div
         className={cn(
           NODE_CARD_WIDTH,
-          'flex items-center gap-3 rounded-xl border border-border-default bg-surface-elevated px-6 py-5 text-muted-foreground shadow-xs',
+          'flex items-center gap-3 rounded-xl border border-border-default bg-surface-elevated px-6 py-5 text-muted-foreground shadow-sm',
         )}
       >
         <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={2} />
