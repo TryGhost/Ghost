@@ -76,6 +76,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('slug').notNullable().unique();
     table.text('name').notNullable();
     table.text('status').notNullable();
+    table.text('trigger_tier_scope');
   });
 
   await database.schema.createTable('automation_actions', (table) => {
@@ -848,22 +849,29 @@ describe('automations repository', function () {
       await repo.browse({ includeStats: false });
 
       const automations = await knex('automations')
-        .select('id', 'name', 'slug', 'status')
+        .select('id', 'name', 'slug', 'status', 'trigger_tier_scope')
         .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
         .orderBy('slug');
 
       assert.deepEqual(
-        automations.map(({ name, slug, status }) => ({ name, slug, status })),
+        automations.map(({ name, slug, status, trigger_tier_scope }) => ({
+          name,
+          slug,
+          status,
+          trigger_tier_scope,
+        })),
         [
           {
             name: 'Free member welcome flow',
             slug: 'member-welcome-email-free',
             status: 'inactive',
+            trigger_tier_scope: 'free',
           },
           {
             name: 'Paid member welcome flow',
             slug: 'member-welcome-email-paid',
             status: 'inactive',
+            trigger_tier_scope: 'all_paid',
           },
         ],
       );

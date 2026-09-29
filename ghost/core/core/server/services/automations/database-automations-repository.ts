@@ -36,12 +36,14 @@ const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
   {
     name: 'Free member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+    trigger_tier_scope: 'free',
   },
   {
     name: 'Paid member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+    trigger_tier_scope: 'all_paid',
   },
-];
+] as const;
 
 const messages = {
   invalidAutomationActionRevision:
@@ -501,7 +503,7 @@ async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
 
 async function ensureAutomation(
   trx: Knex.Transaction,
-  defaults: Readonly<{ name: string; slug: string }>,
+  defaults: Readonly<{ name: string; slug: string; trigger_tier_scope: 'free' | 'all_paid' }>,
 ): Promise<AutomationRow> {
   const now = toDatabaseDate(new Date());
   const id = ObjectId().toHexString();
@@ -512,6 +514,7 @@ async function ensureAutomation(
       status: 'inactive',
       name: defaults.name,
       slug: defaults.slug,
+      trigger_tier_scope: defaults.trigger_tier_scope,
       created_at: now,
       updated_at: now,
     })
