@@ -86,13 +86,14 @@ export function FullscreenDialog({
           <DialogHeader
             className={cn(
               'flex-row flex-wrap items-center justify-between gap-4 border-b border-border-default p-4',
-              headerControls && 'xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]',
+              headerControls &&
+                'grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(max-content,1fr)_minmax(0,max-content)_minmax(max-content,1fr)]',
             )}
           >
-            <DialogTitle className="text-lg">{title}</DialogTitle>
-            {headerControls && (
-              <Box className="order-3 w-full min-w-0 xl:order-none xl:w-auto">{headerControls}</Box>
-            )}
+            <DialogTitle className={cn('text-lg', headerControls && 'sr-only md:not-sr-only')}>
+              {title}
+            </DialogTitle>
+            {headerControls && <Box className="min-w-0">{headerControls}</Box>}
             <Box className="justify-self-end">{headerActions}</Box>
           </DialogHeader>
         ) : (

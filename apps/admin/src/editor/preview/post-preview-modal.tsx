@@ -345,7 +345,7 @@ export function PostPreviewModal({
         </PageHeader.ActionGroup>
       }
       headerControls={
-        <Inline gap="md" justify="center" wrap>
+        <Inline className="min-w-0" gap="md">
           {emailAvailable && (
             <Tabs
               value={format}
@@ -363,6 +363,7 @@ export function PostPreviewModal({
             </Tabs>
           )}
           <ToggleGroup
+            className="hidden shrink-0 sidebar:flex"
             shape="pill"
             type="single"
             value={device}
@@ -381,7 +382,13 @@ export function PostPreviewModal({
           </ToggleGroup>
           {showSegmentSelect && (
             <Select value={segment} onValueChange={(value) => setSegment(value as PreviewSegment)}>
-              <PageHeader.SelectTrigger label="Preview as" shape="pill" variant="ghost" showChevron>
+              <PageHeader.SelectTrigger
+                className="hidden shrink-0 md:flex"
+                label="Preview as"
+                shape="pill"
+                variant="ghost"
+                showChevron
+              >
                 <SelectValue />
               </PageHeader.SelectTrigger>
               <SelectContent>
@@ -396,7 +403,7 @@ export function PostPreviewModal({
           {showTierSelect && (
             <Select value={tierSlug} onValueChange={setPickedTierSlug}>
               <PageHeader.SelectTrigger
-                className="max-w-[240px] min-w-0 [&>span]:min-w-0 [&>span]:truncate"
+                className="hidden max-w-[240px] min-w-0 md:flex [&>span]:min-w-0 [&>span]:truncate"
                 label="Tier"
                 shape="pill"
                 title={selectedTier?.name}

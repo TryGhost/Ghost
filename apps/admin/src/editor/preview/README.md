@@ -17,8 +17,9 @@ The modal never writes to the post. `onBeforeOpen` exists because a draft must b
 
 ## Layout and controls
 
-View controls are centered in the header on wide screens and wrap below the title
-and actions on narrow screens. Format and device controls use pill groups; audience
+View controls are centered in the header when space allows and shift toward the title
+as the screen narrows. Device controls hide below 800px. Below 640px, the title and audience selectors
+are hidden so format tabs and actions stay on one row. Format and device controls use pill groups; audience
 and tier selectors use the ghost header treatment. The icon-only Share menu keeps
 copying the audience-specific preview link and opening it in a new tab together,
 and stays disabled until the post has been saved successfully.

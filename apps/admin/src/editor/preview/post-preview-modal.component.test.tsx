@@ -26,12 +26,25 @@ const POST_ID = 'abc123';
 const PREVIEW_URL = 'http://localhost:2368/p/post-uuid/';
 const CURRENT_USER_EMAIL = String(currentUserResponse().users[0].email);
 
+async function previewViewport(width: number, height: number) {
+  const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+  const initialFontSize = document.documentElement.style.fontSize;
+  // Embedded Admin uses a 10px rem base; match it when checking pixel breakpoints.
+  document.documentElement.style.fontSize = '10px';
+  onTestFinished(async () => {
+    document.documentElement.style.fontSize = initialFontSize;
+    await page.viewport(initialViewport.width, initialViewport.height);
+  });
+  await page.viewport(width, height);
+}
+
 interface RenderOptions {
   isPost?: boolean;
   newsletterSlug?: string;
   previewUrl?: string;
   onBeforeOpen?: () => Promise<void>;
   onOpenChange?: (open: boolean) => void;
+  onPublish?: () => void;
 }
 
 async function renderPreviewModal({
@@ -40,6 +53,7 @@ async function renderPreviewModal({
   previewUrl = PREVIEW_URL,
   onBeforeOpen,
   onOpenChange = () => {},
+  onPublish,
 }: RenderOptions = {}) {
   return await renderInApp(
     <PostPreviewModal
@@ -50,6 +64,7 @@ async function renderPreviewModal({
       open
       onBeforeOpen={onBeforeOpen}
       onOpenChange={onOpenChange}
+      onPublish={onPublish}
     />,
   );
 }
@@ -290,110 +305,107 @@ describe('Post preview modal', () => {
     await expect(previewScreen.option('Specific tier')).toHaveCount(0);
   });
 
-  it('centers the view controls and fills the desktop viewport without gutters', async () => {
-    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
-    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
-    await page.viewport(1440, 900);
+  it.each([1183, 1440])(
+    'centers the view controls and fills the desktop viewport at %ipx',
+    async (width) => {
+      await previewViewport(width, 900);
+      fakePreviewWorld();
+      await renderPreviewModal({ onPublish: () => {} });
+      await expect.element(previewScreen.browserFrame()).toBeVisible();
+
+      const modal = previewScreen.modal().element().getBoundingClientRect();
+      const frame = previewScreen.browserFrame().element().getBoundingClientRect();
+      const controls = previewScreen
+        .segmentSelect()
+        .element()
+        .parentElement!.getBoundingClientRect();
+      const title = page
+        .getByRole('heading', { name: 'Preview', exact: true })
+        .element()
+        .getBoundingClientRect();
+      const close = previewScreen.closeButton().element().getBoundingClientRect();
+      expect((controls.top + controls.bottom) / 2).toBeCloseTo((title.top + title.bottom) / 2, 0);
+      expect((controls.top + controls.bottom) / 2).toBeCloseTo((close.top + close.bottom) / 2, 0);
+      expect(frame.left).toBeCloseTo(modal.left, 0);
+      expect(frame.right).toBeCloseTo(modal.right, 0);
+      expect(frame.bottom).toBeCloseTo(modal.bottom, 0);
+      expect((controls.left + controls.right) / 2).toBeCloseTo((modal.left + modal.right) / 2, 0);
+    },
+  );
+
+  it('keeps format and actions on one row and hides secondary controls on phones', async () => {
+    await previewViewport(390, 844);
     fakePreviewWorld();
-    await renderPreviewModal();
-    await expect.element(previewScreen.browserFrame()).toBeVisible();
+    fakeEmailPreview();
+    await renderPreviewModal({ onPublish: () => {} });
 
-    const modal = previewScreen.modal().element().getBoundingClientRect();
-    const frame = previewScreen.browserFrame().element().getBoundingClientRect();
-    const controls = previewScreen.segmentSelect().element().parentElement!.getBoundingClientRect();
-    const title = page
-      .getByRole('heading', { name: 'Preview', exact: true })
-      .element()
-      .getBoundingClientRect();
-    const close = previewScreen.closeButton().element().getBoundingClientRect();
-    expect((controls.top + controls.bottom) / 2).toBeCloseTo((title.top + title.bottom) / 2, 0);
-    expect((controls.top + controls.bottom) / 2).toBeCloseTo((close.top + close.bottom) / 2, 0);
-    expect(frame.left).toBeCloseTo(modal.left, 0);
-    expect(frame.right).toBeCloseTo(modal.right, 0);
-    expect(frame.bottom).toBeCloseTo(modal.bottom, 0);
-    expect((controls.left + controls.right) / 2).toBeCloseTo((modal.left + modal.right) / 2, 0);
-  });
-
-  it('wraps the view controls without overflowing a narrow screen', async () => {
-    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
-    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
-    await page.viewport(390, 844);
-    fakePreviewWorld({ tiers: [tier({ name: 'Gold', slug: 'gold' })] });
-    await renderPreviewModal();
-    await previewScreen.previewAs('Specific tier');
-    await expect.element(previewScreen.tierSelect()).toBeVisible();
-
+    await expect.element(previewScreen.webTab()).toBeVisible();
+    await expect(previewScreen.segmentSelect()).toHaveCount(0);
+    await expect(previewScreen.mobileToggle()).toHaveCount(0);
     const modal = previewScreen.modal().element();
     expect(modal.scrollWidth).toBeLessThanOrEqual(modal.clientWidth);
-    const controls = previewScreen.segmentSelect().element().parentElement!.getBoundingClientRect();
-    expect(controls.top).toBeGreaterThan(
-      previewScreen.closeButton().element().getBoundingClientRect().bottom,
-    );
-    for (const control of [
-      previewScreen.tierSelect(),
-      previewScreen.closeButton(),
-      previewScreen.mobileToggle(),
-    ]) {
-      const bounds = control.element().getBoundingClientRect();
-      expect(bounds.left).toBeGreaterThanOrEqual(0);
-      expect(bounds.right).toBeLessThanOrEqual(390);
-    }
+    const tabs = previewScreen.webTab().element().parentElement!.getBoundingClientRect();
+    const actions = previewScreen.shareButton().element().getBoundingClientRect();
+    expect(tabs.right).toBeLessThanOrEqual(actions.left);
+    expect((tabs.top + tabs.bottom) / 2).toBeCloseTo((actions.top + actions.bottom) / 2, 0);
+    await previewScreen.emailTab().click();
+    await expect.element(previewScreen.emailTab()).toHaveAttribute('aria-selected', 'true');
   });
 
-  it.each([1440, 390])('keeps a long tier name clear of header actions at %ipx', async (width) => {
-    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
-    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
-    await page.viewport(width, 844);
-    const name = 'Premium annual membership for independent publishers and supporters';
-    fakePreviewWorld({ tiers: [tier({ name, slug: 'premium' })] });
-    await renderInApp(
-      <PostPreviewModal
-        postId={POST_ID}
-        previewUrl={PREVIEW_URL}
-        open
-        onOpenChange={() => {}}
-        onPublish={() => {}}
-      />,
-    );
-    await previewScreen.previewAs('Specific tier');
-    await expect.element(previewScreen.tierSelect()).toHaveTextContent(name);
+  it.each([1440, 1183, 1024, 800, 640])(
+    'keeps a long tier name clear of header actions at %ipx',
+    async (width) => {
+      await previewViewport(width, 844);
+      const name = 'Premium annual membership for independent publishers and supporters';
+      fakePreviewWorld({ tiers: [tier({ name, slug: 'premium' })] });
+      await renderInApp(
+        <PostPreviewModal
+          postId={POST_ID}
+          previewUrl={PREVIEW_URL}
+          open
+          onOpenChange={() => {}}
+          onPublish={() => {}}
+        />,
+      );
+      await previewScreen.previewAs('Specific tier');
+      await expect.element(previewScreen.tierSelect()).toHaveTextContent(name);
 
-    const modal = previewScreen.modal().element();
-    expect(modal.scrollWidth).toBeLessThanOrEqual(modal.clientWidth);
-    const controls = [
-      previewScreen.webTab(),
-      previewScreen.emailTab(),
-      previewScreen.desktopToggle(),
-      previewScreen.mobileToggle(),
-      previewScreen.segmentSelect(),
-      previewScreen.tierSelect(),
-    ];
-    const actions = [
-      previewScreen.shareButton(),
-      previewScreen.closeButton(),
-      previewScreen.publishButton(),
-    ];
-    for (const control of controls) {
-      const bounds = control.element().getBoundingClientRect();
-      expect(bounds.left).toBeGreaterThanOrEqual(0);
-      expect(bounds.right).toBeLessThanOrEqual(width);
-      for (const action of actions) {
-        const other = action.element().getBoundingClientRect();
-        const overlaps =
-          bounds.left < other.right &&
-          bounds.right > other.left &&
-          bounds.top < other.bottom &&
-          bounds.bottom > other.top;
-        expect(overlaps).toBe(false);
+      const modal = previewScreen.modal().element();
+      expect(modal.scrollWidth).toBeLessThanOrEqual(modal.clientWidth);
+      const controls = [
+        previewScreen.webTab(),
+        previewScreen.emailTab(),
+        ...(width >= 800 ? [previewScreen.desktopToggle(), previewScreen.mobileToggle()] : []),
+        previewScreen.segmentSelect(),
+        previewScreen.tierSelect(),
+      ];
+      const actions = [
+        previewScreen.shareButton(),
+        previewScreen.closeButton(),
+        previewScreen.publishButton(),
+      ];
+      for (const control of controls) {
+        const bounds = control.element().getBoundingClientRect();
+        expect(bounds.left).toBeGreaterThanOrEqual(0);
+        expect(bounds.right).toBeLessThanOrEqual(width);
+        for (const action of actions) {
+          const other = action.element().getBoundingClientRect();
+          const overlaps =
+            bounds.left < other.right &&
+            bounds.right > other.left &&
+            bounds.top < other.bottom &&
+            bounds.bottom > other.top;
+          expect(overlaps).toBe(false);
+        }
       }
-    }
-    if (width === 1440) {
-      const group = previewScreen.tierSelect().element().parentElement!.getBoundingClientRect();
-      expect((group.left + group.right) / 2).toBeCloseTo(width / 2, 0);
-    }
-    await previewScreen.tierSelect().click();
-    await expect.element(previewScreen.option(name)).toBeVisible();
-  });
+      if (width === 1440) {
+        const group = previewScreen.tierSelect().element().parentElement!.getBoundingClientRect();
+        expect((group.left + group.right) / 2).toBeCloseTo(width / 2, 0);
+      }
+      await previewScreen.tierSelect().click();
+      await expect.element(previewScreen.option(name)).toBeVisible();
+    },
+  );
 
   it('limits desktop emails to 720px on a muted canvas', async () => {
     fakePreviewWorld();
@@ -410,9 +422,7 @@ describe('Post preview modal', () => {
   });
 
   it('keeps long newsletter names clear of the test button on narrow screens', async () => {
-    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
-    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
-    await page.viewport(390, 844);
+    await previewViewport(390, 844);
     fakePreviewWorld({
       newsletters: [
         newsletter({
@@ -450,15 +460,14 @@ describe('Post preview modal', () => {
   });
 
   it('switches the frame to a mobile viewport without clipping its top', async () => {
-    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
-    onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
-    await page.viewport(390, 844);
+    await previewViewport(1183, 844);
     fakePreviewWorld();
     await renderPreviewModal();
 
     await expect.element(previewScreen.browserChrome()).not.toHaveClass('w-[380px]');
 
     await previewScreen.mobileToggle().click();
+    await page.viewport(390, 844);
 
     await expect.element(previewScreen.browserChrome()).toHaveClass('w-[380px]');
     const chrome = previewScreen.browserChrome().element();
