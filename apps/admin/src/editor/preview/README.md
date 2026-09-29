@@ -59,7 +59,10 @@ in the session and saves on blur or Enter.
 An empty subject falls back to the post title. The session enforces the 300-character
 limit on every save; validation and save errors appear beside the field. Test sending
 stays disabled while edits are unsaved or a save is pending. The mobile frame displays
-the live subject as text, matching Ember.
+the live subject as text, matching Ember. Closing preview preserves unsaved subject
+edits. If those edits prevent saving when preview reopens, the save-failure screen
+keeps the subject field available for correction. Saving the corrected subject retries
+preparation before displaying the preview or enabling sharing and test sends.
 
 ## Not here yet
 

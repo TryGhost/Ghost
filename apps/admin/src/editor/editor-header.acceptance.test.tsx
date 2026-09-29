@@ -439,6 +439,49 @@ describe('Editor header actions', () => {
     await expect.element(previewScreen.testEmailButton()).toBeEnabled();
   });
 
+  it.each(['Close', 'Escape'])(
+    'recovers an invalid subject after leaving preview with %s',
+    async (dismiss) => {
+      publishChrome({ newsletters: 1 });
+      const saveApi = fakeSavablePost();
+      fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+        email_previews: [
+          { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+        ],
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(MAILGUN_ON));
+      await editorScreen.previewButton().click();
+      await previewScreen.emailTab().click();
+      await previewScreen.emailSubject().fill('a'.repeat(301));
+      if (dismiss === 'Close') {
+        await previewScreen.closeButton().click();
+      } else {
+        await userEvent.keyboard('{Escape}');
+      }
+      await expect(previewScreen.modal()).toHaveCount(0);
+      await editorScreen.titleInput().fill('Keep this title edit');
+      await editorScreen.previewButton().click();
+      await expect.element(previewScreen.saveFailed()).toBeVisible();
+      await expect(previewScreen.browserFrame()).toHaveCount(0);
+      await expect(previewScreen.emailFrame()).toHaveCount(0);
+      await expect.element(previewScreen.shareButton()).toBeDisabled();
+      await expect.element(previewScreen.emailSubject()).toHaveValue('a'.repeat(301));
+      await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+      expect(saveApi.requests).toHaveLength(0);
+
+      await previewScreen.emailSubject().fill('A corrected subject');
+      await userEvent.keyboard('{Enter}');
+      await expect(saveApi).toHaveSavedFields({
+        email_subject: 'A corrected subject',
+        title: 'Keep this title edit',
+      });
+      await expect(previewScreen.saveFailed()).toHaveCount(0);
+      await expect.element(previewScreen.emailFrame()).toBeVisible();
+      await expect.element(previewScreen.testEmailButton()).toBeEnabled();
+      await expect.element(previewScreen.shareButton()).toBeEnabled();
+    },
+  );
+
   it('retains the subject and blocks test sends when saving fails', async () => {
     publishChrome({ newsletters: 1 });
     const saveApi = fakeSavablePost({}, { failWith: 422 });

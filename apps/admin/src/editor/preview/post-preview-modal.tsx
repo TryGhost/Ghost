@@ -24,7 +24,7 @@ import {
   useNewslettersEnabled,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { Inline } from '@tryghost/shade/primitives';
+import { Inline, Stack } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
@@ -46,7 +46,7 @@ import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
-import type { EmailSubjectEditor } from './email-subject';
+import { EmailSubject, type EmailSubjectEditor } from './email-subject';
 import {
   browserPreviewUrl,
   type PreviewAudience,
@@ -470,15 +470,33 @@ export function PostPreviewModal({
         ) : prepareState === 'failed' ? (
           <EmptyIndicator
             actions={
-              <Button
-                variant="outline"
-                onClick={() => {
-                  preparePromise.current = null;
-                  setPrepareState('preparing');
-                }}
-              >
-                Retry
-              </Button>
+              <Stack className="w-[320px] max-w-full" gap="md">
+                {emailAvailable && subjectEditor && (
+                  <Stack className="text-left" gap="xs">
+                    <span className="text-sm text-muted-foreground">Email subject</span>
+                    <EmailSubject
+                      editor={{
+                        ...subjectEditor,
+                        onSave: async () => {
+                          await subjectEditor.onSave();
+                          preparePromise.current = null;
+                          setPrepareState('preparing');
+                        },
+                      }}
+                    />
+                  </Stack>
+                )}
+                <Button
+                  className="self-center"
+                  variant="outline"
+                  onClick={() => {
+                    preparePromise.current = null;
+                    setPrepareState('preparing');
+                  }}
+                >
+                  Retry
+                </Button>
+              </Stack>
             }
             className="grow justify-center self-center"
             data-testid={postPreviewSaveFailed}
