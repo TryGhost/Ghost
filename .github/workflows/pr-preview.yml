@@ -11,10 +11,17 @@ jobs:
     # collaborator write access. Adding a profile label to an already-labelled PR
     # has to redeploy, or the label would claim a profile the preview is not on;
     # Ghost-Moya notices the change and reseeds.
+    #
+    # Removing a profile label redeploys for the same reason, in reverse: the
+    # labels would otherwise say "default" while the preview stayed seeded on
+    # whatever the removed label named. `startsWith` excludes the bare `preview`
+    # label, which has no colon, so removing that still only destroys.
     if: >-
-      github.event.action == 'labeled'
-      && (github.event.label.name == 'preview'
-          || startsWith(github.event.label.name, 'preview:'))
+      (github.event.action == 'labeled'
+       && (github.event.label.name == 'preview'
+           || startsWith(github.event.label.name, 'preview:')))
+      || (github.event.action == 'unlabeled'
+          && startsWith(github.event.label.name, 'preview:'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -117,18 +124,31 @@ jobs:
           # preview/profiles.json and validated there, so nothing here needs to
           # know them — passing the suffix through keeps one source of truth.
           # Sending nothing means Moya applies its own default.
-          PROFILES=$(echo "$PR" | jq -r '[.labels[] | select(startswith("preview:")) | ltrimstr("preview:")] | join(" ")')
-          COUNT=$(echo "$PROFILES" | wc -w)
+          # Counted with jq rather than by word-splitting: a label may contain a
+          # space, and counting words would read one such label as two profiles
+          # and reject it with a message about a conflict that does not exist.
+          COUNT=$(echo "$PR" | jq '[.labels[] | select(startswith("preview:"))] | length')
+          PROFILE=$(echo "$PR" | jq -r '[.labels[] | select(startswith("preview:")) | ltrimstr("preview:")] | first // ""')
 
           if [ "$COUNT" -gt 1 ]; then
-            echo "::error::Multiple preview profile labels ($PROFILES) — remove all but one"
+            NAMES=$(echo "$PR" | jq -r '[.labels[] | select(startswith("preview:"))] | join(", ")')
+            echo "::error::Multiple preview profile labels ($NAMES) — remove all but one"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
           if [ "$COUNT" -eq 1 ]; then
-            echo "Preview profile: ${PROFILES}"
-            echo "profile=${PROFILES}" >> "$GITHUB_OUTPUT"
+            # Shape only, not a list of names — the names stay Ghost-Moya's to
+            # own. This rejects a malformed label here, with a message that says
+            # what is wrong, rather than dispatching it to fail further away, and
+            # keeps anything odd out of GITHUB_OUTPUT.
+            if ! echo "$PROFILE" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+              echo "::error::Malformed profile label 'preview:${PROFILE}' — expected lowercase words separated by hyphens"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 1
+            fi
+            echo "Preview profile: ${PROFILE}"
+            echo "profile=${PROFILE}" >> "$GITHUB_OUTPUT"
           else
             echo "No preview:<profile> label, Ghost-Moya will use its default"
             echo "profile=" >> "$GITHUB_OUTPUT"
