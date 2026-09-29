@@ -158,6 +158,22 @@ describe('Restore posts', () => {
     expect(created(createApi.lastRequest, 'posts').authors).toEqual([{ id: me.users[0].id }]);
   });
 
+  it('starts one restore however quickly the button is pressed twice', async () => {
+    storeCopy('post-1', NEWER, { type: 'post', title: 'Lost words', lexical: LEXICAL });
+    const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => ({
+      posts: [{ ...(body as { posts: object[] }).posts[0], id: 'restored-3' }],
+    }));
+    await renderAdminApp('/restore');
+    await expect.element(restoreScreen.revisionRow('Lost words').restoreButton()).toBeVisible();
+    const button = restoreScreen.revisionRow('Lost words').restoreButton().element() as HTMLElement;
+
+    button.click();
+    button.click();
+
+    await expect.element(restoreScreen.revisionRow('Lost words').openLink()).toBeVisible();
+    expect(createApi.requests).toHaveLength(1);
+  });
+
   it('restores a page as a page', async () => {
     storeCopy('page-1', NEWER, { type: 'page', title: 'About us', lexical: LEXICAL });
     const createApi = fakeAdminEndpoint('POST', /^\/pages\/\?/, ({ body }) => ({

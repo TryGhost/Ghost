@@ -68,6 +68,8 @@ export default function RestoreScreen() {
   const [restored, setRestored] = useState<Record<string, Restored>>({});
   const [justRestored, setJustRestored] = useState<string | null>(null);
   const openLinks = useRef(new Map<string, HTMLElement>());
+  // Two clicks dispatched in one task both see the same render's state.
+  const inFlight = useRef(false);
   const titleIdPrefix = useId();
   const { data: currentUser } = useCurrentUser();
   const { mutateAsync: addPost } = useAddPost();
@@ -82,9 +84,10 @@ export default function RestoreScreen() {
   }, [justRestored]);
 
   const restore = async (revision: StoredLocalRevision) => {
-    if (restoring !== null) {
+    if (inFlight.current) {
       return;
     }
+    inFlight.current = true;
     setRestoring(revision.key);
     try {
       const soleAuthorId =
@@ -100,6 +103,7 @@ export default function RestoreScreen() {
     } catch (error) {
       handleError(error);
     } finally {
+      inFlight.current = false;
       setRestoring(null);
     }
   };
@@ -181,6 +185,7 @@ export default function RestoreScreen() {
                           ) : (
                             <Button
                               aria-describedby={titleId}
+                              aria-disabled={restoring === revision.key || undefined}
                               // The pressed button stays enabled so focus stays on it if the restore fails.
                               disabled={restoring !== null && restoring !== revision.key}
                               size="sm"
