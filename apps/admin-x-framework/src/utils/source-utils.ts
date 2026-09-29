@@ -29,12 +29,24 @@ export const SOURCE_DOMAIN_MAP: Record<string, string> = {
   'Apple News': 'apple.com',
   SmartNews: 'smartnews.com',
   'Hacker News': 'news.ycombinator.com',
+  GitHub: 'github.com',
+  Medium: 'medium.com',
+  Pinterest: 'pinterest.com',
+  TikTok: 'tiktok.com',
+  YouTube: 'youtube.com',
+  Telegram: 'telegram.org',
+  WhatsApp: 'whatsapp.com',
   // Search engines
   Google: 'google.com',
   'Google News': 'news.google.com',
   Bing: 'bing.com',
   DuckDuckGo: 'duckduckgo.com',
+  Yahoo: 'yahoo.com',
+  Yandex: 'yandex.com',
+  Baidu: 'baidu.com',
   // Email/Newsletter
+  'Apple Mail': 'apple.com',
+  'Yahoo Mail': 'mail.yahoo.com',
   'newsletter-email': 'static.ghost.org',
   newsletter: 'static.ghost.org',
 };
@@ -233,9 +245,10 @@ export const getFaviconDomain = (
     return { domain: mappedDomain, isDirectTraffic: false };
   }
 
-  // If not in mapping, check if it's already a domain
+  // If not in mapping, check if it's already a domain. Require at least one dot so
+  // unmapped display names (e.g. "GitHub") don't become links like https://github/
   const isDomain =
-    /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(
+    /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(
       source,
     );
   if (isDomain) {
