@@ -14,6 +14,8 @@ export type SiteData = {
   locale: string;
   version: string;
   site_uuid: string;
+  /** Whether Admin serves its React auth screens; absent on servers before the flag existed. */
+  authReact?: boolean;
 };
 
 export interface SiteResponseType {
