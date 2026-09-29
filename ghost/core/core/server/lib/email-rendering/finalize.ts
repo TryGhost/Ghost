@@ -1,4 +1,4 @@
-import cheerio from 'cheerio/slim';
+import * as cheerio from 'cheerio/slim';
 import juice from 'juice';
 // @ts-expect-error This module currently lacks type definitions.
 import htmlToPlaintext from '@tryghost/html-to-plaintext';
