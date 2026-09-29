@@ -129,7 +129,10 @@ export function ImageField({
 
   if (!children) {
     return (
-      <ImageUpload className={cn('max-h-[480px]', className)} data-testid={testId}>
+      <ImageUpload
+        className={cn(variant === 'panel' && 'max-h-[480px]', className)}
+        data-testid={testId}
+      >
         {preview}
       </ImageUpload>
     );
@@ -137,7 +140,7 @@ export function ImageField({
 
   return (
     <Stack className={className} data-testid={testId} gap="sm">
-      <ImageUpload className="max-h-[480px]">{preview}</ImageUpload>
+      <ImageUpload className={cn(variant === 'panel' && 'max-h-[480px]')}>{preview}</ImageUpload>
       {children}
     </Stack>
   );
