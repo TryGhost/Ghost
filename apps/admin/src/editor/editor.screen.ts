@@ -138,6 +138,7 @@ export const editorScreen = {
     return pane;
   },
   loadError: () => page.getByTestId(editorLoadError),
+  retryLoad: () => page.getByTestId(editorLoadError).getByRole('button', { name: 'Retry' }),
   /** The sign-in dialog a save that finds no session opens, and its two steps. */
   reauthDialog: () => page.getByTestId(editorReauthDialog),
   reauthEmail: () => page.getByTestId(editorReauthDialog).getByLabelText('Email'),
