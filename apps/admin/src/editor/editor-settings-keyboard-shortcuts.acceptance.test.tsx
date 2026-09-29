@@ -74,6 +74,50 @@ async function openShortcuts() {
  * slash command the editor answers to, in the writer's own platform glyphs.
  */
 describe('Post settings keyboard shortcuts', () => {
+  it.each([MAC_AGENT, WINDOWS_AGENT])(
+    'keeps labels readable under legacy host styles (%s)',
+    async (agent) => {
+      onPlatform(agent);
+      const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+      onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
+      const hostStyles = document.createElement('style');
+      // Ember's global definition-list and keycap rules also surround the embedded editor.
+      hostStyles.textContent = `
+      dl { margin: 1.6em 0; }
+      dl dt { float: left; clear: left; overflow: hidden; margin-bottom: 1em; width: 180px; text-align: right; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+      dl dd { margin-bottom: 1em; margin-left: 200px; }
+      kbd { margin-bottom: 0.4em; padding: 1px 8px; border: 1px solid; box-shadow: 0 1px 0; }
+    `;
+      document.head.append(hostStyles);
+      onTestFinished(() => hostStyles.remove());
+      fakeEditablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openShortcuts();
+
+      for (const width of [1280, 390]) {
+        await page.viewport(width, 844);
+        const pane = editorScreen.settingsSubviewPane().element();
+        for (const label of pane.querySelectorAll('dt')) {
+          expect(getComputedStyle(label).whiteSpace).toBe('normal');
+          expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth + 1);
+        }
+        for (const definition of pane.querySelectorAll('dd')) {
+          expect(getComputedStyle(definition).marginLeft).toBe('0px');
+        }
+        for (const group of pane.querySelectorAll('[data-slot="kbd-group"]')) {
+          expect(getComputedStyle(group).borderTopWidth).toBe('0px');
+          const capHeight = Math.max(
+            ...[...group.querySelectorAll('[data-slot="kbd"]')].map(
+              (cap) => cap.getBoundingClientRect().height,
+            ),
+          );
+          expect(group.getBoundingClientRect().height).toBeLessThanOrEqual(capHeight + 1);
+        }
+        expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth + 1);
+      }
+    },
+  );
+
   it('opens the pane over the section list and comes back from it', async () => {
     fakeEditablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);

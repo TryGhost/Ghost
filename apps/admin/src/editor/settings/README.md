@@ -399,6 +399,11 @@ user agent as the pane renders. Hovering a glyph names the key it stands for;
 a key already shown as its name carries no tooltip. A slash command reads the
 same wherever it is typed.
 
+The reference uses compact rows with a shared hover background, wrapping labels,
+and underlined group headings. Definition-list spacing is reset locally so Ember's
+global list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
+lays out the individual `Kbd` caps; it does not draw another cap around them.
+
 ## Delete
 
 Deleting is the one thing in the panel that does not go through the session: it

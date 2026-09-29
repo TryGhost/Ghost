@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Displays keyboard keys and shortcuts in a styled format. Use to indicate keyboard input or shortcuts in tooltips, buttons, and documentation.',
+          'Displays keyboard keys and shortcuts in a styled format. Use to indicate keyboard input or shortcuts in tooltips, buttons, and documentation. KbdGroup is an unstyled layout container; each Kbd owns its keycap appearance, avoiding inherited keycap styles around the whole group.',
       },
     },
   },
