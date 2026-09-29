@@ -109,6 +109,9 @@ export class EmailAnalyticsService {
   #fetchLatestOpenedData: FetchData;
   #fetchScheduledData: FetchDataScheduled;
 
+  /** Ids from a job's run whose final aggregation failed, retried by its next run. */
+  #unaggregated = new WeakMap<FetchData, EventProcessingResult>();
+
   constructor({
     queries,
     fetchEvents,
@@ -300,7 +303,12 @@ export class EmailAnalyticsService {
       return createEmptyResult();
     }
 
-    return await this.#fetchEventsForJob(this.#fetchMissingData, { begin, end, maxEvents });
+    return await this.#fetchEventsForJob(this.#fetchMissingData, {
+      begin,
+      end,
+      maxEvents,
+      skipUnchanged: true,
+    });
   }
 
   /**
@@ -443,6 +451,7 @@ export class EmailAnalyticsService {
    * Start fetching analytics and store the data of the progress inside fetchData
    * @param [options.maxEvents=Infinity] - Maximum number of events to fetch. Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
    * @param [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
+   * @param [options.skipUnchanged] - Skip aggregation when the run only replays events that are already stored.
    */
   async #fetchEventsForJob(
     fetchData: FetchData,
@@ -451,11 +460,13 @@ export class EmailAnalyticsService {
       end,
       maxEvents = Infinity,
       eventTypes,
+      skipUnchanged = false,
     }: {
       begin: Date;
       end: Date;
       maxEvents?: number;
       eventTypes?: EmailAnalyticsEvent[];
+      skipUnchanged?: boolean;
     },
   ): Promise<EmailAnalyticsFetchResult> {
     // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
@@ -473,12 +484,18 @@ export class EmailAnalyticsService {
     let memberAggregationTimeMs = 0;
 
     let eventCount = 0;
-    const includeOpenedEvents = eventTypes?.includes('opened') ?? false;
+    // Without eventTypes Mailgun returns every event type, including opens
+    const includeOpenedEvents = eventTypes?.includes('opened') ?? true;
 
     const eventProcessor = this.#createEventProcessor();
 
     // We keep the processing result here, so we also have a result in case of failures
     const processingResult = new EventProcessingResult();
+    const unaggregated = this.#unaggregated.get(fetchData);
+    this.#unaggregated.delete(fetchData);
+    if (unaggregated) {
+      processingResult.merge(unaggregated);
+    }
     // Track cumulative event counts separately since processingResult gets reset during intermediate aggregations
     const cumulativeResult = new EventProcessingResult();
     let error: unknown = null;
@@ -490,8 +507,9 @@ export class EmailAnalyticsService {
       const start = Date.now();
       const timings = await eventProcessor.aggregate({
         includeOpenedEvents,
-        // A failed batch may have stored events before returning its counts.
-        skipUnchanged: fetchData === this.#fetchMissingData && !error,
+        // A failed batch may have stored events before returning its counts, and
+        // retried ids must be aggregated even though their events are already stored.
+        skipUnchanged: skipUnchanged && !error && !unaggregated,
         processingResult,
         isFinal,
       });
@@ -605,6 +623,15 @@ export class EmailAnalyticsService {
     } catch (err) {
       logging.error('[EmailAnalytics] Error while aggregating stats');
       logging.error(err);
+
+      // Replays of these events store nothing new, so no later run would aggregate them
+      this.#unaggregated.set(
+        fetchData,
+        new EventProcessingResult({
+          emailIds: processingResult.emailIds,
+          memberIds: processingResult.memberIds,
+        }),
+      );
 
       if (!error) {
         error = err;
