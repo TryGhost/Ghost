@@ -381,7 +381,7 @@ export function PostPreviewModal({
           </ToggleGroup>
           {showSegmentSelect && (
             <Select value={segment} onValueChange={(value) => setSegment(value as PreviewSegment)}>
-              <PageHeader.SelectTrigger label="Preview as" shape="pill" variant="ghost">
+              <PageHeader.SelectTrigger label="Preview as" shape="pill" variant="ghost" showChevron>
                 <SelectValue />
               </PageHeader.SelectTrigger>
               <SelectContent>
@@ -401,6 +401,7 @@ export function PostPreviewModal({
                 shape="pill"
                 title={selectedTier?.name}
                 variant="ghost"
+                showChevron
               >
                 <SelectValue />
               </PageHeader.SelectTrigger>
