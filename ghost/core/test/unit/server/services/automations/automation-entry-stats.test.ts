@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   fillEntryStats,
+  parseEntryStatsTimezone,
   getEntryStatsWindow,
 } from '../../../../../core/server/services/automations/automation-entry-stats';
 
@@ -59,5 +60,31 @@ describe('automation entry history', function () {
         { date: '2024-03-01', count: 2 },
       ],
     });
+  });
+});
+
+describe('automation statistics timezone', function () {
+  it('defaults to UTC and normalizes a supplied timezone', function () {
+    assert.equal(parseEntryStatsTimezone(undefined), 'UTC');
+    assert.equal(parseEntryStatsTimezone('america/new_york'), 'America/New_York');
+  });
+
+  it.each(['invalid', '', null, 123])('rejects invalid timezone %s', function (timezone) {
+    assert.throws(
+      () => parseEntryStatsTimezone(timezone),
+      /Invalid automation statistics timezone/,
+    );
+  });
+
+  it('uses the requested local date for an empty history near midnight', function () {
+    assert.deepEqual(
+      getEntryStatsWindow([], new Date('2024-03-11T01:00:00Z'), 'America/New_York'),
+      {
+        date_from: '2024-03-10',
+        date_to: '2024-03-11',
+        bucket: 'day',
+        timezone: 'America/New_York',
+      },
+    );
   });
 });

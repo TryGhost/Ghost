@@ -28,8 +28,9 @@ SQL >
 
 NODE performance_counts
 SQL >
+    %
     SELECT
-        toString(toDate(runs.created_at, 'UTC')) AS date,
+        toString(toDate(runs.created_at, {{ String(timezone, 'UTC') }})) AS date,
         -- Unknown statuses are reported to Core as an error, even alongside pending steps.
         countIf(bitAnd(status_flags, 8) = 0 AND bitAnd(status_flags, 1) != 0) AS in_progress_run_count,
         countIf(status_flags = 2) AS completed_run_count,

@@ -59,7 +59,9 @@ partial-success message or fourth user-facing status category.
 One entry is one run, including repeat entries and deleted members. Missing days
 are filled with zero from the first included entry through today. Empty histories
 return a zero total and one zero bucket for today. `date_from` is inclusive and
-`date_to` is exclusive. This endpoint has no date-filter parameters yet.
+`date_to` is exclusive. The optional `timezone` parameter accepts an IANA timezone and defaults to UTC.
+It controls daily grouping and today’s date. Admin should pass the browser
+timezone, consistent with web analytics. This endpoint has no date-filter parameters yet.
 
 Admin uses the shared analytics grouping rules: daily under 91 days, weekly for
 91–270 days, and monthly for longer spans. Grouping does not limit the history to

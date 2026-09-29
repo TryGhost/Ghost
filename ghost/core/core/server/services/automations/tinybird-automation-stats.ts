@@ -9,6 +9,7 @@ export type TinybirdClient = {
     options: {
       version: string;
       automationId?: string;
+      timezone?: string;
     },
   ): Promise<unknown>;
 };
@@ -95,11 +96,13 @@ const performanceRowSchema = z.object({
 export async function fetchAutomationPerformanceStats(
   client: TinybirdClient,
   automationId: string,
+  timezone = 'UTC',
 ): Promise<AutomationPerformanceStats | null> {
   try {
     const rows = await client.fetch('api_automation_performance_stats', {
       version: '',
       automationId,
+      timezone,
     });
     const parsed = z.array(performanceRowSchema).safeParse(rows);
     if (

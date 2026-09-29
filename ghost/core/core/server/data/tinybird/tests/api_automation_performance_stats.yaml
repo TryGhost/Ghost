@@ -58,3 +58,8 @@
   expected_result: |
     {"date":"2020-01-01","in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"invalid_run_count":0}
     {"date":"2020-02-01","in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
+
+- name: local_day_grouping
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&timezone=America/New_York
+  expected_result: |
+    {"date":"2019-12-31","in_progress_run_count":1,"completed_run_count":2,"exited_early_run_count":4,"invalid_run_count":2}

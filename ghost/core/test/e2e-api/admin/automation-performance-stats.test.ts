@@ -113,10 +113,19 @@ describe('Automation performance stats API', function () {
       assert.equal(requests.isDone(), false);
     });
 
-    function mockStats(status: number, response: string | Record<string, unknown>) {
+    function mockStats(
+      status: number,
+      response: string | Record<string, unknown>,
+      timezone = 'UTC',
+    ) {
       return nock('https://api.tinybird.co')
         .get('/v0/pipes/api_automation_performance_stats.json')
-        .query({ ghost_client: 'server', site_uuid: siteUuid, automation_id: automationId })
+        .query({
+          ghost_client: 'server',
+          site_uuid: siteUuid,
+          automation_id: automationId,
+          timezone,
+        })
         .reply(status, response);
     }
 
@@ -129,6 +138,29 @@ describe('Automation performance stats API', function () {
       } finally {
         await agent.loginAsOwner();
       }
+    });
+
+    it('passes the normalized timezone to Tinybird and uses it for the response window', async function () {
+      clock.setSystemTime(new Date('2026-09-14T01:00:00Z'));
+      const requests = mockStats(200, { data: [] }, 'America/New_York');
+      const { body } = await agent
+        .get(`automations/${automationId}/performance-stats/?timezone=america%2Fnew_york`)
+        .expectStatus(200);
+      assert.ok(requests.isDone());
+      assert.deepEqual(body.automation_performance_stats[0].entry_window, {
+        date_from: '2026-09-13',
+        date_to: '2026-09-14',
+        bucket: 'day',
+        timezone: 'America/New_York',
+      });
+    });
+
+    it('rejects an invalid timezone before querying Tinybird', async function () {
+      const requests = mockStats(200, { data: [] });
+      await agent
+        .get(`automations/${automationId}/performance-stats/?timezone=invalid`)
+        .expectStatus(422);
+      assert.equal(requests.isDone(), false);
     });
 
     it('returns the full history and matching total from one Tinybird query', async function () {

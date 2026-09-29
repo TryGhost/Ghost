@@ -11,7 +11,11 @@ import {
   fetchAutomationStats,
   fetchAutomationPerformanceStats,
 } from './tinybird-automation-stats';
-import { fillEntryStats, getEntryStatsWindow } from './automation-entry-stats';
+import {
+  fillEntryStats,
+  getEntryStatsWindow,
+  parseEntryStatsTimezone,
+} from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
 const { knex } = require('../../data/db');
@@ -142,7 +146,10 @@ export async function read(automationId: string) {
   return automation;
 }
 
-export async function readPerformanceStats(automationId: string) {
+export async function readPerformanceStats(
+  automationId: string,
+  options: { timezone?: unknown } = {},
+) {
   const exists = await repository.exists(automationId);
   if (!exists) {
     throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
@@ -154,13 +161,14 @@ export async function readPerformanceStats(automationId: string) {
       message: tpl(messages.tinybirdPerformanceStatsFailed),
     });
   }
-  const stats = await fetchAutomationPerformanceStats(client, automationId);
+  const timezone = parseEntryStatsTimezone(options.timezone);
+  const stats = await fetchAutomationPerformanceStats(client, automationId, timezone);
   if (stats === null) {
     throw new errors.InternalServerError({
       message: tpl(messages.tinybirdPerformanceStatsFailed),
     });
   }
-  const entryWindow = getEntryStatsWindow(stats.entries);
+  const entryWindow = getEntryStatsWindow(stats.entries, new Date(), timezone);
   return {
     automation_id: automationId,
     ...stats,

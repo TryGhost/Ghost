@@ -118,6 +118,7 @@ describe('fetchAutomationPerformanceStats', function () {
     sinon.assert.calledOnceWithExactly(client.fetch, 'api_automation_performance_stats', {
       version: '',
       automationId: 'selected',
+      timezone: 'UTC',
     });
   });
 
