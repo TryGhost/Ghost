@@ -251,7 +251,7 @@ export default Route.extend(ShortcutsRoute, {
 
             // Don't open the search modal if the sidebar is hidden
             // e.g. in the editor or settings screens
-            if (this.ui.isFullScreen) {
+            if (this.ui.isFullScreen || this.stateBridge.isReactFullScreen) {
                 return;
             }
 
@@ -261,7 +261,7 @@ export default Route.extend(ShortcutsRoute, {
         openSettings() {
             // Don't open the settings screen if the sidebar is hidden
             // e.g. in the editor or settings screens
-            if (this.ui.isFullScreen) {
+            if (this.ui.isFullScreen || this.stateBridge.isReactFullScreen) {
                 return;
             }
 

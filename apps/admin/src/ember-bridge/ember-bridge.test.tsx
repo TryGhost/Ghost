@@ -109,6 +109,40 @@ describe('syncEmberPostListQueryParams', () => {
   });
 });
 
+describe('syncEmberFullScreen', () => {
+  baseTest('applies the value once Ember loads after React', async () => {
+    vi.useFakeTimers();
+    const { syncEmberFullScreen } = await import('./ember-bridge');
+    const stop = syncEmberFullScreen(true);
+    const mock = createMockStateBridge();
+    const setReactFullScreen = vi.fn();
+    mock.stateBridge.setReactFullScreen = setReactFullScreen;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setReactFullScreen).toHaveBeenCalledExactlyOnceWith(true);
+    stop();
+  });
+
+  baseTest('applies only the latest value when the route changes before Ember loads', async () => {
+    vi.useFakeTimers();
+    const { syncEmberFullScreen } = await import('./ember-bridge');
+    const stop = syncEmberFullScreen(true);
+    stop();
+    const stopCurrent = syncEmberFullScreen(false);
+    const mock = createMockStateBridge();
+    const setReactFullScreen = vi.fn();
+    mock.stateBridge.setReactFullScreen = setReactFullScreen;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setReactFullScreen).toHaveBeenCalledExactlyOnceWith(false);
+    stopCurrent();
+  });
+});
+
 beforeEach(async () => {
   vi.resetModules();
   vi.useRealTimers();

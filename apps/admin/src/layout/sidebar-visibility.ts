@@ -1,5 +1,9 @@
+import { useEffect } from 'react';
 import { type AdminRouteHandle, useMatches } from '@tryghost/admin-x-framework';
-import { useSidebarVisibility as useEmberSidebarVisibility } from '@/ember-bridge';
+import {
+  syncEmberFullScreen,
+  useSidebarVisibility as useEmberSidebarVisibility,
+} from '@/ember-bridge';
 
 function hidesAdminSidebar(handle: unknown): handle is AdminRouteHandle {
   return (
@@ -10,11 +14,22 @@ function hidesAdminSidebar(handle: unknown): handle is AdminRouteHandle {
   );
 }
 
-export function useAdminSidebarVisibility(): boolean {
-  const emberSidebarVisible = useEmberSidebarVisibility();
+export function useRouteHidesAdminSidebar(): boolean {
   const matches = useMatches();
 
-  const routeHidesSidebar = matches.some((match) => hidesAdminSidebar(match.handle));
+  return matches.some((match) => hidesAdminSidebar(match.handle));
+}
+
+export function useAdminSidebarVisibility(): boolean {
+  const emberSidebarVisible = useEmberSidebarVisibility();
+  const routeHidesSidebar = useRouteHidesAdminSidebar();
 
   return emberSidebarVisible && !routeHidesSidebar;
+}
+
+/** Publishes whether the current route hides the admin sidebar. */
+export function useSyncEmberFullScreen(): void {
+  const routeHidesSidebar = useRouteHidesAdminSidebar();
+
+  useEffect(() => syncEmberFullScreen(routeHidesSidebar), [routeHidesSidebar]);
 }
