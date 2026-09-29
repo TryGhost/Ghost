@@ -624,8 +624,9 @@ const Sidebar: React.FC<SidebarProps> = ({ autoFocusSearch = true, onNavigate })
         </NavSection>
 
         {!filter && admin7Settings && (
-          <a
+          <button
             className={NAV_ITEM_CLASS_NAME}
+            type="button"
             onClick={() => {
               updateRoute('about');
               onNavigate?.();
@@ -644,7 +645,7 @@ const Sidebar: React.FC<SidebarProps> = ({ autoFocusSearch = true, onNavigate })
               }}
             />
             About Ghost
-          </a>
+          </button>
         )}
         {!filter && !admin7Settings && (
           <a
