@@ -44,6 +44,12 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
       const recipientCache =
         await this.#emailEventProcessor.batchGetRecipients(emailIdentifications);
+      const flushBatchedUpdates = async () => {
+        const counts = await this.#emailEventProcessor.flushBatchedUpdates((partialCounts) => {
+          result.merge(partialCounts);
+        });
+        result.merge(counts);
+      };
 
       try {
         for (const event of events) {
@@ -62,7 +68,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
       } catch (err) {
         // Flush queued updates even when processing fails so later jobs do not count them.
         try {
-          result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
+          await flushBatchedUpdates();
         } catch (flushError) {
           // Preserve the original processing error if the flush also fails.
           logging.error(
@@ -74,7 +80,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
       }
 
       // Flush all batched updates to the database.
-      result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
+      await flushBatchedUpdates();
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {

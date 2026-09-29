@@ -147,6 +147,45 @@ describe('Email Event Storage', function () {
     }
   });
 
+  it('reports persisted counts and retries only pending categories after a partial flush failure', async function () {
+    const db = createDb();
+    const raw = sinon.stub(db.knex, 'raw');
+    const flushError = new Error('Opened flush failed');
+    raw.onFirstCall().resolves([{ affectedRows: 1 }]);
+    raw.onSecondCall().rejects(flushError);
+    raw.resolves([{ affectedRows: 1 }]);
+    const storage = createEventStorage({ db, config: { get: () => true } });
+    sinon.stub(storage, 'saveFailure').resolves();
+    const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
+
+    await storage.handleDelivered(event);
+    await storage.handleOpened(event);
+    await storage.handlePermanentFailed(event);
+
+    let partialCounts;
+    await assert.rejects(
+      storage.flushBatchedUpdates((counts) => {
+        partialCounts = counts;
+      }),
+      (err) => err === flushError,
+    );
+    assert.deepEqual(partialCounts, {
+      storedDelivered: 1,
+      storedOpened: 0,
+      storedPermanentFailed: 0,
+    });
+
+    const retryCounts = await storage.flushBatchedUpdates();
+    assert.deepEqual(retryCounts, {
+      storedDelivered: 0,
+      storedOpened: 1,
+      storedPermanentFailed: 1,
+    });
+    sinon.assert.callCount(raw, 4);
+    assert.match(raw.thirdCall.args[0], /SET opened_at/);
+    assert.match(raw.lastCall.args[0], /SET failed_at/);
+  });
+
   describe('Constructor', function () {
     it("doesn't throw", function () {
       createEventStorage({});
