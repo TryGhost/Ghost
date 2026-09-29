@@ -11,11 +11,7 @@ import {
   fetchAutomationStats,
   fetchAutomationPerformanceStats,
 } from './tinybird-automation-stats';
-import {
-  fillEntryStats,
-  getEntryStatsWindow,
-  parseEntryStatsTimezone,
-} from './automation-entry-stats';
+import { getEntryStatsWindow, parseEntryStatsTimezone } from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
 const { knex } = require('../../data/db');
@@ -168,11 +164,10 @@ export async function readPerformanceStats(
       message: tpl(messages.tinybirdPerformanceStatsFailed),
     });
   }
-  const entryWindow = getEntryStatsWindow(stats.entries, new Date(), timezone);
+  const entryWindow = getEntryStatsWindow(stats.entries, timezone);
   return {
     automation_id: automationId,
     ...stats,
-    ...fillEntryStats(stats, entryWindow),
     entry_window: entryWindow,
   };
 }

@@ -42,4 +42,37 @@ SQL >
     GROUP BY date
     ORDER BY date ASC
 
+NODE entry_bounds
+SQL >
+    %
+    -- Clock override keeps calendar tests deterministic, like api_kpis.
+    WITH
+        {% if defined(current_time) %}
+        toDate(parseDateTime64BestEffort({{ String(current_time) }}, 3, 'UTC'), {{ String(timezone, 'UTC') }})
+        {% else %}
+        toDate(now(), {{ String(timezone, 'UTC') }})
+        {% end %} AS today
+    SELECT
+        coalesce(minOrNull(toDate(date)), today) AS first_date,
+        greatest(coalesce(maxOrNull(toDate(date)), today), today) AS last_date
+    FROM performance_counts
+
+NODE calendar
+SQL >
+    SELECT
+        toString(addDays(first_date, arrayJoin(range(toUInt32(dateDiff('day', first_date, last_date) + 1))))) AS date
+    FROM entry_bounds
+
+NODE filled_performance_counts
+SQL >
+    SELECT
+        calendar.date,
+        coalesce(counts.in_progress_run_count, 0) AS in_progress_run_count,
+        coalesce(counts.completed_run_count, 0) AS completed_run_count,
+        coalesce(counts.exited_early_run_count, 0) AS exited_early_run_count,
+        coalesce(counts.invalid_run_count, 0) AS invalid_run_count
+    FROM calendar
+    LEFT JOIN performance_counts AS counts ON calendar.date = counts.date
+    ORDER BY calendar.date
+
 TYPE ENDPOINT

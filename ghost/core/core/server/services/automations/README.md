@@ -56,8 +56,8 @@ Runs with no recorded steps are excluded from both chart and cards. An unexpecte
 step status fails the request, including when another step is pending. There is no
 partial-success message or fourth user-facing status category.
 
-One entry is one run, including repeat entries and deleted members. Missing days
-are filled with zero from the first included entry through today. Empty histories
+One entry is one run, including repeat entries and deleted members. Tinybird fills missing days
+with zero from the first included entry through today. Empty histories
 return a zero total and one zero bucket for today. `date_from` is inclusive and
 `date_to` is exclusive. The optional `timezone` parameter accepts an IANA timezone and defaults to UTC.
 It controls daily grouping and today’s date. Admin should pass the browser

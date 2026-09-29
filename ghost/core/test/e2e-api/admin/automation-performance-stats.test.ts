@@ -17,6 +17,13 @@ describe('Automation performance stats API', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let automationId: string;
   let clock: sinon.SinonFakeTimers;
+  const zeroRow = (date = '2026-09-14') => ({
+    date,
+    in_progress_run_count: 0,
+    completed_run_count: 0,
+    exited_early_run_count: 0,
+    invalid_run_count: 0,
+  });
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
@@ -107,7 +114,7 @@ describe('Automation performance stats API', function () {
         }
         return originalQuery.call(this, connection, query);
       });
-      const requests = mockStats(200, { data: [] });
+      const requests = mockStats(200, { data: [zeroRow()] });
       await agent.get(`automations/${automationId}/performance-stats`).expectStatus(500);
       assert.equal(lookupFailures, 1);
       assert.equal(requests.isDone(), false);
@@ -130,7 +137,7 @@ describe('Automation performance stats API', function () {
     }
 
     it.each(['owner', 'admin'])('allows a %s staff JWT to read statistics', async function (role) {
-      const requests = mockStats(200, { data: [] });
+      const requests = mockStats(200, { data: [zeroRow()] });
       await agent.useStaffTokenFor(role);
       try {
         await agent.get(`automations/${automationId}/performance-stats`).expectStatus(200);
@@ -142,7 +149,7 @@ describe('Automation performance stats API', function () {
 
     it('passes the normalized timezone to Tinybird and uses it for the response window', async function () {
       clock.setSystemTime(new Date('2026-09-14T01:00:00Z'));
-      const requests = mockStats(200, { data: [] }, 'America/New_York');
+      const requests = mockStats(200, { data: [zeroRow('2026-09-13')] }, 'America/New_York');
       const { body } = await agent
         .get(`automations/${automationId}/performance-stats/?timezone=america%2Fnew_york`)
         .expectStatus(200);
@@ -156,7 +163,7 @@ describe('Automation performance stats API', function () {
     });
 
     it('rejects an invalid timezone before querying Tinybird', async function () {
-      const requests = mockStats(200, { data: [] });
+      const requests = mockStats(200, { data: [zeroRow()] });
       await agent
         .get(`automations/${automationId}/performance-stats/?timezone=invalid`)
         .expectStatus(422);
@@ -164,24 +171,16 @@ describe('Automation performance stats API', function () {
     });
 
     it('returns the full history and matching total from one Tinybird query', async function () {
-      const requests = mockStats(200, {
-        data: [
-          {
-            date: '2026-09-14',
-            in_progress_run_count: '1',
-            completed_run_count: '0',
-            exited_early_run_count: '1',
-            invalid_run_count: '0',
-          },
-          {
-            date: '2020-01-01',
-            in_progress_run_count: 0,
-            completed_run_count: 1,
-            exited_early_run_count: 0,
-            invalid_run_count: 0,
-          },
-        ],
-      });
+      const start = Date.parse('2020-01-01');
+      const dayMs = 24 * 60 * 60 * 1000;
+      const days = (Date.parse('2026-09-14') - start) / dayMs + 1;
+      const rows = Array.from({ length: days }, (_, day) =>
+        zeroRow(new Date(start + day * dayMs).toISOString().slice(0, 10)),
+      );
+      rows[0].completed_run_count = 1;
+      rows[rows.length - 1].in_progress_run_count = 1;
+      rows[rows.length - 1].exited_early_run_count = 1;
+      const requests = mockStats(200, { data: rows });
       const { body } = await requestStats(200);
       assert.ok(requests.isDone());
       const stats = body.automation_performance_stats[0];
@@ -192,7 +191,7 @@ describe('Automation performance stats API', function () {
         bucket: 'day',
         timezone: 'UTC',
       });
-      assert.ok(stats.entries.length > 1000);
+      assert.equal(stats.entries.length, rows.length);
       assert.equal(stats.total_run_count, 3);
       assert.equal(stats.in_progress_run_count, 1);
       assert.equal(stats.completed_run_count, 1);
@@ -228,8 +227,8 @@ describe('Automation performance stats API', function () {
       await requestStats(500);
     });
 
-    it('preserves a successful empty Tinybird response', async function () {
-      const requests = mockStats(200, { data: [] });
+    it('preserves Tinybird’s zero bucket for an empty history', async function () {
+      const requests = mockStats(200, { data: [zeroRow()] });
       const { body } = await requestStats(200);
       assert.ok(requests.isDone());
       assert.equal(body.automation_performance_stats[0].total_run_count, 0);

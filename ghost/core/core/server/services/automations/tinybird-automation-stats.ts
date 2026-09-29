@@ -104,7 +104,7 @@ export async function fetchAutomationPerformanceStats(
       automationId,
       timezone,
     });
-    const parsed = z.array(performanceRowSchema).safeParse(rows);
+    const parsed = z.array(performanceRowSchema).min(1).safeParse(rows);
     if (
       !parsed.success ||
       new Set(parsed.data.map((row) => row.date)).size !== parsed.data.length

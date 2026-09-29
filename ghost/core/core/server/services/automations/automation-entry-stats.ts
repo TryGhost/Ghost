@@ -34,37 +34,17 @@ export function parseEntryStatsTimezone(timezone: unknown): string {
   return parsed.data;
 }
 
-// Include the complete recorded history through today. Empty histories show today's zero.
+// Tinybird returns the complete, ordered calendar, including today's zero for empty histories.
 export function getEntryStatsWindow(
   entries: EntryStatsData['entries'],
-  now = new Date(),
   timezone = 'UTC',
 ): EntryStatsWindow {
-  const today = moment(now).tz(timezone).format('YYYY-MM-DD');
-  let start = entries[0]?.date ?? today;
-  let end = today;
-  for (const { date } of entries) {
-    if (date < start) {
-      start = date;
-    }
-    if (date > end) {
-      end = date;
-    }
-  }
   return {
-    date_from: start,
-    date_to: new Date(Date.parse(end) + DAY_MS).toISOString().slice(0, 10),
+    date_from: entries[0].date,
+    date_to: new Date(Date.parse(entries[entries.length - 1].date) + DAY_MS)
+      .toISOString()
+      .slice(0, 10),
     bucket: 'day',
     timezone,
   };
-}
-
-export function fillEntryStats(data: EntryStatsData, window: EntryStatsWindow): EntryStatsData {
-  const counts = new Map(data.entries.map((entry) => [entry.date, entry.count]));
-  const entries = [];
-  for (let day = Date.parse(window.date_from); day < Date.parse(window.date_to); day += DAY_MS) {
-    const date = new Date(day).toISOString().slice(0, 10);
-    entries.push({ date, count: counts.get(date) ?? 0 });
-  }
-  return { total_run_count: data.total_run_count, entries };
 }

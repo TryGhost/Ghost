@@ -123,17 +123,21 @@ describe('fetchAutomationPerformanceStats', function () {
   });
 
   it('returns zero for a successful empty history', async function () {
-    assert.deepEqual(await fetchAutomationPerformanceStats(clientReturning([]), 'selected'), {
-      total_run_count: 0,
-      in_progress_run_count: 0,
-      completed_run_count: 0,
-      exited_early_run_count: 0,
-      entries: [],
-    });
+    assert.deepEqual(
+      await fetchAutomationPerformanceStats(clientReturning([row('2026-09-14', 0)]), 'selected'),
+      {
+        total_run_count: 0,
+        in_progress_run_count: 0,
+        completed_run_count: 0,
+        exited_early_run_count: 0,
+        entries: [{ date: '2026-09-14', count: 0 }],
+      },
+    );
   });
 
   it.each([
     { name: 'missing response', rows: null },
+    { name: 'missing calendar', rows: [] },
     { name: 'invalid date', rows: [row('2026-02-30')] },
     { name: 'negative count', rows: [row('2026-09-01', -1)] },
     { name: 'null count', rows: [row('2026-09-01', null)] },

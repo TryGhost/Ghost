@@ -93,8 +93,8 @@ prefix also supports the automation list. Queries use `FINAL` before aggregating
 Changing sorting keys rebuilds the materialized tables from the raw event
 datasources, which have no TTL. Deploy the related datafiles together.
 
-The performance pipe classifies each run once, then returns daily counts for each
-of the three statuses. Core derives the chart and status totals from that same
+The performance pipe classifies each run once, then fills a daily calendar with zero counts
+for missing dates through today in the requested timezone. Core derives the chart and status totals from that same
 result. The latest step categories use a bit mask: pending=1, finished=2, known
 exit=4, unknown=8. Any unknown bit fails the API request. Otherwise pending wins;
 finished-only is 2; known exits with or without finished steps are 6 or 4. Runs
