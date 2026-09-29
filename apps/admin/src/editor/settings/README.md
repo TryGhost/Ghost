@@ -42,11 +42,9 @@ write is the entry the map leaves out. The prose below follows that order.
 Some sections are a row that opens a pane over the rest of the panel rather than
 fields in the list. `SettingsSubview` in `settings-subview.tsx` is both halves:
 give it the section's own id, an icon and a label for the row, a title and a
-back-button label for the pane, and the pane's fields as children. Two props
-adjust the shell around them: `wide` widens the panel for a pane that needs the
-room, and `contentClassName` overrides the pane body's default padding for a pane
-that runs full-bleed. Without either, the shell renders the pane as it renders
-this one.
+back-button label for the pane, and the pane's fields as children.
+`contentClassName` overrides the pane body's default padding for a pane that
+runs full-bleed. Every pane keeps the same width as the section list.
 
 Only one pane is open at a time. While it is, the panel shows that section
 alone: its heading, the other sections and their rows are all out of the way,
@@ -88,8 +86,8 @@ editor entry. There is no keyboard shortcut for it.
 
 Below the `lg` breakpoint the panel overlays the editor from the right rather
 than narrowing it, and below 500px it takes the full width. Above it the panel
-sits in the flow beside the editor at a fixed 350px, widening to 500px for a
-pane that asks for the room.
+sits in the flow beside the editor at a fixed 350px, including while a subview
+is open.
 
 ## URL
 
@@ -109,17 +107,18 @@ navigation and tab-close guards ask about it; the session owns
 [that wait](../session/README.md#the-slug).
 
 The preview under the input is the site URL without its scheme, then the slug,
-both slash-terminated. The section is the slug and that preview and nothing
-else: it does not link out to a published post, and a sent post previews its
-site URL like any other rather than the separate email URL it also has.
+both slash-terminated. Published posts also show a View post link beside the
+label. It uses the saved record's URL, preserving custom routes and avoiding links to an unsaved slug.
+A sent post previews its site URL like any other rather than its separate email URL.
 
 ## Publish date
 
 When the post is published, edited in the site's timezone and carried as a UTC
 instant. A post that has no publish time yet shows the current moment, and only
 an edit stages a value, so an untouched draft still leaves the time to the
-server. The date is chosen from a calendar and the time typed as `HH:mm`; an
-unparseable time returns to the value already held. Both fields commit at minute
+server. The fields share the row equally, with calendar and clock icons and the
+timezone inside the time field. The date is chosen from a calendar and the time entered
+through Shade's native `TimePicker`, whose value is `HH:mm`; an unparseable time returns to the value already held. Both fields commit at minute
 granularity, and the seconds a publish stamped are kept whenever the committed
 minute is the one already saved. Tabbing through an untouched time, retyping it,
 or choosing the displayed calendar day does not commit a value.
@@ -339,16 +338,21 @@ still closes the pane.
 
 ## Meta data
 
-Meta data is a pane, and every role that can open the panel can open it. A meta
-field cleared back to empty is stored as no value, as the excerpt is.
+Meta data is a pane containing the title, description and canonical URL, and every
+role that can open the panel can open it. A meta field cleared back to empty is stored as no value, as the excerpt is.
 
-Neither field is required, and the character counts beside them are a
-recommendation rather than a limit: 60 for the title, 145 for the description,
+Neither title nor description is required, and the character counts beside them
+are a recommendation rather than a limit: 60 for the title, 145 for the description,
 counted as symbols so a multibyte character counts once, and coloured once the
 writer is past the recommendation.
 
-The preview under them is the result the post would produce. Each line falls
-back rather than emptying: the title is the meta title, else the title the
+The optional canonical URL accepts root-relative paths or absolute URLs with a
+valid host, rejects whitespace, and keeps Ember's 2,000-character limit. Invalid
+values stay staged and block saves until corrected. Clearing the field stores
+no canonical override.
+
+The preview under them is the result the post would produce, with a Google logo,
+search bar and blue result title. Each line falls back rather than emptying: the title is the meta title, else the title the
 writer is looking at, else `(Untitled)`; the description is the meta
 description, else the post's excerpt, else a sentence explaining that search
 engines will compose their own. The address is the canonical URL when the post
@@ -395,6 +399,12 @@ the Mac glyphs for a Mac writer, the key names for everyone else — read from t
 user agent as the pane renders. Hovering a glyph names the key it stands for;
 a key already shown as its name carries no tooltip. A slash command reads the
 same wherever it is typed.
+
+The reference uses compact rows with a shared hover background, wrapping labels,
+and underlined group headings. Definition-list spacing is reset locally so Ember's
+global list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
+lays out the individual `Kbd` caps; it does not draw another cap around them.
+The caps use `variant="contrast"` to stand out against the sidebar background.
 
 ## Delete
 

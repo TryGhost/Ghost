@@ -5,6 +5,7 @@
 
 // testids
 export const membersListItem = 'members-list-item';
+export const membersListScrollRoot = 'members-list-scroll-root';
 export const membersSearchInput = 'members-search-input';
 export const membersActions = 'members-actions';
 export const memberDetail = 'member-detail';
@@ -28,6 +29,7 @@ export const newMemberLink = 'New member';
 export const showAllButton = 'Show all members';
 export const addYourselfButton = 'Add yourself as a member';
 export const importCsvLink = 'Import with CSV';
+export const loadMoreButton = 'Load more';
 
 // accessible-name prefixes (the import mapping table names controls per CSV column,
 // and member detail names its per-field edit buttons)

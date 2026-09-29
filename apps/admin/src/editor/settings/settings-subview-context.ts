@@ -5,8 +5,6 @@ export interface OpenSubview {
   id: SettingsSectionId;
   /** The pane's heading, which names the panel while the pane is open. */
   title: string;
-  /** The pane needs more room than the section list does. */
-  wide: boolean;
 }
 
 export interface SubviewController {

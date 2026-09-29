@@ -127,6 +127,7 @@ export const VALIDATED_SETTINGS_FIELD_KEYS = [
   'tiers',
   'meta_title',
   'meta_description',
+  'canonical_url',
   'og_title',
   'og_description',
   'twitter_title',
@@ -145,7 +146,7 @@ export function validatedFieldsOf(fields: ValidatedSettingsFields): ValidatedSet
 
 /** The width each text field is held to, and what it says when it is past it. */
 const LENGTH_RULES: Record<
-  Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers'>,
+  Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers' | 'canonical_url'>,
   { max: number; message: string }
 > = {
   meta_title: { max: META_TITLE_MAX, message: META_TITLE_TOO_LONG },
@@ -167,6 +168,26 @@ export function settingsFieldErrorFor(
   }
   if (key === 'tiers') {
     return tiersIncomplete(fields) ? TIERS_REQUIRED : null;
+  }
+  if (key === 'canonical_url') {
+    const url = fields.canonical_url;
+    if (!url) {
+      return null;
+    }
+    if (/\s/.test(url)) {
+      return 'Please enter a valid URL';
+    }
+    // Root-relative paths are supported; absolute URLs must have a valid host.
+    if (!url.startsWith('/')) {
+      try {
+        if (!new URL(url).hostname) {
+          return 'Please enter a valid URL';
+        }
+      } catch {
+        return 'Please enter a valid URL';
+      }
+    }
+    return overLength(url, 2000) ? 'Canonical URL is too long, max 2000 chars' : null;
   }
   const { max, message } = LENGTH_RULES[key];
   return overLength(fields[key], max) ? message : null;
