@@ -1,7 +1,7 @@
 import React from 'react';
 import { RouterProvider, createHashRouter, createMemoryRouter } from 'react-router';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   hashPathname,
   installHistoryPopGate,
@@ -282,10 +282,8 @@ describe('useUnsavedChangesGuard with guardHistoryPops', () => {
 
   const traverse = async (move: () => void, target: string) => {
     const before = reached.length;
-    await act(async () => {
-      move();
-      await waitFor(() => expect(reached.slice(before)).toContain(target));
-    });
+    move();
+    await waitFor(() => expect(reached.slice(before)).toContain(target));
   };
   const popBack = (target = '#/elsewhere') => traverse(() => window.history.back(), target);
   const popForward = (target: string) => traverse(() => window.history.forward(), target);
@@ -469,6 +467,35 @@ describe('useUnsavedChangesGuard with guardHistoryPops', () => {
 
     expect(window.location.hash).toBe('#/elsewhere');
     expect(dialogOpen()).toBe('false');
+  });
+
+  it('does not block a pop to the same screen without its trailing slash', async () => {
+    let screenGuard!: { guard: UnsavedChangesGuard; setWhen: (when: boolean) => void };
+    function Screen() {
+      const [when, setWhen] = React.useState(false);
+      screenGuard = { guard: useUnsavedChangesGuard({ when, guardHistoryPops: true }), setWhen };
+      return null;
+    }
+    window.history.replaceState(null, '', '#/guarded');
+    const router = createHashRouter([{ path: '/guarded', element: <Screen /> }]);
+    render(<RouterProvider router={router} />);
+    const go = vi.spyOn(window.history, 'go').mockImplementation(() => {});
+    try {
+      await traverse(() => {
+        window.location.hash = '/guarded/';
+      }, '#/guarded/');
+      await waitFor(() => expect(router.state.location.pathname).toBe('/guarded/'));
+      act(() => screenGuard.setWhen(true));
+
+      await popBack('#/guarded');
+
+      await waitFor(() => expect(router.state.location.pathname).toBe('/guarded'));
+      expect(go).not.toHaveBeenCalled();
+      expect(screenGuard.guard.isBlocked).toBe(false);
+    } finally {
+      go.mockRestore();
+      router.dispose();
+    }
   });
 
   it('leaves the router able to undo a later pop onto the entry a cancelled Forward restored', async () => {

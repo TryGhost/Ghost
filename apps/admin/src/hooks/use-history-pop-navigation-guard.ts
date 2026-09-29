@@ -67,7 +67,10 @@ export function restoredState(state: unknown, reachedState: unknown): unknown {
     : state;
 }
 
-const withoutTrailingSlash = (pathname: string) => pathname.replace(/\/+$/, '');
+/** A pathname without its trailing slash, which the router ignores when matching routes. */
+export function withoutTrailingSlash(pathname: string): string {
+  return pathname.replace(/\/+$/, '');
+}
 
 interface GuardedEntry {
   pathname: string;
@@ -105,7 +108,6 @@ export function useHistoryPopNavigationGuard(when: boolean, claim: () => boolean
       if (!whenRef.current || releasedRef.current || !entry) {
         return false;
       }
-      // The router matches a path with or without its trailing slash.
       const reachedPathname = withoutTrailingSlash(hashPathname(window.location.hash));
       if (reachedPathname === withoutTrailingSlash(entry.pathname)) {
         return false;

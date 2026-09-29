@@ -7,7 +7,10 @@ import {
   useLocation,
 } from '@tryghost/admin-x-framework';
 import { useHashLinkNavigationGuard } from '@/hooks/use-hash-link-navigation-guard';
-import { useHistoryPopNavigationGuard } from '@/hooks/use-history-pop-navigation-guard';
+import {
+  useHistoryPopNavigationGuard,
+  withoutTrailingSlash,
+} from '@/hooks/use-history-pop-navigation-guard';
 import type { BlockerFunction } from '@tryghost/admin-x-framework';
 
 type BlockerFunctionArgs = Parameters<BlockerFunction>[0];
@@ -113,7 +116,10 @@ export function useUnsavedChangesGuard({
       return true;
     }
     blockedByInterceptRef.current = false;
-    const shouldBlock = when && args.currentLocation.pathname !== args.nextLocation.pathname;
+    const shouldBlock =
+      when &&
+      withoutTrailingSlash(args.currentLocation.pathname) !==
+        withoutTrailingSlash(args.nextLocation.pathname);
     if (shouldBlock) {
       blockedNavigationRef.current = true;
     }
@@ -155,6 +161,7 @@ export function useUnsavedChangesGuard({
     bypassRef.current = false;
     blockedNavigationRef.current = false;
     resumeAfterSaveRef.current = false;
+    leaveConfirmedRef.current = false;
   }, [location.pathname]);
 
   React.useEffect(() => {

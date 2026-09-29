@@ -129,54 +129,96 @@ describe('useEditorLeaveGuard', () => {
     router.dispose();
   });
 
-  it('lets a later exit ask again once an accepted pop lands on the same mounted editor', async () => {
+  it.each(['confirm', 'proceed'] as const)(
+    'keeps asking once an exit accepted by %s lands on the same mounted editor',
+    async (firstDecision) => {
+      const leaveRequested = vi.fn().mockResolvedValue('confirm');
+      leaveRequested.mockResolvedValueOnce(firstDecision);
+      const session = {
+        state: { kind: 'idle' },
+        createdId: null,
+        isDirty: () => true,
+        leaveRequested,
+      } as unknown as EditorSessionHandle;
+      let guard!: EditorLeaveGuard;
+      let mounts = 0;
+      function Editor() {
+        guard = useEditorLeaveGuard(session, 'post');
+        useEffect(() => {
+          mounts += 1;
+        }, []);
+        return createElement('main');
+      }
+      // Keyed like the editor screen, so entries with the same session key share one editor.
+      function EditorRoute() {
+        return createElement(Editor, { key: useEditorSessionKey() });
+      }
+      window.history.replaceState(null, '', '#/editor/post/first');
+      window.history.pushState(null, '', '#/posts');
+      window.history.pushState(null, '', '#/editor/post/second');
+      const router = createHashRouter([
+        { path: '/editor/*', element: createElement(EditorRoute) },
+        { path: '/posts', element: 'Posts' },
+      ]);
+      // Hash anchors leave their entries without a router index.
+      window.history.replaceState(null, '');
+      render(createElement(RouterProvider, { router }));
+      try {
+        await traverse(() => window.history.go(-2), '#/editor/post/first');
+        if (firstDecision === 'confirm') {
+          await waitFor(() => expect(guard.dialogProps.open).toBe(true));
+          act(() => {
+            guard.dialogProps.onConfirm();
+            guard.dialogProps.onOpenChange(false);
+          });
+        }
+
+        await waitFor(() => expect(router.state.location.pathname).toBe('/editor/post/first'));
+        await waitFor(() => expect(guard.dialogProps.open).toBe(false));
+        expect(mounts).toBe(1);
+
+        await traverse(() => window.history.forward(), '#/editor/post/second');
+        await waitFor(() => expect(guard.dialogProps.open).toBe(true));
+        act(() => guard.dialogProps.onOpenChange(false));
+        await waitFor(() => expect(guard.dialogProps.open).toBe(false));
+
+        await traverse(() => window.history.back(), '#/editor/post/second');
+
+        await waitFor(() => expect(guard.dialogProps.open).toBe(true));
+        expect(leaveRequested).toHaveBeenCalledTimes(3);
+      } finally {
+        router.dispose();
+      }
+    },
+  );
+
+  it('replaces the URL of a post created at its trailing-slash URL without asking to leave', async () => {
     const leaveRequested = vi.fn().mockResolvedValue('confirm');
-    const session = {
-      state: { kind: 'idle' },
-      createdId: null,
-      isDirty: () => true,
-      leaveRequested,
-    } as unknown as EditorSessionHandle;
-    let guard!: EditorLeaveGuard;
-    let mounts = 0;
+    let acknowledgeCreate!: () => void;
     function Editor() {
-      guard = useEditorLeaveGuard(session, 'post');
-      useEffect(() => {
-        mounts += 1;
-      }, []);
+      const [createdId, setCreatedId] = useState<string | null>(null);
+      acknowledgeCreate = () => setCreatedId('new789');
+      useEditorLeaveGuard(
+        {
+          state: { kind: 'idle' },
+          createdId,
+          isDirty: () => true,
+          leaveRequested,
+        } as unknown as EditorSessionHandle,
+        'post',
+      );
       return createElement('main');
     }
-    // Keyed like the editor screen, so entries with the same session key share one editor.
-    function EditorRoute() {
-      return createElement(Editor, { key: useEditorSessionKey() });
-    }
-    window.history.replaceState(null, '', '#/editor/post/first');
-    window.history.pushState(null, '', '#/posts');
-    window.history.pushState(null, '', '#/editor/post/second');
-    const router = createHashRouter([
-      { path: '/editor/*', element: createElement(EditorRoute) },
-      { path: '/posts', element: 'Posts' },
-    ]);
-    // Hash anchors leave their entries without a router index.
-    window.history.replaceState(null, '');
+    const router = createMemoryRouter(
+      [{ path: '/editor/post/:id?', element: createElement(Editor) }],
+      { initialEntries: ['/editor/post/'] },
+    );
     render(createElement(RouterProvider, { router }));
     try {
-      await traverse(() => window.history.go(-2), '#/editor/post/first');
-      await waitFor(() => expect(guard.dialogProps.open).toBe(true));
+      act(() => acknowledgeCreate());
 
-      act(() => {
-        guard.dialogProps.onConfirm();
-        guard.dialogProps.onOpenChange(false);
-      });
-
-      await waitFor(() => expect(router.state.location.pathname).toBe('/editor/post/first'));
-      await waitFor(() => expect(guard.dialogProps.open).toBe(false));
-      expect(mounts).toBe(1);
-
-      await traverse(() => window.history.forward(), '#/editor/post/second');
-
-      await waitFor(() => expect(guard.dialogProps.open).toBe(true));
-      expect(leaveRequested).toHaveBeenCalledTimes(2);
+      await waitFor(() => expect(router.state.location.pathname).toBe('/editor/post/new789'));
+      expect(leaveRequested).not.toHaveBeenCalled();
     } finally {
       router.dispose();
     }

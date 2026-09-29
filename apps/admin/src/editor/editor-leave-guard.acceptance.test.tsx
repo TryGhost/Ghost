@@ -364,24 +364,27 @@ describe('Post editor leave guard', () => {
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
   });
 
-  it('replaces the URL of a created post without asking to leave', async () => {
-    const { createApi, updateApi, resolveCreate } = fakeNewPost();
+  it.each(['/editor/post', '/editor/post/'])(
+    'replaces the URL of a post created at %s without asking to leave',
+    async (newPostUrl) => {
+      const { createApi, updateApi, resolveCreate } = fakeNewPost();
 
-    await renderAdminApp('/editor/post', withFastAutosave(FLAG_ON));
-    await expect.element(editorScreen.body()).toBeVisible();
+      await renderAdminApp(newPostUrl, withFastAutosave(FLAG_ON));
+      await expect.element(editorScreen.body()).toBeVisible();
 
-    await appendToBody('First words');
-    await expect.poll(() => createApi.requests.length).toBe(1);
-    // The URL swap lands on a post the writer has already moved past.
-    await appendToBody(' and then some');
-    resolveCreate();
+      await appendToBody('First words');
+      await expect.poll(() => createApi.requests.length).toBe(1);
+      // The URL swap lands on a post the writer has already moved past.
+      await appendToBody(' and then some');
+      resolveCreate();
 
-    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
-    await expect(editorScreen.leaveDialog()).toHaveCount(0);
-    await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
-    // Nothing treated the swap as a leave, so no revision was cut for it.
-    expect(updateApi.requests.every((r) => !r.url.includes('save_revision=true'))).toBe(true);
-  });
+      await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+      await expect(editorScreen.leaveDialog()).toHaveCount(0);
+      await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
+      // Nothing treated the swap as a leave, so no revision was cut for it.
+      expect(updateApi.requests.every((r) => !r.url.includes('save_revision=true'))).toBe(true);
+    },
+  );
 
   it('preserves a blocked exit when a create acquires its ID', async () => {
     const { createApi, resolveCreate } = fakeNewPost();
@@ -556,6 +559,31 @@ describe('Post editor leave guard on history pops', () => {
     await editorScreen.leaveEditor().click();
     await expect.poll(currentRoute).toBe('/posts');
     await expect(editorScreen.root()).toHaveCount(0);
+    expect(saveApi.requests.length).toBe(0);
+  });
+
+  it('asks again after a Stay once an accepted exit kept the editor mounted', async () => {
+    const saveApi = fakeEditablePost({ status: 'published', published_at: LOADED_AT });
+    await openByHashChange(`/editor/post/${POST_ID}`, withFastAutosave(EDITOR_ONLY));
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+
+    // Plain entries for two posts share a session key, so leaving to the other keeps this editor.
+    window.location.hash = '/editor/post/other1';
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    await editorScreen.leaveEditor().click();
+    await expect.poll(currentRoute).toBe('/editor/post/other1');
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+
+    window.history.back();
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    await editorScreen.stayInEditor().click();
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+
+    window.history.back();
+
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
     expect(saveApi.requests.length).toBe(0);
   });
 
