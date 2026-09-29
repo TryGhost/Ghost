@@ -20,11 +20,15 @@ import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/
 import type { ProtoAutomationDetail } from '@/automations/proto/shared/update-member';
 import { getRunData } from '@/automations/proto/shared/mock';
 import {
+  type ProtoAutomation,
+  blankAutomation,
+  insertAutomation,
   setAutomationArchived,
   saveAutomation,
   setAutomationStatus,
   updateAutomationDetails,
   useProtoAutomation,
+  useStripeConnected,
 } from '@/automations/proto/shared/store';
 import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
@@ -32,7 +36,8 @@ import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { HeaderActions } from './header-bar';
 import { HEADER_ACTION, HEADER_ICON_BUTTON, floatingControl } from './header-controls';
 import { LeftPanel } from './left-panel';
-import type { TriggerConfig } from '@/automations/proto/shared/trigger-config';
+import { type TriggerConfig, triggerConfigFor } from '@/automations/proto/shared/trigger-config';
+import { NEW_AUTOMATION_ID } from './creation';
 import { CANVAS_SLOT_FILL, canvasTheme } from '@/automations/proto/canvas/flow-utils';
 import { EditCanvas } from './canvas/edit-canvas';
 import { RunCanvas } from './canvas/run-canvas';
@@ -164,7 +169,22 @@ const AutomationFloat: React.FC = () => {
   // session is as real as a seeded fixture. Runs and metrics stay hand-authored
   // and keyed by id — a created automation has none, which is the empty state
   // `emptyScenarioId` already designs for.
-  const record = useProtoAutomation(id);
+  //
+  // /new is the creation sentinel — phase 2's deferred model (see ./creation).
+  // The screen synthesizes a blank once per mount, carrying its REAL id, and
+  // stands it in for the saved record, so the diff and the leave guard work
+  // unmodified against it. A Stripe-less site starts on the free trigger, on the
+  // baseline so arriving and leaving untouched registers no change.
+  const stripeConnected = useStripeConnected();
+  const isNew = id === NEW_AUTOMATION_ID;
+  const newBase = useRef<ProtoAutomation | null>(null);
+  if (isNew && newBase.current === null) {
+    newBase.current = {
+      ...blankAutomation(),
+      trigger: !stripeConnected ? triggerConfigFor('member_subscribes') : null,
+    };
+  }
+  const record = useProtoAutomation(id) ?? (isNew ? (newBase.current ?? undefined) : undefined);
   const scenario = record
     ? { automation: record.automation, ...getRunData(record.automation.id) }
     : undefined;
@@ -193,6 +213,11 @@ const AutomationFloat: React.FC = () => {
   // No model behind it yet — see the panel. Held here so the choice survives a tab
   // switch, which is enough to tell whether the question belongs in this panel.
   const [allowReentry, setAllowReentry] = useState(false);
+  // A new automation's name and description, held until the first save. The
+  // Settings fields write straight to the store for an automation that exists;
+  // one that doesn't yet has nowhere to write, so they land here and ride the
+  // insert. null = untouched.
+  const [newDetails, setNewDetails] = useState<{ name: string; description: string } | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
   // Edits are held here until Save commits them to the store, which is also why
   // they're the one piece of state that ISN'T persisted: an unsaved draft is
@@ -211,7 +236,14 @@ const AutomationFloat: React.FC = () => {
 
   // The trigger stays editable here — nothing is fixed after creation.
   // The canvas is always editable, so hiding the pane is the user's call.
-  const [paneCollapsed, setPaneCollapsed] = useState(false);
+  //
+  // It OPENS only when there's something to report: the automation is live, or
+  // it has runs. A new automation — or one that's off and has never enrolled
+  // anyone — opens straight onto the canvas, where the work is, rather than
+  // onto a chart of zeroes. An arrival rule only; after that the toggle is yours.
+  const [paneCollapsed, setPaneCollapsed] = useState(
+    () => !(liveStatus === 'active' || (scenario?.runs.length ?? 0) > 0),
+  );
   // Shade's control shape and Admin 7 flag, for the one floating piece that
   // isn't a Button (the name card) — so its corners and padding match the
   // buttons' either way.
@@ -242,7 +274,9 @@ const AutomationFloat: React.FC = () => {
           draftTrigger: triggerConfig,
         })
       : [];
-  const hasChanges = changes.length > 0;
+  // A new automation's name and description count too — they're only in
+  // screen state until the first save, so leaving would lose them.
+  const hasChanges = changes.length > 0 || (isNew && newDetails !== null);
 
   // Both the commit button and the leave guard hang off hasChanges — the draft
   // differing from what's stored — and nothing else.
@@ -259,10 +293,16 @@ const AutomationFloat: React.FC = () => {
   // the draft is React state, deliberately not persisted (see `draft`), so a refresh
   // or a closed tab loses it exactly as an in-app navigation would. Both guards watch
   // the same condition now, which is also what phase 1 and 2 do.
+  // The id the first save just wrote, so the /new → /:id swap it navigates
+  // isn't mistaken for leaving.
+  const createdId = useRef<string | null>(null);
   useConfirmUnload(hasChanges);
   const navigationBlocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      hasChanges && currentLocation.pathname !== nextLocation.pathname,
+      !leaving.current &&
+      !(createdId.current !== null && nextLocation.pathname.endsWith(`/${createdId.current}`)) &&
+      hasChanges &&
+      currentLocation.pathname !== nextLocation.pathname,
   );
 
   const goBack = () => navigate(toVersioned(lanePath(LANE)));
@@ -277,6 +317,13 @@ const AutomationFloat: React.FC = () => {
   const handleArchive = () => {
     setArchiveOpen(false);
     if (!id || !savedAutomation) {
+      return;
+    }
+    // Unsaved, there's nothing in the store to archive: it's abandoning the
+    // draft. Leave without writing or claiming anything.
+    if (isNew) {
+      leaving.current = true;
+      navigate(toVersioned(lanePath(LANE)));
       return;
     }
     // Flagged before the navigate: the store is external, so this re-renders the
@@ -301,6 +348,11 @@ const AutomationFloat: React.FC = () => {
   }
 
   if (!scenario || !record || !id) {
+    // Mid-archive: the route change is in flight. Nothing, for one frame, rather
+    // than "not found" for something you just did on purpose.
+    if (leaving.current) {
+      return null;
+    }
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background">
         <EmptyIndicator title="Automation not found" />
@@ -312,6 +364,10 @@ const AutomationFloat: React.FC = () => {
   }
 
   const { automation } = scenario;
+  // What the automation is called on screen: the held name while a new one is
+  // unsaved (see newDetails), the stored one otherwise. What the first save
+  // writes, too. A blanked field keeps the name it had.
+  const displayName = newDetails?.name.trim() || automation.name;
   // Same two values as above, narrowed. The versions used for the diff are derived
   // before the not-found guard (hooks can't run conditionally), so TypeScript
   // still sees them as possibly-undefined; past the guard they can't be.
@@ -351,7 +407,24 @@ const AutomationFloat: React.FC = () => {
   // reversible via Stop, and a blocking modal would interrupt the flow. All the
   // friction lives on Stop and on publishing to something already running.
   // Whatever's in the draft becomes the running version.
-  const promoteDraft = () => {
+  //
+  // The first commit of a /new automation is an INSERT: flow, trigger, details
+  // and status in one write, then the URL swaps to the real id (replace, so Back
+  // doesn't return to a /new that would synthesize a second blank). The screen's
+  // key holds across that swap — see AutomationFloatScreen.
+  const promoteDraft = (status?: LiveStatus) => {
+    if (isNew) {
+      insertAutomation({
+        automation: { ...draftFlow, name: displayName, status: status ?? 'inactive' },
+        description: newDetails?.description ?? '',
+        trigger: triggerConfig,
+      });
+      setDraft(null);
+      setNewDetails(null);
+      createdId.current = draftFlow.id;
+      navigate(toVersioned(`${lanePath(LANE)}/${draftFlow.id}`), { replace: true });
+      return;
+    }
     saveAutomation(id, draftFlow, triggerConfig);
     setDraft(null);
   };
@@ -361,8 +434,13 @@ const AutomationFloat: React.FC = () => {
     // becomes the published version in the same move — there's no separate
     // "publish" step to remember for something that was never running.
     setStartOpen(false);
-    promoteDraft();
-    setAutomationStatus(id, 'active');
+    if (isNew) {
+      // Created live, in the one write.
+      promoteDraft('active');
+    } else {
+      promoteDraft();
+      setAutomationStatus(id, 'active');
+    }
     // Title only — the start-confirmation dialog already explained what
     // turning it on means, so the toast just confirms it happened.
     toast.success('Automation is live');
@@ -370,7 +448,14 @@ const AutomationFloat: React.FC = () => {
 
   const publishChanges = () => {
     setPublishOpen(false);
+    // Read before promoteDraft navigates the sentinel away: the first save is the
+    // creation, and the toast has to say the thing that actually happened.
+    const created = isNew;
     promoteDraft();
+    if (created) {
+      toast.success('Automation created');
+      return;
+    }
     // The same press does two different things depending on the automation, and the
     // toast is the only thing that says which: live, the edits reached the running
     // version; stopped, they were written down and nothing started.
@@ -618,13 +703,19 @@ const AutomationFloat: React.FC = () => {
                 scenario={scenario}
                 selectedMemberId={selectedMemberId}
                 settings={{
-                  name: automation.name,
-                  description: record?.description ?? '',
+                  name: isNew ? (newDetails?.name ?? automation.name) : automation.name,
+                  description: isNew
+                    ? (newDetails?.description ?? '')
+                    : (record?.description ?? ''),
                   // Written straight through, like the status is — properties of the
                   // automation rather than of the flow, and the flow is the thing
                   // Publish commits.
+                  // A new automation isn't in the store yet, so its details are held
+                  // until the first save (see newDetails).
                   onDetailsChange: ({ name, description }) =>
-                    updateAutomationDetails(id, name, description),
+                    isNew
+                      ? setNewDetails({ name, description })
+                      : updateAutomationDetails(id, name, description),
                   allowReentry,
                   onAllowReentryChange: setAllowReentry,
                   onArchive: () => setArchiveOpen(true),
@@ -647,7 +738,7 @@ const AutomationFloat: React.FC = () => {
       {/* Opened from the Settings tab — see the pane. */}
       <ArchiveAutomationDialog
         live={liveStatus === 'active'}
-        name={automation.name}
+        name={displayName}
         open={archiveOpen}
         onConfirm={handleArchive}
         onOpenChange={setArchiveOpen}
@@ -712,7 +803,7 @@ const AutomationFloat: React.FC = () => {
           </Button>
           {/* The name, in a card built like the buttons beside it — see headerCard. */}
           <span className={headerCard}>
-            <span className="min-w-0 truncate text-control font-medium">{automation.name}</span>
+            <span className="min-w-0 truncate text-control font-medium">{displayName}</span>
           </span>
           {/* The status, calmed down to how the post editor does it: plain muted
               text — "Live" or "Off" — rather than the list's coloured, uppercase
@@ -817,7 +908,21 @@ const AutomationFloatScreen: React.FC = () => {
   // configured, the member in focus — belongs to one automation and starts clean
   // on the next. Without it, React reuses the instance across a route change and
   // the previous automation's draft would follow you to the new one.
-  return <AutomationFloat key={id} />;
+  //
+  // With ONE exception, as in phase 2: the first save of a /new automation swaps
+  // the URL to its real id — the same automation gaining an id, not a change of
+  // subject — so the key holds across exactly that transition. Letting it change
+  // there would tear the screen down and rebuild it mid-save.
+  const current = id ?? NEW_AUTOMATION_ID;
+  const [screenKey, setScreenKey] = useState(current);
+  const [prevRouteId, setPrevRouteId] = useState(current);
+  if (prevRouteId !== current) {
+    setPrevRouteId(current);
+    if (prevRouteId !== NEW_AUTOMATION_ID) {
+      setScreenKey(current);
+    }
+  }
+  return <AutomationFloat key={screenKey} />;
 };
 
 export default AutomationFloatScreen;

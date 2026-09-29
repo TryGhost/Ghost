@@ -1476,7 +1476,10 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
                     <TriggerFieldsForm
                       config={triggerConfig}
                       savedTierIds={d.savedTierIds}
-                      showExits={!d.simpleTriggerNames}
+                      // No exit sentence on the card: exit conditions live in the
+                      // Settings tab in this lane, so stating them here as well
+                      // would be the same fact in two places.
+                      showExits={false}
                       onChange={d.onTriggerConfigChange}
                     />
                   ) : (
@@ -1577,8 +1580,10 @@ const ExitNode: React.FC<NodeProps> = ({ data }) => {
     >
       <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
       <div
+        // Hugs its content rather than taking the step width: it's where the
+        // flow ends, not a step in it, so it reads as a marker. Centred by the
+        // column wrapper, so the connector still lands on its middle.
         className={cn(
-          NODE_CARD_WIDTH,
           'flex items-center gap-3 rounded-xl border border-border-default bg-surface-elevated px-6 py-5 text-muted-foreground shadow-sm',
         )}
       >

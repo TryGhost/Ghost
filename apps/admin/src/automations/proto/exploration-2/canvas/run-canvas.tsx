@@ -157,7 +157,8 @@ const RunStepNode: React.FC<NodeProps> = ({ data }) => {
       <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
       <div
         className={cn(
-          NODE_CARD_WIDTH,
+          // The flow's end hugs its content, as it does on the edit canvas.
+          d.kind !== 'terminal' && NODE_CARD_WIDTH,
           'flex rounded-xl border border-border-default bg-surface-elevated transition-opacity',
           isEmail ? 'flex-col overflow-hidden' : 'items-center gap-3 px-6 py-5',
           isUnreached(d) && 'opacity-35',

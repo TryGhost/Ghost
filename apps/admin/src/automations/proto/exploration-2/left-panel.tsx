@@ -165,7 +165,15 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   // who (the searchable members list), in one scroll — and Settings, the
   // automation itself. Members had a tab of its own for a while; review put it
   // back under the numbers it breaks down.
-  const [tab, setTab] = useState<PaneTab>('performance');
+  // Opens on Performance when there's something to report — the automation is
+  // live or has runs — and on Settings otherwise, the same rule the screen uses
+  // for whether the pane opens at all. A new automation's pane is Settings: its
+  // name and description are what's left to do there.
+  const [tab, setTab] = useState<PaneTab>(() =>
+    scenario.automation.status === 'active' || scenario.runs.length > 0
+      ? 'performance'
+      : 'settings',
+  );
   // Search collapses to a magnifier in the Members heading until pressed.
   const [searchOpen, setSearchOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusKey | null>(null);
