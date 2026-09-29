@@ -109,7 +109,7 @@ export class EmailAnalyticsService {
   #fetchLatestOpenedData: FetchData;
   #fetchScheduledData: FetchDataScheduled;
 
-  /** Ids from a job's run whose final aggregation failed, retried by its next run. */
+  /** IDs awaiting aggregation, retried on this job's next run. Lost on restart. */
   #unaggregated = new WeakMap<FetchData, EventProcessingResult>();
 
   constructor({
@@ -624,7 +624,8 @@ export class EmailAnalyticsService {
       logging.error('[EmailAnalytics] Error while aggregating stats');
       logging.error(err);
 
-      // Replays of these events store nothing new, so no later run would aggregate them
+      // Keep these IDs for the next run. The missing-events sweep may skip
+      // their replayed events because the recipient timestamps are already stored.
       this.#unaggregated.set(
         fetchData,
         new EventProcessingResult({
