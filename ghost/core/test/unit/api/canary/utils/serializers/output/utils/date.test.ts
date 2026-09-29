@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
 import settingsCache from '../../../../../../../../core/shared/settings-cache';
 import * as dateUtil from '../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date';
 
