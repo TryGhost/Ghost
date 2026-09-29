@@ -221,28 +221,33 @@ feature image with its alt text and caption, authors and tags, and is stored
 under `post-revision-<post id>-<timestamp>`; `draft` stands in for the id until
 the post has been created.
 
-Only the writer's own changes count, and the tracker decides what those are. A
-body that differs from the saved copy only by Koenig's load-time normalization
-matches the hidden instance's baseline, and a change that arrives before that
-baseline has been reported is treated the same way, so opening a post leaves no
-copy behind. If the hidden instance fails, the body is compared with the saved
-copy alone. A save that failed is not unsaved work of its own. Published,
-scheduled and sent posts are never copied.
+Only unsaved changes to what a copy carries count. The body is judged by the
+tracker's verdict: a body that differs from the saved copy only by Koenig's
+load-time normalization matches the hidden instance's baseline, and a change
+that arrives before that baseline has been reported waits for it, so opening a
+post leaves no copy behind. If the hidden instance fails, the body is compared
+with the saved copy alone. The other carried fields are judged by their own
+compare; a change to a field a copy does not carry, such as the meta title, does
+not write one, and neither does a save that failed. Published, scheduled and
+sent posts are never copied.
 
 The first change writes a copy at once. After that at most one copy a minute is
 written, carrying the newest draft, and a copy identical to the last one written
 is skipped. A copy still waiting for the minute is dropped once a save leaves
-nothing unsaved. A copy is written straight away when the page is hidden or
-closed, when the session is disposed holding unsaved work, before a revision from
-the post's history replaces the body, and when a save stops on a conflict, a
-deleted post, an expired session or a crash. A save that keeps failing is left to
-the minute's pace.
+nothing unsaved or the post leaves draft. A copy is written straight away when
+the page is hidden or closed, when the session is disposed holding unsaved work,
+before a revision from the post's history replaces the body, and when a save
+stops on a conflict, a deleted post, an expired session or a crash; a conflict
+that failing saves keep re-entering is copied once. A save that keeps failing is
+otherwise left to the minute's pace, and nothing is copied while a revision's
+restore is being saved.
 
 Each post keeps its newest five copies. A post that has not been created keeps
-at most five from one session, and once it is created those copies are removed;
-later copies carry its id. When storage is full, the oldest copies of any post
-are removed until the new one fits. Storage never interrupts editing: a copy
-that cannot be written is reported, not thrown.
+at most five from one session; once it is created those copies are removed, and
+any work the create did not carry is written again under the new id. When
+storage is full, the oldest copies of any post are removed until the new one
+fits. Storage never interrupts editing: a copy that cannot be written is
+reported, not thrown.
 
 ## Reloading the document
 

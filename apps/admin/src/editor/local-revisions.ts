@@ -228,12 +228,14 @@ export function createLocalRevisionWriter({
     }
     const timestamp = now();
     lastWriteAt = timestamp;
-    lastWritten = content;
     const key = writeLocalRevision(
       store,
       { ...draft, id: draft.id ?? UNSAVED_POST_ID, type, revisionTimestamp: timestamp },
       onError,
     );
+    if (key) {
+      lastWritten = content;
+    }
     if (key && draft.id === null) {
       unsavedKeys = [...unsavedKeys.filter((kept) => kept !== key), key];
       for (const stale of unsavedKeys.splice(0, Math.max(0, unsavedKeys.length - KEPT_PER_POST))) {

@@ -203,6 +203,24 @@ export interface EditorSession {
   dispose: () => void;
 }
 
+/** Body reasons that stand for the writer's edits; a pending baseline is load-time normalization. */
+const BODY_WORK_REASONS: ReadonlySet<ChangeReasonCode> = new Set([
+  'SCRATCH_DIVERGED_FROM_SECONDARY',
+  'BASELINE_FAILED',
+  'LEXICAL_PARSE_FAILED',
+]);
+
+/** What a local copy carries besides the body. */
+const COPIED_FIELD_KEYS = [
+  'title',
+  'tags',
+  'custom_excerpt',
+  'feature_image',
+  'feature_image_alt',
+  'feature_image_caption',
+  'authors',
+] as const;
+
 /** States a save stays stuck in until the writer acts. `error` is re-entered by every retry. */
 const STUCK_ENGINE_STATES: ReadonlySet<SaveEngineState['kind']> = new Set([
   'reauth-pending',
@@ -283,6 +301,10 @@ export function createEditorSession({
   const writerEdits = new Map<SettingsFieldKey, number>();
   // The version the in-flight request was built at, or null when none is.
   let inFlightSince: number | null = null;
+  // A restore's own save holds the revision, not the writer's work.
+  let restoringRevision = false;
+  // A failing save re-enters a held conflict; one copy per conflict is enough.
+  let flushedConflictError: unknown = null;
 
   function livePublishedAt(): string | null {
     return stagedPublishedAt ?? publishedAt;
@@ -449,13 +471,12 @@ export function createEditorSession({
     });
   }
 
-  // Koenig's load-time normalization reads as a pending baseline, not as writer work.
+  // The body counts by the baseline-aware verdict, so Koenig's load-time normalization never does.
   function holdsUnsavedWork(): boolean {
-    return tracker
-      .verdict()
-      .reasons.some(
-        (reason) => reason.code !== 'POST_HAS_ERROR' && reason.code !== 'BASELINE_PENDING',
-      );
+    return (
+      COPIED_FIELD_KEYS.some((key) => tracker.isFieldDirty(key)) ||
+      tracker.verdict().reasons.some((reason) => BODY_WORK_REASONS.has(reason.code))
+    );
   }
 
   function localRevisionDraft(): LocalRevisionDraft {
@@ -486,7 +507,7 @@ export function createEditorSession({
   }
 
   function keepLocalRevision(write: (writer: LocalRevisionWriter) => void): void {
-    if (disposed || status !== 'draft') {
+    if (disposed || restoringRevision || status !== 'draft') {
       return;
     }
     withLocalRevisions((writer) => {
@@ -705,10 +726,13 @@ export function createEditorSession({
       withLocalRevisions((writer) => writer.created());
       onIdAcquired(result.id);
     }
-    // A copy still waiting for the minute is stale once the save left nothing unsaved.
+    // A waiting copy is stale once nothing is unsaved or the post left draft; a new
+    // post's unsaved work is written again under the id it now has.
     withLocalRevisions((writer) => {
-      if (!holdsUnsavedWork()) {
+      if (status !== 'draft' || !holdsUnsavedWork()) {
         writer.discard();
+      } else if (created) {
+        writer.flush(localRevisionDraft());
       }
     });
     notifyChanged();
@@ -726,7 +750,11 @@ export function createEditorSession({
         tracker.markSaveError();
       }
       if (STUCK_ENGINE_STATES.has(next.kind)) {
-        flushLocalRevision();
+        const heldConflict = next.kind === 'conflict' ? next.error : null;
+        if (heldConflict === null || heldConflict !== flushedConflictError) {
+          flushedConflictError = heldConflict;
+          flushLocalRevision();
+        }
       }
       // A save error also moves dirtiness without going through a field patch.
       notifyChanged();
@@ -846,30 +874,37 @@ export function createEditorSession({
         feature_image_caption: live.feature_image_caption,
       };
 
-      patchLive(revision);
-      // Ember's slug task bails once the post carries the revision's title, so a
-      // restore leaves the URL alone.
-      slug.titleReplaced(revision.title);
+      restoringRevision = true;
+      try {
+        patchLive(revision);
+        // Ember's slug task bails once the post carries the revision's title, so a
+        // restore leaves the URL alone.
+        slug.titleReplaced(revision.title);
 
-      const completion = await engine.dispatch('explicit');
-      if (completion.kind !== 'saved') {
-        // The editor surface never adopted the revision, so nothing may keep it.
-        patchLive(previous);
-        slug.titleReplaced(previous.title);
-        return false;
+        const completion = await engine.dispatch('explicit');
+        if (completion.kind !== 'saved') {
+          // The editor surface never adopted the revision, so nothing may keep it.
+          patchLive(previous);
+          slug.titleReplaced(previous.title);
+          return false;
+        }
+        tracker.revisionRestored(identity.id, revision);
+        notifyChanged();
+        return true;
+      } finally {
+        restoringRevision = false;
       }
-      tracker.revisionRestored(identity.id, revision);
-      notifyChanged();
-      return true;
     },
 
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
       notifyChanged();
+      recordLocalRevision();
     },
     baselineFailed: () => {
       tracker.baselineFailed(identity.id);
       notifyChanged();
+      recordLocalRevision();
     },
 
     // Only a draft's title drives the slug; a published URL must not move.

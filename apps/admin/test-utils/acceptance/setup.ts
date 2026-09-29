@@ -38,6 +38,12 @@ afterEach(async () => {
     resetFakeApi();
     resetDeclaredResources();
     sessionStorage.clear();
+    // The editor keeps local copies of drafts here, and the restore screen lists them all.
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith('post-revision-')) {
+        localStorage.removeItem(key);
+      }
+    }
     window.location.hash = '';
     try {
       await resetFakeFrameOrigins();

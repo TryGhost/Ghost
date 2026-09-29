@@ -408,6 +408,23 @@ describe('createLocalRevisionWriter', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it('writes an identical draft again after the write before it failed', () => {
+    const failure = new Error('storage is broken');
+    const setItem = storage.setItem.bind(storage);
+    vi.spyOn(storage, 'setItem')
+      .mockImplementationOnce(() => {
+        throw failure;
+      })
+      .mockImplementation(setItem);
+    const revisions = writer();
+
+    revisions.record(draft({ title: 'Same' }));
+    vi.advanceTimersByTime(60_000);
+    revisions.record(draft({ title: 'Same' }));
+
+    expect(stored().map(({ title }) => title)).toEqual(['Same']);
+  });
+
   it('reports storage that cannot be reached once instead of throwing', () => {
     const onError = vi.fn();
     const failure = new DOMException('Access is denied.', 'SecurityError');
