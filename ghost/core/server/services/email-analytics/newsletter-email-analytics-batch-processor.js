@@ -60,8 +60,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
           result.merge(batchResult);
         }
       } catch (err) {
-        // Store updates queued by earlier events before this run aggregates them,
-        // instead of leaving them for whichever run flushes next
+        // Flush earlier events so this run's final aggregation includes their updates.
         try {
           result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
         } catch (flushErr) {

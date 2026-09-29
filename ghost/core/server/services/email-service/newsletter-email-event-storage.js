@@ -113,8 +113,8 @@ class NewsletterEmailEventStorage {
    * @returns {Promise<number>} Number of newly written recipient timestamps; queued updates return zero.
    */
   async handlePermanentFailed(event) {
-    // Save the failure first so a failed save leaves failed_at unset. A replay then
-    // stores failed_at as new, so the missing-event sweep does not skip aggregating it.
+    // Save the failure record before setting failed_at. If this throws,
+    // replaying the event can still populate failed_at and trigger aggregation.
     await this.saveFailure('permanent', event);
 
     let rowCount = 0;
@@ -335,8 +335,8 @@ class NewsletterEmailEventStorage {
         storedPermanentFailed: await this.#flushFailedUpdates(),
       };
     } finally {
-      // A failed fetch replays its window, so dropped updates are queued again by the
-      // run that re-stores them rather than being counted by an unrelated later run.
+      // Clear the queue even after a failed flush. Retrying the fetch queues
+      // these events again, keeping their stored counts with the retry.
       this.#pendingUpdates.delivered.clear();
       this.#pendingUpdates.opened.clear();
       this.#pendingUpdates.failed.clear();
