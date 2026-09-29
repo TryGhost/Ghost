@@ -1001,11 +1001,11 @@ describe('Automations API', function () {
       assert.deepEqual(readBody.automations[0], automation);
     });
 
-    it('allows an automation with 20 actions', async function () {
+    it('allows an automation with 50 actions', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
       const automationId = browseBody.automations[0].id;
-      const actions = Array.from({ length: 20 }, buildWaitAction);
+      const actions = Array.from({ length: 50 }, buildWaitAction);
       const edges = buildLinearEdges(actions);
 
       const { body: editBody } = await agent
@@ -1024,20 +1024,20 @@ describe('Automations API', function () {
 
       const automation = editBody.automations[0];
       assert.equal(automation.status, 'inactive');
-      assert.equal(automation.actions.length, 20);
-      assert.equal(automation.edges.length, 19);
+      assert.equal(automation.actions.length, 50);
+      assert.equal(automation.edges.length, 49);
       assert.deepEqual(automation.actions, actions);
       assert.deepEqual(automation.edges, edges);
     });
 
-    it('rejects an automation with more than 20 actions', async function () {
+    it('rejects an automation with more than 50 actions', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
       const automationId = browseBody.automations[0].id;
 
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
 
-      const actions = Array.from({ length: 21 }, buildWaitAction);
+      const actions = Array.from({ length: 51 }, buildWaitAction);
 
       await agent
         .put(`automations/${automationId}`)
