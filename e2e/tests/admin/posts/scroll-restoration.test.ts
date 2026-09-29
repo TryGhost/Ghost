@@ -2,7 +2,7 @@ import { PostEditorPage, PostsPage } from '@/admin-pages';
 import { createPostFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
 import { post } from '@tryghost/test-data';
-import { postListItemLink } from '@tryghost/test-data/selectors/posts';
+import { postListItemLink, postsList, postsListItem } from '@tryghost/test-data/selectors/posts';
 
 for (const editorReact of [false, true]) {
   test.describe(`Posts scroll restoration (${editorReact ? 'React' : 'Ember'} editor)`, () => {
@@ -61,9 +61,34 @@ for (const editorReact of [false, true]) {
         const row = postsPage.getPostByTitle(target.title);
         await row.scrollIntoViewIfNeeded();
         const scrollTop = await postsPage.getScrollParentScrollTop();
+        const rowTop = await row.evaluate((element) => element.getBoundingClientRect().top);
         expect(scrollTop).toBeGreaterThan(1000);
         await row.getByTestId(postListItemLink).click();
         await expect(editor.titleInput).toBeVisible();
+
+        // Observe the first frame containing rows: polling only the final scroll
+        // offset would miss a visible flash at the top before restoration.
+        await page.evaluate(
+          ({ listId, rowId, title }) => {
+            const sample = () => {
+              const rows = document.querySelectorAll(
+                `[data-testid="${listId}"] [data-testid="${rowId}"]`,
+              );
+              const targetRow = Array.from(rows).find((element) =>
+                element.textContent?.includes(title),
+              );
+              if (rows.length) {
+                document.documentElement.dataset.firstPostReturnTop = String(
+                  targetRow?.getBoundingClientRect().top ?? Infinity,
+                );
+                return;
+              }
+              requestAnimationFrame(sample);
+            };
+            requestAnimationFrame(sample);
+          },
+          { listId: postsList, rowId: postsListItem, title: target.title },
+        );
 
         if (returnWith === 'back') {
           await page.goBack();
@@ -73,6 +98,14 @@ for (const editorReact of [false, true]) {
 
         await expect(page).toHaveURL(/\/ghost\/#\/posts\?type=draft&order=title(?:%20|\+)asc$/);
         await expect(postsPage.postsListItem).toHaveCount(60);
+        await expect
+          .poll(async () => {
+            const firstTop = await page.evaluate(
+              () => document.documentElement.dataset.firstPostReturnTop,
+            );
+            return Math.abs(Number(firstTop) - rowTop);
+          })
+          .toBeLessThan(50);
         await expect
           .poll(async () => Math.abs((await postsPage.getScrollParentScrollTop()) - scrollTop))
           .toBeLessThan(50);

@@ -1,6 +1,6 @@
 import { readListReturnState, rememberListReturnState } from './list-return-state';
 import { getScrollParent } from '@tryghost/shade/utils';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import type { RefObject } from 'react';
 
@@ -134,8 +134,8 @@ export function useScrollRestoration({
   const key = location.pathname + location.search;
   const entryKey = `${location.key}::${key}`;
 
-  // Find the scroll container once the parent element is mounted
-  useEffect(() => {
+  // Resolve the container before paint so cached lists can restore immediately.
+  useLayoutEffect(() => {
     if (!enabled || !parentRef.current) {
       return;
     }
@@ -245,8 +245,8 @@ export function useScrollRestoration({
     };
   }, [enabled, key, entryKey, scrollContainer]);
 
-  // Restore scroll position when location changes and data has loaded
-  useEffect(() => {
+  // Restore before paint when the content is ready, avoiding a flash at the top.
+  useLayoutEffect(() => {
     const historyState = getCurrentHistoryState();
     const entryScopedScrollPositionKey = getEntryScopedScrollPositionKey(historyState, key);
     const savedPosition =
@@ -264,8 +264,7 @@ export function useScrollRestoration({
     if (savedPosition !== undefined && previousEntryRef.current !== entryKey) {
       previousEntryRef.current = entryKey;
 
-      // Delay to ensure content is rendered and scroll height is correct
-      // For virtual scrolling, we may need multiple attempts as the virtualizer measures items
+      // Virtual lists may need another attempt while measuring their content.
       let attempts = 0;
       const maxAttempts = 20;
 
@@ -313,7 +312,7 @@ export function useScrollRestoration({
         rememberListReturnState(key, { scrollPosition: scrollContainer.scrollTop });
       };
 
-      scheduleRestore(attemptRestore, 150);
+      attemptRestore();
       return () => clearRestoreTimeouts();
     }
 

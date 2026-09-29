@@ -22,7 +22,7 @@ beforeEach(() => {
   window.history.replaceState({ key: location.key }, '');
   scrollContainer = document.createElement('div');
   Object.defineProperties(scrollContainer, {
-    scrollHeight: { value: 3000 },
+    scrollHeight: { value: 3000, configurable: true },
     clientHeight: { value: 500 },
   });
 });
@@ -33,10 +33,14 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function mount(resetOnNavigation = false) {
+function mount(resetOnNavigation = false, isLoading = false) {
   const parentRef = { current: scrollContainer };
   const getScrollElement = () => scrollContainer;
-  return renderHook(() => useScrollRestoration({ parentRef, getScrollElement, resetOnNavigation }));
+  return renderHook(
+    ({ isLoading: loading }) =>
+      useScrollRestoration({ parentRef, getScrollElement, resetOnNavigation, isLoading: loading }),
+    { initialProps: { isLoading } },
+  );
 }
 
 describe('list scroll restoration', () => {
@@ -46,7 +50,7 @@ describe('list scroll restoration', () => {
     expect(getListReturnNavigationState('/posts')?.listReturn.scrollPosition).toBe(0);
   });
 
-  it.each(['back', 'breadcrumb'])('restores %s after the list mounts', async (returnWith) => {
+  it.each(['back', 'breadcrumb'])('restores %s without waiting for a timer', (returnWith) => {
     rememberListReturnState('/posts', { scrollPosition: 1500 });
     const state =
       returnWith === 'back'
@@ -54,7 +58,30 @@ describe('list scroll restoration', () => {
         : { usr: getListReturnNavigationState('/posts') };
     window.history.replaceState({ key: location.key, ...state }, '');
     mount(true);
-    await act(() => vi.advanceTimersByTimeAsync(150));
+    expect(scrollContainer.scrollTop).toBe(1500);
+  });
+
+  it('retries when the list is still measuring its height', async () => {
+    window.history.replaceState(
+      { key: location.key, ghostVirtualListScrollPosition: { '/posts': 1500 } },
+      '',
+    );
+    Object.defineProperty(scrollContainer, 'scrollHeight', { value: 500, configurable: true });
+    mount(true);
+    expect(scrollContainer.scrollTop).toBe(0);
+    Object.defineProperty(scrollContainer, 'scrollHeight', { value: 3000 });
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(scrollContainer.scrollTop).toBe(1500);
+  });
+
+  it('restores immediately when loading finishes', () => {
+    window.history.replaceState(
+      { key: location.key, ghostVirtualListScrollPosition: { '/posts': 1500 } },
+      '',
+    );
+    const { rerender } = mount(true, true);
+    expect(scrollContainer.scrollTop).toBe(0);
+    rerender({ isLoading: false });
     expect(scrollContainer.scrollTop).toBe(1500);
   });
 
@@ -76,7 +103,7 @@ describe('list scroll restoration', () => {
     entry += 1;
     location.key = `entry-${entry}`;
     window.history.replaceState({ key: location.key }, '');
-    rerender();
+    rerender({ isLoading: false });
     expect(scrollContainer.scrollTop).toBe(0);
     expect(getListReturnNavigationState('/posts')?.listReturn.scrollPosition).toBe(0);
   });
@@ -89,7 +116,7 @@ describe('list scroll restoration', () => {
     entry += 1;
     location.key = `entry-${entry}`;
     window.history.replaceState({ key: location.key }, '');
-    rerender();
+    rerender({ isLoading: false });
     expect(scrollContainer.scrollTop).toBe(1500);
   });
 });
