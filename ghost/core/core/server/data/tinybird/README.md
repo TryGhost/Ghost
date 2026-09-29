@@ -90,10 +90,8 @@ Run rows are sorted by `(site_uuid, automation_id, id)` and step rows by
 row ID remains in each key, preserving latest-version deduplication. The site
 prefix also supports the automation list. Queries use `FINAL` before aggregating.
 
-Changing sorting keys rebuilds the materialized tables. Their `FORWARD_QUERY`
-copies existing rows so the migration does not depend on retained raw events.
-Keep it through deployment of the new layout, then remove it after every target
-environment has migrated. Deploy the related datafiles together.
+Changing sorting keys rebuilds the materialized tables from the raw event
+datasources, which have no TTL. Deploy the related datafiles together.
 
 The performance pipe classifies each run once, then returns daily counts for each
 of the three statuses. Core derives the chart and status totals from that same
