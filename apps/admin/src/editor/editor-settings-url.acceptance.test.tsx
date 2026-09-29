@@ -48,6 +48,29 @@ async function openSidebar() {
  * through the slug machine rather than written as a settings field.
  */
 describe('Post settings URL', () => {
+  it('links to a published post’s saved URL, including its custom route', async () => {
+    fakeSlugs();
+    fakeSavablePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+      url: 'https://example.com/journal/saved-post/',
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    const link = page.getByRole('link', { name: 'View post' });
+    await expect.element(link).toHaveAttribute('href', 'https://example.com/journal/saved-post/');
+    await editorScreen.settingsSlug().fill('unsaved-slug');
+    await userEvent.tab();
+    await expect.element(link).toHaveAttribute('href', 'https://example.com/journal/saved-post/');
+  });
+
+  it('does not offer a public link for a draft', async () => {
+    fakeSavablePost({ status: 'draft' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect(page.getByRole('link', { name: 'View post' })).toHaveCount(0);
+  });
+
   it('saves the focused URL edit with Cmd-S while generation is pending', async () => {
     const generated = deferred<{ slugs: { slug: string }[] }>();
     const slugApi = fakeAdminEndpoint('GET', /^\/slugs\/post\//, () => generated.promise);

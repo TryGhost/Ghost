@@ -420,7 +420,7 @@ describe('Floating editor shell', () => {
     await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
     const sidebar = editorScreen.settingsSidebar().element();
     await expect.poll(() => sidebar.getBoundingClientRect().right).toBe(window.innerWidth - 8);
-    expect(sidebar.getBoundingClientRect().width).toBe(492);
+    expect(sidebar.getBoundingClientRect().width).toBe(342);
     await expect(editorScreen.settingsToggle()).toHaveCount(1);
     expect(editorScreen.settingsToggle().element()).toBe(toggle);
     expect(toggle.getBoundingClientRect()).toEqual(toggleBefore);
@@ -433,7 +433,7 @@ describe('Floating editor shell', () => {
     expect(document.activeElement).toBe(editorScreen.settingsToggle().element());
   });
 
-  it('keeps a full-width image inside the writing pane beside normal and wide settings', async () => {
+  it('keeps a full-width image inside the writing pane beside the settings list and its subpanels', async () => {
     const imageUrl = URL.createObjectURL(
       new Blob(
         [
@@ -476,7 +476,7 @@ describe('Floating editor shell', () => {
       expect(pane.getBoundingClientRect().right).toBe(sidebar.getBoundingClientRect().left);
 
       await editorScreen.settingsSubviewRow('Code injection').click();
-      await expect.poll(() => sidebar.parentElement!.getBoundingClientRect().width).toBe(500);
+      await expect.poll(() => sidebar.parentElement!.getBoundingClientRect().width).toBe(350);
       await expect
         .poll(() => image.element().getBoundingClientRect().right)
         .toBeCloseTo(pane.getBoundingClientRect().right - 12, 0);

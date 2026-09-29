@@ -107,7 +107,6 @@ export function SocialCardSection({
       id={network.id}
       label={`${network.name} card`}
       title={`${network.name} card`}
-      wide
     >
       <ImageField
         src={image || null}
