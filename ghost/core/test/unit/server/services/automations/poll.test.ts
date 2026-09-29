@@ -3,7 +3,6 @@ import sinon from 'sinon';
 
 import { poll } from '../../../../../core/server/services/automations/poll';
 import type { AutomationStepToRun } from '../../../../../core/server/services/automations/automations-repository';
-import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../../core/server/services/member-welcome-emails/constants';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../../../../core/server/models';
 
@@ -93,7 +92,7 @@ function buildStep(attrs: Partial<StepBase> = {}): StepBase {
     locked_by: 'lock-id',
     automation_run_id: 'run-id',
     automation_id: 'automation-id',
-    automation_slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+    automation_trigger_tier_scope: 'free',
     automation_status: 'active',
     member_id: 'member-id',
     member_email: 'member@example.com',
@@ -273,10 +272,25 @@ describe('automations poll', function () {
     );
   });
 
-  it('bails if the member status changed', async function () {
+  it('bails if the member status changed from free to paid', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     Member.findOne.resolves(buildMember({ status: 'paid' }));
+
+    await poll(options);
+
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      step,
+      'member changed status',
+    );
+  });
+
+  it('bails if the member status changed paid to free', async function () {
+    const step = buildEmailStep({ automation_trigger_tier_scope: 'all_paid' });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    Member.findOne.resolves(buildMember({ status: 'free' }));
 
     await poll(options);
 
@@ -350,7 +364,7 @@ describe('automations poll', function () {
 
   it('gift members run through paid automations', async function () {
     const step = buildEmailStep({
-      automation_slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+      automation_trigger_tier_scope: 'all_paid',
     });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     Member.findOne.resolves(buildMember({ status: 'gift' }));

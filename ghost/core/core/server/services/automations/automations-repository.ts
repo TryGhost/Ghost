@@ -115,8 +115,7 @@ type AutomationStepBase = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  // NOTE: This property will be removed once we support additional automation triggers.
-  automation_slug: null | string;
+  automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_status: 'inactive' | 'active';
   member_id: string | null;
   member_email: string;

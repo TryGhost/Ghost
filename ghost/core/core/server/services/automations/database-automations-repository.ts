@@ -47,6 +47,10 @@ const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
     trigger_tier_scope: 'all_paid',
   },
 ] as const;
+const TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS = {
+  free: 'free',
+  paid: 'all_paid',
+} as const satisfies Record<'free' | 'paid', AutomationTriggerTierScope>;
 
 const messages = {
   invalidAutomationActionRevision:
@@ -111,6 +115,24 @@ type EdgeRow = {
   target_action_id: string;
 };
 
+type RunToInsert = {
+  id: string;
+  created_at: DatabaseDate;
+  updated_at: DatabaseDate;
+  automation_id: string;
+  member_id: string;
+  member_email: string;
+};
+
+type StepToInsert = {
+  id: string;
+  created_at: DatabaseDate;
+  updated_at: DatabaseDate;
+  automation_run_id: string;
+  automation_action_revision_id: string;
+  ready_at: DatabaseDate;
+};
+
 type NextActionRevisionRow = {
   automation_id: string;
   action_id: string;
@@ -124,7 +146,7 @@ type StepToRunRow = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  automation_slug: null | string;
+  automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_status: 'inactive' | 'active';
   member_id: string | null;
   member_email: string;
@@ -619,67 +641,88 @@ async function trigger(
 
   await lockMemberForTriggering(trx, memberId);
 
-  const firstAction = await findFirstActionRevision(trx, memberStatus);
-  if (!firstAction) {
-    return;
+  const firstActions = await findFirstActionRevisions(trx, memberStatus);
+
+  const runsToInsert: RunToInsert[] = [];
+  const stepsToInsert: StepToInsert[] = [];
+
+  await Promise.all(
+    firstActions.map(async (firstAction) => {
+      const automationId = firstAction.automation_id;
+
+      if (await hasMemberAlreadyEnteredAutomation(trx, automationId, memberId)) {
+        logging.info(
+          `Skipping automation ${automationId} for member ${memberId} because they have already run it`,
+        );
+        return;
+      }
+
+      const now = new Date();
+      const nowString = toDatabaseDate(now);
+
+      const readyAt = getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier);
+
+      const run = {
+        id: ObjectId().toHexString(),
+        created_at: nowString,
+        updated_at: nowString,
+        automation_id: automationId,
+        member_id: memberId,
+        member_email: memberEmail,
+      };
+      runsToInsert.push(run);
+
+      const step = createRunStep({
+        automationRunId: run.id,
+        automationActionRevisionId: firstAction.automation_action_revision_id,
+        now,
+        readyAt,
+      });
+      stepsToInsert.push(step);
+    }),
+  );
+
+  if (runsToInsert.length > 0) {
+    await Promise.all([
+      trx('automation_runs').insert(runsToInsert),
+      trx('automation_run_steps').insert(stepsToInsert),
+    ]);
   }
-
-  const automationId = firstAction.automation_id;
-
-  if (await hasMemberAlreadyEnteredAutomation(trx, automationId, memberId)) {
-    logging.info(
-      `Skipping automation ${automationId} for member ${memberId} because they have already run it`,
-    );
-    return;
-  }
-
-  const now = new Date();
-  const nowString = toDatabaseDate(now);
-
-  const readyAt = getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier);
-
-  const run = {
-    id: ObjectId().toHexString(),
-    created_at: nowString,
-    updated_at: nowString,
-    automation_id: automationId,
-    member_id: memberId,
-    member_email: memberEmail,
-  };
-
-  await trx('automation_runs').insert(run);
-  await insertRunStep(trx, {
-    automationRunId: run.id,
-    automationActionRevisionId: firstAction.automation_action_revision_id,
-    now,
-    readyAt,
-  });
 }
 
 async function insertRunStep(
   trx: Knex.Transaction,
-  {
-    automationRunId,
-    automationActionRevisionId,
-    now,
-    readyAt,
-  }: ReadonlyDeep<{
+  options: ReadonlyDeep<{
     automationRunId: string;
     automationActionRevisionId: string;
     now: Date;
     readyAt: Date;
   }>,
 ): Promise<void> {
+  await trx('automation_run_steps').insert(createRunStep(options));
+}
+
+function createRunStep({
+  automationRunId,
+  automationActionRevisionId,
+  now,
+  readyAt,
+}: ReadonlyDeep<{
+  automationRunId: string;
+  automationActionRevisionId: string;
+  now: Date;
+  readyAt: Date;
+}>): StepToInsert {
   const nowString = toDatabaseDate(now);
 
-  await trx('automation_run_steps').insert({
+  return {
     id: ObjectId().toHexString(),
     created_at: nowString,
     updated_at: nowString,
     automation_run_id: automationRunId,
     automation_action_revision_id: automationActionRevisionId,
     ready_at: toDatabaseDate(readyAt),
-  });
+  };
 }
 
 async function fetchAndLockSteps(
@@ -748,7 +791,7 @@ async function fetchAndLockSteps(
       'step.locked_by as locked_by',
       'step.automation_run_id as automation_run_id',
       'run.automation_id as automation_id',
-      'automation.slug as automation_slug',
+      'automation.trigger_tier_scope as automation_trigger_tier_scope',
       'automation.status as automation_status',
       'run.member_id as member_id',
       'run.member_email as member_email',
@@ -803,7 +846,7 @@ function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
     locked_by: row.locked_by,
     automation_run_id: row.automation_run_id,
     automation_id: row.automation_id,
-    automation_slug: row.automation_slug,
+    automation_trigger_tier_scope: row.automation_trigger_tier_scope,
     automation_status: row.automation_status,
     member_id: row.member_id,
     member_email: row.member_email,
@@ -833,13 +876,11 @@ function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
   }
 }
 
-async function findFirstActionRevision(
+async function findFirstActionRevisions(
   trx: Knex.Transaction,
   memberStatus: 'free' | 'paid',
-): Promise<NextActionRevisionRow | null> {
-  const automationSlug: NonNullable<string> = MEMBER_WELCOME_EMAIL_SLUGS[memberStatus];
-
-  const row = await trx('automations as automation')
+): Promise<NextActionRevisionRow[]> {
+  return await trx('automations as automation')
     .select(
       'automation.id as automation_id',
       'actions.id as action_id',
@@ -849,7 +890,7 @@ async function findFirstActionRevision(
     )
     .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
     .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
-    .where('automation.slug', automationSlug)
+    .where('automation.trigger_tier_scope', TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS[memberStatus])
     .where('automation.status', 'active')
     .whereNull('actions.deleted_at')
     .whereNotExists(
@@ -869,10 +910,7 @@ async function findFirstActionRevision(
         .max('created_at')
         .where('action_id', trx.ref('actions.id')),
     )
-    .orderBy(['actions.created_at', 'actions.id'])
-    .first();
-
-  return row ?? null;
+    .orderBy(['actions.created_at', 'actions.id']);
 }
 
 async function finishStepAndEnqueueNext(
