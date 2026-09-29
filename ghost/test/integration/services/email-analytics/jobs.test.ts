@@ -355,7 +355,7 @@ describe('email analytics JobsService delivery', function () {
       await assertMemberOpenCountsAggregated();
     });
 
-    it('aggregates a failure stored by a missing-sweep batch that then errored', async function () {
+    it('aggregates a permanent failure whose record failed to save in the missing sweep', async function () {
       const batch = fixtureManager.get('email_batches', 0);
       const [recipient] = recipients;
       await knex('email_recipients').where('id', recipient.id).update({ failed_at: null });

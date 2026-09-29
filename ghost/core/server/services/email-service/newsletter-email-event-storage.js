@@ -113,6 +113,10 @@ class NewsletterEmailEventStorage {
    * @returns {Promise<number>} Number of newly written recipient timestamps; queued updates return zero.
    */
   async handlePermanentFailed(event) {
+    // Save the failure first so a failed save leaves failed_at unset. A replay then
+    // stores failed_at as new, so the missing-event sweep does not skip aggregating it.
+    await this.saveFailure('permanent', event);
+
     let rowCount = 0;
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
@@ -139,7 +143,6 @@ class NewsletterEmailEventStorage {
           }),
       );
     }
-    await this.saveFailure('permanent', event);
     return rowCount;
   }
 
