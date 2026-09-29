@@ -82,9 +82,10 @@ export function UnsplashPicker({
           aria-label={label}
           className={cn(
             'group/unsplash hover:bg-button-hover',
-            variant === 'inline' && 'w-3.5 p-0 hover:bg-transparent',
+            variant === 'inline' && 'p-0 hover:bg-transparent',
           )}
           disabled={disabled}
+          shape="pill"
           size="icon"
           type="button"
           variant="ghost"
