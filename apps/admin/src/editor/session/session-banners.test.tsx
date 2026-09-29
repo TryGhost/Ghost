@@ -25,9 +25,7 @@ function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) 
       hasUnsavedContent={overrides.hasUnsavedContent ?? (() => false)}
       pendingSave={overrides.pendingSave}
       state={state}
-      onDismissReauth={noop}
       onReload={overrides.onReload ?? (() => Promise.resolve('reloaded'))}
-      onRetryReauth={noop}
       onRetrySave={noop}
     />,
   );
@@ -95,12 +93,10 @@ describe('SessionBanners', () => {
     expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
   });
 
-  it('offers a retry in place when the session expired', () => {
-    renderBanners({ kind: 'reauth-pending', intent: 'explicit' });
+  it('shows nothing while the sign-in dialog holds the queue', () => {
+    const { container } = renderBanners({ kind: 'reauth-pending', intent: 'explicit' });
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Your session expired');
-    expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Dismiss' })).toBeVisible();
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('names a collision and offers both ways out', () => {
@@ -244,9 +240,7 @@ describe('SessionBanners reporting', () => {
         contentText={() => ''}
         hasUnsavedContent={() => false}
         state={state}
-        onDismissReauth={noop}
         onReload={() => Promise.resolve('reloaded')}
-        onRetryReauth={noop}
         onRetrySave={noop}
       />,
     );
@@ -268,9 +262,7 @@ describe('SessionBanners reporting', () => {
         hasUnsavedContent={() => false}
         pendingSave={{ blockedBy }}
         state={{ kind: 'idle' }}
-        onDismissReauth={noop}
         onReload={() => Promise.resolve('reloaded')}
-        onRetryReauth={noop}
         onRetrySave={noop}
       />,
     );

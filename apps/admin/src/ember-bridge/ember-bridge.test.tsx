@@ -632,3 +632,27 @@ describe('emberMutationHandlers', () => {
     expect(mock.stateBridge.onDelete).toHaveBeenCalledWith('UsersResponseType', 'user-1');
   });
 });
+
+describe('useEmberListReturnSync', () => {
+  test('carries breadcrumb state without replacing the destination history entry', async () => {
+    const { useEmberListReturnSync } = await import('./ember-bridge');
+    const { rememberListReturnState } = await import('@/shared/virtual-list/list-return-state');
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+    const original = window.history.state as unknown;
+    window.history.replaceState({ key: 'destination', idx: 3, usr: { keep: true } }, '');
+    rememberListReturnState('/posts?tag=news', { scrollPosition: 1234 });
+    const { unmount } = renderHook(() => useEmberListReturnSync());
+    try {
+      act(() => mock.emit('restoreListState', { path: '/posts?tag=news' }));
+      expect(window.history.state).toEqual({
+        key: 'destination',
+        idx: 3,
+        usr: { keep: true, listReturn: { path: '/posts?tag=news', scrollPosition: 1234 } },
+      });
+    } finally {
+      unmount();
+      window.history.replaceState(original, '');
+    }
+  });
+});

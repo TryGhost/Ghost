@@ -1,3 +1,4 @@
+import { getListReturnNavigationState } from '@/shared/virtual-list';
 import {
   type CSSProperties,
   type ReactNode,
@@ -45,6 +46,7 @@ import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
+import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
@@ -93,7 +95,7 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
         label={listLabel}
         asChild
       >
-        <AdminLink to={listUrl}>
+        <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
           <LucideIcon.ArrowLeft />
           {listLabel}
         </AdminLink>
@@ -295,10 +297,14 @@ function EditorContent({
             hasUnsavedContent={session.hasUnsavedContent}
             pendingSave={session.pendingSave}
             state={session.state}
-            onDismissReauth={session.reauthAbandoned}
             onReload={session.reload}
-            onRetryReauth={session.reauthSucceeded}
             onRetrySave={session.dispatchExplicit}
+          />
+          <ReauthDialog
+            email={currentUser?.email ?? ''}
+            open={session.state.kind === 'reauth-pending'}
+            onAbandoned={session.reauthAbandoned}
+            onSucceeded={session.reauthSucceeded}
           />
         </Box>
         {/* Session warnings reserve space; otherwise the document reaches behind the header. */}

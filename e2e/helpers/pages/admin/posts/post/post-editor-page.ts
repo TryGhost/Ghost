@@ -8,7 +8,7 @@ import { PostSettingsSidebar } from './post-settings-sidebar';
 import {
   editorBody,
   editorConflictBanner,
-  editorReauthBanner,
+  editorReauthDialog,
   editorSecondaryInstance,
   editorTitleInput,
   publishAtScheduleOption,
@@ -294,7 +294,7 @@ export class PostEditorPage extends AdminPage {
    * really "arrow-left Posts".
    */
   readonly backButton: Locator;
-  /** The session-expired prompt: Ember's modal, React's banner. */
+  /** The session-expired sign-in prompt of either editor. */
   readonly reauthPrompt: Locator;
   /** React's update-collision banner. */
   readonly conflictBanner: Locator;
@@ -360,7 +360,7 @@ export class PostEditorPage extends AdminPage {
     this.featureImage = new FeatureImage(page);
 
     this.reauthPrompt = react
-      ? page.getByTestId(editorReauthBanner)
+      ? page.getByTestId(editorReauthDialog)
       : this.reauthenticateModal.modal;
     this.conflictBanner = page.getByTestId(editorConflictBanner);
   }

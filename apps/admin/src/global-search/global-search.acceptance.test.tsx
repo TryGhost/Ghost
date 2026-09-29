@@ -123,9 +123,7 @@ describe('Cmd-K search', () => {
     await globalSearchScreen.openButton().click();
     await expect.element(globalSearchScreen.input()).toHaveFocus();
     await expect.poll(controlledListbox).not.toBeNull();
-    await expect
-      .element(globalSearchScreen.shortcutHint())
-      .toHaveTextContent('Open with Ctrl/⌘ + K');
+    await expect.element(globalSearchScreen.shortcutHint()).not.toBeInTheDocument();
 
     await globalSearchScreen.search('first');
 
@@ -155,12 +153,12 @@ describe('Cmd-K search', () => {
     }
   });
 
-  it('closes on a click over the shortcut hint, which sits on the overlay', async () => {
+  it('closes on a click below the dialog, which sits on the overlay', async () => {
     await renderAdminApp('/tags', flagOn);
     await globalSearchScreen.openButton().click();
-    await expect.element(globalSearchScreen.shortcutHint()).toBeVisible();
+    await expect.element(globalSearchScreen.input()).toHaveFocus();
 
-    await globalSearchScreen.clickAt(globalSearchScreen.shortcutHint());
+    await globalSearchScreen.clickBelowDialog();
 
     await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
   });
