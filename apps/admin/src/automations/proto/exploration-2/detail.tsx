@@ -11,6 +11,7 @@ import {
   EmptyIndicator,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
+import { useShade } from '@tryghost/shade/app';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
@@ -27,7 +28,8 @@ import {
 import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
-import { HEADER_ACTION, HeaderActions, HeaderBar } from './header-bar';
+import { HeaderActions } from './header-bar';
+import { HEADER_ACTION, HEADER_ICON_BUTTON, floatingControl } from './header-controls';
 import { LeftPanel } from './left-panel';
 import type { TriggerConfig } from '@/automations/proto/shared/trigger-config';
 import { CANVAS_SLOT_FILL, canvasTheme } from '@/automations/proto/canvas/flow-utils';
@@ -48,18 +50,14 @@ import { StatusBadge } from '@/automations/proto/shared/status-badge';
 // window, so the flow is the only bounded object on screen.
 const LANE = 'exploration-2' as const;
 
-// Maximising, borrowed from the full-canvas lane and mirrored: the sidebar
-// toggle grows the canvas to fill the screen — the header row closing up above
-// it, the pane narrowing beside it — rather than a sheet sliding off the right.
-// The screen's controls never leave or move: the way back and the name are
-// pinned top-left, the actions and the toggle top-right, and maximising only
-// fades a card in behind each. The pane stays on the right, where this lane
-// has it. Every geometric part of it runs on the one duration in `chrome`
-// (300ms), because it's one gesture.
+// The canvas fills the screen, always. There's no header bar: the way back,
+// the name and the status float over the canvas top-left, the lifecycle
+// buttons and the sidebar toggle top-right, each control on its own surface.
+// The pane is a card that slides in over the canvas from the right; opening it
+// moves only the lifecycle buttons, which keep clear of it. Both run on the
+// one curve in `chrome`.
 //
-// 4px around 36px controls — the same inset as the corner cards, so everything
-// floating is one material at one spacing. rounded-lg, a step rounder than the
-// controls' own rounded-md, so the corners nest instead of running parallel.
+// The member-run pill's material: 4px around 36px controls, rounded-lg.
 const HUD_PILL = 'flex items-center rounded-lg bg-surface-elevated p-1 shadow-sm';
 
 type LiveStatus = 'active' | 'inactive';
@@ -216,6 +214,10 @@ const AutomationFloat: React.FC = () => {
   // The trigger stays editable here — nothing is fixed after creation.
   // The canvas is always editable, so hiding the pane is the user's call.
   const [paneCollapsed, setPaneCollapsed] = useState(false);
+  // Shade's control shape and Admin 7 flag, for the one floating piece that
+  // isn't a Button (the name card) — so its corners and padding match the
+  // buttons' either way.
+  const { controlShape, isAdmin7 } = useShade();
 
   // What's running vs what's being edited. Derived up here, before the early
   // return, because the leave guards below need to know whether anything differs
@@ -445,7 +447,7 @@ const AutomationFloat: React.FC = () => {
       {/* Primary once live, where pushing edits is the main job; ghost while
           off, where Publish beside it is the primary. See StatusAction. */}
       <Button
-        className={HEADER_ACTION}
+        className={cn(HEADER_ACTION, floatingControl(true, liveStatus === 'active'))}
         disabled={!hasChanges}
         variant={liveStatus === 'active' ? 'default' : 'ghost'}
         onClick={handlePublishClick}
@@ -455,11 +457,10 @@ const AutomationFloat: React.FC = () => {
     </>
   );
 
-  // The maximise gesture's timing — see CHROME_MS. The header's contents leave
-  // quickly and come back only once there's room for them again.
+  // The maximise gesture's timing: every geometric part of it — the header row,
+  // the pane's width, the actions sliding — on one curve, because it's one
+  // gesture.
   const chrome = `duration-300 ${PROTO_EASE} motion-reduce:transition-none`;
-  const leaves = 'opacity-0 duration-150';
-  const arrives = 'opacity-100 duration-200 [transition-delay:220ms]';
 
   return (
     // One column: the header row, then the canvas-and-rail row under it.
@@ -467,20 +468,6 @@ const AutomationFloat: React.FC = () => {
       className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background"
       data-testid="float-detail"
     >
-      {/* The header's band, full width — behind the header on the left AND the
-          top-right cluster over the pane — with a soft shadow under it. The
-          header itself only spans the canvas column, so without this the
-          cluster sat in the pane's first row looking unattached; one band
-          makes the header a single bar across the screen, and gives the pane's
-          content a top edge to sit under. Fades with the header when the canvas
-          is maximised. */}
-      <div
-        className={cn(
-          'pointer-events-none absolute inset-x-0 top-0 z-20 h-[68px] bg-background shadow-xs transition-opacity',
-          paneCollapsed ? leaves : arrives,
-        )}
-        aria-hidden
-      />
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* The canvas and the header above it, as one column.
 
@@ -490,29 +477,6 @@ const AutomationFloat: React.FC = () => {
                     things act on, and the pane gets its own top row instead of starting
                     below a bar that was never about it. */}
         <div className="flex min-w-0 flex-1 flex-col">
-          {/* Closes by height rather than unmounting, so nothing below jumps a
-              row before the animation has started — a grid row from 1fr to 0fr,
-              which animates to a height nobody has to name. Its contents fade
-              first: a header cut in half on the way out is worse than one
-              that has already gone. */}
-          <div
-            className={cn(
-              'grid shrink-0 transition-[grid-template-rows]',
-              chrome,
-              paneCollapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]',
-            )}
-          >
-            <div className="overflow-hidden">
-              {/* A stand-in, holding the header's height: the back arrow and the
-                  name themselves live in the pinned top-left cluster (see the
-                  root), which never moves — so this row is only the space they
-                  sit in, and closing it is what lets the canvas grow up.
-                  Invisible, so nothing in it can be focused or read twice. */}
-              <div className="invisible" aria-hidden>
-                <HeaderBar title={automation.name} onBack={goBack} />
-              </div>
-            </div>
-          </div>
           {/* Canvas first in the row, so the pane sits to its RIGHT — this lane's whole
                   difference from Exploration 1 so far.
                 
@@ -580,19 +544,9 @@ const AutomationFloat: React.FC = () => {
                 aria-label rather than the bare name, since "Marcus Chen" doesn't say what
                 pressing it does; it contains the visible text, so the label-in-name rule
                 still holds. */}
-            {/* The member whose run is open. It stays at one spot on SCREEN in
-                both states — just under the header's line — so as the canvas grows
-                up beneath it (its top moving from 68px to 0), it moves down by the
-                same amount over the same curve, and clears the pinned name that
-                takes the corner once the header's gone. */}
+            {/* The member whose run is open, under the top-left controls. */}
             {selectedRun && !showEditCanvas && (
-              <div
-                className={cn(
-                  'absolute left-5 z-20 transition-[top]',
-                  chrome,
-                  paneCollapsed ? 'top-20' : 'top-3',
-                )}
-              >
+              <div className="absolute top-[68px] left-5 z-20">
                 <div className={HUD_PILL}>
                   <Button
                     aria-label={`Close ${selectedRun.member.name}'s run`}
@@ -640,52 +594,41 @@ const AutomationFloat: React.FC = () => {
               global nav — it happened to match in dark and diverged in light. */}
         <aside
           className={cn(
-            // Collapses by WIDTH, not by sliding out on a negative margin. Both
-            // animate the same 420px, but a slide takes the pane's contents with it,
-            // which reads as the pane escaping rather than closing. Narrowing holds
-            // every child exactly where it is and lets overflow-hidden wipe them as the
-            // canvas edge advances, so nothing moves that isn't supposed to.
-            //
-            // On this side the wipe runs the other way — the contents are clipped from
-            // the right while the pane's left edge travels — which is why the child below
-            // stays pinned to its full width.
-            //
-            // This only works because the child below is pinned to w-[420px]: left
-            // to itself the content would reflow as the pane narrowed, wrapping the
-            // title and crushing the table for the length of the animation.
-            'relative flex shrink-0 flex-col overflow-hidden transition-[width]',
+            // Over the canvas, not beside it: the canvas is always full width and
+            // never re-lays or re-centres for the pane; the pane slides in on top
+            // of it from the right, and back out. Transparent itself — the card
+            // inside carries the surface, so the canvas shows in the 8px around it.
+            'absolute inset-y-0 right-0 z-30 flex w-[420px] flex-col transition-transform',
             chrome,
-            // Page content on the page's own background, with no rule of its own:
-            // the canvas window's edge is what divides them.
-            'bg-background',
-            paneCollapsed ? 'w-0' : 'w-[420px]',
+            paneCollapsed ? 'pointer-events-none translate-x-full' : 'translate-x-0',
           )}
         >
-          {/* onCollapse is future only — that release puts the toggle on the
-                    pane, beside its title. Phase 1 drives the same state from the
-                    header bar, so its pane doesn't carry a control of its own. */}
-          {/* Pinned to the pane's full width so it never reflows while the
-                    aside narrows around it — see the note above. */}
-          <div className="flex min-h-0 w-[420px] flex-1 flex-col">
-            <LeftPanel
-              query={query}
-              scenario={scenario}
-              selectedMemberId={selectedMemberId}
-              settings={{
-                name: automation.name,
-                description: record?.description ?? '',
-                // Written straight through, like the status is — properties of the
-                // automation rather than of the flow, and the flow is the thing
-                // Publish commits.
-                onDetailsChange: ({ name, description }) =>
-                  updateAutomationDetails(id, name, description),
-                allowReentry,
-                onAllowReentryChange: setAllowReentry,
-                onArchive: () => setArchiveOpen(true),
-              }}
-              onQueryChange={setQuery}
-              onSelectMember={setSelectedMemberId}
-            />
+          {/* The pane as a floating card, the post editor's settings panel: 8px of
+              page around it, rounded, ruled. Its first row is its own header —
+              the tabs — level with the header's buttons, with the sidebar toggle
+              (pinned to the screen's corner, see below) at its right end. */}
+          <div className="flex min-h-0 w-[420px] flex-1 flex-col p-2">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-default bg-background shadow-sm">
+              <LeftPanel
+                query={query}
+                scenario={scenario}
+                selectedMemberId={selectedMemberId}
+                settings={{
+                  name: automation.name,
+                  description: record?.description ?? '',
+                  // Written straight through, like the status is — properties of the
+                  // automation rather than of the flow, and the flow is the thing
+                  // Publish commits.
+                  onDetailsChange: ({ name, description }) =>
+                    updateAutomationDetails(id, name, description),
+                  allowReentry,
+                  onAllowReentryChange: setAllowReentry,
+                  onArchive: () => setArchiveOpen(true),
+                }}
+                onQueryChange={setQuery}
+                onSelectMember={setSelectedMemberId}
+              />
+            </div>
           </div>
         </aside>
       </div>
@@ -746,93 +689,94 @@ const AutomationFloat: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* The way back and the name, pinned to the top-left and never anywhere
-          else — the top-right cluster's twin. With the pane open they read as the
-          header's left half; maximised, the header row closes up and a card
-          fades in behind them, and they float over the canvas. They don't move,
-          change size or remount either way: only the card arrives, so the
-          toggle is one continuous thing rather than a header fading out and a
-          copy of it fading in. The full-canvas lane does the same with its pill.
-
-          16px down and 24px in, the header's own padding; the card is drawn 4px
-          out around them, as the top-right one is. */}
-      <div className="pointer-events-none absolute top-0 left-0 z-40 flex max-w-[50%] px-6 py-4">
-        <div className="pointer-events-auto relative flex min-w-0 items-center">
-          <div
+      {/* The way back, the name and the status, floating over the canvas at its
+          top-left — always, there's no header for them to sit in. Each part
+          stands on its own surface like the top-right controls: the arrow as a
+          button, the name and status as a small card built like one. 20px down,
+          24px in. */}
+      <div className="pointer-events-none absolute top-0 left-0 z-40 flex max-w-[50%] px-6 py-5">
+        <Inline align="center" className="pointer-events-auto min-w-0" gap="md">
+          <Button
+            aria-label="Back to automations"
+            className={cn(HEADER_ACTION, HEADER_ICON_BUTTON, floatingControl(true))}
+            size="icon"
+            type="button"
+            variant="ghost"
+            onClick={goBack}
+          >
+            <LucideIcon.ArrowLeft strokeWidth={2} />
+          </Button>
+          {/* The name's card is built like the buttons beside it — their height,
+              padding, type (13px medium) and corner shape — so floating, the
+              pieces read as one family. The shape follows Shade's control shape
+              (pill under Admin 7, rounded otherwise), the same setting the
+              buttons read. The padding is there docked too — it's only the
+              surface that comes and goes. */}
+          <span
             className={cn(
-              'absolute -inset-1 rounded-lg bg-surface-elevated shadow-sm transition-opacity',
-              paneCollapsed
-                ? 'opacity-100 [transition-delay:150ms] duration-200'
-                : 'pointer-events-none opacity-0 duration-100',
+              // Shade's ghost-button padding, which is what this card sits beside:
+              // 12px under Admin 7, 10px (the default size's px-2.5) otherwise.
+              'flex h-8 min-w-0 items-center gap-2',
+              isAdmin7 ? 'px-3' : 'px-2.5',
+              controlShape === 'pill' ? 'rounded-full' : 'rounded-control',
+              HEADER_ACTION,
+              floatingControl(true),
             )}
-          />
-          <Inline align="center" className="relative min-w-0" gap="sm">
-            <Button
-              aria-label="Back to automations"
-              size="icon"
-              type="button"
-              variant="ghost"
-              onClick={goBack}
-            >
-              <LucideIcon.ArrowLeft strokeWidth={2} />
-            </Button>
-            <span className="min-w-0 truncate text-md font-semibold">{automation.name}</span>
-            {/* On / Off beside the name — the same badge the other lanes' headers
-                and the list use. shrink-0 so a long name truncates before the
-                status does. mr-2 is the card's breathing room past it; with no
-                card showing it's just space. */}
-            <span className="mr-2 flex shrink-0">
+          >
+            <span className="min-w-0 truncate text-control font-medium">{automation.name}</span>
+            {/* On / Off beside the name — the same badge the other lanes'
+                headers and the list use. shrink-0 so a long name truncates
+                before the status does. */}
+            <span className="flex shrink-0">
               <StatusBadge status={liveStatus} />
             </span>
-          </Inline>
-        </div>
+          </span>
+        </Inline>
       </div>
 
-      {/* The screen's controls — the sidebar toggle and the automation's actions —
-          as one cluster pinned to the top-right at the pane's width, and never
-          anywhere else. Loops' arrangement: with the pane open it's the pane's
-          top row (the pane leaves that row empty for it); maximised, the same row
-          floats over the canvas as a card. Nothing in it moves either way — only
-          the card arrives behind it — so the controls are where your hand already
-          is, whichever state you're in.
-
-          The actions lead and the toggle ends the row, in the screen's corner —
-          the one control that acts on the layout rather than the automation. */}
-      <div className="pointer-events-none absolute top-0 right-0 z-40 flex w-[420px] justify-end px-6 py-4">
-        <div className="pointer-events-auto relative flex items-center gap-2">
-          {/* The card hugs the controls, in the same material as the top-left
-              pill (HUD_PILL — surface, radius, shadow, no border) and the same
-              4px around them, so the two corners read as one set of floating
-              chrome. It fades in once the pane has mostly gone — before that the
-              pane IS its background — and out at once on the way back. */}
-          <div
-            className={cn(
-              'absolute -inset-1 rounded-lg bg-surface-elevated shadow-sm transition-opacity',
-              paneCollapsed
-                ? 'opacity-100 [transition-delay:150ms] duration-200'
-                : 'pointer-events-none opacity-0 duration-100',
-            )}
+      {/* The automation's actions, floating top-right — the post editor's
+          Preview / Publish. They belong to the canvas, not the pane, so they
+          keep clear of the pane card: with it open they stop 24px short of it
+          (its left edge is 412px from the right — the pane's 420 less its 8px
+          inset), and as it slides away they slide right with it, on the same
+          curve, to sit 12px from the sidebar toggle. Only the toggle holds
+          still. */}
+      <div
+        className={cn(
+          'pointer-events-none absolute top-5 z-40 flex transition-[right]',
+          chrome,
+          paneCollapsed ? 'right-[68px]' : 'right-[436px]',
+        )}
+      >
+        <Inline align="center" className="pointer-events-auto" gap="md">
+          <HeaderActions
+            canGoLive={canGoLive}
+            commit={chromeActions}
+            status={liveStatus}
+            floating
+            onStatusChange={handleStatusToggle}
           />
-          {/* 4px between controls, matching the card's 4px around them. */}
-          <Inline align="center" className="relative" gap="xs">
-            <HeaderActions
-              canGoLive={canGoLive}
-              commit={chromeActions}
-              status={liveStatus}
-              onStatusChange={handleStatusToggle}
-            />
-            <Button
-              aria-label={paneCollapsed ? 'Show sidebar' : 'Hide sidebar'}
-              aria-pressed={paneCollapsed}
-              size="icon"
-              type="button"
-              variant="ghost"
-              onClick={() => setPaneCollapsed(!paneCollapsed)}
-            >
-              <LucideIcon.PanelRight strokeWidth={2} />
-            </Button>
-          </Inline>
-        </div>
+        </Inline>
+      </div>
+
+      {/* The sidebar toggle, pinned to the screen's top-right corner and never
+          anywhere else: with the pane open it ends the pane card's header row
+          (the card is inset 8px, so 24px in is 16px inside it; 20px down, the
+          controls' line). The one control
+          that acts on the layout rather than the automation, so it's the one
+          that doesn't move. */}
+      <div className="absolute top-5 right-6 z-40">
+        <Button
+          aria-label={paneCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+          aria-pressed={paneCollapsed}
+          className={cn(HEADER_ACTION, HEADER_ICON_BUTTON, floatingControl(true))}
+          size="icon"
+          type="button"
+          variant="ghost"
+          onClick={() => setPaneCollapsed(!paneCollapsed)}
+        >
+          <LucideIcon.PanelRight strokeWidth={2} />
+        </Button>
       </div>
 
       {/* Prototype-only: which lane this is, and the way to the others. */}

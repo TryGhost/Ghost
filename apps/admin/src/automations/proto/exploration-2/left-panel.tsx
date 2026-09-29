@@ -227,7 +227,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   // the filter chips, the summary, the sticky bar and the table — has to use the
   // same one or the left edge goes ragged, so it's named once rather than typed
   // five times. Tried at 32px and came back to 24.
-  const gutter = 'px-6';
+  const gutter = 'px-4';
 
   // Three tabs: Performance (how it's doing — the chart and the status counts),
   // Members (who — the searchable list), and Settings (the automation itself). They used to be one long scroll
@@ -338,14 +338,11 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   const filterMenu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          aria-label="Filter"
-          className="shrink-0"
-          size="icon"
-          type="button"
-          variant="outline"
-        >
-          <LucideIcon.Funnel strokeWidth={2} />
+        {/* h-9 to sit level with the 36px search field beside it. The word is
+            the label, so no aria-label. */}
+        <Button className="h-9 shrink-0" type="button" variant="outline">
+          <LucideIcon.ListFilter strokeWidth={2} />
+          Filter
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -420,18 +417,15 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
       <Tabs
         className="flex min-h-0 flex-1 flex-col"
         value={tab}
-        variant="underline"
+        variant="button"
         onValueChange={(next) => setTab(next as PaneTab)}
       >
-        {/* The screen's top-right cluster — the sidebar toggle and the
-            automation's actions — sits over this: it's pinned to the right of the
-            screen at the pane's width, and the pane's first row is left empty for
-            it: 16 + 36 + 16, the header's height, so the cluster and the header
-            share a line. Its bottom 24px is the gap above what follows. */}
-        <div className="h-[68px] shrink-0" aria-hidden />
-        {/* Shade's underline tabs, 24px under the header band's edge — the band
-            now draws a line across the pane, so the tabs need air below it. */}
-        <TabsList className="m-6 shrink-0">
+        {/* Shade's button tabs — the "stable selection width" kind — as the
+            pane card's header row. mt-3 puts them level with the floating
+            buttons (the card starts 8px down, the buttons 20px); the sidebar
+            toggle, pinned to the screen's corner, ends the row on the right,
+            so it's left clear. */}
+        <TabsList className="mx-4 mt-3 mb-6 shrink-0">
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -531,8 +525,10 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
           value="members"
         >
           {/* The controls, held above the list rather than scrolling with it:
-              search and the filters on one row, what's narrowing the list under
-              it, then the status chips. Only the table scrolls. */}
+              search and the filters on one row, then what's narrowing the list
+              as removable chips. Status is filtered from the filter menu (or a
+              Performance card) — no separate row of status pills. Only the
+              table scrolls. */}
           <div className={cn('shrink-0 pb-4', gutter)}>
             <div className="flex gap-2 pb-3">
               {searchField}
@@ -546,7 +542,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                       Status and exit reason share one chip: choosing a reason sets the status
                       with it, so two chips would be one fact stated twice. */}
             {(range !== 'all' || statusFilter || exitFilter) && (
-              <FilterBar className={cn('shrink-0 pb-3', gutter)}>
+              <FilterBar className="shrink-0 pb-3">
                 {/* One child, not one per chip: FilterBar justifies between its children
                               so it can hold filters at the left and controls like "Save view" at
                               the right, and handing it peers pushed them to opposite ends. */}
@@ -573,46 +569,6 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                 </Inline>
               </FilterBar>
             )}
-            <div className="flex gap-2">
-              {STATUS_FACETS.map((facet) => {
-                const active = statusFilter === facet.key;
-                return (
-                  <button
-                    key={facet.key}
-                    aria-pressed={active}
-                    className={cn(
-                      // rounded-md, not a pill — Shade's Filters
-                      // pattern (the members page's chips) defaults
-                      // to md, so filter-shaped controls share one
-                      // radius everywhere.
-                      'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border px-3 text-sm transition-colors',
-                      active
-                        ? 'border-foreground bg-muted-foreground/10'
-                        : 'border-border-default hover:bg-interactive-hover',
-                    )}
-                    title={facet.key}
-                    type="button"
-                    onClick={() => setStatusFilter(active ? null : facet.key)}
-                  >
-                    {facet.mark}
-                    {/* Selected lifts the count to full text colour — the border and
-                                          fill mark the chip, but keeping its number muted made the
-                                          active filter look no more current than the idle ones. */}
-                    {/* font-mono: three counts read side by side
-                                          and get compared, so they're the repeated-
-                                          readout case rather than the headline one. */}
-                    <span
-                      className={cn(
-                        'font-mono tabular-nums',
-                        active ? 'text-foreground' : 'text-muted-foreground',
-                      )}
-                    >
-                      {formatNumber(counts[facet.key] ?? 0)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
             {/* Member table. table-fixed keeps the Entered/Status widths steady. */}
@@ -706,7 +662,7 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
           </div>
         </TabsContent>
         <TabsContent className="min-h-0 flex-1 overflow-y-auto" value="settings">
-          <SettingsPanel {...settings} />
+          <SettingsPanel {...settings} className="px-4" />
         </TabsContent>
       </Tabs>
     </div>

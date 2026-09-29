@@ -1110,7 +1110,19 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
   const [from, setFrom] = useState({ width: 0, height: 0 });
   // The form's full height, measured once it's mounted.
   const [toHeight, setToHeight] = useState<number | null>(null);
+  // The height the panel opened at. Once it's open, its position and the room
+  // around it are held to THIS, not to whatever the form grows or shrinks to
+  // while you edit — see the resize effect below.
+  const [anchorHeight, setAnchorHeight] = useState<number | null>(null);
 
+  // The node's height, held while its panel is out. The node stays mounted
+  // (invisible) under the panel and keeps rendering what's being edited — a
+  // title that wraps onto another line, a subject getting longer — and every
+  // change to its height re-laid the column: the neighbours moved and the panel
+  // re-centred under the cursor mid-edit. Frozen at its size on opening (layout
+  // pixels, not the zoomed screen ones) and released once the panel is back
+  // inside it, so the column settles once, after you're done.
+  const [frozenHeight, setFrozenHeight] = useState<number | null>(null);
   // The node itself — a <button>, or for an email a div acting as one — held
   // by a callback ref so either element fits.
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -1158,6 +1170,7 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
     setFrom(readNode());
     setToHeight(null);
     setExpanded(false);
+    setFrozenHeight(triggerRef.current?.offsetHeight ?? null);
     setPhase('opening');
     onFocusChangeRef.current?.(true);
   }, []);
@@ -1191,6 +1204,7 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
       (isEmail ? (subjectRowRef.current?.offsetHeight ?? 0) + EMAIL_INSET_EXTRA_HEIGHT : 0);
     void panelRef.current?.offsetWidth;
     setToHeight(height);
+    setAnchorHeight(height);
     onFocusHeightRef.current?.(height);
     const frame = requestAnimationFrame(() => setExpanded(true));
     const timer = setTimeout(() => setPhase('open'), reducedMotion() ? 0 : MORPH_OPEN_MS);
@@ -1208,7 +1222,13 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
     }
     void panelRef.current?.offsetWidth;
     const frame = requestAnimationFrame(() => setExpanded(false));
-    const timer = setTimeout(() => setPhase('closed'), reducedMotion() ? 0 : MORPH_CLOSE_MS);
+    const timer = setTimeout(
+      () => {
+        setPhase('closed');
+        setFrozenHeight(null);
+      },
+      reducedMotion() ? 0 : MORPH_CLOSE_MS,
+    );
     return () => {
       cancelAnimationFrame(frame);
       clearTimeout(timer);
@@ -1216,15 +1236,19 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
   }, [phase]);
 
   // Open, the form can change height under you — switching an update from
-  // "unsubscribe" to "add a label" adds a row. Track it, so the box the panel
-  // is centred in (and the offset that centres it on the node) follows.
+  // "unsubscribe" to "add a label" adds a row, the paid trigger's exit sentence
+  // rewraps as its tiers change. The height is tracked so the box stays big
+  // enough, but NOTHING moves for it: the panel keeps the top edge it opened
+  // with and grows or shrinks at the bottom, and the room made for it in the
+  // column stays at its opening size. Re-centring on every change had the
+  // panel — and any menu open inside it — sliding under the cursor, and the
+  // nodes below shuffling, while you were mid-edit.
   useEffect(() => {
     if (phase !== 'open' || !contentEl) {
       return;
     }
     const observer = new ResizeObserver(() => {
       setToHeight(contentEl.offsetHeight);
-      onFocusHeightRef.current?.(contentEl.offsetHeight);
     });
     observer.observe(contentEl);
     return () => observer.disconnect();
@@ -1324,6 +1348,9 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
         ? { width: MORPH_WIDTH, height: toHeight ?? undefined }
         : { width: from.width, height: from.height };
 
+  const frozenStyle: React.CSSProperties | undefined =
+    frozenHeight === null ? undefined : { height: frozenHeight, overflow: 'hidden' };
+
   const nodeClassName = cn(
     'nodrag nopan flex cursor-pointer rounded-xl border bg-surface-elevated text-left shadow-xs transition-colors hover:border-border-strong',
     isEmail ? 'flex-col overflow-hidden' : 'items-center gap-3 px-6 py-5',
@@ -1360,6 +1387,7 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
               aria-haspopup="dialog"
               className={nodeClassName}
               role="button"
+              style={frozenStyle}
               tabIndex={0}
               onClick={requestOpen}
               onKeyDown={(event) => {
@@ -1374,7 +1402,7 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
           </PopoverAnchor>
         ) : (
           <PopoverTrigger asChild>
-            <button ref={setTrigger} className={nodeClassName} type="button">
+            <button ref={setTrigger} className={nodeClassName} style={frozenStyle} type="button">
               <StepNodeFace icon={icon} title={title} warning={Boolean(d.warning)} />
             </button>
           </PopoverTrigger>
@@ -1389,7 +1417,11 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
           // above and below. The content box is held at the panel's full height
           // with the panel centred inside it, and pulled up so the box's middle
           // sits on the node's middle — the panel then only has to change size.
-          sideOffset={-(from.height + outerHeight) / 2}
+          // Open, held to the height it opened at (anchorHeight), so a change
+          // in the form's height moves the bottom edge only.
+          sideOffset={
+            -(from.height + (phase === 'open' ? (anchorHeight ?? outerHeight) : outerHeight)) / 2
+          }
           style={{ width: MORPH_WIDTH, height: phase === 'open' ? undefined : outerHeight }}
           updatePositionStrategy="always"
           // Radix restores focus to the trigger on close, which would land on an
