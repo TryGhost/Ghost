@@ -259,6 +259,18 @@ references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
 for `useSyncExternalStore` and lets it stand in for those values as a dependency.
 
+## Leaving the editor
+
+While the post holds unsaved work, every way out of the editor is put to the
+save engine: a link, the browser's Back and Forward buttons, and any other
+change to the URL's hash. The engine finishes or saves what is outstanding and
+answers either that leaving loses nothing, and the navigation goes ahead, or
+that the writer has to confirm it. Until then the URL stays on the editor. A
+Back or Forward is undone as it happens and replayed once the writer may leave,
+so they land on the entry it reached. A clean editor leaves at once, a tab close
+or reload gets the browser's own prompt, and the URL replace after a create is
+not an exit.
+
 ## What the session reports
 
 Failures never reach the writer as thrown errors; the session reports them. Every

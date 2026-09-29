@@ -8,9 +8,13 @@ import {
 import { ShadeApp } from '@tryghost/shade/app';
 
 import App from './app.tsx';
+import { installHistoryPopGate } from './hooks/use-history-pop-navigation-guard';
 import { routes, useIsEmberOwnedRoute } from './routes.tsx';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
+
+// At module scope, so it is in place before `AdminAppRoot` creates the router.
+installHistoryPopGate();
 
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();

@@ -7,6 +7,7 @@ import {
   useLocation,
 } from '@tryghost/admin-x-framework';
 import { useHashLinkNavigationGuard } from '@/hooks/use-hash-link-navigation-guard';
+import { useHistoryPopNavigationGuard } from '@/hooks/use-history-pop-navigation-guard';
 import type { BlockerFunction } from '@tryghost/admin-x-framework';
 
 type BlockerFunctionArgs = Parameters<BlockerFunction>[0];
@@ -25,6 +26,8 @@ export interface UseUnsavedChangesGuardOptions {
    * closed and the caller settles it via `interceptedNavigation`.
    */
   interceptNavigation?: (args: BlockerFunctionArgs) => boolean;
+  /** Also holds Back, Forward and other history pops out of the screen, keeping its URL. */
+  guardHistoryPops?: boolean;
 }
 
 export interface UnsavedChangesGuard {
@@ -69,6 +72,7 @@ export function useUnsavedChangesGuard({
   confirmUnloadWhen,
   isSaving = false,
   interceptNavigation,
+  guardHistoryPops = false,
 }: UseUnsavedChangesGuardOptions): UnsavedChangesGuard {
   const location = useLocation();
   // Lets the caller's own programmatic navigations (post-save redirects,
@@ -113,10 +117,33 @@ export function useUnsavedChangesGuard({
   const anchorGuard = useHashLinkNavigationGuard(when, () => {
     blockedNavigationRef.current = true;
   });
+  const popGuard = useHistoryPopNavigationGuard(when && guardHistoryPops, () => {
+    if (blockedNavigationRef.current) {
+      return false;
+    }
+    blockedNavigationRef.current = true;
+    return true;
+  });
 
   const isBlockedByIntercept = blocker.state === 'blocked' && blockedByInterceptRef.current;
   const isBlocked =
-    (blocker.state === 'blocked' && !blockedByInterceptRef.current) || anchorGuard.isBlocked;
+    (blocker.state === 'blocked' && !blockedByInterceptRef.current) ||
+    anchorGuard.isBlocked ||
+    popGuard.isBlocked;
+
+  const proceedBlocked = () => {
+    // An anchor proceeds with a hash change, which arrives as a history pop.
+    popGuard.release();
+    if (anchorGuard.isBlocked) {
+      anchorGuard.proceed();
+    } else if (popGuard.isBlocked) {
+      // The held pop is replayed as a POP the router blocker must let through.
+      bypassRef.current = true;
+      popGuard.proceed();
+    } else {
+      blocker.proceed?.();
+    }
+  };
 
   // One-shot state is scoped to the current route target.
   React.useEffect(() => {
@@ -131,12 +158,8 @@ export function useUnsavedChangesGuard({
     }
     resumeAfterSaveRef.current = false;
     blockedNavigationRef.current = false;
-    if (anchorGuard.isBlocked) {
-      anchorGuard.proceed();
-    } else {
-      blocker.proceed?.();
-    }
-  }, [isSaving, isBlocked, anchorGuard, blocker]);
+    proceedBlocked();
+  }, [isSaving, isBlocked, proceedBlocked]);
 
   const bypassNextNavigation = React.useCallback(() => {
     bypassRef.current = true;
@@ -161,11 +184,7 @@ export function useUnsavedChangesGuard({
         leaveConfirmedRef.current = true;
         blockedNavigationRef.current = false;
         resumeAfterSaveRef.current = false;
-        if (anchorGuard.isBlocked) {
-          anchorGuard.proceed();
-        } else {
-          blocker.proceed?.();
-        }
+        proceedBlocked();
       },
       onOpenChange: (open: boolean) => {
         if (open) {
@@ -180,6 +199,7 @@ export function useUnsavedChangesGuard({
           resumeAfterSaveRef.current = false;
           blocker.reset?.();
           anchorGuard.reset();
+          popGuard.reset();
         }
       },
     },

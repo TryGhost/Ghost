@@ -1,7 +1,8 @@
 import React from 'react';
 import { RouterProvider, createMemoryRouter } from 'react-router';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { hashPathname, installHistoryPopGate } from './use-history-pop-navigation-guard';
 import { useUnsavedChangesGuard } from './use-unsaved-changes-guard';
 import type {
   UnsavedChangesGuard,
@@ -251,5 +252,161 @@ describe('useUnsavedChangesGuard', () => {
     });
 
     expect(window.location.hash).toBe('#/ember-route');
+  });
+});
+
+describe('useUnsavedChangesGuard with guardHistoryPops', () => {
+  const reached: string[] = [];
+  beforeAll(() => {
+    // Ahead of the gate, so it also sees where the pops the gate holds went.
+    window.addEventListener('popstate', () => {
+      reached.push(window.location.hash);
+    });
+    installHistoryPopGate();
+  });
+
+  // The memory router ignores window history, so the window mirrors its entry
+  // after one the router did not create.
+  beforeEach(() => {
+    window.history.replaceState(null, '', '#/elsewhere');
+    window.history.pushState(null, '', '#/guarded');
+  });
+
+  const popBack = async (target = '#/elsewhere') => {
+    const before = reached.length;
+    await act(async () => {
+      window.history.back();
+      await waitFor(() => expect(reached.slice(before)).toContain(target));
+    });
+  };
+
+  it('holds a pop out of the screen at its URL, then completes it on confirm', async () => {
+    renderGuarded({ when: true, guardHistoryPops: true });
+
+    await popBack();
+
+    expect(window.location.hash).toBe('#/guarded');
+    expect(dialogOpen()).toBe('true');
+
+    act(() => {
+      latestGuard.dialogProps.onConfirm();
+      latestGuard.dialogProps.onOpenChange(false);
+    });
+
+    await waitFor(() => expect(window.location.hash).toBe('#/elsewhere'));
+  });
+
+  it('stays on cancel and holds the next pop again', async () => {
+    renderGuarded({ when: true, guardHistoryPops: true });
+    await popBack();
+
+    act(() => {
+      latestGuard.dialogProps.onOpenChange(false);
+    });
+    expect(dialogOpen()).toBe('false');
+    expect(window.location.hash).toBe('#/guarded');
+
+    await popBack();
+
+    expect(window.location.hash).toBe('#/guarded');
+    expect(dialogOpen()).toBe('true');
+  });
+
+  it('hides a held pop from the listeners that come after the gate', async () => {
+    const seen: string[] = [];
+    const onPop = () => seen.push(`popstate ${window.location.hash}`);
+    const onHashChange = (event: HashChangeEvent) =>
+      seen.push(`hashchange ${new URL(event.newURL).hash}`);
+    window.addEventListener('popstate', onPop);
+    window.addEventListener('hashchange', onHashChange);
+    try {
+      renderGuarded({ when: true, guardHistoryPops: true });
+      await popBack();
+      expect(seen).toEqual([]);
+
+      act(() => {
+        latestGuard.dialogProps.onConfirm();
+      });
+
+      await waitFor(() => expect(seen).toEqual(['popstate #/elsewhere', 'hashchange #/elsewhere']));
+    } finally {
+      window.removeEventListener('popstate', onPop);
+      window.removeEventListener('hashchange', onHashChange);
+    }
+  });
+
+  it('keeps the destination of an exit that is already awaiting a decision', async () => {
+    const router = renderGuarded({ when: true, guardHistoryPops: true });
+    await act(async () => {
+      await router.navigate('/elsewhere');
+    });
+    expect(dialogOpen()).toBe('true');
+
+    await popBack();
+    expect(window.location.hash).toBe('#/guarded');
+
+    act(() => {
+      latestGuard.dialogProps.onConfirm();
+      latestGuard.dialogProps.onOpenChange(false);
+    });
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/elsewhere'));
+    expect(window.location.hash).toBe('#/guarded');
+  });
+
+  it('lets through the hash change of an anchor exit the writer confirmed', async () => {
+    renderGuarded({ when: true, guardHistoryPops: true });
+    fireEvent.click(screen.getByText('Ember link'));
+    const before = reached.length;
+
+    await act(async () => {
+      latestGuard.dialogProps.onConfirm();
+      latestGuard.dialogProps.onOpenChange(false);
+      await waitFor(() => expect(reached.slice(before)).toContain('#/ember-route'));
+    });
+
+    expect(window.location.hash).toBe('#/ember-route');
+    expect(dialogOpen()).toBe('false');
+  });
+
+  it('lets pops through while there is nothing to lose', async () => {
+    renderGuarded({ when: false, guardHistoryPops: true });
+
+    await popBack();
+
+    expect(window.location.hash).toBe('#/elsewhere');
+    expect(dialogOpen()).toBe('false');
+  });
+
+  it('lets a pop that keeps the pathname through', async () => {
+    window.history.replaceState(null, '', '#/guarded?tab=first');
+    window.history.pushState(null, '', '#/guarded');
+    renderGuarded({ when: true, guardHistoryPops: true });
+
+    await popBack('#/guarded?tab=first');
+
+    expect(window.location.hash).toBe('#/guarded?tab=first');
+    expect(dialogOpen()).toBe('false');
+  });
+
+  it('leaves pops alone without the option', async () => {
+    renderGuarded({ when: true });
+
+    await popBack();
+
+    expect(window.location.hash).toBe('#/elsewhere');
+    expect(dialogOpen()).toBe('false');
+  });
+});
+
+describe('hashPathname', () => {
+  it.each([
+    ['#/editor/post/abc', '/editor/post/abc'],
+    ['#/posts?type=draft', '/posts'],
+    ['#/posts/#section', '/posts/'],
+    ['#posts', '/posts'],
+    ['', '/'],
+  ])('reads %s as %s', (hash, pathname) => {
+    expect(hashPathname(hash)).toBe(pathname);
   });
 });
