@@ -91,14 +91,17 @@ describe('Route access', () => {
     },
   );
 
-  it.each(['/site', '/migrate'])('redirects %s to billing during a force upgrade', async (path) => {
-    const config = configResponse();
-    config.config.hostSettings = { forceUpgrade: true };
+  it.each(['/site', '/migrate', '/posts', '/pages', '/members-activity'])(
+    'redirects %s to billing during a force upgrade',
+    async (path) => {
+      const config = configResponse();
+      config.config.hostSettings = { forceUpgrade: true };
 
-    await renderAdminApp(path, { boot: { browseConfig: { response: config } } });
+      await renderAdminApp(path, { boot: { browseConfig: { response: config } } });
 
-    await expect.poll(currentRoute).toBe('/pro');
-  });
+      await expect.poll(currentRoute).toBe('/pro');
+    },
+  );
 
   it('redirects members to billing during a force upgrade', async () => {
     const config = configResponse();

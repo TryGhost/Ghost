@@ -121,10 +121,7 @@ const appRoutes: RouteObject[] = [
   {
     path: '/members-activity',
     Component: MemberActivityGate,
-    handle: {
-      ...emberFallbackHandle,
-      requiresAccess: canManageMembers,
-    } satisfies AccessRouteHandle & AdminRouteHandle,
+    handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
   },
   {
     path: '/posts/analytics/:postId/debug',
@@ -185,10 +182,8 @@ const appRoutes: RouteObject[] = [
     } satisfies AdminRouteHandle & AccessRouteHandle,
   },
   // Served by React or Ember depending on the `postsListReact` Labs flag.
-  // The handle stays emberFallbackHandle so force-upgrade behaves the same
-  // on both sides of the flag.
-  { path: '/posts', Component: PostsListGate, handle: emberFallbackHandle },
-  { path: '/pages', Component: PagesListGate, handle: emberFallbackHandle },
+  { path: '/posts', Component: PostsListGate },
+  { path: '/pages', Component: PagesListGate },
   {
     // Served by React or Ember depending on the `editorReact` Labs flag.
     //
