@@ -3071,6 +3071,38 @@ describe('automations repository', function () {
       assert.equal(await getOpenedCount(firstRevisionId), null);
     });
 
+    it('skips recipients with neither a delivery nor an open, still tracking the rest', async function () {
+      const updateQueries: string[] = [];
+      const recordQuery = ({ sql }: { sql: string }) => {
+        if (sql.startsWith('update')) {
+          updateQueries.push(sql);
+        }
+      };
+      knex.on('query', recordQuery);
+
+      try {
+        await repo.trackEmailDeliveredAndOpened(
+          new Map([
+            ['recipient-1', { automationActionRevisionId: firstRevisionId }],
+            ['recipient-2', delivered(EARLIER, secondRevisionId)],
+          ]),
+        );
+      } finally {
+        knex.off('query', recordQuery);
+      }
+
+      assert.equal(updateQueries.length, 1, 'only the delivered recipient should be updated');
+      assert.deepEqual(await getRecipient('recipient-1'), {
+        delivered_at: null,
+        opened_at: null,
+      });
+      assert.deepEqual(await getRecipient('recipient-2'), {
+        delivered_at: EARLIER,
+        opened_at: null,
+      });
+      assert.equal(await getOpenedCount(firstRevisionId), null);
+    });
+
     it('adds to existing open counts, starting from zero when unset', async function () {
       await knex('automation_action_revisions')
         .where('id', secondRevisionId)

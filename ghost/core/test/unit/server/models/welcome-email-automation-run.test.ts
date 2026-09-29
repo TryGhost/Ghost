@@ -27,19 +27,34 @@ describe('Unit: models/welcome-email-automation-run', function () {
   });
 
   describe('relationships', function () {
-    it('has an automation relationship', function () {
+    it('belongs to an automation', function () {
       const model = new WelcomeEmailAutomationRun();
-      assert.equal(typeof model.automation, 'function');
+      const { relatedData } = model.automation();
+
+      assert.equal(relatedData.type, 'belongsTo');
+      assert.equal(relatedData.targetTableName, 'automations');
+      assert.equal(relatedData.foreignKey, 'welcome_email_automation_id');
+      assert.equal(relatedData.targetIdAttribute, 'id');
     });
 
-    it('has a member relationship', function () {
+    it('belongs to a member', function () {
       const model = new WelcomeEmailAutomationRun();
-      assert.equal(typeof model.member, 'function');
+      const { relatedData } = model.member();
+
+      assert.equal(relatedData.type, 'belongsTo');
+      assert.equal(relatedData.targetTableName, 'members');
+      assert.equal(relatedData.foreignKey, 'member_id');
+      assert.equal(relatedData.targetIdAttribute, 'id');
     });
 
-    it('has a nextWelcomeEmailAutomatedEmail relationship', function () {
+    it('belongs to the next welcome email automated email', function () {
       const model = new WelcomeEmailAutomationRun();
-      assert.equal(typeof model.nextWelcomeEmailAutomatedEmail, 'function');
+      const { relatedData } = model.nextWelcomeEmailAutomatedEmail();
+
+      assert.equal(relatedData.type, 'belongsTo');
+      assert.equal(relatedData.targetTableName, 'welcome_email_automated_emails');
+      assert.equal(relatedData.foreignKey, 'next_welcome_email_automated_email_id');
+      assert.equal(relatedData.targetIdAttribute, 'id');
     });
   });
 });

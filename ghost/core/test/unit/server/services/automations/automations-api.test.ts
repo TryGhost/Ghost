@@ -19,6 +19,17 @@ const buildSendEmailAction = (dataOverrides = {}) => ({
   },
 });
 
+const buildWaitAction = () => ({
+  id: ObjectId().toHexString(),
+  type: 'wait',
+  data: { wait_hours: 1 },
+});
+
+const buildEdge = (source: Readonly<{ id: string }>, target: Readonly<{ id: string }>) => ({
+  source_action_id: source.id,
+  target_action_id: target.id,
+});
+
 describe('automations API', function () {
   afterEach(function () {
     sinon.restore();
@@ -126,6 +137,61 @@ describe('automations API', function () {
           edges: [],
         }),
         /well-formed Lexical document/,
+      );
+    });
+    it('names the whole payload when a non-object payload is rejected', async function () {
+      await assert.rejects(automationsApi.edit(automationId, null), (err: Error) => {
+        assert.equal(err.name, 'ValidationError');
+        assert.match(
+          err.message,
+          /^Automation edit payload must include status, actions, and edges\. payload: /,
+        );
+        return true;
+      });
+    });
+
+    it('rejects duplicate edges', async function () {
+      const first = buildWaitAction();
+      const second = buildWaitAction();
+
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [first, second],
+          edges: [buildEdge(first, second), buildEdge(first, second)],
+        }),
+        (err: Error & { property?: string }) => {
+          assert.equal(err.name, 'ValidationError');
+          assert.equal(err.message, 'Automation edges must be unique.');
+          assert.equal(err.property, 'edges');
+          return true;
+        },
+      );
+    });
+
+    it('rejects a path with a separate cycle', async function () {
+      // A -> B is a valid path, but C <-> D forms a disconnected cycle. The
+      // edge count and head/tail counts still look like a linear path.
+      const a = buildWaitAction();
+      const b = buildWaitAction();
+      const c = buildWaitAction();
+      const d = buildWaitAction();
+
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [a, b, c, d],
+          edges: [buildEdge(a, b), buildEdge(c, d), buildEdge(d, c)],
+        }),
+        (err: Error & { property?: string }) => {
+          assert.equal(err.name, 'ValidationError');
+          assert.equal(
+            err.message,
+            'Automation graph must be a single linear path without branches or cycles.',
+          );
+          assert.equal(err.property, 'edges');
+          return true;
+        },
       );
     });
   });

@@ -61,6 +61,18 @@ describe('Unit: models/automation', function () {
       assert.equal(logArg.system.slug, 'member-welcome-email-paid');
     });
 
+    it('does not log for a model without an id', function () {
+      const infoStub = sinon.stub(logging, 'info');
+      const model = Automation.forge({
+        slug: 'member-welcome-email-free',
+        status: 'active',
+      });
+
+      model.onSaved(model);
+
+      sinon.assert.notCalled(infoStub);
+    });
+
     it('does not log for non-welcome-email slugs', function () {
       const infoStub = sinon.stub(logging, 'info');
       const model = Automation.forge({

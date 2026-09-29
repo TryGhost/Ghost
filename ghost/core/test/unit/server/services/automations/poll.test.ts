@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import logging from '@tryghost/logging';
 
 import { poll } from '../../../../../core/server/services/automations/poll';
 import type { AutomationStepToRun } from '../../../../../core/server/services/automations/automations-repository';
@@ -255,6 +256,50 @@ describe('automations poll', function () {
       automationsApi.markStepTerminal,
       step,
       'automation disabled',
+    );
+  });
+
+  it('marks the step failed without sending when the automation slug is unknown', async function () {
+    const errorLog = sinon.stub(logging, 'error');
+    const step = buildEmailStep({ automation_slug: 'unknown-automation' });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+
+    await poll(options);
+
+    sinon.assert.notCalled(Member.findOne);
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+    sinon.assert.calledOnce(errorLog);
+    const errorLogSystem = (errorLog.firstCall.args[0] as { system: Record<string, unknown> })
+      .system;
+    assert.equal(errorLogSystem.event, 'automations.poll.unknown_slug');
+    assert.equal(errorLogSystem.slug, 'unknown-automation');
+  });
+
+  it('marks the step failed without sending when the automation has no slug', async function () {
+    const errorLog = sinon.stub(logging, 'error');
+    const step = buildEmailStep({ automation_slug: null });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+
+    await poll(options);
+
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+    sinon.assert.calledOnce(errorLog);
+  });
+
+  it('bails without loading the member if the step has no member', async function () {
+    const step = buildEmailStep({ member_id: null });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+
+    await poll(options);
+
+    sinon.assert.notCalled(Member.findOne);
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      step,
+      'member unsubscribed',
     );
   });
 
