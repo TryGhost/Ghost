@@ -403,6 +403,7 @@ The reference uses compact rows with a shared hover background, wrapping labels,
 and underlined group headings. Definition-list spacing is reset locally so Ember's
 global list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
 lays out the individual `Kbd` caps; it does not draw another cap around them.
+The caps use `variant="contrast"` to stand out against the sidebar background.
 
 ## Delete
 

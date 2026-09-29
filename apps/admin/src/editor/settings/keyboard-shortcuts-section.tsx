@@ -36,6 +36,7 @@ function KeyCap({ token }: { token: ShortcutKey }) {
         token.tooltip && 'pointer-events-auto',
       )}
       role={token.tooltip ? 'img' : undefined}
+      variant="contrast"
     >
       {token.text}
     </Kbd>
