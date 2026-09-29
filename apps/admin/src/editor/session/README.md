@@ -222,18 +222,20 @@ before any of those replacements happen. Its retained collision record authorize
 recovery even after a retry fails for another reason; an active save or frozen
 authentication attempt must settle before the document can be replaced. The
 replacement completes before recovery is announced to subscribers, so an edit
-made from that notification belongs to the new document and is preserved. The read is its own request, never a
-refetch of the query the screen rendered from, so nothing is replaced until the
-session has accepted the copy. A reload that fails leaves the halt, the content
-and the banner exactly as they were. A reload that succeeds seeds the screen's
-query with the accepted document, so a quick close and reopen cannot resurrect
-the version it first read.
+made from that notification belongs to the new document and is preserved. The
+read is its own request, never a refetch of the query the screen rendered from,
+so nothing is replaced until the session has accepted the copy. A reload that
+fails leaves the halt, the content and the banner exactly as they were. A reload
+that succeeds seeds the screen's query with the accepted document, so a quick
+close and reopen cannot resurrect the version it first read.
 
-The screen's query also refetches on its own, after every save and on reconnect
-once it is stale. Only a first read that fails replaces the screen, with the load
-error or a missing post. Once the post is on screen, a refetch that fails leaves
-the editor, the session and the unsaved content where they are, and the next save
-reports a deleted post, an expired session or a collision itself.
+The screen's query also refetches on its own, after every save that lands and
+on reconnect once it is stale. Only a read that never produced the post
+replaces the screen, with the load error or a missing post, so reopening a post
+whose stale copy is still cached shows that copy even when its refetch fails.
+Once the post is on screen, a refetch that fails leaves the editor, the session
+and the unsaved content where they are, and the next save reports a deleted
+post, an expired session or a collision itself.
 
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a

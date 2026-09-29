@@ -101,6 +101,8 @@ function bodyElement(): Element | null {
 }
 
 const POST_NOT_FOUND = { errors: [{ type: 'NotFoundError', message: 'Post not found.' }] };
+// Ghost answers a request whose session has gone with this 403.
+const SESSION_GONE = { errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }] };
 
 /** A later handler for the same route wins, so from here every read of the post fails. */
 function failReads(status: number, body: object): EndpointCapture {
@@ -354,34 +356,57 @@ describe('Post editor saving', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Published');
   });
 
-  it.each<[number, object]>([
-    [500, { errors: [{ type: 'InternalServerError', message: 'Boom' }] }],
-    // Ghost answers a request whose session has gone with this 403.
-    [403, { errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }] }],
-  ])(
-    'keeps the editor and what was typed when the read after a save fails with a %i',
-    async (status, failure) => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      const mountedBody = bodyElement();
+  it('keeps the editor and what was typed when the read after a save fails with a 500', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    const mountedBody = bodyElement();
 
-      const failedRead = failReads(status, failure);
-      await appendToBody(' and more');
-      await expect.poll(() => saveApi.requests.length).toBe(1);
-      await expect.poll(() => failedRead.requests.length).toBeGreaterThan(0);
+    const failedRead = failReads(500, {
+      errors: [{ type: 'InternalServerError', message: 'Boom' }],
+    });
+    await appendToBody(' and more');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(() => failedRead.requests.length).toBeGreaterThan(0);
 
-      await appendToBody(' and then some');
+    await appendToBody(' and then some');
 
-      await expect.poll(() => saveApi.requests.length).toBe(2);
-      expect(submittedBody(saveApi)).toContain('Hello from React and more and then some');
-      await expect
-        .element(editorScreen.body())
-        .toHaveTextContent('Hello from React and more and then some');
-      await expect(editorScreen.loadError()).toHaveCount(0);
-      expect(bodyElement()).toBe(mountedBody);
-    },
-  );
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+    expect(submittedBody(saveApi)).toContain('Hello from React and more and then some');
+    await expect
+      .element(editorScreen.body())
+      .toHaveTextContent('Hello from React and more and then some');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+    expect(bodyElement()).toBe(mountedBody);
+  });
+
+  it('leaves an expired session to the next save when the read after a save is a 403', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    const mountedBody = bodyElement();
+
+    const expiredRead = failReads(403, SESSION_GONE);
+    await appendToBody(' and more');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(() => expiredRead.requests.length).toBeGreaterThan(0);
+
+    const expiredSave = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      SESSION_GONE,
+      { status: 403 },
+    );
+    await appendToBody(' and then some');
+
+    await expect.poll(() => expiredSave.requests.length).toBe(1);
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+    await expect
+      .element(editorScreen.bodyBehindDialog())
+      .toHaveTextContent('Hello from React and more and then some');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+    expect(bodyElement()).toBe(mountedBody);
+  });
 
   it('leaves a post deleted elsewhere to the next save when the read after a save is a 404', async () => {
     const saveApi = fakeSavablePost();
