@@ -10,31 +10,40 @@ export class UnsplashProvider implements IUnsplashProvider {
   SEARCH_IS_RUNNING: boolean = false;
   LAST_REQUEST_URL: string = '';
   IS_LOADING: boolean = false;
+  private activeRequests: number = 0;
+  private latestRequestController: AbortController | null = null;
 
   constructor(HEADERS: DefaultHeaderTypes) {
     this.HEADERS = HEADERS;
   }
 
-  private async makeRequest(url: string): Promise<Photo[] | { results: Photo[] } | null> {
-    if (this.REQUEST_IS_RUNNING) {
-      return null;
-    }
-
+  private async makeRequest(
+    url: string,
+    signal?: AbortSignal,
+  ): Promise<Photo[] | { results: Photo[] } | null> {
     this.LAST_REQUEST_URL = url;
     const options = {
       method: 'GET',
       headers: this.HEADERS as unknown as HeadersInit,
+      signal,
     };
 
     try {
+      this.activeRequests += 1;
       this.REQUEST_IS_RUNNING = true;
       this.IS_LOADING = true;
 
       const response = await fetch(url, options);
       const checkedResponse = await this.checkStatus(response);
-      this.extractPagination(checkedResponse);
-
       const jsonResponse = await checkedResponse.json();
+
+      // A newer request replaced this one while it was in flight, so its
+      // results and pagination are stale
+      if (signal?.aborted) {
+        return null;
+      }
+
+      this.extractPagination(checkedResponse);
 
       if ('results' in jsonResponse) {
         return jsonResponse.results;
@@ -42,11 +51,30 @@ export class UnsplashProvider implements IUnsplashProvider {
         return jsonResponse;
       }
     } catch (error) {
-      this.ERROR = error as string;
+      if (!signal?.aborted) {
+        this.ERROR = error as string;
+      }
       return null;
     } finally {
-      this.REQUEST_IS_RUNNING = false;
-      this.IS_LOADING = false;
+      this.activeRequests -= 1;
+      this.REQUEST_IS_RUNNING = this.activeRequests > 0;
+      this.IS_LOADING = this.REQUEST_IS_RUNNING;
+    }
+  }
+
+  // Loading the initial photos or a search replaces whatever the gallery shows,
+  // so it cancels the previous one instead of being dropped while it's running
+  private async makeLatestRequest(url: string): Promise<Photo[] | { results: Photo[] } | null> {
+    this.latestRequestController?.abort();
+    const controller = new AbortController();
+    this.latestRequestController = controller;
+
+    try {
+      return await this.makeRequest(url, controller.signal);
+    } finally {
+      if (this.latestRequestController === controller) {
+        this.latestRequestController = null;
+      }
     }
   }
 
@@ -84,8 +112,8 @@ export class UnsplashProvider implements IUnsplashProvider {
 
   public async fetchPhotos(): Promise<Photo[]> {
     const url = `${this.API_URL}/photos?per_page=30`;
-    const request = await this.makeRequest(url);
-    return request as Photo[];
+    const request = await this.makeLatestRequest(url);
+    return (request as Photo[]) || [];
   }
 
   public async fetchNextPage(): Promise<Photo[] | null> {
@@ -109,9 +137,9 @@ export class UnsplashProvider implements IUnsplashProvider {
   }
 
   public async searchPhotos(term: string): Promise<Photo[]> {
-    const url = `${this.API_URL}/search/photos?query=${term}&per_page=30`;
+    const url = `${this.API_URL}/search/photos?query=${encodeURIComponent(term)}&per_page=30`;
 
-    const request = await this.makeRequest(url);
+    const request = await this.makeLatestRequest(url);
     if (request) {
       return request as Photo[];
     }
