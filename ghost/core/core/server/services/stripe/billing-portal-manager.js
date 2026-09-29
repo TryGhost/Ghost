@@ -110,11 +110,7 @@ class BillingPortalManager {
           );
           return configuration.id;
         } catch (createError) {
-          if (isMissing) {
-            throw createError;
-          }
-
-          // Keep startup working if replacement of an existing configuration fails.
+          // Keep startup working even if a replacement cannot be created.
           logging.error('Failed to replace the billing portal configuration', { err: createError });
           return id;
         }
