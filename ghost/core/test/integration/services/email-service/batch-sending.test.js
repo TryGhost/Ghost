@@ -227,11 +227,9 @@ describe('Batch sending tests', function () {
     const emailModels = await Promise.all(
       Array.from({ length: 50 }, () => models.Email.findOne({ id: emailModel.id })),
     );
-    const completed = jobManager.awaitCompletion('batch-sending-service-job');
     const results = await Promise.allSettled(
       emailModels.map((model) => emailService.service.retryEmail(model)),
     );
-    await completed;
 
     assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
     for (const result of results) {
