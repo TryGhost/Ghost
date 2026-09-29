@@ -59,11 +59,20 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
           result.merge(batchResult);
         }
-      } finally {
-        // Flush even when an event fails, so updates queued by earlier events are stored
-        // before this run aggregates them instead of by whichever run flushes next
-        result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
+      } catch (err) {
+        // Store updates queued by earlier events before this run aggregates them,
+        // instead of leaving them for whichever run flushes next
+        try {
+          result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
+        } catch (flushErr) {
+          logging.error('[EmailAnalytics] Error while flushing batched updates');
+          logging.error(flushErr);
+        }
+        throw err;
       }
+
+      // Flush all batched updates to the database
+      result.merge(await this.#emailEventProcessor.flushBatchedUpdates());
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
