@@ -411,6 +411,18 @@ class ImportManager {
       });
     }
 
+    return this.processImport(importData, importOptions);
+  }
+
+  /**
+   * Import loaded content, report on it, release the files it owns, and email the user how
+   * it went. A failed import is reported in that email and resolves undefined.
+   * @param {ImportData} importData
+   * @param {ImportOptions} importOptions
+   * @returns {Promise<Object.<string, ImportResult>|undefined>}
+   */
+  async processImport(importData, importOptions) {
+    const env = this.config.get('env');
     let importResult;
     try {
       // Step 2: Let the importers pre-process the data
