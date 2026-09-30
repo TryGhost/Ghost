@@ -196,9 +196,9 @@ export default function RestoreScreen() {
                                 }
                               }}
                               aria-describedby={titleId}
-                              className="h-auto min-h-9 max-w-full whitespace-normal"
+                              className="h-auto min-h-7 max-w-full py-1 text-center whitespace-normal"
                               size="sm"
-                              variant="link"
+                              variant="outline"
                               asChild
                             >
                               <AdminLink to={`/editor/${done.type}/${done.id}`}>
