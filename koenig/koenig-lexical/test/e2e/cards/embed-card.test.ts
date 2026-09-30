@@ -3,7 +3,7 @@ import path from 'path';
 import {E2E_PORT} from '../../../playwright.config';
 import {EMBED_RENDERER_MAX_HEIGHT} from '../../../src/utils/embed-renderer';
 import {assertHTML, createSnippet, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {chromium, expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -152,6 +152,27 @@ test.describe('Embed card', async () => {
 
             const iframe = page.getByTestId('embed-iframe');
             await expect(iframe).toHaveCSS('height', `${EMBED_RENDERER_MAX_HEIGHT}px`);
+        });
+
+        test('settles on a height when the renderer shows scrollbars that take up space', async function () {
+            // Playwright hides scrollbars by default, and a scrollbar narrows the
+            // renderer, changing the height it works out from its width
+            const browser = await chromium.launch({ignoreDefaultArgs: ['--hide-scrollbars']});
+
+            try {
+                const scrollbarPage = await browser.newPage({baseURL: `http://localhost:${E2E_PORT}`});
+                await scrollbarPage.route(`${rendererDirectory}**`, route => route.fulfill({path: rendererFile, contentType: 'text/html'}));
+
+                const embedHtml = '<style>::-webkit-scrollbar { width: 15px; }</style><iframe width="200" height="113" src="about:blank"></iframe>';
+                await initialize({page: scrollbarPage, uri: `/#/?embedPreviewUrl=${encodeURIComponent(rendererDirectory)}&content=${embedContent(embedHtml)}`});
+
+                const iframe = scrollbarPage.getByTestId('embed-iframe');
+                const {width} = await iframe.boundingBox();
+
+                await expect(iframe).toHaveCSS('height', `${Math.ceil(width / (200 / 113))}px`);
+            } finally {
+                await browser.close();
+            }
         });
 
         test('shows a placeholder when the renderer is on the editor origin', async function () {
