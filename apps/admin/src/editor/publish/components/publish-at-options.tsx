@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { Label, RadioGroup, RadioGroupItem } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Grid, Inline } from '@tryghost/shade/primitives';
 import { publishScheduleDate, publishScheduleTime } from '@tryghost/test-data/selectors/editor';
 import { DateTimePicker } from '@/editor/date-time-picker';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
@@ -21,12 +21,13 @@ export function PublishAtOptions({
   const id = useId();
 
   return (
-    <Stack gap="md">
+    <Grid align="center" className="grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)]" gap="sm">
       <RadioGroup
+        className="contents"
         value={state.isScheduled ? 'schedule' : 'now'}
         onValueChange={(value) => onToggleScheduled(value === 'schedule')}
       >
-        <Inline gap="sm">
+        <Inline className="col-span-full" gap="sm">
           <RadioGroupItem id={`${id}-now`} value="now" />
           <Label htmlFor={`${id}-now`}>Set it live now</Label>
         </Inline>
@@ -38,6 +39,7 @@ export function PublishAtOptions({
 
       {state.isScheduled ? (
         <DateTimePicker
+          className="w-full sm:col-start-2 sm:w-70 sm:justify-self-end"
           dateLabel="Publish date"
           dateTestId={publishScheduleDate}
           minDate={state.minScheduledAt}
@@ -48,6 +50,6 @@ export function PublishAtOptions({
           onChange={onSetScheduledAt}
         />
       ) : null}
-    </Stack>
+    </Grid>
   );
 }
