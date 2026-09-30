@@ -167,7 +167,12 @@ export function trackIssuedRequests(): void {
     const url = input instanceof Request ? input.url : absoluteUrl(input);
     const method = init?.method ?? (input instanceof Request ? input.method : 'GET');
     const settle = url ? recordIssuedRequest(method, url) : () => {};
-    return originalFetch(input, init).finally(settle);
+    try {
+      return originalFetch(input, init).finally(settle);
+    } catch (error) {
+      settle();
+      throw error;
+    }
   };
 
   // Unbound on purpose: each is re-applied to the request instance it wraps.

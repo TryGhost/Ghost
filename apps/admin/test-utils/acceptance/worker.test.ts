@@ -84,6 +84,18 @@ describe('fake API request teardown', () => {
     await draining;
   });
 
+  it('removes a fetch that throws before returning from the ledger', async () => {
+    const error = new TypeError('Failed to construct Request');
+    fetchMock.mockImplementation(() => {
+      throw error;
+    });
+
+    expect(() => window.fetch('/ghost/api/admin/stats/posts-member-counts/')).toThrow(error);
+    const draining = settleRequests();
+    await vi.advanceTimersByTimeAsync(60);
+    await draining;
+  });
+
   it('reports the method and path of a fetch still waiting for MSW', async () => {
     const pending = deferredResponse();
     fetchMock.mockReturnValue(pending.promise);
