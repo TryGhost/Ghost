@@ -8,6 +8,21 @@ const cacheManager = require('cache-manager');
 const redisStoreFactory = require('./redis-store-factory');
 
 const PREFIX_HASH_KEY = 'prefix_hash';
+const EVENT_OPERATION_TIMEOUT_MS = 1000;
+const APPEND_EVENT_SCRIPT = `
+  local key = KEYS[1]
+  local timestamp = ARGV[1]
+  local value = ARGV[2]
+  local cutoff = ARGV[3]
+  local limit = tonumber(ARGV[4])
+  local ttl = ARGV[5]
+
+  redis.call('ZADD', key, timestamp, value)
+  redis.call('ZREMRANGEBYSCORE', key, '-inf', cutoff)
+  redis.call('ZREMRANGEBYRANK', key, 0, -limit - 1)
+  redis.call('EXPIRE', key, ttl)
+  return redis.call('ZCARD', key)
+`;
 
 /** @implements {import('@tryghost/adapter-base-cache').EventLogCache} */
 class AdapterCacheRedis extends CacheBase {
@@ -385,13 +400,7 @@ class AdapterCacheRedis extends CacheBase {
       const internalKey = await this._buildKey(key);
       checkDeadline();
       return await this.redisClient.eval(
-        `
-      redis.call('ZADD', KEYS[1], ARGV[1], ARGV[2])
-      redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[3])
-      redis.call('ZREMRANGEBYRANK', KEYS[1], 0, -tonumber(ARGV[4])-1)
-      redis.call('EXPIRE', KEYS[1], ARGV[5])
-      return redis.call('ZCARD', KEYS[1])
-      `,
+        APPEND_EVENT_SCRIPT,
         1,
         internalKey,
         timestamp,
@@ -461,7 +470,7 @@ class AdapterCacheRedis extends CacheBase {
             timedOut = true;
             this._timedOutEventOperations += 1;
             reject(timeoutError());
-          }, 1000);
+          }, EVENT_OPERATION_TIMEOUT_MS);
         }),
       ]);
     } finally {
