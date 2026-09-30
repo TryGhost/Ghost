@@ -868,18 +868,62 @@ describe('EmailAnalyticsService', function () {
         assert.equal(result.storedPermanentFailed, 2);
       });
 
-      it('preserves new email and member IDs in the cumulative result', async function () {
+      it('retains event counts without retaining processed IDs', async function () {
         const eventProcessor = createStubEventProcessor();
         eventProcessor.processBatch.callsFake(async (_events, result) => {
-          result.emailIds.push('email-id');
-          result.memberIds.push('member-id');
+          result.merge({ opened: 1, emailIds: ['email-id'], memberIds: ['member-id'] });
         });
         const service = createServiceWithEventProcessor(eventProcessor);
 
         const result = await service.fetchLatestOpenedEvents();
 
-        assert.deepEqual(result.result.emailIds, ['email-id']);
-        assert.deepEqual(result.result.memberIds, ['member-id']);
+        assert.equal(result.result.opened, 1);
+        assert.deepEqual(result.result.emailIds, []);
+        assert.deepEqual(result.result.memberIds, []);
+      });
+
+      it('accumulates event counts across intermediate resets', async function () {
+        const eventProcessor = createStubEventProcessor();
+        const batches = [
+          { opened: 1, emailIds: ['email-1'], memberIds: ['member-1', 'member-2'] },
+          { opened: 2, emailIds: ['email-1', 'email-2'], memberIds: ['member-2', 'member-3'] },
+          { opened: 3, emailIds: ['email-2'], memberIds: ['member-3'] },
+        ];
+        eventProcessor.processBatch.callsFake(async (_events, result) => {
+          result.merge(batches.shift());
+        });
+        // A processor resets the shared result after an intermediate aggregation,
+        // so count deltas start from both zero and non-zero values.
+        let intermediateAggregations = 0;
+        eventProcessor.aggregate.callsFake(async ({ processingResult, isFinal }) => {
+          if (!isFinal) {
+            intermediateAggregations += 1;
+            if (intermediateAggregations === 2) {
+              processingResult.reset();
+            }
+          }
+          return { emailAggregationTimeMs: 0, memberAggregationTimeMs: 0 };
+        });
+        const service = createService({
+          queries: {
+            getLastEventTimestamp: sinon.stub().resolves(),
+            setJobTimestamp: sinon.stub().resolves(),
+            setJobStatus: sinon.stub().resolves(),
+          },
+          fetchEvents: async ({ batchHandler }: { batchHandler: BatchHandler }) => {
+            for (let i = 0; i < 3; i++) {
+              await batchHandler([{ type: 'delivered', timestamp: new Date(i + 1) }]);
+            }
+          },
+          createEventProcessor: () => eventProcessor,
+        });
+
+        const result = await service.fetchLatestOpenedEvents();
+
+        assert.equal(result.eventCount, 3);
+        assert.equal(result.result.opened, 6);
+        assert.deepEqual(result.result.emailIds, []);
+        assert.deepEqual(result.result.memberIds, []);
       });
 
       it('rejects when fetching events fails', async function () {

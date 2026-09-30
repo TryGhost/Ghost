@@ -112,6 +112,12 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
     (post.status === 'published' || post.status === 'sent') &&
     (hasBeenEmailed(post) || (enabled && status && post.email)),
   );
+  // Loading counts as unsent so a send in progress never briefly reads as done.
+  const isEmailSent =
+    hasNewsletterAnalytics &&
+    sendingStatus !== 'failed' &&
+    !isStatusLoading &&
+    !isNewsletterDataHidden;
 
   const retrySending = useCallback(async () => {
     if (!emailId || retryInFlight.current) {
@@ -140,6 +146,7 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
       isNewsletterDataHidden,
       newsletterDataHiddenReason,
       hasNewsletterAnalytics,
+      isEmailSent,
       hasUnknownDeliveryOutcome,
       isRetrying,
       retrySending,
@@ -150,6 +157,7 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
       isNewsletterDataHidden,
       newsletterDataHiddenReason,
       hasNewsletterAnalytics,
+      isEmailSent,
       hasUnknownDeliveryOutcome,
       isRetrying,
       retrySending,

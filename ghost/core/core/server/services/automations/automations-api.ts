@@ -6,7 +6,12 @@ import { z } from 'zod';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import type { AutomationsRepository, EditAutomationData } from './automations-repository';
-import { EMPTY_AUTOMATION_STATS, fetchAutomationStats } from './tinybird-automation-stats';
+import {
+  EMPTY_AUTOMATION_STATS,
+  fetchAutomationStats,
+  fetchAutomationPerformanceStats,
+} from './tinybird-automation-stats';
+import { getEntryStatsWindow, parseEntryStatsTimezone } from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
 const { knex } = require('../../data/db');
@@ -22,6 +27,8 @@ const lexicalLib = require('../../lib/lexical');
 const MAX_AUTOMATION_ACTIONS = 50;
 
 const messages = {
+  tinybirdPerformanceStatsFailed: 'Could not load Tinybird automation performance stats.',
+
   automationNotFound: 'Automation not found.',
   automationActionNotFound: 'Automation action not found.',
   invalidAutomationPayload: 'Automation edit payload must include status, actions, and edges.',
@@ -133,6 +140,36 @@ export async function read(automationId: string) {
   }
 
   return automation;
+}
+
+export async function readPerformanceStats(
+  automationId: string,
+  options: { timezone?: unknown } = {},
+) {
+  const exists = await repository.exists(automationId);
+  if (!exists) {
+    throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
+  }
+
+  const client = getTinybirdClient();
+  if (!client) {
+    throw new errors.InternalServerError({
+      message: tpl(messages.tinybirdPerformanceStatsFailed),
+    });
+  }
+  const timezone = parseEntryStatsTimezone(options.timezone);
+  const stats = await fetchAutomationPerformanceStats(client, automationId, timezone);
+  if (stats === null) {
+    throw new errors.InternalServerError({
+      message: tpl(messages.tinybirdPerformanceStatsFailed),
+    });
+  }
+  const entryWindow = getEntryStatsWindow(stats.entries, timezone);
+  return {
+    automation_id: automationId,
+    ...stats,
+    entry_window: entryWindow,
+  };
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {

@@ -1,5 +1,6 @@
 import { Banner, Button } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
@@ -76,15 +77,19 @@ export function ConfirmStep({
   return (
     <Stack data-testid={publishFlowConfirm} gap="xl">
       <Stack gap="none">
-        <Text as="h2" className="text-state-success" size="3xl" weight="bold">
+        <Text
+          as="h2"
+          className="text-5xl leading-tighter tracking-tight text-state-success"
+          weight="bold"
+        >
           Ready, set, publish.
         </Text>
-        <Text size="3xl" weight="bold">
+        <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
           Share it with the world.
         </Text>
       </Stack>
 
-      <Text>
+      <Text className="text-pretty" size="lg">
         {state.isScheduled ? (
           <>
             On <strong>{formatSiteDateTime(state.scheduledAt, timezone)}</strong> your
@@ -123,8 +128,19 @@ export function ConfirmStep({
         </Banner>
       ) : null}
 
-      <Stack align="start" gap="sm">
+      <Inline gap="sm" justify="between" wrap>
         <Button
+          data-testid={publishBackToSettings}
+          disabled={status === 'running'}
+          size="lg"
+          variant="outline"
+          onClick={onBack}
+        >
+          <LucideIcon.ArrowLeft />
+          Back to settings
+        </Button>
+        <Button
+          className="ml-auto h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
           data-testid={publishConfirm}
           disabled={status === 'running'}
           size="lg"
@@ -132,16 +148,7 @@ export function ConfirmStep({
         >
           {status === 'running' ? buttonText.running : buttonText.idle}
         </Button>
-        <Button
-          data-testid={publishBackToSettings}
-          disabled={status === 'running'}
-          size="lg"
-          variant="link"
-          onClick={onBack}
-        >
-          Back to settings
-        </Button>
-      </Stack>
+      </Inline>
     </Stack>
   );
 }

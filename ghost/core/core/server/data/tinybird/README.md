@@ -82,3 +82,27 @@ sources before adding test data to it.
 ### Architecture
 
 [See full documentation regarding analytics architecture in following document](ARCHITECTURE.md)
+
+### Automation statistics
+
+Run rows are sorted by `(site_uuid, automation_id, id)` and step rows by
+`(site_uuid, automation_run_id, id)`. Ownership is immutable and the individual
+row ID remains in each key, preserving latest-version deduplication. The site
+prefix also supports the automation list. Queries use `FINAL` before aggregating.
+
+Changing sorting keys rebuilds the materialized tables from the raw event
+datasources, which have no TTL. Deploy the related datafiles together.
+
+The performance pipe classifies each run once, then fills a daily calendar with zero counts
+for missing dates through today in the requested timezone. Core derives the chart and status totals from that same
+result. The latest step categories use a bit mask: pending=1, finished=2, known
+exit=4, unknown=8. Any unknown bit fails the API request. Otherwise pending wins;
+finished-only is 2; known exits with or without finished steps are 6 or 4. Runs
+without steps are excluded by the inner join. The automation list continues using
+its existing pending-run view.
+
+Do not turn these into incrementing materialized counters without a retraction
+or deduplication strategy: inserted versions include retries and status changes.
+Run `tb test run` to check the performance pipe against the committed fixtures,
+including duplicates, old versions, missing history, unknown statuses, daily
+buckets, and site isolation.

@@ -54,6 +54,8 @@ export function SendTestEmail({
   const mailgunIsConfigured =
     Boolean(configData?.config.mailgunIsConfigured) ||
     Boolean(mailgunApiKey && mailgunDomain && mailgunBaseUrl);
+  // Until both have loaded, an unconfigured Mailgun can't be told from one not read yet.
+  const mailgunStatusKnown = configData !== undefined && settingsData !== undefined;
 
   const send = async () => {
     const recipient = address.trim();
@@ -114,7 +116,7 @@ export function SendTestEmail({
             <p className="text-sm text-muted-foreground">
               You&rsquo;ll receive this as a {audienceLabel}.
             </p>
-            <Button disabled={disabled || isPending} type="submit">
+            <Button disabled={disabled || isPending || !mailgunStatusKnown} type="submit">
               {isPending ? 'Sending...' : 'Send'}
             </Button>
           </Stack>
