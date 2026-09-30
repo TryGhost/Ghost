@@ -356,17 +356,19 @@ export class MetafieldValuesService {
   }
 
   /**
-   * Apply a plan from `planWrite`.
+   * Apply plans from `planWrite`, in order: where two write one field, the last is what
+   * the field holds.
    *
    * A write touches the paths it names and nothing else, at every level: naming a path
    * with an empty value clears that part, naming the field with `null` clears all of
    * them, and saying nothing about a path leaves it alone. There is no whole-value
    * replace, so a caller that does not know about a field cannot erase it.
    *
-   * The values and the activity feed entry record the writer the plan was checked for.
+   * The values and the activity feed entry record the writer each plan was checked for.
    *
-   * Returns the values the plan replaced, read in the same transaction: each field it
-   * names, with the value the member held, or null if they held none.
+   * Returns the values the plans replaced, read in the same transaction before any is
+   * applied: each field they name, with the value the member held, or null if they held
+   * none.
    *
    * Always transactional. Given an executor it joins that transaction, so the importer's
    * failed value write takes its member with it; given none it opens its own.
@@ -376,110 +378,118 @@ export class MetafieldValuesService {
    * change that was not stored or miss one that was. A value has more than one author,
    * and the feed is where a publisher finds out which of them changed it.
    */
-  async applyWrite(
+  async applyWrites(
     memberId: string,
-    { writer, writes }: Plan,
+    plans: Plan[],
     { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<MemberMetafields> {
-    const { writtenBy, source } = writer.origin;
-    if (writes.length === 0) {
+    const writing = plans.filter((plan) => plan.writes.length > 0);
+    if (writing.length === 0) {
       return {};
     }
 
     const apply = async (trx: Knex): Promise<MemberMetafields> => {
-      const replaced = await this.heldFor(trx, memberId, writes);
-
-      // Built first, then sent as whole statements: a handful per member rather
-      // than one per part, under one timestamp, because a write happened once
-      // however many rows record it.
-      const now = new Date();
-      const clearedKeys: string[] = [];
-      const clearedPaths: Array<{ fieldKey: string; paths: string[] }> = [];
-      const rows: DbLeafRow[] = [];
-
-      for (const { field, value } of writes) {
-        if (value === undefined) {
-          clearedKeys.push(field.key);
-          continue;
-        }
-
-        const { set, cleared } = leavesToWrite(value);
-        if (cleared.length > 0) {
-          clearedPaths.push({ fieldKey: field.key, paths: cleared });
-        }
-
-        rows.push(
-          ...set.map((leaf) => ({
-            id: new ObjectID().toHexString(),
-            member_id: memberId,
-            metafield_key: field.key,
-            path: leaf.path,
-            value_text: leaf.value_text,
-            written_by_type: writtenBy.type,
-            written_by_id: writtenBy.id,
-            created_at: now,
-            updated_at: now,
-          })),
-        );
+      const replaced = await this.heldFor(
+        trx,
+        memberId,
+        writing.flatMap((plan) => plan.writes),
+      );
+      for (const plan of writing) {
+        await this.store(trx, memberId, plan);
       }
-
-      if (clearedKeys.length > 0) {
-        await trx(VALUES_TABLE)
-          .where('member_id', memberId)
-          .whereIn('metafield_key', clearedKeys)
-          .del();
-      }
-
-      if (clearedPaths.length > 0) {
-        // One statement with a group per field, rather than a statement per field.
-        await trx(VALUES_TABLE)
-          .where('member_id', memberId)
-          .where((builder) => {
-            for (const { fieldKey, paths } of clearedPaths) {
-              builder.orWhere((pair) =>
-                pair.where('metafield_key', fieldKey).whereIn('path', paths),
-              );
-            }
-          })
-          .del();
-      }
-
-      for (let from = 0; from < rows.length; from += UPSERT_CHUNK) {
-        // Typed as the plain row because `merge` takes its columns as `keyof` the
-        // builder's record, which for a composite table registration is the scope
-        // names rather than the columns.
-        await trx<DbLeafRow>(VALUES_TABLE)
-          .insert(rows.slice(from, from + UPSERT_CHUNK))
-          // Naming the columns rather than giving values takes each from the row
-          // that lost the conflict, so every part updates to its own value.
-          .onConflict(['member_id', 'metafield_key', 'path'])
-          // The writer is merged with the value, so a leaf names who wrote what
-          // it currently holds rather than who wrote its first value.
-          .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
-      }
-
-      const fields: MetafieldChangeEventField[] = writes.map(({ field }) => ({
-        namespace: field.namespace,
-        key: field.key,
-        name: field.name,
-      }));
-      await trx(CHANGE_EVENTS_TABLE).insert({
-        id: new ObjectID().toHexString(),
-        member_id: memberId,
-        written_by_type: writtenBy.type,
-        written_by_id: writtenBy.id,
-        source,
-        metafields: StoredFieldList.encode(fields),
-        // A string rather than the Date the value rows take: SQLite stores a bound Date
-        // as a number, which sorts before every string the feed pages through time with.
-        created_at: toDatabaseDate(now),
-      });
-
       return replaced;
     };
 
     // knex's marker for a transactor: join it rather than nesting a savepoint under it.
     return executor.isTransaction ? apply(executor) : executor.transaction(apply);
+  }
+
+  private async store(trx: Knex, memberId: string, { writer, writes }: Plan): Promise<void> {
+    const { writtenBy, source } = writer.origin;
+
+    // Built first, then sent as whole statements: a handful per member rather
+    // than one per part, under one timestamp, because a write happened once
+    // however many rows record it.
+    const now = new Date();
+    const clearedKeys: string[] = [];
+    const clearedPaths: Array<{ fieldKey: string; paths: string[] }> = [];
+    const rows: DbLeafRow[] = [];
+
+    for (const { field, value } of writes) {
+      if (value === undefined) {
+        clearedKeys.push(field.key);
+        continue;
+      }
+
+      const { set, cleared } = leavesToWrite(value);
+      if (cleared.length > 0) {
+        clearedPaths.push({ fieldKey: field.key, paths: cleared });
+      }
+
+      rows.push(
+        ...set.map((leaf) => ({
+          id: new ObjectID().toHexString(),
+          member_id: memberId,
+          metafield_key: field.key,
+          path: leaf.path,
+          value_text: leaf.value_text,
+          written_by_type: writtenBy.type,
+          written_by_id: writtenBy.id,
+          created_at: now,
+          updated_at: now,
+        })),
+      );
+    }
+
+    if (clearedKeys.length > 0) {
+      await trx(VALUES_TABLE)
+        .where('member_id', memberId)
+        .whereIn('metafield_key', clearedKeys)
+        .del();
+    }
+
+    if (clearedPaths.length > 0) {
+      // One statement with a group per field, rather than a statement per field.
+      await trx(VALUES_TABLE)
+        .where('member_id', memberId)
+        .where((builder) => {
+          for (const { fieldKey, paths } of clearedPaths) {
+            builder.orWhere((pair) => pair.where('metafield_key', fieldKey).whereIn('path', paths));
+          }
+        })
+        .del();
+    }
+
+    for (let from = 0; from < rows.length; from += UPSERT_CHUNK) {
+      // Typed as the plain row because `merge` takes its columns as `keyof` the
+      // builder's record, which for a composite table registration is the scope
+      // names rather than the columns.
+      await trx<DbLeafRow>(VALUES_TABLE)
+        .insert(rows.slice(from, from + UPSERT_CHUNK))
+        // Naming the columns rather than giving values takes each from the row
+        // that lost the conflict, so every part updates to its own value.
+        .onConflict(['member_id', 'metafield_key', 'path'])
+        // The writer is merged with the value, so a leaf names who wrote what
+        // it currently holds rather than who wrote its first value.
+        .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
+    }
+
+    const fields: MetafieldChangeEventField[] = writes.map(({ field }) => ({
+      namespace: field.namespace,
+      key: field.key,
+      name: field.name,
+    }));
+    await trx(CHANGE_EVENTS_TABLE).insert({
+      id: new ObjectID().toHexString(),
+      member_id: memberId,
+      written_by_type: writtenBy.type,
+      written_by_id: writtenBy.id,
+      source,
+      metafields: StoredFieldList.encode(fields),
+      // A string rather than the Date the value rows take: SQLite stores a bound Date
+      // as a number, which sorts before every string the feed pages through time with.
+      created_at: toDatabaseDate(now),
+    });
   }
 
   /**

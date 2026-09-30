@@ -513,7 +513,7 @@ module.exports = class MemberBREADService {
 
     return this.transaction(async (transacting) => {
       const created = await this.memberRepository.create(data, { ...options, transacting });
-      await this.metafieldValues.applyWrite(created.id, plan, { executor: transacting });
+      await this.metafieldValues.applyWrites(created.id, [plan], { executor: transacting });
       return created;
     });
   }
@@ -532,12 +532,35 @@ module.exports = class MemberBREADService {
     if (!plan) {
       return this.memberRepository.update(data, options);
     }
+    return this.updateWithPlans(data, options, [plan]);
+  }
 
+  /**
+   * Stores metafields planned elsewhere, such as at checkout, as one edit of the member.
+   * `member.edited` fires once, after the commit, as for `updateWithMetafields`.
+   *
+   * @param {string} memberId
+   * @param {import('../../../members-metafields').Plan[]} plans applied in order
+   */
+  async applyMetafieldPlans(memberId, plans) {
+    if (!plans.some((plan) => plan.writes.length > 0)) {
+      return;
+    }
+    await this.updateWithPlans({}, { id: memberId }, plans);
+  }
+
+  /**
+   * @private
+   * @param {object} data
+   * @param {object} options
+   * @param {import('../../../members-metafields').Plan[]} plans
+   */
+  async updateWithPlans(data, options, plans) {
     return this.transaction(async (transacting) => {
       const updated = await this.memberRepository.update(data, { ...options, transacting });
       const memberUnchanged = !updated._changed || Object.keys(updated._changed).length === 0;
 
-      const replaced = await this.metafieldValues.applyWrite(updated.id, plan, {
+      const replaced = await this.metafieldValues.applyWrites(updated.id, plans, {
         executor: transacting,
       });
       recordReplacedMetafields(updated, replaced);

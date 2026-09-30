@@ -61,7 +61,7 @@ interface ImporterServices {
         values: Record<string, unknown>,
         writer: InternalWriter,
       ): Promise<Plan<InternalWriter>>;
-      applyWrite(memberId: string, plan: Plan, options: { executor?: Knex }): Promise<void>;
+      applyWrites(memberId: string, plans: Plan[], options: { executor?: Knex }): Promise<unknown>;
     };
   };
 }
@@ -132,8 +132,9 @@ export function makeImporter(deps: ImporterServices) {
     activeFields: async () => deps.metafields.definitions.browse({}, INTERNAL),
     // Every value the import writes came out of the file, whichever column carried it.
     planWrite: (values) => deps.metafields.values.planWrite(values, importWriter()),
-    applyWrite: (memberId, plan, executor) =>
-      deps.metafields.values.applyWrite(memberId, plan, { executor }),
+    applyWrite: async (memberId, plan, executor) => {
+      await deps.metafields.values.applyWrites(memberId, [plan], { executor });
+    },
   };
 
   // The import job never rejects, so the jobs service never sees its failures, and the

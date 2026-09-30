@@ -18,7 +18,7 @@ export {
   type Writer,
 } from './writers';
 export type { Plan } from './values-service';
-export type { BoundField } from './bindings-service';
+export type { BoundField, RoutedPlans } from './bindings-service';
 export type { MetafieldChangeEvent, WriteOrigin, WrittenBy } from './schema';
 
 // Which door a request came through, which is what decides how much of a member's

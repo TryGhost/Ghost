@@ -94,7 +94,7 @@ describe('MembersAPI', function () {
       metafieldValues: {
         getValuesForPayload: sinon.stub().resolves(null),
         planWrite: sinon.stub().resolves([]),
-        applyWrite: sinon.stub().resolves(),
+        applyWrites: sinon.stub().resolves({}),
       },
     });
   };

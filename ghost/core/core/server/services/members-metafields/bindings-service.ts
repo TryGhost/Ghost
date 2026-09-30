@@ -3,7 +3,7 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
 import { DbBoundField, FIELD_STATUS } from './schema';
-import type { MetafieldValuesService } from './values-service';
+import type { MetafieldValuesService, Plan } from './values-service';
 import { bindingWriter, checkoutMemberWriter, type InternalWriter } from './writers';
 
 const FIELDS_TABLE = 'members_metafields';
@@ -24,15 +24,22 @@ export interface BoundField {
  */
 type Attribution = (binding: BoundField) => InternalWriter;
 
+/** Plans for the values a source sent, in the order they arrived. */
+export interface RoutedPlans {
+  plans: Plan<InternalWriter>[];
+  /** The first value that couldn't be placed or was refused. The rest are still planned. */
+  failure?: unknown;
+}
+
 /**
  * Where a source sends what it collected: a `port` is the name that source uses for a
  * thing, and the binding resolves it to one of the publisher's fields.
  */
 export class MetafieldBindingsService {
   private knex: Knex;
-  private values: MetafieldValuesService;
+  private values: Pick<MetafieldValuesService, 'planWrite'>;
 
-  constructor({ knex, values }: { knex: Knex; values: MetafieldValuesService }) {
+  constructor({ knex, values }: { knex: Knex; values: Pick<MetafieldValuesService, 'planWrite'> }) {
     this.knex = knex;
     this.values = values;
   }
@@ -79,14 +86,11 @@ export class MetafieldBindingsService {
    * as, and the field it landed in, which is everything worth knowing about how the
    * value arrived.
    */
-  async writeCollected(
-    memberId: string,
+  async planCollected(
     productId: string,
     collected: Array<{ port: string; value: unknown }>,
-  ): Promise<void> {
-    return this.writeThrough(memberId, productId, collected, (binding) =>
-      bindingWriter(binding.bindingId),
-    );
+  ): Promise<RoutedPlans> {
+    return this.planThrough(productId, collected, (binding) => bindingWriter(binding.bindingId));
   }
 
   /**
@@ -96,65 +100,54 @@ export class MetafieldBindingsService {
    * routing is, and a record saying a binding wrote it would be wrong. The member is the
    * one whose record this is, so there is nobody else it could be.
    */
-  async writeSuppliedByMember(
+  async planSuppliedByMember(
     memberId: string,
     productId: string,
     supplied: Array<{ port: string; value: unknown }>,
-  ): Promise<void> {
-    return this.writeThrough(memberId, productId, supplied, () => checkoutMemberWriter(memberId));
+  ): Promise<RoutedPlans> {
+    return this.planThrough(productId, supplied, () => checkoutMemberWriter(memberId));
   }
 
   /**
-   * Values arrive in the order they are to be applied: where two land in one field, the
-   * last of them is what the field holds.
+   * Plans are returned in the order values arrive, which is the order to apply them:
+   * where two land in one field, the last of them is what the field holds.
    *
-   * Every value is attempted, and then the first failure is raised. Attempting them all
-   * is this method's business: one refused answer must not cost a publisher the address
-   * a courier needs, and the values have nothing to do with each other beyond arriving
-   * together. Whether the failure is worth acting on is the caller's, which is why it
-   * leaves here rather than being logged and forgotten — a checkout webhook has already
-   * taken the money and must never fail, while a member filling in a form is owed the
-   * news.
+   * Every value is attempted, and the first failure is returned with the plans for the
+   * rest. Attempting them all is this method's business: one refused answer must not cost
+   * a publisher the address a courier needs, and the values have nothing to do with each
+   * other beyond arriving together. Whether the failure is worth acting on is the
+   * caller's: a checkout webhook has already taken the money and must never fail, while a
+   * member filling in a form is owed the news.
    */
-  private async writeThrough(
-    memberId: string,
+  private async planThrough(
     productId: string,
     values: Array<{ port: string; value: unknown }>,
     attribute: Attribution,
-  ): Promise<void> {
+  ): Promise<RoutedPlans> {
+    const plans: Plan<InternalWriter>[] = [];
     let failure: unknown;
 
     for (const { port, value } of values) {
       try {
-        // Inside, because working out where a value goes can fail the same way storing
+        // Inside, because working out where a value goes can fail the same way checking
         // it can, and a value nobody could place is no more reason to abandon the rest
-        // than one nobody could store.
+        // than one the catalog refused.
         const destination = await this.resolve(productId, port);
         if (!destination) {
           continue;
         }
-        await this.writeOne(memberId, destination, value, attribute);
+        plans.push(
+          await this.values.planWrite(
+            { [`${CUSTOM_NAMESPACE}.${destination.key}`]: value },
+            attribute(destination),
+          ),
+        );
       } catch (err) {
         failure = failure ?? err;
       }
     }
 
-    if (failure) {
-      throw failure;
-    }
-  }
-
-  private async writeOne(
-    memberId: string,
-    into: BoundField,
-    value: unknown,
-    attribute: Attribution,
-  ): Promise<void> {
-    const plan = await this.values.planWrite(
-      { [`${CUSTOM_NAMESPACE}.${into.key}`]: value },
-      attribute(into),
-    );
-    await this.values.applyWrite(memberId, plan);
+    return { plans, failure };
   }
 
   private async resolve(productId: string, port: string): Promise<BoundField | null> {

@@ -1165,11 +1165,13 @@ describe('CheckoutSessionEventService', function () {
     describe('collected fields writeback', function () {
       let labsService;
       let metafieldBindings;
+      let memberBREADService;
 
       beforeEach(function () {
         labsService = { isSet: sinon.stub().returns(true) };
-        metafieldBindings = { writeCollected: sinon.stub().resolves() };
-        service = createService({ labsService, metafieldBindings });
+        metafieldBindings = { planCollected: sinon.stub().resolves({ plans: ['a plan'] }) };
+        memberBREADService = { applyMetafieldPlans: sinon.stub().resolves() };
+        service = createService({ labsService, metafieldBindings, memberBREADService });
         session.metadata.ghostTierId = 'tier_123';
         api.getCustomer.resolves(customer);
         sinon.stub(logging, 'warn');
@@ -1186,12 +1188,10 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnce(metafieldBindings.writeCollected);
-        sinon.assert.calledWith(
-          metafieldBindings.writeCollected,
+        sinon.assert.calledOnceWithExactly(
+          memberBREADService.applyMetafieldPlans,
           'created_member',
-          'tier_123',
-          sinon.match.array,
+          ['a plan'],
         );
       });
 
@@ -1201,7 +1201,7 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.notCalled(metafieldBindings.writeCollected);
+        sinon.assert.notCalled(memberBREADService.applyMetafieldPlans);
       });
 
       it('treats a session carrying no signup context as unverified', async function () {
@@ -1210,7 +1210,7 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.notCalled(metafieldBindings.writeCollected);
+        sinon.assert.notCalled(memberBREADService.applyMetafieldPlans);
       });
 
       it('writes onto an existing member when the checkout was started signed in', async function () {
@@ -1219,13 +1219,9 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnce(metafieldBindings.writeCollected);
-        sinon.assert.calledWith(
-          metafieldBindings.writeCollected,
-          'member_123',
-          'tier_123',
-          sinon.match.array,
-        );
+        sinon.assert.calledOnceWithExactly(memberBREADService.applyMetafieldPlans, 'member_123', [
+          'a plan',
+        ]);
       });
 
       it('does not write when the session names no tier', async function () {
@@ -1234,16 +1230,33 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.notCalled(metafieldBindings.writeCollected);
+        sinon.assert.notCalled(memberBREADService.applyMetafieldPlans);
       });
 
       it('does not fail the webhook when the write is rejected', async function () {
         memberRepository.get.resolves(null);
-        metafieldBindings.writeCollected.rejects(new Error('storage broke'));
+        memberBREADService.applyMetafieldPlans.rejects(new Error('storage broke'));
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnce(metafieldBindings.writeCollected);
+        sinon.assert.calledOnce(logging.error);
+      });
+
+      it('stores the values it could plan when another was refused, and logs the refusal', async function () {
+        memberRepository.get.resolves(null);
+        metafieldBindings.planCollected.resolves({
+          plans: ['a plan'],
+          failure: new Error('the catalog refused it'),
+        });
+
+        await service.handleSubscriptionEvent(session);
+
+        sinon.assert.calledOnceWithExactly(
+          memberBREADService.applyMetafieldPlans,
+          'created_member',
+          ['a plan'],
+        );
+        sinon.assert.calledOnce(logging.error);
       });
     });
   });

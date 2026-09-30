@@ -13,7 +13,7 @@ const createMetafieldValuesStub = (payload = null) => ({
   getValuesForPayload: sinon.stub().resolves(payload),
   unwrapWire: sinon.stub().callsFake((input) => input),
   planWrite: sinon.stub().resolves([]),
-  applyWrite: sinon.stub().resolves(),
+  applyWrites: sinon.stub().resolves({}),
 });
 
 describe('MemberBreadService', function () {

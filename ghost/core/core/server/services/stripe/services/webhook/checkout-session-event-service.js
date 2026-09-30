@@ -87,6 +87,8 @@ module.exports = class CheckoutSessionEventService {
    * @param {object} deps.staffServiceEmails
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
+   * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
+   * @param {{applyMetafieldPlans: (memberId: string, plans: import('../../../members-metafields').Plan[]) => Promise<void>}} deps.memberBREADService
    */
   constructor(deps) {
     this.api = deps.api;
@@ -493,11 +495,14 @@ module.exports = class CheckoutSessionEventService {
         return;
       }
 
-      await this.deps.metafieldBindings.writeCollected(
-        memberId,
+      const { plans, failure } = await this.deps.metafieldBindings.planCollected(
         tierId,
         collectedByPort.parse(session),
       );
+      await this.deps.memberBREADService.applyMetafieldPlans(memberId, plans);
+      if (failure) {
+        throw failure;
+      }
     } catch (err) {
       logging.error(
         {
