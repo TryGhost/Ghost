@@ -44,18 +44,6 @@ describe('Presence API', () => {
     expect(read.body.presence[0].events).toHaveLength(1);
   });
 
-  it('records browser saves without advertising a new active session', async () => {
-    await agent
-      .put(`/posts/${postId}/`)
-      .body({ posts: [{ title: 'Saved', updated_at: null }] })
-      .expectStatus(200);
-    const response = await agent.post('/presence/').body(body(false)).expectStatus(200);
-    const saved = response.body.presence[0].events.filter(
-      (event: { action: string }) => event.action === 'saved',
-    );
-    expect(saved).toEqual(expect.arrayContaining([expect.objectContaining({ sessionId: null })]));
-  });
-
   it('rejects malformed and oversized requests', async () => {
     await agent
       .post('/presence/')
@@ -67,22 +55,8 @@ describe('Presence API', () => {
       .expectStatus(422);
   });
 
-  it('rejects staff API tokens and does not turn their saves into presence', async () => {
+  it('rejects staff API tokens', async () => {
     await tokenAgent.post('/presence/').body(body()).expectStatus(403);
-    const created = await tokenAgent
-      .post('/posts/')
-      .body({ posts: [{ title: 'Automated post' }] })
-      .expectStatus(201);
-    const id = created.body.posts[0].id;
-    await tokenAgent
-      .put(`/posts/${id}/`)
-      .body({ posts: [{ title: 'Automated edit', updated_at: null }] })
-      .expectStatus(200);
-    const response = await agent
-      .post('/presence/')
-      .body({ presence: [{ resources: [{ id, type: 'post' }], sessionId }] })
-      .expectStatus(200);
-    expect(response.body.presence[0].events).toEqual([]);
   });
 
   it('supports pages and distinguishes their resource type', async () => {
@@ -100,17 +74,13 @@ describe('Presence API', () => {
         ],
       })
       .expectStatus(200);
-    await agent
-      .put(`/pages/${id}/`)
-      .body({ pages: [{ title: 'Saved page', updated_at: null }] })
-      .expectStatus(200);
     const read = await agent
       .post('/presence/')
       .body({ presence: [{ resources: [resource], sessionId }] })
       .expectStatus(200);
-    expect(read.body.presence[0].events.map((event: { action: string }) => event.action)).toEqual(
-      expect.arrayContaining(['opened', 'saved']),
-    );
+    expect(read.body.presence[0].events.map((event: { action: string }) => event.action)).toEqual([
+      'opened',
+    ]);
     const wrongType = await agent
       .post('/presence/')
       .body({ presence: [{ resources: [{ id, type: 'post' }], sessionId }] })

@@ -16,7 +16,7 @@ const eventSchema = z.object({
   resourceType: z.enum(['post', 'page']),
   resourceId: z.string(),
   sessionId: z.string().nullable(),
-  action: z.enum(['opened', 'editing', 'saved']),
+  action: z.string(),
   ts: z.number().finite(),
 });
 const responseSchema = z.object({

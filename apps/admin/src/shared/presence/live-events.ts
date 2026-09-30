@@ -18,7 +18,7 @@ export function mergeLiveEvents(
   );
   const fresh = response.events.filter(
     (event) =>
-      event.action !== 'saved' &&
+      (event.action === 'opened' || event.action === 'editing') &&
       event.userId !== currentUserId &&
       event.ts > response.serverTime - FRESHNESS_MS,
   );

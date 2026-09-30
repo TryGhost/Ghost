@@ -26,7 +26,7 @@ export const eventSchema = z.object({
   resourceType: z.enum(['post', 'page']),
   resourceId: id,
   sessionId: z.string().uuid().nullable(),
-  action: z.enum(['opened', 'editing', 'saved']),
+  action: z.enum(['opened', 'editing']),
   ts: z.number().int().nonnegative(),
 });
 export type PresenceEvent = z.infer<typeof eventSchema>;

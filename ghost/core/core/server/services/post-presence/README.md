@@ -16,8 +16,9 @@ Interaction or returning to the tab resumes polling immediately.
 
 Scrolling changes which rows the next poll requests; it does not restart the
 timer or error backoff. List polls only read events. Editor polls also record
-an `opened` event, followed by `editing` heartbeats. Successful saves record
-`saved` events without waiting for the cache write. Failures are logged.
+an `opened` event, followed by `editing` heartbeats while the user is active.
+Both show the same avatar; heartbeats indicate activity, not content changes.
+Saving a post or page does not write presence events.
 
 Avatars show activity from the last 30 seconds, grouped by user. Your own user
 is excluded, including activity from other tabs or browsers. Sessions expire

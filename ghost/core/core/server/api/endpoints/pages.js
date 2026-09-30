@@ -164,7 +164,6 @@ const controller = {
     },
     async query(frame) {
       const model = await models.Post.edit(frame.data.pages[0], frame.options);
-      void require('../../services/post-presence/record-save').recordSave(frame, model.toJSON());
 
       const cacheInvalidation = postsService.handleCacheInvalidation(model);
 
