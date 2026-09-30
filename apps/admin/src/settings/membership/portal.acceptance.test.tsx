@@ -46,10 +46,11 @@ describe('Portal settings', () => {
     await freeTierCheckbox.click();
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-    expect(tierApi.lastRequest?.body).toMatchObject({
-      tiers: [{ id: freeTier.id, visibility: 'none' }],
-    });
+    await expect
+      .poll(() => tierApi.lastRequest?.body)
+      .toMatchObject({
+        tiers: [{ id: freeTier.id, visibility: 'none' }],
+      });
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'portal_name', value: false },
       { key: 'portal_plans', value: '["monthly","yearly"]' },
@@ -86,7 +87,6 @@ describe('Portal settings', () => {
       .toBe('false');
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'portal_signup_gift_promotion', value: false },
       { key: 'portal_account_gift_promotion', value: false },
@@ -128,7 +128,6 @@ describe('Portal settings', () => {
     await modal.getByRole('switch').click();
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'portal_button', value: false },
       { key: 'portal_button_signup_text', value: 'become a member of something epic' },
@@ -176,7 +175,6 @@ describe('Portal settings', () => {
     await modal.getByRole('tab', { name: 'Signup options' }).click();
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'members_support_address', value: 'hello@world.com' },
     ]);

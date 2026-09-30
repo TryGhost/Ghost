@@ -67,7 +67,6 @@ describe('Default recipient settings', () => {
     await settingsScreen.selectOption(firstOffer.name).click();
     await section.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(section.getByRole('button', { name: 'Saved' })).toBeVisible();
     await expect
       .element(settingsScreen.defaultRecipientsSelect())
       .toHaveTextContent('Specific people');

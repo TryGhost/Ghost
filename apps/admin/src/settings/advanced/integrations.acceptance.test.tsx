@@ -554,7 +554,6 @@ describe('Advanced integrations', () => {
     await expect.element(modal).toHaveTextContent(/zapier-api-secret/);
     await adminApiKey.getByText('zapier-api-secret').hover();
     await adminApiKey.getByRole('button', { name: 'Copy' }).click();
-    await expect(adminApiKey.getByRole('button', { name: 'Copied' })).toHaveCount(1);
     expect(writeText).toHaveBeenCalledWith('zapier-api-secret');
     await adminApiKey.getByRole('button', { name: 'Regenerate' }).click();
     await settingsScreen

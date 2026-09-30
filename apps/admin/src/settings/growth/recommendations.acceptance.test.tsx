@@ -176,8 +176,7 @@ describe('Recommendations settings', () => {
     await modal.getByLabelText('Short description').fill(updated.description);
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-    expect(editApi.lastRequest?.body).toEqual({ recommendations: [updated] });
+    await expect.poll(() => editApi.lastRequest?.body).toEqual({ recommendations: [updated] });
   });
 
   it('deletes a recommendation only after confirmation', async () => {

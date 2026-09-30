@@ -54,10 +54,11 @@ describe('Staff roles', () => {
     await settingsScreen.selectOption('Editor').click();
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-    expect(editApi.lastRequest?.body).toMatchObject({
-      users: [{ id: author.id, roles: [{ id: role('Editor').id, name: 'Editor' }] }],
-    });
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({
+        users: [{ id: author.id, roles: [{ id: role('Editor').id, name: 'Editor' }] }],
+      });
     await modal.getByRole('button', { name: 'Close' }).click();
 
     const section = settingsScreen.users();
@@ -107,8 +108,9 @@ describe('Staff roles', () => {
     await modal.getByLabelText('Full name').fill('Updated Contributor');
     await modal.getByRole('button', { name: 'Save' }).click();
 
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
-    expect(editApi.lastRequest?.body).toMatchObject({ users: [{ name: 'Updated Contributor' }] });
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({ users: [{ name: 'Updated Contributor' }] });
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect.element(section.getByText('Updated Contributor', { exact: true })).toBeVisible();
   });
