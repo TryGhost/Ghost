@@ -18,6 +18,7 @@ export {
   applyEmberAdminThemePreference,
   navigateEmberBillingSubRoute,
   syncEmberPostListQueryParams,
+  syncEmberFullScreen,
   emberMutationHandlers,
 } from './ember-bridge';
 export type {
