@@ -1,6 +1,8 @@
+import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
+import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
 import React, { useId, useState } from 'react';
 import { Button } from '@tryghost/shade/components';
-import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
@@ -9,6 +11,42 @@ import {
   createPerformanceDateRange,
   PERFORMANCE_RANGES,
 } from '@/automations/utils/performance-date-range';
+
+const PerformanceContent: React.FC<{ automationId: string; dateRange: PerformanceDateRange }> = ({
+  automationId,
+  dateRange,
+}) => {
+  const { chart, counts, isLoading, isError, retry } = useAutomationPerformanceStats(
+    automationId,
+    dateRange,
+  );
+
+  if (isError) {
+    return (
+      <Stack
+        align="center"
+        className="flex-1 py-8 text-center"
+        gap="md"
+        justify="center"
+        role="alert"
+      >
+        <Text size="sm" tone="secondary">
+          Could not load performance data.
+        </Text>
+        <Button size="sm" variant="outline" onClick={retry}>
+          Retry
+        </Button>
+      </Stack>
+    );
+  }
+
+  return (
+    <>
+      <TotalEntries chart={chart} isLoading={isLoading} />
+      <StatusCounts data={counts} isLoading={isLoading} />
+    </>
+  );
+};
 
 export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automationId }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +88,10 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
         id={panelId}
       >
         {/* Keep content at its full width while the sidebar animates open or closed. */}
-        <Box className="h-full w-[min(480px,calc(100cqw-6rem))] overflow-y-auto border-r border-border-default px-6 py-4">
+        <Stack
+          className="h-full w-[min(480px,calc(100cqw-6rem))] overflow-y-auto border-r border-border-default px-6 py-4"
+          gap="none"
+        >
           <Inline className="h-9 pl-10" gap="none" justify="between">
             <Text as="h2" id={headingId} size="md" weight="semibold">
               Performance
@@ -65,7 +106,7 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
             />
           </Inline>
           {hasOpened && (
-            <Stack className="mt-4" gap="md">
+            <Stack className="mt-4 flex-1" gap="md">
               {dateRange.value !== 'all' && (
                 <Button
                   aria-label="Clear date filter"
@@ -78,11 +119,10 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
                   <LucideIcon.X strokeWidth={2} />
                 </Button>
               )}
-              <TotalEntries automationId={automationId} dateRange={dateRange} />
-              <StatusCounts automationId={automationId} dateRange={dateRange} />
+              <PerformanceContent automationId={automationId} dateRange={dateRange} />
             </Stack>
           )}
-        </Box>
+        </Stack>
       </aside>
     </>
   );

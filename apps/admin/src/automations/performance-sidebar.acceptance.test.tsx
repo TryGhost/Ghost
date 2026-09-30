@@ -139,7 +139,7 @@ describe('Performance sidebar data and errors', () => {
   });
 
   it.each([404, 500])(
-    'shows ordinary errors and retries both chart and cards together (%s)',
+    'shows one panel error and retries both chart and cards together (%s)',
     async (status) => {
       read('first');
       const failedRequest = fakeAdminEndpoint(
@@ -151,26 +151,21 @@ describe('Performance sidebar data and errors', () => {
       await renderAdminApp('/automations/first', flags);
       await open();
       await expect
-        .element(statuses().getByRole('alert'))
-        .toHaveTextContent('Could not load status counts.');
-      await expect
-        .element(entries().getByRole('alert'))
-        .toHaveTextContent('Could not load entries.');
-      await expect.element(statusCard('Completed')).toHaveTextContent('—');
-      await expect.element(statuses().getByRole('status')).toBeEmptyDOMElement();
-      await expect.element(entries().getByRole('status')).toBeEmptyDOMElement();
-      await expect.element(statuses()).not.toHaveTextContent('version of Ghost');
+        .element(page.getByRole('alert'))
+        .toHaveTextContent('Could not load performance data.');
+      await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(1);
+      await expect.element(entries()).not.toBeInTheDocument();
+      await expect.element(statuses()).not.toBeInTheDocument();
       await close();
       await open();
-      await expect.element(statuses().getByRole('alert')).toBeVisible();
+      await expect.element(page.getByRole('alert')).toBeVisible();
       expect(failedRequest.requests).toHaveLength(1);
       const retry = fakeAdminEndpoint('GET', statsUrl('first'), response('first'));
-      await statuses().getByRole('button', { name: 'Retry' }).click();
+      await page.getByRole('button', { name: 'Retry' }).click();
       await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
       await expect.element(entries()).toHaveTextContent('1,432');
       expect(retry.requests).toHaveLength(1);
-      await expect.element(statuses().getByRole('alert')).not.toBeInTheDocument();
-      await expect.element(entries().getByRole('alert')).not.toBeInTheDocument();
+      await expect.element(page.getByRole('alert')).not.toBeInTheDocument();
     },
   );
 
@@ -183,10 +178,10 @@ describe('Performance sidebar data and errors', () => {
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect
-      .element(statuses().getByRole('alert'))
-      .toHaveTextContent('Could not load status counts.');
-    await expect.element(entries().getByRole('alert')).toHaveTextContent('Could not load entries.');
-    await expect.element(statusCard('Completed')).toHaveTextContent('—');
+      .element(page.getByRole('alert'))
+      .toHaveTextContent('Could not load performance data.');
+    await expect.element(entries()).not.toBeInTheDocument();
+    await expect.element(statuses()).not.toBeInTheDocument();
   });
 });
 

@@ -2,9 +2,13 @@ import type { PerformanceDateRange } from '@/automations/utils/performance-date-
 import { performanceQueryOptions } from './performance-query-options';
 import { useMemo } from 'react';
 import { useReadAutomationPerformanceStats } from '@tryghost/admin-x-framework/api/automations';
+import { mapAutomationStatusStats } from '@/automations/utils/automation-status-stats';
 import { mapAutomationEntryStats } from '@/automations/utils/automation-entry-stats';
 
-export const useAutomationEntryStats = (automationId: string, dateRange: PerformanceDateRange) => {
+export const useAutomationPerformanceStats = (
+  automationId: string,
+  dateRange: PerformanceDateRange,
+) => {
   const query = useReadAutomationPerformanceStats(automationId, {
     ...performanceQueryOptions,
     searchParams: dateRange.searchParams,
@@ -17,10 +21,12 @@ export const useAutomationEntryStats = (automationId: string, dateRange: Perform
         : undefined,
     [stats, dateRange.value],
   );
+  const counts = useMemo(() => (stats ? mapAutomationStatusStats(stats) : undefined), [stats]);
   const failed = !query.isFetching && query.isError;
 
   return {
     chart,
+    counts,
     isLoading: !chart && !failed,
     isError: failed,
     retry: () => {

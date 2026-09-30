@@ -219,12 +219,12 @@ describe('Automation performance date filter', () => {
     await render();
     await expectCounts([10, 20, 30]);
     await selectRange('Last 7 days');
-    await expect.element(entries().getByRole('alert')).toHaveTextContent('Could not load entries.');
-    for (const label of labels) {
-      await expect.element(card(label)).toHaveTextContent('—');
-    }
+    await expect
+      .element(page.getByRole('alert'))
+      .toHaveTextContent('Could not load performance data.');
+    await expect.element(entries()).not.toBeInTheDocument();
     const retry = fakeAdminEndpoint('GET', endpoint, response('2024-03-04', [1, 2, 3]));
-    await entries().getByRole('button', { name: 'Retry' }).click();
+    await page.getByRole('button', { name: 'Retry' }).click();
     await expectCounts([1, 2, 3]);
     expect(retry.requests).toHaveLength(1);
     expect(params(retry.requests[0].url)).toEqual({
