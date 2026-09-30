@@ -45,14 +45,14 @@ export function PublishSetting({
         onClick={onToggle}
       >
         <span className="shrink-0">{icon}</span>
-        <Text className="grow" weight="medium">
+        <Text className="grow" size="lg" weight="medium">
           {title}
         </Text>
         <LucideIcon.ChevronDown
           className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')}
         />
       </button>
-      {open && children ? <div className="pb-5">{children}</div> : null}
+      {open && children ? <div className="pr-1 pb-5 pl-8">{children}</div> : null}
       {footer}
     </Stack>
   );
