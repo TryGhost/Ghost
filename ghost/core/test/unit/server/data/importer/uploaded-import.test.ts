@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
+import { open } from 'node:fs/promises';
 import fs from 'fs-extra';
 import sinon from 'sinon';
 import { afterEach, beforeEach, describe, it } from 'vitest';
@@ -449,4 +450,70 @@ describe('Uploaded site imports', function () {
       false,
     );
   });
+  for (const size of [16 * 1024 * 1024 + 3, 2 ** 31 + 1]) {
+    it(`transfers an archive containing a ${size}-byte asset and an empty asset under one UUID`, async function () {
+      // The >2 GiB case uses a sparse source and compressed ZIP. Extraction needs
+      // about 2.1 GiB disk per pass (passes are sequential); allow 180s for slow CI.
+      const source = path.join(directory, 'large.mp4');
+      const handle = await open(source, 'w');
+      try {
+        await handle.truncate(size);
+        await handle.write(Buffer.from([1, 2, 3]), 0, 3, 0);
+        await handle.write(Buffer.from([4, 5, 6]), 0, 3, size - 3);
+      } finally {
+        await handle.close();
+      }
+      const file = { name: 'large.zip', path: path.join(directory, 'large.zip') };
+      const zip = new ZipArchive();
+      const written = pipeline(zip, fs.createWriteStream(file.path));
+      zip.append(json, { name: 'data.json' });
+      zip.file(source, { name: 'content/media/large.mp4' });
+      zip.append('', { name: 'content/media/empty.mp4' });
+      await Promise.all([zip.finalize(), written]);
+      const first = subject();
+      const save = sinon.spy(storage, 'save');
+      const raw = sinon.spy(storage, 'saveRaw');
+      const buffered = sinon.spy(storage, 'read');
+      await first.manager.importFromFile(file, { user: { email: 'owner@example.com' } });
+      const [uploadKey, fileName, importOptions] = await queuedImport(first);
+      assert.match(uploadKey, uuid);
+      assert.deepEqual(await fs.readdir(storage.storagePath), [uploadKey]);
+      sinon.assert.calledOnce(save);
+      sinon.assert.notCalled(raw);
+      await fs.remove(source);
+      await fs.remove(file.path);
+      const later = subject();
+      const imported = sinon.stub(later.manager, 'doImport').callsFake(async (data: any) => {
+        const large = data.media.find((asset: any) => asset.name === 'large.mp4');
+        const empty = data.media.find((asset: any) => asset.name === 'empty.mp4');
+        assert.equal((await fs.stat(large.path)).size, size);
+        assert.equal((await fs.stat(empty.path)).size, 0);
+        const restored = await open(large.path, 'r');
+        try {
+          for (const [offset, bytes] of [
+            [0, [1, 2, 3]],
+            [size - 3, [4, 5, 6]],
+            [Math.floor(size / 2), [0, 0, 0]],
+          ] as const) {
+            const result = await restored.read(Buffer.alloc(3), 0, 3, offset);
+            assert.deepEqual(result.buffer, Buffer.from(bytes));
+          }
+        } finally {
+          await restored.close();
+        }
+        return {};
+      });
+      assert.deepEqual(
+        await later.manager.executeImport(uploadKey, fileName, importOptions),
+        {},
+        later.deps.logging.error.firstCall?.args[0]?.stack,
+      );
+      sinon.assert.calledOnce(imported);
+      sinon.assert.calledOnceWithMatch(later.deps.mailer.send, {
+        subject: 'Your content import has finished',
+      });
+      sinon.assert.notCalled(buffered);
+      assert.deepEqual(await fs.readdir(storage.storagePath), []);
+    }, 180000);
+  }
 });
