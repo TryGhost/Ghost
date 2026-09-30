@@ -135,6 +135,51 @@ edit: {
 }
 ```
 
+### Schema-aware method definitions (preparatory API)
+
+`defineMethod()` infers callback request types from Zod schemas. This is currently
+a definition API only: runtime parsing and pipeline integration are not
+implemented. Do not register these methods with `pipeline()` yet; its TypeScript
+contract rejects callbacks that require a validated frame.
+
+```ts
+import { defineMethod, type InferMethodFrame } from '@tryghost/api-framework';
+import { z } from 'zod';
+
+const read = defineMethod({
+  schema: {
+    options: z.object({
+      id: z.string(),
+      page: z.string().transform(Number).default(1),
+    }),
+  },
+  permissions: true,
+  query(frame) {
+    // Inferred schema outputs: id is string and page is number.
+    return { id: frame.validated.options.id, page: frame.validated.options.page };
+  },
+});
+
+type ReadFrame = InferMethodFrame<typeof read>;
+```
+
+Declare `schema.options`, `schema.body`, or both. Only declared channels appear
+in `frame.validated`. Callbacks for `validation`, `permissions`,
+`permissions.before`, `query`, and `generateCacheKeyData` receive the same inferred
+frame. `permissions` and `query` are required in schema-aware definitions.
+
+The validated channels use `z.output`, including defaults and transforms, rather
+than the schema's input type. The existing working `frame.options` and
+`frame.data` retain their dictionary types because input serializers can change
+their shape. `frame.validated` and its channel properties are readonly references;
+the schemas determine whether their nested output values are readonly. The
+runtime integration must keep these values independent of serializer mutations.
+
+`defineMethod()` preserves the supplied configuration, schemas, and callbacks by
+reference. It does not parse requests, invoke callbacks, or change existing
+controller behavior. Existing controllers continue to use `Controller` and
+`ControllerMethod` without this helper.
+
 ## Develop
 
 This is a monorepo package.
