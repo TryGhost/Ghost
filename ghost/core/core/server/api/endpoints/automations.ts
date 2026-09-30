@@ -62,7 +62,7 @@ export const controller = {
       // this is a soft limit.
       const numberOfAutomations = await automationsApi.getNumberOfAutomations();
       if (numberOfAutomations >= MAX_AUTOMATIONS) {
-        throw new errors.ValidationError({
+        throw new errors.HostLimitError({
           code: 'AUTOMATION_LIMIT_REACHED',
           message: `Cannot create more than ${MAX_AUTOMATIONS} automations.`,
         });

@@ -83,7 +83,8 @@ describe('Automations controller', function () {
       it(`rejects creation with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
         await assert.rejects(automationsController.add.query(), {
-          statusCode: 422,
+          errorType: 'HostLimitError',
+          statusCode: 403,
           code: 'AUTOMATION_LIMIT_REACHED',
         });
       });
