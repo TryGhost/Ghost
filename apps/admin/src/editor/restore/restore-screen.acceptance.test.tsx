@@ -10,6 +10,7 @@ import {
   type CapturedEndpointRequest,
 } from '@test-utils/acceptance';
 import { LOCAL_REVISION_PREFIX } from '@/editor/local-revisions';
+import { sidebarScreen } from '@/layout/sidebar.screen';
 import { restoreScreen } from '@/editor/restore/restore.screen';
 
 const OLDER = Date.parse('2026-09-28T09:15:00.000Z');
@@ -104,6 +105,69 @@ describe('Restore posts', () => {
     await renderAdminApp('/restore');
 
     await expect.element(restoreScreen.emptyState()).toBeVisible();
+  });
+
+  it.each(['light', 'dark'] as const)(
+    'highlights only the hovered revision and keeps the introduction readable in %s mode',
+    async (theme) => {
+      storeCopy('post-1', OLDER, { title: 'An older draft', custom_excerpt: 'Earlier words' });
+      storeCopy('post-2', NEWER, { title: 'A newer draft', custom_excerpt: 'Recent words' });
+      await renderAdminApp('/restore');
+      await sidebarScreen.selectAppearance(theme);
+      await restoreScreen.heading().hover();
+      const row = restoreScreen.revisionRow('A newer draft');
+      await expect.element(row).toBeVisible();
+      const introduction = page.getByText('Posts are regularly saved locally', { exact: false });
+      const headers = page.getByRole('columnheader').elements();
+      const background = (element: Element) => getComputedStyle(element).backgroundColor;
+      const headerBackgrounds = headers.map(background);
+      const otherCells = restoreScreen.revisionRow('An older draft').getByRole('cell').elements();
+      const otherBackgrounds = otherCells.map(background);
+      const cells = row.getByRole('cell').elements();
+      const originalBackground = background(cells[0]);
+
+      await row.hover();
+
+      await expect.poll(() => background(cells[0])).not.toBe(originalBackground);
+      expect(cells.map(background)).toEqual(cells.map(() => background(cells[0])));
+      expect(headers.map(background)).toEqual(headerBackgrounds);
+      expect(otherCells.map(background)).toEqual(otherBackgrounds);
+      await expect.element(introduction).toBeVisible();
+      await expect.element(row.getByText('Recent words')).toBeVisible();
+    },
+  );
+
+  it('keeps long revision titles and restore actions inside a mobile viewport', async () => {
+    await page.viewport(390, 844);
+    onTestFinished(() => page.viewport(1280, 800));
+    const title = 'A'.repeat(255);
+    storeCopy('post-1', NEWER, { title, custom_excerpt: 'Words worth keeping' });
+    fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => ({
+      posts: [{ ...(body as { posts: object[] }).posts[0], id: 'restored-mobile' }],
+    }));
+    await renderAdminApp('/restore');
+    const row = restoreScreen.revisionRow(title);
+    await expect.element(row).toBeVisible();
+    await expect
+      .element(
+        row
+          .getByRole('cell')
+          .first()
+          .getByText(moment(NEWER).format('MMM D, YYYY HH:mm'), { exact: true }),
+      )
+      .toBeVisible();
+    expect(row.restoreButton().element().getBoundingClientRect().bottom).toBeLessThan(
+      window.innerHeight,
+    );
+    expect(row.element().getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
+    expect(row.restoreButton().element().getBoundingClientRect().right).toBeLessThanOrEqual(
+      window.innerWidth,
+    );
+    await row.restoreButton().click();
+    await expect.element(row.openLink()).toBeVisible();
+    expect(row.openLink().element().getBoundingClientRect().right).toBeLessThanOrEqual(
+      window.innerWidth,
+    );
   });
 
   it('restores a copy as a new draft and links to it', async () => {

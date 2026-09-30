@@ -129,12 +129,12 @@ export default function RestoreScreen() {
                 <LucideIcon.History />
               </EmptyIndicator>
             ) : (
-              <Table aria-label="Local revisions">
+              <Table aria-label="Local revisions" className="table-fixed">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Title</TableHead>
-                    <TableHead className="w-48">Saved</TableHead>
-                    <TableHead className="w-48">
+                    <TableHead className="hidden w-48 md:table-cell">Saved</TableHead>
+                    <TableHead className="w-28 md:w-48">
                       <span className="sr-only">Actions</span>
                     </TableHead>
                   </TableRow>
@@ -144,23 +144,45 @@ export default function RestoreScreen() {
                     const done = restored[revision.key];
                     const preview = previews.get(revision.key);
                     const titleId = `${titleIdPrefix}-${index}`;
+                    const title =
+                      typeof revision.title === 'string' && revision.title
+                        ? revision.title
+                        : '(no title)';
+                    const savedAt = moment(revision.revisionTimestamp).format('MMM D, YYYY HH:mm');
                     return (
                       <TableRow key={revision.key}>
                         <TableCell className="min-w-0">
-                          <Text as="div" id={titleId} weight="medium">
-                            {typeof revision.title === 'string' && revision.title
-                              ? revision.title
-                              : '(no title)'}
+                          <Text
+                            as="div"
+                            className="break-anywhere line-clamp-2"
+                            id={titleId}
+                            title={title}
+                            weight="medium"
+                          >
+                            {title}
                           </Text>
                           {preview ? (
-                            <Text as="div" size="sm" tone="secondary">
+                            <Text
+                              as="div"
+                              className="break-anywhere line-clamp-2"
+                              size="sm"
+                              tone="secondary"
+                            >
                               {preview}
                             </Text>
                           ) : null}
+                          <Text
+                            as="div"
+                            className="mt-1 tabular-nums md:hidden"
+                            size="sm"
+                            tone="secondary"
+                          >
+                            {savedAt}
+                          </Text>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <Text as="span" className="tabular-nums" size="sm" tone="secondary">
-                            {moment(revision.revisionTimestamp).format('MMM D, YYYY HH:mm')}
+                            {savedAt}
                           </Text>
                         </TableCell>
                         <TableCell className="text-right">
@@ -174,6 +196,7 @@ export default function RestoreScreen() {
                                 }
                               }}
                               aria-describedby={titleId}
+                              className="h-auto min-h-9 max-w-full whitespace-normal"
                               size="sm"
                               variant="link"
                               asChild
