@@ -1,5 +1,6 @@
 import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
 import { getMailgunMessageId } from '../lib/mailgun-message-id';
+import { getMailgunError } from '../lib/mailgun-error';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import {
@@ -104,7 +105,7 @@ const handleStepExecutionFailure = async ({
 }>): Promise<Date | null> => {
   logging.error(
     {
-      err,
+      err: getMailgunError(err),
       system: {
         event: 'automations.poll.step_execution_failed',
         step_id: step.id,

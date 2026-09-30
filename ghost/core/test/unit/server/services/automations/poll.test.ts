@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import logging from '@tryghost/logging';
 
 import { poll } from '../../../../../core/server/services/automations/poll';
 import type { AutomationStepToRun } from '../../../../../core/server/services/automations/automations-repository';
@@ -644,6 +645,57 @@ describe('automations poll', function () {
     assert.ok(Math.abs(retryAt.getTime() - (pollStart + RETRY_DELAY_MS)) < 2000);
     sinon.assert.calledOnceWithExactly(automationsApi.retryStep, step, retryAt);
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, retryAt);
+  });
+
+  it('logs native send errors unchanged', async function () {
+    const step = buildEmailStep();
+    const error = new Error('Mailgun request timed out');
+    const logError = sinon.stub(logging, 'error');
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    memberWelcomeEmailService.api.sendAutomationEmail.rejects(error);
+
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(
+      logError,
+      {
+        err: sinon.match.same(error),
+        system: {
+          event: 'automations.poll.step_execution_failed',
+          step_id: step.id,
+        },
+      },
+      `[AUTOMATIONS] Failed to execute automation step ${step.id}`,
+    );
+    sinon.assert.calledOnce(automationsApi.retryStep);
+    sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+  });
+
+  it('logs the original Mailgun error without the email payload', async function () {
+    const step = buildEmailStep();
+    const error = new Error('Mailgun request timed out');
+    const logError = sinon.stub(logging, 'error');
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    memberWelcomeEmailService.api.sendAutomationEmail.rejects({
+      error,
+      messageData: { html: 'Private email content' },
+    });
+
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(
+      logError,
+      {
+        err: sinon.match.same(error),
+        system: {
+          event: 'automations.poll.step_execution_failed',
+          step_id: step.id,
+        },
+      },
+      `[AUTOMATIONS] Failed to execute automation step ${step.id}`,
+    );
+    sinon.assert.calledOnce(automationsApi.retryStep);
+    sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
   });
 
   it('permanently fails email send failures at the attempt limit', async function () {
