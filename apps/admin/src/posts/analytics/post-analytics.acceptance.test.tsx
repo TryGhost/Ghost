@@ -163,31 +163,12 @@ describe('Post analytics overview', () => {
                   opened_count: 400,
                   status: 'submitted',
                 },
+                count: { clicks: 60, positive_feedback: 3, negative_feedback: 1 },
               },
         ),
       ];
     });
-    let detailedPostRequestCount = 0;
-    const detailedPostsApi = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), () => {
-      detailedPostRequestCount += 1;
-      return {
-        posts: [
-          seededPost(
-            detailedPostRequestCount === 1
-              ? postOverrides
-              : {
-                  email: {
-                    id: EMAIL_ID,
-                    email_count: 1000,
-                    opened_count: 400,
-                    status: 'submitted',
-                  },
-                  count: { clicks: 60, positive_feedback: 0, negative_feedback: 0 },
-                },
-          ),
-        ],
-      };
-    });
+    fakeAdminEndpoint('GET', new RegExp(`^/feedback/${POST_ID}/`), { feedback: [] });
     const basicStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, {
       stats: [
         {
@@ -257,6 +238,7 @@ describe('Post analytics overview', () => {
       .element(page.getByRole('button', { name: /View members/ }).first())
       .not.toBeInTheDocument();
 
+    const pendingLinkRequestCount = linksApi.requests.length;
     completeSending = true;
     const pendingStatusRequestCount = statusRequestCount;
     await expect
@@ -264,12 +246,13 @@ describe('Post analytics overview', () => {
       .toBeGreaterThan(pendingStatusRequestCount);
     await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
-    await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => clickStatsApi.requests.length).toBeGreaterThan(0);
-    await expect.poll(() => linksApi.requests.length).toBeGreaterThan(1);
+    await expect.poll(() => linksApi.requests.length).toBeGreaterThan(pendingLinkRequestCount);
     await expect.element(page.getByText('1,000').first()).toBeVisible();
     await expect.element(page.getByText('400').first()).toBeVisible();
+    await expect.element(page.getByRole('tab', { name: 'More like this 75%' })).toBeVisible();
+    await expect.element(page.getByRole('tab', { name: 'Less like this 25%' })).toBeVisible();
     await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeEnabled();
     await expect.element(page.getByText(/^Published and sent to 1,000 members on/)).toBeVisible();
     await expect.element(page.getByText(/^Published on your site on/)).not.toBeInTheDocument();
