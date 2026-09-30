@@ -72,6 +72,52 @@ and kept until navigation. Closing, reopening, focus, and reconnect do not refre
 it. Failed requests, including a missing endpoint, show an inline error and retry
 without guessing whether the backend is older.
 
+## Run list
+
+`GET /ghost/api/admin/automations/:id/runs/` returns the latest fifty runs:
+
+```json
+{
+  "automation_runs": [{
+    "id": "…",
+    "created_at": "2026-09-14T12:00:00.123Z",
+    "status": "completed",
+    "failed": false,
+    "member": {"id": "…", "name": "Alex", "email": "alex@example.com"}
+  }]
+}
+```
+
+Each row is a run, including repeat entries by the same member. Ordering is entry
+time (`created_at`) descending, then run ID descending for ties. Timestamps are UTC
+with millisecond precision. Status is `in_progress`, `completed`, or `exited_early`,
+using the same recorded-step rules as the status counts. Runs without steps are
+excluded. Unknown step statuses fail the request, even alongside pending steps
+or outside the selected status/page.
+`failed` is true only for an exited-early run with a latest step record marked
+`failed`. Pending runs and superseded failures do not set
+this flag. It is a failure detail, not an additional run status.
+
+Tinybird selects the runs and classifies their latest step versions. Core looks up
+current member details for those IDs in one query scoped to the automation. A
+missing name remains null so Admin can use the email. A deleted member or missing
+Core run returns `member: null`; it does not remove the Tinybird run or substitute
+the historical email. A failed lookup returns an error rather than null members.
+
+The endpoint accepts an optional `status` parameter: `in_progress`, `completed`, or
+`exited_early`.
+Omitting it includes all three statuses. Unsupported or
+empty values return 422. Filtering uses the complete recorded step history before
+ordering and limiting to fifty matching runs; pending steps take precedence as they
+do in the summary counts. The optional `date_from`, `date_to`, and `timezone`
+parameters use the same inclusive calendar-date contract as performance stats:
+`date_from` is required when `date_to` is supplied; omitting `date_to` uses today
+in the requested timezone, and omitting both dates selects all history.
+Entry-date filters select runs before classification, keeping the list and summary
+counts on the same cohort. There are no search or pagination controls. An empty history or no matches
+returns `automation_runs: []`. It requires automation read permission, returns 404
+for unknown automations, and uses the same Tinybird availability checks as summaries.
+
 ## Availability
 
 The performance endpoint requires `automationsTinybirdSync`. A disabled flag,

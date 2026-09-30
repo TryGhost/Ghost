@@ -101,6 +101,18 @@ finished-only is 2; known exits with or without finished steps are 6 or 4. Runs
 without steps are excluded by the inner join. The automation list continues using
 its existing pending-run view.
 
+`api_automation_runs` returns the latest fifty runs for one automation, ordered by
+entry time then run ID descending. Entry-date filters use local midnight boundaries,
+just like performance stats. It classifies eligible runs before filtering by status
+and limiting, excluding runs without recorded steps. Invalid statuses are returned
+first, regardless of status filtering, so Core rejects the request instead of hiding
+invalid history beyond the page limit.
+It reuses the existing materialized tables without a rebuild.
+Member details are joined in Core, not stored in these Tinybird tables.
+The run-list tests reuse the status and DST fixtures. A fixture with 52 eligible runs
+checks the fifty-row limit both with and without a status filter; its newest
+pending run must not take a slot in a completed-only page.
+
 Do not turn these into incrementing materialized counters without a retraction
 or deduplication strategy: inserted versions include retries and status changes.
 Run `tb test run` to check the performance pipe against the committed fixtures,
