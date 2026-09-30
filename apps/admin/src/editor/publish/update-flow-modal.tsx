@@ -175,7 +175,7 @@ function KeyedUpdateFlowModal({
         <Inline className="absolute inset-x-0 top-0 p-4" justify="end">
           <PageHeader.ActionGroup>
             {isSent ? null : (
-              <Button variant="ghost" onClick={close}>
+              <Button variant="outline" onClick={close}>
                 Close
               </Button>
             )}
@@ -244,9 +244,9 @@ function KeyedUpdateFlowModal({
           ) : null}
 
           {isScheduled || !emailOnly ? (
-            <Inline justify="end">
+            <Inline justify="start">
               <Button
-                className="h-auto min-h-11 max-w-full py-2 whitespace-normal"
+                className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"
                 data-testid={publishRevertToDraft}
                 disabled={running}
                 size="lg"
