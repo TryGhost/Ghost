@@ -1,8 +1,8 @@
-const assert = require('node:assert/strict');
-const {
-  ACCESS_CODE_WORDS,
-  generatePrivateSiteAccessCode,
-} = require('../../../../../core/server/services/settings/private-site-access-code');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import * as accessCode from '../../../../../core/server/services/settings/private-site-access-code';
+
+const { ACCESS_CODE_WORDS, generatePrivateSiteAccessCode } = accessCode;
 
 describe('private-site-access-code', function () {
   it('returns a curated word with a three-digit suffix', function () {
@@ -21,11 +21,11 @@ describe('private-site-access-code', function () {
   it('uses a 48-word lowercase list with no duplicate entries', function () {
     assert.equal(ACCESS_CODE_WORDS.length, 48);
     assert.equal(new Set(ACCESS_CODE_WORDS).size, ACCESS_CODE_WORDS.length);
-    assert.ok(ACCESS_CODE_WORDS.every((word) => /^[a-z]+$/.test(word)));
+    assert.ok(ACCESS_CODE_WORDS.every((word: string) => /^[a-z]+$/.test(word)));
   });
 
   it('produces varied codes across consecutive calls', function () {
-    const codes = new Set();
+    const codes = new Set<string>();
     for (let i = 0; i < 50; i++) {
       codes.add(generatePrivateSiteAccessCode());
     }
