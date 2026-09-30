@@ -1,6 +1,5 @@
 import _ from 'lodash';
-import { MEMBERS, memberWriter } from '../members-metafields';
-import type { MetafieldValuesService } from '../members-metafields/values-service';
+import { MEMBERS, memberWriter, type Writer } from '../members-metafields';
 
 /**
  * A member's own account: what they are shown about themselves, and what they may
@@ -44,6 +43,11 @@ interface MemberBreadService {
     data: { id: string },
     options?: Record<string, unknown>,
   ): Promise<Record<string, unknown> | null>;
+  updateWithMetafields(
+    data: Record<string, unknown>,
+    options: Record<string, unknown>,
+    metafields?: { values: unknown; writer: Writer },
+  ): Promise<unknown>;
 }
 
 interface MemberRepository {
@@ -55,31 +59,21 @@ interface EmailSuppressionList {
   removeEmail(email: string): Promise<unknown>;
 }
 
-type MetafieldValues = Pick<MetafieldValuesService, 'unwrapWire' | 'planWrite' | 'applyWrite'>;
-
 export interface MemberAccountServiceDeps {
   memberBREADService: MemberBreadService;
   members: MemberRepository;
   emailSuppressionList: EmailSuppressionList;
-  metafieldValues: MetafieldValues;
 }
 
 export class MemberAccountService {
   #memberBREADService: MemberBreadService;
   #members: MemberRepository;
   #emailSuppressionList: EmailSuppressionList;
-  #metafieldValues: MetafieldValues;
 
-  constructor({
-    memberBREADService,
-    members,
-    emailSuppressionList,
-    metafieldValues,
-  }: MemberAccountServiceDeps) {
+  constructor({ memberBREADService, members, emailSuppressionList }: MemberAccountServiceDeps) {
     this.#memberBREADService = memberBREADService;
     this.#members = members;
     this.#emailSuppressionList = emailSuppressionList;
-    this.#metafieldValues = metafieldValues;
   }
 
   /** Everything a member is shown about themselves. */
@@ -91,26 +85,14 @@ export class MemberAccountService {
 
   /** Apply what a member asked to change about themselves, and say what they now hold. */
   async edit(data: Record<string, unknown>, memberId: string) {
-    // Worked out before the member is touched, so a value the catalog refuses fails
-    // the whole request rather than leaving a member renamed with their answers
-    // rejected. The write below reconciles subscriptions with Stripe and sends
-    // events, none of which giving up halfway could undo.
-    const plannedMetafields =
+    // Saved through the members service so the change reaches webhooks.
+    await this.#memberBREADService.updateWithMetafields(
+      _.pick(data, WRITABLE_FIELDS),
+      { id: memberId, withRelated: WRITE_RELATIONS },
       data.metafields === undefined
-        ? null
-        : await this.#metafieldValues.planWrite(
-            this.#metafieldValues.unwrapWire(data.metafields),
-            memberWriter(memberId),
-          );
-
-    await this.#members.update(_.pick(data, WRITABLE_FIELDS), {
-      id: memberId,
-      withRelated: WRITE_RELATIONS,
-    });
-
-    if (plannedMetafields) {
-      await this.#metafieldValues.applyWrite(memberId, plannedMetafields);
-    }
+        ? undefined
+        : { values: data.metafields, writer: memberWriter(memberId) },
+    );
 
     // Read back rather than returning what was written: a member is told what
     // Ghost now holds, which is not always what they sent. Setting the older

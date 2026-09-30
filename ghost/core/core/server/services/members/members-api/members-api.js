@@ -364,7 +364,6 @@ module.exports = function MembersAPI({
     memberBREADService,
     members: users,
     emailSuppressionList,
-    metafieldValues,
   });
 
   async function getMemberIdentity(transientId) {
