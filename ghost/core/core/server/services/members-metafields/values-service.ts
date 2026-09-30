@@ -108,6 +108,27 @@ export interface Plan<W extends Writer = Writer> {
   writes: PlannedWrite[];
 }
 
+/** Stored value rows as leaves, skipping and logging any that can't be read. */
+function readableLeaves(rows: Array<{ key: string; path: string }>): StoredLeaf[] {
+  const leaves: StoredLeaf[] = [];
+  for (const row of rows) {
+    try {
+      leaves.push(DbMetafieldLeaf.parse(row));
+    } catch (err) {
+      logging.warn(
+        {
+          event: { name: 'members.metafields.value_unreadable' },
+          err,
+          metafieldKey: row.key,
+          path: row.path,
+        },
+        'Skipping an unreadable metafield value',
+      );
+    }
+  }
+  return leaves;
+}
+
 /**
  * What a member holds for each defined field. Separate from the definitions service
  * because a value belongs to the member and a definition belongs to the site's settings,
@@ -210,24 +231,7 @@ export class MetafieldValuesService {
         `${VALUES_TABLE}.value_text`,
       );
 
-    const leaves: StoredLeaf[] = [];
-    for (const row of rows) {
-      try {
-        leaves.push(DbMetafieldLeaf.parse(row));
-      } catch (err) {
-        logging.warn(
-          {
-            event: { name: 'members.metafields.value_unreadable' },
-            err,
-            metafieldKey: row.key,
-            path: row.path,
-          },
-          'Skipping an unreadable metafield value',
-        );
-      }
-    }
-
-    const flat = valuesFromLeaves(leaves);
+    const flat = valuesFromLeaves(readableLeaves(rows));
     return new Map(
       memberIds.map((memberId) => [memberId, { [CUSTOM_NAMESPACE]: flat.get(memberId) ?? {} }]),
     );
@@ -373,6 +377,9 @@ export class MetafieldValuesService {
    *
    * The values and the activity feed entry record the writer the plan was checked for.
    *
+   * Returns the values the plan replaced, read in the same transaction: each field it
+   * names, with the value the member held, or null if they held none.
+   *
    * Always transactional. Given an executor it joins that transaction, so the importer's
    * failed value write takes its member with it; given none it opens its own.
    *
@@ -385,13 +392,15 @@ export class MetafieldValuesService {
     memberId: string,
     { writer, writes }: Plan,
     { executor = this.knex }: { executor?: Knex } = {},
-  ): Promise<void> {
+  ): Promise<MemberMetafields> {
     const { writtenBy, source } = writer.origin;
     if (writes.length === 0) {
-      return;
+      return {};
     }
 
-    const apply = async (trx: Knex) => {
+    const apply = async (trx: Knex): Promise<MemberMetafields> => {
+      const replaced = await this.heldFor(trx, memberId, writes);
+
       // Built first, then sent as whole statements: a handful per member rather
       // than one per part, under one timestamp, because a write happened once
       // however many rows record it.
@@ -477,14 +486,48 @@ export class MetafieldValuesService {
         // as a number, which sorts before every string the feed pages through time with.
         created_at: toDatabaseDate(now),
       });
+
+      return replaced;
     };
 
     // knex's marker for a transactor: join it rather than nesting a savepoint under it.
-    if (executor.isTransaction) {
-      await apply(executor);
-    } else {
-      await executor.transaction(apply);
+    return executor.isTransaction ? apply(executor) : executor.transaction(apply);
+  }
+
+  /**
+   * The values the member holds for the fields `writes` names, by namespace, with null
+   * for a field they hold no value for.
+   */
+  private async heldFor(
+    executor: Knex,
+    memberId: string,
+    writes: PlannedWrite[],
+  ): Promise<MemberMetafields> {
+    const rows = await executor(VALUES_TABLE)
+      .join(FIELDS_TABLE, `${VALUES_TABLE}.metafield_key`, `${FIELDS_TABLE}.key`)
+      .where(`${VALUES_TABLE}.member_id`, memberId)
+      .whereIn(
+        `${VALUES_TABLE}.metafield_key`,
+        writes.map(({ field }) => field.key),
+      )
+      .orderBy(`${VALUES_TABLE}.path`, 'asc')
+      .select(
+        `${VALUES_TABLE}.member_id`,
+        `${FIELDS_TABLE}.key`,
+        `${FIELDS_TABLE}.type`,
+        `${VALUES_TABLE}.path`,
+        `${VALUES_TABLE}.value_text`,
+      );
+    const held = valuesFromLeaves(readableLeaves(rows)).get(memberId) ?? {};
+
+    const replaced: MemberMetafields = {};
+    for (const { field } of writes) {
+      replaced[field.namespace] ??= {};
+      replaced[field.namespace][field.key] = Object.hasOwn(held, field.key)
+        ? held[field.key]
+        : null;
     }
+    return replaced;
   }
 
   /**
