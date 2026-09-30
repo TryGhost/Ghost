@@ -1,32 +1,27 @@
 import { formatNumber } from '@tryghost/shade/utils';
-import type { EmailSendingPhase, EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
+import type {
+  EmailSendingPhase,
+  EmailSendingProgress,
+  EmailSendingState,
+} from '@tryghost/admin-x-framework/api/emails';
 
-type NonFailedEmailSendingState = Exclude<EmailSendingState, { status: 'failed' }>;
-
-export interface EmailSendingProgressCopy {
-  title: 'Preparing emails' | 'Sending emails';
-  detail: string | null;
+interface ActiveEmailSend {
+  status: Exclude<EmailSendingState, { status: 'failed' }>['status'];
+  /** Unknown until the status endpoint first reports. */
+  progress?: EmailSendingProgress;
 }
 
-/**
- * The active send wording shared by post analytics and the posts list.
- * `submitted` is accepted because analytics keeps the sending UI visible while
- * its dependent post and newsletter data refreshes.
- */
-export function getEmailSendingProgressCopy(
-  sending: NonFailedEmailSendingState,
-  estimate: string | null,
-): EmailSendingProgressCopy {
-  const { completed, total } = sending.progress;
-  const progress = total === 0 ? null : `${formatNumber(completed)} of ${formatNumber(total)}`;
-
-  return {
-    title: sending.status === 'preparing' ? 'Preparing emails' : 'Sending emails',
-    detail: [progress, estimate].filter(Boolean).join(' · ') || null,
-  };
+interface EmailSendingLineOptions {
+  /** A time-left label from useSendingEta. */
+  estimate?: string | null;
+  /**
+   * Post analytics shows preparation as a percentage so the recipient count
+   * only climbs once, during sending, while the audience size stays on screen.
+   */
+  preparingProgress?: 'count' | 'percentage';
 }
 
-/** An active send's status line. Each screen supplies its own wording. */
+/** An active send's status line. */
 export interface EmailSendingLine {
   phase: EmailSendingPhase;
   /** 0 to 1, or null before the total is known. */
@@ -34,15 +29,33 @@ export interface EmailSendingLine {
   text: string;
 }
 
+/**
+ * The active send wording shared by post analytics and the posts list.
+ * `submitted` is accepted because analytics keeps the sending UI visible while
+ * its dependent post and newsletter data refreshes.
+ */
 export function getEmailSendingLine(
-  sending: NonFailedEmailSendingState,
-  { title, detail }: EmailSendingProgressCopy,
+  { status, progress }: ActiveEmailSend,
+  { estimate = null, preparingProgress = 'count' }: EmailSendingLineOptions = {},
 ): EmailSendingLine {
-  const { completed, total } = sending.progress;
+  const phase = status === 'preparing' ? 'preparing' : 'submitting';
+  const completed = progress?.completed ?? 0;
+  const total = progress?.total ?? 0;
+  let progressText: string | null = null;
+
+  if (total > 0) {
+    const percent = Math.min(100, Math.floor((completed / total) * 100));
+    progressText =
+      phase === 'preparing' && preparingProgress === 'percentage'
+        ? `${formatNumber(percent)}% complete · ${formatNumber(total)} total`
+        : `${formatNumber(completed)} of ${formatNumber(total)}`;
+  }
 
   return {
-    phase: sending.status === 'preparing' ? 'preparing' : 'submitting',
+    phase,
     fractionComplete: total > 0 ? completed / total : null,
-    text: detail ? `${title} · ${detail}` : title,
+    text: [phase === 'preparing' ? 'Preparing emails' : 'Sending emails', progressText, estimate]
+      .filter(Boolean)
+      .join(' · '),
   };
 }

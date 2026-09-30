@@ -1,10 +1,7 @@
 import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
-import {
-  getEmailSendingLine,
-  getEmailSendingProgressCopy,
-} from '@/posts/email-sending-status/email-sending-status-copy';
+import { getEmailSendingLine } from '@/posts/email-sending-status/email-sending-status-copy';
 import { useEmailSendingStatusPolling } from '@/posts/email-sending-status/use-email-sending-status';
 import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
@@ -80,7 +77,7 @@ export function PostListRowEmailStatus({ post, children }: PostListRowEmailStatu
       <>
         {children({
           status: 'sending',
-          line: getEmailSendingLine(sending, getEmailSendingProgressCopy(sending, estimate)),
+          line: getEmailSendingLine(sending, { estimate }),
         })}
       </>
     );
@@ -91,11 +88,9 @@ export function PostListRowEmailStatus({ post, children }: PostListRowEmailStatu
       <>
         {children({
           status: 'sending',
-          line: {
-            phase: emailStatus === 'pending' ? 'preparing' : 'submitting',
-            fractionComplete: null,
-            text: emailStatus === 'pending' ? 'Preparing emails' : 'Sending emails',
-          },
+          line: getEmailSendingLine({
+            status: emailStatus === 'pending' ? 'preparing' : 'submitting',
+          }),
         })}
       </>
     );

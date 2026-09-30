@@ -6,13 +6,10 @@ import {
 } from './email-sending-status-line';
 import { getEmailSendingLine } from './email-sending-status-copy';
 
-const sending = getEmailSendingLine(
-  {
-    status: 'submitting',
-    progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
-  },
-  { title: 'Sending emails', detail: '250 of 1,000' },
-);
+const sending = getEmailSendingLine({
+  status: 'submitting',
+  progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+});
 
 describe('EmailSendingStatusLine', () => {
   beforeEach(() => {
@@ -42,13 +39,7 @@ describe('EmailSendingStatusLine', () => {
   });
 
   it('replays the reveal on every phase change', () => {
-    const preparing = getEmailSendingLine(
-      {
-        status: 'preparing',
-        progress: { completed: 0, total: 1000, estimated_seconds_remaining: null },
-      },
-      { title: 'Preparing emails', detail: null },
-    );
+    const preparing = getEmailSendingLine({ status: 'preparing' });
     const { rerender } = render(<EmailSendingStatusLine data-testid="line" line={null} />);
 
     rerender(<EmailSendingStatusLine data-testid="line" line={preparing} />);

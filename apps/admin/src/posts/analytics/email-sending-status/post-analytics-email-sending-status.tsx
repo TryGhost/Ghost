@@ -2,30 +2,10 @@ import { Button } from '@tryghost/shade/components';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useEmailSendingStatusContext } from './email-sending-status-context';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
-import {
-  getEmailSendingLine,
-  getEmailSendingProgressCopy,
-  type EmailSendingLine,
-} from '@/posts/email-sending-status/email-sending-status-copy';
+import { getEmailSendingLine } from '@/posts/email-sending-status/email-sending-status-copy';
 import { EmailSendingStatusLine } from '@/posts/email-sending-status/email-sending-status-line';
 import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
-import type {
-  EmailSendingProgress,
-  EmailSendingState,
-} from '@tryghost/admin-x-framework/api/emails';
-
-/**
- * Preparation reports a percentage so the recipient count only climbs once,
- * during sending, while the audience size stays on screen throughout.
- */
-const preparingDetail = ({ completed, total }: EmailSendingProgress) => {
-  if (total === 0) {
-    return null;
-  }
-
-  const percent = Math.min(100, Math.floor((completed / total) * 100));
-  return `${formatNumber(percent)}% complete · ${formatNumber(total)} total`;
-};
+import type { EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
 
 const failureDetail = (
   sending: Extract<EmailSendingState, { status: 'failed' }>,
@@ -100,21 +80,15 @@ const PostAnalyticsEmailSendingStatus = () => {
   }
 
   const isActive = sending && (sending.status !== 'submitted' || isNewsletterDataHidden);
-  let line: EmailSendingLine | null = null;
-  if (isActive) {
-    const copy = getEmailSendingProgressCopy(sending, estimate);
-    line = getEmailSendingLine(
-      sending,
-      sending.status === 'preparing'
-        ? { ...copy, detail: preparingDetail(sending.progress) }
-        : copy,
-    );
-  }
 
   return (
     <EmailSendingStatusLine
       data-testid="email-sending-status-line"
-      line={line}
+      line={
+        isActive
+          ? getEmailSendingLine(sending, { estimate, preparingProgress: 'percentage' })
+          : null
+      }
       ready={!isStatusLoading}
     />
   );
