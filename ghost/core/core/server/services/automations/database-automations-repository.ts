@@ -183,6 +183,10 @@ export function createDatabaseAutomationsRepository({
       });
     },
 
+    async exists(id) {
+      return !!(await knex('automations').where({ id }).first('id'));
+    },
+
     async getById(id: string): Promise<Automation | null> {
       return await knex.transaction(async (trx) => {
         const automation = await loadAutomation(trx, id);
