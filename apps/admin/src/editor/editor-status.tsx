@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Text } from '@tryghost/shade/primitives';
-import { buttonVariants } from '@tryghost/shade/components';
+import { Button, buttonVariants } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { formatNumber } from '@tryghost/shade/utils';
 import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { editorScheduleCountdown, editorStatus } from '@tryghost/test-data/selectors/editor';
 import { formatPostTime } from '@/posts/list/post-time';
+import { usePublishInputs } from './publish/use-publish-inputs';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useSiteTimezone } from './use-editor-settings';
 import type { SaveEngineState } from './engine/save-engine';
@@ -58,14 +59,36 @@ function ScheduleCountdown({
   );
 }
 
+/** Opens the publish flow, which starts at its email-failure step for a failed send. */
+function EmailFailureAction({ label, onOpen }: { label: string; onOpen: () => void }) {
+  // The flow is built from the publish inputs, so it cannot open before they load.
+  const { isReady } = usePublishInputs();
+
+  return (
+    <>
+      {' '}
+      <Button
+        className="h-auto p-0 text-destructive"
+        disabled={!isReady}
+        variant="link"
+        onClick={onOpen}
+      >
+        {label}
+      </Button>
+    </>
+  );
+}
+
 function StatusBody({
   view,
   timezone,
   isHovered,
+  onOpenPublishFlow,
 }: {
   view: EditorStatusView;
   timezone: string;
   isHovered: boolean;
+  onOpenPublishFlow?: () => void;
 }) {
   switch (view.kind) {
     case 'problem':
@@ -77,7 +100,16 @@ function StatusBody({
     case 'draft':
       return <>{view.saved ? 'Draft - Saved' : 'Draft'}</>;
     case 'sent':
-      return view.failed ? <>Failed to send newsletter.</> : <>Sent to {members(view.count)}</>;
+      return view.failed ? (
+        <>
+          Failed to send newsletter.
+          {onOpenPublishFlow ? (
+            <EmailFailureAction label="Retry now" onOpen={onOpenPublishFlow} />
+          ) : null}
+        </>
+      ) : (
+        <>Sent to {members(view.count)}</>
+      );
     case 'scheduled':
       return (
         <>
@@ -114,6 +146,9 @@ function StatusBody({
           {view.email === 'sending' && ` and sending to ${members(view.count)}`}
           {view.email === 'sent' && ` and sent to ${members(view.count)}`}
           {view.email === 'failed' && ' but failed to send newsletter.'}
+          {view.email === 'failed' && onOpenPublishFlow ? (
+            <EmailFailureAction label="View details" onOpen={onOpenPublishFlow} />
+          ) : null}
         </>
       );
   }
@@ -123,10 +158,12 @@ export interface EditorStatusProps {
   state: SaveEngineState;
   record?: EditorStatusRecord;
   isDirty: boolean;
+  /** Opens the publish flow at a failed send; omitted unless the role may retry it. */
+  onOpenPublishFlow?: () => void;
 }
 
 /** Where the post stands: its status, the newsletter, and the last save. */
-export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
+export function EditorStatus({ state, record, isDirty, onOpenPublishFlow }: EditorStatusProps) {
   const { isAdmin7 } = useShade();
   const timezone = useSiteTimezone();
   const isSaving = useSavingHold(state.kind === 'saving' || state.kind === 'pending-coalesced');
@@ -168,6 +205,7 @@ export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
           isHovered={isHovered}
           timezone={timezone}
           view={deriveEditorStatus({ state, record, isDirty, isSaving })}
+          onOpenPublishFlow={onOpenPublishFlow}
         />
       </span>
     </Text>

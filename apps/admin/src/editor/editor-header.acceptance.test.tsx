@@ -6,10 +6,14 @@ import { publishTypeError } from '@tryghost/test-data/selectors/editor';
 import {
   browseResponse,
   configResponse,
+  currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeNewsletters,
+  fakePages,
   fakePosts,
+  fakePostsListScreen,
   fakeSnippets,
   fakeTiers,
   newsletter,
@@ -29,7 +33,7 @@ import { publishScreen } from '@/editor/publish/publish.screen';
 
 const POST_ID = 'abc123';
 const POST_UUID = 'post-uuid';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = { labs: { editorReact: true, postsListReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const SITE_URL = 'http://test.com';
 
@@ -77,6 +81,12 @@ function failureBody(status: number) {
 function publishChrome({ newsletters = 0 } = {}) {
   fakeSnippets([]);
   fakePosts([]);
+  fakePages([]);
+  fakePostsListScreen();
+  // Successful sends leave the editor for the post's analytics screen.
+  fakeAdminStats.postReferrers(POST_ID, []);
+  fakeAdminStats.postGrowth(POST_ID);
+  fakeAdminStats.mrr();
   fakeTiers([]);
   fakeNewsletters(
     Array.from({ length: newsletters }, () =>
@@ -105,6 +115,11 @@ function restoreNewsletters() {
   fakeAdminEndpoint('GET', /^\/newsletters\//, browseResponse('newsletters', [], { limit: 'all' }));
 }
 
+/** The publish flow's email confirmation reads the post with its email alone. */
+function isEmailConfirmationRead(url: string): boolean {
+  return new URL(url).searchParams.get('include') === 'email';
+}
+
 /**
  * A post that answers saves the way Ghost does: the response carries the
  * submitted fields back with a fresh collision token, and the read endpoint
@@ -112,7 +127,11 @@ function restoreNewsletters() {
  */
 function fakeSavablePost(
   overrides: Partial<SavedPost> = {},
-  { failWith = 0, holdFirstSave }: { failWith?: number; holdFirstSave?: Promise<void> } = {},
+  {
+    failWith = 0,
+    holdFirstSave,
+    resource = 'posts',
+  }: { failWith?: number; holdFirstSave?: Promise<void>; resource?: 'posts' | 'pages' } = {},
 ) {
   let current = post({
     id: POST_ID,
@@ -134,11 +153,17 @@ function fakeSavablePost(
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));
 
-  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({ posts: [current] }));
+  fakeAdminEndpoint('GET', new RegExp(`^/${resource}/${POST_ID}/\\?`), ({ url }) => {
+    // The send has gone out by the time the flow's email confirmation reads the post.
+    if (current.email?.status === 'pending' && isEmailConfirmationRead(url)) {
+      current.email = { ...current.email, status: 'submitted', error: null };
+    }
+    return { [resource]: [current] };
+  });
 
   const saveApi = fakeAdminEndpoint(
     'PUT',
-    new RegExp(`^/posts/${POST_ID}/\\?`),
+    new RegExp(`^/${resource}/${POST_ID}/\\?`),
     async ({ body, url }) => {
       saves += 1;
 
@@ -150,15 +175,15 @@ function fakeSavablePost(
         return failureBody(failWith);
       }
 
-      const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+      const submitted = (body as Record<string, Partial<SavedPost>[]>)[resource][0];
       current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
 
-      // A send hands the email over asynchronously; the flow polls until it settles.
+      // Core creates a send's email pending and hands it over in the background.
       if (url.includes('newsletter=')) {
-        current.email = { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 };
+        current.email = { id: 'email-1', status: 'pending', email_count: 20, opened_count: 0 };
       }
 
-      return { posts: [current] };
+      return { [resource]: [current] };
     },
     { status: failWith || 200 },
   );
@@ -216,6 +241,7 @@ afterEach(() => {
   localStorage.removeItem('ghost-last-published-post');
   localStorage.removeItem('ghost-last-scheduled-post');
   delete window.EmberBridge;
+  delete document.body.dataset.externalNavigate;
 });
 
 /**
@@ -224,7 +250,7 @@ afterEach(() => {
  * make.
  */
 describe('Editor header actions', () => {
-  it('publishes a draft and keeps the editor open on the new status', async () => {
+  it('returns to the post list after publishing without email', async () => {
     publishChrome();
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -232,17 +258,34 @@ describe('Editor header actions', () => {
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
 
-    await expect.element(publishScreen.complete()).toBeVisible();
+    await expect.poll(currentRoute).toBe('/posts');
     expect(submittedPost(saveApi)).toMatchObject({ id: POST_ID, status: 'published' });
     // The header never PUTs on its own: the publish is the only write.
     expect(saveApi.requests).toHaveLength(1);
 
-    await expect.element(editorScreen.root()).toBeVisible();
-    await expect.element(editorScreen.status()).toHaveTextContent('Published');
-    // The header's controls follow the acknowledged status through the session view.
-    await expect.element(editorScreen.updateButton()).toBeVisible();
-    await expect(editorScreen.previewButton()).toHaveCount(0);
+    await expect(editorScreen.root()).toHaveCount(0);
   });
+
+  it.each(['post', 'page'] as const)(
+    'hands completed %s publishing to Ember when it owns the destination list',
+    async (postType) => {
+      publishChrome();
+      const resource = postType === 'page' ? 'pages' : 'posts';
+      fakeSavablePost({}, { resource });
+      await renderAdminApp(`/editor/${postType}/${POST_ID}`, {
+        labs: { editorReact: true, postsListReact: false },
+      });
+
+      await publishThroughFlow();
+
+      await expect
+        .poll((): unknown => JSON.parse(document.body.dataset.externalNavigate ?? 'null'))
+        .toMatchObject({ route: `/${resource}`, isExternal: true });
+      // The harness records the handoff; the pending flow stays until Ember navigates.
+      await expect.element(publishScreen.confirmButton()).toBeDisabled();
+      await expect(publishScreen.complete()).toHaveCount(0);
+    },
+  );
 
   it('sends the newsletter the publish flow selected', async () => {
     publishChrome({ newsletters: 1 });
@@ -252,10 +295,28 @@ describe('Editor header actions', () => {
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
 
-    await expect.element(publishScreen.complete()).toBeVisible();
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
     expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
     expect(saveApi.lastRequest?.url).toContain('newsletter=weekly');
     expect(saveApi.lastRequest?.url).toContain('email_segment=all');
+  });
+
+  it('opens post analytics once the flow confirms the email send', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await expect
+      .element(publishScreen.setting('publish-type'))
+      .toHaveTextContent('Publish and email');
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    expect(saveApi.lastRequest?.url).toContain('newsletter=weekly');
+    await expect(editorScreen.root()).toHaveCount(0);
   });
 
   it('schedules a draft for the time the flow chose', async () => {
@@ -269,10 +330,72 @@ describe('Editor header actions', () => {
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
-    await expect.element(publishScreen.complete()).toBeVisible();
+    await expect.poll(currentRoute).toBe('/posts');
     const submitted = submittedPost(saveApi);
     expect(submitted).toMatchObject({ status: 'scheduled' });
     expect(Date.parse(String(submitted.published_at))).toBeGreaterThan(Date.now());
+  });
+
+  it('returns scheduled emails to the post list instead of analytics', async () => {
+    publishChrome({ newsletters: 1 });
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+
+    await editorScreen.publishButton().click();
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.root()).toHaveCount(0);
+  });
+
+  it.each([false, true])('returns pages to the page list (scheduled: %s)', async (scheduled) => {
+    publishChrome();
+    fakeSavablePost({}, { resource: 'pages' });
+    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.publishButton().click();
+    if (scheduled) {
+      await publishScreen.setting('publish-at').click();
+      await page.getByLabelText('Schedule for later').click();
+    }
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe('/pages');
+    await expect(editorScreen.root()).toHaveCount(0);
+  });
+
+  it('opens analytics after an email-only send', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+
+    await editorScreen.publishButton().click();
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Email only').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    expect(submittedPost(saveApi)).toMatchObject({ status: 'published', email_only: true });
+    await expect(editorScreen.root()).toHaveCount(0);
+  });
+
+  it('opens analytics when republishing a previously emailed post', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost({
+      email: { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 },
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+
+    await publishThroughFlow();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
+    await expect(editorScreen.root()).toHaveCount(0);
   });
 
   it('saves unsaved work on a published post through Update', async () => {
@@ -378,6 +501,154 @@ describe('Editor header actions', () => {
     await expect(previewScreen.modal()).toHaveCount(0);
   });
 
+  it.each(['Enter', 'Tab'])(
+    'saves the email subject from preview on %s and keeps it when reopened',
+    async (key) => {
+      publishChrome({ newsletters: 1 });
+      const saveApi = fakeSavablePost({ email_subject: null });
+      fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+        email_previews: [
+          { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+        ],
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+      await editorScreen.previewButton().click();
+      await previewScreen.emailTab().click();
+      await expect.element(previewScreen.emailSubject()).toHaveValue('Hello from React');
+
+      await previewScreen.emailSubject().fill('A custom email subject');
+      await expect.element(previewScreen.testEmailButton()).toBeDisabled();
+      await userEvent.keyboard(`{${key}}`);
+      await expect.poll(() => submittedPost(saveApi)?.email_subject).toBe('A custom email subject');
+      await expect.element(previewScreen.testEmailButton()).toBeEnabled();
+      await previewScreen.closeButton().click();
+      await editorScreen.previewButton().click();
+      await previewScreen.emailTab().click();
+      await expect.element(previewScreen.emailSubject()).toHaveValue('A custom email subject');
+
+      await previewScreen.emailSubject().fill('');
+      await userEvent.keyboard('{Tab}');
+      await expect.poll(() => saveApi.requests.length).toBe(2);
+      expect(submittedPost(saveApi, 1)).toMatchObject({ email_subject: '' });
+      await expect
+        .element(previewScreen.emailSubject())
+        .toHaveAttribute('placeholder', 'Hello from React');
+    },
+  );
+
+  it('keeps an invalid email subject editable without saving or enabling test sends', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.emailSubject().fill('a'.repeat(301));
+    await userEvent.keyboard('{Enter}');
+    await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+    await expect
+      .element(page.getByRole('alert'))
+      .toHaveTextContent('Email subject cannot be longer than 300 characters.');
+    await expect.element(previewScreen.testEmailButton()).toBeDisabled();
+    expect(saveApi.requests).toHaveLength(0);
+
+    await previewScreen.emailSubject().fill('a'.repeat(300));
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => submittedPost(saveApi)?.email_subject).toBe('a'.repeat(300));
+    await expect.element(previewScreen.testEmailButton()).toBeEnabled();
+  });
+
+  it.each(['Close', 'Escape'])(
+    'recovers an invalid subject after leaving preview with %s',
+    async (dismiss) => {
+      publishChrome({ newsletters: 1 });
+      const saveApi = fakeSavablePost();
+      fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+        email_previews: [
+          { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+        ],
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(MAILGUN_ON));
+      await editorScreen.previewButton().click();
+      await previewScreen.emailTab().click();
+      await previewScreen.emailSubject().fill('a'.repeat(301));
+      if (dismiss === 'Close') {
+        await previewScreen.closeButton().click();
+      } else {
+        await userEvent.keyboard('{Escape}');
+      }
+      await expect(previewScreen.modal()).toHaveCount(0);
+      await editorScreen.titleInput().fill('Keep this title edit');
+      await editorScreen.previewButton().click();
+      await expect.element(previewScreen.saveFailed()).toBeVisible();
+      await expect(previewScreen.browserFrame()).toHaveCount(0);
+      await expect(previewScreen.emailFrame()).toHaveCount(0);
+      await expect.element(previewScreen.shareButton()).toBeDisabled();
+      await expect.element(previewScreen.emailSubject()).toHaveValue('a'.repeat(301));
+      await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+      expect(saveApi.requests).toHaveLength(0);
+
+      await previewScreen.emailSubject().fill('A corrected subject');
+      await userEvent.keyboard('{Enter}');
+      await expect(saveApi).toHaveSavedFields({
+        email_subject: 'A corrected subject',
+        title: 'Keep this title edit',
+      });
+      await expect(previewScreen.saveFailed()).toHaveCount(0);
+      await expect.element(previewScreen.emailFrame()).toBeVisible();
+      await expect.element(previewScreen.testEmailButton()).toBeEnabled();
+      await expect.element(previewScreen.shareButton()).toBeEnabled();
+    },
+  );
+
+  it('retains the subject and blocks test sends when saving fails', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost({}, { failWith: 422 });
+    fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.emailSubject().fill('Keep this subject');
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(previewScreen.emailSubject()).toHaveValue('Keep this subject');
+    await expect.element(previewScreen.testEmailButton()).toBeDisabled();
+  });
+
+  it('keeps a newer subject while an earlier subject save is pending', async () => {
+    publishChrome({ newsletters: 1 });
+    const held = deferred<void>();
+    const saveApi = fakeSavablePost({}, { holdFirstSave: held.promise });
+    fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.emailSubject().fill('First subject');
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await previewScreen.emailSubject().fill('Newer subject');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(previewScreen.testEmailButton()).toBeDisabled();
+    held.resolve();
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+    expect(submittedPost(saveApi, 1)).toMatchObject({ email_subject: 'Newer subject' });
+    await expect.element(previewScreen.emailSubject()).toHaveValue('Newer subject');
+    await expect.element(previewScreen.testEmailButton()).toBeEnabled();
+  });
+
   it('keeps the failure in the publish flow and sends nothing more', async () => {
     publishChrome();
     const saveApi = fakeSavablePost({}, { failWith: 422 });
@@ -415,6 +686,36 @@ describe('Editor header actions', () => {
     await expect(previewScreen.modal()).toHaveCount(0);
   });
 
+  it('animates opening from the editor but switches fullscreen surfaces without animation', async () => {
+    publishChrome();
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.modal()).toBeVisible();
+    expect(getComputedStyle(previewScreen.modal().element()).animationName).not.toBe('none');
+    await previewScreen.publishButton().click();
+    await expect(previewScreen.modal()).toHaveCount(0);
+    await expect.element(publishScreen.options()).toBeVisible();
+    expect(getComputedStyle(publishScreen.root().element()).animationName).toBe('none');
+
+    await publishScreen.previewButton().click();
+    await expect.element(previewScreen.modal()).toBeVisible();
+    expect(getComputedStyle(previewScreen.modal().element()).animationName).toBe('none');
+    await previewScreen.publishButton().click();
+    await expect(previewScreen.modal()).toHaveCount(0);
+    expect(getComputedStyle(publishScreen.root().element()).animationName).toBe('none');
+
+    await publishScreen.closeButton().click();
+    await editorScreen.publishButton().click();
+    await expect.element(publishScreen.options()).toBeVisible();
+    expect(getComputedStyle(publishScreen.root().element()).animationName).not.toBe('none');
+    await publishScreen.closeButton().click();
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.modal()).toBeVisible();
+    expect(getComputedStyle(previewScreen.modal().element()).animationName).not.toBe('none');
+  });
+
   it('keeps the publish flow and its choices while previewing from inside it', async () => {
     publishChrome({ newsletters: 1 });
     const saveApi = fakeSavablePost();
@@ -434,7 +735,7 @@ describe('Editor header actions', () => {
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
-    await expect.element(publishScreen.complete()).toBeVisible();
+    await expect.poll(currentRoute).toBe('/posts');
     expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
     expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
   });
@@ -473,7 +774,7 @@ describe('Editor header actions', () => {
     await publishScreen.confirmButton().click();
 
     // A remounted flow would default back to publishing and emailing.
-    await expect.element(publishScreen.complete()).toBeVisible();
+    await expect.poll(currentRoute).toBe('/posts');
     expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
   });
 
@@ -495,21 +796,59 @@ describe('Editor header actions', () => {
     await expect(editorScreen.publishInputsError()).toHaveCount(0);
   });
 
-  it('returns to the publish flow when the preview it opened is closed', async () => {
+  it('offers a retry when the publish inputs fail to load for a failed send', async () => {
     publishChrome();
-    fakeSavablePost();
+    fakeSavablePost({
+      status: 'published',
+      published_at: '2026-02-01T10:00:00.000Z',
+      email: {
+        id: 'email-1',
+        status: 'failed',
+        error: 'The email service was unavailable.',
+        email_count: 20,
+        opened_count: 0,
+      },
+    });
+    failNewsletters();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await editorScreen.publishButton().click();
-    await publishScreen.previewButton().click();
-    await expect.element(previewScreen.modal()).toBeVisible();
+    await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
+    await expect.element(editorScreen.publishInputsError()).toHaveAttribute('role', 'alert');
+    await expect.element(editorScreen.viewNewsletterDetails()).toBeDisabled();
 
-    await previewScreen.closeButton().click();
+    restoreNewsletters();
+    await editorScreen.retryPublishInputs().click();
 
-    await expect(previewScreen.modal()).toHaveCount(0);
-    await expect.element(publishScreen.options()).toBeVisible();
-    await expect.element(publishScreen.previewButton()).toHaveFocus();
+    await expect.element(editorScreen.viewNewsletterDetails()).toBeEnabled();
+    await expect(editorScreen.publishInputsError()).toHaveCount(0);
   });
+
+  it.each(['Close', 'Escape', 'preview shortcut'])(
+    'returns to the editor when a preview opened from Publish is dismissed with %s',
+    async (closeWith) => {
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await editorScreen.publishButton().click();
+      await publishScreen.previewButton().click();
+      await expect.element(previewScreen.modal()).toBeVisible();
+
+      if (closeWith === 'Close') {
+        await previewScreen.closeButton().click();
+      } else {
+        await userEvent.keyboard(closeWith === 'Escape' ? '{Escape}' : '{Meta>}p{/Meta}');
+      }
+
+      await expect(previewScreen.modal()).toHaveCount(0);
+      await expect(publishScreen.root()).toHaveCount(0);
+      await expect.element(editorScreen.publishButton()).toHaveFocus();
+
+      await editorScreen.publishButton().click();
+      await expect.element(publishScreen.options()).toBeVisible();
+      expect(getComputedStyle(publishScreen.root().element()).animationName).not.toBe('none');
+    },
+  );
 
   it('publishes from a preview opened by the header Preview button', async () => {
     publishChrome();
@@ -570,7 +909,7 @@ describe('Editor header actions', () => {
     await typeIntoBody(' and more');
     await publishThroughFlow();
 
-    await expect.element(publishScreen.complete()).toBeVisible();
+    await expect.poll(currentRoute).toBe('/posts');
     expect(saveApi.requests).toHaveLength(2);
     expect(submittedPost(saveApi, 0)).toMatchObject({ status: 'draft' });
     expect(saveApi.requests[0].url).toContain('save_revision=true');
@@ -620,7 +959,7 @@ describe('Editor header actions', () => {
 
     await publishScreen.confirmButton().click();
 
-    await expect.element(publishScreen.complete()).toBeVisible();
+    await expect.poll(currentRoute).toBe('/posts');
     expect(submittedPost(restoredApi)).toMatchObject({ id: POST_ID, status: 'published' });
     expect(restoredApi.requests).toHaveLength(1);
   });
@@ -803,7 +1142,7 @@ describe('Editor header actions', () => {
       await expect.element(editorScreen.publishButton()).toBeEnabled();
       await publishThroughFlow();
 
-      await expect.element(publishScreen.complete()).toBeVisible();
+      await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
       expect(saveApi.lastRequest?.url).toContain('newsletter=weekly');
       // The count only covers the period the limit measures.
       expect(emailsApi.lastRequest?.url).toContain('filter=created_at%3A%3E%3D%27');
@@ -844,7 +1183,7 @@ describe('Editor header actions', () => {
       await publishScreen.continueButton().click();
       await publishScreen.confirmButton().click();
 
-      await expect.element(publishScreen.complete()).toBeVisible();
+      await expect.poll(currentRoute).toBe('/posts');
       expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
     });
 

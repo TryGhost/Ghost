@@ -172,7 +172,7 @@ test.describe('Ghost Admin - Post editor access (React)', () => {
       await editor.publishFlow.open();
       await expect(editor.publishFlow.optionsStep).toBeVisible();
       await editor.publishFlow.confirm();
-      await expect(editor.publishFlow.completeStep).toBeVisible();
+      await expect(page).toHaveURL('/ghost/#/posts');
 
       const published = await readAccess(page, postId);
       expect(published).toMatchObject({

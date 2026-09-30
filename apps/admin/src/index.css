@@ -13,23 +13,34 @@
   initial-value: 0;
 }
 
-@keyframes email-sending-arrow-rise {
+/* Shimmer for an active send's status line. The gradient is 300% wide so
+   each sweep has a pause before the next. */
+@keyframes email-sending-shimmer {
   from {
-    transform: translateY(115%);
+    background-position: 100% 0;
   }
 
   to {
-    transform: translateY(-115%);
+    background-position: 0% 0;
   }
 }
 
-@keyframes email-sending-fill-rise {
-  from {
-    transform: translateY(100%);
-  }
+@utility email-sending-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--chart-purple) 40%,
+    color-mix(in oklab, var(--chart-purple) 50%, transparent) 50%,
+    var(--chart-purple) 60%
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: email-sending-shimmer 1.75s linear infinite;
 
-  to {
-    transform: translateY(0%);
+  @media (prefers-reduced-motion: reduce) {
+    background-image: none;
+    color: var(--chart-purple);
+    animation: none;
   }
 }
 
@@ -118,8 +129,6 @@
    must be generated in this Tailwind lane; the font files themselves load with
    settings/custom-fonts.css in the settings chunk. */
 @theme {
-  --animate-email-sending-arrow-rise: email-sending-arrow-rise 1200ms linear infinite;
-  --animate-email-sending-fill-rise: email-sending-fill-rise 1200ms linear infinite;
   --font-cardo: Cardo;
   --font-manrope: Manrope;
   --font-merriweather: Merriweather;

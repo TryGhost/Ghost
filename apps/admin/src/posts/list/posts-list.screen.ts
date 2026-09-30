@@ -111,6 +111,7 @@ export const postsListScreen = {
   giftLinkModal: () => page.getByRole('dialog', { name: /gift/i }),
   /** The trailing button at a row's end — Analytics, View, or Editor. */
   rowAction: () => page.getByTestId(postListItemAction),
+  actionTooltip: (label: string) => page.getByRole('tooltip', { name: label, exact: true }),
   featuredMarkers: () => page.getByTestId(postFeaturedMarker),
   emptyCold: () => page.getByTestId(postsEmptyCold),
   emptyFiltered: () => page.getByTestId(postsEmptyFiltered),

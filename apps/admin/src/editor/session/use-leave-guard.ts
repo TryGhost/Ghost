@@ -15,16 +15,13 @@ export interface EditorLeaveGuard {
 }
 
 /**
- * Stops a navigation from losing what the writer typed. In-router navigations
- * and native `<a href="#/…">` anchors into Ember-owned routes are put to the
- * save engine, which finishes or saves whatever is outstanding and answers
- * `proceed` (leaving loses nothing) or `confirm` (ask first); a tab close or
- * reload gets the browser's own prompt. The session's own URL replace after a
- * create is not an exit and passes silently.
- *
- * Browser Back is not covered: the shared guard lets a POP through unless the
- * entry it returns to was created by the router, and admin reaches the editor
- * through a native hash anchor.
+ * Stops a navigation from losing what the writer typed. In-router navigations,
+ * native `<a href="#/…">` anchors and history pops (Back, Forward, a hash change
+ * made outside the router) are put to the save engine, which finishes or saves
+ * whatever is outstanding and answers `proceed` (leaving loses nothing) or
+ * `confirm` (ask first); a held pop keeps the editor's URL until then. A tab
+ * close or reload gets the browser's own prompt. The session's own URL replace
+ * after a create is not an exit and passes silently.
  */
 export function useEditorLeaveGuard(
   session: EditorSessionHandle,
@@ -42,6 +39,7 @@ export function useEditorLeaveGuard(
     confirmUnloadWhen: hasWork,
     interceptNavigation: ({ currentLocation, nextLocation }) =>
       isCreatedIdUrlSwap(currentLocation, nextLocation, postType, sessionKey),
+    guardHistoryPops: true,
   });
 
   const guardRef = useRef(guard);
@@ -58,6 +56,16 @@ export function useEditorLeaveGuard(
       isMountedRef.current = false;
     };
   }, []);
+
+  // An accepted exit that lands without unmounting the editor is over. Runs before the ID
+  // swap below, which waits for it.
+  useEffect(() => {
+    if (!isLeavingRef.current) {
+      return;
+    }
+    isLeavingRef.current = false;
+    setIsConfirmingLeave(false);
+  }, [location]);
 
   const isUrlSwapBlocked = guard.interceptedNavigation.isBlocked;
 

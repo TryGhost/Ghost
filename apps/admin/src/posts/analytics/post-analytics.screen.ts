@@ -23,7 +23,7 @@ export const postAnalyticsScreen = {
     page.getByTestId(sel.webPerformance).getByRole('button', { name: 'View more' }),
   uniqueVisitors: () => page.getByTestId(sel.uniqueVisitors),
   growthCard: () => page.getByTestId(sel.growth),
-  emailSendingStatusBanner: () => page.getByTestId(sel.emailSendingStatusBanner),
+  emailSendingStatusLine: () => page.getByTestId(sel.emailSendingStatusLine),
   growthViewMoreButton: () =>
     page.getByTestId(sel.growth).getByRole('button', { name: 'View more' }),
 
