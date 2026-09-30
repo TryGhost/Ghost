@@ -2,7 +2,7 @@ import { Grid, Inline } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { EmailSendingStatusIcon } from './email-sending-status-icon';
 import { useChangeCount } from './use-change-count';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import type { EmailSendingLine } from './email-sending-status-copy';
 
 /** Covers the 250ms fade and the 400ms collapse that starts 150ms in. */
@@ -13,16 +13,14 @@ export const EMAIL_SENDING_LEAVE_DURATION_MS = 600;
 const REVEAL =
   'animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out motion-reduce:animate-none';
 
-const CROSSFADE = 'animate-in fade-in-0 duration-300 ease-out motion-reduce:animate-none';
-
 const isSameLine = (a: EmailSendingLine | null, b: EmailSendingLine | null) =>
   a?.phase === b?.phase && a?.fractionComplete === b?.fractionComplete && a?.text === b?.text;
 
 interface EmailSendingStatusLineProps {
-  /** Null once the send has settled or failed. */
+  /** Null once the send has settled, which fades the last line out. */
   line: EmailSendingLine | null;
-  /** Shown in place of the active line, without the leave animation. */
-  failure?: ReactNode;
+  /** Animates in on mount, for a line that replaces other content after load. */
+  appear?: boolean;
   /** False while loading, so the initial state doesn't animate in. */
   ready?: boolean;
   /** Off in the posts list, where every polling row would be announced. */
@@ -34,19 +32,19 @@ interface EmailSendingStatusLineProps {
 /** A send's status line, used on post analytics and in the posts list. */
 export function EmailSendingStatusLine({
   line,
-  failure,
+  appear = false,
   ready = true,
   announce = true,
   className,
   'data-testid': testId,
 }: EmailSendingStatusLineProps) {
-  // Keeps the last active line around so it can fade out.
+  // Keeps the last line around so it can fade out.
   const [shownLine, setShownLine] = useState(line);
-  if (line ? !isSameLine(line, shownLine) : failure && shownLine) {
+  if (line && !isSameLine(line, shownLine)) {
     setShownLine(line);
   }
   const isLeaving = !line && shownLine !== null;
-  const changeCount = useChangeCount(shownLine?.phase ?? (failure ? 'failed' : null), ready);
+  const changeCount = useChangeCount(shownLine?.phase ?? null, ready);
 
   useEffect(() => {
     if (!isLeaving) {
@@ -56,50 +54,35 @@ export function EmailSendingStatusLine({
     return () => clearTimeout(timeout);
   }, [isLeaving]);
 
-  if (shownLine) {
-    return (
-      <Grid
-        className={cn(
-          // Fade out, then collapse the height.
-          '[transition:opacity_250ms_ease-out,grid-template-rows_400ms_cubic-bezier(0.4,0,0.2,1)_150ms] motion-reduce:transition-none',
-          isLeaving ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr]',
-          className,
-        )}
-        gap="none"
-        role={announce ? 'status' : undefined}
-      >
-        {/* Remounts on each phase change to replay the reveal, inside a live
-            region that stays put so the new phase is still announced. */}
-        <div key={changeCount} className={cn('min-h-0 overflow-hidden', changeCount > 0 && REVEAL)}>
-          <Inline className="leading-[1.65em]" data-testid={testId} gap="xs">
-            <EmailSendingStatusIcon
-              fractionComplete={shownLine.fractionComplete}
-              phase={shownLine.phase}
-            />
-            <span className="email-sending-shimmer font-medium tabular-nums">{shownLine.text}</span>
-          </Inline>
-        </div>
-      </Grid>
-    );
-  }
-
-  if (!failure) {
+  if (!shownLine) {
     return null;
   }
 
   return (
-    <Inline
+    <Grid
       className={cn(
-        'leading-[1.65em] text-muted-foreground tabular-nums',
-        changeCount > 0 && CROSSFADE,
+        // Fade out, then collapse the height.
+        '[transition:opacity_250ms_ease-out,grid-template-rows_400ms_cubic-bezier(0.4,0,0.2,1)_150ms] motion-reduce:transition-none',
+        isLeaving ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr]',
         className,
       )}
-      data-testid={testId}
-      gap="xs"
-      role={announce ? 'alert' : undefined}
-      wrap
+      gap="none"
+      role={announce ? 'status' : undefined}
     >
-      {failure}
-    </Inline>
+      {/* Remounts on each phase change to replay the reveal, inside a live
+          region that stays put so the new phase is still announced. */}
+      <div
+        key={changeCount}
+        className={cn('min-h-0 overflow-hidden', (appear || changeCount > 0) && REVEAL)}
+      >
+        <Inline className="leading-[1.65em]" data-testid={testId} gap="xs">
+          <EmailSendingStatusIcon
+            fractionComplete={shownLine.fractionComplete}
+            phase={shownLine.phase}
+          />
+          <span className="email-sending-shimmer font-medium tabular-nums">{shownLine.text}</span>
+        </Inline>
+      </div>
+    </Grid>
   );
 }

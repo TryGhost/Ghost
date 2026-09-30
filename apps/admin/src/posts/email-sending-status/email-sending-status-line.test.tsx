@@ -51,13 +51,13 @@ describe('EmailSendingStatusLine', () => {
     expect(screen.getByRole('status')).toBe(region);
   });
 
-  it('replaces an active line with a failure straight away', () => {
-    const { rerender } = render(<EmailSendingStatusLine line={sending} />);
+  it('only animates in on mount when the line is appearing', () => {
+    const { unmount } = render(<EmailSendingStatusLine data-testid="line" line={sending} />);
+    expect(screen.getByTestId('line').parentElement).not.toHaveClass('animate-in');
+    unmount();
 
-    rerender(<EmailSendingStatusLine failure="Emails failed to send" line={null} />);
-
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(screen.getByRole('alert')).toHaveTextContent('Emails failed to send');
+    render(<EmailSendingStatusLine data-testid="line" line={sending} appear />);
+    expect(screen.getByTestId('line').parentElement).toHaveClass('animate-in');
   });
 
   it('is silent when told not to announce', () => {
