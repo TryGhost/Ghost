@@ -13,5 +13,6 @@ export * from './posts';
 export * from './tags';
 export * from './sidebar';
 export * from './site-page';
+export * from './migrate-page';
 export * from './billing';
 export * from './comments';

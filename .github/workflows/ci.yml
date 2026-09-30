@@ -15,7 +15,7 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  NODE_VERSION: 22.23.1
+  NODE_VERSION: 22.23.3
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -222,13 +222,16 @@ jobs:
             # it — the break lands on main and surfaces in someone else's PR.
             tb-cli:
               - 'docker/tb-cli/**'
+            tinybird-slim:
+              - 'docker/tinybird-local-slim/**'
+              - 'compose.dev.analytics.yaml'
 
       - name: Define Node test matrix
         # Node lines the unit / legacy / acceptance suites must keep passing on.
         # test:unit's Nx cache is keyed on `node -v` (nx.json) so each leg runs.
         id: node_matrix
         run: |
-          echo 'matrix=["22.23.1", "24.20.0"]' >> $GITHUB_OUTPUT
+          echo "matrix=[\"${NODE_VERSION}\", \"24.20.0\"]" >> $GITHUB_OUTPUT
 
       - name: Start Nx Cloud CI run
         run: pnpm nx start-ci-run
@@ -244,7 +247,7 @@ jobs:
             echo 'typecheck_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
-            echo 'affected_playwright_projects=[]' >> "$GITHUB_OUTPUT"
+            echo 'affected_playwright_matrix=[]' >> "$GITHUB_OUTPUT"
             echo 'publish_public_apps_matrix=[]' >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -287,7 +290,12 @@ jobs:
             --withTarget test:acceptance \
             --projects 'tag:playwright' \
             --json)
-          echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
+          # Split Admin across two runners; every other app keeps a single shard.
+          PLAYWRIGHT_MATRIX=$(jq -c '[.[] | . as $app |
+            (if $app == "@tryghost/admin" then 2 else 1 end) as $total |
+            range(1; $total + 1) | {app: $app, shardIndex: ., shardTotal: $total}
+          ]' <<< "$PLAYWRIGHT_PROJECTS")
+          echo "affected_playwright_matrix=$PLAYWRIGHT_MATRIX" >> "$GITHUB_OUTPUT"
 
           # Build the publish matrix for affected public apps. Matrix context
           # isn't available in a job-level `if:`, so the publish job can't filter
@@ -302,7 +310,7 @@ jobs:
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
       typecheck_projects_str: ${{ steps.affected.outputs.typecheck_projects_str }}
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
-      affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
+      affected_playwright_matrix: ${{ steps.affected.outputs.affected_playwright_matrix }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
@@ -310,6 +318,7 @@ jobs:
       changed_docs: ${{ steps.changed.outputs.docs }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
+      changed_tinybird_slim: ${{ steps.changed.outputs.tinybird-slim }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
       # filter above). A test-only / docs-only change keeps this false.
@@ -700,8 +709,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -828,8 +840,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -938,8 +953,11 @@ jobs:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
           # Without --no-runtime, pnpm links the devEngines Node and every
-          # leg of this matrix runs that same version.
-          install-args: --no-runtime
+          # leg of this matrix runs that same version. With it, pnpm still keys
+          # cached native builds by the devEngines Node major, so a build from
+          # another leg can be reused against the wrong ABI; disable the
+          # side-effects cache so native modules build for the running Node.
+          install-args: --no-runtime --config.side-effects-cache=false
 
       - name: Set env vars (MySQL)
         run: |
@@ -975,12 +993,12 @@ jobs:
     # are not starved on the default runner. See job_acceptance-tests above.
     runs-on: ${{ (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost' && matrix.app == '@tryghost/admin') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
     needs: [job_setup]
-    if: needs.job_setup.outputs.affected_playwright_projects != '[]'
-    name: App Playwright Acceptance Tests
+    if: needs.job_setup.outputs.affected_playwright_matrix != '[]'
+    name: App Playwright Acceptance Tests (${{ matrix.app }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     strategy:
       fail-fast: false
       matrix:
-        app: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_projects) }}
+        include: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_matrix) }}
     env:
       CI: true
     steps:
@@ -1053,7 +1071,7 @@ jobs:
         run: pnpm exec playwright install-deps firefox
 
       - name: Run Playwright tests
-        run: pnpm nx run ${{ matrix.app }}:test:acceptance
+        run: pnpm nx run ${{ matrix.app }}:test:acceptance --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Get App Name
         if: always()
@@ -1077,7 +1095,7 @@ jobs:
         if: always() && steps.app_name.outputs.has_report == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ${{ steps.app_name.outputs.name }}-playwright-report
+          name: ${{ steps.app_name.outputs.name }}-playwright-report-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
@@ -1088,7 +1106,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ${{ steps.app_name.outputs.name }}-failure-screenshots
+          name: ${{ steps.app_name.outputs.name }}-failure-screenshots-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/**/__screenshots__/**
           if-no-files-found: ignore
           retention-days: 30
@@ -1255,19 +1273,20 @@ jobs:
             echo "::error::IS_SHIPPING is set but VITE_SENTRY_AUTH_TOKEN is empty — Koenig sourcemaps would not reach Sentry"
             exit 1
           fi
-          # Builds apps/admin/dist AND ghost/core/core/built/admin (asset-delivery).
+          # Builds apps/admin/dist, ghost/core/core/built/admin (asset-delivery),
+          # and ghost/core/core/built/embed-renderer (separate-origin previews).
           pnpm nx run @tryghost/admin:build
 
-      # The built admin (ghost/core/core/built/admin) is consumed by both job_pack
-      # (packed into the Ghost-CLI archive) and job_docker (COPYed into the full
-      # image). Ship it as a tarball to preserve file modes and speed transfer.
+      # The built admin and embed renderer are consumed by both job_pack (packed
+      # into the Ghost-CLI archive) and job_docker (COPYed into the full image).
+      # Ship them as a tarball to preserve file modes and speed transfer.
       #
       # --exclude '*.map': admin sourcemaps (~60MB) are uploaded to Sentry during
       # the build (IS_SHIPPING), not shipped in the image. ghost/core's `files`
       # field strips them from the Ghost-CLI archive (!core/built/**/*.map), so
       # excluding them here matches that for the Docker image too.
       - name: Pack admin build
-        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/core/built admin
+        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/core/built admin embed-renderer
 
       - name: Upload admin build artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -1346,7 +1365,8 @@ jobs:
           name: admin-build
 
       - name: Extract admin build
-        # The archive includes core/built/admin via ghost/core's files allowlist.
+        # The archive includes core/built/admin and core/built/embed-renderer via
+        # ghost/core's files allowlist.
         run: |
           mkdir -p ghost/core/core/built
           tar -xzf admin-build.tar.gz -C ghost/core/core/built
@@ -1575,9 +1595,9 @@ jobs:
           path: ${{ runner.temp }}/admin-artifact
 
       - name: Extract admin build into context
-        # The full stage COPYs ghost/core/core/built/admin from the context; the
-        # deploy stage excludes core/built entirely, so admin never leaks into core
-        # and adding it is the only context change between the core and full builds.
+        # The full stage COPYs the admin and embed renderer from the context; the
+        # deploy stage excludes core/built entirely, so neither leaks into core and
+        # adding them is the only context change between the core and full builds.
         run: |
           mkdir -p ghost/core/core/built
           tar -xzf "${RUNNER_TEMP}/admin-artifact/admin-build.tar.gz" -C ghost/core/core/built
@@ -1587,8 +1607,8 @@ jobs:
         env:
           BUILDKIT_PROGRESS: plain
         with:
-          # Same repo-root context as core (admin now present at
-          # ghost/core/core/built/admin, excluded by the deploy stage) so the
+          # Same repo-root context as core (admin and embed renderer now present
+          # under ghost/core/core/built, excluded by the deploy stage) so the
           # deploy/install/build layers cache-hit from the core build above.
           context: .
           file: Dockerfile.production
@@ -2011,10 +2031,12 @@ jobs:
       #
       # Its GHCR package is internal (the upstream licence only permits
       # distribution within our own organization), so it is unreadable from a
-      # cross-repo PR's scoped token — those runs stay on the upstream image.
+      # cross-repo PR's scoped token — those runs stay on the upstream image
+      # unless they change the slim image and build it locally below.
       # infra-up.sh falls back on a failed pull regardless, so an unexpected
       # permission gap degrades rather than breaks.
-      GHOST_E2E_TINYBIRD_SLIM: ${{ github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+      GHOST_E2E_TINYBIRD_SLIM: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' || (github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) }}
+      GHOST_E2E_TINYBIRD_SLIM_IMAGE: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' && 'tinybird-local-slim:e2e' || 'ghcr.io/tryghost/tinybird-local-slim:latest' }}
     strategy:
       fail-fast: true
       matrix:
@@ -2088,7 +2110,7 @@ jobs:
 
       - name: Log in to GitHub Container Registry
         # Needed to read the internal tinybird-local-slim package.
-        if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true'
+        if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true' && needs.job_setup.outputs.changed_tinybird_slim != 'true'
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         continue-on-error: true
         with:
@@ -2122,6 +2144,20 @@ jobs:
             echo "GHCR image not available, building from source"
           fi
           docker build --tag "$COMPOSE_IMAGE" --file docker/tb-cli/Dockerfile .
+          docker builder prune --all --force
+
+      - name: Build changed Tinybird slim image
+        if: matrix.analytics == 'true' && needs.job_setup.outputs.changed_tinybird_slim == 'true'
+        # Build before loading the Ghost image or installing dependencies: the
+        # upstream layers need several GB that can be reclaimed after flattening.
+        # This image stays on the runner; only the main publish workflow pushes it.
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          upstream_ref=$(grep -oE 'tinybirdco/tinybird-local:[^ ]+' compose.dev.analytics.yaml)
+          docker build --platform linux/amd64 \
+            --build-arg "TINYBIRD_LOCAL_REF=$upstream_ref" \
+            --file docker/tinybird-local-slim/Dockerfile \
+            --tag "$GHOST_E2E_TINYBIRD_SLIM_IMAGE" .
           docker builder prune --all --force
 
       - name: Load Image
@@ -2357,7 +2393,9 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       - name: Output needs
-        run: echo "${{ toJson(needs) }}"
+        env:
+          NEEDS_JSON: ${{ toJson(needs) }}
+        run: printf '%s\n' "$NEEDS_JSON"
 
       - name: Check if any required jobs failed or been cancelled
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')

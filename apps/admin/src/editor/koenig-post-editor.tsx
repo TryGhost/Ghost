@@ -9,7 +9,7 @@ import {
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { editorFileUploader } from './koenig-file-uploader';
-import { reportKoenigError } from './report-error';
+import { reportKoenigError, reportKoenigRenderError } from './report-error';
 
 const NOOP = () => {};
 
@@ -22,7 +22,7 @@ export interface KoenigPostEditorProps {
   onChange?: (lexical: unknown) => void;
   onSecondaryChange?: (lexical: unknown) => void;
   /** The hidden instance failed, so its serialization cannot be a change baseline. */
-  onSecondaryError?: (error: unknown) => void;
+  onSecondaryError?: () => void;
   registerAPI: (api: KoenigInstance | null) => void;
   registerSecondaryAPI: (api: KoenigInstance | null) => void;
   onWordCountChange: (count: number) => void;
@@ -92,14 +92,14 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
   const onSecondaryInstanceError = useCallback(
     (error: unknown) => {
       reportKoenigError(error);
-      onSecondaryError?.(error);
+      onSecondaryError?.();
     },
     [onSecondaryError],
   );
 
   return (
     <div className="koenig-react-editor koenig-lexical mx-auto w-full max-w-[740px]">
-      <ErrorBoundary name="the editor">
+      <ErrorBoundary name="the editor" onError={reportKoenigRenderError}>
         <Suspense
           fallback={
             <div className="flex justify-center py-10">

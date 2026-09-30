@@ -158,6 +158,7 @@ export default class LexicalEditorController extends Controller {
     @service search;
     @service session;
     @service settings;
+    @service stateBridge;
     @service ui;
     @service localRevisions;
     @service('unsaved-changes') unsavedChanges;
@@ -175,6 +176,19 @@ export default class LexicalEditorController extends Controller {
      * Flag used to determine if we should return to the analytics page or to the posts/pages overview
      */
     fromAnalytics = false;
+
+    get listQueryParams() {
+        if (this.feature.postsListReact !== true) {
+            return {};
+        }
+
+        const resource = this.post?.displayName === 'page' ? 'pages' : 'posts';
+        // Explicit nulls clear any stale query params retained by Ember.
+        return {
+            type: null, visibility: null, author: null, tag: null, order: null,
+            ...this.stateBridge.postListQueryParams[resource]
+        };
+    }
 
     // koenig related properties
     wordCount = 0;

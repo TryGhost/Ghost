@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useState, useSyncExternalStore } fr
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { EmberContext } from './ember-context';
+import { getListReturnNavigationState } from '@/shared/virtual-list';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -15,6 +16,7 @@ export type StateBridgeEventMap = {
   routeChange: RouteChangeEvent;
   openGiftLinkModal: OpenGiftLinkModalEvent;
   featureFlagsChange: undefined;
+  restoreListState: { path: string };
 };
 
 export type AdminThemeMode = 'light' | 'dark' | 'system';
@@ -27,6 +29,8 @@ export interface StateBridge {
   isFeatureEnabled?: (name: string) => boolean | undefined;
   preloadAdminThemeStylesheet?: () => Promise<void>;
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
+  navigateToBillingSubRoute?: (subRoute: string) => void;
+  setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -231,6 +235,32 @@ export function useEmberAuthSync() {
   }, [queryClient]);
 }
 
+/** Ember writes the destination hash before asking React to restore list state. */
+export function useEmberListReturnSync() {
+  useEffect(
+    () =>
+      onEmberStateBridgeEvent('restoreListState', ({ path }) => {
+        const returnState = getListReturnNavigationState(path);
+        if (!returnState) {
+          return;
+        }
+        const state = window.history.state as Record<string, unknown> | null;
+        const userState = state?.usr;
+        window.history.replaceState(
+          {
+            ...state,
+            usr: {
+              ...(userState && typeof userState === 'object' ? userState : {}),
+              ...returnState,
+            },
+          },
+          '',
+        );
+      }),
+    [],
+  );
+}
+
 export function useSubscriptionStatus() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
 
@@ -313,6 +343,29 @@ export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
   }
   void stateBridge.applyAdminThemePreference(mode);
   return true;
+}
+
+/**
+ * Hands a billing app sub-route straight to Ember's billing app, for when the
+ * billing route is already showing. Returns false when no bridge is present.
+ */
+export function navigateEmberBillingSubRoute(subRoute: string): boolean {
+  const stateBridge = window.EmberBridge?.state;
+  if (!stateBridge?.navigateToBillingSubRoute) {
+    return false;
+  }
+  stateBridge.navigateToBillingSubRoute(subRoute);
+  return true;
+}
+
+/** Keep the Ember editor's breadcrumb in sync with the React list. */
+export function syncEmberPostListQueryParams(
+  resource: 'posts' | 'pages',
+  params: Record<string, string>,
+): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setPostListQueryParams?.(resource, params);
+  });
 }
 
 /**

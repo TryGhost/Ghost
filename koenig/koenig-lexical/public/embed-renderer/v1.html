@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Embed preview</title>
+</head>
+<body>
+<script>
+// Ghost embed renderer, protocol version 1.
+//
+// The Ghost editor loads this page in an iframe and sends it embed card html to
+// render. Embed scripts run with this page's origin, so serve it from a domain
+// used for nothing else: never from Ghost's own domains, and never alongside
+// cookies or other data. Send `Content-Security-Policy: frame-ancestors` with it
+// so only your Ghost Admin can frame it.
+(function () {
+    var VERSION = 1;
+
+    // runs inside the rendered embed and reports the height it needs
+    function reportHeight(parentOrigin, version) {
+        var body = document.body;
+        body.style.display = 'flex';
+        body.style.margin = '0';
+        body.style.justifyContent = 'center';
+        // don't stretch embeds to the frame, or ones that clip overflow (eg, TikTok) never grow
+        body.style.alignItems = 'flex-start';
+
+        function setSize(element, property, value) {
+            if (element.style[property] !== value) {
+                element.style[property] = value;
+            }
+        }
+
+        function getHeight() {
+            var firstElement = body.firstElementChild;
+
+            // get ratio from nested iframe if present (eg, Spotify)
+            if (firstElement && firstElement.tagName === 'IFRAME') {
+                var widthAttr = firstElement.getAttribute('width');
+                var heightAttr = firstElement.getAttribute('height');
+
+                if (widthAttr && heightAttr && widthAttr.indexOf('%') === -1 && heightAttr.indexOf('%') === -1) {
+                    var height = document.documentElement.clientWidth / (parseInt(widthAttr) / parseInt(heightAttr));
+                    setSize(firstElement, 'height', height + 'px');
+                    setSize(firstElement, 'width', '100%');
+                    return height;
+                }
+
+                if (heightAttr && heightAttr.indexOf('%') === -1) {
+                    return parseInt(heightAttr);
+                }
+            }
+
+            // otherwise use the document's own height (eg, Instagram)
+            return document.scrollingElement ? document.scrollingElement.scrollHeight : body.scrollHeight;
+        }
+
+        function report() {
+            window.parent.postMessage({type: 'kg-embed-resize', version: version, height: getHeight()}, parentOrigin);
+        }
+
+        // embeds such as Twitter load richer content after the first render
+        new MutationObserver(report).observe(document, {attributes: true, characterData: true, childList: true, subtree: true});
+        window.addEventListener('resize', report);
+        window.addEventListener('load', report);
+        report();
+    }
+
+    window.addEventListener('message', function onRender(event) {
+        var data = event.data;
+
+        if (event.source !== window.parent || !data || data.type !== 'kg-embed-render' || data.version !== VERSION || typeof data.html !== 'string') {
+            return;
+        }
+
+        // an editor on this page's own origin means the renderer is being served
+        // from the editor's domain, where embed scripts would get the editor's access
+        if (event.origin === window.location.origin) {
+            return;
+        }
+
+        window.removeEventListener('message', onRender);
+
+        document.open();
+        document.write(data.html + '<script>(' + reportHeight.toString() + ')(' + JSON.stringify(event.origin) + ', ' + VERSION + ');<\/script>');
+        document.close();
+    });
+
+    if (window.parent !== window) {
+        window.parent.postMessage({type: 'kg-embed-ready', version: VERSION}, '*');
+    }
+})();
+</script>
+</body>
+</html>

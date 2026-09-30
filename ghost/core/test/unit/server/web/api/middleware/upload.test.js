@@ -6,6 +6,7 @@ const os = require('os');
 const path = require('path');
 const assert = require('node:assert/strict');
 const config = require('../../../../../../core/shared/config');
+const configUtils = require('../../../../../utils/config-utils');
 
 describe('web utils', function () {
   describe('checkFileExists', function () {
@@ -194,14 +195,18 @@ describe('web utils', function () {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     });
 
-    const runMediaValidation = async (thumbnailFixture, originalname = thumbnailFixture) => {
+    const runMediaValidation = async (
+      thumbnailFixture,
+      originalname = thumbnailFixture,
+      mimetype = 'image/svg+xml',
+    ) => {
       const thumbnailPath = path.join(tmpDir, thumbnailFixture);
       fs.copyFileSync(path.join(__dirname, imageFixturePath, thumbnailFixture), thumbnailPath);
 
       const req = {
         files: {
           file: [{ originalname: 'video.mp4', mimetype: 'video/mp4', path: 'video.mp4' }],
-          thumbnail: [{ originalname, mimetype: 'image/svg+xml', path: thumbnailPath }],
+          thumbnail: [{ originalname, mimetype, path: thumbnailPath }],
         },
       };
       const nextArgs = await new Promise((resolve) => {
@@ -243,6 +248,94 @@ describe('web utils', function () {
 
       assert.equal(nextArgs[0].errorType, 'UnsupportedMediaTypeError');
       assert.equal(nextArgs[0].message, 'Please select a valid SVG image');
+    });
+
+    it('accepts thumbnails whose contents match an allowed format', async function () {
+      const { nextArgs } = await runMediaValidation('ghost-logo.png', 'thumbnail.png', 'image/png');
+
+      assert.deepEqual(nextArgs, []);
+    });
+
+    it('ignores non-image content types configured for thumbnails', async function () {
+      const thumbnails = config.get('uploads').thumbnails;
+      configUtils.set('uploads:thumbnails:contentTypes', [...thumbnails.contentTypes, 'text/html']);
+
+      try {
+        const { nextArgs } = await runMediaValidation(
+          'ghost-logo.png',
+          'thumbnail.png',
+          'text/html',
+        );
+
+        assert.equal(nextArgs[0].errorType, 'UnsupportedMediaTypeError');
+      } finally {
+        await configUtils.restore();
+      }
+    });
+
+    it('rejects thumbnails whose contents are not an allowed format', async function () {
+      const { nextArgs } = await runMediaValidation('ghosticon.avif', 'thumbnail.png', 'image/png');
+
+      assert.equal(nextArgs[0].errorType, 'UnsupportedMediaTypeError');
+    });
+  });
+
+  describe('validation', function () {
+    let tmpDir;
+
+    beforeEach(function () {
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-upload-validation-'));
+    });
+
+    afterEach(function () {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    const runImageValidation = async (fixture, originalname, mimetype) => {
+      const filePath = path.join(tmpDir, fixture);
+      fs.copyFileSync(path.join(__dirname, imageFixturePath, fixture), filePath);
+
+      const req = { file: { originalname, mimetype, path: filePath } };
+
+      return new Promise((resolve) => {
+        upload.validation({ type: 'images' })(req, {}, (...args) => resolve(args));
+      });
+    };
+
+    it('accepts images whose contents match an allowed format', async function () {
+      assert.deepEqual(await runImageValidation('ghosticon.jpg', 'photo.jpg', 'image/jpeg'), []);
+      assert.deepEqual(await runImageValidation('ghost-logo.png', 'logo.png', 'image/png'), []);
+    });
+
+    it('accepts images whose contents are a different allowed format to the extension', async function () {
+      assert.deepEqual(await runImageValidation('ghost-logo.png', 'logo.jpg', 'image/jpeg'), []);
+    });
+
+    it('rejects images whose contents are not an allowed format', async function () {
+      const nextArgs = await runImageValidation('ghosticon.avif', 'photo.jpg', 'image/jpeg');
+
+      assert.equal(nextArgs[0].errorType, 'UnsupportedMediaTypeError');
+    });
+
+    describe('with non-image content types configured', function () {
+      beforeEach(function () {
+        const images = config.get('uploads').images;
+        configUtils.set('uploads:images:contentTypes', [...images.contentTypes, 'text/html']);
+      });
+
+      afterEach(async function () {
+        await configUtils.restore();
+      });
+
+      it('ignores them', async function () {
+        const nextArgs = await runImageValidation('ghost-logo.png', 'logo.png', 'text/html');
+
+        assert.equal(nextArgs[0].errorType, 'UnsupportedMediaTypeError');
+      });
+
+      it('still accepts image content types', async function () {
+        assert.deepEqual(await runImageValidation('ghost-logo.png', 'logo.png', 'image/png'), []);
+      });
     });
   });
 });

@@ -182,7 +182,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     const action = goesToAnalytics
       ? {
           href: `#/posts/analytics/${post.id}`,
-          label: 'Go to Analytics',
+          label: 'Post analytics',
           external: false,
           Icon: LucideIcon.ChartNoAxesColumn,
         }
@@ -190,7 +190,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ? // "View post" on both resources, as Ember hardcodes it. Only ever
           // reached by a contributor, who has no page access anyway.
           { href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight }
-        : { href, label: 'Go to Editor', external: false, Icon: LucideIcon.Pen };
+        : { href, label: 'Edit', external: false, Icon: LucideIcon.Pen };
 
     const row = (
       <li

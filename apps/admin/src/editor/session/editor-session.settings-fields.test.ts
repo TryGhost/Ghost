@@ -479,22 +479,6 @@ describe('createEditorSession', () => {
     });
 
     it.each([
-      { status: 'draft' as const, dispatches: true },
-      { status: 'published' as const, dispatches: false },
-      { status: 'scheduled' as const, dispatches: false },
-      { status: 'sent' as const, dispatches: false },
-    ])('$status: commitField reaches the engine=$dispatches', ({ status, dispatches }) => {
-      const { session } = sessionHarness({
-        record: record({ status, published_at: status === 'draft' ? null : PUBLISHED_AT }),
-      });
-
-      session.patchFields({ featured: true });
-      session.commitField();
-
-      expect(dispatchedIntents).toEqual(dispatches ? ['field'] : []);
-    });
-
-    it.each([
       { status: 'draft' as const, persists: true },
       { status: 'published' as const, persists: false },
       { status: 'scheduled' as const, persists: false },
@@ -522,7 +506,7 @@ describe('createEditorSession', () => {
       session.commitField();
       await settle();
 
-      expect(dispatchedIntents).toEqual([]);
+      expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } });
       expect(state.updates).toHaveLength(0);
 
       expect(await session.dispatchExplicit()).toMatchObject({
@@ -723,8 +707,9 @@ describe('createEditorSession', () => {
         session.patchFields({ authors: [] });
         session.commitField();
 
-        // The gate holds the field save back, as an incomplete tier pairing is.
-        expect(dispatchedIntents).toEqual([]);
+        // The engine retains invalid content without sending a request.
+        await settle();
+        expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } });
         expect(await session.dispatchExplicit()).toMatchObject({
           kind: 'failed',
           error: { kind: 'validation', message: 'At least one author is required.' },

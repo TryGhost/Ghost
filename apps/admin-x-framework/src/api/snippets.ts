@@ -1,4 +1,5 @@
-import { Meta, createMutation, createQuery } from '../utils/api/hooks';
+import { InfiniteData } from '@tanstack/react-query';
+import { Meta, createInfiniteQuery, createMutation } from '../utils/api/hooks';
 
 // mobiledoc and lexical travel as JSON strings on the wire; callers parse/stringify
 export type Snippet = {
@@ -24,10 +25,32 @@ const dataType = 'SnippetsResponseType';
 // Without `formats` the API strips `lexical` from responses (mobiledoc is the default format)
 const formats = 'mobiledoc,lexical';
 
-const useBrowseSnippetsQuery = createQuery<SnippetsResponseType>({
+const useBrowseSnippetsQuery = createInfiniteQuery<SnippetsResponseType & { isEnd: boolean }>({
   dataType,
   path: '/snippets/',
   defaultSearchParams: { limit: 'all', formats },
+  defaultNextPageParams: (lastPage, otherParams) => {
+    const nextPage = lastPage.meta?.pagination.next;
+    if (!nextPage) {
+      return undefined;
+    }
+
+    return {
+      ...otherParams,
+      page: nextPage.toString(),
+    };
+  },
+  returnData: (originalData) => {
+    const { pages } = originalData as InfiniteData<SnippetsResponseType>;
+    const snippets = pages.flatMap((page) => page.snippets);
+    const meta = pages[pages.length - 1].meta;
+
+    return {
+      snippets,
+      meta,
+      isEnd: meta ? meta.pagination.pages === meta.pagination.page : true,
+    };
+  },
 });
 
 export const useBrowseSnippets = ({

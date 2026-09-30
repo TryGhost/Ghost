@@ -1,6 +1,10 @@
 import { describe, expect, it, onTestFinished } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import {
+  settingsKeyboardShortcutsBackButton,
+  settingsKeyboardShortcutsRow,
+} from '@tryghost/test-data/selectors/editor';
 
 import {
   currentUserResponse,
@@ -18,8 +22,6 @@ const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = { labs: { editorReact: true } };
 const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
-const BACK_LABEL = 'Close keyboard shortcuts panel';
-const ROW_LABEL = 'Keyboard shortcuts';
 const MAC_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 const WINDOWS_AGENT =
@@ -63,7 +65,7 @@ function fakeEditablePost(overrides: Partial<ReturnType<typeof post>> = {}) {
 async function openShortcuts() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-  await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+  await editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }
 
@@ -72,6 +74,50 @@ async function openShortcuts() {
  * slash command the editor answers to, in the writer's own platform glyphs.
  */
 describe('Post settings keyboard shortcuts', () => {
+  it.each([MAC_AGENT, WINDOWS_AGENT])(
+    'keeps labels readable under legacy host styles (%s)',
+    async (agent) => {
+      onPlatform(agent);
+      const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+      onTestFinished(() => page.viewport(initialViewport.width, initialViewport.height));
+      const hostStyles = document.createElement('style');
+      // Ember's global definition-list and keycap rules also surround the embedded editor.
+      hostStyles.textContent = `
+      dl { margin: 1.6em 0; }
+      dl dt { float: left; clear: left; overflow: hidden; margin-bottom: 1em; width: 180px; text-align: right; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+      dl dd { margin-bottom: 1em; margin-left: 200px; }
+      kbd { margin-bottom: 0.4em; padding: 1px 8px; border: 1px solid; box-shadow: 0 1px 0; }
+    `;
+      document.head.append(hostStyles);
+      onTestFinished(() => hostStyles.remove());
+      fakeEditablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openShortcuts();
+
+      for (const width of [1280, 390]) {
+        await page.viewport(width, 844);
+        const pane = editorScreen.settingsSubviewPane().element();
+        for (const label of pane.querySelectorAll('dt')) {
+          expect(getComputedStyle(label).whiteSpace).toBe('normal');
+          expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth + 1);
+        }
+        for (const definition of pane.querySelectorAll('dd')) {
+          expect(getComputedStyle(definition).marginLeft).toBe('0px');
+        }
+        for (const group of pane.querySelectorAll('[data-slot="kbd-group"]')) {
+          expect(getComputedStyle(group).borderTopWidth).toBe('0px');
+          const capHeight = Math.max(
+            ...[...group.querySelectorAll('[data-slot="kbd"]')].map(
+              (cap) => cap.getBoundingClientRect().height,
+            ),
+          );
+          expect(group.getBoundingClientRect().height).toBeLessThanOrEqual(capHeight + 1);
+        }
+        expect(pane.scrollWidth).toBeLessThanOrEqual(pane.clientWidth + 1);
+      }
+    },
+  );
+
   it('opens the pane over the section list and comes back from it', async () => {
     fakeEditablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -79,14 +125,20 @@ describe('Post settings keyboard shortcuts', () => {
 
     // The pane replaces the list it was opened from.
     await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSidebar()).toHaveAttribute('aria-label', ROW_LABEL);
-    await expect.element(page.getByRole('heading', { level: 2, name: ROW_LABEL })).toBeVisible();
+    await expect
+      .element(editorScreen.settingsSidebar())
+      .toHaveAttribute('aria-label', settingsKeyboardShortcutsRow);
+    await expect
+      .element(page.getByRole('heading', { level: 2, name: settingsKeyboardShortcutsRow }))
+      .toBeVisible();
 
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsKeyboardShortcutsBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
+    await expect
+      .element(editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow))
+      .toBeVisible();
   });
 
   it('lists every shortcut under the group it belongs to, without widening the panel', async () => {
@@ -101,7 +153,11 @@ describe('Post settings keyboard shortcuts', () => {
     await expect.element(pane).toHaveTextContent('Inserting');
 
     expect(editorScreen.settingsShortcutRows()).toHaveLength(50);
-    expect(editorScreen.settingsSidebar().element().getBoundingClientRect().width).toBe(350);
+    await expect
+      .poll(
+        () => editorScreen.settingsSidebar().element().parentElement!.getBoundingClientRect().width,
+      )
+      .toBe(350);
   });
 
   it('shows a Mac writer the Mac glyphs', async () => {
@@ -156,7 +212,9 @@ describe('Post settings keyboard shortcuts', () => {
     await userEvent.keyboard('{Escape}');
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toHaveFocus();
+    await expect
+      .element(editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow))
+      .toHaveFocus();
   });
 
   it('gives a contributor the same reference list', async () => {

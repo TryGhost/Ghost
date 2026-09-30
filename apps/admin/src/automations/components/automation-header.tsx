@@ -60,13 +60,21 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
       </div>
       <div className="flex shrink-0 items-center gap-3">
         {status === 'active' && (
-          <Button disabled={!isTurnOffButtonEnabled} variant="outline" onClick={onTurnOff}>
+          <Button
+            disabled={!isTurnOffButtonEnabled}
+            variant={isAdmin7 ? 'ghost' : 'outline'}
+            onClick={onTurnOff}
+          >
             <LucideIcon.Power />
             Turn off
           </Button>
         )}
         {status === 'inactive' && (
-          <Button disabled={!isSaveButtonEnabled} variant={saveButtonVariant} onClick={onSave}>
+          <Button
+            disabled={!isSaveButtonEnabled}
+            variant={isAdmin7 && saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
+            onClick={onSave}
+          >
             {saveButtonChildren}
           </Button>
         )}

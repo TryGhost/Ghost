@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 import { emberAssetsPlugin } from './vite-ember-assets';
+import { embedRendererPlugin } from './vite-embed-renderer';
 import { ghostBackendProxyPlugin } from './vite-backend-proxy';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
@@ -37,7 +38,13 @@ function getBase(command: 'build' | 'serve'): string {
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
   base: getBase(command),
-  plugins: [tailwindcss() as PluginOption, react(), emberAssetsPlugin(), ghostBackendProxyPlugin()],
+  plugins: [
+    tailwindcss() as PluginOption,
+    react(),
+    emberAssetsPlugin(),
+    embedRendererPlugin(),
+    ghostBackendProxyPlugin(),
+  ],
   define: sharedDefine,
   server: {
     host: '0.0.0.0',

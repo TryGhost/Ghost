@@ -3,6 +3,7 @@ import {
   CONFLICT_MESSAGE,
   DROPPED_MESSAGE,
   REAUTH_MESSAGE,
+  SESSION_ABANDONED_MESSAGE,
   UNREACHABLE_MESSAGE,
   describeCompletionFailure,
 } from '@/editor/publish/completion-message';
@@ -26,7 +27,7 @@ describe('describeCompletionFailure', () => {
   it('sends a re-auth interruption back to confirm with an explanation', () => {
     expect(describeCompletionFailure({ kind: 'needs-retry' })).toEqual({ message: REAUTH_MESSAGE });
     expect(describeCompletionFailure(failed('session-invalid'))).toEqual({
-      message: REAUTH_MESSAGE,
+      message: SESSION_ABANDONED_MESSAGE,
     });
   });
 

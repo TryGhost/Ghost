@@ -40,6 +40,27 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
  * save engine the body uses.
  */
 describe('Post editor feature image', () => {
+  it.each([
+    { orientation: 'portrait', width: 800, height: 1200 },
+    { orientation: 'landscape', width: 1200, height: 800 },
+  ])(
+    'shows the full $orientation image at its original aspect ratio',
+    async ({ width, height }) => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="purple"/></svg>`;
+      fakeSavablePost({ feature_image: `data:image/svg+xml,${encodeURIComponent(svg)}` });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.featureImage()).toBeVisible();
+      const image = editorScreen.featureImage().element().querySelector('img')!;
+      await expect.poll(() => image.naturalWidth).toBe(width);
+
+      const imageBounds = image.getBoundingClientRect();
+      const containerBounds = image.closest('[data-slot="image-upload"]')!.getBoundingClientRect();
+      expect(imageBounds.height).toBeCloseTo((imageBounds.width * height) / width, 0);
+      expect(containerBounds.height).toBeCloseTo(imageBounds.height, 0);
+    },
+  );
+
   it('saves an uploaded image as soon as it lands', async () => {
     const saveApi = fakeSavablePost();
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
@@ -174,6 +195,37 @@ describe('Post editor feature image', () => {
       status: 'published',
       feature_image: UPLOADED,
       feature_image_alt: 'Rolling hills',
+    });
+  });
+
+  it('holds a new image on a published post until Update, then sends it once', async () => {
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: '2026-01-01T00:00:00.000Z',
+    });
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
+      images: [{ url: UPLOADED, ref: null }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+    await userEvent.upload(
+      editorScreen.featureImageInput().element(),
+      new File(['image'], 'hills.png', { type: 'image/png' }),
+    );
+
+    await expect.poll(() => uploadApi.requests.length, SAVE_POLL).toBe(1);
+    await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    expect(saveApi.requests).toHaveLength(0);
+
+    await editorScreen.updateButton().click();
+
+    await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      status: 'published',
+      feature_image: UPLOADED,
     });
   });
 

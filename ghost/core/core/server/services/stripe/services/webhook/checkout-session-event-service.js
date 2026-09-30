@@ -13,7 +13,7 @@ function isStripeMetadataTrue(value) {
 }
 
 function hasStripeMetadataKey(metadata, key) {
-  return Object.prototype.hasOwnProperty.call(metadata || {}, key);
+  return Object.hasOwn(metadata || {}, key);
 }
 
 function isGiftCheckoutSession(session) {

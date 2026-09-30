@@ -55,12 +55,6 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
-    title: 'Admin 7 · Milestone 2 · Pill controls',
-    description:
-      'Preview Admin 7 controls and page headers on React pages. The editor is excluded.',
-    flag: 'admin7Pill',
-  },
-  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
@@ -92,6 +86,12 @@ const features: Feature[] = [
     description:
       'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication',
+  },
+  {
+    title: 'Member location maps',
+    description:
+      'Show a location map and profile header on member pages, with state pins for US members.',
+    flag: 'memberLocationMap',
   },
   {
     title: 'Member custom fields',
@@ -129,9 +129,21 @@ const features: Feature[] = [
     flag: 'editorReact',
   },
   {
+    title: 'React global search',
+    description:
+      'Serves the Cmd/Ctrl+K search modal from the React app instead of the Ember modal. Gates the migration behind a runtime toggle so we can compare both implementations.',
+    flag: 'globalSearchReact',
+  },
+  {
     title: 'React member activity',
     description: 'Preview the new member activity screen.',
     flag: 'membersActivityReact',
+  },
+  {
+    title: 'React sign-in screens',
+    description:
+      'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
+    flag: 'authReact',
   },
   {
     title: 'Self-serve archives',

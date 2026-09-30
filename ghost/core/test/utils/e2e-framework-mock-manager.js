@@ -27,7 +27,7 @@ const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
-const limitService = require('../../core/server/services/limits');
+const { limitService } = require('../../core/server/services/limits');
 const dns = require('dns');
 const dnsPromises = dns.promises;
 const StripeMocker = require('./stripe-mocker');
@@ -492,9 +492,7 @@ const mockLimitService = (limit, options) => {
   if (!mocks.limitService.originalEntries.has(limit)) {
     mocks.limitService.originalEntries.set(
       limit,
-      Object.prototype.hasOwnProperty.call(limitService.limits, limit)
-        ? limitService.limits[limit]
-        : undefined,
+      Object.hasOwn(limitService.limits, limit) ? limitService.limits[limit] : undefined,
     );
   }
   limitService.limits[limit] = {

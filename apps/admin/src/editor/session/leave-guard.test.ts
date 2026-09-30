@@ -23,6 +23,7 @@ describe('hasUnsavedWork', () => {
   });
 
   it('guards a clean post while a write is still outstanding', () => {
+    expect(hasUnsavedWork({ kind: 'preparing', intent: 'publish' }, false)).toBe(true);
     expect(hasUnsavedWork({ kind: 'saving', intent: 'autosave' }, false)).toBe(true);
     expect(
       hasUnsavedWork({ kind: 'pending-coalesced', intent: 'autosave', pending: 'explicit' }, false),

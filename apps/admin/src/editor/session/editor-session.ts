@@ -7,17 +7,20 @@ import {
   zeroMilliseconds,
   type LeaveDecision,
   type PersistedIdentity,
+  type PendingSave,
   type PostStatus,
   type PrepareOutcome,
   type PublishOptions,
   type SaveCompletion,
   type ScheduleOptions,
   type SaveEngineState,
+  type SaveFailure,
   type SaveOutcome,
   type SaveRequest,
   type SaveResult,
 } from '@/editor/engine/save-engine';
 import type {
+  ChangeReasonCode,
   EditablePostPatch,
   EditablePostProjection,
   RestoredRevision,
@@ -26,6 +29,7 @@ import type {
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import { pick } from '@/editor/engine/pick';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
+import type { EditorErrorContext } from '@/editor/report-error';
 import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
@@ -37,6 +41,7 @@ import {
   identityFor,
   publishedAtInFuture,
   settingsFieldError,
+  tiersIncomplete,
   validatedFieldsOf,
   type EditorSettingsPatch,
   type EditorSettingsFields,
@@ -52,6 +57,20 @@ type SlugEditOutcome = 'applied' | 'unchanged' | 'failed';
 /** The full acknowledged record travels with the result so reconcile can rebase on it. */
 export interface EditorSaveResult extends SaveResult {
   post: EditorRecord;
+}
+
+/** A failed request with the post it was for: its server id, if any, and its persisted status. */
+export interface EditorSaveFailure extends SaveFailure {
+  readonly postId: string | null;
+  readonly status: PostStatus;
+}
+
+/** A leave the writer has to confirm, with why the tracker holds the post dirty. */
+export interface EditorLeaveConfirmation {
+  readonly postId: string | null;
+  readonly status: PostStatus;
+  readonly engineState: SaveEngineState['kind'];
+  readonly reasons: ChangeReasonCode[];
 }
 
 /** Fields the engine writes onto the request rather than reading from the live post. */
@@ -105,12 +124,17 @@ export interface EditorSessionOptions {
   transport: EditorSessionTransport;
   /** Called once the create acknowledges; the caller replaces the URL. */
   onIdAcquired: (id: string) => void;
-  onError: (error: unknown) => void;
+  onError: (error: unknown, context?: EditorErrorContext) => void;
+  /** Called once per request that settled as failed. */
+  onSaveFailed?: (failure: EditorSaveFailure) => void;
+  /** Called when a leave request answers `confirm`. */
+  onLeaveConfirmed?: (leave: EditorLeaveConfirmation) => void;
 }
 
 /** The state React renders, published together after a session change. */
 export interface EditorSessionView {
   readonly state: SaveEngineState;
+  readonly pendingSave: PendingSave | null;
   readonly isDirty: boolean;
   /** The title the engine holds, which is DEFAULT_TITLE while the input is blank. */
   readonly title: string;
@@ -147,7 +171,7 @@ export interface EditorSession {
   editPublishedAt: (publishedAt: string) => void;
   /** The publish time the writer is looking at, staged edit included. */
   getPublishedAt: () => string | null;
-  /** The one save policy gate for settings fields; see the README. */
+  /** Requests a field save; the engine owns eligibility and pending work. */
   commitField: () => void;
   /** The slug the machine holds, which a title commit moves without a field patch. */
   getSlug: () => string;
@@ -157,9 +181,8 @@ export interface EditorSession {
   /** Writes a revision's fields into the post and saves them; true once persisted. */
   restoreRevision: (restored: RestoredRevision) => Promise<boolean>;
   setBaseline: (lexical: LexicalInput) => void;
-  baselineFailed: (error: unknown) => void;
+  baselineFailed: () => void;
   commitTitle: (title: string) => void;
-  dispatchField: () => void;
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
   dispatchPublish: (options?: PublishOptions) => Promise<SaveCompletion>;
@@ -222,6 +245,8 @@ export function createEditorSession({
   transport,
   onIdAcquired,
   onError,
+  onSaveFailed,
+  onLeaveConfirmed,
 }: EditorSessionOptions): EditorSession {
   let identity: PersistedIdentity = record
     ? { id: record.id, updatedAt: record.updated_at ?? '' }
@@ -277,6 +302,11 @@ export function createEditorSession({
       return;
     }
     const state = engine.getState();
+    const pending = engine.getPendingSave();
+    // getPendingSave() allocates per call; typing more body text must not
+    // republish an otherwise unchanged React snapshot.
+    const pendingSave =
+      view?.pendingSave?.blockedBy === pending?.blockedBy ? (view?.pendingSave ?? null) : pending;
     const isDirty = getSnapshot().isDirty;
     const currentSlug = machine.getState().slug;
     const currentPublishedAt = livePublishedAt();
@@ -296,6 +326,7 @@ export function createEditorSession({
     if (
       view &&
       view.state === state &&
+      view.pendingSave === pendingSave &&
       view.isDirty === isDirty &&
       view.title === live.title &&
       view.slug === currentSlug &&
@@ -304,7 +335,15 @@ export function createEditorSession({
     ) {
       return;
     }
-    view = { state, isDirty, title: live.title, slug: currentSlug, settings, publishTime };
+    view = {
+      state,
+      pendingSave,
+      isDirty,
+      title: live.title,
+      slug: currentSlug,
+      settings,
+      publishTime,
+    };
     for (const listener of changeListeners) {
       try {
         listener();
@@ -338,7 +377,11 @@ export function createEditorSession({
   function adoptWhereUnchanged(before: AuthoredFields, next: Partial<AuthoredFields>): void {
     for (const key of AUTHORED_KEYS) {
       const value = next[key];
-      if (value === undefined || value === before[key] || live[key] !== before[key]) {
+      if (
+        value === undefined ||
+        value === before[key] ||
+        !sameFieldValue(key, live[key], before[key])
+      ) {
         continue;
       }
       live = { ...live, [key]: value };
@@ -375,11 +418,6 @@ export function createEditorSession({
     tracker.setLive(identity.id, patch);
   }
 
-  /** The writer removed every author the post had; Ember's validator refuses it too. */
-  function authorsEmptied(): boolean {
-    return live.authors.length === 0 && tracker.isFieldDirty('authors');
-  }
-
   function getSnapshot(): EditorSaveSnapshot {
     const verdict = tracker.verdict();
     return buildSaveSnapshot({
@@ -401,12 +439,13 @@ export function createEditorSession({
   const stopSlugNotifications = machine.subscribe(notifyChanged);
 
   // The post validator runs before every save: an explicit tier selection needs a
-  // tier even on the first save, and an over-long field is not sent.
+  // tier once the post exists or leaves draft, and an over-long field is not sent.
   function requestInvalid(
     request: SaveRequest<EditorSaveSnapshot>,
     projection: EditablePostPatch,
   ): string | null {
-    const invalid = settingsFieldError(validatedFieldsOf(live));
+    const creatingDraft = request.snapshot.id === null && request.target.status === 'draft';
+    const invalid = settingsFieldError(validatedFieldsOf(live), creatingDraft);
     if (invalid) {
       return invalid;
     }
@@ -458,10 +497,17 @@ export function createEditorSession({
         stageSettingsField(key, live, projection, payload);
       }
     }
-    // The write contract requires the pair even when only one field changed.
-    // Reads include tier relations for Public and Paid posts too, so switching
-    // to specific tiers can leave the relation IDs unchanged.
-    if (live.visibility === 'tiers' && ('visibility' in payload || 'tiers' in payload)) {
+    if (tiersIncomplete(live)) {
+      // The transport drops the unpaired pair (post-contract.ts). Kept out of the
+      // submitted projection too, or the ack rebases the held visibility away.
+      delete projection.visibility;
+      delete payload.visibility;
+      delete projection.tiers;
+      delete payload.tiers;
+    } else if (live.visibility === 'tiers' && ('visibility' in payload || 'tiers' in payload)) {
+      // The write contract requires the pair even when only one field changed.
+      // Reads include tier relations for Public and Paid posts too, so switching
+      // to specific tiers can leave the relation IDs unchanged.
       projection.visibility = live.visibility;
       payload.visibility = live.visibility;
       projection.tiers = live.tiers;
@@ -548,13 +594,19 @@ export function createEditorSession({
     // A matching refetch can make an unsubmitted edit look saved. Preserve
     // those edits through the rebase, whose fallback base is the latest saved
     // copy. Submitted fields already have a stable base in the request.
-    const unsubmittedEdits = Object.fromEntries(
+    const unsubmittedEdits: EditablePostPatch = Object.fromEntries(
       SETTINGS_FIELD_KEYS.filter(
         (key) =>
           prepared.projection[key] === undefined &&
           (writerEdits.get(key) ?? 0) > prepared.builtAtVersion,
       ).map((key) => [key, live[key]]),
     );
+    // A pair left out of the write was never acknowledged; its empty tier list
+    // equals a new post's saved one, so the rebase would take the server's relations.
+    if (prepared.projection.visibility === undefined && tiersIncomplete(live)) {
+      unsubmittedEdits.visibility = live.visibility;
+      unsubmittedEdits.tiers = live.tiers;
+    }
     const acknowledged = projectionOf(result.post);
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
     tracker.setLive(result.id, unsubmittedEdits);
@@ -594,29 +646,20 @@ export function createEditorSession({
     autosaveDebounceMs,
     onStateChange: (next) => {
       if (next.kind === 'error' || next.kind === 'conflict') {
-        tracker.markSaveError(next.error.message);
+        tracker.markSaveError();
       }
       // A save error also moves dirtiness without going through a field patch.
       notifyChanged();
     },
     onListenerError: onError,
+    onSaveFailed: (failure) => onSaveFailed?.({ ...failure, postId: identity.id, status }),
   });
 
   // Seed the external-store snapshot before the session is handed to React.
   notifyChanged();
 
-  // The one place the sidebar's save policy lives. A draft persists a settings
-  // field the way the body does; every other status stages it until Update.
+  // Every field commit enters the engine; it owns eligibility and pending work.
   function commitField(): void {
-    // Invalid settings stay staged rather than dispatching a field save.
-    if (
-      status !== 'draft' ||
-      settingsFieldError(validatedFieldsOf(live)) ||
-      authorsEmptied() ||
-      publishedAtInFuture(status, livePublishedAt())
-    ) {
-      return;
-    }
     void engine.dispatch('field');
   }
 
@@ -726,14 +769,7 @@ export function createEditorSession({
       // restore leaves the URL alone.
       slug.titleReplaced(revision.title);
 
-      // The reauth controls are behind the history modal. Fail and roll back
-      // this restore instead of leaving it frozen with no accessible way out.
-      const stop = engine.subscribe(() => {
-        if (engine.getState().kind === 'reauth-pending') {
-          engine.reauthAbandoned();
-        }
-      });
-      const completion = await engine.dispatch('explicit').finally(stop);
+      const completion = await engine.dispatch('explicit');
       if (completion.kind !== 'saved') {
         // The editor surface never adopted the revision, so nothing may keep it.
         patchLive(previous);
@@ -749,8 +785,8 @@ export function createEditorSession({
       tracker.setBaseline(identity.id, lexical);
       notifyChanged();
     },
-    baselineFailed: (error) => {
-      tracker.baselineFailed(identity.id, error);
+    baselineFailed: () => {
+      tracker.baselineFailed(identity.id);
       notifyChanged();
     },
 
@@ -760,7 +796,6 @@ export function createEditorSession({
         slug.commitTitle(title);
       }
     },
-    dispatchField: () => void engine.dispatch('field'),
     dispatchAutosave: () => void engine.dispatch('autosave'),
     dispatchExplicit: () => engine.dispatch('explicit'),
     dispatchPublish: (options) => engine.dispatch('publish', options),
@@ -805,32 +840,66 @@ export function createEditorSession({
       ) {
         return false;
       }
-      if (engine.getState().kind !== 'conflict' || !engine.contentReloaded(updatedAt)) {
+      if (
+        !engine.contentReloaded(updatedAt, () => {
+          identity = { id: next.id, updatedAt };
+          status = next.status ?? 'draft';
+          publishedAt = next.published_at ?? null;
+          latestRevision = latestRevisionOf(next);
+          live = projectionOf(next);
+          stagedPublishedAt = null;
+          publishedAtEditedAt = 0;
+          pendingSlugEdits.clear();
+          writerEdits.clear();
+          inFlightSince = null;
+          version += 1;
+          tracker.load(identity.id, live);
+          slug.reset();
+          // The machine may notify subscribers, so the document boundary must be
+          // complete first and no later mutation may overwrite a subscriber edit.
+          machine.loaded({ slug: live.slug, title: live.title });
+        })
+      ) {
         return false;
       }
-      identity = { id: next.id, updatedAt };
-      status = next.status ?? 'draft';
-      publishedAt = next.published_at ?? null;
-      latestRevision = latestRevisionOf(next);
-      live = projectionOf(next);
-      stagedPublishedAt = null;
-      publishedAtEditedAt = 0;
-      pendingSlugEdits.clear();
-      writerEdits.clear();
-      inFlightSince = null;
-      version += 1;
-      tracker.load(identity.id, live);
-      machine.loaded({ slug: live.slug, title: live.title });
-      slug.reset();
       notifyChanged();
       return true;
     },
 
     reauthSucceeded: () => engine.reauthSucceeded(),
     reauthAbandoned: () => engine.reauthAbandoned(),
-    leaveRequested: () => engine.leaveRequested(),
+    leaveRequested: async () => {
+      const decision = await engine.leaveRequested();
+      if (decision === 'confirm' && !disposed) {
+        try {
+          onLeaveConfirmed?.({
+            postId: identity.id,
+            status,
+            engineState: engine.getState().kind,
+            reasons: tracker.verdict().reasons.map((reason) => reason.code),
+          });
+        } catch (error) {
+          onError(error);
+        }
+      }
+      return decision;
+    },
 
     dispose: () => {
+      if (disposed) {
+        return;
+      }
+      // A draft leaving with a title but a slug still derived from the default title.
+      if (
+        status === 'draft' &&
+        live.slug.includes('untitled') &&
+        live.title.trim() &&
+        live.title !== DEFAULT_TITLE
+      ) {
+        onError(new Error('Draft post has title set with untitled slug'), {
+          extra: { slug: live.slug, title: live.title },
+        });
+      }
       disposed = true;
       pendingSlugEdits.clear();
       stopSlugNotifications();

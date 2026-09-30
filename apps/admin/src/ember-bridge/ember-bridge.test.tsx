@@ -72,6 +72,43 @@ let useEmberFeatureFlag: typeof import('./ember-bridge').useEmberFeatureFlag;
 let useSidebarVisibility: typeof import('./ember-bridge').useSidebarVisibility;
 let useEmberRouting: typeof import('./ember-bridge').useEmberRouting;
 
+describe('syncEmberPostListQueryParams', () => {
+  baseTest('delivers filters when Ember loads after the React list', async () => {
+    vi.useFakeTimers();
+    const { syncEmberPostListQueryParams } = await import('./ember-bridge');
+    const stop = syncEmberPostListQueryParams('posts', { tag: 'news', order: 'title asc' });
+    const mock = createMockStateBridge();
+    const setPostListQueryParams = vi.fn();
+    mock.stateBridge.setPostListQueryParams = setPostListQueryParams;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setPostListQueryParams).toHaveBeenCalledWith('posts', {
+      tag: 'news',
+      order: 'title asc',
+    });
+    stop();
+  });
+
+  baseTest('cancels stale pending filters when the list changes', async () => {
+    vi.useFakeTimers();
+    const { syncEmberPostListQueryParams } = await import('./ember-bridge');
+    const stop = syncEmberPostListQueryParams('posts', { tag: 'news' });
+    stop();
+    const mock = createMockStateBridge();
+    const setPostListQueryParams = vi.fn();
+    mock.stateBridge.setPostListQueryParams = setPostListQueryParams;
+    window.EmberBridge = { state: mock.stateBridge };
+    const stopCurrent = syncEmberPostListQueryParams('posts', {});
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setPostListQueryParams).toHaveBeenCalledExactlyOnceWith('posts', {});
+    stopCurrent();
+  });
+});
+
 beforeEach(async () => {
   vi.resetModules();
   vi.useRealTimers();
@@ -98,7 +135,7 @@ describe('useEmberFeatureFlag', () => {
     mock.stateBridge.isFeatureEnabled = vi.fn(() => enabled);
     window.EmberBridge = { state: mock.stateBridge };
 
-    const { result } = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
     expect(result.current).toBe(false);
 
     enabled = true;
@@ -112,7 +149,7 @@ describe('useEmberFeatureFlag', () => {
     const mock = createMockStateBridge();
     mock.stateBridge.isFeatureEnabled = vi.fn(() => true);
 
-    const { result } = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
     expect(result.current).toBeUndefined();
 
     window.EmberBridge = { state: mock.stateBridge };
@@ -129,7 +166,7 @@ describe('useEmberFeatureFlag', () => {
     mock.stateBridge.isFeatureEnabled = vi.fn(() => undefined);
     window.EmberBridge = { state: mock.stateBridge };
 
-    const { result } = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+    const { result } = renderHook(() => useEmberFeatureFlag('postsListReact'));
 
     expect(result.current).toBeNull();
   });
@@ -625,6 +662,25 @@ describe('theme bridge helpers', () => {
     expect(applyEmberAdminThemePreference('dark')).toBe(false);
   });
 
+  test('navigateEmberBillingSubRoute hands the sub-route to Ember and reports it', async () => {
+    const { navigateEmberBillingSubRoute } = await import('./ember-bridge');
+    const mock = createMockStateBridge();
+    const navigate = vi.fn();
+    mock.stateBridge.navigateToBillingSubRoute = navigate;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    expect(navigateEmberBillingSubRoute('/plans')).toBe(true);
+    expect(navigate).toHaveBeenCalledWith('/plans');
+  });
+
+  test('navigateEmberBillingSubRoute returns false without a bridge or method', async () => {
+    const { navigateEmberBillingSubRoute } = await import('./ember-bridge');
+    expect(navigateEmberBillingSubRoute('/plans')).toBe(false);
+
+    window.EmberBridge = { state: createMockStateBridge().stateBridge };
+    expect(navigateEmberBillingSubRoute('/plans')).toBe(false);
+  });
+
   test('preloadEmberAdminThemeStylesheet resolves with and without the bridge', async () => {
     const { preloadEmberAdminThemeStylesheet } = await import('./ember-bridge');
     await expect(preloadEmberAdminThemeStylesheet()).resolves.toBeUndefined();
@@ -672,5 +728,29 @@ describe('emberMutationHandlers', () => {
     });
     expect(mock.stateBridge.onInvalidate).toHaveBeenCalledWith('TagsResponseType');
     expect(mock.stateBridge.onDelete).toHaveBeenCalledWith('UsersResponseType', 'user-1');
+  });
+});
+
+describe('useEmberListReturnSync', () => {
+  test('carries breadcrumb state without replacing the destination history entry', async () => {
+    const { useEmberListReturnSync } = await import('./ember-bridge');
+    const { rememberListReturnState } = await import('@/shared/virtual-list/list-return-state');
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+    const original = window.history.state as unknown;
+    window.history.replaceState({ key: 'destination', idx: 3, usr: { keep: true } }, '');
+    rememberListReturnState('/posts?tag=news', { scrollPosition: 1234 });
+    const { unmount } = renderHook(() => useEmberListReturnSync());
+    try {
+      act(() => mock.emit('restoreListState', { path: '/posts?tag=news' }));
+      expect(window.history.state).toEqual({
+        key: 'destination',
+        idx: 3,
+        usr: { keep: true, listReturn: { path: '/posts?tag=news', scrollPosition: 1234 } },
+      });
+    } finally {
+      unmount();
+      window.history.replaceState(original, '');
+    }
   });
 });

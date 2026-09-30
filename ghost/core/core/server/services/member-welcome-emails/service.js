@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const verifyEmailTemplate = require('../newsletters/emails/verify-email');
-const MagicLink = require('../lib/magic-link/magic-link');
+const MagicLink = require('../../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
 const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
@@ -261,7 +261,7 @@ class MemberWelcomeEmailService {
     const normalized = {};
 
     for (const field of SHARED_SENDER_FIELDS) {
-      if (!Object.prototype.hasOwnProperty.call(attrs, field)) {
+      if (!Object.hasOwn(attrs, field)) {
         continue;
       }
 

@@ -89,20 +89,5 @@ describe('Acceptance: Error Handling', function () {
             expect(find('.gh-alert').textContent).to.not.match(/html>/);
             expect(find('.gh-alert').textContent).to.match(/An unexpected error occurred, please try again./);
         });
-
-        it('handles ember-ajax HTML response', async function () {
-            const tag = this.server.create('tag', {slug: 'test'});
-
-            this.server.del(`/tags/${tag.id}/`, htmlErrorResponse);
-
-            await visit('/tags/test');
-
-            await click('[data-test-button="delete-tag"]');
-            await click('[data-test-modal="confirm-delete-tag"] [data-test-button="confirm"]');
-
-            expect(findAll('.gh-alert').length).to.equal(1);
-            expect(find('.gh-alert').textContent).to.not.match(/html>/);
-            expect(find('.gh-alert').textContent).to.match(/An unexpected error occurred, please try again./);
-        });
     });
 });

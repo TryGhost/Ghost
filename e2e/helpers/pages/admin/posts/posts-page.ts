@@ -67,6 +67,24 @@ export class PostsPage extends AdminPage {
     });
   }
 
+  async getScrollParentScrollTop(): Promise<number> {
+    return this.postsList.evaluate((list) => {
+      let element = list instanceof HTMLElement ? list : list.parentElement;
+      while (element) {
+        const overflow = window.getComputedStyle(element).overflowY;
+        if (
+          overflow !== 'visible' &&
+          overflow !== 'hidden' &&
+          element.scrollHeight >= element.clientHeight
+        ) {
+          return element.scrollTop;
+        }
+        element = element.parentElement;
+      }
+      return document.body.scrollTop;
+    });
+  }
+
   async waitForPageToFullyLoad() {
     await this.page.waitForURL(this.pageUrl);
     await this.postsList.waitFor({ state: 'visible' });

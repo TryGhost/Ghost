@@ -1,12 +1,15 @@
 import moment from 'moment-timezone';
 import {
   Calendar,
-  Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  TimePicker,
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@tryghost/shade/components';
-import { Inline, Text } from '@tryghost/shade/primitives';
+import { Grid } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useState } from 'react';
 import { siteCalendarDay } from '@/editor/publish/publish-copy';
@@ -105,50 +108,51 @@ export function DateTimePicker({
   const describedByProps = describedBy ? { 'aria-describedby': describedBy } : {};
 
   return (
-    <Inline aria-labelledby={labelledBy} gap="sm" role={labelledBy ? 'group' : undefined}>
-      <Popover open={calendarOpen && !disabled} onOpenChange={setCalendarOpen}>
-        <PopoverTrigger asChild>
-          <Input
-            aria-label={dateLabel}
-            data-testid={dateTestId}
-            disabled={disabled}
-            value={current.format(DATE_FORMAT)}
-            readOnly
-            {...invalidProps}
-            {...describedByProps}
-          />
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            captionLayout="dropdown-months"
-            // Opening on the selected date's month, never today's.
-            defaultMonth={siteCalendarDay(value, timezone)}
-            disabled={[
-              ...(minDate ? [{ before: siteCalendarDay(minDate, timezone) }] : []),
-              ...(maxDate ? [{ after: siteCalendarDay(maxDate, timezone) }] : []),
-            ]}
-            mode="single"
-            selected={siteCalendarDay(value, timezone)}
-            onSelect={commitDate}
-          />
-        </PopoverContent>
-      </Popover>
-      <Input
+    <Grid aria-labelledby={labelledBy} columns={2} gap="sm" role={labelledBy ? 'group' : undefined}>
+      <InputGroup className="min-w-0" data-disabled={disabled}>
+        <InputGroupAddon>
+          <LucideIcon.CalendarDays />
+        </InputGroupAddon>
+        <Popover open={calendarOpen && !disabled} onOpenChange={setCalendarOpen}>
+          <PopoverTrigger asChild>
+            <InputGroupInput
+              aria-label={dateLabel}
+              className="min-w-0"
+              data-testid={dateTestId}
+              disabled={disabled}
+              value={current.format(DATE_FORMAT)}
+              readOnly
+              {...invalidProps}
+              {...describedByProps}
+            />
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              captionLayout="dropdown-months"
+              // Opening on the selected date's month, never today's.
+              defaultMonth={siteCalendarDay(value, timezone)}
+              disabled={[
+                ...(minDate ? [{ before: siteCalendarDay(minDate, timezone) }] : []),
+                ...(maxDate ? [{ after: siteCalendarDay(maxDate, timezone) }] : []),
+              ]}
+              mode="single"
+              selected={siteCalendarDay(value, timezone)}
+              onSelect={commitDate}
+            />
+          </PopoverContent>
+        </Popover>
+      </InputGroup>
+      <TimePicker
         aria-label={timeLabel}
         data-testid={timeTestId}
         disabled={disabled}
+        suffix={current.format('z')}
         value={timeDraft ?? current.format(TIME_FORMAT)}
         onBlur={(event) => commitTime(event.target.value)}
         onChange={(event) => setTimeDraft(event.target.value)}
         {...invalidProps}
         {...describedByProps}
       />
-      <Inline className="shrink-0" gap="xs">
-        <LucideIcon.Clock className="size-4" />
-        <Text size="sm" tone="secondary">
-          {current.format('z')}
-        </Text>
-      </Inline>
-    </Inline>
+    </Grid>
   );
 }

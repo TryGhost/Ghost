@@ -1,7 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { fakeAdminEndpoint, fakeEditorChrome, post, renderAdminApp } from '@test-utils/acceptance';
+import {
+  currentRoute,
+  fakeAdminEndpoint,
+  fakeEditorChrome,
+  fakePages,
+  fakePosts,
+  fakePostsListScreen,
+  post,
+  renderAdminApp,
+  tag,
+} from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
+import { clearStickyPostFilters } from '@/posts/list/posts-sticky-filters';
 
 const FLAG_ON = { labs: { editorReact: true } };
 const FLAG_OFF = { labs: { editorReact: false } };
@@ -70,4 +82,48 @@ describe('Editor flag', () => {
     await expect.poll(emberShellShown).toBe(true);
     await expect(editorScreen.root()).toHaveCount(0);
   });
+});
+
+describe('Editor list breadcrumb', () => {
+  afterEach(clearStickyPostFilters);
+
+  it.each([
+    { postType: 'post', returnWith: 'breadcrumb' },
+    { postType: 'page', returnWith: 'breadcrumb' },
+    { postType: 'post', returnWith: 'back' },
+    { postType: 'page', returnWith: 'back' },
+  ] as const)(
+    'returns a $postType to its filtered list with the same sort order using $returnWith',
+    async ({ postType, returnWith }) => {
+      const resource = postType === 'post' ? 'posts' : 'pages';
+      const entry = post({ id: 'abc123', title: 'Engineering update', status: 'draft' });
+      fakeEditorChrome();
+      fakePostsListScreen();
+      const listApi = (postType === 'post' ? fakePosts : fakePages)([entry]);
+      fakeAdminEndpoint('GET', new RegExp(`^/${resource}/abc123/\\?`), { [resource]: [entry] });
+      fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, {
+        tags: [tag({ name: 'Engineering', slug: 'engineering' })],
+      });
+      const listUrl = `/${resource}?type=draft&tag=engineering&order=title+asc`;
+      await renderAdminApp(listUrl, { labs: { editorReact: true, postsListReact: true } });
+
+      await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');
+      await postsListScreen.listItems().first().click();
+      await expect.element(editorScreen.root()).toBeVisible();
+      await expect.element(editorScreen.backLink(postType)).toHaveAttribute('href', `#${listUrl}`);
+      if (returnWith === 'breadcrumb') {
+        await editorScreen.backLink(postType).click();
+      } else {
+        window.history.back();
+      }
+
+      await expect.poll(currentRoute).toBe(listUrl);
+      await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');
+      expect(
+        listApi.requests.some(
+          (request) => request.filter?.includes('tag:engineering') && request.order === 'title asc',
+        ),
+      ).toBe(true);
+    },
+  );
 });

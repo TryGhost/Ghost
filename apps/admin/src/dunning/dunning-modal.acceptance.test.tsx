@@ -30,7 +30,7 @@ it.each(['Dismiss', 'Pay now'])(
     fakeAdminEndpoint('GET', new RegExp(`^/tags/slug/${news.slug}/`), () => ({ tags: [news] }));
     const response = configResponse();
     await renderAdminApp('/tags/news', {
-      labs: { dunningWarnings: true, tagDetailsReact: true },
+      labs: { dunningWarnings: true },
       boot: {
         browseConfig: {
           response: {

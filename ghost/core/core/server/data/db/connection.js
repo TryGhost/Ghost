@@ -28,7 +28,7 @@ function configure(dbConfig) {
 
   if (client === 'better-sqlite3') {
     // Backwards compatibility with old knex behaviour
-    dbConfig.useNullAsDefault = Object.prototype.hasOwnProperty.call(dbConfig, 'useNullAsDefault')
+    dbConfig.useNullAsDefault = Object.hasOwn(dbConfig, 'useNullAsDefault')
       ? dbConfig.useNullAsDefault
       : true;
 

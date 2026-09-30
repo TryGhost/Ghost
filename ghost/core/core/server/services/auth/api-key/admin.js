@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 const url = require('url');
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
-const limitService = require('../../../services/limits');
-const { legacyApiPathMatch } = require('../../../services/api-version-compatibility');
+const { limitService } = require('../../../services/limits');
+const { legacyApiPathMatch } = require('../../../web/api/middleware/api-version-compatibility');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 

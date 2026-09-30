@@ -204,11 +204,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
   return (
     <Layout>
-      <div className="z-0 mx-[max(-4vw,-24px)] -mt-9 flex flex-col items-center pb-16">
+      <div className="z-0 pb-16">
         <div className="mx-auto w-full">
           <>
             {account?.bannerImageUrl ? (
-              <div className="h-[15vw] min-h-[200px] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100">
+              <div className="h-[15vw] min-h-[200px] w-full overflow-hidden rounded-xl bg-surface-elevated">
                 <img
                   alt={account?.name}
                   className="size-full object-cover"

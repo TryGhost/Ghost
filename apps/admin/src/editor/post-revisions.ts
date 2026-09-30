@@ -11,6 +11,7 @@ const revisionSchema = z.object({
   post_status: z.string().nullish(),
   reason: z.string().nullish(),
   created_at: z.string().optional(),
+  created_at_ts: z.number().optional(),
   author: z.object({ name: z.string().nullish(), profile_image: z.string().nullish() }).nullish(),
 });
 const revisionsSchema = z.array(revisionSchema);
@@ -21,7 +22,11 @@ export function parsePostRevisions(value: unknown) {
   return parsed.success ? parsed.data : [];
 }
 
+/** `created_at` is second precision; `created_at_ts` is the millisecond Core orders by. */
 export function revisionTime(revision: z.infer<typeof revisionSchema>): number {
+  if (typeof revision.created_at_ts === 'number') {
+    return revision.created_at_ts;
+  }
   const time = Date.parse(revision.created_at ?? '');
   return Number.isNaN(time) ? 0 : time;
 }

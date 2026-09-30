@@ -1,8 +1,0 @@
-<div
-    {{did-insert this.replaceIframeContents}}
-    {{did-update this.replaceIframeContents @html}}
-    ...attributes
->
-    <iframe class="w-100 h-100" title="Site preview" data-testid="iframe-html" {{did-insert this.registerIframe}} {{on "load" this.didLoad}}></iframe>
-    <iframe class="w-100 h-100" title="Page preview" data-testid="iframe-html" {{did-insert this.registerIframe}} {{on "load" this.didLoad}}></iframe>
-</div>

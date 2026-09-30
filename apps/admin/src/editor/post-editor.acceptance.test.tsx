@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
+import type { Snippet } from '@tryghost/admin-x-framework/api/snippets';
+
 import {
+  browseResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -12,9 +15,11 @@ import {
   post,
   renderAdminApp,
   staffRole,
+  withoutAutosave,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
@@ -47,6 +52,17 @@ function fakeEditorPost(overrides: Partial<ReturnType<typeof post>> = {}) {
   });
 }
 
+function snippet(name: string): Snippet {
+  return {
+    id: `snippet-${name}`,
+    name,
+    mobiledoc: '{}',
+    lexical: buildLexicalParagraph(name),
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: null,
+  };
+}
+
 function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: role })];
@@ -68,6 +84,37 @@ function pasteText(content: string) {
  * editor-save.acceptance.test.tsx.
  */
 describe('Post editor', () => {
+  it('grows and shrinks the title with its text under the Ember host constraints', async () => {
+    // The acceptance host omits Ember's global form CSS, which still surrounds
+    // the React editor in production.
+    const hostStyles = document.createElement('style');
+    hostStyles.textContent = 'textarea { min-height: 10rem; max-width: 500px; }';
+    document.head.appendChild(hostStyles);
+
+    try {
+      fakeEditorPost({ title: 'Short title' });
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+
+      const title = editorScreen.titleInput();
+      await expect.element(title).toHaveValue('Short title');
+      const height = () => title.element().getBoundingClientRect().height;
+      const singleLineHeight = height();
+      const lineHeight = parseFloat(getComputedStyle(title.element()).lineHeight);
+      expect(singleLineHeight).toBeLessThan(lineHeight * 2);
+      expect(title.element().getBoundingClientRect().width).toBeGreaterThan(500);
+
+      await title.fill(
+        'A long post title that wraps across several lines in the writing area '.repeat(3),
+      );
+      await expect.poll(height).toBeGreaterThan(singleLineHeight * 2);
+
+      await title.fill('Short title');
+      await expect.poll(height).toBe(singleLineHeight);
+    } finally {
+      hostStyles.remove();
+    }
+  });
+
   it('loads the post into the title and body', async () => {
     const postsApi = fakeEditorPost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -106,6 +153,58 @@ describe('Post editor', () => {
 
     await expect.element(body).toHaveTextContent('Hello from React and more');
     await expect.element(editorScreen.wordCount()).toHaveTextContent('5 words');
+  });
+
+  it('offers every snippet in the card menu, past the first page of the browse', async () => {
+    fakeEditorPost();
+    // `limit=all` is capped by Core, so the site's snippets can span several pages.
+    const snippetsApi = fakeAdminEndpoint('GET', /^\/snippets\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      return browseResponse('snippets', [snippet('Alpha'), snippet('Zulu')], {
+        page: pageNumber,
+        limit: 1,
+      });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.poll(() => snippetsApi.requests.length).toBe(2);
+    const secondPageParams = new URL(snippetsApi.requests[1].url).searchParams;
+    expect(secondPageParams.get('page')).toBe('2');
+    expect(secondPageParams.get('formats')).toBe('mobiledoc,lexical');
+
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End}{Enter}/');
+
+    await expect.element(editorScreen.cardMenuItem('Zulu')).toBeVisible();
+    await expect.element(editorScreen.cardMenuItem('Alpha')).toBeVisible();
+  });
+
+  it('offers no snippets in the card menu until the last page of the browse arrives', async () => {
+    fakeEditorPost();
+    const secondPage = deferred<void>();
+    const snippetsApi = fakeAdminEndpoint('GET', /^\/snippets\/\?/, async ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      if (pageNumber === 2) {
+        await secondPage.promise;
+      }
+      return browseResponse('snippets', [snippet('Alpha'), snippet('Zulu')], {
+        page: pageNumber,
+        limit: 1,
+      });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.poll(() => snippetsApi.requests.length).toBe(2);
+
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End}{Enter}/');
+
+    await expect.element(editorScreen.cardMenuItem('Image')).toBeVisible();
+    await expect.element(editorScreen.cardMenuItem('Alpha')).not.toBeInTheDocument();
+
+    secondPage.resolve();
+
+    await expect.element(editorScreen.cardMenuItem('Alpha')).toBeVisible();
+    await expect.element(editorScreen.cardMenuItem('Zulu')).toBeVisible();
   });
 
   it('keeps title edits in memory', async () => {

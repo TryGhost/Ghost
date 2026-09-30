@@ -2,17 +2,33 @@
 
 `<PostPreviewModal>` shows a post as its readers will get it: rendered by the site (Web) or rendered as the newsletter it would be sent as (Email). It is self-contained — the caller supplies the post's identity and preview URL, and the modal reads everything else (settings, tiers, newsletters, the current user, the email preview) from the Admin API.
 
-| Prop                | Meaning                                                                                |
-| ------------------- | -------------------------------------------------------------------------------------- |
-| `open`              | Whether the modal is shown; `onOpenChange` reports closing                             |
-| `postId`            | Identifies the post for the email preview and test-send endpoints                      |
-| `previewUrl`        | The post's public preview URL; empty until the post has a uuid                         |
-| `isPost`            | Pages have no email preview                                                            |
-| `newsletterSlug`    | The post's own newsletter, preselected in the email preview                            |
-| `onBeforeOpen`      | Awaited before the preview renders, so the caller can save the draft it previews       |
-| `onReturnToPublish` | Renders a Publish button; supplied while a publish flow stands open behind the preview |
+| Prop              | Meaning                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| `open`            | Whether the modal is shown; `onOpenChange` reports closing                                   |
+| `postId`          | Identifies the post for the email preview and test-send endpoints                            |
+| `previewUrl`      | The post's public preview URL; empty until the post has a uuid                               |
+| `isPost`          | Pages have no email preview                                                                  |
+| `newsletterSlug`  | The post's own newsletter, preselected in the email preview                                  |
+| `subjectEditor`   | Live subject, title fallback, save state, and session callbacks for editing the subject      |
+| `onBeforeOpen`    | Awaited before the preview renders, so the caller can save the draft it previews             |
+| `onPublish`       | Renders a Publish button; supplied for every user who can publish                            |
+| `publishDisabled` | Keeps the Publish button rendered but disabled while the caller cannot open its publish flow |
 
-The modal never writes to the post. `onBeforeOpen` exists because a draft must be persisted before the site or the email renderer can see the latest content; what that means — dirty checks, a save in flight — belongs to the caller.
+The modal delegates subject edits and saves through the optional `subjectEditor` port to the editor session. `onBeforeOpen` exists because a draft must be persisted before the site or the email renderer can see the latest content; what that means — dirty checks, a save in flight — belongs to the caller.
+
+## Layout and controls
+
+View controls are centered in the header when space allows and shift toward the title
+as the screen narrows. Device controls hide below 800px. Below 640px, the title and audience selectors
+are hidden so format tabs and actions stay on one row. Format and device controls use pill groups; audience
+and tier selectors use the ghost header treatment. The icon-only Share menu keeps
+copying the audience-specific preview link and opening it in a new tab together,
+and stays disabled until the post has been saved successfully.
+
+Desktop Web previews fill the space below the header without gutters or device
+chrome. Desktop Email previews are centered at a maximum width of 720px on a
+muted canvas, with the sidebar's corner radius and the mobile frame's shadow.
+Mobile previews retain their phone frame on the same muted canvas in either format.
 
 ## Audience
 
@@ -25,7 +41,7 @@ One audience drives both formats, held as a segment plus an optional tier slug a
 | `paid`      | `member_status=paid`                    | `member_status=paid`                    |
 | `tier`      | `member_status=paid&member_tier=<slug>` | `member_status=paid&member_tier=<slug>` |
 
-The paid audiences appear only when paid members are enabled, and the tier audience only when the site has paid tiers. The default is a free member.
+The paid audiences appear only when paid members are enabled, and the tier audience only when the site has paid tiers and the user is not a contributor, who cannot read tiers. The default is a free member.
 
 ## Email
 
@@ -37,6 +53,17 @@ The newsletters offered are the site's active ones, read from the same full brow
 
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
 
+The sender and subject controls share a label column and a local 28px height;
+the subject input keeps its visible outline. The desktop subject field stages edits
+in the session and saves on blur or Enter.
+An empty subject falls back to the post title. The session enforces the 300-character
+limit on every save; validation and save errors appear beside the field. Test sending
+stays disabled while edits are unsaved or a save is pending. The mobile frame displays
+the live subject as text, matching Ember. Closing preview preserves unsaved subject
+edits. If those edits prevent saving when preview reopens, the save-failure screen
+keeps the subject field available for correction. Saving the corrected subject retries
+preparation before displaying the preview or enabling sharing and test sends.
+
 ## Not here yet
 
-Known gaps, listed so they are not mistaken for decisions: the email subject is read-only (editing it would write to the post), there is no over-100kB "may get clipped" warning, an Escape pressed inside the site preview frame does not close the modal, an already-sent post is re-rendered by the preview endpoint rather than showing its stored email, and the sender address does not apply the managed-email override.
+Known gaps, listed so they are not mistaken for decisions: there is no over-100kB "may get clipped" warning, an Escape pressed inside the site preview frame does not close the modal, an already-sent post is re-rendered by the preview endpoint rather than showing its stored email, and the sender address does not apply the managed-email override.

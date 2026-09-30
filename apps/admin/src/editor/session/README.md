@@ -3,16 +3,19 @@
 `apps/admin/src/editor/session/` composes the three modules described in
 [the engine README](../engine/README.md) — the save engine, the change tracker
 and the slug machine — into one editing session, and is the editor's only
-writer. Every title, excerpt, body, feature-image and settings change goes
+writer. Every title, excerpt, body, feature-image, email-subject and settings change goes
 through it, and it owns everything those three modules deliberately do not:
-what a save sends, when it runs, and what an acknowledgement may change.
+what a save sends and what an acknowledgement may change. The save engine owns
+pending work and scheduling.
 
 ## One session per post
 
-One session per opened post, built and disposed together. A new post always gets
-its own; nothing is carried from one new post to the next. Once a create
-acquires an id the URL is replaced from new to edit as a state-driven effect,
-with the screen keyed on the session so the switch does not remount the editor.
+One session per opened post, built and disposed together. Building a session
+starts no timer, request or outside subscription, so a session discarded without
+`dispose()` leaves nothing running. A new post always gets its own; nothing is
+carried from one new post to the next. Once a create acquires an id the URL is
+replaced from new to edit as a state-driven effect, with the screen keyed on the
+session so the switch does not remount the editor.
 
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.
@@ -53,37 +56,52 @@ a field patch would be dropped before the request is built.
 
 ## Staging and committing
 
-A settings field is staged with one call and committed with another. Staging
-writes the value into the live projection and nothing else; committing puts it
-through the one save policy gate. What that gate does depends on the post's
-status.
+Every edit updates the live projection. The save engine derives pending content
+from that projection when the session reads its view. Staging alone does not
+start a request. A field commit — including title blur, image changes, and
+settings — dispatches `field` unconditionally;
+body edits dispatch `autosave`. The engine owns when these requests may run.
 
-| Status                           | On a field commit                                                   | Persisted by                           |
-| -------------------------------- | ------------------------------------------------------------------- | -------------------------------------- |
-| `draft`                          | dispatches the save engine's `field` intent, as a title commit does | the field save itself                  |
-| `published`, `scheduled`, `sent` | nothing — the value is staged in the live document                  | the next explicit save (Update, Cmd-S) |
+| Status                           | Background save request                                         | Persisted by             |
+| -------------------------------- | --------------------------------------------------------------- | ------------------------ |
+| `draft`                          | Runs immediately for a field commit, or after the body debounce | The eligible save        |
+| `published`, `scheduled`, `sent` | Retains pending content until Update                            | Explicit Update or Cmd-S |
 
-The gate also holds a draft's field save back while a value it would send is not
-yet valid: an incomplete tier pairing, a meta or social-card title or
-description past its column width, an author list the writer emptied, or a
-publish time that has not passed. The value stays staged, the section says why,
-and the next save the writer asks for is refused with the same message. A
-draft's body autosave is not held back the same way: it runs, and the same rules
-fail it before any request is sent, so the engine reports that error until the
-value is valid again. The save banner carries the message whether or not the
-sidebar is open, so closing the panel does not hide it.
+Pending content is separate from the runnable queue. It includes edits awaiting
+a field commit, the autosave debounce, Update, validation, or recovery, and can
+coexist with an older request in flight. A blocked document never leaves a
+command in the runnable queue, so navigating away does not wait indefinitely.
+The live document remains the source of truth: Update enables, the post stays
+dirty, and leaving requires a save or confirmation.
 
-Staging is not a weaker form of saving. A staged value lives in the same live
-document as the body, so it counts everywhere unsaved work counts: the post
-reads dirty, the Update button enables, and the leave guard asks before the
-writer navigates away. The save engine independently refuses background saves
-for anything that is not a draft, so the gate states the policy rather than
-being its only enforcement.
+All saves use the same preparation validator. An incomplete tier pairing on a
+post that exists, an over-long meta/social field, an emptied author list, or a
+newly staged future publish time holds a background save with a validation
+blocker. Body autosave, title and image commits follow the same rule, including
+an already armed timer or queued request. The editor explains why changes are
+waiting even when the settings panel is closed. A saved future publish time is
+not itself invalid.
 
-Failures leave staged values alone. A rejected explicit save keeps them in the
-live document and surfaces the error in the editor's banners; a collision goes
-to the conflict banner, and only the writer choosing the server's copy discards
-what they staged.
+A post the server has not created yet is not held to the tier rule. Its saves
+go ahead with the incomplete pair left out of the write and of the submitted
+projection, so the acknowledgement is not authoritative for either field: the
+pair stays the writer's edit across the create, whatever visibility and tier
+relations the server answered with, and the next complete pair sends both.
+
+An explicit save returns a validation failure promptly and shows the save error.
+Its content stays pending; its publish/schedule/email target is not retained for
+automatic retry. Correcting the document and committing requests a new save that
+combines its current values. Unchanged invalid versions suppress background
+retries; an explicit retry still revalidates. Unrelated edits retain the warning
+until a preparation succeeds or a save attempt finds the document clean. Body edits on a blocked new post debounce too,
+and preparation occupies the save slot without displaying “Saving…”.
+
+Failures never discard pending content. Server validation, network errors and
+authentication expiry retain their recovery policies. A collision remains
+recoverable after a retry fails for a different reason.
+Only accepting a server reload discards outstanding local work. Successful
+acknowledgement clears pending content only when the reconciled live document
+is clean; edits made after submission remain pending.
 
 ## What a save sends
 
@@ -132,9 +150,11 @@ A save writes a title and slug the writer never typed — the request's own
 default title, the slug derived from the title — and the server may normalize
 both again. The live document adopts each, before the acknowledgement is
 applied, and only where the writer has not typed past the value since, which is
-the rule the rebase itself uses. Skip this and the rebase keeps the superseded
-local value: the post reads as diverged from its own saved state for the rest of
-the session. Adopting is not an edit, so it must not move the version the
+the rule the rebase itself uses. Any difference from the submitted value is
+adopted, so a title the server trimmed replaces the input's text, while whether
+the writer has typed past it compares the title trimmed. Skip this and the
+rebase keeps the superseded local value: the post reads as diverged from its own
+saved state for the rest of the session. Adopting is not an edit, so it must not move the version the
 request was built against. Normalized title and slug acknowledgements are
 synchronized back into the slug machine through its ownership-preserving
 transition, so later saves do not resend a superseded value or freeze derived
@@ -175,7 +195,7 @@ Only a draft's title commit drives generation, so a published URL does not move
 under the writer. A slug is regenerated whenever the post has none, for any
 status, including after the default title has been substituted for a blank one.
 The session does not persist a proposal itself: an applied proposal is patched
-into the live document and then goes through the same gate as any other field,
+into the live document and then dispatches the same engine intent as any other field,
 so a draft saves it and every other status stages it until Update.
 
 ## Restoring a revision
@@ -185,8 +205,8 @@ and caption into the live document and saves them explicitly, so the server
 keeps a version of what was replaced. The tracker is told about the restore only
 once that save lands. A save that is refused puts the post back as it was —
 content, title and slug — and reports the failure. A restore that meets an
-expired session is rolled back rather than left frozen, because the re-auth
-controls are behind the history modal.
+expired session waits behind the sign-in dialog, which sits above the history
+modal, and lands once the session is back; abandoning the sign-in rolls it back.
 
 A restore is a document boundary for the slug: the restored title is not a title
 the writer typed, so the slug is kept rather than moved to it, and whether it
@@ -198,7 +218,11 @@ A reload replaces the whole document with the server's copy when the writer
 chooses it. The tracker is loaded afresh, so the hidden instance's old baseline
 goes with it; the identity adopts the fresh collision token, the editor surface
 re-seeds both Koenig instances, and the save engine validates the candidate
-before any of those replacements happen. The read is its own request, never a
+before any of those replacements happen. Its retained collision record authorizes
+recovery even after a retry fails for another reason; an active save or frozen
+authentication attempt must settle before the document can be replaced. The
+replacement completes before recovery is announced to subscribers, so an edit
+made from that notification belongs to the new document and is preserved. The read is its own request, never a
 refetch of the query the screen rendered from: a failing refetch puts that query
 into an error state and replaces the editor, taking the unsaved content and the
 way to copy it out with it. A reload that fails leaves the halt, the content and
@@ -210,15 +234,53 @@ What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
 way back in and the content stays untouched.
 
+## Signing in again without leaving
+
+A save that finds the session gone freezes the queue and opens a sign-in dialog
+over the editor (`reauth-dialog.tsx`); the content stays on screen behind it and
+nothing navigates. The writer's email is already filled in and only the password
+is asked for; the credentials go to the session endpoint and nowhere else. A site
+that requires a sign-in code turns the dialog into a second step that asks for
+the emailed code. A wrong password or code is named inside the dialog and nothing
+else changes. Once the session is back the held save goes out on its own; a
+status change it was carrying, such as a publish, is re-confirmed rather than
+sent unasked. Clicking outside the dialog does nothing; Escape or Cancel abandons
+it, which moves the queue to the save-error banner with the content kept, and the
+banner's retry brings the dialog back.
+
 ## The view React subscribes to
 
-The session publishes one cached view — the engine state, dirtiness, the title,
-the slug, the settings fields and the publish time — and republishes it only
-when one of those values changes. The nested settings and publish-time
+The session publishes one cached view — the engine state, pending-save
+blocking information,
+dirtiness, title, slug, settings and publish time — and republishes it only
+when one of those values changes. Pending content is read on demand after
+tracker changes, including save errors that make a clean document dirty. The nested settings and publish-time
 references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
-for `useSyncExternalStore` and lets it stand in for all six values as a
-dependency.
+for `useSyncExternalStore` and lets it stand in for those values as a dependency.
+
+## What the session reports
+
+Failures never reach the writer as thrown errors; the session reports them. Every
+request that ran and failed is reported once, with the command it ran, the
+error, whether the post already had a server id, the post's persisted status,
+the id, and how long the request took. Queued work a failure dropped is not
+reported on its own. An expired session is reported only when re-authentication
+is abandoned, not when it is retried. A leave the writer has to
+confirm is reported with the reason codes the tracker holds the post dirty for.
+A draft disposed with a title but a slug still derived from the default title is
+reported as an error. A throwing subscriber or slug listener is reported as an
+error, and so is a slug edit the generator rejected.
+
+Sentry receives these through the editor's own reporter, with the response
+status and URL when the transport answered. Validation failures, host limits and
+an unreachable server are not sent: they are the writer's or the host's to act
+on. A failed request that took more than two seconds is sent as a second event
+with its timing. Every error banner the writer is shown — a failed save, a
+collision, a deleted post — is also sent once as a message carrying the text
+they read. A Koenig instance that crashes its error boundary is reported as a
+Lexical failure. Sentry stays optional: without a DSN the calls are no-ops, and
+an error is still logged to the console.
 
 ## The autosave debounce
 

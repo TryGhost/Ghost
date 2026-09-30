@@ -494,6 +494,7 @@ export default class KoenigLexicalEditor extends Component {
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             klipy: this.config.klipy?.apiKey ? this.config.klipy : null,
+            embedPreviewUrl: this.config.security?.embedPreviewUrl || undefined,
             fetchAutocompleteLinks,
             fetchEmbed,
             fetchLabels,

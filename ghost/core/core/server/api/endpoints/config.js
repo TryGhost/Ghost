@@ -1,4 +1,4 @@
-const publicConfig = require('../../services/public-config');
+const publicConfig = require('./utils/public-config');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

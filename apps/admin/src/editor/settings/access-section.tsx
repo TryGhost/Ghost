@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId } from 'react';
 import {
   Checkbox,
   FieldError,
@@ -21,8 +21,12 @@ import type { PostType } from '@/editor/card-config';
 import { PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { TIERS_REQUIRED, tiersIncomplete } from '@/editor/session/settings-fields';
-import type { EditorSettingsPort } from './editor-settings-port';
+import {
+  TIERS_REQUIRED,
+  tiersIncomplete,
+  type EditorSettingsFields,
+} from '@/editor/session/settings-fields';
+import { type EditorSettingsPort, isNewPost } from './editor-settings-port';
 import { SectionLoadError } from './section-load-error';
 import { SettingsSection } from './settings-section';
 import {
@@ -111,7 +115,10 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
 
   const {
     data: tiersData,
+    fetchNextPage,
+    hasNextPage,
     isError: tiersFailed,
+    isFetchingNextPage,
     refetch: refetchTiers,
   } = useBrowseTiers({
     defaultErrorHandler: false,
@@ -119,11 +126,29 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     requestOptions: EDITOR_REQUEST_OPTIONS,
     searchParams: PAID_TIERS_SEARCH_PARAMS,
   });
-  const options = tierOptions(tiersData?.tiers);
+
+  // Core caps `limit=all`, so the response can still contain a next page. The
+  // list is not complete, so it is not shown, until every page has arrived.
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage && !tiersFailed) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, tiersFailed]);
+  const options = hasNextPage ? [] : tierOptions(tiersData?.tiers);
+
+  // An incomplete pair is left out of every write. On a post the server has not
+  // created yet it is staged without a save of its own: that write would carry nothing.
+  const editAccess = (patch: Pick<EditorSettingsFields, 'visibility' | 'tiers'>) => {
+    if (tiersIncomplete(patch) && isNewPost(session)) {
+      session.stageSettings(patch);
+      return;
+    }
+    session.editSettings(patch);
+  };
 
   // Leaving `tiers` clears the tiers it granted, as the tier pickers do.
   const changeVisibility = (next: string) =>
-    session.editSettings({
+    editAccess({
       visibility: next,
       tiers: next === 'tiers' ? postTiers(session.settings.tiers) : [],
     });
@@ -133,7 +158,7 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     if (!next.delete(id)) {
       next.add(id);
     }
-    session.editSettings({ visibility: 'tiers', tiers: tiersFromSelection(options, next) });
+    editAccess({ visibility: 'tiers', tiers: tiersFromSelection(options, next) });
   };
 
   return (

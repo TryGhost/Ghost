@@ -17,7 +17,10 @@ export function hasUnsavedWork(state: SaveEngineState, isDirty: boolean): boolea
     return true;
   }
   return (
-    state.kind === 'saving' || state.kind === 'pending-coalesced' || state.kind === 'reauth-pending'
+    state.kind === 'preparing' ||
+    state.kind === 'saving' ||
+    state.kind === 'pending-coalesced' ||
+    state.kind === 'reauth-pending'
   );
 }
 

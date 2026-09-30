@@ -58,6 +58,11 @@ export type Config = {
         max?: number;
         error?: string;
       };
+      emails?: {
+        maxPeriodic?: number;
+        disabled?: boolean;
+        error?: string;
+      };
       customThemes?: {
         allowlist?: string[];
         error?: string;
@@ -86,6 +91,9 @@ export type Config = {
         title?: string; // Banner heading
         upgradeUrl?: string; // Destination for the banner's upgrade button
       };
+    };
+    subscription?: {
+      start?: string; // ISO date that anchors monthly periodic limits
     };
     billing?: {
       enabled?: boolean;
@@ -127,6 +135,10 @@ export type Config = {
       enabled?: boolean;
       sendingDomain?: string;
     };
+    emailVerification?: {
+      // Shown in place of the default hold copy while the host reviews the account
+      emailSendingDisabledMessage?: string;
+    };
     export?: {
       // Host archive webhook — when set, "Export data" delivers the
       // archive by email instead of a synchronous download
@@ -135,6 +147,8 @@ export type Config = {
   };
   security?: {
     staffDeviceVerification?: boolean;
+    // directory serving the Koenig embed renderer on a separate origin
+    embedPreviewUrl?: string;
   };
   featurebase?: {
     enabled?: boolean;

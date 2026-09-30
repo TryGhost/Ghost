@@ -93,3 +93,87 @@ export const useRetryEmail = createMutation<EmailsResponseType, RetryEmailPayloa
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
   invalidateQueries: { dataType: postsDataType },
 });
+
+export interface EmailDebugBatch extends EmailBatch {
+  created_at?: string | null;
+  member_segment?: string | null;
+  mailgun_message_id?: string | null;
+  error_message?: string | null;
+  error_status_code?: number | null;
+  count?: { recipients: number };
+}
+
+export interface EmailRecipientFailure {
+  id: string;
+  severity: 'temporary' | 'permanent';
+  code: number;
+  enhanced_code?: string | null;
+  message: string;
+  email_recipient?: { member_name?: string | null; member_email?: string | null } | null;
+  member?: { id: string; name?: string | null; avatar_image?: string | null } | null;
+}
+
+export interface EmailAnalyticsJob {
+  running?: boolean;
+  lastStarted?: string | null;
+  lastBegin?: string | null;
+  lastEventTimestamp?: string | null;
+  fetchedThrough?: string | null;
+  lagSeconds?: number | null;
+  canceled?: boolean;
+  schedule?: { begin: string; end: string } | null;
+}
+
+export interface EmailAnalyticsStatus {
+  latest?: EmailAnalyticsJob;
+  latestOpened?: EmailAnalyticsJob;
+  missing?: EmailAnalyticsJob;
+  scheduled?: EmailAnalyticsJob;
+}
+
+const emailAnalyticsDataType = 'EmailAnalyticsStatus';
+
+export const useEmail = createQueryWithId<EmailsResponseType>({
+  dataType: 'EmailsResponseType',
+  path: (id) => `/emails/${id}/`,
+});
+
+// The sending-status query parses a minimal projection. Keep diagnostic details
+// in a separate query so its schema does not discard the full batch response.
+export const useEmailDebugBatches = createQueryWithId<{ batches: EmailDebugBatch[] }>({
+  dataType: 'EmailDebugBatches',
+  path: (id) => `/emails/${id}/batches/`,
+  defaultSearchParams: {
+    include: 'count.recipients',
+    limit: 'all',
+    order: 'status asc, created_at desc',
+  },
+});
+
+export const useEmailRecipientFailures = createQueryWithId<{ failures: EmailRecipientFailure[] }>({
+  dataType: 'EmailRecipientFailures',
+  path: (id) => `/emails/${id}/recipient-failures/`,
+  defaultSearchParams: { include: 'member,email_recipient', limit: 'all' },
+});
+
+export const useEmailAnalyticsStatus = createQueryWithId<EmailAnalyticsStatus>({
+  dataType: emailAnalyticsDataType,
+  path: (id) => `/emails/${id}/analytics/`,
+});
+
+export const useScheduleEmailAnalytics = createMutation<
+  unknown,
+  { id: string; begin?: string; end?: string }
+>({
+  method: 'PUT',
+  path: ({ id }) => `/emails/${id}/analytics/`,
+  searchParams: ({ begin, end }) => ({ ...(begin ? { begin } : {}), ...(end ? { end } : {}) }),
+  body: () => ({}),
+  invalidateQueries: { dataType: emailAnalyticsDataType },
+});
+
+export const useCancelEmailAnalytics = createMutation<unknown, void>({
+  method: 'DELETE',
+  path: () => '/emails/analytics/',
+  invalidateQueries: { dataType: emailAnalyticsDataType },
+});

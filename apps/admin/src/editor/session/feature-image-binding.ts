@@ -11,7 +11,7 @@ export interface FeatureImagePatch {
 /** The session calls the feature image needs; the rest of the handle is irrelevant to it. */
 export interface FeatureImagePort {
   patchFeatureImage: (patch: FeatureImagePatch) => void;
-  dispatchField: () => void;
+  commitSettings: () => void;
 }
 
 export interface FeatureImageBinding {
@@ -77,7 +77,8 @@ export function normalizeCaptionHtml(html: string | null | undefined): string {
 
 /**
  * Feature image, alt text and caption as the editor holds them. Setting,
- * clearing and alt edits save immediately; the caption saves on blur.
+ * clearing and alt edits commit immediately; the caption commits on blur. Each
+ * commit enters the save engine, which retains work until it can be saved.
  */
 export function useFeatureImageBinding(
   port: FeatureImagePort,
@@ -105,7 +106,7 @@ export function useFeatureImageBinding(
   const onFeatureImageChange = useCallback((url: string) => {
     setFeatureImage(url);
     session.current.patchFeatureImage({ feature_image: url });
-    session.current.dispatchField();
+    session.current.commitSettings();
   }, []);
 
   const onFeatureImageClear = useCallback(() => {
@@ -117,13 +118,13 @@ export function useFeatureImageBinding(
       feature_image_alt: null,
       feature_image_caption: null,
     });
-    session.current.dispatchField();
+    session.current.commitSettings();
   }, []);
 
   const onFeatureImageAltChange = useCallback((alt: string) => {
     setFeatureImageAlt(alt);
     session.current.patchFeatureImage({ feature_image_alt: alt });
-    session.current.dispatchField();
+    session.current.commitSettings();
   }, []);
 
   const onFeatureImageCaptionChange = useCallback((html: string) => {
@@ -135,7 +136,7 @@ export function useFeatureImageBinding(
     session.current.patchFeatureImage({ feature_image_caption: cleaned });
   }, []);
 
-  const onFeatureImageCaptionBlur = useCallback(() => session.current.dispatchField(), []);
+  const onFeatureImageCaptionBlur = useCallback(() => session.current.commitSettings(), []);
 
   return {
     featureImage,

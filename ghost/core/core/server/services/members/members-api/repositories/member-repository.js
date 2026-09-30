@@ -1111,8 +1111,7 @@ module.exports = class MemberRepository {
     const memberIds = memberRows.map((row) => row.id);
 
     if (data.action === 'unsubscribe') {
-      const hasNewsletterSelected =
-        Object.prototype.hasOwnProperty.call(data, 'newsletter') && data.newsletter !== null;
+      const hasNewsletterSelected = Object.hasOwn(data, 'newsletter') && data.newsletter !== null;
       if (hasNewsletterSelected) {
         const membersArr = memberIds.map((i) => `'${i}'`).join(',');
         const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
@@ -1247,6 +1246,10 @@ module.exports = class MemberRepository {
       },
       { ...options, forUpdate: true },
     );
+
+    if (!memberModel) {
+      throw new errors.NotFoundError({ message: tpl(messages.memberNotFound, { id: data.id }) });
+    }
 
     const memberStripeCustomerModel = await memberModel
       .related('stripeCustomers')
@@ -2039,6 +2042,10 @@ module.exports = class MemberRepository {
       email: data.email,
     });
 
+    if (!member) {
+      throw new errors.NotFoundError({ message: tpl(messages.memberNotFound, { id: data.email }) });
+    }
+
     const subscription = await member
       .related('stripeSubscriptions')
       .query({
@@ -2079,6 +2086,12 @@ module.exports = class MemberRepository {
     }
 
     const member = await this._Member.findOne(findQuery);
+
+    if (!member) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.memberNotFound, { id: data.id || data.email }),
+      });
+    }
 
     const subscription = await member
       .related('stripeSubscriptions')
@@ -2138,6 +2151,12 @@ module.exports = class MemberRepository {
     }
 
     const member = await this._Member.findOne(findQuery);
+
+    if (!member) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.memberNotFound, { id: data.id || data.email }),
+      });
+    }
 
     const subscriptionModel = await member
       .related('stripeSubscriptions')

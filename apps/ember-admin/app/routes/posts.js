@@ -36,6 +36,7 @@ class PostsWithAnalytics extends InfinityModel {
 }
 
 export default class PostsRoute extends AuthenticatedRoute {
+    @service stateBridge;
     @service infinity;
     @service router;
     @service feature;
@@ -106,7 +107,11 @@ export default class PostsRoute extends AuthenticatedRoute {
         // `<LinkTo @route="posts">` breadcrumb) has no URL yet, so we supply
         // one.
         if (!transition.intent?.url) {
-            this._navigateToReactRoute(this._reactRouteUrl(transition));
+            const url = this._reactRouteUrl(transition);
+            this._navigateToReactRoute(url);
+            if (transition.from?.name?.startsWith('lexical-editor')) {
+                this.stateBridge.trigger('restoreListState', {path: url});
+            }
         }
 
         this._parkOnReactFallback();
@@ -143,21 +148,11 @@ export default class PostsRoute extends AuthenticatedRoute {
             return;
         }
 
-        const url = window.location.hash;
-        const state = window.history.state;
-
-        this.router.replaceWith('react-fallback', this.routeName)
-            .finally(() => this._restoreUrl(url, state));
-    }
-
-    // Parking writes the fallback route's own path, dropping the query string
-    // that addresses saved views - so the captured URL goes back afterwards.
-    // `replaceState`: no history entry, and no `hashchange` to re-enter
-    // routing. The captured history state goes back too, unconditionally:
-    // react-router keeps `{usr, key, idx}` there, and the parking navigation
-    // resets it - a `null` state breaks its back/forward index and useBlocker.
-    _restoreUrl(url, state) {
-        window.history.replaceState(state, '', url);
+        // Never write the fallback's queryless URL. On refresh React can read
+        // that temporary URL before a silent replaceState restores it, leaving
+        // the list and sidebar unfiltered. Suppressing the write also preserves
+        // React Router's history state and back/forward index.
+        this.router.replaceWith('react-fallback', this.routeName).method(null);
     }
 
     // Built by hand rather than with `router.urlFor`, whose output depends on

@@ -65,8 +65,9 @@ export function useEditorLeaveGuard(
   // Router owns one blocker target, so starting this replace while an exit is
   // blocked would overwrite the writer's original destination.
   const createdId = session.createdId;
+  const { hasBlockedNavigation } = guard;
   useEffect(() => {
-    if (!createdId || guard.isBlocked || isUrlSwapBlocked || isLeavingRef.current) {
+    if (!createdId || hasBlockedNavigation() || isUrlSwapBlocked || isLeavingRef.current) {
       return;
     }
     const target = `/editor/${postType}/${createdId}`;
@@ -80,6 +81,7 @@ export function useEditorLeaveGuard(
   }, [
     createdId,
     guard.isBlocked,
+    hasBlockedNavigation,
     isUrlSwapBlocked,
     location.pathname,
     navigate,
