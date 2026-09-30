@@ -23,7 +23,10 @@ vi.mock('./email-confirmation', async (importOriginal) => ({
       new Promise<EmailConfirmationOutcome>((resolve) => {
         confirmation.settle = resolve;
       }),
-    retryAndConfirm: vi.fn(),
+    retryAndConfirm: () =>
+      new Promise<EmailConfirmationOutcome>((resolve) => {
+        confirmation.settle = resolve;
+      }),
     cancel: () => confirmation.settle?.({ kind: 'cancelled' }),
   }),
 }));
@@ -160,6 +163,19 @@ describe('post reads after an emailed publish', () => {
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
   });
 
+  it.each([null, ''])('keeps a failed send recoverable with error %j', async (error) => {
+    const { result, invalidateQueries, publishing } = await publishAndEmail();
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'failed', error, partial: false });
+      await publishing;
+    });
+
+    expect(result.current.step).toBe('email-error');
+    expect(result.current.emailErrorMessage).toBe('Unknown error');
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
+  });
+
   it('leaves them alone when the flow is closed before the send is confirmed', async () => {
     const { result, invalidateQueries, publishing } = await publishAndEmail();
 
@@ -169,5 +185,38 @@ describe('post reads after an emailed publish', () => {
     });
 
     expect(invalidateQueries).not.toHaveBeenCalled();
+  });
+});
+
+describe('failed newsletter retry', () => {
+  it.each([null, ''])('keeps a failed retry recoverable with error %j', async (error) => {
+    const inputs = options();
+    inputs.post = {
+      ...inputs.post,
+      status: 'published',
+      email: {
+        id: 'email-1',
+        status: 'failed',
+        error: 'The email service was unavailable.',
+        email_count: 20,
+        opened_count: 0,
+      },
+    };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+
+    let retrying: Promise<void> = Promise.resolve();
+    act(() => {
+      retrying = result.current.retryEmail();
+    });
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'failed', error, partial: false });
+      await retrying;
+    });
+
+    expect(result.current.step).toBe('email-error');
+    expect(result.current.emailErrorMessage).toBe('Unknown error');
+    expect(result.current.retryStatus).toBe('idle');
   });
 });

@@ -50,11 +50,11 @@ function isConfirmationRead(url: string): boolean {
  * A post whose newsletter failed, answering a retry as Core does: the retry
  * leaves the email pending, and it is sent by the time the flow polls for it.
  */
-function fakeFailedSend(overrides: Partial<Post>) {
+function fakeFailedSend(overrides: Partial<Post>, error: string | null = SEND_ERROR) {
   const failedEmail: NonNullable<Post['email']> = {
     id: EMAIL_ID,
     status: 'failed',
-    error: SEND_ERROR,
+    error,
     email_count: 20,
     opened_count: 0,
   };
@@ -103,53 +103,59 @@ afterEach(() => {
  * line leads back into the flow at its email-failure step, where it is retried.
  */
 describe('Editor newsletter retry', () => {
-  it('retries a published post’s failed newsletter from View details', async () => {
-    publishChrome();
-    const retryApi = fakeFailedSend({ status: 'published' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it.each([SEND_ERROR, null, ''])(
+    'retries a published post’s failed newsletter from View details with error %j',
+    async (error) => {
+      publishChrome();
+      const retryApi = fakeFailedSend({ status: 'published' }, error);
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect
-      .element(editorScreen.status())
-      .toHaveTextContent('Published but failed to send newsletter.');
-    await expect.element(editorScreen.viewNewsletterDetails()).toBeEnabled();
-    await editorScreen.viewNewsletterDetails().click();
+      await expect
+        .element(editorScreen.status())
+        .toHaveTextContent('Published but failed to send newsletter.');
+      await expect.element(editorScreen.viewNewsletterDetails()).toBeEnabled();
+      await editorScreen.viewNewsletterDetails().click();
 
-    await expect
-      .element(publishScreen.emailError())
-      .toHaveTextContent('Your post has been published but the email failed to send.');
-    await expect.element(publishScreen.emailError()).toHaveTextContent(SEND_ERROR);
-    await publishScreen.retryEmailButton().click();
+      await expect
+        .element(publishScreen.emailError())
+        .toHaveTextContent('Your post has been published but the email failed to send.');
+      await expect.element(publishScreen.emailError()).toHaveTextContent(error || 'Unknown error');
+      await publishScreen.retryEmailButton().click();
 
-    await expect
-      .element(publishScreen.complete())
-      .toHaveTextContent('Your post has been published.');
-    expect(retryApi.requests).toHaveLength(1);
-    await expect
-      .element(editorScreen.status())
-      .toHaveTextContent('Published and sent to 20 members');
-    await expect(editorScreen.viewNewsletterDetails()).toHaveCount(0);
-  });
+      await expect
+        .element(publishScreen.complete())
+        .toHaveTextContent('Your post has been published.');
+      expect(retryApi.requests).toHaveLength(1);
+      await expect
+        .element(editorScreen.status())
+        .toHaveTextContent('Published and sent to 20 members');
+      await expect(editorScreen.viewNewsletterDetails()).toHaveCount(0);
+    },
+  );
 
-  it('retries an email-only send’s failed newsletter from Retry now', async () => {
-    publishChrome();
-    const retryApi = fakeFailedSend({ status: 'sent', email_only: true });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it.each([SEND_ERROR, null, ''])(
+    'retries an email-only send’s failed newsletter from Retry now with error %j',
+    async (error) => {
+      publishChrome();
+      const retryApi = fakeFailedSend({ status: 'sent', email_only: true }, error);
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.status()).toHaveTextContent('Failed to send newsletter.');
-    await expect.element(editorScreen.retryNewsletter()).toBeEnabled();
-    await editorScreen.retryNewsletter().click();
+      await expect.element(editorScreen.status()).toHaveTextContent('Failed to send newsletter.');
+      await expect.element(editorScreen.retryNewsletter()).toBeEnabled();
+      await editorScreen.retryNewsletter().click();
 
-    await expect
-      .element(publishScreen.emailError())
-      .toHaveTextContent('Your post has been created but the email failed to send.');
-    await expect.element(publishScreen.emailError()).toHaveTextContent(SEND_ERROR);
-    await publishScreen.retryEmailButton().click();
+      await expect
+        .element(publishScreen.emailError())
+        .toHaveTextContent('Your post has been created but the email failed to send.');
+      await expect.element(publishScreen.emailError()).toHaveTextContent(error || 'Unknown error');
+      await publishScreen.retryEmailButton().click();
 
-    await expect.element(publishScreen.complete()).toHaveTextContent('Your email has been sent.');
-    expect(retryApi.requests).toHaveLength(1);
-    await expect.element(editorScreen.status()).toHaveTextContent('Sent to 20 members');
-    await expect(editorScreen.retryNewsletter()).toHaveCount(0);
-  });
+      await expect.element(publishScreen.complete()).toHaveTextContent('Your email has been sent.');
+      expect(retryApi.requests).toHaveLength(1);
+      await expect.element(editorScreen.status()).toHaveTextContent('Sent to 20 members');
+      await expect(editorScreen.retryNewsletter()).toHaveCount(0);
+    },
+  );
 
   it('holds the way back into the flow until the publish inputs load', async () => {
     publishChrome();

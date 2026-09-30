@@ -96,7 +96,7 @@ export function initialEmailError(post: PublishFlowPost): string | null {
     (post.status === 'published' || post.status === 'sent') &&
     post.email?.status === 'failed';
 
-  return didEmailFail ? (post.email?.error ?? UNKNOWN_EMAIL_ERROR) : null;
+  return didEmailFail ? post.email?.error || UNKNOWN_EMAIL_ERROR : null;
 }
 
 export function usePublishFlow({
@@ -378,7 +378,7 @@ export function usePublishFlow({
       }
 
       if (outcome.kind === 'failed') {
-        setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
+        setEmailErrorMessage(outcome.error || UNKNOWN_EMAIL_ERROR);
         setStep('email-error');
         setConfirmStatus('idle');
         return;
@@ -527,7 +527,7 @@ export function usePublishFlow({
       if (outcome.kind === 'failed' || outcome.kind === 'cancelled') {
         retryRunningRef.current = false;
         if (outcome.kind === 'failed') {
-          setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
+          setEmailErrorMessage(outcome.error || UNKNOWN_EMAIL_ERROR);
         }
         setRetryStatus('idle');
         return;
