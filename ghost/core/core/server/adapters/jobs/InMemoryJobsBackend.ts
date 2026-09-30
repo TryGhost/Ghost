@@ -14,6 +14,11 @@ import type {
 const later = require('@breejs/later');
 const logging = require('@tryghost/logging');
 
+// Cron schedules are read in the server's local time. later reads them in UTC
+// unless told otherwise, and it was Bree that told it, as a side effect of the
+// legacy job manager being loaded.
+later.date.localTime();
+
 const DEFAULT_SHUTDOWN_TIMEOUT_MS = 10000;
 const DEFAULT_CONCURRENCY = 3;
 // Envelopes with no routing share this lane; routing to "default" by name is
