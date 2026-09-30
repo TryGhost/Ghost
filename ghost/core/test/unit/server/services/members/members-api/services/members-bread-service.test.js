@@ -12,7 +12,6 @@ const { ADMIN } = require('../../../../../../../core/server/services/members-met
 const createMetafieldValuesStub = (payload = null) => ({
   getValuesForPayload: sinon.stub().resolves(payload),
   unwrapWire: sinon.stub().callsFake((input) => input),
-  namesValues: sinon.stub().returns(false),
   planWrite: sinon.stub().resolves([]),
   applyWrite: sinon.stub().resolves(),
 });
@@ -61,6 +60,7 @@ describe('MemberBreadService', function () {
 
       const linkStripeCustomerStub = sinon.stub().resolves();
       const createStub = sinon.stub().resolves(mockMemberModel);
+      const transactionStub = sinon.stub().callsFake((fn) => fn('a-transaction'));
       const getSuppressionDataStub = sinon.stub().resolves({ suppressed: false, info: null });
 
       const memberRepository = {
@@ -81,6 +81,7 @@ describe('MemberBreadService', function () {
           createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe'),
         },
         metafieldValues,
+        transaction: transactionStub,
       });
 
       // Stub the read method to avoid having to mock all its dependencies
@@ -101,40 +102,18 @@ describe('MemberBreadService', function () {
       };
     }
 
-    it('refuses a create whose body names custom field values', async function () {
-      // Values can only be set on a later edit. The values service decides what
-      // counts as naming them, so drive it directly rather than through a body
-      // shape, which is the values service's own contract to test.
-      const metafieldValues = createMetafieldValuesStub();
-      metafieldValues.namesValues.returns(true);
-      const { service, createStub } = createService({}, metafieldValues);
+    // No API request passes its own transaction, so only a direct caller can reach this.
+    it('refuses custom field values inside a caller transaction', async function () {
+      const { service, createStub } = createService();
 
       await assert.rejects(
-        () =>
-          service.add(
-            { email: 'test@example.com', metafields: { custom: { favourite_topic: 'Ghosts' } } },
-            {},
-          ),
-        (error) => {
-          assert.equal(error.errorType, 'ValidationError');
-          assert.equal(error.property, 'metafields');
-          return true;
-        },
+        service.add(
+          { email: 'test@example.com', metafields: { custom: { favourite_topic: 'Ghosts' } } },
+          { transacting: {}, context: { user: 'user_1' } },
+        ),
+        (error) => error.errorType === 'IncorrectUsageError',
       );
-
       assert.equal(createStub.called, false, 'the member must not be created');
-    });
-
-    it('creates a member when the body names no custom field values', async function () {
-      const { service, createStub, metafieldValues } = createService();
-
-      await service.add({ email: 'test@example.com' }, {});
-
-      assert.equal(createStub.calledOnce, true);
-      // Asked unconditionally: the member data is handed over whether or not it
-      // carries the key, and an absent one is the values service's to judge.
-      assert.equal(metafieldValues.namesValues.calledOnce, true);
-      assert.equal(metafieldValues.namesValues.firstCall.args[0], undefined);
     });
 
     it('passes context to linkStripeCustomer when stripe_customer_id is provided', async function () {
@@ -352,6 +331,20 @@ describe('MemberBreadService', function () {
         removeComplimentarySubscription,
       };
     }
+
+    // No API request passes its own transaction, so only a direct caller can reach this.
+    it('refuses custom field values inside a caller transaction', async function () {
+      const { service, updateStub } = createService();
+
+      await assert.rejects(
+        service.edit(
+          { name: 'Renamed', metafields: { custom: { favourite_topic: 'Ghosts' } } },
+          { id: 'member_123', transacting: {}, context: { user: 'user_1' } },
+        ),
+        (error) => error.errorType === 'IncorrectUsageError',
+      );
+      assert.equal(updateStub.called, false, 'the member must not be updated');
+    });
 
     it('sets email_disabled to true when the new email is on the suppression list', async function () {
       const { service, updateStub, getSuppressionDataStub } = createService();

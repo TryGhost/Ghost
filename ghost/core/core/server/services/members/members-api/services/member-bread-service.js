@@ -1,5 +1,6 @@
 const errors = require('@tryghost/errors');
 const { ADMIN, staffWriter } = require('../../../members-metafields');
+const { recordReplacedMetafields } = require('../../metafield-changes');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -8,12 +9,18 @@ const messages = {
   stripeNotConnected: 'Missing Stripe connection.',
   memberAlreadyExists: 'Member already exists.',
   memberNotFound: 'Member not found.',
-  metafieldsOnAdd:
-    'Custom field values cannot be set while creating a member. Create the member, then set values with an edit.',
+  metafieldsInCallerTransaction:
+    'Custom field values cannot be written inside a caller-owned transaction.',
 };
 
 // Stored in the action's `context.action_name`; Admin maps it to a display label.
 const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
+
+/**
+ * @typedef {object} MetafieldWrite
+ * @prop {unknown} values the `metafields` of a member payload
+ * @prop {import('../../../members-metafields').Writer} writer
+ */
 
 /**
  * @typedef {object} IEmailService
@@ -47,6 +54,8 @@ module.exports = class MemberBREADService {
    * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
    * @param {IGiftsModule} deps.giftService
    * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues Required: boot builds it before the members service
+   * @param {<T>(fn: (transacting: import('knex').Knex.Transaction) => Promise<T>) => Promise<T>} deps.transaction
+   *   Runs `fn` in a database transaction. Used to write a member and their metafields together.
    */
   constructor({
     memberRepository,
@@ -60,6 +69,7 @@ module.exports = class MemberBREADService {
     commentsService,
     giftService,
     metafieldValues,
+    transaction,
   }) {
     this.offersAPI = offersAPI;
     /** @private */
@@ -82,6 +92,8 @@ module.exports = class MemberBREADService {
     this.giftService = giftService;
     /** @private */
     this.metafieldValues = metafieldValues;
+    /** @private */
+    this.transaction = transaction;
   }
 
   /**
@@ -439,15 +451,112 @@ module.exports = class MemberBREADService {
     return member;
   }
 
-  async add(data, options) {
-    if (this.metafieldValues.namesValues(this.metafieldValues.unwrapWire(data.metafields))) {
-      throw new errors.ValidationError({
-        message: tpl(messages.metafieldsOnAdd),
-        property: 'metafields',
+  /**
+   * Removes `metafields` from an Admin API member payload, with staff as their writer.
+   *
+   * @private
+   * @param {object} data the member payload
+   * @param {object} options
+   * @returns {MetafieldWrite | undefined} undefined when the payload has no `metafields`
+   */
+  takeStaffMetafields(data, options) {
+    const values = data.metafields;
+    delete data.metafields;
+    return values === undefined ? undefined : { values, writer: staffWriter(options.context) };
+  }
+
+  /**
+   * Plans a write of a member's metafields, before the member is touched.
+   * Throws on an invalid value, or inside a caller's transaction.
+   *
+   * @private
+   * @param {MetafieldWrite | undefined} metafields
+   * @param {object} options
+   * @returns {Promise<import('../../../members-metafields').Plan | null>}
+   *   null when there is nothing to write
+   */
+  async planMetafields(metafields, options) {
+    if (!metafields) {
+      return null;
+    }
+
+    // Planning reads with the default connection, which SQLite can't open while a
+    // caller's transaction holds it.
+    if (options.transacting) {
+      throw new errors.IncorrectUsageError({
+        message: tpl(messages.metafieldsInCallerTransaction),
       });
     }
 
-    delete data.metafields;
+    const plan = await this.metafieldValues.planWrite(
+      this.metafieldValues.unwrapWire(metafields.values),
+      metafields.writer,
+    );
+    return plan.writes.length > 0 ? plan : null;
+  }
+
+  /**
+   * Creates a member and their metafields in one transaction.
+   * `member.added` fires after the commit, with the metafields in `current`.
+   * Without metafields, creates the member as before.
+   *
+   * @private
+   * @param {object} data the member attributes
+   * @param {object} options
+   * @param {MetafieldWrite} [metafields]
+   */
+  async createWithMetafields(data, options, metafields) {
+    const plan = await this.planMetafields(metafields, options);
+    if (!plan) {
+      return this.memberRepository.create(data, options);
+    }
+
+    return this.transaction(async (transacting) => {
+      const created = await this.memberRepository.create(data, { ...options, transacting });
+      await this.metafieldValues.applyWrite(created.id, plan, { executor: transacting });
+      return created;
+    });
+  }
+
+  /**
+   * Updates a member and their metafields in one transaction.
+   * `member.edited` fires once, after the commit, with the new metafields in `current` and
+   * the replaced ones in `previous`. Without metafields, updates the member as before.
+   *
+   * @param {object} data the member attributes to change
+   * @param {object} options must name the member by `id`
+   * @param {MetafieldWrite} [metafields]
+   */
+  async updateWithMetafields(data, options, metafields) {
+    const plan = await this.planMetafields(metafields, options);
+    if (!plan) {
+      return this.memberRepository.update(data, options);
+    }
+
+    return this.transaction(async (transacting) => {
+      const updated = await this.memberRepository.update(data, { ...options, transacting });
+      const memberUnchanged = !updated._changed || Object.keys(updated._changed).length === 0;
+
+      const replaced = await this.metafieldValues.applyWrite(updated.id, plan, {
+        executor: transacting,
+      });
+      recordReplacedMetafields(updated, replaced);
+
+      if (memberUnchanged) {
+        // The save skipped its audit action, because nothing had changed yet.
+        await updated.addAction(updated, 'edited', {
+          context: options.context,
+          transacting,
+          actionName: CUSTOM_FIELDS_EDITED_ACTION,
+        });
+      }
+
+      return updated;
+    });
+  }
+
+  async add(data, options) {
+    const metafields = this.takeStaffMetafields(data, options);
 
     if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
       const property = data.comped ? 'comped' : 'stripe_customer_id';
@@ -475,7 +584,7 @@ module.exports = class MemberBREADService {
       if (attribution) {
         data.attribution = attribution;
       }
-      model = await this.memberRepository.create(data, options);
+      model = await this.createWithMetafields(data, options, metafields);
     } catch (error) {
       if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
         throw new errors.ValidationError({
@@ -543,17 +652,7 @@ module.exports = class MemberBREADService {
   async edit(data, options) {
     delete data.last_seen_at;
 
-    const metafields = this.metafieldValues.unwrapWire(data.metafields);
-    const writeMetafields = metafields !== undefined;
-    delete data.metafields;
-
-    // Plan (which validates) before the member is touched, so a bad value 422s
-    // here rather than after the member edit has been applied — and keep the
-    // plan to apply once below, so the values aren't resolved and validated
-    // twice.
-    const plannedMetafields = writeMetafields
-      ? await this.metafieldValues.planWrite(metafields, staffWriter(options.context))
-      : null;
+    const metafields = this.takeStaffMetafields(data, options);
 
     let model;
 
@@ -565,7 +664,7 @@ module.exports = class MemberBREADService {
         data.email_disabled = !!isSuppressed;
       }
 
-      model = await this.memberRepository.update(data, options);
+      model = await this.updateWithMetafields(data, options, metafields);
     } catch (error) {
       if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
         throw new errors.ValidationError({
@@ -602,36 +701,6 @@ module.exports = class MemberBREADService {
             transacting: options.transacting,
           });
         }
-      }
-    }
-
-    if (plannedMetafields) {
-      await this.metafieldValues.applyWrite(model.id, plannedMetafields);
-
-      // Metafields aren't a member column or relation, so an edit touching
-      // only them leaves `model._changed` empty and the save fires nothing.
-      // Declare the change into `_changed` — as bookshelf-relations does for a
-      // labels change — so the member's edited lifecycle fires its usual signals
-      // (audit action + the webhook event, no `updated_at` bump).
-      //
-      // Guarded to the row-unchanged case: a real member change already
-      // populated `_changed` and fired the edited event during update(), so
-      // re-firing would duplicate it (this also covers a full PUT that resends
-      // unchanged member fields — `_changed` stays empty there too). That
-      // combined event omits `metafields` from `_changed`, which only gates
-      // whether the event fires.
-      const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
-      if (memberUnchanged && plannedMetafields.writes.length > 0) {
-        model._changed = { metafields: true };
-        // A mixed edit keeps the generic label on purpose: relabelling the
-        // one action a member change already fired would bury that change
-        // behind this one.
-        const eventOptions = {
-          context: options.context,
-          transacting: options.transacting,
-          actionName: CUSTOM_FIELDS_EDITED_ACTION,
-        };
-        await model.triggerThen('updated', model, eventOptions);
       }
     }
 

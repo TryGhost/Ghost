@@ -14,6 +14,8 @@ const SERIALIZED_KEYS = {
   },
 };
 
+const { replacedMetafields } = require('../members/metafield-changes');
+
 const loadRequiredUrlRelations = async (model, urlService) => {
   const required = urlService.getRequiredRelations();
   const missing = required.filter((relation) => !model.relations[relation]);
@@ -103,6 +105,11 @@ module.exports =
         frame.response[docName][0],
         changed.map((key) => SERIALIZED_KEYS[docName]?.[key] ?? key),
       );
+    }
+
+    const replaced = docName === 'members' ? replacedMetafields(model) : undefined;
+    if (replaced) {
+      previous.metafields = replaced;
     }
 
     const payload = {

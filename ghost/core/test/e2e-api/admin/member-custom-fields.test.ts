@@ -1401,12 +1401,10 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), { [good.key]: 'Ghosts' });
     });
 
-    it('rejects metafields when creating a member', async function () {
-      // Setting values on create is a later vertical; the API rejects rather
-      // than silently dropping them, so the gap is explicit.
+    it('stores metafields named when creating a member', async function () {
       const field = await createField({ name: 'Favourite topic' });
 
-      await agent
+      const { body } = await agent
         .post('members/')
         .body({
           members: [
@@ -1416,7 +1414,57 @@ describe('Member Custom Fields Admin API', function () {
             },
           ],
         })
+        .expectStatus(201);
+
+      assert.deepEqual(body.members[0].metafields.custom, { [field.key]: 'Ghosts' });
+      assert.deepEqual(await readValues(body.members[0].id), { [field.key]: 'Ghosts' });
+    });
+
+    it('stores metafields named when creating a member onto a tier', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const { body: tiersBody } = await agent
+        .get(`tiers/?filter=${encodeURIComponent('type:paid+active:true')}`)
+        .expectStatus(200);
+      const [tier] = tiersBody.tiers;
+
+      const { body } = await agent
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'create-on-tier-with-values@example.com',
+              tiers: [{ id: tier.id }],
+              metafields: { custom: { [field.key]: 'Ghosts' } },
+            },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.equal(body.members[0].tiers[0].id, tier.id);
+      assert.deepEqual(body.members[0].metafields.custom, { [field.key]: 'Ghosts' });
+    });
+
+    it('creates no member when a value named at create is refused', async function () {
+      await createField({ name: 'Favourite topic' });
+
+      const { body } = await agent
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'create-with-bad-values@example.com',
+              metafields: { custom: { no_such_field: 'Ghosts' } },
+            },
+          ],
+        })
         .expectStatus(422);
+      assert.match(body.errors[0].context, /Unknown custom field/);
+
+      const rows = await models.Base.knex('members').where(
+        'email',
+        'create-with-bad-values@example.com',
+      );
+      assert.equal(rows.length, 0);
     });
 
     it('refuses a value in a namespace holding no fields, as an unknown field', async function () {
@@ -1957,6 +2005,16 @@ describe('Member Custom Fields Admin API', function () {
       });
     }
 
+    // An action is inserted once the edit's transaction commits, which can be after the
+    // response, so this waits for the first one to land.
+    async function recordedMemberEditedActions(memberId: string) {
+      return vi.waitFor(async () => {
+        const actions = await memberEditedActions(memberId);
+        assert.ok(actions.length > 0, 'no member edited action recorded yet');
+        return actions;
+      });
+    }
+
     // Runs `fn` while counting `member.edited` common events (the signal
     // webhooks listen to) for the given member.
     async function countMemberEditedEvents(
@@ -1992,7 +2050,7 @@ describe('Member Custom Fields Admin API', function () {
       );
 
       assert.equal(editedEvents, 1);
-      assert.equal((await memberEditedActions(memberId)).length, 1);
+      assert.equal((await recordedMemberEditedActions(memberId)).length, 1);
     });
 
     it('fires a single member.edited when the edit changes the member too', async function () {
@@ -2012,7 +2070,7 @@ describe('Member Custom Fields Admin API', function () {
       });
 
       assert.equal(editedEvents, 1);
-      assert.equal((await memberEditedActions(memberId)).length, 1);
+      assert.equal((await recordedMemberEditedActions(memberId)).length, 1);
     });
 
     it('fires member.edited when a full PUT resends unchanged member fields with a custom-field change', async function () {
@@ -2033,7 +2091,7 @@ describe('Member Custom Fields Admin API', function () {
       });
 
       assert.equal(editedEvents, 1);
-      assert.equal((await memberEditedActions(memberId)).length, 1);
+      assert.equal((await recordedMemberEditedActions(memberId)).length, 1);
     });
 
     it('fires no member.edited when the metafields object is empty', async function () {
@@ -2308,13 +2366,20 @@ describe('Member Custom Fields Admin API', function () {
       typeof action.context === 'string' ? JSON.parse(action.context) : action.context;
 
     // Read back over the API the history log is served from, not the table,
-    // so what Admin receives is what's asserted — `context` included.
-    const memberEditedActionsViaApi = async (memberId: string) => {
-      const { body } = await agent
-        .get(`actions/?filter=resource_id:'${memberId}'%2Bresource_type:member&include=actor`)
-        .expectStatus(200);
-      return body.actions.filter((action: { event: string }) => action.event === 'edited');
-    };
+    // so what Admin receives is what's asserted — `context` included. Waits for the
+    // first action, which is inserted once the edit's transaction commits and can land
+    // after the response.
+    const memberEditedActionsViaApi = (memberId: string) =>
+      vi.waitFor(async () => {
+        const { body } = await agent
+          .get(`actions/?filter=resource_id:'${memberId}'%2Bresource_type:member&include=actor`)
+          .expectStatus(200);
+        const edited = body.actions.filter(
+          (action: { event: string }) => action.event === 'edited',
+        );
+        assert.ok(edited.length > 0, 'no member edited action recorded yet');
+        return edited;
+      });
 
     it('marks a values-only edit as a custom-field change', async function () {
       // The payload that makes the whole feature auditable: without

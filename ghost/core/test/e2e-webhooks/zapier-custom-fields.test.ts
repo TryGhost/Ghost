@@ -106,6 +106,47 @@ describe('Zapier and member custom fields', function () {
       assert.deepEqual(body.members[0].metafields.custom, { [key]: 'Ghost internals' });
     });
 
+    it('creates a member and their custom fields in one call', async function () {
+      const key = await definePublisherField('Favourite topic');
+
+      const { body } = await zapier
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'zap-creates@example.com',
+              metafields: { custom: { [key]: 'Ghost internals' } },
+            },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.deepEqual(body.members[0].metafields.custom, { [key]: 'Ghost internals' });
+
+      const { body: read } = await zapier.get(`members/${body.members[0].id}/`).expectStatus(200);
+      assert.deepEqual(read.members[0].metafields.custom, { [key]: 'Ghost internals' });
+    });
+
+    it('creates no member at all when a custom field value is refused', async function () {
+      await definePublisherField('Favourite topic');
+
+      await zapier
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'zap-rejected@example.com',
+              metafields: { custom: { not_a_field: 'x' } },
+            },
+          ],
+        })
+        .expectStatus(422);
+
+      const filter = encodeURIComponent("email:'zap-rejected@example.com'");
+      const { body } = await zapier.get(`members/?filter=${filter}`).expectStatus(200);
+      assert.equal(body.members.length, 0);
+    });
+
     it('returns the values on a member browse that asks for them', async function () {
       const key = await definePublisherField('Favourite topic');
       const memberId = await createMember('zap-browses@example.com');
@@ -124,6 +165,7 @@ describe('Zapier and member custom fields', function () {
     it('carries custom fields in the Updated Member trigger payload', async function () {
       const key = await definePublisherField('Favourite topic');
       const memberId = await createMember('zap-trigger@example.com');
+      await zapierWritesField(memberId, key, 'Reading');
       await subscribeZapTo(
         'member.edited',
         'https://test-webhook-receiver.com/zapier-member-edited/',
@@ -135,7 +177,76 @@ describe('Zapier and member custom fields', function () {
       const { member } = deliveredPayload();
       assert.equal(member.current.email, 'zap-trigger@example.com');
       assert.deepEqual(member.current.metafields.custom, { [key]: 'Ghost internals' });
-      assert.deepEqual(member.previous, {});
+      assert.deepEqual(member.previous.metafields.custom, { [key]: 'Reading' });
+    });
+
+    it('carries the new value when an edit changes the member as well as its fields', async function () {
+      const key = await definePublisherField('Favourite topic');
+      const memberId = await createMember('zap-mixed@example.com');
+      await zapierWritesField(memberId, key, 'Reading');
+      await subscribeZapTo(
+        'member.edited',
+        'https://test-webhook-receiver.com/zapier-member-edited/',
+      );
+
+      await zapier
+        .put(`members/${memberId}/`)
+        .body({
+          members: [{ name: 'Renamed', metafields: { custom: { [key]: 'Ghost internals' } } }],
+        })
+        .expectStatus(200);
+      await webhookMockReceiver.receivedRequest();
+
+      const { member } = deliveredPayload();
+      assert.equal(member.current.name, 'Renamed');
+      assert.deepEqual(member.current.metafields.custom, { [key]: 'Ghost internals' });
+      assert.equal(member.previous.name, null);
+      assert.deepEqual(member.previous.metafields.custom, { [key]: 'Reading' });
+    });
+
+    it('lists only the fields an edit wrote as previous, with null for one that held nothing', async function () {
+      const topicKey = await definePublisherField('Favourite topic');
+      const colourKey = await definePublisherField('Favourite colour');
+      const memberId = await createMember('zap-first-value@example.com');
+      await zapierWritesField(memberId, topicKey, 'Reading');
+      await subscribeZapTo(
+        'member.edited',
+        'https://test-webhook-receiver.com/zapier-member-edited/',
+      );
+
+      await zapierWritesField(memberId, colourKey, 'Green');
+      await webhookMockReceiver.receivedRequest();
+
+      const { member } = deliveredPayload();
+      assert.deepEqual(member.current.metafields.custom, {
+        [topicKey]: 'Reading',
+        [colourKey]: 'Green',
+      });
+      assert.deepEqual(member.previous.metafields.custom, { [colourKey]: null });
+    });
+
+    it('carries the values a member was created with in the New Member payload', async function () {
+      const key = await definePublisherField('Favourite topic');
+      await subscribeZapTo(
+        'member.added',
+        'https://test-webhook-receiver.com/zapier-member-added-with-values/',
+      );
+
+      await zapier
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'zap-added-with-values@example.com',
+              metafields: { custom: { [key]: 'Ghost internals' } },
+            },
+          ],
+        })
+        .expectStatus(201);
+      await webhookMockReceiver.receivedRequest();
+
+      const { member } = deliveredPayload();
+      assert.deepEqual(member.current.metafields.custom, { [key]: 'Ghost internals' });
     });
 
     it('carries empty custom fields on the New Member payload of a member who holds none', async function () {
@@ -165,26 +276,6 @@ describe('Zapier and member custom fields', function () {
       const { member } = deliveredPayload();
       assert.equal(member.current.email, 'zap-no-fields@example.com');
       assert.equal(member.current.metafields, undefined);
-    });
-  });
-
-  describe('creating a member', function () {
-    it('refuses custom fields sent to the Create Member action', async function () {
-      const key = await definePublisherField('Favourite topic');
-
-      const { body } = await zapier
-        .post('members/')
-        .body({
-          members: [
-            {
-              email: 'zap-creates@example.com',
-              metafields: { custom: { [key]: 'Ghost internals' } },
-            },
-          ],
-        })
-        .expectStatus(422);
-
-      assert.match(body.errors[0].context, /Create the member, then set values with an edit/);
     });
   });
 });
