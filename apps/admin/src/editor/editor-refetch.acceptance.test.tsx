@@ -95,6 +95,7 @@ type SharedPost = ReturnType<typeof fakeSharedPost>;
 
 async function appendToBody(text: string) {
   const body = editorScreen.body();
+  await expect.element(body).toBeVisible();
   await body.fill(`${body.element().textContent ?? ''}${text}`);
 }
 
