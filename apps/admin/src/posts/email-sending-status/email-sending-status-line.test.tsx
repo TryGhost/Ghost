@@ -41,6 +41,25 @@ describe('EmailSendingStatusLine', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
+  it('replays the reveal on every phase change', () => {
+    const preparing = getEmailSendingActiveLine(
+      {
+        status: 'preparing',
+        progress: { completed: 0, total: 1000, estimated_seconds_remaining: null },
+      },
+      { title: 'Preparing emails', detail: null },
+    );
+    const { rerender } = render(<EmailSendingStatusLine active={null} data-testid="line" />);
+
+    rerender(<EmailSendingStatusLine active={preparing} data-testid="line" />);
+    const region = screen.getByRole('status');
+    const preparingLine = screen.getByTestId('line');
+    rerender(<EmailSendingStatusLine active={sending} data-testid="line" />);
+
+    expect(screen.getByTestId('line')).not.toBe(preparingLine);
+    expect(screen.getByRole('status')).toBe(region);
+  });
+
   it('replaces an active line with a failure straight away', () => {
     const { rerender } = render(<EmailSendingStatusLine active={sending} />);
 

@@ -46,7 +46,7 @@ export function EmailSendingStatusLine({
     setShownLine(active);
   }
   const isLeaving = !active && shownLine !== null;
-  const animateChange = useAnimateOnChange(shownLine?.phase ?? (failure ? 'failed' : null), ready);
+  const changeCount = useAnimateOnChange(shownLine?.phase ?? (failure ? 'failed' : null), ready);
 
   useEffect(() => {
     if (!isLeaving) {
@@ -63,18 +63,15 @@ export function EmailSendingStatusLine({
           // Fade out, then collapse the height.
           '[transition:opacity_250ms_ease-out,grid-template-rows_400ms_cubic-bezier(0.4,0,0.2,1)_150ms] motion-reduce:transition-none',
           isLeaving ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr]',
-          animateChange && REVEAL,
           className,
         )}
         gap="none"
+        role={announce ? 'status' : undefined}
       >
-        <div className="min-h-0 overflow-hidden">
-          <Inline
-            className="leading-[1.65em]"
-            data-testid={testId}
-            gap="xs"
-            role={announce ? 'status' : undefined}
-          >
+        {/* Remounts on each phase change to replay the reveal, inside a live
+            region that stays put so the new phase is still announced. */}
+        <div key={changeCount} className={cn('min-h-0 overflow-hidden', changeCount > 0 && REVEAL)}>
+          <Inline className="leading-[1.65em]" data-testid={testId} gap="xs">
             <EmailSendingStatusIcon phase={shownLine.phase} share={shownLine.share} />
             <span className="email-sending-shimmer font-medium tabular-nums">{shownLine.text}</span>
           </Inline>
@@ -91,7 +88,7 @@ export function EmailSendingStatusLine({
     <Inline
       className={cn(
         'leading-[1.65em] text-muted-foreground tabular-nums',
-        animateChange && CROSSFADE,
+        changeCount > 0 && CROSSFADE,
         className,
       )}
       data-testid={testId}

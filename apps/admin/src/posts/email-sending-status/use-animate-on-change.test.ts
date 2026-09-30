@@ -6,7 +6,7 @@ describe('useAnimateOnChange', () => {
   it('does not animate the first render', () => {
     const { result } = renderHook(() => useAnimateOnChange('sending'));
 
-    expect(result.current).toBe(false);
+    expect(result.current).toBe(0);
   });
 
   it('animates once the value changes', () => {
@@ -16,7 +16,20 @@ describe('useAnimateOnChange', () => {
 
     rerender({ value: 'sent' });
 
-    expect(result.current).toBe(true);
+    expect(result.current).toBe(1);
+  });
+
+  it('gives every later change a new key', () => {
+    const { result, rerender } = renderHook(({ value }) => useAnimateOnChange(value), {
+      initialProps: { value: 'preparing' },
+    });
+
+    rerender({ value: 'submitting' });
+    rerender({ value: 'submitting' });
+    expect(result.current).toBe(1);
+
+    rerender({ value: 'failed' });
+    expect(result.current).toBe(2);
   });
 
   it('ignores changes while the value is still loading in', () => {
@@ -26,9 +39,9 @@ describe('useAnimateOnChange', () => {
     );
 
     rerender({ value: 'published', ready: true });
-    expect(result.current).toBe(false);
+    expect(result.current).toBe(0);
 
     rerender({ value: 'published-and-sent', ready: true });
-    expect(result.current).toBe(true);
+    expect(result.current).toBe(1);
   });
 });
