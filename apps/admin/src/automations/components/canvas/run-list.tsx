@@ -142,7 +142,7 @@ export const RunList: React.FC<{
           Updating automation runs
         </Text>
       )}
-      {!isLoading && data?.length === 0 && (
+      {!isLoading && !isError && data?.length === 0 && (
         <Text className="px-4 py-6 text-center" role="status" size="sm" tone="secondary">
           {emptyMessage}
         </Text>

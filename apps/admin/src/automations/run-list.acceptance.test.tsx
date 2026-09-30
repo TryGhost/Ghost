@@ -157,6 +157,29 @@ describe('Automation run list', () => {
     },
   );
 
+  it('shows only the error when an empty result fails to refresh, then restores the empty state on retry', async () => {
+    prepareStatuses();
+    const endpoint = /\/automations\/first\/runs\/\?timezone=[^&]+$/;
+    fakeAdminEndpoint('GET', endpoint, { automation_runs: [] });
+    const { queryClient } = await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+
+    const refresh = fakeAdminEndpoint('GET', endpoint, {}, { status: 500 });
+    // The app's authentication bridge can invalidate a previously successful query.
+    await queryClient.invalidateQueries();
+    await expect
+      .element(runsRegion().getByRole('alert'))
+      .toHaveTextContent('Could not load automation runs');
+    expect(refresh.requests).toHaveLength(1);
+    await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
+
+    fakeAdminEndpoint('GET', endpoint, { automation_runs: [] });
+    await runsRegion().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
+    await expect.element(runsRegion().getByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('shows a malformed response as an error', async () => {
     prepareStatuses();
     fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?timezone=[^&]+$/, {});
