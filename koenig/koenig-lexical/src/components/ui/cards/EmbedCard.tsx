@@ -1,4 +1,5 @@
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
+import KoenigComposerContext from '../../../context/KoenigComposerContext';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
@@ -156,10 +157,19 @@ function EmbedIframe({dataTestId, html}) {
 function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
     const iframeRef = React.useRef<HTMLIFrameElement>(null);
     const [unavailable, setUnavailable] = React.useState(!rendererUrl);
+    const {onError} = React.useContext(KoenigComposerContext);
+    const loadedRef = React.useRef(false);
+
+    // reports to the host, so a preview that fails to load can be debugged
+    const fail = (reason: string) => {
+        setUnavailable(true);
+        onError?.(new Error(`Embed renderer unavailable: ${reason}`));
+    };
 
     // a layout effect listens before the iframe can run, so a cached renderer's ready message isn't missed
     React.useLayoutEffect(() => {
         if (!rendererUrl) {
+            fail('invalid url');
             return;
         }
 
@@ -175,7 +185,9 @@ function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
 
             if (event.data?.type === EMBED_READY_MESSAGE && !rendered) {
                 if (event.data.version !== EMBED_RENDERER_VERSION) {
-                    setUnavailable(true);
+                    // the effect isn't cleaned up on failure, so stop the timeout reporting again
+                    window.clearTimeout(timeout);
+                    fail(`renderer is v${event.data.version}, editor is v${EMBED_RENDERER_VERSION}`);
                     return;
                 }
 
@@ -198,7 +210,8 @@ function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
         // the renderer can be blocked, offline or misconfigured
         const timeout = window.setTimeout(() => {
             if (!rendered) {
-                setUnavailable(true);
+                // the frame loads for error pages too, so loaded means the wrong document came back
+                fail(`timed out, frame ${loadedRef.current ? 'loaded' : 'never loaded'}`);
             }
         }, EMBED_RENDERER_TIMEOUT);
 
@@ -206,6 +219,8 @@ function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
             window.removeEventListener('message', handleMessage);
             window.clearTimeout(timeout);
         };
+        // `fail` is recreated every render and mustn't restart the handshake
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [html, rendererUrl]);
 
     if (unavailable) {
@@ -221,7 +236,10 @@ function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
             sandbox={EMBED_RENDERER_PERMISSIONS}
             src={rendererUrl}
             tabIndex={-1}
-            title="embed-card-iframe">
+            title="embed-card-iframe"
+            onLoad={() => {
+                loadedRef.current = true;
+            }}>
         </iframe>
     );
 }
