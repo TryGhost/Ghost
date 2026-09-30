@@ -61,11 +61,7 @@ interface GiftPageContext {
   pageData?: {
     giftStep?: GiftStep;
   };
-  site: Site | null;
-}
-
-function getTierPriceLabel(product: GiftProduct, months: GiftDuration) {
-  return formatGiftValue(getGiftPrice(product, months));
+  site: (Site & { locale?: string }) | null;
 }
 
 function getPortalHash(page: string | null) {
@@ -85,6 +81,9 @@ const GiftPage = () => {
   const { site, member, brandColor, action, doAction, lastPage, pageData } = useContext(
     AppContext,
   ) as GiftPageContext;
+  const getTierPriceLabel = (product: GiftProduct, months: GiftDuration) => {
+    return formatGiftValue(getGiftPrice(product, months), site?.locale);
+  };
   const routeStep: GiftStep = pageData?.giftStep === 'delivery' ? 'delivery' : 'plan';
   const [step, setStep] = useState<GiftStep>(routeStep);
   const [formState, setFormState] = useSessionStorageState({
