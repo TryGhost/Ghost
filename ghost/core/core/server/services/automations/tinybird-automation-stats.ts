@@ -12,6 +12,7 @@ export type TinybirdClient = {
       timezone?: string;
       dateFrom?: string;
       dateTo?: string;
+      runStatus?: string;
     },
   ): Promise<unknown>;
 };
@@ -139,6 +140,48 @@ export async function fetchAutomationPerformanceStats(
     return stats;
   } catch (error) {
     logging.error('Error fetching Tinybird automation performance stats:', error);
+    return null;
+  }
+}
+
+const automationRunsSchema = z
+  .array(
+    z
+      .object({
+        id: z.string().min(1),
+        created_at: z.iso.datetime().transform((value) => new Date(value).toISOString()),
+        status: z.enum(['in_progress', 'completed', 'exited_early']),
+        failed: z.boolean(),
+      })
+      .refine((run) => !run.failed || run.status === 'exited_early'),
+  )
+  .max(50);
+
+export async function fetchAutomationRuns(
+  client: TinybirdClient,
+  automationId: string,
+  status?: 'in_progress' | 'completed' | 'exited_early',
+  options: { dateFrom?: string; dateTo?: string; timezone?: string } = {},
+) {
+  try {
+    const rows = await client.fetch('api_automation_runs', {
+      version: '',
+      automationId,
+      runStatus: status,
+      ...options,
+    });
+    const parsed = automationRunsSchema.safeParse(rows);
+    if (
+      !parsed.success ||
+      new Set(parsed.data.map((row) => row.id)).size !== parsed.data.length ||
+      (status && parsed.data.some((row) => row.status !== status))
+    ) {
+      logging.error('Unexpected response from the Tinybird automation runs pipe');
+      return null;
+    }
+    return parsed.data;
+  } catch (error) {
+    logging.error('Error fetching Tinybird automation runs:', error);
     return null;
   }
 }
