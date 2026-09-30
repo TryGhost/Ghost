@@ -1,4 +1,4 @@
-import { Button } from '@tryghost/shade/components';
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
@@ -304,34 +304,41 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           />
           {/* Always visible so the action stays discoverable and remains
                     available on touch devices. */}
-          <Button
-            // The 32px margin on top of the row's gap separates
-            // the action from the analytics figures beside it. It is an
-            // action rather than another figure, so it needs to read as
-            // separate from the run of metrics.
-            // Margin rather than a wider row gap, which would push the
-            // title away from the metrics too.
-            className={cn(
-              'my-4 shrink-0',
-              isAdmin7 ? 'ms-8' : 'ms-2',
-              isAdmin7 ? isHovered && 'bg-background' : 'bg-control-surface px-4',
-            )}
-            size={isAdmin7 ? 'icon' : undefined}
-            variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
-            asChild
-          >
-            <a
-              aria-label={action.label}
-              data-testid="post-list-item-action"
-              href={action.href}
-              rel={action.external ? 'noopener noreferrer' : undefined}
-              target={action.external ? '_blank' : undefined}
-              title={action.label}
-              data-ignore-select
-            >
-              <action.Icon />
-            </a>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                // The 32px margin on top of the row's gap separates
+                // the action from the analytics figures beside it. It is an
+                // action rather than another figure, so it needs to read as
+                // separate from the run of metrics.
+                // Margin rather than a wider row gap, which would push the
+                // title away from the metrics too.
+                className={cn(
+                  'my-4 shrink-0',
+                  isAdmin7 ? 'ms-8' : 'ms-2',
+                  isAdmin7
+                    ? 'text-muted-foreground hover:bg-background hover:text-foreground'
+                    : 'bg-control-surface px-4',
+                  isAdmin7 && isHovered && 'bg-background',
+                )}
+                size={isAdmin7 ? 'icon' : undefined}
+                variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+                asChild
+              >
+                <a
+                  aria-label={action.label}
+                  data-testid="post-list-item-action"
+                  href={action.href}
+                  rel={action.external ? 'noopener noreferrer' : undefined}
+                  target={action.external ? '_blank' : undefined}
+                  data-ignore-select
+                >
+                  <action.Icon />
+                </a>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent variant="white">{action.label}</TooltipContent>
+          </Tooltip>
         </Inline>
       </li>
     );
