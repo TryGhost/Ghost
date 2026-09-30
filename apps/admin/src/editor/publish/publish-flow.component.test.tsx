@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
@@ -325,6 +325,26 @@ describe('Publish flow', () => {
     expect(publishedAt).toMatch(/T\d\d:\d\d:\d\d\.000Z$/);
     expect(localStorage.getItem('ghost-last-scheduled-post')).not.toBeNull();
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+  });
+
+  it('rotates disclosure chevrons only 180 degrees alongside legacy Admin CSS', async () => {
+    const legacyStyle = document.createElement('style');
+    legacyStyle.textContent = '.rotate-180 { transform: rotate(180deg); }';
+    document.head.appendChild(legacyStyle);
+    onTestFinished(() => legacyStyle.remove());
+    await renderPublishFlow();
+
+    const trigger = publishScreen.setting('publish-type');
+    const chevron = () => trigger.element().querySelector(':scope > svg')!;
+    expect(getComputedStyle(chevron()).rotate).toBe('none');
+
+    await trigger.click();
+    await expect.poll(() => getComputedStyle(chevron()).rotate).toBe('180deg');
+    expect(getComputedStyle(chevron()).transform).toBe('none');
+
+    await trigger.click();
+    await expect.poll(() => getComputedStyle(chevron()).rotate).toBe('none');
+    expect(getComputedStyle(chevron()).transform).toBe('none');
   });
 
   it('keeps timing radios in place when scheduling fields appear and disappear', async () => {
