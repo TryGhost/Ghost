@@ -93,7 +93,7 @@ prefix also supports the automation list. Queries use `FINAL` before aggregating
 Changing sorting keys rebuilds the materialized tables from the raw event
 datasources, which have no TTL. Deploy the related datafiles together.
 
-The performance pipe classifies each run once, then fills a daily calendar with zero counts
+The performance pipe classifies each run once, then fills a calendar with zero counts
 for missing dates through today in the requested timezone. Core derives the chart and status totals from that same
 result. The latest step categories use a bit mask: pending=1, finished=2, known
 exit=4, unknown=8. Any unknown bit fails the API request. Otherwise pending wins;
@@ -106,3 +106,10 @@ or deduplication strategy: inserted versions include retries and status changes.
 Run `tb test run` to check the performance pipe against the committed fixtures,
 including duplicates, old versions, missing history, unknown statuses, daily
 buckets, and site isolation.
+
+The performance pipe automatically groups single-day results by hour. Hourly
+keys are UTC timestamps, so repeated local hours remain distinct. The calendar
+uses local midnight boundaries and fills through the current hour for today.
+Longer ranges use daily dates. Missing-parameter behavior is
+provided by Tinybird's required parameters; do not snapshot its error prose,
+which differs between CLI/runtime environments.

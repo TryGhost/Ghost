@@ -6,9 +6,9 @@ const controller = {
   read: {
     headers: { cacheInvalidate: false },
     data: ['id'],
-    options: ['timezone'],
+    options: ['date_from', 'date_to', 'timezone'],
     permissions: { docName: 'automations', method: 'read' },
-    async query(frame: { data: { id: string }; options: { timezone?: unknown } }) {
+    async query(frame: { data: { id: string }; options: Record<string, unknown> }) {
       return await automationsApi.readPerformanceStats(frame.data.id, frame.options);
     },
   },

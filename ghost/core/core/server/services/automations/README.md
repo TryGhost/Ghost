@@ -32,10 +32,10 @@ not load actions, email contents, or email statistics.
     "in_progress_run_count": 4,
     "completed_run_count": 6,
     "exited_early_run_count": 2,
-    "entries": [{"date": "2026-09-14", "count": 12}],
+    "entries": [{"date": "2026-09-14", "count": 12}, {"date": "2026-09-15", "count": 0}],
     "entry_window": {
       "date_from": "2026-09-14",
-      "date_to": "2026-09-15",
+      "date_to": "2026-09-16",
       "bucket": "day",
       "timezone": "UTC"
     }
@@ -45,7 +45,7 @@ not load actions, email contents, or email statistics.
 
 One Tinybird query classifies each run using its latest recorded steps and groups
 the counts by entry date. Core derives both the chart and the three status totals
-from those same daily rows. The cards sum to the total entries count.
+from those same rows. The cards sum to the total entries count.
 
 - **In progress:** any pending step, provided every step has a known status.
 - **Completed:** all recorded steps finished.
@@ -56,14 +56,14 @@ Runs with no recorded steps are excluded from both chart and cards. An unexpecte
 step status fails the request, including when another step is pending. There is no
 partial-success message or fourth user-facing status category.
 
-One entry is one run, including repeat entries and deleted members. Tinybird fills missing days
+One entry is one run, including repeat entries and deleted members. Tinybird fills missing hours or days
 with zero from the first included entry through today. Empty histories
-return a zero total and one zero bucket for today. `date_from` is inclusive and
+return a zero total and zero-filled hourly buckets for today. `date_from` is inclusive and
 `date_to` is exclusive. The optional `timezone` parameter accepts an IANA timezone and defaults to UTC.
-It controls daily grouping and today’s date. Admin should pass the browser
-timezone, consistent with web analytics. This endpoint has no date-filter parameters yet.
+It controls calendar grouping and today’s date. Admin should pass the browser
+timezone, consistent with web analytics. Optional date filters are described below.
 
-Admin uses the shared analytics grouping rules: daily under 91 days, weekly for
+Admin uses the shared analytics grouping rules: hourly for a single day, daily under 91 days, weekly for
 91–270 days, and monthly for longer spans. Grouping does not limit the history to
 the web analytics 1,000-day fetch window.
 
@@ -82,3 +82,31 @@ empty Tinybird response still returns zero counts rather than falling back.
 The `automationRunAnalytics` flag controls presentation. See the
 [Tinybird storage notes](../../data/tinybird/README.md#automation-statistics)
 for sorting keys, migration behavior, and query tests.
+
+### Performance date ranges
+
+The performance endpoint accepts `date_from` and `date_to` as inclusive
+`YYYY-MM-DD` calendar dates, plus an optional `timezone` (UTC by default).
+Omit both dates for all time, or supply `date_from` with an optional `date_to`.
+When `date_to` is omitted, the range ends today in the requested timezone.
+An end date without a start date, invalid dates, reversed ranges, dates after
+today in the requested timezone, and unknown timezones return 422 before querying Tinybird.
+
+The range selects runs by entry time. Entries, totals, and current status
+counts all describe those same runs; step status is not restricted to the entry
+dates. Tinybird uses local midnight boundaries, including 23- and 25-hour DST
+days. The response `entry_window.date_to` is exclusive. Tinybird fills every requested
+day, including empty ranges and zero counts at the boundaries. Core rejects
+out-of-range response buckets.
+
+Without dates, all recorded history is included through today in the requested
+timezone. The all-time query has no fixed lookback limit.
+
+### Hourly entry history
+
+Entries are grouped hourly when the selected calendar range is one day, or when
+all-time history fits within today. Longer ranges remain daily, matching web
+analytics. Hourly entry dates are UTC ISO timestamps; `entry_window.bucket`
+is `hour`. Window boundaries remain local calendar dates in the requested
+timezone, with an exclusive end. Today includes buckets through the current
+hour; historical days include every hour, including 23/25-hour DST days.

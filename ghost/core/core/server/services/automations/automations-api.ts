@@ -11,7 +11,7 @@ import {
   fetchAutomationStats,
   fetchAutomationPerformanceStats,
 } from './tinybird-automation-stats';
-import { getEntryStatsWindow, parseEntryStatsTimezone } from './automation-entry-stats';
+import { entryDate, getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
 const { knex } = require('../../data/db');
@@ -27,6 +27,7 @@ const lexicalLib = require('../../lib/lexical');
 const MAX_AUTOMATION_ACTIONS = 50;
 
 const messages = {
+  tinybirdEntriesOutsideRange: 'Tinybird returned entries outside the requested range.',
   tinybirdPerformanceStatsFailed: 'Could not load Tinybird automation performance stats.',
 
   automationNotFound: 'Automation not found.',
@@ -142,10 +143,7 @@ export async function read(automationId: string) {
   return automation;
 }
 
-export async function readPerformanceStats(
-  automationId: string,
-  options: { timezone?: unknown } = {},
-) {
+export async function readPerformanceStats(automationId: string, options: unknown = {}) {
   const exists = await repository.exists(automationId);
   if (!exists) {
     throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
@@ -157,14 +155,30 @@ export async function readPerformanceStats(
       message: tpl(messages.tinybirdPerformanceStatsFailed),
     });
   }
-  const timezone = parseEntryStatsTimezone(options.timezone);
-  const stats = await fetchAutomationPerformanceStats(client, automationId, timezone);
+  const { timezone, window: requestedWindow } = parseEntryStatsOptions(options);
+  const stats = await fetchAutomationPerformanceStats(client, automationId, {
+    timezone,
+    ...(requestedWindow
+      ? { dateFrom: requestedWindow.date_from, dateTo: requestedWindow.date_to }
+      : {}),
+  });
   if (stats === null) {
     throw new errors.InternalServerError({
       message: tpl(messages.tinybirdPerformanceStatsFailed),
     });
   }
-  const entryWindow = getEntryStatsWindow(stats.entries, timezone);
+  const returnedWindow = getEntryStatsWindow(stats.entries, timezone);
+  const entryWindow = requestedWindow
+    ? { ...requestedWindow, bucket: returnedWindow.bucket }
+    : returnedWindow;
+  if (
+    stats.entries.some(({ date }) => {
+      const day = entryDate(date, timezone);
+      return day < entryWindow.date_from || day >= entryWindow.date_to;
+    })
+  ) {
+    throw new errors.InternalServerError({ message: tpl(messages.tinybirdEntriesOutsideRange) });
+  }
   return {
     automation_id: automationId,
     ...stats,

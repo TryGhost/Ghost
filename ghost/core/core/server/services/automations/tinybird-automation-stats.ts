@@ -10,6 +10,8 @@ export type TinybirdClient = {
       version: string;
       automationId?: string;
       timezone?: string;
+      dateFrom?: string;
+      dateTo?: string;
     },
   ): Promise<unknown>;
 };
@@ -84,7 +86,7 @@ export type AutomationPerformanceStats = EntryStatsData & {
 };
 
 const performanceRowSchema = z.object({
-  date: z.iso.date(),
+  date: z.union([z.iso.date(), z.iso.datetime()]),
   in_progress_run_count: runCountSchema,
   completed_run_count: runCountSchema,
   exited_early_run_count: runCountSchema,
@@ -96,13 +98,14 @@ const performanceRowSchema = z.object({
 export async function fetchAutomationPerformanceStats(
   client: TinybirdClient,
   automationId: string,
-  timezone = 'UTC',
+  options: { dateFrom?: string; dateTo?: string; timezone?: string } = {},
 ): Promise<AutomationPerformanceStats | null> {
   try {
     const rows = await client.fetch('api_automation_performance_stats', {
       version: '',
       automationId,
-      timezone,
+      timezone: 'UTC',
+      ...options,
     });
     const parsed = z.array(performanceRowSchema).min(1).safeParse(rows);
     if (
