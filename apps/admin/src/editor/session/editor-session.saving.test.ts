@@ -8,6 +8,7 @@ import {
   sessionHarness,
   type HarnessHooks,
 } from '@/editor/session/__test-utils__/session-harness';
+import { TITLE_MAX, TITLE_TOO_LONG } from './settings-fields';
 
 describe('createEditorSession', () => {
   it('loads a post clean and dirties it on the first edit', () => {
@@ -264,6 +265,25 @@ describe('createEditorSession', () => {
       isDirty: false,
       titleDirty: false,
     });
+  });
+
+  it('holds a title past the limit from a field save and refuses an explicit one', async () => {
+    const { session, state } = sessionHarness({ record: record() });
+
+    session.patchTitle('a'.repeat(TITLE_MAX + 1));
+    session.commitField();
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(session.getView().pendingSave).toMatchObject({
+      blockedBy: { kind: 'validation', message: TITLE_TOO_LONG },
+    });
+    expect(await session.dispatchExplicit()).toMatchObject({
+      kind: 'failed',
+      error: { kind: 'validation', message: TITLE_TOO_LONG },
+    });
+    expect(state.updates).toHaveLength(0);
   });
 
   it('leaves tags out of the payload so edits elsewhere survive', async () => {

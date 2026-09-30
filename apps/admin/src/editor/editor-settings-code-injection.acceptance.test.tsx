@@ -26,6 +26,7 @@ import {
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { CODE_INJECTION_HEAD_TOO_LONG, CODE_INJECTION_MAX } from '@/editor/session/settings-fields';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
@@ -284,6 +285,36 @@ describe('Post settings code injection', () => {
 
     await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
     await expect.element(headEditor()).toHaveTextContent('<script>onClose();</script>');
+  });
+
+  it('refuses to save header code longer than the field holds', async () => {
+    // Lines keep CodeMirror's viewport light; the last one pads to the limit exactly.
+    const lines = '<!-- a line of saved code -->\n'.repeat(2000);
+    const saveApi = fakeSavablePost({
+      codeinjection_head: lines + 'a'.repeat(CODE_INJECTION_MAX - lines.length),
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
+
+    // The label focuses the editor; a click on its content would aim far below the pane.
+    await editorScreen.settingsSubviewPane().getByText(codeInjectionHeadLabel).click();
+    await userEvent.keyboard('{ControlOrMeta>}{End}{/ControlOrMeta}b');
+    await footEditor().click();
+
+    await expect.element(headEditor()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(headEditor()).toHaveAccessibleDescription(CODE_INJECTION_HEAD_TOO_LONG);
+    await expect
+      .element(editorScreen.pendingSaveNotice())
+      .toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
+    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect
+      .element(editorScreen.saveErrorBanner())
+      .toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
+    expect(saveApi.requests).toHaveLength(0);
   });
 
   it.each(['codeinjection_head', 'codeinjection_foot'] as const)(

@@ -76,12 +76,12 @@ The live document remains the source of truth: Update enables, the post stays
 dirty, and leaving requires a save or confirmation.
 
 All saves use the same preparation validator. An incomplete tier pairing on a
-post that exists, an over-long meta/social field, an emptied author list, or a
-newly staged future publish time holds a background save with a validation
-blocker. Body autosave, title and image commits follow the same rule, including
-an already armed timer or queued request. The editor explains why changes are
-waiting even when the settings panel is closed. A saved future publish time is
-not itself invalid.
+post that exists, an over-long title, excerpt, code injection or meta/social
+field, an emptied author list, or a newly staged future publish time holds a
+background save with a validation blocker. Body autosave, title and image
+commits follow the same rule, including an already armed timer or queued
+request. The editor explains why changes are waiting even when the settings
+panel is closed. A saved future publish time is not itself invalid.
 
 A post the server has not created yet is not held to the tier rule. Its saves
 go ahead with the incomplete pair left out of the write and of the submitted
@@ -124,10 +124,12 @@ without tiers. The publish flow's email extras — the newsletter, the recipient
 segment and the email-only flag — ride on the command that carried them rather
 than on the projection.
 
-The whole payload is validated before the request: the settings rules above in
-their own order, then the publish time, then the author list. A failure there is
-typed exactly as one the server would have reported, so the save fails with that
-kind and sends nothing.
+The whole payload is validated before the request: the title, then the settings
+rules above in their own order, then the publish time, then the author list. A
+failure there is typed exactly as one the server would have reported, so the
+save fails with that kind and sends nothing. Each length is counted as the
+server counts it: the title trimmed, with an emoji and its presentation selector
+as one character, and every other field by code point.
 
 A failure the transport reports is mapped onto the same kinds, so the engine's
 state machine reads them the same way: an `UPDATE_COLLISION` code becomes
@@ -138,6 +140,10 @@ failure, a payload the server refuses as too large and a 422 become
 `validation`, because a payload refused outright has to suppress background
 saves the way a validation failure does or it retries on every edit; a 404
 becomes `not-found`; and anything else becomes `unknown`.
+
+A `validation` failure the server reports carries the server's reason as its
+message. The server sends that reason as the error's context beside a generic
+summary, and the summary is used only when there is no context.
 
 ## Adopting the server's answer
 

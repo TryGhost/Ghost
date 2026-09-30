@@ -31,6 +31,14 @@ a component reading a query key it shares with a screen outside the editor opts
 out too. `layering.ts` carries the z-index a confirmation dialog opened from
 inside another editor surface needs in order to paint above it.
 
+## Title and excerpt limits
+
+The title is held to 255 characters, counted as the server counts a title:
+trimmed, with an emoji and its presentation selector as one character. Past
+that the title says so beneath itself and nothing is saved, and a save the
+writer asks for is refused with the same message. The inline excerpt is held to
+300 characters the same way, and its divider turns red while it is past them.
+
 ## Opening the publish flow
 
 A draft opens the publish flow from three places: the header's Publish button,
