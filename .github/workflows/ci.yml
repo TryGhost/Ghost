@@ -2544,9 +2544,10 @@ jobs:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya
           event-type: ghost-artifacts-ready
+          # PR ref is the head SHA to match the `sha-<short>` image tag, not the merge commit
           client-payload: >-
             {
-              "ref": "${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || github.sha }}",
+              "ref": "${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || github.event.pull_request.head.sha || github.sha }}",
               "source_repo": "${{ github.repository }}",
               "pr_number": "${{ steps.params.outputs.pr_number }}",
               "deploy": "${{ steps.params.outputs.deploy }}",
