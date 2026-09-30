@@ -5,6 +5,7 @@ import ObjectId from 'bson-objectid';
 import logging from '@tryghost/logging';
 import { dequal } from 'dequal';
 import { type Knex } from 'knex';
+import { DefaultMap } from '../../../shared/default-map';
 // @ts-expect-error This module currently lacks type definitions.
 import lexicalLib from '../../lib/lexical';
 import urlUtils from '../../../shared/url-utils';
@@ -377,7 +378,7 @@ export function createDatabaseAutomationsRepository({
         const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
 
         const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
-        const newOpensPerRevision = new Map<string, number>();
+        const newOpensPerRevision = new DefaultMap<string, number>(() => 0);
 
         for (const [
           id,
@@ -404,7 +405,7 @@ export function createDatabaseAutomationsRepository({
           if (openedAt && notYetOpened.has(id)) {
             newOpensPerRevision.set(
               automationActionRevisionId,
-              (newOpensPerRevision.get(automationActionRevisionId) ?? 0) + 1,
+              newOpensPerRevision.get(automationActionRevisionId) + 1,
             );
           }
         }
