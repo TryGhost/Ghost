@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { PageHeader } from '@tryghost/shade/patterns';
@@ -204,6 +205,7 @@ function PublishActions({
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
+  const navigate = useNavigate();
   const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
   const limits = usePublishLimits();
@@ -342,6 +344,15 @@ function PublishActions({
           user={inputs.user}
           onBeforePublish={saveBeforePublish}
           onClose={closeFlow}
+          onCompleted={({ postId, isScheduled, hasEmail }) => {
+            if (post.displayName === 'page') {
+              navigate('/pages');
+            } else if (!isScheduled && (hasEmail || post.email || post.emailOnly)) {
+              navigate(`/posts/analytics/${postId}`);
+            } else {
+              navigate('/posts');
+            }
+          }}
           onPreview={onPreview}
           onRevertToDraft={revertToDraft}
         />
