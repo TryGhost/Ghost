@@ -52,8 +52,13 @@ export interface ResourceCapture {
   readonly lastRequest: BrowseQuery | undefined;
 }
 
-/** The entities to serve: one world for every request, or per-request via a function of the parsed query. */
-export type RespondWith<TEntity> = TEntity[] | ((query: BrowseQuery) => TEntity[]);
+/**
+ * The entities to serve: one world for every request, or per-request via a
+ * function of the parsed query — async to hold the response (e.g. on a `deferred`).
+ */
+export type RespondWith<TEntity> =
+  | TEntity[]
+  | ((query: BrowseQuery) => TEntity[] | Promise<TEntity[]>);
 
 /** How much query behavior the fake implements — see THE RULE on `defineResource`. */
 export type ResourceSemantics<TEntity> =
@@ -161,7 +166,7 @@ export function defineResource<TEntity>({
     const requests: BrowseQuery[] = [];
 
     registerRoute('GET', `/${resource}/?…`);
-    registerAdminApiHandler((request, apiPath) => {
+    registerAdminApiHandler(async (request, apiPath) => {
       const isBrowse =
         request.method === 'GET' &&
         (apiPath === `/${resource}/` || apiPath.startsWith(`/${resource}/?`));
@@ -172,7 +177,7 @@ export function defineResource<TEntity>({
       const query = parseBrowseQuery(request);
       requests.push(query);
 
-      const declared = typeof respondWith === 'function' ? respondWith(query) : respondWith;
+      const declared = typeof respondWith === 'function' ? await respondWith(query) : respondWith;
 
       let matching = declared;
       if (semantics.kind === 'declared-query') {

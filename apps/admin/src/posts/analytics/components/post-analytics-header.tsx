@@ -106,12 +106,13 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     });
   }, [isShareOpen, canManageGiftLink]);
 
-  // Use the active visitors hook with post-specific filtering
-  const { activeVisitors, isLoading: isActiveVisitorsLoading } = useActiveVisitors({
+  // Held until the post has loaded: without its uuid the count is site-wide
+  const { activeVisitors, isLoading: isActiveVisitorsQueryLoading } = useActiveVisitors({
     postUuid: post?.uuid,
     statsConfig,
-    enabled: webAnalyticsEnabled,
+    enabled: webAnalyticsEnabled && Boolean(post?.uuid),
   });
+  const isActiveVisitorsLoading = isPostLoading || isActiveVisitorsQueryLoading;
 
   // Determine which tabs to show based on post type and settings
   const availableTabs = useMemo(() => {
