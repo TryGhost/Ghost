@@ -88,11 +88,13 @@ module.exports.createSessionFromToken = () => {
   ssoAdapter.setUserRepository({
     async getByEmail(email) {
       const user = await models.User.findOne({ email });
-      return user ? { id: user.id, email: user.get('email') } : null;
+      return user ? { id: user.id, email: user.get('email'), status: user.get('status') } : null;
     },
     async getOwner() {
       const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
-      return owner ? { id: owner.id, email: owner.get('email') } : null;
+      return owner
+        ? { id: owner.id, email: owner.get('email'), status: owner.get('status') }
+        : null;
     },
   });
 
