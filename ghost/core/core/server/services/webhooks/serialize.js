@@ -108,6 +108,10 @@ module.exports =
       );
     }
 
+    if (event === 'member.edited' && model._previousMetafields) {
+      previous.metafields = model._previousMetafields;
+    }
+
     const payload = {
       [docName.replace(/s$/, '')]: {
         current,
