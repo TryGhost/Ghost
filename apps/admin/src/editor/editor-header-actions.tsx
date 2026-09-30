@@ -88,7 +88,12 @@ export function EditorHeaderActions({
   const isDraft = post.status === 'draft';
 
   usePreviewShortcut(
-    useCallback(() => setPreviewOpen((open) => !open), []),
+    useCallback(() => {
+      setPreviewOpen(!previewOpen);
+      if (previewOpen) {
+        onOpenFlow('none');
+      }
+    }, [onOpenFlow, previewOpen]),
     isDraft && persistedId !== null,
   );
 
@@ -236,6 +241,15 @@ function PublishActions({
     onOpenFlow('publish');
   }, [onOpenFlow]);
   const { onOpenChange: setPreviewOpen } = preview;
+  const changePreviewOpen = useCallback(
+    (open: boolean) => {
+      setPreviewOpen(open);
+      if (!open) {
+        closeFlow();
+      }
+    },
+    [closeFlow, setPreviewOpen],
+  );
   const publishFromPreview = useCallback(() => {
     setOpenedFromPreview(true);
     setPreviewOpen(false);
@@ -285,6 +299,7 @@ function PublishActions({
             {...preview}
             animate={openFlow !== 'publish'}
             publishDisabled={!inputs.isReady}
+            onOpenChange={changePreviewOpen}
             onPublish={publishFromPreview}
           />
         </>

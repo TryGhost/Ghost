@@ -732,21 +732,32 @@ describe('Editor header actions', () => {
     await expect(editorScreen.publishInputsError()).toHaveCount(0);
   });
 
-  it('returns to the publish flow when the preview it opened is closed', async () => {
-    publishChrome();
-    fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it.each(['Close', 'Escape', 'preview shortcut'])(
+    'returns to the editor when a preview opened from Publish is dismissed with %s',
+    async (closeWith) => {
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await editorScreen.publishButton().click();
-    await publishScreen.previewButton().click();
-    await expect.element(previewScreen.modal()).toBeVisible();
+      await editorScreen.publishButton().click();
+      await publishScreen.previewButton().click();
+      await expect.element(previewScreen.modal()).toBeVisible();
 
-    await previewScreen.closeButton().click();
+      if (closeWith === 'Close') {
+        await previewScreen.closeButton().click();
+      } else {
+        await userEvent.keyboard(closeWith === 'Escape' ? '{Escape}' : '{Meta>}p{/Meta}');
+      }
 
-    await expect(previewScreen.modal()).toHaveCount(0);
-    await expect.element(publishScreen.options()).toBeVisible();
-    await expect.element(publishScreen.previewButton()).toHaveFocus();
-  });
+      await expect(previewScreen.modal()).toHaveCount(0);
+      await expect(publishScreen.root()).toHaveCount(0);
+      await expect.element(editorScreen.publishButton()).toHaveFocus();
+
+      await editorScreen.publishButton().click();
+      await expect.element(publishScreen.options()).toBeVisible();
+      expect(getComputedStyle(publishScreen.root().element()).animationName).not.toBe('none');
+    },
+  );
 
   it('publishes from a preview opened by the header Preview button', async () => {
     publishChrome();
