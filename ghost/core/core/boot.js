@@ -142,6 +142,12 @@ async function initCore({ ghostServer, config }) {
   await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
   debug('End: settings');
 
+  // Signing keys come from settings and must be ready before anything signs or serves a JWKS
+  debug('Begin: signing keys');
+  const signingKeys = require('./server/services/signing-keys');
+  await signingKeys.init();
+  debug('End: signing keys');
+
   debug('Begin: i18n');
   const i18n = require('./server/services/i18n');
   await i18n.init();
@@ -570,6 +576,14 @@ async function initBackgroundServices({ config }) {
   try {
     const memberJobs = require('./server/services/members/jobs');
     await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  try {
+    const signingKeys = require('./server/services/signing-keys');
+    await signingKeys.scheduleCheckJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);

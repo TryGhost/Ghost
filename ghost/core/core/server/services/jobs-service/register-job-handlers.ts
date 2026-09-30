@@ -21,6 +21,8 @@ import ProcessWebmentionJob from '../mentions/process-webmention-job';
 import SendWebmentionsJob from '../mentions/send-webmentions-job';
 import type EmailService from '../email-service/email-service';
 import SendEmailJob from '../email-service/jobs/send-email-job';
+import CheckSigningKeysJob from '../signing-keys/check-signing-keys-job';
+import * as signingKeys from '../signing-keys';
 
 const updateCheck = require('../update-check');
 
@@ -114,6 +116,10 @@ export default function registerJobHandlers({
 
   jobsService.handle(UpdateCheckJob, async () => {
     await updateCheck({ rethrowErrors: true });
+  });
+
+  jobsService.handle(CheckSigningKeysJob, async () => {
+    await signingKeys.getInstance().check();
   });
 
   jobsService.handle(
