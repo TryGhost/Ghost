@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { page } from 'vitest/browser';
 import { focusManager } from '@tanstack/react-query';
 
@@ -309,6 +309,86 @@ describe('Post analytics overview', () => {
     await expect
       .element(postAnalyticsScreen.emailSendingStatusLine())
       .toHaveTextContent('Less than 1 minute left');
+  });
+
+  it('does not show a send as complete while its status is loading', async () => {
+    seedPostAnalyticsWorld({
+      email: { id: EMAIL_ID, email_count: 1000, opened_count: 0, status: 'submitting' },
+    });
+    let releaseStatus = () => {};
+    const statusReleased = new Promise<void>((resolve) => {
+      releaseStatus = resolve;
+    });
+    // A held request would block teardown if an assertion fails first.
+    onTestFinished(() => releaseStatus());
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, async () => {
+      await statusReleased;
+      return {
+        email_statuses: [
+          {
+            id: EMAIL_ID,
+            sending: {
+              status: 'submitting',
+              progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+            },
+          },
+        ],
+      };
+    });
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(page.getByText(/^Published on your site on/)).toBeVisible();
+    await expect.element(page.getByText(/^Published and sent/)).not.toBeInTheDocument();
+
+    releaseStatus();
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
+    await expect.element(page.getByText(/^Published on your site on/)).toBeVisible();
+  });
+
+  it('only shows an email-only post as sent once the send finishes', async () => {
+    seedPostAnalyticsWorld({
+      email_only: true,
+      status: 'sent',
+      email: { id: EMAIL_ID, email_count: 1000, opened_count: 0, status: 'submitting' },
+    });
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'submitting',
+            progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
+    await expect.element(page.getByText(/^Sent\b/)).not.toBeInTheDocument();
+  });
+
+  it('shows the recipient count for a sent email-only post', async () => {
+    seedPostAnalyticsWorld({ email_only: true, status: 'sent' });
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(page.getByText(/^Sent to 1,000 members on/)).toBeVisible();
   });
 
   it('shows a failed send and its retry action under the title', async () => {

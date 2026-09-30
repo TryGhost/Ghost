@@ -77,29 +77,32 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
-  const {
-    hasNewsletterAnalytics,
-    isNewsletterDataHidden,
-    status: emailSendingStatus,
-  } = useEmailSendingStatusContext();
+  const { hasNewsletterAnalytics, isEmailSent } = useEmailSendingStatusContext();
   const canManageGiftLink = useCanManageGiftLink(post);
   const editorPath = `/editor/post/${postId}`;
   // Whether the editor needs a hash navigation depends on the `editorReact` flag.
   const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
   const siteTimezone = getSiteTimezone(settings);
-  const isPublishedPost = post?.status === 'published';
-  const hasFailedEmail = emailSendingStatus?.sending.status === 'failed';
-  // "and sent" waits for the send to finish, so the recipient count it
-  // carries is the final one rather than a figure that is still moving.
-  const isEmailSent = hasNewsletterAnalytics && !hasFailedEmail && !isNewsletterDataHidden;
-  const showPublishedOnSite = isPublishedPost && !isEmailSent;
-  const showPublishedAndSent = isPublishedPost && isEmailSent;
+  // "Sent" waits for the send to finish, so the recipient count it carries is
+  // the final one rather than a figure that is still moving.
   const emailCount = post?.email?.email_count ?? 0;
   const recipients =
     improveSendingUI && isEmailSent && emailCount > 0
       ? ` to ${formatNumber(emailCount)} ${emailCount === 1 ? 'member' : 'members'}`
       : '';
+  let byline: string | null = null;
+  if (post?.published_at) {
+    const publishedAt = `on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`;
+    if (isEmailOnly(post)) {
+      // An unfinished send is reported by the status line under the title.
+      byline = isEmailSent || !improveSendingUI ? `Sent${recipients} ${publishedAt}` : null;
+    } else if (post.status === 'published') {
+      byline = isEmailSent
+        ? `Published and sent${recipients} ${publishedAt}`
+        : `Published on your site ${publishedAt}`;
+    }
+  }
 
   // Track once per open — canManageGiftLink can flip while the modal is open
   // (current-user query resolving), which must not re-fire the event.
@@ -328,14 +331,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                   >
                     {post?.title}
                   </H1>
-                  {post?.published_at && (
+                  {byline && (
                     <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
-                      {isEmailOnly(post) &&
-                        `Sent${recipients} on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {showPublishedOnSite &&
-                        `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {showPublishedAndSent &&
-                        `Published and sent${recipients} on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                      {byline}
                     </div>
                   )}
                   <PostAnalyticsEmailSendingStatus key={postId} />
