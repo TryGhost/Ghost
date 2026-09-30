@@ -90,7 +90,7 @@ export function ConfirmStep({
         </Text>
       </Stack>
 
-      <Text>
+      <Text className="text-pretty" size="lg">
         {state.isScheduled ? (
           <>
             On <strong>{formatSiteDateTime(state.scheduledAt, timezone)}</strong> your
