@@ -1,7 +1,8 @@
-const assert = require('node:assert/strict');
-const signinEmail = require('../../../../../../core/server/services/auth/session/emails/signin');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import signinEmail from '../../../../../../core/server/services/auth/session/emails/signin';
 
-const t = (s) => s;
+const t = (s: string) => s;
 
 const baseDetails = {
   siteTitle: 'Example Site',
