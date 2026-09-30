@@ -302,10 +302,37 @@ describe('Automation performance stats API', function () {
       );
     });
 
-    // The parser unit tests cover the validation matrix; this checks the HTTP boundary.
-    it('returns 422 for an incomplete range without fetching Tinybird', async function () {
+    it('defaults an omitted end to today in the requested timezone', async function () {
+      clock.setSystemTime(new Date('2026-09-14T01:00:00Z'));
+      const requests = mockStats(
+        200,
+        { data: [zeroRow('2026-09-13')] },
+        {
+          date_from: '2026-09-13',
+          date_to: '2026-09-14',
+          timezone: 'America/New_York',
+        },
+      );
+      const { body } = await requestStats(200, '?date_from=2026-09-13&timezone=America%2FNew_York');
+      assert.ok(requests.isDone());
+      assert.deepEqual(body.automation_performance_stats[0].entry_window, {
+        date_from: '2026-09-13',
+        date_to: '2026-09-14',
+        bucket: 'day',
+        timezone: 'America/New_York',
+      });
+    });
+
+    it('rejects a future date before querying Tinybird', async function () {
       const requests = mockStats(200, { data: [] });
-      await requestStats(422, '?date_from=2024-01-01');
+      await requestStats(422, '?date_from=2026-09-14&date_to=2026-09-15');
+      assert.equal(requests.isDone(), false);
+    });
+
+    // The parser unit tests cover the validation matrix; this checks the HTTP boundary.
+    it('returns 422 for an end date without a start date without fetching Tinybird', async function () {
+      const requests = mockStats(200, { data: [] });
+      await requestStats(422, '?date_to=2024-01-01');
       assert.equal(requests.isDone(), false);
     });
 

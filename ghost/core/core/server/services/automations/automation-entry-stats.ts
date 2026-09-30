@@ -17,15 +17,16 @@ export type EntryStatsData = {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const messages = {
-  incompleteDateRange: 'Supply both date_from and date_to, or neither.',
+  missingStartDate: 'date_from is required when date_to is provided.',
   reversedDateRange: 'date_from must be on or before date_to.',
-  dateRangeEndOverflow: 'date_to must allow a following calendar day.',
+  futureStartDate: 'date_from must not be in the future.',
+  futureEndDate: 'date_to must not be in the future.',
   invalidEntryDateRange: 'Invalid automation entry date range.',
 };
 
 const timezoneSchema = z
   .string()
-  .refine((value) => !!moment.tz.zone(value))
+  .refine((value) => !!moment.tz.zone(value), { abort: true })
   .transform((value) => moment.tz.zone(value)!.name)
   .default('UTC');
 
@@ -41,16 +42,20 @@ const entryStatsOptionsSchema = z
     timezone: timezoneSchema,
   })
   .superRefine((options, context) => {
-    if (!!options.date_from !== !!options.date_to) {
+    if (options.date_to && !options.date_from) {
       context.addIssue({
         code: 'custom',
-        message: messages.incompleteDateRange,
+        message: messages.missingStartDate,
       });
     } else if (options.date_from && options.date_to && options.date_from > options.date_to) {
       context.addIssue({ code: 'custom', message: messages.reversedDateRange });
     }
-    if (options.date_to === '9999-12-31') {
-      context.addIssue({ code: 'custom', message: messages.dateRangeEndOverflow });
+    const today = moment().tz(options.timezone).format('YYYY-MM-DD');
+    if (options.date_from && options.date_from > today) {
+      context.addIssue({ code: 'custom', message: messages.futureStartDate });
+    }
+    if (options.date_to && options.date_to > today) {
+      context.addIssue({ code: 'custom', message: messages.futureEndDate });
     }
   });
 
@@ -71,11 +76,11 @@ export function parseEntryStatsOptions(options: unknown): EntryStatsOptions {
   const { date_from: dateFrom, date_to: dateTo, timezone } = parsed.data;
   return {
     timezone,
-    ...(dateFrom && dateTo
+    ...(dateFrom
       ? {
           window: {
             date_from: dateFrom,
-            date_to: nextDate(dateTo),
+            date_to: nextDate(dateTo ?? moment().tz(timezone).format('YYYY-MM-DD')),
             timezone,
             bucket: 'day' as const,
           },

@@ -87,8 +87,10 @@ for sorting keys, migration behavior, and query tests.
 
 The performance endpoint accepts `date_from` and `date_to` as inclusive
 `YYYY-MM-DD` calendar dates, plus an optional `timezone` (UTC by default).
-Supply both dates or neither. Invalid dates, reversed or incomplete ranges,
-and unknown timezones return 422 before querying Tinybird.
+Omit both dates for all time, or supply `date_from` with an optional `date_to`.
+When `date_to` is omitted, the range ends today in the requested timezone.
+An end date without a start date, invalid dates, reversed ranges, dates after
+today in the requested timezone, and unknown timezones return 422 before querying Tinybird.
 
 The range selects runs by entry time. Entries, totals, and current status
 counts all describe those same runs; step status is not restricted to the entry

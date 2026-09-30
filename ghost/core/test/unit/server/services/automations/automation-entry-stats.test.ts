@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { afterEach, beforeEach, vi } from 'vitest';
 import {
   getEntryStatsWindow,
   parseEntryStatsOptions,
@@ -48,6 +49,43 @@ describe('automation statistics timezone', function () {
 });
 
 describe('automation entry date range', function () {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-14T01:00:00Z'));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it('keeps requests without dates unbounded', function () {
+    assert.equal(parseEntryStatsOptions({}).window, undefined);
+  });
+
+  it.each([
+    ['UTC', '2026-09-14', '2026-09-15'],
+    ['America/New_York', '2026-09-13', '2026-09-14'],
+    ['Pacific/Kiritimati', '2026-09-14', '2026-09-15'],
+  ])(
+    'defaults the end to today in %s and accepts today explicitly',
+    function (timezone, today, end) {
+      const expected = { date_from: today, date_to: end, bucket: 'day', timezone };
+      assert.deepEqual(parseEntryStatsOptions({ date_from: today, timezone }).window, expected);
+      assert.deepEqual(
+        parseEntryStatsOptions({ date_from: today, date_to: today, timezone }).window,
+        expected,
+      );
+    },
+  );
+
+  it.each([
+    [{ date_from: '2026-09-14' }, 'date_from must not be in the future.'],
+    [{ date_from: '2026-09-13', date_to: '2026-09-14' }, 'date_to must not be in the future.'],
+    [{ date_to: '2026-09-13' }, 'date_from is required when date_to is provided.'],
+  ])('rejects invalid boundaries with a clear explanation (%j)', function (options, context) {
+    assert.throws(() => parseEntryStatsOptions({ ...options, timezone: 'America/New_York' }), {
+      errorType: 'ValidationError',
+      context,
+    });
+  });
+
   it.each([
     ['2024-02-28', '2024-03-01', '2024-03-02'],
     ['2024-03-10', '2024-03-10', '2024-03-11'],
@@ -69,7 +107,6 @@ describe('automation entry date range', function () {
   );
 
   it.each([
-    { date_from: '2024-01-01' },
     { date_to: '2024-01-01' },
     { date_from: '2024-02-30', date_to: '2024-03-01' },
     { date_from: '2024-03-02', date_to: '2024-03-01' },
