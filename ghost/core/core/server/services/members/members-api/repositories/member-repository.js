@@ -981,17 +981,46 @@ module.exports = class MemberRepository {
     }
 
     if (this._stripeAPIService.configured && member._changed.email) {
-      await member.related('stripeCustomers').fetch();
-      const customers = member.related('stripeCustomers');
-      for (const customer of customers.models) {
-        await this._stripeAPIService.updateCustomerEmail(
-          customer.get('customer_id'),
-          member.get('email'),
+      if (options.transacting) {
+        // Stripe can't be rolled back, so the new address is sent only once the edit
+        // has committed, and not at all if it rolls back.
+        options.transacting.executionPromise.then(
+          () =>
+            this.updateStripeCustomerEmails(member).catch((err) => {
+              logging.error(
+                {
+                  event: { name: 'members.stripe_customer_email.update_failed' },
+                  err,
+                  memberId: member.id,
+                },
+                'Failed to update the Stripe customer email after a member edit',
+              );
+            }),
+          () => {},
         );
+      } else {
+        await this.updateStripeCustomerEmails(member);
       }
     }
 
     return member;
+  }
+
+  /**
+   * Sends a member's email address to every Stripe customer linked to them.
+   *
+   * @private
+   * @param {object} member
+   */
+  async updateStripeCustomerEmails(member) {
+    await member.related('stripeCustomers').fetch();
+    const customers = member.related('stripeCustomers');
+    for (const customer of customers.models) {
+      await this._stripeAPIService.updateCustomerEmail(
+        customer.get('customer_id'),
+        member.get('email'),
+      );
+    }
   }
 
   async list(options) {
