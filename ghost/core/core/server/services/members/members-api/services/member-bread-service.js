@@ -633,9 +633,7 @@ module.exports = class MemberBREADService {
       // populated `_changed` and fired the edited event during update(), so
       // re-firing would duplicate it (this also covers a full PUT that resends
       // unchanged member fields — `_changed` stays empty there too). That
-      // combined event omits `metafields` from `_changed`, which nothing
-      // reads: metafields aren't in the webhook payload (they're injected
-      // into read/browse responses, not the model), and `_changed` only gates
+      // combined event omits `metafields` from `_changed`, which only gates
       // whether the event fires.
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
       if (memberUnchanged && plannedMetafields.length > 0) {
