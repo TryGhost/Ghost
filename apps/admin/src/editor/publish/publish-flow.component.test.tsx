@@ -6,6 +6,7 @@ import { InAppProviders, fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-
 import {
   publishRecipientFree,
   publishRecipientSegments,
+  publishSettingEmailRecipients,
 } from '@tryghost/test-data/selectors/editor';
 
 import { PublishFlowModal } from '@/editor/publish/publish-flow-modal';
@@ -433,6 +434,63 @@ describe('Publish flow', () => {
       .element()
       .dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await expect.element(publishScreen.options()).toBeInTheDocument();
+  });
+
+  it('keeps recipient section height stable while a new newsletter count loads', async () => {
+    let finishCounts = () => {};
+    const countsPending = new Promise<void>((resolve) => {
+      finishCounts = resolve;
+    });
+    fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, async ({ url }) => {
+      const isMonthly = new URL(url).searchParams.get('filter')?.includes('monthly');
+      if (isMonthly) {
+        await countsPending;
+      }
+      return {
+        members: [],
+        meta: {
+          pagination: {
+            page: 1,
+            limit: 1,
+            pages: 1,
+            total: isMonthly ? 5 : 20,
+            next: null,
+            prev: null,
+          },
+        },
+      };
+    });
+    await renderPublishFlow({
+      site: {
+        ...SITE,
+        newsletters: [
+          ...SITE.newsletters,
+          {
+            slug: 'monthly',
+            name: 'Monthly',
+            status: 'active',
+            visibility: 'members',
+            sortOrder: 1,
+          },
+        ],
+      },
+    });
+    await publishScreen.setting('email-recipients').click();
+    await expect.element(publishScreen.recipientFree()).toHaveAccessibleName('Free (20)');
+    const section = page.getByTestId(publishSettingEmailRecipients);
+    const before = section.element().getBoundingClientRect().height;
+
+    try {
+      await page.getByRole('combobox', { name: 'Newsletter' }).click();
+      await page.getByRole('option', { name: 'Monthly', exact: true }).click();
+      await expect.element(publishScreen.recipientFree()).toHaveAccessibleName('Free');
+      expect(section.element().getBoundingClientRect().height).toBe(before);
+    } finally {
+      finishCounts();
+    }
+
+    await expect.element(publishScreen.recipientFree()).toHaveAccessibleName('Free (5)');
+    expect(section.element().getBoundingClientRect().height).toBe(before);
   });
 
   it('loads every page before exposing tier and label recipients', async () => {

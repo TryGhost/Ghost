@@ -41,7 +41,7 @@ function SegmentCount({ filter }: { filter: string | null }) {
   }
 
   return (
-    <Text as="span" size="sm" tone="secondary">
+    <Text as="span" leading="none" size="sm" tone="secondary">
       ({formatNumber(count)})
     </Text>
   );
