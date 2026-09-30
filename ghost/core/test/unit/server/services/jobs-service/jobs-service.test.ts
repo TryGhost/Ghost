@@ -340,6 +340,63 @@ describe('JobsService', function () {
     });
   });
 
+  describe('isEnabled', function () {
+    it('drops a delivery without running the handler or logging while switched off', async function () {
+      const service = makeService();
+      let runs = 0;
+      service.handle(
+        GreetJob,
+        async () => {
+          runs += 1;
+        },
+        { queue: 'greetings', concurrency: 1, isEnabled: () => false },
+      );
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      await backend.deliver();
+
+      assert.equal(runs, 0);
+      assert.deepEqual(logger.calls.info, []);
+      assert.deepEqual(logger.calls.error, []);
+    });
+
+    it('checks the switch on every delivery', async function () {
+      const service = makeService();
+      let enabled = false;
+      let runs = 0;
+      service.handle(
+        GreetJob,
+        async () => {
+          runs += 1;
+        },
+        { queue: 'greetings', concurrency: 1, isEnabled: () => enabled },
+      );
+      await service.start();
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      await backend.deliver();
+      enabled = true;
+      await backend.deliver();
+
+      assert.equal(runs, 1);
+      assert.equal(logger.calls.info[0]![0], '[Background Job] greet started');
+    });
+
+    it('keeps the switch out of the queue declaration handed to the backend', async function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {}, {
+        queue: 'greetings',
+        concurrency: 2,
+        isEnabled: () => true,
+      });
+
+      await service.start();
+
+      assert.deepEqual(backend.startOptions!.queues, { greetings: { concurrency: 2 } });
+    });
+  });
+
   describe('scheduleRecurring', function () {
     it('hands the backend an envelope and schedule', async function () {
       const service = makeService();
