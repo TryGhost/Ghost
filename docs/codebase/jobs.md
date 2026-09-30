@@ -28,6 +28,11 @@ Current examples include:
 
 - [Gift reminders](../../ghost/core/core/server/services/gifts/jobs/send-gift-reminders-job.ts),
   dispatched on a recurring schedule.
+- [Site content imports](../../ghost/core/core/server/data/importer/jobs/content-import-job.ts),
+  dispatched once in the shared default lane with the key of the stored upload
+  and the name it was uploaded with. Import failures resolve after reporting by
+  email; completion-email failures reject. Testing environments and explicit
+  direct calls still run inline.
 - [Newsletter sending](../../ghost/core/core/server/services/email-service/jobs/send-email-job.ts),
   dispatched once with an email ID.
 - [Email analytics](../../ghost/core/core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts),
@@ -50,10 +55,7 @@ inside `init()`.
 
 The legacy service in `ghost/core/core/server/services/jobs/` wraps
 `@tryghost/job-manager` and remains for unmigrated jobs. Do not add new jobs to
-it. Existing legacy examples include:
-
-- The site content import (`ghost/core/core/server/data/importer/`), which runs
-  as an inline job.
+it.
 
 ## Queues
 
@@ -83,6 +85,9 @@ Awaiting `dispatch()` only waits for the backend's enqueue call. Tests which
 need the work to finish should wait for its observable result. Newsletter
 tests should follow the [email service testing guidance](../../ghost/core/core/server/services/email-service/README.md#testing);
 the legacy job manager's `allSettled` event does not cover class-based jobs.
+Site import tests wait for the completion email, which is sent after the stored
+upload has been deleted. There are no automatic retries and no collection of
+uploads orphaned by a shutdown between dispatch and execution.
 
 ## Scheduling
 

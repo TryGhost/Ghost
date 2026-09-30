@@ -10,9 +10,11 @@ describe('Site importer lifecycle', function () {
     try {
       const importer = require(importerPath);
       assert.throws(() => importer.getInstance(), /before init/);
-      const instance = importer.init();
+      const jobsService = { dispatch() {} };
+      const instance = importer.init({ jobsService });
       assert.equal(importer.getInstance(), instance);
-      const rebooted = importer.init();
+      assert.equal(instance.jobsService, jobsService);
+      const rebooted = importer.init({ jobsService });
       assert.notEqual(rebooted, instance);
       assert.equal(importer.getInstance(), rebooted);
     } finally {

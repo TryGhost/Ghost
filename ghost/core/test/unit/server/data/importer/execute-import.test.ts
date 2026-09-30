@@ -11,7 +11,7 @@ function subject(env = 'production') {
   const deps = {
     handlers: [],
     importers: [],
-    jobManager: { addJob: sinon.stub().resolves() },
+    jobsService: { dispatch: sinon.stub().resolves() },
     mailer: { send: sinon.stub().resolves() },
     config: { get: sinon.stub().returns(env) },
     urlUtils: {
@@ -211,7 +211,7 @@ describe('Site import execution', function () {
       const { manager, deps } = subject(env);
       const direct = env === 'production' ? { runningInJob: true } : {};
       await manager.importFromFile(null, { ...options, ...direct, data: {} });
-      sinon.assert.notCalled(deps.jobManager.addJob);
+      sinon.assert.notCalled(deps.jobsService.dispatch);
       assert.equal(deps.mailer.send.callCount, env === 'production' ? 1 : 0);
     }
   });
@@ -221,7 +221,7 @@ describe('Site import execution', function () {
     const error = new Error('invalid upload');
     sinon.stub(manager, 'loadFile').rejects(error);
     await assert.rejects(manager.importFromFile({ name: 'bad.json' }, options), error);
-    sinon.assert.notCalled(deps.jobManager.addJob);
+    sinon.assert.notCalled(deps.jobsService.dispatch);
     sinon.assert.notCalled(deps.mailer.send);
   });
 });
