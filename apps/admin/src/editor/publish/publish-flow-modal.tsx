@@ -1,5 +1,5 @@
 import { Button } from '@tryghost/shade/components';
-import { Box, Inline, Stack } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useState } from 'react';
@@ -166,7 +166,10 @@ function PublishFlowDialog({
       onOpenChange={(open) => !open && close()}
     >
       <Box className="relative min-h-full">
-        <Inline className="absolute inset-x-0 top-0 p-4" justify="end">
+        <Inline className="absolute inset-x-0 top-0 p-4" justify="between">
+          <Text aria-hidden="true" as="h2" className="text-lg tracking-tight" weight="semibold">
+            Publish
+          </Text>
           <PageHeader.ActionGroup>
             {step === 'complete' ? null : (
               <>

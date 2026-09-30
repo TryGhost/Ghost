@@ -172,7 +172,10 @@ function KeyedUpdateFlowModal({
       onOpenChange={(open) => !open && close()}
     >
       <Box className="relative min-h-full">
-        <Inline className="absolute inset-x-0 top-0 p-4" justify="end">
+        <Inline className="absolute inset-x-0 top-0 p-4" justify="between">
+          <Text aria-hidden="true" as="h2" className="text-lg tracking-tight" weight="semibold">
+            {isScheduled ? 'Unschedule' : 'Unpublish'}
+          </Text>
           <PageHeader.ActionGroup>
             {isSent ? null : (
               <Button variant="outline" onClick={close}>
