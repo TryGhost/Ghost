@@ -1,4 +1,4 @@
-import { Button } from '@tryghost/shade/components';
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
@@ -117,7 +117,11 @@ function FeatureImage({ post }: { post: PostListItem }) {
 
   // `p-0` because the placeholder's own padding is sized for a larger box;
   // here the icon just centres in the thumbnail.
-  return <FeatureImagePlaceholder className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0')} />;
+  return (
+    <FeatureImagePlaceholder
+      className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0 group-hover:brightness-95')}
+    />
+  );
 }
 
 const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps>(
@@ -233,7 +237,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 so the row's own box has to stay flush. */}
         <Inline align="center" className="pr-4" gap="md">
           <a
-            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline"
+            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
             data-testid="post-list-item-link"
             href={href}
             rel={linksOffsite ? 'noopener noreferrer' : undefined}
@@ -249,7 +253,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                     data-testid="post-featured"
                   />
                 )}
-                <Text as="h3" className="truncate" weight="semibold">
+                <Text as="h3" className="truncate tracking-normal" weight="semibold">
                   {post.title}
                 </Text>
               </Inline>
@@ -275,7 +279,15 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   )}
                 </Text>
               ) : (
-                <Text className={statusTone(displayedPost, displayedIsFailed)} size="sm">
+                <Text
+                  className={statusTone(displayedPost, displayedIsFailed)}
+                  size="sm"
+                  weight={
+                    displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
+                      ? 'medium'
+                      : 'regular'
+                  }
+                >
                   {displayedStatusLabel}
                   {/* Mounted only while hovered, as Ember does. A CSS
                                   opacity fade would keep it in the DOM, so a screen
@@ -300,34 +312,41 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           />
           {/* Always visible so the action stays discoverable and remains
                     available on touch devices. */}
-          <Button
-            // The 32px margin on top of the row's gap separates
-            // the action from the analytics figures beside it. It is an
-            // action rather than another figure, so it needs to read as
-            // separate from the run of metrics.
-            // Margin rather than a wider row gap, which would push the
-            // title away from the metrics too.
-            className={cn(
-              'my-4 shrink-0',
-              isAdmin7 ? 'ms-8' : 'ms-2',
-              isAdmin7 ? isHovered && 'bg-background' : 'bg-control-surface px-4',
-            )}
-            size={isAdmin7 ? 'icon' : undefined}
-            variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
-            asChild
-          >
-            <a
-              aria-label={action.label}
-              data-testid="post-list-item-action"
-              href={action.href}
-              rel={action.external ? 'noopener noreferrer' : undefined}
-              target={action.external ? '_blank' : undefined}
-              title={action.label}
-              data-ignore-select
-            >
-              <action.Icon />
-            </a>
-          </Button>
+          <Tooltip delayDuration={1000}>
+            <TooltipTrigger asChild>
+              <Button
+                // The 32px margin on top of the row's gap separates
+                // the action from the analytics figures beside it. It is an
+                // action rather than another figure, so it needs to read as
+                // separate from the run of metrics.
+                // Margin rather than a wider row gap, which would push the
+                // title away from the metrics too.
+                className={cn(
+                  'my-4 shrink-0',
+                  isAdmin7 ? 'ms-8' : 'ms-2',
+                  isAdmin7
+                    ? 'text-muted-foreground hover:bg-background hover:text-foreground'
+                    : 'bg-control-surface px-4',
+                  isAdmin7 && isHovered && 'bg-background',
+                )}
+                size={isAdmin7 ? 'icon' : undefined}
+                variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+                asChild
+              >
+                <a
+                  aria-label={action.label}
+                  data-testid="post-list-item-action"
+                  href={action.href}
+                  rel={action.external ? 'noopener noreferrer' : undefined}
+                  target={action.external ? '_blank' : undefined}
+                  data-ignore-select
+                >
+                  <action.Icon />
+                </a>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent variant="white">{action.label}</TooltipContent>
+          </Tooltip>
         </Inline>
       </li>
     );

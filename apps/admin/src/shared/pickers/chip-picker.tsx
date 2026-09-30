@@ -1,4 +1,4 @@
-import { Badge, inputSurface } from '@tryghost/shade/components';
+import { Badge, tokenFieldClasses } from '@tryghost/shade/components';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
@@ -295,10 +295,7 @@ export function ChipPicker<TOption, TChip>({
       }}
     >
       <div
-        className={cn(
-          inputSurface('within'),
-          'flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 px-3 py-1 text-control',
-        )}
+        className={cn(tokenFieldClasses.field, 'pr-8')}
         data-testid={testIds?.field}
         onClick={() => {
           input.current?.focus();
@@ -307,10 +304,14 @@ export function ChipPicker<TOption, TChip>({
       >
         {/* The whole chip removes, so it is the button rather than carrying one. */}
         {selected.map((chip) => (
-          <Badge key={getKey(chip)} variant={chipVariant?.(chip) ?? 'default'} asChild>
+          <Badge
+            key={getKey(chip)}
+            className={tokenFieldClasses.chip}
+            variant={chipVariant?.(chip) ?? 'default'}
+            asChild
+          >
             <button
               aria-label={`Remove ${getLabel(chip)}`}
-              className="cursor-pointer gap-1 pr-1"
               data-testid={testIds?.chip}
               type="button"
               onClick={(event) => {
@@ -318,7 +319,7 @@ export function ChipPicker<TOption, TChip>({
                 onRemove(getKey(chip));
               }}
             >
-              {getLabel(chip)}
+              <span className="truncate">{getLabel(chip)}</span>
               <LucideIcon.X className="size-3" />
             </button>
           </Badge>
@@ -337,7 +338,7 @@ export function ChipPicker<TOption, TChip>({
           // A visible label the caller renders is the accessible name; a second
           // one here would shadow it.
           aria-label={inputId ? undefined : inputLabel}
-          className="min-w-20 flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground"
+          className={tokenFieldClasses.input}
           data-testid={testIds?.input}
           id={inputId}
           maxLength={maxLength}
@@ -352,7 +353,7 @@ export function ChipPicker<TOption, TChip>({
         />
         {/* Says the field opens a list; without it a bordered box with a
             placeholder reads as a plain text input. */}
-        <LucideIcon.ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+        <LucideIcon.ChevronDown className={tokenFieldClasses.chevron} />
       </div>
       {open && (
         <div className="absolute top-full left-0 z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30">

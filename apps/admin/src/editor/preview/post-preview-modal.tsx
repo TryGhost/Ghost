@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   EmptyIndicator,
   LoadingIndicator,
   Select,
@@ -8,7 +12,6 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectTrigger,
   SelectValue,
   Tabs,
   TabsList,
@@ -21,9 +24,9 @@ import {
   useNewslettersEnabled,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { Inline } from '@tryghost/shade/primitives';
+import { Inline, Stack } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -43,6 +46,7 @@ import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
+import { EmailSubject, type EmailSubjectEditor } from './email-subject';
 import {
   browserPreviewUrl,
   type PreviewAudience,
@@ -60,6 +64,7 @@ interface SegmentOption {
 }
 
 export interface PostPreviewModalProps {
+  subjectEditor?: EmailSubjectEditor;
   open: boolean;
   postId: string;
   /** The post's public preview URL (`/p/:uuid/`), empty until the post has a uuid. */
@@ -78,6 +83,7 @@ export interface PostPreviewModalProps {
 }
 
 export function PostPreviewModal({
+  subjectEditor,
   open,
   postId,
   previewUrl,
@@ -311,141 +317,188 @@ export function PostPreviewModal({
       aria-describedby={undefined}
       data-testid={postPreviewModal}
       headerActions={
-        <>
-          <Inline gap="md">
-            {emailAvailable && (
-              <Tabs
-                value={format}
-                variant="segmented"
-                onValueChange={(value) => changeFormat(value as PreviewFormat)}
-              >
-                <TabsList>
-                  <TabsTrigger value="browser">Web</TabsTrigger>
-                  <TabsTrigger value="email">Email</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            )}
-            <ToggleGroup
-              shape="rounded"
-              type="single"
-              value={device}
-              onValueChange={(value) => {
-                if (value === 'desktop' || value === 'mobile') {
-                  setDevice(value);
-                }
-              }}
-            >
-              <ToggleGroupItem aria-label="Desktop" value="desktop">
-                <LucideIcon.Laptop />
-              </ToggleGroupItem>
-              <ToggleGroupItem aria-label="Mobile" value="mobile">
-                <LucideIcon.Smartphone />
-              </ToggleGroupItem>
-            </ToggleGroup>
-            {showSegmentSelect && (
-              <Select
-                value={segment}
-                onValueChange={(value) => setSegment(value as PreviewSegment)}
-              >
-                <SelectTrigger aria-label="Preview as" className="w-auto">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {segmentOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            {showTierSelect && (
-              <Select value={tierSlug} onValueChange={setPickedTierSlug}>
-                <SelectTrigger aria-label="Tier" className="w-auto">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {activeTiers.length > 0 && (
-                    <SelectGroup>
-                      <SelectLabel>Active tiers</SelectLabel>
-                      {activeTiers.map((tier) => (
-                        <SelectItem key={tier.id} value={tier.slug}>
-                          {tier.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  )}
-                  {archivedTiers.length > 0 && (
-                    <SelectGroup>
-                      <SelectLabel>Archived tiers</SelectLabel>
-                      {archivedTiers.map((tier) => (
-                        <SelectItem key={tier.id} value={tier.slug}>
-                          {tier.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  )}
-                </SelectContent>
-              </Select>
-            )}
-          </Inline>
-          <PageHeader.ActionGroup>
-            <PageHeader.Action
-              disabled={!previewActionsAvailable}
-              label="Copy preview link"
-              iconOnly
-              onClick={() => void copyPreviewLink()}
-            >
-              <LucideIcon.Link />
-            </PageHeader.Action>
-            {previewActionsAvailable ? (
-              <PageHeader.Action label="Open in new tab" asChild>
+        <PageHeader.ActionGroup>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <PageHeader.Action disabled={!previewActionsAvailable} label="Share" iconOnly>
+                <LucideIcon.Share />
+              </PageHeader.Action>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => void copyPreviewLink()}>
+                <LucideIcon.Link />
+                Copy preview link
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <a href={audienceUrl} rel="noopener noreferrer" target="_blank">
                   <LucideIcon.ExternalLink />
                   Open in new tab
                 </a>
-              </PageHeader.Action>
-            ) : (
-              <PageHeader.Action label="Open in new tab" disabled>
-                <LucideIcon.ExternalLink />
-                Open in new tab
-              </PageHeader.Action>
-            )}
-            <Button variant={onPublish ? 'outline' : 'default'} onClick={() => onOpenChange(false)}>
-              Close
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+          {onPublish ? (
+            <Button disabled={publishDisabled} onClick={onPublish}>
+              Publish
             </Button>
-            {onPublish ? (
-              <Button disabled={publishDisabled} onClick={onPublish}>
-                Publish
-              </Button>
-            ) : null}
-          </PageHeader.ActionGroup>
-        </>
+          ) : null}
+        </PageHeader.ActionGroup>
+      }
+      headerControls={
+        <Inline className="min-w-0" gap="md">
+          {emailAvailable && (
+            <Tabs
+              value={format}
+              variant="segmented"
+              onValueChange={(value) => changeFormat(value as PreviewFormat)}
+            >
+              <TabsList className="rounded-full">
+                <TabsTrigger className="rounded-full" value="browser">
+                  Web
+                </TabsTrigger>
+                <TabsTrigger className="rounded-full" value="email">
+                  Email
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+          <ToggleGroup
+            className="hidden shrink-0 sidebar:flex"
+            shape="pill"
+            type="single"
+            value={device}
+            onValueChange={(value) => {
+              if (value === 'desktop' || value === 'mobile') {
+                setDevice(value);
+              }
+            }}
+          >
+            <ToggleGroupItem aria-label="Desktop" value="desktop">
+              <LucideIcon.Laptop />
+            </ToggleGroupItem>
+            <ToggleGroupItem aria-label="Mobile" value="mobile">
+              <LucideIcon.Smartphone />
+            </ToggleGroupItem>
+          </ToggleGroup>
+          {showSegmentSelect && (
+            <Select value={segment} onValueChange={(value) => setSegment(value as PreviewSegment)}>
+              <PageHeader.SelectTrigger
+                className="hidden shrink-0 md:flex"
+                label="Preview as"
+                shape="pill"
+                variant="ghost"
+                showChevron
+              >
+                <SelectValue />
+              </PageHeader.SelectTrigger>
+              <SelectContent>
+                {segmentOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {showTierSelect && (
+            <Select value={tierSlug} onValueChange={setPickedTierSlug}>
+              <PageHeader.SelectTrigger
+                className="hidden max-w-[240px] min-w-0 md:flex [&>span]:min-w-0 [&>span]:truncate"
+                label="Tier"
+                shape="pill"
+                title={selectedTier?.name}
+                variant="ghost"
+                showChevron
+              >
+                <SelectValue />
+              </PageHeader.SelectTrigger>
+              <SelectContent>
+                {activeTiers.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Active tiers</SelectLabel>
+                    {activeTiers.map((tier) => (
+                      <SelectItem key={tier.id} value={tier.slug}>
+                        {tier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+                {archivedTiers.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Archived tiers</SelectLabel>
+                    {archivedTiers.map((tier) => (
+                      <SelectItem key={tier.id} value={tier.slug}>
+                        {tier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+              </SelectContent>
+            </Select>
+          )}
+        </Inline>
       }
       layout="header"
       open={open}
       title="Preview"
       onOpenChange={onOpenChange}
     >
-      <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">
+      <Inline
+        align="start"
+        className={cn(
+          'min-h-0 overflow-auto',
+          showEmail || device === 'mobile' ? 'bg-muted' : 'bg-surface-panel',
+          (showEmail || device === 'mobile') && 'p-6',
+        )}
+        gap="none"
+        justify="center"
+      >
         {prepareState === 'preparing' ? (
-          <Inline align="center" className="grow" gap="none" justify="center">
+          <Inline
+            align="center"
+            aria-label="Preparing preview"
+            className="grow self-center"
+            gap="none"
+            justify="center"
+            role="status"
+          >
             <LoadingIndicator size="lg" />
           </Inline>
         ) : prepareState === 'failed' ? (
           <EmptyIndicator
             actions={
-              <Button
-                variant="outline"
-                onClick={() => {
-                  preparePromise.current = null;
-                  setPrepareState('preparing');
-                }}
-              >
-                Retry
-              </Button>
+              <Stack className="w-[320px] max-w-full" gap="md">
+                {emailAvailable && subjectEditor && (
+                  <Stack className="text-left" gap="xs">
+                    <span className="text-sm text-muted-foreground">Email subject</span>
+                    <EmailSubject
+                      editor={{
+                        ...subjectEditor,
+                        onSave: async () => {
+                          await subjectEditor.onSave();
+                          preparePromise.current = null;
+                          setPrepareState('preparing');
+                        },
+                      }}
+                    />
+                  </Stack>
+                )}
+                <Button
+                  className="self-center"
+                  variant="outline"
+                  onClick={() => {
+                    preparePromise.current = null;
+                    setPrepareState('preparing');
+                  }}
+                >
+                  Retry
+                </Button>
+              </Stack>
             }
-            className="grow justify-center"
+            className="grow justify-center self-center"
             data-testid={postPreviewSaveFailed}
             description="Saving the post failed, so there is nothing new to preview."
             title="Couldn’t preview this post"
@@ -463,6 +516,7 @@ export function PostPreviewModal({
             newsletters={newsletters}
             newsletterSlug={selectedNewsletterSlug}
             postId={postId}
+            subjectEditor={subjectEditor}
             tierName={selectedTier?.name}
             onNewsletterChange={setPickedNewsletterSlug}
             onRetryNewsletterLookup={retryNewsletterLookup}

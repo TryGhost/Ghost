@@ -113,6 +113,14 @@ export function EditorHeaderActions({
   }
 
   const preview: HeaderPreviewProps = {
+    subjectEditor: {
+      value: session.settings.email_subject,
+      fallback: session.title,
+      hasUnsavedChanges: session.isDirty(),
+      isSaving,
+      onChange: (value) => session.stageSettings({ email_subject: value }),
+      onSave: saveBeforePreview,
+    },
     isPost: postType === 'post',
     newsletterSlug: post.newsletter ?? undefined,
     open: previewOpen,
@@ -232,13 +240,6 @@ function PublishActions({
     <>
       {isDraft ? (
         <>
-          <Button
-            disabled={!inputs.isReady}
-            size={isAdmin7 ? 'default' : 'sm'}
-            onClick={openPublishFlow}
-          >
-            Publish
-          </Button>
           {inputs.error ? (
             <>
               <Text
@@ -259,6 +260,13 @@ function PublishActions({
               </Button>
             </>
           ) : null}
+          <Button
+            disabled={!inputs.isReady}
+            size={isAdmin7 ? 'default' : 'sm'}
+            onClick={openPublishFlow}
+          >
+            Publish
+          </Button>
           <PostPreviewModal
             {...preview}
             publishDisabled={!inputs.isReady}
@@ -267,6 +275,18 @@ function PublishActions({
         </>
       ) : (
         <>
+          {/* Ember routes a sent post to the update flow from its status line, not the header. */}
+          {post.status === 'sent' ? null : (
+            <PageHeader.Action
+              className="bg-background/80 backdrop-blur-sm"
+              fallbackSize="sm"
+              fallbackVariant="ghost"
+              label={post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
+              onClick={() => onOpenFlow('update')}
+            >
+              {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
+            </PageHeader.Action>
+          )}
           <Button
             disabled={!session.isDirty() || isSaving}
             size={isAdmin7 ? 'default' : 'sm'}
@@ -274,17 +294,6 @@ function PublishActions({
           >
             Update
           </Button>
-          {/* Ember routes a sent post to the update flow from its status line, not the header. */}
-          {post.status === 'sent' ? null : (
-            <Button
-              className="bg-background/80 backdrop-blur-sm"
-              size={isAdmin7 ? 'default' : 'sm'}
-              variant="outline"
-              onClick={() => onOpenFlow('update')}
-            >
-              {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
-            </Button>
-          )}
         </>
       )}
 

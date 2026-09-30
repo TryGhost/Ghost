@@ -5,7 +5,7 @@ import { tagIdentities } from '@/shared/tags/tag-selection';
 import type { EditorCreatePayload } from './write-payload';
 
 /**
- * The projection keys the settings sidebar may write. Slug, status and publish
+ * The projection keys settings and the email subject editor may write. Slug, status and publish
  * time are absent on purpose: the slug machine and the save engine's command
  * target own them, and a field patch would be dropped before the request.
  */
@@ -13,6 +13,7 @@ export const SETTINGS_FIELD_KEYS = [
   'tags',
   'authors',
   'custom_excerpt',
+  'email_subject',
   'featured',
   'visibility',
   'tiers',
@@ -78,6 +79,8 @@ export function identityFor(
 }
 
 /** The column widths the schema gives these fields. */
+export const EMAIL_SUBJECT_MAX = 300;
+export const EMAIL_SUBJECT_TOO_LONG = `Email subject cannot be longer than ${EMAIL_SUBJECT_MAX} characters.`;
 export const META_TITLE_MAX = 300;
 export const META_DESCRIPTION_MAX = 500;
 export const OG_TITLE_MAX = 300;
@@ -123,10 +126,12 @@ export function overLength(value: string | null, max: number): boolean {
 
 /** The settings keys the validator reads, and all a prepared save carries for it. */
 export const VALIDATED_SETTINGS_FIELD_KEYS = [
+  'email_subject',
   'visibility',
   'tiers',
   'meta_title',
   'meta_description',
+  'canonical_url',
   'og_title',
   'og_description',
   'twitter_title',
@@ -145,9 +150,10 @@ export function validatedFieldsOf(fields: ValidatedSettingsFields): ValidatedSet
 
 /** The width each text field is held to, and what it says when it is past it. */
 const LENGTH_RULES: Record<
-  Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers'>,
+  Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers' | 'canonical_url'>,
   { max: number; message: string }
 > = {
+  email_subject: { max: EMAIL_SUBJECT_MAX, message: EMAIL_SUBJECT_TOO_LONG },
   meta_title: { max: META_TITLE_MAX, message: META_TITLE_TOO_LONG },
   meta_description: { max: META_DESCRIPTION_MAX, message: META_DESCRIPTION_TOO_LONG },
   og_title: { max: OG_TITLE_MAX, message: OG_TITLE_TOO_LONG },
@@ -167,6 +173,26 @@ export function settingsFieldErrorFor(
   }
   if (key === 'tiers') {
     return tiersIncomplete(fields) ? TIERS_REQUIRED : null;
+  }
+  if (key === 'canonical_url') {
+    const url = fields.canonical_url;
+    if (!url) {
+      return null;
+    }
+    if (/\s/.test(url)) {
+      return 'Please enter a valid URL';
+    }
+    // Root-relative paths are supported; absolute URLs must have a valid host.
+    if (!url.startsWith('/')) {
+      try {
+        if (!new URL(url).hostname) {
+          return 'Please enter a valid URL';
+        }
+      } catch {
+        return 'Please enter a valid URL';
+      }
+    }
+    return overLength(url, 2000) ? 'Canonical URL is too long, max 2000 chars' : null;
   }
   const { max, message } = LENGTH_RULES[key];
   return overLength(fields[key], max) ? message : null;

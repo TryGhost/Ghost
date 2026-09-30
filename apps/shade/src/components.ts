@@ -69,3 +69,6 @@ export { default as GhostOrb } from './assets/images/ghost-orb.svg?react';
 export { default as GoogleLogo } from './assets/images/google-logo.svg?react';
 export { default as TwitterLogo } from './assets/images/twitter-logo.svg?react';
 export { default as XLogo } from './assets/images/x-logo.svg?react';
+
+export { TimePicker, type TimePickerProps } from './components/ui/time-picker';
+export { tokenFieldClasses } from './components/ui/token-field';

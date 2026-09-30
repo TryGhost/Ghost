@@ -62,7 +62,7 @@ export const useAddAutomatedEmail = createMutation<
 export const useEditAutomatedEmail = createMutation<AutomatedEmailsResponseType, AutomatedEmail>({
   method: 'PUT',
   path: (automatedEmail) => `/automated_emails/${automatedEmail.id}/`,
-  body: (automatedEmail) => ({ automated_emails: [automatedEmail] }),
+  body: ({ slug: _slug, ...automatedEmail }) => ({ automated_emails: [automatedEmail] }),
   updateQueries: {
     dataType,
     emberUpdateType: 'createOrUpdate',

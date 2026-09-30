@@ -3,7 +3,7 @@
 `apps/admin/src/editor/session/` composes the three modules described in
 [the engine README](../engine/README.md) — the save engine, the change tracker
 and the slug machine — into one editing session, and is the editor's only
-writer. Every title, excerpt, body, feature-image and settings change goes
+writer. Every title, excerpt, body, feature-image, email-subject and settings change goes
 through it, and it owns everything those three modules deliberately do not:
 what a save sends and what an acknowledgement may change. The save engine owns
 pending work and scheduling.
@@ -259,13 +259,20 @@ before any of those replacements happen. Its retained collision record authorize
 recovery even after a retry fails for another reason; an active save or frozen
 authentication attempt must settle before the document can be replaced. The
 replacement completes before recovery is announced to subscribers, so an edit
-made from that notification belongs to the new document and is preserved. The read is its own request, never a
-refetch of the query the screen rendered from: a failing refetch puts that query
-into an error state and replaces the editor, taking the unsaved content and the
-way to copy it out with it. A reload that fails leaves the halt, the content and
-the banner exactly as they were. A reload that succeeds seeds the screen's query
-with the accepted document, so a quick close and reopen cannot resurrect the
-version it first read.
+made from that notification belongs to the new document and is preserved. The
+read is its own request, never a refetch of the query the screen rendered from,
+so nothing is replaced until the session has accepted the copy. A reload that
+fails leaves the halt, the content and the banner exactly as they were. A reload
+that succeeds seeds the screen's query with the accepted document, so a quick
+close and reopen cannot resurrect the version it first read.
+
+The screen's query also refetches on its own, after every save that lands and
+on reconnect once it is stale. Only a read that never produced the post
+replaces the screen, with the load error or a missing post, so reopening a post
+whose stale copy is still cached shows that copy even when its refetch fails.
+Once the post is on screen, a refetch that fails leaves the editor, the session
+and the unsaved content where they are, and the next save reports a deleted
+post, an expired session or a collision itself.
 
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
@@ -295,6 +302,22 @@ tracker changes, including save errors that make a clean document dirty. The nes
 references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
 for `useSyncExternalStore` and lets it stand in for those values as a dependency.
+
+## Leaving the editor
+
+While the post holds unsaved work, every way out of the editor is put to the
+save engine: a link, the browser's Back and Forward buttons, and any other
+change to the URL's hash. The engine finishes or saves what is outstanding and
+answers either that leaving loses nothing, and the navigation goes ahead, or
+that the writer has to confirm it. Until then the URL stays on the editor. A
+Back or Forward is undone as it happens and replayed once the writer may leave,
+so they land on the entry it reached. Undoing it puts the editor back directly
+above that entry: a held Back drops the forward history, and a Forward or a hash
+change from outside that the writer cancels leaves its destination directly
+below the editor, where the next Back goes. A URL that differs only by a
+trailing slash is the same screen, not an exit. A clean editor leaves at once, a
+tab close or reload gets the browser's own prompt, and the URL replace after a
+create is not an exit.
 
 ## What the session reports
 

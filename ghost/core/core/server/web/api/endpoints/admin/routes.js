@@ -206,10 +206,13 @@ module.exports = function apiRoutes() {
   // guarded by being there, which is the safer way round to forget.
   //
   // Mounted before /members/:id so the literal path is not captured as an id.
+  //
+  // Authenticated as a route here rather than inside the mount: mounting strips the path
+  // from req.url, and the check on integration keys names the resource from its first
+  // segment, so inside it would see "custom" instead of "members" and refuse them.
   const metafieldsRouter = express.Router('admin api members metafields');
+  router.all(['/members/metafields', '/members/metafields/*'], mw.authAdminApi);
   router.use('/members/metafields', metafieldsRouter);
-
-  metafieldsRouter.use(mw.authAdminApi);
 
   // Reading is deliberately open: Admin asks every site for its definitions to draw
   // screens it renders either way, and a site that has none simply answers with an empty
@@ -310,6 +313,7 @@ module.exports = function apiRoutes() {
     http(api.automationEmailPreviews.sendTestEmail),
   );
   router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
+  router.post('/automations', mw.authAdminApi, http(api.automations.add));
   router.put('/automations/:id', mw.authAdminApi, http(api.automations.edit));
 
   // ## Automated Emails

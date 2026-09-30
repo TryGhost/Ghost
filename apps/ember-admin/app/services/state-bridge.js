@@ -46,9 +46,17 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @tracked postListQueryParams = {posts: {}, pages: {}};
 
+    // True while the React route hides the admin sidebar
+    @tracked isReactFullScreen = false;
+
     @action
     setPostListQueryParams(resource, params) {
         this.postListQueryParams = {...this.postListQueryParams, [resource]: params};
+    }
+
+    @action
+    setReactFullScreen(isFullScreen) {
+        this.isReactFullScreen = isFullScreen;
     }
 
     /**
