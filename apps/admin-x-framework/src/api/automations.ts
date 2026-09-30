@@ -122,7 +122,7 @@ export const AutomationPerformanceStatsSchema = z.object({
   entries: z
     .array(
       z.object({
-        date: z.iso.date(),
+        date: z.union([z.iso.date(), z.iso.datetime()]),
         count: z.number().int().nonnegative(),
       }),
     )
@@ -130,7 +130,7 @@ export const AutomationPerformanceStatsSchema = z.object({
   entry_window: z.object({
     date_from: z.iso.date(),
     date_to: z.iso.date(),
-    bucket: z.literal('day'),
+    bucket: z.enum(['day', 'hour']),
     timezone: z.string().min(1),
   }),
 });
@@ -154,7 +154,23 @@ export const useReadAutomationPerformanceStats = (
       AutomationPerformanceStatsResponseSchema.refine(
         (response) => response.automation_performance_stats[0].automation_id === id,
         { message: 'Performance statistics do not match the requested automation.' },
-      ).parse(data),
+      )
+        .refine(
+          (response) => {
+            const window = response.automation_performance_stats[0].entry_window;
+            const params = options?.searchParams;
+            const exclusiveEnd = params?.date_to
+              ? new Date(Date.parse(params.date_to) + 86400000).toISOString().slice(0, 10)
+              : undefined;
+            return (
+              (!params?.timezone || window.timezone === params.timezone) &&
+              (!params?.date_from || window.date_from === params.date_from) &&
+              (!exclusiveEnd || window.date_to === exclusiveEnd)
+            );
+          },
+          { message: 'Performance statistics do not match the requested date range.' },
+        )
+        .parse(data),
   });
   return useQuery(options);
 };

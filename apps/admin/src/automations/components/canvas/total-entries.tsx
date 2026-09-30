@@ -1,12 +1,14 @@
+import type { AutomationEntriesChartData } from '@/automations/utils/automation-entry-stats';
 import React, { useId } from 'react';
-import { Button, Skeleton } from '@tryghost/shade/components';
+import { Skeleton } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useAutomationEntryStats } from '@/automations/hooks/use-automation-entry-stats';
 import { TotalEntriesChart } from './total-entries-chart';
 
-export const TotalEntries: React.FC<{ automationId: string }> = ({ automationId }) => {
-  const { chart, isLoading, isError, retry } = useAutomationEntryStats(automationId);
+export const TotalEntries: React.FC<{ chart?: AutomationEntriesChartData; isLoading: boolean }> = ({
+  chart,
+  isLoading,
+}) => {
   const headingId = useId();
 
   return (
@@ -23,11 +25,7 @@ export const TotalEntries: React.FC<{ automationId: string }> = ({ automationId 
         </Text>
       </Inline>
       <Text aria-atomic="true" className="sr-only" role="status">
-        {isLoading
-          ? 'Loading total entries'
-          : !isError && chart
-            ? `Total entries loaded: ${chart.total}.`
-            : ''}
+        {isLoading ? 'Loading total entries' : chart ? `Total entries loaded: ${chart.total}.` : ''}
       </Text>
       {isLoading && (
         <Stack aria-hidden="true" gap="xs">
@@ -41,16 +39,6 @@ export const TotalEntries: React.FC<{ automationId: string }> = ({ automationId 
         </Stack>
       )}
       {chart && <TotalEntriesChart data={chart} />}
-      {isError && (
-        <Stack className="py-3" gap="sm" role="alert">
-          <Text size="sm" tone="secondary">
-            Could not load entries.
-          </Text>
-          <Button className="self-start" size="sm" variant="outline" onClick={retry}>
-            Retry
-          </Button>
-        </Stack>
-      )}
     </Stack>
   );
 };

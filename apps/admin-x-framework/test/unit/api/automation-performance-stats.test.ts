@@ -28,6 +28,15 @@ describe('AutomationPerformanceStatsSchema', () => {
     expect(AutomationPerformanceStatsSchema.parse(localized)).toEqual(localized);
   });
 
+  it('accepts hourly timestamps from an automatic-bucketing response', () => {
+    const hourly = {
+      ...stats,
+      entries: [{ date: '2026-01-01T03:00:00Z', count: 1 }],
+      entry_window: { ...stats.entry_window, bucket: 'hour' },
+    };
+    expect(AutomationPerformanceStatsSchema.parse(hourly)).toEqual(hourly);
+  });
+
   it.each([
     { name: 'empty series', overrides: { entries: [] } },
     { name: 'invalid date', overrides: { entries: [{ date: '2026-02-30', count: 1 }] } },

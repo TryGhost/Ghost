@@ -12,13 +12,14 @@ export const TotalEntriesChart: React.FC<{ data: AutomationEntriesChartData }> =
       </Text>
       <figure aria-label="Automation entries" className="relative">
         <figcaption className="sr-only">
-          All-time automation entries from {data.startDate} to {data.endDate}, in {data.timezone}.
+          Automation entries from {data.startDate} to {data.endDate}, in {data.timezone}.
         </figcaption>
         <GhAreaChart
           className="h-[180px]"
           data={data.points}
           id={id}
           range={data.range}
+          showHours={data.showHours}
           showYAxisValues={false}
           yAxisRange={[0, data.max]}
         />
@@ -28,7 +29,7 @@ export const TotalEntriesChart: React.FC<{ data: AutomationEntriesChartData }> =
             size="sm"
             tone="secondary"
           >
-            No entries yet
+            {data.allTime ? 'No entries yet' : 'No entries in this period'}
           </Text>
         )}
       </figure>
