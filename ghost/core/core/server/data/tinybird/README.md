@@ -101,8 +101,9 @@ finished-only is 2; known exits with or without finished steps are 6 or 4. Runs
 without steps are excluded by the inner join. The automation list continues using
 its existing pending-run view.
 
-`api_automation_runs` returns the latest fifty runs for one automation, ordered by
-entry time then run ID descending. Entry-date filters use local midnight boundaries,
+`api_automation_runs` returns pages of fifty runs for one automation, ordered by
+entry time then run ID in the requested direction. Keyset cursors continue after
+the last entry time/ID, and Core requests one extra row to detect the next page. Entry-date filters use local midnight boundaries,
 just like performance stats. It classifies eligible runs before filtering by status
 and limiting, excluding runs without recorded steps. Invalid statuses are returned
 first, regardless of status filtering, so Core rejects the request instead of hiding
