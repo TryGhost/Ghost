@@ -380,14 +380,8 @@ class ImportManager {
           const startedAt = Date.now();
           this.logging.info('[Background Job] site-content-import started');
           try {
-            const result = await this.importFromFile(
-              file,
-              Object.assign({}, importOptions, {
-                runningInJob: true,
-                data: importData,
-              }),
-            );
-            // importFromFile swallows its own failures and returns undefined,
+            const result = await this.processImport(importData, importOptions);
+            // processImport swallows import failures and resolves undefined,
             // so an absent result is the only signal that the import failed.
             if (result === undefined) {
               this.logging.info(
