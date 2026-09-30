@@ -95,13 +95,12 @@ export class MemberAccountService {
     // the whole request rather than leaving a member renamed with their answers
     // rejected. The write below reconciles subscriptions with Stripe and sends
     // events, none of which giving up halfway could undo.
-    const writer = memberWriter(memberId);
     const plannedMetafields =
       data.metafields === undefined
         ? null
         : await this.#metafieldValues.planWrite(
             this.#metafieldValues.unwrapWire(data.metafields),
-            writer.audience,
+            memberWriter(memberId),
           );
 
     await this.#members.update(_.pick(data, WRITABLE_FIELDS), {
@@ -110,7 +109,7 @@ export class MemberAccountService {
     });
 
     if (plannedMetafields) {
-      await this.#metafieldValues.applyWrite(memberId, plannedMetafields, writer.origin);
+      await this.#metafieldValues.applyWrite(memberId, plannedMetafields);
     }
 
     // Read back rather than returning what was written: a member is told what

@@ -5,6 +5,7 @@ import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-types/
 import type { Knex } from 'knex';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 import type { RowSpool } from './spool';
+import type { Plan } from '../../../members-metafields';
 import MembersImportJob from '../../jobs/members-import-job';
 
 const metrics = require('@tryghost/metrics');
@@ -105,17 +106,14 @@ export interface EmailNotifications {
 // escaping.
 export type FailureReporter = (error: unknown) => void;
 
-// Opaque to the import: planWrite produces it, applyWrite consumes it.
-type MetafieldPlan = unknown;
-
 // The metafields collaborator as the import needs it. activeFields is the field set a
 // metafields.* column is read against, empty when the feature is off; planWrite
 // validates a row's values (throwing so the row fails whole) and applyWrite persists
 // them, touching only the parts the row named, both on the row's transaction.
 export interface MetafieldsImport {
   activeFields(): Promise<CsvField[]>;
-  planWrite(values: Record<string, unknown>): Promise<MetafieldPlan[]>;
-  applyWrite(memberId: string, plan: MetafieldPlan[], executor: Knex): Promise<void>;
+  planWrite(values: Record<string, unknown>): Promise<Plan>;
+  applyWrite(memberId: string, plan: Plan, executor: Knex): Promise<void>;
 }
 
 // The collaborators the import depends on, one per concern.
@@ -463,7 +461,7 @@ class MembersCSVImporter {
                   fieldValuesFromCsvRow(activeMetafields, row, stripFormulaGuard),
                 ),
               )
-            : [];
+            : null;
 
         trx = await this._knex.transaction(undefined, { doNotRejectOnRollback: false });
         const options = { transacting: trx, context: IMPORT_CONTEXT };
@@ -582,7 +580,9 @@ class MembersCSVImporter {
 
         // On the row's transaction, so the values commit or roll back with the member.
         try {
-          await this._metafields.applyWrite(member.id, metafieldPlan, trx);
+          if (metafieldPlan) {
+            await this._metafields.applyWrite(member.id, metafieldPlan, trx);
+          }
         } catch (writeError) {
           // planWrite passed every value before the transaction opened, so a failure
           // here is ours and not the row's. Operators get the original, which a driver

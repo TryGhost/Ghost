@@ -2,9 +2,9 @@ import ObjectID from 'bson-objectid';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
-import { INTERNAL } from './access';
-import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
-import type { MetafieldValuesService, PlannedWrite } from './values-service';
+import { DbBoundField, FIELD_STATUS } from './schema';
+import type { MetafieldValuesService } from './values-service';
+import { bindingWriter, checkoutMemberWriter, type InternalWriter } from './writers';
 
 const FIELDS_TABLE = 'members_metafields';
 
@@ -18,12 +18,11 @@ export interface BoundField {
 }
 
 /**
- * What a value's provenance is, once the port it came through has been resolved.
- *
- * An intersection rather than `Extract`: a member writes from more than one place, so only
- * narrowing each pairing to checkout keeps the member among the writers here.
+ * Who wrote a value, once the port it came through has been resolved. Internal: what may
+ * be set is bounded by the binding rather than by who is looking. A port exists because a
+ * publisher pointed it at a field, and that decision admits the value, whoever supplied it.
  */
-type Attribution = (binding: BoundField) => WriteOrigin & { source: 'checkout' };
+type Attribution = (binding: BoundField) => InternalWriter;
 
 /**
  * Where a source sends what it collected: a `port` is the name that source uses for a
@@ -85,10 +84,9 @@ export class MetafieldBindingsService {
     productId: string,
     collected: Array<{ port: string; value: unknown }>,
   ): Promise<void> {
-    return this.writeThrough(memberId, productId, collected, (binding) => ({
-      writtenBy: { type: 'binding', id: binding.bindingId },
-      source: 'checkout',
-    }));
+    return this.writeThrough(memberId, productId, collected, (binding) =>
+      bindingWriter(binding.bindingId),
+    );
   }
 
   /**
@@ -103,10 +101,7 @@ export class MetafieldBindingsService {
     productId: string,
     supplied: Array<{ port: string; value: unknown }>,
   ): Promise<void> {
-    return this.writeThrough(memberId, productId, supplied, () => ({
-      writtenBy: { type: 'member', id: memberId },
-      source: 'checkout',
-    }));
+    return this.writeThrough(memberId, productId, supplied, () => checkoutMemberWriter(memberId));
   }
 
   /**
@@ -155,15 +150,11 @@ export class MetafieldBindingsService {
     value: unknown,
     attribute: Attribution,
   ): Promise<void> {
-    // Internal: what may be set is bounded by the binding rather than by who is
-    // looking. A port exists because a publisher pointed it at a field, and that
-    // decision is what admits the value, whoever supplied it.
-    const planned: PlannedWrite[] = await this.values.planWrite(
+    const plan = await this.values.planWrite(
       { [`${CUSTOM_NAMESPACE}.${into.key}`]: value },
-      INTERNAL,
+      attribute(into),
     );
-
-    await this.values.applyWrite(memberId, planned, attribute(into));
+    await this.values.applyWrite(memberId, plan);
   }
 
   private async resolve(productId: string, port: string): Promise<BoundField | null> {

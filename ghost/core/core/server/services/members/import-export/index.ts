@@ -1,6 +1,12 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-types/csv';
-import { INTERNAL, type Audience, type WriteOrigin } from '../../members-metafields';
+import {
+  INTERNAL,
+  importWriter,
+  type Audience,
+  type InternalWriter,
+  type Plan,
+} from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -51,12 +57,11 @@ interface ImporterServices {
       browse(options: { namespace?: string }, audience: Audience): Promise<CsvField[]>;
     };
     values: {
-      planWrite(values: Record<string, unknown>, audience: Audience): Promise<unknown[]>;
-      applyWrite(
-        memberId: string,
-        plan: unknown[],
-        options: WriteOrigin & { executor?: Knex },
-      ): Promise<void>;
+      planWrite(
+        values: Record<string, unknown>,
+        writer: InternalWriter,
+      ): Promise<Plan<InternalWriter>>;
+      applyWrite(memberId: string, plan: Plan, options: { executor?: Knex }): Promise<void>;
     };
   };
 }
@@ -125,15 +130,10 @@ export function makeImporter(deps: ImporterServices) {
 
   const metafields: MetafieldsImport = {
     activeFields: async () => deps.metafields.definitions.browse({}, INTERNAL),
-    planWrite: (values) => deps.metafields.values.planWrite(values, INTERNAL),
     // Every value the import writes came out of the file, whichever column carried it.
-    // An import has no id to give until runs are tracked, so it names its kind only.
+    planWrite: (values) => deps.metafields.values.planWrite(values, importWriter()),
     applyWrite: (memberId, plan, executor) =>
-      deps.metafields.values.applyWrite(memberId, plan, {
-        writtenBy: { type: 'import', id: null },
-        source: 'import',
-        executor,
-      }),
+      deps.metafields.values.applyWrite(memberId, plan, { executor }),
   };
 
   // The import job never rejects, so the jobs service never sees its failures, and the

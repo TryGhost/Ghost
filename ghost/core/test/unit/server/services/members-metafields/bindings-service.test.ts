@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import { MetafieldBindingsService } from '../../../../../core/server/services/members-metafields/bindings-service';
+import type { Plan } from '../../../../../core/server/services/members-metafields/values-service';
+import type { Writer } from '../../../../../core/server/services/members-metafields/writers';
 
 // What a port resolves to. Every port here resolves to the same field, because where a
 // value lands is not what any of these are about.
@@ -32,17 +34,17 @@ const REFUSED = /^refuse:/;
 /** Refuses anything named as refusable, and records everything it stores. */
 const recordingValues = (applied: Applied[]) =>
   ({
-    planWrite: async (input: Record<string, unknown>) => {
+    planWrite: async (input: Record<string, unknown>, writer: Writer) => {
       const refused = Object.values(input).find(
         (value) => typeof value === 'string' && REFUSED.test(value),
       );
       if (refused !== undefined) {
         throw new Error(`the catalog refused ${refused}`);
       }
-      return [];
+      return { writer, writes: [] };
     },
-    applyWrite: async (_memberId: string, _planned: unknown[], options: Applied) => {
-      applied.push({ writtenBy: options.writtenBy });
+    applyWrite: async (_memberId: string, plan: Plan) => {
+      applied.push({ writtenBy: plan.writer.origin.writtenBy });
     },
   }) as never;
 

@@ -551,9 +551,8 @@ module.exports = class MemberBREADService {
     // here rather than after the member edit has been applied — and keep the
     // plan to apply once below, so the values aren't resolved and validated
     // twice.
-    const writer = writeMetafields ? staffWriter(options.context) : null;
-    const plannedMetafields = writer
-      ? await this.metafieldValues.planWrite(metafields, writer.audience)
+    const plannedMetafields = writeMetafields
+      ? await this.metafieldValues.planWrite(metafields, staffWriter(options.context))
       : null;
 
     let model;
@@ -607,7 +606,7 @@ module.exports = class MemberBREADService {
     }
 
     if (plannedMetafields) {
-      await this.metafieldValues.applyWrite(model.id, plannedMetafields, writer.origin);
+      await this.metafieldValues.applyWrite(model.id, plannedMetafields);
 
       // Metafields aren't a member column or relation, so an edit touching
       // only them leaves `model._changed` empty and the save fires nothing.
@@ -622,7 +621,7 @@ module.exports = class MemberBREADService {
       // combined event omits `metafields` from `_changed`, which only gates
       // whether the event fires.
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
-      if (memberUnchanged && plannedMetafields.length > 0) {
+      if (memberUnchanged && plannedMetafields.writes.length > 0) {
         model._changed = { metafields: true };
         // A mixed edit keeps the generic label on purpose: relabelling the
         // one action a member change already fired would bury that change

@@ -22,12 +22,12 @@ import {
   FIELD_STATUS,
   StoredFieldList,
   type MetafieldChangeEvent,
-  type WriteOrigin,
 } from './schema';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import { ACTIVE_ONLY, definitions, knexify, readableBy } from './queries';
 import { canWrite, type Audience, type MemberAccess } from './access';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
+import type { Writer } from './writers';
 
 const FIELDS_TABLE = 'members_metafields';
 const VALUES_TABLE = 'members_metafield_values';
@@ -101,6 +101,12 @@ export interface PlannedWrite {
 
 /** A member's metafield values, by namespace and then by key. */
 export type MemberMetafields = Record<string, Record<string, unknown>>;
+
+/** Writes checked for `writer`, to be applied as `writer`. Built by `planWrite`. */
+export interface Plan<W extends Writer = Writer> {
+  writer: W;
+  writes: PlannedWrite[];
+}
 
 /**
  * What a member holds for each defined field. Separate from the definitions service
@@ -281,7 +287,8 @@ export class MetafieldValuesService {
    * validate before opening a transaction it would otherwise have to unwind, then apply
    * the same plan without re-resolving it.
    */
-  async planWrite(input: unknown, audience: Audience): Promise<PlannedWrite[]> {
+  async planWrite<W extends Writer>(input: unknown, writer: W): Promise<Plan<W>> {
+    const { audience } = writer;
     const values = this.parseValues(input);
     const identities = Object.keys(values);
 
@@ -353,7 +360,7 @@ export class MetafieldValuesService {
       throw refusalError(refusals);
     }
 
-    return writes;
+    return { writer, writes };
   }
 
   /**
@@ -364,9 +371,7 @@ export class MetafieldValuesService {
    * them, and saying nothing about a path leaves it alone. There is no whole-value
    * replace, so a caller that does not know about a field cannot erase it.
    *
-   * `writtenBy` and `source` are required and have no default: every writer has to name
-   * itself and where it wrote, so a new one cannot quietly inherit the identity of
-   * whichever was written first.
+   * The values and the activity feed entry record the writer the plan was checked for.
    *
    * Always transactional. Given an executor it joins that transaction, so the importer's
    * failed value write takes its member with it; given none it opens its own.
@@ -378,9 +383,10 @@ export class MetafieldValuesService {
    */
   async applyWrite(
     memberId: string,
-    writes: PlannedWrite[],
-    { writtenBy, source, executor = this.knex }: WriteOrigin & { executor?: Knex },
+    { writer, writes }: Plan,
+    { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<void> {
+    const { writtenBy, source } = writer.origin;
     if (writes.length === 0) {
       return;
     }

@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
+import type { CsvField } from '@tryghost/metafield-types/csv';
 import MembersCSVImporter from '../../../../../../../core/server/services/members/import-export/import/importer';
 import MembersImportJob from '../../../../../../../core/server/services/members/jobs/members-import-job';
 import type { MemberImportRow } from '../../../../../../../core/server/services/members/import-export/import/row';
+import { importWriter } from '../../../../../../../core/server/services/members-metafields/writers';
 
 const errors = require('@tryghost/errors');
 
@@ -122,8 +124,8 @@ function harness(
       reassignRedeemer: async () => {},
     },
     metafields: {
-      activeFields: async () => [],
-      planWrite: async () => [],
+      activeFields: async (): Promise<CsvField[]> => [],
+      planWrite: async () => ({ writer: importWriter(), writes: [] }),
       applyWrite: async () => {},
     },
     email: {
@@ -286,6 +288,9 @@ describe('members import error handling', function () {
     it('keeps a fault of its own out of the error file and sends it to operators', async function () {
       const h = harness([row('first@example.com')]);
       const fault = new Error('ER_LOCK_WAIT_TIMEOUT: update `members_metafield_values` set ...');
+      h.deps.metafields.activeFields = async () => [
+        { namespace: 'custom', key: 'favourite_topic', type: 'short_text' },
+      ];
       h.deps.metafields.applyWrite = async () => {
         throw fault;
       };

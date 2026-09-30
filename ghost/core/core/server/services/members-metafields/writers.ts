@@ -46,10 +46,40 @@ export function staffWriter(context: unknown): Writer {
   };
 }
 
+/**
+ * A writer bounded by what Ghost itself routes rather than by who is looking: an import,
+ * or a checkout whose ports a publisher bound to fields.
+ */
+export type InternalWriter = Extract<Writer, { audience: typeof INTERNAL }>;
+
 /** A member writing their own metafields from Portal. */
 export function memberWriter(memberId: string): Writer {
   return {
     audience: MEMBERS,
     origin: { writtenBy: { type: 'member', id: memberId }, source: 'portal' },
+  };
+}
+
+/** A CSV import. An import has no id to give until runs are tracked, so it names its kind only. */
+export function importWriter(): InternalWriter {
+  return {
+    audience: INTERNAL,
+    origin: { writtenBy: { type: 'import', id: null }, source: 'import' },
+  };
+}
+
+/** A value collected at checkout and routed into a field by a binding. */
+export function bindingWriter(bindingId: string): InternalWriter {
+  return {
+    audience: INTERNAL,
+    origin: { writtenBy: { type: 'binding', id: bindingId }, source: 'checkout' },
+  };
+}
+
+/** A member supplying their own value at checkout. */
+export function checkoutMemberWriter(memberId: string): InternalWriter {
+  return {
+    audience: INTERNAL,
+    origin: { writtenBy: { type: 'member', id: memberId }, source: 'checkout' },
   };
 }
