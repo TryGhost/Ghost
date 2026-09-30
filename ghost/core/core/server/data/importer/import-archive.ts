@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'fs-extra';
+import logging from '@tryghost/logging';
 import { globSync } from 'glob';
 
 const { extract } = require('@tryghost/zip') as {
@@ -142,7 +143,9 @@ export default class ImportArchive {
       const files = globSync('**/*', { cwd: tmpDir, nodir: true });
       await Promise.all(files.map((file) => fs.chmod(path.join(tmpDir, file), 0o644)));
     } catch (error) {
-      await fs.remove(tmpDir).catch(() => {});
+      await fs.remove(tmpDir).catch((cleanupError: unknown) => {
+        logging.error(cleanupError, 'Import archive cleanup failed');
+      });
       const message = messageOf(error);
 
       if (message.startsWith('ENAMETOOLONG:')) {
