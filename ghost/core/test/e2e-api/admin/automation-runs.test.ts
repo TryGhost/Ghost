@@ -49,9 +49,13 @@ describe('Automation runs API', function () {
     await models.Base.knex('members').whereIn('id', memberIds).del();
   });
 
-  async function readRuns(query = '') {
+  async function readPage(query = '') {
     const { body } = await agent.get(`automations/${automationId}/runs${query}`).expectStatus(200);
-    return body.automation_runs;
+    return body;
+  }
+
+  async function readRuns(query = '') {
+    return (await readPage(query)).automation_runs;
   }
 
   async function expectRunError(status: number, type: string, query = '') {
@@ -116,7 +120,12 @@ describe('Automation runs API', function () {
       await configUtils.restore();
     });
 
-    function mockRuns(status: number, response: nock.Body, runStatus?: string, dateOptions = {}) {
+    function mockRuns(
+      status: number,
+      response: nock.Body,
+      runStatus?: string,
+      pagination: Record<string, string | number> = {},
+    ) {
       return nock('https://api.tinybird.co', { reqheaders: { authorization: 'Bearer test-token' } })
         .get('/v0/pipes/api_automation_runs.json')
         .query({
@@ -124,7 +133,9 @@ describe('Automation runs API', function () {
           site_uuid: siteUuid,
           automation_id: automationId,
           timezone: 'UTC',
-          ...dateOptions,
+          sort_direction: 'desc',
+          limit: 51,
+          ...pagination,
           ...(runStatus ? { run_status: runStatus } : {}),
         })
         .reply(status, response);
@@ -182,12 +193,15 @@ describe('Automation runs API', function () {
       const deletedRun = runId();
       await addRun(deletedRun, member);
       await models.Base.knex('members').where('id', member.id).del();
-      const rows = [deletedRun, runId()].map((id) => ({
-        id,
-        created_at: timestamp,
-        status: 'completed',
-        failed: false,
-      }));
+      const rows = [deletedRun, runId()]
+        .sort()
+        .reverse()
+        .map((id) => ({
+          id,
+          created_at: timestamp,
+          status: 'completed',
+          failed: false,
+        }));
       mockRuns(200, { data: rows });
       assert.deepEqual(
         await readRuns(),
@@ -265,6 +279,70 @@ describe('Automation runs API', function () {
         assertNoRunLookup();
       },
     );
+
+    it.each(['asc', 'desc'])(
+      'paginates with an opaque cursor in %s order and hydrates only the visible page',
+      async function (direction) {
+        const clock = sinon.useFakeTimers({
+          now: new Date('2026-09-15T03:59:00Z'),
+          toFake: ['Date'],
+        });
+        const rows = Array.from({ length: 51 }, () => ({
+          id: runId(),
+          created_at: timestamp,
+          status: 'completed',
+          failed: false,
+        })).sort((a, b) =>
+          direction === 'asc' ? a.id.localeCompare(b.id) : b.id.localeCompare(a.id),
+        );
+        const dates = {
+          date_from: '2026-09-14',
+          date_to: '2026-09-15',
+          timezone: 'America/New_York',
+        };
+        const first = mockRuns(200, { data: rows }, 'completed', {
+          ...dates,
+          sort_direction: direction,
+        });
+        captureQueries();
+        const query = `?status=completed&order=created_at%20${direction}&date_from=2026-09-14&date_to=2026-09-14&timezone=America/New_York`;
+        const page = await readPage(query);
+        assert.equal(page.automation_runs.length, 50);
+        assert.equal(page.meta.pagination.limit, 50);
+        assert.ok(first.isDone());
+        const cursor = page.meta.pagination.next_cursor;
+        assert.equal(JSON.parse(Buffer.from(cursor, 'base64url').toString()).id, rows[49].id);
+        const next = mockRuns(200, { data: rows.slice(50) }, 'completed', {
+          ...dates,
+          sort_direction: direction,
+          after_created_at: timestamp,
+          after_id: rows[49].id,
+        });
+        // Omitting the end resolves to the same local date and preserves the cursor scope.
+        const startOnly = query.replace('&date_to=2026-09-14', '');
+        const final = await readPage(`${startOnly}&cursor=${cursor}`);
+        assert.deepEqual(
+          final.automation_runs.map((row: { id: string }) => row.id),
+          [rows[50].id],
+        );
+        assert.equal(final.meta.pagination.next_cursor, null);
+        assert.ok(next.isDone());
+        clock.setSystemTime(new Date('2026-09-15T04:01:00Z'));
+        // Local midnight changes the default end, so the old cursor must be rejected.
+        await expectRunError(422, 'ValidationError', `${startOnly}&cursor=${cursor}`);
+        await expectRunError(422, 'ValidationError', `?cursor=${cursor}`);
+        await expectRunError(
+          422,
+          'ValidationError',
+          `${query.replace('date_from=2026-09-14', 'date_from=2026-09-13')}&cursor=${cursor}`,
+        );
+      },
+    );
+
+    it('rejects unsupported order and malformed cursors before querying Tinybird', async function () {
+      await expectRunError(422, 'ValidationError', '?order=email');
+      await expectRunError(422, 'ValidationError', '?cursor=not-a-cursor');
+    });
 
     it('fails without a Tinybird token', async function () {
       getToken.returns(null);

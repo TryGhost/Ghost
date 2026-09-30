@@ -74,7 +74,7 @@ without guessing whether the backend is older.
 
 ## Run list
 
-`GET /ghost/api/admin/automations/:id/runs/` returns the latest fifty runs:
+`GET /ghost/api/admin/automations/:id/runs/` returns up to fifty runs per page:
 
 ```json
 {
@@ -114,7 +114,7 @@ parameters use the same inclusive calendar-date contract as performance stats:
 `date_from` is required when `date_to` is supplied; omitting `date_to` uses today
 in the requested timezone, and omitting both dates selects all history.
 Entry-date filters select runs before classification, keeping the list and summary
-counts on the same cohort. There are no search or pagination controls. An empty history or no matches
+counts on the same cohort. There is no member search in this slice. An empty history or no matches
 returns `automation_runs: []`. It requires automation read permission, returns 404
 for unknown automations, and uses the same Tinybird availability checks as summaries.
 
@@ -147,6 +147,13 @@ out-of-range response buckets.
 
 Without dates, all recorded history is included through today in the requested
 timezone. The all-time query has no fixed lookback limit.
+
+The optional `order` is `created_at desc` (default) or `created_at asc`; both use
+run ID in the same direction to break ties. `cursor` continues after the last
+returned timestamp and ID. It is bound to the automation, status, direction, entry dates, and timezone;
+malformed or mismatched cursors return 422. Core requests one extra row to decide
+whether to return a next cursor and hydrates only the visible page. These are live
+reads, not a snapshot: status changes can affect later pages.
 
 ### Hourly entry history
 
