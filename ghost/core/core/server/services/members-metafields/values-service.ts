@@ -147,21 +147,27 @@ export class MetafieldValuesService {
     );
   }
 
-  /** The member's metafields, or undefined if they have none. */
+  /**
+   * The member's metafields, or undefined if they have none. Given an executor, reads
+   * inside that transaction.
+   */
   async getValuesForMember(
     memberId: string,
     audience: Audience,
+    executor: Knex = this.knex,
   ): Promise<Record<string, Record<string, unknown>> | undefined> {
-    return (await this.getValuesForMembers([memberId], audience)).get(memberId);
+    return (await this.getValuesForMembers([memberId], audience, executor)).get(memberId);
   }
 
   /**
    * Metafields for each member, keyed by member id. Only active fields the audience can
-   * read are included. Members with no metafields have no entry.
+   * read are included. Members with no metafields have no entry. Given an executor, reads
+   * inside that transaction.
    */
   async getValuesForMembers(
     memberIds: string[],
     audience: Audience,
+    executor: Knex = this.knex,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (memberIds.length === 0) {
       return new Map();
@@ -171,7 +177,7 @@ export class MetafieldValuesService {
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const rows = await readableBy(
-      this.knex(VALUES_TABLE).join(
+      executor(VALUES_TABLE).join(
         FIELDS_TABLE,
         `${VALUES_TABLE}.metafield_key`,
         `${FIELDS_TABLE}.key`,

@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const _ = require('lodash');
 const { ADMIN, adminWriteOrigin } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -96,10 +97,11 @@ module.exports = class MemberBREADService {
    *
    * @param {string} memberId
    * @param {import('../../../members-metafields').Audience} audience
+   * @param {{transacting?: import('knex').Knex.Transaction}} [options] reads inside this transaction
    * @returns {Promise<Record<string, Record<string, unknown>>>}
    */
-  async readMetafieldsForMember(memberId, audience) {
-    return (await this.metafieldValues.getValuesForMember(memberId, audience)) ?? {};
+  async readMetafieldsForMember(memberId, audience, { transacting } = {}) {
+    return (await this.metafieldValues.getValuesForMember(memberId, audience, transacting)) ?? {};
   }
 
   /**
@@ -670,7 +672,13 @@ module.exports = class MemberBREADService {
       const model = await this.memberRepository.update(data, { ...options, transacting });
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
 
+      const before = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
       await this.metafieldValues.applyWrite(model.id, writes, { ...origin, executor: transacting });
+      const after = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
+      if (!_.isEqual(before, after)) {
+        // Metafields aren't member columns, so the model doesn't keep their old values.
+        model._previousMetafields = before;
+      }
 
       if (memberUnchanged) {
         // Metafields aren't a member column or relation, so an edit touching only them

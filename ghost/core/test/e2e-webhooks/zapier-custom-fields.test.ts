@@ -135,7 +135,74 @@ describe('Zapier and member custom fields', function () {
       const { member } = deliveredPayload();
       assert.equal(member.current.email, 'zap-trigger@example.com');
       assert.deepEqual(member.current.metafields.custom, { [key]: 'Ghost internals' });
-      assert.deepEqual(member.previous, {});
+      // The member had no custom fields before this edit.
+      assert.deepEqual(member.previous, { metafields: {} });
+    });
+
+    it('shows all the custom fields a member had before an edit changed one', async function () {
+      const topicKey = await definePublisherField('Favourite topic');
+      const colourKey = await definePublisherField('Favourite colour');
+      const memberId = await createMember('zap-previous@example.com');
+      await zapierWritesField(memberId, topicKey, 'Reading');
+      await zapierWritesField(memberId, colourKey, 'Green');
+      await subscribeZapTo(
+        'member.edited',
+        'https://test-webhook-receiver.com/zapier-member-edited/',
+      );
+
+      await zapierWritesField(memberId, topicKey, 'Ghost internals');
+      await webhookMockReceiver.receivedRequest();
+
+      const { member } = deliveredPayload();
+      assert.deepEqual(member.current.metafields.custom, {
+        [topicKey]: 'Ghost internals',
+        [colourKey]: 'Green',
+      });
+      assert.deepEqual(member.previous.metafields.custom, {
+        [topicKey]: 'Reading',
+        [colourKey]: 'Green',
+      });
+    });
+
+    it('shows the custom fields beside the other fields an edit changed', async function () {
+      const key = await definePublisherField('Favourite topic');
+      const memberId = await createMember('zap-mixed@example.com');
+      await zapierWritesField(memberId, key, 'Reading');
+      await subscribeZapTo(
+        'member.edited',
+        'https://test-webhook-receiver.com/zapier-member-edited/',
+      );
+
+      await zapier
+        .put(`members/${memberId}/`)
+        .body({
+          members: [{ name: 'Renamed', metafields: { custom: { [key]: 'Ghost internals' } } }],
+        })
+        .expectStatus(200);
+      await webhookMockReceiver.receivedRequest();
+
+      const { member } = deliveredPayload();
+      assert.equal(member.current.name, 'Renamed');
+      assert.deepEqual(member.current.metafields.custom, { [key]: 'Ghost internals' });
+      assert.equal(Object.hasOwn(member.previous, 'name'), true);
+      assert.deepEqual(member.previous.metafields.custom, { [key]: 'Reading' });
+    });
+
+    it('leaves custom fields out of previous when an edit writes the values they already had', async function () {
+      const key = await definePublisherField('Favourite topic');
+      const memberId = await createMember('zap-same@example.com');
+      await zapierWritesField(memberId, key, 'Reading');
+      await subscribeZapTo(
+        'member.edited',
+        'https://test-webhook-receiver.com/zapier-member-edited/',
+      );
+
+      await zapierWritesField(memberId, key, 'Reading');
+      await webhookMockReceiver.receivedRequest();
+
+      const { member } = deliveredPayload();
+      assert.deepEqual(member.current.metafields.custom, { [key]: 'Reading' });
+      assert.equal(Object.hasOwn(member.previous, 'metafields'), false);
     });
 
     it('leaves custom fields off the New Member payload of a member who holds none', async function () {
