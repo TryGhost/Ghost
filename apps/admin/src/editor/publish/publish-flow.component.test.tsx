@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { InAppProviders, fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
-import { publishRecipientFree } from '@tryghost/test-data/selectors/editor';
+import {
+  publishRecipientFree,
+  publishRecipientSegments,
+} from '@tryghost/test-data/selectors/editor';
 
 import { PublishFlowModal } from '@/editor/publish/publish-flow-modal';
 import { UpdateFlowModal } from '@/editor/publish/update-flow-modal';
@@ -475,7 +478,7 @@ describe('Publish flow', () => {
     await publishScreen.setting('email-recipients').click();
     await publishScreen.recipientFree().click();
     await page.getByLabelText('Specific people').click();
-    const search = page.getByRole('combobox').getByRole('textbox');
+    const search = page.getByRole('combobox');
     await search.fill('VIP');
     await expect.element(page.getByRole('option', { name: 'VIP' })).toBeVisible();
     await expect(page.getByRole('option', { name: 'Staff' })).toHaveCount(0);
@@ -495,6 +498,58 @@ describe('Publish flow', () => {
     expect(dispatch).toHaveBeenCalledWith({
       kind: 'publish',
       options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'label:vip' },
+    });
+  });
+
+  it('selects and removes specific recipients with the keyboard', async () => {
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [
+        { slug: 'vip', name: 'VIP' },
+        { slug: 'staff', name: 'Staff' },
+      ],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: 'status:free',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+    await page.getByLabelText('Specific people').click();
+    const picker = page.getByTestId(publishRecipientSegments);
+    const search = page.getByRole('combobox');
+    await search.click();
+    await expect.element(page.getByRole('option', { name: 'VIP' })).toBeVisible();
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(picker.getByRole('button', { name: 'Remove Staff' })).toBeVisible();
+    await userEvent.keyboard('{Enter}');
+    await expect(picker.getByRole('button', { name: 'Remove Staff' })).toHaveCount(0);
+    await userEvent.keyboard('{ArrowUp}{Enter}');
+    await expect.element(picker.getByRole('button', { name: 'Remove VIP' })).toBeVisible();
+    await userEvent.keyboard('{Backspace}');
+    await expect(picker.getByRole('button', { name: 'Remove VIP' })).toHaveCount(0);
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(picker.getByRole('button', { name: 'Remove Staff' })).toBeVisible();
+    const activeId = search.element().getAttribute('aria-activedescendant');
+    expect(activeId).toBeTruthy();
+    expect(document.getElementById(activeId ?? '')).toHaveTextContent('Staff');
+    await userEvent.keyboard('{Escape}');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect.element(search).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(publishScreen.options()).toBeVisible();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(page.getByRole('listbox')).toBeVisible();
+    await expect.element(search).toHaveAttribute('aria-expanded', 'true');
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'label:staff' },
     });
   });
 

@@ -6,6 +6,7 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
 } from '@tryghost/shade/components';
@@ -204,13 +205,20 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
             isAdmin7 && cn(tokenFieldClasses.chip, 'bg-secondary'),
           )}
           variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(label.slug);
-          }}
+          asChild
         >
-          {label.name}
-          <LucideIcon.X className="size-3" />
+          <button
+            aria-label={`Remove ${label.name}`}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(label.slug);
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            {label.name}
+            <LucideIcon.X className="size-3" />
+          </button>
         </Badge>
       ))}
     </>
@@ -327,63 +335,94 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [open]);
 
+  // Intercept Escape before the containing Radix dialog's document listener.
+  // The first press dismisses suggestions while keeping the search field focused.
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && event.target === inputRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape, true);
+    return () => window.removeEventListener('keydown', handleEscape, true);
+  }, [open]);
+
   const handleInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' && !search && selectedSlugs.length > 0) {
       onToggle(selectedSlugs[selectedSlugs.length - 1]);
     }
-    if (e.key === 'Escape') {
-      setOpen(false);
-      inputRef.current?.blur();
+    if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      setOpen(true);
     }
   };
 
   return (
     <div ref={containerRef} className="relative">
-      <div
-        className={cn(
-          isAdmin7
-            ? tokenFieldClasses.field
-            : 'flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-control-surface px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25',
-        )}
-        role="combobox"
-        onClick={() => {
-          inputRef.current?.focus();
-          setOpen(true);
-        }}
+      <Command
+        className="h-auto overflow-visible [&_[data-slot=command-input]]:contents [&_[data-slot=command-input]>svg]:hidden"
+        label={placeholder || 'Labels'}
+        shouldFilter={false}
       >
-        <SelectedPills labels={selectedLabels} onToggle={onToggle} />
-        <input
-          ref={inputRef}
-          className={cn(
-            isAdmin7
-              ? tokenFieldClasses.input
-              : 'min-w-20 flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
-          )}
-          placeholder={selectedLabels.length === 0 ? placeholder : ''}
-          value={search}
-          onChange={(e) => {
-            handleSearchChange(e.target.value);
-            if (!open) {
-              setOpen(true);
-            }
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={handleInputKeyDown}
-        />
-      </div>
-      {open && (
         <div
           className={cn(
-            'absolute top-full left-0 z-50 mt-1 w-full border bg-white shadow-md dark:bg-gray-950',
-            isAdmin7 ? 'rounded-menu' : 'rounded-md',
+            isAdmin7
+              ? tokenFieldClasses.field
+              : 'flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-control-surface px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25',
           )}
+          onClick={() => {
+            inputRef.current?.focus();
+            setOpen(true);
+          }}
         >
-          {optionSource.isInitialLoad ? (
-            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-              Loading labels...
-            </div>
-          ) : (
-            <Command shouldFilter={false}>
+          <SelectedPills
+            labels={selectedLabels}
+            onToggle={(slug) => {
+              onToggle(slug);
+              inputRef.current?.focus();
+            }}
+          />
+          <CommandInput
+            className={cn(
+              'size-auto rounded-none py-0',
+              isAdmin7
+                ? tokenFieldClasses.input
+                : 'min-w-20 flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
+            )}
+            value={search}
+            asChild
+            onFocus={() => setOpen(true)}
+            onKeyDown={handleInputKeyDown}
+            onValueChange={(value) => {
+              handleSearchChange(value);
+              if (!open) {
+                setOpen(true);
+              }
+            }}
+          >
+            <input
+              ref={inputRef}
+              aria-expanded={open}
+              placeholder={selectedLabels.length === 0 ? placeholder : ''}
+            />
+          </CommandInput>
+        </div>
+        {open && (
+          <div
+            className={cn(
+              'absolute top-full left-0 z-50 mt-1 w-full border bg-white shadow-md dark:bg-gray-950',
+              isAdmin7 ? 'rounded-menu' : 'rounded-md',
+            )}
+          >
+            {optionSource.isInitialLoad ? (
+              <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                Loading labels...
+              </div>
+            ) : (
               <CommandList className="overflow-y-auto" style={{ maxHeight }}>
                 <LabelListItems
                   isCreating={isCreating}
@@ -397,10 +436,10 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                   onToggle={onToggle}
                 />
               </CommandList>
-            </Command>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </Command>
     </div>
   );
 };
