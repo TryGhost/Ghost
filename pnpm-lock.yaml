@@ -641,6 +641,9 @@ catalogs:
     shell-quote:
       specifier: 1.10.0
       version: 1.10.0
+    should:
+      specifier: 13.2.3
+      version: 13.2.3
     sinon:
       specifier: 22.1.0
       version: 22.1.0
@@ -701,6 +704,10 @@ catalogs:
     zod:
       specifier: 4.4.3
       version: 4.4.3
+  image-transform-migration:
+    fs-extra:
+      specifier: 11.4.1
+      version: 11.4.1
   react17:
     '@testing-library/react':
       specifier: 12.1.5
@@ -2550,8 +2557,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/i18n
       '@tryghost/image-transform':
-        specifier: 1.4.18
-        version: 1.4.18(@types/node@22.20.1)
+        specifier: workspace:*
+        version: link:../../packages/image-transform
       '@tryghost/job-manager':
         specifier: 1.0.9
         version: 1.0.9(supports-color@10.2.2)
@@ -4423,6 +4430,44 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+
+  packages/image-transform:
+    dependencies:
+      '@tryghost/errors':
+        specifier: 3.4.0
+        version: 3.4.0
+      fs-extra:
+        specifier: catalog:image-transform-migration
+        version: 11.4.1
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../configs/eslint
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
+      should:
+        specifier: 'catalog:'
+        version: 13.2.3
+      sinon:
+        specifier: 'catalog:'
+        version: 22.1.0
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+    optionalDependencies:
+      sharp:
+        specifier: 'catalog:'
+        version: 0.35.5(@types/node@22.20.1)
 
   packages/limit-service:
     dependencies:
@@ -9673,9 +9718,6 @@ packages:
   '@tryghost/http-stream@2.3.16':
     resolution: {integrity: sha512-Il4zlpL8/vr555ep6opYozTa+jJvEXw12KjyqSWUfIUFrt53vkBPR7dRoSi+OnF20FazjnihllTZDEbvcKu61Q==}
 
-  '@tryghost/image-transform@1.4.18':
-    resolution: {integrity: sha512-dyYs5Zdmqx9wPOI63WNAeAgGnDOL/4QdYs7ZDaSWc0Ybz4qKs+F2k7ciHBdDtwRNyrnSNf1HZAOyv31hTvGaOA==}
-
   '@tryghost/jest-snapshot@2.3.15':
     resolution: {integrity: sha512-HzusbUXhIdGpK686psfg3VQdmAev29Qr9yt5A6EVLzexNQZNkyApyymySqrpeL7iQrcCozwsdZgVB/ccj7+ITQ==}
 
@@ -14896,6 +14938,10 @@ packages:
 
   fs-extra@11.4.0:
     resolution: {integrity: sha512-EQsFzMUJkCKGr1ePqlYADkIUmHW1s3ZXr5Yqy6wbGrfUCphpl2maM/kyOIRA2HpP3AaFQTZXD4ldjek+nccddA==}
+    engines: {node: '>=14.14'}
+
+  fs-extra@11.4.1:
+    resolution: {integrity: sha512-KYAb4c9BJQI6QqGKthV68OHe0badztdXJWKo0WtBA9IuCFPTKvE5ZdUBglP833aMjhaSPNO4A5j/EkzZtGlKjA==}
     engines: {node: '>=14.14'}
 
   fs-extra@4.0.3:
@@ -20699,6 +20745,24 @@ packages:
 
   shellwords@0.1.1:
     resolution: {integrity: sha512-vFwSUfQvqybiICwZY5+DAWIPLKsWO31Q91JSKl3UYv+K5c2QRPzn0qzec6QPu1Qc9eHYItiP3NdJqNVqetYAww==}
+
+  should-equal@2.0.0:
+    resolution: {integrity: sha512-ZP36TMrK9euEuWQYBig9W55WPC7uo37qzAEmbjHz4gfyuXrEUgF8cUvQVO+w+d3OMfPvSRQJ22lSm8MQJ43LTA==}
+
+  should-format@3.0.3:
+    resolution: {integrity: sha512-hZ58adtulAk0gKtua7QxevgUaXTTXxIi8t41L3zo9AHvjXO1/7sdLECuHeIN2SRtYXpNkmhoUP2pdeWgricQ+Q==}
+
+  should-type-adaptors@1.1.0:
+    resolution: {integrity: sha512-JA4hdoLnN+kebEp2Vs8eBe9g7uy0zbRo+RMcU0EsNy+R+k049Ki+N5tT5Jagst2g7EAja+euFuoXFCa8vIklfA==}
+
+  should-type@1.4.0:
+    resolution: {integrity: sha512-MdAsTu3n25yDbIe1NeN69G4n6mUnJGtSJHygX3+oN0ZbO3DTiATnf7XnYJdGT42JCXurTb1JI0qOBR65shvhPQ==}
+
+  should-util@1.0.1:
+    resolution: {integrity: sha512-oXF8tfxx5cDk8r2kYqlkUJzZpDBqVY/II2WhvU0n9Y3XYvAYRmeaf1PvvIvTgPnv4KJ+ES5M0PyDq5Jp+Ygy2g==}
+
+  should@13.2.3:
+    resolution: {integrity: sha512-ggLesLtu2xp+ZxI+ysJTmNjh2U0TsC+rQ/pfED9bUZZ4DKefP27D+7YJVVTvKsmjLpIi9jAa7itwDGkDDmt1GQ==}
 
   side-channel-list@1.0.1:
     resolution: {integrity: sha512-mjn/0bi/oUURjc5Xl7IaWi/OJJJumuoJFQJfDDyO46+hBWsfaVM65TBHq2eoZBhzl9EchxOijpkbRC8SVBQU0w==}
@@ -28728,15 +28792,6 @@ snapshots:
     dependencies:
       '@tryghost/errors': 3.4.0
       '@tryghost/request': 4.0.8
-
-  '@tryghost/image-transform@1.4.18(@types/node@22.20.1)':
-    dependencies:
-      '@tryghost/errors': 3.4.0
-      fs-extra: 11.4.0
-    optionalDependencies:
-      sharp: 0.35.5(@types/node@22.20.1)
-    transitivePeerDependencies:
-      - '@types/node'
 
   '@tryghost/jest-snapshot@2.3.15(supports-color@10.2.2)':
     dependencies:
@@ -36876,6 +36931,12 @@ snapshots:
       jsonfile: 6.2.1
       universalify: 2.0.1
 
+  fs-extra@11.4.1:
+    dependencies:
+      graceful-fs: 4.2.11
+      jsonfile: 6.2.1
+      universalify: 2.0.1
+
   fs-extra@4.0.3:
     dependencies:
       graceful-fs: 4.2.11
@@ -44160,6 +44221,32 @@ snapshots:
   shell-quote@1.9.0: {}
 
   shellwords@0.1.1: {}
+
+  should-equal@2.0.0:
+    dependencies:
+      should-type: 1.4.0
+
+  should-format@3.0.3:
+    dependencies:
+      should-type: 1.4.0
+      should-type-adaptors: 1.1.0
+
+  should-type-adaptors@1.1.0:
+    dependencies:
+      should-type: 1.4.0
+      should-util: 1.0.1
+
+  should-type@1.4.0: {}
+
+  should-util@1.0.1: {}
+
+  should@13.2.3:
+    dependencies:
+      should-equal: 2.0.0
+      should-format: 3.0.3
+      should-type: 1.4.0
+      should-type-adaptors: 1.1.0
+      should-util: 1.0.1
 
   side-channel-list@1.0.1:
     dependencies:

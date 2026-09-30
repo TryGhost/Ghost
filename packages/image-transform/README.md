@@ -1,39 +1,18 @@
 # Image Transform
 
-## Install
+Resizes and converts images for Ghost with [sharp](https://sharp.pixelplumbing.com/).
+sharp is an optional dependency: without it, `canTransformFiles()` returns
+`false` and Ghost stores images without processing them.
 
-`npm install @tryghost/image-transform --save`
-
-or
-
-`yarn add @tryghost/image-transform`
-
-
-## Usage
-
+This is a private workspace package used by Ghost Core. It is bundled into the
+Ghost release artifact and is not published independently.
 
 ## Develop
 
-This is a mono repository, managed with [lerna](https://lernajs.io/).
-
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `yarn` to install top-level dependencies.
-
-
-## Run
-
-- `yarn dev`
-
-
-## Test
-
-- `yarn lint` run just eslint
-- `yarn test` run lint and tests
-
-If the image output changes, one way to compare the output is with [git diff image](https://github.com/ewanmellor/git-diff-image)
-
-
+```bash
+pnpm nx run @tryghost/image-transform:lint
+pnpm nx run @tryghost/image-transform:test
+```
 
 # Copyright & License
 
