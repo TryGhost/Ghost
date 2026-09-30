@@ -312,7 +312,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           />
           {/* Always visible so the action stays discoverable and remains
                     available on touch devices. */}
-          <Tooltip>
+          <Tooltip delayDuration={1000}>
             <TooltipTrigger asChild>
               <Button
                 // The 32px margin on top of the row's gap separates

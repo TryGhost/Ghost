@@ -588,6 +588,7 @@ describe('Posts list trailing action button', () => {
     await expect.element(action).toHaveAttribute('href', `#/posts/analytics/${emailedPost.id}`);
     await expect.element(action).not.toHaveAttribute('title');
     await action.hover();
+    expect(action.element()).toHaveAttribute('data-state', 'closed');
     await expect.element(postsListScreen.actionTooltip('Post analytics')).toBeVisible();
   });
 
@@ -627,6 +628,7 @@ describe('Posts list trailing action button', () => {
     await expect.element(action).toHaveAttribute('href', `#/editor/page/${page.id}`);
     await expect.element(action).not.toHaveAttribute('title');
     await action.hover();
+    expect(action.element()).toHaveAttribute('data-state', 'closed');
     await expect.element(postsListScreen.actionTooltip('Edit')).toBeVisible();
   });
 });
