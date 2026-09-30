@@ -5,26 +5,26 @@ import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-con
 import {
   getEmailSendingActiveLine,
   getEmailSendingProgressCopy,
+  type EmailSendingActiveLine,
 } from '@/posts/email-sending-status/email-sending-status-copy';
 import { EmailSendingStatusLine } from '@/posts/email-sending-status/email-sending-status-line';
 import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
-import type { EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
+import type {
+  EmailSendingProgress,
+  EmailSendingState,
+} from '@tryghost/admin-x-framework/api/emails';
 
-const activeDetail = (sending: Exclude<EmailSendingState, { status: 'failed' }>) => {
-  const { completed, total } = sending.progress;
-
+/**
+ * Preparation reports a percentage so the recipient count only climbs once,
+ * during sending, while the audience size stays on screen throughout.
+ */
+const preparingDetail = ({ completed, total }: EmailSendingProgress) => {
   if (total === 0) {
     return null;
   }
 
-  // Preparation reports a percentage so the recipient count only climbs
-  // once, during sending, while the audience size stays on screen throughout.
-  if (sending.status === 'preparing') {
-    const percent = Math.min(100, Math.floor((completed / total) * 100));
-    return `${formatNumber(percent)}% complete · ${formatNumber(total)} total`;
-  }
-
-  return getEmailSendingProgressCopy(sending, null).detail;
+  const percent = Math.min(100, Math.floor((completed / total) * 100));
+  return `${formatNumber(percent)}% complete · ${formatNumber(total)} total`;
 };
 
 const failureDetail = (
@@ -100,17 +100,20 @@ const PostAnalyticsEmailSendingStatus = () => {
   }
 
   const isActive = sending && (sending.status !== 'submitted' || isNewsletterDataHidden);
+  let active: EmailSendingActiveLine | null = null;
+  if (isActive) {
+    const copy = getEmailSendingProgressCopy(sending, estimate);
+    active = getEmailSendingActiveLine(
+      sending,
+      sending.status === 'preparing'
+        ? { ...copy, detail: preparingDetail(sending.progress) }
+        : copy,
+    );
+  }
 
   return (
     <EmailSendingStatusLine
-      active={
-        isActive
-          ? getEmailSendingActiveLine(sending, {
-              title: getEmailSendingProgressCopy(sending, null).title,
-              detail: [activeDetail(sending), estimate].filter(Boolean).join(' · ') || null,
-            })
-          : null
-      }
+      active={active}
       data-testid="email-sending-status-line"
       ready={!isStatusLoading}
     />
