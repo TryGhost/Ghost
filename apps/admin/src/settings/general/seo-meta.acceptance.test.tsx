@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 import {
   fakeAdminEndpoint,
@@ -7,6 +8,7 @@ import {
   renderAdminApp,
   settingsResponse,
 } from '@test-utils/acceptance';
+import { deferred } from '@/utils/deferred';
 import { settingsScreen } from '@/settings/settings.screen';
 
 function imageFile(): File {
@@ -170,6 +172,39 @@ describe('SEO meta settings', () => {
       { key: 'twitter_title', value: 'X Title' },
       { key: 'twitter_description', value: 'X Description' },
     ]);
+  });
+
+  it('holds the save until an in-flight image upload lands', async () => {
+    fakeSettingsScreens();
+    const pendingUpload = deferred<{ images: { url: string; ref: null }[] }>();
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', () => pendingUpload.promise);
+    const settingsApi = fakeEditSettings();
+    await renderAdminApp('/settings');
+
+    const section = settingsScreen.seoMeta();
+    const saveButton = section.getByRole('button', { name: 'Save' });
+    await section.getByLabelText('Meta title').fill('SEO Title');
+    await section.getByRole('tab', { name: 'Facebook card' }).click();
+    await section.getByLabelText('Upload Facebook image').upload(imageFile());
+    await expect.poll(() => uploadApi.requests.length).toBe(1);
+    await expect.element(saveButton).toBeDisabled();
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    pendingUpload.resolve({ images: [{ url: 'http://example.com/facebook.png', ref: null }] });
+    await expect
+      .poll(() => document.getElementById('facebook-image')?.getAttribute('src'))
+      .toBe('http://example.com/facebook.png');
+    await saveButton.click();
+
+    await expect(settingsApi).toHaveEditedSettings([
+      { key: 'meta_title', value: 'SEO Title' },
+      { key: 'og_image', value: 'http://example.com/facebook.png' },
+    ]);
+    // ⌘S reaches every settings group; only the SEO saves matter here.
+    const seoSaves = settingsApi.requests.filter(({ settings }) =>
+      settings.some(({ key }) => key === 'meta_title'),
+    );
+    expect(seoSaves).toHaveLength(1);
   });
 
   it('navigates between card tabs', async () => {
