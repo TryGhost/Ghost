@@ -29,19 +29,14 @@ import {
   PageMenuItem,
 } from '@tryghost/shade/components';
 import { H1 } from '@tryghost/shade/primitives';
-import {
-  LucideIcon,
-  formatDisplayDate,
-  formatDisplayTime,
-  formatNumber,
-} from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useIsEmberOwnedRoute } from '@/routes';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
+import { getPostByline } from '@/posts/analytics/utils/post-byline';
 import {
-  isEmailOnly,
   isPublishedOnly,
   trackEvent,
   useActiveVisitors,
@@ -83,26 +78,13 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   // Whether the editor needs a hash navigation depends on the `editorReact` flag.
   const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
-  const siteTimezone = getSiteTimezone(settings);
-  // "Sent" waits for the send to finish, so the recipient count it carries is
-  // the final one rather than a figure that is still moving.
-  const emailCount = post?.email?.email_count ?? 0;
-  const recipients =
-    improveSendingUI && isEmailSent && emailCount > 0
-      ? ` to ${formatNumber(emailCount)} ${emailCount === 1 ? 'member' : 'members'}`
-      : '';
-  let byline: string | null = null;
-  if (post?.published_at) {
-    const publishedAt = `on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`;
-    if (isEmailOnly(post)) {
-      // An unfinished send is reported by the status line under the title.
-      byline = isEmailSent || !improveSendingUI ? `Sent${recipients} ${publishedAt}` : null;
-    } else if (post.status === 'published') {
-      byline = isEmailSent
-        ? `Published and sent${recipients} ${publishedAt}`
-        : `Published on your site ${publishedAt}`;
-    }
-  }
+  const byline =
+    post &&
+    getPostByline(post, {
+      isEmailSent,
+      improveSendingUI,
+      timezone: getSiteTimezone(settings),
+    });
 
   // Track once per open — canManageGiftLink can flip while the modal is open
   // (current-user query resolving), which must not re-fire the event.
