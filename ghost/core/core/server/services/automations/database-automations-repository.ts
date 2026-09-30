@@ -311,11 +311,14 @@ export function createDatabaseAutomationsRepository({
       });
     },
 
-    async trigger(options: {
-      memberEmail: string;
-      memberId: string;
-      memberStatus: 'free' | 'paid';
-    }): Promise<void> {
+    async trigger(
+      options: ReadonlyDeep<{
+        memberEmail: string;
+        memberId: string;
+        memberStatus: 'free' | 'paid';
+        memberTierIds: string[];
+      }>,
+    ): Promise<void> {
       return await knex.transaction((trx) =>
         trigger(trx, {
           ...options,
@@ -663,18 +666,19 @@ async function hasMemberAlreadyEnteredAutomation(
 
 async function trigger(
   trx: Knex.Transaction,
-  options: Readonly<{
+  options: ReadonlyDeep<{
     memberEmail: string;
     memberId: string;
     memberStatus: 'free' | 'paid';
+    memberTierIds: string[];
     fakeWaitHoursMultiplier: number | null;
   }>,
 ): Promise<void> {
-  const { memberEmail, memberId, memberStatus, fakeWaitHoursMultiplier } = options;
+  const { memberEmail, memberId, memberStatus, memberTierIds, fakeWaitHoursMultiplier } = options;
 
   await lockMemberForTriggering(trx, memberId);
 
-  const firstActions = await findFirstActionRevisions(trx, memberStatus);
+  const firstActions = await findFirstActionRevisions(trx, memberStatus, memberTierIds);
 
   const runsToInsert: RunToInsert[] = [];
   const stepsToInsert: StepToInsert[] = [];
@@ -850,10 +854,42 @@ async function fetchAndLockSteps(
     .where('step.locked_by', lockId)
     .orderBy(['step.ready_at', 'step.created_at', 'step.id']);
 
+  const tierIdsByAutomation = await getTierIdsByAutomation(trx, rows);
+
   return {
-    steps: rows.map((row) => buildStepToRun(row)),
+    steps: rows.map((row) => buildStepToRun(row, tierIdsByAutomation.get(row.automation_id))),
     nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff),
   };
+}
+
+async function getTierIdsByAutomation(
+  trx: Knex.Transaction,
+  stepsToRun: ReadonlyDeep<StepToRunRow[]>,
+): Promise<DefaultMap<string, string[]>> {
+  const result = new DefaultMap<string, string[]>(() => []);
+
+  const automationIdsToLookAt = new Set<string>();
+  for (const stepToRun of stepsToRun) {
+    if (stepToRun.automation_trigger_tier_scope === 'selected_paid') {
+      automationIdsToLookAt.add(stepToRun.automation_id);
+    }
+  }
+
+  if (automationIdsToLookAt.size === 0) {
+    return result;
+  }
+
+  const triggerTiers: { automation_id: string; product_id: string }[] = await trx(
+    'automation_trigger_tiers',
+  )
+    .select('automation_id', 'product_id')
+    .whereIn('automation_id', [...automationIdsToLookAt]);
+
+  for (const triggerTier of triggerTiers) {
+    result.get(triggerTier.automation_id).push(triggerTier.product_id);
+  }
+
+  return result;
 }
 
 async function findNextPendingReadyAt(
@@ -871,7 +907,10 @@ async function findNextPendingReadyAt(
   return row?.next_ready_at ? fromDatabaseDate(row.next_ready_at) : null;
 }
 
-function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
+function buildStepToRun(
+  row: ReadonlyDeep<StepToRunRow>,
+  triggerTierIds: string[],
+): AutomationStepToRun {
   const base = {
     id: row.id,
     step_attempts: row.step_attempts,
@@ -880,6 +919,7 @@ function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
     automation_run_id: row.automation_run_id,
     automation_id: row.automation_id,
     automation_trigger_tier_scope: row.automation_trigger_tier_scope,
+    automation_trigger_tier_ids: triggerTierIds,
     automation_status: row.automation_status,
     member_id: row.member_id,
     member_email: row.member_email,
@@ -912,6 +952,7 @@ function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
 async function findFirstActionRevisions(
   trx: Knex.Transaction,
   memberStatus: 'free' | 'paid',
+  memberTierIds: readonly string[],
 ): Promise<NextActionRevisionRow[]> {
   return await trx('automations as automation')
     .select(
@@ -923,7 +964,24 @@ async function findFirstActionRevisions(
     )
     .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
     .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
-    .where('automation.trigger_tier_scope', TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS[memberStatus])
+    .where((builder) => {
+      builder.where(
+        'automation.trigger_tier_scope',
+        TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS[memberStatus],
+      );
+      if (memberStatus === 'paid' && memberTierIds.length > 0) {
+        builder.orWhere((selected) => {
+          selected
+            .where('automation.trigger_tier_scope', 'selected_paid')
+            .whereExists(
+              trx('automation_trigger_tiers as trigger_tier')
+                .select('trigger_tier.automation_id')
+                .where('trigger_tier.automation_id', trx.ref('automation.id'))
+                .whereIn('trigger_tier.product_id', memberTierIds),
+            );
+        });
+      }
+    })
     .where('automation.status', 'active')
     .whereNull('actions.deleted_at')
     .whereNotExists(

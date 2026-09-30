@@ -117,6 +117,7 @@ type AutomationStepBase = {
   automation_run_id: string;
   automation_id: string;
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
+  automation_trigger_tier_ids: string[];
   automation_status: 'inactive' | 'active';
   member_id: string | null;
   member_email: string;
@@ -178,11 +179,14 @@ export type AutomationsRepository = {
     actionId: string,
   ): Promise<AutomationActionLink[] | null>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
-  trigger(options: {
-    memberEmail: string;
-    memberId: string;
-    memberStatus: 'free' | 'paid';
-  }): Promise<void>;
+  trigger(
+    options: ReadonlyDeep<{
+      memberEmail: string;
+      memberId: string;
+      memberStatus: 'free' | 'paid';
+      memberTierIds: string[];
+    }>,
+  ): Promise<void>;
   /**
    * Select the steps we want to run and return the next time any remaining
    * pending step should be polled, if any.

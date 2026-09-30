@@ -616,6 +616,7 @@ describe('MemberRepository', function () {
         findOne: sinon.stub().resolves({
           related: (relation) => {
             return {
+              models: [],
               query: sinon.stub().returns({
                 fetchOne: sinon.stub().resolves({}),
               }),
@@ -1965,6 +1966,34 @@ describe('MemberRepository', function () {
     });
   });
 
+  describe('triggerMemberSignupAutomation', function () {
+    const buildSignupMember = (products) => {
+      const fetch = sinon.stub().resolves({ models: products });
+      return {
+        id: 'member_id_123',
+        get: sinon.stub().withArgs('email').returns('test@example.com'),
+        // Deliberately stale to ensure that the latest tiers are fetched.
+        related: sinon
+          .stub()
+          .withArgs('products')
+          .returns({ models: [{ id: 'old-tier' }], fetch }),
+      };
+    };
+
+    it('triggers automations with paid tiers', async function () {
+      const member = buildSignupMember([{ id: 'bronze' }]);
+      const repo = buildRepo();
+      await repo.triggerMemberSignupAutomation(member, 'paid', {});
+      sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+        event: 'member_sign_up',
+        memberId: 'member_id_123',
+        memberEmail: 'test@example.com',
+        memberStatus: 'paid',
+        memberTierIds: ['bronze'],
+      });
+    });
+  });
+
   describe('create - automation integration', function () {
     it('triggers an automation event for free signup', async function () {
       const repo = buildRepo();
@@ -1975,6 +2004,7 @@ describe('MemberRepository', function () {
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'free',
+        memberTierIds: [],
       });
     });
 
@@ -2023,6 +2053,7 @@ describe('MemberRepository', function () {
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'free',
+          memberTierIds: [],
         });
         sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         sinon.assert.notCalled(Automation.findOne);
@@ -2200,6 +2231,7 @@ describe('MemberRepository', function () {
           }),
           related: (relation) => {
             return {
+              models: [],
               query: sinon.stub().returns({
                 fetchOne: sinon.stub().resolves({}),
               }),
@@ -2339,6 +2371,7 @@ describe('MemberRepository', function () {
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'paid',
+        memberTierIds: [],
       });
     });
 
@@ -2437,6 +2470,7 @@ describe('MemberRepository', function () {
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'paid',
+          memberTierIds: [],
         });
         sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         sinon.assert.notCalled(Automation.findOne);

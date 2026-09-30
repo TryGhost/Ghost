@@ -67,8 +67,7 @@ interface MemberRepository {
   ): Promise<MemberModel | null>;
   update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
   triggerMemberSignupAutomation(
-    memberId: string,
-    memberEmail: string,
+    member: MemberModel,
     memberStatus: 'free' | 'paid',
     options?: Record<string, unknown>,
   ): Promise<unknown>;
@@ -945,12 +944,7 @@ export class GiftService {
     await this.deps.giftDeliveryService.cancelPendingForGift(redeemed.token, { transacting });
 
     // Gift members receive the paid welcome email, as they receive access to paid content
-    await this.deps.memberRepository.triggerMemberSignupAutomation(
-      memberId,
-      member.get('email'),
-      'paid',
-      { transacting },
-    );
+    await this.deps.memberRepository.triggerMemberSignupAutomation(member, 'paid', { transacting });
 
     return { redeemed, member };
   }
