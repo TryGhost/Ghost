@@ -22,8 +22,8 @@ export default class GhPsmTemplateSelect extends Component {
     // computed properties
     @computed('activeTheme.customTemplates.[]')
     get customTemplates() {
-        let templates = this.get('activeTheme.customTemplates') || [];
-        let defaultTemplate = {
+        const templates = this.get('activeTheme.customTemplates') || [];
+        const defaultTemplate = {
             filename: '',
             name: 'Default'
         };
@@ -33,10 +33,10 @@ export default class GhPsmTemplateSelect extends Component {
 
     @computed('post.{page,slug}', 'activeTheme.slugTemplates.[]')
     get matchedSlugTemplate() {
-        let slug = this.get('post.slug');
-        let type = this.post.constructor.modelName;
+        const slug = this.get('post.slug');
+        const type = this.post.constructor.modelName;
 
-        let [matchedTemplate] = this.get('activeTheme.slugTemplates').filter(function (template) {
+        const [matchedTemplate] = this.get('activeTheme.slugTemplates').filter(function (template) {
             return template.for.includes(type) && template.slug === slug;
         });
 
@@ -45,8 +45,8 @@ export default class GhPsmTemplateSelect extends Component {
 
     @computed('post.customTemplate', 'customTemplates.[]')
     get selectedTemplate() {
-        let templates = this.customTemplates;
-        let filename = this.get('post.customTemplate');
+        const templates = this.customTemplates;
+        const filename = this.get('post.customTemplate');
 
         return templates.findBy('filename', filename);
     }
@@ -64,14 +64,14 @@ export default class GhPsmTemplateSelect extends Component {
 
     // tasks
     @task(function* () {
-        let store = this.store;
+        const store = this.store;
         let themes = yield store.peekAll('theme');
 
         if (isEmpty(themes)) {
             themes = yield store.findAll('theme');
         }
 
-        let activeTheme = themes.filterBy('active', true).get('firstObject');
+        const activeTheme = themes.filterBy('active', true).get('firstObject');
 
         this.set('activeTheme', activeTheme);
     })

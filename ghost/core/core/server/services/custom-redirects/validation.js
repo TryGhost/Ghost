@@ -16,7 +16,7 @@ const messages = {
  * @param {import('@tryghost/adapter-base-redirects').RedirectConfig[]} redirects
  */
 const validate = (redirects) => {
-  if (!_.isArray(redirects)) {
+  if (!Array.isArray(redirects)) {
     throw new errors.ValidationError({
       message: tpl(messages.redirectsWrongFormat),
       help: tpl(messages.redirectsHelp),

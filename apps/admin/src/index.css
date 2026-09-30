@@ -6,6 +6,13 @@
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin/fonts.css';
 
+/* One progress value keeps the settings panel and its vacated header slot in sync. */
+@property --editor-settings-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
 @keyframes email-sending-arrow-rise {
   from {
     transform: translateY(115%);

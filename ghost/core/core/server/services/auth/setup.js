@@ -87,13 +87,11 @@ async function doSettings(data, settingsAPI) {
   const blogTitle = data.userData.blogTitle;
   const description = data.userData.description ? data.userData.description.trim() : null;
 
-  let userSettings;
-
   if (!blogTitle || typeof blogTitle !== 'string') {
     return user;
   }
 
-  userSettings = [
+  const userSettings = [
     { key: 'title', value: blogTitle.trim() },
     { key: 'description', value: description || tpl(messages.sampleBlogDescription) },
   ];

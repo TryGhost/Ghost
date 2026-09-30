@@ -7,7 +7,7 @@ import devRoutes from './routes-dev';
 import testRoutes from './routes-test';
 
 export default function (config) {
-    let finalConfig = {
+    const finalConfig = {
         ...config,
         models: {...discoverEmberDataModels(), ...config.models},
         serializers: applyEmberDataSerializers(config.serializers),

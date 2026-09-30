@@ -43,7 +43,7 @@ const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u)
 const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
-let watchedProps = [
+const watchedProps = [
     'post.lexicalScratch',
     'post.titleScratch',
     'post.hasDirtyAttributes',
@@ -158,6 +158,7 @@ export default class LexicalEditorController extends Controller {
     @service search;
     @service session;
     @service settings;
+    @service stateBridge;
     @service ui;
     @service localRevisions;
     @service('unsaved-changes') unsavedChanges;
@@ -175,6 +176,19 @@ export default class LexicalEditorController extends Controller {
      * Flag used to determine if we should return to the analytics page or to the posts/pages overview
      */
     fromAnalytics = false;
+
+    get listQueryParams() {
+        if (this.feature.postsListReact !== true) {
+            return {};
+        }
+
+        const resource = this.post?.displayName === 'page' ? 'pages' : 'posts';
+        // Explicit nulls clear any stale query params retained by Ember.
+        return {
+            type: null, visibility: null, author: null, tag: null, order: null,
+            ...this.stateBridge.postListQueryParams[resource]
+        };
+    }
 
     // koenig related properties
     wordCount = 0;
@@ -264,7 +278,7 @@ export default class LexicalEditorController extends Controller {
 
     @computed('session.user.{isAdmin,isEitherEditor}')
     get canManageSnippets() {
-        let {user} = this.session;
+        const {user} = this.session;
         if (user.get('isAdmin') || user.get('isEitherEditor')) {
             return true;
         }
@@ -273,8 +287,8 @@ export default class LexicalEditorController extends Controller {
 
     @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning')
     get _autosaveRunning() {
-        let autosave = this.get('_autosaveTask.isRunning');
-        let timedsave = this.get('_timedSaveTask.isRunning');
+        const autosave = this.get('_autosaveTask.isRunning');
+        const timedsave = this.get('_timedSaveTask.isRunning');
 
         return autosave || timedsave;
     }
@@ -394,7 +408,7 @@ export default class LexicalEditorController extends Controller {
     // called by the "are you sure?" modal
     @action
     leaveEditor() {
-        let transition = this.leaveEditorTransition;
+        const transition = this.leaveEditorTransition;
 
         if (!transition) {
             this.notifications.showAlert(GENERIC_ERROR_MESSAGE, {type: 'error'});
@@ -594,8 +608,8 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        let prevStatus = this.get('post.status');
-        let isNew = this.get('post.isNew');
+        const prevStatus = this.get('post.status');
+        const isNew = this.get('post.isNew');
         const adapterOptions = {};
 
         this.cancelAutosave();
@@ -646,7 +660,7 @@ export default class LexicalEditorController extends Controller {
         yield this.beforeSaveTask.perform(options);
 
         try {
-            let post = yield this._savePostTask.perform({...options, adapterOptions});
+            const post = yield this._savePostTask.perform({...options, adapterOptions});
 
             // Clear any error notification (if any)
             this.notifications.clearAll();
@@ -713,7 +727,7 @@ export default class LexicalEditorController extends Controller {
             }
 
             if (!options.silent) {
-                let errorOrMessages = error || this.get('post.errors.messages');
+                const errorOrMessages = error || this.get('post.errors.messages');
                 this._showErrorAlert(prevStatus, this.get('post.status'), errorOrMessages);
                 return;
             }
@@ -773,8 +787,8 @@ export default class LexicalEditorController extends Controller {
      */
     @task({group: 'saveTasks'})
     *updateSlugTask(_newSlug) {
-        let slug = this.get('post.slug');
-        let newSlug, serverSlug;
+        const slug = this.get('post.slug');
+        let newSlug;
 
         newSlug = _newSlug || slug;
         newSlug = newSlug && newSlug.trim();
@@ -786,7 +800,7 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        serverSlug = yield this.slugGenerator.generateSlug('post', newSlug, this.get('post.id'));
+        const serverSlug = yield this.slugGenerator.generateSlug('post', newSlug, this.get('post.id'));
         // If after getting the sanitized and unique slug back from the API
         // we end up with a slug that matches the existing slug, abort the change
         if (serverSlug === slug) {
@@ -800,8 +814,8 @@ export default class LexicalEditorController extends Controller {
         // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
 
         // get the last token out of the slug candidate and see if it's a number
-        let slugTokens = serverSlug.split('-');
-        let check = Number(slugTokens.pop());
+        const slugTokens = serverSlug.split('-');
+        const check = Number(slugTokens.pop());
 
         // if the candidate slug is the same as the existing slug except
         // for the incrementor then the existing slug should be used
@@ -837,7 +851,7 @@ export default class LexicalEditorController extends Controller {
             }
 
             if (error) {
-                let status = this.get('post.status');
+                const status = this.get('post.status');
                 this._showErrorAlert(status, status, error);
             }
 
@@ -848,7 +862,7 @@ export default class LexicalEditorController extends Controller {
     // convenience method for saving the post and performing post-save cleanup
     @task
     *_savePostTask(options = {}) {
-        let {post} = this;
+        const {post} = this;
 
         const previousEmailOnlyValue = this.post.emailOnly;
 
@@ -908,8 +922,8 @@ export default class LexicalEditorController extends Controller {
         // if the two "scratch" properties (title and content) match the post,
         // then it's ok to set hasDirtyAttributes to false
         // TODO: why is this necessary?
-        let titlesMatch = post.get('titleScratch') === post.get('title');
-        let bodiesMatch = post.get('lexicalScratch') === post.get('lexical');
+        const titlesMatch = post.get('titleScratch') === post.get('title');
+        const bodiesMatch = post.get('lexicalScratch') === post.get('lexical');
 
         if (titlesMatch && bodiesMatch) {
             this.set('hasDirtyAttributes', false);
@@ -918,9 +932,9 @@ export default class LexicalEditorController extends Controller {
 
     @task
     *saveTitleTask() {
-        let post = this.post;
-        let currentTitle = post.get('title');
-        let newTitle = post.get('titleScratch').trim();
+        const post = this.post;
+        const currentTitle = post.get('title');
+        const newTitle = post.get('titleScratch').trim();
 
         if ((currentTitle && newTitle && newTitle === currentTitle) || (!currentTitle && !newTitle)) {
             return;
@@ -1117,7 +1131,7 @@ export default class LexicalEditorController extends Controller {
     // logic to _confirmLeave via the unsaved-changes service so that
     // intercepted hash link clicks follow exactly the same code path.
     async willTransition(transition) {
-        let post = this.post;
+        const post = this.post;
 
         // exit early and allow transition if we have no post, occurs if reset
         // has already been called
@@ -1137,7 +1151,7 @@ export default class LexicalEditorController extends Controller {
             && transition.targetName === 'lexical-editor.edit'
             && transition.intent.contexts?.[0]?.id === post.id;
 
-        let leaveState = this._getLeaveTransitionState({fromNewToEdit});
+        const leaveState = this._getLeaveTransitionState({fromNewToEdit});
 
         if (leaveState.shouldAbort) {
             transition.abort();
@@ -1186,8 +1200,8 @@ export default class LexicalEditorController extends Controller {
     // autosave handling, and the "are you sure?" modal. Returns true if leaving
     // should proceed, false if the user chose to stay.
     async _confirmLeave() {
-        let {fromNewToEdit = false} = this._confirmLeaveContext || {};
-        let post = this.post;
+        const {fromNewToEdit = false} = this._confirmLeaveContext || {};
+        const post = this.post;
         if (!post) {
             return true;
         }
@@ -1274,7 +1288,7 @@ export default class LexicalEditorController extends Controller {
     }
 
     _getLeaveTransitionState({fromNewToEdit = false} = {}) {
-        let post = this.post;
+        const post = this.post;
 
         if (!post) {
             return {
@@ -1285,7 +1299,7 @@ export default class LexicalEditorController extends Controller {
         }
 
         let hasDirtyAttributes = this.hasDirtyAttributes;
-        let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
+        const state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
         if (state.isDeleted) {
             // if the post is deleted, we don't need to save it
@@ -1293,20 +1307,20 @@ export default class LexicalEditorController extends Controller {
         }
 
         // Check if anything has changed since the last revision
-        let postRevisions = post.get('postRevisions').toArray();
-        let latestRevision = postRevisions[postRevisions.length - 1];
-        let hasChangedSinceLastRevision = !latestRevision || (!post.isNew && post.lexical.replaceAll(this.config.blogUrl, '') !== latestRevision.lexical.replaceAll(this.config.blogUrl, ''));
+        const postRevisions = post.get('postRevisions').toArray();
+        const latestRevision = postRevisions[postRevisions.length - 1];
+        const hasChangedSinceLastRevision = !latestRevision || (!post.isNew && post.lexical.replaceAll(this.config.blogUrl, '') !== latestRevision.lexical.replaceAll(this.config.blogUrl, ''));
 
-        let deletedWithoutChanges = state.isDeleted
+        const deletedWithoutChanges = state.isDeleted
                 && (state.isSaving || !state.hasDirtyAttributes);
 
-        let shouldSaveOnLeave = !this._saveOnLeavePerformed
+        const shouldSaveOnLeave = !this._saveOnLeavePerformed
             && hasChangedSinceLastRevision
             && hasDirtyAttributes
             && !state.isDeleted
             && post.get('status') === 'draft';
 
-        let shouldConfirmFlow = !this._leaveConfirmed
+        const shouldConfirmFlow = !this._leaveConfirmed
             && !fromNewToEdit
             && !deletedWithoutChanges
             && hasDirtyAttributes;
@@ -1327,7 +1341,7 @@ export default class LexicalEditorController extends Controller {
 
     // called when the editor route is left or the post model is swapped
     reset() {
-        let post = this.post;
+        const post = this.post;
 
         // make sure the save tasks aren't still running in the background
         // after leaving the edit route
@@ -1412,7 +1426,7 @@ export default class LexicalEditorController extends Controller {
             diff.forEach((change) => {
                 if (change.path) {
                 // use path array to fill in node types from parsedScratch when path shows an index
-                    let humanPath = [];
+                    const humanPath = [];
                     change.path.forEach((child, i) => {
                         if (typeof child === 'number') {
                             const partialPath = diff.path.slice(0, i + 1);
@@ -1442,7 +1456,7 @@ export default class LexicalEditorController extends Controller {
     }
 
     _hasDirtyAttributes() {
-        let post = this.post;
+        const post = this.post;
 
         if (!post) {
             return false;
@@ -1460,8 +1474,8 @@ export default class LexicalEditorController extends Controller {
 
         // post.tags is an array so hasDirtyAttributes doesn't pick up
         // changes unless the array ref is changed
-        let currentTags = (this._tagNames || []).join(', ');
-        let previousTags = (this._previousTagNames || []).join(', ');
+        const currentTags = (this._tagNames || []).join(', ');
+        const previousTags = (this._previousTagNames || []).join(', ');
         if (currentTags !== previousTags) {
             this._leaveModalReason = {
                 reason: 'tags are different',
@@ -1482,13 +1496,13 @@ export default class LexicalEditorController extends Controller {
         }
 
         // Lexical and scratch comparison
-        let lexical = post.get('lexical');
-        let scratch = post.get('lexicalScratch');
-        let secondaryLexical = post.get('secondaryLexicalState');
+        const lexical = post.get('lexical');
+        const scratch = post.get('lexicalScratch');
+        const secondaryLexical = post.get('secondaryLexicalState');
 
-        let lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
-        let scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
-        let secondaryLexicalChildNodes = secondaryLexical ? JSON.parse(secondaryLexical).root?.children : [];
+        const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
+        const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
+        const secondaryLexicalChildNodes = secondaryLexical ? JSON.parse(secondaryLexical).root?.children : [];
 
         lexicalChildNodes.forEach(child => child.direction = null);
         scratchChildNodes.forEach(child => child.direction = null);
@@ -1520,7 +1534,7 @@ export default class LexicalEditorController extends Controller {
         // New+unsaved posts always return `hasDirtyAttributes: true`
         // so we need a manual check to see if any
         if (post.get('isNew')) {
-            let changedAttributes = Object.keys(post.changedAttributes() || {});
+            const changedAttributes = Object.keys(post.changedAttributes() || {});
             if (changedAttributes.length) {
                 this._leaveModalReason = {
                     reason: 'post.changedAttributes.length > 0',
@@ -1533,7 +1547,7 @@ export default class LexicalEditorController extends Controller {
 
         // We've covered all the non-tracked cases we care about so fall
         // back on Ember Data's default dirty attribute checks
-        let {hasDirtyAttributes} = post;
+        const {hasDirtyAttributes} = post;
         if (hasDirtyAttributes) {
             this._leaveModalReason = {
                 reason: 'post.hasDirtyAttributes === true',
@@ -1552,10 +1566,10 @@ export default class LexicalEditorController extends Controller {
             return this._showScheduledNotification(delayed);
         }
 
-        let notifications = this.notifications;
+        const notifications = this.notifications;
         let message = messageMap.success.post[prevStatus][status];
-        let actions, type, path;
-        type = this.get('post.displayName');
+        let actions, path;
+        const type = this.get('post.displayName');
 
         if (status === 'published' || status === 'scheduled') {
             path = this.get('post.url');
@@ -1568,16 +1582,16 @@ export default class LexicalEditorController extends Controller {
     }
 
     async _showScheduledNotification(delayed) {
-        let {
+        const {
             publishedAtUTC,
             previewUrl,
             emailOnly,
             newsletter,
             displayName
         } = this.post;
-        let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.timezone);
+        const publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.timezone);
 
-        let title = capitalizeFirstLetter(displayName) + ' scheduled';
+        const title = capitalizeFirstLetter(displayName) + ' scheduled';
         let description = emailOnly ? ['Will be sent'] : ['Will be published'];
 
         if (newsletter) {
@@ -1596,14 +1610,14 @@ export default class LexicalEditorController extends Controller {
 
         description = htmlSafe(description.join(' '));
 
-        let actions = htmlSafe(`<a href="${previewUrl}" target="_blank">Show preview</a>`);
+        const actions = htmlSafe(`<a href="${previewUrl}" target="_blank">Show preview</a>`);
 
         return this.notifications.showNotification(title, {description, actions, type: 'success', delayed});
     }
 
     _showErrorAlert(prevStatus, status, error, delay) {
         let message = messageMap.errors.post[prevStatus][status];
-        let notifications = this.notifications;
+        const notifications = this.notifications;
         let errorMessage;
 
         function isString(str) {

@@ -321,7 +321,10 @@ module.exports = class MentionsAPI {
    * @returns {Promise<Mention>}
    */
   async processWebmention(webmention) {
-    let mention = await this.#repository.getBySourceAndTarget(webmention.source, webmention.target);
+    const mention = await this.#repository.getBySourceAndTarget(
+      webmention.source,
+      webmention.target,
+    );
 
     return await this.#updateWebmention(mention, webmention);
   }

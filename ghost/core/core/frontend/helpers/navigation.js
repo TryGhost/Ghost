@@ -110,7 +110,6 @@ module.exports = function navigation(options) {
   const navigationData = options.data.site[key];
   const currentUrl = options.data.root.relativeUrl;
   const member = options.data.member || options.data.root.member;
-  let output;
 
   if (!Array.isArray(navigationData)) {
     throw new errors.IncorrectUsageError({
@@ -154,7 +153,7 @@ module.exports = function navigation(options) {
 
   const navigationIconsEnabled = labs.isSet('navigationIcons');
 
-  output = navigationData
+  const output = navigationData
     .filter((item) => (navigationIconsEnabled ? isNavigationItemVisible(item, member) : true))
     .map(function (e) {
       const out = {};

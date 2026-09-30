@@ -1,3 +1,9 @@
+import {
+  isMetafieldChangeSource,
+  type MetafieldChangeEntry,
+  type MetafieldChangeSource,
+} from '@tryghost/metafield-types';
+
 // Port of Ember `app/helpers/parse-member-event.js`.
 // The Ember helper is a Glimmer helper with injected services; we take the
 // tiny slice of settings-derived context it actually reads (`hasMultipleTiers`,
@@ -180,7 +186,55 @@ function getIcon(event: RawMemberEvent): string {
   if (event.type === 'email_change_event') {
     icon = 'email-changed';
   }
+  if (event.type === 'metafield_change_event') {
+    icon = 'metafields-changed';
+  }
   return `event-${icon}`;
+}
+
+/** Past this many, the rest of a list of field names is counted rather than named. */
+const NAMED_FIELDS_LIMIT = 3;
+
+/**
+ * A change to a member's custom fields, as the members events endpoint sends it. Typed
+ * rather than checked at runtime, like every other response from Ghost's own API: the
+ * server owns this shape and Admin trusts it.
+ */
+interface MetafieldChangeEvent extends RawMemberEvent {
+  type: 'metafield_change_event';
+  data: RawMemberEvent['data'] & MetafieldChangeEntry;
+}
+
+function isMetafieldChangeEvent(event: RawMemberEvent): event is MetafieldChangeEvent {
+  return event.type === 'metafield_change_event';
+}
+
+// Where a change was made, as it reads after the fields. Keyed by the shared vocabulary,
+// so a place added on the server does not compile here until it has a label. A newer
+// server than this Admin can still send one it does not know, which is left out.
+const METAFIELD_CHANGE_PLACES: Record<MetafieldChangeSource, string> = {
+  admin: 'in Admin',
+  admin_api: 'through the Admin API',
+  import: 'from an import',
+  checkout: 'at checkout',
+  portal: 'in Portal',
+};
+
+function metafieldChangeAction(event: MetafieldChangeEvent): string {
+  const names = event.data.metafields.map(({ name }) => name);
+
+  let changed = 'custom fields';
+  if (names.length > NAMED_FIELDS_LIMIT) {
+    const rest = names.length - NAMED_FIELDS_LIMIT;
+    changed = `${names.slice(0, NAMED_FIELDS_LIMIT).join(', ')} and ${rest} more ${rest === 1 ? 'field' : 'fields'}`;
+  } else if (names.length > 0) {
+    changed =
+      names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+  }
+
+  const { source } = event.data;
+  const place = isMetafieldChangeSource(source) ? METAFIELD_CHANGE_PLACES[source] : undefined;
+  return place ? `updated ${changed} ${place}` : `updated ${changed}`;
 }
 
 function getAction(event: RawMemberEvent, hasMultipleNewsletters: boolean): string | undefined {
@@ -270,6 +324,9 @@ function getAction(event: RawMemberEvent, hasMultipleNewsletters: boolean): stri
       return `Email address changed from ${event.data.from_email as string} to ${event.data.to_email as string}`;
     }
     return 'Email address changed';
+  }
+  if (isMetafieldChangeEvent(event)) {
+    return metafieldChangeAction(event);
   }
   if (event.type === 'donation_event') {
     return 'Made a one-time payment';

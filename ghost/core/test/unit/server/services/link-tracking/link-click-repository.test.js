@@ -8,17 +8,6 @@ const sentry = require('../../../../../core/shared/sentry');
 const LinkClickRepository = require('../../../../../core/server/services/link-tracking/link-click-repository');
 const LinkClick = require('../../../../../core/server/services/link-tracking/click-event');
 
-function deferred() {
-  let resolve;
-  let reject;
-  const promise = new Promise((resolvePromise, rejectPromise) => {
-    resolve = resolvePromise;
-    reject = rejectPromise;
-  });
-
-  return { promise, resolve, reject };
-}
-
 const linkClicks = [
   new LinkClick({
     link_id: ObjectID(),
@@ -186,7 +175,7 @@ describe('LinkClickRepository class', function () {
     });
 
     it('should dispatch a member click event after its transaction commits', async function () {
-      const execution = deferred();
+      const execution = Promise.withResolvers();
       const transacting = { executionPromise: execution.promise };
 
       await linkClickRepository.save(linkClicks[0], { transacting });
@@ -201,7 +190,7 @@ describe('LinkClickRepository class', function () {
 
     it('should report dispatch failures after its transaction commits', async function () {
       const error = new Error('dispatch failed');
-      const execution = deferred();
+      const execution = Promise.withResolvers();
       const transacting = { executionPromise: execution.promise };
       const captureException = sinon.stub(sentry, 'captureException');
       domainEventsStub.dispatch.throws(error);
@@ -215,7 +204,7 @@ describe('LinkClickRepository class', function () {
 
     it('should not dispatch a member click event when its transaction rolls back', async function () {
       const error = new Error('transaction rolled back');
-      const execution = deferred();
+      const execution = Promise.withResolvers();
       const transacting = { executionPromise: execution.promise };
 
       await linkClickRepository.save(linkClicks[0], { transacting });

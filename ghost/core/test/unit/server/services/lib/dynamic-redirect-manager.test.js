@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const DynamicRedirectManager = require('../../../../../core/server/services/lib/dynamic-redirect-manager');
 
 const urlJoin = (...parts) => {
-  let url = parts.join('/');
+  const url = parts.join('/');
   return url.replace(/(^|[^:])\/\/+/g, '$1/');
 };
 

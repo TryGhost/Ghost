@@ -58,7 +58,7 @@ describe('Unit - services/routing/controllers/channel', function () {
   });
 
   it('no params', async function () {
-    let next = sinon.stub();
+    const next = sinon.stub();
 
     fetchDataStub
       .withArgs({ page: 1, slug: undefined, limit: postsPerPage }, res.routerOptions)
@@ -79,7 +79,7 @@ describe('Unit - services/routing/controllers/channel', function () {
   });
 
   it('pass page param', async function () {
-    let next = sinon.stub();
+    const next = sinon.stub();
     req.params.page = 2;
 
     fetchDataStub
@@ -101,7 +101,7 @@ describe('Unit - services/routing/controllers/channel', function () {
   });
 
   it('update hbs engine: router defines limit', async function () {
-    let next = sinon.stub();
+    const next = sinon.stub();
     res.routerOptions.limit = 3;
     req.params.page = 2;
 
@@ -127,7 +127,7 @@ describe('Unit - services/routing/controllers/channel', function () {
   });
 
   it('page param too big', async function () {
-    let next = sinon.stub();
+    const next = sinon.stub();
     req.params.page = 6;
 
     fetchDataStub
@@ -149,7 +149,7 @@ describe('Unit - services/routing/controllers/channel', function () {
   });
 
   it('slug param', async function () {
-    let next = sinon.stub();
+    const next = sinon.stub();
     req.params.slug = 'unsafe';
 
     fetchDataStub
@@ -171,7 +171,7 @@ describe('Unit - services/routing/controllers/channel', function () {
   });
 
   it('invalid posts per page', async function () {
-    let next = sinon.stub();
+    const next = sinon.stub();
     postsPerPage = -1;
 
     fetchDataStub.withArgs({ page: 1, slug: undefined }, res.routerOptions).resolves({

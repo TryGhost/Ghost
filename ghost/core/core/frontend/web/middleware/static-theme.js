@@ -91,7 +91,7 @@ function forwardToExpressStatic(req, res, next, options = {}) {
   // We also allow sitemap.xml and sitemap-:resource.xml to fall through so that we can serve our defaults if they're not found in the theme
   const fallthrough = isFallthroughFile(req.path);
 
-  express.static(
+  express.serveStatic(
     themeEngine.getActive().path,
     Object.assign(
       {

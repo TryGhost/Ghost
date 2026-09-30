@@ -1,3 +1,5 @@
+const { performance } = require('node:perf_hooks');
+const { setImmediate: yieldToEventLoop } = require('node:timers/promises');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils').default;
 const IndexMapGenerator = require('./site-map-index-generator');
@@ -22,11 +24,22 @@ const SITEMAP_COLUMNS = [
   'canonical_url',
 ];
 
+const RESOURCE_TYPES = ['posts', 'pages', 'tags', 'authors'];
+
+// Longest stretch a build runs before yielding to the event loop.
+const DEFAULT_BUILD_SLICE_MS = 10;
+
+// Builds a reader will start before giving up on a site that keeps changing.
+const MAX_BUILD_ATTEMPTS = 3;
+
 class SiteMapManager {
   constructor(options) {
     options = options || {};
 
     options.maxPerPage = options.maxPerPage || 50000;
+    // Every build creates fresh generators from these.
+    this._options = options;
+    this._buildSliceMs = options.buildSliceMs ?? DEFAULT_BUILD_SLICE_MS;
 
     this.pages = options.pages || this.createPagesGenerator(options);
     this.posts = options.posts || this.createPostsGenerator(options);
@@ -54,7 +67,7 @@ class SiteMapManager {
     this._indexEpoch = 0;
     // Static/collection route entries only arrive via RouteRegistered,
     // which fires at boot and routes reload. They are recorded here so
-    // every rebuild can replay them after resetting the generators.
+    // every rebuild can replay them into its fresh generators.
     this._routerEntries = [];
 
     routingEvents.on('RouteRegistered', ({ path, type, id }) => {
@@ -66,7 +79,6 @@ class SiteMapManager {
         datum: { id, staticRoute: type === 'StaticRoutesRouter' },
       };
       this._routerEntries.push(entry);
-      this.pages.addUrl(entry.url, entry.datum);
       // A router registering after a build must not leave a
       // zero-router index marked built — the CDN would pin it.
       this._invalidateIndex();
@@ -90,13 +102,13 @@ class SiteMapManager {
     });
   }
 
-  createIndexGenerator(options) {
+  createIndexGenerator(options, types = this) {
     return new IndexMapGenerator({
       types: {
-        pages: this.pages,
-        posts: this.posts,
-        authors: this.authors,
-        tags: this.tags,
+        pages: types.pages,
+        posts: types.posts,
+        authors: types.authors,
+        tags: types.tags,
       },
       maxPerPage: options.maxPerPage,
     });
@@ -133,81 +145,108 @@ class SiteMapManager {
    * no caller can render from an unbuilt index. The index is built on first
    * read; the invalidation signals empty it and the next read rebuilds.
    *
-   * Concurrent readers share one build. A build whose result was
-   * invalidated while it ran is discarded and the read fails — the index
-   * must never serve pre-invalidation data (the CDN would pin it for the
-   * full cache maxAge), and a 503 is retried by crawlers and stored by
-   * nobody. Deliberately no retry; if SITEMAP_BUILD_SUPERSEDED shows up in
-   * the logs at any rate worth caring about, add one then.
+   * Reads wait for the rebuild rather than being served the previous index.
+   * site.changed is emitted by the same response that purges the CDN, so the
+   * first read after an invalidation is the one the CDN stores for the full
+   * cache maxAge: serving the previous index there would pin a sitemap
+   * missing the change on every publish.
+   *
+   * Concurrent readers share one build. A build invalidated while it runs is
+   * abandoned and a fresh one started; a site changing faster than the index
+   * can be built fails the read with a 503, which crawlers retry and nobody
+   * stores.
    */
   async _ensureIndexReady() {
-    if (this._indexBuilt) {
-      return;
+    for (let attempt = 0; attempt < MAX_BUILD_ATTEMPTS && !this._indexBuilt; attempt++) {
+      if (!this._buildInFlight) {
+        this._buildInFlight = this._buildIndex().finally(() => {
+          this._buildInFlight = null;
+        });
+      }
+      await this._buildInFlight;
     }
-    if (!this._buildInFlight) {
-      this._buildInFlight = this._buildIndex().finally(() => {
-        this._buildInFlight = null;
-      });
-    }
-    await this._buildInFlight;
 
     if (!this._indexBuilt) {
       throw new errors.MaintenanceError({
-        message: 'Sitemap index build was invalidated by a concurrent site change',
+        message: 'Sitemap index build was repeatedly invalidated by concurrent site changes',
         code: 'SITEMAP_BUILD_SUPERSEDED',
       });
     }
   }
 
+  /**
+   * Builds into fresh generators and swaps them in once complete, so the
+   * build can yield to the event loop without any reader seeing a partial
+   * index. The epoch is checked after every yield: an invalidation (including
+   * a RouteRegistered mid-build) abandons the build without swapping.
+   */
   async _buildIndex() {
     const epoch = this._indexEpoch;
     const urlService = this._getUrlService();
     const fetch = (type) => urlService.getRoutableResources(type, { columns: SITEMAP_COLUMNS });
 
-    const [posts, pages, tags, authors] = await Promise.all([
-      fetch('posts'),
-      fetch('pages'),
-      fetch('tags'),
-      fetch('authors'),
-    ]);
+    const [posts, pages, tags, authors] = await Promise.all(RESOURCE_TYPES.map(fetch));
     const resources = { posts, pages, tags, authors };
 
     if (epoch !== this._indexEpoch) {
-      // Invalidated while fetching: leave the generators alone and let
-      // _ensureIndexReady start over.
       return;
     }
-    // Everything from here on is synchronous, so no request can observe
-    // a half-applied index.
-    this.posts.reset();
-    this.pages.reset();
-    this.tags.reset();
-    this.users.reset();
+
+    const next = {
+      posts: this.createPostsGenerator(this._options),
+      pages: this.createPagesGenerator(this._options),
+      tags: this.createTagsGenerator(this._options),
+      authors: this.createUsersGenerator(this._options),
+    };
     for (const entry of this._routerEntries) {
-      this.pages.addUrl(entry.url, entry.datum);
+      next.pages.addUrl(entry.url, entry.datum);
     }
-    for (const type of ['posts', 'pages', 'tags', 'authors']) {
-      for (const datum of resources[type]) {
-        this._applyResource(type, datum);
+
+    let sliceStart = performance.now();
+    for (const type of RESOURCE_TYPES) {
+      const rows = resources[type];
+      for (let i = 0; i < rows.length; i++) {
+        this._applyResource(next, type, rows[i]);
+        // Release each row once applied, so rows and records are not both
+        // fully resident.
+        rows[i] = undefined;
+
+        if (performance.now() - sliceStart >= this._buildSliceMs) {
+          await yieldToEventLoop();
+          if (epoch !== this._indexEpoch) {
+            return;
+          }
+          sliceStart = performance.now();
+        }
       }
     }
+
+    this.posts = next.posts;
+    this.pages = next.pages;
+    this.tags = next.tags;
+    this.users = this.authors = next.authors;
+    // The index generator holds references to the generators it counts.
+    this.index = this.createIndexGenerator(this._options, next);
     this._indexBuilt = true;
   }
 
   _invalidateIndex() {
     this._indexBuilt = false;
     this._indexEpoch += 1;
+    // The index generator's cached xml is valid exactly while _indexBuilt
+    // is, so the two are dropped together.
+    this.index.reset();
   }
 
   /**
-   * Add a single resource to the index.
+   * Add a single resource to a set of generators being built.
    */
-  _applyResource(type, datum) {
+  _applyResource(generators, type, datum) {
     const url = this._getUrlService().getUrlForResource({ ...datum, type }, { absolute: true });
     // Exact match on the not-found sentinel: a real resource can carry
     // a slug like "404" (/tag/404/) and must stay in the sitemap.
     if (url && url !== this._notFoundUrl()) {
-      this[type].addUrl(url, datum);
+      generators[type].addUrl(url, datum);
     }
   }
 

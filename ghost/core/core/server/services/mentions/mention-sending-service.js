@@ -81,8 +81,8 @@ module.exports = class MentionSendingService {
         return;
       }
       // make sure we have something to parse before we create a job
-      let html = post.get('status') === 'published' ? post.get('html') : null;
-      let previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
+      const html = post.get('status') === 'published' ? post.get('html') : null;
+      const previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
       if (html || previousHtml) {
         // Capture the source URL now, from the event's data, rather than
         // deferring the model into the job.

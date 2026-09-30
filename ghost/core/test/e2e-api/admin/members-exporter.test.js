@@ -49,7 +49,7 @@ async function testOutput(member, asserts, filters = []) {
 
   for (const filter of filters) {
     // Test all
-    let res = await agent
+    const res = await agent
       .get(`/members/upload/?${filter}`)
       .expectStatus(200)
       .expectEmptyBody()
@@ -63,8 +63,8 @@ async function testOutput(member, asserts, filters = []) {
       /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/,
     );
 
-    let csv = Papa.parse(res.text, { header: true });
-    let row = csv.data.find((r) => r.id === member.id);
+    const csv = Papa.parse(res.text, { header: true });
+    const row = csv.data.find((r) => r.id === member.id);
     assertExists(row);
 
     asserts(row);

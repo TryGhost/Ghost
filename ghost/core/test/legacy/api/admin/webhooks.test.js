@@ -18,7 +18,7 @@ describe('Webhooks API', function () {
   });
 
   it('Can create a webhook using integration', function () {
-    let webhookData = {
+    const webhookData = {
       event: 'test.create',
       target_url: 'http://example.com/webhooks/test/extra/canary',
       integration_id: 'ignore_me',
@@ -64,7 +64,7 @@ describe('Webhooks API', function () {
   });
 
   it('Fails validation for when integration_id is missing', function () {
-    let webhookData = {
+    const webhookData = {
       event: 'test.create',
       target_url: 'http://example.com/webhooks/test/extra/1',
       name: 'test',
@@ -82,7 +82,7 @@ describe('Webhooks API', function () {
   });
 
   it('Fails validation for non-lowercase event name', function () {
-    let webhookData = {
+    const webhookData = {
       event: 'tEst.evenT',
       target_url: 'http://example.com/webhooks/test/extra/1',
       name: 'test',
@@ -100,7 +100,7 @@ describe('Webhooks API', function () {
   });
 
   it('Fails validation when required fields are not present', function () {
-    let webhookData = {
+    const webhookData = {
       api_version: API_VERSION,
       integration_id: 'dummy',
     };
@@ -209,7 +209,7 @@ describe('Webhooks API', function () {
   });
 
   it('Cannot edit webhooks using content api keys', function () {
-    let webhookData = {
+    const webhookData = {
       event: 'post.create',
       target_url: 'http://example.com/webhooks/test/extra/2',
     };

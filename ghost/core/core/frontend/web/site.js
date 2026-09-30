@@ -120,7 +120,7 @@ module.exports = function setupSiteApp(routerConfig) {
   config.get('apps:internal').forEach((appName) => {
     const app = require(path.join(config.get('paths').internalAppPath, appName));
 
-    if (Object.prototype.hasOwnProperty.call(app, 'setupMiddleware')) {
+    if (Object.hasOwn(app, 'setupMiddleware')) {
       app.setupMiddleware(siteApp);
     }
   });
@@ -204,7 +204,7 @@ module.exports = function setupSiteApp(routerConfig) {
   config.get('apps:internal').forEach((appName) => {
     const app = require(path.join(config.get('paths').internalAppPath, appName));
 
-    if (Object.prototype.hasOwnProperty.call(app, 'setupErrorHandling')) {
+    if (Object.hasOwn(app, 'setupErrorHandling')) {
       app.setupErrorHandling(siteApp);
     }
   });

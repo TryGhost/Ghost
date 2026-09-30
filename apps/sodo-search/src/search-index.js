@@ -2,7 +2,7 @@ import Flexsearch, { Charset } from 'flexsearch';
 
 const cjkEncoderPresetCodepoint = {
   finalize: (terms) => {
-    let results = [];
+    const results = [];
 
     for (const term of terms) {
       results.push(...tokenizeCjkByCodePoint(term));

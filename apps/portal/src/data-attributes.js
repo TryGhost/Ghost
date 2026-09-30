@@ -30,21 +30,21 @@ export async function formSubmitHandler({
     errorEl.innerText = '';
   }
   form.classList.remove('success', 'invalid', 'error');
-  let emailInput = event.target.querySelector('input[data-members-email]');
-  let nameInput = event.target.querySelector('input[data-members-name]');
-  let autoRedirect = form?.dataset?.membersAutoredirect || 'true';
-  let email = emailInput?.value;
-  let name = (nameInput?.value || '').trim() || undefined;
+  const emailInput = event.target.querySelector('input[data-members-email]');
+  const nameInput = event.target.querySelector('input[data-members-name]');
+  const autoRedirect = form?.dataset?.membersAutoredirect || 'true';
+  const email = emailInput?.value;
+  const name = (nameInput?.value || '').trim() || undefined;
   let emailType = undefined;
-  let labels = [];
-  let newsletters = [];
+  const labels = [];
+  const newsletters = [];
 
-  let labelInputs = event.target.querySelectorAll('input[data-members-label]') || [];
+  const labelInputs = event.target.querySelectorAll('input[data-members-label]') || [];
   for (let i = 0; i < labelInputs.length; ++i) {
     labels.push(labelInputs[i].value);
   }
 
-  let newsletterInputs =
+  const newsletterInputs =
     event.target.querySelectorAll(
       'input[type=hidden][data-members-newsletter], input[type=checkbox][data-members-newsletter]:checked, input[type=radio][data-members-newsletter]:checked',
     ) || [];
@@ -139,10 +139,10 @@ export async function formSubmitHandler({
 export function planClickHandler({ event, el, errorEl, siteUrl, site, member, clickHandler }) {
   el.removeEventListener('click', clickHandler);
   event.preventDefault();
-  let plan = el.dataset.membersPlan;
-  let requestData = getCheckoutSessionDataFromPlanAttribute(site, plan.toLowerCase());
-  let successUrl = el.dataset.membersSuccess;
-  let cancelUrl = el.dataset.membersCancel;
+  const plan = el.dataset.membersPlan;
+  const requestData = getCheckoutSessionDataFromPlanAttribute(site, plan.toLowerCase());
+  const successUrl = el.dataset.membersSuccess;
+  const cancelUrl = el.dataset.membersCancel;
   let checkoutSuccessUrl;
   let checkoutCancelUrl;
 
@@ -240,7 +240,7 @@ export function handleDataAttributes({
   Array.prototype.forEach.call(
     document.querySelectorAll('form[data-members-form]'),
     function (form) {
-      let errorEl = form.querySelector('[data-members-error]');
+      const errorEl = form.querySelector('[data-members-error]');
       function submitHandler(event) {
         formSubmitHandler({
           event,
@@ -257,7 +257,7 @@ export function handleDataAttributes({
   );
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), function (el) {
-    let errorEl = el.querySelector('[data-members-error]');
+    const errorEl = el.querySelector('[data-members-error]');
     function clickHandler(event) {
       planClickHandler({ el, event, errorEl, member, site, siteUrl, clickHandler });
     }
@@ -267,9 +267,9 @@ export function handleDataAttributes({
   Array.prototype.forEach.call(
     document.querySelectorAll('[data-members-edit-billing]'),
     function (el) {
-      let errorEl = el.querySelector('[data-members-error]');
-      let membersSuccess = el.dataset.membersSuccess;
-      let membersCancel = el.dataset.membersCancel;
+      const errorEl = el.querySelector('[data-members-error]');
+      const membersSuccess = el.dataset.membersSuccess;
+      const membersCancel = el.dataset.membersCancel;
       let successUrl;
       let cancelUrl;
 
@@ -317,7 +317,7 @@ export function handleDataAttributes({
             });
           })
           .then(function (result) {
-            let stripe = window.Stripe(result.publicKey);
+            const stripe = window.Stripe(result.publicKey);
             return stripe.redirectToCheckout({
               sessionId: result.sessionId,
             });
@@ -344,8 +344,8 @@ export function handleDataAttributes({
   Array.prototype.forEach.call(
     document.querySelectorAll('[data-members-manage-billing]'),
     function (el) {
-      let errorEl = el.querySelector('[data-members-error]');
-      let membersReturn = el.dataset.membersReturn;
+      const errorEl = el.querySelector('[data-members-error]');
+      const membersReturn = el.dataset.membersReturn;
       let returnUrl;
 
       if (membersReturn) {
@@ -429,11 +429,11 @@ export function handleDataAttributes({
   Array.prototype.forEach.call(
     document.querySelectorAll('[data-members-cancel-subscription]'),
     function (el) {
-      let errorEl = el.parentElement.querySelector('[data-members-error]');
+      const errorEl = el.parentElement.querySelector('[data-members-error]');
       function clickHandler(event) {
         event.preventDefault();
 
-        let subscriptionId = el.dataset.membersCancelSubscription;
+        const subscriptionId = el.dataset.membersCancelSubscription;
 
         // If retention offer is available, open Portal to show the offer
         if (hasRetentionOffers) {
@@ -501,14 +501,14 @@ export function handleDataAttributes({
   Array.prototype.forEach.call(
     document.querySelectorAll('[data-members-continue-subscription]'),
     function (el) {
-      let errorEl = el.parentElement.querySelector('[data-members-error]');
+      const errorEl = el.parentElement.querySelector('[data-members-error]');
       function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
         event.preventDefault();
         el.classList.remove('error');
         el.classList.add('loading');
 
-        let subscriptionId = el.dataset.membersContinueSubscription;
+        const subscriptionId = el.dataset.membersContinueSubscription;
 
         if (errorEl) {
           errorEl.innerText = '';

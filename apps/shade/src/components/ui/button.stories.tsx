@@ -7,8 +7,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Inline } from '@/components/primitives/inline';
+import { Inline, Stack, Text } from '@/components/primitives';
 import ShadeApp from '@/shade-app';
+import { useShade } from '@/providers/shade-provider';
 import { ArrowUp, Smile } from 'lucide-react';
 
 const meta = {
@@ -19,7 +20,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Reusable button for interactive actions across the UI. Supports multiple visual variants and sizes to match hierarchy and context. Outline, secondary and ghost buttons show an inset shadow while pressed. Menu and popover triggers retain their pressed appearance while aria-expanded is true, including when composed with a Tooltip. Disabled controls do not gain pressed styling.',
+          'Reusable button for interactive actions across the UI. Supports multiple visual variants and sizes to match hierarchy and context. Outline, secondary and ghost buttons show an inset shadow while pressed. Menu and popover triggers retain their pressed appearance while aria-expanded is true, including when composed with a Tooltip. Disabled primary buttons use an opaque neutral surface and muted text in every host mode. Disabled controls do not gain pressed styling.',
       },
     },
   },
@@ -113,6 +114,27 @@ export const Destructive: Story = {
     docs: {
       description: {
         story: 'Use for dangerous or irreversible actions (e.g., delete, remove, reset).',
+      },
+    },
+  },
+};
+
+export const DestructiveGhost: Story = {
+  args: {
+    variant: 'destructive-ghost',
+    children: 'Delete item',
+  },
+  render: (args) => (
+    <Inline gap="sm">
+      <Button {...args} />
+      <Button {...args} disabled />
+    </Inline>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use for low-emphasis destructive actions. Admin 7 adds a translucent red background on hover and while pressed. Tab to inspect keyboard focus; disabled buttons remain inactive.',
       },
     },
   },
@@ -323,6 +345,40 @@ export const Disabled: Story = {
   },
 };
 
+export const DisabledPrimaryComparison: Story = {
+  render: function Render() {
+    const { darkMode } = useShade();
+    return (
+      <Stack gap="lg">
+        {[true, false].map((isAdmin7) => (
+          <ShadeApp key={`${darkMode}-${isAdmin7}`} darkMode={darkMode} isAdmin7={isAdmin7}>
+            <Stack className="rounded-lg bg-background p-5" gap="sm">
+              <Text size="sm" tone="secondary">
+                {darkMode ? 'Dark' : 'Light'} · {isAdmin7 ? 'Default controls' : 'Legacy controls'}
+              </Text>
+              <Inline gap="sm" wrap>
+                <Button>Continue</Button>
+                <Button disabled>Continue</Button>
+                <Button aria-label="Move up" size="icon" disabled>
+                  <ArrowUp />
+                </Button>
+              </Inline>
+            </Stack>
+          </ShadeApp>
+        ))}
+      </Stack>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Compare enabled and disabled primary actions in both host modes; use the theme toolbar to check light and dark. The disabled neutral background, muted label and full opacity apply without a feature flag. Hover or Tab to compare enabled states; disabled controls stay inactive and outside the tab order.',
+      },
+    },
+  },
+};
+
 export const PillPressedStates: Story = {
   render: () => (
     <Inline gap="sm" wrap>
@@ -386,6 +442,7 @@ export const Admin7Disabled: Story = {
         <Button>Primary</Button>
         <Button variant="secondary">Secondary</Button>
         <Button variant="ghost">Ghost</Button>
+        <Button variant="destructive-ghost">Delete item</Button>
         <Button variant="subtle">Subtle</Button>
       </Inline>
     </ShadeApp>

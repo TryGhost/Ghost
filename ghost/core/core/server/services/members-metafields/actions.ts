@@ -1,9 +1,12 @@
 import logging from '@tryghost/logging';
 import type { MemberAccess } from './access';
+import type { WriteOrigin } from './schema';
 
 export interface Actor {
   id: string;
   type: 'user' | 'integration';
+  /** An API key rather than a signed-in session, which a user's staff token also is. */
+  viaApiKey: boolean;
 }
 
 export interface RequestContext {
@@ -19,14 +22,39 @@ export interface RequestContext {
  * has none, and the history says so rather than guessing.
  */
 export function actingContext(context: unknown): RequestContext {
-  const frame = (context ?? {}) as { user?: string; integration?: { id: string } };
+  const frame = (context ?? {}) as {
+    user?: string;
+    integration?: { id: string };
+    api_key?: unknown;
+  };
+  const viaApiKey = Boolean(frame.api_key);
   if (frame.integration) {
-    return { actor: { id: frame.integration.id, type: 'integration' } };
+    return { actor: { id: frame.integration.id, type: 'integration', viaApiKey } };
   }
   if (frame.user) {
-    return { actor: { id: frame.user, type: 'user' } };
+    return { actor: { id: frame.user, type: 'user', viaApiKey } };
   }
   return { actor: null };
+}
+
+/**
+ * Who made a write through the Admin API and where, read off the same context as
+ * `actingContext`, so the values a request writes and the history it records name the
+ * same writer. Null when nobody is acting, which no Admin API write should be.
+ */
+export function adminWriteOrigin(context: unknown): WriteOrigin | null {
+  const { actor } = actingContext(context);
+  if (!actor) {
+    return null;
+  }
+  if (actor.type === 'integration') {
+    return { writtenBy: { type: 'integration', id: actor.id }, source: 'admin_api' };
+  }
+  // A staff token authenticates as its user but is a call to the API, not a visit to Admin.
+  return {
+    writtenBy: { type: 'user', id: actor.id },
+    source: actor.viaApiKey ? 'admin_api' : 'admin',
+  };
 }
 
 export interface ActionRecorder {

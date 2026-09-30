@@ -134,7 +134,7 @@ const controller = {
       method: 'browse',
     },
     async query() {
-      return emailAnalytics.newsletters.service.getStatus();
+      return emailAnalytics.getNewsletters().service.getStatus();
     },
   },
 
@@ -161,7 +161,7 @@ const controller = {
             ),
           );
 
-      return emailAnalytics.newsletters.service.schedule({ begin, end });
+      return emailAnalytics.getNewsletters().service.schedule({ begin, end });
     },
   },
 
@@ -173,7 +173,7 @@ const controller = {
       method: 'browse',
     },
     async query() {
-      return emailAnalytics.newsletters.service.cancelScheduled();
+      return emailAnalytics.getNewsletters().service.cancelScheduled();
     },
   },
 };

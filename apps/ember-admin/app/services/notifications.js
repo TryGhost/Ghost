@@ -83,9 +83,9 @@ export default class NotificationsService extends Service {
         }
 
         // close existing alerts/notifications which have the same text to avoid stacking
-        let newText = message.message.string || message.message;
+        const newText = message.message.string || message.message;
         this.content = new TrackedArray(this.content.reject((notification) => {
-            let existingText = notification.message.string || notification.message;
+            const existingText = notification.message.string || notification.message;
             return existingText === newText;
         }));
 
@@ -225,7 +225,7 @@ export default class NotificationsService extends Service {
     }
 
     closeNotification(notification) {
-        let content = this.content;
+        const content = this.content;
 
         if (notification.constructor.modelName === 'notification') {
             notification.deleteRecord();
@@ -251,15 +251,15 @@ export default class NotificationsService extends Service {
 
     _removeItems(status, key) {
         if (key) {
-            let keyBase = this._getKeyBase(key);
+            const keyBase = this._getKeyBase(key);
             // TODO: keys should only have . special char but we should
             // probably use a better regexp escaping function/polyfill
-            let escapedKeyBase = keyBase.replace('.', '\\.');
-            let keyRegex = new RegExp(`^${escapedKeyBase}`);
+            const escapedKeyBase = keyBase.replace('.', '\\.');
+            const keyRegex = new RegExp(`^${escapedKeyBase}`);
 
             this.content = new TrackedArray(this.content.reject((item) => {
-                let itemKey = item.key;
-                let itemStatus = item.status;
+                const itemKey = item.key;
+                const itemStatus = item.status;
 
                 return itemStatus === status && (itemKey && itemKey.match(keyRegex));
             }));

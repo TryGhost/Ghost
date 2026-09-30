@@ -70,6 +70,29 @@ describe('revisionEntries', () => {
     expect(entries.map((entry) => entry.id)).toEqual(['new', 'middle', 'old']);
   });
 
+  it('breaks a same-second tie by the millisecond the server recorded', () => {
+    const entries = revisionEntries([
+      revision({ id: 'old', created_at: '2026-01-01T00:00:00.000Z', created_at_ts: 1767225600100 }),
+      revision({ id: 'new', created_at: '2026-01-01T00:00:00.000Z', created_at_ts: 1767225600900 }),
+    ]);
+
+    expect(entries.map((entry) => entry.id)).toEqual(['new', 'old']);
+    expect(entries[0].tags).toEqual(['latest']);
+  });
+
+  it('orders a version without a millisecond timestamp by its date', () => {
+    const entries = revisionEntries([
+      revision({
+        id: 'stamped',
+        created_at: '2026-01-01T00:00:00.000Z',
+        created_at_ts: 1767225600000,
+      }),
+      revision({ id: 'unstamped', created_at: '2026-02-01T00:00:00.000Z' }),
+    ]);
+
+    expect(entries.map((entry) => entry.id)).toEqual(['unstamped', 'stamped']);
+  });
+
   it('labels the newest version', () => {
     const entries = revisionEntries([
       revision({ id: 'a', created_at: '2026-01-01T00:00:00.000Z' }),

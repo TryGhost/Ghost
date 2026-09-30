@@ -35,7 +35,7 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest@sha256:cf9de0516700eea366161181e74cae943f1a7310e6f2cc4f5762cb1777ed3fb3
+    image: tinybirdco/tinybird-local:latest@sha256:9d438ecb6f03b00b024f6a48c824ddc29c81b99829c874a0095648b765c083e6
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s
@@ -53,12 +53,12 @@ services:
       start_interval: 1s
 
   tb-cli:
-    build:
+    build: &tb-cli-build
       context: ./
       dockerfile: docker/tb-cli/Dockerfile
     container_name: ghost-dev-tb-cli
     working_dir: /home/tinybird
-    environment:
+    environment: &tb-cli-environment
       - TB_HOST=http://tinybird-local:7181
       - TB_LOCAL_HOST=tinybird-local
     volumes:
@@ -67,6 +67,19 @@ services:
     depends_on:
       tinybird-local:
         condition: service_healthy
+
+  tb-watch:
+    build: *tb-cli-build
+    container_name: ghost-dev-tb-watch
+    working_dir: /home/tinybird
+    # Keep initialization in tb-cli so Ghost can wait for it to finish.
+    entrypoint: ['tb', '--local', 'dev']
+    environment: *tb-cli-environment
+    volumes:
+      - ./ghost/core/core/server/data/tinybird:/home/tinybird
+    depends_on:
+      tb-cli:
+        condition: service_completed_successfully
 
   ghost-dev:
     volumes:

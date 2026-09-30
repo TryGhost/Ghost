@@ -245,18 +245,18 @@ describe('Helpers - ', () => {
 
   describe('isSameCurrency - ', () => {
     test('can match two currencies correctly ', () => {
-      let currency1 = 'USD';
-      let currency2 = 'USD';
+      const currency1 = 'USD';
+      const currency2 = 'USD';
       expect(isSameCurrency(currency1, currency2)).toBe(true);
     });
     test('can match currencies with case mismatch', () => {
-      let currency1 = 'USD';
-      let currency2 = 'usd';
+      const currency1 = 'USD';
+      const currency2 = 'usd';
       expect(isSameCurrency(currency1, currency2)).toBe(true);
     });
     test('can match currencies with case mismatch', () => {
-      let currency1 = 'eur';
-      let currency2 = 'usd';
+      const currency1 = 'eur';
+      const currency2 = 'usd';
       expect(isSameCurrency(currency1, currency2)).toBe(false);
     });
   });
@@ -537,7 +537,7 @@ describe('Helpers - ', () => {
   describe('getSupportAddress -', () => {
     describe('when the calculated support address is available', () => {
       test('returns the calculated support email address, if available', () => {
-        let site = {
+        const site = {
           support_email_address: 'support@example.com',
           members_support_address: 'noreply@example.com',
         };
@@ -549,7 +549,7 @@ describe('Helpers - ', () => {
 
     describe('[Deprecated] when the calculated support address is not available', () => {
       test('returns expected support address for non sub domain', () => {
-        let site = {
+        const site = {
           members_support_address: 'jamie@example.com',
         };
         const supportAddress = getSupportAddress({ site });
@@ -558,7 +558,7 @@ describe('Helpers - ', () => {
       });
 
       test('returns expected support address for non www sub domain', () => {
-        let site = {
+        const site = {
           members_support_address: 'jamie@blog.example.com',
         };
         const supportAddress = getSupportAddress({ site });
@@ -567,7 +567,7 @@ describe('Helpers - ', () => {
       });
 
       test('returns expected support address for www domain', () => {
-        let site = {
+        const site = {
           members_support_address: 'jamie@www.example.com',
         };
         const supportAddress = getSupportAddress({ site });
@@ -576,7 +576,7 @@ describe('Helpers - ', () => {
       });
 
       test('returns expected support address for default noreply value', () => {
-        let site = {
+        const site = {
           members_support_address: 'noreply',
           url: 'https://www.example.com',
         };
@@ -586,7 +586,7 @@ describe('Helpers - ', () => {
       });
 
       test('returns empty string for missing support address', () => {
-        let site = {
+        const site = {
           members_support_address: null,
           url: 'https://www.example.com',
         };
@@ -599,7 +599,7 @@ describe('Helpers - ', () => {
 
   describe('getDefaultNewsletterSender - ', () => {
     test('returns the sender_email from the first newsletter when available', () => {
-      let site = {
+      const site = {
         default_email_address: 'default@example.com',
         url: 'https://example.com',
         newsletters: [
@@ -614,7 +614,7 @@ describe('Helpers - ', () => {
     });
 
     test('otherwise, fallbacks to the calculated default_email_address when available', () => {
-      let site = {
+      const site = {
         default_email_address: 'default@example.com',
         url: 'https://example.com',
       };
@@ -624,7 +624,7 @@ describe('Helpers - ', () => {
     });
 
     test('otherwise, fallbacks to noreply@sitedomain.com', () => {
-      let site = {
+      const site = {
         url: 'https://example.com',
       };
       const defaultAddress = getDefaultNewsletterSender({ site });

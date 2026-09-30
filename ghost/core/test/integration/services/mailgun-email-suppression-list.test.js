@@ -67,7 +67,7 @@ describe('MailgunEmailSuppressionList', function () {
       }),
     ];
 
-    await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+    await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
     await DomainEvents.allSettled();
 
     const {
@@ -113,7 +113,7 @@ describe('MailgunEmailSuppressionList', function () {
       }),
     ];
 
-    await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+    await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
     await DomainEvents.allSettled();
 
     const {
@@ -159,7 +159,7 @@ describe('MailgunEmailSuppressionList', function () {
       }),
     ];
 
-    await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+    await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
     await DomainEvents.allSettled();
 
     const {
@@ -205,7 +205,7 @@ describe('MailgunEmailSuppressionList', function () {
       }),
     ];
 
-    await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+    await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
     await DomainEvents.allSettled();
 
     const {
@@ -258,7 +258,7 @@ describe('MailgunEmailSuppressionList', function () {
       },
     ];
 
-    await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+    await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
     await DomainEvents.allSettled();
 
     const {
@@ -310,7 +310,7 @@ describe('MailgunEmailSuppressionList', function () {
       }),
     ];
 
-    await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+    await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
     await DomainEvents.allSettled();
 
     const memberAfter = await models.Member.findOne({ id: memberId }, { require: true });

@@ -14,14 +14,14 @@ export default Component.extend({
     href: htmlSafe('javascript:;'),
 
     click() {
-        let el = document.querySelector(this.anchor);
+        const el = document.querySelector(this.anchor);
 
         if (el) {
             // Scrolls to the top of main content or whatever
             // is passed to the anchor attribute
             document.body.scrollTop = el.getBoundingClientRect().top;
 
-            let removeTabindex = function () {
+            const removeTabindex = function () {
                 el.removeAttribute('tabindex');
             };
 

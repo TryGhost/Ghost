@@ -32,7 +32,7 @@ describe('Minifier', function () {
 
   describe('getMatchingFiles expands globs correctly', function () {
     it('star glob e.g. css/*.css', async function () {
-      let result = await minifier.getMatchingFiles('css/*.css');
+      const result = await minifier.getMatchingFiles('css/*.css');
 
       assert(Array.isArray(result));
       assert.equal(result.length, 3);
@@ -42,7 +42,7 @@ describe('Minifier', function () {
     });
 
     it('match glob range e.g. css/bookmark.css and css/empty.css (css/@(bookmark|empty).css)', async function () {
-      let result = await minifier.getMatchingFiles('css/@(bookmark|empty).css');
+      const result = await minifier.getMatchingFiles('css/@(bookmark|empty).css');
 
       assert(Array.isArray(result));
       assert.equal(result.length, 2);
@@ -51,7 +51,7 @@ describe('Minifier', function () {
     });
 
     it('reverse match glob e.g. css/!(bookmark).css', async function () {
-      let result = await minifier.getMatchingFiles('css/!(bookmark).css');
+      const result = await minifier.getMatchingFiles('css/!(bookmark).css');
 
       assert(Array.isArray(result));
       assert.equal(result.length, 2);
@@ -59,7 +59,7 @@ describe('Minifier', function () {
       assert.equal(result[1], expectedFixturePath('gallery.css'));
     });
     it('reverse match glob e.g. css/!(bookmark|gallery).css', async function () {
-      let result = await minifier.getMatchingFiles('css/!(bookmark|gallery).css');
+      const result = await minifier.getMatchingFiles('css/!(bookmark|gallery).css');
 
       assert(Array.isArray(result));
       assert.equal(result.length, 1);
@@ -69,7 +69,7 @@ describe('Minifier', function () {
 
   describe('Minify', function () {
     it('single type, single file', async function () {
-      let result = await minifier.minify({
+      const result = await minifier.minify({
         'card.min.js': 'js/*.js',
       });
       assert(Array.isArray(result));
@@ -77,7 +77,7 @@ describe('Minifier', function () {
     });
 
     it('single type, multi file', async function () {
-      let result = await minifier.minify({
+      const result = await minifier.minify({
         'card.min.css': 'css/*.css',
       });
       assert(Array.isArray(result));
@@ -85,7 +85,7 @@ describe('Minifier', function () {
     });
 
     it('both css and js types + multiple files', async function () {
-      let result = await minifier.minify({
+      const result = await minifier.minify({
         'card.min.js': 'js/*.js',
         'card.min.css': 'css/*.css',
       });
@@ -95,7 +95,7 @@ describe('Minifier', function () {
     });
 
     it('can replace the content', async function () {
-      let result = await minifier.minify(
+      const result = await minifier.minify(
         {
           'card.min.js': 'js/*.js',
         },
@@ -161,7 +161,7 @@ describe('Minifier', function () {
     });
 
     it('can minify empty js correctly to no result', async function () {
-      let result = await minifier.minify({
+      const result = await minifier.minify({
         'card.min.js': 'js/empty.js',
       });
 
@@ -169,7 +169,7 @@ describe('Minifier', function () {
     });
 
     it('can minify empty css correctly to no result', async function () {
-      let result = await minifier.minify({
+      const result = await minifier.minify({
         'card.min.css': 'css/empty.css',
       });
 

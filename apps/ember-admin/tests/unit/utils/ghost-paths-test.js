@@ -4,7 +4,7 @@ import {expect} from 'chai';
 
 describe('Unit: Util: ghost-paths', function () {
     describe('join', function () {
-        let {join} = ghostPaths().url;
+        const {join} = ghostPaths().url;
 
         it('should join two or more paths, normalizing slashes', function () {
             let path;

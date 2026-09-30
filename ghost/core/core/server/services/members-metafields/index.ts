@@ -6,9 +6,9 @@ import { resolveMaxDefinitions } from './config';
 
 export type { Metafield } from './models';
 export type { RequestContext } from './actions';
-export { actingContext } from './actions';
+export { actingContext, adminWriteOrigin } from './actions';
 export type { BoundField } from './bindings-service';
-export type { WrittenBy } from './schema';
+export type { MetafieldChangeEvent, WriteOrigin, WrittenBy } from './schema';
 
 // Which door a request came through, which is what decides how much of a member's
 // answers it may see or change. Required wherever that is asked, so a new caller

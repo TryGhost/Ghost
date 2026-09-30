@@ -225,14 +225,14 @@ export default class LocalRevisionsService extends Service {
     async restore(key) {
         try {
             const revision = this.find(key);
-            let authors = [];
+            const authors = [];
             if (revision.authors) {
                 for (const author of revision.authors) {
                     const authorModel = await this.store.queryRecord('user', {id: author.id});
                     authors.push(authorModel);
                 }
             }
-            let post = this.store.createRecord('post', {
+            const post = this.store.createRecord('post', {
                 title: `(Restored) ${revision.title}`,
                 lexical: revision.lexical,
                 authors,

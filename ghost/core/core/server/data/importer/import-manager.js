@@ -29,7 +29,7 @@ const messages = {
   zipContainsMultipleDataFormats:
     'Zip file contains multiple data formats. Please split up and import separately.',
 };
-let defaults = {
+const defaults = {
   extensions: ['.zip'],
   contentTypes: ['application/zip', 'application/x-zip-compressed'],
   directories: [],
@@ -191,7 +191,7 @@ class ImportManager {
       debug('handler', handler.type, files);
 
       if (files.length > 0) {
-        if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
+        if (Object.hasOwn(importData, handler.type)) {
           // This limitation is here to reduce the complexity of the importer for now
           throw new errors.UnsupportedMediaTypeError({
             message: tpl(messages.zipContainsMultipleDataFormats),
@@ -290,7 +290,7 @@ class ImportManager {
 
     for (const importer of this.importers) {
       debug('importer looking for', importer.type, 'in', Object.keys(importData));
-      if (Object.prototype.hasOwnProperty.call(importData, importer.type)) {
+      if (Object.hasOwn(importData, importer.type)) {
         importResults[importer.type] = await importer.doImport(
           importData[importer.type],
           importOptions,

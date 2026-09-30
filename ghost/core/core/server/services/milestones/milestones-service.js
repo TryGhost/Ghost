@@ -300,7 +300,7 @@ module.exports = class MilestonesService {
     const membersMilestones = this.#milestonesConfig.members;
 
     // get the closest milestone we're over now
-    let achievedMilestones = this.#getMatchedMilestones(membersMilestones, membersCount);
+    const achievedMilestones = this.#getMatchedMilestones(membersMilestones, membersCount);
 
     // check for previously achieved milestones. We do not send an email when no
     // previous milestones exist

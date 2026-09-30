@@ -250,10 +250,9 @@ const Connected: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
     <section>
       <div className="flex items-center justify-between">
         <Button
-          className="text-destructive hover:text-destructive"
           disabled={isFetchingMembers}
           type="button"
-          variant="ghost"
+          variant="destructive-ghost"
           onClick={() => void openDisconnectStripeModal()}
         >
           <LucideIcon.Unlink />

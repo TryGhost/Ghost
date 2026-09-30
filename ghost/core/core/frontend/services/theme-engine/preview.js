@@ -27,7 +27,7 @@ function getPreviewData(previewHeader, customThemeSettingKeys = []) {
     hf: 'heading_font',
   };
 
-  let opts = new URLSearchParams(previewHeader);
+  const opts = new URLSearchParams(previewHeader);
 
   const previewData = {};
 

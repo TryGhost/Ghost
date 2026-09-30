@@ -19,7 +19,7 @@ describe('Unit: Serializer: notification', function () {
 
     it('converts location->key when deserializing', function () {
         server.get(`${ghostPaths().apiRoot}/notifications`, function () {
-            let response = {
+            const response = {
                 notifications: [{
                     id: 1,
                     dismissible: false,
@@ -33,7 +33,7 @@ describe('Unit: Serializer: notification', function () {
             return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
         });
 
-        let store = this.owner.lookup('service:store');
+        const store = this.owner.lookup('service:store');
 
         return store.findAll('notification').then((notifications) => {
             expect(notifications.get('length')).to.equal(1);

@@ -56,10 +56,10 @@ async function testGhostHead(options) {
 }
 
 describe('{{ghost_head}} helper', function () {
-  let posts = [];
-  let tags = [];
-  let authors = [];
-  let users = [];
+  const posts = [];
+  const tags = [];
+  const authors = [];
+  const users = [];
 
   let getStub;
   let routingRegistryGetRssUrlStub;
@@ -1880,7 +1880,7 @@ describe('{{ghost_head}} helper', function () {
       getStub.withArgs('members_enabled').returns(true);
       getStub.withArgs('paid_members_enabled').returns(true);
 
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: '' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -1898,7 +1898,7 @@ describe('{{ghost_head}} helper', function () {
       getStub.withArgs('members_enabled').returns(true);
       getStub.withArgs('paid_members_enabled').returns(true);
 
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'search' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -1916,7 +1916,7 @@ describe('{{ghost_head}} helper', function () {
       getStub.withArgs('members_enabled').returns(true);
       getStub.withArgs('paid_members_enabled').returns(true);
 
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'portal' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -1934,7 +1934,7 @@ describe('{{ghost_head}} helper', function () {
       getStub.withArgs('members_enabled').returns(true);
       getStub.withArgs('paid_members_enabled').returns(true);
 
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'portal,search' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -1955,7 +1955,7 @@ describe('{{ghost_head}} helper', function () {
       getStub.withArgs('announcement_content').returns('Hello world');
       getStub.withArgs('announcement_visibility').returns('visitors');
 
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: '' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -1976,7 +1976,7 @@ describe('{{ghost_head}} helper', function () {
       getStub.withArgs('announcement_content').returns('Hello world');
       getStub.withArgs('announcement_visibility').returns('visitors');
 
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'announcement' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -1995,7 +1995,7 @@ describe('{{ghost_head}} helper', function () {
 
     it('does not load the comments script when exclude contains comment_counts', async function () {
       getStub.withArgs('comments_enabled').returns('all');
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'comment_counts' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -2195,7 +2195,7 @@ describe('{{ghost_head}} helper', function () {
       // mock the card assets cardAssets.hasFile('js', 'cards.min.js').returns(true);
       sinon.stub(cardAssets, 'hasFile').returns(true);
 
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         ...testUtils.createHbsResponse({
           locals: {
             relativeUrl: '/',
@@ -2209,7 +2209,7 @@ describe('{{ghost_head}} helper', function () {
     });
     it('does not load card assets when excluded with card_assets', async function () {
       sinon.stub(cardAssets, 'hasFile').returns(true);
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'card_assets' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -2223,7 +2223,7 @@ describe('{{ghost_head}} helper', function () {
       assert.doesNotMatch(rendered, /cards.min.css/);
     });
     it('does not load meta tags when excluded with metadata', async function () {
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'metadata' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -2236,7 +2236,7 @@ describe('{{ghost_head}} helper', function () {
       assert.doesNotMatch(rendered, /<link rel="canonical"/);
     });
     it('does not load schema when excluded with schema', async function () {
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'schema' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -2249,7 +2249,7 @@ describe('{{ghost_head}} helper', function () {
       assert.doesNotMatch(rendered, /<script type="application\/ld\+json"/);
     });
     it('does not load og: or twitter: attributes when excludd with social_data', async function () {
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'social_data' },
         ...testUtils.createHbsResponse({
           locals: {
@@ -2265,7 +2265,7 @@ describe('{{ghost_head}} helper', function () {
     it('does not load cta styles when excluded with cta_styles', async function () {
       getStub.withArgs('members_enabled').returns(true);
       getStub.withArgs('paid_members_enabled').returns(true);
-      let rendered = await testGhostHead({
+      const rendered = await testGhostHead({
         hash: { exclude: 'cta_styles' },
         ...testUtils.createHbsResponse({
           locals: {

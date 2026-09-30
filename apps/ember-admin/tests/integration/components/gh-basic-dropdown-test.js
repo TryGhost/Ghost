@@ -9,7 +9,7 @@ describe('Integration: Component: gh-basic-dropdown', function () {
     setupRenderingTest();
 
     it('closes when dropdown service fires close event', async function () {
-        let dropdownService = this.owner.lookup('service:dropdown');
+        const dropdownService = this.owner.lookup('service:dropdown');
 
         await render(hbs`
             <GhBasicDropdown as |dropdown|>

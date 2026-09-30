@@ -4,14 +4,13 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
-import type express from 'express';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
 import { StorageBase, type ReadOptions, type StorageFile } from 'ghost-storage-base';
 import urlUtils from '../../../shared/url-utils';
 import { errify } from '../../../shared/errify';
-
-const serveStatic: typeof express.static = require('../../../shared/express').static;
+// @ts-expect-error This module lacks type definitions.
+import { serveStatic } from '../../../shared/express';
 
 const messages = {
   notFound: 'File not found',

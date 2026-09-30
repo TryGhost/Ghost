@@ -23,9 +23,9 @@ describe('Email Event Processor', function () {
     };
 
     eventStorage = {
-      handleDelivered: sinon.stub(),
-      handleOpened: sinon.stub(),
-      handlePermanentFailed: sinon.stub(),
+      handleDelivered: sinon.stub().resolves(1),
+      handleOpened: sinon.stub().resolves(1),
+      handlePermanentFailed: sinon.stub().resolves(1),
       handleTemporaryFailed: sinon.stub(),
       handleComplained: sinon.stub(),
       handleUnsubscribed: sinon.stub(),
@@ -117,6 +117,7 @@ describe('Email Event Processor', function () {
         emailRecipientId: 'email-recipient-id',
         memberId: 'member-id',
         emailId: 'email-id',
+        storedCount: 1,
       });
       sinon.assert.calledOnce(eventStorage.handleDelivered);
       const event = eventStorage.handleDelivered.firstCall.args[0];
@@ -133,6 +134,7 @@ describe('Email Event Processor', function () {
         emailRecipientId: 'email-recipient-id',
         memberId: 'member-id',
         emailId: 'email-id',
+        storedCount: 1,
       });
       sinon.assert.calledOnce(eventStorage.handleOpened);
       const event = eventStorage.handleOpened.firstCall.args[0];
@@ -165,6 +167,7 @@ describe('Email Event Processor', function () {
         emailRecipientId: 'email-recipient-id',
         memberId: 'member-id',
         emailId: 'email-id',
+        storedCount: 1,
       });
       sinon.assert.calledOnce(eventStorage.handlePermanentFailed);
       const event = eventStorage.handlePermanentFailed.firstCall.args[0];

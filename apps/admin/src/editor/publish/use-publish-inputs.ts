@@ -4,6 +4,7 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { useCallback, useEffect, useMemo } from 'react';
 import { z } from 'zod';
+import { NEWSLETTERS_SEARCH_PARAMS } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEditorSettings, useSiteTimezone } from '@/editor/use-editor-settings';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
@@ -153,7 +154,7 @@ export function usePublishInputs(): PublishInputs {
   const newslettersQuery = useBrowseNewsletters({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: { limit: 'all' },
+    searchParams: NEWSLETTERS_SEARCH_PARAMS,
   });
   const {
     fetchNextPage: fetchNextNewsletterPage,
@@ -200,8 +201,9 @@ export function usePublishInputs(): PublishInputs {
     [settingsData, configData, newslettersData, currentUser, memberCount],
   );
   const isLoading =
+    // Opening the flow refreshes settings for its limit checks. Keep validated
+    // cached settings usable so its Publish opener can receive focus on close.
     settingsQuery.isLoading ||
-    settingsQuery.isFetching ||
     configQuery.isLoading ||
     configQuery.isFetching ||
     newslettersQuery.isLoading ||

@@ -154,4 +154,33 @@ describe('Unit: Helper: parse-member-event', function () {
             expect(result.icon).to.equal('event-gift');
         });
     });
+
+    describe('metafield_change_event', function () {
+        function fields(...names) {
+            return names.map((name, index) => ({namespace: 'custom', key: `field_${index}`, name}));
+        }
+
+        it('names the fields that changed and where', function () {
+            const event = buildEvent({
+                type: 'metafield_change_event',
+                data: {source: 'portal', metafields: fields('Home address', 'Job title')}
+            });
+            const result = helper.compute([event]);
+            expect(result.action).to.equal('updated Home address and Job title in Portal');
+            expect(result.icon).to.equal('event-metafields-changed');
+        });
+
+        it('counts the rest once a list is too long to read at a glance', function () {
+            const event = buildEvent({
+                type: 'metafield_change_event',
+                data: {source: 'import', metafields: fields('A', 'B', 'C', 'D', 'E')}
+            });
+            expect(helper.compute([event]).action).to.equal('updated A, B, C and 2 more fields from an import');
+        });
+
+        it('leaves out a place it does not know', function () {
+            const event = buildEvent({type: 'metafield_change_event', data: {source: 'somewhere_new', metafields: fields('Job title')}});
+            expect(helper.compute([event]).action).to.equal('updated Job title');
+        });
+    });
 });

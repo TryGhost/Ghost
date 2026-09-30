@@ -145,7 +145,7 @@ class SettingsImporter extends BaseImporter {
 
         if (deprecatedSettingValue) {
           deprecatedSupportedSettingsOneToManyMap[key].forEach(({ from, to }) => {
-            let value = _.isObject(deprecatedSettingValue)
+            const value = _.isObject(deprecatedSettingValue)
               ? _.get(deprecatedSettingValue, from)
               : deprecatedSetting.value;
 
@@ -274,7 +274,7 @@ class SettingsImporter extends BaseImporter {
   async doImport(options) {
     debug('doImport', this.dataToImport.length);
 
-    let ops = [];
+    const ops = [];
 
     _.each(this.dataToImport, (model) => {
       ops.push(async () => {

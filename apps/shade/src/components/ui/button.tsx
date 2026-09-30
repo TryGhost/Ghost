@@ -11,7 +11,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary font-semibold text-primary-foreground hover:bg-primary/90',
+        default:
+          'bg-primary font-semibold text-primary-foreground hover:bg-primary/90 disabled:bg-control-disabled-surface disabled:text-muted-foreground/80 disabled:opacity-100',
         destructive:
           'bg-destructive font-medium text-destructive-foreground hover:bg-destructive/90',
         outline:
@@ -19,6 +20,7 @@ const buttonVariants = cva(
         secondary: 'font-medium text-secondary-foreground',
         subtle: 'font-medium',
         ghost: 'font-medium hover:bg-accent hover:text-accent-foreground',
+        'destructive-ghost': 'font-medium text-destructive hover:text-destructive',
         link: 'font-medium text-primary underline-offset-4 hover:underline',
         dropdown:
           'border border-control-border bg-transparent hover:bg-button-hover hover:text-accent-foreground',
@@ -43,6 +45,13 @@ const buttonVariants = cva(
         className: 'bg-secondary hover:bg-secondary/80',
       },
       { isAdmin7: true, variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
+      { isAdmin7: false, variant: 'destructive-ghost', className: 'hover:bg-accent' },
+      {
+        isAdmin7: true,
+        variant: 'destructive-ghost',
+        className:
+          'hover:bg-destructive/10 enabled:active:bg-destructive/10 enabled:aria-expanded:bg-destructive/10',
+      },
       {
         isAdmin7: false,
         variant: 'subtle',
@@ -56,7 +65,7 @@ const buttonVariants = cva(
       },
       {
         isAdmin7: true,
-        variant: ['secondary', 'ghost', 'subtle'],
+        variant: ['secondary', 'ghost', 'destructive-ghost', 'subtle'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
@@ -79,7 +88,15 @@ const buttonVariants = cva(
       },
       {
         isAdmin7: true,
-        variant: ['destructive', 'outline', 'secondary', 'ghost', 'dropdown', 'subtle'],
+        variant: [
+          'destructive',
+          'outline',
+          'secondary',
+          'ghost',
+          'destructive-ghost',
+          'dropdown',
+          'subtle',
+        ],
         size: ['default', 'sm', 'lg'],
         className: 'px-3',
       },

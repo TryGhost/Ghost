@@ -1,19 +1,19 @@
 import {triggerEvent} from '@ember/test-helpers';
 
 export function createFile(content = ['test'], options = {}) {
-    let {
+    const {
         name,
         type
     } = options;
 
-    let file = new Blob(content, {type: type ? type : 'text/plain'});
+    const file = new Blob(content, {type: type ? type : 'text/plain'});
     file.name = name ? name : 'test.txt';
 
     return file;
 }
 
 export function fileUpload(target, content, options) {
-    let file = createFile(content, options);
+    const file = createFile(content, options);
 
     return triggerEvent(
         target,

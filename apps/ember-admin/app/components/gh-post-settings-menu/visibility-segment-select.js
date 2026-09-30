@@ -53,8 +53,8 @@ export default class VisibilitySegmentSelect extends Component {
 
     @action
     setSegment(options) {
-        let ids = options.mapBy('id').map((id) => {
-            let tier = this.tiers.find((p) => {
+        const ids = options.mapBy('id').map((id) => {
+            const tier = this.tiers.find((p) => {
                 return p.id === id;
             });
             return {

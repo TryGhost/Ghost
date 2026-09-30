@@ -34,6 +34,8 @@ describe('Unit: Service: billing', function () {
         billingService?.clearBillingAppLoadMonitor();
         billingService = null;
         sinon.restore();
+        window.sessionStorage.removeItem('ghost-dunning-pay-return-route');
+        window.sessionStorage.removeItem('ghost-dunning-payment-settled-for');
     });
 
     it('retries loading the billing app before reporting', async function () {
@@ -432,6 +434,108 @@ describe('Unit: Service: billing', function () {
         service.navigateToAdminDestination('newsletters');
 
         expect(transitionTo.calledOnceWithExactly('/settings/newsletters')).to.be.true;
+    });
+
+    it('returns to the recorded route for the previousPage destination', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        window.sessionStorage.setItem('ghost-dunning-pay-return-route', '/editor/post/abc123');
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(transitionTo.calledOnceWithExactly('/editor/post/abc123')).to.be.true;
+        // consumed: a later return without a fresh "Pay now" click must not reuse it
+        expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
+    });
+
+    for (const now of ['2026-07-01T00:00:00Z', '2026-11-01T00:00:00Z']) {
+        it(`records the settled failure with the client clock at ${now}`, function () {
+            const service = this.owner.lookup('service:billing');
+            billingService = service;
+            sinon.stub(service.router, 'transitionTo');
+            sinon.stub(service.feature, 'dunningWarnings').get(() => true);
+            sinon.useFakeTimers({now: new Date(now), toFake: ['Date']});
+            const config = this.owner.lookup('config:main');
+            config.hostSettings.billing.dunning = {
+                active: true,
+                paymentFailedAt: '2026-09-01T04:00:00+04:00',
+                suspendsAt: '2026-09-29T00:00:00Z'
+            };
+
+            service.navigateToAdminDestination('previousPage');
+
+            expect(window.sessionStorage.getItem('ghost-dunning-payment-settled-for'))
+                .to.equal('2026-09-01T00:00:00.000Z');
+        });
+    }
+
+    for (const [label, enabled, dunning] of [
+        ['flag disabled', false, {active: true, paymentFailedAt: '2026-09-01', suspendsAt: '2026-09-29'}],
+        ['missing config', true, undefined],
+        ['malformed config', true, {active: true, paymentFailedAt: 'invalid', suspendsAt: '2026-09-29'}]
+    ]) {
+        it(`does not record a settled failure with ${label}`, function () {
+            const service = this.owner.lookup('service:billing');
+            billingService = service;
+            const transitionTo = sinon.stub(service.router, 'transitionTo');
+            sinon.stub(service.feature, 'dunningWarnings').get(() => enabled);
+            this.owner.lookup('config:main').hostSettings.billing.dunning = dunning;
+
+            service.navigateToAdminDestination('previousPage');
+
+            expect(window.sessionStorage.getItem('ghost-dunning-payment-settled-for')).to.be.null;
+            expect(transitionTo.calledOnceWithExactly('pro')).to.be.true;
+        });
+    }
+
+    it('falls back to the billing overview without a recorded return route', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        window.sessionStorage.removeItem('ghost-dunning-pay-return-route');
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(transitionTo.calledOnceWithExactly('pro')).to.be.true;
+    });
+
+    it('ignores a recorded return route that is not an absolute path', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        window.sessionStorage.setItem('ghost-dunning-pay-return-route', 'https://evil.example');
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(transitionTo.calledOnceWithExactly('pro')).to.be.true;
+        expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
+    });
+
+    it('ignores a protocol-relative recorded return route', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        // '//host' passes a bare startsWith('/') check but is a URL, not a route
+        window.sessionStorage.setItem('ghost-dunning-pay-return-route', '//evil.example');
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(transitionTo.calledOnceWithExactly('pro')).to.be.true;
+        expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
+    });
+
+    it('falls back to the billing overview when the recorded route does not resolve', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        transitionTo.withArgs('/behind-a-flag').throws(new Error('UnrecognizedURLError: /behind-a-flag'));
+        window.sessionStorage.setItem('ghost-dunning-pay-return-route', '/behind-a-flag');
+
+        expect(() => service.navigateToAdminDestination('previousPage')).to.not.throw();
+
+        expect(transitionTo.calledWithExactly('pro')).to.be.true;
+        expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
     });
 
     it('ignores destinations that are not approved keys', function () {

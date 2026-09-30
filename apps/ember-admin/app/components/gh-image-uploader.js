@@ -70,8 +70,8 @@ export default Component.extend({
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads
     formData: computed('file', function () {
-        let file = this.file;
-        let formData = new FormData();
+        const file = this.file;
+        const formData = new FormData();
 
         formData.append(this.paramName, file);
 
@@ -83,13 +83,13 @@ export default Component.extend({
     }),
 
     description: computed('text', 'altText', function () {
-        let altText = this.altText;
+        const altText = this.altText;
 
         return this.text || (altText ? `Upload image of "${altText}"` : 'Upload an image');
     }),
 
     progressStyle: computed('uploadPercentage', function () {
-        let percentage = this.uploadPercentage;
+        const percentage = this.uploadPercentage;
         let width = '';
 
         if (percentage > 0) {
@@ -121,7 +121,7 @@ export default Component.extend({
     didReceiveAttrs() {
         this._super(...arguments);
 
-        let image = this.image;
+        const image = this.image;
         this.set('url', image);
     },
 
@@ -129,8 +129,8 @@ export default Component.extend({
         fileSelected(fileList, resetInput) {
             // can't use array destructuring here as FileList is not a strict
             // array and fails in Safari
-            let file = fileList[0];
-            let validationResult = this._validate(file);
+            const file = fileList[0];
+            const validationResult = this._validate(file);
 
             this.set('file', file);
             this.fileSelected(file);
@@ -163,7 +163,7 @@ export default Component.extend({
         },
 
         saveUrl() {
-            let url = this.url;
+            const url = this.url;
             this.update(url);
         }
     },
@@ -176,7 +176,7 @@ export default Component.extend({
         // this is needed to work around inconsistencies with dropping files
         // from Chrome's downloads bar
         if (navigator.userAgent.indexOf('Chrome') > -1) {
-            let eA = event.dataTransfer.effectAllowed;
+            const eA = event.dataTransfer.effectAllowed;
             event.dataTransfer.dropEffect = (eA === 'move' || eA === 'linkMove') ? 'move' : 'copy';
         }
 
@@ -204,7 +204,7 @@ export default Component.extend({
     _uploadProgress(event) {
         if (event.lengthComputable) {
             run(() => {
-                let percentage = Math.round((event.loaded / event.total) * 100);
+                const percentage = Math.round((event.loaded / event.total) * 100);
                 if (!this.isDestroyed && !this.isDestroying) {
                     this.set('uploadPercentage', percentage);
                 }
@@ -225,7 +225,7 @@ export default Component.extend({
         }
 
         if (uploadResponse) {
-            let resource = get(uploadResponse, this.resourceName);
+            const resource = get(uploadResponse, this.resourceName);
             if (resource && isArray(resource) && resource[0]) {
                 responseUrl = get(resource[0], 'url');
             }
@@ -263,11 +263,11 @@ export default Component.extend({
     },
 
     generateRequest() {
-        let ajax = this.ajax;
-        let formData = this.formData;
-        let uploadUrl = this.uploadUrl;
+        const ajax = this.ajax;
+        const formData = this.formData;
+        const uploadUrl = this.uploadUrl;
         // CASE: we want to upload an icon and we have to POST it to a different endpoint, expecially for icons
-        let url = `${ghostPaths().apiRoot}${uploadUrl}`;
+        const url = `${ghostPaths().apiRoot}${uploadUrl}`;
 
         this.uploadStarted();
 
@@ -277,7 +277,7 @@ export default Component.extend({
             contentType: false,
             dataType: 'text',
             xhr: () => {
-                let xhr = new window.XMLHttpRequest();
+                const xhr = new window.XMLHttpRequest();
 
                 xhr.upload.addEventListener('progress', (event) => {
                     this._uploadProgress(event);
@@ -304,7 +304,7 @@ export default Component.extend({
 
     _defaultValidator(file) {
         let extensions = this.extensions;
-        let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+        const [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
         if (!isArray(extensions)) {
             extensions = extensions.split(',');

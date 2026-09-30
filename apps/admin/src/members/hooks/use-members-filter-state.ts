@@ -116,6 +116,12 @@ export function useMembersFilterState(
   );
   const [searchParams, setSearchParams] = useSearchParams();
   const lastWrittenQueryRef = useRef<string | null>(null);
+  // Set when the URL changed from outside (a link, a saved view, back) and the draft is being
+  // replaced from it. The write effect runs in the same commit with the previous draft still
+  // in its closure, and would write those stale filters over the new URL; a navigation that
+  // arrived meanwhile could then be lost. Skipping that one write lets the next render, with
+  // the new draft, normalise the URL instead.
+  const draftReplacedFromUrlRef = useRef(false);
   const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
   const currentQuery = useMemo(() => searchParams.toString(), [searchParams]);
 
@@ -134,12 +140,18 @@ export function useMembersFilterState(
 
   useEffect(() => {
     if (currentQuery !== lastWrittenQueryRef.current) {
+      draftReplacedFromUrlRef.current = lastWrittenQueryRef.current !== null;
       setDraftFilters(parsedFilters);
       lastWrittenQueryRef.current = currentQuery;
     }
   }, [currentQuery, parsedFilters]);
 
   useEffect(() => {
+    if (draftReplacedFromUrlRef.current) {
+      draftReplacedFromUrlRef.current = false;
+      return;
+    }
+
     if (lastWrittenQueryRef.current !== null && currentQuery !== lastWrittenQueryRef.current) {
       return;
     }

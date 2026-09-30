@@ -657,7 +657,7 @@ export default class AccountPlanPage extends React.Component {
     const { member, site } = this.context;
 
     this.prices = getAvailablePrices({ site });
-    let activePrice = getMemberActivePrice({ member });
+    const activePrice = getMemberActivePrice({ member });
 
     // Only filter by currency for real Stripe subscriptions. Synthetic
     // complimentary/gift subscriptions have an empty price_id and a

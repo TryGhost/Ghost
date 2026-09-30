@@ -717,7 +717,7 @@ module.exports = class MemberRepository {
     }
 
     // Fetch the member
-    let initialMember = await this._Member.findOne(
+    const initialMember = await this._Member.findOne(
       {
         id: options.id,
       },
@@ -1111,8 +1111,7 @@ module.exports = class MemberRepository {
     const memberIds = memberRows.map((row) => row.id);
 
     if (data.action === 'unsubscribe') {
-      const hasNewsletterSelected =
-        Object.prototype.hasOwnProperty.call(data, 'newsletter') && data.newsletter !== null;
+      const hasNewsletterSelected = Object.hasOwn(data, 'newsletter') && data.newsletter !== null;
       if (hasNewsletterSelected) {
         const membersArr = memberIds.map((i) => `'${i}'`).join(',');
         const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
@@ -1248,6 +1247,10 @@ module.exports = class MemberRepository {
       { ...options, forUpdate: true },
     );
 
+    if (!memberModel) {
+      throw new errors.NotFoundError({ message: tpl(messages.memberNotFound, { id: data.id }) });
+    }
+
     const memberStripeCustomerModel = await memberModel
       .related('stripeCustomers')
       .query({
@@ -1335,7 +1338,7 @@ module.exports = class MemberRepository {
       logging.error(e);
     }
 
-    let stripeCouponId = stripeSubscriptionData.discount?.coupon?.id;
+    const stripeCouponId = stripeSubscriptionData.discount?.coupon?.id;
 
     // For trial offers, offer id is passed from metadata as there is no stripe coupon
     let offerId = data.offerId || null;
@@ -1432,7 +1435,7 @@ module.exports = class MemberRepository {
 
       return 'inactive';
     };
-    let eventData = {};
+    const eventData = {};
     const isIncomplete = ['incomplete', 'incomplete_expired'].includes(
       stripeSubscriptionData.status,
     );
@@ -2039,6 +2042,10 @@ module.exports = class MemberRepository {
       email: data.email,
     });
 
+    if (!member) {
+      throw new errors.NotFoundError({ message: tpl(messages.memberNotFound, { id: data.email }) });
+    }
+
     const subscription = await member
       .related('stripeSubscriptions')
       .query({
@@ -2079,6 +2086,12 @@ module.exports = class MemberRepository {
     }
 
     const member = await this._Member.findOne(findQuery);
+
+    if (!member) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.memberNotFound, { id: data.id || data.email }),
+      });
+    }
 
     const subscription = await member
       .related('stripeSubscriptions')
@@ -2138,6 +2151,12 @@ module.exports = class MemberRepository {
     }
 
     const member = await this._Member.findOne(findQuery);
+
+    if (!member) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.memberNotFound, { id: data.id || data.email }),
+      });
+    }
 
     const subscriptionModel = await member
       .related('stripeSubscriptions')

@@ -42,8 +42,8 @@ let spamMemberLogin = spam.member_login || {};
 let spamCheckoutSessionGlobal = spam.checkout_session_global || {};
 let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
-let spamWebmentionsBlock = spam.webmentions_block || {};
-let spamEmailPreviewBlock = spam.email_preview_block || {};
+const spamWebmentionsBlock = spam.webmentions_block || {};
+const spamEmailPreviewBlock = spam.email_preview_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 

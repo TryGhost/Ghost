@@ -231,7 +231,7 @@ const controller = {
       unsafeAttrs: unsafeAttrs,
     },
     async query(frame) {
-      let model = await postsService.editPost(frame, {
+      const model = await postsService.editPost(frame, {
         eventHandler: (event, dto) => {
           const cacheInvalidate = getCacheHeaderFromEventString(event, dto);
           if (cacheInvalidate === true) {

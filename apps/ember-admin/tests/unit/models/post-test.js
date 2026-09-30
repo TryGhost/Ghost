@@ -13,13 +13,13 @@ describe('Unit: Model: post', function () {
     });
 
     it('has a validation type of "post"', function () {
-        let model = store.createRecord('post');
+        const model = store.createRecord('post');
 
         expect(model.validationType).to.equal('post');
     });
 
     it('isPublished, isDraft and isScheduled are correct', function () {
-        let model = store.createRecord('post', {
+        const model = store.createRecord('post', {
             status: 'published'
         });
 
@@ -45,10 +45,10 @@ describe('Unit: Model: post', function () {
     });
 
     it('isAuthoredByUser is correct', function () {
-        let user1 = store.createRecord('user', {id: 'abcd1234'});
-        let user2 = store.createRecord('user', {id: 'wxyz9876'});
+        const user1 = store.createRecord('user', {id: 'abcd1234'});
+        const user2 = store.createRecord('user', {id: 'wxyz9876'});
 
-        let model = store.createRecord('post', {
+        const model = store.createRecord('post', {
             authors: [user1]
         });
 
@@ -62,13 +62,13 @@ describe('Unit: Model: post', function () {
     });
 
     it('updateTags removes and deletes old tags', function () {
-        let model = store.createRecord('post');
+        const model = store.createRecord('post');
 
         run(this, function () {
-            let modelTags = model.get('tags');
-            let tag1 = store.createRecord('tag', {id: '1'});
-            let tag2 = store.createRecord('tag', {id: '2'});
-            let tag3 = store.createRecord('tag');
+            const modelTags = model.get('tags');
+            const tag1 = store.createRecord('tag', {id: '1'});
+            const tag2 = store.createRecord('tag', {id: '2'});
+            const tag3 = store.createRecord('tag');
 
             // During testing a record created without an explicit id will get
             // an id of 'fixture-n' instead of null

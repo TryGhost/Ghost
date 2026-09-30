@@ -1,4 +1,5 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
+export { authToken, fakeSetupStatus, plainText, signedOut } from './auth';
 export { fakeAnalyticsOverview } from './analytics';
 export {
   UNSPLASH_PICKED,
@@ -65,6 +66,7 @@ export {
 } from './tinybird';
 export type { TinybirdPipeCapture, TinybirdPipeQuery } from './tinybird';
 export { fakeAdminStats } from './stats';
+export { fakeFrameOrigin } from './frames';
 export { unsavedChangesGuarded } from './unsaved-changes-guard';
 
 // Test-data re-exports, so a spec needs a single import surface.

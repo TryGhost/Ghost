@@ -7,12 +7,12 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 
 describe('Acceptance: Restore', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
         // Create a user and authenticate the session
-        let role = this.server.create('role', {name: 'Owner'});
+        const role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role], slug: 'owner'});
         await authenticateSession();
     });

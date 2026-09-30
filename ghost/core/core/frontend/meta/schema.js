@@ -11,12 +11,11 @@ const _ = require('lodash');
 // literal `Tom &amp; Jerry`.
 
 function schemaImageObject(metaDataVal) {
-  let imageObject;
   if (!metaDataVal || !metaDataVal.url) {
     return null;
   }
 
-  imageObject = {
+  const imageObject = {
     '@type': 'ImageObject',
     url: metaDataVal.url,
   };
@@ -30,9 +29,7 @@ function schemaImageObject(metaDataVal) {
 }
 
 function schemaPublisherObject(metaDataVal) {
-  let publisherObject;
-
-  publisherObject = {
+  const publisherObject = {
     '@type': 'Organization',
     name: metaDataVal.site.title,
     url: metaDataVal.site.url || null,
@@ -118,11 +115,9 @@ function getPostSchema(metaData, data) {
   // or the automated excerpt of 50 words. It is empty for any other context.
   const description = metaData.excerpt || null;
 
-  let schema;
-
   const context = data.page ? 'page' : 'post';
 
-  schema = {
+  const schema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     publisher: schemaPublisherObject(metaData),

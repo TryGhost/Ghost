@@ -36,12 +36,14 @@ See **[Contributing](?path=/docs/overview-contributing--docs)** for the implemen
 Shade previews use the new controls by default. New screens use ordinary
 `Button`, `SelectTrigger`, `InputGroup`, `Badge`, `FilterBar`, and `PageHeader`
 components; there is no need to add `shape="pill"` or copy milestone classes into
-pages. Explicit shapes remain available for a specific visual need.
+pages. Form selects and input groups retain standard rounded corners; their
+embedded action buttons inherit the button shape. PageHeader.SelectTrigger supplies
+the pill shape for header dropdowns. Explicit shapes remain available for a specific visual need.
 
-Admin reads the existing `admin7Pill` Labs flag at its application boundary,
-excludes unsupported routes, and passes a boolean to Shade's existing provider.
-The generic `isAdmin7` switch follows the current milestone without adding a
-separate Shade prop for each milestone:
+Admin enables the current design on all React-owned routes without a Labs flag.
+It passes `isAdmin7={false}` on Ember-owned routes, including the editor while
+`editorReact` is disabled, to preserve their compatibility appearance. The generic
+`isAdmin7` provider switch remains available for these legacy surfaces:
 
 ```tsx
 <ShadeApp darkMode={darkMode} isAdmin7={isAdmin7}>
@@ -49,8 +51,8 @@ separate Shade prop for each milestone:
 </ShadeApp>
 ```
 
-Components can read the same value for temporary structural or interaction
-differences:
+Components can read the same value for structural or interaction differences
+required by legacy surfaces:
 
 ```tsx
 import {useShade} from '@tryghost/shade/app';
@@ -65,13 +67,13 @@ proxy for behavior.
 
 Portals carry `data-admin7` through Shade's internal scope wrapper. Keep
 scope attributes off `document.body`: independently mounted surfaces must not
-change one another's menus or dialogs. Shade previews default to the new
-appearance; Admin supplies its computed boolean and standalone ActivityPub
-explicitly passes `isAdmin7={false}`.
+change one another's menus or dialogs. Shade previews and standalone ActivityPub
+default to the new appearance. Embedded ActivityPub inherits Admin's computed
+boolean from the shared application wrapper.
 
 The [feature flag guide](https://github.com/TryGhost/Ghost/blob/main/docs/practices/feature-flags.md#admin-7-milestones)
-covers naming, shared presentation, testing and removal. At rollout, keep the
-enabled behavior and remove the milestone's compatibility branches; ordinary
-component calls already use the intended defaults.
+covers naming, shared presentation, testing and removal. Retain compatibility
+branches while Ember-owned surfaces still need them; ordinary component calls
+already use the intended defaults.
 
 </div>

@@ -5,7 +5,7 @@
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
-const limits = require('../limits');
+const { limitService: limits } = require('../limits');
 const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager').default;
 const SettingsCache = require('../../../shared/settings-cache');

@@ -19,7 +19,7 @@ export function mockMembersStats(server) {
     server.get('/members/stats/count', withPermissionsCheck(ALLOWED_ROLES, function (db, {queryParams}) {
         let {days} = queryParams;
 
-        let firstSubscriberDays = faker.number.int({min: 30, max: 600});
+        const firstSubscriberDays = faker.number.int({min: 30, max: 600});
 
         if (days === 'all-time') {
             days = firstSubscriberDays;
@@ -33,11 +33,11 @@ export function mockMembersStats(server) {
         }
 
         // simulate sql GROUP BY where days with 0 subscribers are missing
-        let dateCounts = {};
+        const dateCounts = {};
         let i = 0;
         while (i < days) {
-            let date = moment().subtract(i, 'days').format('YYYY-MM-DD');
-            let count = faker.number.int({min: 0, max: 30});
+            const date = moment().subtract(i, 'days').format('YYYY-MM-DD');
+            const count = faker.number.int({min: 0, max: 30});
 
             if (count !== 0) {
                 dateCounts[date] = count;
@@ -47,10 +47,10 @@ export function mockMembersStats(server) {
         }
 
         // similar to what we'll need to do on the server
-        let totalOnDate = {};
+        const totalOnDate = {};
         let j = days - 1;
         while (j >= 0) {
-            let date = moment().subtract(j, 'days').format('YYYY-MM-DD');
+            const date = moment().subtract(j, 'days').format('YYYY-MM-DD');
             totalOnDate[date] = total + (dateCounts[date] || 0);
             total += (dateCounts[date] || 0);
             j -= 1;
@@ -157,7 +157,7 @@ export default function mockMembers(server) {
         let membersToDelete = members.all();
 
         if (queryParams.filter) {
-            let labelFilter = extractFilterParam('label', queryParams.filter);
+            const labelFilter = extractFilterParam('label', queryParams.filter);
 
             membersToDelete = membersToDelete.filter((member) => {
                 let matches = false;
@@ -170,7 +170,7 @@ export default function mockMembers(server) {
             });
         }
 
-        let count = membersToDelete.length;
+        const count = membersToDelete.length;
         membersToDelete.destroy();
 
         return {
@@ -183,8 +183,8 @@ export default function mockMembers(server) {
     }));
 
     server.get('/members/:id/', withPermissionsCheck(ALLOWED_ROLES, function ({members}, {params}) {
-        let {id} = params;
-        let member = members.find(id);
+        const {id} = params;
+        const member = members.find(id);
 
         return member || new Response(404, {}, {
             errors: [{

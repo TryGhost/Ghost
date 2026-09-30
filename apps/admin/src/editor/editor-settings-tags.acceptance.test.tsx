@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import { settingsTagsCreateText } from '@tryghost/test-data/selectors/editor';
 
 import {
   currentUserResponse,
@@ -185,13 +186,32 @@ describe('Post settings tags', () => {
     await openTagList();
 
     await editorScreen.settingsTagsInput().fill('Culture');
-    await editorScreen.settingsTagOption('Create “Culture”').click();
+    await editorScreen.settingsTagOption(`${settingsTagsCreateText} “Culture”`).click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     // Named, not created first: an abandoned edit leaves no stray tag behind.
     expect(submittedTags(saveApi)).toEqual([{ name: 'Culture' }]);
     expect(tagsApi.requests).toHaveLength(0);
     await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Culture');
+  });
+
+  it('refetches the site’s tags once a save has created one', async () => {
+    const { saveApi } = fakeTaggablePost();
+    const tagsApi = fakeTags([NEWS]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
+
+    await editorScreen.settingsTagsInput().fill('Culture');
+    // Offered only once the search for the typed name has answered.
+    await expect.element(editorScreen.settingsTagOption('Create “Culture”')).toBeVisible();
+    const browsesBefore = tagsApi.requests.length;
+    await editorScreen.settingsTagOption('Create “Culture”').click();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    // Without it, every tag list — the posts list's tag filter too — keeps
+    // serving a cache without the new tag for the five-minute staleTime.
+    await expect.poll(() => tagsApi.requests.length, POLL).toBeGreaterThan(browsesBefore);
   });
 
   it('drops an uncommitted term when the list closes', async () => {
@@ -233,7 +253,9 @@ describe('Post settings tags', () => {
 
     // A comma is an ordinary character in a tag name, not a separator.
     await editorScreen.settingsTagsInput().fill('Arts, Culture');
-    await expect.element(editorScreen.settingsTagOption(/Create/)).toBeVisible();
+    await expect
+      .element(editorScreen.settingsTagOption(new RegExp(settingsTagsCreateText)))
+      .toBeVisible();
     await userEvent.keyboard('{Tab}');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);

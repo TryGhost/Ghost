@@ -12,8 +12,8 @@ export default Factory.extend({
     updatedAt() { return moment.utc().format(); },
 
     afterCreate(integration, server) {
-        let contentKey = server.create('api-key', {type: 'content', integration});
-        let adminKey = server.create('api-key', {type: 'admin', integration});
+        const contentKey = server.create('api-key', {type: 'content', integration});
+        const adminKey = server.create('api-key', {type: 'admin', integration});
 
         integration.apiKeyIds = [contentKey.id, adminKey.id];
         integration.save();

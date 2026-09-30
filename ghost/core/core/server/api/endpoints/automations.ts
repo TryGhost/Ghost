@@ -1,4 +1,7 @@
+import errors from '@tryghost/errors';
 import * as automationsApi from '../../services/automations/automations-api';
+// @ts-expect-error This module lacks type definitions.
+import labs from '../../../shared/labs';
 
 type ReadFrame = {
   data: {
@@ -24,6 +27,12 @@ export const controller = {
     },
     permissions: true,
     async query() {
+      if (!labs.isSet('automations')) {
+        throw new errors.NotFoundError({
+          message: 'Automations are not enabled.',
+        });
+      }
+
       return await automationsApi.browse();
     },
   },
@@ -36,6 +45,22 @@ export const controller = {
     permissions: true,
     async query(frame: ReadFrame) {
       return await automationsApi.read(frame.data.id);
+    },
+  },
+
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: true,
+    async query() {
+      // TODO(NY-1637) Implement this endpoint.
+      throw new errors.InternalServerError({
+        statusCode: 501,
+        code: 'NOT_IMPLEMENTED',
+        message: 'Adding automations is not implemented.',
+      });
     },
   },
 

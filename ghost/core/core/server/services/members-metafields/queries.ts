@@ -4,6 +4,17 @@ import { FIELD_STATUS } from './schema';
 
 const FIELDS_TABLE = 'members_metafields';
 
+// The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to our
+// raw-knex queries: nql parses a `filter` string to a Mongo query, mongo-knex turns that
+// into parametrised WHERE clauses. Neither needs a Bookshelf model. Typed once here, since
+// neither package ships types.
+export const nql = require('@tryghost/nql') as (filter: string) => { toJSON(): object };
+export const knexify = require('@tryghost/mongo-knex') as <T extends Knex.QueryBuilder>(
+  qb: T,
+  mongoQuery: object,
+  config: { tableName: string },
+) => T;
+
 // Nothing in the database keeps an archived or hidden field out of a read: no
 // constraint stops a value row referencing one. Both filters are therefore applied in
 // code, and a query that forgets either is a silent bug.

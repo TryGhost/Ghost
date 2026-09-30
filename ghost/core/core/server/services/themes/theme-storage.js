@@ -78,8 +78,8 @@ class ThemeStorage extends LocalStorageBase {
    * @param {string} destName
    */
   rename(srcName, destName) {
-    let src = path.join(this.getTargetDir(), srcName);
-    let dest = path.join(this.getTargetDir(), destName);
+    const src = path.join(this.getTargetDir(), srcName);
+    const dest = path.join(this.getTargetDir(), destName);
 
     return fs.move(src, dest);
   }

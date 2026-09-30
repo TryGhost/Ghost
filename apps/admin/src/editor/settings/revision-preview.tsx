@@ -17,7 +17,7 @@ import {
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from '@/editor/card-config';
 import { editorFileUploader } from '@/editor/koenig-file-uploader';
-import { reportKoenigError } from '@/editor/report-error';
+import { reportKoenigError, reportKoenigRenderError } from '@/editor/report-error';
 import type { RevisionEntry } from './post-history';
 
 /** The part of Lexical's editor the loader's minimal instance type leaves out. */
@@ -95,7 +95,7 @@ export function RevisionPreview({
 
   return (
     <div className="mx-auto w-full max-w-[740px]" data-testid={postHistoryPreview}>
-      <ErrorBoundary name="this version">
+      <ErrorBoundary name="this version" onError={reportKoenigRenderError}>
         <Suspense
           fallback={
             <Inline className="py-10" justify="center">

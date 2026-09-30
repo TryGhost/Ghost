@@ -32,7 +32,7 @@ export default class MembersEventFilter extends Helper {
             excludedEvents.forEach(type => excludedEventsSet.add(type));
         }
 
-        let filterParts = [];
+        const filterParts = [];
 
         const excludedEventsArray = Array.from(excludedEventsSet).reject(isBlank);
 

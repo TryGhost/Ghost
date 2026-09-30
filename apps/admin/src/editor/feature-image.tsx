@@ -117,7 +117,7 @@ export function FeatureImage({
         {isEditingAlt ? (
           <input
             aria-label="Alt text for feature image"
-            className="flex-1 border-0 bg-transparent p-0 text-sm text-text-secondary outline-none placeholder:text-muted-foreground"
+            className="flex-1 border-0 bg-transparent p-0 font-sans text-base leading-6 text-text-secondary outline-none placeholder:text-muted-foreground"
             maxLength={ALT_MAX_LENGTH}
             name="alt"
             placeholder="Add alt text to the feature image"
@@ -127,7 +127,7 @@ export function FeatureImage({
             onChange={(event) => onAltChange(event.target.value)}
           />
         ) : (
-          <div className="flex-1 text-sm" data-testid={editorFeatureImageCaption}>
+          <div className="flex-1" data-testid={editorFeatureImageCaption}>
             <FeatureImageCaption
               darkMode={darkMode}
               html={caption}
@@ -156,7 +156,7 @@ export function FeatureImage({
           className={cn(
             'rounded-md border px-1.5 py-0.5 text-2xs font-medium tracking-wide',
             isEditingAlt
-              ? 'border-state-success bg-state-success text-state-success-foreground'
+              ? 'border-primary bg-primary text-primary-foreground'
               : 'border-border-default bg-transparent text-text-tertiary',
           )}
           type="button"

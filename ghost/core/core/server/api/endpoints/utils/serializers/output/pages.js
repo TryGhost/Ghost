@@ -17,7 +17,7 @@ module.exports = {
     if (!models) {
       return;
     }
-    let pages = [];
+    const pages = [];
 
     const tiersPage = await tiersService.api.browse({});
     const tiers =
@@ -44,8 +44,8 @@ module.exports = {
       }) || [];
 
     if (models.meta) {
-      for (let model of models.data) {
-        let page = await mappers.pages(model, frame, { tiers });
+      for (const model of models.data) {
+        const page = await mappers.pages(model, frame, { tiers });
         pages.push(page);
       }
       frame.response = {
@@ -55,7 +55,7 @@ module.exports = {
 
       return;
     }
-    let page = await mappers.pages(models, frame, { tiers });
+    const page = await mappers.pages(models, frame, { tiers });
     frame.response = {
       pages: [page],
     };

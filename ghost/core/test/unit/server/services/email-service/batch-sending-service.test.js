@@ -37,17 +37,24 @@ describe('Batch Sending Service', function () {
   });
 
   describe('scheduleEmail', function () {
-    it('schedules email', async function () {
-      const jobsService = {
-        addJob: sinon.stub().resolves(),
-      };
-      const service = new BatchSendingService({
-        jobsService,
-      });
-      service.scheduleEmail(createModel({}));
-      sinon.assert.calledOnce(jobsService.addJob);
-      const job = jobsService.addJob.firstCall.args[0].job;
-      assert.equal(typeof job, 'function');
+    it('dispatches a SendEmailJob for the email', async function () {
+      const jobsService = { dispatch: sinon.stub().resolves() };
+      const service = new BatchSendingService({ jobsService });
+
+      await service.scheduleEmail(createModel({ id: 'email-id' }));
+
+      sinon.assert.calledOnce(jobsService.dispatch);
+      const job = jobsService.dispatch.firstCall.args[0];
+      assert.equal(job.constructor.type, 'send-email');
+      assert.deepEqual({ ...job }, { emailId: 'email-id' });
+    });
+
+    it('rejects when the queue refuses the dispatch', async function () {
+      const error = new Error('Queue unavailable');
+      const jobsService = { dispatch: sinon.stub().rejects(error) };
+      const service = new BatchSendingService({ jobsService });
+
+      await assert.rejects(() => service.scheduleEmail(createModel({ id: 'email-id' })), error);
     });
   });
 
@@ -907,7 +914,6 @@ describe('Batch Sending Service', function () {
           });
         });
 
-        let service;
         let fetchCount = 0;
         const Member = createModelClass({});
         Member.getFilteredCollectionQuery = ({ filter }) => {
@@ -926,7 +932,7 @@ describe('Batch Sending Service', function () {
 
         const db = createDb({ all: [] });
         const insert = sinon.spy(db, 'insert');
-        service = new BatchSendingService({
+        const service = new BatchSendingService({
           models: { Member, EmailBatch: createModelClass({}) },
           domainWarmingService: { isEnabled: () => false },
           emailRenderer: {

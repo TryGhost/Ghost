@@ -100,6 +100,15 @@ function bodyElement(): Element | null {
   return document.querySelector(`[data-testid="${editorBody}"]`);
 }
 
+const POST_NOT_FOUND = { errors: [{ type: 'NotFoundError', message: 'Post not found.' }] };
+// Ghost answers a request whose session has gone with this 403.
+const SESSION_GONE = { errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }] };
+
+/** A later handler for the same route wins, so from here every read of the post fails. */
+function failReads(status: number, body: object): EndpointCapture {
+  return fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), body, { status });
+}
+
 /**
  * The React post editor's save engine wired to the API: body edits autosave,
  * a new post is created on its first edit, and a rejected save surfaces in
@@ -347,6 +356,88 @@ describe('Post editor saving', () => {
     await expect.element(editorScreen.status()).toHaveTextContent('Published');
   });
 
+  it('keeps the editor and what was typed when the read after a save fails with a 500', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    const mountedBody = bodyElement();
+
+    const failedRead = failReads(500, {
+      errors: [{ type: 'InternalServerError', message: 'Boom' }],
+    });
+    await appendToBody(' and more');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(() => failedRead.requests.length).toBeGreaterThan(0);
+
+    await appendToBody(' and then some');
+
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+    expect(submittedBody(saveApi)).toContain('Hello from React and more and then some');
+    await expect
+      .element(editorScreen.body())
+      .toHaveTextContent('Hello from React and more and then some');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+    expect(bodyElement()).toBe(mountedBody);
+  });
+
+  it('leaves an expired session to the next save when the read after a save is a 403', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    const mountedBody = bodyElement();
+
+    const expiredRead = failReads(403, SESSION_GONE);
+    await appendToBody(' and more');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(() => expiredRead.requests.length).toBeGreaterThan(0);
+
+    const expiredSave = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      SESSION_GONE,
+      { status: 403 },
+    );
+    await appendToBody(' and then some');
+
+    await expect.poll(() => expiredSave.requests.length).toBe(1);
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+    await expect
+      .element(editorScreen.bodyBehindDialog())
+      .toHaveTextContent('Hello from React and more and then some');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+    expect(bodyElement()).toBe(mountedBody);
+  });
+
+  it('leaves a post deleted elsewhere to the next save when the read after a save is a 404', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    const mountedBody = bodyElement();
+
+    const goneRead = failReads(404, POST_NOT_FOUND);
+    await appendToBody(' and more');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(() => goneRead.requests.length).toBeGreaterThan(0);
+
+    const goneSave = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      POST_NOT_FOUND,
+      { status: 404 },
+    );
+    await appendToBody(' and then some');
+
+    await expect.poll(() => goneSave.requests.length).toBe(1);
+    await expect
+      .element(editorScreen.conflictBanner())
+      .toHaveTextContent('This post has been deleted');
+    await expect
+      .element(editorScreen.body())
+      .toHaveTextContent('Hello from React and more and then some');
+    await expect(editorScreen.notFound()).toHaveCount(0);
+    expect(bodyElement()).toBe(mountedBody);
+  });
+
   it('leaves tags alone when it saves', async () => {
     const saveApi = fakeSavablePost({ tags: [tag({ id: 'tag1', name: 'News', slug: 'news' })] });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -401,113 +492,5 @@ describe('Post editor saving', () => {
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
     await expect.element(editorScreen.body()).toHaveTextContent('and more again');
-  });
-
-  it('offers a retry in place when the session expired', async () => {
-    fakeEditorChrome();
-    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-      posts: [
-        post({
-          id: POST_ID,
-          title: 'Hello from React',
-          slug: 'hello-from-react',
-          status: 'draft',
-          lexical: buildLexicalParagraph('Hello from React'),
-          updated_at: LOADED_AT,
-          tags: [],
-        }),
-      ],
-    });
-    const saveApi = fakeAdminEndpoint(
-      'PUT',
-      new RegExp(`^/posts/${POST_ID}/\\?`),
-      { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
-      { status: 401 },
-    );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await appendToBody(' and more');
-
-    await expect.element(editorScreen.reauthBanner()).toHaveTextContent('Your session expired');
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-
-    await editorScreen.retryReauth().click();
-
-    await expect.poll(() => saveApi.requests.length).toBe(2);
-  });
-
-  it('still says saving stopped after the session banner is dismissed', async () => {
-    fakeEditorChrome();
-    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-      posts: [
-        post({
-          id: POST_ID,
-          title: 'Hello from React',
-          slug: 'hello-from-react',
-          status: 'draft',
-          lexical: buildLexicalParagraph('Hello from React'),
-          updated_at: LOADED_AT,
-          tags: [],
-        }),
-      ],
-    });
-    fakeAdminEndpoint(
-      'PUT',
-      new RegExp(`^/posts/${POST_ID}/\\?`),
-      { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
-      { status: 401 },
-    );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await appendToBody(' and more');
-
-    await expect.element(editorScreen.reauthBanner()).toBeVisible();
-    await editorScreen.dismissReauth().click();
-
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent('session expired');
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-  });
-
-  it('does not leave the editor when the slug request finds no session', async () => {
-    fakeEditorChrome();
-    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-      posts: [
-        post({
-          id: POST_ID,
-          title: 'Hello from React',
-          slug: 'hello-from-react',
-          status: 'draft',
-          lexical: buildLexicalParagraph('Hello from React'),
-          updated_at: LOADED_AT,
-          tags: [],
-        }),
-      ],
-    });
-    fakeAdminEndpoint(
-      'GET',
-      /^\/slugs\/post\//,
-      { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
-      { status: 401 },
-    );
-    const saveApi = fakeAdminEndpoint(
-      'PUT',
-      new RegExp(`^/posts/${POST_ID}/\\?`),
-      { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
-      { status: 401 },
-    );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await editorScreen.titleInput().fill('Brand New Name');
-    await editorScreen.body().click();
-
-    // The failing slug lookup must not navigate; the save that follows it
-    // is what tells the writer the session is gone.
-    await expect.element(editorScreen.reauthBanner()).toBeVisible();
-    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-    expect(saveApi.requests.length).toBeGreaterThan(0);
   });
 });

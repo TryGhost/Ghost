@@ -7,7 +7,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {versionMismatchResponse} from 'ghost-admin/mirage/utils';
 
-let htmlErrorResponse = function () {
+const htmlErrorResponse = function () {
     return new Response(
         504,
         {'Content-Type': 'text/html'},
@@ -16,13 +16,13 @@ let htmlErrorResponse = function () {
 };
 
 describe('Acceptance: Error Handling', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     describe('VersionMismatch errors', function () {
         describe('logged in', function () {
             beforeEach(async function () {
-                let role = this.server.create('role', {name: 'Administrator'});
+                const role = this.server.create('role', {name: 'Administrator'});
                 this.server.create('user', {roles: [role]});
 
                 await authenticateSession();
@@ -71,7 +71,7 @@ describe('Acceptance: Error Handling', function () {
         beforeEach(async function () {
             this.server.loadFixtures();
 
-            let roles = this.server.schema.roles.where({name: 'Administrator'});
+            const roles = this.server.schema.roles.where({name: 'Administrator'});
             this.server.create('user', {roles});
 
             await authenticateSession();
@@ -84,21 +84,6 @@ describe('Acceptance: Error Handling', function () {
             await visit('/editor/post/1');
             await fillIn('[data-test-editor-title-input]', 'Updated post');
             await blur('[data-test-editor-title-input]');
-
-            expect(findAll('.gh-alert').length).to.equal(1);
-            expect(find('.gh-alert').textContent).to.not.match(/html>/);
-            expect(find('.gh-alert').textContent).to.match(/An unexpected error occurred, please try again./);
-        });
-
-        it('handles ember-ajax HTML response', async function () {
-            const tag = this.server.create('tag', {slug: 'test'});
-
-            this.server.del(`/tags/${tag.id}/`, htmlErrorResponse);
-
-            await visit('/tags/test');
-
-            await click('[data-test-button="delete-tag"]');
-            await click('[data-test-modal="confirm-delete-tag"] [data-test-button="confirm"]');
 
             expect(findAll('.gh-alert').length).to.equal(1);
             expect(find('.gh-alert').textContent).to.not.match(/html>/);

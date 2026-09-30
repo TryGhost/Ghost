@@ -6,8 +6,8 @@ export default function mockWebhooks(server) {
     server.get('/webhooks/', paginatedResponse('webhooks'));
 
     server.post('/webhooks/', function ({webhooks}) {
-        let attrs = this.normalizedRequestAttrs();
-        let errors = [];
+        const attrs = this.normalizedRequestAttrs();
+        const errors = [];
 
         if (!attrs.name) {
             errors.push({

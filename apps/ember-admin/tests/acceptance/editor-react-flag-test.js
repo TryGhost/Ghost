@@ -30,15 +30,15 @@ async function visitExpectingAbort(url) {
 }
 
 describe('Acceptance: editor React flag', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
 
-        let role = this.server.create('role', {name: 'Administrator'});
-        let user = this.server.create('user', {roles: [role]});
+        const role = this.server.create('role', {name: 'Administrator'});
+        const user = this.server.create('user', {roles: [role]});
         this.server.create('post', {authors: [user]});
 
         return await authenticateSession();

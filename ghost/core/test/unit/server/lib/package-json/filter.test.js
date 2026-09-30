@@ -42,11 +42,10 @@ describe('package-json filter', function () {
 
   it('should filter packages correctly', function () {
     const result = packageJSON.filter({ casper: casper });
-    let package1;
 
     assert(Array.isArray(result));
     assert.equal(result.length, 1);
-    package1 = result[0];
+    const package1 = result[0];
 
     assert(package1 && typeof package1 === 'object');
     assert('name' in package1);
@@ -63,13 +62,11 @@ describe('package-json filter', function () {
 
   it('should filter packages and handle a single active package string', function () {
     const result = packageJSON.filter({ casper: casper, simple: simplePackage }, 'casper');
-    let package1;
-    let package2;
 
     assert(Array.isArray(result));
     assert.equal(result.length, 2);
-    package1 = result[0];
-    package2 = result[1];
+    const package1 = result[0];
+    const package2 = result[1];
 
     assert(package1 && typeof package1 === 'object');
     assert('name' in package1);
@@ -101,13 +98,11 @@ describe('package-json filter', function () {
       'casper',
       'simple',
     ]);
-    let package1;
-    let package2;
 
     assert(Array.isArray(result));
     assert.equal(result.length, 2);
-    package1 = result[0];
-    package2 = result[1];
+    const package1 = result[0];
+    const package2 = result[1];
 
     assert(package1 && typeof package1 === 'object');
     assert('name' in package1);
@@ -136,13 +131,11 @@ describe('package-json filter', function () {
 
   it('handles packages with no package.json even though this makes us sad', function () {
     const result = packageJSON.filter({ casper: casper, missing: missingPackageJson }, ['casper']);
-    let package1;
-    let package2;
 
     assert(Array.isArray(result));
     assert.equal(result.length, 2);
-    package1 = result[0];
-    package2 = result[1];
+    const package1 = result[0];
+    const package2 = result[1];
 
     assert(package1 && typeof package1 === 'object');
     assert('name' in package1);

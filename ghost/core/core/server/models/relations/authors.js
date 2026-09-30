@@ -139,7 +139,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
       },
 
       serialize: function serialize(options) {
-        let attrs = proto.serialize.call(this, options);
+        const attrs = proto.serialize.call(this, options);
 
         // CASE: e.g. you stub model response in the test
         // CASE: you delete a model without fetching before
@@ -209,7 +209,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 .where(query)
                 .fetch(Object.assign({ columns: ['id'] }, _.pick(options, 'transacting')))
                 .then((user) => {
-                  let userId = user ? user.id : ownerUser.id;
+                  const userId = user ? user.id : ownerUser.id;
 
                   // CASE: avoid attaching duplicate authors relation
                   const userExists = _.find(authorsToSet, { id: userId.id });
@@ -243,10 +243,10 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
        * @param {Object} unfilteredOptions.transacting
        */
       reassignByAuthor: async function reassignByAuthor(unfilteredOptions) {
-        let options = this.filterOptions(unfilteredOptions, 'reassignByAuthor', {
+        const options = this.filterOptions(unfilteredOptions, 'reassignByAuthor', {
           extraAllowedProperties: ['id'],
         });
-        let authorId = options.id;
+        const authorId = options.id;
 
         if (!authorId) {
           return Promise.reject(
@@ -257,8 +257,8 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         }
 
         const reassignPost = async () => {
-          let trx = options.transacting;
-          let knex = ghostBookshelf.knex;
+          const trx = options.transacting;
+          const knex = ghostBookshelf.knex;
 
           try {
             // There's only one possible owner per Ghost instance
@@ -350,9 +350,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         const postModel = postModelOrId;
         let origArgs;
         const { isContributor, isAuthor } = setIsRoles(loadedPermissions);
-        let isEdit;
-        let isAdd;
-        let isDestroy;
 
         // If we passed in an id instead of a model, get the model
         // then check the permissions
@@ -377,9 +374,9 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
           });
         }
 
-        isEdit = action === 'edit';
-        isAdd = action === 'add';
-        isDestroy = action === 'destroy';
+        const isEdit = action === 'edit';
+        const isAdd = action === 'add';
+        const isDestroy = action === 'destroy';
 
         function isChangingAuthors() {
           if (!unsafeAttrs.authors) {

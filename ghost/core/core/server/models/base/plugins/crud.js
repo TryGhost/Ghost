@@ -302,10 +302,9 @@ module.exports = function (Bookshelf) {
        */
       add: function add(data, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'add');
-        let model;
 
         data = this.filterData(data);
-        model = this.forge(data);
+        const model = this.forge(data);
 
         // We allow you to disable timestamps when importing posts so that the new posts `updated_at` value is the same
         // as the import json blob. More details refer to https://github.com/TryGhost/Ghost/issues/1696

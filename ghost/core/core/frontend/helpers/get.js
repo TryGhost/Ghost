@@ -300,7 +300,7 @@ function optimiseFilterCacheability(resource, options) {
  */
 async function makeAPICall(resource, controllerName, action, apiOptions) {
   const controller = api[controllerName];
-  let makeRequest = (options) => controller[action](options);
+  const makeRequest = (options) => controller[action](options);
 
   const { options, parseResult } = optimiseFilterCacheability(resource, apiOptions);
 

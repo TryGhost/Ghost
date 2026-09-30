@@ -714,8 +714,15 @@ describe('Import members custom fields', () => {
 
     // Dismissed without answering which part the column holds.
     await expect.element(importMembersScreen.option('Shipping address (City)')).toBeVisible();
+    // Visible options can precede Radix registering the reopened picker as the active
+    // layer. Wait for an actionable input before Escape, or it can reach the import dialog.
+    await importMembersScreen.searchFieldsInput().click();
+    await expect.element(importMembersScreen.searchFieldsInput()).toHaveFocus();
     await userEvent.keyboard('{Escape}');
 
+    await expect.element(importMembersScreen.searchFieldsInput()).not.toBeInTheDocument();
+    await expect.element(fieldSelect('city')).toHaveFocus();
+    await expect.element(importMembersScreen.leaveConfirmationText()).not.toBeInTheDocument();
     await importMembersScreen.importButton(1).click();
     await expect
       .element(importMembersScreen.messageText(/Choose a field for "city"/))

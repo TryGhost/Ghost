@@ -7,6 +7,7 @@ import {
   createQuery,
   createQueryWithId,
 } from '../utils/api/hooks';
+import { escapeNqlString } from '@tryghost/nql-string';
 import { apiUrl, type RequestOptions } from '../utils/api/fetch-api';
 import type { FieldValue } from '@tryghost/metafield-types';
 import { useCurrentUser } from './current-user';
@@ -872,8 +873,15 @@ function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
   return new Date(createdAt).toISOString().slice(0, 19).replace('T', ' ');
 }
 
-function buildMemberEventsFilter(memberId: string): string {
-  return `data.member_id:'${memberId}'`;
+// The same exclusion the full activity page sends, so the preview and the page leave out
+// the same events.
+function buildMemberEventsFilter(memberId: string, excludedEvents: string[]): string {
+  return [
+    excludedEvents.length > 0 && `type:-[${excludedEvents.map(escapeNqlString).join(',')}]`,
+    `data.member_id:'${memberId}'`,
+  ]
+    .filter(Boolean)
+    .join('+');
 }
 
 const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfiniteResponseType>({
@@ -914,12 +922,12 @@ const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfinit
 
 export function useMemberActivityFeed(
   memberId: string,
-  options: { enabled?: boolean; limit?: string } = {},
+  options: { enabled?: boolean; limit?: string; excludedEvents?: string[] } = {},
 ) {
-  const { limit = MEMBER_ACTIVITY_LIMIT, enabled } = options;
+  const { limit = MEMBER_ACTIVITY_LIMIT, enabled, excludedEvents = [] } = options;
   return useMemberActivityFeedQuery({
     searchParams: {
-      filter: buildMemberEventsFilter(memberId),
+      filter: buildMemberEventsFilter(memberId, excludedEvents),
       limit,
     },
     ...(enabled !== undefined ? { enabled } : {}),

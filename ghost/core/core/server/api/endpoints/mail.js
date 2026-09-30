@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const mailService = require('../../services/mail');
 const api = require('./');
 let mailer;
-let _private = {};
+const _private = {};
 
 const messages = {
   unableToSendEmail: 'Ghost is currently unable to send email.',

@@ -77,6 +77,7 @@ export function createTinybirdSyncService({
   };
 
   const runLoop = async (ingest: IngestConfig): Promise<never> => {
+    // Randomize the first wait to avoid all instances syncing at the same time.
     await sleep(Math.floor(random() * INTERVAL_MS));
 
     while (true) {

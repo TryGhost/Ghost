@@ -3,13 +3,13 @@ const path = require('path');
 const lexicalLib = require('../../lib/lexical');
 const labs = require('../../../shared/labs');
 const urlUtils = require('../../../shared/url-utils').default;
-const { finalize } = require('../email-rendering/finalize');
+const { finalize } = require('../../lib/email-rendering/finalize');
 const errors = require('@tryghost/errors');
 const { MESSAGES } = require('./constants');
 const { wrapReplacementStrings } = require('@tryghost/kg-default-nodes').utils.replacementStrings;
 const linkReplacer = require('../lib/link-replacer');
 const linkTracking = require('../link-tracking');
-const emailDesign = require('../email-rendering/email-design');
+const emailDesign = require('../../lib/email-rendering/email-design');
 const { registerHelpers } = require('../email-service/helpers/register-helpers');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
@@ -24,15 +24,15 @@ class MemberWelcomeEmailRenderer {
     this.Handlebars = require('handlebars').create();
     registerHelpers(this.Handlebars, labs, t);
     const baseStylesSource = fs.readFileSync(
-      path.join(__dirname, '../email-rendering/partials/base-styles.hbs'),
+      path.join(__dirname, '../../lib/email-rendering/partials/base-styles.hbs'),
       'utf8',
     );
     const contentStylesSource = fs.readFileSync(
-      path.join(__dirname, '../email-rendering/partials/content-styles.hbs'),
+      path.join(__dirname, '../../lib/email-rendering/partials/content-styles.hbs'),
       'utf8',
     );
     const cardStylesSource = fs.readFileSync(
-      path.join(__dirname, '../email-rendering/partials/card-styles.hbs'),
+      path.join(__dirname, '../../lib/email-rendering/partials/card-styles.hbs'),
       'utf8',
     );
     this.Handlebars.registerPartial('baseStyles', baseStylesSource);
@@ -44,7 +44,7 @@ class MemberWelcomeEmailRenderer {
     );
     this.Handlebars.registerPartial('styles', emailStylesSource);
     const emailWrapperSource = fs.readFileSync(
-      path.join(__dirname, '../email-rendering/partials/email-wrapper.hbs'),
+      path.join(__dirname, '../../lib/email-rendering/partials/email-wrapper.hbs'),
       'utf8',
     );
     this.Handlebars.registerPartial('emailWrapper', emailWrapperSource);

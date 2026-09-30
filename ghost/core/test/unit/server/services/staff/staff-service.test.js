@@ -110,12 +110,12 @@ describe('StaffService', function () {
     let subscribeStub;
     let getEmailAlertUsersStub;
     let service;
-    let options = {
+    const options = {
       transacting: {},
       forUpdate: true,
     };
     let stubs;
-    let labs = {
+    const labs = {
       isSet: () => {
         return false;
       },
@@ -644,7 +644,7 @@ describe('StaffService', function () {
       });
 
       it('sends paid subscription start alert without member name', async function () {
-        let memberData = {
+        const memberData = {
           email: 'member@example.com',
           id: 'abc',
         };

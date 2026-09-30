@@ -113,9 +113,30 @@ export function verifyNoUnhandledRequests(): void {
   }
 }
 
-// In-flight ledger (requestId → "METHOD path") for requests the worker owns;
-// drained in afterEach so stragglers can't cross test boundaries.
-const inFlightRequests = new Map<string, string>();
+// In-flight ledger for requests the worker owns; drained in afterEach so
+// stragglers can't cross test boundaries. Symbols track fetch calls before
+// the service worker delivers request:start; MSW request IDs also cover XHR.
+const inFlightRequests = new Map<string | symbol, string>();
+
+function trackFetchRequests(): void {
+  const fetch = window.fetch.bind(window);
+  window.fetch = async (input, init) => {
+    const url = new URL(input instanceof Request ? input.url : input, window.location.href).href;
+    if (!isTrackedUrl(url)) {
+      return fetch(input, init);
+    }
+
+    const id = Symbol();
+    const method = init?.method ?? (input instanceof Request ? input.method : 'GET');
+    const path = ADMIN_API_PATTERN.test(url) ? toAdminApiPath(url) : url;
+    inFlightRequests.set(id, `${method.toUpperCase()} ${path}`);
+    try {
+      return await fetch(input, init);
+    } finally {
+      inFlightRequests.delete(id);
+    }
+  };
+}
 
 function trackInFlightRequests(worker: SetupWorker): void {
   worker.events.on('request:start', ({ request, requestId }) => {
@@ -497,6 +518,11 @@ export async function startFakeApi({
       Reflect.deleteProperty(window, 'addEventListener');
     }
   }
+
+  // request:start arrives asynchronously through the service worker. Track
+  // fetch synchronously too, or teardown can see an empty ledger and remove
+  // a declared fake while its request is still travelling to MSW.
+  trackFetchRequests();
 
   return worker;
 }

@@ -36,7 +36,7 @@ export default Model.extend(ValidationEngine, {
     feature: service(),
 
     updateVisibility() {
-        let internalRegex = /^#.?/;
+        const internalRegex = /^#.?/;
         this.set('visibility', internalRegex.test(this.name) ? 'internal' : 'public');
     },
 

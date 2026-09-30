@@ -226,7 +226,7 @@ class ReferrersStatsService {
     const { dateFrom: startDateTime, dateTo: endDateTime } = getDateBoundaries(options);
 
     // Join subscription created events with paid subscription events to get MRR changes
-    let query = knex('members_subscription_created_events as msce')
+    const query = knex('members_subscription_created_events as msce')
       .join('members_paid_subscription_events as mpse', function () {
         this.on('msce.member_id', '=', 'mpse.member_id').andOn(
           'msce.subscription_id',

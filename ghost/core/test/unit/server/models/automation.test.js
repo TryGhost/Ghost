@@ -21,8 +21,9 @@ describe('Unit: models/automation', function () {
       const defaults = model.defaults();
 
       assert.ok(defaults);
-      assert.equal(Object.keys(defaults).length, 1);
+      assert.equal(Object.keys(defaults).length, 2);
       assert.equal(defaults.status, 'inactive');
+      assert.equal(defaults.description, '');
     });
   });
 

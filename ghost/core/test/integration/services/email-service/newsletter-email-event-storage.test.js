@@ -98,8 +98,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       assert.equal(initialModel.get('delivered_at'), null);
 
       // Fire event processing
-      // We use offloading to have correct coverage and usage of worker thread
-      const result = await emailAnalytics.newsletters.fetchLatestNonOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestNonOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -160,7 +159,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       assert.equal(initialModel.get('delivered_at'), null);
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestNonOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestNonOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -216,7 +215,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       assert.equal(initialModel.get('opened_at'), null);
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -304,7 +303,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       assert.notEqual(initialModel.get('delivered_at'), null);
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -414,7 +413,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       assert.notEqual(initialModel.get('delivered_at'), null);
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -522,7 +521,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       );
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -629,7 +628,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       assert.equal(initialModel.get('failed_at'), null);
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -763,7 +762,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       assert.equal(initialModel.get('failed_at'), null);
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -873,7 +872,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       ];
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -980,7 +979,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       ];
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -1087,7 +1086,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       ];
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -1166,7 +1165,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       ];
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -1243,7 +1242,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       ];
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
 
       // Since this is all event based we should wait for all dispatched events to be completed.
@@ -1323,7 +1322,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
         },
       ];
 
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
       await DomainEvents.allSettled();
 
@@ -1371,7 +1370,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       ];
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 1);
     });
 
@@ -1392,7 +1391,7 @@ processingModes.forEach(({ name, batchProcessing }) => {
       const errorLog = sinon.stub(logging, 'error');
 
       // Fire event processing
-      const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+      const result = await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
       assert.equal(result, 0);
 
       sinon.assert.called(errorLog);

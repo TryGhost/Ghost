@@ -12,8 +12,6 @@ const AUTH_FRAME_LOAD_TIMEOUT = 5000;
 
 function waitForFrameLoad(frame) {
   return new Promise((resolve, reject) => {
-    let timeout;
-
     function cleanup() {
       window.clearTimeout(timeout);
       frame.removeEventListener('load', handleLoad);
@@ -30,7 +28,7 @@ function waitForFrameLoad(frame) {
       reject(new Error('auth_frame_load_error'));
     }
 
-    timeout = window.setTimeout(() => {
+    const timeout = window.setTimeout(() => {
       cleanup();
       reject(new Error('auth_frame_load_timeout'));
     }, AUTH_FRAME_LOAD_TIMEOUT);

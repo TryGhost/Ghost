@@ -28,7 +28,7 @@ export default RestSerializer.extend({
             object = new Collection(object.modelName, [object]);
         }
 
-        let json = RestSerializer.prototype.serialize.call(this, object, request);
+        const json = RestSerializer.prototype.serialize.call(this, object, request);
 
         if (this.isCollection(object) && object.meta) {
             json.meta = object.meta;
@@ -44,7 +44,7 @@ export default RestSerializer.extend({
         // sometimes mirage doesn't include a modelName, so we extrapolate it from
         // the first element of Object.keys
         modelName = pluralize(modelName) || Object.keys(body)[0];
-        let [attributes] = body[modelName] || [{}];
+        const [attributes] = body[modelName] || [{}];
         return {data: {attributes}};
     }
 });

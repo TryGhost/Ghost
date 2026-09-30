@@ -16,9 +16,9 @@ describe('Unit: endpoints/utils/serializers/output/mappers/comments', function (
     sinon.restore();
   });
 
-  function makeFrame() {
+  function makeFrame(apiType = 'members') {
     return {
-      apiType: 'members',
+      apiType,
       options: {},
       original: {},
     };
@@ -87,5 +87,29 @@ describe('Unit: endpoints/utils/serializers/output/mappers/comments', function (
     sinon.assert.calledOnce(getUrlForResourceStub);
     const [resource] = getUrlForResourceStub.firstCall.args;
     assert.equal(resource.type, 'posts');
+  });
+
+  for (const [source, post] of [
+    ['custom excerpt', { custom_excerpt: 'Custom excerpt' }],
+    ['plaintext', { plaintext: 'Paid post content' }],
+  ]) {
+    it(`does not expose a post excerpt from ${source} to the members API`, function () {
+      const response = commentMapper(
+        makeComment({ id: 'post-id', title: 'A post', type: 'post', ...post }),
+        makeFrame(),
+      );
+
+      assert.equal(response.post.title, 'A post');
+      assert.equal('excerpt' in response.post, false);
+    });
+  }
+
+  it('includes the post excerpt for the Admin API', function () {
+    const response = commentMapper(
+      makeComment({ id: 'post-id', title: 'A post', type: 'post', plaintext: 'Paid post content' }),
+      makeFrame('admin'),
+    );
+
+    assert.equal(response.post.excerpt, 'Paid post content');
   });
 });

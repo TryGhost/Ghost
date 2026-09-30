@@ -1,7 +1,7 @@
 const _ = require('lodash');
 
 module.exports.findKey = function findKey(key /* ...objects... */) {
-  let objects = Array.prototype.slice.call(arguments, 1);
+  const objects = Array.prototype.slice.call(arguments, 1);
 
   return _.reduceRight(
     objects,
@@ -40,8 +40,8 @@ function _urlParentMatch(href, location) {
   }
 
   let parent = false;
-  let locParts = _urlClean(location).split('/');
-  let hrefParts = _urlClean(href).split('/');
+  const locParts = _urlClean(location).split('/');
+  const hrefParts = _urlClean(href).split('/');
 
   if (locParts.length <= hrefParts.length) {
     return false;
@@ -55,11 +55,11 @@ function _urlParentMatch(href, location) {
 }
 
 module.exports.buildLinkClasses = function buildLinkClasses(siteUrl, href, options) {
-  let relativeHref = href.replace(siteUrl, '');
-  let location = options.data.root.relativeUrl;
-  let classes = options.hash.class ? options.hash.class.toString().split(' ') : [];
-  let activeClass = _.has(options.hash, 'activeClass') ? options.hash.activeClass : 'nav-current';
-  let parentActiveClass = _.has(options.hash, 'parentActiveClass')
+  const relativeHref = href.replace(siteUrl, '');
+  const location = options.data.root.relativeUrl;
+  const classes = options.hash.class ? options.hash.class.toString().split(' ') : [];
+  const activeClass = _.has(options.hash, 'activeClass') ? options.hash.activeClass : 'nav-current';
+  const parentActiveClass = _.has(options.hash, 'parentActiveClass')
     ? options.hash.parentActiveClass
     : `${activeClass || 'nav-current'}-parent`;
 

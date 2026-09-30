@@ -247,8 +247,8 @@ export default class GhKoenigEditorLexical extends Component {
             // In the future, we'd like to use `focusKoenigEditorOnBottomClick`
             // from `admin-x-framework`, but we can't import it without more
             // changes.
-            let editorCanvas = this.editorAPI.editorInstance.getRootElement();
-            let {bottom} = editorCanvas.getBoundingClientRect();
+            const editorCanvas = this.editorAPI.editorInstance.getRootElement();
+            const {bottom} = editorCanvas.getBoundingClientRect();
 
             // if a mousedown and subsequent mouseup occurs below the editor
             // canvas, focus the editor and put the cursor at the end of the document

@@ -8,13 +8,28 @@ import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Post revisions', function () {
-    let hooks = setupApplicationTest();
+    const hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
         this.server.loadFixtures();
 
         await loginAsRole('Administrator', this.server);
+    });
+
+    it('can open history for a post without revisions', async function () {
+        const post = this.server.create('post', {
+            title: 'Current Title',
+            status: 'draft'
+        });
+
+        await visit(`/editor/post/${post.id}`);
+
+        await click('[data-test-psm-trigger]');
+        await click('[data-test-toggle="post-history"]');
+
+        expect(findAll('[data-test-revision-item]').length).to.equal(0);
+        expect(find('[data-test-post-history-preview-title]')).to.have.trimmed.text('Current Title');
     });
 
     it('can restore a draft post revision', async function () {

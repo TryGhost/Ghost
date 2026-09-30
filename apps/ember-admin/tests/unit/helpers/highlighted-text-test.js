@@ -9,13 +9,13 @@ import {
 
 describe('Unit: Helper: highlighted-text', function () {
     it('works', function () {
-        let result = highlightedText(['Test', 'e']);
+        const result = highlightedText(['Test', 'e']);
         expect(result).to.be.an('object');
         expect(result.string).to.equal('T<span class="highlight">e</span>st');
     });
 
     it('escapes html', function () {
-        let result = highlightedText(['<script>alert("oops")</script>', 'oops']);
+        const result = highlightedText(['<script>alert("oops")</script>', 'oops']);
         expect(result).to.be.an('object');
         expect(result.string).to.equal('&lt;script&gt;alert(&quot;<span class="highlight">oops</span>&quot;)&lt;/script&gt;');
     });

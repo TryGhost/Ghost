@@ -27,7 +27,7 @@ const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
-const limitService = require('../../core/server/services/limits');
+const { limitService } = require('../../core/server/services/limits');
 const dns = require('dns');
 const dnsPromises = dns.promises;
 const StripeMocker = require('./stripe-mocker');
@@ -288,7 +288,7 @@ const sentEmail = (matchers) => {
     });
   }
 
-  let spyCall = mocks.mail.getCall(emailCount);
+  const spyCall = mocks.mail.getCall(emailCount);
 
   assert.notEqual(spyCall, null, 'Expected at least ' + (emailCount + 1) + ' emails sent.');
 
@@ -298,7 +298,7 @@ const sentEmail = (matchers) => {
   sinon.assert.called(mocks.mail);
 
   Object.keys(matchers).forEach((key) => {
-    let value = matchers[key];
+    const value = matchers[key];
 
     // We use assert, rather than sinon.assert.calledWith, as we end up with much better error messaging
     assert.notEqual(spyCall.args[0][key], undefined, `Expected email to have property ${key}`);
@@ -492,9 +492,7 @@ const mockLimitService = (limit, options) => {
   if (!mocks.limitService.originalEntries.has(limit)) {
     mocks.limitService.originalEntries.set(
       limit,
-      Object.prototype.hasOwnProperty.call(limitService.limits, limit)
-        ? limitService.limits[limit]
-        : undefined,
+      Object.hasOwn(limitService.limits, limit) ? limitService.limits[limit] : undefined,
     );
   }
   limitService.limits[limit] = {

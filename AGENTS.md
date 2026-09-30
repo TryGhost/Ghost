@@ -22,7 +22,7 @@ Start with:
 - Run `pnpm bootstrap` before other commands in a fresh checkout or worktree.
 - Use `pnpm check` as the default full validation command. Browser E2E and Ember
   Admin tests run separately; follow the testing guide.
-- Read the nearest `AGENTS.md`, `CLAUDE.md`, and README before changing a package
+- Read the nearest `AGENTS.md` and README before changing a package
   or subsystem. More specific guidance overrides this file.
 - When committing, load and follow `.agents/skills/commit/SKILL.md`.
 

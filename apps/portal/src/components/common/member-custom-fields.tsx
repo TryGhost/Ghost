@@ -35,10 +35,6 @@ const addressLabels = (): Record<keyof Address, string> => ({
   country: t('Country'),
 });
 
-interface RowProps {
-  parts: (keyof Address)[];
-}
-
 interface FieldProps {
   field: DrawableCustomField;
   value: CustomFieldValue;
@@ -66,6 +62,32 @@ function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps) 
       onChange={(event: { target: { value: string } }) => onChange(field, null, event.target.value)}
       onKeyDown={onKeyDown}
     />
+  );
+}
+
+interface AddressRowProps {
+  parts: (keyof Address)[];
+  input: (part: keyof Address) => Record<string, unknown>;
+  onChange: (part: string | null, value: string) => void;
+  onKeyDown: (event: React.KeyboardEvent) => void;
+}
+
+/**
+ * One row of an address. Declared here rather than inside the field: a component made
+ * afresh on every render is a new type each time, so React would replace the row's
+ * inputs on every keystroke and take the member's focus with them.
+ */
+function AddressRow({ parts, input, onChange, onKeyDown }: AddressRowProps) {
+  return (
+    <div className="gh-portal-input-group-row">
+      <InputForm
+        fields={parts.map(input)}
+        onChange={(event: { target: { value: string } }, changed: { part?: string }) =>
+          onChange(changed.part ?? null, event.target.value)
+        }
+        onKeyDown={onKeyDown}
+      />
+    </div>
   );
 }
 
@@ -106,26 +128,20 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
     };
   };
 
-  const Row = ({ parts }: RowProps) => (
-    <div className="gh-portal-input-group-row">
-      <InputForm
-        fields={parts.map(input)}
-        onChange={(event: { target: { value: string } }, changed: { part?: string }) =>
-          onChange(field, changed.part ?? null, event.target.value)
-        }
-        onKeyDown={onKeyDown}
-      />
-    </div>
-  );
+  const rowProps = {
+    input,
+    onChange: (part: string | null, changed: string) => onChange(field, part, changed),
+    onKeyDown,
+  };
 
   // The form, written out. Nothing else states how an address is laid out, and the
   // reasons below read their order from these same rows, so the order a member sees and
   // the order they are listed in cannot come apart.
-  const rows: React.ReactElement<RowProps>[] = [
-    <Row key="line1" parts={['line1']} />,
-    <Row key="line2" parts={['line2']} />,
-    <Row key="city" parts={['city', 'state']} />,
-    <Row key="postal_code" parts={['postal_code', 'country']} />,
+  const rows: React.ReactElement<AddressRowProps>[] = [
+    <AddressRow {...rowProps} key="line1" parts={['line1']} />,
+    <AddressRow {...rowProps} key="line2" parts={['line2']} />,
+    <AddressRow {...rowProps} key="city" parts={['city', 'state']} />,
+    <AddressRow {...rowProps} key="postal_code" parts={['postal_code', 'country']} />,
   ];
 
   const refused = rows

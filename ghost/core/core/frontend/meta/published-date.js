@@ -1,7 +1,7 @@
 const getContextObject = require('./context-object.js');
 
 function getPublishedDate(data) {
-  let context = data.context ? data.context[0] : null;
+  const context = data.context ? data.context[0] : null;
 
   const contextObject = getContextObject(data, context);
 

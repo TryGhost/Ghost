@@ -12,6 +12,11 @@ module.exports = function logRequest(req, res, next) {
   const startTime = Date.now();
 
   function logResponse() {
+    // 'close' before 'finish' means the client went away before we responded
+    if (!res.writableFinished) {
+      res.statusCode = 499;
+    }
+
     res.responseTime = Date.now() - startTime + 'ms';
     req.userId = req.user ? (req.user.id ? req.user.id : req.user) : null;
 

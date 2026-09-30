@@ -6,7 +6,10 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 
-const TooltipInputContext = React.createContext<React.RefObject<boolean> | null>(null);
+const TooltipInputContext = React.createContext<React.RefObject<{
+  suppressFocus: boolean;
+  windowBlurred: boolean;
+}> | null>(null);
 
 /**
  * Shared hover timing: `delayDuration` (ms) waits before the first tooltip;
@@ -17,29 +20,41 @@ function TooltipProvider({
   children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
-  const pointerInteraction = React.useRef(false);
+  const inputState = React.useRef({ suppressFocus: false, windowBlurred: false });
   const { isAdmin7 } = useShade();
 
   React.useEffect(() => {
     if (!isAdmin7) {
       return;
     }
-    const onPointerDown = () => {
-      pointerInteraction.current = true;
+    const suppressFocus = () => {
+      inputState.current.suppressFocus = true;
+    };
+    const onWindowBlur = () => {
+      suppressFocus();
+      inputState.current.windowBlurred = true;
     };
     const onKeyDown = () => {
-      pointerInteraction.current = false;
+      inputState.current.suppressFocus = false;
+      inputState.current.windowBlurred = false;
     };
-    document.addEventListener('pointerdown', onPointerDown, true);
+    const onPointerMove = () => {
+      inputState.current.windowBlurred = false;
+    };
+    document.addEventListener('pointerdown', suppressFocus, true);
+    document.addEventListener('pointermove', onPointerMove, true);
+    window.addEventListener('blur', onWindowBlur);
     document.addEventListener('keydown', onKeyDown, true);
     return () => {
-      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('pointerdown', suppressFocus, true);
+      document.removeEventListener('pointermove', onPointerMove, true);
+      window.removeEventListener('blur', onWindowBlur);
       document.removeEventListener('keydown', onKeyDown, true);
     };
   }, [isAdmin7]);
 
   return (
-    <TooltipInputContext.Provider value={isAdmin7 ? pointerInteraction : null}>
+    <TooltipInputContext.Provider value={isAdmin7 ? inputState : null}>
       <TooltipPrimitive.Provider delayDuration={isAdmin7 ? 1000 : 700} {...props}>
         {children}
       </TooltipPrimitive.Provider>
@@ -47,13 +62,52 @@ function TooltipProvider({
   );
 }
 
-const Tooltip = TooltipPrimitive.Root;
+function Tooltip({
+  open: controlledOpen,
+  defaultOpen = false,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Root>) {
+  const { isAdmin7 } = useShade();
+  const inputState = React.useContext(TooltipInputContext);
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
+  const open = controlledOpen ?? uncontrolledOpen;
+  const handleOpenChange = React.useCallback(
+    (nextOpen: boolean) => {
+      // Radix may finish a hover timer after window blur. Wait for fresh input.
+      if (nextOpen && inputState?.current?.windowBlurred) {
+        return;
+      }
+      setUncontrolledOpen(nextOpen);
+      onOpenChange?.(nextOpen);
+    },
+    [inputState, onOpenChange],
+  );
+
+  React.useEffect(() => {
+    if (!isAdmin7 || !open) {
+      return;
+    }
+    const close = () => handleOpenChange(false);
+    window.addEventListener('blur', close);
+    return () => window.removeEventListener('blur', close);
+  }, [isAdmin7, open, handleOpenChange]);
+
+  return (
+    <TooltipPrimitive.Root
+      {...props}
+      defaultOpen={defaultOpen}
+      open={isAdmin7 ? open : controlledOpen}
+      onOpenChange={isAdmin7 ? handleOpenChange : onOpenChange}
+    />
+  );
+}
 
 const TooltipTrigger = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger>
 >(({ onFocus, ...props }, ref) => {
-  const pointerInteraction = React.useContext(TooltipInputContext);
+  const inputState = React.useContext(TooltipInputContext);
 
   return (
     <TooltipPrimitive.Trigger
@@ -61,9 +115,9 @@ const TooltipTrigger = React.forwardRef<
       {...props}
       onFocus={(event) => {
         onFocus?.(event);
-        // Menus restore focus after selection. Pointer-driven restoration should
-        // not reveal a tooltip; keyboard focus and normal hover still should.
-        if (pointerInteraction?.current) {
+        // Menus and browser windows restore focus without a new interaction.
+        // Only deliberate keyboard focus or normal hover should show a tooltip.
+        if (inputState?.current?.suppressFocus) {
           event.preventDefault();
         }
       }}

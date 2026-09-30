@@ -87,13 +87,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
   };
 
   const buttons = custom ? (
-    <Button
-      className="text-destructive hover:text-destructive"
-      size="sm"
-      type="button"
-      variant="ghost"
-      onClick={handleDelete}
-    >
+    <Button size="sm" type="button" variant="destructive-ghost" onClick={handleDelete}>
       Delete
     </Button>
   ) : disabled ? (

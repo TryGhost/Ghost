@@ -4,6 +4,7 @@ import { Inline, Stack, Text } from '@/components/primitives';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { inputSurface } from '@/components/ui/input-surface';
 import { cn } from '@/lib/utils';
+import { useShade } from '@/providers/shade-provider';
 
 type CopyFieldContextValue = {
   copied: boolean;
@@ -161,18 +162,23 @@ const CopyFieldValue = React.forwardRef<HTMLElement, React.ComponentProps<typeof
 CopyFieldValue.displayName = 'CopyFieldValue';
 
 const CopyFieldActions = React.forwardRef<HTMLElement, React.ComponentProps<typeof Inline>>(
-  ({ className, ...props }, ref) => (
-    <Inline
-      ref={ref}
-      className={cn(
-        'absolute top-1/2 right-[1px] -translate-y-1/2 gap-px bg-control-readonly-surface pl-1 transition-opacity md:pointer-events-none md:opacity-0 md:group-focus-within/copy-field-content:pointer-events-auto md:group-focus-within/copy-field-content:opacity-100 md:group-hover/copy-field-content:pointer-events-auto md:group-hover/copy-field-content:opacity-100 [&_button]:h-7 [&_button]:rounded-sm [&_button:not([data-slot=copy-field-copy-button])]:bg-control-readonly-surface [&_button:not([data-slot=copy-field-copy-button])]:hover:bg-secondary',
-        className,
-      )}
-      data-slot="copy-field-actions"
-      gap="none"
-      {...props}
-    />
-  ),
+  ({ className, ...props }, ref) => {
+    const { isAdmin7 } = useShade();
+
+    return (
+      <Inline
+        ref={ref}
+        className={cn(
+          'absolute top-1/2 right-[1px] -translate-y-1/2 gap-px bg-control-readonly-surface pl-1 transition-opacity md:pointer-events-none md:opacity-0 md:group-focus-within/copy-field-content:pointer-events-auto md:group-focus-within/copy-field-content:opacity-100 md:group-hover/copy-field-content:pointer-events-auto md:group-hover/copy-field-content:opacity-100 [&_button:not([data-slot=copy-field-copy-button])]:bg-control-readonly-surface [&_button:not([data-slot=copy-field-copy-button])]:hover:bg-secondary [&_button[data-control-shape=rounded]]:rounded-sm',
+          isAdmin7 ? '[&_button]:h-6' : '[&_button]:h-7',
+          className,
+        )}
+        data-slot="copy-field-actions"
+        gap="none"
+        {...props}
+      />
+    );
+  },
 );
 CopyFieldActions.displayName = 'CopyFieldActions';
 

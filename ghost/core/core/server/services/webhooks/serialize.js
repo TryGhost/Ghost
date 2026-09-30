@@ -42,7 +42,7 @@ module.exports =
     const changed = model._changed ? Object.keys(model._changed) : [];
 
     if (Object.keys(model.attributes).length) {
-      let frame = { options: { previous: false, context: { user: true } } };
+      const frame = { options: { previous: false, context: { user: true } } };
 
       // @NOTE: below options are lost during event processing, a more holistic approach would be
       //       to pass them somehow along with the model

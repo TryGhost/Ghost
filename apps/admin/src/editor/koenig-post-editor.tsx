@@ -1,4 +1,4 @@
-import { Suspense, useCallback } from 'react';
+import { memo, Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
 import ErrorBoundary from '@/settings/components/error-boundary';
@@ -9,7 +9,7 @@ import {
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { editorFileUploader } from './koenig-file-uploader';
-import { reportKoenigError } from './report-error';
+import { reportKoenigError, reportKoenigRenderError } from './report-error';
 
 const NOOP = () => {};
 
@@ -22,7 +22,7 @@ export interface KoenigPostEditorProps {
   onChange?: (lexical: unknown) => void;
   onSecondaryChange?: (lexical: unknown) => void;
   /** The hidden instance failed, so its serialization cannot be a change baseline. */
-  onSecondaryError?: (error: unknown) => void;
+  onSecondaryError?: () => void;
   registerAPI: (api: KoenigInstance | null) => void;
   registerSecondaryAPI: (api: KoenigInstance | null) => void;
   onWordCountChange: (count: number) => void;
@@ -83,21 +83,23 @@ function KoenigInstanceMount({
   );
 }
 
-export function KoenigPostEditor(props: KoenigPostEditorProps) {
+// Memoized: every prop is referentially stable, so a settings edit elsewhere in
+// the editor must not re-render two composer subtrees.
+export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPostEditorProps) {
   const editor = loadKoenig();
   const { onSecondaryError } = props;
 
   const onSecondaryInstanceError = useCallback(
     (error: unknown) => {
       reportKoenigError(error);
-      onSecondaryError?.(error);
+      onSecondaryError?.();
     },
     [onSecondaryError],
   );
 
   return (
     <div className="koenig-react-editor koenig-lexical mx-auto w-full max-w-[740px]">
-      <ErrorBoundary name="the editor">
+      <ErrorBoundary name="the editor" onError={reportKoenigRenderError}>
         <Suspense
           fallback={
             <div className="flex justify-center py-10">
@@ -121,4 +123,4 @@ export function KoenigPostEditor(props: KoenigPostEditorProps) {
       </ErrorBoundary>
     </div>
   );
-}
+});

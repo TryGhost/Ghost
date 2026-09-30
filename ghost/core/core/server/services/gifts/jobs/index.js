@@ -2,7 +2,7 @@ const logging = require('@tryghost/logging');
 const CleanGiftsJob = require('./clean-gifts-job').default;
 const SendGiftRemindersJob = require('./send-gift-reminders-job').default;
 
-let hasScheduled = {
+const hasScheduled = {
   cleanup: false,
   reminders: false,
 };

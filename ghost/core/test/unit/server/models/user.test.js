@@ -102,7 +102,7 @@ describe('Unit: models/user', function () {
       });
 
       it('email cannot be blank', function () {
-        let data = { name: 'name' };
+        const data = { name: 'name' };
         sinon.stub(models.User, 'findOne').resolves(null);
 
         return models.User.add(data)

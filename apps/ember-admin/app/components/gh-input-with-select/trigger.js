@@ -34,7 +34,7 @@ export default class GhSearchInputTrigger extends Component {
 
     @action
     handleInput(event) {
-        let term = event.target.value;
+        const term = event.target.value;
 
         // open dropdown if not open and term is present
         // close dropdown if open and term is blank

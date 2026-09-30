@@ -19,7 +19,7 @@ const TinybirdServiceWrapper = require('../tinybird');
 const { create: createTinybirdClient } = require('../stats/utils/tinybird');
 const lexicalLib = require('../../lib/lexical');
 
-const MAX_AUTOMATION_ACTIONS = 20;
+const MAX_AUTOMATION_ACTIONS = 50;
 
 const messages = {
   automationNotFound: 'Automation not found.',

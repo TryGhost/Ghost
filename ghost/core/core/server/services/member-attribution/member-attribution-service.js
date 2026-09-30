@@ -34,7 +34,7 @@ class MemberAttributionService {
 
     // We consider only select internal context sources
     if (['import', 'api', 'admin'].includes(source)) {
-      let attribution = {
+      const attribution = {
         id: null,
         type: null,
         url: null,

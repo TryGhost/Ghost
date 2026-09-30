@@ -52,10 +52,11 @@ import {
   useWebAnalyticsEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
-import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
+import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 import { useShade } from '@tryghost/shade/app';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -67,6 +68,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
+  const queryClient = useQueryClient();
   const { mutateAsync: deletePost } = useDeletePost();
   const handleError = useHandleError();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -152,6 +154,8 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     }
     try {
       await deletePost({ id: postId });
+      // `refetchType: 'none'`: this screen's own read of the post is still mounted.
+      void queryClient.invalidateQueries({ queryKey: [postsDataType], refetchType: 'none' });
       setShowDeleteDialog(false);
       // Navigate back to posts list
       navigate('/posts/', { crossApp: true });

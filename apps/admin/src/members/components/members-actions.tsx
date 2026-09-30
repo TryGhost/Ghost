@@ -26,6 +26,7 @@ import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { exportMembers } from './members-actions-helpers';
 
 interface MembersActionsProps {
+  children?: React.ReactNode;
   hasFilterOrSearch: boolean;
   memberCount: number;
   nql?: string;
@@ -37,6 +38,7 @@ interface MembersActionsProps {
 }
 
 const MembersActions: React.FC<MembersActionsProps> = ({
+  children,
   hasFilterOrSearch,
   memberCount,
   nql,
@@ -248,7 +250,11 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         <>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <PageHeader.Action data-testid="members-actions" label="More member actions" iconOnly>
+              <PageHeader.Action
+                data-testid="members-actions"
+                label={isAdmin7 ? 'Member actions' : 'More member actions'}
+                iconOnly
+              >
                 <LucideIcon.MoreHorizontal className="size-4" />
               </PageHeader.Action>
             </DropdownMenuTrigger>
@@ -303,6 +309,8 @@ const MembersActions: React.FC<MembersActionsProps> = ({
           </DropdownMenu>
         </>
       )}
+
+      {children}
 
       {showNewMember && (
         <PageHeader.ActionGroup.Primary>

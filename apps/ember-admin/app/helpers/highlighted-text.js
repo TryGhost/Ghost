@@ -6,11 +6,11 @@ const {Handlebars} = Ember;
 
 export function highlightedText([text, termToHighlight]) {
     // replace any non-word character with an escaped character
-    let sanitisedTerm = termToHighlight.replace(new RegExp(/\W/ig), '\\$&');
-    let termMatcher = new RegExp(sanitisedTerm, 'ig');
+    const sanitisedTerm = termToHighlight.replace(new RegExp(/\W/ig), '\\$&');
+    const termMatcher = new RegExp(sanitisedTerm, 'ig');
 
-    let matches = text.match(termMatcher) || [];
-    let nonMatches = text.split(termMatcher);
+    const matches = text.match(termMatcher) || [];
+    const nonMatches = text.split(termMatcher);
 
     let htmlSafeResult = '';
 

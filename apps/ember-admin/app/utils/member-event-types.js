@@ -10,6 +10,7 @@ export const ALL_EVENT_TYPES = [
     {event: 'email_failed_event', icon: 'filter-dropdown-email-bounced', name: 'Email bounced', group: 'emails'},
     {event: 'email_change_event', icon: 'filter-dropdown-email-address-changed', name: 'Email address changed', group: 'emails'},
     {event: 'automated_email_sent_event', icon: 'filter-dropdown-email-received', name: 'Welcome email received', group: 'emails'},
+    {event: 'metafield_change_event', icon: 'filter-dropdown-custom-fields-updated', name: 'Custom fields updated', group: 'others'},
     {event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'}
 ];
 

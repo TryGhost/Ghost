@@ -303,7 +303,7 @@ export default function NewsletterManagement({
             hasNewslettersEnabled={hasNewslettersEnabled}
             subscribedNewsletters={subscribedNewsletters}
             setSubscribedNewsletters={(updatedNewsletters) => {
-              let newsletters = updatedNewsletters.map((d) => {
+              const newsletters = updatedNewsletters.map((d) => {
                 return {
                   id: d.id,
                 };

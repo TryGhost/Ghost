@@ -17,10 +17,9 @@ const RevueSubscriberImporter = require('./revue-subscriber-importer');
 const RolesImporter = require('./roles-importer');
 const { slugify } = require('@tryghost/string/lib');
 
-let importers = {};
-let DataImporter;
+const importers = {};
 
-DataImporter = {
+const DataImporter = {
   type: 'data',
 
   preProcess: function preProcess(importData) {
@@ -78,7 +77,7 @@ DataImporter = {
     const ops = [];
     let problems = [];
     let errors = [];
-    let importedData = {};
+    const importedData = {};
 
     const modelOptions = {
       importing: true,
@@ -87,7 +86,7 @@ DataImporter = {
       },
     };
 
-    if (!Object.prototype.hasOwnProperty.call(importOptions, 'returnImportedData')) {
+    if (!Object.hasOwn(importOptions, 'returnImportedData')) {
       importOptions.returnImportedData = false;
     }
 

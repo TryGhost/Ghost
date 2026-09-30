@@ -78,7 +78,7 @@ const privateBlogging = {
 
     // CASE: Allow private RSS feed urls.
     // If the path matches the private rss feed URL we rewrite the url. Even Express uses rewriting when using `app.use()`.
-    let isPrivateRSS = new RegExp(`/${settingsCache.get('public_hash')}/rss(/)?$`);
+    const isPrivateRSS = new RegExp(`/${settingsCache.get('public_hash')}/rss(/)?$`);
     if (isPrivateRSS.test(req.path)) {
       req.url = req.url.replace(settingsCache.get('public_hash') + '/', '');
       return next();
