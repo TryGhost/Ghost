@@ -279,7 +279,15 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   )}
                 </Text>
               ) : (
-                <Text className={statusTone(displayedPost, displayedIsFailed)} size="sm">
+                <Text
+                  className={statusTone(displayedPost, displayedIsFailed)}
+                  size="sm"
+                  weight={
+                    displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
+                      ? 'medium'
+                      : 'regular'
+                  }
+                >
                   {displayedStatusLabel}
                   {/* Mounted only while hovered, as Ember does. A CSS
                                   opacity fade would keep it in the DOM, so a screen
