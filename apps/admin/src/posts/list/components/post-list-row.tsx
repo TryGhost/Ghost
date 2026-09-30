@@ -119,7 +119,7 @@ function FeatureImage({ post }: { post: PostListItem }) {
   // here the icon just centres in the thumbnail.
   return (
     <FeatureImagePlaceholder
-      className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0 group-hover:bg-background')}
+      className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0 group-hover:bg-secondary')}
     />
   );
 }
