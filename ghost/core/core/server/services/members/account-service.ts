@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { MEMBERS, type WriteOrigin } from '../members-metafields';
-import type { MetafieldValuesService, PlannedWrite } from '../members-metafields/values-service';
+import { MEMBERS } from '../members-metafields';
+import type { MetafieldPlan, MetafieldValuesService } from '../members-metafields/values-service';
 
 /**
  * A member's own account: what they are shown about themselves, and what they may
@@ -47,8 +47,7 @@ interface MemberBreadService {
   updateWithMetafields(
     data: Record<string, unknown>,
     options: Record<string, unknown>,
-    writes: PlannedWrite[],
-    origin: WriteOrigin,
+    plans: MetafieldPlan[],
   ): Promise<unknown>;
 }
 
@@ -113,8 +112,7 @@ export class MemberAccountService {
     await this.#memberBREADService.updateWithMetafields(
       _.pick(data, WRITABLE_FIELDS),
       { id: memberId, withRelated: WRITE_RELATIONS },
-      writes,
-      { writtenBy: { type: 'member', id: memberId }, source: 'portal' },
+      [{ writes, origin: { writtenBy: { type: 'member', id: memberId }, source: 'portal' } }],
     );
 
     // Read back rather than returning what was written: a member is told what

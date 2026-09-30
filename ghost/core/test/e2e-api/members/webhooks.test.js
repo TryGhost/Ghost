@@ -1,3 +1,4 @@
+/* global vi */
 const crypto = require('crypto');
 const assert = require('node:assert/strict');
 const { assertArrayContainsDeep, assertObjectMatches } = require('../../utils/assertions');
@@ -1533,6 +1534,74 @@ describe('Members API', function () {
             { field: 'T-shirt size', source: 'checkout', writer: 'binding' },
           ],
         );
+      });
+
+      it('tells a member.edited subscriber what the checkout collected', async function () {
+        const receiver = 'https://test-webhook-receiver.com';
+        const path = '/checkout-member-edited/';
+        // Every delivery rather than the first: the checkout also edits the member's
+        // status, which sends its own member.edited before the collected values land.
+        const delivered = [];
+        nock(receiver)
+          .persist()
+          .post(path, (body) => {
+            delivered.push(body.member);
+            return true;
+          })
+          .reply(200, { status: 'OK' });
+
+        const { body: integrations } = await adminAgent
+          .post('/integrations/')
+          .body({ integrations: [{ name: 'Checkout receiver' }] })
+          .expectStatus(201);
+        const integrationId = integrations.integrations[0].id;
+        const { body: webhooks } = await adminAgent
+          .post('/webhooks/')
+          .body({
+            webhooks: [
+              {
+                event: 'member.edited',
+                target_url: receiver + path,
+                integration_id: integrationId,
+              },
+            ],
+          })
+          .expectStatus(201);
+
+        try {
+          const member = await sendCheckoutWebhook('checkout-collected-webhook@email.com', {
+            custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+            shipping: {
+              name: 'Bex Jones',
+              address: { line1: '1 High Street', city: 'London', country: 'GB' },
+            },
+          });
+
+          const withValues = await vi.waitFor(() => {
+            const found = delivered.find((edit) => edit.previous.metafields);
+            assert.ok(found, 'a member.edited reporting the collected values as changed');
+            return found;
+          });
+          assert.equal(withValues.current.id, member.id);
+          // One edit carrying every collected value, however many bindings routed them.
+          assert.equal(withValues.current.metafields.custom[fieldKeys.question], 'Large');
+          assert.equal(withValues.current.metafields.custom[fieldKeys.recipient], 'Bex Jones');
+          assert.equal(
+            delivered.filter((edit) => edit.previous.metafields).length,
+            1,
+            'the collected values are one edit',
+          );
+        } finally {
+          await adminAgent.delete(`/webhooks/${webhooks.webhooks[0].id}/`).expectStatus(204);
+          await adminAgent.delete(`/integrations/${integrationId}/`).expectStatus(204);
+          // Only this interceptor: the file's Stripe mocks are interceptors too.
+          nock.removeInterceptor({
+            proto: 'https',
+            hostname: 'test-webhook-receiver.com',
+            path,
+            method: 'POST',
+          });
+        }
       });
 
       // Turning collection off has to stop the collecting, and Stripe keeps returning
