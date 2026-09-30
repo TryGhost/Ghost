@@ -46,12 +46,6 @@ class ImportManager {
       extensions: this.getExtensions(),
       directories: this.getDirectories(),
     });
-
-    // Keep track of file to cleanup at the end
-    /**
-     * @type {?string}
-     */
-    this.fileToDelete = null;
   }
 
   /**
@@ -132,9 +126,7 @@ class ImportManager {
    * @returns {Promise<string>} full path to the extracted folder
    */
   async extractZip(filePath) {
-    const tmpDir = await this.archive.extract(filePath);
-    this.fileToDelete = tmpDir;
-    return tmpDir;
+    return this.archive.extract(filePath);
   }
 
   /**
@@ -160,13 +152,22 @@ class ImportManager {
   /**
    * Process Zip
    * Takes a reference to a zip file, extracts it and reads it, returning the content to import
+   * alongside the extracted directory, which the caller owns from here on
    * @param {File} file
-   * @returns {Promise<ImportData>}
+   * @returns {Promise<LoadedImport>}
    */
   async processZip(file) {
-    const zipDirectory = await this.extractZip(file.path);
+    const cleanupDirectory = await this.extractZip(file.path);
 
-    return this.readExtractedZip(zipDirectory);
+    try {
+      return {
+        data: await this.readExtractedZip(cleanupDirectory),
+        cleanupDirectory,
+      };
+    } catch (err) {
+      await this.cleanUp(cleanupDirectory);
+      throw err;
+    }
   }
 
   /**
@@ -251,13 +252,16 @@ class ImportManager {
    * Import Step 1:
    * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
    * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
+   * A zip also yields the extracted directory, which the caller owns from here on.
    * @param {File} file
-   * @returns {Promise<ImportData>}
+   * @returns {Promise<LoadedImport>}
    */
-  loadFile(file) {
-    const self = this;
+  async loadFile(file) {
     const ext = path.extname(file.name).toLowerCase();
-    return this.isZip(ext) ? self.processZip(file) : self.processFile(file, ext);
+
+    return this.isZip(ext)
+      ? this.processZip(file)
+      : { data: await this.processFile(file, ext) };
   }
 
   /**
@@ -314,16 +318,17 @@ class ImportManager {
 
   /**
    * Step 5:
-   * Remove files after we're done (abstracted into a function for easier testing)
+   * Remove the files an import owns, once it is done with them
+   * @param {string} [cleanupDirectory]
    * @returns {Promise<void>}
    */
-  async cleanUp() {
-    if (this.fileToDelete === null) {
+  async cleanUp(cleanupDirectory) {
+    if (!cleanupDirectory) {
       return;
     }
 
     try {
-      await fs.remove(this.fileToDelete);
+      await fs.remove(cleanupDirectory);
     } catch (err) {
       this.logging.error(
         new errors.InternalServerError({
@@ -333,8 +338,6 @@ class ImportManager {
         }),
       );
     }
-
-    this.fileToDelete = null;
   }
 
   /**
@@ -372,30 +375,30 @@ class ImportManager {
   async importFromFile(file, importOptions = {}) {
     // Step 1: Handle converting the file to usable data
     // Has to be completed outside of the job to ensure the file is processed before being deleted
-    const importData = importOptions.data ? importOptions.data : await this.loadFile(file);
+    const loaded = importOptions.data ? { data: importOptions.data } : await this.loadFile(file);
 
-    debug('importFromFile completed file load', importData);
+    debug('importFromFile completed file load', loaded.data);
 
     const env = this.config.get('env');
     if (!env?.startsWith('testing') && !importOptions.runningInJob) {
       this.logging.info('[Background Job] site-content-import queued');
       return this.jobManager.addJob({
-        job: () => this.executeImport(importData, { ...importOptions, runningInJob: true }),
+        job: () => this.executeImport(loaded, { ...importOptions, runningInJob: true }),
         offloaded: false,
       });
     }
 
-    return this.executeImport(importData, importOptions);
+    return this.executeImport(loaded, importOptions);
   }
 
   /**
    * Run a loaded import to completion: import its content, report on it, release the files it
    * owns, and tell the user how it went. Import failures are reported by email, not thrown.
-   * @param {ImportData} importData
+   * @param {LoadedImport} loaded
    * @param {ImportOptions} [importOptions]
    * @returns {Promise<Object.<string, ImportResult>|undefined>}
    */
-  async executeImport(importData, importOptions = {}) {
+  async executeImport(loaded, importOptions = {}) {
     const env = this.config.get('env');
     const startedAt = Date.now();
     if (!env?.startsWith('testing')) {
@@ -403,7 +406,7 @@ class ImportManager {
     }
 
     try {
-      const result = await this.processImport(importData, importOptions, env);
+      const result = await this.processImport(loaded, importOptions, env);
       if (!env?.startsWith('testing')) {
         // processImport swallows its own failures and returns undefined,
         // so an absent result is the only signal that the import failed.
@@ -424,12 +427,12 @@ class ImportManager {
   }
 
   /**
-   * @param {ImportData} data
+   * @param {LoadedImport} loaded
    * @param {ImportOptions} importOptions
    * @param {string} [env]
    * @returns {Promise<Object.<string, ImportResult>|undefined>}
    */
-  async processImport(data, importOptions, env) {
+  async processImport({ data, cleanupDirectory }, importOptions, env) {
     let importResult;
     try {
       // Step 2: Let the importers pre-process the data
@@ -448,8 +451,8 @@ class ImportManager {
       const errorDetails = err.errorDetails || [err];
       importResult = { data: { errors: errorDetails } };
     } finally {
-      // Step 5: Cleanup any files
-      await this.cleanUp();
+      // Step 5: Cleanup the files this import owns
+      await this.cleanUp(cleanupDirectory);
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
@@ -531,5 +534,12 @@ class ImportManager {
 
 /**
  * @typedef {Object} ImportResult
+ */
+
+/**
+ * Content ready to import, with the directory its owner has to remove afterwards
+ * @typedef {Object} LoadedImport
+ * @property {ImportData} [data]
+ * @property {string} [cleanupDirectory]
  */
 module.exports = ImportManager;
