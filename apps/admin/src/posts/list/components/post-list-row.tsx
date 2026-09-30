@@ -117,7 +117,11 @@ function FeatureImage({ post }: { post: PostListItem }) {
 
   // `p-0` because the placeholder's own padding is sized for a larger box;
   // here the icon just centres in the thumbnail.
-  return <FeatureImagePlaceholder className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0')} />;
+  return (
+    <FeatureImagePlaceholder
+      className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0 group-hover:bg-background')}
+    />
+  );
 }
 
 const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps>(
