@@ -1401,12 +1401,10 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), { [good.key]: 'Ghosts' });
     });
 
-    it('rejects metafields when creating a member', async function () {
-      // Setting values on create is a later vertical; the API rejects rather
-      // than silently dropping them, so the gap is explicit.
+    it('creates a member with their values in one request', async function () {
       const field = await createField({ name: 'Favourite topic' });
 
-      await agent
+      const { body } = await agent
         .post('members/')
         .body({
           members: [
@@ -1416,7 +1414,49 @@ describe('Member Custom Fields Admin API', function () {
             },
           ],
         })
+        .expectStatus(201);
+
+      assert.deepEqual(body.members[0].metafields.custom, { [field.key]: 'Ghosts' });
+      assert.deepEqual(await readValues(body.members[0].id), { [field.key]: 'Ghosts' });
+    });
+
+    it('creates no member when one of their values is refused', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const email = 'create-refused-value@example.com';
+
+      await agent
+        .post('members/')
+        .body({
+          members: [{ email, metafields: { custom: { [field.key]: 'Ghosts', not_a_field: 'x' } } }],
+        })
         .expectStatus(422);
+
+      const { body } = await agent
+        .get(`members/?filter=${encodeURIComponent(`email:'${email}'`)}`)
+        .expectStatus(200);
+      assert.equal(body.members.length, 0);
+    });
+
+    it('creates a member on a tier with their values', async function () {
+      // The tier is looked up while the member and their values are being saved together.
+      const field = await createField({ name: 'Favourite topic' });
+      const { body: tiers } = await agent.get('tiers/?limit=1&filter=type:paid').expectStatus(200);
+
+      const { body } = await agent
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'create-tier-with-values@example.com',
+              tiers: [{ id: tiers.tiers[0].id }],
+              metafields: { custom: { [field.key]: 'Ghosts' } },
+            },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.equal(body.members[0].tiers[0].id, tiers.tiers[0].id);
+      assert.deepEqual(body.members[0].metafields.custom, { [field.key]: 'Ghosts' });
     });
 
     it('refuses a value in a namespace holding no fields, as an unknown field', async function () {

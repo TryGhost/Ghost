@@ -504,7 +504,10 @@ module.exports = class MemberRepository {
     // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
     if (memberData.products && memberData.status !== 'gift') {
       for (const productData of memberData.products) {
-        const product = await this._productRepository.get(productData);
+        const product = await this._productRepository.get(
+          productData,
+          _.pick(options, 'transacting'),
+        );
         if (product.get('active') !== true) {
           throw new errors.BadRequestError({ message: tpl(messages.tierArchived) });
         }
