@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@tryghost/shade/components';
+import { Box } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { useLayoutEffect, useRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
@@ -24,6 +25,8 @@ export interface FullscreenDialogProps extends Omit<DialogContentProps, 'title'>
   layout?: keyof typeof LAYOUTS;
   /** Controls rendered in the header row beside the title. */
   headerActions?: ReactNode;
+  /** View controls centered between the title and actions on wide screens. */
+  headerControls?: ReactNode;
 }
 
 /**
@@ -37,6 +40,7 @@ export function FullscreenDialog({
   title,
   layout = 'plain',
   headerActions,
+  headerControls,
   className,
   children,
   onCloseAutoFocus,
@@ -79,9 +83,18 @@ export function FullscreenDialog({
         {...props}
       >
         {layout === 'header' ? (
-          <DialogHeader className="flex-row items-center justify-between gap-4 border-b border-border-default p-4">
-            <DialogTitle className="text-lg">{title}</DialogTitle>
-            {headerActions}
+          <DialogHeader
+            className={cn(
+              'flex-row flex-wrap items-center justify-between gap-4 border-b border-border-default p-4',
+              headerControls &&
+                'grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(max-content,1fr)_minmax(0,max-content)_minmax(max-content,1fr)]',
+            )}
+          >
+            <DialogTitle className={cn('text-lg', headerControls && 'sr-only md:not-sr-only')}>
+              {title}
+            </DialogTitle>
+            {headerControls && <Box className="min-w-0">{headerControls}</Box>}
+            <Box className="justify-self-end">{headerActions}</Box>
           </DialogHeader>
         ) : (
           <DialogTitle className="sr-only">{title}</DialogTitle>

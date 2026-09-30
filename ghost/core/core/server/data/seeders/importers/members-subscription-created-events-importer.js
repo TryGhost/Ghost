@@ -53,7 +53,7 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
       }
       await this.importForEach(
         membersStripeCustomersSubscriptions,
-        quantity ? quantity / membersStripeCustomersSubscriptions.length : 1,
+        quantity !== undefined ? quantity / membersStripeCustomersSubscriptions.length : 1,
       );
       offset += limit;
     }

@@ -7,12 +7,19 @@ import {
   useLocation,
 } from '@tryghost/admin-x-framework';
 import { useHashLinkNavigationGuard } from '@/hooks/use-hash-link-navigation-guard';
+import {
+  useHistoryPopNavigationGuard,
+  withoutTrailingSlash,
+} from '@/hooks/use-history-pop-navigation-guard';
 import type { BlockerFunction } from '@tryghost/admin-x-framework';
 
 type BlockerFunctionArgs = Parameters<BlockerFunction>[0];
 
 export interface UseUnsavedChangesGuardOptions {
-  /** Guards in-router navigations and raw `<a href="#/…">` anchors while true. */
+  /**
+   * Guards in-router navigations and raw `<a href="#/…">` anchors while true, and history pops
+   * too with `guardHistoryPops`.
+   */
   when: boolean;
   /** `beforeunload` guard condition; defaults to `when`. */
   confirmUnloadWhen?: boolean;
@@ -25,6 +32,8 @@ export interface UseUnsavedChangesGuardOptions {
    * closed and the caller settles it via `interceptedNavigation`.
    */
   interceptNavigation?: (args: BlockerFunctionArgs) => boolean;
+  /** Also holds Back, Forward and other history pops out of the screen, keeping its URL. */
+  guardHistoryPops?: boolean;
 }
 
 export interface UnsavedChangesGuard {
@@ -60,6 +69,8 @@ export interface UnsavedChangesGuard {
  * `useBlocker` (in-router navigations), and `useHashLinkNavigationGuard`
  * (native hash anchors that reach the router as untracked POPs it cannot
  * block) — plus the proceed/reset choreography behind the discard dialog.
+ * With `guardHistoryPops` it also holds Back, Forward and other history pops
+ * through `useHistoryPopNavigationGuard`.
  *
  * Settings uses a different exit-point model (`useGlobalDirtyState` +
  * `useDirtyConfirmation`); this hook is for screens that own their routes.
@@ -69,6 +80,7 @@ export function useUnsavedChangesGuard({
   confirmUnloadWhen,
   isSaving = false,
   interceptNavigation,
+  guardHistoryPops = false,
 }: UseUnsavedChangesGuardOptions): UnsavedChangesGuard {
   const location = useLocation();
   // Lets the caller's own programmatic navigations (post-save redirects,
@@ -104,7 +116,10 @@ export function useUnsavedChangesGuard({
       return true;
     }
     blockedByInterceptRef.current = false;
-    const shouldBlock = when && args.currentLocation.pathname !== args.nextLocation.pathname;
+    const shouldBlock =
+      when &&
+      withoutTrailingSlash(args.currentLocation.pathname) !==
+        withoutTrailingSlash(args.nextLocation.pathname);
     if (shouldBlock) {
       blockedNavigationRef.current = true;
     }
@@ -113,16 +128,40 @@ export function useUnsavedChangesGuard({
   const anchorGuard = useHashLinkNavigationGuard(when, () => {
     blockedNavigationRef.current = true;
   });
+  const popGuard = useHistoryPopNavigationGuard(when && guardHistoryPops, () => {
+    if (blockedNavigationRef.current) {
+      return false;
+    }
+    blockedNavigationRef.current = true;
+    return true;
+  });
 
   const isBlockedByIntercept = blocker.state === 'blocked' && blockedByInterceptRef.current;
   const isBlocked =
-    (blocker.state === 'blocked' && !blockedByInterceptRef.current) || anchorGuard.isBlocked;
+    (blocker.state === 'blocked' && !blockedByInterceptRef.current) ||
+    anchorGuard.isBlocked ||
+    popGuard.isBlocked;
+
+  const proceedBlocked = () => {
+    // An anchor proceeds with a hash change, which arrives as a history pop.
+    popGuard.release();
+    if (anchorGuard.isBlocked) {
+      anchorGuard.proceed();
+    } else if (popGuard.isBlocked) {
+      // The held pop is replayed as a POP the router blocker must let through.
+      bypassRef.current = true;
+      popGuard.proceed();
+    } else {
+      blocker.proceed?.();
+    }
+  };
 
   // One-shot state is scoped to the current route target.
   React.useEffect(() => {
     bypassRef.current = false;
     blockedNavigationRef.current = false;
     resumeAfterSaveRef.current = false;
+    leaveConfirmedRef.current = false;
   }, [location.pathname]);
 
   React.useEffect(() => {
@@ -131,12 +170,8 @@ export function useUnsavedChangesGuard({
     }
     resumeAfterSaveRef.current = false;
     blockedNavigationRef.current = false;
-    if (anchorGuard.isBlocked) {
-      anchorGuard.proceed();
-    } else {
-      blocker.proceed?.();
-    }
-  }, [isSaving, isBlocked, anchorGuard, blocker]);
+    proceedBlocked();
+  }, [isSaving, isBlocked, proceedBlocked]);
 
   const bypassNextNavigation = React.useCallback(() => {
     bypassRef.current = true;
@@ -161,11 +196,7 @@ export function useUnsavedChangesGuard({
         leaveConfirmedRef.current = true;
         blockedNavigationRef.current = false;
         resumeAfterSaveRef.current = false;
-        if (anchorGuard.isBlocked) {
-          anchorGuard.proceed();
-        } else {
-          blocker.proceed?.();
-        }
+        proceedBlocked();
       },
       onOpenChange: (open: boolean) => {
         if (open) {
@@ -180,6 +211,7 @@ export function useUnsavedChangesGuard({
           resumeAfterSaveRef.current = false;
           blocker.reset?.();
           anchorGuard.reset();
+          popGuard.reset();
         }
       },
     },

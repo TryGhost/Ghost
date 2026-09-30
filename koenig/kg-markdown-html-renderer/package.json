@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-markdown-html-renderer",
-  "version": "7.2.4",
+  "version": "7.2.5",
   "description": "Markdown to HTML rendering for Ghost's markdown card",
   "license": "MIT",
   "author": "Ghost Foundation",

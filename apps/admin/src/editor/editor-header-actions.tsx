@@ -113,6 +113,14 @@ export function EditorHeaderActions({
   }
 
   const preview: HeaderPreviewProps = {
+    subjectEditor: {
+      value: session.settings.email_subject,
+      fallback: session.title,
+      hasUnsavedChanges: session.isDirty(),
+      isSaving,
+      onChange: (value) => session.stageSettings({ email_subject: value }),
+      onSave: saveBeforePreview,
+    },
     isPost: postType === 'post',
     newsletterSlug: post.newsletter ?? undefined,
     open: previewOpen,
