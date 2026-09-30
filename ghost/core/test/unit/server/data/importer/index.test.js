@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const moment = require('moment');
+const os = require('node:os');
 const path = require('path');
 const fs = require('fs-extra');
 
@@ -198,6 +199,16 @@ describe('Importer', function () {
 
     // Step 1 of importing is loadFile
     describe('loadFile', function () {
+      // A failed processZip removes the directory it extracted, so the rejection
+      // cases below hand it a disposable directory instead of a fixture.
+      async function disposableDirectory(fixture) {
+        const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'importer-fixture-'));
+        if (fixture) {
+          await fs.copy(fixture, directory);
+        }
+        return directory;
+      }
+
       it('knows when to process a file', async function () {
         const testFile = { name: 'myFile.json', path: '/my/path/myFile.json' };
         const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve({}));
@@ -431,9 +442,11 @@ describe('Importer', function () {
         });
 
         it('throws zipContainsMultipleDataFormats', async function () {
-          const testDir = path.resolve(
-            __dirname,
-            '../../../../utils/fixtures/import/zips/zip-multiple-data-formats',
+          const testDir = await disposableDirectory(
+            path.resolve(
+              __dirname,
+              '../../../../utils/fixtures/import/zips/zip-multiple-data-formats',
+            ),
           );
           const extractSpy = sinon
             .stub(ImportManager, 'extractZip')
@@ -441,19 +454,18 @@ describe('Importer', function () {
 
           await assert.rejects(ImportManager.processZip(testZip), /multiple data formats/);
           sinon.assert.calledOnce(extractSpy);
+          assert.equal(await fs.pathExists(testDir), false);
         });
 
         it('throws noContentToImport', async function () {
-          const testDir = path.resolve(
-            __dirname,
-            '../../../../utils/fixtures/import/zips/zip-empty',
-          );
+          const testDir = await disposableDirectory();
           const extractSpy = sinon
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
           await assert.rejects(ImportManager.processZip(testZip), /not include any content/);
           sinon.assert.calledOnce(extractSpy);
+          assert.equal(await fs.pathExists(testDir), false);
         });
       });
 

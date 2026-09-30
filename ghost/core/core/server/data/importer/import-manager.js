@@ -159,10 +159,15 @@ class ImportManager {
   async processZip(file) {
     const cleanupDirectory = await this.extractZip(file.path);
 
-    return {
-      data: await this.readExtractedZip(cleanupDirectory),
-      cleanupDirectory,
-    };
+    try {
+      return {
+        data: await this.readExtractedZip(cleanupDirectory),
+        cleanupDirectory,
+      };
+    } catch (err) {
+      await this.cleanUp(cleanupDirectory);
+      throw err;
+    }
   }
 
   /**
