@@ -1955,6 +1955,16 @@ describe('Member Custom Fields Admin API', function () {
       });
     }
 
+    // An action is inserted once the edit's transaction commits, which can be after the
+    // response, so this waits for the first one to land.
+    async function recordedMemberEditedActions(memberId: string) {
+      return vi.waitFor(async () => {
+        const actions = await memberEditedActions(memberId);
+        assert.ok(actions.length > 0, 'no member edited action recorded yet');
+        return actions;
+      });
+    }
+
     // Runs `fn` while counting `member.edited` common events (the signal
     // webhooks listen to) for the given member.
     async function countMemberEditedEvents(
@@ -1990,7 +2000,40 @@ describe('Member Custom Fields Admin API', function () {
       );
 
       assert.equal(editedEvents, 1);
-      assert.equal((await memberEditedActions(memberId)).length, 1);
+      assert.equal((await recordedMemberEditedActions(memberId)).length, 1);
+    });
+
+    it('fires member.edited for an edit that changes the member too only once the new values are stored', async function () {
+      // Anything that reads the values when member.edited fires, such as a webhook, has to
+      // see the new ones.
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Reading' });
+
+      let readAtEvent: Promise<unknown> | undefined;
+      const handler = (model: { id: string }) => {
+        if (model.id === memberId) {
+          readAtEvent = models.Base.knex('members_metafield_values')
+            .where({ member_id: memberId, metafield_key: field.key })
+            .first('value_text')
+            // Started now, when the event fires; a knex query otherwise waits to be awaited.
+            .then((row: unknown) => row);
+        }
+      };
+      events.on('member.edited', handler);
+      try {
+        await agent
+          .put(`members/${memberId}/`)
+          .body({
+            members: [{ name: 'Renamed', metafields: { custom: { [field.key]: 'Ghosts' } } }],
+          })
+          .expectStatus(200);
+      } finally {
+        events.removeListener('member.edited', handler);
+      }
+
+      assert.ok(readAtEvent, 'member.edited fired');
+      assert.deepEqual(await readAtEvent, { value_text: 'Ghosts' });
     });
 
     it('fires a single member.edited when the edit changes the member too', async function () {
@@ -2010,7 +2053,7 @@ describe('Member Custom Fields Admin API', function () {
       });
 
       assert.equal(editedEvents, 1);
-      assert.equal((await memberEditedActions(memberId)).length, 1);
+      assert.equal((await recordedMemberEditedActions(memberId)).length, 1);
     });
 
     it('fires member.edited when a full PUT resends unchanged member fields with a custom-field change', async function () {
@@ -2031,7 +2074,7 @@ describe('Member Custom Fields Admin API', function () {
       });
 
       assert.equal(editedEvents, 1);
-      assert.equal((await memberEditedActions(memberId)).length, 1);
+      assert.equal((await recordedMemberEditedActions(memberId)).length, 1);
     });
 
     it('fires no member.edited when the metafields object is empty', async function () {
@@ -2307,12 +2350,19 @@ describe('Member Custom Fields Admin API', function () {
 
     // Read back over the API the history log is served from, not the table,
     // so what Admin receives is what's asserted — `context` included.
-    const memberEditedActionsViaApi = async (memberId: string) => {
-      const { body } = await agent
-        .get(`actions/?filter=resource_id:'${memberId}'%2Bresource_type:member&include=actor`)
-        .expectStatus(200);
-      return body.actions.filter((action: { event: string }) => action.event === 'edited');
-    };
+    // Waits for the first action, which is inserted once the edit's transaction commits and
+    // can land after the response.
+    const memberEditedActionsViaApi = (memberId: string) =>
+      vi.waitFor(async () => {
+        const { body } = await agent
+          .get(`actions/?filter=resource_id:'${memberId}'%2Bresource_type:member&include=actor`)
+          .expectStatus(200);
+        const edited = body.actions.filter(
+          (action: { event: string }) => action.event === 'edited',
+        );
+        assert.ok(edited.length > 0, 'no member edited action recorded yet');
+        return edited;
+      });
 
     it('marks a values-only edit as a custom-field change', async function () {
       // The payload that makes the whole feature auditable: without

@@ -154,6 +154,7 @@ module.exports = function MembersAPI({
     commentsService,
     giftService,
     metafieldValues,
+    transaction: (fn) => Member.transaction(fn),
   });
 
   const geolocationService = new GeolocationService();
