@@ -41,6 +41,7 @@ export interface PublishFlowOptions {
   /** The machine's clock, injected for tests. */
   now?: () => Date;
   dispatch: PublishDispatcher;
+  showCompletion?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
 }
@@ -106,6 +107,7 @@ export function usePublishFlow({
   limits,
   now,
   dispatch,
+  showCompletion = true,
   onBeforePublish,
   onCompleted,
 }: PublishFlowOptions): PublishFlow {
@@ -357,18 +359,20 @@ export function usePublishFlow({
         return;
       }
       completedRef.current = true;
-      setEmailErrorMessage(null);
-      setConfirmStatus('success');
-      setStep('complete');
-      // The server stamps the publish time; this is the closest the client has.
-      setCompletedAt(new Date().toISOString());
+      if (showCompletion) {
+        setEmailErrorMessage(null);
+        setConfirmStatus('success');
+        setStep('complete');
+        // The server stamps the publish time; this is the closest the client has.
+        setCompletedAt(new Date().toISOString());
+      }
       try {
         writePublishCelebration({ postId: post.id, displayName: post.displayName, isScheduled });
       } finally {
         onCompleted?.({ postId: post.id, isScheduled, hasEmail });
       }
     },
-    [onCompleted, post.displayName, post.id],
+    [onCompleted, post.displayName, post.id, showCompletion],
   );
 
   const applyEmailOutcome = useCallback(
@@ -536,7 +540,9 @@ export function usePublishFlow({
       if (outcome.kind !== 'submitted') {
         setEmailNote(EMAIL_UNCONFIRMED);
       }
-      setRetryStatus('success');
+      if (showCompletion) {
+        setRetryStatus('success');
+      }
       complete(false, outcome.kind !== 'not-needed');
     } catch (error) {
       if (activeRef.current) {
@@ -545,7 +551,7 @@ export function usePublishFlow({
         setRetryStatus('failure');
       }
     }
-  }, [complete, confirmation, post.id, refreshPostReads]);
+  }, [complete, confirmation, post.id, refreshPostReads, showCompletion]);
 
   return {
     ...optionActions,

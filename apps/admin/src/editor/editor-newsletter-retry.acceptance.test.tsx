@@ -3,8 +3,10 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   browseResponse,
+  currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeNewsletters,
   fakePosts,
   fakeSnippets,
@@ -34,6 +36,10 @@ function publishChrome() {
   fakeSnippets([]);
   fakePosts([]);
   fakeNewsletters(weeklyNewsletters());
+  // Successful retries leave the editor for the post's analytics screen.
+  fakeAdminStats.postReferrers(POST_ID, []);
+  fakeAdminStats.postGrowth(POST_ID);
+  fakeAdminStats.mrr();
   // The site-wide member total the publish machine reads; the boot entry counts a different shape.
   fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
     members: [],
@@ -122,14 +128,10 @@ describe('Editor newsletter retry', () => {
       await expect.element(publishScreen.emailError()).toHaveTextContent(error || 'Unknown error');
       await publishScreen.retryEmailButton().click();
 
-      await expect
-        .element(publishScreen.complete())
-        .toHaveTextContent('Your post has been published.');
+      await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
       expect(retryApi.requests).toHaveLength(1);
-      await expect
-        .element(editorScreen.status())
-        .toHaveTextContent('Published and sent to 20 members');
-      await expect(editorScreen.viewNewsletterDetails()).toHaveCount(0);
+      await expect(editorScreen.root()).toHaveCount(0);
+      await expect(publishScreen.root()).toHaveCount(0);
     },
   );
 
@@ -150,10 +152,10 @@ describe('Editor newsletter retry', () => {
       await expect.element(publishScreen.emailError()).toHaveTextContent(error || 'Unknown error');
       await publishScreen.retryEmailButton().click();
 
-      await expect.element(publishScreen.complete()).toHaveTextContent('Your email has been sent.');
+      await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
       expect(retryApi.requests).toHaveLength(1);
-      await expect.element(editorScreen.status()).toHaveTextContent('Sent to 20 members');
-      await expect(editorScreen.retryNewsletter()).toHaveCount(0);
+      await expect(editorScreen.root()).toHaveCount(0);
+      await expect(publishScreen.root()).toHaveCount(0);
     },
   );
 

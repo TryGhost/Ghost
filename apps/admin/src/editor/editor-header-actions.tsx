@@ -1,4 +1,6 @@
 import { useCallback, useState } from 'react';
+import { useEmberOwnedRouteMatcher } from '@/routes';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { PageHeader } from '@tryghost/shade/patterns';
@@ -88,7 +90,12 @@ export function EditorHeaderActions({
   const isDraft = post.status === 'draft';
 
   usePreviewShortcut(
-    useCallback(() => setPreviewOpen((open) => !open), []),
+    useCallback(() => {
+      setPreviewOpen(!previewOpen);
+      if (previewOpen) {
+        onOpenFlow('none');
+      }
+    }, [onOpenFlow, previewOpen]),
     isDraft && persistedId !== null,
   );
 
@@ -199,6 +206,8 @@ function PublishActions({
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
+  const navigate = useNavigate();
+  const isEmberOwned = useEmberOwnedRouteMatcher();
   const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
   const limits = usePublishLimits();
@@ -210,6 +219,7 @@ function PublishActions({
   });
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
+  const [openedFromPreview, setOpenedFromPreview] = useState(false);
 
   if (inputs.isReady && !everReady) {
     setEverReady(true);
@@ -226,10 +236,26 @@ function PublishActions({
     onOpenFlow('none');
     void session.dispatchPublish({ kind: 'revert' });
   }, [onOpenFlow, session]);
-  const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
-  const openPublishFlow = useCallback(() => onOpenFlow('publish'), [onOpenFlow]);
+  const closeFlow = useCallback(() => {
+    setOpenedFromPreview(false);
+    onOpenFlow('none');
+  }, [onOpenFlow]);
+  const openPublishFlow = useCallback(() => {
+    setOpenedFromPreview(false);
+    onOpenFlow('publish');
+  }, [onOpenFlow]);
   const { onOpenChange: setPreviewOpen } = preview;
+  const changePreviewOpen = useCallback(
+    (open: boolean) => {
+      setPreviewOpen(open);
+      if (!open) {
+        closeFlow();
+      }
+    },
+    [closeFlow, setPreviewOpen],
+  );
   const publishFromPreview = useCallback(() => {
+    setOpenedFromPreview(true);
     setPreviewOpen(false);
     onOpenFlow('publish');
   }, [onOpenFlow, setPreviewOpen]);
@@ -275,7 +301,9 @@ function PublishActions({
           </Button>
           <PostPreviewModal
             {...preview}
+            animate={openFlow !== 'publish'}
             publishDisabled={!inputs.isReady}
+            onOpenChange={changePreviewOpen}
             onPublish={publishFromPreview}
           />
         </>
@@ -306,10 +334,12 @@ function PublishActions({
 
       {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
+          animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
           limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}
+          showCompletion={false}
           site={inputs.site}
           siteTitle={siteTitle}
           timezone={inputs.timezone}
@@ -317,6 +347,15 @@ function PublishActions({
           user={inputs.user}
           onBeforePublish={saveBeforePublish}
           onClose={closeFlow}
+          onCompleted={({ postId, isScheduled, hasEmail }) => {
+            const destination =
+              post.displayName === 'page'
+                ? '/pages'
+                : !isScheduled && (hasEmail || post.email || post.emailOnly)
+                  ? `/posts/analytics/${postId}`
+                  : '/posts';
+            navigate(destination, { crossApp: isEmberOwned(destination) });
+          }}
           onPreview={onPreview}
           onRevertToDraft={revertToDraft}
         />

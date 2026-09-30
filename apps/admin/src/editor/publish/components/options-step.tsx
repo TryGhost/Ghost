@@ -105,10 +105,14 @@ export function OptionsStep({
   return (
     <Stack data-testid={publishFlowOptions} gap="xl">
       <Stack gap="none">
-        <Text as="h2" className="text-state-success" size="3xl" weight="bold">
+        <Text
+          as="h2"
+          className="text-5xl leading-tighter tracking-tight text-state-success"
+          weight="bold"
+        >
           Ready, set, publish.
         </Text>
-        <Text size="3xl" weight="bold">
+        <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
           Share it with the world.
         </Text>
       </Stack>

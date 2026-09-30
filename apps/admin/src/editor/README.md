@@ -49,6 +49,13 @@ members" while the email is on its way and "Published and sent to N members"
 once the flow's email confirmation finds it submitted; an email-only send reads
 "Sent to N members" throughout.
 
+After successful completion, the editor follows the publish flow's celebration
+handoff to the destination screen. Pages return to `/pages`; scheduled posts
+and posts without email return to `/posts`. Immediately published posts with
+email, including email-only sends and posts that were emailed previously, open
+`/posts/analytics/:id`. Failed saves and failed sends keep the flow open so the
+writer can retry.
+
 ## Adding a settings section
 
 1. Add the section's id to `SETTINGS_SECTION_ORDER` in `settings/sections.ts`,
