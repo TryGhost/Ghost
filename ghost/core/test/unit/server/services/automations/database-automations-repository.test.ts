@@ -77,6 +77,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('name').notNullable();
     table.text('description').notNullable();
     table.text('status').notNullable();
+    table.text('trigger_tier_scope');
   });
 
   await database.schema.createTable('automation_actions', (table) => {
@@ -858,22 +859,29 @@ describe('automations repository', function () {
       await repo.browse({ includeStats: false });
 
       const automations = await knex('automations')
-        .select('id', 'name', 'slug', 'status')
+        .select('id', 'name', 'slug', 'status', 'trigger_tier_scope')
         .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
         .orderBy('slug');
 
       assert.deepEqual(
-        automations.map(({ name, slug, status }) => ({ name, slug, status })),
+        automations.map(({ name, slug, status, trigger_tier_scope }) => ({
+          name,
+          slug,
+          status,
+          trigger_tier_scope,
+        })),
         [
           {
             name: 'Free member welcome flow',
             slug: 'member-welcome-email-free',
             status: 'inactive',
+            trigger_tier_scope: 'free',
           },
           {
             name: 'Paid member welcome flow',
             slug: 'member-welcome-email-paid',
             status: 'inactive',
+            trigger_tier_scope: 'all_paid',
           },
         ],
       );
@@ -1773,6 +1781,34 @@ describe('automations repository', function () {
       assert.equal(step.started_at, step.locked_at);
       assert.equal(step.updated_at, step.locked_at);
     };
+
+    it('returns step data', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const readyAt = new Date('2024-01-01T00:00:00.000Z');
+      const stepRow = await insertStep(run.id, action.revision_id, { ready_at: readyAt });
+
+      const { steps } = await repo.fetchAndLockSteps(1);
+      assert.deepEqual(steps, [
+        {
+          id: stepRow.id,
+          locked_by: assertSingleBatchLock(steps),
+          automation_run_id: run.id,
+          automation_id: automation.id,
+          automation_slug: automation.slug,
+          automation_status: 'active',
+          member_id: run.member_id,
+          member_email: run.member_email,
+          action_id: action.action_id,
+          automation_action_revision_id: action.revision_id,
+          ready_at: new Date(toRepositoryDateISOString(readyAt)),
+          step_attempts: 1,
+          type: 'wait',
+          wait_hours: 48,
+        },
+      ]);
+    });
 
     it('locks ready and steps with stale locks, but skips future and recently-locked steps', async function () {
       const automation = await getAutomationBySlug('member-welcome-email-free');

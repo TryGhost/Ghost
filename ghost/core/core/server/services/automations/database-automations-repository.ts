@@ -22,6 +22,7 @@ import type {
   AutomationSummary,
   AutomationStepTerminalStatus,
   AutomationStepToRun,
+  AutomationTriggerTierScope,
   AutomationsRepository,
   BrowseOptions,
   EditAutomationData,
@@ -37,13 +38,15 @@ const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
     name: 'Free member welcome flow',
     description: 'Welcome new free members after they sign up.',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+    trigger_tier_scope: 'free',
   },
   {
     name: 'Paid member welcome flow',
     description: 'Welcome new paid members after they start their subscription.',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+    trigger_tier_scope: 'all_paid',
   },
-];
+] as const;
 
 const messages = {
   invalidAutomationActionRevision:
@@ -504,7 +507,12 @@ async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
 
 async function ensureAutomation(
   trx: Knex.Transaction,
-  defaults: Readonly<{ name: string; description: string; slug: string }>,
+  defaults: Readonly<{
+    name: string;
+    description: string;
+    slug: string;
+    trigger_tier_scope: AutomationTriggerTierScope;
+  }>,
 ): Promise<AutomationRow> {
   const now = toDatabaseDate(new Date());
   const id = ObjectId().toHexString();
@@ -516,6 +524,7 @@ async function ensureAutomation(
       name: defaults.name,
       description: defaults.description,
       slug: defaults.slug,
+      trigger_tier_scope: defaults.trigger_tier_scope,
       created_at: now,
       updated_at: now,
     })
@@ -1091,7 +1100,7 @@ async function loadAutomation(
   automationId: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .where('id', automationId)
     .first();
   return row ?? null;
@@ -1102,7 +1111,7 @@ async function loadAutomationBySlug(
   slug: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .where('slug', slug)
     .first();
   return row ?? null;
@@ -1110,7 +1119,7 @@ async function loadAutomationBySlug(
 
 async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
   return await trx('automations')
-    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .orderBy('name');
 }
 
@@ -1132,6 +1141,7 @@ async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<Automati
       'automations.id',
       'automations.slug',
       'automations.name',
+      'automations.description',
       'automations.status',
       'automations.created_at',
       'automations.updated_at',
@@ -1532,6 +1542,7 @@ function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
     id: automation.id,
     slug: automation.slug,
     name: automation.name,
+    description: automation.description,
     status: automation.status,
     created_at: serializeDate(automation.created_at),
     updated_at: serializeDate(automation.updated_at),

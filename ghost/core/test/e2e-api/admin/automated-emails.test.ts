@@ -358,6 +358,23 @@ describe('Automated Emails API', function () {
           etag: anyEtag,
           location: anyLocationFor('automated_emails'),
         });
+
+      const automation = await models.Base.knex('automations')
+        .where('slug', 'member-welcome-email-free')
+        .first('trigger_tier_scope');
+      assert.equal(automation.trigger_tier_scope, 'free');
+    });
+
+    it('Sets all paid tier scope for paid welcome email', async function () {
+      const automatedEmail = await createAutomatedEmail({
+        name: 'Paid member welcome flow',
+        slug: 'member-welcome-email-paid',
+      });
+
+      const automation = await models.Base.knex('automations')
+        .where('id', automatedEmail.id)
+        .first('trigger_tier_scope');
+      assert.equal(automation.trigger_tier_scope, 'all_paid');
     });
 
     it('Writes sender settings to email design settings on add', async function () {

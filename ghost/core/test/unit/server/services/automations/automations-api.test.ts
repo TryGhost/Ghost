@@ -8,6 +8,12 @@ import {
   NON_EMPTY_EMAIL_LEXICAL,
 } from '../../../../utils/automations-fixtures';
 
+const buildWaitAction = () => ({
+  id: ObjectId().toHexString(),
+  type: 'wait',
+  data: { wait_hours: 1 },
+});
+
 const buildSendEmailAction = (dataOverrides = {}) => ({
   id: ObjectId().toHexString(),
   type: 'send_email',
@@ -17,6 +23,11 @@ const buildSendEmailAction = (dataOverrides = {}) => ({
     email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7',
     ...dataOverrides,
   },
+});
+
+const buildEdge = (source: Readonly<{ id: string }>, target: Readonly<{ id: string }>) => ({
+  source_action_id: source.id,
+  target_action_id: target.id,
 });
 
 describe('automations API', function () {
@@ -126,6 +137,38 @@ describe('automations API', function () {
           edges: [],
         }),
         /well-formed Lexical document/,
+      );
+    });
+
+    it('rejects duplicate edges', async function () {
+      const first = buildWaitAction();
+      const second = buildWaitAction();
+
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [first, second],
+          edges: [buildEdge(first, second), buildEdge(first, second)],
+        }),
+        /edges must be unique/,
+      );
+    });
+
+    it('rejects a path with a separate cycle', async function () {
+      // A -> B is a valid path, but C <-> D forms a disconnected cycle. The
+      // edge count and head/tail counts still look like a linear path.
+      const a = buildWaitAction();
+      const b = buildWaitAction();
+      const c = buildWaitAction();
+      const d = buildWaitAction();
+
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [a, b, c, d],
+          edges: [buildEdge(a, b), buildEdge(c, d), buildEdge(d, c)],
+        }),
+        /graph must be a single linear path/,
       );
     });
   });

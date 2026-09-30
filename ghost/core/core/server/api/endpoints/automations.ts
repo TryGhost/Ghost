@@ -48,6 +48,22 @@ export const controller = {
     },
   },
 
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: true,
+    async query() {
+      // TODO(NY-1637) Implement this endpoint.
+      throw new errors.InternalServerError({
+        statusCode: 501,
+        code: 'NOT_IMPLEMENTED',
+        message: 'Adding automations is not implemented.',
+      });
+    },
+  },
+
   edit: {
     headers: {
       cacheInvalidate: false,

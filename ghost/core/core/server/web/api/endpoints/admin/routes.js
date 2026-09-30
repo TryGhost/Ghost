@@ -313,6 +313,7 @@ module.exports = function apiRoutes() {
     http(api.automationEmailPreviews.sendTestEmail),
   );
   router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
+  router.post('/automations', mw.authAdminApi, http(api.automations.add));
   router.put('/automations/:id', mw.authAdminApi, http(api.automations.edit));
 
   // ## Automated Emails

@@ -7,10 +7,21 @@ on:
 jobs:
   deploy:
     name: Deploy Preview
-    # Runs when the "preview" label is added — requires collaborator write access
+    # Runs when "preview" or a "preview:<profile>" label is added — either needs
+    # collaborator write access. Adding a profile label to an already-labelled PR
+    # has to redeploy, or the label would claim a profile the preview is not on;
+    # Ghost-Moya notices the change and reseeds.
+    #
+    # Removing a profile label redeploys for the same reason, in reverse: the
+    # labels would otherwise say "default" while the preview stayed seeded on
+    # whatever the removed label named. `startsWith` excludes the bare `preview`
+    # label, which has no colon, so removing that still only destroys.
     if: >-
-      github.event.action == 'labeled'
-      && github.event.label.name == 'preview'
+      (github.event.action == 'labeled'
+       && (github.event.label.name == 'preview'
+           || startsWith(github.event.label.name, 'preview:')))
+      || (github.event.action == 'unlabeled'
+          && startsWith(github.event.label.name, 'preview:'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -92,23 +103,77 @@ jobs:
           if [ "$STATE" != "open" ]; then
             echo "::warning::PR is no longer open ($STATE), skipping dispatch"
             echo "skip=true" >> "$GITHUB_OUTPUT"
-          elif [ "$HAS_LABEL" != "true" ]; then
-            echo "::warning::preview label was removed, skipping dispatch"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "PR still eligible for preview deploy"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          # `preview` is the switch; `preview:<profile>` only says which data to
+          # use. A profile label on its own is not a request for a preview, and
+          # saying so beats the older "label was removed" warning, which is
+          # actively misleading when it was never added.
+          if [ "$HAS_LABEL" != "true" ]; then
+            if echo "$PR" | jq -e '.labels | any(startswith("preview:"))' > /dev/null; then
+              echo "::warning::A preview:<profile> label needs the 'preview' label too, skipping dispatch"
+            else
+              echo "::warning::preview label was removed, skipping dispatch"
+            fi
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # A `preview:<profile>` label picks how much seed data the preview starts
+          # with. The names are defined in TryGhost/Ghost-Moya's
+          # preview/profiles.json and validated there, so nothing here needs to
+          # know them — passing the suffix through keeps one source of truth.
+          # Sending nothing means Moya applies its own default.
+          # Counted with jq rather than by word-splitting: a label may contain a
+          # space, and counting words would read one such label as two profiles
+          # and reject it with a message about a conflict that does not exist.
+          COUNT=$(echo "$PR" | jq '[.labels[] | select(startswith("preview:"))] | length')
+          PROFILE=$(echo "$PR" | jq -r '[.labels[] | select(startswith("preview:")) | ltrimstr("preview:")] | first // ""')
+
+          if [ "$COUNT" -gt 1 ]; then
+            NAMES=$(echo "$PR" | jq -r '[.labels[] | select(startswith("preview:"))] | join(", ")')
+            echo "::error::Multiple preview profile labels ($NAMES) — remove all but one"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          if [ "$COUNT" -eq 1 ]; then
+            # Shape only, not a list of names — the names stay Ghost-Moya's to
+            # own. This rejects a malformed label here, with a message that says
+            # what is wrong, rather than dispatching it to fail further away.
+            #
+            # Matched with [[ =~ ]] rather than grep. grep works a line at a
+            # time, so ^ and $ bound a line, not the string, and `grep -q`
+            # succeeds if any one line matches: a label containing a newline
+            # would pass on its first line and then write a second line into
+            # GITHUB_OUTPUT, which becomes a step output of its own. This
+            # workflow is pull_request_target and carries a dispatch token, so
+            # that is worth closing rather than noting. bash anchors to the
+            # whole string, so a newline cannot match at all.
+            if ! [[ "$PROFILE" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+              echo "::error::Malformed profile label 'preview:${PROFILE}' — expected lowercase words separated by hyphens"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 1
+            fi
+            echo "Preview profile: ${PROFILE}"
+            echo "profile=${PROFILE}" >> "$GITHUB_OUTPUT"
+          else
+            echo "No preview:<profile> label, Ghost-Moya will use its default"
+            echo "profile=" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "PR still eligible for preview deploy"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
 
       - name: Resolve image digest from GHCR
         id: digest
         if: steps.recheck.outputs.skip != 'true'
         env:
           IMAGE_REPO: tryghost/ghost
-          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          # Pin the deploy to an immutable digest so Artifact Registry's pull-through
-          # cache cannot serve a stale manifest for the mutable pr-N tag.
+          # Resolve the per-commit tag (not mutable pr-N) so a push during the wait
+          # cannot swap the image, then pin the digest past Artifact Registry's cache.
+          IMAGE_TAG="sha-${HEAD_SHA:0:7}"
           TOKEN=$(curl -sf "https://ghcr.io/token?service=ghcr.io&scope=repository:${IMAGE_REPO}:pull" | jq -r '.token')
           if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
             echo "::error::Failed to acquire anonymous GHCR token for ${IMAGE_REPO}"
@@ -119,13 +184,13 @@ jobs:
             -H "Accept: application/vnd.oci.image.index.v1+json" \
             -H "Accept: application/vnd.docker.distribution.manifest.list.v2+json" \
             -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-            "https://ghcr.io/v2/${IMAGE_REPO}/manifests/pr-${PR_NUMBER}" \
+            "https://ghcr.io/v2/${IMAGE_REPO}/manifests/${IMAGE_TAG}" \
             | awk 'tolower($1) == "docker-content-digest:" {print $2}' | tr -d '\r\n')
           if [[ ! "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]; then
-            echo "::error::Could not resolve digest for ghcr.io/${IMAGE_REPO}:pr-${PR_NUMBER} (got: '$DIGEST')"
+            echo "::error::Could not resolve digest for ghcr.io/${IMAGE_REPO}:${IMAGE_TAG} (got: '$DIGEST')"
             exit 1
           fi
-          echo "Resolved digest: $DIGEST"
+          echo "Resolved ${IMAGE_TAG} digest: $DIGEST"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Dispatch deploy to Ghost-Moya
@@ -140,7 +205,7 @@ jobs:
               "pr_number": "${{ github.event.pull_request.number }}",
               "image_digest": "${{ steps.digest.outputs.digest }}",
               "action": "deploy",
-              "seed": "true"
+              "profile": "${{ steps.recheck.outputs.profile }}"
             }
 
   destroy:

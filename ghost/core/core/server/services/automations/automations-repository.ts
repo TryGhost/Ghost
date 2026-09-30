@@ -60,6 +60,7 @@ export type AutomationSummary = {
   id: string;
   slug: null | string;
   name: string;
+  description: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -107,6 +108,8 @@ export type RecordEmailSentOptions = Readonly<{
   trackClicks: boolean;
   trackOpens: boolean;
 }>;
+
+export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
 
 type AutomationStepBase = {
   id: string;
