@@ -3,6 +3,7 @@ import os from 'node:os';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
+const nock = require('nock');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
@@ -16,7 +17,12 @@ const { mockManager } = require('../../utils/e2e-framework');
 // two behaviours proven here; the end-to-end export -> import loop lives in
 // members-export-import.
 describe('Members import — custom fields', function () {
-  let request: { post: (_url: string) => any; get: (_url: string) => any };
+  let request: {
+    post: (_url: string) => any;
+    get: (_url: string) => any;
+    put: (_url: string) => any;
+    del: (_url: string) => any;
+  };
 
   // The key is minted server-side from the name, so callers read it off the result.
   async function createField(name: string, type: string): Promise<string> {
@@ -103,6 +109,66 @@ describe('Members import — custom fields', function () {
   });
 
   // An exported file re-imports with no mapping: its header is already the field target.
+  it('sends no member.edited webhook for the custom fields an import changes', async function () {
+    const key = await createField('Nickname', 'short_text');
+    const email = 'cf-webhook@example.com';
+    await importCSV(`email,metafields.custom.${key}\n${email},Bex\n`);
+
+    const receiver = 'https://test-webhook-receiver.com';
+    const receiverPath = '/import-member-edited/';
+    const delivered: Array<{ current: { email: string } }> = [];
+    nock(receiver)
+      .persist()
+      .post(receiverPath, (body: { member: { current: { email: string } } }) => {
+        delivered.push(body.member);
+        return true;
+      })
+      .reply(200, { status: 'OK' });
+    const integration = await (request.post(localUtils.API.getApiQuery('integrations/')) as any)
+      .set('Origin', config.get('url'))
+      .send({ integrations: [{ name: 'Import receiver' }] })
+      .expect(201);
+    const integrationId = integration.body.integrations[0].id;
+    await (request.post(localUtils.API.getApiQuery('webhooks/')) as any)
+      .set('Origin', config.get('url'))
+      .send({
+        webhooks: [
+          {
+            event: 'member.edited',
+            target_url: receiver + receiverPath,
+            integration_id: integrationId,
+          },
+        ],
+      })
+      .expect(201);
+
+    try {
+      await importCSV(`email,metafields.custom.${key}\n${email},Bexley\n`);
+      assert.equal((await findMember(email)).metafields.custom[key], 'Bexley');
+
+      // A staff edit afterwards does send one, so an empty list means the import sent
+      // nothing rather than that nothing could arrive.
+      const member = await findMember(email);
+      await (request.put(localUtils.API.getApiQuery(`members/${member.id}/`)) as any)
+        .set('Origin', config.get('url'))
+        .send({ members: [{ name: 'Renamed' }] })
+        .expect(200);
+      await vi.waitFor(() => assert.equal(delivered.length, 1));
+      assert.equal(delivered[0].current.email, email);
+    } finally {
+      await (request.del(localUtils.API.getApiQuery(`integrations/${integrationId}/`)) as any)
+        .set('Origin', config.get('url'))
+        .expect(204);
+      // Only this interceptor: the file's Stripe mocks are interceptors too.
+      nock.removeInterceptor({
+        proto: 'https',
+        hostname: 'test-webhook-receiver.com',
+        path: receiverPath,
+        method: 'POST',
+      });
+    }
+  });
+
   it('reads a namespaced column onto a member with no mapping', async function () {
     const key = await createField('Nickname', 'short_text');
     const email = 'cf-auto@example.com';

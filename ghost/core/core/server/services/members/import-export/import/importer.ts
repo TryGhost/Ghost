@@ -463,6 +463,9 @@ class MembersCSVImporter {
               )
             : null;
 
+        // Opened on knex rather than through Bookshelf, so the member events the saves below
+        // queue never fire: an import sends no member webhooks and writes no audit entries,
+        // however many rows it has.
         trx = await this._knex.transaction(undefined, { doNotRejectOnRollback: false });
         const options = { transacting: trx, context: IMPORT_CONTEXT };
 
