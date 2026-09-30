@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { run } from './run-list.test-utils';
+import { run, setupEmbeddedRootFontSize } from './run-list.test-utils';
+
+setupEmbeddedRootFontSize();
 import { QueryCache } from '@tanstack/react-query';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
