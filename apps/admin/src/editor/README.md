@@ -2,8 +2,9 @@
 
 `apps/admin/src/editor/` is the React post and page editor: the screen, the
 Koenig surface it wraps, the settings sidebar beside it, and the publish and
-preview flows it opens. `api.ts` is the domain's public surface — the shell
-mounts the screen lazily through it and everything else here is internal.
+preview flows it opens, plus the restore screen that turns a local copy of a
+lost draft back into a post. `api.ts` is the domain's public surface — the shell
+mounts both screens lazily through it and everything else here is internal.
 
 ## The modules
 
@@ -16,9 +17,10 @@ mounts the screen lazily through it and everything else here is internal.
 | [`preview/`](preview/README.md)                  | The modal that shows a post as the site renders it or as the newsletter it would be sent as                          |
 | `editor-screen.tsx`                              | The route: loads the post, builds the session, and lays out the header, the surface and the sidebar                  |
 | `post-editor.tsx`, `koenig-post-editor.tsx`      | The title, excerpt and feature image around the Koenig instances, and the Koenig integration itself                  |
-| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands                                 |
+| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands, with a failed send's retry     |
 | `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                    |
 | `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                      |
+| `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                    |
 
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
@@ -28,6 +30,24 @@ belongs to whichever component starts a fetch rather than to the cache entry, so
 a component reading a query key it shares with a screen outside the editor opts
 out too. `layering.ts` carries the z-index a confirmation dialog opened from
 inside another editor surface needs in order to paint above it.
+
+## Opening the publish flow
+
+A draft opens the publish flow from three places: the header's Publish button,
+its keyboard shortcut and the preview's Publish. A published or sent post whose
+newsletter failed opens it from the status line instead, which offers "Retry
+now" on an email-only send and "View details" on a published post; the flow
+then starts at its email-failure step. Whether a post qualifies is decided by
+the flow's own `initialEmailError()`, and the button is offered only to roles
+Core lets retry an email, so an Author sees the failure without it.
+
+Every opener stays unavailable until the publish inputs have loaded. When they
+fail to load, the header shows the error with a Retry for a draft, and for a
+post whose status line offers the retry. After a retry, or a publish that
+emails, a published post's status line reads "Published and sending to N
+members" while the email is on its way and "Published and sent to N members"
+once the flow's email confirmation finds it submitted; an email-only send reads
+"Sent to N members" throughout.
 
 ## Adding a settings section
 

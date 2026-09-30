@@ -152,6 +152,10 @@ It is self-contained: the caller supplies the post projection, the site and user
 
 The stateful journey is keyed by post id. If a mounted caller replaces the post, the gates, options machine, limits readiness, failures and completion state all start again for the new post.
 
+## Opening the flow
+
+The flow opens at its email-failure step for a published or sent post whose email failed, and at the options step for anything else. `initialEmailError()` is that test, exported so a caller can tell whether opening the flow leads to a retry. A caller must not open the flow before `usePublishInputs()` reports the inputs ready: the machine is built from them once.
+
 ## Steps
 
 The flow is a four-way branch, taken in this order:
@@ -193,6 +197,8 @@ A `failed` outcome moves to the email-error step with the message the API stored
 A reload that throws — a transport failure, or the 401 the redirect opt-out below turns into a rejection — completes the flow with a note instead. The post is published by that point and only the email's fate is unknown, so the alternatives are both wrong: claiming the email failed would invent a fact, and leaving the button running would strand the user on a disabled control for a publish that already succeeded.
 
 The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately. Closing the flow cancels the poll and marks every pending pre-save, save, confirmation and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
+
+The poller reads the post around the query cache, so the cached post reads never see what it found. Once a confirmation settles with any outcome but `cancelled`, after a publish or a retry, the flow invalidates the post reads so whatever is drawn from them catches up with the send. A reload that throws leaves them alone, since a refetch would most likely fail the same way.
 
 ## Requests
 
