@@ -387,6 +387,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
             isAdmin7
               ? tokenFieldClasses.field
               : 'flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-control-surface px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25',
+            'relative pr-8',
           )}
           onClick={() => {
             inputRef.current?.focus();
@@ -424,6 +425,9 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
               placeholder={selectedLabels.length === 0 ? placeholder : ''}
             />
           </CommandInput>
+          <LucideIcon.ChevronDown
+            className={cn(tokenFieldClasses.chevron, !isAdmin7 && 'top-2.5')}
+          />
         </div>
         {open && (
           <div
