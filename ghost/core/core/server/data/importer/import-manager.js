@@ -376,36 +376,44 @@ class ImportManager {
     if (!env?.startsWith('testing') && !importOptions.runningInJob) {
       this.logging.info('[Background Job] site-content-import queued');
       return this.jobManager.addJob({
-        job: async () => {
-          const startedAt = Date.now();
-          this.logging.info('[Background Job] site-content-import started');
-          try {
-            const result = await this.processImport(importData, importOptions);
-            // processImport swallows import failures and resolves undefined,
-            // so an absent result is the only signal that the import failed.
-            if (result === undefined) {
-              this.logging.info(
-                `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-              );
-            } else {
-              this.logging.info(
-                `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
-              );
-            }
-            return result;
-          } catch (err) {
-            this.logging.error(
-              err,
-              `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-            );
-            throw err;
-          }
-        },
+        job: () => this.executeImport(importData, importOptions),
         offloaded: false,
       });
     }
 
     return this.processImport(importData, importOptions);
+  }
+
+  /**
+   * Run a queued import, logging when it starts and how it ends
+   * @param {ImportData} importData
+   * @param {ImportOptions} importOptions
+   * @returns {Promise<Object.<string, ImportResult>|undefined>}
+   */
+  async executeImport(importData, importOptions) {
+    const startedAt = Date.now();
+    this.logging.info('[Background Job] site-content-import started');
+    try {
+      const result = await this.processImport(importData, importOptions);
+      // processImport swallows import failures and resolves undefined,
+      // so an absent result is the only signal that the import failed.
+      if (result === undefined) {
+        this.logging.info(
+          `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+        );
+      } else {
+        this.logging.info(
+          `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
+        );
+      }
+      return result;
+    } catch (err) {
+      this.logging.error(
+        err,
+        `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+      );
+      throw err;
+    }
   }
 
   /**
