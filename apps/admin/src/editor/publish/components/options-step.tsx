@@ -107,12 +107,12 @@ export function OptionsStep({
       <Stack gap="none">
         <Text
           as="h2"
-          className="text-4xl leading-tighter tracking-tight text-state-success"
+          className="text-5xl leading-tighter tracking-tight text-state-success"
           weight="bold"
         >
           Ready, set, publish.
         </Text>
-        <Text className="text-4xl leading-tighter tracking-tight" weight="bold">
+        <Text className="text-5xl leading-tighter tracking-tight" weight="bold">
           Share it with the world.
         </Text>
       </Stack>
