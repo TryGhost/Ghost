@@ -6,6 +6,8 @@ import type { EventLogCache } from '@tryghost/adapter-base-cache';
 export const RETENTION_SECONDS = 60;
 export const FRESHNESS_MS = 30000;
 export const MAX_EVENTS = 2000;
+const POLL_LIMIT_WINDOW_SECONDS = 10;
+const MAX_POLLS_PER_WINDOW = 30;
 const id = z.string().regex(/^[a-f\d]{24}$/i);
 export const resourceSchema = z.object({ id, type: z.enum(['post', 'page']) });
 export const actorSchema = z.object({
@@ -49,15 +51,15 @@ export class PostPresenceService {
   }
 
   async allowPoll(userId: string) {
-    // Share the limit across replicas. Keep the 31st entry to detect overflow.
+    // Share the limit across replicas. Keep one extra request to detect overflow.
     const count = await this.cache.appendEvent(
       `presence:v1:${this.siteId}:limit:${userId}`,
       randomUUID(),
       this.now(),
-      10,
-      31,
+      POLL_LIMIT_WINDOW_SECONDS,
+      MAX_POLLS_PER_WINDOW + 1,
     );
-    return count <= 30;
+    return count <= MAX_POLLS_PER_WINDOW;
   }
 
   async record(resource: Resource, actor: Actor) {
