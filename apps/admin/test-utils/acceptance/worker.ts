@@ -236,7 +236,12 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
-/** Resolves once no tracked request has been in flight for `quietMs` continuously. */
+/**
+ * Resolves once no tracked request has been in flight for `quietMs` continuously.
+ * Teardown drains with it. A spec waits on it for every section on screen to have
+ * its data, before a gesture that the page reflowing mid-way would knock off target,
+ * such as a drag.
+ */
 export async function settleRequests({
   quietMs = 50,
   timeoutMs = 2000,
@@ -262,7 +267,7 @@ export async function settleRequests({
 
   throw new Error(
     [
-      `Request(s) still in flight ${timeoutMs}ms after the test finished:`,
+      `Request(s) still in flight after ${timeoutMs}ms:`,
       // The page and MSW can both hold the same request.
       ...[...new Set(inFlightRequests.values())].map((description) => `  - ${description}`),
     ].join('\n'),
