@@ -76,10 +76,15 @@ export function ConfirmStep({
   return (
     <Stack data-testid={publishFlowConfirm} gap="xl">
       <Stack gap="none">
-        <Text as="h2" className="text-state-success" size="3xl" weight="bold">
+        <Text
+          as="h2"
+          className="text-4xl tracking-tight text-state-success"
+          leading="tight"
+          weight="bold"
+        >
           Ready, set, publish.
         </Text>
-        <Text size="3xl" weight="bold">
+        <Text className="text-4xl tracking-tight" leading="tight" weight="bold">
           Share it with the world.
         </Text>
       </Stack>
