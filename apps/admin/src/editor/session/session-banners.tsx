@@ -16,7 +16,6 @@ import { Inline, Text } from '@tryghost/shade/primitives';
 import {
   editorConflictBanner,
   editorConflictReloadConfirm,
-  editorReauthBanner,
   editorSaveErrorBanner,
 } from '@tryghost/test-data/selectors/editor';
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
@@ -24,7 +23,7 @@ import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import { reportShownAlert } from '@/editor/report-error';
 import type { ReloadOutcome } from './use-editor-session';
 
-const SESSION_EXPIRED = 'Your session expired. Sign in again in a new tab, then retry.';
+const SESSION_EXPIRED = 'Your session expired. Retry to sign in again and save.';
 const CONFLICT =
   'Someone else is editing this post. Reloading replaces what you have with their version, so copy your content first if you need it.';
 const GONE =
@@ -37,8 +36,6 @@ export interface SessionBannersProps {
   pendingSave?: PendingSave | null;
   hasUnsavedContent: () => boolean;
   contentText: () => string;
-  onRetryReauth: () => void;
-  onDismissReauth: () => void;
   onRetrySave: () => void;
   onReload: () => Promise<ReloadOutcome>;
 }
@@ -174,35 +171,11 @@ export function SessionBanners({
   pendingSave,
   hasUnsavedContent,
   contentText,
-  onRetryReauth,
-  onDismissReauth,
   onRetrySave,
   onReload,
 }: SessionBannersProps) {
   const saveError = state.kind === 'error' ? state.error : null;
   useShownAlert(saveError && saveErrorMessage(saveError), saveError);
-
-  if (state.kind === 'reauth-pending') {
-    return (
-      <Banner
-        className="mx-4 mb-2 shrink-0"
-        data-testid={editorReauthBanner}
-        role="alert"
-        size="sm"
-        variant="warning"
-      >
-        <Inline align="center" gap="sm">
-          <Text>{SESSION_EXPIRED}</Text>
-          <Button size="sm" variant="outline" onClick={onRetryReauth}>
-            Retry
-          </Button>
-          <Button size="sm" variant="ghost" onClick={onDismissReauth}>
-            Dismiss
-          </Button>
-        </Inline>
-      </Banner>
-    );
-  }
 
   const conflict =
     state.kind === 'conflict'

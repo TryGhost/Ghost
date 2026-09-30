@@ -1,4 +1,5 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
+export { authToken, fakeSetupStatus, plainText, signedOut } from './auth';
 export { fakeAnalyticsOverview } from './analytics';
 export {
   UNSPLASH_PICKED,

@@ -211,10 +211,10 @@ describe('useHandleError', () => {
 
     result.current(error);
 
-    // The fetch layer redirects to signin on session expiry, so the
-    // error handler must not flash a toast over the unloading page
+    // Signed-out boots report every read as expired; the signin flow's own
+    // toasts must survive those reports
     expect(toast.error).not.toHaveBeenCalled();
-    expect(toast.dismiss).toHaveBeenCalled();
+    expect(toast.dismiss).not.toHaveBeenCalled();
   });
 
   it('shows toast for unauthorized errors that do not trigger a redirect', () => {

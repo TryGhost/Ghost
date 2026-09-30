@@ -1,3 +1,4 @@
+import { getListReturnNavigationState } from '@/shared/virtual-list';
 import {
   type CSSProperties,
   type ReactNode,
@@ -40,11 +41,14 @@ import {
   type PostType,
   withLiveSettings,
 } from './card-config';
-import { EditorHeaderActions } from './editor-header-actions';
+import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
+import { buildPublishFlowPost } from './publish/flow-post';
+import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
+import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
@@ -93,7 +97,7 @@ function EditorHeader({ postType, children }: { postType: PostType; children?: R
         label={listLabel}
         asChild
       >
-        <AdminLink to={listUrl}>
+        <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
           <LucideIcon.ArrowLeft />
           {listLabel}
         </AdminLink>
@@ -156,6 +160,22 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
+  const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
+  const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
+  const publishPost = buildPublishFlowPost({
+    snapshot: {
+      id: session.persistedId,
+      status: session.publishTime.status,
+      publishedAt: session.publishTime.publishedAt,
+      title: session.title,
+    },
+    record: session.loadedRecord,
+    displayName: postType,
+    lexical: session.getLiveLexical(),
+  });
+  // Core refuses an email retry to Authors and Contributors.
+  const offersEmailRetry =
+    !!currentUser && !isAuthorOrContributor(currentUser) && !!initialEmailError(publishPost);
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
@@ -273,14 +293,19 @@ function EditorContent({
               isDirty={session.isDirty()}
               record={statusRecordOf(session.loadedRecord ?? record, createdId)}
               state={session.state}
+              onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
             />
             <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1">
               <EditorHeaderActions
                 currentUser={currentUser}
+                offersEmailRetry={offersEmailRetry}
+                openFlow={openFlow}
+                post={publishPost}
                 postType={postType}
                 session={session}
                 siteUrl={cardConfig.siteUrl}
                 tkCount={tkCount}
+                onOpenFlow={setOpenFlow}
               />
               <Box
                 aria-hidden="true"
@@ -295,10 +320,14 @@ function EditorContent({
             hasUnsavedContent={session.hasUnsavedContent}
             pendingSave={session.pendingSave}
             state={session.state}
-            onDismissReauth={session.reauthAbandoned}
             onReload={session.reload}
-            onRetryReauth={session.reauthSucceeded}
             onRetrySave={session.dispatchExplicit}
+          />
+          <ReauthDialog
+            email={currentUser?.email ?? ''}
+            open={session.state.kind === 'reauth-pending'}
+            onAbandoned={session.reauthAbandoned}
+            onSucceeded={session.reauthSucceeded}
           />
         </Box>
         {/* Session warnings reserve space; otherwise the document reaches behind the header. */}
@@ -475,12 +504,14 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     return <EditorSurface createdId={id} postType={postType} />;
   }
 
-  const notFound = query.error instanceof APIError && query.error.response?.status === 404;
+  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
+  const loadError = loaded ? null : query.error;
+  const notFound = loadError instanceof APIError && loadError.response?.status === 404;
   if (notFound) {
     return <NotFound />;
   }
 
-  if (query.error) {
+  if (loadError) {
     return (
       <EditorLoadError
         message={`Couldn’t load this ${postType}.`}

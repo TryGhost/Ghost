@@ -82,6 +82,7 @@ test.describe('Ghost Admin - Members import with custom fields', () => {
     await importModal.closeButton.click();
 
     await membersPage.goto();
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await membersPage.searchInput.fill(freshEmail);
     await expect(membersPage.getMemberByName(freshName)).toBeVisible({ timeout: 30000 });
     await membersPage.openMemberByName(freshName);
@@ -127,6 +128,7 @@ test.describe('Ghost Admin - Members import with custom fields', () => {
     await importModal.closeButton.click();
 
     await membersPage.goto();
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await membersPage.searchInput.fill(email);
     await expect(membersPage.getMemberByName(name)).toBeVisible({ timeout: 30000 });
     await membersPage.openMemberByName(name);

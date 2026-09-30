@@ -13,6 +13,7 @@ const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const messages = {
   automatedEmailNotFound: 'Automated email not found.',
+  slugCannotBeChanged: 'Automated email slug cannot be changed.',
 };
 
 // NOTE: This file is in a transitionary state. The `automated_emails` database table was split into
@@ -21,6 +22,10 @@ const messages = {
 // acts as a facade that joins/splits data between those two models while preserving the original
 // `automated_emails` API shape externally.
 const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
+const TRIGGER_TIER_SCOPE_BY_SLUG = {
+  [MEMBER_WELCOME_EMAIL_SLUGS.free]: 'free',
+  [MEMBER_WELCOME_EMAIL_SLUGS.paid]: 'all_paid',
+};
 const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
 const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
@@ -158,6 +163,7 @@ const controller = {
       const emailData = _.pick(data, EMAIL_FIELDS);
       const senderData = _.pick(data, SENDER_FIELDS);
       const automationData = _.pick(data, AUTOMATION_FIELDS);
+      automationData.trigger_tier_scope = TRIGGER_TIER_SCOPE_BY_SLUG[data.slug];
       emailAddressService.init();
       validateEmailSenderFields(emailAddressService.service, senderData);
 
@@ -218,6 +224,12 @@ const controller = {
         if (!automation) {
           throw new errors.NotFoundError({
             message: tpl(messages.automatedEmailNotFound),
+          });
+        }
+        if (Object.hasOwn(data, 'slug') && data.slug !== automation.get('slug')) {
+          throw new errors.ValidationError({
+            message: tpl(messages.slugCannotBeChanged),
+            property: 'slug',
           });
         }
         let email = automation.related('welcomeEmailAutomatedEmail');

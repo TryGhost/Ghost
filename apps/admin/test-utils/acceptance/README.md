@@ -119,6 +119,17 @@ pnpm test:acceptance:watch                         # watch mode
 pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the browser
 ```
 
+CI splits this suite across two runners using Vitest's `--shard` option. To
+reproduce either shard from the repository root, including dependency builds:
+
+```bash
+pnpm nx run @tryghost/admin:test:acceptance --shard=1/2
+pnpm nx run @tryghost/admin:test:acceptance --shard=2/2
+```
+
+Each shard uploads its own failure screenshots. Running without `--shard` still
+runs the full suite.
+
 ## Debugging
 
 - Runs print a final summary and failure details, including console output from failing tests, locally and in CI. To see all console output and individual test results, run `pnpm test:acceptance --silent=false --reporter=verbose` (optionally add a test file path). The same flags work with `test:acceptance:watch`.
@@ -129,3 +140,4 @@ pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the bro
 ## Known limitations
 
 - **5xx boot overrides leave a retry ticking.** The framework's fetch layer retries `ServerUnreachableError`/`MaintenanceError` (503)/`TypeError` with 500/1000ms backoff whenever `MODE !== 'development'` — and vitest runs with `MODE === 'test'`, so retries are ACTIVE here. A spec that overrides a boot response with a 503 leaves a pending retry that outlives the teardown quiet window and can fire mid-next-test. Prefer non-retryable 4xx statuses for error-shape specs; proper 5xx-retry semantics need a retry-disable seam in admin-x-framework — tracked as [PLA-242](https://linear.app/ghost/issue/PLA-242).
+- **Signed-out boots share a file only with other signed-out boots.** The framework's session-expiry redirect arms once `/users/me/` has succeeded, and that state lives in the module for the whole spec file. A signed-in spec followed by a signed-out one in the same file triggers the redirect and takes the test page away; keep signed-in and signed-out specs in separate files (see `src/auth/`).

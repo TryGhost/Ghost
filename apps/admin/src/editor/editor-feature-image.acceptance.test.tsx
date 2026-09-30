@@ -40,6 +40,27 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
  * save engine the body uses.
  */
 describe('Post editor feature image', () => {
+  it.each([
+    { orientation: 'portrait', width: 800, height: 1200 },
+    { orientation: 'landscape', width: 1200, height: 800 },
+  ])(
+    'shows the full $orientation image at its original aspect ratio',
+    async ({ width, height }) => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="purple"/></svg>`;
+      fakeSavablePost({ feature_image: `data:image/svg+xml,${encodeURIComponent(svg)}` });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.featureImage()).toBeVisible();
+      const image = editorScreen.featureImage().element().querySelector('img')!;
+      await expect.poll(() => image.naturalWidth).toBe(width);
+
+      const imageBounds = image.getBoundingClientRect();
+      const containerBounds = image.closest('[data-slot="image-upload"]')!.getBoundingClientRect();
+      expect(imageBounds.height).toBeCloseTo((imageBounds.width * height) / width, 0);
+      expect(containerBounds.height).toBeCloseTo(imageBounds.height, 0);
+    },
+  );
+
   it('saves an uploaded image as soon as it lands', async () => {
     const saveApi = fakeSavablePost();
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {

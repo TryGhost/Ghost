@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogTitle,
 } from '@tryghost/shade/components';
-import { Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { navigateEmberBillingSubRoute } from '@/ember-bridge';
@@ -106,51 +105,40 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
   const hasTerm = term.trim() !== '';
 
   return (
-    <>
-      <Command
-        className={cn('sm:rounded-lg', !hasTerm && '[&_[cmdk-input-wrapper]]:border-b-0')}
-        shouldFilter={false}
-      >
-        <CommandInput placeholder="Search site" value={term} onValueChange={setTerm} />
-        <CommandList className={cn('max-h-[50vh]', !hasTerm && 'hidden')}>
-          {results.map((group, index) => (
-            <Fragment key={group.groupKey ?? group.groupName}>
-              {index > 0 && <CommandSeparator alwaysRender />}
-              <CommandGroup
-                className="[&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
-                heading={group.groupName}
-              >
-                {group.options.map((result) => (
-                  <CommandItem
-                    key={result.id}
-                    className="justify-between"
-                    value={result.id}
-                    onSelect={() => openResult(result)}
-                  >
-                    <span className="truncate">
-                      <HighlightedText term={term} text={result.title} />
-                    </span>
-                    <StatusBadge status={result.status} />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </Fragment>
-          ))}
-          {hasTerm && results.length === 0 && (
-            <CommandEmpty>{isLoading ? 'Loading' : 'No results found'}</CommandEmpty>
-          )}
-        </CommandList>
-      </Command>
-      {results.length === 0 && (
-        <Text
-          className="pointer-events-none absolute top-full right-0 mt-1.5 px-2"
-          size="xs"
-          weight="semibold"
-        >
-          Open with Ctrl/⌘ + K
-        </Text>
-      )}
-    </>
+    <Command
+      className={cn('sm:rounded-lg', !hasTerm && '[&_[cmdk-input-wrapper]]:border-b-0')}
+      shouldFilter={false}
+    >
+      <CommandInput placeholder="Search site" value={term} onValueChange={setTerm} />
+      <CommandList className={cn('max-h-[50vh]', !hasTerm && 'hidden')}>
+        {results.map((group, index) => (
+          <Fragment key={group.groupKey ?? group.groupName}>
+            {index > 0 && <CommandSeparator alwaysRender />}
+            <CommandGroup
+              className="[&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
+              heading={group.groupName}
+            >
+              {group.options.map((result) => (
+                <CommandItem
+                  key={result.id}
+                  className="justify-between"
+                  value={result.id}
+                  onSelect={() => openResult(result)}
+                >
+                  <span className="truncate">
+                    <HighlightedText term={term} text={result.title} />
+                  </span>
+                  <StatusBadge status={result.status} />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Fragment>
+        ))}
+        {hasTerm && results.length === 0 && (
+          <CommandEmpty>{isLoading ? 'Loading' : 'No results found'}</CommandEmpty>
+        )}
+      </CommandList>
+    </Command>
   );
 }
 

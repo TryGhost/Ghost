@@ -109,6 +109,40 @@ describe('syncEmberPostListQueryParams', () => {
   });
 });
 
+describe('syncEmberFullScreen', () => {
+  baseTest('applies the value once Ember loads after React', async () => {
+    vi.useFakeTimers();
+    const { syncEmberFullScreen } = await import('./ember-bridge');
+    const stop = syncEmberFullScreen(true);
+    const mock = createMockStateBridge();
+    const setReactFullScreen = vi.fn();
+    mock.stateBridge.setReactFullScreen = setReactFullScreen;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setReactFullScreen).toHaveBeenCalledExactlyOnceWith(true);
+    stop();
+  });
+
+  baseTest('applies only the latest value when the route changes before Ember loads', async () => {
+    vi.useFakeTimers();
+    const { syncEmberFullScreen } = await import('./ember-bridge');
+    const stop = syncEmberFullScreen(true);
+    stop();
+    const stopCurrent = syncEmberFullScreen(false);
+    const mock = createMockStateBridge();
+    const setReactFullScreen = vi.fn();
+    mock.stateBridge.setReactFullScreen = setReactFullScreen;
+    window.EmberBridge = { state: mock.stateBridge };
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(setReactFullScreen).toHaveBeenCalledExactlyOnceWith(false);
+    stopCurrent();
+  });
+});
+
 beforeEach(async () => {
   vi.resetModules();
   vi.useRealTimers();
@@ -728,5 +762,29 @@ describe('emberMutationHandlers', () => {
     });
     expect(mock.stateBridge.onInvalidate).toHaveBeenCalledWith('TagsResponseType');
     expect(mock.stateBridge.onDelete).toHaveBeenCalledWith('UsersResponseType', 'user-1');
+  });
+});
+
+describe('useEmberListReturnSync', () => {
+  test('carries breadcrumb state without replacing the destination history entry', async () => {
+    const { useEmberListReturnSync } = await import('./ember-bridge');
+    const { rememberListReturnState } = await import('@/shared/virtual-list/list-return-state');
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+    const original = window.history.state as unknown;
+    window.history.replaceState({ key: 'destination', idx: 3, usr: { keep: true } }, '');
+    rememberListReturnState('/posts?tag=news', { scrollPosition: 1234 });
+    const { unmount } = renderHook(() => useEmberListReturnSync());
+    try {
+      act(() => mock.emit('restoreListState', { path: '/posts?tag=news' }));
+      expect(window.history.state).toEqual({
+        key: 'destination',
+        idx: 3,
+        usr: { keep: true, listReturn: { path: '/posts?tag=news', scrollPosition: 1234 } },
+      });
+    } finally {
+      unmount();
+      window.history.replaceState(original, '');
+    }
   });
 });

@@ -1,3 +1,4 @@
+import { getListReturnNavigationState } from '@/shared/virtual-list';
 import MemberActionsMenu from './member-actions-menu';
 import MemberActivityFeed from './member-activity-feed';
 import MemberCustomFieldsField from './member-custom-fields-field';
@@ -379,7 +380,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                     <BreadcrumbList>
                       <BreadcrumbItem>
                         <BreadcrumbLink asChild>
-                          <Link data-test-link="members-back" to={backPath}>
+                          <Link
+                            data-test-link="members-back"
+                            state={getListReturnNavigationState(backPath)}
+                            to={backPath}
+                          >
                             Members
                           </Link>
                         </BreadcrumbLink>

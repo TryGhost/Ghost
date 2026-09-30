@@ -1097,8 +1097,8 @@ describe('oembed-service', function () {
       });
 
       it('converts anything served under an .svg name, whatever its case', async function () {
-        // Padding defeats the content sniff, so the extension is what
-        // guarantees nothing is stored as an SVG document.
+        // Padding defeats the short content sniff used for other names, so
+        // the extension is what guarantees nothing is stored as an SVG document.
         const saveRaw = sinon.stub().resolves('/stored');
         const padded = `<!--${'x'.repeat(2000)}-->${SVG}`;
 
@@ -1108,6 +1108,27 @@ describe('oembed-service', function () {
         );
 
         assert.match(saveRaw.firstCall.args[1], /\.png$/);
+      });
+
+      it('does not convert a non-SVG image served under an .svg name', async function () {
+        // The converter picks its decoder from the contents, so the name
+        // alone must not route other formats into it.
+        const saveRaw = sinon.stub().resolves('/stored');
+        const avif = await sharp({
+          create: { width: 8, height: 8, channels: 3, background: 'red' },
+        })
+          .avif()
+          .toBuffer();
+
+        await assert.rejects(
+          () =>
+            buildService(saveRaw, avif).processImageFromUrl(
+              'https://example.com/favicon.svg',
+              'icon',
+            ),
+          { message: /not a supported file type/ },
+        );
+        sinon.assert.notCalled(saveRaw);
       });
 
       it('rejects a gzipped SVG rather than inflating it', async function () {

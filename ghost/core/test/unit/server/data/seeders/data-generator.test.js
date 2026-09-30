@@ -362,6 +362,68 @@ describe('Data Generator', function () {
     assert.equal(new Set(minimumSteps.map((step) => step.automation_run_id)).size, runs.length);
   });
 
+  it('Generates no rows for an explicit quantity of 0', async function () {
+    const dataGenerator = new DataGenerator({
+      knex: db,
+      schema,
+      schemaTables,
+      logger: {
+        info: () => {},
+        ok: () => {},
+        warn: () => {},
+      },
+      tables: [
+        {
+          name: 'posts',
+          quantity: 5,
+        },
+        {
+          name: 'posts_authors',
+          quantity: 0,
+        },
+        {
+          name: 'redirects',
+          quantity: 0,
+        },
+      ],
+    });
+    await dataGenerator.importData();
+
+    const posts = await db.select('id').from('posts');
+    assert.equal(posts.length, 5);
+    assert.equal((await db.select('id').from('posts_authors')).length, 0);
+    assert.equal((await db.select('id').from('redirects')).length, 0);
+  });
+
+  it('Uses the default per-model quantity when none is given', async function () {
+    const dataGenerator = new DataGenerator({
+      knex: db,
+      schema,
+      schemaTables,
+      logger: {
+        info: () => {},
+        ok: () => {},
+        warn: () => {},
+      },
+      tables: [
+        {
+          name: 'posts',
+          quantity: 5,
+        },
+        {
+          name: 'posts_authors',
+        },
+      ],
+    });
+    await dataGenerator.importData();
+
+    const posts = await db.select('id').from('posts');
+    const postsAuthors = await db.select('post_id').from('posts_authors');
+    assert.equal(posts.length, 5);
+    assert.equal(postsAuthors.length, posts.length);
+    assert.equal(new Set(postsAuthors.map((row) => row.post_id)).size, posts.length);
+  });
+
   it('Can import explicit offer redemptions', async function () {
     const dataGenerator = new DataGenerator({
       knex: db,
@@ -462,6 +524,8 @@ describe('Importer', function () {
       table.string('status');
       table.string('name').unique();
       table.string('slug').unique();
+      table.string('description', 2000);
+      table.string('trigger_tier_scope');
       table.dateTime('created_at');
       table.dateTime('updated_at');
     });
@@ -503,24 +567,33 @@ describe('Importer', function () {
     await automationsImporter.import(3);
     await transaction.commit();
 
-    const automations = await db.select('id', 'status', 'name', 'slug').from('automations');
+    const automations = await db
+      .select('id', 'status', 'name', 'description', 'slug', 'trigger_tier_scope')
+      .from('automations');
 
     assert.equal(automations.length, 3);
     assert.deepEqual(
-      automations.slice(0, 2).map(({ name, slug }) => ({ name, slug })),
+      automations.slice(0, 2).map(({ name, description, slug }) => ({ name, description, slug })),
       [
         {
           name: 'Free member welcome flow',
+          description: 'Welcome new free members after they sign up.',
           slug: 'member-welcome-email-free',
         },
         {
           name: 'Paid member welcome flow',
+          description: 'Welcome new paid members after they start their subscription.',
           slug: 'member-welcome-email-paid',
         },
       ],
     );
     assert.equal(new Set(automations.map((automation) => automation.name)).size, 3);
     assert.equal(new Set(automations.map((automation) => automation.slug)).size, 3);
+    assert.equal(automations[2].description, '');
+    assert.deepEqual(
+      automations.map((automation) => automation.trigger_tier_scope),
+      ['free', 'all_paid', 'all_paid'],
+    );
     assert.ok(
       automations.every((automation) => ['active', 'inactive'].includes(automation.status)),
     );

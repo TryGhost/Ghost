@@ -17,14 +17,16 @@ import {
   editorHelpLink,
   editorLeaveDialog,
   editorLoadError,
+  editorNewsletterDetailsButton,
   editorPreviewButton,
   editorPublishButton,
   editorPublishInputsError,
+  editorRetryNewsletterButton,
   editorSaveButton,
   editorUnpublishButton,
   editorUnscheduleButton,
   editorUpdateButton,
-  editorReauthBanner,
+  editorReauthDialog,
   editorScheduleCountdown,
   editorSaveErrorBanner,
   editorSecondaryInstance,
@@ -114,6 +116,8 @@ export const editorScreen = {
   excerptInput: () => page.getByTestId(editorExcerptInput),
   /** The primary Koenig content editable. */
   body: () => page.getByTestId(editorBody).getByRole('textbox'),
+  /** The body's container: readable while an open dialog hides the page from role queries. */
+  bodyBehindDialog: () => page.getByTestId(editorBody),
   /** Koenig's Signup card and its labels setting, by Koenig's own test ids. */
   signupCard: () => page.getByTestId(editorBody).getByTestId('signup-card-container'),
   signupLabelsInput: () => page.getByTestId('labels-dropdown').getByRole('textbox'),
@@ -136,8 +140,16 @@ export const editorScreen = {
     return pane;
   },
   loadError: () => page.getByTestId(editorLoadError),
-  reauthBanner: () => page.getByTestId(editorReauthBanner),
-  retryReauth: () => page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Retry' }),
+  retryLoad: () => page.getByTestId(editorLoadError).getByRole('button', { name: 'Retry' }),
+  /** The sign-in dialog a save that finds no session opens, and its two steps. */
+  reauthDialog: () => page.getByTestId(editorReauthDialog),
+  reauthEmail: () => page.getByTestId(editorReauthDialog).getByLabelText('Email'),
+  reauthPassword: () => page.getByTestId(editorReauthDialog).getByLabelText('Password'),
+  reauthSignIn: () => page.getByTestId(editorReauthDialog).getByRole('button', { name: 'Sign in' }),
+  reauthCode: () => page.getByTestId(editorReauthDialog).getByLabelText('Verification code'),
+  reauthVerify: () => page.getByTestId(editorReauthDialog).getByRole('button', { name: 'Verify' }),
+  reauthError: () => page.getByTestId(editorReauthDialog).getByRole('alert'),
+  cancelReauth: () => page.getByTestId(editorReauthDialog).getByRole('button', { name: 'Cancel' }),
   conflictBanner: () => page.getByTestId(editorConflictBanner),
   reloadAfterConflict: () =>
     page.getByTestId(editorConflictBanner).getByRole('button', { name: conflictReloadButton }),
@@ -153,6 +165,11 @@ export const editorScreen = {
       .getByTestId(editorConflictReloadConfirm)
       .getByRole('button', { name: conflictCancelReloadButton }),
   status: () => page.getByTestId(editorStatus),
+  /** The status line's ways back into the publish flow once a newsletter failed. */
+  retryNewsletter: () =>
+    page.getByTestId(editorStatus).getByRole('button', { name: editorRetryNewsletterButton }),
+  viewNewsletterDetails: () =>
+    page.getByTestId(editorStatus).getByRole('button', { name: editorNewsletterDetailsButton }),
   pendingSaveNotice: () =>
     page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 
@@ -174,6 +191,7 @@ export const editorScreen = {
     page.getByTestId(editorHeaderActions).getByRole('button', { name: 'Retry' }),
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
   saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
+  retrySave: () => page.getByTestId(editorSaveErrorBanner).getByRole('button', { name: 'Retry' }),
   leaveDialog: () => page.getByTestId(editorLeaveDialog),
   /** The leave dialog as a raw selector, for DOM-level sampling a locator cannot do. */
   leaveDialogSelector: `[data-testid="${editorLeaveDialog}"]`,
@@ -181,8 +199,6 @@ export const editorScreen = {
     page.getByTestId(editorLeaveDialog).getByRole('button', { name: stayInEditorButton }),
   leaveEditor: () =>
     page.getByTestId(editorLeaveDialog).getByRole('button', { name: leaveEditorButton }),
-  dismissReauth: () =>
-    page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Dismiss' }),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),
   titleTkIndicator: () => page.getByTestId(tkIndicator),
 

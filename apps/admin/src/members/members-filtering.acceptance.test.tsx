@@ -53,6 +53,7 @@ describe('Members list', () => {
 
     await expect(membersScreen.memberRows()).toHaveCount(1);
 
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await membersScreen.searchInput().fill('nonexistentnamestring');
 
     await expect.element(membersScreen.noResults()).toBeVisible();

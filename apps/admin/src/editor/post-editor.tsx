@@ -316,7 +316,7 @@ export function PostEditor({
               autoFocus={autofocusTitle}
               className={cn(
                 fieldClassName,
-                'heading-font-features mb-4 text-4xl leading-tight font-bold tracking-tight text-foreground placeholder:font-bold placeholder:text-muted-foreground',
+                'heading-font-features mb-4 min-h-0 max-w-none min-w-0 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-muted-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
               )}
               data-testid={editorTitleInput}
               placeholder={`${capitalize(postType)} title`}

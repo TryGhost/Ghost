@@ -13,8 +13,10 @@ import { useSettingsField } from './use-settings-field';
 const SETTINGS: ValidatedSettingsFields = {
   visibility: 'public',
   tiers: [],
+  email_subject: null,
   meta_title: null,
   meta_description: null,
+  canonical_url: null,
   og_title: null,
   og_description: null,
   twitter_title: null,

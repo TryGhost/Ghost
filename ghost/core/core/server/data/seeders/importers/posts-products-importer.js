@@ -12,7 +12,7 @@ class PostsProductsImporter extends TableImporter {
     const posts = await this.transaction.select('id').from('posts').where('type', 'post');
     this.products = await this.transaction.select('id').from('products');
 
-    await this.importForEach(posts, quantity ? quantity / posts.length : 1);
+    await this.importForEach(posts, quantity !== undefined ? quantity / posts.length : 1);
   }
 
   setReferencedModel(model) {

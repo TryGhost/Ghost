@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Badge,
+  tokenFieldClasses,
   type ComboboxOptionSource,
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { EditRow } from './edit-row';
@@ -24,11 +27,16 @@ const DROPDOWN_CHROME = 6;
 // Kept clear of the viewport edge so the list never sits flush against it.
 const GUTTER = 16;
 
+type PickerLabel = Pick<Label, 'id' | 'name' | 'slug'> & {
+  /** Optional heading for related options; omitted for a flat label list. */
+  group?: string;
+};
+
 export interface LabelPickerProps {
-  labels: Label[];
+  labels: PickerLabel[];
   optionSource: ComboboxOptionSource<string>;
   selectedSlugs: string[];
-  resolvedSelectedLabels?: Label[];
+  resolvedSelectedLabels?: PickerLabel[];
   onToggle: (slug: string) => void;
   // Creation
   onCreate?: (name: string) => Promise<Label | undefined>;
@@ -45,7 +53,7 @@ export interface LabelPickerProps {
 // --- LabelRow: single label item with overlapping check/edit icon ---
 
 interface LabelRowProps {
-  label: Label;
+  label: PickerLabel;
   isSelected: boolean;
   showEdit: boolean;
   onToggle: (slug: string) => void;
@@ -86,7 +94,7 @@ const LabelRow: React.FC<LabelRowProps> = ({
 // --- Shared label list items (used by both modes) ---
 
 interface LabelListItemsProps {
-  labels: Label[];
+  labels: PickerLabel[];
   selectedSlugs: string[];
   search: string;
   onToggle: (slug: string) => void;
@@ -115,6 +123,13 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     ? labels.filter((label) => label.name.toLowerCase().includes(normalizedSearch))
     : labels;
   const showCreate = !!onCreate && canCreateLabel(labels, search);
+  const groups = new Map<string, PickerLabel[]>();
+  for (const label of visibleLabels) {
+    const group = label.group ?? '';
+    const groupLabels = groups.get(group) ?? [];
+    groupLabels.push(label);
+    groups.set(group, groupLabels);
+  }
   const showEdit = !!onEdit;
   const handleCreate = async () => {
     if (!onCreate) {
@@ -146,30 +161,33 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   return (
     <>
       {!showCreate && visibleLabels.length === 0 && <CommandEmpty>No labels found</CommandEmpty>}
-      {visibleLabels.length > 0 && (
-        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7 && 'p-0')}>
-          {visibleLabels.map((label) =>
-            editingLabelId === label.id ? (
-              <EditRow
-                key={label.id}
-                label={label}
-                onCancel={() => setEditingLabelId(null)}
-                onDelete={handleDelete}
-                onSave={handleEdit}
-              />
-            ) : (
-              <LabelRow
-                key={label.id}
-                isSelected={selectedSlugs.includes(label.slug)}
-                label={label}
-                showEdit={showEdit}
-                onEditClick={() => setEditingLabelId(label.id)}
-                onToggle={onToggle}
-              />
-            ),
-          )}
-        </CommandGroup>
-      )}
+      {[...groups].map(([group, groupLabels], index) => (
+        <React.Fragment key={group}>
+          {index > 0 && <CommandSeparator className="my-1" />}
+          <CommandGroup className={cn(isAdmin7 && 'p-0')} heading={group || undefined}>
+            {groupLabels.map((label) =>
+              editingLabelId === label.id ? (
+                <EditRow
+                  key={label.id}
+                  label={label}
+                  onCancel={() => setEditingLabelId(null)}
+                  onDelete={handleDelete}
+                  onSave={handleEdit}
+                />
+              ) : (
+                <LabelRow
+                  key={label.id}
+                  isSelected={selectedSlugs.includes(label.slug)}
+                  label={label}
+                  showEdit={showEdit}
+                  onEditClick={() => setEditingLabelId(label.id)}
+                  onToggle={onToggle}
+                />
+              ),
+            )}
+          </CommandGroup>
+        </React.Fragment>
+      ))}
       {showCreate && (
         <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7 && 'p-0')}>
           <CommandItem disabled={isCreating} onSelect={() => void handleCreate()}>
@@ -185,7 +203,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 // --- Selected labels as removable pills ---
 
 interface SelectedPillsProps {
-  labels: Label[];
+  labels: PickerLabel[];
   onToggle: (slug: string) => void;
 }
 
@@ -198,16 +216,23 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
           key={label.id}
           className={cn(
             'cursor-pointer gap-1 pr-1',
-            isAdmin7 && 'h-6 rounded-full border-transparent bg-secondary px-2 pr-1.5 text-sm',
+            isAdmin7 && cn(tokenFieldClasses.chip, 'bg-secondary'),
           )}
           variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(label.slug);
-          }}
+          asChild
         >
-          {label.name}
-          <LucideIcon.X className="size-3" />
+          <button
+            aria-label={`Remove ${label.name}`}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(label.slug);
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            {label.name}
+            <LucideIcon.X className="size-3" />
+          </button>
         </Badge>
       ))}
     </>
@@ -230,7 +255,9 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
 }) => {
   const selectedLabels =
     resolvedSelectedLabels ||
-    selectedSlugs.map((slug) => labels.find((l) => l.slug === slug)).filter((l): l is Label => !!l);
+    selectedSlugs
+      .map((slug) => labels.find((l) => l.slug === slug))
+      .filter((l): l is PickerLabel => !!l);
 
   return (
     <ComboboxPicker
@@ -251,9 +278,9 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
 // --- ComboboxPicker: chips-in-input + popover dropdown (for modals) ---
 
 interface ComboboxPickerProps {
-  labels: Label[];
+  labels: PickerLabel[];
   optionSource: ComboboxOptionSource<string>;
-  selectedLabels: Label[];
+  selectedLabels: PickerLabel[];
   selectedSlugs: string[];
   onToggle: (slug: string) => void;
   onCreate?: (name: string) => Promise<Label | undefined>;
@@ -322,61 +349,98 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [open]);
 
+  // Intercept Escape before the containing Radix dialog's document listener.
+  // The first press dismisses suggestions while keeping the search field focused.
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && event.target === inputRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape, true);
+    return () => window.removeEventListener('keydown', handleEscape, true);
+  }, [open]);
+
   const handleInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' && !search && selectedSlugs.length > 0) {
       onToggle(selectedSlugs[selectedSlugs.length - 1]);
     }
-    if (e.key === 'Escape') {
-      setOpen(false);
-      inputRef.current?.blur();
+    if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      setOpen(true);
     }
   };
 
   return (
     <div ref={containerRef} className="relative">
-      <div
-        className={cn(
-          'flex min-h-9 w-full cursor-text flex-wrap items-center border border-control-border bg-surface-elevated text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent',
-          isAdmin7 ? 'gap-1 rounded-control p-1' : 'gap-1.5 rounded-md px-3 py-1',
-        )}
-        role="combobox"
-        onClick={() => {
-          inputRef.current?.focus();
-          setOpen(true);
-        }}
+      <Command
+        className="h-auto overflow-visible [&_[data-slot=command-input]]:contents [&_[data-slot=command-input]>svg]:hidden"
+        label={placeholder || 'Labels'}
+        shouldFilter={false}
       >
-        <SelectedPills labels={selectedLabels} onToggle={onToggle} />
-        <input
-          ref={inputRef}
-          className={cn(
-            'min-w-[80px] flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
-            isAdmin7 && 'px-2',
-          )}
-          placeholder={selectedLabels.length === 0 ? placeholder : ''}
-          value={search}
-          onChange={(e) => {
-            handleSearchChange(e.target.value);
-            if (!open) {
-              setOpen(true);
-            }
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={handleInputKeyDown}
-        />
-      </div>
-      {open && (
         <div
           className={cn(
-            'absolute top-full left-0 z-50 mt-1 w-full border bg-white shadow-md dark:bg-gray-950',
-            isAdmin7 ? 'rounded-menu' : 'rounded-md',
+            isAdmin7
+              ? tokenFieldClasses.field
+              : 'flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-control-surface px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25',
+            'relative pr-8',
           )}
+          onClick={() => {
+            inputRef.current?.focus();
+            setOpen(true);
+          }}
         >
-          {optionSource.isInitialLoad ? (
-            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-              Loading labels...
-            </div>
-          ) : (
-            <Command shouldFilter={false}>
+          <SelectedPills
+            labels={selectedLabels}
+            onToggle={(slug) => {
+              onToggle(slug);
+              inputRef.current?.focus();
+            }}
+          />
+          <CommandInput
+            className={cn(
+              'size-auto rounded-none py-0',
+              isAdmin7
+                ? tokenFieldClasses.input
+                : 'min-w-20 flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
+            )}
+            value={search}
+            asChild
+            onFocus={() => setOpen(true)}
+            onKeyDown={handleInputKeyDown}
+            onValueChange={(value) => {
+              handleSearchChange(value);
+              if (!open) {
+                setOpen(true);
+              }
+            }}
+          >
+            <input
+              ref={inputRef}
+              aria-expanded={open}
+              placeholder={selectedLabels.length === 0 ? placeholder : ''}
+            />
+          </CommandInput>
+          <LucideIcon.ChevronDown
+            className={cn(tokenFieldClasses.chevron, !isAdmin7 && 'top-2.5')}
+          />
+        </div>
+        {open && (
+          <div
+            className={cn(
+              'absolute top-full left-0 z-50 mt-1 w-full border bg-white shadow-md dark:bg-gray-950',
+              isAdmin7 ? 'rounded-menu' : 'rounded-md',
+            )}
+          >
+            {optionSource.isInitialLoad ? (
+              <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                Loading labels...
+              </div>
+            ) : (
               <CommandList className="overflow-y-auto" style={{ maxHeight }}>
                 <LabelListItems
                   isCreating={isCreating}
@@ -390,10 +454,10 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                   onToggle={onToggle}
                 />
               </CommandList>
-            </Command>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </Command>
     </div>
   );
 };
