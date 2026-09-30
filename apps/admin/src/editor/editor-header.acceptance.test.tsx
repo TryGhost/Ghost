@@ -595,6 +595,36 @@ describe('Editor header actions', () => {
     await expect(previewScreen.modal()).toHaveCount(0);
   });
 
+  it('animates opening from the editor but switches fullscreen surfaces without animation', async () => {
+    publishChrome();
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.modal()).toBeVisible();
+    expect(getComputedStyle(previewScreen.modal().element()).animationName).not.toBe('none');
+    await previewScreen.publishButton().click();
+    await expect(previewScreen.modal()).toHaveCount(0);
+    await expect.element(publishScreen.options()).toBeVisible();
+    expect(getComputedStyle(publishScreen.root().element()).animationName).toBe('none');
+
+    await publishScreen.previewButton().click();
+    await expect.element(previewScreen.modal()).toBeVisible();
+    expect(getComputedStyle(previewScreen.modal().element()).animationName).toBe('none');
+    await previewScreen.publishButton().click();
+    await expect(previewScreen.modal()).toHaveCount(0);
+    expect(getComputedStyle(publishScreen.root().element()).animationName).toBe('none');
+
+    await publishScreen.closeButton().click();
+    await editorScreen.publishButton().click();
+    await expect.element(publishScreen.options()).toBeVisible();
+    expect(getComputedStyle(publishScreen.root().element()).animationName).not.toBe('none');
+    await publishScreen.closeButton().click();
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.modal()).toBeVisible();
+    expect(getComputedStyle(previewScreen.modal().element()).animationName).not.toBe('none');
+  });
+
   it('keeps the publish flow and its choices while previewing from inside it', async () => {
     publishChrome({ newsletters: 1 });
     const saveApi = fakeSavablePost();

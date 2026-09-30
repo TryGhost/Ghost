@@ -210,6 +210,7 @@ function PublishActions({
   });
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
+  const [openedFromPreview, setOpenedFromPreview] = useState(false);
 
   if (inputs.isReady && !everReady) {
     setEverReady(true);
@@ -227,9 +228,13 @@ function PublishActions({
     void session.dispatchPublish({ kind: 'revert' });
   }, [onOpenFlow, session]);
   const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
-  const openPublishFlow = useCallback(() => onOpenFlow('publish'), [onOpenFlow]);
+  const openPublishFlow = useCallback(() => {
+    setOpenedFromPreview(false);
+    onOpenFlow('publish');
+  }, [onOpenFlow]);
   const { onOpenChange: setPreviewOpen } = preview;
   const publishFromPreview = useCallback(() => {
+    setOpenedFromPreview(true);
     setPreviewOpen(false);
     onOpenFlow('publish');
   }, [onOpenFlow, setPreviewOpen]);
@@ -275,6 +280,7 @@ function PublishActions({
           </Button>
           <PostPreviewModal
             {...preview}
+            animate={openFlow !== 'publish'}
             publishDisabled={!inputs.isReady}
             onPublish={publishFromPreview}
           />
@@ -306,6 +312,7 @@ function PublishActions({
 
       {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
+          animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
           limits={limits}
           paywallImprovements={paywallImprovements}
