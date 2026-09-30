@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AutomationRun } from '@tryghost/admin-x-framework/api/automations';
-import { mapAutomationRuns } from './automation-runs';
+import { mapAutomationRuns, isSortedByEntry } from './automation-runs';
 
 const run: AutomationRun = {
   id: 'one',
@@ -44,5 +44,39 @@ describe('automation run list mapping', () => {
     { status: 'exited_early', failed: true, label: 'Exited early — Failed' },
   ] as const)('labels $status with failed=$failed', ({ status, failed, label }) => {
     expect(mapAutomationRuns([{ ...run, status, failed }])[0].statusLabel).toBe(label);
+  });
+});
+
+describe('automation run list ordering check', () => {
+  const at = (id: string, createdAt: string): AutomationRun => ({
+    ...run,
+    id,
+    created_at: createdAt,
+  });
+  const newest = at('b', '2026-09-15T12:00:00.000Z');
+  const olderTieB = at('b', '2026-09-14T12:00:00.000Z');
+  const olderTieA = at('a', '2026-09-14T12:00:00.000Z');
+
+  it('accepts entry time then run ID in the requested direction, including empty lists', () => {
+    expect(isSortedByEntry([newest, olderTieB, olderTieA], 'desc')).toBe(true);
+    expect(isSortedByEntry([olderTieA, olderTieB, newest], 'asc')).toBe(true);
+    expect(isSortedByEntry([], 'asc')).toBe(true);
+    expect(isSortedByEntry([newest], 'desc')).toBe(true);
+  });
+
+  it('rejects rows in the opposite direction or with ties out of ID order', () => {
+    expect(isSortedByEntry([olderTieA, newest], 'desc')).toBe(false);
+    expect(isSortedByEntry([newest, olderTieA], 'asc')).toBe(false);
+    expect(isSortedByEntry([olderTieA, olderTieB], 'desc')).toBe(false);
+    expect(isSortedByEntry([olderTieB, olderTieA], 'asc')).toBe(false);
+  });
+
+  it('compares equal instants written in different timestamp formats', () => {
+    expect(
+      isSortedByEntry(
+        [at('b', '2026-09-14T12:00:00Z'), at('a', '2026-09-14T12:00:00.000Z')],
+        'desc',
+      ),
+    ).toBe(true);
   });
 });

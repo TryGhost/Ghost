@@ -121,14 +121,14 @@ describe('automations api queries', () => {
       );
       await waitFor(() => expect(completedRequests).toBe(1));
       rerender({ scope: 'visit:1', status: 'exited_early' });
-      await waitFor(() => expect(result.current.data?.automation_runs[0].id).toBe('exited'));
+      await waitFor(() => expect(result.current.data?.[0].id).toBe('exited'));
       rerender({ scope: 'visit:2', status: 'completed' });
-      await waitFor(() => expect(result.current.data?.automation_runs[0].id).toBe('fresh'));
+      await waitFor(() => expect(result.current.data?.[0].id).toBe('fresh'));
       finish(response('late', 'completed'));
       // Wait for every request to settle using the public client API before checking the result.
       await waitFor(() => expect(queryClient.isFetching()).toBe(0));
       expect(completedRequests).toBe(2);
-      expect(result.current.data?.automation_runs[0].id).toBe('fresh');
+      expect(result.current.data?.[0].id).toBe('fresh');
     } finally {
       finish(response('late', 'completed'));
       fetch.mockRestore();

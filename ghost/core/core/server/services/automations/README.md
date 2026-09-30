@@ -138,10 +138,13 @@ reads, not a snapshot: status changes can affect later pages.
 In Admin, the list loads on first sidebar open and stays cached through closing
 and reopening. Selecting a status card filters only the list; selecting it again
 clears the status filter. Each selection fetches fresh rows while the chart and
-counts stay unchanged. Previous rows remain visible during status requests, with
+counts stay unchanged. The Entered heading switches between newest and oldest
+first. Scrolling loads additional fifty-run pages; changing status, direction,
+or dates starts from the first page. A failed next page retains the loaded rows
+and retries only that page. Previous rows remain visible during status requests, with
 a delayed loading indicator. Date changes clear previous rows and load both the
-summary and list for the selected period. Initial list loading uses one compact
-placeholder row rather than filling the panel with skeleton rows.
+summary and list for the selected period. Loading without existing rows shows ten
+skeleton rows, with a loading announcement for screen readers.
 
 Empty-state messages appear only in the list: "No entries yet" for all time,
 "No entries in this period" for a date filter, and "No matching entries" for a
