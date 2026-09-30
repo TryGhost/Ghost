@@ -249,7 +249,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                     data-testid="post-featured"
                   />
                 )}
-                <Text as="h3" className="truncate" weight="semibold">
+                <Text as="h3" className="truncate tracking-normal" weight="semibold">
                   {post.title}
                 </Text>
               </Inline>
