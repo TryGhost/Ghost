@@ -3,7 +3,7 @@ import { Meta, createMutation, createQuery, createQueryWithId } from '../utils/a
 import type { ReadonlyDeep } from 'type-fest';
 
 export type AutomationStatus = 'active' | 'inactive';
-export const MAX_AUTOMATION_ACTIONS = 20;
+export const MAX_AUTOMATION_ACTIONS = 50;
 
 export type Automation = {
   id: string;
