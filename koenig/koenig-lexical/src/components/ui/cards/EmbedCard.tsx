@@ -5,6 +5,7 @@ import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {
     EMBED_READY_MESSAGE,
+    EMBED_RENDERER_LOADING_DELAY,
     EMBED_RENDERER_PERMISSIONS,
     EMBED_RENDERER_TIMEOUT,
     EMBED_RENDERER_VERSION,
@@ -14,7 +15,7 @@ import {
 } from '../../../utils/embed-renderer';
 import {UrlInput} from '../UrlInput';
 
-export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, rendererUrl, url, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlSubmit, handleRetry, handlePasteAsLink, handleClose}) {
+export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, metadata, rendererUrl, url, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlSubmit, handleRetry, handlePasteAsLink, handleClose}) {
     if (html) {
         return (
             <div>
@@ -27,6 +28,7 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
                             key={`${rendererUrl}\n${html}`}
                             dataTestId="embed-iframe"
                             html={html}
+                            metadata={metadata}
                             rendererUrl={rendererUrl}
                             url={url}
                         />
@@ -152,18 +154,24 @@ function EmbedIframe({dataTestId, html}) {
 }
 
 // Previews embed html in the embed renderer, which runs on a separate origin
-// so embed scripts can't reach the editor. Fails closed when the renderer is
-// unusable or doesn't answer.
-function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
+// so embed scripts can't reach the editor. Never falls back to rendering in the
+// editor: a static preview stands in while the renderer is unusable or slow.
+function RendererEmbedIframe({dataTestId, html, metadata, rendererUrl, url}) {
     const iframeRef = React.useRef<HTMLIFrameElement>(null);
     const [unavailable, setUnavailable] = React.useState(!rendererUrl);
+    // set while the renderer hasn't answered: 'slow', then 'timed-out'
+    const [waiting, setWaiting] = React.useState<'slow' | 'timed-out' | null>(null);
     const {onError} = React.useContext(KoenigComposerContext);
     const loadedRef = React.useRef(false);
 
     // reports to the host, so a preview that fails to load can be debugged
+    const report = (reason: string) => {
+        onError?.(new Error(`Embed renderer unavailable: ${reason}`));
+    };
+
     const fail = (reason: string) => {
         setUnavailable(true);
-        onError?.(new Error(`Embed renderer unavailable: ${reason}`));
+        report(reason);
     };
 
     // a layout effect listens before the iframe can run, so a cached renderer's ready message isn't missed
@@ -192,6 +200,7 @@ function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
                 }
 
                 rendered = true;
+                setWaiting(null);
                 iframe.contentWindow.postMessage({type: EMBED_RENDER_MESSAGE, version: EMBED_RENDERER_VERSION, html}, rendererOrigin);
                 return;
             }
@@ -207,47 +216,68 @@ function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
 
         window.addEventListener('message', handleMessage);
 
-        // the renderer can be blocked, offline or misconfigured
+        const loadingDelay = window.setTimeout(() => {
+            if (!rendered) {
+                setWaiting('slow');
+            }
+        }, EMBED_RENDERER_LOADING_DELAY);
+
+        // the renderer can be blocked, offline or just slow, so keep the frame
+        // loading behind the static preview in case it answers late
         const timeout = window.setTimeout(() => {
             if (!rendered) {
+                setWaiting('timed-out');
                 // the frame loads for error pages too, so loaded means the wrong document came back
-                fail(`timed out, frame ${loadedRef.current ? 'loaded' : 'never loaded'}`);
+                report(`timed out, frame ${loadedRef.current ? 'loaded' : 'never loaded'}`);
             }
         }, EMBED_RENDERER_TIMEOUT);
 
         return function cleanup() {
             window.removeEventListener('message', handleMessage);
+            window.clearTimeout(loadingDelay);
             window.clearTimeout(timeout);
         };
-        // `fail` is recreated every render and mustn't restart the handshake
+        // `fail` and `report` are recreated every render and mustn't restart the handshake
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [html, rendererUrl]);
 
     if (unavailable) {
-        return <EmbedPreviewUnavailable url={url} />;
+        return <EmbedPreviewPlaceholder metadata={metadata} url={url} />;
     }
 
     return (
-        <iframe
-            ref={iframeRef}
-            className="bn miw-100 w-full"
-            data-testid={dataTestId}
-            referrerPolicy="no-referrer"
-            sandbox={EMBED_RENDERER_PERMISSIONS}
-            src={rendererUrl}
-            tabIndex={-1}
-            title="embed-card-iframe"
-            onLoad={() => {
-                loadedRef.current = true;
-            }}>
-        </iframe>
+        <>
+            {waiting && <EmbedPreviewPlaceholder isLoading={waiting === 'slow'} metadata={metadata} url={url} />}
+            <iframe
+                ref={iframeRef}
+                className={waiting ? 'hidden' : 'bn miw-100 w-full'}
+                data-testid={dataTestId}
+                referrerPolicy="no-referrer"
+                sandbox={EMBED_RENDERER_PERMISSIONS}
+                src={rendererUrl}
+                tabIndex={-1}
+                title="embed-card-iframe"
+                onLoad={() => {
+                    loadedRef.current = true;
+                }}>
+            </iframe>
+        </>
     );
 }
 
-function EmbedPreviewUnavailable({url}) {
+// Built from the embed's oEmbed metadata, so nothing from the embed runs
+function EmbedPreviewPlaceholder({isLoading = false, metadata, url}) {
+    const [thumbnailFailed, setThumbnailFailed] = React.useState(false);
+    const title = typeof metadata?.title === 'string' ? metadata.title : null;
+    const thumbnail = typeof metadata?.thumbnail_url === 'string' ? metadata.thumbnail_url : null;
+
     return (
-        <div className="flex min-h-[120px] w-full flex-col items-center justify-center gap-1 rounded border border-grey-200 p-4 text-center font-sans text-sm text-grey-700 dark:border-grey-900 dark:text-grey-500" data-testid="embed-preview-unavailable">
-            <span>Embed preview unavailable</span>
+        <div className="flex min-h-[120px] w-full flex-col items-center justify-center gap-1 rounded border border-grey-200 p-4 text-center font-sans text-sm text-grey-700 dark:border-grey-900 dark:text-grey-500" data-testid="embed-preview-placeholder">
+            {thumbnail && !thumbnailFailed && (
+                <img alt="" className="mb-2 max-h-[200px] max-w-full rounded object-contain" data-testid="embed-preview-thumbnail" referrerPolicy="no-referrer" src={thumbnail} onError={() => setThumbnailFailed(true)} />
+            )}
+            {title && <span className="font-semibold text-grey-900 dark:text-grey-100" data-testid="embed-preview-title">{title}</span>}
+            <span>{isLoading ? 'Loading preview…' : 'Embed preview unavailable'}</span>
             {url && <span className="break-all text-xs text-grey-500">{url}</span>}
         </div>
     );
@@ -255,6 +285,7 @@ function EmbedPreviewUnavailable({url}) {
 
 EmbedCard.propTypes = {
     html: PropTypes.string,
+    metadata: PropTypes.object,
     rendererUrl: PropTypes.string,
     url: PropTypes.string,
     isSelected: PropTypes.bool,
@@ -279,10 +310,13 @@ EmbedIframe.propTypes = {
 RendererEmbedIframe.propTypes = {
     dataTestId: PropTypes.string,
     html: PropTypes.string,
+    metadata: PropTypes.object,
     rendererUrl: PropTypes.string,
     url: PropTypes.string
 };
 
-EmbedPreviewUnavailable.propTypes = {
+EmbedPreviewPlaceholder.propTypes = {
+    isLoading: PropTypes.bool,
+    metadata: PropTypes.object,
     url: PropTypes.string
 };

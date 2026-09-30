@@ -1,13 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import {E2E_PORT} from '../../../playwright.config';
-import {EMBED_RENDERER_MAX_HEIGHT} from '../../../src/utils/embed-renderer';
+import {EMBED_RENDERER_LOADING_DELAY, EMBED_RENDERER_MAX_HEIGHT, EMBED_RENDERER_TIMEOUT} from '../../../src/utils/embed-renderer';
 import {assertHTML, createSnippet, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
 import {chromium, expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const THUMBNAIL = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
 test.describe('Embed card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
@@ -107,13 +109,13 @@ test.describe('Embed card', async () => {
             await page.unroute(`${rendererDirectory}**`);
         });
 
-        function embedContent(embedHtml) {
+        function embedContent(embedHtml, metadata = {}) {
             return encodeURIComponent(JSON.stringify({
                 root: {
                     children: [{
                         type: 'embed',
                         html: embedHtml,
-                        metadata: {},
+                        metadata,
                         embedType: 'rich',
                         url: 'https://attacker.example/'
                     }],
@@ -177,11 +179,55 @@ test.describe('Embed card', async () => {
 
         test('shows a placeholder when the renderer is on the editor origin', async function () {
             const sameOriginDirectory = `http://localhost:${E2E_PORT}/embed-renderer/`;
+            const metadata = {title: 'An embedded video', thumbnail_url: THUMBNAIL};
 
-            await initialize({page, uri: `/#/?embedPreviewUrl=${encodeURIComponent(sameOriginDirectory)}&content=${embedContent('<p>Embedded content</p>')}`});
+            await initialize({page, uri: `/#/?embedPreviewUrl=${encodeURIComponent(sameOriginDirectory)}&content=${embedContent('<p>Embedded content</p>', metadata)}`});
 
-            await expect(page.getByTestId('embed-preview-unavailable')).toContainText('https://attacker.example/');
+            const placeholder = page.getByTestId('embed-preview-placeholder');
+            await expect(placeholder).toContainText('https://attacker.example/');
+            await expect(placeholder).toContainText('Embed preview unavailable');
+            await expect(placeholder.getByTestId('embed-preview-title')).toHaveText('An embedded video');
+            await expect(placeholder.getByTestId('embed-preview-thumbnail')).toHaveAttribute('src', THUMBNAIL);
             await expect(page.getByTestId('embed-iframe')).toHaveCount(0);
+        });
+
+        test('shows a placeholder while the renderer is slow, then the embed once it answers', async function ({browser}) {
+            // its own page, so the fake clock doesn't leak into other tests
+            const slowPage = await browser.newPage();
+
+            try {
+                let answerRenderer: () => Promise<void>;
+                await slowPage.route(`${rendererDirectory}**`, (route) => {
+                    answerRenderer = () => route.fulfill({path: rendererFile, contentType: 'text/html'});
+                });
+                await slowPage.clock.install();
+
+                // the unanswered renderer holds up the page's load event
+                const uri = `/#/?embedPreviewUrl=${encodeURIComponent(rendererDirectory)}&content=${embedContent('<div style="height: 400px">Embedded content</div>', {title: 'A slow embed'})}`;
+                await slowPage.goto(`http://localhost:${E2E_PORT}${uri}`, {waitUntil: 'domcontentloaded'});
+                await expect(slowPage.getByTestId('embed-iframe')).toBeAttached();
+
+                const placeholder = slowPage.getByTestId('embed-preview-placeholder');
+
+                await slowPage.clock.runFor(EMBED_RENDERER_LOADING_DELAY);
+
+                await expect(placeholder).toContainText('Loading preview');
+                await expect(slowPage.getByTestId('embed-preview-title')).toHaveText('A slow embed');
+                await expect(slowPage.getByTestId('embed-iframe')).toBeHidden();
+
+                await slowPage.clock.runFor(EMBED_RENDERER_TIMEOUT - EMBED_RENDERER_LOADING_DELAY);
+
+                await expect(placeholder).toContainText('Embed preview unavailable');
+                await expect(slowPage.getByTestId('embed-iframe')).toBeHidden();
+
+                await answerRenderer();
+
+                await expect(slowPage.getByTestId('embed-iframe')).toBeVisible();
+                await expect(slowPage.getByTestId('embed-iframe')).toHaveCSS('height', '400px');
+                await expect(placeholder).toHaveCount(0);
+            } finally {
+                await slowPage.close();
+            }
         });
     });
 

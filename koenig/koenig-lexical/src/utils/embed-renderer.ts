@@ -15,6 +15,9 @@ export const EMBED_RESIZE_MESSAGE = 'kg-embed-resize';
 // embed players (YouTube, Vimeo, etc.) on their own origins.
 export const EMBED_RENDERER_PERMISSIONS = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation';
 
+// a static preview stands in once the renderer is slow to answer
+export const EMBED_RENDERER_LOADING_DELAY = 2000;
+
 export const EMBED_RENDERER_TIMEOUT = 10000;
 
 // The height comes from the embed itself, so cap what the editor will apply:
