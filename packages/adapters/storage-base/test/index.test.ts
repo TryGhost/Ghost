@@ -335,4 +335,114 @@ describe('Storage Base', function () {
     );
     assert.deepEqual(calls, [{ filename: '-abc-@-123-.zip', dir: 'target-dir' }]);
   });
+
+  it('generateUnique: leaves short filenames untouched', async function () {
+    const storage = new TestStorage();
+
+    storage.exists = function () {
+      return Promise.resolve(false);
+    };
+
+    assert.equal(
+      await storage.generateUnique('target-dir', 'something', '.jpg', 0),
+      path.join('target-dir', 'something.jpg'),
+    );
+  });
+
+  it('generateUnique: truncates filenames longer than 255 bytes to keep the extension', async function () {
+    const storage = new TestStorage();
+
+    storage.exists = function () {
+      return Promise.resolve(false);
+    };
+
+    const longName = 'a'.repeat(383);
+    const result = await storage.generateUnique('target-dir', longName, '.jpg', 0);
+    const filename = path.basename(result);
+
+    assert.ok(Buffer.byteLength(filename) <= 255);
+    assert.ok(filename.endsWith('.jpg'));
+    // 255 bytes total minus the 4-byte '.jpg' extension leaves 251 bytes of name.
+    assert.equal(filename, 'a'.repeat(251) + '.jpg');
+  });
+
+  it('generateUnique: keeps the collision suffix within the 255-byte limit', async function () {
+    const storage = new TestStorage();
+    let calls = 0;
+
+    storage.exists = function () {
+      calls = calls + 1;
+      // First candidate collides, forcing the '-1' suffix path.
+      return Promise.resolve(calls < 2);
+    };
+
+    const longName = 'a'.repeat(383);
+    const result = await storage.generateUnique('target-dir', longName, '.jpg', 0);
+    const filename = path.basename(result);
+
+    assert.ok(Buffer.byteLength(filename) <= 255);
+    assert.ok(filename.endsWith('-1.jpg'));
+    // 255 bytes total minus the 6-byte '-1.jpg' suffix leaves 249 bytes of name.
+    assert.equal(filename, 'a'.repeat(249) + '-1.jpg');
+  });
+
+  it('generateUnique: truncates multibyte filenames on a codepoint boundary', async function () {
+    const storage = new TestStorage();
+
+    storage.exists = function () {
+      return Promise.resolve(false);
+    };
+
+    // '中' is 3 bytes in UTF-8; 100 of them is 300 bytes, over the limit.
+    const longName = '中'.repeat(100);
+    const result = await storage.generateUnique('target-dir', longName, '.jpg', 0);
+    const filename = path.basename(result);
+
+    assert.ok(Buffer.byteLength(filename) <= 255);
+    assert.ok(filename.endsWith('.jpg'));
+    // No replacement character and no split codepoint: decoding is lossless.
+    assert.ok(!filename.includes('�'));
+    const nameWithoutExt = filename.slice(0, -'.jpg'.length);
+    assert.equal(Buffer.byteLength(nameWithoutExt) % 3, 0);
+    assert.equal(nameWithoutExt, '中'.repeat(nameWithoutExt.length));
+  });
+
+  it('generateUnique: truncates filenames without extensions', async function () {
+    const storage = new TestStorage();
+
+    storage.exists = function () {
+      return Promise.resolve(false);
+    };
+
+    const longName = 'a'.repeat(383);
+    const result = await storage.generateUnique('target-dir', longName, null, 0);
+    const filename = path.basename(result);
+
+    assert.ok(Buffer.byteLength(filename) <= 255);
+    assert.equal(filename, 'a'.repeat(255));
+  });
+
+  it('truncateFileNameToByteLength: returns short strings unchanged', function () {
+    const storage = new TestStorage();
+
+    assert.equal(storage.truncateFileNameToByteLength('something', 255), 'something');
+  });
+
+  it('truncateFileNameToByteLength: returns an empty string for non-positive limits', function () {
+    const storage = new TestStorage();
+
+    assert.equal(storage.truncateFileNameToByteLength('something', 0), '');
+    assert.equal(storage.truncateFileNameToByteLength('something', -5), '');
+  });
+
+  it('truncateFileNameToByteLength: never splits a multibyte character', function () {
+    const storage = new TestStorage();
+
+    // '中' is 3 bytes; ask for 4 bytes so a naive cut would split the 2nd char.
+    const result = storage.truncateFileNameToByteLength('中中中', 4);
+
+    assert.ok(Buffer.byteLength(result) <= 4);
+    assert.ok(!result.includes('�'));
+    assert.equal(result, '中');
+  });
 });

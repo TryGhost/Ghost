@@ -12,6 +12,13 @@ export type ReadOptions = {
   path: string;
 };
 
+// Most filesystems limit a single filename component to 255 bytes (NAME_MAX).
+// Object storage does not enforce this, so long client-supplied filenames can
+// later fail with ENAMETOOLONG when written back to disk (e.g. archive
+// downloads). We cap the generated filename here so every storage adapter
+// (local, S3, and external adapters extending this base) produces portable names.
+const MAX_FILENAME_LENGTH = 255;
+
 /**
  * Base class for Ghost storage adapters.
  *
@@ -50,6 +57,26 @@ export abstract class StorageBase {
     return path.join(year, month);
   }
 
+  truncateFileNameToByteLength(name: string, maxBytes: number): string {
+    if (maxBytes <= 0) {
+      return '';
+    }
+
+    const buffer = Buffer.from(name, 'utf8');
+
+    if (buffer.length <= maxBytes) {
+      return name;
+    }
+
+    // Back up off any UTF-8 continuation byte so we never split a character.
+    let end = maxBytes;
+    while (end > 0 && (buffer[end]! & 0xc0) === 0x80) {
+      end -= 1;
+    }
+
+    return buffer.subarray(0, end).toString('utf8');
+  }
+
   generateUnique(dir: string, name: string, ext: string | null, i: number): Promise<string> {
     let filename: string;
     let append = '';
@@ -58,10 +85,16 @@ export abstract class StorageBase {
       append = '-' + i;
     }
 
+    const suffix = append + (ext || '');
+    const truncatedName = this.truncateFileNameToByteLength(
+      name,
+      MAX_FILENAME_LENGTH - Buffer.byteLength(suffix, 'utf8'),
+    );
+
     if (ext) {
-      filename = name + append + ext;
+      filename = truncatedName + append + ext;
     } else {
-      filename = name + append;
+      filename = truncatedName + append;
     }
 
     return this.exists(filename, dir).then((exists) => {
