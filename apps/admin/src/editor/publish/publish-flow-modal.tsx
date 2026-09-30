@@ -174,7 +174,12 @@ function PublishFlowDialog({
                   Close
                 </Button>
                 {flow.emailErrorMessage || !onPreview ? null : (
-                  <Button data-testid={publishFlowPreview} variant="outline" onClick={onPreview}>
+                  <Button
+                    className="w-20 shrink-0"
+                    data-testid={publishFlowPreview}
+                    variant="outline"
+                    onClick={onPreview}
+                  >
                     Preview
                   </Button>
                 )}

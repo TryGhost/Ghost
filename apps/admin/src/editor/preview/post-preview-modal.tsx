@@ -344,7 +344,7 @@ export function PostPreviewModal({
             Close
           </Button>
           {onPublish ? (
-            <Button disabled={publishDisabled} onClick={onPublish}>
+            <Button className="w-20 shrink-0" disabled={publishDisabled} onClick={onPublish}>
               Publish
             </Button>
           ) : null}
