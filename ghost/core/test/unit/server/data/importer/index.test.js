@@ -247,7 +247,7 @@ describe('Importer', function () {
           .withArgs(RevueHandler, sinon.match.string)
           .returns([{ path: '/tmp/dir/myFile.json', name: 'myFile.json' }]);
 
-        const zipResult = await ImportManager.processZip(testZip);
+        const { data: zipResult } = await ImportManager.processZip(testZip);
 
         sinon.assert.calledOnce(extractSpy);
         sinon.assert.calledOnce(validSpy);
@@ -384,7 +384,7 @@ describe('Importer', function () {
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
-          const zipResult = await ImportManager.processZip(testZip);
+          const { data: zipResult } = await ImportManager.processZip(testZip);
           assertExists(zipResult.data);
           assert.equal(zipResult.images, undefined);
           sinon.assert.calledOnce(extractSpy);
@@ -399,7 +399,7 @@ describe('Importer', function () {
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
-          const zipResult = await ImportManager.processZip(testZip);
+          const { data: zipResult } = await ImportManager.processZip(testZip);
           assertExists(zipResult.data);
           assert.equal(zipResult.images, undefined);
           sinon.assert.calledOnce(extractSpy);
@@ -414,7 +414,7 @@ describe('Importer', function () {
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
-          const zipResult = await ImportManager.processZip(testZip);
+          const { data: zipResult } = await ImportManager.processZip(testZip);
           assert.equal(zipResult.images.length, 1);
           assert.equal(zipResult.data, undefined);
           sinon.assert.calledOnce(extractSpy);
@@ -429,7 +429,7 @@ describe('Importer', function () {
             .stub(ImportManager, 'extractZip')
             .returns(Promise.resolve(testDir));
 
-          const zipResult = await ImportManager.processZip(testZip);
+          const { data: zipResult } = await ImportManager.processZip(testZip);
           assert.equal(zipResult.images.length, 1);
           assert.equal(zipResult.data, undefined);
           sinon.assert.calledOnce(extractSpy);

@@ -160,13 +160,17 @@ class ImportManager {
   /**
    * Process Zip
    * Takes a reference to a zip file, extracts it and reads it, returning the content to import
+   * alongside the directory it was extracted to
    * @param {File} file
-   * @returns {Promise<ImportData>}
+   * @returns {Promise<LoadedImport>}
    */
   async processZip(file) {
-    const zipDirectory = await this.extractZip(file.path);
+    const cleanupDirectory = await this.extractZip(file.path);
 
-    return this.readExtractedZip(zipDirectory);
+    return {
+      data: await this.readExtractedZip(cleanupDirectory),
+      cleanupDirectory,
+    };
   }
 
   /**
@@ -251,13 +255,14 @@ class ImportManager {
    * Import Step 1:
    * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
    * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
+   * A zip also yields the directory it was extracted to.
    * @param {File} file
-   * @returns {Promise<ImportData>}
+   * @returns {Promise<LoadedImport>}
    */
-  loadFile(file) {
-    const self = this;
+  async loadFile(file) {
     const ext = path.extname(file.name).toLowerCase();
-    return this.isZip(ext) ? self.processZip(file) : self.processFile(file, ext);
+
+    return this.isZip(ext) ? this.processZip(file) : { data: await this.processFile(file, ext) };
   }
 
   /**
@@ -370,40 +375,40 @@ class ImportManager {
    * @returns {Promise<Object.<string, ImportResult>>}
    */
   async importFromFile(file, importOptions = {}) {
-    let importData;
+    let loaded;
     if (importOptions.data) {
-      importData = importOptions.data;
+      loaded = { data: importOptions.data };
     } else {
       // Step 1: Handle converting the file to usable data
       // Has to be completed outside of job to ensure file is processed before being deleted
-      importData = await this.loadFile(file);
+      loaded = await this.loadFile(file);
     }
 
-    debug('importFromFile completed file load', importData);
+    debug('importFromFile completed file load', loaded.data);
 
     const env = this.config.get('env');
     if (!env?.startsWith('testing') && !importOptions.runningInJob) {
       this.logging.info('[Background Job] site-content-import queued');
       return this.jobManager.addJob({
-        job: () => this.executeImport(importData, importOptions),
+        job: () => this.executeImport(loaded, importOptions),
         offloaded: false,
       });
     }
 
-    return this.processImport(importData, importOptions);
+    return this.processImport(loaded, importOptions);
   }
 
   /**
    * Run a queued import, logging when it starts and how it ends
-   * @param {ImportData} importData
+   * @param {LoadedImport} loaded
    * @param {ImportOptions} importOptions
    * @returns {Promise<Object.<string, ImportResult>|undefined>}
    */
-  async executeImport(importData, importOptions) {
+  async executeImport(loaded, importOptions) {
     const startedAt = Date.now();
     this.logging.info('[Background Job] site-content-import started');
     try {
-      const result = await this.processImport(importData, importOptions);
+      const result = await this.processImport(loaded, importOptions);
       // processImport swallows import failures and resolves undefined,
       // so an absent result is the only signal that the import failed.
       if (result === undefined) {
@@ -428,16 +433,16 @@ class ImportManager {
   /**
    * Import loaded content, report on it, release the files it owns, and email the user how
    * it went. A failed import is reported in that email and resolves undefined.
-   * @param {ImportData} importData
+   * @param {LoadedImport} loaded
    * @param {ImportOptions} importOptions
    * @returns {Promise<Object.<string, ImportResult>|undefined>}
    */
-  async processImport(importData, importOptions) {
+  async processImport(loaded, importOptions) {
     const env = this.config.get('env');
     let importResult;
     try {
       // Step 2: Let the importers pre-process the data
-      importData = await this.preProcess(importData);
+      const importData = await this.preProcess(loaded.data);
 
       // Step 3: Actually do the import
       // @TODO: It would be cool to have some sort of dry run flag here
@@ -535,5 +540,12 @@ class ImportManager {
 
 /**
  * @typedef {Object} ImportResult
+ */
+
+/**
+ * Content ready to import, with the directory it was extracted to, if any
+ * @typedef {Object} LoadedImport
+ * @property {ImportData} data
+ * @property {string} [cleanupDirectory]
  */
 module.exports = ImportManager;

@@ -59,7 +59,7 @@ describe('Site import execution', function () {
     deps.mailer.send.callsFake(async () => {
       events.push('email');
     });
-    assert.deepEqual(await manager.processImport(data, options), { images: {}, data: {} });
+    assert.deepEqual(await manager.processImport({ data }, options), { images: {}, data: {} });
     assert.deepEqual(events, [
       'pre:images',
       'pre:data',
@@ -80,7 +80,7 @@ describe('Site import execution', function () {
     const { manager, deps } = subject();
     const error = new Error('import failed');
     sinon.stub(manager, 'preProcess').rejects(error);
-    assert.equal(await manager.processImport({}, options), undefined);
+    assert.equal(await manager.processImport({ data: {} }, options), undefined);
     sinon.assert.calledWith(
       deps.logging.error,
       error,
@@ -102,7 +102,7 @@ describe('Site import execution', function () {
       } else {
         sinon.stub(manager, stage).throws(error);
       }
-      await assert.rejects(manager.processImport({}, options), error);
+      await assert.rejects(manager.processImport({ data: {} }, options), error);
       sinon.assert.calledOnce(cleanup);
     });
   }
@@ -111,7 +111,7 @@ describe('Site import execution', function () {
     const { manager, deps } = subject();
     manager.fileToDelete = '/tmp/owned';
     sinon.stub(fs, 'remove').rejects(new Error('cleanup failed'));
-    assert.deepEqual(await manager.processImport({}, options), {});
+    assert.deepEqual(await manager.processImport({ data: {} }, options), {});
     sinon.assert.calledOnce(deps.logging.error);
     sinon.assert.calledOnce(deps.mailer.send);
   });
@@ -123,28 +123,28 @@ describe('Site import execution', function () {
 
     const succeeds = subject();
     sinon.stub(succeeds.manager, 'processImport').resolves({});
-    assert.deepEqual(await succeeds.manager.executeImport({}, options), {});
+    assert.deepEqual(await succeeds.manager.executeImport({ data: {} }, options), {});
     sinon.assert.calledWith(succeeds.deps.logging.info.firstCall, started);
     sinon.assert.calledWith(succeeds.deps.logging.info.secondCall, sinon.match(completed));
 
     // A failed import is swallowed by processImport, which resolves undefined
     const fails = subject();
     sinon.stub(fails.manager, 'processImport').resolves(undefined);
-    assert.equal(await fails.manager.executeImport({}, options), undefined);
+    assert.equal(await fails.manager.executeImport({ data: {} }, options), undefined);
     sinon.assert.calledWith(fails.deps.logging.info.firstCall, started);
     sinon.assert.calledWith(fails.deps.logging.info.secondCall, sinon.match(failed));
 
     const throws = subject();
     const error = new Error('email failed');
     sinon.stub(throws.manager, 'processImport').rejects(error);
-    await assert.rejects(throws.manager.executeImport({}, options), error);
+    await assert.rejects(throws.manager.executeImport({ data: {} }, options), error);
     sinon.assert.calledWith(throws.deps.logging.error, error, sinon.match(failed));
   });
 
   it('queues the loaded import outside testing and runs it when the job executes', async function () {
     const { manager, deps } = subject();
-    const data = { data: { posts: [] } };
-    sinon.stub(manager, 'loadFile').resolves(data);
+    const loaded = { data: { data: { posts: [] } }, cleanupDirectory: '/tmp/owned' };
+    sinon.stub(manager, 'loadFile').resolves(loaded);
     const execute = sinon.stub(manager, 'executeImport').resolves({});
 
     await manager.importFromFile({ name: 'export.json' }, options);
@@ -153,7 +153,7 @@ describe('Site import execution', function () {
     sinon.assert.calledOnceWithMatch(deps.jobManager.addJob, { offloaded: false });
     sinon.assert.notCalled(execute);
     await deps.jobManager.addJob.firstCall.args[0].job();
-    sinon.assert.calledOnceWithExactly(execute, data, options);
+    sinon.assert.calledOnceWithExactly(execute, loaded, options);
   });
 
   it('keeps testing calls inline without email and explicit direct calls inline with email', async function () {
