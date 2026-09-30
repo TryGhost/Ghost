@@ -683,14 +683,18 @@ module.exports = class MemberBREADService {
   /**
    * Updates a member and writes their metafields in one transaction. The `member.edited`
    * event fires when the transaction commits, so it always sees the new metafields.
+   * Without writes, updates the member as before.
    *
-   * @private
    * @param {object} data the member attributes to change
    * @param {object} options must name the member by `id`
    * @param {import('../../../members-metafields/values-service').PlannedWrite[]} writes
    * @param {import('../../../members-metafields').WriteOrigin} origin
    */
   async updateWithMetafields(data, options, writes, origin) {
+    if (writes.length === 0) {
+      return this.memberRepository.update(data, options);
+    }
+
     return this.transaction(async (transacting) => {
       // Locked before anything else reads. On MySQL a transaction reads from a snapshot
       // taken at its first plain read, so an edit that waited on another edit to this
