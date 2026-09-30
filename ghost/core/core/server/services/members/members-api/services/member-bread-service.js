@@ -669,6 +669,10 @@ module.exports = class MemberBREADService {
    */
   async updateWithMetafields(data, options, writes, origin) {
     return this.transaction(async (transacting) => {
+      // Locked before anything else reads. On MySQL a transaction reads from a snapshot
+      // taken at its first plain read, so an edit that waited on another edit to this
+      // member would otherwise read the metafields from before that edit committed.
+      await this.memberRepository.get({ id: options.id }, { transacting, forUpdate: true });
       const model = await this.memberRepository.update(data, { ...options, transacting });
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
 
