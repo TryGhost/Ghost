@@ -4,40 +4,18 @@ import {
   useNewsletterBasicStats,
   useNewsletterClickStats,
 } from '@tryghost/admin-x-framework/api/stats';
-import { type Post, usePost } from '@tryghost/admin-x-framework/api/posts';
 import { processAndGroupTopLinks } from '@/posts/analytics/utils/link-helpers';
 import { useMemo } from 'react';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
-import { getEmailStatsRefetchInterval } from '@/posts/analytics/utils/email-stats-polling';
-import { usePostStatsPolling } from '@/posts/analytics/hooks/use-post-stats-polling';
-
-// Extend the Post type to include newsletter property
-type PostWithNewsletter = Post & {
-  newsletter?: {
-    id: string;
-  };
-};
+import { getEmailStatsPollingOptions } from '@/posts/analytics/utils/email-stats-polling';
+import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
+import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useEmailTrackClicks } from '@tryghost/admin-x-framework/api/settings';
 
 export const usePostNewsletterStats = (postId: string) => {
-  // Fetch the post with main stats (email, clicks)
-  const { data: postResponse, isLoading: isPostLoading } = usePostStatsPolling(postId);
-
-  // Fetch the post with feedback count relations
-  const { data: feedbackPostResponse, isLoading: isFeedbackPostLoading } = usePost(postId, {
-    searchParams: {
-      include: 'count.positive_feedback,count.negative_feedback',
-    },
-  });
-
-  // Fetch the post to get top level stats
-  const post = useMemo(
-    () => postResponse?.posts[0] as PostWithNewsletter | undefined,
-    [postResponse],
-  );
-  const feedbackPost = useMemo(
-    () => feedbackPostResponse?.posts[0] as PostWithNewsletter | undefined,
-    [feedbackPostResponse],
-  );
+  const { post, isPostLoading } = usePostAnalytics();
+  const { isNewsletterDataHidden } = useEmailSendingStatusContext();
+  const emailTrackClicksEnabled = useEmailTrackClicks();
 
   const stats = useMemo(() => {
     if (!post) {
@@ -62,9 +40,9 @@ export const usePostNewsletterStats = (postId: string) => {
     };
   }, [post]);
 
-  // Calculate feedback stats from the separate feedback post fetch
+  // Calculate feedback stats from the shared post
   const feedbackStats = useMemo(() => {
-    if (!feedbackPost?.count) {
+    if (!post?.count) {
       return {
         positiveFeedback: 0,
         negativeFeedback: 0,
@@ -72,8 +50,8 @@ export const usePostNewsletterStats = (postId: string) => {
       };
     }
 
-    const positiveFeedback = feedbackPost.count.positive_feedback || 0;
-    const negativeFeedback = feedbackPost.count.negative_feedback || 0;
+    const positiveFeedback = post.count.positive_feedback || 0;
+    const negativeFeedback = post.count.negative_feedback || 0;
     const totalFeedback = positiveFeedback + negativeFeedback;
 
     return {
@@ -81,7 +59,7 @@ export const usePostNewsletterStats = (postId: string) => {
       negativeFeedback,
       totalFeedback,
     };
-  }, [feedbackPost]);
+  }, [post]);
 
   // Get the newsletter_id from the post
   const newsletterId = useMemo(() => post?.newsletter?.id, [post]);
@@ -152,11 +130,8 @@ export const usePostNewsletterStats = (postId: string) => {
     isLoading: isClicksLoading,
     refetch: refetchTopLinks,
   } = useTopLinks({
-    refetchIntervalInBackground: false,
-    refetchInterval: (query) =>
-      query.state.status === 'error'
-        ? false
-        : getEmailStatsRefetchInterval(post?.email?.submitted_at),
+    ...getEmailStatsPollingOptions(() => post?.email),
+    enabled: !!emailTrackClicksEnabled && !isNewsletterDataHidden,
     searchParams: {
       filter: `post_id:'${postId}'`,
     },
@@ -212,7 +187,6 @@ export const usePostNewsletterStats = (postId: string) => {
     averageStats,
     topLinks,
     refetchTopLinks,
-    isLoading:
-      isPostLoading || isFeedbackPostLoading || isNewsletterStatsLoading || isClicksLoading,
+    isLoading: isPostLoading || isNewsletterStatsLoading || isClicksLoading,
   };
 };
