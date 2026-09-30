@@ -45,7 +45,7 @@ export function PublishSetting({
         onClick={onToggle}
       >
         <span className="shrink-0">{icon}</span>
-        <Text className="grow" size="lg" weight="medium">
+        <Text className="grow text-inherit" size="lg" weight="medium">
           {title}
         </Text>
         <LucideIcon.ChevronDown className="size-4 shrink-0 transition-transform" />
