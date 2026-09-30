@@ -22,6 +22,7 @@ export interface SegmentOption {
   /** The NQL segment, e.g. `tier:gold` or `label:vip`. */
   segment: string;
   name: string;
+  group: string;
 }
 
 export interface RecipientSelectProps {
@@ -170,6 +171,7 @@ export function RecipientSelect({
               id: option.segment,
               slug: option.segment,
               name: option.name,
+              group: option.group,
             }))}
             optionSource={{
               options: segmentOptions.map((option) => ({

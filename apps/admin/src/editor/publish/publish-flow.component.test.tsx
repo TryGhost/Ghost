@@ -579,6 +579,63 @@ describe('Publish flow', () => {
     expect(new URL(labelsApi.requests[1].url).searchParams.get('page')).toBe('2');
   });
 
+  it('groups specific recipients into active tiers, archived tiers, and labels', async () => {
+    fakeAdminEndpoint('GET', /^\/tiers\/\?/, {
+      tiers: [
+        { slug: 'legacy', name: 'Legacy tier', active: false },
+        { slug: 'supporter', name: 'Supporter', active: true },
+      ],
+    });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [{ slug: 'vip', name: 'VIP' }],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: 'status:free',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+    await page.getByLabelText('Specific people').click();
+    const search = page.getByRole('combobox');
+    await search.click();
+
+    await expect
+      .element(
+        page
+          .getByRole('group', { name: 'Active tiers' })
+          .getByRole('option', { name: 'Supporter' }),
+      )
+      .toBeVisible();
+    await expect
+      .element(
+        page
+          .getByRole('group', { name: 'Archived tiers' })
+          .getByRole('option', { name: 'Legacy tier' }),
+      )
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('group', { name: 'Labels' }).getByRole('option', { name: 'VIP' }))
+      .toBeVisible();
+
+    await search.fill('Legacy');
+    await expect(page.getByRole('group', { name: 'Active tiers' })).toHaveCount(0);
+    await expect(page.getByRole('group', { name: 'Labels' })).toHaveCount(0);
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByRole('button', { name: 'Remove Legacy tier' })).toBeVisible();
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeVisible();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'tier:legacy' },
+    });
+  });
+
   it('searches existing recipient labels without offering label management', async () => {
     fakeAdminEndpoint('GET', /^\/labels\/\?/, {
       labels: [

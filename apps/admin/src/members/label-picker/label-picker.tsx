@@ -9,6 +9,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { EditRow } from './edit-row';
@@ -26,7 +27,10 @@ const DROPDOWN_CHROME = 6;
 // Kept clear of the viewport edge so the list never sits flush against it.
 const GUTTER = 16;
 
-type PickerLabel = Pick<Label, 'id' | 'name' | 'slug'>;
+type PickerLabel = Pick<Label, 'id' | 'name' | 'slug'> & {
+  /** Optional heading for related options; omitted for a flat label list. */
+  group?: string;
+};
 
 export interface LabelPickerProps {
   labels: PickerLabel[];
@@ -119,6 +123,13 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     ? labels.filter((label) => label.name.toLowerCase().includes(normalizedSearch))
     : labels;
   const showCreate = !!onCreate && canCreateLabel(labels, search);
+  const groups = new Map<string, PickerLabel[]>();
+  for (const label of visibleLabels) {
+    const group = label.group ?? '';
+    const groupLabels = groups.get(group) ?? [];
+    groupLabels.push(label);
+    groups.set(group, groupLabels);
+  }
   const showEdit = !!onEdit;
   const handleCreate = async () => {
     if (!onCreate) {
@@ -150,30 +161,33 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   return (
     <>
       {!showCreate && visibleLabels.length === 0 && <CommandEmpty>No labels found</CommandEmpty>}
-      {visibleLabels.length > 0 && (
-        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7 && 'p-0')}>
-          {visibleLabels.map((label) =>
-            editingLabelId === label.id ? (
-              <EditRow
-                key={label.id}
-                label={label}
-                onCancel={() => setEditingLabelId(null)}
-                onDelete={handleDelete}
-                onSave={handleEdit}
-              />
-            ) : (
-              <LabelRow
-                key={label.id}
-                isSelected={selectedSlugs.includes(label.slug)}
-                label={label}
-                showEdit={showEdit}
-                onEditClick={() => setEditingLabelId(label.id)}
-                onToggle={onToggle}
-              />
-            ),
-          )}
-        </CommandGroup>
-      )}
+      {[...groups].map(([group, groupLabels], index) => (
+        <React.Fragment key={group}>
+          {index > 0 && <CommandSeparator className="my-1" />}
+          <CommandGroup className={cn(isAdmin7 && 'p-0')} heading={group || undefined}>
+            {groupLabels.map((label) =>
+              editingLabelId === label.id ? (
+                <EditRow
+                  key={label.id}
+                  label={label}
+                  onCancel={() => setEditingLabelId(null)}
+                  onDelete={handleDelete}
+                  onSave={handleEdit}
+                />
+              ) : (
+                <LabelRow
+                  key={label.id}
+                  isSelected={selectedSlugs.includes(label.slug)}
+                  label={label}
+                  showEdit={showEdit}
+                  onEditClick={() => setEditingLabelId(label.id)}
+                  onToggle={onToggle}
+                />
+              ),
+            )}
+          </CommandGroup>
+        </React.Fragment>
+      ))}
       {showCreate && (
         <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7 && 'p-0')}>
           <CommandItem disabled={isCreating} onSelect={() => void handleCreate()}>
