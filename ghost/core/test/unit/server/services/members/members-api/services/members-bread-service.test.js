@@ -12,7 +12,6 @@ const createMetafieldValuesStub = () => ({
   getValuesForMembers: sinon.stub().resolves(new Map()),
   getValuesForMember: sinon.stub().resolves(undefined),
   unwrapWire: sinon.stub().callsFake((input) => input),
-  namesValues: sinon.stub().returns(false),
   planWrite: sinon.stub().resolves([]),
   applyWrite: sinon.stub().resolves(),
 });
@@ -100,42 +99,6 @@ describe('MemberBreadService', function () {
         metafieldValues,
       };
     }
-
-    it('refuses a create whose body names custom field values', async function () {
-      // Values can only be set on a later edit. The values service decides what
-      // counts as naming them, so drive it directly rather than through a body
-      // shape, which is the values service's own contract to test.
-      const metafieldValues = createMetafieldValuesStub();
-      metafieldValues.namesValues.returns(true);
-      const { service, createStub } = createService({}, metafieldValues);
-
-      await assert.rejects(
-        () =>
-          service.add(
-            { email: 'test@example.com', metafields: { custom: { favourite_topic: 'Ghosts' } } },
-            {},
-          ),
-        (error) => {
-          assert.equal(error.errorType, 'ValidationError');
-          assert.equal(error.property, 'metafields');
-          return true;
-        },
-      );
-
-      assert.equal(createStub.called, false, 'the member must not be created');
-    });
-
-    it('creates a member when the body names no custom field values', async function () {
-      const { service, createStub, metafieldValues } = createService();
-
-      await service.add({ email: 'test@example.com' }, {});
-
-      assert.equal(createStub.calledOnce, true);
-      // Asked unconditionally: the member data is handed over whether or not it
-      // carries the key, and an absent one is the values service's to judge.
-      assert.equal(metafieldValues.namesValues.calledOnce, true);
-      assert.equal(metafieldValues.namesValues.firstCall.args[0], undefined);
-    });
 
     it('passes context to linkStripeCustomer when stripe_customer_id is provided', async function () {
       // This test verifies that when a member is created via Admin API with a stripe_customer_id,

@@ -9,8 +9,6 @@ const messages = {
   stripeNotConnected: 'Missing Stripe connection.',
   memberAlreadyExists: 'Member already exists.',
   memberNotFound: 'Member not found.',
-  metafieldsOnAdd:
-    'Custom field values cannot be set while creating a member. Create the member, then set values with an edit.',
   metafieldsWithoutWriter:
     'Custom field values cannot be set by a request with no authenticated user or integration.',
 };
@@ -469,15 +467,65 @@ module.exports = class MemberBREADService {
     return member;
   }
 
-  async add(data, options) {
-    if (this.metafieldValues.namesValues(this.metafieldValues.unwrapWire(data.metafields))) {
-      throw new errors.ValidationError({
-        message: tpl(messages.metafieldsOnAdd),
-        property: 'metafields',
+  /**
+   * Takes the metafields out of an Admin API member payload and plans their write. Throws on
+   * an invalid value, or when the request has no user or integration to name as the writer.
+   *
+   * @private
+   * @param {object} data the member payload, whose `metafields` key is removed
+   * @param {object} options
+   * @returns {Promise<{writes: import('../../../members-metafields/values-service').PlannedWrite[], origin: import('../../../members-metafields').WriteOrigin} | null>}
+   *   null when there is nothing to write
+   */
+  async planStaffMetafields(data, options) {
+    const metafields = this.metafieldValues.unwrapWire(data.metafields);
+    delete data.metafields;
+    if (metafields === undefined) {
+      return null;
+    }
+
+    // Planned before the member is touched, so a bad value refuses the whole request.
+    const writes = await this.metafieldValues.planWrite(metafields, ADMIN);
+    if (writes.length === 0) {
+      return null;
+    }
+
+    // Every value reaching here was typed into the Admin API, so the writer is
+    // whoever made the request — the same pair the action log records, so the two
+    // agree about who did it rather than one saying only that it was "admin".
+    //
+    // The only route to this branch is the authenticated Admin API, so an anonymous
+    // request is a mistake somewhere upstream rather than a writer to invent a name
+    // for. Refusing keeps every stored writer resolvable.
+    const origin = adminWriteOrigin(options.context);
+    if (!origin) {
+      throw new errors.IncorrectUsageError({
+        message: tpl(messages.metafieldsWithoutWriter),
       });
     }
 
-    delete data.metafields;
+    return { writes, origin };
+  }
+
+  /**
+   * Creates a member and writes their metafields in one transaction. The `member.added`
+   * event fires when the transaction commits, so it sees the metafields.
+   *
+   * @private
+   * @param {object} data the member attributes
+   * @param {object} options
+   * @param {{writes: import('../../../members-metafields/values-service').PlannedWrite[], origin: import('../../../members-metafields').WriteOrigin}} metafields
+   */
+  async createWithMetafields(data, options, { writes, origin }) {
+    return this.transaction(async (transacting) => {
+      const model = await this.memberRepository.create(data, { ...options, transacting });
+      await this.metafieldValues.applyWrite(model.id, writes, { ...origin, executor: transacting });
+      return model;
+    });
+  }
+
+  async add(data, options) {
+    const metafields = await this.planStaffMetafields(data, options);
 
     if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
       const property = data.comped ? 'comped' : 'stripe_customer_id';
@@ -505,7 +553,9 @@ module.exports = class MemberBREADService {
       if (attribution) {
         data.attribution = attribution;
       }
-      model = await this.memberRepository.create(data, options);
+      model = metafields
+        ? await this.createWithMetafields(data, options, metafields)
+        : await this.memberRepository.create(data, options);
     } catch (error) {
       if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
         throw new errors.ValidationError({
@@ -573,34 +623,7 @@ module.exports = class MemberBREADService {
   async edit(data, options) {
     delete data.last_seen_at;
 
-    const metafields = this.metafieldValues.unwrapWire(data.metafields);
-    const writeMetafields = metafields !== undefined;
-    delete data.metafields;
-
-    // Plan (which validates) before the member is touched, so a bad value 422s
-    // here rather than after the member edit has been applied — and keep the
-    // plan to apply once below, so the values aren't resolved and validated
-    // twice.
-    const plannedMetafields = writeMetafields
-      ? await this.metafieldValues.planWrite(metafields, ADMIN)
-      : null;
-
-    let origin = null;
-    if (plannedMetafields?.length > 0) {
-      // Every value reaching here was typed into the Admin API, so the writer is
-      // whoever made the request — the same pair the action log records, so the two
-      // agree about who did it rather than one saying only that it was "admin".
-      //
-      // The only route to this branch is the authenticated Admin API, so an anonymous
-      // request is a mistake somewhere upstream rather than a writer to invent a name
-      // for. Refusing keeps every stored writer resolvable.
-      origin = adminWriteOrigin(options.context);
-      if (!origin) {
-        throw new errors.IncorrectUsageError({
-          message: tpl(messages.metafieldsWithoutWriter),
-        });
-      }
-    }
+    const metafields = await this.planStaffMetafields(data, options);
 
     let model;
 
@@ -612,8 +635,8 @@ module.exports = class MemberBREADService {
         data.email_disabled = !!isSuppressed;
       }
 
-      model = origin
-        ? await this.updateWithMetafields(data, options, plannedMetafields, origin)
+      model = metafields
+        ? await this.updateWithMetafields(data, options, metafields.writes, metafields.origin)
         : await this.memberRepository.update(data, options);
     } catch (error) {
       if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {

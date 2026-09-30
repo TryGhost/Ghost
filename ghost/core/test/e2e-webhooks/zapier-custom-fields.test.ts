@@ -236,8 +236,12 @@ describe('Zapier and member custom fields', function () {
   });
 
   describe('creating a member', function () {
-    it('refuses custom fields sent to the Create Member action', async function () {
+    it('creates a member and their custom fields in one Create Member call', async function () {
       const key = await definePublisherField('Favourite topic');
+      await subscribeZapTo(
+        'member.added',
+        'https://test-webhook-receiver.com/zapier-member-added-with-values/',
+      );
 
       const { body } = await zapier
         .post('members/')
@@ -249,9 +253,13 @@ describe('Zapier and member custom fields', function () {
             },
           ],
         })
-        .expectStatus(422);
+        .expectStatus(201);
+      await webhookMockReceiver.receivedRequest();
 
-      assert.match(body.errors[0].context, /Create the member, then set values with an edit/);
+      assert.deepEqual(body.members[0].metafields.custom, { [key]: 'Ghost internals' });
+      const { member } = deliveredPayload();
+      assert.equal(member.current.email, 'zap-creates@example.com');
+      assert.deepEqual(member.current.metafields.custom, { [key]: 'Ghost internals' });
     });
   });
 });

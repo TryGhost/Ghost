@@ -258,18 +258,6 @@ export class MetafieldValuesService {
   }
 
   /**
-   * Whether input names any values. Asks the shape question alone, with no catalog
-   * lookup, so it can be asked before a write is known to be permitted.
-   */
-  namesValues(input: unknown): boolean {
-    if (input === undefined) {
-      return false;
-    }
-
-    return Object.keys(this.parseValues(input)).length > 0;
-  }
-
-  /**
    * Resolve input into the writes it implies, writing nothing. Returned so a caller can
    * validate before opening a transaction it would otherwise have to unwind, then apply
    * the same plan without re-resolving it.
