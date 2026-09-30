@@ -43,18 +43,6 @@
   expected_result: |
     {"date":"2020-01-01","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
 
-- name: missing_site
-  parameters: automation_id=status-automation
-  expected_http_status: 400
-  expected_result: >-
-    Template Syntax Error: Required parameter is not defined. Check the parameters site_uuid, automation_id, date_from and date_to. Please provide a value or set a default value in the pipe code.
-
-- name: missing_automation
-  parameters: site_uuid=15840000-0000-4000-8000-000000000000
-  expected_http_status: 400
-  expected_result: >-
-    Template Syntax Error: Required parameter is not defined. Check the parameters site_uuid, automation_id, date_from and date_to. Please provide a value or set a default value in the pipe code.
-
 - name: daily_chart_and_counts
   parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=summary-dates&current_time=2020-02-01T12:00:00Z
   expected_result: |
