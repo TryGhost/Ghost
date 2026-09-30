@@ -130,7 +130,10 @@ kind and sends nothing.
 
 A failure the transport reports is mapped onto the same kinds, so the engine's
 state machine reads them the same way: an `UPDATE_COLLISION` code becomes
-`conflict`; a session-expired, unauthorized or 401 failure becomes
+`conflict`, and so does the validation error the server raises instead when a
+save still sends `scheduled` for a post its schedule has since published, since
+either way only the server's newer copy lets the writer save again; a
+session-expired, unauthorized or 401 failure becomes
 `session-invalid`; a host-limit failure becomes `host-limit`; an unreachable
 server, a maintenance response and a timeout become `transport`; a validation
 failure, a payload the server refuses as too large and a 422 become

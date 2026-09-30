@@ -56,6 +56,31 @@ describe('toSaveError', () => {
     ['an unreachable server', new ServerUnreachableError(), 'transport'],
     ['maintenance', new MaintenanceError(response(503), ''), 'transport'],
     ['a timeout', new TimeoutError(), 'transport'],
+    // Core's error handler summarises the message and moves the model's sentence into context.
+    [
+      'a scheduled save of a post published since',
+      new ValidationError(
+        response(422),
+        errorBody({
+          type: 'ValidationError',
+          message: 'Validation error, cannot edit post.',
+          context: 'Your post is already published, please reload your page.',
+        }),
+      ),
+      'conflict',
+    ],
+    [
+      'any other refused edit',
+      new ValidationError(
+        response(422),
+        errorBody({
+          type: 'ValidationError',
+          message: 'Validation error, cannot edit post.',
+          context: 'Value in [posts.title] exceeds maximum length of 255 characters.',
+        }),
+      ),
+      'validation',
+    ],
     ['a validation failure', new ValidationError(response(422), errorBody()), 'validation'],
     ['a missing post', new APIError(response(404)), 'not-found'],
     ['an unprocessable body', new JSONError(response(422), errorBody()), 'validation'],

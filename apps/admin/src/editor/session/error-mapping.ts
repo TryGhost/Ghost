@@ -14,9 +14,17 @@ import type { SaveError } from '@/editor/engine/save-engine';
 
 // @tryghost/bookshelf-collision rejects a stale updated_at with this code.
 const COLLISION_CODE = 'UPDATE_COLLISION';
+// Core refuses `scheduled` for a post published since with this ValidationError context,
+// raised before the collision check could see the stale updated_at.
+const ALREADY_PUBLISHED = 'Your post is already published, please reload your page.';
 
 function apiErrorCode(error: unknown): string | undefined {
   return error instanceof JSONError ? (error.data?.errors?.[0]?.code ?? undefined) : undefined;
+}
+
+function isAlreadyPublished(error: unknown): boolean {
+  const body = error instanceof JSONError ? error.data?.errors?.[0] : undefined;
+  return body?.type === 'ValidationError' && body.context === ALREADY_PUBLISHED;
 }
 
 function status(error: unknown): number | undefined {
@@ -30,7 +38,7 @@ function messageOf(error: unknown, fallback: string): string {
 /** Maps a transport failure onto the save engine's error kinds. */
 export function toSaveError(error: unknown, fallback: string): SaveError {
   const kind = ((): SaveError['kind'] => {
-    if (apiErrorCode(error) === COLLISION_CODE) {
+    if (apiErrorCode(error) === COLLISION_CODE || isAlreadyPublished(error)) {
       return 'conflict';
     }
     if (error instanceof SessionExpiredError || error instanceof UnauthorizedError) {
