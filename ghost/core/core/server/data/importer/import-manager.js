@@ -159,16 +159,25 @@ class ImportManager {
 
   /**
    * Process Zip
-   * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
-   * returns an object in the importData format: {data: {}, images: []}
-   * The data key contains JSON representing any data that should be imported
-   * The image key contains references to images that will be stored (and where they will be stored)
+   * Takes a reference to a zip file, extracts it and reads it, returning the content to import
    * @param {File} file
    * @returns {Promise<ImportData>}
    */
   async processZip(file) {
     const zipDirectory = await this.extractZip(file.path);
 
+    return this.readExtractedZip(zipDirectory);
+  }
+
+  /**
+   * Send any relevant files from an extracted zip to the right handler, and return an object in
+   * the importData format: {data: {}, images: []}
+   * The data key contains JSON representing any data that should be imported
+   * The image key contains references to images that will be stored (and where they will be stored)
+   * @param {string} zipDirectory
+   * @returns {Promise<ImportData>}
+   */
+  async readExtractedZip(zipDirectory) {
     /**
      * @type {ImportData}
      */
