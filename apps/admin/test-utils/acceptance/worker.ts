@@ -443,8 +443,9 @@ export type FakeAdminEndpointResponse =
  * Fake one admin API endpoint that has no resource fake. `apiPath` is
  * relative to /ghost/api/admin (string = exact including the query, RegExp =
  * test). `response` may be a synchronous or async function of the captured request —
- * `({body}) => body` echoes. Returns a capture of every matched request.
- * Prefer `defineResource` for browse endpoints.
+ * `({body}) => body` echoes. A `Response`, given or returned, is served as it is, so a
+ * function can answer with a status that depends on the request. Returns a capture of
+ * every matched request. Prefer `defineResource` for browse endpoints.
  */
 export function fakeAdminEndpoint(
   method: string,
@@ -470,6 +471,11 @@ export function fakeAdminEndpoint(
 
     const responseBody: unknown =
       typeof response === 'function' ? await response(captured) : response;
+
+    if (responseBody instanceof Response) {
+      // A body can be read only once, so every request is served its own copy.
+      return responseBody.clone();
+    }
 
     if (responseBody instanceof ArrayBuffer) {
       return new HttpResponse(responseBody, {

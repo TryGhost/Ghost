@@ -3,6 +3,7 @@ export { authToken, fakeSetupStatus, plainText, signedOut } from './auth';
 export { fakeAnalyticsOverview } from './analytics';
 export {
   UNSPLASH_PICKED,
+  editorReadLanded,
   fakeEditorChrome,
   fakeEditorPost,
   fakeUnsplashPhotos,
