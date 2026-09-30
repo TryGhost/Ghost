@@ -93,18 +93,13 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     // default schedule is ten minutes out
     await editor.publishFlow.schedule({});
     await Promise.all([waitForPostSave(page, postId), editor.publishFlow.confirm()]);
-    await expect(editor.publishFlow.completeStep).toBeVisible();
+    await expect(page).toHaveURL('/ghost/#/posts');
 
     const scheduled = await readPost(page, postId);
     expect(scheduled.status).toBe('scheduled');
 
-    await postsPage.goto();
     await postsPage.waitForPageToFullyLoad();
     await expect(postsPage.getPostByTitle(title)).toContainText('Scheduled');
-
-    // The publish flow's complete modal outlives an in-app hash route change
-    await page.reload();
-    await postsPage.waitForPageToFullyLoad();
     await postsPage.getPostByTitle(title).click();
     await expect(editor.postStatus).toContainText('Scheduled');
 
@@ -252,7 +247,7 @@ test.describe('Ghost Admin - Publishing (React)', () => {
       await expect(editor.publishFlow.optionsStep).toBeVisible();
       await editor.publishFlow.selectPublishType('publish');
       await editor.publishFlow.confirm();
-      await expect(editor.publishFlow.completeStep).toBeVisible();
+      await expect(page).toHaveURL('/ghost/#/posts');
 
       const post = await readPost(page, postId);
       expect(post.status).toBe('published');
@@ -285,7 +280,7 @@ test.describe('Ghost Admin - Publishing (React)', () => {
       await expect(editor.publishFlow.optionsStep).toBeVisible();
       await editor.publishFlow.selectPublishType('publish+send');
       await editor.publishFlow.confirm();
-      await expect(editor.publishFlow.completeStep).toBeVisible();
+      await expect(page).toHaveURL(`/ghost/#/posts/analytics/${postId}`);
 
       const post = await readPost(page, postId);
       expect(post.status).toBe('published');
