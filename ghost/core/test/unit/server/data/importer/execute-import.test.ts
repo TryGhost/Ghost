@@ -187,10 +187,20 @@ describe('Site import execution', function () {
     const failed = /^\[Background Job\] site-content-import failed after \d+ms$/;
 
     const succeeds = subject();
-    sinon.stub(succeeds.manager, 'processImport').resolves({});
-    assert.deepEqual(await succeeds.manager.executeImport(job), {});
+    sinon.stub(succeeds.manager, 'processImport').resolves({ images: {}, data: {} });
+    assert.deepEqual(await succeeds.manager.executeImport(job), { images: {}, data: {} });
     sinon.assert.calledWith(succeeds.deps.logging.info.firstCall, started);
-    sinon.assert.calledWith(succeeds.deps.logging.info.secondCall, sinon.match(completed));
+    sinon.assert.calledWith(
+      succeeds.deps.logging.info.secondCall,
+      {
+        system: {
+          event: 'site_content_import.completed',
+          import_groups: 2,
+          duration_ms: sinon.match.number,
+        },
+      },
+      sinon.match(completed),
+    );
 
     // A failed import is swallowed by processImport, which resolves undefined
     const fails = subject();
@@ -198,6 +208,10 @@ describe('Site import execution', function () {
     assert.equal(await fails.manager.executeImport(job), undefined);
     sinon.assert.calledWith(fails.deps.logging.info.firstCall, started);
     sinon.assert.calledWith(fails.deps.logging.info.secondCall, sinon.match(failed));
+    sinon.assert.neverCalledWith(
+      fails.deps.logging.info,
+      sinon.match({ system: { event: 'site_content_import.completed' } }),
+    );
 
     const throws = subject();
     const error = new Error('email failed');

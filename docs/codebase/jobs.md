@@ -86,8 +86,11 @@ need the work to finish should wait for its observable result. Newsletter
 tests should follow the [email service testing guidance](../../ghost/core/core/server/services/email-service/README.md#testing);
 the legacy job manager's `allSettled` event does not cover class-based jobs.
 Site import tests wait for the completion email, which is sent after the stored
-upload has been deleted. There are no automatic retries and no collection of
-uploads orphaned by a shutdown between dispatch and execution.
+upload has been deleted. The importer's `site_content_import.completed` event
+records successful imports; generic job completion only records that the handler
+settled, which it also does for an import failure it reported. There are no
+automatic retries and no collection of uploads orphaned by a shutdown between
+dispatch and execution.
 
 ## Scheduling
 

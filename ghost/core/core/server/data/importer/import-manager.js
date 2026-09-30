@@ -543,8 +543,16 @@ class ImportManager {
           `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
         );
       } else {
+        const durationMs = Date.now() - startedAt;
         this.logging.info(
-          `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
+          {
+            system: {
+              event: 'site_content_import.completed',
+              import_groups: Object.keys(result).length,
+              duration_ms: durationMs,
+            },
+          },
+          `[Background Job] site-content-import completed in ${durationMs}ms`,
         );
       }
       return result;
