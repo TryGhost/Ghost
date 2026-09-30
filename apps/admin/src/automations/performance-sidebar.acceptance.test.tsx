@@ -22,12 +22,12 @@ const prepare = (id = 'first') => {
 };
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
-const statusCard = (name: string) => statuses().getByRole('group', { name, exact: true });
+const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
 const open = () => page.getByRole('button', { name: 'Show performance' }).click();
 const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
 
 describe('Performance sidebar data and errors', () => {
-  it('fetches only when opened and renders three display-only status cards', async () => {
+  it('fetches only when opened and renders three status cards', async () => {
     const request = prepare();
     await renderAdminApp('/automations/first', flags);
     await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
@@ -39,7 +39,7 @@ describe('Performance sidebar data and errors', () => {
     await expect
       .element(statuses().getByRole('status'))
       .toHaveTextContent('Statistics loaded. 118 in progress, 1,260 completed, 54 exited early.');
-    await expect.element(statuses().getByRole('button')).not.toBeInTheDocument();
+    await expect(statuses().getByRole('button')).toHaveCount(3);
     await expect.element(entries()).toHaveTextContent('1,432');
     await expect
       .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
@@ -235,7 +235,7 @@ describe('Performance sidebar layout', () => {
     await expect.poll(() => document.querySelector('aside')?.getBoundingClientRect().width).toBe(0);
     const panel = chartElement.closest('aside')!;
     const cards = ['In progress', 'Completed', 'Exited early'].map((name) =>
-      panel.querySelector(`[role="group"][aria-label="${name}"]`)!,
+      panel.querySelector(`button[aria-label="${name}"]`)!,
     );
     const expectedCardWidths = cards.map((card) => card.getBoundingClientRect().width);
     // Pause the real CSS transition and seek through it, independent of frame timing.

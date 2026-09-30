@@ -201,6 +201,7 @@ export const AutomationRunsResponseSchema = z.object({
 });
 
 export type AutomationRun = z.infer<typeof AutomationRunSchema>;
+export type AutomationRunStatusFilter = AutomationRun['status'];
 
 export const useBrowseAutomationRuns = (
   id: string,
@@ -209,7 +210,7 @@ export const useBrowseAutomationRuns = (
     ReturnType<typeof createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>>
   >[1],
 ) => {
-  // Keep results from different sidebar visits in separate cache entries.
+  // Keep results from different sidebar visits and filter selections in separate cache entries.
   const useQuery = createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>({
     dataType: `AutomationRunsResponseType:${queryScope}`,
     path: (automationId) => `/automations/${automationId}/runs/`,

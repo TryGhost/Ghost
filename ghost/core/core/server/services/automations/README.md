@@ -136,13 +136,17 @@ whether to return a next cursor and hydrates only the visible page. These are li
 reads, not a snapshot: status changes can affect later pages.
 
 In Admin, the list loads on first sidebar open and stays cached through closing
-and reopening. Date changes load both the summary and list for the selected
-period. Initial list loading uses one compact placeholder row rather than filling
-the panel with skeleton rows.
+and reopening. Selecting a status card filters only the list; selecting it again
+clears the status filter. Each selection fetches fresh rows while the chart and
+counts stay unchanged. Previous rows remain visible during status requests, with
+a delayed loading indicator. Date changes clear previous rows and load both the
+summary and list for the selected period. Initial list loading uses one compact
+placeholder row rather than filling the panel with skeleton rows.
 
-Empty-state messages appear only in the list: "No entries yet" for all time and
-"No entries in this period" for a date filter. Empty histories and periods keep
-the zero chart visible. A failed list request shows its own retry action without
+Empty-state messages appear only in the list: "No entries yet" for all time,
+"No entries in this period" for a date filter, and "No matching entries" for a
+status filter. Empty histories and periods keep the zero chart visible; status
+filters do not change it. A failed list request shows its own retry action without
 replacing a successful chart or status counts.
 
 ## Availability

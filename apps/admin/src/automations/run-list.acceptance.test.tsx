@@ -13,7 +13,7 @@ setupEmbeddedRootFontSize();
 
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
-const statusCard = (name: string) => statuses().getByRole('group', { name, exact: true });
+const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
 const open = () => page.getByRole('button', { name: 'Show performance' }).click();
 const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
 
