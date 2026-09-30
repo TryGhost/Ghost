@@ -50,7 +50,13 @@ export type {
   ResourceSemantics,
   RespondWith,
 } from './resources';
-export { allowUnhandledRequests, fakeAdminEndpoint, fakeEndpoint, fakeSitePreview } from './worker';
+export {
+  allowUnhandledRequests,
+  fakeAdminEndpoint,
+  fakeEndpoint,
+  fakeSitePreview,
+  settleRequests,
+} from './worker';
 export type {
   CapturedEndpointRequest,
   EndpointCapture,
