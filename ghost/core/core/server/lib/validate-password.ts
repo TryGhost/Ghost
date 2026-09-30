@@ -1,3 +1,4 @@
+import { DefaultMap } from '../../shared/default-map';
 import tpl from '@tryghost/tpl';
 // @ts-expect-error This module lacks type definitions.
 import validator from '@tryghost/validator';
@@ -19,11 +20,11 @@ type PasswordValidationResult = { isValid: true } | { isValid: false; message: s
  */
 function characterOccurrence(stringToTest: string): boolean {
   const limit = stringToTest.length / 2;
-  const counts = new Map<string, number>();
+  const counts = new DefaultMap<string, number>(() => 0);
 
   for (let i = 0; i < stringToTest.length; i++) {
     const char = stringToTest[i];
-    const count = (counts.get(char) || 0) + 1;
+    const count = counts.get(char) + 1;
     if (count >= limit) {
       return false;
     }

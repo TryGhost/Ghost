@@ -1,3 +1,4 @@
+import { DefaultMap } from '../../../../shared/default-map';
 import { faker } from '@faker-js/faker';
 import errors from '@tryghost/errors';
 import { clamp } from 'lodash';
@@ -93,13 +94,13 @@ export class AutomationRunStepsImporter extends TableImporter<AutomationRunStep>
     const nextActionBySource = new Map(
       edges.map((edge) => [edge.source_action_id, edge.target_action_id]),
     );
-    const actionCountByAutomation = new Map<string, number>();
+    const actionCountByAutomation = new DefaultMap<string, number>(() => 0);
     const actionPathByAutomation = new Map<string, ActionRevision[]>();
 
     for (const revision of latestRevisionByAction.values()) {
       actionCountByAutomation.set(
         revision.automation_id,
-        (actionCountByAutomation.get(revision.automation_id) ?? 0) + 1,
+        actionCountByAutomation.get(revision.automation_id) + 1,
       );
       if (targetActionIds.has(revision.action_id)) {
         continue;
@@ -122,7 +123,7 @@ export class AutomationRunStepsImporter extends TableImporter<AutomationRunStep>
 
     for (const run of runs) {
       const actionPath = actionPathByAutomation.get(run.automation_id) ?? [];
-      const actionCount = actionCountByAutomation.get(run.automation_id) ?? 0;
+      const actionCount = actionCountByAutomation.get(run.automation_id);
       if (actionPath.length === 0) {
         throw new errors.InternalServerError({
           message: `Missing action path for automation run: ${run.id}`,

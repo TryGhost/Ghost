@@ -16,6 +16,7 @@
  *   - Ghost database populated with posts/members: pnpm reset:data
  */
 
+const { DefaultMap } = require('../../../../shared/default-map');
 const DockerDatabaseUtils = require('./docker-database-utils');
 const { execSync } = require('child_process');
 
@@ -137,7 +138,7 @@ class DockerAnalyticsManager {
     ];
 
     this.userCount = 200;
-    this.userSessions = new Map();
+    this.userSessions = new DefaultMap(() => []);
     this.postPopularityMap = new Map();
 
     this.postPopularityTiers = [
@@ -354,10 +355,6 @@ class DockerAnalyticsManager {
    */
   generateSessionId(userId, timestamp) {
     const userKey = `user_${userId}`;
-
-    if (!this.userSessions.has(userKey)) {
-      this.userSessions.set(userKey, []);
-    }
 
     const userSessionData = this.userSessions.get(userKey);
 
