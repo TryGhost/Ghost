@@ -136,10 +136,10 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   // Tab management
   const [selectedTab, setSelectedTab] = useState('metadata');
 
-  // One entry per in-flight upload. Save stays blocked until they land, otherwise
-  // it would go out without the image and the image would arrive after the save.
-  const [uploadingSettings, setUploadingSettings] = useState<string[]>([]);
-  const isUploading = (settingKey: string) => uploadingSettings.includes(settingKey);
+  // Save stays blocked while an upload is in flight, otherwise it would go out
+  // without the image and the image would land after the save.
+  const [uploadingSettings, setUploadingSettings] = useState<ReadonlySet<string>>(new Set());
+  const isUploading = (settingKey: string) => uploadingSettings.has(settingKey);
 
   const createSettingHandler = (settingKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     updateSetting(settingKey, e.target.value);
@@ -149,11 +149,10 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   };
 
   const createImageUploadHandler = (settingKey: string) => async (file: File) => {
-    setUploadingSettings((keys) => [...keys, settingKey]);
+    setUploadingSettings((keys) => new Set(keys).add(settingKey));
     try {
       const imageUrl = getImageUrl(await uploadImage({ file }));
       updateSetting(settingKey, imageUrl);
-      // Unconditional: `isEditing` in this closure is from before the upload started.
       handleEditingChange(true);
     } catch (e) {
       const error = e as APIError;
@@ -163,8 +162,8 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       handleError(error);
     } finally {
       setUploadingSettings((keys) => {
-        const remaining = [...keys];
-        remaining.splice(remaining.indexOf(settingKey), 1);
+        const remaining = new Set(keys);
+        remaining.delete(settingKey);
         return remaining;
       });
     }
@@ -271,6 +270,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                   {editor.isEnabled && (
                     <ImageUploadAction
                       aria-label="Edit Facebook image"
+                      disabled={isUploading('og_image')}
                       onClick={() =>
                         editor.openEditor({
                           image: facebookImage,
@@ -284,6 +284,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                   <ImageUploadAction
                     aria-label="Remove Facebook image"
                     data-testid="image-delete-button"
+                    disabled={isUploading('og_image')}
                     onClick={handleFacebookImageDelete}
                   >
                     <Trash2 />
@@ -350,6 +351,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                   {editor.isEnabled && (
                     <ImageUploadAction
                       aria-label="Edit X image"
+                      disabled={isUploading('twitter_image')}
                       onClick={() =>
                         editor.openEditor({
                           image: twitterImage,
@@ -363,6 +365,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                   <ImageUploadAction
                     aria-label="Remove X image"
                     data-testid="image-delete-button"
+                    disabled={isUploading('twitter_image')}
                     onClick={handleTwitterImageDelete}
                   >
                     <Trash2 />
@@ -414,7 +417,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       isEditing={isEditing}
       keywords={keywords}
       navid="metadata"
-      saveDisabled={uploadingSettings.length > 0}
+      saveDisabled={uploadingSettings.size > 0}
       saveState={saveState}
       testId="seometa"
       title="Meta data"

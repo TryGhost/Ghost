@@ -29,7 +29,6 @@ interface TopLevelGroupProps {
   children?: React.ReactNode;
   hideEditButton?: boolean;
   alwaysShowSaveButton?: boolean;
-  /** Blocks Save (the button and ⌘S), e.g. while an upload the save depends on is in flight. */
   saveDisabled?: boolean;
   highlightOnModalClose?: boolean;
   enableCMDS?: boolean;
