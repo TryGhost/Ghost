@@ -481,12 +481,14 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     return <EditorSurface createdId={id} postType={postType} />;
   }
 
-  const notFound = query.error instanceof APIError && query.error.response?.status === 404;
+  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
+  const loadError = loaded ? null : query.error;
+  const notFound = loadError instanceof APIError && loadError.response?.status === 404;
   if (notFound) {
     return <NotFound />;
   }
 
-  if (query.error) {
+  if (loadError) {
     return (
       <EditorLoadError
         message={`Couldn’t load this ${postType}.`}

@@ -325,7 +325,7 @@ export function useEditorSession({
     }
   }, [saved, session]);
 
-  // Its own request: a failed refetch of the screen's query replaces the editor.
+  // Its own request: a query refetch would land before the session could refuse the copy.
   const reload = useCallback(async (): Promise<ReloadOutcome> => {
     if (!persistedId) {
       return 'failed';
