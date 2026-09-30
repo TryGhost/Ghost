@@ -9,6 +9,7 @@ import logging from '@tryghost/logging';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  GetObjectCommandOutput,
   HeadObjectCommand,
   NotFound,
   NoSuchKey,
@@ -457,8 +458,12 @@ export default class S3Storage extends StorageBase {
    * fall back to reading from storage for images served via the CDN.
    */
   async read(options: { path?: string } = {}): Promise<Buffer> {
-    const relativePath = options.path;
+    const response = await this.getObject(options.path);
+    const bytes = await response.Body?.transformToByteArray();
+    return Buffer.from(bytes ?? []);
+  }
 
+  private async getObject(relativePath?: string): Promise<GetObjectCommandOutput> {
     if (!relativePath?.trim()) {
       throw new errors.IncorrectUsageError({
         message: tpl(messages.emptyReadPath),
@@ -468,15 +473,12 @@ export default class S3Storage extends StorageBase {
     const key = this.buildKey(relativePath);
 
     try {
-      const response = await this.client.send(
+      return await this.client.send(
         new GetObjectCommand({
           Bucket: this.bucket,
           Key: key,
         }),
       );
-
-      const bytes = await response.Body?.transformToByteArray();
-      return Buffer.from(bytes ?? []);
     } catch (error) {
       if (this.isNotFound(error)) {
         throw new errors.NotFoundError({
