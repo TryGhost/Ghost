@@ -53,9 +53,10 @@ describe('Member Custom Fields Admin API', function () {
     return body.members[0].id;
   }
 
+  // No `metafields` key means no values.
   async function readValues(memberId: string) {
     const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
-    return body.members[0].metafields?.custom;
+    return body.members[0].metafields?.custom ?? {};
   }
 
   async function setValues(memberId: string, customFields: Record<string, unknown>, status = 200) {
@@ -1186,11 +1187,12 @@ describe('Member Custom Fields Admin API', function () {
   });
 
   describe('Values', function () {
-    it('returns an empty object for a member with no values set', async function () {
+    it('leaves the key off a member with no values set', async function () {
       await createField({ name: 'Favourite topic' });
       const memberId = await createMember();
 
-      assert.deepEqual(await readValues(memberId), {});
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
     });
 
     it('echoes the values back on the edit response', async function () {
@@ -1219,8 +1221,7 @@ describe('Member Custom Fields Admin API', function () {
 
     it('gives each member on a browse page its own values', async function () {
       // Behaviour, not mechanism: every member on the page gets their own
-      // values and no one else's, and a member with none gets an empty
-      // object. (The bulk-lookup implementation is the reason browse stays
+      // values and no one else's, and a member with none gets no key. (The bulk-lookup implementation is the reason browse stays
       // off an N+1, but that's an implementation detail this doesn't couple
       // to — it asserts the result, not the query count.)
       const field = await createField({ name: 'Favourite topic' });
@@ -1234,8 +1235,7 @@ describe('Member Custom Fields Admin API', function () {
       const byId = new Map(body.members.map((m: { id: string }) => [m.id, m]));
 
       assert.deepEqual((byId.get(first) as any).metafields.custom, { [field.key]: 'Ghosts' });
-      // A member with no values gets an empty object, not a missing key.
-      assert.deepEqual((byId.get(second) as any).metafields.custom, {});
+      assert.equal(Object.hasOwn(byId.get(second) as object, 'metafields'), false);
       assert.deepEqual((byId.get(third) as any).metafields.custom, { [field.key]: 'Opera' });
     });
 
@@ -1552,10 +1552,8 @@ describe('Member Custom Fields Admin API', function () {
 
       await setStatus(field.key, 'archived');
 
-      // Archiving the site's only field takes the whole key off the payload, not just the
-      // value: with nothing active, the member reads exactly as it did before the site
-      // ever defined a field.
-      assert.equal(await readValues(memberId), undefined);
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
       // The row survives archiving — only the definition was hidden, and the
       // value is still attached to it (restoring the field brings it back).
       const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
@@ -2070,12 +2068,12 @@ describe('Member Custom Fields Admin API', function () {
       assert.notEqual(read.members[0].name, 'Renamed');
     });
 
-    it('carries the key once a field exists, even with no value against it', async function () {
+    it('leaves the key off until the member holds a value, even once a field exists', async function () {
       const memberId = await createMember();
       await createField({ name: 'Favourite topic' });
 
       const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
-      assert.deepEqual(body.members[0].metafields, { custom: {} });
+      assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
     });
   });
 

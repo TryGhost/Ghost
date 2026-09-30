@@ -147,6 +147,10 @@ export class MetafieldValuesService {
     );
   }
 
+  /**
+   * Metafields for each member, keyed by member id. Only active fields the audience can
+   * read are included. Members with no metafields have no entry.
+   */
   async getValuesForMembers(
     memberIds: string[],
     audience: Audience,
@@ -194,9 +198,11 @@ export class MetafieldValuesService {
       }
     }
 
-    const flat = valuesFromLeaves(leaves);
     return new Map(
-      memberIds.map((memberId) => [memberId, { [CUSTOM_NAMESPACE]: flat.get(memberId) ?? {} }]),
+      [...valuesFromLeaves(leaves)].map(([memberId, values]) => [
+        memberId,
+        { [CUSTOM_NAMESPACE]: values },
+      ]),
     );
   }
 
