@@ -141,7 +141,8 @@ describe('EmbedNode', function () {
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
             expect(EmbedNode.urlTransformMap).toEqual({
-                url: 'url'
+                url: 'url',
+                'metadata.thumbnail_url': 'url'
             });
         }));
     });
