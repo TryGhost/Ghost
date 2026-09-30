@@ -23,6 +23,7 @@ describe('Zapier and member custom fields', function () {
     get: (_url: string) => any;
     put: (_url: string) => any;
     post: (_url: string) => any;
+    delete: (_url: string) => any;
     loginAsOwner: () => Promise<void>;
     useZapierAdminAPIKey: () => Promise<void>;
   };
@@ -218,6 +219,39 @@ describe('Zapier and member custom fields', function () {
       const { member } = deliveredPayload();
       assert.equal(member.current.email, 'zap-added@example.com');
       assert.equal(Object.hasOwn(member.current, 'metafields'), false);
+    });
+
+    it('shows the custom fields a deleted member had', async function () {
+      const key = await definePublisherField('Favourite topic');
+      const memberId = await createMember('zap-deleted@example.com');
+      await zapierWritesField(memberId, key, 'Reading');
+      await subscribeZapTo(
+        'member.deleted',
+        'https://test-webhook-receiver.com/zapier-member-deleted/',
+      );
+
+      await zapier.delete(`members/${memberId}/`).expectStatus(204);
+      await webhookMockReceiver.receivedRequest();
+
+      const { member } = deliveredPayload();
+      assert.equal(member.previous.email, 'zap-deleted@example.com');
+      assert.deepEqual(member.previous.metafields.custom, { [key]: 'Reading' });
+    });
+
+    it('leaves custom fields off a deleted member who had none', async function () {
+      await definePublisherField('Favourite topic');
+      const memberId = await createMember('zap-deleted-none@example.com');
+      await subscribeZapTo(
+        'member.deleted',
+        'https://test-webhook-receiver.com/zapier-member-deleted-none/',
+      );
+
+      await zapier.delete(`members/${memberId}/`).expectStatus(204);
+      await webhookMockReceiver.receivedRequest();
+
+      const { member } = deliveredPayload();
+      assert.equal(member.previous.email, 'zap-deleted-none@example.com');
+      assert.equal(Object.hasOwn(member.previous, 'metafields'), false);
     });
 
     it('leaves the key off entirely for a site with no custom fields', async function () {
