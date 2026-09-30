@@ -699,6 +699,8 @@ describe('Post analytics overview', () => {
 
   it('holds its Tinybird queries until the post has loaded', async () => {
     const pendingPost = deferred<Post[]>();
+    // A held request would block teardown if an assertion fails first.
+    onTestFinished(() => pendingPost.resolve([]));
     const { tokenApi, activeVisitorsApi, kpisApi, topSourcesApi } = seedPostAnalyticsWorld(
       {},
       () => pendingPost.promise,
@@ -852,6 +854,8 @@ describe('Post analytics web', () => {
 
   it('holds its Tinybird queries until the post has loaded', async () => {
     const pendingPost = deferred<Post[]>();
+    // A held request would block teardown if an assertion fails first.
+    onTestFinished(() => pendingPost.resolve([]));
     const { tokenApi, activeVisitorsApi, kpisApi, topLocationsApi, topSourcesApi } =
       seedPostAnalyticsWorld({}, () => pendingPost.promise);
     // An applied filter makes the filter bar fetch that field's options too.
