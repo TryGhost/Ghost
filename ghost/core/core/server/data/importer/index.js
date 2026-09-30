@@ -11,7 +11,7 @@ const RevueImporter = require('./importers/importer-revue');
 const DataImporter = require('./importers/data');
 const { createContentFileHandlers, createContentFileImporters } = require('./content-files');
 
-module.exports = new ImportManager({
+const instance = new ImportManager({
   jobManager,
   handlers: [...createContentFileHandlers(), RevueHandler, JSONHandler, MarkdownHandler],
   importers: [...createContentFileImporters(), RevueImporter, DataImporter],
@@ -20,3 +20,9 @@ module.exports = new ImportManager({
   urlUtils,
   logging,
 });
+
+module.exports = {
+  getInstance() {
+    return instance;
+  },
+};
