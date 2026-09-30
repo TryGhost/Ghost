@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { Readable } from 'node:stream';
 import path from 'node:path';
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import { z } from 'zod';
@@ -36,7 +37,7 @@ const messages = {
   emptyTargetPath: 'S3Storage.saveRaw requires a non-empty targetPath',
   emptyFileName: 'S3Storage.{method} requires a non-empty fileName',
   emptyRelativePath: 'S3Storage.buildKey requires a non-empty relativePath',
-  emptyReadPath: 'S3Storage.read requires a non-empty path',
+  emptyReadPath: 'Reading from S3Storage requires a non-empty path',
   readNotFound: 'Could not read file: {path}',
   multipartUploadInitFailed: 'Failed to initiate file upload.',
   multipartUploadPartFailed: 'Failed to upload file part {partNumber}.',
@@ -461,6 +462,18 @@ export default class S3Storage extends StorageBase {
     const response = await this.getObject(options.path);
     const bytes = await response.Body?.transformToByteArray();
     return Buffer.from(bytes ?? []);
+  }
+
+  async readStream(options: { path?: string } = {}): Promise<Readable> {
+    const response = await this.getObject(options.path);
+
+    if (!(response.Body instanceof Readable)) {
+      throw new errors.InternalServerError({
+        message: 'S3 response did not contain a readable stream',
+      });
+    }
+
+    return response.Body;
   }
 
   private async getObject(relativePath?: string): Promise<GetObjectCommandOutput> {
