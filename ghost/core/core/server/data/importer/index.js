@@ -1,1 +1,1 @@
-module.exports = require('./import-manager');
+module.exports = require('./create-import-manager')();
