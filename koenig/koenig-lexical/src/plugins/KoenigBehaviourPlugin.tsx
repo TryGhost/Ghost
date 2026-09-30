@@ -91,7 +91,7 @@ function $selectCard(editor, nodeKey) {
 // remove empty cards when they are deselected
 function $deselectCard(editor, nodeKey) {
     const cardNode = $getNodeByKey(nodeKey);
-    if (cardNode?.isEmpty?.()) {
+    if (cardNode?.isAttached() && cardNode.isEmpty?.()) {
         $removeOrReplaceNodeWithParagraph(editor, cardNode);
     }
 }
@@ -157,7 +157,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
     // deselect cards on mousedown outside of the editor container
     React.useEffect(() => {
         const onMousedown = (event) => {
-            if (!document.body.contains(event.target)) {
+            if (!document.body?.contains(event.target)) {
                 // The event target is no longer in the DOM
                 // This is possible if we have listeners in the capture phase of the event (e.g. dropdowns)
                 return;
@@ -200,7 +200,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                 // ignore selections inside of nested editors otherwise we'll
                 // mistakenly deselect the card containing the nested editor
-                if (isNested || document.activeElement.closest('[data-lexical-decorator]')) {
+                if (isNested || document.activeElement?.closest('[data-lexical-decorator]')) {
                     return;
                 }
 
@@ -431,6 +431,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
+                    if (!event) {
+                        return false;
+                    }
+
                     // toggle edit mode if a card is selected and ctrl/cmd+enter is pressed
                     if (selectedCardKey && (event.metaKey || event.ctrlKey)) {
                         const cardNode = $getNodeByKey(selectedCardKey);
@@ -527,8 +531,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 anchorNode = anchorNode.getTopLevelElement();
                                 let focusNode = selection.focus.getNode().getTopLevelElement();
 
+                                if (!anchorNode || !focusNode) {
+                                    return false;
+                                }
+
                                 // treat text nodes as normal
-                                let previousSibling = focusNode.getTopLevelElement().getPreviousSibling();
+                                let previousSibling = focusNode.getPreviousSibling();
                                 if ($isTextNode(focusNode) && $isTextNode(previousSibling)) {
                                     return false;
                                 }
@@ -573,6 +581,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     if ($isNodeSelection(selection)) {
                         const currentNode = selection.getNodes()[0];
+                        if (!currentNode) {
+                            return false;
+                        }
+
                         const previousSibling = currentNode.getPreviousSibling();
 
                         if (!previousSibling && cursorDidExitAtTop) {
@@ -613,7 +625,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 selection.focus.offset === 0;
 
                             if (onEmptyNode || atStartOfElement) {
-                                const previousSibling = topLevelElement.getPreviousSibling();
+                                const previousSibling = topLevelElement?.getPreviousSibling();
                                 if ($isDecoratorNode(previousSibling)) {
                                     $selectDecoratorNode(previousSibling);
                                     return true;
@@ -621,7 +633,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             } else {
                                 const atTopOfNode = $isAtTopOfNode(nativeSelection, RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX);
                                 if (atTopOfNode) {
-                                    const previousSibling = topLevelElement.getPreviousSibling();
+                                    const previousSibling = topLevelElement?.getPreviousSibling();
                                     if ($isDecoratorNode(previousSibling)) {
                                         $selectDecoratorNode(previousSibling);
                                         return true;
@@ -649,8 +661,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 anchorNode = anchorNode.getTopLevelElement();
                                 let focusNode = selection.focus.getNode().getTopLevelElement();
 
+                                if (!anchorNode || !focusNode) {
+                                    return false;
+                                }
+
                                 // treat text nodes as normal
-                                let nextSibling = focusNode.getTopLevelElement().getNextSibling();
+                                let nextSibling = focusNode.getNextSibling();
                                 if ($isTextNode(focusNode) && $isTextNode(nextSibling)) {
                                     return false;
                                 }
@@ -695,6 +711,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     if ($isNodeSelection(selection)) {
                         const currentNode = selection.getNodes()[0];
+                        if (!currentNode) {
+                            return false;
+                        }
+
                         const nextSibling = currentNode.getNextSibling();
 
                         // create a new paragraph and select it if selected card is at end of document
@@ -721,7 +741,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         if (selection.isCollapsed()) {
                             const topLevelElement = selection.anchor.getNode().getTopLevelElement();
                             const nativeSelection = window.getSelection();
-                            const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection.anchorNode);
+                            const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection?.anchorNode);
+                            if (!nativeTopLevelElement || !nativeSelection?.rangeCount) {
+                                return false;
+                            }
 
                             // empty paragraphs are odd because the native range won't
                             // have a rect to compare positioning
@@ -736,7 +759,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 nativeSelection.focusOffset === nativeTopLevelElement.children.length - 1;
 
                             if (onEmptyNode || atEndOfElement) {
-                                const nextSibling = topLevelElement.getNextSibling();
+                                const nextSibling = topLevelElement?.getNextSibling();
                                 if ($isDecoratorNode(nextSibling)) {
                                     $selectDecoratorNode(nextSibling);
                                     return true;
@@ -752,7 +775,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                     const elemRect = nativeTopLevelElement.getBoundingClientRect();
 
                                     if (Math.abs(rangeRect.bottom - elemRect.bottom) < RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX) {
-                                        const nextSibling = topLevelElement.getNextSibling();
+                                        const nextSibling = topLevelElement?.getNextSibling();
                                         if ($isDecoratorNode(nextSibling)) {
                                             $selectDecoratorNode(nextSibling);
                                             return true;
@@ -780,6 +803,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     if (cursorDidExitAtTop) {
                         if ($isNodeSelection(selection)) {
                             const currentNode = selection.getNodes()[0];
+                            if (!currentNode) {
+                                return false;
+                            }
+
                             const previousSibling = currentNode.getPreviousSibling();
 
                             if (!previousSibling) {
@@ -800,11 +827,14 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     }
 
                     const firstNode = selection.getNodes()[0];
+                    if (!firstNode) {
+                        return false;
+                    }
                     let previousSibling;
 
                     if (!$isKoenigCard(firstNode)) {
                         const topLevelElement = firstNode.getTopLevelElement();
-                        previousSibling = topLevelElement.getPreviousSibling();
+                        previousSibling = topLevelElement?.getPreviousSibling();
                     } else {
                         previousSibling = firstNode.getPreviousSibling();
                     }
@@ -835,13 +865,16 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     const selectedNodes = selection.getNodes();
                     const lastNode = selectedNodes[selectedNodes.length - 1];
+                    if (!lastNode) {
+                        return false;
+                    }
 
                     let nextSibling;
                     if ($isKoenigCard(lastNode)) {
                         nextSibling = lastNode.getNextSibling();
                     } else {
                         const topLevelElement = lastNode.getTopLevelElement();
-                        nextSibling = topLevelElement.getNextSibling();
+                        nextSibling = topLevelElement?.getNextSibling();
                     }
 
                     if ($isDecoratorNode(nextSibling)) {
@@ -999,7 +1032,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             const anchor = selection.anchor;
                             const anchorNode = anchor.getNode();
                             const topLevelElement = anchorNode.getTopLevelElement();
-                            const previousSibling = topLevelElement.getPreviousSibling();
+                            const previousSibling = topLevelElement?.getPreviousSibling();
 
                             const atStartOfElement =
                                 selection.anchor.offset === 0 &&
@@ -1033,7 +1066,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                             // delete empty paragraphs and select card if preceded by card
                             if ($isParagraphNode(anchorNode) && anchorNode.isEmpty() && $isDecoratorNode(previousSibling)) {
-                                topLevelElement.remove();
+                                topLevelElement?.remove();
                                 $selectDecoratorNode(previousSibling);
                                 return true;
                             }
@@ -1139,7 +1172,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             const anchor = selection.anchor;
                             const anchorNode = anchor.getNode();
                             const topLevelElement = anchorNode.getTopLevelElement();
-                            const nextSibling = topLevelElement.getNextSibling();
+                            const nextSibling = topLevelElement?.getNextSibling();
 
                             const onEmptyNode =
                                 topLevelElement?.getTextContent().trim() === '' &&
@@ -1195,8 +1228,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             const anchor = selection.anchor;
                             const anchorNode = anchor.getNode();
                             const topLevelElement = anchorNode.getTopLevelElement();
-                            const previousSibling = topLevelElement.getPreviousSibling();
-                            const nextSibling = topLevelElement.getNextSibling();
+                            const previousSibling = topLevelElement?.getPreviousSibling();
+                            const nextSibling = topLevelElement?.getNextSibling();
                             const sibling = isBackward ? previousSibling : nextSibling;
 
                             // Find out if the paragraph contains only one line
@@ -1228,6 +1261,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return true;
                     }
 
+                    if (!$getSelection()) {
+                        return false;
+                    }
+
                     // exit the editor if we're shift tabbing on an element that isn't tabbed
                     if (event.shiftKey && cursorDidExitAtTop) {
                         const selection = $getSelection();
@@ -1237,6 +1274,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             selection.clear();
                             cursorDidExitAtTop();
                             return true;
+                        }
+
+                        if (!$isRangeSelection(selection)) {
+                            return false;
                         }
 
                         let nodes;
@@ -1261,7 +1302,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     // code card shortcut
                     if (!isNested) {
                         const selection = $getSelection();
-                        const currentNode = selection.getNodes()[0];
+                        const currentNode = selection?.getNodes()[0];
                         if ($isTextNode(currentNode)) {
                             const textContent = currentNode.getTextContent();
                             if (textContent.match(/^```(\w{1,10})?/)) {
@@ -1389,6 +1430,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 PASTE_LINK_COMMAND,
                 ({linkMatch}) => {
                     const selection = $getSelection();
+                    if (!$isRangeSelection(selection)) {
+                        return false;
+                    }
                     const selectionContent = selection.getTextContent();
                     const node = selection.anchor.getNode();
                     const nodeContent = node.getTextContent();
