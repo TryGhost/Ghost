@@ -188,7 +188,7 @@ function PublishFlowDialog({
           </PageHeader.ActionGroup>
         </Inline>
 
-        <Stack className="mx-auto w-full max-w-2xl px-6 pt-[max(9.6rem,18vh)] pb-16" gap="xl">
+        <Stack className="mx-auto w-full max-w-xl px-6 pt-[max(9.6rem,18vh)] pb-16" gap="xl">
           {step === 'email-error' && flow.emailErrorMessage ? (
             <CompleteWithEmailErrorStep
               emailErrorMessage={flow.emailErrorMessage}
