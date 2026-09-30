@@ -212,6 +212,43 @@ A restore is a document boundary for the slug: the restored title is not a title
 the writer typed, so the slug is kept rather than moved to it, and whether it
 goes on following the title is re-read from the slug itself.
 
+## Keeping a local copy
+
+While a draft holds unsaved work, the session keeps a copy of it in the
+browser's local storage, so work that never reached the server can be brought
+back from the restore screen. A copy carries the title, slug, body, excerpt,
+feature image with its alt text and caption, authors and tags, and is stored
+under `post-revision-<post id>-<timestamp>`; `draft` stands in for the id until
+the post has been created.
+
+Only unsaved changes to what a copy carries count. The body is judged by the
+tracker's verdict: a body that differs from the saved copy only by Koenig's
+load-time normalization matches the hidden instance's baseline, and a change
+that arrives before that baseline has been reported waits for it, so opening a
+post leaves no copy behind. If the hidden instance fails, the body is compared
+with the saved copy alone. The other carried fields are judged by their own
+compare; a change to a field a copy does not carry, such as the meta title, does
+not write one, and neither does a save that failed. Published, scheduled and
+sent posts are never copied.
+
+The first change writes a copy at once. After that at most one copy a minute is
+written, carrying the newest draft, and a copy identical to the last one written
+is skipped. A copy still waiting for the minute is dropped once a save leaves
+nothing unsaved or the post leaves draft. A copy is written straight away when
+the page is hidden or closed, when the session is disposed holding unsaved work,
+before a revision from the post's history replaces the body, and when a save
+stops on a conflict, a deleted post, an expired session or a crash; a conflict
+that failing saves keep re-entering is copied once. A save that keeps failing is
+otherwise left to the minute's pace, and nothing is copied while a revision's
+restore is being saved.
+
+Each post keeps its newest five copies. A post that has not been created keeps
+at most five from one session; once it is created those copies are removed, and
+any work the create did not carry is written again under the new id. When
+storage is full, the oldest copies of any post are removed until the new one
+fits. Storage never interrupts editing: a copy that cannot be written is
+reported, not thrown.
+
 ## Reloading the document
 
 A reload replaces the whole document with the server's copy when the writer
@@ -222,13 +259,20 @@ before any of those replacements happen. Its retained collision record authorize
 recovery even after a retry fails for another reason; an active save or frozen
 authentication attempt must settle before the document can be replaced. The
 replacement completes before recovery is announced to subscribers, so an edit
-made from that notification belongs to the new document and is preserved. The read is its own request, never a
-refetch of the query the screen rendered from: a failing refetch puts that query
-into an error state and replaces the editor, taking the unsaved content and the
-way to copy it out with it. A reload that fails leaves the halt, the content and
-the banner exactly as they were. A reload that succeeds seeds the screen's query
-with the accepted document, so a quick close and reopen cannot resurrect the
-version it first read.
+made from that notification belongs to the new document and is preserved. The
+read is its own request, never a refetch of the query the screen rendered from,
+so nothing is replaced until the session has accepted the copy. A reload that
+fails leaves the halt, the content and the banner exactly as they were. A reload
+that succeeds seeds the screen's query with the accepted document, so a quick
+close and reopen cannot resurrect the version it first read.
+
+The screen's query also refetches on its own, after every save that lands and
+on reconnect once it is stale. Only a read that never produced the post
+replaces the screen, with the load error or a missing post, so reopening a post
+whose stale copy is still cached shows that copy even when its refetch fails.
+Once the post is on screen, a refetch that fails leaves the editor, the session
+and the unsaved content where they are, and the next save reports a deleted
+post, an expired session or a collision itself.
 
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
@@ -259,6 +303,22 @@ references are kept stable across engine events, so body edits need no new React
 snapshot while the rendered values stay the same. That makes the view suitable
 for `useSyncExternalStore` and lets it stand in for those values as a dependency.
 
+## Leaving the editor
+
+While the post holds unsaved work, every way out of the editor is put to the
+save engine: a link, the browser's Back and Forward buttons, and any other
+change to the URL's hash. The engine finishes or saves what is outstanding and
+answers either that leaving loses nothing, and the navigation goes ahead, or
+that the writer has to confirm it. Until then the URL stays on the editor. A
+Back or Forward is undone as it happens and replayed once the writer may leave,
+so they land on the entry it reached. Undoing it puts the editor back directly
+above that entry: a held Back drops the forward history, and a Forward or a hash
+change from outside that the writer cancels leaves its destination directly
+below the editor, where the next Back goes. A URL that differs only by a
+trailing slash is the same screen, not an exit. A clean editor leaves at once, a
+tab close or reload gets the browser's own prompt, and the URL replace after a
+create is not an exit.
+
 ## What the session reports
 
 Failures never reach the writer as thrown errors; the session reports them. Every
@@ -270,7 +330,10 @@ is abandoned, not when it is retried. A leave the writer has to
 confirm is reported with the reason codes the tracker holds the post dirty for.
 A draft disposed with a title but a slug still derived from the default title is
 reported as an error. A throwing subscriber or slug listener is reported as an
-error, and so is a slug edit the generator rejected.
+error, and so is a slug edit the generator rejected. A local copy that storage
+refused is reported with a `localRevisions` tag naming why: `quotaExceeded` when
+older copies had to make room, `quotaExceededNoSpace` when nothing could, and
+`saveError` for any other failure.
 
 Sentry receives these through the editor's own reporter, with the response
 status and URL when the transport answered. Validation failures, host limits and

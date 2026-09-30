@@ -458,6 +458,17 @@ describe('Automations API', function () {
         });
       });
 
+      it('uses database stats when Tinybird configuration is missing', async function () {
+        configUtils.set('tinybird:stats', null);
+        const [automation] = await models.Base.knex('automations').select('id');
+        await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
+        const { body } = await agent.get('automations').expectStatus(200);
+        assert.equal(
+          body.automations.find((item) => item.id === automation.id).stats.total_run_count,
+          1,
+        );
+      });
+
       it('uses database stats when the flag is disabled', async function () {
         mockManager.mockLabsDisabled('automationsTinybirdSync');
         const [automation] = await models.Base.knex('automations').select('id');
@@ -534,6 +545,7 @@ describe('Automations API', function () {
       );
 
       it.each([
+        { reason: 'missing', status: 404, response: 'missing pipe' },
         { reason: 'unavailable', status: 500, response: 'nope' },
         { reason: 'malformed', status: 200, response: { data: [{ automation_id: 42 }] } },
       ])('uses database stats when Tinybird is $reason', async function ({ status, response }) {
@@ -1051,11 +1063,11 @@ describe('Automations API', function () {
       assert.deepEqual(readBody.automations[0], automation);
     });
 
-    it('allows an automation with 20 actions', async function () {
+    it('allows an automation with 50 actions', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
       const automationId = browseBody.automations[0].id;
-      const actions = Array.from({ length: 20 }, buildWaitAction);
+      const actions = Array.from({ length: 50 }, buildWaitAction);
       const edges = buildLinearEdges(actions);
 
       const { body: editBody } = await agent
@@ -1074,20 +1086,20 @@ describe('Automations API', function () {
 
       const automation = editBody.automations[0];
       assert.equal(automation.status, 'inactive');
-      assert.equal(automation.actions.length, 20);
-      assert.equal(automation.edges.length, 19);
+      assert.equal(automation.actions.length, 50);
+      assert.equal(automation.edges.length, 49);
       assert.deepEqual(automation.actions, actions);
       assert.deepEqual(automation.edges, edges);
     });
 
-    it('rejects an automation with more than 20 actions', async function () {
+    it('rejects an automation with more than 50 actions', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
       const automationId = browseBody.automations[0].id;
 
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
 
-      const actions = Array.from({ length: 21 }, buildWaitAction);
+      const actions = Array.from({ length: 51 }, buildWaitAction);
 
       await agent
         .put(`automations/${automationId}`)

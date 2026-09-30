@@ -183,6 +183,10 @@ export function createDatabaseAutomationsRepository({
       });
     },
 
+    async exists(id) {
+      return !!(await knex('automations').where({ id }).first('id'));
+    },
+
     async getById(id: string): Promise<Automation | null> {
       return await knex.transaction(async (trx) => {
         const automation = await loadAutomation(trx, id);
@@ -1100,7 +1104,7 @@ async function loadAutomation(
   automationId: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .where('id', automationId)
     .first();
   return row ?? null;
@@ -1111,7 +1115,7 @@ async function loadAutomationBySlug(
   slug: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .where('slug', slug)
     .first();
   return row ?? null;
@@ -1119,7 +1123,7 @@ async function loadAutomationBySlug(
 
 async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
   return await trx('automations')
-    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .orderBy('name');
 }
 
@@ -1141,6 +1145,7 @@ async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<Automati
       'automations.id',
       'automations.slug',
       'automations.name',
+      'automations.description',
       'automations.status',
       'automations.created_at',
       'automations.updated_at',
@@ -1541,6 +1546,7 @@ function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
     id: automation.id,
     slug: automation.slug,
     name: automation.name,
+    description: automation.description,
     status: automation.status,
     created_at: serializeDate(automation.created_at),
     updated_at: serializeDate(automation.updated_at),

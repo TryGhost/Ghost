@@ -34,6 +34,7 @@ import {
 import type { RestoredRevision } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
+import { createLocalRevisionWriter } from '@/editor/local-revisions';
 import {
   reportEditorError,
   reportLeaveConfirmation,
@@ -213,6 +214,11 @@ export function useEditorSession({
       onError: reportEditorError,
       onSaveFailed: (failure) => reportSaveFailure(failure, postType),
       onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, postType),
+      localRevisions: createLocalRevisionWriter({
+        type: postType,
+        storage: () => window.localStorage,
+        onError: reportEditorError,
+      }),
       transport: {
         create: async (payload: EditorCreatePayload) => {
           const current = transport.current;
@@ -264,6 +270,22 @@ export function useEditorSession({
     clearTimeout(pendingDispose.current);
     return () => {
       pendingDispose.current = setTimeout(() => session.dispose());
+    };
+  }, [session]);
+
+  // A closing or backgrounded tab never unmounts the editor, and a discarded one never fires `pagehide`.
+  useEffect(() => {
+    const flush = () => session.flushLocalRevision();
+    const flushWhenHidden = () => {
+      if (document.visibilityState === 'hidden') {
+        flush();
+      }
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', flushWhenHidden);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', flushWhenHidden);
     };
   }, [session]);
 
@@ -325,7 +347,7 @@ export function useEditorSession({
     }
   }, [saved, session]);
 
-  // Its own request: a failed refetch of the screen's query replaces the editor.
+  // Its own request: a query refetch would land before the session could refuse the copy.
   const reload = useCallback(async (): Promise<ReloadOutcome> => {
     if (!persistedId) {
       return 'failed';

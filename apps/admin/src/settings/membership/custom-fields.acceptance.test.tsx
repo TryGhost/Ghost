@@ -35,6 +35,11 @@ const archivedField: MemberCustomField = {
 
 const flagOn = { labs: { membersCustomFields: true } };
 
+// A drag that travels to the drop point, as a hand does. dnd-kit works out the row
+// under the pointer as it moves, so a drag that jumps straight there in one move can
+// be released before the list has registered where it is.
+const DRAG = { steps: 10 };
+
 type CustomField = typeof companyField;
 
 function fakeCustomFields(fields: CustomField[] = [companyField]) {
@@ -513,7 +518,7 @@ describe('Custom fields', () => {
     // lifted item by a flat 25px and it never reaches the next row.
     const handle = settingsScreen.customFields().getByLabelText('Reorder Nickname');
     await expect.element(handle).toBeVisible();
-    await userEvent.dragAndDrop(handle, rows.first());
+    await userEvent.dragAndDrop(handle, rows.first(), DRAG);
 
     // The whole list goes up, in the order the drag left it, keys only — order is a
     // property of the list, so a field never carries a rank. Nickname was dropped on
@@ -561,6 +566,7 @@ describe('Custom fields', () => {
     await userEvent.dragAndDrop(
       settingsScreen.customFields().getByLabelText('Reorder Nickname'),
       rows.first(),
+      DRAG,
     );
 
     await expect.element(rows.first()).toHaveTextContent('Nickname');
@@ -609,6 +615,7 @@ describe('Custom fields', () => {
     await userEvent.dragAndDrop(
       settingsScreen.customFields().getByLabelText('Reorder Nickname'),
       rows.first(),
+      DRAG,
     );
 
     // The server's own words reach the publisher, not a generic failure: they name
@@ -638,6 +645,7 @@ describe('Custom fields', () => {
     await userEvent.dragAndDrop(
       settingsScreen.customFields().getByLabelText('Reorder Shirt size'),
       rows.first(),
+      DRAG,
     );
 
     // The archived field is named even though it was never on screen: an order states
@@ -670,6 +678,7 @@ describe('Custom fields', () => {
     await userEvent.dragAndDrop(
       settingsScreen.customFields().getByLabelText('Reorder Field 2'),
       rows.first(),
+      DRAG,
     );
 
     // The two fields the publisher cannot see are still named, and still last.
