@@ -337,6 +337,7 @@ function PublishActions({
           limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}
+          showCompletion={false}
           site={inputs.site}
           siteTitle={siteTitle}
           timezone={inputs.timezone}

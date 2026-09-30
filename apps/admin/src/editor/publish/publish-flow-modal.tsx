@@ -24,6 +24,8 @@ import type { PublishLimitPorts, PublishSiteInput, PublishUserInput } from './pu
 export interface PublishFlowModalProps {
   post: PublishFlowPost;
   animate?: boolean;
+  /** Disable when onCompleted navigates, keeping the pending step visible until it unmounts. */
+  showCompletion?: boolean;
   site: PublishSiteInput;
   user: PublishUserInput;
   limits?: PublishLimitPorts;
@@ -52,6 +54,7 @@ export function PublishFlowModal({ post, ...props }: PublishFlowModalProps) {
 function KeyedPublishFlowModal({
   post,
   animate = true,
+  showCompletion,
   site,
   user,
   limits,
@@ -109,6 +112,7 @@ function KeyedPublishFlowModal({
       limits={limits}
       now={now}
       post={post}
+      showCompletion={showCompletion}
       site={site}
       siteTitle={siteTitle}
       timezone={timezone}
@@ -127,6 +131,7 @@ type PublishFlowDialogProps = Omit<PublishFlowModalProps, 'tkCount' | 'paywallIm
 function PublishFlowDialog({
   post,
   animate = true,
+  showCompletion,
   site,
   user,
   limits,
@@ -147,6 +152,7 @@ function PublishFlowDialog({
     limits,
     now,
     dispatch,
+    showCompletion,
     onBeforePublish,
     onCompleted,
   });

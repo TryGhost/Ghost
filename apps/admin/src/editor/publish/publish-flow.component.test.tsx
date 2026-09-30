@@ -190,6 +190,23 @@ describe('Publish flow', () => {
     });
   });
 
+  it('keeps confirmation pending during navigation without showing completion', async () => {
+    const { onCompleted } = await renderPublishFlow({ showCompletion: false });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+    // The caller has started navigation, but the destination may still be loading.
+    await expect.element(publishScreen.confirm()).toBeVisible();
+    await expect.element(publishScreen.confirmButton()).toBeDisabled();
+    await expect(publishScreen.complete()).toHaveCount(0);
+    expect(JSON.parse(localStorage.getItem('ghost-last-published-post') ?? 'null')).toEqual({
+      id: POST_ID,
+      type: 'post',
+    });
+  });
+
   it('holds the confirm button through the email poll so the publish cannot be dispatched twice', async () => {
     const email = { status: 'pending' };
     fakeEmailPolling(email);
@@ -970,6 +987,24 @@ describe('Publish flow', () => {
     await publishScreen.retryEmailButton().click();
 
     await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(retryApi.requests).toHaveLength(1);
+  });
+
+  it('keeps the email retry pending during navigation without showing completion', async () => {
+    fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
+    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
+    const { onCompleted } = await renderPublishFlow({ showCompletion: false });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await publishScreen.retryEmailButton().click();
+
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+    await expect.element(publishScreen.emailError()).toBeVisible();
+    await expect.element(publishScreen.retryEmailButton()).toBeDisabled();
+    await expect(publishScreen.complete()).toHaveCount(0);
     expect(retryApi.requests).toHaveLength(1);
   });
 
