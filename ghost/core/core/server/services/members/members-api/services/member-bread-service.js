@@ -49,6 +49,8 @@ module.exports = class MemberBREADService {
    * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
    * @param {IGiftsModule} deps.giftService
    * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues Required: boot builds it before the members service
+   * @param {<T>(fn: (transacting: import('knex').Knex.Transaction) => Promise<T>) => Promise<T>} deps.transaction
+   *   Runs `fn` in a database transaction.
    */
   constructor({
     memberRepository,
@@ -62,6 +64,7 @@ module.exports = class MemberBREADService {
     commentsService,
     giftService,
     metafieldValues,
+    transaction,
   }) {
     this.offersAPI = offersAPI;
     /** @private */
@@ -84,6 +87,8 @@ module.exports = class MemberBREADService {
     this.giftService = giftService;
     /** @private */
     this.metafieldValues = metafieldValues;
+    /** @private */
+    this.transaction = transaction;
   }
 
   /**
@@ -578,6 +583,23 @@ module.exports = class MemberBREADService {
       ? await this.metafieldValues.planWrite(metafields, ADMIN)
       : null;
 
+    let origin = null;
+    if (plannedMetafields?.length > 0) {
+      // Every value reaching here was typed into the Admin API, so the writer is
+      // whoever made the request — the same pair the action log records, so the two
+      // agree about who did it rather than one saying only that it was "admin".
+      //
+      // The only route to this branch is the authenticated Admin API, so an anonymous
+      // request is a mistake somewhere upstream rather than a writer to invent a name
+      // for. Refusing keeps every stored writer resolvable.
+      origin = adminWriteOrigin(options.context);
+      if (!origin) {
+        throw new errors.IncorrectUsageError({
+          message: tpl(messages.metafieldsWithoutWriter),
+        });
+      }
+    }
+
     let model;
 
     try {
@@ -588,7 +610,9 @@ module.exports = class MemberBREADService {
         data.email_disabled = !!isSuppressed;
       }
 
-      model = await this.memberRepository.update(data, options);
+      model = origin
+        ? await this.updateWithMetafields(data, options, plannedMetafields, origin)
+        : await this.memberRepository.update(data, options);
     } catch (error) {
       if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
         throw new errors.ValidationError({
@@ -628,50 +652,42 @@ module.exports = class MemberBREADService {
       }
     }
 
-    if (plannedMetafields) {
-      // Every value reaching here was typed into the Admin API, so the writer is
-      // whoever made the request — the same pair the action log records, so the two
-      // agree about who did it rather than one saying only that it was "admin".
-      //
-      // The only route to this branch is the authenticated Admin API, so an anonymous
-      // request is a mistake somewhere upstream rather than a writer to invent a name
-      // for. Refusing keeps every stored writer resolvable.
-      const origin = adminWriteOrigin(options.context);
-      if (!origin) {
-        throw new errors.IncorrectUsageError({
-          message: tpl(messages.metafieldsWithoutWriter),
+    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
+  }
+
+  /**
+   * Updates a member and writes their metafields in one transaction. The `member.edited`
+   * event fires when the transaction commits, so it always sees the new metafields.
+   *
+   * @private
+   * @param {object} data the member attributes to change
+   * @param {object} options must name the member by `id`
+   * @param {import('../../../members-metafields/values-service').PlannedWrite[]} writes
+   * @param {import('../../../members-metafields').WriteOrigin} origin
+   */
+  async updateWithMetafields(data, options, writes, origin) {
+    return this.transaction(async (transacting) => {
+      const model = await this.memberRepository.update(data, { ...options, transacting });
+      const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
+
+      await this.metafieldValues.applyWrite(model.id, writes, { ...origin, executor: transacting });
+
+      if (memberUnchanged) {
+        // Metafields aren't a member column or relation, so an edit touching only them
+        // leaves `_changed` empty, and the event the save queued would not fire. Marking
+        // them as the change lets it fire at commit, as a labels change does.
+        model._changed = { metafields: true };
+        // The save skipped its audit action, because nothing had changed yet. A mixed
+        // edit keeps the generic label: relabelling it would hide the member change.
+        await model.addAction(model, 'edited', {
+          context: options.context,
+          transacting,
+          actionName: CUSTOM_FIELDS_EDITED_ACTION,
         });
       }
-      await this.metafieldValues.applyWrite(model.id, plannedMetafields, origin);
 
-      // Metafields aren't a member column or relation, so an edit touching
-      // only them leaves `model._changed` empty and the save fires nothing.
-      // Declare the change into `_changed` — as bookshelf-relations does for a
-      // labels change — so the member's edited lifecycle fires its usual signals
-      // (audit action + the webhook event, no `updated_at` bump).
-      //
-      // Guarded to the row-unchanged case: a real member change already
-      // populated `_changed` and fired the edited event during update(), so
-      // re-firing would duplicate it (this also covers a full PUT that resends
-      // unchanged member fields — `_changed` stays empty there too). That
-      // combined event omits `metafields` from `_changed`, which only gates
-      // whether the event fires.
-      const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
-      if (memberUnchanged && plannedMetafields.length > 0) {
-        model._changed = { metafields: true };
-        // A mixed edit keeps the generic label on purpose: relabelling the
-        // one action a member change already fired would bury that change
-        // behind this one.
-        const eventOptions = {
-          context: options.context,
-          transacting: options.transacting,
-          actionName: CUSTOM_FIELDS_EDITED_ACTION,
-        };
-        await model.triggerThen('updated', model, eventOptions);
-      }
-    }
-
-    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
+      return model;
+    });
   }
 
   /**
