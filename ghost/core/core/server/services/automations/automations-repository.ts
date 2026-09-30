@@ -149,6 +149,12 @@ export type AutomationStepTerminalStatus =
   | 'member changed status'
   | 'member unsubscribed';
 
+export type AutomationRunMember = {
+  id: string;
+  name: string | null;
+  email: string;
+};
+
 export type BrowseOptions = Readonly<{
   /**
    * Should stats be included?
@@ -162,6 +168,10 @@ export type AutomationsRepository = {
   browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
+  getRunMembers(
+    automationId: string,
+    runIds: string[],
+  ): Promise<Map<string, AutomationRunMember | null>>;
   getAutomationActionLinks(
     automationId: string,
     actionId: string,

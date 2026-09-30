@@ -10,6 +10,7 @@ import {
   EMPTY_AUTOMATION_STATS,
   fetchAutomationStats,
   fetchAutomationPerformanceStats,
+  fetchAutomationRuns,
 } from './tinybird-automation-stats';
 import { entryDate, getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
@@ -27,6 +28,8 @@ const lexicalLib = require('../../lib/lexical');
 const MAX_AUTOMATION_ACTIONS = 50;
 
 const messages = {
+  invalidRunStatus: 'Automation run status must be one of: in_progress, completed, exited_early.',
+  tinybirdRunsFailed: 'Could not load Tinybird automation runs.',
   tinybirdEntriesOutsideRange: 'Tinybird returned entries outside the requested range.',
   tinybirdPerformanceStatsFailed: 'Could not load Tinybird automation performance stats.',
 
@@ -184,6 +187,41 @@ export async function readPerformanceStats(automationId: string, options: unknow
     ...stats,
     entry_window: entryWindow,
   };
+}
+
+export async function browseRuns(automationId: string, options: Record<string, unknown> = {}) {
+  const { window: entryWindow, timezone } = parseEntryStatsOptions(options);
+  const parsedStatus = z
+    .enum(['in_progress', 'completed', 'exited_early'])
+    .optional()
+    .safeParse(options.status);
+  if (!parsedStatus.success) {
+    throw new errors.ValidationError({
+      message: tpl(messages.invalidRunStatus),
+    });
+  }
+  const exists = await repository.exists(automationId);
+  if (!exists) {
+    throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
+  }
+  const client = getTinybirdClient();
+  if (!client) {
+    throw new errors.InternalServerError({ message: tpl(messages.tinybirdRunsFailed) });
+  }
+  const runs = await fetchAutomationRuns(client, automationId, parsedStatus.data, {
+    timezone,
+    dateFrom: entryWindow?.date_from,
+    dateTo: entryWindow?.date_to,
+  });
+  if (runs === null) {
+    throw new errors.InternalServerError({ message: tpl(messages.tinybirdRunsFailed) });
+  }
+  // Keep member details in Core; a deleted member must not remove a run from this page.
+  const members = await repository.getRunMembers(
+    automationId,
+    runs.map((run) => run.id),
+  );
+  return runs.map((run) => ({ ...run, member: members.get(run.id) ?? null }));
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {

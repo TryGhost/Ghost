@@ -20,6 +20,7 @@ import type {
   AutomationEdge,
   AutomationEmailStats,
   AutomationSummary,
+  AutomationRunMember,
   AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationTriggerTierScope,
@@ -219,6 +220,28 @@ export function createDatabaseAutomationsRepository({
 
         return await buildAutomation(trx, automation);
       });
+    },
+
+    async getRunMembers(automationId, runIds) {
+      if (runIds.length === 0) {
+        return new Map();
+      }
+      const rows = await knex('automation_runs as runs')
+        .leftJoin('members', 'members.id', 'runs.member_id')
+        .where('runs.automation_id', automationId)
+        .whereIn('runs.id', runIds)
+        .select<{ run_id: string; id: string | null; name: string | null; email: string | null }[]>(
+          'runs.id as run_id',
+          'members.id',
+          'members.name',
+          'members.email',
+        );
+      return new Map<string, AutomationRunMember | null>(
+        rows.map((row) => [
+          row.run_id,
+          row.id && row.email ? { id: row.id, name: row.name, email: row.email } : null,
+        ]),
+      );
     },
 
     async getAutomationActionLinks(automationId, actionId) {
