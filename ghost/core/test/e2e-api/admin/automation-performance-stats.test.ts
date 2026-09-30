@@ -272,6 +272,36 @@ describe('Automation performance stats API', function () {
       ]);
     });
 
+    it('returns hourly buckets within the requested local calendar day', async function () {
+      const rows = [
+        zeroRow('2024-11-03T05:00:00Z'),
+        zeroRow('2024-11-03T06:00:00Z'),
+        zeroRow('2024-11-04T04:00:00Z'),
+      ];
+      rows[0].completed_run_count = 1;
+      const requests = mockStats(
+        200,
+        { data: rows },
+        {
+          date_from: '2024-11-03',
+          date_to: '2024-11-04',
+          timezone: 'America/New_York',
+        },
+      );
+      const { body } = await requestStats(
+        200,
+        '?date_from=2024-11-03&date_to=2024-11-03&timezone=America%2FNew_York',
+      );
+      assert.ok(requests.isDone());
+      const stats = body.automation_performance_stats[0];
+      assert.equal(stats.entry_window.bucket, 'hour');
+      assert.equal(stats.total_run_count, 1);
+      assert.deepEqual(
+        stats.entries.map((entry: { date: string }) => entry.date),
+        rows.map((row) => row.date),
+      );
+    });
+
     // The parser unit tests cover the validation matrix; this checks the HTTP boundary.
     it('returns 422 for an incomplete range without fetching Tinybird', async function () {
       const requests = mockStats(200, { data: [] });

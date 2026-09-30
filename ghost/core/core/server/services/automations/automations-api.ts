@@ -11,7 +11,7 @@ import {
   fetchAutomationStats,
   fetchAutomationPerformanceStats,
 } from './tinybird-automation-stats';
-import { getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
+import { entryDate, getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
 const { knex } = require('../../data/db');
@@ -167,9 +167,15 @@ export async function readPerformanceStats(automationId: string, options: unknow
       message: tpl(messages.tinybirdPerformanceStatsFailed),
     });
   }
-  const entryWindow = requestedWindow ?? getEntryStatsWindow(stats.entries, timezone);
+  const returnedWindow = getEntryStatsWindow(stats.entries, timezone);
+  const entryWindow = requestedWindow
+    ? { ...requestedWindow, bucket: returnedWindow.bucket }
+    : returnedWindow;
   if (
-    stats.entries.some(({ date }) => date < entryWindow.date_from || date >= entryWindow.date_to)
+    stats.entries.some(({ date }) => {
+      const day = entryDate(date, timezone);
+      return day < entryWindow.date_from || day >= entryWindow.date_to;
+    })
   ) {
     throw new errors.InternalServerError({ message: tpl(messages.tinybirdEntriesOutsideRange) });
   }

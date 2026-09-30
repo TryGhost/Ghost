@@ -5,7 +5,7 @@ import { z } from 'zod';
 export type EntryStatsWindow = {
   date_from: string;
   date_to: string;
-  bucket: 'day';
+  bucket: 'day' | 'hour';
   timezone: string;
 };
 
@@ -90,9 +90,13 @@ export function getEntryStatsWindow(
   timezone = 'UTC',
 ): EntryStatsWindow {
   return {
-    date_from: entries[0].date,
-    date_to: nextDate(entries[entries.length - 1].date),
-    bucket: 'day',
+    date_from: entryDate(entries[0].date, timezone),
+    date_to: nextDate(entryDate(entries[entries.length - 1].date, timezone)),
+    bucket: entries[0].date.includes('T') ? 'hour' : 'day',
     timezone,
   };
+}
+
+export function entryDate(date: string, timezone: string): string {
+  return date.includes('T') ? moment(date).tz(timezone).format('YYYY-MM-DD') : date;
 }

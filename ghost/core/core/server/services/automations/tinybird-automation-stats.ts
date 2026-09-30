@@ -86,7 +86,7 @@ export type AutomationPerformanceStats = EntryStatsData & {
 };
 
 const performanceRowSchema = z.object({
-  date: z.iso.date(),
+  date: z.union([z.iso.date(), z.iso.datetime()]),
   in_progress_run_count: runCountSchema,
   completed_run_count: runCountSchema,
   exited_early_run_count: runCountSchema,

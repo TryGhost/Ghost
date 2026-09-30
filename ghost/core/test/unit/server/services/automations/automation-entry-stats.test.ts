@@ -81,3 +81,23 @@ describe('automation entry date range', function () {
     assert.throws(() => parseEntryStatsOptions(options), { errorType: 'ValidationError' });
   });
 });
+
+describe('hourly entry windows', function () {
+  it('keeps both repeated DST hours within the selected local day', function () {
+    assert.deepEqual(
+      getEntryStatsWindow(
+        [
+          { date: '2024-11-03T05:00:00Z', count: 1 },
+          { date: '2024-11-04T04:00:00Z', count: 2 },
+        ],
+        'America/New_York',
+      ),
+      {
+        date_from: '2024-11-03',
+        date_to: '2024-11-04',
+        bucket: 'hour',
+        timezone: 'America/New_York',
+      },
+    );
+  });
+});
