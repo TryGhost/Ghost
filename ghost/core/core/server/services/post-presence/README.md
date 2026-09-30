@@ -72,6 +72,3 @@ Both adapters implement the optional `EventLogCache` interface from
 Logs retain up to 2,000 heartbeats per resource for 60 seconds. The API returns
 only the latest heartbeat per user and resource from the last 30 seconds. There
 is no history query. Memory storage is capped at 10,000 logs.
-
-Before Pro rollout, check polling, cache failures and idle-site sleep on staging
-behind Fastly.
