@@ -38,7 +38,7 @@ export function PublishAtOptions({
 
       {state.isScheduled ? (
         <DateTimePicker
-          className="w-full sm:w-70 sm:justify-self-end"
+          className="w-full sm:w-70 sm:translate-y-2 sm:justify-self-end"
           dateLabel="Publish date"
           dateTestId={publishScheduleDate}
           minDate={state.minScheduledAt}
