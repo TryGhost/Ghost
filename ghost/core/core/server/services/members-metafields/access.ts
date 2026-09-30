@@ -13,9 +13,9 @@ const EVERY_LEVEL: MemberAccess[] = [...MEMBER_ACCESS_LEVELS];
 
 export type Audience = { entry: 'admin' } | { entry: 'members' } | { entry: 'internal' };
 
-export const ADMIN: Audience = { entry: 'admin' };
-export const MEMBERS: Audience = { entry: 'members' };
-export const INTERNAL: Audience = { entry: 'internal' };
+export const ADMIN = { entry: 'admin' } as const satisfies Audience;
+export const MEMBERS = { entry: 'members' } as const satisfies Audience;
+export const INTERNAL = { entry: 'internal' } as const satisfies Audience;
 
 // Every audience is spelled out with the levels it may read, staff included, because
 // reads narrow on whatever this returns and an audience with no entry gets an empty

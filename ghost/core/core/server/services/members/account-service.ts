@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { MEMBERS } from '../members-metafields';
+import { MEMBERS, memberWriter } from '../members-metafields';
 import type { MetafieldValuesService } from '../members-metafields/values-service';
 
 /**
@@ -95,12 +95,13 @@ export class MemberAccountService {
     // the whole request rather than leaving a member renamed with their answers
     // rejected. The write below reconciles subscriptions with Stripe and sends
     // events, none of which giving up halfway could undo.
+    const writer = memberWriter(memberId);
     const plannedMetafields =
       data.metafields === undefined
         ? null
         : await this.#metafieldValues.planWrite(
             this.#metafieldValues.unwrapWire(data.metafields),
-            MEMBERS,
+            writer.audience,
           );
 
     await this.#members.update(_.pick(data, WRITABLE_FIELDS), {
@@ -109,12 +110,7 @@ export class MemberAccountService {
     });
 
     if (plannedMetafields) {
-      // A member is recorded as the author of their own answers, made from their
-      // account, which is Portal's.
-      await this.#metafieldValues.applyWrite(memberId, plannedMetafields, {
-        writtenBy: { type: 'member', id: memberId },
-        source: 'portal',
-      });
+      await this.#metafieldValues.applyWrite(memberId, plannedMetafields, writer.origin);
     }
 
     // Read back rather than returning what was written: a member is told what

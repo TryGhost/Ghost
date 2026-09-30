@@ -7,7 +7,8 @@ import { resolveMaxDefinitions } from './config';
 export type { Metafield } from './models';
 export type { MemberMetafields } from './values-service';
 export type { RequestContext } from './actions';
-export { actingContext, adminWriteOrigin } from './actions';
+export { actingContext } from './actions';
+export { memberWriter, staffWriter, type Writer } from './writers';
 export type { BoundField } from './bindings-service';
 export type { MetafieldChangeEvent, WriteOrigin, WrittenBy } from './schema';
 

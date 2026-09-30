@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const { ADMIN, adminWriteOrigin } = require('../../../members-metafields');
+const { ADMIN, staffWriter } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -10,8 +10,6 @@ const messages = {
   memberNotFound: 'Member not found.',
   metafieldsOnAdd:
     'Custom field values cannot be set while creating a member. Create the member, then set values with an edit.',
-  metafieldsWithoutWriter:
-    'Custom field values cannot be set by a request with no authenticated user or integration.',
 };
 
 // Stored in the action's `context.action_name`; Admin maps it to a display label.
@@ -553,8 +551,9 @@ module.exports = class MemberBREADService {
     // here rather than after the member edit has been applied — and keep the
     // plan to apply once below, so the values aren't resolved and validated
     // twice.
-    const plannedMetafields = writeMetafields
-      ? await this.metafieldValues.planWrite(metafields, ADMIN)
+    const writer = writeMetafields ? staffWriter(options.context) : null;
+    const plannedMetafields = writer
+      ? await this.metafieldValues.planWrite(metafields, writer.audience)
       : null;
 
     let model;
@@ -608,20 +607,7 @@ module.exports = class MemberBREADService {
     }
 
     if (plannedMetafields) {
-      // Every value reaching here was typed into the Admin API, so the writer is
-      // whoever made the request — the same pair the action log records, so the two
-      // agree about who did it rather than one saying only that it was "admin".
-      //
-      // The only route to this branch is the authenticated Admin API, so an anonymous
-      // request is a mistake somewhere upstream rather than a writer to invent a name
-      // for. Refusing keeps every stored writer resolvable.
-      const origin = adminWriteOrigin(options.context);
-      if (!origin) {
-        throw new errors.IncorrectUsageError({
-          message: tpl(messages.metafieldsWithoutWriter),
-        });
-      }
-      await this.metafieldValues.applyWrite(model.id, plannedMetafields, origin);
+      await this.metafieldValues.applyWrite(model.id, plannedMetafields, writer.origin);
 
       // Metafields aren't a member column or relation, so an edit touching
       // only them leaves `model._changed` empty and the save fires nothing.
