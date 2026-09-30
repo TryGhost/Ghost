@@ -59,61 +59,98 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement, { 'data-index': number }>
   },
 );
 
-const RunRow = forwardRef<HTMLTableRowElement, { run: AutomationRun; 'data-index': number }>(
-  function RunRow({ run: data, ...props }, ref) {
-    const run = mapAutomationRun(data);
-    const { Icon, color } = statusIcons[run.status];
-    return (
-      <TableRow ref={ref} {...props}>
-        <TableCell className="h-[72px] p-4">
-          <Stack className="min-w-0" gap="none">
-            <span className="truncate font-medium" title={run.memberName}>
-              {run.memberName}
-            </span>
-            {run.memberEmail && (
-              <span className="truncate text-muted-foreground" title={run.memberEmail}>
-                {run.memberEmail}
-              </span>
-            )}
-          </Stack>
-        </TableCell>
-        <TableCell className="p-4">
-          <time className="block truncate" dateTime={run.enteredAt} title={run.enteredDescription}>
-            {run.enteredLabel}
-          </time>
-        </TableCell>
-        <TableCell className="p-4 text-center">
-          <Inline
-            aria-label={run.statusLabel}
-            as="span"
-            justify="center"
-            role="img"
-            title={run.statusLabel}
+const RunRow = forwardRef<
+  HTMLTableRowElement,
+  {
+    run: AutomationRun;
+    'data-index': number;
+    selectedRunId: string | null;
+    onSelectRun: (id: string, memberName: string) => void;
+    isSelectionDisabled: boolean;
+  }
+>(function RunRow({ run: data, selectedRunId, onSelectRun, isSelectionDisabled, ...props }, ref) {
+  const run = mapAutomationRun(data);
+  const { Icon, color } = statusIcons[run.status];
+  return (
+    <TableRow
+      ref={ref}
+      {...props}
+      className={isSelectionDisabled ? undefined : 'cursor-pointer'}
+      data-state={selectedRunId === run.id ? 'selected' : undefined}
+      onClick={() => {
+        if (!isSelectionDisabled) {
+          onSelectRun(run.id, run.memberName);
+        }
+      }}
+    >
+      <TableCell className="h-[72px] p-4">
+        <Stack className="min-w-0" gap="none">
+          <button
+            aria-label={`View run history for ${run.memberName}, entered ${run.enteredDescription}`}
+            aria-pressed={selectedRunId === run.id}
+            className="truncate text-left font-medium outline-offset-4 focus-visible:outline-2 focus-visible:outline-focus-ring"
+            disabled={isSelectionDisabled}
+            title={run.memberName}
+            type="button"
           >
-            <span className="relative">
-              <Icon aria-hidden="true" className={`size-4 ${color}`} />
-              {run.failed && (
-                <span
-                  aria-hidden="true"
-                  className="absolute -top-1 -right-1 size-1.5 rounded-full bg-state-danger"
-                />
-              )}
+            {run.memberName}
+          </button>
+          {run.memberEmail && (
+            <span className="truncate text-muted-foreground" title={run.memberEmail}>
+              {run.memberEmail}
             </span>
-          </Inline>
-        </TableCell>
-      </TableRow>
-    );
-  },
-);
+          )}
+        </Stack>
+      </TableCell>
+      <TableCell className="p-4">
+        <time className="block truncate" dateTime={run.enteredAt} title={run.enteredDescription}>
+          {run.enteredLabel}
+        </time>
+      </TableCell>
+      <TableCell className="p-4 text-center">
+        <Inline
+          aria-label={run.statusLabel}
+          as="span"
+          justify="center"
+          role="img"
+          title={run.statusLabel}
+        >
+          <span className="relative">
+            <Icon aria-hidden="true" className={`size-4 ${color}`} />
+            {run.failed && (
+              <span
+                aria-hidden="true"
+                className="absolute -top-1 -right-1 size-1.5 rounded-full bg-state-danger"
+              />
+            )}
+          </span>
+        </Inline>
+      </TableCell>
+    </TableRow>
+  );
+});
 
 export const RunList: React.FC<{
   automationId: string;
   queryScope: string;
   dateRange: PerformanceDateRange;
   status: AutomationRunStatusFilter | null;
+  selectedRunId: string | null;
+  onSelectRun: (id: string, memberName: string) => void;
+  isSelectionDisabled: boolean;
   direction: RunSortDirection;
   onDirectionChange: (direction: RunSortDirection) => void;
-}> = ({ automationId, queryScope, status, dateRange, direction, onDirectionChange }) => {
+}> = ({
+  automationId,
+  queryScope,
+  status,
+  dateRange,
+  direction,
+  onDirectionChange,
+  selectedRunId,
+  onSelectRun,
+  isSelectionDisabled,
+}) => {
   const { runs, isLoading, isError, retry, canLoadMore, isLoadingMore, isNextPageError, loadMore } =
     useAutomationRuns(automationId, status, direction, queryScope, dateRange);
   const [showLoading, setShowLoading] = useState(false);
@@ -208,7 +245,16 @@ export const RunList: React.FC<{
               if (virtualItem.index > items.length - 1) {
                 return <PlaceholderRow key={key} {...props} />;
               }
-              return <RunRow key={item.id} run={item} {...props} />;
+              return (
+                <RunRow
+                  key={item.id}
+                  isSelectionDisabled={isSelectionDisabled}
+                  run={item}
+                  selectedRunId={selectedRunId}
+                  onSelectRun={onSelectRun}
+                  {...props}
+                />
+              );
             })}
             <SpacerRow height={spaceAfter} />
           </TableBody>

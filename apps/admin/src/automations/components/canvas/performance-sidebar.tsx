@@ -20,6 +20,10 @@ const PerformanceContent: React.FC<{
   dateRange: PerformanceDateRange;
   queryScope: string;
   runQueryScope: string;
+  selectedRunId: string | null;
+  onSelectRun: (id: string, memberName: string) => void;
+  isRunSelectionDisabled: boolean;
+
   direction: RunSortDirection;
   onDirectionChange: (direction: RunSortDirection) => void;
   selectedStatus: AutomationRunStatusFilter | null;
@@ -29,6 +33,9 @@ const PerformanceContent: React.FC<{
   dateRange,
   queryScope,
   runQueryScope,
+  selectedRunId,
+  onSelectRun,
+  isRunSelectionDisabled,
   selectedStatus,
   onStatusChange,
   direction,
@@ -73,16 +80,34 @@ const PerformanceContent: React.FC<{
         automationId={automationId}
         dateRange={dateRange}
         direction={direction}
+        isSelectionDisabled={isRunSelectionDisabled}
         queryScope={runQueryScope}
+        selectedRunId={selectedRunId}
         status={selectedStatus}
         onDirectionChange={onDirectionChange}
+        onSelectRun={onSelectRun}
       />
     </>
   );
 };
 
-export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automationId }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const PerformanceSidebar: React.FC<{
+  automationId: string;
+  isOpen: boolean;
+  isHistoryOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedRunId: string | null;
+  onSelectRun: (id: string, memberName: string) => void;
+  isRunSelectionDisabled: boolean;
+}> = ({
+  automationId,
+  isOpen,
+  isHistoryOpen,
+  onOpenChange,
+  selectedRunId,
+  onSelectRun,
+  isRunSelectionDisabled,
+}) => {
   const [hasOpened, setHasOpened] = useState(false);
   const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
   const [direction, setDirection] = useState<RunSortDirection>('desc');
@@ -100,13 +125,13 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
         aria-controls={panelId}
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide performance' : 'Show performance'}
-        className="absolute top-4 left-4 z-10"
+        className="absolute top-4 left-4 z-20"
         size="icon"
         type="button"
         variant="ghost"
         onClick={() => {
           setHasOpened(true);
-          setIsOpen((open) => !open);
+          onOpenChange(!isOpen);
         }}
       >
         <LucideIcon.PanelLeft strokeWidth={2} />
@@ -121,13 +146,26 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
         aria-labelledby={headingId}
         className={cn(
           'shrink-0 overflow-hidden bg-surface-elevated transition-[width] duration-150 ease-out motion-reduce:transition-none',
-          isOpen ? 'w-[min(480px,calc(100cqw-6rem))]' : 'w-0',
+          isHistoryOpen
+            ? '@max-[640px]/automation:absolute @max-[640px]/automation:inset-y-0 @max-[640px]/automation:left-0 @max-[640px]/automation:z-10'
+            : '@max-[960px]/automation:absolute @max-[960px]/automation:inset-y-0 @max-[960px]/automation:left-0 @max-[960px]/automation:z-10',
+          isOpen
+            ? cn(
+                'w-[480px]',
+                isHistoryOpen ? '@max-[640px]/automation:w-full' : '@max-[960px]/automation:w-full',
+              )
+            : 'w-0',
         )}
         id={panelId}
       >
         {/* Keep content at its full width while the sidebar animates open or closed. */}
         <Stack
-          className="h-full w-[min(480px,calc(100cqw-6rem))] overflow-y-auto border-r border-border-default px-6 py-4"
+          className={cn(
+            'h-full w-[480px] overflow-y-auto border-r border-border-default px-6 py-4',
+            isHistoryOpen
+              ? '@max-[640px]/automation:w-[100cqw]'
+              : '@max-[960px]/automation:w-[100cqw]',
+          )}
           gap="none"
         >
           <Inline className="h-9 pl-10" gap="none" justify="between">
@@ -161,13 +199,16 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
                 automationId={automationId}
                 dateRange={dateRange}
                 direction={direction}
+                isRunSelectionDisabled={isRunSelectionDisabled}
                 queryScope={panelId}
                 runQueryScope={runQueryScope}
+                selectedRunId={selectedRunId}
                 selectedStatus={status}
                 onDirectionChange={(next) => {
                   setDirection(next);
                   setQueryRevision((revision) => revision + 1);
                 }}
+                onSelectRun={onSelectRun}
                 onStatusChange={(selected) => {
                   setStatus(status === selected ? null : selected);
                   setQueryRevision((revision) => revision + 1);
