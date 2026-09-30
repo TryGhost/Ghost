@@ -74,6 +74,8 @@ const edgeSchema = z.object({
 });
 
 const editAutomationDataSchema = z.object({
+  name: z.string().trim().min(1).max(191).optional(),
+  description: z.string().trim().max(2000).optional(),
   status: z.enum(['active', 'inactive']),
   actions: z
     .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))

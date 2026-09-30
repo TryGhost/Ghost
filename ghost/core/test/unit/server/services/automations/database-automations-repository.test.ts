@@ -1584,6 +1584,41 @@ describe('automations repository', function () {
       });
     };
 
+    it('persists optional metadata and preserves omitted fields', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const graph = {
+        status: automation.status,
+        actions: automation.actions,
+        edges: automation.edges,
+      };
+
+      const renamed = await repo.edit(automation.id, {
+        ...graph,
+        name: 'Renamed flow',
+        description: 'Updated description',
+      });
+      assert(renamed);
+      assert.equal(renamed.name, 'Renamed flow');
+      assert.equal(renamed.description, 'Updated description');
+      assert.equal(renamed.slug, automation.slug);
+      assert.deepEqual(await repo.getById(automation.id), renamed);
+
+      const unchanged = await repo.edit(automation.id, graph);
+      assert(unchanged);
+      assert.equal(unchanged.name, 'Renamed flow');
+      assert.equal(unchanged.description, 'Updated description');
+
+      const cleared = await repo.edit(automation.id, { ...graph, description: '' });
+      assert(cleared);
+      assert.equal(cleared.name, 'Renamed flow');
+      assert.equal(cleared.description, '');
+
+      const nameOnly = await repo.edit(automation.id, { ...graph, name: 'Another name' });
+      assert(nameOnly);
+      assert.equal(nameOnly.name, 'Another name');
+      assert.equal(nameOnly.description, '');
+    });
+
     it('cancels pending unlocked steps when disabling an automation', async function () {
       const automation = await getAutomationBySlug('member-welcome-email-free');
       const action = await getActionByIndex(automation.id, 0);

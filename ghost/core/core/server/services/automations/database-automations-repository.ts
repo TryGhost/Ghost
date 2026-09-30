@@ -297,6 +297,8 @@ export function createDatabaseAutomationsRepository({
 
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
+          name: data.name ?? automation.name,
+          description: data.description ?? automation.description,
           status: data.status,
           updated_at: toDatabaseDate(now),
         });
@@ -1230,6 +1232,8 @@ async function updateAutomation(
 ): Promise<AutomationRow> {
   await trx('automations')
     .update({
+      name: automation.name,
+      description: automation.description,
       status: automation.status,
       updated_at: automation.updated_at,
     })
