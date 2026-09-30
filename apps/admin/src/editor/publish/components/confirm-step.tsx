@@ -1,5 +1,5 @@
 import { Banner, Button } from '@tryghost/shade/components';
-import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
@@ -139,25 +139,15 @@ export function ConfirmStep({
           <LucideIcon.ArrowLeft />
           Back to settings
         </Button>
-        <Box className="relative ml-auto max-w-full">
-          {status === 'idle' ? (
-            <Box
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-2 overflow-hidden rounded-full"
-            >
-              <Box className="absolute inset-2 rounded-full bg-state-success/30 motion-safe:animate-ping" />
-            </Box>
-          ) : null}
-          <Button
-            className="relative h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
-            data-testid={publishConfirm}
-            disabled={status === 'running'}
-            size="lg"
-            onClick={onConfirm}
-          >
-            {status === 'running' ? buttonText.running : buttonText.idle}
-          </Button>
-        </Box>
+        <Button
+          className="ml-auto h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
+          data-testid={publishConfirm}
+          disabled={status === 'running'}
+          size="lg"
+          onClick={onConfirm}
+        >
+          {status === 'running' ? buttonText.running : buttonText.idle}
+        </Button>
       </Inline>
     </Stack>
   );
