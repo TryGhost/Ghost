@@ -20,14 +20,9 @@ describe('EmailSendingStatusLine', () => {
     vi.useRealTimers();
   });
 
-  it('shows an active send', () => {
-    render(<EmailSendingStatusLine line={sending} />);
-
-    expect(screen.getByRole('status')).toHaveTextContent('Sending emails · 250 of 1,000');
-  });
-
   it('keeps the last line up while a settled send leaves, then removes it', () => {
     const { rerender } = render(<EmailSendingStatusLine line={sending} />);
+    expect(screen.getByRole('status')).toHaveTextContent('Sending emails · 250 of 1,000');
 
     rerender(<EmailSendingStatusLine line={null} />);
     expect(screen.getByRole('status')).toHaveTextContent('Sending emails · 250 of 1,000');

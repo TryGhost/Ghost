@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatDisplayDate, formatDisplayTime } from '@tryghost/shade/utils';
-import { getPostByline } from '@/posts/analytics/utils/post-byline';
+import { getPostPublicationSummary } from '@/posts/analytics/utils/post-publication-summary';
 import type { Post } from '@tryghost/admin-x-framework/api/posts';
 
 const PUBLISHED_AT = '2026-09-19T10:00:00.000Z';
@@ -22,38 +22,46 @@ const emailOnlyPost = (overrides: Partial<Post> = {}) =>
 const sent = { isEmailSent: true, improveSendingUI: true, timezone: TIMEZONE };
 const unsent = { ...sent, isEmailSent: false };
 
-describe('getPostByline', () => {
+describe('getPostPublicationSummary', () => {
   it('has nothing to say before a post is published', () => {
-    expect(getPostByline(publishedPost({ published_at: null }), sent)).toBeNull();
+    expect(getPostPublicationSummary(publishedPost({ published_at: null }), sent)).toBeNull();
   });
 
   it('says a post is only on the site until its send finishes', () => {
-    expect(getPostByline(publishedPost(), unsent)).toBe(`Published on your site ${ON}`);
+    expect(getPostPublicationSummary(publishedPost(), unsent)).toBe(`Published on your site ${ON}`);
   });
 
   it('adds the recipient count once the send finishes', () => {
-    expect(getPostByline(publishedPost(), sent)).toBe(`Published and sent to 1,000 members ${ON}`);
-    expect(getPostByline(publishedPost({ email: { email_count: 1 } } as Partial<Post>), sent)).toBe(
-      `Published and sent to 1 member ${ON}`,
+    expect(getPostPublicationSummary(publishedPost(), sent)).toBe(
+      `Published and sent to 1,000 members ${ON}`,
     );
+    expect(
+      getPostPublicationSummary(
+        publishedPost({ email: { email_count: 1 } } as Partial<Post>),
+        sent,
+      ),
+    ).toBe(`Published and sent to 1 member ${ON}`);
   });
 
   it('leaves the count out when there is none', () => {
-    expect(getPostByline(publishedPost({ email: { email_count: 0 } } as Partial<Post>), sent)).toBe(
-      `Published and sent ${ON}`,
-    );
+    expect(
+      getPostPublicationSummary(
+        publishedPost({ email: { email_count: 0 } } as Partial<Post>),
+        sent,
+      ),
+    ).toBe(`Published and sent ${ON}`);
   });
 
-  it('holds an email-only byline back until the send finishes', () => {
-    expect(getPostByline(emailOnlyPost(), unsent)).toBeNull();
-    expect(getPostByline(emailOnlyPost(), sent)).toBe(`Sent to 1,000 members ${ON}`);
+  it('holds an email-only publication summary back until the send finishes', () => {
+    expect(getPostPublicationSummary(emailOnlyPost(), unsent)).toBeNull();
+    expect(getPostPublicationSummary(emailOnlyPost(), sent)).toBe(`Sent to 1,000 members ${ON}`);
   });
 
   it('keeps the previous wording without the improved sending UI', () => {
     const flagOff = { ...unsent, improveSendingUI: false };
 
-    expect(getPostByline(emailOnlyPost(), flagOff)).toBe(`Sent ${ON}`);
-    expect(getPostByline(publishedPost(), { ...flagOff, isEmailSent: true })).toBe(
+    expect(getPostPublicationSummary(emailOnlyPost(), flagOff)).toBe(`Sent ${ON}`);
+    expect(getPostPublicationSummary(publishedPost(), { ...flagOff, isEmailSent: true })).toBe(
       `Published and sent ${ON}`,
     );
   });

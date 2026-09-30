@@ -3,28 +3,16 @@ import { renderHook } from '@testing-library/react';
 import { useChangeCount } from './use-change-count';
 
 describe('useChangeCount', () => {
-  it('does not animate the first render', () => {
-    const { result } = renderHook(() => useChangeCount('sending'));
-
-    expect(result.current).toBe(0);
-  });
-
-  it('animates once the value changes', () => {
-    const { result, rerender } = renderHook(({ value }) => useChangeCount(value), {
-      initialProps: { value: 'sending' },
-    });
-
-    rerender({ value: 'sent' });
-
-    expect(result.current).toBe(1);
-  });
-
-  it('gives every later change a new key', () => {
+  it('starts at zero and increments only when the value changes', () => {
     const { result, rerender } = renderHook(({ value }) => useChangeCount(value), {
       initialProps: { value: 'preparing' },
     });
 
+    expect(result.current).toBe(0);
+
     rerender({ value: 'submitting' });
+    expect(result.current).toBe(1);
+
     rerender({ value: 'submitting' });
     expect(result.current).toBe(1);
 

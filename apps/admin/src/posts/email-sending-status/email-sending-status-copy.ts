@@ -7,12 +7,10 @@ import type {
 
 interface ActiveEmailSend {
   status: Exclude<EmailSendingState, { status: 'failed' }>['status'];
-  /** Unknown until the status endpoint first reports. */
   progress?: EmailSendingProgress;
 }
 
 interface EmailSendingLineOptions {
-  /** A time-left label from useSendingEta. */
   estimate?: string | null;
   /**
    * Post analytics shows preparation as a percentage so the recipient count
@@ -21,7 +19,6 @@ interface EmailSendingLineOptions {
   preparingProgress?: 'count' | 'percentage';
 }
 
-/** An active send's status line. */
 export interface EmailSendingLine {
   phase: EmailSendingPhase;
   /** 0 to 1, or null before the total is known. */

@@ -29,7 +29,6 @@ const failureDetail = (
   return error ? `${progress} ${error}` : progress;
 };
 
-/** The email send's status, shown under the post title. */
 const PostAnalyticsEmailSendingStatus = () => {
   const { post } = usePostAnalytics();
   const {
@@ -74,7 +73,6 @@ const PostAnalyticsEmailSendingStatus = () => {
         <span>{detail}</span>
         {!hasUnknownDeliveryOutcome && (
           <Button
-            // Match the surrounding text size.
             className="h-auto p-0 text-[length:inherit] leading-[inherit]"
             disabled={isRetrying}
             variant="link"

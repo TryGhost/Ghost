@@ -2,18 +2,15 @@ import { formatDisplayDate, formatDisplayTime, formatNumber } from '@tryghost/sh
 import { isEmailOnly } from '@tryghost/admin-x-framework';
 import type { Post } from '@tryghost/admin-x-framework/api/posts';
 
-interface PostBylineOptions {
-  /** From the email sending status provider. */
+interface PostPublicationSummaryOptions {
   isEmailSent: boolean;
-  /** Adds the recipient count and holds "Sent" back until the send finishes. */
   improveSendingUI: boolean;
   timezone: string;
 }
 
-/** When and how a post went out, shown under its title in post analytics. */
-export function getPostByline(
+export function getPostPublicationSummary(
   post: Post,
-  { isEmailSent, improveSendingUI, timezone }: PostBylineOptions,
+  { isEmailSent, improveSendingUI, timezone }: PostPublicationSummaryOptions,
 ): string | null {
   if (!post.published_at) {
     return null;

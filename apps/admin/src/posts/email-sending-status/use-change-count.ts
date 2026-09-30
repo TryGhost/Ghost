@@ -1,9 +1,7 @@
 import { useState } from 'react';
 
 /**
- * Counts changes to `value` after `ready`: 0 means don't animate, so first
- * renders stay still. Key the animated element with it so every change
- * replays the animation instead of only the first.
+ * Counts changes after the first ready value; zero suppresses the initial animation.
  */
 export function useChangeCount(value: unknown, ready = true): number {
   const [settledValue, setSettledValue] = useState<{ value: unknown } | null>(null);

@@ -692,7 +692,6 @@ describe('Post analytics overview', () => {
     });
 
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
-    // The recipient count in the byline is part of the improveSendingUI work.
     await expect.element(page.getByText(/^Published and sent on/)).toBeVisible();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
     const overviewKpiRequestCount = kpisApi.requests.length;

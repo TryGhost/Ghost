@@ -29,7 +29,6 @@ interface EmailSendingStatusLineProps {
   'data-testid'?: string;
 }
 
-/** A send's status line, used on post analytics and in the posts list. */
 export function EmailSendingStatusLine({
   line,
   appear = false,
@@ -61,7 +60,6 @@ export function EmailSendingStatusLine({
   return (
     <Grid
       className={cn(
-        // Fade out, then collapse the height.
         '[transition:opacity_250ms_ease-out,grid-template-rows_400ms_cubic-bezier(0.4,0,0.2,1)_150ms] motion-reduce:transition-none',
         isLeaving ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr]',
         className,

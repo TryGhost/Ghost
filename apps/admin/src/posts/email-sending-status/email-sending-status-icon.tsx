@@ -23,7 +23,6 @@ interface EmailSendingStatusIconProps {
   className?: string;
 }
 
-/** A spinning arc while preparing, then a ring that fills as emails are sent. */
 export function EmailSendingStatusIcon({
   phase,
   fractionComplete,

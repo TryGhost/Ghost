@@ -35,7 +35,7 @@ import { useIsEmberOwnedRoute } from '@/routes';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
-import { getPostByline } from '@/posts/analytics/utils/post-byline';
+import { getPostPublicationSummary } from '@/posts/analytics/utils/post-publication-summary';
 import {
   isPublishedOnly,
   trackEvent,
@@ -78,9 +78,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   // Whether the editor needs a hash navigation depends on the `editorReact` flag.
   const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
-  const byline =
+  const publicationSummary =
     post &&
-    getPostByline(post, {
+    getPostPublicationSummary(post, {
       isEmailSent,
       improveSendingUI,
       timezone: getSiteTimezone(settings),
@@ -313,9 +313,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                   >
                     {post?.title}
                   </H1>
-                  {byline && (
+                  {publicationSummary && (
                     <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
-                      {byline}
+                      {publicationSummary}
                     </div>
                   )}
                   <PostAnalyticsEmailSendingStatus key={postId} />
