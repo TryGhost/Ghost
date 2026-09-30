@@ -19,6 +19,8 @@ function deferredResponse() {
   return { promise, resolve, reject };
 }
 
+const xhrMethods = Object.getOwnPropertyDescriptors(XMLHttpRequest.prototype);
+
 describe('fake API request teardown', () => {
   let settleRequests: typeof import('./worker').settleRequests;
   let fetchMock: ReturnType<typeof vi.fn<typeof fetch>>;
@@ -28,12 +30,20 @@ describe('fake API request teardown', () => {
     vi.useFakeTimers();
     fetchMock = vi.fn<typeof fetch>();
     vi.stubGlobal('fetch', fetchMock);
+    // An XHR is held the same way: sent, but never delivered until the test
+    // fires its loadend.
+    XMLHttpRequest.prototype.send = () => {};
     const worker = await import('./worker');
     settleRequests = worker.settleRequests;
+    worker.trackIssuedRequests();
     await worker.startFakeApi({ resolver: () => undefined, routes: [] });
   });
 
   afterEach(() => {
+    Object.defineProperties(XMLHttpRequest.prototype, {
+      open: xhrMethods.open,
+      send: xhrMethods.send,
+    });
     vi.unstubAllGlobals();
     vi.useRealTimers();
   });
@@ -74,6 +84,18 @@ describe('fake API request teardown', () => {
     await draining;
   });
 
+  it('removes a fetch that throws before returning from the ledger', async () => {
+    const error = new TypeError('Failed to construct Request');
+    fetchMock.mockImplementation(() => {
+      throw error;
+    });
+
+    expect(() => window.fetch('/ghost/api/admin/stats/posts-member-counts/')).toThrow(error);
+    const draining = settleRequests();
+    await vi.advanceTimersByTimeAsync(60);
+    await draining;
+  });
+
   it('reports the method and path of a fetch still waiting for MSW', async () => {
     const pending = deferredResponse();
     fetchMock.mockReturnValue(pending.promise);
@@ -103,5 +125,21 @@ describe('fake API request teardown', () => {
     await draining;
     pending.resolve(new Response('image'));
     await request;
+  });
+
+  it('waits for an XHR upload that has not reached the service worker', async () => {
+    const upload = new XMLHttpRequest();
+    upload.open('POST', '/ghost/api/admin/images/upload/');
+    upload.send();
+    const settled = vi.fn();
+    const draining = settleRequests().then(settled);
+
+    await vi.advanceTimersByTimeAsync(100);
+    expect(settled).not.toHaveBeenCalled();
+
+    upload.dispatchEvent(new Event('loadend'));
+    await vi.advanceTimersByTimeAsync(60);
+    await draining;
+    expect(settled).toHaveBeenCalledOnce();
   });
 });
