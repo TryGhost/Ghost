@@ -1,7 +1,7 @@
 import Automations from './automations';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 const { mockUseBrowseAutomations, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser } =
   vi.hoisted(() => ({
@@ -118,6 +118,33 @@ describe('Automations', () => {
     mockUseBrowseSettings.mockReturnValue({ data: stripeConnectedSettings, isLoading: false });
     mockUseBrowseConfig.mockReturnValue({ data: { config: {} }, isLoading: false });
     mockUseCurrentUser.mockReturnValue({ data: { id: 'user-1', roles: [{ name: 'Owner' }] } });
+  });
+
+  it.each([undefined, false])('hides "New automation" button when per-tier flag is %s', (flag) => {
+    mockUseBrowseConfig.mockReturnValue({
+      data: { config: { labs: { automationsPerTier: flag } } },
+      isLoading: false,
+    });
+
+    renderPage();
+
+    expect(screen.queryByRole('button', { name: 'New automation' })).not.toBeInTheDocument();
+  });
+
+  it('shows the "New automation" button when per-tier flag is enabled', () => {
+    mockUseBrowseConfig.mockReturnValue({
+      data: { config: { labs: { automationsPerTier: true } } },
+      isLoading: false,
+    });
+
+    renderPage();
+
+    const button = screen.getByRole('button', { name: 'New automation' });
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+
+    expect(screen.getByTestId('automations-page')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New automation' })).toBe(button);
   });
 
   it('shows free and paid sequences when Stripe is connected', () => {
