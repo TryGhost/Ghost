@@ -5,7 +5,7 @@ import { useState } from 'react';
  * renders stay still. Key the animated element with it so every change
  * replays the animation instead of only the first.
  */
-export function useAnimateOnChange(value: unknown, ready = true): number {
+export function useChangeCount(value: unknown, ready = true): number {
   const [settledValue, setSettledValue] = useState<{ value: unknown } | null>(null);
   const [changeCount, setChangeCount] = useState(0);
 

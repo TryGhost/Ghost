@@ -270,9 +270,9 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
 
               {emailSendingState.status === 'sending' ? (
                 <EmailSendingStatusLine
-                  active={emailSendingState.line}
                   announce={false}
                   className="text-sm"
+                  line={emailSendingState.line}
                 />
               ) : (
                 <Text className={statusTone(displayedPost, displayedIsFailed)} size="sm">

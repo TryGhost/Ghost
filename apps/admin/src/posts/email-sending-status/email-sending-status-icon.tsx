@@ -19,12 +19,16 @@ const RingCircle = ({ className, ...props }: ComponentPropsWithoutRef<'circle'>)
 interface EmailSendingStatusIconProps {
   phase: EmailSendingPhase;
   /** 0 to 1. Only used while submitting. */
-  share?: number | null;
+  fractionComplete?: number | null;
   className?: string;
 }
 
 /** A spinning arc while preparing, then a ring that fills as emails are sent. */
-export function EmailSendingStatusIcon({ phase, share, className }: EmailSendingStatusIconProps) {
+export function EmailSendingStatusIcon({
+  phase,
+  fractionComplete,
+  className,
+}: EmailSendingStatusIconProps) {
   if (phase === 'preparing') {
     return (
       <span
@@ -46,7 +50,7 @@ export function EmailSendingStatusIcon({ phase, share, className }: EmailSending
     );
   }
 
-  const drawnShare = Math.min(1, Math.max(0, share ?? 0));
+  const drawnFraction = Math.min(1, Math.max(0, fractionComplete ?? 0));
 
   return (
     <svg
@@ -58,7 +62,7 @@ export function EmailSendingStatusIcon({ phase, share, className }: EmailSending
       <RingCircle className="opacity-25" />
       <RingCircle
         strokeDasharray={RING_CIRCUMFERENCE}
-        strokeDashoffset={RING_CIRCUMFERENCE * (1 - drawnShare)}
+        strokeDashoffset={RING_CIRCUMFERENCE * (1 - drawnFraction)}
       />
     </svg>
   );

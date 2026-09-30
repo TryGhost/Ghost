@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  getEmailSendingActiveLine,
-  getEmailSendingProgressCopy,
-} from './email-sending-status-copy';
+import { getEmailSendingLine, getEmailSendingProgressCopy } from './email-sending-status-copy';
 
 describe('getEmailSendingProgressCopy', () => {
   it('formats preparing progress and an estimate', () => {
@@ -45,10 +42,10 @@ describe('getEmailSendingProgressCopy', () => {
   });
 });
 
-describe('getEmailSendingActiveLine', () => {
-  it('joins the copy into one line and reports the share sent', () => {
+describe('getEmailSendingLine', () => {
+  it('joins the copy into one line and reports the fraction complete', () => {
     expect(
-      getEmailSendingActiveLine(
+      getEmailSendingLine(
         {
           status: 'submitting',
           progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
@@ -57,20 +54,20 @@ describe('getEmailSendingActiveLine', () => {
       ),
     ).toEqual({
       phase: 'submitting',
-      share: 0.25,
+      fractionComplete: 0.25,
       text: 'Sending emails · 250 of 1,000',
     });
   });
 
-  it('treats a submitted send as sending and has no share before a total', () => {
+  it('treats a submitted send as sending and has no fraction before a total', () => {
     expect(
-      getEmailSendingActiveLine(
+      getEmailSendingLine(
         {
           status: 'submitted',
           progress: { completed: 0, total: 0, estimated_seconds_remaining: 0 },
         },
         { title: 'Sending emails', detail: null },
       ),
-    ).toEqual({ phase: 'submitting', share: null, text: 'Sending emails' });
+    ).toEqual({ phase: 'submitting', fractionComplete: null, text: 'Sending emails' });
   });
 });

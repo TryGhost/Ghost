@@ -27,22 +27,22 @@ export function getEmailSendingProgressCopy(
 }
 
 /** An active send's status line. Each screen supplies its own wording. */
-export interface EmailSendingActiveLine {
+export interface EmailSendingLine {
   phase: EmailSendingPhase;
   /** 0 to 1, or null before the total is known. */
-  share: number | null;
+  fractionComplete: number | null;
   text: string;
 }
 
-export function getEmailSendingActiveLine(
+export function getEmailSendingLine(
   sending: NonFailedEmailSendingState,
   { title, detail }: EmailSendingProgressCopy,
-): EmailSendingActiveLine {
+): EmailSendingLine {
   const { completed, total } = sending.progress;
 
   return {
     phase: sending.status === 'preparing' ? 'preparing' : 'submitting',
-    share: total > 0 ? completed / total : null,
+    fractionComplete: total > 0 ? completed / total : null,
     text: detail ? `${title} · ${detail}` : title,
   };
 }

@@ -3,9 +3,9 @@ import { formatNumber } from '@tryghost/shade/utils';
 import { useEmailSendingStatusContext } from './email-sending-status-context';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import {
-  getEmailSendingActiveLine,
+  getEmailSendingLine,
   getEmailSendingProgressCopy,
-  type EmailSendingActiveLine,
+  type EmailSendingLine,
 } from '@/posts/email-sending-status/email-sending-status-copy';
 import { EmailSendingStatusLine } from '@/posts/email-sending-status/email-sending-status-line';
 import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
@@ -68,7 +68,6 @@ const PostAnalyticsEmailSendingStatus = () => {
 
     return (
       <EmailSendingStatusLine
-        active={null}
         data-testid="email-sending-status-line"
         failure={
           <>
@@ -94,16 +93,17 @@ const PostAnalyticsEmailSendingStatus = () => {
             )}
           </>
         }
+        line={null}
         ready={!isStatusLoading}
       />
     );
   }
 
   const isActive = sending && (sending.status !== 'submitted' || isNewsletterDataHidden);
-  let active: EmailSendingActiveLine | null = null;
+  let line: EmailSendingLine | null = null;
   if (isActive) {
     const copy = getEmailSendingProgressCopy(sending, estimate);
-    active = getEmailSendingActiveLine(
+    line = getEmailSendingLine(
       sending,
       sending.status === 'preparing'
         ? { ...copy, detail: preparingDetail(sending.progress) }
@@ -113,8 +113,8 @@ const PostAnalyticsEmailSendingStatus = () => {
 
   return (
     <EmailSendingStatusLine
-      active={active}
       data-testid="email-sending-status-line"
+      line={line}
       ready={!isStatusLoading}
     />
   );

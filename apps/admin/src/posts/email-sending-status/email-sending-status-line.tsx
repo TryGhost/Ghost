@@ -1,9 +1,9 @@
 import { Grid, Inline } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { EmailSendingStatusIcon } from './email-sending-status-icon';
-import { useAnimateOnChange } from './use-animate-on-change';
+import { useChangeCount } from './use-change-count';
 import { useEffect, useState, type ReactNode } from 'react';
-import type { EmailSendingActiveLine } from './email-sending-status-copy';
+import type { EmailSendingLine } from './email-sending-status-copy';
 
 /** Covers the 250ms fade and the 400ms collapse that starts 150ms in. */
 export const EMAIL_SENDING_LEAVE_DURATION_MS = 600;
@@ -15,12 +15,12 @@ const REVEAL =
 
 const CROSSFADE = 'animate-in fade-in-0 duration-300 ease-out motion-reduce:animate-none';
 
-const isSameLine = (a: EmailSendingActiveLine | null, b: EmailSendingActiveLine | null) =>
-  a?.phase === b?.phase && a?.share === b?.share && a?.text === b?.text;
+const isSameLine = (a: EmailSendingLine | null, b: EmailSendingLine | null) =>
+  a?.phase === b?.phase && a?.fractionComplete === b?.fractionComplete && a?.text === b?.text;
 
 interface EmailSendingStatusLineProps {
   /** Null once the send has settled or failed. */
-  active: EmailSendingActiveLine | null;
+  line: EmailSendingLine | null;
   /** Shown in place of the active line, without the leave animation. */
   failure?: ReactNode;
   /** False while loading, so the initial state doesn't animate in. */
@@ -33,7 +33,7 @@ interface EmailSendingStatusLineProps {
 
 /** A send's status line, used on post analytics and in the posts list. */
 export function EmailSendingStatusLine({
-  active,
+  line,
   failure,
   ready = true,
   announce = true,
@@ -41,12 +41,12 @@ export function EmailSendingStatusLine({
   'data-testid': testId,
 }: EmailSendingStatusLineProps) {
   // Keeps the last active line around so it can fade out.
-  const [shownLine, setShownLine] = useState(active);
-  if (active ? !isSameLine(active, shownLine) : failure && shownLine) {
-    setShownLine(active);
+  const [shownLine, setShownLine] = useState(line);
+  if (line ? !isSameLine(line, shownLine) : failure && shownLine) {
+    setShownLine(line);
   }
-  const isLeaving = !active && shownLine !== null;
-  const changeCount = useAnimateOnChange(shownLine?.phase ?? (failure ? 'failed' : null), ready);
+  const isLeaving = !line && shownLine !== null;
+  const changeCount = useChangeCount(shownLine?.phase ?? (failure ? 'failed' : null), ready);
 
   useEffect(() => {
     if (!isLeaving) {
@@ -72,7 +72,10 @@ export function EmailSendingStatusLine({
             region that stays put so the new phase is still announced. */}
         <div key={changeCount} className={cn('min-h-0 overflow-hidden', changeCount > 0 && REVEAL)}>
           <Inline className="leading-[1.65em]" data-testid={testId} gap="xs">
-            <EmailSendingStatusIcon phase={shownLine.phase} share={shownLine.share} />
+            <EmailSendingStatusIcon
+              fractionComplete={shownLine.fractionComplete}
+              phase={shownLine.phase}
+            />
             <span className="email-sending-shimmer font-medium tabular-nums">{shownLine.text}</span>
           </Inline>
         </div>
