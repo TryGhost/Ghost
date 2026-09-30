@@ -79,13 +79,12 @@ export function ConfirmStep({
       <Stack gap="none">
         <Text
           as="h2"
-          className="text-4xl tracking-tight text-state-success"
-          leading="tight"
+          className="text-4xl leading-tighter tracking-tight text-state-success"
           weight="bold"
         >
           Ready, set, publish.
         </Text>
-        <Text className="text-4xl tracking-tight" leading="tight" weight="bold">
+        <Text className="text-4xl leading-tighter tracking-tight" weight="bold">
           Share it with the world.
         </Text>
       </Stack>
@@ -144,8 +143,10 @@ export function ConfirmStep({
           {status === 'idle' ? (
             <Box
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 rounded-full bg-state-success/30 motion-safe:animate-ping"
-            />
+              className="pointer-events-none absolute -inset-2 overflow-hidden rounded-full"
+            >
+              <Box className="absolute inset-2 rounded-full bg-state-success/30 motion-safe:animate-ping" />
+            </Box>
           ) : null}
           <Button
             className="relative h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-state-success-foreground hover:bg-state-success/90"

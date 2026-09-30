@@ -227,7 +227,10 @@ function PublishActions({
     onOpenFlow('none');
     void session.dispatchPublish({ kind: 'revert' });
   }, [onOpenFlow, session]);
-  const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
+  const closeFlow = useCallback(() => {
+    setOpenedFromPreview(false);
+    onOpenFlow('none');
+  }, [onOpenFlow]);
   const openPublishFlow = useCallback(() => {
     setOpenedFromPreview(false);
     onOpenFlow('publish');
