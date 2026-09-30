@@ -31,10 +31,6 @@ import * as urlServiceUtils from './url-service-utils';
 // @ts-expect-error This module lacks type definitions.
 import mockManager from './e2e-framework-mock-manager';
 // @ts-expect-error This module lacks type definitions.
-import mentionsJobsService from '../../core/server/services/mentions-jobs';
-// @ts-expect-error This module lacks type definitions.
-import jobsService from '../../core/server/services/jobs';
-// @ts-expect-error This module lacks type definitions.
 import boot from '../../core/boot';
 import {
   AdminAPITestAgent,
@@ -72,8 +68,6 @@ let totalBoots = 0;
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
-  await mentionsJobsService.allSettled();
-  await jobsService.allSettled();
   await DomainEvents.allSettled();
 
   /**
