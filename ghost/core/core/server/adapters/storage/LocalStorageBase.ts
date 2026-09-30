@@ -335,29 +335,33 @@ class LocalStorageBase extends StorageBase {
     try {
       return await fs.readFile(targetPath);
     } catch (rawError) {
-      const err = errify(rawError);
-      const code = (rawError as NodeJS.ErrnoException).code;
+      throw this.readError(rawError, options.path);
+    }
+  }
 
-      if (code === 'ENOENT' || code === 'ENOTDIR') {
-        throw new errors.NotFoundError({
-          err: err,
-          message: tpl(this.errorMessages.notFoundWithRef, { file: options.path }),
-        });
-      }
+  private readError(rawError: unknown, filePath?: string): Error {
+    const err = errify(rawError);
+    const code = (rawError as NodeJS.ErrnoException).code;
 
-      if (code === 'ENAMETOOLONG') {
-        throw new errors.BadRequestError({ err: err });
-      }
-
-      if (code === 'EACCES') {
-        throw new errors.NoPermissionError({ err: err });
-      }
-
-      throw new errors.InternalServerError({
+    if (code === 'ENOENT' || code === 'ENOTDIR') {
+      return new errors.NotFoundError({
         err: err,
-        message: tpl(this.errorMessages.cannotRead, { file: options.path }),
+        message: tpl(this.errorMessages.notFoundWithRef, { file: filePath }),
       });
     }
+
+    if (code === 'ENAMETOOLONG') {
+      return new errors.BadRequestError({ err: err });
+    }
+
+    if (code === 'EACCES') {
+      return new errors.NoPermissionError({ err: err });
+    }
+
+    return new errors.InternalServerError({
+      err: err,
+      message: tpl(this.errorMessages.cannotRead, { file: filePath }),
+    });
   }
 }
 
