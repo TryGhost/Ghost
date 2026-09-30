@@ -30,7 +30,7 @@ type RunData = { metrics: AutomationRunMetrics; runs: AutomationRun[] };
 // one per interesting shape (in-progress, completed, exited-early, etc.), so
 // they're easy to reason about individually. Real automations run against
 // thousands of members, so a list of 3-5 reads as too sparse to get a feel for
-// scanning/searching/selecting at scale. expandRuns pads a scenario's runs out
+// scanning/searching/selecting at scale. expandRunsByStatus pads a scenario's runs out
 // to `targetCount` by re-cycling the hand-authored ones onto new member
 // identities (shifting their timestamps back in history) — it's fine, even
 // expected, for these synthetic members to repeat the same journeys.
@@ -64,10 +64,14 @@ const NAME_POOL: { first: string; last: string }[] = [
 ];
 
 function buildSyntheticMember(automationId: string, index: number): AutomationRun['member'] {
-  const { first, last } = NAME_POOL[index % NAME_POOL.length];
-  // Once the pool wraps, suffix the name/email so repeats stay visibly distinct.
+  const { first } = NAME_POOL[index % NAME_POOL.length];
+  // Once the pool wraps, recombine rather than number: each cycle pairs every
+  // first name with a different surname (offset by the cycle, stepped by a
+  // number coprime with most pool sizes), so the list keeps reading as people —
+  // "Maya Chen 2" read as test data, which is what a demo mustn't look like.
   const cycle = Math.floor(index / NAME_POOL.length);
-  const name = cycle > 0 ? `${first} ${last} ${cycle + 1}` : `${first} ${last}`;
+  const { last } = NAME_POOL[(index + cycle * 7) % NAME_POOL.length];
+  const name = `${first} ${last}`;
   const email = `${first.toLowerCase()}.${last.toLowerCase()}${cycle > 0 ? cycle + 1 : ''}@example.com`;
   return { id: `mem_${automationId}_${index}`, name, email };
 }
@@ -102,10 +106,11 @@ function cloneRunForMember(
   template: AutomationRun,
   automationId: string,
   index: number,
+  // How far back to move it. Defaults to pushing each synthetic run further
+  // back than the last, so the list reads as an ongoing history rather than a
+  // pile of same-day runs.
+  days = 14 + index * 3,
 ): AutomationRun {
-  // Push each synthetic run further back in history than the last, so the
-  // list reads as an ongoing history rather than a pile of same-day runs.
-  const days = 14 + index * 3;
   const failedTemplate = template.steps.some((step) => step.failed);
   return {
     ...template,
@@ -119,22 +124,44 @@ function cloneRunForMember(
   };
 }
 
-/** Pads `baseRuns` out to `targetCount` by re-cycling them onto new members. */
-function expandRuns(
+// Pads each status up to `perStatus` members — the demo's filtered views (press
+// "Completed" and see who) have to fill the screen, and cycling the whole base
+// evenly left the rarer statuses at five or six rows under a card reporting
+// hundreds. Clones come from runs of the same status, so each keeps a history
+// that belongs to it.
+//
+// In-progress clones stay recent — a few days back, since they're still
+// mid-flow — and skip a template sitting on a SEND (no detail on its current
+// step): that state is deliberately rare (see run_sarah), and copies would make
+// it common. Finished runs spread further into the past.
+function expandRunsByStatus(
   automationId: string,
   baseRuns: AutomationRun[],
-  targetCount: number,
+  perStatus: number,
 ): AutomationRun[] {
-  if (baseRuns.length === 0 || targetCount <= baseRuns.length) {
-    return baseRuns;
+  const out = [...baseRuns];
+  let index = 0;
+  for (const status of ['in_progress', 'completed', 'exited_early'] as const) {
+    const ofStatus = baseRuns.filter((run) => run.status === status);
+    if (ofStatus.length === 0) {
+      continue;
+    }
+    const waiting = ofStatus.filter(
+      (run) =>
+        status !== 'in_progress' ||
+        run.steps.some((step) => step.state === 'current' && step.detail),
+    );
+    const templates = waiting.length > 0 ? waiting : ofStatus;
+    for (let k = 0; ofStatus.length + k < perStatus; k += 1) {
+      const days = status === 'in_progress' ? 1 + Math.floor(k / 3) : 14 + k * 3;
+      out.push(cloneRunForMember(templates[k % templates.length], automationId, index, days));
+      index += 1;
+    }
   }
-  const synthetic = Array.from({ length: targetCount - baseRuns.length }, (_, i) =>
-    cloneRunForMember(baseRuns[i % baseRuns.length], automationId, i),
-  );
-  return [...baseRuns, ...synthetic];
+  return out;
 }
 
-const RUNS_PER_SCENARIO = 22;
+const RUNS_PER_STATUS = 20;
 
 // --- Welcome series (healthy) ---------------------------------------------
 
@@ -931,11 +958,15 @@ const upsellRunsBase: AutomationRun[] = [
   },
 ];
 
-const welcomeRuns = expandRuns(welcomeSeries.id, welcomeRunsBase, RUNS_PER_SCENARIO);
-const upgradeRuns = expandRuns(paidUpgradeNudge.id, upgradeRunsBase, RUNS_PER_SCENARIO);
-const leadMagnetRuns = expandRuns(leadMagnetDelivery.id, leadMagnetRunsBase, RUNS_PER_SCENARIO);
-const winbackRuns = expandRuns(winbackLapsed.id, winbackRunsBase, RUNS_PER_SCENARIO);
-const upsellRuns = expandRuns(engagedUpsell.id, upsellRunsBase, RUNS_PER_SCENARIO);
+const welcomeRuns = expandRunsByStatus(welcomeSeries.id, welcomeRunsBase, RUNS_PER_STATUS);
+const upgradeRuns = expandRunsByStatus(paidUpgradeNudge.id, upgradeRunsBase, RUNS_PER_STATUS);
+const leadMagnetRuns = expandRunsByStatus(
+  leadMagnetDelivery.id,
+  leadMagnetRunsBase,
+  RUNS_PER_STATUS,
+);
+const winbackRuns = expandRunsByStatus(winbackLapsed.id, winbackRunsBase, RUNS_PER_STATUS);
+const upsellRuns = expandRunsByStatus(engagedUpsell.id, upsellRunsBase, RUNS_PER_STATUS);
 
 // --- Registry + accessor ---------------------------------------------------
 

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';
 import {
@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -27,6 +28,12 @@ import {
   useStripeConnected,
 } from './store';
 import { LANES, type LaneId, laneLabel, lanePath } from './lanes';
+import {
+  RECORDING_MODE_SHORTCUT,
+  isRecordingModeShortcut,
+  toggleRecordingMode,
+  useRecordingMode,
+} from './recording-mode';
 
 // The lane switcher. Split from lanes.ts, which holds the registry and the
 // helpers, so this file only exports a component (react-refresh/only-export-
@@ -66,6 +73,27 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
   const stripeConnected = useStripeConnected();
   const archivedTierIds = useArchivedTierIds();
   const bronzeArchived = archivedTierIds.includes('bronze');
+
+  // Recording mode hides this control — see shared/recording-mode. The
+  // shortcut is listened for here because this is on every prototype screen,
+  // so it works wherever you are in the prototype, and it has to keep
+  // listening while hidden to bring it back.
+  const hidden = useRecordingMode();
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isRecordingModeShortcut(event)) {
+        event.preventDefault();
+        setOpen(false);
+        toggleRecordingMode();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  if (hidden) {
+    return null;
+  }
 
   return (
     <div className={cn('absolute right-4 bottom-4 z-30', className)}>
@@ -193,6 +221,20 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
           >
             Bronze tier archived
             <Switch checked={bronzeArchived} className="pointer-events-none ml-auto" aria-hidden />
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator className="-mx-2" />
+          {/* Recording mode, with its shortcut as the row's hint — the way back
+              out, once this menu is hidden, is only the shortcut, so the row is
+              where it gets learned. */}
+          <DropdownMenuItem
+            onClick={() => {
+              setOpen(false);
+              toggleRecordingMode();
+            }}
+          >
+            <LucideIcon.Video /> Recording mode
+            <DropdownMenuShortcut>{RECORDING_MODE_SHORTCUT}</DropdownMenuShortcut>
           </DropdownMenuItem>
 
           <DropdownMenuSeparator className="-mx-2" />

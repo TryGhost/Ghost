@@ -47,6 +47,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  FieldError,
   Input,
   Popover,
   PopoverAnchor,
@@ -300,6 +301,16 @@ type StepNodeData = {
   // The exit sentence is stated somewhere other than the trigger card (the
   // screen's Settings), so the card leaves it out — see exitsOnTriggerCard.
   exitsElsewhere?: boolean;
+  // FIELD-mode faults (see the canvas's faultDisplay): which field is missing
+  // what, so each field can wear Shade's invalid state with its own message,
+  // and the card goes red. `warning` still marks the card as faulty either way.
+  faultsOnFields?: boolean;
+  subjectError?: string;
+  messageError?: string;
+  triggerFieldError?: string;
+  // A fault that belongs to the card but to none of its fields — a paid
+  // trigger on a site without Stripe.
+  cardError?: string;
   // Nothing chosen to start this automation yet. Its own flag rather than an
   // absent triggerConfig, because the read canvas also passes no config and means
   // something entirely different by it — "don't offer to edit this", not "this
@@ -616,20 +627,21 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   // is already a shape this header has. A button rather than a static glyph, for
   // the same reason the lock is one: the icon raises the question and clicking it
   // should be the answer.
-  const warningAction = d.warning ? (
-    <Popover modal={false}>
-      <PopoverTrigger asChild>
-        <Button aria-label="Why this step needs attention" size="icon" variant="ghost">
-          <LucideIcon.TriangleAlert className="text-state-warning" />
-        </Button>
-      </PopoverTrigger>
-      {/* "always" so the popover tracks its card when the canvas pans — same
+  const warningAction =
+    d.warning && !d.faultsOnFields ? (
+      <Popover modal={false}>
+        <PopoverTrigger asChild>
+          <Button aria-label="Why this step needs attention" size="icon" variant="ghost">
+            <LucideIcon.TriangleAlert className="text-state-warning" />
+          </Button>
+        </PopoverTrigger>
+        {/* "always" so the popover tracks its card when the canvas pans — same
                 as every other surface raised from a card. */}
-      <PopoverContent align="end" className="w-72" updatePositionStrategy="always">
-        <p className="text-md">{d.warning.message}</p>
-      </PopoverContent>
-    </Popover>
-  ) : undefined;
+        <PopoverContent align="end" className="w-72" updatePositionStrategy="always">
+          <p className="text-md">{d.warning.message}</p>
+        </PopoverContent>
+      </Popover>
+    ) : undefined;
   // Email cards raise their analytics from the header, beside the overflow, so
   // the way in is a control that names itself rather than a hover state buried
   // in the metrics.
@@ -707,7 +719,9 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
     <NodeCard
       // Warning outranks selection: a fault the automation can't run with is
       // worth more than where the cursor happens to be.
-      border={d.warning ? 'warning' : d.selected ? 'selected' : 'default'}
+      border={
+        d.warning ? (d.faultsOnFields ? 'error' : 'warning') : d.selected ? 'selected' : 'default'
+      }
       className={cn(
         // The entrance and an insertion never overlap in practice — one is the
         // canvas arriving, the other needs it to already be there — but they're
@@ -772,6 +786,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                   {triggerHasField(triggerConfig) ? (
                     <TriggerFieldsForm
                       config={triggerConfig}
+                      error={d.triggerFieldError}
                       revealFieldSignal={d.fieldRevealSignal}
                       savedTierIds={d.savedTierIds}
                       // Phase 1's triggers stay simple: the exit sentence belongs to
@@ -786,6 +801,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                       {triggerExplanation(triggerConfig)}
                     </p>
                   )}
+                  {d.cardError && <FieldError className="mt-3">{d.cardError}</FieldError>}
                 </div>
               ) : (
                 // text-control — the same size every trigger caption takes,
@@ -813,7 +829,9 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
             <div>
               <EmailPreview
                 hasContent={d.emailHasContent}
+                messageError={d.messageError}
                 subject={d.subject ?? ''}
+                subjectError={d.subjectError}
                 editable
                 onEditContent={d.onEditContent}
                 onSubjectChange={d.onSubjectChange}
@@ -1134,6 +1152,11 @@ interface EditCanvasProps {
   // exit early if they…"). On by default; phase 2 turns it off because the
   // sentence moved to its Settings tab, under Exit conditions.
   exitsOnTriggerCard?: boolean;
+  // How a card says it can't run. 'alert' (the default, every lane so far): a
+  // gold outline and an alert button in the header opening a popover with the
+  // fix. 'field': Shade's own field states — the faulty field goes red with its
+  // message under it, and the card takes a matching red border. Phase 2.
+  faultDisplay?: 'alert' | 'field';
   // The create-button variant's pre-create state (see CREATION_SLOT): the
   // empty trigger card's options become SELECTIONS with a Create button
   // beneath, and pressing it hands the chosen config up instead of applying
@@ -1159,6 +1182,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   alwaysShowInserts = false,
   analyticsSurface = 'sheet',
   exitsOnTriggerCard = true,
+  faultDisplay = 'alert',
   onCreateAutomation,
   hideControls = false,
 }) => {
@@ -1501,6 +1525,18 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         triggerOptions: laneOptions,
         simpleTriggerNames,
         exitsElsewhere: !exitsOnTriggerCard,
+        faultsOnFields: faultDisplay === 'field',
+        // Field mode splits the one warning in two: the screen's (Stripe) is the
+        // card's, and an unanswered field is that field's. Same grace gating.
+        cardError: faultDisplay === 'field' && !showOptions ? triggerWarning?.message : undefined,
+        triggerFieldError:
+          faultDisplay === 'field' &&
+          !showOptions &&
+          !triggerWarning &&
+          triggerConfig &&
+          graceStepId !== TRIGGER_NODE_ID
+            ? unansweredFieldWarning(triggerConfig)?.message
+            : undefined,
         triggerUnset: showOptions,
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),
@@ -1580,6 +1616,17 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           // the trigger's Stripe warning, and the same register: the fix, not
           // the failure. See emailFault above for what counts as blank.
           warning: emailFault && action.id !== graceStepId ? { message: emailFault } : undefined,
+          // Field mode: each missing field says so under itself, in its own
+          // words — the card's one sentence split per field. Same grace gating.
+          faultsOnFields: faultDisplay === 'field',
+          subjectError:
+            faultDisplay === 'field' && missingSubject && action.id !== graceStepId
+              ? 'Add a subject line'
+              : undefined,
+          messageError:
+            faultDisplay === 'field' && missingMessage && action.id !== graceStepId
+              ? 'Add a message'
+              : undefined,
           stats: action.type === 'send_email' ? (action.stats ?? ZERO_EMAIL_STATS) : undefined,
           waitHours: action.type === 'wait' ? action.data.wait_hours : undefined,
           onSubjectChange: (subject: string) => {
@@ -1697,6 +1744,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     savedTierIds,
     onCreateAutomation,
     exitsOnTriggerCard,
+    faultDisplay,
   ]);
 
   // Follow whichever card was asked for, once the column has settled around it.

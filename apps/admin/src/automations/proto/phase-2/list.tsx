@@ -38,6 +38,11 @@ import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 
 // PHASE 2 — the automations list, with CRUD.
 //
+// Toasts on this screen share one format: "Automation" and the past tense of
+// exactly what you just did — created, saved, published, updated, archived,
+// unarchived, duplicated. No names, no actions, no second line. Turning off has
+// none: the badge flipping to Off is the feedback, in the place you're looking.
+//
 // This is the lane where automations can be made and removed. Phase 1's list is
 // read-only and stays that way.
 const LANE = 'phase-2' as const;
@@ -112,8 +117,8 @@ const AutomationsList: React.FC = () => {
     duplicateAutomation(entry.automation, entry.trigger, entry.description, name);
     // The copy appears in the list you're already looking at, at the top, under the
     // name this names. A "View" action was offering a trip to something already on
-    // screen.
-    toast.success(`“${name}” created`);
+    // screen. Toast format — see the note at the top of this file.
+    toast.success('Automation duplicated');
   };
 
   // No confirm. Archiving takes nothing away — the automation, its history and its
@@ -129,7 +134,7 @@ const AutomationsList: React.FC = () => {
   const handleArchive = (entry: ProtoAutomation) => {
     if (entry.archived) {
       setAutomationArchived(entry.automation.id, false);
-      toast.success(`“${entry.automation.name}” restored`);
+      toast.success('Automation unarchived');
       return;
     }
     setPendingArchive(entry);
@@ -173,7 +178,7 @@ const AutomationsList: React.FC = () => {
     setPendingPublish(null);
     setAutomationStatus(pendingPublish.automation.id, 'active');
     // The same words the detail screen's publish uses — one act, one confirmation.
-    toast.success('Automation is live');
+    toast.success('Automation published');
   };
 
   const confirmTurnOff = () => {

@@ -20,3 +20,7 @@ export const lazyProtoExplorationList = () => import('./proto/exploration/list')
 export const lazyProtoExplorationDetail = () => import('./proto/exploration/detail');
 export const lazyProtoExploration2List = () => import('./proto/exploration-2/list');
 export const lazyProtoExploration2Detail = () => import('./proto/exploration-2/detail');
+
+// Recording mode — the sidebar reads it to show the prototype as the product
+// while screen-recording. See proto/shared/recording-mode.
+export { useRecordingMode } from './proto/shared/recording-mode';

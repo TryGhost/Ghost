@@ -24,6 +24,7 @@ import { usePostNavigation } from './use-post-navigation';
 import { useIsActiveLink } from './use-is-active-link';
 import { useEmberRouting } from '@/ember-bridge';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useRecordingMode } from '@/automations/api';
 
 const LEGACY_MEMBERS_ACTIVE_ROUTES = ['members-activity'];
 
@@ -87,6 +88,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const memberCount = useMemberCount();
   const routing = useEmberRouting();
   const automationsEnabled = useFeatureFlag('automations');
+  const recordingMode = useRecordingMode();
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
   // Highlight the proto item for any concept under /automations-proto/*, even
   // though the link itself points at the default concept (float).
@@ -188,7 +190,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             </NavMenuItem>
           )}
 
-          {showAutomations && automationsEnabled && (
+          {/* Recording mode (the prototype's ⌘⇧.) shows the prototype as the
+              product for screen recordings: the real item steps aside, and the
+              prototype's item below takes its name and icon. */}
+          {showAutomations && automationsEnabled && !recordingMode && (
             <NavMenuItem>
               <NavMenuItem.Link to="automations" activeOnSubpath>
                 <LucideIcon.Zap />
@@ -200,8 +205,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
           {showAutomations && automationsEnabled && (
             <NavMenuItem>
               <NavMenuItem.Link isActive={isProtoRouteActive} to="automations-proto/phase-1">
-                <LucideIcon.FlaskConical />
-                <NavMenuItem.Label>Automations (Proto)</NavMenuItem.Label>
+                {recordingMode ? <LucideIcon.Zap /> : <LucideIcon.FlaskConical />}
+                <NavMenuItem.Label>
+                  {recordingMode ? 'Automations' : 'Automations (Proto)'}
+                </NavMenuItem.Label>
               </NavMenuItem.Link>
             </NavMenuItem>
           )}

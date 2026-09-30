@@ -5,7 +5,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   InputGroup,
   InputGroupAddon,
@@ -24,7 +23,7 @@ import {
   KpiCardHeaderValue,
 } from '@tryghost/shade/patterns';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
-import type { AutomationRun, ExitReason } from '@/automations/proto/shared/mock';
+import type { AutomationRun } from '@/automations/proto/shared/mock';
 import type { LeftPanelProps } from '@/automations/proto/shared/left-panel-types';
 import {
   CompletedGlyph,
@@ -32,12 +31,7 @@ import {
   InProgressGlyph,
 } from '@/automations/proto/shared/run-glyphs';
 import { SortHead, type SortState } from '@/automations/proto/shared/sort-head';
-import {
-  EXIT_REASONS,
-  exitReasonLabel,
-  runFailed,
-  startedLabel,
-} from '@/automations/proto/shared/member-runs';
+import { exitReasonLabel, runFailed, startedLabel } from '@/automations/proto/shared/member-runs';
 import { toAreaData } from '@/automations/proto/shared/chart';
 import { useStickyList } from '@/automations/proto/shared/use-sticky-list';
 
@@ -127,17 +121,15 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   const gutter = 'px-6';
 
   const [statusFilter, setStatusFilter] = useState<StatusKey | null>(null);
-  // Why someone left, filtered separately from the status. Deliberately not a
-  // fourth status card: the three statuses are mutually exclusive outcomes, and
-  // a failure is a REASON for exiting rather than a different kind of exit.
-  // Selecting one implies Exited early, so it doesn't need the card as well.
-  const [exitFilter, setExitFilter] = useState<ExitReason | null>(null);
+  // No exit-reason filter: descoped from phase 1. The filter menu holds the
+  // timeframe only; a failed run is still marked in the table (see FailureDot).
+  //
   // The summary (Total entries + chart) answers "how many are entering, over
-  // time", and only the timeframe changes that. Searching or filtering by exit
-  // reason narrows the list beneath it and leaves it untouched — so while either
-  // is active it would sit there contradicting the controls above it. It rolls
-  // away instead, and comes back the moment they clear.
-  const summaryHidden = Boolean(exitFilter) || query.trim().length > 0;
+  // time", and only the timeframe changes that. Searching narrows the list
+  // beneath it and leaves it untouched — so while a search is active it would
+  // sit there contradicting the controls above it. It rolls away instead, and
+  // comes back the moment the search clears.
+  const summaryHidden = query.trim().length > 0;
 
   // Newest first: the question this table answers is "who's in here now".
   const [sort, setSort] = useState<SortState<SortKey>>({ key: 'entered', direction: 'desc' });
@@ -174,28 +166,41 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       .map((run) => ({ run, status: statusOf(run) }));
   }, [runs, query]);
 
-  // Counts follow the search and the exit-reason filter, but NOT the active
-  // status — so every card keeps showing exactly what selecting IT would give.
-  // Skipping the status is what lets the cards stay comparable; honouring the
-  // exit reason is what keeps a card's number from promising rows the filter
-  // would then hide.
+  // Counts follow the search, but NOT the active status — so every card keeps
+  // showing exactly what selecting IT would give. Skipping the status is what
+  // lets the cards stay comparable.
+  //
+  // Unless nothing is narrowing the rows. Then the cards report the automation's
+  // own funnel — the metrics' in-progress / completed / exited split — scaled to
+  // the timeframe's total, so the three always add up to "Total entries" above
+  // them. The table under them is a hand-authored sample of runs, not every
+  // entry, so counting its rows gave 10 / 6 / 6 under a total of 1,432. With a
+  // search applied, the rows are the question being asked, so the cards count
+  // them again and each card's number is what pressing it shows.
+  const reportsFunnel = !query.trim() && metrics.enrollments > 0;
   const counts = useMemo(() => {
+    if (reportsFunnel) {
+      const scale = totalEntries / metrics.enrollments;
+      const inProgress = Math.round(metrics.in_progress * scale);
+      const exited = Math.round(metrics.exited_early * scale);
+      // Completed takes the remainder, so rounding can't break the sum.
+      return {
+        'In progress': inProgress,
+        'Exited early': exited,
+        Completed: Math.max(totalEntries - inProgress - exited, 0),
+      };
+    }
     const tally: Record<string, number> = {};
-    searched
-      .filter(({ run }) => !exitFilter || run.exit_reason === exitFilter)
-      .forEach(({ status }) => {
-        tally[status] = (tally[status] ?? 0) + 1;
-      });
+    searched.forEach(({ status }) => {
+      tally[status] = (tally[status] ?? 0) + 1;
+    });
     return tally;
-  }, [searched, exitFilter]);
+  }, [reportsFunnel, totalEntries, metrics, searched]);
 
   const sorted = useMemo(() => {
-    const byStatus = statusFilter
+    const rows = statusFilter
       ? searched.filter((row) => row.status === statusFilter)
       : [...searched];
-    const rows = exitFilter
-      ? byStatus.filter((row) => row.run.exit_reason === exitFilter)
-      : byStatus;
     const order: StatusKey[] = ['In progress', 'Completed', 'Exited early'];
     rows.sort((a, b) => {
       // enrolled_at is ISO 8601, so a lexical compare is chronological.
@@ -209,7 +214,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       return sort.direction === 'asc' ? cmp : -cmp;
     });
     return rows;
-  }, [searched, statusFilter, exitFilter, sort]);
+  }, [searched, statusFilter, sort]);
 
   // h-9 rather than the h-(--control-height) default. 32px left the field a step
   // under the icon buttons and the canvas member chip, which are all size-9 —
@@ -335,10 +340,10 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                       removable — by its chip in the row below, so tinting the button
                       as well said the same thing twice in a place you can't act on. */}
           <DropdownMenu>
-            {/* One funnel holding both the timeframe and the exit reason.
-                          Phase 1 doesn't split its filters by scope the way Exploration
-                          does — this strip is the only place it has for them, and a
-                          single funnel is the affordance the rest of Ghost uses. */}
+            {/* The timeframe, and only that — the exit-reason section was
+                          descoped from phase 1. A filter button rather than a lone
+                          timeframe control, so the filters that arrive later have
+                          their home already. */}
             <DropdownMenuTrigger asChild>
               <Button aria-label="Filter" size="icon" type="button" variant="ghost">
                 <LucideIcon.Funnel strokeWidth={2} />
@@ -361,27 +366,6 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                   />
                 </DropdownMenuItem>
               ))}
-              {/* Exit reason lives here rather than as a fourth status
-                              card. The cards are lifecycle outcomes and stay three;
-                              this asks a different question — why someone left —
-                              and only of the ones who did. Selecting a reason is
-                              what "show me failures" means. */}
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Exit reason</DropdownMenuLabel>
-              {EXIT_REASONS.map((reason) => (
-                <DropdownMenuItem
-                  key={reason.id}
-                  onSelect={() => setExitFilter(exitFilter === reason.id ? null : reason.id)}
-                >
-                  {reason.label}
-                  <LucideIcon.Check
-                    className={cn(
-                      'ms-auto text-primary',
-                      exitFilter === reason.id ? 'opacity-100' : 'opacity-0',
-                    )}
-                  />
-                </DropdownMenuItem>
-              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </Inline>
@@ -391,7 +375,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                 members page does it — so what's narrowing the list is always visible
                 rather than hidden inside the button that set it. "All time" is the
                 default, so it isn't a filter and doesn't earn a row. */}
-      {(range !== 'all' || exitFilter) && (
+      {range !== 'all' && (
         <FilterBar className={cn('shrink-0 pb-3', gutter)}>
           {/* One child, not one per chip: FilterBar justifies between its
                         children so it can hold filters at the left and controls like
@@ -412,12 +396,6 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             {range !== 'all' && (
               <Button type="button" variant="outline" onClick={() => setRange('all')}>
                 {rangeLabel}
-                <LucideIcon.X strokeWidth={2} />
-              </Button>
-            )}
-            {exitFilter && (
-              <Button type="button" variant="outline" onClick={() => setExitFilter(null)}>
-                {exitReasonLabel(exitFilter)}
                 <LucideIcon.X strokeWidth={2} />
               </Button>
             )}

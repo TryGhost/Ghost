@@ -512,7 +512,7 @@ const AutomationFloat: React.FC = () => {
         //
         // Title only — the start-confirmation dialog already explained what
         // turning it on means, so the toast just confirms it happened.
-        toast.success('Automation is live');
+        toast.success('Automation published');
       },
       () => setStartOpen(false),
     );
@@ -522,7 +522,9 @@ const AutomationFloat: React.FC = () => {
     runPublish(
       () => {
         promoteDraft();
-        toast.success('Changes published');
+        // "Updated", matching the button that asked for it. Toast format —
+        // see the list screen's note.
+        toast.success('Automation updated');
       },
       () => setPublishOpen(false),
     );
@@ -587,18 +589,6 @@ const AutomationFloat: React.FC = () => {
   // Settings tab debounces what it SAYS about it (see side-panel).
   const nameCollides = isNameTaken(settingsDraft.name, id);
 
-  // Leaving Settings — another tab, or the panel closing — is just putting it
-  // away: never blocked, nothing committed. The one exit worth a word is leaving
-  // a name in the field that never applied: the guard kept the previous name,
-  // and a toast says so, because a silently reverted rename reads as a rename
-  // that vanished. Blank names stay silent — an emptied field reverting is
-  // expected; a typed name being refused isn't.
-  const warnIfNameRefused = () => {
-    if (settingsDraft.name.trim() && nameCollides) {
-      toast(`That name's already in use — kept “${draftDetails.name}”`);
-    }
-  };
-
   // Seeded on the way IN from what the screen is currently showing — the pending
   // details if they've been edited this session, the saved ones otherwise — so
   // the field never shows a name the header doesn't. That's also what makes
@@ -608,18 +598,14 @@ const AutomationFloat: React.FC = () => {
     if (next === 'settings' && paneTab !== 'settings') {
       setSettingsDraft(draftDetails);
     }
-    if (next !== 'settings' && paneTab === 'settings') {
-      warnIfNameRefused();
-    }
     setPaneTab(next);
   };
 
-  const togglePane = () => {
-    if (!paneCollapsed && paneTab === 'settings') {
-      warnIfNameRefused();
-    }
-    setPaneCollapsed(!paneCollapsed);
-  };
+  // Leaving Settings — another tab, or the panel closing — is just putting it
+  // away: never blocked, nothing committed, and no toast. A taken name is said
+  // by the field's own error state while you're there; there used to be a toast
+  // on the way out as well, retired when the field moved into this panel.
+  const togglePane = () => setPaneCollapsed(!paneCollapsed);
 
   // Typing writes through: the field text lands on the details draft as it
   // changes, the header retitles live, and the global Save is the one commit.
@@ -687,8 +673,9 @@ const AutomationFloat: React.FC = () => {
   const blockedPopover = (button: React.ReactNode) => (
     <Popover open={publishBlockedOpen} onOpenChange={setPublishBlockedOpen}>
       <PopoverAnchor asChild>{button}</PopoverAnchor>
-      <PopoverContent align="end" className="w-72">
-        <p className="text-md">Fix all issues to publish this automation.</p>
+      {/* Shade's own popover: its p-5, no set width and its own type, so it hugs the line. */}
+      <PopoverContent align="end">
+        <p>Fix highlighted issues to publish.</p>
       </PopoverContent>
     </Popover>
   );
@@ -866,6 +853,10 @@ const AutomationFloat: React.FC = () => {
                 draft={draftFlow}
                 // The exit sentence lives in Settings now, under Exit conditions.
                 exitsOnTriggerCard={false}
+                // Faults show on the fields that have them, in Shade's own
+                // invalid state, with the card's border in the same red —
+                // rather than a gold alert in the card's header.
+                faultDisplay="field"
                 // Which triggers this screen may offer — see shared/capabilities.
                 lane={LANE}
                 revealWarningsSignal={revealSignal}

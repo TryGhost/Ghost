@@ -28,7 +28,8 @@ export type NodeBorder =
   | 'done'
   | 'exited'
   | 'failed'
-  | 'warning';
+  | 'warning'
+  | 'error';
 const NODE_BORDER: Record<NodeBorder, string> = {
   default: 'border-border-default',
   selected: 'border-blue',
@@ -40,6 +41,10 @@ const NODE_BORDER: Record<NodeBorder, string> = {
   // and Indicator use, so the alert icon in the card's header and the outline
   // read as one signal.
   warning: 'border-state-warning',
+  // A card with a field in Shade's invalid state (the canvas's field fault
+  // display): the same destructive red the field wears, so the two read as one
+  // signal — the card says where, the field says what.
+  error: 'border-destructive',
   done: 'border-green',
   // Where a member left the flow. Grey rather than a colour of its own — exiting
   // isn't a failure to flag, it just isn't a completion, and green here read as

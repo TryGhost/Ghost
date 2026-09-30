@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   Button,
+  FieldError,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -170,6 +171,10 @@ interface TriggerConfigFormProps {
   // edit on the screen. Without it (older lanes), unticking an archived tier
   // removes its row at once.
   savedTierIds?: string[];
+  // An unanswered field, as the message that fixes it — when the screen shows
+  // faults on the fields themselves (see the edit canvas's faultDisplay). The
+  // trigger's field goes Shade's invalid red and the message sits under it.
+  error?: string;
 }
 
 export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
@@ -177,6 +182,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   onChange,
   showExits = true,
   revealFieldSignal,
+  error,
   savedTierIds = [],
 }) => {
   const tierIds = config.tierIds;
@@ -303,6 +309,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
           <Popover modal={false} open={tiersOpen} onOpenChange={setTiersOpen}>
             <PopoverTrigger asChild>
               <button
+                aria-invalid={error ? true : undefined}
                 aria-label="Edit tiers"
                 // hover:bg-muted on top of the input chrome — an input doesn't
                 // hover, but this is a button wearing input clothes, and a field
@@ -455,6 +462,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                     On the card, for both. Whatever the popover gained by fusing
                     the sentence to the choice, it cost more in making the trigger
                     card mean different things depending on which trigger it held. */}
+          {error && <FieldError>{error}</FieldError>}
           {showExits && (
             <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
           )}
@@ -503,6 +511,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
           <span className="text-control">{LABEL_FIELD_LABEL}</span>
           <SearchableSelectField
             canCreate={(query) => canCreateLabel(labels, query)}
+            invalid={Boolean(error)}
             options={labels}
             placeholder="Choose a label"
             searchLabel="Search labels"
@@ -513,6 +522,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
           {/* The exits, on the card under the field — the same placement the
                     tiers field uses, and see the note there for why both ended up
                     here rather than inside their fields. */}
+          {error && <FieldError>{error}</FieldError>}
           {showExits && (
             <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
           )}
@@ -534,6 +544,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
         <div className="flex flex-col gap-2">
           <span className="text-control">{SEGMENT_FIELD_LABEL}</span>
           <SearchableSelectField
+            invalid={Boolean(error)}
             // Disabled, deliberately. Creating a segment means reusing the
             // members filtering experience, and that's blocked on
             // useMemberFilterFields moving out of the members domain — the
@@ -562,6 +573,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
               {conditionsSentence(selectedSegment.conditions)}
             </p>
           )}
+          {error && <FieldError>{error}</FieldError>}
           {showExits && (
             <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
           )}
@@ -586,6 +598,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
         <div className="flex flex-col gap-2">
           <span className="text-control">{CHANGE_FIELD_LABEL}</span>
           <SearchableSelectField
+            invalid={Boolean(error)}
             options={CHANGE_OPTIONS.map((option) => ({
               id: option.value,
               name: option.label,
@@ -599,6 +612,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
           {/* The exits, on the card like the other two fields — and the one
                     place the winback's defining behaviour is stated: a run ends
                     when the member starts paying again. */}
+          {error && <FieldError>{error}</FieldError>}
           {showExits && (
             <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
           )}

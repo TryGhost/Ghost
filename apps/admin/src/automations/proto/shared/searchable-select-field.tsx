@@ -107,6 +107,12 @@ export const SearchableSelectField: React.FC<{
    * all: the rows hold still on selection in both.
    */
   searchable?: boolean;
+  /**
+   * Marks the field invalid — Shade's own state, via aria-invalid, which the
+   * inputSurface recipe (and ComboboxTrigger) paint red. The message itself is
+   * the caller's, under the field; see FieldError.
+   */
+  invalid?: boolean;
 }> = ({
   options,
   selectedId,
@@ -117,6 +123,7 @@ export const SearchableSelectField: React.FC<{
   canCreate,
   newItem,
   searchable = true,
+  invalid = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -157,6 +164,7 @@ export const SearchableSelectField: React.FC<{
           {/* nodrag/nopan so typing and clicking here never pans the canvas. */}
           <div
             aria-expanded={open}
+            aria-invalid={invalid || undefined}
             className={cn(
               inputSurface('self'),
               'nodrag nopan flex h-9 w-full cursor-text items-center gap-2 px-3',
@@ -205,7 +213,11 @@ export const SearchableSelectField: React.FC<{
         // Shade's own trigger, which is the same recipe the searchable half
         // draws by hand — worth using directly the moment there's no input that
         // has to live inside it (a <button> can't hold one).
-        <ComboboxTrigger aria-label={searchLabel} className="nodrag nopan">
+        <ComboboxTrigger
+          aria-invalid={invalid || undefined}
+          aria-label={searchLabel}
+          className="nodrag nopan"
+        >
           <ComboboxValue placeholder={!selectedName}>{selectedName ?? placeholder}</ComboboxValue>
         </ComboboxTrigger>
       )}

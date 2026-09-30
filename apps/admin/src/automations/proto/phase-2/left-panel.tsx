@@ -203,7 +203,27 @@ export const LeftPanel: React.FC<Phase2LeftPanelProps> = ({
   // Skipping the status is what lets the cards stay comparable; honouring the
   // exit reason is what keeps a card's number from promising rows the filter
   // would then hide.
+  //
+  // Unless nothing is narrowing the rows. Then the cards report the automation's
+  // own funnel — the metrics' in-progress / completed / exited split — scaled to
+  // the timeframe's total, so the three always add up to "Total entries" above
+  // them. The table under them is a hand-authored sample of runs, not every
+  // entry, so counting its rows gave 10 / 6 / 6 under a total of 1,432. With a
+  // search or exit reason applied, the rows are the question being asked, so the
+  // cards count them again and each card's number is what pressing it shows.
+  const reportsFunnel = !query.trim() && !exitFilter && metrics.enrollments > 0;
   const counts = useMemo(() => {
+    if (reportsFunnel) {
+      const scale = totalEntries / metrics.enrollments;
+      const inProgress = Math.round(metrics.in_progress * scale);
+      const exited = Math.round(metrics.exited_early * scale);
+      // Completed takes the remainder, so rounding can't break the sum.
+      return {
+        'In progress': inProgress,
+        'Exited early': exited,
+        Completed: Math.max(totalEntries - inProgress - exited, 0),
+      };
+    }
     const tally: Record<string, number> = {};
     searched
       .filter(({ run }) => !exitFilter || run.exit_reason === exitFilter)
@@ -211,7 +231,7 @@ export const LeftPanel: React.FC<Phase2LeftPanelProps> = ({
         tally[status] = (tally[status] ?? 0) + 1;
       });
     return tally;
-  }, [searched, exitFilter]);
+  }, [reportsFunnel, totalEntries, metrics, searched, exitFilter]);
 
   const sorted = useMemo(() => {
     const byStatus = statusFilter

@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  FieldError,
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
@@ -34,6 +35,11 @@ interface EmailPreviewProps {
   hasContent?: boolean;
   onSubjectChange?: (subject: string) => void;
   onEditContent?: () => void;
+  // What each field is missing, if the screen shows faults on the fields
+  // themselves (see the edit canvas's faultDisplay): the field goes Shade's
+  // invalid red and the message sits under it. Absent, the fields are plain.
+  subjectError?: string;
+  messageError?: string;
 }
 
 // Subject line (with a discreet leading "Subject" label) above an email body excerpt
@@ -50,20 +56,24 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({
   hasContent = true,
   onSubjectChange,
   onEditContent,
+  subjectError,
+  messageError,
 }) => (
   <div>
-    <InputGroup className="mb-3">
+    <InputGroup className={subjectError ? undefined : 'mb-3'}>
       <InputGroupAddon align="inline-start">
         <InputGroupText>Subject</InputGroupText>
       </InputGroupAddon>
       {/* No placeholder — the "Subject" addon is already inside the field, and a
                 placeholder beside it said the same thing twice. */}
       <InputGroupInput
+        aria-invalid={subjectError ? true : undefined}
         readOnly={!editable}
         value={subject}
         onChange={editable ? (e) => onSubjectChange?.(e.target.value) : undefined}
       />
     </InputGroup>
+    {subjectError && <FieldError className="mt-1.5 mb-3">{subjectError}</FieldError>}
     {/* The content, as A FIELD THAT OPENS — the same shape the trigger's tiers
             field takes: input chrome (inputSurface), a Pen on the right naming the
             interaction, hover:bg-muted saying it's pressable, and the WHOLE surface
@@ -77,6 +87,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({
             isn't this surface's job. */}
     {editable ? (
       <button
+        aria-invalid={messageError ? true : undefined}
         aria-label="Edit email content"
         // px-3 py-2.5, not p-4: the horizontal inset is the input recipe's own
         // (the tiers field and the subject input above both sit on px-3), and
@@ -120,5 +131,6 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({
         </p>
       </div>
     )}
+    {messageError && <FieldError className="mt-1.5">{messageError}</FieldError>}
   </div>
 );
