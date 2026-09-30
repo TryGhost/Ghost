@@ -99,6 +99,9 @@ export interface PlannedWrite {
   value?: unknown;
 }
 
+/** A member's metafield values, by namespace and then by key. */
+export type MemberMetafields = Record<string, Record<string, unknown>>;
+
 /**
  * What a member holds for each defined field. Separate from the definitions service
  * because a value belongs to the member and a definition belongs to the site's settings,
@@ -147,10 +150,34 @@ export class MetafieldValuesService {
     );
   }
 
+  /**
+   * Each member's metafields as a member payload carries them: an entry for every member,
+   * empty when they hold none.
+   *
+   * Null when the audience has no field it may read, which tells the caller to leave the
+   * `metafields` key off the payload: a key added to an API response cannot be withdrawn
+   * without breaking whoever started reading it, and most sites have never defined a
+   * field, so those sites keep the payload they had before this feature existed.
+   */
+  async getValuesForPayload(
+    memberIds: string[],
+    audience: Audience,
+  ): Promise<Map<string, MemberMetafields> | null> {
+    const [readable] = await definitions(this.knex, {
+      audience,
+      status: ACTIVE_ONLY,
+      limit: 1,
+    }).select('key');
+    if (!readable) {
+      return null;
+    }
+    return this.getValuesForMembers(memberIds, audience);
+  }
+
   async getValuesForMembers(
     memberIds: string[],
     audience: Audience,
-  ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
+  ): Promise<Map<string, MemberMetafields>> {
     if (memberIds.length === 0) {
       return new Map();
     }

@@ -9,16 +9,12 @@ const { ADMIN } = require('../../../../../../../core/server/services/members-met
 // the members service, so the members service is never without one. Fixtures build
 // it the same way, otherwise a test fails on a dependency the code is entitled to
 // assume rather than on the behaviour it is checking.
-const createMetafieldValuesStub = () => ({
-  getValuesForMembers: sinon.stub().resolves(new Map()),
+const createMetafieldValuesStub = (payload = null) => ({
+  getValuesForPayload: sinon.stub().resolves(payload),
   unwrapWire: sinon.stub().callsFake((input) => input),
   namesValues: sinon.stub().returns(false),
   planWrite: sinon.stub().resolves([]),
   applyWrite: sinon.stub().resolves(),
-});
-
-const createMetafieldDefinitionsStub = (hasAnyReadable = false) => ({
-  hasAnyReadable: sinon.stub().resolves(hasAnyReadable),
 });
 
 describe('MemberBreadService', function () {
@@ -85,7 +81,6 @@ describe('MemberBreadService', function () {
           createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe'),
         },
         metafieldValues,
-        metafieldDefinitions: createMetafieldDefinitionsStub(),
       });
 
       // Stub the read method to avoid having to mock all its dependencies
@@ -345,7 +340,6 @@ describe('MemberBreadService', function () {
           createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe'),
         },
         metafieldValues: createMetafieldValuesStub(),
-        metafieldDefinitions: createMetafieldDefinitionsStub(),
       });
 
       sinon.stub(service, 'read').resolves({ id: 'member_123' });
@@ -532,7 +526,6 @@ describe('MemberBreadService', function () {
         offersAPI: options.offersAPI || defaultOffersAPI,
         giftService: options.giftService || defaultGiftService,
         metafieldValues: options.metafieldValues || defaultMetafieldValues,
-        metafieldDefinitions: options.metafieldDefinitions || createMetafieldDefinitionsStub(),
       });
     };
 
@@ -579,24 +572,22 @@ describe('MemberBreadService', function () {
     });
 
     it('asks nothing about custom fields when the caller does not want them', async function () {
-      const metafieldDefinitions = createMetafieldDefinitionsStub(true);
-      const metafieldValues = createMetafieldValuesStub();
-      const memberBreadService = getService({ metafieldDefinitions, metafieldValues });
+      const metafieldValues = createMetafieldValuesStub(new Map([[MEMBER_ID, { custom: {} }]]));
+      const memberBreadService = getService({ metafieldValues });
 
       const member = await memberBreadService.read({ id: MEMBER_ID }, { metafieldsFor: null });
 
       assert.equal(Object.hasOwn(member, 'metafields'), false);
-      assert.equal(metafieldDefinitions.hasAnyReadable.called, false);
-      assert.equal(metafieldValues.getValuesForMembers.called, false);
+      assert.equal(metafieldValues.getValuesForPayload.called, false);
     });
 
     it('carries custom fields on a site that defines them', async function () {
-      const metafieldDefinitions = createMetafieldDefinitionsStub(true);
-      const memberBreadService = getService({ metafieldDefinitions });
+      const metafieldValues = createMetafieldValuesStub(new Map([[MEMBER_ID, { custom: {} }]]));
+      const memberBreadService = getService({ metafieldValues });
 
       const member = await memberBreadService.read({ id: MEMBER_ID }, { metafieldsFor: ADMIN });
 
-      assert.deepEqual(member.metafields, {});
+      assert.deepEqual(member.metafields, { custom: {} });
     });
 
     it('returns a member with subscriptions', async function () {

@@ -5,6 +5,7 @@ import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
 
 export type { Metafield } from './models';
+export type { MemberMetafields } from './values-service';
 export type { RequestContext } from './actions';
 export { actingContext, adminWriteOrigin } from './actions';
 export type { BoundField } from './bindings-service';
