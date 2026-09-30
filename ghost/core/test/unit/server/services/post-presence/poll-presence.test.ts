@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { createPresencePoll } from '../../../../../core/server/services/post-presence/poll-presence';
 import { PostPresenceService } from '../../../../../core/server/services/post-presence/post-presence-service';
@@ -19,8 +18,7 @@ function setup() {
       presence: [
         {
           resources: [resource],
-          sessionId: randomUUID(),
-          editing: { ...resource, action: 'editing' as const },
+          editing: resource,
         },
       ],
     },

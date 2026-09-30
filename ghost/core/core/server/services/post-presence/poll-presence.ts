@@ -58,7 +58,7 @@ export function createPresencePoll({ getService, findResources, canEdit }: Depen
         throw new errors.NoPermissionError({ message: 'You cannot edit this resource.' });
       }
       await canEdit(frame.options.context, editing.id);
-      await service.record(editing, user, editing.action, request.sessionId);
+      await service.record(editing, user);
     }
     return { events: await service.recent(visible), serverTime: Date.now() };
   };

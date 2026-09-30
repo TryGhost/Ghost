@@ -17,10 +17,7 @@ export function mergeLiveEvents(
       expiresAt > now && !requested.has(`${event.resourceType}:${event.resourceId}`),
   );
   const fresh = response.events.filter(
-    (event) =>
-      (event.action === 'opened' || event.action === 'editing') &&
-      event.userId !== currentUserId &&
-      event.ts > response.serverTime - FRESHNESS_MS,
+    (event) => event.userId !== currentUserId && event.ts > response.serverTime - FRESHNESS_MS,
   );
   // Convert server timestamps to local expiry times.
   const offset = now - response.serverTime;

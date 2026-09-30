@@ -13,7 +13,6 @@ const mocks = vi.hoisted(() => ({
 const requestSchema = z.object({
   presence: z.array(
     z.object({
-      sessionId: z.string(),
       resources: z.array(z.object({ id: z.string(), type: z.string() })),
       editing: z.unknown().optional(),
     }),
@@ -34,8 +33,6 @@ const event = {
   avatar: null,
   resourceType: 'post',
   resourceId: resource.id,
-  sessionId: 'other-tab',
-  action: 'editing',
   ts: 0,
 };
 
@@ -71,27 +68,15 @@ describe('presence transport', () => {
     hook.unmount();
   });
 
-  it('combines an editor heartbeat with reads and hides the current user across sessions', async () => {
-    mocks.fetch.mockImplementation((_url, options) => {
-      const request = requestSchema.parse(JSON.parse(options.body)).presence[0];
-      return Promise.resolve({
-        presence: [
-          {
-            serverTime: 0,
-            events: [
-              event,
-              { ...event, userId: 'me', sessionId: request.sessionId },
-              { ...event, userId: 'me', sessionId: 'another-browser' },
-            ],
-          },
-        ],
-      });
+  it('combines an editor heartbeat with reads and hides the current user', async () => {
+    mocks.fetch.mockResolvedValue({
+      presence: [{ serverTime: 0, events: [event, { ...event, userId: 'me' }] }],
     });
     const hook = renderHook(() => usePresence([resource], 'me', resource));
     await act(() => vi.advanceTimersByTimeAsync(0));
     expect(hook.result.current.events).toHaveLength(1);
     const request = requestSchema.parse(JSON.parse(mocks.fetch.mock.calls[0][1].body)).presence[0];
-    expect(request.editing).toEqual({ ...resource, action: 'opened' });
+    expect(request.editing).toEqual(resource);
     expect(mocks.fetch.mock.calls[0][1]).toMatchObject({
       retry: false,
       sessionExpiryRedirect: false,

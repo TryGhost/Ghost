@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { init, getService } from '../../../../../core/server/services/post-presence';
 import MemoryEventLog from '../../../../../core/server/adapters/cache/MemoryEventLog';
@@ -20,7 +19,7 @@ describe('presence cache selection', () => {
 
     init({ cache, siteId: 'site' });
     const service = getService()!;
-    await service.record(post, actor, 'opened', randomUUID());
+    await service.record(post, actor);
     expect(await service.recent([post])).toHaveLength(1);
   });
 
@@ -30,9 +29,7 @@ describe('presence cache selection', () => {
       throw new Error('Store unavailable');
     });
     init({ cache, siteId: 'site' });
-    await expect(getService()!.record(post, actor, 'opened', randomUUID())).rejects.toThrow(
-      'Store unavailable',
-    );
+    await expect(getService()!.record(post, actor)).rejects.toThrow('Store unavailable');
     expect(append).toHaveBeenCalledOnce();
   });
 });

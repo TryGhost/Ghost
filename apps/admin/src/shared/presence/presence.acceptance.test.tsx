@@ -18,8 +18,6 @@ const event = {
   avatar: null,
   resourceId: id,
   resourceType: 'post',
-  sessionId: 'another-session',
-  action: 'editing',
 };
 function boot(supported = true) {
   const response = configResponse({
@@ -52,7 +50,7 @@ describe('Presence in React Admin', () => {
       .element(page.getByRole('img', { name: 'Alex Smith is active in the editor' }))
       .toBeVisible();
     expect(presence.requests[0].body).toMatchObject({
-      presence: [{ editing: { id, type: 'post', action: 'opened' } }],
+      presence: [{ editing: { id, type: 'post' } }],
     });
   });
 

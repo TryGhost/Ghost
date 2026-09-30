@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { beforeAll, afterEach, describe, expect, it } from 'vitest';
 const { agentProvider, fixtureManager, configUtils } = require('../../utils/e2e-framework');
 
@@ -6,13 +5,11 @@ describe('Presence API', () => {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let tokenAgent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let postId: string;
-  const sessionId = randomUUID();
   const body = (editing = true) => ({
     presence: [
       {
         resources: [{ id: postId, type: 'post' }],
-        sessionId,
-        ...(editing ? { editing: { id: postId, type: 'post', action: 'opened' } } : {}),
+        ...(editing ? { editing: { id: postId, type: 'post' } } : {}),
       },
     ],
   });
@@ -36,9 +33,7 @@ describe('Presence API', () => {
     const response = await agent.post('/presence/').body(body()).expectStatus(200);
     expect(response.headers['cache-control']).toContain('no-store');
     expect(response.body.presence[0].events).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ resourceId: postId, sessionId, action: 'opened' }),
-      ]),
+      expect.arrayContaining([expect.objectContaining({ resourceId: postId })]),
     );
     const read = await agent.post('/presence/').body(body(false)).expectStatus(200);
     expect(read.body.presence[0].events).toHaveLength(1);
@@ -47,11 +42,11 @@ describe('Presence API', () => {
   it('rejects malformed and oversized requests', async () => {
     await agent
       .post('/presence/')
-      .body({ presence: [{ resources: [], sessionId }] })
+      .body({ presence: [{ resources: [] }] })
       .expectStatus(422);
     await agent
       .post('/presence/')
-      .body({ presence: [{ resources: Array(51).fill({ id: postId, type: 'post' }), sessionId }] })
+      .body({ presence: [{ resources: Array(51).fill({ id: postId, type: 'post' }) }] })
       .expectStatus(422);
   });
 
@@ -69,21 +64,19 @@ describe('Presence API', () => {
     await agent
       .post('/presence/')
       .body({
-        presence: [
-          { resources: [resource], editing: { ...resource, action: 'opened' }, sessionId },
-        ],
+        presence: [{ resources: [resource], editing: resource }],
       })
       .expectStatus(200);
     const read = await agent
       .post('/presence/')
-      .body({ presence: [{ resources: [resource], sessionId }] })
+      .body({ presence: [{ resources: [resource] }] })
       .expectStatus(200);
-    expect(read.body.presence[0].events.map((event: { action: string }) => event.action)).toEqual([
-      'opened',
+    expect(read.body.presence[0].events).toEqual([
+      expect.objectContaining({ resourceId: id, resourceType: 'page' }),
     ]);
     const wrongType = await agent
       .post('/presence/')
-      .body({ presence: [{ resources: [{ id, type: 'post' }], sessionId }] })
+      .body({ presence: [{ resources: [{ id, type: 'post' }] }] })
       .expectStatus(200);
     expect(wrongType.body.presence[0].events).toEqual([]);
   });

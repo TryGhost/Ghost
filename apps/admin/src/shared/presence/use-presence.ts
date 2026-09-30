@@ -15,8 +15,6 @@ const eventSchema = z.object({
   avatar: z.string().nullable(),
   resourceType: z.enum(['post', 'page']),
   resourceId: z.string(),
-  sessionId: z.string().nullable(),
-  action: z.string(),
   ts: z.number().finite(),
 });
 const responseSchema = z.object({
@@ -32,20 +30,6 @@ const responseSchema = z.object({
 export type PresenceEvent = z.infer<typeof eventSchema>;
 export type PresenceResource = { id: string; type: 'post' | 'page' };
 const EMPTY_EVENTS: PresenceEvent[] = [];
-// Keep the ID across route changes. Avoid sessionStorage: duplicated tabs copy it.
-let tabSessionId: string | undefined;
-function getSessionId() {
-  if (!tabSessionId) {
-    // Build a UUID with getRandomValues because randomUUID requires HTTPS.
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
-    bytes[6] = (bytes[6] & 15) | 64;
-    bytes[8] = (bytes[8] & 63) | 128;
-    const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-    tabSessionId = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-  }
-  return tabSessionId;
-}
-
 export function usePresenceEnabled(currentUserId: string | undefined) {
   const flag = useFeatureFlag('editorPresence');
   const { data: config } = useBrowseConfig();
@@ -72,8 +56,6 @@ export function usePresence(
       return;
     }
     const current = editingId && editingType ? { id: editingId, type: editingType } : undefined;
-    const sessionId = getSessionId();
-    let opened = false;
     let expire: ReturnType<typeof setTimeout> | undefined;
     let live: LiveEvent[] = [];
     const updateEvents = (next: PresenceEvent[]) =>
@@ -112,17 +94,13 @@ export function usePresence(
                 presence: [
                   {
                     resources: window,
-                    sessionId,
-                    ...(current
-                      ? { editing: { ...current, action: opened ? 'editing' : 'opened' } }
-                      : {}),
+                    ...(current ? { editing: current } : {}),
                   },
                 ],
               }),
             }),
           ).presence[0];
           if (isCurrent()) {
-            opened = true;
             live = mergeLiveEvents(live, response, window, currentUserId, Date.now());
             refresh();
           }

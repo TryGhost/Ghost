@@ -15,14 +15,15 @@ one minute without interaction, when the tab is hidden, or when the route closes
 Interaction or returning to the tab resumes polling immediately.
 
 Scrolling changes which rows the next poll requests; it does not restart the
-timer or error backoff. List polls only read events. Editor polls also record
-an `opened` event, followed by `editing` heartbeats while the user is active.
-Both show the same avatar; heartbeats indicate activity, not content changes.
+timer or error backoff. List polls only read presence. Editor polls send the same
+heartbeat immediately on entry and every 10 seconds while active. A heartbeat
+indicates activity, not a content change.
 Saving a post or page does not write presence events.
 
 Avatars show activity from the last 30 seconds, grouped by user. Your own user
-is excluded, including activity from other tabs or browsers. Sessions expire
-naturally after the editor stops sending heartbeats.
+is excluded, including activity from other tabs or browsers. The latest heartbeat
+per user and resource determines presence; tabs do not have separate identities.
+A user disappears after all their tabs stop sending heartbeats and presence expires.
 The editor shows up to two overlapping avatars and the list shows up to three,
 with a `+N` indicator for additional users.
 
@@ -31,8 +32,7 @@ with a `+N` indicator for additional users.
 `POST /ghost/api/admin/presence/` accepts one entry in a `presence` array:
 
 - `resources`: 1–50 `{id, type}` pairs, where type is `post` or `page`.
-- `sessionId`: a UUID unique to the browser document.
-- `editing`: optional `{id, type, action: opened|editing}`.
+- `editing`: optional `{id, type}` for the resource to heartbeat.
 
 The response contains `events` and `serverTime`. Only staff sessions can use the
 endpoint; permissions are checked on every request. The limit is 30 polls per
@@ -68,8 +68,9 @@ cache operations continue using the shared connection.
 
 Both adapters implement the optional `EventLogCache` interface from
 `@tryghost/adapter-base-cache`. Writes append, trim and expire events atomically.
-Logs retain up to 2,000 events per resource for one hour; the API currently
-returns only the last 30 seconds. Memory storage is capped at 10,000 logs.
+Logs retain up to 2,000 heartbeats per resource for 60 seconds. The API returns
+only the latest heartbeat per user and resource from the last 30 seconds. There
+is no history query. Memory storage is capped at 10,000 logs.
 
 Before Pro rollout, check polling, cache failures and idle-site sleep on staging
 behind Fastly.

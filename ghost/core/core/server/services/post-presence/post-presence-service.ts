@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { EventLogCache } from '@tryghost/adapter-base-cache';
 
-export const RETENTION_SECONDS = 3600;
+export const RETENTION_SECONDS = 60;
 export const FRESHNESS_MS = 30000;
 export const MAX_EVENTS = 2000;
 const id = z.string().regex(/^[a-f\d]{24}$/i);
@@ -15,8 +15,7 @@ export const actorSchema = z.object({
 });
 export const requestSchema = z.object({
   resources: z.array(resourceSchema).min(1).max(50),
-  sessionId: z.string().uuid(),
-  editing: resourceSchema.extend({ action: z.enum(['opened', 'editing']) }).optional(),
+  editing: resourceSchema.optional(),
 });
 export const eventSchema = z.object({
   eventId: z.string().uuid(),
@@ -25,8 +24,6 @@ export const eventSchema = z.object({
   avatar: z.string().nullable(),
   resourceType: z.enum(['post', 'page']),
   resourceId: id,
-  sessionId: z.string().uuid().nullable(),
-  action: z.enum(['opened', 'editing']),
   ts: z.number().int().nonnegative(),
 });
 export type PresenceEvent = z.infer<typeof eventSchema>;
@@ -63,12 +60,7 @@ export class PostPresenceService {
     return count <= 30;
   }
 
-  async record(
-    resource: Resource,
-    actor: Actor,
-    action: PresenceEvent['action'],
-    sessionId: string | null,
-  ) {
+  async record(resource: Resource, actor: Actor) {
     const event = eventSchema.parse({
       eventId: randomUUID(),
       userId: actor.id,
@@ -76,8 +68,6 @@ export class PostPresenceService {
       avatar: actor.profile_image,
       resourceType: resource.type,
       resourceId: resource.id,
-      action,
-      sessionId,
       ts: this.now(),
     });
     await this.cache.appendEvent(
@@ -89,13 +79,13 @@ export class PostPresenceService {
     );
   }
 
-  async recent(resources: Resource[], since = this.now() - FRESHNESS_MS) {
+  async recent(resources: Resource[]) {
     const now = this.now();
+    const since = now - FRESHNESS_MS;
     const keys = resources.map((resource) => this.key(resource));
-    const start = Math.max(since, now - RETENTION_SECONDS * 1000);
     const windows = this.cache.readEventsMany
-      ? await this.cache.readEventsMany(keys, start)
-      : await Promise.all(keys.map((key) => this.cache.readEvents(key, start)));
+      ? await this.cache.readEventsMany(keys, since)
+      : await Promise.all(keys.map((key) => this.cache.readEvents(key, since)));
     const events = windows.flatMap((values, index) => {
       const resource = resources[index];
       return values.flatMap((value) => {
@@ -116,10 +106,10 @@ export class PostPresenceService {
         }
       });
     });
-    // Return the latest event for each resource, user, session and action.
+    // Return one heartbeat per user and resource, regardless of how many tabs are open.
     const latest = new Map<string, PresenceEvent>();
     for (const event of events) {
-      const key = `${event.resourceId}:${event.userId}:${event.sessionId}:${event.action}`;
+      const key = `${event.resourceType}:${event.resourceId}:${event.userId}`;
       const previous = latest.get(key);
       if (!previous || previous.ts < event.ts) {
         latest.set(key, event);

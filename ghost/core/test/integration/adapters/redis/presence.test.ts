@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { afterEach, describe, expect, it } from 'vitest';
-import { PostPresenceService } from '../../../../core/server/services/post-presence/post-presence-service';
+import {
+  PostPresenceService,
+  RETENTION_SECONDS,
+} from '../../../../core/server/services/post-presence/post-presence-service';
 // @ts-expect-error Legacy cache adapter.
 import RedisCache from '../../../../core/server/adapters/lib/redis/AdapterCacheRedis';
 
@@ -34,7 +37,7 @@ describe.skipIf(process.env.GHOST_TEST_REDIS_AVAILABLE !== '1')(
       const actor = { id: 'b'.repeat(24), name: 'Alex', profile_image: null };
       await Promise.all(
         Array.from({ length: 20 }, (_, i) =>
-          (i % 2 ? first : second).record(post, actor, 'editing', randomUUID()),
+          (i % 2 ? first : second).record(post, { ...actor, id: i.toString(16).padStart(24, '0') }),
         ),
       );
       expect(await second.recent([post])).toHaveLength(20);
@@ -42,7 +45,9 @@ describe.skipIf(process.env.GHOST_TEST_REDIS_AVAILABLE !== '1')(
       const replacement = new PostPresenceService(replica(prefix), 'site-a');
       expect(await replacement.recent([post])).toHaveLength(20);
       const key = await a._buildKey(`presence:v1:site-a:post:${post.id}`);
-      expect(await a.redisClient.ttl(key)).toBeGreaterThan(3500);
+      const ttl = await a.redisClient.ttl(key);
+      expect(ttl).toBeGreaterThan(0);
+      expect(ttl).toBeLessThanOrEqual(RETENTION_SECONDS);
       // Delete only this test's keys.
       await a.redisClient.del(key, `${prefix}prefix_hash`);
     });

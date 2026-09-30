@@ -1,8 +1,8 @@
-import { randomUUID } from 'node:crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   PostPresenceService,
   MAX_EVENTS,
+  RETENTION_SECONDS,
 } from '../../../../../core/server/services/post-presence/post-presence-service';
 import { init, getService } from '../../../../../core/server/services/post-presence';
 import MemoryEventLog from '../../../../../core/server/adapters/cache/MemoryEventLog';
@@ -19,39 +19,45 @@ describe('PostPresenceService', () => {
     const second = new PostPresenceService(cache, 'site-a');
     const other = new PostPresenceService(cache, 'site-b');
     await Promise.all([
-      first.record(post, actor, 'opened', randomUUID()),
-      second.record(post, { ...actor, id: 'c'.repeat(24) }, 'editing', randomUUID()),
+      first.record(post, actor),
+      second.record(post, { ...actor, id: 'c'.repeat(24) }),
     ]);
     expect(await second.recent([post])).toHaveLength(2);
     expect(await other.recent([post])).toEqual([]);
     expect(await first.recent([{ ...post, type: 'page' }])).toEqual([]);
   });
 
-  it('keeps separate tabs and expires a vanished tab while another remains active', async () => {
+  it('keeps one avatar while any tab is active, then expires presence and trims old heartbeats', async () => {
     vi.useFakeTimers();
+    vi.setSystemTime(0);
     const cache = new MemoryEventLog();
-    const service = new PostPresenceService(cache, 'site');
-    const tab = randomUUID();
-    await service.record(post, actor, 'opened', tab);
-    await service.record(post, actor, 'opened', randomUUID());
-    expect(await service.recent([post])).toHaveLength(2);
-    vi.advanceTimersByTime(31000);
-    await service.record(post, actor, 'editing', tab);
-    expect(await service.recent([post])).toHaveLength(1);
-    vi.advanceTimersByTime(3600001);
-    expect(await service.recent([post], 0)).toEqual([]);
+    const first = new PostPresenceService(cache, 'site');
+    const second = new PostPresenceService(cache, 'site');
+    await first.record(post, actor);
+    vi.advanceTimersByTime(10000);
+    await second.record(post, actor);
+    expect(await first.recent([post])).toEqual([
+      expect.objectContaining({ userId: actor.id, ts: 10000 }),
+    ]);
+    vi.advanceTimersByTime(21000);
+    expect(await first.recent([post])).toHaveLength(1);
+    vi.advanceTimersByTime(10000);
+    expect(await first.recent([post])).toEqual([]);
+    vi.advanceTimersByTime(RETENTION_SECONDS * 1000);
+    await second.record(post, actor);
+    expect(cache.readEvents(`presence:v1:site:post:${post.id}`, 0)).toHaveLength(1);
   });
 
-  it('bounds retained history and rejects malformed cached events', async () => {
+  it('bounds stored heartbeats and rejects malformed cached events', async () => {
     const cache = new MemoryEventLog();
     const service = new PostPresenceService(cache, 'site');
     const key = `presence:v1:site:post:${post.id}`;
     for (let i = 0; i < MAX_EVENTS + 5; i++) {
-      await service.record(post, actor, 'editing', randomUUID());
+      await service.record(post, actor);
     }
     expect(cache.readEvents(key, 0)).toHaveLength(MAX_EVENTS);
-    cache.appendEvent(key, '{broken', Date.now(), 3600, MAX_EVENTS);
-    expect((await service.recent([post])).length).toBeLessThan(MAX_EVENTS);
+    cache.appendEvent(key, '{broken', Date.now(), RETENTION_SECONDS, MAX_EVENTS);
+    expect(await service.recent([post])).toEqual([expect.objectContaining({ userId: actor.id })]);
   });
 
   it('shares a bounded rate limit across instances and lets it expire', async () => {
@@ -73,9 +79,7 @@ describe('PostPresenceService', () => {
       readEvents: vi.fn().mockRejectedValue(new Error('Redis unavailable')),
     };
     const service = new PostPresenceService(cache, 'site');
-    await expect(service.record(post, actor, 'opened', randomUUID())).rejects.toThrow(
-      'Redis unavailable',
-    );
+    await expect(service.record(post, actor)).rejects.toThrow('Redis unavailable');
     await expect(service.recent([post])).rejects.toThrow('Redis unavailable');
     init({ cache: { get: () => null, set: () => {} }, siteId: 'site' });
     expect(getService()).toBeUndefined();
