@@ -87,6 +87,17 @@ module.exports = class MemberBREADService {
   }
 
   /**
+   * The member's metafields as this audience may see them, empty if they have none.
+   *
+   * @param {string} memberId
+   * @param {import('../../../members-metafields').Audience} audience
+   * @returns {Promise<Record<string, Record<string, unknown>>>}
+   */
+  async readMetafieldsForMember(memberId, audience) {
+    return (await this.metafieldValues.getValuesForMember(memberId, audience)) ?? {};
+  }
+
+  /**
    * Each member's metafields as this audience may see them. A member with none has an
    * empty object.
    *
@@ -445,9 +456,7 @@ module.exports = class MemberBREADService {
     member.unsubscribe_url = unsubscribeUrl;
 
     if (metafieldsFor) {
-      member.metafields = (await this.readMetafieldsForMembers([member.id], metafieldsFor)).get(
-        member.id,
-      );
+      member.metafields = await this.readMetafieldsForMember(member.id, metafieldsFor);
     }
 
     return member;

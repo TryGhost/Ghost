@@ -147,6 +147,14 @@ export class MetafieldValuesService {
     );
   }
 
+  /** The member's metafields, or undefined if they have none. */
+  async getValuesForMember(
+    memberId: string,
+    audience: Audience,
+  ): Promise<Record<string, Record<string, unknown>> | undefined> {
+    return (await this.getValuesForMembers([memberId], audience)).get(memberId);
+  }
+
   /**
    * Metafields for each member, keyed by member id. Only active fields the audience can
    * read are included. Members with no metafields have no entry.
