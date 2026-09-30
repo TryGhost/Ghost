@@ -39,6 +39,7 @@ import PlusCardMenuPlugin from './plugins/PlusCardMenuPlugin';
 import ProductPlugin from './plugins/ProductPlugin';
 import ReplacementStringsPlugin from './plugins/ReplacementStringsPlugin';
 import RestrictContentPlugin from './plugins/RestrictContentPlugin';
+import SelectionWordCountPlugin from './plugins/SelectionWordCountPlugin';
 import SignupPlugin from './plugins/SignupPlugin';
 import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
 import TKCountPlugin from './plugins/TKCountPlugin';
@@ -112,6 +113,7 @@ export {
     ProductPlugin,
     ReplacementStringsPlugin,
     RestrictContentPlugin,
+    SelectionWordCountPlugin,
     SignupPlugin,
     SlashCardMenuPlugin,
     TKCountPlugin,
