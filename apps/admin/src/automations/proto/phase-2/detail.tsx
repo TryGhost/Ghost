@@ -41,9 +41,10 @@ import {
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar } from './header-bar';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
-import { LeftPanel } from './left-panel';
+import { type PaneTab, SidePanel } from './side-panel';
 import {
   type TriggerConfig,
+  exitSentence,
   needsStripe,
   tiersUnanswered,
   triggerConfigFor,
@@ -59,7 +60,6 @@ import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
-import { SettingsSheet } from './settings-sheet';
 
 // PHASE 2 — per-tier automations. See shared/lanes for why each lane owns its
 // own copy of this screen.
@@ -195,8 +195,23 @@ const AutomationFloat: React.FC = () => {
   // (Cancel/Done, and Save before that) read as the task being finished and
   // written, when the real commit is the header's Save. `null` means untouched —
   // the saved name and description are what's being shown.
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settingsDraft, setSettingsDraft] = useState({ name: '', description: '' });
+  // Which of the side panel's tabs is showing. Settings used to be a sheet with
+  // its own open state; it's a tab now (see side-panel).
+  //
+  // Opens on Performance when there's something to report — the automation is
+  // live, or has runs — and on Settings otherwise: a new or never-run automation
+  // has a chart of zeroes to show and a name to give, and the name is the one
+  // that's actionable.
+  const [paneTab, setPaneTab] = useState<PaneTab>(() =>
+    liveStatus === 'active' || (scenario?.runs.length ?? 0) > 0 ? 'performance' : 'settings',
+  );
+  // Seeded with the saved details, since Settings can be the tab the panel opens
+  // on; switching back to it reseeds from what the header shows (see
+  // handlePaneTabChange).
+  const [settingsDraft, setSettingsDraft] = useState(() => ({
+    name: savedAutomation?.name ?? '',
+    description: record?.description ?? '',
+  }));
   const [detailsDraft, setDetailsDraft] = useState<{ name: string; description: string } | null>(
     null,
   );
@@ -567,37 +582,43 @@ const AutomationFloat: React.FC = () => {
   //
   // Delete stays. Nothing ambiguous about removing the whole thing, draft and all.
 
-  const openSettings = () => {
-    // Seeded from what the screen is currently showing — the pending details if
-    // they've been edited this session, the saved ones otherwise. Seeding from
-    // the record alone would show a name the header no longer does, which reads
-    // as the rename having been lost. This is also what makes abandoning a
-    // blanked or colliding name safe: reopening shows the name that actually
-    // applied.
-    setSettingsDraft(draftDetails);
-    setSettingsOpen(true);
-  };
-
   // Whether the field text names another automation. Live per keystroke: the
   // guard below reads it to keep a colliding name off the draft, and the
-  // settings sheet debounces what it SAYS about it (see settings-sheet).
+  // Settings tab debounces what it SAYS about it (see side-panel).
   const nameCollides = isNameTaken(settingsDraft.name, id);
 
-  // Closing the sheet is just putting it away — never blocked, nothing
-  // committed. The one exit worth a word is leaving a name in the field that
-  // never applied: the guard kept the previous name, and a toast says so,
-  // because a silently reverted rename reads as a rename that vanished. Blank
-  // names stay silent — an emptied field reverting is expected; a typed name
-  // being refused isn't.
-  const handleDetailsOpenChange = (open: boolean) => {
-    if (open) {
-      openSettings();
-      return;
-    }
-    setSettingsOpen(false);
+  // Leaving Settings — another tab, or the panel closing — is just putting it
+  // away: never blocked, nothing committed. The one exit worth a word is leaving
+  // a name in the field that never applied: the guard kept the previous name,
+  // and a toast says so, because a silently reverted rename reads as a rename
+  // that vanished. Blank names stay silent — an emptied field reverting is
+  // expected; a typed name being refused isn't.
+  const warnIfNameRefused = () => {
     if (settingsDraft.name.trim() && nameCollides) {
       toast(`That name's already in use — kept “${draftDetails.name}”`);
     }
+  };
+
+  // Seeded on the way IN from what the screen is currently showing — the pending
+  // details if they've been edited this session, the saved ones otherwise — so
+  // the field never shows a name the header doesn't. That's also what makes
+  // abandoning a blanked or colliding name safe: coming back shows the name that
+  // actually applied.
+  const handlePaneTabChange = (next: PaneTab) => {
+    if (next === 'settings' && paneTab !== 'settings') {
+      setSettingsDraft(draftDetails);
+    }
+    if (next !== 'settings' && paneTab === 'settings') {
+      warnIfNameRefused();
+    }
+    setPaneTab(next);
+  };
+
+  const togglePane = () => {
+    if (!paneCollapsed && paneTab === 'settings') {
+      warnIfNameRefused();
+    }
+    setPaneCollapsed(!paneCollapsed);
   };
 
   // Typing writes through: the field text lands on the details draft as it
@@ -688,9 +709,11 @@ const AutomationFloat: React.FC = () => {
         <Button variant="outline" onClick={() => setStopOpen(true)}>
           Turn off
         </Button>
+        {/* "Update", the post editor's word for pushing edits to something
+            that's already live — and the right-panel concept's. */}
         {blockedPopover(
           <Button disabled={!hasChanges} onClick={handlePublishChangesClick}>
-            Publish changes
+            Update
           </Button>,
         )}
       </>
@@ -700,7 +723,7 @@ const AutomationFloat: React.FC = () => {
     // flex-col in both variants: the docked header is a row above the pane and
     // canvas, and with no header the same column collapses to just that row.
     <div
-      className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background"
+      className="fixed inset-0 z-50 flex overflow-hidden bg-background"
       data-testid="float-detail"
     >
       {/* The header never carries the pane control in either release — its left
@@ -713,125 +736,57 @@ const AutomationFloat: React.FC = () => {
                 The Publish button still refuses via canGoLive (popover at the press),
                 so the header's half of the story is the control refusing, and the
                 card's half is why. */}
-      <HeaderBar
-        actions={chromeActions}
-        status={liveStatus}
-        // The pending name, not the saved one: a rename shows here the moment
-        // it's typed in the settings sheet, the way a canvas edit shows on the
-        // canvas — on screen now, committed by Save.
-        title={draftDetails.name}
-        onBack={goBack}
-        // Toggle, not open: the gear presses closed a sheet that's open, the
-        // same contract the email cards' analytics buttons keep with theirs.
-        onToggleSettings={() => handleDetailsOpenChange(!settingsOpen)}
-      />
-      <div className="relative flex min-h-0 flex-1 overflow-hidden">
-        {/* Left pane docked flush to the edge. On entering edit it slides off the
-                left (negative margin collapses its flex footprint to 0) and the canvas
-                grows leftward to fill. Always mounted so the transition can animate; the
-                canvas's ResizeObserver re-centres the flow as it grows. Clearing the
-                title overlay is left to each panel variant — one keeps its content
-                below it, another puts controls on the same baseline as it. */}
-        {/* --surface-elevated, matching the right-hand analytics sheet: both are
-                content panels flanking the canvas, so they're the same step of the
-                ladder. This was on the --sidebar-* family, which is for the app's
-                global nav — it happened to match in dark and diverged in light. */}
-        <aside
-          className={cn(
-            // Collapses by WIDTH, not by sliding out on a negative margin. Both
-            // animate the same 480px, but a slide takes the pane's contents with
-            // it — the title and its controls travelled left and passed under the
-            // toggle on their way out, which read as the pane escaping rather than
-            // closing. Narrowing holds every child exactly where it is and lets
-            // overflow-hidden wipe them from the right as the canvas edge advances,
-            // so nothing moves that isn't supposed to.
-            //
-            // This only works because the child below is pinned to w-[480px]: left
-            // to itself the content would reflow as the pane narrowed, wrapping the
-            // title and crushing the table for the length of the animation.
-            'relative flex shrink-0 flex-col overflow-hidden',
-            // 420ms on the proto's shared curve, matching the canvas's creation
-            // sequence: publishing opens this pane, and the two shouldn't look like
-            // separate animations that happened to fire together. At the old
-            // 150ms/ease-out a 480px slab arrived faster than the eye could follow it,
-            // which is what made it read as a jump rather than a reveal.
-            paneAnimated &&
-              `transition-[width] duration-420 ${PROTO_EASE} motion-reduce:transition-none`,
-            // A content panel flanking the canvas, so it takes the same step of
-            // the ladder as the right-hand analytics sheet.
-            'border-r border-border-default bg-surface-elevated',
-            // border-r goes with the width: at w-0 a rule would still paint, a
-            // stray hairline down the left of the canvas.
-            paneHidden ? 'w-0 border-r-0' : 'w-[480px]',
-          )}
-        >
-          {/* onCollapse is future only — that release puts the toggle on the
-                    pane, beside its title. Phase 1 drives the same state from the
-                    header bar, so its pane doesn't carry a control of its own. */}
-          {/* Pinned to the pane's full width so it never reflows while the
-                    aside narrows around it — see the note above. */}
-          {/* The contents fade rather than being wiped in by the widening edge.
-                    Width alone made the panel's own text appear to slide out from under
-                    the canvas, because everything inside was arriving sideways at 480px
-                    of travel while standing still relative to its own column.
-                    
-                    Trailing the width on the way in, leading it on the way out: a reveal
-                    wants the space to exist before anything occupies it, and a dismissal
-                    wants the contents gone before the space closes over them. */}
-          <div
-            className={cn(
-              'flex min-h-0 w-[480px] flex-1 flex-col',
-              paneAnimated && 'transition-opacity motion-reduce:transition-none',
-              paneHidden
-                ? 'opacity-0 duration-100'
-                : 'opacity-100 [transition-delay:140ms] duration-300',
-            )}
-          >
-            <LeftPanel
-              query={query}
-              scenario={scenario}
-              selectedMemberId={selectedMemberId}
-              onQueryChange={setQuery}
-              onSelectMember={setSelectedMemberId}
-            />
-          </div>
-        </aside>
-
-        {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
+      {/* Everything but the side panel, as one column: the header and the
+          canvas beneath it. The panel is a full-height column to its right, so
+          opening it narrows this one — the header's actions and the canvas slide
+          over together, the way the right-panel concept's chrome moves. */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <HeaderBar
+          actions={chromeActions}
+          paneOpen={!paneCollapsed}
+          status={liveStatus}
+          // The pending name, not the saved one: a rename shows here the moment
+          // it's typed in the Settings tab, the way a canvas edit shows on the
+          // canvas — on screen now, committed by Save.
+          title={draftDetails.name}
+          onBack={goBack}
+        />
+        <div className="relative flex min-h-0 flex-1 overflow-hidden">
+          {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
                 centres within its own region — no left-inset hack needed. Same fill as
                 REACT_FLOW_THEME paints inside it, so the region and the flow's own
                 background can't disagree at the edges. */}
-        <div
-          className={cn(
-            'relative min-w-0 flex-1 overflow-hidden',
-            // This region owns the canvas palette. Everything inside it — both
-            // canvases and the dashed insert buttons — reads the fill, dots and
-            // edge colour from here by inheritance, so the two releases can look
-            // completely different without either canvas knowing which one it is.
-            CANVAS_SLOT_FILL,
-            canvasTheme('phase-1', Boolean(selectedRun)),
-            // Docked chrome: the canvas is one of three abutting surfaces, so it
-            // fills its column flush — no inset, no radius. The inset-window
-            // treatment belongs to the exploration lane.
-          )}
-        >
-          {/* Both canvases stay mounted and crossfade on mode change. No remount
+          <div
+            className={cn(
+              'relative min-w-0 flex-1 overflow-hidden',
+              // This region owns the canvas palette. Everything inside it — both
+              // canvases and the dashed insert buttons — reads the fill, dots and
+              // edge colour from here by inheritance, so the two releases can look
+              // completely different without either canvas knowing which one it is.
+              CANVAS_SLOT_FILL,
+              canvasTheme('phase-1', Boolean(selectedRun)),
+              // Docked chrome: the canvas is one of three abutting surfaces, so it
+              // fills its column flush — no inset, no radius. The inset-window
+              // treatment belongs to the exploration lane.
+            )}
+          >
+            {/* Both canvases stay mounted and crossfade on mode change. No remount
                     means the incoming flow is already centred — no first-frame node flash.
                     The inactive one is opacity-0 + pointer-events-none so clicks fall to
                     the active canvas beneath/above it. */}
-          <div
-            className={cn(
-              'absolute inset-0 transition-opacity duration-150',
-              showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100',
-            )}
-          >
-            <FlowCanvas
-              automation={publishedFlow}
-              selectedRun={selectedRun}
-              triggerConfig={savedTrigger ?? undefined}
-            />
-          </div>
-          {/* One top-left cluster, not two things at the same coordinates: the
+            <div
+              className={cn(
+                'absolute inset-0 transition-opacity duration-150',
+                showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100',
+              )}
+            >
+              <FlowCanvas
+                automation={publishedFlow}
+                selectedRun={selectedRun}
+                triggerConfig={savedTrigger ?? undefined}
+              />
+            </div>
+            {/* One top-left cluster, not two things at the same coordinates: the
                     pane toggle (future's — phase 1's is anchored to the row below) and
                     the member button can both be present at once, so they sit in a row
                     and neither has to know about the other.
@@ -852,29 +807,10 @@ const AutomationFloat: React.FC = () => {
                     exploration lane's canvas is a bounded window instead, inset from the
                     page — nothing to line up with, so its cluster keeps the symmetric
                     24. */}
-          {selectedRun && !showEditCanvas && (
-            <div className="absolute top-4 left-6 z-20">
-              <Inline align="center" gap="sm">
-                {/* Phase 1's toggle is anchored to the row, not to this
-                                cluster — and once the pane collapses the canvas starts at
-                                x=0, so the two land on the same 16/16 and the member
-                                button ends up underneath it.
-
-                                An empty box of the toggle's exact footprint (size-9 is
-                                what Shade's size="icon" resolves to) stands in for it, so
-                                the Inline's own gap does the spacing and the member
-                                button sits off the toggle by the same distance it does in
-                                future. Nothing to keep in sync but the size token.
-
-                                No negative inset, because the toggle has none either — its
-                                box edge sits on the 24px column in both its states, same as
-                                the header's back arrow.
-
-                                Only while collapsed: with the pane open the toggle is
-                                480px away over the pane, and reserving space here would
-                                indent the member button against nothing. */}
-                {paneCollapsed && <div className="size-9 shrink-0" aria-hidden />}
-                {/* Who you're looking at, and the way out, as one control:
+            {selectedRun && !showEditCanvas && (
+              <div className="absolute top-4 left-6 z-20">
+                <Inline align="center" gap="sm">
+                  {/* Who you're looking at, and the way out, as one control:
                                 clicking the member's name closes their run. This replaced
                                 a bare X in the canvas's top-right, which said nothing
                                 about whose run it was — you could see you were inside
@@ -891,132 +827,178 @@ const AutomationFloat: React.FC = () => {
                                 aria-label rather than the bare name, since "Marcus Chen"
                                 doesn't say what pressing it does; it contains the visible
                                 text, so the label-in-name rule still holds. */}
-                {selectedRun && !showEditCanvas && (
-                  <Button
-                    aria-label={`Close ${selectedRun.member.name}'s run`}
-                    // Same chrome as the maximise toggle beside it, so
-                    // the two read as one set of canvas controls.
-                    className={CANVAS_HUD_BUTTON}
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSelectedMemberId(null)}
-                  >
-                    <LucideIcon.X strokeWidth={2} />
-                    {selectedRun.member.name}
-                  </Button>
-                )}
-              </Inline>
-            </div>
-          )}
-
-          <div
-            className={cn(
-              'absolute inset-0 transition-opacity duration-150',
-              showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0',
+                  {selectedRun && !showEditCanvas && (
+                    <Button
+                      aria-label={`Close ${selectedRun.member.name}'s run`}
+                      // Same chrome as the maximise toggle beside it, so
+                      // the two read as one set of canvas controls.
+                      className={CANVAS_HUD_BUTTON}
+                      type="button"
+                      variant="outline"
+                      onClick={() => setSelectedMemberId(null)}
+                    >
+                      <LucideIcon.X strokeWidth={2} />
+                      {selectedRun.member.name}
+                    </Button>
+                  )}
+                </Inline>
+              </div>
             )}
-          >
-            <EditCanvas
-              // Building vs watching: while the automation is off the inserts
-              // stay on screen — choosing a trigger otherwise landed on one
-              // card, one line and no visible next move. Live, they go back to
-              // hover; the flow is being read then, not assembled. (Email
-              // analytics are NOT lifecycle-gated — every email card reports
-              // from the moment it exists, zeros included; see the canvas's
-              // ZERO_EMAIL_STATS.)
-              alwaysShowInserts={liveStatus === 'inactive'}
-              draft={draftFlow}
-              // Which triggers this screen may offer — see shared/capabilities.
-              lane={LANE}
-              revealWarningsSignal={revealSignal}
-              // Type-gated: a saved trigger of a different type answered a
-              // different question, so its tiers don't keep archived rows
-              // offered here.
-              savedTierIds={
-                savedTrigger && savedTrigger.type === triggerConfig?.type
-                  ? savedTrigger.tierIds
-                  : []
-              }
-              triggerConfig={triggerConfig}
-              // The Stripe problem, worn by the card that has it. The message
-              // states the fix rather than the failure — one sentence, the same
-              // one the header Banner carried: "members", not "subscribers",
-              // Ghost's noun throughout.
-              triggerWarning={
-                stripeMissing
-                  ? { message: 'Connect Stripe to publish automations for paid members.' }
-                  : undefined
-              }
-              onChange={handleDraftChange}
-              onTriggerConfigChange={handleTriggerConfigChange}
-            />
+
+            <div
+              className={cn(
+                'absolute inset-0 transition-opacity duration-150',
+                showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0',
+              )}
+            >
+              <EditCanvas
+                // Building vs watching: while the automation is off the inserts
+                // stay on screen — choosing a trigger otherwise landed on one
+                // card, one line and no visible next move. Live, they go back to
+                // hover; the flow is being read then, not assembled. (Email
+                // analytics are NOT lifecycle-gated — every email card reports
+                // from the moment it exists, zeros included; see the canvas's
+                // ZERO_EMAIL_STATS.)
+                alwaysShowInserts={liveStatus === 'inactive'}
+                // An email's report opens as a modal here: the side panel owns the
+                // right edge, where the other lanes' sheet slides in.
+                analyticsSurface="modal"
+                draft={draftFlow}
+                // The exit sentence lives in Settings now, under Exit conditions.
+                exitsOnTriggerCard={false}
+                // Which triggers this screen may offer — see shared/capabilities.
+                lane={LANE}
+                revealWarningsSignal={revealSignal}
+                // Type-gated: a saved trigger of a different type answered a
+                // different question, so its tiers don't keep archived rows
+                // offered here.
+                savedTierIds={
+                  savedTrigger && savedTrigger.type === triggerConfig?.type
+                    ? savedTrigger.tierIds
+                    : []
+                }
+                triggerConfig={triggerConfig}
+                // The Stripe problem, worn by the card that has it. The message
+                // states the fix rather than the failure — one sentence, the same
+                // one the header Banner carried: "members", not "subscribers",
+                // Ghost's noun throughout.
+                triggerWarning={
+                  stripeMissing
+                    ? { message: 'Connect Stripe to publish automations for paid members.' }
+                    : undefined
+                }
+                onChange={handleDraftChange}
+                onTriggerConfigChange={handleTriggerConfigChange}
+              />
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Phase 1's pane toggle, anchored to the ROW rather than to either side of
-                it — the one thing in this layout that doesn't belong to the pane or the
-                canvas, because its whole job is to survive the boundary moving between
-                them.
-
-                Inside the pane it would slide away with the pane. On the canvas it
-                would appear at the canvas's own left edge — 480px in while the pane is
-                still open — and then ride leftward as the pane collapsed, which is the
-                flash this replaced. Anchored here it is simply always at 16/16 of the
-                row: the pane's own px-6 horizontally, its pt-4 under a 64px header
-                vertically. The pane collapses out from under a button that never
-                moves, and the same press sends it back.
-
-                z-30 clears the pane's own sticky bars at z-20. The pane holds an
-                invisible twin of this button in flow (see reserveToggle) so the
-                Performance title starts where it would if this one were really there. */}
-        {/* Anchored to the ROW rather than to either side of it — the one thing
-                    in this layout that doesn't belong to the pane or the canvas, because
-                    its whole job is to survive the boundary moving between them.
-
-                    Which means it changes surface underneath itself, and its chrome has to
-                    change with it. Pane OPEN, it stands on the pane — a panel, where a
-                    ghost button is what every other control on a panel is. Pane COLLAPSED,
-                    the canvas starts at x=0 and the same button is floating over the dot
-                    grid, where ghost reads as a glyph with nothing holding it: outline on
-                    CANVAS_HUD_BUTTON's opaque surface, the same treatment the zoom controls
-                    and the member button take.
-
-                    What does NOT change is where it sits. left-6 in both, box edge on 24,
-                    no negative inset either way — it used to pull back 8px while the pane
-                    was open, which made the button jump 8px sideways at the moment the
-                    pane went. See the header for why 24 is the box edge and not the
-                    glyph.
-
-                    One button that restyles, not two that swap: it never unmounts, so the
-                    pane collapses out from under a control that stays exactly where it is
-                    and the same press sends it back. */}
-        <div className="absolute top-4 left-6 z-30">
-          <Button
-            aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
-            aria-pressed={!paneCollapsed}
-            className={paneCollapsed ? CANVAS_HUD_BUTTON : undefined}
-            size="icon"
-            type="button"
-            variant={paneCollapsed ? 'outline' : 'ghost'}
-            onClick={() => setPaneCollapsed(!paneCollapsed)}
-          >
-            <LucideIcon.PanelLeft strokeWidth={2} />
-          </Button>
+      {/* The side panel, full height at the right edge. Collapsing narrows it
+              to nothing, and the column to its left — header and canvas — grows
+              to fill; the canvas's ResizeObserver re-centres the flow as it does.
+              Always mounted so the transition can animate. */}
+      {/* --surface-elevated, matching the right-hand analytics sheet: both are
+              content panels flanking the canvas, so they're the same step of the
+              ladder. This was on the --sidebar-* family, which is for the app's
+              global nav — it happened to match in dark and diverged in light. */}
+      <aside
+        className={cn(
+          // Collapses by WIDTH, not by sliding out on a negative margin. Both
+          // animate the same 480px, but a slide takes the pane's contents with
+          // it — the title and its controls travelled left and passed under the
+          // toggle on their way out, which read as the pane escaping rather than
+          // closing. Narrowing holds every child exactly where it is and lets
+          // overflow-hidden wipe them from the right as the canvas edge advances,
+          // so nothing moves that isn't supposed to.
+          //
+          // This only works because the child below is pinned to w-[480px]: left
+          // to itself the content would reflow as the pane narrowed, wrapping the
+          // title and crushing the table for the length of the animation. It's
+          // held to the RIGHT edge (items-end), so the panel's left edge sweeps
+          // over it rather than the contents sliding.
+          'relative flex shrink-0 flex-col items-end overflow-hidden',
+          // 420ms on the proto's shared curve, matching the canvas's creation
+          // sequence: publishing opens this pane, and the two shouldn't look like
+          // separate animations that happened to fire together. At the old
+          // 150ms/ease-out a 480px slab arrived faster than the eye could follow it,
+          // which is what made it read as a jump rather than a reveal.
+          paneAnimated &&
+            `transition-[width] duration-420 ${PROTO_EASE} motion-reduce:transition-none`,
+          // A content panel flanking the canvas, so it takes the same step of
+          // the ladder as the right-hand analytics sheet.
+          'border-l border-border-default bg-surface-elevated',
+          // border-l goes with the width: at w-0 a rule would still paint, a
+          // stray hairline down the right of the screen.
+          paneHidden ? 'w-0 border-l-0' : 'w-[480px]',
+        )}
+      >
+        {/* onCollapse is future only — that release puts the toggle on the
+                  pane, beside its title. Phase 1 drives the same state from the
+                  header bar, so its pane doesn't carry a control of its own. */}
+        {/* Pinned to the pane's full width so it never reflows while the
+                  aside narrows around it — see the note above. */}
+        {/* The contents fade rather than being wiped in by the widening edge.
+                  Width alone made the panel's own text appear to slide out from under
+                  the canvas, because everything inside was arriving sideways at 480px
+                  of travel while standing still relative to its own column.
+                  
+                  Trailing the width on the way in, leading it on the way out: a reveal
+                  wants the space to exist before anything occupies it, and a dismissal
+                  wants the contents gone before the space closes over them. */}
+        <div
+          className={cn(
+            'flex min-h-0 w-[480px] flex-1 flex-col',
+            paneAnimated && 'transition-opacity motion-reduce:transition-none',
+            paneHidden
+              ? 'opacity-0 duration-100'
+              : 'opacity-100 [transition-delay:140ms] duration-300',
+          )}
+        >
+          <SidePanel
+            query={query}
+            scenario={scenario}
+            selectedMemberId={selectedMemberId}
+            settings={{
+              values: settingsDraft,
+              onChange: handleDetailsChange,
+              nameTaken: nameCollides,
+              // The draft's trigger, so the sentence follows a trigger change
+              // before it's saved, as the card's did.
+              exits: triggerConfig ? exitSentence(triggerConfig) : null,
+            }}
+            tab={paneTab}
+            onQueryChange={setQuery}
+            onSelectMember={setSelectedMemberId}
+            onTabChange={handlePaneTabChange}
+          />
         </div>
+      </aside>
 
-        {/* The settings sheet, over the canvas's right edge like the analytics
-                    sheet below it in the tree — the screen's two sheets are one kind
-                    of surface. Mounted at ROW level rather than inside the canvas
-                    region so it can outlast canvas crossfades; the header above it
-                    stays live, which is where the retitling shows while the name
-                    field here changes it. Open/close and the collision toast are the
-                    screen's (see handleDetailsOpenChange). */}
-        <SettingsSheet
-          nameTaken={nameCollides}
-          open={settingsOpen}
-          values={settingsDraft}
-          onChange={handleDetailsChange}
-          onOpenChange={handleDetailsOpenChange}
-        />
+      {/* The side panel's toggle, pinned to the screen's top-right corner and
+          nowhere else — the right-panel concept's arrangement. It's the one
+          control that acts on the layout rather than the automation, so it's the
+          one that holds still while the layout moves under it: closed, it ends
+          the header's row (the header reserves its footprint); open, it ends the
+          panel's top row (the panel reserves it too).
+
+          32px (size-8), the height of every other control in both rows, and
+          top-4 centres that in their 64px. At Shade's size="icon" 36 it sat
+          2px high: the button drew at 32 inside a 36px box, top-aligned. A flex
+          wrapper so there's no line box around it to add height either. */}
+      <div className="absolute top-4 right-6 z-40 flex">
+        <Button
+          aria-label={paneCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+          aria-pressed={!paneCollapsed}
+          className="size-8"
+          size="icon"
+          type="button"
+          variant="ghost"
+          onClick={togglePane}
+        >
+          <LucideIcon.PanelRight strokeWidth={2} />
+        </Button>
       </div>
 
       {/* Lifecycle confirms — turning the automation on, and taking it off. */}
@@ -1028,9 +1010,9 @@ const AutomationFloat: React.FC = () => {
       />
       <TurnOffAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
 
-      {/* The details editor is the settings sheet, rendered up in the canvas
-                row — see SettingsSheet for the whole container lineage (dialog,
-                three footers, a popover from the title, now a panel). */}
+      {/* The details editor is the side panel's Settings tab — before that a
+                sheet, a popover from the title, and a dialog with three footers
+                (see side-panel and this file's history). */}
 
       {/* Where the delete confirm used to be. If Delete ever returns to the UI, its
                 dialog is worth writing again rather than reaching for "this can't be

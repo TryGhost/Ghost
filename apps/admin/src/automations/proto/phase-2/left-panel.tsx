@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Button,
   DropdownMenu,
@@ -17,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack } from '@tryghost/shade/primitives';
 import {
   FilterBar,
   GhAreaChart,
@@ -107,12 +108,24 @@ const RANGE_OPTIONS: { value: string; label: string }[] = [
 
 type EnrichedRun = { run: AutomationRun; status: StatusKey };
 
-export const LeftPanel: React.FC<LeftPanelProps> = ({
+// The shared contract plus what the side panel needs. The panel owns the top row
+// — its tab bar sits there, mounted once for both tabs — and this pane renders
+// its search and filter controls into the row's slot (stripSlot) through a
+// portal, and says when search opens so the panel can clear the tabs out of the
+// field's way. See side-panel.
+interface Phase2LeftPanelProps extends LeftPanelProps {
+  stripSlot: HTMLElement | null;
+  onSearchOpenChange: (open: boolean) => void;
+}
+
+export const LeftPanel: React.FC<Phase2LeftPanelProps> = ({
   scenario,
   selectedMemberId,
   onSelectMember,
   query,
   onQueryChange,
+  stripSlot,
+  onSearchOpenChange,
 }) => {
   const { automation, metrics, runs } = scenario;
   // Nothing has ever entered this automation — a different situation from a
@@ -123,6 +136,13 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   // often); opening it takes over the header row, swapping out the title, rather
   // than adding a second control the eye has to skip.
   const [searchOpen, setSearchOpen] = useState(false);
+  // Tell the panel when search opens, so it can hide the tabs while the field
+  // takes the row — and closed again on unmount, since switching to Settings
+  // unmounts this pane with its search state.
+  useEffect(() => {
+    onSearchOpenChange(searchOpen);
+    return () => onSearchOpenChange(false);
+  }, [searchOpen, onSearchOpenChange]);
 
   // The pane's horizontal gutter. Every band in this column — the control strip,
   // the filter chips, the summary, the sticky bar and the table — has to use the
@@ -244,152 +264,115 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                 Docked header: there is no strip to borrow — the bar above already owns
                 that row — so the pane titles itself and keeps its controls on its own
                 baseline. Outside the scroll container either way, so they stay put. */}
-      <Inline
-        align="center"
-        // No justify. It used to be 'between', which worked while the strip
-        // held exactly two children (whatever leads, then the controls). The
-        // toggle's placeholder makes three, and 'between' spread all three —
-        // parking the title in the middle of the pane. Whichever child leads
-        // grows instead (flex-1 below), which pins the controls right without
-        // the layout caring how many children there are.
-        className={cn('shrink-0 pt-4 pb-3', gutter)}
-        gap="sm"
-      >
-        {/* The pane titles itself: it's a region of its own beneath a bordered
-                  header, and the rule above it makes it a distinct thing that should
-                  say what it is. */}
-        {/* An invisible twin of the pane toggle, holding its place. The real one
-                  is painted on the row outside this pane, so that collapsing takes the
-                  pane out from under a button that never moves; this reserves the
-                  footprint so whatever leads the strip starts clear of it.
-
-                  A sibling of both the title and the search field, not a child of the
-                  title's group. The toggle is still sitting there when search takes
-                  the strip over, so the space has to be held in BOTH states — nested
-                  inside the title it disappeared along with it, and the open search
-                  field ran straight under the button.
-
-                  The same component rather than a sized box, so the space can't drift
-                  from the thing standing in it. aria-hidden and out of the tab order —
-                  the real button carries both. */}
-        <Button
-          className="invisible"
-          size="icon"
-          tabIndex={-1}
-          type="button"
-          variant="ghost"
-          aria-hidden
-        >
-          <LucideIcon.PanelLeft strokeWidth={2} />
-        </Button>
-        {!searchOpen && (
-          <Inline align="center" className="min-w-0 flex-1" gap="sm">
-            {/* One stop below the automation name in the header (text-md
-                          to its text-lg): this names a region within that automation,
-                          so it reads as the level beneath it. */}
-            <Text size="md" weight="semibold">
-              Performance
-            </Text>
-          </Inline>
-        )}
-        {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the whole
-                  strip, overflows it once the gap and buttons are counted, and flex
-                  resolves that by shrinking the siblings — so the icon buttons squash
-                  below 36px and appear to jump width as search opens. */}
-        {searchOpen && searchField}
-        {/* Same 8px the header bar puts between its own buttons, so every
-                  button row on the screen is spaced alike. (These sat flush for a
-                  while, on the reasoning that each button's own padding was already
-                  separating them and a gap spaced them twice — matching the header
-                  won out.) */}
-        <Inline align="center" className="shrink-0" gap="sm">
-          {/* The search toggle. */}
-          {searchOpen ? (
-            <Button
-              aria-label="Close search"
-              size="icon"
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                onQueryChange('');
-                setSearchOpen(false);
-              }}
-            >
-              <LucideIcon.X strokeWidth={2} />
-            </Button>
-          ) : (
-            <Button
-              aria-label="Search members"
-              size="icon"
-              type="button"
-              variant="ghost"
-              onClick={() => setSearchOpen(true)}
-            >
-              <LucideIcon.Search strokeWidth={2} />
-            </Button>
-          )}
-          {/* A plain filter button rather than a labelled timeframe control: the
-                      timeframe is one of several things we'll want to filter on, and this
-                      is the affordance the rest of Ghost already uses — the funnel from
-                      the members page filter bar, not a generic sliders icon, so the same
-                      action reads the same way everywhere it appears.
-
-                      One funnel, no active state: the icon names the action and
-                      nothing more. An applied filter is already stated — and made
-                      removable — by its chip in the row below, so tinting the button
-                      as well said the same thing twice in a place you can't act on. */}
-          <DropdownMenu>
-            {/* One funnel holding both the timeframe and the exit reason.
-                          Phase 1 doesn't split its filters by scope the way Exploration
-                          does — this strip is the only place it has for them, and a
-                          single funnel is the affordance the rest of Ghost uses. */}
-            <DropdownMenuTrigger asChild>
-              <Button aria-label="Filter" size="icon" type="button" variant="ghost">
-                <LucideIcon.Funnel strokeWidth={2} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Entries</DropdownMenuLabel>
-              {/* Trailing check, not the radio bullet: Shade's active-option
-                              convention (the Filters pattern's option rows, SelectItem) puts
-                              a check at the end of the row. Opacity rather than conditional
-                              render so rows keep a stable width. */}
-              {RANGE_OPTIONS.map((option) => (
-                <DropdownMenuItem key={option.value} onSelect={() => setRange(option.value)}>
-                  {option.label}
-                  <LucideIcon.Check
-                    className={cn(
-                      'ms-auto text-primary',
-                      range === option.value ? 'opacity-100' : 'opacity-0',
-                    )}
-                  />
-                </DropdownMenuItem>
-              ))}
-              {/* Exit reason lives here rather than as a fourth status
-                              card. The cards are lifecycle outcomes and stay three;
-                              this asks a different question — why someone left —
-                              and only of the ones who did. Selecting a reason is
-                              what "show me failures" means. */}
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Exit reason</DropdownMenuLabel>
-              {EXIT_REASONS.map((reason) => (
-                <DropdownMenuItem
-                  key={reason.id}
-                  onSelect={() => setExitFilter(exitFilter === reason.id ? null : reason.id)}
+      {/* The controls live in the side panel's top row, beside its tabs —
+          rendered there through a portal into the row's slot, so the tab bar
+          stays one element that never remounts when you switch tabs (a copy per
+          tab jumped and re-animated on every switch). Portalled content still
+          belongs to this component, so the menus and state behave as before. */}
+      {stripSlot &&
+        createPortal(
+          <>
+            {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the whole
+                      strip, overflows it once the gap and buttons are counted, and flex
+                      resolves that by shrinking the siblings — so the icon buttons squash
+                      below 36px and appear to jump width as search opens. */}
+            {searchOpen && searchField}
+            {/* Same 8px the header bar puts between its own buttons, so every
+                      button row on the screen is spaced alike. (These sat flush for a
+                      while, on the reasoning that each button's own padding was already
+                      separating them and a gap spaced them twice — matching the header
+                      won out.) */}
+            <Inline align="center" className="shrink-0" gap="sm">
+              {/* The search toggle. */}
+              {searchOpen ? (
+                <Button
+                  aria-label="Close search"
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    onQueryChange('');
+                    setSearchOpen(false);
+                  }}
                 >
-                  {reason.label}
-                  <LucideIcon.Check
-                    className={cn(
-                      'ms-auto text-primary',
-                      exitFilter === reason.id ? 'opacity-100' : 'opacity-0',
-                    )}
-                  />
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </Inline>
-      </Inline>
+                  <LucideIcon.X strokeWidth={2} />
+                </Button>
+              ) : (
+                <Button
+                  aria-label="Search members"
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setSearchOpen(true)}
+                >
+                  <LucideIcon.Search strokeWidth={2} />
+                </Button>
+              )}
+              {/* A plain filter button rather than a labelled timeframe control: the
+                          timeframe is one of several things we'll want to filter on, and this
+                          is the affordance the rest of Ghost already uses. List-filter
+                          rather than the funnel it started as — the members page's
+                          filter button and the right-panel concept's — so the same
+                          action reads the same way everywhere it appears.
+
+                          One button, no active state: the icon names the action and
+                          nothing more. An applied filter is already stated — and made
+                          removable — by its chip in the row below, so tinting the button
+                          as well said the same thing twice in a place you can't act on. */}
+              <DropdownMenu>
+                {/* One filter button holding both the timeframe and the exit reason.
+                              Phase 1 doesn't split its filters by scope the way Exploration
+                              does — this strip is the only place it has for them, and a
+                              single filter button is the affordance the rest of Ghost uses. */}
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label="Filter" size="icon" type="button" variant="ghost">
+                    <LucideIcon.ListFilter strokeWidth={2} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Entries</DropdownMenuLabel>
+                  {/* Trailing check, not the radio bullet: Shade's active-option
+                                  convention (the Filters pattern's option rows, SelectItem) puts
+                                  a check at the end of the row. Opacity rather than conditional
+                                  render so rows keep a stable width. */}
+                  {RANGE_OPTIONS.map((option) => (
+                    <DropdownMenuItem key={option.value} onSelect={() => setRange(option.value)}>
+                      {option.label}
+                      <LucideIcon.Check
+                        className={cn(
+                          'ms-auto text-primary',
+                          range === option.value ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
+                    </DropdownMenuItem>
+                  ))}
+                  {/* Exit reason lives here rather than as a fourth status
+                                  card. The cards are lifecycle outcomes and stay three;
+                                  this asks a different question — why someone left —
+                                  and only of the ones who did. Selecting a reason is
+                                  what "show me failures" means. */}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Exit reason</DropdownMenuLabel>
+                  {EXIT_REASONS.map((reason) => (
+                    <DropdownMenuItem
+                      key={reason.id}
+                      onSelect={() => setExitFilter(exitFilter === reason.id ? null : reason.id)}
+                    >
+                      {reason.label}
+                      <LucideIcon.Check
+                        className={cn(
+                          'ms-auto text-primary',
+                          exitFilter === reason.id ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </Inline>
+          </>,
+          stripSlot,
+        )}
 
       {/* An applied filter gets its own row beneath the controls, the way the
                 members page does it — so what's narrowing the list is always visible

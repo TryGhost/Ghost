@@ -66,21 +66,30 @@ export const NodeCard: React.FC<{
   style?: React.CSSProperties;
   children: React.ReactNode;
 }> = ({ border = 'default', muted = false, className, style, children }) => (
-  // group/node so controls that only earn their place on hover — the subject's
-  // pencil, the performance chevron — can key off the whole card rather than the
-  // element they sit next to.
-  <div
-    className={cn(
-      'group/node transition-colors',
-      NODE_CARD_SHELL,
-      NODE_BORDER[border],
-      muted && 'opacity-60',
-      className,
-    )}
-    style={style}
-  >
+  // The handles sit on a plain outer box, and the card — with any entrance
+  // animation passed in className — is inside it. React Flow reads a handle's
+  // position off the screen, so a handle inside an animating card is measured
+  // wherever the animation has it at that moment: mid-rise, 8px low, which drew
+  // every connector (and the + on it) 8px low until something re-measured and
+  // they jumped into place. Outside the animation, the handles are measured
+  // where the card will end up.
+  <div>
     <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
-    {children}
+    {/* group/node so controls that only earn their place on hover — the subject's
+        pencil, the performance chevron — can key off the whole card rather than
+        the element they sit next to. */}
+    <div
+      className={cn(
+        'group/node transition-colors',
+        NODE_CARD_SHELL,
+        NODE_BORDER[border],
+        muted && 'opacity-60',
+        className,
+      )}
+      style={style}
+    >
+      {children}
+    </div>
     <Handle position={Position.Bottom} style={HIDDEN_HANDLE_STYLE} type="source" />
   </div>
 );

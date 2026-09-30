@@ -153,28 +153,31 @@ const RunStepNode: React.FC<NodeProps> = ({ data }) => {
   );
   const enter = entrance(d);
   return (
-    <div key={enter.key} className={cn(COLUMN_WRAPPER, enter.className)} style={enter.style}>
+    <div key={enter.key} className={COLUMN_WRAPPER}>
+      {/* Handles outside the animated box — see the edit canvas's MorphNode. */}
       <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
-      <div
-        className={cn(
-          // The flow's end hugs its content, as it does on the edit canvas.
-          d.kind !== 'terminal' && NODE_CARD_WIDTH,
-          'flex rounded-xl border border-border-default bg-surface-elevated transition-opacity',
-          isEmail ? 'flex-col overflow-hidden' : 'items-center gap-3 px-6 py-5',
-          isUnreached(d) && 'opacity-35',
-        )}
-      >
-        {isEmail ? (
-          <>
-            <span className="flex items-center gap-3 border-b border-border-default px-6 py-5">
-              {face}
-            </span>
-            <EmailThumbnail d={{ emailHasContent: d.emailHasContent }} />
-          </>
-        ) : (
-          face
-        )}
-        {d.focused && d.state && <span className="sr-only">{STATE_A11Y[d.state]}</span>}
+      <div className={enter.className} style={enter.style}>
+        <div
+          className={cn(
+            // The flow's end hugs its content, as it does on the edit canvas.
+            d.kind !== 'terminal' && NODE_CARD_WIDTH,
+            'flex rounded-xl border border-border-default bg-surface-elevated transition-opacity',
+            isEmail ? 'flex-col overflow-hidden' : 'items-center gap-3 px-6 py-5',
+            isUnreached(d) && 'opacity-35',
+          )}
+        >
+          {isEmail ? (
+            <>
+              <span className="flex items-center gap-3 border-b border-border-default px-6 py-5">
+                {face}
+              </span>
+              <EmailThumbnail d={{ emailHasContent: d.emailHasContent }} />
+            </>
+          ) : (
+            face
+          )}
+          {d.focused && d.state && <span className="sr-only">{STATE_A11Y[d.state]}</span>}
+        </div>
       </div>
       <Handle position={Position.Bottom} style={HIDDEN_HANDLE_STYLE} type="source" />
     </div>
@@ -200,27 +203,25 @@ const RunEventNode: React.FC<NodeProps> = ({ data }) => {
   const failed = d.variant === 'failed';
   const enter = entrance(d);
   return (
-    <div
-      key={enter.key}
-      className={cn(COLUMN_WRAPPER, 'pointer-events-none', enter.className)}
-      style={enter.style}
-    >
+    <div key={enter.key} className={cn(COLUMN_WRAPPER, 'pointer-events-none')}>
       <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
-      {/* The nodes' own face — icon, title, and the timestamp as a muted line
+      <div className={enter.className} style={enter.style}>
+        {/* The nodes' own face — icon, title, and the timestamp as a muted line
           under it — so the pill says "when" the same way every step does. */}
-      <span
-        className={cn(
-          NODE_CARD_WIDTH,
-          'flex items-center gap-3 rounded-full border border-border-default bg-surface-elevated px-6 py-5',
-        )}
-      >
-        <StepNodeFace
-          icon={failed ? FailedIcon : ExitedIcon}
-          subtitle={d.at ?? undefined}
-          title={d.title}
-          warning={false}
-        />
-      </span>
+        <span
+          className={cn(
+            NODE_CARD_WIDTH,
+            'flex items-center gap-3 rounded-full border border-border-default bg-surface-elevated px-6 py-5',
+          )}
+        >
+          <StepNodeFace
+            icon={failed ? FailedIcon : ExitedIcon}
+            subtitle={d.at ?? undefined}
+            title={d.title}
+            warning={false}
+          />
+        </span>
+      </div>
       <Handle position={Position.Bottom} style={HIDDEN_HANDLE_STYLE} type="source" />
     </div>
   );

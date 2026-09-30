@@ -22,11 +22,9 @@ import type { ProtoAutomation } from '@/automations/proto/shared/store';
 import {
   canPublishAutomation,
   duplicateAutomation,
-  isNameTaken,
   setAutomationArchived,
   setAutomationStatus,
   suggestCopyName,
-  updateAutomationDetails,
   useProtoAutomations,
   useStripeConnected,
 } from '@/automations/proto/shared/store';
@@ -36,7 +34,6 @@ import {
   TurnOnAutomationDialog,
 } from '@/automations/proto/shared/lifecycle-dialogs';
 import { NEW_AUTOMATION_ID } from './creation-variant';
-import { DetailsDialog } from './details-dialog';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 
 // PHASE 2 — the automations list, with CRUD.
@@ -77,9 +74,6 @@ const AutomationsList: React.FC = () => {
   // The row waiting on the archive confirm. Held here rather than per row, so the list
   // has one dialog instead of one behind every menu.
   const [pendingArchive, setPendingArchive] = useState<ProtoAutomation | null>(null);
-  // The row being renamed, and the name and description offered for it.
-  const [pendingRename, setPendingRename] = useState<ProtoAutomation | null>(null);
-  const [renameDraft, setRenameDraft] = useState({ name: '', description: '' });
   // The rows waiting on a lifecycle confirm — same one-dialog-per-list shape as
   // pendingArchive. Two states rather than one with a direction in it, because
   // each opens a different dialog.
@@ -120,39 +114,6 @@ const AutomationsList: React.FC = () => {
     // name this names. A "View" action was offering a trip to something already on
     // screen.
     toast.success(`“${name}” created`);
-  };
-
-  // "Edit details", not "Rename". Rename is the sharper word, and it was wrong: the
-  // dialog behind it edits the description as well, so the label promised less than it
-  // delivered and anyone looking for the description had no reason to open it.
-  //
-  // The description belongs in there because it's the line under the name in this very
-  // table — the two are what you're organising by, and splitting them across two
-  // actions would mean opening one dialog to fix a row and another to finish the job.
-  const openRename = (entry: ProtoAutomation) => {
-    setRenameDraft({ name: entry.automation.name, description: entry.description });
-    setPendingRename(entry);
-  };
-
-  // A typed name another automation carries. Same rule as the detail screen's
-  // popover (isNameTaken: trimmed, case-insensitive, archived included), shown
-  // under the field and holding Save — this dialog HAS a commit button, so the
-  // refusal lives on it rather than in a write-through guard.
-  const renameNameError =
-    pendingRename &&
-    renameDraft.name.trim() &&
-    isNameTaken(renameDraft.name, pendingRename.automation.id)
-      ? 'An automation with this name already exists.'
-      : undefined;
-
-  const confirmRename = () => {
-    const name = renameDraft.name.trim();
-    if (!pendingRename || !name || renameNameError) {
-      return;
-    }
-    updateAutomationDetails(pendingRename.automation.id, name, renameDraft.description.trim());
-    setPendingRename(null);
-    toast.success('Automation updated');
   };
 
   // No confirm. Archiving takes nothing away — the automation, its history and its
@@ -325,27 +286,12 @@ const AutomationsList: React.FC = () => {
                 publishBlocked={(entry) => !canPublishAutomation(entry, stripeConnected)}
                 onArchive={handleArchive}
                 onDuplicate={handleDuplicate}
-                onRename={openRename}
                 onToggleStatus={handleToggleStatus}
               />
             )}
           </ListPage.Body>
         </ListPage>
       </Container>
-
-      {/* The same dialog the detail screen's Edit details opens, so naming an
-                automation is one act asked one way wherever you do it. */}
-      <DetailsDialog
-        blurb="Only you and your team can see this — members never do."
-        confirmLabel="Save"
-        heading="Automation details"
-        nameError={renameNameError}
-        open={Boolean(pendingRename)}
-        values={renameDraft}
-        onChange={setRenameDraft}
-        onConfirm={confirmRename}
-        onOpenChange={() => setPendingRename(null)}
-      />
 
       {/* The delete confirm that used to live here went with the action — see
                 setAutomationArchived in shared/store for why the write is still around. */}

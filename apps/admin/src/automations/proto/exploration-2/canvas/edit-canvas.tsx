@@ -1328,177 +1328,185 @@ const MorphNode: React.FC<{ d: StepNodeData }> = ({ d }) => {
   );
 
   return (
-    <div
-      key={d.enterKey}
-      className={cn(
-        COLUMN_WRAPPER,
-        d.enterDelay !== undefined ? ENTER_CLASS : d.isNew && NEW_STEP_CLASS,
-      )}
-      style={d.enterDelay === undefined ? undefined : { animationDelay: `${d.enterDelay}ms` }}
-    >
+    <div key={d.enterKey} className={COLUMN_WRAPPER}>
+      {/* Handles outside the animated box: React Flow reads a handle's position
+          off the screen, so one inside an entrance would be measured mid-rise and
+          the connectors drawn 8px low until something re-measured. */}
       <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
-      <Popover
-        modal={false}
-        open={active}
-        onOpenChange={(next) => (next ? requestOpen() : requestClose())}
+      <div
+        className={cn(d.enterDelay !== undefined ? ENTER_CLASS : d.isNew && NEW_STEP_CLASS)}
+        style={d.enterDelay === undefined ? undefined : { animationDelay: `${d.enterDelay}ms` }}
       >
-        {isEmail ? (
-          // A div acting as the button rather than a <button>: the email's
-          // preview carries an "Edit email" button of its own, and a button
-          // can't hold another. So it's an anchor with the button's behaviour
-          // — focusable, Enter / Space — and opens the panel itself.
-          <PopoverAnchor asChild>
-            <div
-              ref={setTrigger}
-              aria-expanded={active}
-              aria-haspopup="dialog"
-              className={nodeClassName}
-              role="button"
-              style={frozenStyle}
-              tabIndex={0}
-              onClick={requestOpen}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  requestOpen();
-                }
-              }}
-            >
-              <EmailNodeFace d={d} />
-            </div>
-          </PopoverAnchor>
-        ) : (
-          <PopoverTrigger asChild>
-            <button ref={setTrigger} className={nodeClassName} style={frozenStyle} type="button">
-              <StepNodeFace icon={icon} title={title} warning={Boolean(d.warning)} />
-            </button>
-          </PopoverTrigger>
-        )}
-        <PopoverContent
-          ref={outerRef}
-          align="center"
-          avoidCollisions={false}
-          className={cn(MORPH_CONTENT_RESET, 'flex items-center justify-center')}
-          side="bottom"
-          // Grows from the node's centre, so it stays centred between the nodes
-          // above and below. The content box is held at the panel's full height
-          // with the panel centred inside it, and pulled up so the box's middle
-          // sits on the node's middle — the panel then only has to change size.
-          // Open, held to the height it opened at (anchorHeight), so a change
-          // in the form's height moves the bottom edge only.
-          sideOffset={
-            -(from.height + (phase === 'open' ? (anchorHeight ?? outerHeight) : outerHeight)) / 2
-          }
-          style={{ width: MORPH_WIDTH, height: phase === 'open' ? undefined : outerHeight }}
-          updatePositionStrategy="always"
-          // Radix restores focus to the trigger on close, which would land on an
-          // invisible button mid-shrink; focus on open waits for the grow.
-          onCloseAutoFocus={(event) => event.preventDefault()}
-          // The email editor opens from inside this panel, as a modal over
-          // everything — and to Radix, focus moving into it and presses on it
-          // are both "outside" this popover. The panel stays: closing the
-          // editor should land you back where you were, not on a shrunk node.
-          onInteractOutside={(event) => {
-            if (d.emailDialogOpen) {
-              event.preventDefault();
-            }
-          }}
-          onOpenAutoFocus={(event) => event.preventDefault()}
+        <Popover
+          modal={false}
+          open={active}
+          onOpenChange={(next) => (next ? requestOpen() : requestClose())}
         >
-          <div
-            ref={panelRef}
-            className={cn(
-              'overflow-hidden rounded-xl border bg-surface-elevated',
-              d.warning ? 'border-state-warning' : 'border-border-default',
-              phase === 'closing' ? MORPH_CLOSE_CLASS : MORPH_OPEN_CLASS,
-              expanded ? '-translate-y-0.5 shadow-lg' : 'shadow-sm',
-            )}
-            style={panelStyle}
+          {isEmail ? (
+            // A div acting as the button rather than a <button>: the email's
+            // preview carries an "Edit email" button of its own, and a button
+            // can't hold another. So it's an anchor with the button's behaviour
+            // — focusable, Enter / Space — and opens the panel itself.
+            <PopoverAnchor asChild>
+              <div
+                ref={setTrigger}
+                aria-expanded={active}
+                aria-haspopup="dialog"
+                className={nodeClassName}
+                role="button"
+                style={frozenStyle}
+                tabIndex={0}
+                onClick={requestOpen}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    requestOpen();
+                  }
+                }}
+              >
+                <EmailNodeFace d={d} />
+              </div>
+            </PopoverAnchor>
+          ) : (
+            <PopoverTrigger asChild>
+              <button ref={setTrigger} className={nodeClassName} style={frozenStyle} type="button">
+                <StepNodeFace icon={icon} title={title} warning={Boolean(d.warning)} />
+              </button>
+            </PopoverTrigger>
+          )}
+          <PopoverContent
+            ref={outerRef}
+            align="center"
+            avoidCollisions={false}
+            className={cn(MORPH_CONTENT_RESET, 'flex items-center justify-center')}
+            side="bottom"
+            // Grows from the node's centre, so it stays centred between the nodes
+            // above and below. The content box is held at the panel's full height
+            // with the panel centred inside it, and pulled up so the box's middle
+            // sits on the node's middle — the panel then only has to change size.
+            // Open, held to the height it opened at (anchorHeight), so a change
+            // in the form's height moves the bottom edge only.
+            sideOffset={
+              -(from.height + (phase === 'open' ? (anchorHeight ?? outerHeight) : outerHeight)) / 2
+            }
+            style={{ width: MORPH_WIDTH, height: phase === 'open' ? undefined : outerHeight }}
+            updatePositionStrategy="always"
+            // Radix restores focus to the trigger on close, which would land on an
+            // invisible button mid-shrink; focus on open waits for the grow.
+            onCloseAutoFocus={(event) => event.preventDefault()}
+            // The email editor opens from inside this panel, as a modal over
+            // everything — and to Radix, focus moving into it and presses on it
+            // are both "outside" this popover. The panel stays: closing the
+            // editor should land you back where you were, not on a shrunk node.
+            onInteractOutside={(event) => {
+              if (d.emailDialogOpen) {
+                event.preventDefault();
+              }
+            }}
+            onOpenAutoFocus={(event) => event.preventDefault()}
           >
-            {/* Laid out at the full width from the first frame; the panel clips
+            <div
+              ref={panelRef}
+              className={cn(
+                'overflow-hidden rounded-xl border bg-surface-elevated',
+                d.warning ? 'border-state-warning' : 'border-border-default',
+                phase === 'closing' ? MORPH_CLOSE_CLASS : MORPH_OPEN_CLASS,
+                expanded ? '-translate-y-0.5 shadow-lg' : 'shadow-sm',
+              )}
+              style={panelStyle}
+            >
+              {/* Laid out at the full width from the first frame; the panel clips
                 it. The header's padding is the node's, measured from the panel's
                 left edge — so as that edge moves out, the row goes with it. */}
-            <div
-              ref={(el) => {
-                contentRef.current = el;
-                setContentEl(el);
-              }}
-              style={{ width: MORPH_WIDTH }}
-            >
-              {isEmail ? (
-                <>
-                  <EmailNodeFace actions={headerActions} d={d} headerOnly matchNode />
-                  {/* Opens from nothing as the panel grows, so the preview
+              <div
+                ref={(el) => {
+                  contentRef.current = el;
+                  setContentEl(el);
+                }}
+                style={{ width: MORPH_WIDTH }}
+              >
+                {isEmail ? (
+                  <>
+                    <EmailNodeFace actions={headerActions} d={d} headerOnly matchNode />
+                    {/* Opens from nothing as the panel grows, so the preview
                       slides down to make room rather than starting lower
                       than the node's. grid-rows 0fr → 1fr is the transition
                       that can animate to an auto height. */}
-                  <div
-                    className={cn(
-                      'grid',
-                      `transition-[grid-template-rows] ${thumbnailTransition(phase === 'closing')}`,
-                      expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
-                    )}
-                  >
-                    <div className="overflow-hidden">
-                      <div
-                        ref={subjectRowRef}
-                        className={cn(
-                          'px-6 pb-4',
-                          expanded ? `opacity-100 ${MORPH_FADE_IN}` : `opacity-0 ${MORPH_FADE_OUT}`,
-                        )}
-                      >
-                        <EmailSubjectField d={d} />
+                    <div
+                      className={cn(
+                        'grid',
+                        `transition-[grid-template-rows] ${thumbnailTransition(phase === 'closing')}`,
+                        expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+                      )}
+                    >
+                      <div className="overflow-hidden">
+                        <div
+                          ref={subjectRowRef}
+                          className={cn(
+                            'px-6 pb-4',
+                            expanded
+                              ? `opacity-100 ${MORPH_FADE_IN}`
+                              : `opacity-0 ${MORPH_FADE_OUT}`,
+                          )}
+                        >
+                          <EmailSubjectField d={d} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <EmailThumbnail closing={phase === 'closing'} d={d} expanded={expanded} inset />
-                </>
-              ) : (
-                <div className="flex items-center gap-3 px-6 py-5">
-                  <StepNodeFace icon={icon} title={title} warning={Boolean(d.warning)} matchNode />
-                  {headerActions}
-                </div>
-              )}
-              <div
-                className={cn(
-                  'px-6 pb-6',
-                  isEmail && 'pt-4',
-                  expanded ? `opacity-100 ${MORPH_FADE_IN}` : `opacity-0 ${MORPH_FADE_OUT}`,
-                )}
-              >
-                {d.warning && <p className="mb-3 text-md">{d.warning.message}</p>}
-                {isTrigger ? (
-                  !d.onTriggerConfigChange ? (
-                    <p className="text-control text-muted-foreground">
-                      {triggerSummary(triggerConfig)}
-                    </p>
-                  ) : triggerHasField(triggerConfig) ? (
-                    <TriggerFieldsForm
-                      config={triggerConfig}
-                      savedTierIds={d.savedTierIds}
-                      // No exit sentence on the card: exit conditions live in the
-                      // Settings tab in this lane, so stating them here as well
-                      // would be the same fact in two places.
-                      showExits={false}
-                      onChange={d.onTriggerConfigChange}
-                    />
-                  ) : (
-                    <p className="text-control text-muted-foreground">
-                      {triggerExplanation(triggerConfig)}
-                    </p>
-                  )
-                ) : isEmail ? (
-                  d.stats && <EmailStatsFooter divider={false} stats={d.stats} />
-                ) : d.kind === 'update_member' && d.updateMember && d.onUpdateMemberChange ? (
-                  <UpdateMemberFields data={d.updateMember} onChange={d.onUpdateMemberChange} />
+                    <EmailThumbnail closing={phase === 'closing'} d={d} expanded={expanded} inset />
+                  </>
                 ) : (
-                  <WaitFields waitHours={d.waitHours ?? 24} onWaitChange={d.onWaitChange} />
+                  <div className="flex items-center gap-3 px-6 py-5">
+                    <StepNodeFace
+                      icon={icon}
+                      title={title}
+                      warning={Boolean(d.warning)}
+                      matchNode
+                    />
+                    {headerActions}
+                  </div>
                 )}
+                <div
+                  className={cn(
+                    'px-6 pb-6',
+                    isEmail && 'pt-4',
+                    expanded ? `opacity-100 ${MORPH_FADE_IN}` : `opacity-0 ${MORPH_FADE_OUT}`,
+                  )}
+                >
+                  {d.warning && <p className="mb-3 text-md">{d.warning.message}</p>}
+                  {isTrigger ? (
+                    !d.onTriggerConfigChange ? (
+                      <p className="text-control text-muted-foreground">
+                        {triggerSummary(triggerConfig)}
+                      </p>
+                    ) : triggerHasField(triggerConfig) ? (
+                      <TriggerFieldsForm
+                        config={triggerConfig}
+                        savedTierIds={d.savedTierIds}
+                        // No exit sentence on the card: exit conditions live in the
+                        // Settings tab in this lane, so stating them here as well
+                        // would be the same fact in two places.
+                        showExits={false}
+                        onChange={d.onTriggerConfigChange}
+                      />
+                    ) : (
+                      <p className="text-control text-muted-foreground">
+                        {triggerExplanation(triggerConfig)}
+                      </p>
+                    )
+                  ) : isEmail ? (
+                    d.stats && <EmailStatsFooter divider={false} stats={d.stats} />
+                  ) : d.kind === 'update_member' && d.updateMember && d.onUpdateMemberChange ? (
+                    <UpdateMemberFields data={d.updateMember} onChange={d.onUpdateMemberChange} />
+                  ) : (
+                    <WaitFields waitHours={d.waitHours ?? 24} onWaitChange={d.onWaitChange} />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+          </PopoverContent>
+        </Popover>
+      </div>
       <Handle position={Position.Bottom} style={HIDDEN_HANDLE_STYLE} type="source" />
     </div>
   );
@@ -1568,27 +1576,28 @@ const ExitNode: React.FC<NodeProps> = ({ data }) => {
     return () => cancelAnimationFrame(frame);
   }, [shown]);
   return (
-    <div
-      key={enterKey}
-      className={cn(
-        COLUMN_WRAPPER,
-        enterDelay !== undefined && ENTER_CLASS,
-        intro && INTRO_EXIT_CLASS,
-        intro && !shown && 'translate-y-2 opacity-0',
-      )}
-      style={enterDelay === undefined ? undefined : { animationDelay: `${enterDelay}ms` }}
-    >
+    <div key={enterKey} className={COLUMN_WRAPPER}>
+      {/* Outside the animated box — see MorphNode. */}
       <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
       <div
-        // Hugs its content rather than taking the step width: it's where the
-        // flow ends, not a step in it, so it reads as a marker. Centred by the
-        // column wrapper, so the connector still lands on its middle.
         className={cn(
-          'flex items-center gap-3 rounded-xl border border-border-default bg-surface-elevated px-6 py-5 text-muted-foreground shadow-sm',
+          enterDelay !== undefined && ENTER_CLASS,
+          intro && INTRO_EXIT_CLASS,
+          intro && !shown && 'translate-y-2 opacity-0',
         )}
+        style={enterDelay === undefined ? undefined : { animationDelay: `${enterDelay}ms` }}
       >
-        <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={2} />
-        <span className="text-base font-medium">Exit automation</span>
+        <div
+          // Hugs its content rather than taking the step width: it's where the
+          // flow ends, not a step in it, so it reads as a marker. Centred by the
+          // column wrapper, so the connector still lands on its middle.
+          className={cn(
+            'flex items-center gap-3 rounded-xl border border-border-default bg-surface-elevated px-6 py-5 text-muted-foreground shadow-sm',
+          )}
+        >
+          <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={2} />
+          <span className="text-base font-medium">Exit automation</span>
+        </div>
       </div>
     </div>
   );

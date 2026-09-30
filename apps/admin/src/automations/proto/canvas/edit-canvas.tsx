@@ -107,6 +107,7 @@ import {
 } from '@/automations/proto/shared/update-member';
 import { UpdateMemberFields } from './update-member-fields';
 import { EmailAnalyticsSheet, type SheetEmail } from './email-analytics-sheet';
+import { EmailAnalyticsModal } from './email-analytics-modal';
 import { EmailStatsFooter } from './email-analytics';
 import { NODE_BODY_PADDING, NODE_CARD_FRAME, NodeCard, NodeHeader } from './flow-node-shell';
 import { EmailPreview } from './email-preview';
@@ -296,6 +297,9 @@ type StepNodeData = {
   // second lane needed a different list for a reason that had nothing to do
   // with how the names read.
   simpleTriggerNames?: boolean;
+  // The exit sentence is stated somewhere other than the trigger card (the
+  // screen's Settings), so the card leaves it out — see exitsOnTriggerCard.
+  exitsElsewhere?: boolean;
   // Nothing chosen to start this automation yet. Its own flag rather than an
   // absent triggerConfig, because the read canvas also passes no config and means
   // something entirely different by it — "don't offer to edit this", not "this
@@ -774,7 +778,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                       // the general-model lanes, where exits are part of what's being
                       // explored. Phase 1 shows what ships, and production has no
                       // exit configuration to speak of.
-                      showExits={!d.simpleTriggerNames}
+                      showExits={!d.simpleTriggerNames && !d.exitsElsewhere}
                       onChange={d.onTriggerConfigChange}
                     />
                   ) : (
@@ -925,32 +929,37 @@ const ExitNode: React.FC<NodeProps> = ({ data }) => {
     // The read canvas keeps a full-width card here — see flow-canvas. With a member in
     // focus that node reports their outcome and takes a run border and chip like every
     // other card, so it has to be able to look like one.
-    <div
-      className={cn(
-        'flex w-[400px] justify-center',
-        enterDelay !== undefined && ENTER_CLASS,
-        intro && INTRO_EXIT_CLASS,
-        intro && !shown && 'translate-y-2 opacity-0',
-      )}
-      style={enterDelay === undefined ? undefined : { animationDelay: `${enterDelay}ms` }}
-    >
+    //
+    // The handle sits outside the animated box — see NodeCard for why a handle
+    // inside an entrance animation is measured in the wrong place.
+    <div className="w-[400px]">
       <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
       <div
         className={cn(
-          NODE_CARD_FRAME,
-          'border-border-default',
-          // p-4 (16px), against the cards' own p-6. Their padding is sized to hold a
-          // 36px icon chip and a stack of fields; around one line of text that made a
-          // box mostly full of air, reading as a card waiting for content rather than
-          // one that has all it needs. 16 keeps the family resemblance while letting
-          // the height say what the width already does — 12 took it far enough from
-          // the others to read as a different kind of thing.
-          'inline-flex items-center gap-3 p-4',
-          'text-muted-foreground',
+          'flex w-[400px] justify-center',
+          enterDelay !== undefined && ENTER_CLASS,
+          intro && INTRO_EXIT_CLASS,
+          intro && !shown && 'translate-y-2 opacity-0',
         )}
+        style={enterDelay === undefined ? undefined : { animationDelay: `${enterDelay}ms` }}
       >
-        <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={2} />
-        <span className="text-md font-medium">Exit automation</span>
+        <div
+          className={cn(
+            NODE_CARD_FRAME,
+            'border-border-default',
+            // p-4 (16px), against the cards' own p-6. Their padding is sized to hold a
+            // 36px icon chip and a stack of fields; around one line of text that made a
+            // box mostly full of air, reading as a card waiting for content rather than
+            // one that has all it needs. 16 keeps the family resemblance while letting
+            // the height say what the width already does — 12 took it far enough from
+            // the others to read as a different kind of thing.
+            'inline-flex items-center gap-3 p-4',
+            'text-muted-foreground',
+          )}
+        >
+          <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={2} />
+          <span className="text-md font-medium">Exit automation</span>
+        </div>
       </div>
     </div>
   );
@@ -1117,6 +1126,14 @@ interface EditCanvasProps {
   // continue. Running, the flow is something being watched rather than built,
   // so the inserts fall back to hover the way the shipping canvas does.
   alwaysShowInserts?: boolean;
+  // Where an email's report opens: the sheet over the canvas's right edge
+  // (every lane's default), or a centred modal. Phase 2 takes the modal — its
+  // side panel owns the right edge now. See email-analytics-modal.
+  analyticsSurface?: 'sheet' | 'modal';
+  // Whether the trigger card states the exit sentence under its fields ("Members
+  // exit early if they…"). On by default; phase 2 turns it off because the
+  // sentence moved to its Settings tab, under Exit conditions.
+  exitsOnTriggerCard?: boolean;
   // The create-button variant's pre-create state (see CREATION_SLOT): the
   // empty trigger card's options become SELECTIONS with a Create button
   // beneath, and pressing it hands the chosen config up instead of applying
@@ -1140,6 +1157,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   simpleTriggerNames = false,
   revealWarningsSignal,
   alwaysShowInserts = false,
+  analyticsSurface = 'sheet',
+  exitsOnTriggerCard = true,
   onCreateAutomation,
   hideControls = false,
 }) => {
@@ -1481,6 +1500,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         triggerLocked,
         triggerOptions: laneOptions,
         simpleTriggerNames,
+        exitsElsewhere: !exitsOnTriggerCard,
         triggerUnset: showOptions,
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),
@@ -1676,6 +1696,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     fieldRevealSignal,
     savedTierIds,
     onCreateAutomation,
+    exitsOnTriggerCard,
   ]);
 
   // Follow whichever card was asked for, once the column has settled around it.
@@ -1766,7 +1787,11 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         </ReactFlow>
       </div>
 
-      <EmailAnalyticsSheet email={sheetEmail} onClose={() => setAnalyticsActionId(null)} />
+      {analyticsSurface === 'modal' ? (
+        <EmailAnalyticsModal email={sheetEmail} onClose={() => setAnalyticsActionId(null)} />
+      ) : (
+        <EmailAnalyticsSheet email={sheetEmail} onClose={() => setAnalyticsActionId(null)} />
+      )}
 
       {/* Picking a different trigger from the node's ⋯ resets the settings and exits
                 underneath it, which is worth saying out loud before it happens. */}

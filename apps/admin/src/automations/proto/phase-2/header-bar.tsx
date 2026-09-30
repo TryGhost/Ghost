@@ -3,6 +3,7 @@ import { Button } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { StatusBadge } from '@/automations/proto/shared/status-badge';
+import { PROTO_EASE } from '@/automations/proto/shared/motion';
 
 // PHASE 2 — the screen's header, docked: its own elevated surface with a rule under
 // it. Two zones on one row: navigation and identity at the left — back arrow and
@@ -39,22 +40,20 @@ import { StatusBadge } from '@/automations/proto/shared/status-badge';
 // first. If it comes up a third time, this is the objection to answer.
 interface HeaderBarProps {
   title: string;
-  // Rendered as a badge at the head of the right-side group — the readout
-  // standing at the shoulder of the controls that change it. Phase 1 keeps it
-  // on the left beside the title; over here it reads as the subject of the
-  // buttons rather than part of the name, and the left side stays exactly the
-  // title and the way back.
+  // Rendered as a badge beside the title, as in phase 1. It spent a while at
+  // the head of the right-side group, reading as the subject of the buttons;
+  // it came back when the panel toggle joined that group.
   status: 'active' | 'inactive';
   onBack: () => void;
   // The screen's chrome actions, passed as a node rather than rebuilt here so
   // both header variants raise identical controls — a header style shouldn't
   // change what the screen lets you do.
   actions: React.ReactNode;
-  // Toggles the settings sheet. The gear carries data-settings-toggle so the
-  // sheet's outside-press dismissal leaves its presses alone (the gear manages
-  // the sheet itself — see settings-sheet). Absent, no gear renders — the
-  // other lanes' headers have nothing to open.
-  onToggleSettings?: () => void;
+  // Whether the side panel is open. The panel's toggle isn't in this header —
+  // it's pinned to the screen's top-right corner (see the detail screen) — but
+  // while the panel is closed it sits over this header's right end, so the
+  // header reserves its footprint then, and gives it up as the panel opens.
+  paneOpen: boolean;
   /**
    * A transient message about the automation as a whole. Currently unused: the
    * Stripe warning that lived here moved onto the trigger card (see triggerWarning
@@ -77,7 +76,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   status,
   onBack,
   actions,
-  onToggleSettings,
+  paneOpen,
   notice,
 }) => (
   // A column, not a row: the bar is one 64px row wide enough for the notice to
@@ -133,35 +132,36 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 text-md it was a step BELOW the pane heading beneath it, which inverted
                 the hierarchy — the region label outranking the thing it reports on.
 
-                Plain text again — the editing affordance is the gear beside it,
+                Plain text — renaming lives in the side panel's Settings tab,
                 not the title. The title-as-button era (hover pencil, dialog, then
                 a popover hung from it) is in this file's history; it ended when
                 the head of UX asked for a real settings area and the hidden
                 affordance was the standing complaint. */}
         <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
-        {onToggleSettings && (
-          // Persistent and muted: findable without hovering (the pencil's
-          // failure), quiet enough not to compete with the name it follows.
-          // data-settings-toggle — see the prop note.
-          <Button
-            aria-label="Automation settings"
-            className="text-muted-foreground"
-            size="icon"
-            type="button"
-            variant="ghost"
-            data-settings-toggle
-            onClick={onToggleSettings}
-          >
-            <LucideIcon.Settings strokeWidth={2} />
-          </Button>
-        )}
+        {/* The status beside the name it describes. It sat at the head of the
+            actions for a while — state, then what to do about it — but with the
+            panel toggle joining that group the right side grew busy, and a
+            status reads as part of the automation's identity. shrink-0 so a long
+            name truncates before the badge does. */}
+        <span className="flex shrink-0">
+          <StatusBadge status={status} />
+        </span>
       </Inline>
 
       <Inline align="center" className="shrink-0" gap="sm">
-        {/* The badge leads the group: state first, then what you can do about
-                    it. See the status prop for why it lives on this side. */}
-        <StatusBadge status={status} />
         {actions}
+        {/* The pinned toggle's footprint: its 32px plus the row's 8px gap
+            (the gap this Inline already adds, so w-8). Open, the toggle
+            is over the panel instead, so this closes to nothing — on the
+            panel's own width curve, so the actions glide rather than jumping
+            40px when the press lands. */}
+        <span
+          className={cn(
+            `shrink-0 transition-[width,margin] duration-420 ${PROTO_EASE} motion-reduce:transition-none`,
+            paneOpen ? '-ml-2 w-0' : 'w-8',
+          )}
+          aria-hidden
+        />
       </Inline>
     </div>
 
