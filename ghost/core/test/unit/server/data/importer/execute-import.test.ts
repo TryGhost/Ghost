@@ -5,7 +5,9 @@ import path from 'node:path';
 import sinon from 'sinon';
 import { afterEach, describe, it } from 'vitest';
 
-const createImportManager = require('../../../../../core/server/data/importer/create-import-manager');
+const {
+  createImportManager,
+} = require('../../../../../core/server/data/importer/create-import-manager');
 
 function subject(env = 'production') {
   const deps = {
@@ -84,7 +86,7 @@ describe('Site import execution', function () {
           duration_ms: sinon.match.number,
         },
       }),
-      'Site content import completed',
+      sinon.match(/^\[Background Job\] site-content-import completed in \d+ms$/),
     );
     sinon.assert.calledWith(
       deps.mailer.send,

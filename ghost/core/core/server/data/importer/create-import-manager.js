@@ -30,4 +30,4 @@ function createImportManager(overrides = {}) {
   });
 }
 
-module.exports = createImportManager;
+module.exports = { createImportManager };

@@ -3,7 +3,8 @@ const testUtils = require('../../utils');
 const { exportedBodyV1 } = require('../../utils/fixtures/export/body-generator');
 
 const models = require('../../../core/server/models');
-const importer = require('../../../core/server/data/importer/create-import-manager')();
+const { createImportManager } = require('../../../core/server/data/importer/create-import-manager');
+const importer = createImportManager();
 const dataImporter = importer.importers.find((instance) => {
   return instance.type === 'data';
 });

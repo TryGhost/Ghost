@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
-const importer = require('../../../core/server/data/importer/create-import-manager')();
+const { createImportManager } = require('../../../core/server/data/importer/create-import-manager');
+const importer = createImportManager();
 const models = require('../../../core/server/models');
 const testUtils = require('../../utils');
 const { exportedBodyV5 } = require('../../utils/fixtures/export/body-generator');

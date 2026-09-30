@@ -2,7 +2,10 @@ const assert = require('node:assert/strict');
 const fs = require('fs-extra');
 const path = require('path');
 const { globSync } = require('glob');
-const importManager = require('../../../../../core/server/data/importer/create-import-manager')();
+const {
+  createImportManager,
+} = require('../../../../../core/server/data/importer/create-import-manager');
+const importManager = createImportManager();
 
 describe('Import Manager', function () {
   describe('extractZip', function () {

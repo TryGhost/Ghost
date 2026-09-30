@@ -10,10 +10,13 @@ import { afterEach, beforeEach, describe, it } from 'vitest';
 import LocalStorageBase from '../../../../../core/server/adapters/storage/LocalStorageBase';
 
 const { ZipArchive } = require('archiver');
-const createImportManager = require('../../../../../core/server/data/importer/create-import-manager');
+const {
+  createImportManager,
+} = require('../../../../../core/server/data/importer/create-import-manager');
+const { extract: unzip } = require('@tryghost/zip');
 const {
   STANDALONE_UPLOAD_DIRECTORY,
-} = require('../../../../../core/server/data/importer/convert-file-to-zip');
+} = require('../../../../../core/server/data/importer/import-manager');
 const json = JSON.stringify({ meta: { version: '6.0.0' }, data: { posts: [] } });
 
 describe('Uploaded site imports', function () {
@@ -164,6 +167,32 @@ describe('Uploaded site imports', function () {
     sinon.assert.calledOnce(imported);
     sinon.assert.calledOnce(later.deps.mailer.send);
     sinon.assert.notCalled(read);
+    assert.deepEqual(await fs.readdir(storage.storagePath), []);
+  });
+
+  it('wraps a standalone upload in the marker directory, keeping its name and contents', async function () {
+    const { manager } = subject();
+    const name = 'draft-2014-12-19-title.md';
+    const source = { name, path: path.join(directory, name) };
+    await fs.writeFile(source.path, 'body');
+
+    const uploadKey = await manager.storeUpload(source);
+
+    const extracted = path.join(directory, 'extracted');
+    await unzip(path.join(storage.storagePath, uploadKey), extracted);
+    assert.deepEqual(await fs.readdir(extracted), [STANDALONE_UPLOAD_DIRECTORY]);
+    const wrapped = path.join(extracted, STANDALONE_UPLOAD_DIRECTORY, name);
+    assert.equal(await fs.readFile(wrapped, 'utf8'), 'body');
+  });
+
+  it('rejects a standalone upload it cannot read instead of storing the archive', async function () {
+    const { manager } = subject();
+
+    await assert.rejects(
+      manager.storeUpload({ name: 'missing.json', path: path.join(directory, 'missing.json') }),
+      /ENOENT/,
+    );
+
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
   });
 

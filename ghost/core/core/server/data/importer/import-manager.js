@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
+const { ZipArchive } = require('archiver');
 const path = require('path');
 const os = require('node:os');
 const { randomUUID } = require('node:crypto');
@@ -9,7 +10,6 @@ const debug = require('@tryghost/debug')('import-manager');
 const errors = require('@tryghost/errors');
 const ImportArchive = require('./import-archive').default;
 const ContentImportJob = require('./jobs/content-import-job').default;
-const { convertFileToZip, STANDALONE_UPLOAD_DIRECTORY } = require('./convert-file-to-zip');
 
 const { emailTemplate } = require('./email-template');
 
@@ -27,6 +27,34 @@ const defaults = {
   contentTypes: ['application/zip', 'application/x-zip-compressed'],
   directories: [],
 };
+
+// Uploads that are not archives are wrapped in a single entry archive, so every
+// stored upload is a ZIP. The wrapper uses this directory name so execution can
+// tell a wrapped upload from an ordinary uploaded archive.
+const STANDALONE_UPLOAD_DIRECTORY = 'ghost-standalone-upload';
+
+/**
+ * Stream a single uploaded file into a ZIP archive, preserving its file name
+ * @param {{name: string, path: string}} file
+ * @param {string} targetPath where to write the archive
+ * @returns {Promise<void>}
+ */
+async function convertFileToZip(file, targetPath) {
+  const archive = new ZipArchive();
+  const source = fs.createReadStream(file.path);
+  // archiver does not forward errors from appended source streams.
+  source.on('error', (error) => archive.destroy(error));
+  const written = pipeline(archive, fs.createWriteStream(targetPath));
+  archive.append(source, {
+    name: `${STANDALONE_UPLOAD_DIRECTORY}/${path.basename(file.name)}`,
+  });
+
+  try {
+    await Promise.all([archive.finalize(), written]);
+  } finally {
+    source.destroy();
+  }
+}
 
 class ImportManager {
   constructor({
@@ -561,15 +589,16 @@ class ImportManager {
             `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
           );
         } else {
+          const durationMs = Date.now() - startedAt;
           this.logging.info(
             {
               system: {
                 event: 'site_content_import.completed',
                 import_groups: Object.keys(result).length,
-                duration_ms: Date.now() - startedAt,
+                duration_ms: durationMs,
               },
             },
-            'Site content import completed',
+            `[Background Job] site-content-import completed in ${durationMs}ms`,
           );
         }
       }
@@ -720,3 +749,4 @@ class ImportManager {
  * @property {string} [cleanupDirectory]
  */
 module.exports = ImportManager;
+module.exports.STANDALONE_UPLOAD_DIRECTORY = STANDALONE_UPLOAD_DIRECTORY;

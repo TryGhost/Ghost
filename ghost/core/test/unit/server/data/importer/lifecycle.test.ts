@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
-const createImportManager = require('../../../../../core/server/data/importer/create-import-manager');
+const {
+  createImportManager,
+} = require('../../../../../core/server/data/importer/create-import-manager');
 const importerPath = require.resolve('../../../../../core/server/data/importer');
 
 describe('Site importer lifecycle', function () {

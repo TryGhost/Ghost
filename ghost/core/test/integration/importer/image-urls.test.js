@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
-const importer = require('../../../core/server/data/importer/create-import-manager')();
+const { createImportManager } = require('../../../core/server/data/importer/create-import-manager');
+const importer = createImportManager();
 const db = require('../../../core/server/data/db');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const testUtils = require('../../utils');

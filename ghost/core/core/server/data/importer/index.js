@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const createImportManager = require('./create-import-manager');
+const { createImportManager } = require('./create-import-manager');
 
 let instance;
 
