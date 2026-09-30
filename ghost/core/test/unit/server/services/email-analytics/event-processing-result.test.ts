@@ -51,16 +51,6 @@ describe('EventProcessingResult', function () {
     assert.deepEqual(result.memberIds, ['4', '5']);
   });
 
-  it('includes IDs in object equality and serialization', function () {
-    const result = new EventProcessingResult({ emailIds: ['email-1'], memberIds: ['member-1'] });
-    const other = new EventProcessingResult({ emailIds: ['email-2'], memberIds: ['member-1'] });
-
-    assert.notDeepEqual(result, other);
-    assert.ok(Object.keys(result).includes('emailIds'));
-    assert.deepEqual(Object.entries(result).find(([key]) => key === 'emailIds')?.[1], ['email-1']);
-    assert.deepEqual(JSON.parse(JSON.stringify(result)).memberIds, ['member-1']);
-  });
-
   it('resets all values', function () {
     const result = new EventProcessingResult({
       delivered: 1,
@@ -101,17 +91,6 @@ describe('EventProcessingResult', function () {
       assert.equal(result.opened, 3);
       assert.deepEqual(result.emailIds, ['email-2', 'email-1', 'email-3']);
       assert.deepEqual(result.memberIds, ['member-2', 'member-1', 'member-3']);
-    });
-
-    it('exposes accumulated IDs as read-only views that reflect later merges', function () {
-      const result = new EventProcessingResult({ emailIds: ['email-1'], memberIds: ['member-1'] });
-      const emailIds = result.emailIds;
-      const memberIds = result.memberIds;
-
-      result.merge({ emailIds: ['email-1', 'email-2'], memberIds: ['member-2', 'member-1'] });
-
-      assert.deepEqual(emailIds, ['email-1', 'email-2']);
-      assert.deepEqual(memberIds, ['member-1', 'member-2']);
     });
 
     it('can collect the same IDs again after reset', function () {

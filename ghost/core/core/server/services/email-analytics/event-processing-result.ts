@@ -20,25 +20,14 @@ export class EventProcessingResult {
   processingFailures: number = 0;
 
   // ids seen whilst processing ready for passing to stats aggregator.
-  // The arrays are append-only in first-seen order and must only be written through
-  // merge() and reset(), or they drift from the membership sets. They are exposed as
-  // the backing arrays (not copies) so hot-path `.length` reads stay O(1); `readonly`
-  // is a type-only guard, so JS processors must not push to or clear them directly.
-  declare readonly emailIds: readonly string[];
-  declare readonly memberIds: readonly string[];
+  // Only write these through merge() and reset() so they stay in step with the sets below.
+  emailIds: string[] = [];
+  memberIds: string[] = [];
 
-  #emailIds: string[] = [];
-  #memberIds: string[] = [];
   #emailIdSet = new Set<string>();
   #memberIdSet = new Set<string>();
 
   constructor(result: EventProcessingResultInput = {}) {
-    // Own enumerable accessors keep IDs visible to object equality, spreading, and
-    // serialization as they were when they were public fields.
-    Object.defineProperties(this, {
-      emailIds: { enumerable: true, get: () => this.#emailIds },
-      memberIds: { enumerable: true, get: () => this.#memberIds },
-    });
     this.merge(result);
   }
 
@@ -55,10 +44,8 @@ export class EventProcessingResult {
     this.storedOpened = 0;
     this.storedPermanentFailed = 0;
     this.processingFailures = 0;
-    // Reassign rather than clear in place so callers holding the previous arrays keep
-    // what they had. merge() appends in place, so aggregating and merging must not overlap.
-    this.#emailIds = [];
-    this.#memberIds = [];
+    this.emailIds = [];
+    this.memberIds = [];
     this.#emailIdSet.clear();
     this.#memberIdSet.clear();
   }
@@ -79,8 +66,8 @@ export class EventProcessingResult {
 
     this.processingFailures += other.processingFailures || 0;
 
-    EventProcessingResult.#collect(this.#emailIdSet, this.#emailIds, other.emailIds);
-    EventProcessingResult.#collect(this.#memberIdSet, this.#memberIds, other.memberIds);
+    EventProcessingResult.#collect(this.#emailIdSet, this.emailIds, other.emailIds);
+    EventProcessingResult.#collect(this.#memberIdSet, this.memberIds, other.memberIds);
   }
 
   // Only visit incoming IDs; rebuilding the accumulated arrays per event is quadratic.
