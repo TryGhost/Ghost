@@ -47,6 +47,7 @@ export function createTinybirdSyncService({
   createId,
 }: TinybirdSyncDependencies) {
   let started = false;
+  let syncing = false;
 
   const syncAll = async (ingest: IngestConfig): Promise<void> => {
     const results = await Promise.allSettled(
@@ -76,14 +77,39 @@ export function createTinybirdSyncService({
     }
   };
 
-  const runLoop = async (ingest: IngestConfig): Promise<never> => {
+  const isEnabled = (): boolean => labs.isSet('automationsTinybirdSync');
+
+  // Runs one sync pass. A call that arrives while a pass is still running is
+  // skipped rather than run alongside it, so passes never overlap.
+  const sync = async (): Promise<void> => {
+    if (!isEnabled()) {
+      return;
+    }
+
+    const ingest = getIngestConfig({ config, settingsCache });
+    if (!ingest) {
+      return;
+    }
+
+    if (syncing) {
+      logging.info('[Background Job] tinybird-sync skipped because a sync is already running');
+      return;
+    }
+
+    syncing = true;
+    try {
+      await syncAll(ingest);
+    } finally {
+      syncing = false;
+    }
+  };
+
+  const runLoop = async (): Promise<never> => {
     // Randomize the first wait to avoid all instances syncing at the same time.
     await sleep(Math.floor(random() * INTERVAL_MS));
 
     while (true) {
-      if (labs.isSet('automationsTinybirdSync')) {
-        await syncAll(ingest);
-      }
+      await sync();
       await sleep(INTERVAL_MS);
     }
   };
@@ -107,7 +133,7 @@ export function createTinybirdSyncService({
       `[Tinybird sync] Started: sync ${isSyncEnabled ? 'enabled' : 'disabled'} by labs flag (but may change)`,
     );
 
-    void runLoop(ingest)
+    void runLoop()
       .then(() => {
         logging.error('[Tinybird sync] Loop stopped unexpectedly');
       })
@@ -116,5 +142,5 @@ export function createTinybirdSyncService({
       });
   };
 
-  return { start };
+  return { start, sync, isEnabled };
 }

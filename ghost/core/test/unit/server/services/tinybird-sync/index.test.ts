@@ -189,6 +189,67 @@ describe('createTinybirdSyncService', () => {
     await vi.waitFor(() => assert.deepEqual(requests, [1000, 1]));
   });
 
+  it('follows the labs flag for its switch', () => {
+    const labs = { isSet: vi.fn(() => false) };
+    const { service } = createService({ labs });
+
+    assert.equal(service.isEnabled(), false);
+    labs.isSet.mockReturnValue(true);
+    assert.equal(service.isEnabled(), true);
+    assert.deepEqual(labs.isSet.mock.calls[0], ['automationsTinybirdSync']);
+  });
+
+  it('skips a sync while the previous one is still running', async () => {
+    const database = await createEmptyDatabase();
+    await database('automation_runs').insert({
+      id: 'run-id',
+      automation_id: 'automation-id',
+      created_at: '2026-03-01 11:50:00',
+      updated_at: '2026-03-01 11:50:00',
+    });
+    let respond: (response: Response) => void = () => {};
+    const fetch = vi.fn(
+      () =>
+        new Promise<Response>((resolve) => {
+          respond = resolve;
+        }),
+    );
+    const { dependencies, service } = createService({ knex: database, fetch });
+
+    const first = service.sync();
+    await vi.waitFor(() => assert.equal(fetch.mock.calls.length, 1));
+    await service.sync();
+    respond(new Response(null, { status: 202 }));
+    await first;
+
+    assert.equal(fetch.mock.calls.length, 1);
+    assert.ok(
+      dependencies.logging.info.mock.calls.some(
+        (call) =>
+          call[0] === '[Background Job] tinybird-sync skipped because a sync is already running',
+      ),
+    );
+    assert.equal(
+      dependencies.logging.info.mock.calls.filter(
+        (call) => call[0]?.system?.event === 'tinybird.sync.completed',
+      ).length,
+      2,
+    );
+  });
+
+  it('does not sync without complete analytics config', async () => {
+    const fetch = vi.fn();
+    const { dependencies, service } = createService({
+      config: { get: () => undefined },
+      fetch,
+    });
+
+    await service.sync();
+
+    assert.equal(fetch.mock.calls.length, 0);
+    assert.equal(dependencies.logging.info.mock.calls.length, 0);
+  });
+
   it('does not start without complete analytics config', () => {
     const { dependencies, service } = createService({
       config: { get: () => undefined },
