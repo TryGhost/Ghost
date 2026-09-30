@@ -28,12 +28,17 @@ describe('fetchAutomationRuns', () => {
         version: '',
         automationId: 'selected',
         runStatus: undefined,
+        sortDirection: 'desc',
+        limit: 50,
       }),
     );
   });
 
   it.each([0, 50])('accepts %i runs', async (count) => {
-    const rows = Array.from({ length: count }, (_, i) => ({ ...row, id: String(i) }));
+    const rows = Array.from({ length: count }, (_, i) => ({
+      ...row,
+      id: String(100 - i).padStart(3, '0'),
+    }));
     assert.deepEqual(await fetchAutomationRuns(clientReturning(rows), 'selected'), rows);
   });
 
@@ -48,8 +53,15 @@ describe('fetchAutomationRuns', () => {
     { name: 'invalid failure flag', rows: [{ ...row, failed: 'yes' }] },
     { name: 'duplicate IDs', rows: [row, row] },
     {
+      name: 'out of order',
+      rows: [row, { ...row, id: 'newer', created_at: '2026-09-15T12:00:00.000Z' }],
+    },
+    {
       name: 'more than fifty runs',
-      rows: Array.from({ length: 51 }, (_, i) => ({ ...row, id: String(i) })),
+      rows: Array.from({ length: 51 }, (_, i) => ({
+        ...row,
+        id: String(100 - i).padStart(3, '0'),
+      })),
     },
   ])('rejects $name', async ({ rows }) => {
     assert.equal(await fetchAutomationRuns(clientReturning(rows), 'selected'), null);
@@ -72,12 +84,17 @@ describe('fetchAutomationRuns', () => {
     async (status) => {
       const matching = { ...row, status };
       const client = clientReturning([matching]);
-      assert.deepEqual(await fetchAutomationRuns(client, 'selected', status), [matching]);
+      assert.deepEqual(
+        await fetchAutomationRuns(client, 'selected', { direction: 'desc', limit: 50, status }),
+        [matching],
+      );
       assert.ok(
         client.fetch.calledOnceWithExactly('api_automation_runs', {
           version: '',
           automationId: 'selected',
           runStatus: status,
+          sortDirection: 'desc',
+          limit: 50,
         }),
       );
     },
@@ -85,7 +102,11 @@ describe('fetchAutomationRuns', () => {
 
   it('rejects rows that do not match the requested status', async () => {
     assert.equal(
-      await fetchAutomationRuns(clientReturning([row]), 'selected', 'in_progress'),
+      await fetchAutomationRuns(clientReturning([row]), 'selected', {
+        direction: 'desc',
+        limit: 50,
+        status: 'in_progress',
+      }),
       null,
     );
   });
@@ -93,16 +114,60 @@ describe('fetchAutomationRuns', () => {
   it('forwards local date boundaries alongside the status filter', async () => {
     const client = clientReturning([row]);
     const options = { dateFrom: '2026-09-14', dateTo: '2026-09-15', timezone: 'America/New_York' };
-    assert.deepEqual(await fetchAutomationRuns(client, 'selected', 'completed', options), [row]);
+    assert.deepEqual(
+      await fetchAutomationRuns(client, 'selected', {
+        ...options,
+        status: 'completed',
+        direction: 'desc',
+        limit: 50,
+      }),
+      [row],
+    );
     assert.ok(
       client.fetch.calledOnceWithExactly('api_automation_runs', {
         version: '',
         automationId: 'selected',
         runStatus: 'completed',
+        sortDirection: 'desc',
+        limit: 50,
         ...options,
       }),
     );
   });
+  it.each(['asc', 'desc'] as const)(
+    'continues strictly after the cursor in %s order',
+    async (direction) => {
+      const after = { ...row, id: 'run-2' };
+      const next = { ...row, id: direction === 'asc' ? 'run-3' : 'run-1' };
+      const client = clientReturning([next]);
+      const options = { direction, limit: 2, after };
+      assert.deepEqual(await fetchAutomationRuns(client, 'selected', options), [next]);
+      assert.equal(client.fetch.firstCall.args[1].afterId, 'run-2');
+      assert.equal(client.fetch.firstCall.args[1].afterCreatedAt, row.created_at);
+      assert.equal(await fetchAutomationRuns(clientReturning([after]), 'selected', options), null);
+      const previous = { ...row, id: direction === 'asc' ? 'run-1' : 'run-3' };
+      assert.equal(
+        await fetchAutomationRuns(clientReturning([previous]), 'selected', options),
+        null,
+      );
+    },
+  );
+
+  it.each(['asc', 'desc'] as const)(
+    'enforces the requested page size in %s order',
+    async (direction) => {
+      const rows = ['run-1', 'run-2', 'run-3'].map((id) => ({ ...row, id }));
+      if (direction === 'desc') {
+        rows.reverse();
+      }
+      const options = { direction, limit: 2 };
+      assert.deepEqual(
+        await fetchAutomationRuns(clientReturning(rows.slice(0, 2)), 'selected', options),
+        rows.slice(0, 2),
+      );
+      assert.equal(await fetchAutomationRuns(clientReturning(rows), 'selected', options), null);
+    },
+  );
 
   it('returns null when the client throws', async () => {
     const client = { fetch: sinon.stub().rejects(new Error('Unavailable')) };

@@ -1,3 +1,4 @@
+import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
@@ -26,8 +27,10 @@ const { create: createTinybirdClient } = require('../stats/utils/tinybird');
 const lexicalLib = require('../../lib/lexical');
 
 const MAX_AUTOMATION_ACTIONS = 50;
+const RUN_PAGE_SIZE = 50;
 
 const messages = {
+  invalidRunOrder: 'Automation run order must be one of: created_at desc, created_at asc.',
   invalidRunStatus: 'Automation run status must be one of: in_progress, completed, exited_early.',
   tinybirdRunsFailed: 'Could not load Tinybird automation runs.',
   tinybirdEntriesOutsideRange: 'Tinybird returned entries outside the requested range.',
@@ -194,16 +197,36 @@ export async function readPerformanceStats(automationId: string, options: unknow
 }
 
 export async function browseRuns(automationId: string, options: Record<string, unknown> = {}) {
+  const { status, order, cursor } = options;
   const { window: entryWindow, timezone } = parseEntryStatsOptions(options);
   const parsedStatus = z
     .enum(['in_progress', 'completed', 'exited_early'])
     .optional()
-    .safeParse(options.status);
+    .safeParse(status);
   if (!parsedStatus.success) {
     throw new errors.ValidationError({
       message: tpl(messages.invalidRunStatus),
     });
   }
+  const parsedOrder = z.enum(['created_at desc', 'created_at asc']).optional().safeParse(order);
+  if (!parsedOrder.success) {
+    throw new errors.ValidationError({
+      message: tpl(messages.invalidRunOrder),
+    });
+  }
+  const requestedScope: RunCursorScope = {
+    automation_id: automationId,
+    date_from: entryWindow?.date_from ?? null,
+    date_to: entryWindow?.date_to ?? null,
+    timezone,
+    status: parsedStatus.data ?? null,
+    direction: parsedOrder.data === 'created_at asc' ? 'asc' : 'desc',
+  };
+  const continuation =
+    cursor === undefined
+      ? undefined
+      : decodeRunCursor(cursor, requestedScope, { preserveEndDate: options.date_to === undefined });
+  const scope = continuation?.scope ?? requestedScope;
   const exists = await repository.exists(automationId);
   if (!exists) {
     throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
@@ -212,20 +235,32 @@ export async function browseRuns(automationId: string, options: Record<string, u
   if (!client) {
     throw new errors.InternalServerError({ message: tpl(messages.tinybirdRunsFailed) });
   }
-  const runs = await fetchAutomationRuns(client, automationId, parsedStatus.data, {
+
+  // One extra row tells us whether a next page exists without a separate count.
+  const rows = await fetchAutomationRuns(client, automationId, {
+    status: parsedStatus.data,
+    direction: scope.direction,
+    limit: RUN_PAGE_SIZE + 1,
     timezone,
-    dateFrom: entryWindow?.date_from,
-    dateTo: entryWindow?.date_to,
+    dateFrom: scope.date_from ?? undefined,
+    dateTo: scope.date_to ?? undefined,
+    after: continuation?.position,
   });
-  if (runs === null) {
+  if (rows === null) {
     throw new errors.InternalServerError({ message: tpl(messages.tinybirdRunsFailed) });
   }
+  const runs = rows.slice(0, RUN_PAGE_SIZE);
+  const nextCursor =
+    rows.length > RUN_PAGE_SIZE ? encodeRunCursor(scope, runs[runs.length - 1]) : null;
   // Keep member details in Core; a deleted member must not remove a run from this page.
   const members = await repository.getRunMembers(
     automationId,
     runs.map((run) => run.id),
   );
-  return runs.map((run) => ({ ...run, member: members.get(run.id) ?? null }));
+  return {
+    data: runs.map((run) => ({ ...run, member: members.get(run.id) ?? null })),
+    meta: { pagination: { limit: RUN_PAGE_SIZE, next_cursor: nextCursor } },
+  };
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {

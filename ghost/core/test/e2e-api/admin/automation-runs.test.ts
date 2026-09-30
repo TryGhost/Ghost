@@ -22,8 +22,8 @@ describe('Automation runs API', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let automationId: string;
   let memberIds: string[];
-  let queries: string[];
-  const captureQuery = (query: { sql: string }) => queries.push(query.sql);
+  let queries: { sql: string; bindings: unknown[] }[];
+  const captureQuery = (query: { sql: string; bindings: unknown[] }) => queries.push(query);
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
@@ -49,9 +49,13 @@ describe('Automation runs API', function () {
     await models.Base.knex('members').whereIn('id', memberIds).del();
   });
 
-  async function readRuns(query = '') {
+  async function readPage(query = '') {
     const { body } = await agent.get(`automations/${automationId}/runs${query}`).expectStatus(200);
-    return body.automation_runs;
+    return body;
+  }
+
+  async function readRuns(query = '') {
+    return (await readPage(query)).automation_runs;
   }
 
   async function expectRunError(status: number, type: string, query = '') {
@@ -67,7 +71,9 @@ describe('Automation runs API', function () {
   }
 
   function assertNoRunLookup() {
-    assert.ok(queries.every((sql) => !/\bautomation_runs\b|\bautomation_run_steps\b/.test(sql)));
+    assert.ok(
+      queries.every(({ sql }) => !/\bautomation_runs\b|\bautomation_run_steps\b/.test(sql)),
+    );
   }
 
   it('fails with Tinybird disabled without falling back to SQL', async function () {
@@ -116,7 +122,12 @@ describe('Automation runs API', function () {
       await configUtils.restore();
     });
 
-    function mockRuns(status: number, response: nock.Body, runStatus?: string, dateOptions = {}) {
+    function mockRuns(
+      status: number,
+      response: nock.Body,
+      runStatus?: string,
+      pagination: Record<string, string | number> = {},
+    ) {
       return nock('https://api.tinybird.co', { reqheaders: { authorization: 'Bearer test-token' } })
         .get('/v0/pipes/api_automation_runs.json')
         .query({
@@ -124,7 +135,9 @@ describe('Automation runs API', function () {
           site_uuid: siteUuid,
           automation_id: automationId,
           timezone: 'UTC',
-          ...dateOptions,
+          sort_direction: 'desc',
+          limit: 51,
+          ...pagination,
           ...(runStatus ? { run_status: runStatus } : {}),
         })
         .reply(status, response);
@@ -172,9 +185,9 @@ describe('Automation runs API', function () {
         rows.map((row, i) => ({ ...row, member: i % 2 ? named : unnamed })),
       );
       assert.ok(request.isDone());
-      const runQueries = queries.filter((sql) => /\bautomation_runs\b/.test(sql));
+      const runQueries = queries.filter(({ sql }) => /\bautomation_runs\b/.test(sql));
       assert.equal(runQueries.length, 1);
-      assert.ok(queries.every((sql) => !/\bautomation_run_steps\b/.test(sql)));
+      assert.ok(queries.every(({ sql }) => !/\bautomation_run_steps\b/.test(sql)));
     });
 
     it('keeps deleted members and missing Core runs without reusing historical email', async function () {
@@ -182,12 +195,15 @@ describe('Automation runs API', function () {
       const deletedRun = runId();
       await addRun(deletedRun, member);
       await models.Base.knex('members').where('id', member.id).del();
-      const rows = [deletedRun, runId()].map((id) => ({
-        id,
-        created_at: timestamp,
-        status: 'completed',
-        failed: false,
-      }));
+      const rows = [deletedRun, runId()]
+        .sort()
+        .reverse()
+        .map((id) => ({
+          id,
+          created_at: timestamp,
+          status: 'completed',
+          failed: false,
+        }));
       mockRuns(200, { data: rows });
       assert.deepEqual(
         await readRuns(),
@@ -208,7 +224,9 @@ describe('Automation runs API', function () {
     it('returns an empty page without looking up members', async function () {
       captureQueries();
       const request = mockRuns(200, { data: [] });
-      assert.deepEqual(await readRuns(), []);
+      const page = await readPage();
+      assert.deepEqual(page.automation_runs, []);
+      assert.deepEqual(page.meta.pagination, { limit: 50, next_cursor: null });
       assert.ok(request.isDone());
       assertNoRunLookup();
     });
@@ -265,6 +283,112 @@ describe('Automation runs API', function () {
         assertNoRunLookup();
       },
     );
+
+    function pageRows(count: number, direction = 'desc') {
+      return Array.from({ length: count }, () => ({
+        id: runId(),
+        created_at: timestamp,
+        status: 'completed',
+        failed: false,
+      })).sort((a, b) =>
+        direction === 'asc' ? a.id.localeCompare(b.id) : b.id.localeCompare(a.id),
+      );
+    }
+
+    it.each(['asc', 'desc'])(
+      'paginates in %s order and hydrates only the visible page',
+      async function (direction) {
+        const rows = pageRows(51, direction);
+        const member = await addMember('First page');
+        const nextMember = await addMember('Next page');
+        for (const [index, row] of rows.entries()) {
+          await addRun(row.id, index < 50 ? member : nextMember);
+        }
+        const first = mockRuns(200, { data: rows }, 'completed', { sort_direction: direction });
+        captureQueries();
+        const query = `?status=completed&order=created_at%20${direction}`;
+        const page = await readPage(query);
+        assert.deepEqual(
+          page.automation_runs,
+          rows.slice(0, 50).map((row) => ({ ...row, member })),
+        );
+        assert.equal(page.meta.pagination.limit, 50);
+        assert.ok(first.isDone());
+        const lookups = queries.filter(({ sql }) => /\bautomation_runs\b/.test(sql));
+        assert.equal(lookups.length, 1);
+        assert.deepEqual(
+          new Set(lookups[0].bindings),
+          new Set([automationId, ...rows.slice(0, 50).map((row) => row.id)]),
+        );
+        const cursor = page.meta.pagination.next_cursor;
+        assert.equal(typeof cursor, 'string');
+        const next = mockRuns(200, { data: rows.slice(50) }, 'completed', {
+          sort_direction: direction,
+          after_created_at: timestamp,
+          after_id: rows[49].id,
+        });
+        const final = await readPage(`${query}&cursor=${cursor}`);
+        assert.deepEqual(final.automation_runs, [{ ...rows[50], member: nextMember }]);
+        assert.equal(final.meta.pagination.next_cursor, null);
+        assert.ok(next.isDone());
+      },
+    );
+
+    it('does not offer a next page when exactly fifty runs remain', async function () {
+      const rows = pageRows(50);
+      const request = mockRuns(200, { data: rows });
+      const page = await readPage();
+      assert.deepEqual(
+        page.automation_runs.map((run: { id: string }) => run.id),
+        rows.map((run) => run.id),
+      );
+      assert.deepEqual(page.meta.pagination, { limit: 50, next_cursor: null });
+      assert.ok(request.isDone());
+    });
+
+    it.each([false, true])(
+      'preserves the first page end date across local midnight (explicit end: %s)',
+      async function (explicitEnd) {
+        const clock = sinon.useFakeTimers({
+          now: new Date('2026-09-15T03:59:00Z'),
+          toFake: ['Date'],
+        });
+        const rows = pageRows(51);
+        const dates = {
+          date_from: '2026-09-14',
+          date_to: '2026-09-15',
+          timezone: 'America/New_York',
+        };
+        const first = mockRuns(200, { data: rows }, 'completed', dates);
+        const query = '?status=completed&date_from=2026-09-14&timezone=America/New_York';
+        const pageOneQuery = explicitEnd ? `${query}&date_to=2026-09-14` : query;
+        const page = await readPage(pageOneQuery);
+        assert.ok(first.isDone());
+        const cursor = page.meta.pagination.next_cursor;
+        clock.setSystemTime(new Date('2026-09-15T04:01:00Z'));
+        const next = mockRuns(200, { data: rows.slice(50) }, 'completed', {
+          ...dates,
+          after_created_at: timestamp,
+          after_id: rows[49].id,
+        });
+        const final = await readPage(`${query}&cursor=${cursor}`);
+        assert.deepEqual(
+          final.automation_runs.map((run: { id: string }) => run.id),
+          [rows[50].id],
+        );
+        assert.ok(next.isDone());
+        await expectRunError(
+          422,
+          'ValidationError',
+          `${query}&date_to=2026-09-15&cursor=${cursor}`,
+        );
+      },
+    );
+
+    it('rejects unsupported order and malformed cursors before querying Tinybird', async function () {
+      await expectRunError(422, 'ValidationError', '?order=email');
+      await expectRunError(422, 'ValidationError', '?cursor=not-a-cursor');
+    });
 
     it('fails without a Tinybird token', async function () {
       getToken.returns(null);
