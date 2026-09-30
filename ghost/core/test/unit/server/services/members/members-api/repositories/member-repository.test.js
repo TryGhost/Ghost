@@ -55,6 +55,7 @@ describe('MemberRepository', function () {
       offersAPI,
       automationsApi,
       productRepository,
+      metafieldValues: { getValuesForMember: async () => undefined },
       stripeAPIService,
       tokenService,
       ...overrides,
@@ -3085,6 +3086,7 @@ describe('MemberRepository', function () {
           }),
         }),
         destroy: sinon.stub().resolves(),
+        transaction: (fn) => fn('a-transaction'),
       };
 
       const repo = buildRepo();

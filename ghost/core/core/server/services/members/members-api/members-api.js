@@ -106,6 +106,7 @@ module.exports = function MembersAPI({
     StripeCustomer,
     StripeCustomerSubscription,
     offersAPI,
+    metafieldValues,
   });
 
   const eventRepository = new EventRepository({

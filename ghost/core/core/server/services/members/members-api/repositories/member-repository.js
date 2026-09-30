@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
+const { ADMIN } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
@@ -79,6 +80,7 @@ module.exports = class MemberRepository {
    * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
    * @param {any} deps.productRepository
    * @param {any} deps.offersAPI
+   * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues
    * @param {ITokenService} deps.tokenService
    * @param {any} deps.newslettersService
    * @param {Pick<automationsApi, 'trigger'>} deps.automationsApi
@@ -100,6 +102,7 @@ module.exports = class MemberRepository {
     stripeAPIService,
     productRepository,
     offersAPI,
+    metafieldValues,
     tokenService,
     newslettersService,
     automationsApi,
@@ -120,6 +123,7 @@ module.exports = class MemberRepository {
     this._stripeAPIService = stripeAPIService;
     this._productRepository = productRepository;
     this._offersAPI = offersAPI;
+    this._metafieldValues = metafieldValues;
     this.tokenService = tokenService;
     this._newslettersService = newslettersService;
     this._automationsApi = automationsApi;
@@ -1081,13 +1085,29 @@ module.exports = class MemberRepository {
       }
     }
 
-    // require: false so concurrent deletes don't throw "No Rows Deleted"
-    return this._Member.destroy(
-      {
-        id: data.id,
-      },
-      { ...options, require: false },
-    );
+    // The member's metafields are deleted with them. They're read first, in the same
+    // transaction, and kept on the deleted member, whose member.deleted webhook is sent
+    // once the transaction commits.
+    const destroy = async (transacting) => {
+      const previousMetafields = await this._metafieldValues.getValuesForMember(
+        member.id,
+        ADMIN,
+        transacting,
+      );
+      // require: false so concurrent deletes don't throw "No Rows Deleted"
+      const deleted = await this._Member.destroy(
+        {
+          id: data.id,
+        },
+        { ...options, transacting, require: false },
+      );
+      if (deleted && previousMetafields) {
+        deleted._previousMetafields = previousMetafields;
+      }
+      return deleted;
+    };
+
+    return options.transacting ? destroy(options.transacting) : this._Member.transaction(destroy);
   }
 
   async bulkDestroy(options) {

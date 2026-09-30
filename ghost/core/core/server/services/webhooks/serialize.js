@@ -108,7 +108,7 @@ module.exports =
       );
     }
 
-    if (event === 'member.edited' && model._previousMetafields) {
+    if (model._previousMetafields) {
       previous.metafields = model._previousMetafields;
     }
 
