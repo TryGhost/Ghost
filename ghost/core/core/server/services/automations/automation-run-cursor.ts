@@ -35,7 +35,11 @@ export function encodeRunCursor(scope: RunCursorScope, position: AutomationRunPo
   return Buffer.from(JSON.stringify(cursor)).toString('base64url');
 }
 
-export function decodeRunCursor(cursor: unknown, scope: RunCursorScope): AutomationRunPosition {
+export function decodeRunCursor(
+  cursor: unknown,
+  scope: RunCursorScope,
+  { preserveEndDate = false } = {},
+): { scope: RunCursorScope; position: AutomationRunPosition } {
   let parsed: ReturnType<typeof runCursorSchema.safeParse> | undefined;
   if (typeof cursor === 'string') {
     try {
@@ -56,10 +60,20 @@ export function decodeRunCursor(cursor: unknown, scope: RunCursorScope): Automat
     timezone,
     ...position
   } = parsed.data;
+  // A default end date can advance at midnight. Reuse the cursor's boundary,
+  // but only within the requested start and today's validated upper boundary.
+  const matchesEndDate =
+    dateTo === scope.date_to ||
+    (preserveEndDate &&
+      dateFrom !== null &&
+      dateTo !== null &&
+      scope.date_to !== null &&
+      dateTo > dateFrom &&
+      dateTo <= scope.date_to);
   if (
     automationId !== scope.automation_id ||
     dateFrom !== scope.date_from ||
-    dateTo !== scope.date_to ||
+    !matchesEndDate ||
     timezone !== scope.timezone ||
     status !== scope.status ||
     direction !== scope.direction
@@ -68,5 +82,5 @@ export function decodeRunCursor(cursor: unknown, scope: RunCursorScope): Automat
       message: messages.mismatchedCursor,
     });
   }
-  return position;
+  return { scope: { ...scope, date_to: dateTo }, position };
 }

@@ -346,38 +346,44 @@ describe('Automation runs API', function () {
       assert.ok(request.isDone());
     });
 
-    it('accepts equivalent date scopes and rejects a cursor after the default end changes at local midnight', async function () {
-      const clock = sinon.useFakeTimers({
-        now: new Date('2026-09-15T03:59:00Z'),
-        toFake: ['Date'],
-      });
-      const rows = pageRows(51);
-      const dates = {
-        date_from: '2026-09-14',
-        date_to: '2026-09-15',
-        timezone: 'America/New_York',
-      };
-      const first = mockRuns(200, { data: rows }, 'completed', dates);
-      const query =
-        '?status=completed&date_from=2026-09-14&date_to=2026-09-14&timezone=America/New_York';
-      const page = await readPage(query);
-      assert.ok(first.isDone());
-      const cursor = page.meta.pagination.next_cursor;
-      const next = mockRuns(200, { data: rows.slice(50) }, 'completed', {
-        ...dates,
-        after_created_at: timestamp,
-        after_id: rows[49].id,
-      });
-      const startOnly = query.replace('&date_to=2026-09-14', '');
-      const final = await readPage(`${startOnly}&cursor=${cursor}`);
-      assert.deepEqual(
-        final.automation_runs.map((run: { id: string }) => run.id),
-        [rows[50].id],
-      );
-      assert.ok(next.isDone());
-      clock.setSystemTime(new Date('2026-09-15T04:01:00Z'));
-      await expectRunError(422, 'ValidationError', `${startOnly}&cursor=${cursor}`);
-    });
+    it.each([false, true])(
+      'preserves the first page end date across local midnight (explicit end: %s)',
+      async function (explicitEnd) {
+        const clock = sinon.useFakeTimers({
+          now: new Date('2026-09-15T03:59:00Z'),
+          toFake: ['Date'],
+        });
+        const rows = pageRows(51);
+        const dates = {
+          date_from: '2026-09-14',
+          date_to: '2026-09-15',
+          timezone: 'America/New_York',
+        };
+        const first = mockRuns(200, { data: rows }, 'completed', dates);
+        const query = '?status=completed&date_from=2026-09-14&timezone=America/New_York';
+        const pageOneQuery = explicitEnd ? `${query}&date_to=2026-09-14` : query;
+        const page = await readPage(pageOneQuery);
+        assert.ok(first.isDone());
+        const cursor = page.meta.pagination.next_cursor;
+        clock.setSystemTime(new Date('2026-09-15T04:01:00Z'));
+        const next = mockRuns(200, { data: rows.slice(50) }, 'completed', {
+          ...dates,
+          after_created_at: timestamp,
+          after_id: rows[49].id,
+        });
+        const final = await readPage(`${query}&cursor=${cursor}`);
+        assert.deepEqual(
+          final.automation_runs.map((run: { id: string }) => run.id),
+          [rows[50].id],
+        );
+        assert.ok(next.isDone());
+        await expectRunError(
+          422,
+          'ValidationError',
+          `${query}&date_to=2026-09-15&cursor=${cursor}`,
+        );
+      },
+    );
 
     it('rejects unsupported order and malformed cursors before querying Tinybird', async function () {
       await expectRunError(422, 'ValidationError', '?order=email');

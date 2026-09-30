@@ -214,7 +214,7 @@ export async function browseRuns(automationId: string, options: Record<string, u
       message: tpl(messages.invalidRunOrder),
     });
   }
-  const scope: RunCursorScope = {
+  const requestedScope: RunCursorScope = {
     automation_id: automationId,
     date_from: entryWindow?.date_from ?? null,
     date_to: entryWindow?.date_to ?? null,
@@ -222,7 +222,11 @@ export async function browseRuns(automationId: string, options: Record<string, u
     status: parsedStatus.data ?? null,
     direction: parsedOrder.data === 'created_at asc' ? 'asc' : 'desc',
   };
-  const after = cursor === undefined ? undefined : decodeRunCursor(cursor, scope);
+  const continuation =
+    cursor === undefined
+      ? undefined
+      : decodeRunCursor(cursor, requestedScope, { preserveEndDate: options.date_to === undefined });
+  const scope = continuation?.scope ?? requestedScope;
   const exists = await repository.exists(automationId);
   if (!exists) {
     throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
@@ -238,8 +242,9 @@ export async function browseRuns(automationId: string, options: Record<string, u
     direction: scope.direction,
     limit: RUN_PAGE_SIZE + 1,
     timezone,
-    ...(entryWindow ? { dateFrom: entryWindow.date_from, dateTo: entryWindow.date_to } : {}),
-    after,
+    dateFrom: scope.date_from ?? undefined,
+    dateTo: scope.date_to ?? undefined,
+    after: continuation?.position,
   });
   if (rows === null) {
     throw new errors.InternalServerError({ message: tpl(messages.tinybirdRunsFailed) });

@@ -119,7 +119,10 @@ ordering and limiting to fifty matching runs; pending steps take precedence as t
 do in the summary counts. The optional `date_from`, `date_to`, and `timezone`
 parameters use the same inclusive calendar-date contract as performance stats:
 `date_from` is required when `date_to` is supplied; omitting `date_to` uses today
-in the requested timezone, and omitting both dates selects all history.
+in the requested timezone on the first page, and omitting both dates selects all
+history. When continuing with a cursor and no `date_to`, the first page's end date
+is retained even across local midnight. An explicit `date_to` must still match
+the cursor's end date.
 Entry-date filters select runs before classification, keeping the list and summary
 counts on the same cohort. There is no member search in this slice. An empty history or no matches
 returns `automation_runs: []`. It requires automation read permission, returns 404

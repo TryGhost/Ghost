@@ -19,16 +19,38 @@ const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('
 
 describe('automation run cursors', function () {
   it('round-trips a position under the same scope', function () {
-    assert.deepEqual(decodeRunCursor(encodeRunCursor(scope, position), scope), position);
+    assert.deepEqual(decodeRunCursor(encodeRunCursor(scope, position), scope), { scope, position });
   });
 
   it('normalises the timestamp so it compares with pipe rows', function () {
     const cursor = encode({ ...scope, id: 'run-1', created_at: '2026-09-14T12:00:00Z' });
     assert.deepEqual(decodeRunCursor(cursor, scope), {
-      id: 'run-1',
-      created_at: '2026-09-14T12:00:00.000Z',
+      scope,
+      position: { id: 'run-1', created_at: '2026-09-14T12:00:00.000Z' },
     });
   });
+
+  it('preserves an earlier end date only when the request uses the default', function () {
+    const original = { ...scope, date_from: '2026-09-01', date_to: '2026-09-15' };
+    const cursor = encodeRunCursor(original, position);
+    const nextDay = { ...original, date_to: '2026-09-16' };
+    assert.deepEqual(decodeRunCursor(cursor, nextDay, { preserveEndDate: true }), {
+      scope: original,
+      position,
+    });
+    assert.throws(() => decodeRunCursor(cursor, nextDay), { message: /does not match/ });
+  });
+
+  it.each([null, '2026-09-01', '2026-09-17'])(
+    'rejects an absent, reversed, or future end date when preserving it (%s)',
+    function (dateTo) {
+      const requested = { ...scope, date_from: '2026-09-01', date_to: '2026-09-16' };
+      const cursor = encodeRunCursor({ ...requested, date_to: dateTo }, position);
+      assert.throws(() => decodeRunCursor(cursor, requested, { preserveEndDate: true }), {
+        message: /does not match/,
+      });
+    },
+  );
 
   for (const [label, cursor] of [
     ['a non-string', 42],
@@ -53,7 +75,9 @@ describe('automation run cursors', function () {
   ] as const) {
     it(`rejects a cursor issued for another ${label}`, function () {
       const cursor = encodeRunCursor({ ...scope, ...other }, position);
-      assert.throws(() => decodeRunCursor(cursor, scope), { message: /does not match/ });
+      assert.throws(() => decodeRunCursor(cursor, scope, { preserveEndDate: true }), {
+        message: /does not match/,
+      });
     });
   }
 });
