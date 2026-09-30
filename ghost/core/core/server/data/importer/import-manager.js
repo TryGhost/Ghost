@@ -46,12 +46,6 @@ class ImportManager {
       extensions: this.getExtensions(),
       directories: this.getDirectories(),
     });
-
-    // Keep track of file to cleanup at the end
-    /**
-     * @type {?string}
-     */
-    this.fileToDelete = null;
   }
 
   /**
@@ -132,9 +126,7 @@ class ImportManager {
    * @returns {Promise<string>} full path to the extracted folder
    */
   async extractZip(filePath) {
-    const tmpDir = await this.archive.extract(filePath);
-    this.fileToDelete = tmpDir;
-    return tmpDir;
+    return this.archive.extract(filePath);
   }
 
   /**
@@ -160,7 +152,7 @@ class ImportManager {
   /**
    * Process Zip
    * Takes a reference to a zip file, extracts it and reads it, returning the content to import
-   * alongside the directory it was extracted to
+   * alongside the extracted directory, which the caller owns from here on
    * @param {File} file
    * @returns {Promise<LoadedImport>}
    */
@@ -255,7 +247,7 @@ class ImportManager {
    * Import Step 1:
    * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
    * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
-   * A zip also yields the directory it was extracted to.
+   * A zip also yields the extracted directory, which the caller owns from here on.
    * @param {File} file
    * @returns {Promise<LoadedImport>}
    */
@@ -319,16 +311,17 @@ class ImportManager {
 
   /**
    * Step 5:
-   * Remove files after we're done (abstracted into a function for easier testing)
+   * Remove the files an import owns, once it is done with them
+   * @param {string} [cleanupDirectory]
    * @returns {Promise<void>}
    */
-  async cleanUp() {
-    if (this.fileToDelete === null) {
+  async cleanUp(cleanupDirectory) {
+    if (!cleanupDirectory) {
       return;
     }
 
     try {
-      await fs.remove(this.fileToDelete);
+      await fs.remove(cleanupDirectory);
     } catch (err) {
       this.logging.error(
         new errors.InternalServerError({
@@ -338,8 +331,6 @@ class ImportManager {
         }),
       );
     }
-
-    this.fileToDelete = null;
   }
 
   /**
@@ -457,8 +448,8 @@ class ImportManager {
       const errorDetails = err.errorDetails || [err];
       importResult = { data: { errors: errorDetails } };
     } finally {
-      // Step 5: Cleanup any files
-      await this.cleanUp();
+      // Step 5: Cleanup the files this import owns
+      await this.cleanUp(loaded.cleanupDirectory);
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
@@ -543,7 +534,7 @@ class ImportManager {
  */
 
 /**
- * Content ready to import, with the directory it was extracted to, if any
+ * Content ready to import, with the directory its owner has to remove afterwards
  * @typedef {Object} LoadedImport
  * @property {ImportData} data
  * @property {string} [cleanupDirectory]

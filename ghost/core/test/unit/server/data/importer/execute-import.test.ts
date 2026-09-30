@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'fs-extra';
+import os from 'node:os';
+import path from 'node:path';
 import sinon from 'sinon';
 import { afterEach, describe, it } from 'vitest';
 
@@ -59,7 +61,10 @@ describe('Site import execution', function () {
     deps.mailer.send.callsFake(async () => {
       events.push('email');
     });
-    assert.deepEqual(await manager.processImport({ data }, options), { images: {}, data: {} });
+    assert.deepEqual(
+      await manager.processImport({ data, cleanupDirectory: '/tmp/owned' }, options),
+      { images: {}, data: {} },
+    );
     assert.deepEqual(events, [
       'pre:images',
       'pre:data',
@@ -69,7 +74,7 @@ describe('Site import execution', function () {
       'cleanup',
       'email',
     ]);
-    sinon.assert.calledOnce(cleanup);
+    sinon.assert.calledOnceWithExactly(cleanup, '/tmp/owned');
     sinon.assert.calledWith(
       deps.mailer.send,
       sinon.match({ to: options.user.email, subject: 'Your content import has finished' }),
@@ -107,11 +112,47 @@ describe('Site import execution', function () {
     });
   }
 
+  it('cleans only each overlapping import’s own directory before its email', async function () {
+    const { manager, deps } = subject();
+    const dirs = await Promise.all(
+      [1, 2].map(() => fs.mkdtemp(path.join(os.tmpdir(), 'site-import-test-'))),
+    );
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    sinon
+      .stub(manager, 'doImport')
+      .onFirstCall()
+      .callsFake(async () => {
+        await pending;
+        return {};
+      })
+      .onSecondCall()
+      .resolves({});
+    try {
+      const first = manager.processImport({ data: {}, cleanupDirectory: dirs[0] }, options);
+      await manager.processImport({ data: {}, cleanupDirectory: dirs[1] }, options);
+      assert.equal(await fs.pathExists(dirs[0]), true);
+      assert.equal(await fs.pathExists(dirs[1]), false);
+      assert.equal(deps.mailer.send.callCount, 1);
+      release();
+      await first;
+      assert.equal(await fs.pathExists(dirs[0]), false);
+      assert.equal(deps.mailer.send.callCount, 2);
+    } finally {
+      release();
+      await Promise.all(dirs.map((dir) => fs.remove(dir)));
+    }
+  });
+
   it('logs cleanup failures without replacing the import outcome', async function () {
     const { manager, deps } = subject();
-    manager.fileToDelete = '/tmp/owned';
     sinon.stub(fs, 'remove').rejects(new Error('cleanup failed'));
-    assert.deepEqual(await manager.processImport({ data: {} }, options), {});
+    assert.deepEqual(
+      await manager.processImport({ data: {}, cleanupDirectory: '/tmp/owned' }, options),
+      {},
+    );
     sinon.assert.calledOnce(deps.logging.error);
     sinon.assert.calledOnce(deps.mailer.send);
   });
