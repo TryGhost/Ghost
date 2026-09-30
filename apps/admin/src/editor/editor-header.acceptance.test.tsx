@@ -13,6 +13,7 @@ import {
   fakeNewsletters,
   fakePages,
   fakePosts,
+  fakePostsListScreen,
   fakeSnippets,
   fakeTiers,
   newsletter,
@@ -32,7 +33,7 @@ import { publishScreen } from '@/editor/publish/publish.screen';
 
 const POST_ID = 'abc123';
 const POST_UUID = 'post-uuid';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = { labs: { editorReact: true, postsListReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const SITE_URL = 'http://test.com';
 
@@ -81,6 +82,7 @@ function publishChrome({ newsletters = 0 } = {}) {
   fakeSnippets([]);
   fakePosts([]);
   fakePages([]);
+  fakePostsListScreen();
   // Successful sends leave the editor for the post's analytics screen.
   fakeAdminStats.postReferrers(POST_ID, []);
   fakeAdminStats.postGrowth(POST_ID);
@@ -239,6 +241,7 @@ afterEach(() => {
   localStorage.removeItem('ghost-last-published-post');
   localStorage.removeItem('ghost-last-scheduled-post');
   delete window.EmberBridge;
+  delete document.body.dataset.externalNavigate;
 });
 
 /**
@@ -262,6 +265,27 @@ describe('Editor header actions', () => {
 
     await expect(editorScreen.root()).toHaveCount(0);
   });
+
+  it.each(['post', 'page'] as const)(
+    'hands completed %s publishing to Ember when it owns the destination list',
+    async (postType) => {
+      publishChrome();
+      const resource = postType === 'page' ? 'pages' : 'posts';
+      fakeSavablePost({}, { resource });
+      await renderAdminApp(`/editor/${postType}/${POST_ID}`, {
+        labs: { editorReact: true, postsListReact: false },
+      });
+
+      await publishThroughFlow();
+
+      await expect
+        .poll((): unknown => JSON.parse(document.body.dataset.externalNavigate ?? 'null'))
+        .toMatchObject({ route: `/${resource}`, isExternal: true });
+      // The harness records the handoff; the pending flow stays until Ember navigates.
+      await expect.element(publishScreen.confirmButton()).toBeDisabled();
+      await expect(publishScreen.complete()).toHaveCount(0);
+    },
+  );
 
   it('sends the newsletter the publish flow selected', async () => {
     publishChrome({ newsletters: 1 });

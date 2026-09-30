@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useEmberOwnedRouteMatcher } from '@/routes';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
@@ -206,6 +207,7 @@ function PublishActions({
   onPreview,
 }: PublishActionsProps) {
   const navigate = useNavigate();
+  const isEmberOwned = useEmberOwnedRouteMatcher();
   const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
   const limits = usePublishLimits();
@@ -346,13 +348,13 @@ function PublishActions({
           onBeforePublish={saveBeforePublish}
           onClose={closeFlow}
           onCompleted={({ postId, isScheduled, hasEmail }) => {
-            if (post.displayName === 'page') {
-              navigate('/pages');
-            } else if (!isScheduled && (hasEmail || post.email || post.emailOnly)) {
-              navigate(`/posts/analytics/${postId}`);
-            } else {
-              navigate('/posts');
-            }
+            const destination =
+              post.displayName === 'page'
+                ? '/pages'
+                : !isScheduled && (hasEmail || post.email || post.emailOnly)
+                  ? `/posts/analytics/${postId}`
+                  : '/posts';
+            navigate(destination, { crossApp: isEmberOwned(destination) });
           }}
           onPreview={onPreview}
           onRevertToDraft={revertToDraft}
