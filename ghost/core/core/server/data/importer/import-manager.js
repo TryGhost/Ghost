@@ -358,17 +358,12 @@ class ImportManager {
    * The main method of the ImportManager, call this to kick everything off!
    * @param {File} file
    * @param {ImportOptions} importOptions to allow override of certain import features such as locking a user
-   * @returns {Promise<Object.<string, ImportResult>>}
+   * @returns {Promise<Object.<string, ImportResult>|undefined>}
    */
   async importFromFile(file, importOptions = {}) {
-    let importData;
-    if (importOptions.data) {
-      importData = importOptions.data;
-    } else {
-      // Step 1: Handle converting the file to usable data
-      // Has to be completed outside of job to ensure file is processed before being deleted
-      importData = await this.loadFile(file);
-    }
+    // Step 1: Handle converting the file to usable data
+    // Has to be completed outside of the job to ensure the file is processed before being deleted
+    const importData = importOptions.data ? importOptions.data : await this.loadFile(file);
 
     debug('importFromFile completed file load', importData);
 
@@ -376,45 +371,60 @@ class ImportManager {
     if (!env?.startsWith('testing') && !importOptions.runningInJob) {
       this.logging.info('[Background Job] site-content-import queued');
       return this.jobManager.addJob({
-        job: async () => {
-          const startedAt = Date.now();
-          this.logging.info('[Background Job] site-content-import started');
-          try {
-            const result = await this.importFromFile(
-              file,
-              Object.assign({}, importOptions, {
-                runningInJob: true,
-                data: importData,
-              }),
-            );
-            // importFromFile swallows its own failures and returns undefined,
-            // so an absent result is the only signal that the import failed.
-            if (result === undefined) {
-              this.logging.info(
-                `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-              );
-            } else {
-              this.logging.info(
-                `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
-              );
-            }
-            return result;
-          } catch (err) {
-            this.logging.error(
-              err,
-              `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
-            );
-            throw err;
-          }
-        },
+        job: () => this.executeImport(importData, { ...importOptions, runningInJob: true }),
         offloaded: false,
       });
     }
 
+    return this.executeImport(importData, importOptions);
+  }
+
+  /**
+   * Run a loaded import to completion: import its content, report on it, release the files it
+   * owns, and tell the user how it went. Import failures are reported by email, not thrown.
+   * @param {ImportData} importData
+   * @param {ImportOptions} [importOptions]
+   * @returns {Promise<Object.<string, ImportResult>|undefined>}
+   */
+  async executeImport(importData, importOptions = {}) {
+    const env = this.config.get('env');
+    const startedAt = Date.now();
+    if (!env?.startsWith('testing')) {
+      this.logging.info('[Background Job] site-content-import started');
+    }
+
+    try {
+      const result = await this.processImport(importData, importOptions, env);
+      if (!env?.startsWith('testing')) {
+        // processImport swallows its own failures and returns undefined,
+        // so an absent result is the only signal that the import failed.
+        this.logging.info(
+          result === undefined
+            ? `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`
+            : `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
+        );
+      }
+      return result;
+    } catch (err) {
+      this.logging.error(
+        err,
+        `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
+      );
+      throw err;
+    }
+  }
+
+  /**
+   * @param {ImportData} data
+   * @param {ImportOptions} importOptions
+   * @param {string} [env]
+   * @returns {Promise<Object.<string, ImportResult>|undefined>}
+   */
+  async processImport(data, importOptions, env) {
     let importResult;
     try {
       // Step 2: Let the importers pre-process the data
-      importData = await this.preProcess(importData);
+      const importData = await this.preProcess(data);
 
       // Step 3: Actually do the import
       // @TODO: It would be cool to have some sort of dry run flag here
