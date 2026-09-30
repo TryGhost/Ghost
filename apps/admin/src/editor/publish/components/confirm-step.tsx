@@ -143,13 +143,11 @@ export function ConfirmStep({
           {status === 'idle' ? (
             <Box
               aria-hidden="true"
-              className="pointer-events-none absolute -inset-2 overflow-hidden rounded-full"
-            >
-              <Box className="absolute inset-2 rounded-full bg-state-success/30 motion-safe:animate-ping" />
-            </Box>
+              className="pointer-events-none absolute -inset-2 rounded-full bg-state-success/30 motion-safe:animate-pulse"
+            />
           ) : null}
           <Button
-            className="relative h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-state-success-foreground hover:bg-state-success/90"
+            className="relative h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
             data-testid={publishConfirm}
             disabled={status === 'running'}
             size="lg"
