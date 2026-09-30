@@ -326,6 +326,30 @@ describe('Publish flow', () => {
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
+  it('keeps timing radios in place when scheduling fields appear and disappear', async () => {
+    await renderPublishFlow();
+    await publishScreen.setting('publish-at').click();
+
+    const now = page.getByRole('radio', { name: 'Set it live now' });
+    const schedule = page.getByRole('radio', { name: 'Schedule for later' });
+    await expect.element(now).toBeVisible();
+
+    const radioSpacing = () => {
+      const first = now.element().getBoundingClientRect();
+      const second = schedule.element().getBoundingClientRect();
+      return { x: second.x - first.x, y: second.y - first.y };
+    };
+    const before = radioSpacing();
+
+    await schedule.click();
+    await expect.element(publishScreen.scheduleDate()).toBeVisible();
+    expect(radioSpacing()).toEqual(before);
+
+    await now.click();
+    await expect.element(publishScreen.scheduleDate()).not.toBeInTheDocument();
+    expect(radioSpacing()).toEqual(before);
+  });
+
   it('gives each publish-at radio its own id, reached from exactly one label', async () => {
     await renderPublishFlow();
 
