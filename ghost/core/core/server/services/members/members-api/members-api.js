@@ -72,7 +72,6 @@ module.exports = function MembersAPI({
   emailAddressService,
   giftService,
   metafieldValues,
-  metafieldDefinitions,
 }) {
   const tokenService = new TokenService({
     signingKeys,
@@ -155,7 +154,6 @@ module.exports = function MembersAPI({
     commentsService,
     giftService,
     metafieldValues,
-    metafieldDefinitions,
   });
 
   const geolocationService = new GeolocationService();

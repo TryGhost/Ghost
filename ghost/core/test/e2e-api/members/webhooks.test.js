@@ -1599,7 +1599,7 @@ describe('Members API', function () {
 
         assert.ok(member, 'the member was still created');
         assert.deepEqual(
-          member.metafields.custom,
+          member.metafields?.custom ?? {},
           {},
           'nothing was collected, and nothing else was disturbed',
         );
@@ -1647,11 +1647,15 @@ describe('Members API', function () {
         });
 
         assert.equal(
-          member.metafields.custom[fieldKeys.recipient],
+          member.metafields?.custom?.[fieldKeys.recipient],
           undefined,
           'no recipient name was kept',
         );
-        assert.equal(member.metafields.custom[fieldKeys.address], undefined, 'no address was kept');
+        assert.equal(
+          member.metafields?.custom?.[fieldKeys.address],
+          undefined,
+          'no address was kept',
+        );
       });
 
       // The acceptance criterion this whole thing turns on: a value Stripe collected
@@ -1754,7 +1758,7 @@ describe('Members API', function () {
         const member = await sendCheckoutWebhook('checkout-collected-nothing@email.com', {});
 
         assert.equal(member.status, 'paid');
-        assert.deepEqual(member.metafields.custom, {});
+        assert.deepEqual(member.metafields?.custom ?? {}, {});
       });
 
       // A checkout session can be started with nothing but an email address, and typing
