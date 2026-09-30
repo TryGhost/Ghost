@@ -42,7 +42,8 @@ Failures back off; 401, 403 and 404 stop polling.
 ## Storage
 
 Presence uses Ghost's configured `cache:presence` adapter and keys scoped by
-`site_uuid`. It inherits the active cache adapter unless overridden:
+`site_uuid`. If the site ID is missing, presence is disabled with a startup warning.
+It inherits the active cache adapter unless overridden:
 
 ```json
 {
