@@ -70,13 +70,14 @@ describe('Uploaded site imports', function () {
     return { manager: new ImportManager(deps), deps };
   }
 
-  // The job manager is handed a closure over the stored upload. Run it against a stubbed
-  // executeImport to learn what it would execute, without executing it.
-  async function queuedImport({ manager, deps }: any): Promise<[string, string, any]> {
+  // The job manager is handed a closure over the job. Run it against a stubbed executeImport
+  // to learn which job it would execute, then put that job through JSON, as it will be once
+  // it crosses a process boundary.
+  async function queuedJob({ manager, deps }: any) {
     const execute = sinon.stub(manager, 'executeImport');
     await deps.jobManager.addJob.firstCall.args[0].job();
     execute.restore();
-    return execute.firstCall.args as [string, string, any];
+    return JSON.parse(JSON.stringify(execute.firstCall.args[0]));
   }
   async function archive(entries: Record<string, string>, name = 'upload.zip') {
     const target = path.join(directory, name);
@@ -161,11 +162,16 @@ describe('Uploaded site imports', function () {
     sinon.assert.calledOnceWithMatch(first.deps.jobManager.addJob, { offloaded: false });
     sinon.assert.calledOnce(save);
     sinon.assert.notCalled(raw);
-    const [uploadKey, fileName, importOptions] = await queuedImport(first);
-    assert.match(uploadKey, uuid);
-    assert.equal(fileName, file.name);
-    assert.equal(importOptions, options);
-    assert.deepEqual(await fs.readdir(storage.storagePath), [uploadKey]);
+    const job = await queuedJob(first);
+    assert.match(job.uploadKey, uuid);
+    assert.deepEqual(job, {
+      uploadKey: job.uploadKey,
+      fileName: file.name,
+      emailRecipient: 'owner@example.com',
+      returnImportedData: true,
+      importPersistUser: false,
+    });
+    assert.deepEqual(await fs.readdir(storage.storagePath), [job.uploadKey]);
     await fs.remove(file.path);
     const later = subject();
     const imported = sinon
@@ -173,10 +179,10 @@ describe('Uploaded site imports', function () {
       .callsFake(async (data: any, passed: unknown) => {
         assert.equal(data.images[0].name, name);
         assert.equal((await fs.readFile(data.images[0].path)).toString(), 'image bytes');
-        assert.equal(passed, options);
+        assert.deepEqual(passed, { ...options, importTag: undefined });
         return {};
       });
-    await later.manager.executeImport(uploadKey, fileName, importOptions);
+    await later.manager.executeImport(job);
     sinon.assert.calledOnce(imported);
     sinon.assert.calledOnce(later.deps.mailer.send);
     sinon.assert.notCalled(read);
@@ -197,10 +203,14 @@ describe('Uploaded site imports', function () {
       await fs.writeFile(source.path, content);
       const { data: expected } = await first.manager.loadFile(source);
       await first.manager.importFromFile(source, { user: { email: 'owner@example.com' } });
-      const [uploadKey, fileName, importOptions] = await queuedImport(first);
-      assert.match(uploadKey, uuid);
-      assert.equal(fileName, name);
-      assert.equal(await fs.readFile(path.join(storage.storagePath, uploadKey), 'utf8'), content);
+      const job = await queuedJob(first);
+      assert.match(job.uploadKey, uuid);
+      assert.deepEqual(Object.keys(job).sort(), ['emailRecipient', 'fileName', 'uploadKey']);
+      assert.equal(job.fileName, name);
+      assert.equal(
+        await fs.readFile(path.join(storage.storagePath, job.uploadKey), 'utf8'),
+        content,
+      );
       await fs.remove(source.path);
       const later = subject();
       const imported = sinon.stub(later.manager, 'doImport').callsFake(async (data: unknown) => {
@@ -208,7 +218,7 @@ describe('Uploaded site imports', function () {
         return {};
       });
       assert.deepEqual(
-        await later.manager.executeImport(uploadKey, fileName, importOptions),
+        await later.manager.executeImport(job),
         {},
         later.deps.logging.error.firstCall?.args[0]?.stack,
       );
@@ -220,7 +230,7 @@ describe('Uploaded site imports', function () {
     });
   }
 
-  it('queues the key the adapter stored the upload under, not the one attempted', async function () {
+  it('carries the key the adapter stored the upload under, not the one attempted', async function () {
     const first = subject();
     const save = storage.save.bind(storage);
     sinon
@@ -233,13 +243,13 @@ describe('Uploaded site imports', function () {
       user: { email: 'owner@example.com' },
     });
 
-    const [uploadKey, fileName, importOptions] = await queuedImport(first);
-    assert.match(uploadKey, /^renamed-/);
-    assert.deepEqual(await fs.readdir(storage.storagePath), [uploadKey]);
+    const job = await queuedJob(first);
+    assert.match(job.uploadKey, /^renamed-/);
+    assert.deepEqual(await fs.readdir(storage.storagePath), [job.uploadKey]);
 
     const later = subject();
     const imported = sinon.stub(later.manager, 'doImport').resolves({});
-    assert.deepEqual(await later.manager.executeImport(uploadKey, fileName, importOptions), {});
+    assert.deepEqual(await later.manager.executeImport(job), {});
     sinon.assert.calledOnce(imported);
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
   });
@@ -332,7 +342,7 @@ describe('Uploaded site imports', function () {
     release();
     await pending;
     sinon.assert.calledOnce(first.deps.jobManager.addJob);
-    await first.manager.executeImport(...(await queuedImport(first)));
+    await first.manager.executeImport(await queuedJob(first));
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
   });
   for (const stage of ['missing object', 'read', 'write', 'extraction', 'parsing', 'import']) {
@@ -342,12 +352,12 @@ describe('Uploaded site imports', function () {
       await manager.importFromFile(await archive({ 'data.json': json }), {
         user: { email: 'owner@example.com' },
       });
-      const [uploadKey, fileName, importOptions] = await queuedImport(first);
+      const job = await queuedJob(first);
       const local = sinon.spy(fs, 'mkdtemp');
       const extract = sinon.spy(manager, 'extractZip');
       const failure = new Error(`${stage} failed`);
       if (stage === 'missing object') {
-        await storage.delete(uploadKey);
+        await storage.delete(job.uploadKey);
       }
       if (stage === 'read') {
         const read = storage.readStream.bind(storage);
@@ -370,16 +380,16 @@ describe('Uploaded site imports', function () {
           .callsFake(() => write(path.join(directory, 'absent', 'destination')));
       }
       if (stage === 'extraction') {
-        await fs.writeFile(path.join(storage.storagePath, uploadKey), 'junk');
+        await fs.writeFile(path.join(storage.storagePath, job.uploadKey), 'junk');
       }
       if (stage === 'parsing') {
         const corrupt = await archive({ 'data.json': '{' }, 'corrupt.zip');
-        await fs.copy(corrupt.path, path.join(storage.storagePath, uploadKey));
+        await fs.copy(corrupt.path, path.join(storage.storagePath, job.uploadKey));
       }
       if (stage === 'import') {
         sinon.stub(manager, 'doImport').rejects(failure);
       }
-      assert.equal(await manager.executeImport(uploadKey, fileName, importOptions), undefined);
+      assert.equal(await manager.executeImport(job), undefined);
       sinon.assert.calledOnceWithMatch(deps.mailer.send, {
         subject: 'Your content import was unsuccessful',
       });
@@ -399,7 +409,7 @@ describe('Uploaded site imports', function () {
       await manager.importFromFile(await archive({ 'data.json': json }), {
         user: { email: 'owner@example.com' },
       });
-      const [uploadKey, fileName, importOptions] = await queuedImport(first);
+      const job = await queuedJob(first);
       const extract = sinon.spy(manager, 'extractZip');
       const downloads = sinon.spy(fs, 'mkdtemp');
       const remove = fs.remove.bind(fs);
@@ -415,7 +425,7 @@ describe('Uploaded site imports', function () {
           await remove(target);
         });
       }
-      assert.deepEqual(await manager.executeImport(uploadKey, fileName, importOptions), {});
+      assert.deepEqual(await manager.executeImport(job), {});
       sinon.assert.calledOnce(deps.mailer.send);
       sinon.assert.calledOnce(deps.logging.error);
       assert.equal(
@@ -438,11 +448,11 @@ describe('Uploaded site imports', function () {
     await manager.importFromFile(await archive({ 'data.json': json }), {
       user: { email: 'owner@example.com' },
     });
-    const [uploadKey, fileName, importOptions] = await queuedImport(first);
+    const job = await queuedJob(first);
     const downloads = sinon.spy(fs, 'mkdtemp');
     const failure = new Error('email failed');
     deps.mailer.send.rejects(failure);
-    await assert.rejects(manager.executeImport(uploadKey, fileName, importOptions), failure);
+    await assert.rejects(manager.executeImport(job), failure);
     sinon.assert.calledOnce(deps.mailer.send);
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
     assert.equal(
@@ -475,9 +485,9 @@ describe('Uploaded site imports', function () {
       const raw = sinon.spy(storage, 'saveRaw');
       const buffered = sinon.spy(storage, 'read');
       await first.manager.importFromFile(file, { user: { email: 'owner@example.com' } });
-      const [uploadKey, fileName, importOptions] = await queuedImport(first);
-      assert.match(uploadKey, uuid);
-      assert.deepEqual(await fs.readdir(storage.storagePath), [uploadKey]);
+      const job = await queuedJob(first);
+      assert.match(job.uploadKey, uuid);
+      assert.deepEqual(await fs.readdir(storage.storagePath), [job.uploadKey]);
       sinon.assert.calledOnce(save);
       sinon.assert.notCalled(raw);
       await fs.remove(source);
@@ -504,7 +514,7 @@ describe('Uploaded site imports', function () {
         return {};
       });
       assert.deepEqual(
-        await later.manager.executeImport(uploadKey, fileName, importOptions),
+        await later.manager.executeImport(job),
         {},
         later.deps.logging.error.firstCall?.args[0]?.stack,
       );

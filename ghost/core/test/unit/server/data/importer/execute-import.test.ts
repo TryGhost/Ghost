@@ -177,33 +177,32 @@ describe('Site import execution', function () {
   });
 
   it('logs when a queued import starts and how it ends', async function () {
+    const job = {
+      uploadKey: 'upload-key',
+      fileName: 'export.json',
+      emailRecipient: options.user.email,
+    };
     const started = '[Background Job] site-content-import started';
     const completed = /^\[Background Job\] site-content-import completed in \d+ms$/;
     const failed = /^\[Background Job\] site-content-import failed after \d+ms$/;
 
     const succeeds = subject();
     sinon.stub(succeeds.manager, 'processImport').resolves({});
-    assert.deepEqual(
-      await succeeds.manager.executeImport('upload-key', 'export.json', options),
-      {},
-    );
+    assert.deepEqual(await succeeds.manager.executeImport(job), {});
     sinon.assert.calledWith(succeeds.deps.logging.info.firstCall, started);
     sinon.assert.calledWith(succeeds.deps.logging.info.secondCall, sinon.match(completed));
 
     // A failed import is swallowed by processImport, which resolves undefined
     const fails = subject();
     sinon.stub(fails.manager, 'processImport').resolves(undefined);
-    assert.equal(
-      await fails.manager.executeImport('upload-key', 'export.json', options),
-      undefined,
-    );
+    assert.equal(await fails.manager.executeImport(job), undefined);
     sinon.assert.calledWith(fails.deps.logging.info.firstCall, started);
     sinon.assert.calledWith(fails.deps.logging.info.secondCall, sinon.match(failed));
 
     const throws = subject();
     const error = new Error('email failed');
     sinon.stub(throws.manager, 'processImport').rejects(error);
-    await assert.rejects(throws.manager.executeImport('upload-key', 'export.json', options), error);
+    await assert.rejects(throws.manager.executeImport(job), error);
     sinon.assert.calledWith(throws.deps.logging.error, error, sinon.match(failed));
   });
 
