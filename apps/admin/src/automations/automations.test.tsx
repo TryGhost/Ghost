@@ -147,6 +147,63 @@ describe('Automations', () => {
     expect(screen.getByRole('button', { name: 'New automation' })).toBe(button);
   });
 
+  it.each([
+    { count: undefined, disabled: true },
+    { count: 0, disabled: false },
+    { count: 19, disabled: false },
+    { count: 20, disabled: true },
+    { count: 21, disabled: true },
+  ])('sets "New automation" disabled=$disabled with count=$count', ({ count, disabled }) => {
+    mockUseBrowseConfig.mockReturnValue({
+      data: { config: { labs: { automationsPerTier: true } } },
+      isLoading: false,
+    });
+    mockUseBrowseAutomations.mockReturnValue({
+      data:
+        count === undefined
+          ? undefined
+          : {
+              automations: Array.from({ length: count }, (_, index) => ({
+                ...automations[index % automations.length],
+                id: `automation-id-${index}`,
+              })),
+            },
+      isError: false,
+      isLoading: count === undefined,
+    });
+
+    renderPage();
+
+    const button = screen.getByRole('button', { name: 'New automation' });
+    if (disabled) {
+      expect(button).toBeDisabled();
+    } else {
+      expect(button).toBeEnabled();
+    }
+  });
+
+  it('counts hidden paid automations towards the limit', () => {
+    mockUseBrowseConfig.mockReturnValue({
+      data: { config: { stripeDirect: true, labs: { automationsPerTier: true } } },
+      isLoading: false,
+    });
+    mockUseBrowseAutomations.mockReturnValue({
+      data: {
+        automations: Array.from({ length: 20 }, (_, index) => ({
+          ...automations[index % automations.length],
+          id: `automation-id-${index}`,
+        })),
+      },
+      isError: false,
+      isLoading: false,
+    });
+
+    renderPage();
+
+    expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New automation' })).toBeDisabled();
+  });
+
   it('shows free and paid sequences when Stripe is connected', () => {
     renderPage();
 

@@ -8,9 +8,13 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 
+const MAX_AUTOMATIONS = 20;
+
 const Automations: React.FC = () => {
-  const { automations, error, isError, isLoading } = useVisibleAutomations();
+  const { automations, automationCount, error, isError, isLoading } = useVisibleAutomations();
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
+  const canCreateNewAutomations =
+    automationCount !== undefined && automationCount < MAX_AUTOMATIONS;
 
   if (isError) {
     throw error instanceof Error ? error : new Error('Failed to load automations');
@@ -39,7 +43,11 @@ const Automations: React.FC = () => {
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup>
                     <PageHeader.ActionGroup.Primary>
-                      <PageHeader.Action label="New automation" type="button">
+                      <PageHeader.Action
+                        disabled={!canCreateNewAutomations}
+                        label="New automation"
+                        type="button"
+                      >
                         New automation
                       </PageHeader.Action>
                     </PageHeader.ActionGroup.Primary>
