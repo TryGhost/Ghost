@@ -302,14 +302,14 @@ describe('register-job-handlers', function () {
   // The second slot lets an overlapping tick reach the service's skip guard
   // instead of queueing behind a running pass.
   it('registers tinybird-sync on its own queue with room for an overlapping tick', function () {
-    const registration = registrationFor('tinybird-sync');
+    const options = registrationFor('tinybird-sync').args[2]!;
 
-    assert.equal(registration.args[2].queue, 'tinybird-sync');
-    assert.equal(registration.args[2].concurrency, 2);
+    assert.equal(options.queue, 'tinybird-sync');
+    assert.equal(options.concurrency, 2);
   });
 
   it('gates tinybird-sync ticks on the Tinybird sync switch', function () {
-    const { isEnabled } = registrationFor('tinybird-sync').args[2];
+    const isEnabled = registrationFor('tinybird-sync').args[2]!.isEnabled!;
 
     tinybirdSync.isEnabled.returns(false);
     assert.equal(isEnabled(), false);
