@@ -10,6 +10,7 @@ const moment = require('moment');
 // assume rather than on the behaviour it is checking.
 const createMetafieldValuesStub = () => ({
   getValuesForMembers: sinon.stub().resolves(new Map()),
+  getValuesForMember: sinon.stub().resolves(undefined),
   unwrapWire: sinon.stub().callsFake((input) => input),
   namesValues: sinon.stub().returns(false),
   planWrite: sinon.stub().resolves([]),
