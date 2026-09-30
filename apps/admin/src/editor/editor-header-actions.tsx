@@ -16,7 +16,7 @@ import { PostPreviewModal, type PostPreviewModalProps } from './preview/post-pre
 import { postPreviewUrl } from './preview/preview-url';
 import { PublishFlowModal } from './publish/publish-flow-modal';
 import { UpdateFlowModal } from './publish/update-flow-modal';
-import { buildPublishFlowPost, type PublishFlowPost } from './publish/flow-post';
+import type { PublishFlowPost } from './publish/flow-post';
 import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { usePublishLimits } from './publish/use-publish-limits';
@@ -25,7 +25,7 @@ import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
 import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
 
-type OpenFlow = 'none' | 'publish' | 'update';
+export type OpenFlow = 'none' | 'publish' | 'update';
 
 /** The preview's props short of Publish, which only the publish controls can supply. */
 type HeaderPreviewProps = Omit<PostPreviewModalProps, 'onPublish' | 'publishDisabled'>;
@@ -47,11 +47,18 @@ async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
 
 export interface EditorHeaderActionsProps {
   session: EditorSessionHandle;
+  /** Built by the screen, which derives the status line's retry from it too. */
+  post: PublishFlowPost;
   postType: PostType;
   currentUser?: User;
   siteUrl: string;
   /** Unresolved TK markers in the title, excerpt, body and feature image. */
   tkCount: number;
+  /** Held by the screen, because the status line opens the publish flow too. */
+  openFlow: OpenFlow;
+  onOpenFlow: (flow: OpenFlow) => void;
+  /** Whether the status line offers a failed send's retry, which needs the publish inputs. */
+  offersEmailRetry: boolean;
 }
 
 /**
@@ -60,30 +67,22 @@ export interface EditorHeaderActionsProps {
  */
 export function EditorHeaderActions({
   session,
+  post,
   postType,
   currentUser,
   siteUrl,
   tkCount,
+  openFlow,
+  onOpenFlow,
+  offersEmailRetry,
 }: EditorHeaderActionsProps) {
   const { isAdmin7 } = useShade();
-  const { persistedId, publishTime, title } = session;
+  const { persistedId } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
 
   const openPreview = useCallback(() => setPreviewOpen(true), []);
 
-  const post = buildPublishFlowPost({
-    snapshot: {
-      id: persistedId,
-      status: publishTime.status,
-      publishedAt: publishTime.publishedAt,
-      title,
-    },
-    record,
-    displayName: postType,
-    lexical: session.getLiveLexical(),
-  });
   // Core 301-redirects a published or sent post away from /p/:uuid/ and drops the
   // audience query, so Ember offers a preview only while the post is a draft.
   const isDraft = post.status === 'draft';
@@ -157,12 +156,13 @@ export function EditorHeaderActions({
         <PublishActions
           isDraft={isDraft}
           isSaving={isSaving}
+          offersEmailRetry={offersEmailRetry}
           openFlow={openFlow}
           post={post}
           preview={preview}
           session={session}
           tkCount={tkCount}
-          onOpenFlow={setOpenFlow}
+          onOpenFlow={onOpenFlow}
           onPreview={openPreview}
         />
       )}
@@ -176,6 +176,7 @@ interface PublishActionsProps {
   tkCount: number;
   isDraft: boolean;
   isSaving: boolean;
+  offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
   onOpenFlow: (flow: OpenFlow) => void;
@@ -192,6 +193,7 @@ function PublishActions({
   tkCount,
   isDraft,
   isSaving,
+  offersEmailRetry,
   openFlow,
   preview,
   onOpenFlow,
@@ -236,30 +238,34 @@ function PublishActions({
   // button is the only way into the flow from there.
   usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
 
+  // A draft's Publish and the status line's retry stay disabled until these inputs load.
+  const inputsError =
+    (isDraft || offersEmailRetry) && inputs.error ? (
+      <>
+        <Text
+          className="bg-background/80 text-destructive backdrop-blur-sm"
+          data-testid={editorPublishInputsError}
+          role="alert"
+          size="sm"
+        >
+          {inputs.error.message}
+        </Text>
+        <Button
+          className="bg-background/80 backdrop-blur-sm"
+          size={isAdmin7 ? 'default' : 'sm'}
+          variant="ghost"
+          onClick={inputs.retry}
+        >
+          Retry
+        </Button>
+      </>
+    ) : null;
+
   return (
     <>
       {isDraft ? (
         <>
-          {inputs.error ? (
-            <>
-              <Text
-                className="bg-background/80 text-destructive backdrop-blur-sm"
-                data-testid={editorPublishInputsError}
-                role="alert"
-                size="sm"
-              >
-                {inputs.error.message}
-              </Text>
-              <Button
-                className="bg-background/80 backdrop-blur-sm"
-                size={isAdmin7 ? 'default' : 'sm'}
-                variant="ghost"
-                onClick={inputs.retry}
-              >
-                Retry
-              </Button>
-            </>
-          ) : null}
+          {inputsError}
           <Button
             disabled={!inputs.isReady}
             size={isAdmin7 ? 'default' : 'sm'}
@@ -275,6 +281,7 @@ function PublishActions({
         </>
       ) : (
         <>
+          {inputsError}
           {/* Ember routes a sent post to the update flow from its status line, not the header. */}
           {post.status === 'sent' ? null : (
             <PageHeader.Action
