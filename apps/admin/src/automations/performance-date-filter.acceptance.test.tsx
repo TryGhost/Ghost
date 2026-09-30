@@ -86,6 +86,28 @@ const expectCounts = async (counts: readonly [number, number, number]) => {
 const params = (url: string) => Object.fromEntries(new URL(url).searchParams);
 
 describe('Automation performance date filter', () => {
+  it('renders first-day all-time history with distinct hour labels and shared totals', async () => {
+    const body = response('2024-03-10', [1, 2, 3]);
+    const stats = body.automation_performance_stats[0];
+    stats.entry_window.bucket = 'hour';
+    stats.entries = [
+      { date: '2024-03-10T05:00:00Z', count: 0 },
+      { date: '2024-03-10T06:00:00Z', count: 6 },
+    ];
+    const requests = fakeAdminEndpoint('GET', endpoint, body);
+    await render();
+    await expectCounts([1, 2, 3]);
+    const ticks = () =>
+      entries().element().querySelectorAll('.recharts-xAxis .recharts-cartesian-axis-tick text');
+    await expect.poll(() => ticks().length).toBe(2);
+    const text = [...ticks()].map((tick) => tick.textContent);
+    expect(text[0]).toMatch(/\d+:\d+[ap]m/);
+    expect(text[1]).toMatch(/\d+:\d+[ap]m/);
+    expect(text[0]).not.toBe(text[1]);
+    expect(requests.requests).toHaveLength(1);
+    expect(params(requests.requests[0].url)).toEqual({ timezone });
+  });
+
   it('requests explicit local dates once per preset and updates the chart and all status cards', async () => {
     const requests = fakeAdminEndpoint('GET', endpoint, ({ url }) => {
       const preset = presets.find(({ start }) => start === params(url).date_from);

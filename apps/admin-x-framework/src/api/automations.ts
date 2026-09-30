@@ -122,7 +122,7 @@ export const AutomationPerformanceStatsSchema = z.object({
   entries: z
     .array(
       z.object({
-        date: z.iso.date(),
+        date: z.union([z.iso.date(), z.iso.datetime()]),
         count: z.number().int().nonnegative(),
       }),
     )
@@ -130,7 +130,7 @@ export const AutomationPerformanceStatsSchema = z.object({
   entry_window: z.object({
     date_from: z.iso.date(),
     date_to: z.iso.date(),
-    bucket: z.literal('day'),
+    bucket: z.enum(['day', 'hour']),
     timezone: z.string().min(1),
   }),
 });

@@ -19,6 +19,7 @@ export const TotalEntriesChart: React.FC<{ data: AutomationEntriesChartData }> =
           data={data.points}
           id={id}
           range={data.range}
+          showHours={data.showHours}
           showYAxisValues={false}
           yAxisRange={[0, data.max]}
         />

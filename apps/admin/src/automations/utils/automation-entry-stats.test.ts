@@ -65,6 +65,31 @@ describe('automation entry chart mapping', () => {
     },
   );
 
+  it('preserves hourly points and zero gaps, including both repeated DST hours', () => {
+    const stats = history(1);
+    stats.entry_window = {
+      date_from: '2024-11-03',
+      date_to: '2024-11-04',
+      bucket: 'hour',
+      timezone: 'America/New_York',
+    };
+    stats.entries = [
+      { date: '2024-11-03T04:00:00Z', count: 0 },
+      { date: '2024-11-03T05:00:00Z', count: 1 },
+      { date: '2024-11-03T06:00:00Z', count: 2 },
+    ];
+    stats.total_run_count = 3;
+    const mapped = mapAutomationEntryStats(stats);
+    expect(mapped).toMatchObject({
+      range: 1,
+      showHours: true,
+      total: '3',
+      startDate: '2024-11-03',
+      endDate: '2024-11-03',
+    });
+    expect(mapped.points.map(({ date, value }) => ({ date, count: value }))).toEqual(stats.entries);
+  });
+
   it('keeps an empty chart at zero with a usable axis', () => {
     const stats = history(1);
     stats.entries[0].count = 0;
