@@ -134,6 +134,10 @@ export async function browse() {
   };
 }
 
+export async function getNumberOfAutomations(): Promise<number> {
+  return await repository.getNumberOfAutomations();
+}
+
 export async function read(automationId: string) {
   const automation = await repository.getById(automationId);
 

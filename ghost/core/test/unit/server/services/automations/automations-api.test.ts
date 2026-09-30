@@ -1,6 +1,25 @@
 import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
+import { vi } from 'vitest';
+import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
+
+vi.mock(
+  '../../../../../core/server/services/automations/database-automations-repository',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('../../../../../core/server/services/automations/database-automations-repository')
+      >();
+    return {
+      ...actual,
+      createDatabaseAutomationsRepository: vi.fn((options) => ({
+        ...actual.createDatabaseAutomationsRepository(options),
+        getNumberOfAutomations: vi.fn().mockResolvedValue(20),
+      })),
+    };
+  },
+);
 
 import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
 import {
@@ -33,6 +52,14 @@ const buildEdge = (source: Readonly<{ id: string }>, target: Readonly<{ id: stri
 describe('automations API', function () {
   afterEach(function () {
     sinon.restore();
+  });
+
+  describe('getNumberOfAutomations', function () {
+    it('returns the repository count', async function () {
+      assert.equal(await automationsApi.getNumberOfAutomations(), 20);
+      const repository = vi.mocked(createDatabaseAutomationsRepository).mock.results[0].value;
+      expect(repository.getNumberOfAutomations).toHaveBeenCalledOnce();
+    });
   });
 
   describe('edit', function () {

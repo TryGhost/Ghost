@@ -207,6 +207,11 @@ export function createDatabaseAutomationsRepository({
       });
     },
 
+    async getNumberOfAutomations() {
+      const result = await knex('automations').count({ count: '*' }).first();
+      return Number(result?.count ?? 0);
+    },
+
     async exists(id) {
       return !!(await knex('automations').where({ id }).first('id'));
     },
