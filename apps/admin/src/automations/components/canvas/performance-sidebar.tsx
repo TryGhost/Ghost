@@ -3,6 +3,7 @@ import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
+import { StatusCounts } from './status-counts';
 
 export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automationId }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,6 +52,7 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
           {hasOpened && (
             <Stack className="mt-4" gap="md">
               <TotalEntries automationId={automationId} />
+              <StatusCounts automationId={automationId} />
             </Stack>
           )}
         </Box>
