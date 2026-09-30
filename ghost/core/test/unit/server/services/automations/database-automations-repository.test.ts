@@ -958,6 +958,24 @@ describe('automations repository', function () {
     });
   });
 
+  describe('getNumberOfAutomations', function () {
+    it('counts active and inactive automations without creating defaults', async function () {
+      const rows = await knex('automations').select('id');
+      assert.equal(await repo.getNumberOfAutomations(), rows.length);
+      await knex('automations').update({ status: 'inactive' });
+      assert.equal(await repo.getNumberOfAutomations(), rows.length);
+    });
+
+    it('returns zero for an empty automations table', async function () {
+      await knex('automation_action_edges').del();
+      await knex('automation_action_revisions').del();
+      await knex('automation_actions').del();
+      await knex('automations').del();
+      assert.equal(await repo.getNumberOfAutomations(), 0);
+      assert.equal((await knex('automations').select('id')).length, 0);
+    });
+  });
+
   describe('URL serialization', function () {
     it('returns stored transform-ready email URLs as absolute URLs', async function () {
       const automation = await getAutomationBySlug('member-welcome-email-free');
