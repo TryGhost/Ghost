@@ -6,7 +6,14 @@ import {
   type RunCursorScope,
 } from '../../../../../core/server/services/automations/automation-run-cursor';
 
-const scope: RunCursorScope = { automation_id: 'automation-1', status: null, direction: 'desc' };
+const scope: RunCursorScope = {
+  automation_id: 'automation-1',
+  date_from: null,
+  date_to: null,
+  timezone: 'UTC',
+  status: null,
+  direction: 'desc',
+};
 const position = { id: 'run-1', created_at: '2026-09-14T12:00:00.123Z' };
 const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
 
@@ -37,6 +44,9 @@ describe('automation run cursors', function () {
   }
 
   for (const [label, other] of [
+    ['start date', { date_from: '2026-09-01' }],
+    ['end date', { date_to: '2026-10-01' }],
+    ['timezone', { timezone: 'America/New_York' }],
     ['automation', { automation_id: 'automation-2' }],
     ['status', { status: 'completed' as const }],
     ['direction', { direction: 'asc' as const }],

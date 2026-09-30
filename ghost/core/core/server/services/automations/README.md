@@ -74,7 +74,7 @@ without guessing whether the backend is older.
 
 ## Run list
 
-`GET /ghost/api/admin/automations/:id/runs/` returns the latest fifty runs:
+`GET /ghost/api/admin/automations/:id/runs/` returns up to fifty runs per page:
 
 ```json
 {
@@ -84,11 +84,18 @@ without guessing whether the backend is older.
     "status": "completed",
     "failed": false,
     "member": {"id": "…", "name": "Alex", "email": "alex@example.com"}
-  }]
+  }],
+  "meta": {
+    "pagination": {"limit": 50, "next_cursor": "opaque-cursor"}
+  }
 }
 ```
 
-Each row is a run, including repeat entries by the same member. Ordering is entry
+`next_cursor` is null when no further page is available, including empty results
+and a final page containing exactly fifty runs. Pass a non-null value as `cursor`
+with the same filters and ordering to request the next page.
+
+Each row is a run, including repeat entries by the same member. Default ordering is entry
 time (`created_at`) descending, then run ID descending for ties. Timestamps are UTC
 with millisecond precision. Status is `in_progress`, `completed`, or `exited_early`,
 using the same recorded-step rules as the status counts. Runs without steps are
@@ -114,9 +121,16 @@ parameters use the same inclusive calendar-date contract as performance stats:
 `date_from` is required when `date_to` is supplied; omitting `date_to` uses today
 in the requested timezone, and omitting both dates selects all history.
 Entry-date filters select runs before classification, keeping the list and summary
-counts on the same cohort. There are no search or pagination controls. An empty history or no matches
+counts on the same cohort. There is no member search in this slice. An empty history or no matches
 returns `automation_runs: []`. It requires automation read permission, returns 404
 for unknown automations, and uses the same Tinybird availability checks as summaries.
+
+The optional `order` is `created_at desc` (default) or `created_at asc`; both use
+run ID in the same direction to break ties. `cursor` continues after the last
+returned timestamp and ID. It is bound to the automation, status, direction, entry dates, and timezone;
+malformed or mismatched cursors return 422. Core requests one extra row to decide
+whether to return a next cursor and hydrates only the visible page. These are live
+reads, not a snapshot: status changes can affect later pages.
 
 ## Availability
 

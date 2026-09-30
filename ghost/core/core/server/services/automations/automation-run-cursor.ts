@@ -6,11 +6,14 @@ export type AutomationRunPosition = { id: string; created_at: string };
 const messages = {
   invalidCursor: 'Automation run cursor is invalid.',
   mismatchedCursor:
-    'Automation run cursor does not match the requested automation, status, or order.',
+    'Automation run cursor does not match the requested automation, status, order, or date range.',
 };
 
 export type RunCursorScope = {
   automation_id: string;
+  date_from: string | null;
+  date_to: string | null;
+  timezone: string;
   status: 'in_progress' | 'completed' | 'exited_early' | null;
   direction: AutomationRunSortDirection;
 };
@@ -18,6 +21,9 @@ export type RunCursorScope = {
 // Opaque to clients; carries its scope so it cannot continue a different query.
 const runCursorSchema = z.strictObject({
   automation_id: z.string().min(1),
+  date_from: z.iso.date().nullable(),
+  date_to: z.iso.date().nullable(),
+  timezone: z.string().min(1),
   status: z.enum(['in_progress', 'completed', 'exited_early']).nullable(),
   direction: z.enum(['asc', 'desc']),
   created_at: z.iso.datetime().transform((value) => new Date(value).toISOString()),
@@ -41,9 +47,20 @@ export function decodeRunCursor(cursor: unknown, scope: RunCursorScope): Automat
   if (!parsed?.success) {
     throw new errors.ValidationError({ message: messages.invalidCursor });
   }
-  const { automation_id: automationId, status, direction, ...position } = parsed.data;
+  const {
+    automation_id: automationId,
+    status,
+    direction,
+    date_from: dateFrom,
+    date_to: dateTo,
+    timezone,
+    ...position
+  } = parsed.data;
   if (
     automationId !== scope.automation_id ||
+    dateFrom !== scope.date_from ||
+    dateTo !== scope.date_to ||
+    timezone !== scope.timezone ||
     status !== scope.status ||
     direction !== scope.direction
   ) {

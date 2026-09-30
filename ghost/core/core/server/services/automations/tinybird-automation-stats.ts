@@ -1,3 +1,4 @@
+import type { AutomationRunSortDirection, AutomationRunPosition } from './automation-run-cursor';
 import logging from '@tryghost/logging';
 import { z } from 'zod';
 import type { AutomationBrowseResult } from './automations-repository';
@@ -13,6 +14,10 @@ export type TinybirdClient = {
       dateFrom?: string;
       dateTo?: string;
       runStatus?: string;
+      sortDirection?: AutomationRunSortDirection;
+      limit?: number;
+      afterCreatedAt?: string;
+      afterId?: string;
     },
   ): Promise<unknown>;
 };
@@ -144,38 +149,70 @@ export async function fetchAutomationPerformanceStats(
   }
 }
 
-const automationRunsSchema = z
-  .array(
-    z
-      .object({
-        id: z.string().min(1),
-        created_at: z.iso.datetime().transform((value) => new Date(value).toISOString()),
-        status: z.enum(['in_progress', 'completed', 'exited_early']),
-        failed: z.boolean(),
-      })
-      .refine((run) => !run.failed || run.status === 'exited_early'),
-  )
-  .max(50);
+// Entry time then run ID; both sides must hold normalised ISO timestamps.
+export function compareRuns(a: AutomationRunPosition, b: AutomationRunPosition) {
+  if (a.created_at !== b.created_at) {
+    return a.created_at < b.created_at ? -1 : 1;
+  }
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+}
+
+const automationRunRowSchema = z
+  .object({
+    id: z.string().min(1),
+    created_at: z.iso.datetime().transform((value) => new Date(value).toISOString()),
+    status: z.enum(['in_progress', 'completed', 'exited_early']),
+    failed: z.boolean(),
+  })
+  .refine((run) => !run.failed || run.status === 'exited_early');
+
+type AutomationRunRow = z.infer<typeof automationRunRowSchema>;
+
+function isValidRunPage(
+  rows: AutomationRunRow[],
+  options: {
+    status?: string;
+    direction: AutomationRunSortDirection;
+    after?: AutomationRunPosition;
+  },
+) {
+  const expectedSign = options.direction === 'asc' ? -1 : 1;
+  const uniqueIds = new Set(rows.map((row) => row.id)).size === rows.length;
+  const matchesFilter = !options.status || rows.every((row) => row.status === options.status);
+  const continuesCursor =
+    !options.after || rows.length === 0 || compareRuns(options.after, rows[0]) === expectedSign;
+  const inOrder = rows.every(
+    (row, index) => index === 0 || compareRuns(rows[index - 1], row) === expectedSign,
+  );
+  return uniqueIds && matchesFilter && continuesCursor && inOrder;
+}
 
 export async function fetchAutomationRuns(
   client: TinybirdClient,
   automationId: string,
-  status?: 'in_progress' | 'completed' | 'exited_early',
-  options: { dateFrom?: string; dateTo?: string; timezone?: string } = {},
+  options: {
+    status?: 'in_progress' | 'completed' | 'exited_early';
+    direction: AutomationRunSortDirection;
+    limit: number;
+    timezone?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    after?: AutomationRunPosition;
+  } = { direction: 'desc', limit: 50 },
 ) {
+  const { status, direction, limit, after, ...dates } = options;
   try {
     const rows = await client.fetch('api_automation_runs', {
       version: '',
       automationId,
       runStatus: status,
-      ...options,
+      ...dates,
+      sortDirection: direction,
+      limit,
+      ...(after ? { afterCreatedAt: after.created_at, afterId: after.id } : {}),
     });
-    const parsed = automationRunsSchema.safeParse(rows);
-    if (
-      !parsed.success ||
-      new Set(parsed.data.map((row) => row.id)).size !== parsed.data.length ||
-      (status && parsed.data.some((row) => row.status !== status))
-    ) {
+    const parsed = z.array(automationRunRowSchema).max(limit).safeParse(rows);
+    if (!parsed.success || !isValidRunPage(parsed.data, { status, direction, after })) {
       logging.error('Unexpected response from the Tinybird automation runs pipe');
       return null;
     }
