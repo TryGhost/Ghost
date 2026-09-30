@@ -1031,6 +1031,9 @@ importers:
       '@tryghost/kg-converters':
         specifier: workspace:*
         version: link:../../koenig/kg-converters
+      '@tryghost/kg-markdown-html-renderer':
+        specifier: workspace:*
+        version: link:../../koenig/kg-markdown-html-renderer
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:*
         version: link:../../koenig/kg-unsplash-selector
