@@ -233,7 +233,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 so the row's own box has to stay flush. */}
         <Inline align="center" className="pr-4" gap="md">
           <a
-            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline"
+            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
             data-testid="post-list-item-link"
             href={href}
             rel={linksOffsite ? 'noopener noreferrer' : undefined}
