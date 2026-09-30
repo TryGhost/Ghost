@@ -150,6 +150,25 @@ module.exports = class MemberRepository {
   }
 
   /**
+   * Runs `fn` once the work it follows has committed.
+   *
+   * Without a transaction each query commits as it runs, so `fn` runs now, and whatever it
+   * throws or returns is the caller's. Inside `options.transacting` it runs when that
+   * transaction commits, after the caller has moved on, and not at all if it rolls back;
+   * a rollback, or a failure in `fn`, goes to `onFailure`.
+   *
+   * @param {{transacting?: {executionPromise: Promise<unknown>}}} options
+   * @param {() => unknown} fn
+   * @param {(err: unknown) => void} onFailure
+   */
+  afterCommit(options, fn, onFailure) {
+    if (!options?.transacting) {
+      return fn();
+    }
+    options.transacting.executionPromise.then(() => fn()).catch(onFailure);
+  }
+
+  /**
    * @param {Parameters<typeof DomainEvents.dispatch>[0]} event
    * @param {object} options
    * @param {object} options.transacting
@@ -157,26 +176,20 @@ module.exports = class MemberRepository {
    * @returns {void}
    */
   dispatchEvent(event, options) {
-    if (options?.transacting) {
-      // Only dispatch the event after the transaction has finished
-      options.transacting.executionPromise
-        .then(async () => {
-          DomainEvents.dispatch(event);
-        })
-        .catch((err) => {
-          // catches transaction errors/rollback to not dispatch event
-          let memberMessageFragment = '';
-          if (event.data && typeof event.data === 'object' && 'memberId' in event.data) {
-            memberMessageFragment = `for member ${event.data.memberId} `;
-          }
-          logging.error({
-            err,
-            message: `Error dispatching event ${event.constructor.name} ${memberMessageFragment}after transaction finished`,
-          });
+    this.afterCommit(
+      options,
+      () => DomainEvents.dispatch(event),
+      (err) => {
+        let memberMessageFragment = '';
+        if (event.data && typeof event.data === 'object' && 'memberId' in event.data) {
+          memberMessageFragment = `for member ${event.data.memberId} `;
+        }
+        logging.error({
+          err,
+          message: `Error dispatching event ${event.constructor.name} ${memberMessageFragment}after transaction finished`,
         });
-    } else {
-      DomainEvents.dispatch(event);
-    }
+      },
+    );
   }
 
   isActiveSubscriptionStatus(status) {
@@ -981,17 +994,41 @@ module.exports = class MemberRepository {
     }
 
     if (this._stripeAPIService.configured && member._changed.email) {
-      await member.related('stripeCustomers').fetch();
-      const customers = member.related('stripeCustomers');
-      for (const customer of customers.models) {
-        await this._stripeAPIService.updateCustomerEmail(
-          customer.get('customer_id'),
-          member.get('email'),
-        );
-      }
+      // Stripe can't be rolled back, so it only hears about an address Ghost has saved.
+      await this.afterCommit(
+        options,
+        () => this.updateStripeCustomerEmails(member),
+        (err) => {
+          logging.error(
+            {
+              event: { name: 'members.stripe_customer_email.not_updated' },
+              err,
+              memberId: member.id,
+            },
+            'The Stripe customer email was not updated after a member edit',
+          );
+        },
+      );
     }
 
     return member;
+  }
+
+  /**
+   * Sends a member's email address to every Stripe customer linked to them.
+   *
+   * @private
+   * @param {object} member
+   */
+  async updateStripeCustomerEmails(member) {
+    await member.related('stripeCustomers').fetch();
+    const customers = member.related('stripeCustomers');
+    for (const customer of customers.models) {
+      await this._stripeAPIService.updateCustomerEmail(
+        customer.get('customer_id'),
+        member.get('email'),
+      );
+    }
   }
 
   async list(options) {
