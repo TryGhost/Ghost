@@ -69,7 +69,7 @@ const MigrationToolsExport: React.FC = () => {
             onClick={() => setExportAllOpen(true)}
           >
             <LucideIcon.PackageOpen />
-            Export data
+            All data
           </Button>
           {postAnalyticsButton}
         </div>

@@ -47,9 +47,7 @@ describe('Migration tools export', () => {
     const section = await openExportTab();
     await expect.element(section.getByRole('button', { name: 'Content & settings' })).toBeVisible();
     await expect.element(section.getByRole('button', { name: 'Post analytics' })).toBeVisible();
-    await expect
-      .element(section.getByRole('button', { name: 'Export data' }))
-      .not.toBeInTheDocument();
+    await expect.element(section.getByRole('button', { name: 'All data' })).not.toBeInTheDocument();
   });
 
   it('keeps the post analytics export button alongside the export dialog', async () => {
@@ -61,7 +59,7 @@ describe('Migration tools export', () => {
     await renderAdminApp('/settings/advanced', { labs: { selfServeArchives: true } });
 
     const section = await openExportTab();
-    await expect.element(section.getByRole('button', { name: 'Export data' })).toBeVisible();
+    await expect.element(section.getByRole('button', { name: 'All data' })).toBeVisible();
     await section.getByRole('button', { name: 'Post analytics' }).click();
 
     await expect.poll(() => postsExport.lastRequest?.url).toContain('/posts/export/?limit=1000');
@@ -73,7 +71,7 @@ describe('Migration tools export', () => {
     await renderAdminApp('/settings/advanced', { labs: { selfServeArchives: true } });
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect
@@ -97,7 +95,7 @@ describe('Migration tools export', () => {
     await renderAdminApp('/settings/advanced', { labs: { selfServeArchives: true } });
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('checkbox', { name: 'Members' }).click();
@@ -120,7 +118,7 @@ describe('Migration tools export', () => {
     await renderAdminApp('/settings/advanced', { labs: { selfServeArchives: true } });
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Export', exact: true }).click();
@@ -139,7 +137,7 @@ describe('Migration tools export', () => {
     await renderWithArchiveHost();
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect
@@ -183,7 +181,7 @@ describe('Migration tools export', () => {
     await renderWithArchiveHost();
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Export', exact: true }).click();
@@ -205,7 +203,7 @@ describe('Migration tools export', () => {
     await renderWithArchiveHost();
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByText('Post analytics', { exact: true }).click();
@@ -235,7 +233,7 @@ describe('Migration tools export', () => {
     await renderWithArchiveHost();
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Export', exact: true }).click();
