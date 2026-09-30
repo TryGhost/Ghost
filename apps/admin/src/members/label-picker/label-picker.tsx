@@ -25,11 +25,13 @@ const DROPDOWN_CHROME = 6;
 // Kept clear of the viewport edge so the list never sits flush against it.
 const GUTTER = 16;
 
+type PickerLabel = Pick<Label, 'id' | 'name' | 'slug'>;
+
 export interface LabelPickerProps {
-  labels: Label[];
+  labels: PickerLabel[];
   optionSource: ComboboxOptionSource<string>;
   selectedSlugs: string[];
-  resolvedSelectedLabels?: Label[];
+  resolvedSelectedLabels?: PickerLabel[];
   onToggle: (slug: string) => void;
   // Creation
   onCreate?: (name: string) => Promise<Label | undefined>;
@@ -46,7 +48,7 @@ export interface LabelPickerProps {
 // --- LabelRow: single label item with overlapping check/edit icon ---
 
 interface LabelRowProps {
-  label: Label;
+  label: PickerLabel;
   isSelected: boolean;
   showEdit: boolean;
   onToggle: (slug: string) => void;
@@ -87,7 +89,7 @@ const LabelRow: React.FC<LabelRowProps> = ({
 // --- Shared label list items (used by both modes) ---
 
 interface LabelListItemsProps {
-  labels: Label[];
+  labels: PickerLabel[];
   selectedSlugs: string[];
   search: string;
   onToggle: (slug: string) => void;
@@ -186,7 +188,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 // --- Selected labels as removable pills ---
 
 interface SelectedPillsProps {
-  labels: Label[];
+  labels: PickerLabel[];
   onToggle: (slug: string) => void;
 }
 
@@ -231,7 +233,9 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
 }) => {
   const selectedLabels =
     resolvedSelectedLabels ||
-    selectedSlugs.map((slug) => labels.find((l) => l.slug === slug)).filter((l): l is Label => !!l);
+    selectedSlugs
+      .map((slug) => labels.find((l) => l.slug === slug))
+      .filter((l): l is PickerLabel => !!l);
 
   return (
     <ComboboxPicker
@@ -252,9 +256,9 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
 // --- ComboboxPicker: chips-in-input + popover dropdown (for modals) ---
 
 interface ComboboxPickerProps {
-  labels: Label[];
+  labels: PickerLabel[];
   optionSource: ComboboxOptionSource<string>;
-  selectedLabels: Label[];
+  selectedLabels: PickerLabel[];
   selectedSlugs: string[];
   onToggle: (slug: string) => void;
   onCreate?: (name: string) => Promise<Label | undefined>;

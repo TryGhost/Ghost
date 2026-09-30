@@ -448,12 +448,54 @@ describe('Publish flow', () => {
     await expect.poll(() => labelsApi.requests.length).toBe(2);
     await expect.element(page.getByLabelText('Specific people')).toBeInTheDocument();
     await page.getByLabelText('Specific people').click();
-    await expect.element(page.getByLabelText('First tier')).toBeInTheDocument();
-    await expect.element(page.getByLabelText('Last tier')).toBeInTheDocument();
-    await expect.element(page.getByLabelText('First label')).toBeInTheDocument();
-    await expect.element(page.getByLabelText('Last label')).toBeInTheDocument();
+    await page.getByPlaceholder('Search labels and tiers...').click();
+    await expect.element(page.getByRole('option', { name: 'First tier' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'Last tier' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'First label' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'Last label' })).toBeInTheDocument();
     expect(new URL(tiersApi.requests[1].url).searchParams.get('page')).toBe('2');
     expect(new URL(labelsApi.requests[1].url).searchParams.get('page')).toBe('2');
+  });
+
+  it('searches existing recipient labels without offering label management', async () => {
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [
+        { slug: 'vip', name: 'VIP' },
+        { slug: 'staff', name: 'Staff' },
+      ],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: 'status:free',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+    await page.getByLabelText('Specific people').click();
+    const search = page.getByRole('combobox').getByRole('textbox');
+    await search.fill('VIP');
+    await expect.element(page.getByRole('option', { name: 'VIP' })).toBeVisible();
+    await expect(page.getByRole('option', { name: 'Staff' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Edit label/ })).toHaveCount(0);
+    await page.getByRole('option', { name: 'VIP' }).click();
+    await search.fill('New label');
+    await expect.element(page.getByText('No labels found')).toBeVisible();
+    await expect(page.getByRole('option', { name: /Create/ })).toHaveCount(0);
+
+    // Turning the segment audience off and back on retains the selected label.
+    await page.getByLabelText('Specific people').click();
+    await expect(page.getByRole('combobox')).toHaveCount(0);
+    await page.getByLabelText('Specific people').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'label:vip' },
+    });
   });
 
   it('gates the flow behind the TK reminder', async () => {
