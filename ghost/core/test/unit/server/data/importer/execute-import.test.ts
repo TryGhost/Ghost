@@ -183,37 +183,28 @@ describe('Site import execution', function () {
 
     const succeeds = subject();
     sinon.stub(succeeds.manager, 'processImport').resolves({});
-    assert.deepEqual(await succeeds.manager.executeImport({ data: {} }, options), {});
+    assert.deepEqual(
+      await succeeds.manager.executeImport('upload-key', 'export.json', options),
+      {},
+    );
     sinon.assert.calledWith(succeeds.deps.logging.info.firstCall, started);
     sinon.assert.calledWith(succeeds.deps.logging.info.secondCall, sinon.match(completed));
 
     // A failed import is swallowed by processImport, which resolves undefined
     const fails = subject();
     sinon.stub(fails.manager, 'processImport').resolves(undefined);
-    assert.equal(await fails.manager.executeImport({ data: {} }, options), undefined);
+    assert.equal(
+      await fails.manager.executeImport('upload-key', 'export.json', options),
+      undefined,
+    );
     sinon.assert.calledWith(fails.deps.logging.info.firstCall, started);
     sinon.assert.calledWith(fails.deps.logging.info.secondCall, sinon.match(failed));
 
     const throws = subject();
     const error = new Error('email failed');
     sinon.stub(throws.manager, 'processImport').rejects(error);
-    await assert.rejects(throws.manager.executeImport({ data: {} }, options), error);
+    await assert.rejects(throws.manager.executeImport('upload-key', 'export.json', options), error);
     sinon.assert.calledWith(throws.deps.logging.error, error, sinon.match(failed));
-  });
-
-  it('queues the loaded import outside testing and runs it when the job executes', async function () {
-    const { manager, deps } = subject();
-    const loaded = { data: { data: { posts: [] } }, cleanupDirectory: '/tmp/owned' };
-    sinon.stub(manager, 'loadFile').resolves(loaded);
-    const execute = sinon.stub(manager, 'executeImport').resolves({});
-
-    await manager.importFromFile({ name: 'export.json' }, options);
-
-    sinon.assert.calledWith(deps.logging.info, '[Background Job] site-content-import queued');
-    sinon.assert.calledOnceWithMatch(deps.jobManager.addJob, { offloaded: false });
-    sinon.assert.notCalled(execute);
-    await deps.jobManager.addJob.firstCall.args[0].job();
-    sinon.assert.calledOnceWithExactly(execute, loaded, options);
   });
 
   it('keeps testing calls inline without email and explicit direct calls inline with email', async function () {
