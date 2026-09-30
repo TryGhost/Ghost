@@ -1040,22 +1040,29 @@ describe('AutomationEditor', () => {
     expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
   });
 
-  it('hides the performance toggle and panel when run analytics is disabled', () => {
-    mockLabs.current = { automationRunAnalytics: false };
-    mockUseReadAutomation.mockReturnValue({
-      data: { automations: [automationDetail] },
-      isLoading: false,
-      isError: false,
-    });
+  it.each(['automationRunAnalytics', 'automationsTinybirdSync'])(
+    'hides the performance toggle and panel when %s is disabled',
+    (flag) => {
+      mockLabs.current = {
+        automationRunAnalytics: true,
+        automationsTinybirdSync: true,
+        [flag]: false,
+      };
+      mockUseReadAutomation.mockReturnValue({
+        data: { automations: [automationDetail] },
+        isLoading: false,
+        isError: false,
+      });
 
-    renderEditor();
+      renderEditor();
 
-    expect(screen.queryByRole('button', { name: /performance/i })).not.toBeInTheDocument();
-    expect(screen.queryByText('Performance')).not.toBeInTheDocument();
-  });
+      expect(screen.queryByRole('button', { name: /performance/i })).not.toBeInTheDocument();
+      expect(screen.queryByText('Performance')).not.toBeInTheDocument();
+    },
+  );
 
-  it('renders the performance toggle and panel shell when run analytics is enabled', () => {
-    mockLabs.current = { automationRunAnalytics: true };
+  it('renders the performance toggle and panel shell when both analytics flags are enabled', () => {
+    mockLabs.current = { automationRunAnalytics: true, automationsTinybirdSync: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
