@@ -1,4 +1,4 @@
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import type { ReactNode } from 'react';
 
@@ -52,7 +52,11 @@ export function PublishSetting({
           className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')}
         />
       </button>
-      {open && children ? <div className="pr-1 pb-5 pl-8">{children}</div> : null}
+      {open && children ? (
+        <Box className="pr-1 pb-5 pl-8 motion-safe:animate-in motion-safe:duration-200 motion-safe:fade-in motion-safe:slide-in-from-top-1">
+          {children}
+        </Box>
+      ) : null}
       {footer}
     </Stack>
   );
