@@ -391,7 +391,7 @@ class ImportManager {
       });
     }
 
-    return this.processImport(loaded, importOptions);
+    return this.processImport(() => loaded, importOptions);
   }
 
   /**
@@ -404,7 +404,7 @@ class ImportManager {
     const startedAt = Date.now();
     this.logging.info('[Background Job] site-content-import started');
     try {
-      const result = await this.processImport(loaded, importOptions);
+      const result = await this.processImport(() => loaded, importOptions);
       // processImport swallows import failures and resolves undefined,
       // so an absent result is the only signal that the import failed.
       if (result === undefined) {
@@ -427,16 +427,22 @@ class ImportManager {
   }
 
   /**
-   * Import loaded content, report on it, release the files it owns, and email the user how
-   * it went. A failed import is reported in that email and resolves undefined.
-   * @param {LoadedImport} loaded
+   * Load content and import it, report on it, release the files it owns, and email the user
+   * how it went. A failed import is reported in that email and resolves undefined.
+   * @param {() => LoadedImport|Promise<LoadedImport>} loadImport reads the content to import.
+   * It runs as the first step of the import, so failing to read is reported like any other
+   * import failure.
    * @param {ImportOptions} importOptions
    * @returns {Promise<Object.<string, ImportResult>|undefined>}
    */
-  async processImport(loaded, importOptions) {
+  async processImport(loadImport, importOptions) {
     const env = this.config.get('env');
+    let loaded;
     let importResult;
     try {
+      // Step 1: Load the content to import
+      loaded = await loadImport();
+
       // Step 2: Let the importers pre-process the data
       const importData = await this.preProcess(loaded.data);
 
@@ -454,7 +460,7 @@ class ImportManager {
       importResult = { data: { errors: errorDetails } };
     } finally {
       // Step 5: Cleanup the files this import owns
-      await this.cleanUp(loaded.cleanupDirectory);
+      await this.cleanUp(loaded?.cleanupDirectory);
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
