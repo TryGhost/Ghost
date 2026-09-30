@@ -16,6 +16,7 @@ import * as contentImport from '../content-import';
 import ContentImportJob from '../../data/importer/jobs/content-import-job';
 import MembersImportJob from '../members/jobs/members-import-job';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
+import TinybirdSyncJob from '../tinybird-sync/jobs/tinybird-sync-job';
 import type MentionController from '../mentions/mention-controller';
 import type MentionSendingService from '../mentions/mention-sending-service';
 import ProcessWebmentionJob from '../mentions/process-webmention-job';
@@ -60,6 +61,10 @@ interface RegisterJobHandlersDependencies {
   siteImporter: {
     executeImport(job: ContentImportJob): Promise<unknown>;
   };
+  tinybirdSync: {
+    sync(): Promise<void>;
+    isEnabled(): boolean;
+  };
 }
 
 export default function registerJobHandlers({
@@ -75,6 +80,7 @@ export default function registerJobHandlers({
   membersService,
   emailService,
   siteImporter,
+  tinybirdSync,
 }: RegisterJobHandlersDependencies): void {
   // Each email analytics pipeline fetches on its own five-minute tick and the
   // wrapper skips a tick while its previous fetch is still running. The second
@@ -153,5 +159,21 @@ export default function registerJobHandlers({
       await emailService.handleSendEmailJob(job);
     },
     EMAIL_QUEUE,
+  );
+
+  // Tinybird sync runs on its own five-minute tick, away from the shared
+  // workers, with the same two-slot overlap handling as email analytics above.
+  // Ticks are dropped silently while its labs flag is off, because the flag is
+  // off on almost every site.
+  jobsService.handle(
+    TinybirdSyncJob,
+    async () => {
+      await tinybirdSync.sync();
+    },
+    {
+      queue: TinybirdSyncJob.type,
+      concurrency: 2,
+      isEnabled: () => tinybirdSync.isEnabled(),
+    },
   );
 }
