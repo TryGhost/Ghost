@@ -1,5 +1,6 @@
 import { Banner, Button } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
@@ -128,25 +129,35 @@ export function ConfirmStep({
         </Banner>
       ) : null}
 
-      <Stack align="start" gap="sm">
-        <Button
-          data-testid={publishConfirm}
-          disabled={status === 'running'}
-          size="lg"
-          onClick={onConfirm}
-        >
-          {status === 'running' ? buttonText.running : buttonText.idle}
-        </Button>
+      <Inline gap="sm" justify="between" wrap>
         <Button
           data-testid={publishBackToSettings}
           disabled={status === 'running'}
           size="lg"
-          variant="link"
+          variant="outline"
           onClick={onBack}
         >
+          <LucideIcon.ArrowLeft />
           Back to settings
         </Button>
-      </Stack>
+        <Box className="relative ml-auto max-w-full">
+          {status === 'idle' ? (
+            <Box
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 rounded-full bg-state-success/30 motion-safe:animate-ping"
+            />
+          ) : null}
+          <Button
+            className="relative h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-state-success-foreground hover:bg-state-success/90"
+            data-testid={publishConfirm}
+            disabled={status === 'running'}
+            size="lg"
+            onClick={onConfirm}
+          >
+            {status === 'running' ? buttonText.running : buttonText.idle}
+          </Button>
+        </Box>
+      </Inline>
     </Stack>
   );
 }
