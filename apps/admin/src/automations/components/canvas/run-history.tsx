@@ -3,6 +3,7 @@ import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { useAutomationRunHistory } from '@/automations/hooks/use-automation-run-history';
+import { HistoryFlow } from './history-flow';
 
 export const RunHistory: React.FC<{
   automationId: string;
@@ -11,10 +12,8 @@ export const RunHistory: React.FC<{
   isPerformanceOpen: boolean;
   onClose: () => void;
 }> = ({ automationId, runId, memberName, isPerformanceOpen, onClose }) => {
-  const { history, summary, isLoading, isError, unavailable, retry } = useAutomationRunHistory(
-    automationId,
-    runId,
-  );
+  const { history, summary, isLoading, isError, unavailable, retry, upcoming } =
+    useAutomationRunHistory(automationId, runId);
   const closeButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     closeButton.current?.focus({ preventScroll: true });
@@ -102,6 +101,7 @@ export const RunHistory: React.FC<{
           </Stack>
         )}
       </Stack>
+      {history && <HistoryFlow history={history} upcoming={upcoming} />}
     </Stack>
   );
 };
