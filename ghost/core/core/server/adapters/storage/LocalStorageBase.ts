@@ -1,6 +1,8 @@
 // # Local File Base Storage module
 // The (default) module for storing files using the local file system
 import fs from 'fs-extra';
+import { open } from 'node:fs/promises';
+import type { Readable } from 'node:stream';
 import os from 'os';
 import path from 'path';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
@@ -320,6 +322,16 @@ class LocalStorageBase extends StorageBase {
   async delete(fileName: string, targetDir?: string): Promise<void> {
     const filePath = this._resolveAndValidateStoragePath(targetDir, fileName);
     return await fs.remove(filePath);
+  }
+
+  async readStream(options: Partial<ReadOptions> = {}): Promise<Readable> {
+    const normalizedPath = this._normalizeStorageRelativePath(options.path);
+    try {
+      const file = await open(path.join(this.storagePath, normalizedPath), 'r');
+      return file.createReadStream();
+    } catch (error) {
+      throw this.readError(error, options.path);
+    }
   }
 
   /**
