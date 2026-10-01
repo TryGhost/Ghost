@@ -11,13 +11,14 @@ import {
 } from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { getPostListReturnUrl } from '@/posts/api';
+import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
@@ -500,6 +501,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // reads belong to the session; unmounting the editor would dispose it.
   const [openedWith, setOpenedWith] = useState<EditorRecord>();
   const navigate = useNavigate();
+  const { pathname, search } = useLocation();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
@@ -518,6 +520,14 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   const listPath = postType === 'page' ? '/pages' : '/posts';
   // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
   const loadError = openedWith || loaded ? null : query.error;
+  // Reloading is safe only while nothing is unsaved: the signed-out admin
+  // remembers this route and returns to it after sign in.
+  const sessionExpired = loadError instanceof SessionExpiredError;
+  useEffect(() => {
+    if (sessionExpired) {
+      reloadAdmin(`${pathname}${search}`);
+    }
+  }, [sessionExpired, pathname, search]);
 
   const opening = openedWith ? undefined : loaded;
   const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
@@ -546,6 +556,10 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   const notFound = loadError instanceof APIError && loadError.response?.status === 404;
   if (notFound) {
     return <NotFound />;
+  }
+
+  if (sessionExpired) {
+    return <EditorLoading />;
   }
 
   if (loadError) {

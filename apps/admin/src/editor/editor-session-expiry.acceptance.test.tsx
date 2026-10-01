@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -15,7 +15,10 @@ import {
   type EndpointCapture,
   type Post,
 } from '@test-utils/acceptance';
+import { reloadAdmin } from '@/auth/reload';
 import { editorScreen } from '@/editor/editor.screen';
+
+vi.mock('@/auth/reload', () => ({ reloadAdmin: vi.fn() }));
 
 const POST_ID = 'abc123';
 const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
@@ -27,6 +30,9 @@ const EMAIL = String(currentUserResponse().users[0].email);
 
 const SESSION_GONE = {
   errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
+};
+const NO_SESSION = {
+  errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }],
 };
 const PASSWORD_INCORRECT = {
   errors: [
@@ -277,5 +283,26 @@ describe('Post editor session expiry', () => {
     await expect.element(editorScreen.reauthDialog()).toBeVisible();
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     expect(saveApi.requests.length).toBeGreaterThan(0);
+  });
+});
+
+// Nothing is unsaved before the post opens, so it reloads into the signed-out admin.
+describe('Opening a post after the session expired', () => {
+  beforeEach(() => {
+    vi.mocked(reloadAdmin).mockClear();
+  });
+
+  it.each([
+    [401, SESSION_GONE],
+    [403, NO_SESSION],
+  ])('reloads onto the post when its first read is refused with %i', async (status, body) => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, body, { status });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect
+      .poll(() => vi.mocked(reloadAdmin).mock.calls)
+      .toEqual([[`/editor/post/${POST_ID}`]]);
+    await expect(editorScreen.loadError()).toHaveCount(0);
   });
 });

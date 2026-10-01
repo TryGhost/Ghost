@@ -31,10 +31,12 @@ post doesn't wait on either download.
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
 every request the editor makes passes: leaving the page would take unsaved
-content with it, so the editor surfaces an expired session itself. The opt-out
-belongs to whichever component starts a fetch rather than to the cache entry, so
-a component reading a query key it shares with a screen outside the editor opts
-out too. `layering.ts` carries the z-index a confirmation dialog opened from
+content with it, so the editor surfaces an expired session itself. Until a post
+has opened nothing is unsaved, so a first read refused because the session has
+expired reloads the page instead: the signed-out admin asks the writer to sign
+in and then reopens the post. The opt-out belongs to whichever component starts
+a fetch rather than to the cache entry, so a component reading a query key it
+shares with a screen outside the editor opts out too. `layering.ts` carries the z-index a confirmation dialog opened from
 inside another editor surface needs in order to paint above it.
 
 ## Title and excerpt limits
