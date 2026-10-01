@@ -110,6 +110,7 @@ it('keeps starting background services when email analytics scheduling fails', a
   };
   const logging = { error: sinon.stub() };
   const updateCheck = { scheduleJobs: sinon.stub().resolves() };
+  const tinybirdSync = { scheduleJob: sinon.stub().resolves() };
   const milestones = { initAndRun: sinon.stub() };
   const modules: Record<string, unknown> = {
     '@tryghost/debug': () => () => {},
@@ -129,7 +130,7 @@ it('keeps starting background services when email analytics scheduling fails', a
     './server/services/signing-keys': { scheduleCheckJob: async () => {} },
     './server/services/jobs-service': { getInstance: () => ({}) },
     './server/services/activitypub': { init: async () => {} },
-    './server/services/tinybird-sync': { start() {} },
+    './server/services/tinybird-sync': tinybirdSync,
     './server/services/update-check': updateCheck,
     './server/services/remote-flags': { init() {} },
     './server/services/milestones': milestones,
@@ -147,5 +148,6 @@ it('keeps starting background services when email analytics scheduling fails', a
   sinon.assert.calledWithExactly(logging.error, newsletterError);
   sinon.assert.calledWithExactly(logging.error, giftError);
   sinon.assert.calledOnce(updateCheck.scheduleJobs);
+  sinon.assert.calledOnce(tinybirdSync.scheduleJob);
   sinon.assert.calledOnce(milestones.initAndRun);
 });

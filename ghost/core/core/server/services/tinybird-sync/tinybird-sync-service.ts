@@ -1,3 +1,4 @@
+import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import {
   getIngestConfig,
@@ -5,8 +6,10 @@ import {
   type IngestConfig,
 } from './get-ingest-config';
 import { AUTOMATION_SYNC_TARGETS, syncTableToTinybird } from './sync-table-to-tinybird';
+import TinybirdSyncJob from './jobs/tinybird-sync-job';
+import type { JobsService } from '../jobs-service/jobs-service';
+import { randomFiveMinuteCron } from '../jobs-service/cron';
 
-const INTERVAL_MS = 5 * 60 * 1000;
 const BATCH_SIZE = 5000;
 // This should be a little less than the maximum, because rows are chunked by
 // JSON line, not bytes strictly.
@@ -27,7 +30,6 @@ type TinybirdSyncDependencies = GetIngestConfigDependencies & {
   labs: Labs;
   knex: Knex;
   logging: Logger;
-  sleep: (ms: number) => Promise<void>;
   random: () => number;
   now: () => Date;
   fetch: typeof globalThis.fetch;
@@ -40,13 +42,12 @@ export function createTinybirdSyncService({
   labs,
   knex,
   logging,
-  sleep,
   random,
   now,
   fetch,
   createId,
 }: TinybirdSyncDependencies) {
-  let started = false;
+  let scheduled = false;
 
   const syncAll = async (ingest: IngestConfig): Promise<void> => {
     const results = await Promise.allSettled(
@@ -76,30 +77,34 @@ export function createTinybirdSyncService({
     }
   };
 
-  const runLoop = async (ingest: IngestConfig): Promise<never> => {
-    // Randomize the first wait to avoid all instances syncing at the same time.
-    await sleep(Math.floor(random() * INTERVAL_MS));
-
-    while (true) {
-      if (labs.isSet('automationsTinybirdSync')) {
-        await syncAll(ingest);
-      }
-      await sleep(INTERVAL_MS);
-    }
-  };
-
-  const start = (): void => {
-    if (started) {
+  const sync = async (): Promise<void> => {
+    if (!labs.isSet('automationsTinybirdSync')) {
       return;
     }
 
     const ingest = getIngestConfig({ config, settingsCache });
     if (!ingest) {
+      return;
+    }
+
+    await syncAll(ingest);
+  };
+
+  const scheduleJob = async (
+    jobsService: Pick<JobsService, 'scheduleRecurring'>,
+  ): Promise<void> => {
+    if (scheduled) {
+      throw new errors.IncorrectUsageError({
+        message: 'Tinybird sync is already scheduled.',
+      });
+    }
+
+    if (!getIngestConfig({ config, settingsCache })) {
       logging.info('[Tinybird sync] Not started: Traffic Analytics service is not configured');
       return;
     }
 
-    started = true;
+    scheduled = true;
 
     const isSyncEnabled = labs.isSet('automationsTinybirdSync');
     logging.info(
@@ -107,14 +112,16 @@ export function createTinybirdSyncService({
       `[Tinybird sync] Started: sync ${isSyncEnabled ? 'enabled' : 'disabled'} by labs flag (but may change)`,
     );
 
-    void runLoop(ingest)
-      .then(() => {
-        logging.error('[Tinybird sync] Loop stopped unexpectedly');
-      })
-      .catch((error: unknown) => {
-        logging.error(error, '[Tinybird sync] Loop stopped');
-      });
+    const at = randomFiveMinuteCron(random);
+    logging.info(`[Background Job] ${TinybirdSyncJob.type} scheduled at ${at}`);
+    try {
+      await jobsService.scheduleRecurring(new TinybirdSyncJob(), { cron: at });
+    } catch (error) {
+      // Unmarked so a later call can retry the registration.
+      scheduled = false;
+      throw error;
+    }
   };
 
-  return { start };
+  return { scheduleJob, sync };
 }
