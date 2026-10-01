@@ -90,7 +90,9 @@ export default defineConfig({
     // Print totals and failures, without per-test output that CI expands into
     // separate lines. Use --silent=false --reporter=verbose to debug.
     silent: 'passed-only',
-    reporters: process.env.GITHUB_ACTIONS ? ['minimal', 'github-actions'] : ['minimal'],
+    reporters: process.env.GITHUB_ACTIONS ? ['minimal', 'github-actions', 'json'] : ['minimal'],
+    // Keep per-test timings and failure details without expanding the CI log.
+    outputFile: { json: './test-results/acceptance.json' },
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
     setupFiles: ['./test-utils/acceptance/setup.ts'],

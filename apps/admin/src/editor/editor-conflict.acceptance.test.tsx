@@ -184,7 +184,7 @@ describe('Post editor update collision', () => {
     const { saveApi } = fakeCollidingPost();
     await renderAdminApp(
       `/editor/post/${POST_ID}`,
-      withFastAutosave({ labs: { editorReact: true, postsListReact: true } }),
+      withFastAutosave({ labs: { editorReact: true } }),
     );
     await collide(saveApi);
     await expect.poll(unsavedChangesGuarded).toBe(true);

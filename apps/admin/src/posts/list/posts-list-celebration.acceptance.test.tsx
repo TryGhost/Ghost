@@ -10,8 +10,6 @@ import {
 } from '@test-utils/acceptance';
 import { postsListScreen } from './posts-list.screen';
 
-const FLAG_ON = { labs: { postsListReact: true } };
-
 /**
  * The post-publish celebration. The Ember editor writes a localStorage key and
  * navigates to the list, which reads it on mount — the editor stays Ember on
@@ -34,7 +32,7 @@ describe('Posts list publish celebration', () => {
       JSON.stringify({ id: published.id, type: 'post' }),
     );
 
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
 
     await expect.element(postsListScreen.celebrationModal()).toBeVisible();
     await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('Just published');
@@ -54,7 +52,6 @@ describe('Posts list publish celebration', () => {
       site.site.icon = icon;
 
       await renderAdminApp('/posts?type=published', {
-        ...FLAG_ON,
         boot: { browseSite: { response: site } },
       });
 
@@ -85,7 +82,7 @@ describe('Posts list publish celebration', () => {
       JSON.stringify({ id: page.id, type: 'page' }),
     );
 
-    await renderAdminApp('/pages?type=published', FLAG_ON);
+    await renderAdminApp('/pages?type=published');
 
     await expect.element(postsListScreen.celebrationModal()).toBeVisible();
     await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('A published page');
@@ -99,14 +96,14 @@ describe('Posts list publish celebration', () => {
       JSON.stringify({ id: scheduled.id, type: 'post' }),
     );
 
-    await renderAdminApp('/posts?type=scheduled', FLAG_ON);
+    await renderAdminApp('/posts?type=scheduled');
 
     await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('All set!');
   });
 
   it('shows nothing when the editor left no key', async () => {
     fakePosts([post({ title: 'An ordinary post', status: 'published' })]);
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     await expect(postsListScreen.celebrationModal()).toHaveCount(0);

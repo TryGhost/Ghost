@@ -80,9 +80,8 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 
 function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
-  const reactOwnsList = useFeatureFlag('postsListReact');
   const resource = postType === 'page' ? 'pages' : 'posts';
-  const listUrl = reactOwnsList ? getPostListReturnUrl(resource) : `/${resource}`;
+  const listUrl = getPostListReturnUrl(resource);
 
   return (
     <Grid

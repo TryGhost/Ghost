@@ -4,6 +4,8 @@ import type { ServerNotification } from '@tryghost/admin-x-framework/api/notific
 import {
   currentUserResponse,
   fakeAdminEndpoint,
+  fakePosts,
+  fakePostsListScreen,
   fakeTags,
   renderAdminApp,
   staffRole,
@@ -124,6 +126,8 @@ describe('Server notifications', () => {
     });
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Author' })];
+    fakePostsListScreen();
+    fakePosts([]);
     await renderAdminApp('/posts', { boot: { browseMe: { response: me } } });
 
     // The sidebar waits for the current user, whose role gates the request.

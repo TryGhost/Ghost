@@ -13,8 +13,6 @@ import {
 } from '@test-utils/acceptance';
 import { postsListScreen } from './posts-list.screen';
 
-const FLAG_ON = { labs: { postsListReact: true } };
-
 /**
  * Bulk actions send an NQL *filter*, never a list of ids — that is what lets
  * Cmd+A cover posts that were never loaded. These tests assert the outgoing
@@ -30,7 +28,7 @@ describe('Posts list bulk actions', () => {
     const target = post({ title: 'Doomed', status: 'published' });
     fakePosts([target]);
     const deletion = fakeAdminEndpoint('DELETE', /^\/posts\//, {});
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     await postsListScreen.listItems().first().click({ button: 'right' });
@@ -55,7 +53,7 @@ describe('Posts list bulk actions', () => {
       post({ title: 'Second', status: 'published' }),
     ]);
     const deletion = fakeAdminEndpoint('DELETE', /^\/posts\//, {});
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
 
     await userEvent.keyboard('{Meta>}a{/Meta}');
@@ -75,7 +73,7 @@ describe('Posts list bulk actions', () => {
     const spared = post({ title: 'Spared', status: 'published' });
     fakePosts([post({ title: 'First', status: 'published' }), spared]);
     const deletion = fakeAdminEndpoint('DELETE', /^\/posts\//, {});
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
 
     await userEvent.keyboard('{Meta>}a{/Meta}');
@@ -110,7 +108,7 @@ describe('Posts list bulk actions', () => {
         post({ title: 'Live two', status: 'published' }),
       ]);
       fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp('/posts?type=published', FLAG_ON);
+      await renderAdminApp('/posts?type=published');
       await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -138,7 +136,7 @@ describe('Posts list bulk actions', () => {
         return [post({ title: 'Was published', status: 'published', featured: false })];
       });
       fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp('/posts', FLAG_ON);
+      await renderAdminApp('/posts');
       await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
 
       await postsListScreen.listItems().nth(1).click({ button: 'right' });
@@ -159,7 +157,7 @@ describe('Posts list bulk actions', () => {
         post({ title: 'Untouched', status: 'draft' }),
       ]);
       fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp('/posts?type=published', FLAG_ON);
+      await renderAdminApp('/posts?type=published');
       await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -188,7 +186,7 @@ describe('Posts list bulk actions', () => {
       // flaky by construction.
       fakePosts([post({ title: 'Target', status: type, featured: false })]);
       const edit = fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp(`/posts?type=${type}`, FLAG_ON);
+      await renderAdminApp(`/posts?type=${type}`);
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -206,7 +204,7 @@ describe('Posts list bulk actions', () => {
       fakePosts([post({ title: 'Target', status: 'draft' })]);
       fakeTags([tag({ id: 't1', name: 'News', slug: 'news' })]);
       const edit = fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -243,7 +241,7 @@ describe('Posts list bulk actions', () => {
         }),
       ]);
       fakeTags([tag({ id: 't1', name: 'News', slug: 'news' })]);
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -262,7 +260,7 @@ describe('Posts list bulk actions', () => {
       fakePosts([post({ title: 'Target', status: 'draft' })]);
       fakeTags([]);
       const edit = fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -282,7 +280,7 @@ describe('Posts list bulk actions', () => {
       const existing = tag({ id: 't1', name: 'C++', slug: 'c-plus-plus' });
       fakePosts([post({ title: 'Target', status: 'draft' })]);
       const tags = fakeTags(({ filter }) => (filter?.includes('tags.name:~') ? [existing] : []));
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -306,7 +304,7 @@ describe('Posts list bulk actions', () => {
       fakePosts([post({ title: 'Target', status: 'draft' })]);
       const tags = fakeTags([]);
       fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -332,7 +330,7 @@ describe('Posts list bulk actions', () => {
         tag({ id: 't2', name: 'broaf', slug: 'broaf-2' }),
       ]);
       const edit = fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -357,7 +355,7 @@ describe('Posts list bulk actions', () => {
     it('keeps the dialog open on Escape once a tag is picked', async () => {
       fakePosts([post({ title: 'Target', status: 'draft' })]);
       fakeTags([tag({ id: 't1', name: 'News', slug: 'news' })]);
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -375,7 +373,7 @@ describe('Posts list bulk actions', () => {
     it('removes a picked tag when its chip is clicked', async () => {
       fakePosts([post({ title: 'Target', status: 'draft' })]);
       fakeTags([tag({ id: 't1', name: 'News', slug: 'news' })]);
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -397,7 +395,7 @@ describe('Posts list bulk actions', () => {
     it('keeps a typed term through Escape', async () => {
       fakePosts([post({ title: 'Target', status: 'draft' })]);
       fakeTags([tag({ id: 't1', name: 'News', slug: 'news' })]);
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -414,7 +412,7 @@ describe('Posts list bulk actions', () => {
     it('closes on Escape while the field is still empty', async () => {
       fakePosts([post({ title: 'Target', status: 'draft' })]);
       fakeTags([tag({ id: 't1', name: 'News', slug: 'news' })]);
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -434,7 +432,7 @@ describe('Posts list bulk actions', () => {
       // The modal offers a tier picker once "Specific tier(s)" is chosen.
       fakeTiers([]);
       const edit = fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -463,7 +461,7 @@ describe('Posts list bulk actions', () => {
       fakePosts([first, second, post({ title: 'Untouched', status: 'draft' })]);
       fakeTiers([]);
       const edit = fakeAdminEndpoint('PUT', /^\/posts\/bulk/, {});
-      await renderAdminApp('/posts?type=draft', FLAG_ON);
+      await renderAdminApp('/posts?type=draft');
       await expect.element(postsListScreen.listItems().nth(2)).toBeVisible();
 
       await postsListScreen
@@ -522,7 +520,7 @@ describe('Posts list bulk actions', () => {
       });
 
       try {
-        await renderAdminApp('/posts?type=draft', FLAG_ON);
+        await renderAdminApp('/posts?type=draft');
         await expect.element(postsListScreen.listItems().first()).toBeVisible();
         // Hold the subsequent list refresh independently of the save request.
         const refresh = fakeAdminEndpoint('GET', /^\/posts\//, async () => {
@@ -562,7 +560,7 @@ describe('Posts list bulk actions', () => {
           post({ title: 'Excluded', status: 'draft' }),
         ]);
         fakeTiers([]);
-        await renderAdminApp('/posts?type=draft', FLAG_ON);
+        await renderAdminApp('/posts?type=draft');
         await expect.element(postsListScreen.listItems().nth(2)).toBeVisible();
 
         await userEvent.keyboard('{Meta>}a{/Meta}');

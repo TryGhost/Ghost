@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import {
   currentRoute,
@@ -8,6 +8,7 @@ import {
   fakePostsListScreen,
   post,
   renderAdminApp,
+  settleRequests,
   staffRole,
 } from '@test-utils/acceptance';
 
@@ -350,27 +351,38 @@ describe('Post debug', () => {
   });
 
   it('refreshes analytics and email status and stops polling on unmount', async () => {
-    const api = seed();
-    const app = await renderAdminApp(route);
-    await expect.poll(() => api.emails.requests.length).toBeGreaterThan(0);
-    const analyticsRequests = api.analytics.requests.length;
-    const refreshedEmail = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/`, {
-      emails: [{ ...email, status: 'submitted', error: null }],
-    });
-    await expect
-      .poll(() => api.analytics.requests.length, { timeout: 7000 })
-      .toBeGreaterThan(analyticsRequests);
-    await expect
-      .poll(() => page.getByRole('link', { name: 'Retry' }).query(), { timeout: 12000 })
-      .toBeNull();
-    expect(refreshedEmail.requests.length).toBeGreaterThan(0);
-    await app.unmount();
-    const stopped = api.analytics.requests.length;
-    await new Promise((resolve) => {
-      setTimeout(resolve, 5500);
-    });
-    expect(api.analytics.requests.length).toBe(stopped);
-  }, 25000);
+    // Query refetches use intervals; keep request delivery, React updates and
+    // assertion polling on real time while advancing the 5s/10s refresh clocks.
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    try {
+      const api = seed();
+      const app = await renderAdminApp(route);
+      await expect.poll(() => api.emails.requests.length).toBeGreaterThan(0);
+      await settleRequests();
+      const analyticsRequests = api.analytics.requests.length;
+      const refreshedEmail = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/`, {
+        emails: [{ ...email, status: 'submitted', error: null }],
+      });
+
+      vi.advanceTimersByTime(5000);
+      await expect.poll(() => api.analytics.requests.length).toBeGreaterThan(analyticsRequests);
+      await settleRequests();
+      vi.advanceTimersByTime(5000);
+      await expect.poll(() => page.getByRole('link', { name: 'Retry' }).query()).toBeNull();
+      expect(refreshedEmail.requests.length).toBeGreaterThan(0);
+      await settleRequests();
+
+      await app.unmount();
+      const stoppedAnalytics = api.analytics.requests.length;
+      const stoppedEmails = refreshedEmail.requests.length;
+      vi.advanceTimersByTime(10000);
+      await settleRequests();
+      expect(api.analytics.requests.length).toBe(stoppedAnalytics);
+      expect(refreshedEmail.requests.length).toBe(stoppedEmails);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 
   it('does not request email diagnostics for a post without an email', async () => {
     fakePosts([post({ id: POST_ID, title: 'Web only', email: null })]);

@@ -1,6 +1,9 @@
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
+const os = require('node:os');
+const { randomUUID } = require('node:crypto');
+const { pipeline } = require('node:stream/promises');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
 const errors = require('@tryghost/errors');
@@ -24,8 +27,20 @@ const defaults = {
 };
 
 class ImportManager {
-  constructor({ jobManager, handlers, importers, mailer, config, urlUtils, logging }) {
+  constructor({
+    jobManager,
+    importsStorage,
+    handlers,
+    importers,
+    mailer,
+    config,
+    urlUtils,
+    logging,
+  }) {
     this.jobManager = jobManager;
+
+    /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default | import('../../adapters/storage/S3Storage').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
+    this.importsStorage = importsStorage;
 
     /**
      * @type {Handler[]}
@@ -154,14 +169,15 @@ class ImportManager {
    * Takes a reference to a zip file, extracts it and reads it, returning the content to import
    * alongside the extracted directory, which the caller owns from here on
    * @param {File} file
+   * @param {boolean} [validateOnly] true to skip the work only an actual import needs
    * @returns {Promise<LoadedImport>}
    */
-  async processZip(file) {
+  async processZip(file, validateOnly = false) {
     const cleanupDirectory = await this.extractZip(file.path);
 
     try {
       return {
-        data: await this.readExtractedZip(cleanupDirectory),
+        data: await this.readExtractedZip(cleanupDirectory, validateOnly),
         cleanupDirectory,
       };
     } catch (err) {
@@ -176,9 +192,10 @@ class ImportManager {
    * The data key contains JSON representing any data that should be imported
    * The image key contains references to images that will be stored (and where they will be stored)
    * @param {string} zipDirectory
+   * @param {boolean} [validateOnly] true to skip the work only an actual import needs
    * @returns {Promise<ImportData>}
    */
-  async readExtractedZip(zipDirectory) {
+  async readExtractedZip(zipDirectory, validateOnly = false) {
     /**
      * @type {ImportData}
      */
@@ -200,7 +217,12 @@ class ImportManager {
           });
         }
 
-        const data = await handler.loadFile(files, baseDir);
+        // Asset destination preparation belongs to execution. Validation still
+        // extracts the archive and parses content to preserve request errors.
+        const data =
+          validateOnly && handler.directories.length
+            ? undefined
+            : await handler.loadFile(files, baseDir);
         importData[handler.type] = data;
       }
     }
@@ -254,12 +276,26 @@ class ImportManager {
    * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
    * A zip also yields the extracted directory, which the caller owns from here on.
    * @param {File} file
+   * @param {boolean} [validateOnly] true to skip the work only an actual import needs
    * @returns {Promise<LoadedImport>}
    */
-  async loadFile(file) {
+  async loadFile(file, validateOnly = false) {
     const ext = path.extname(file.name).toLowerCase();
 
-    return this.isZip(ext) ? this.processZip(file) : { data: await this.processFile(file, ext) };
+    return this.isZip(ext)
+      ? this.processZip(file, validateOnly)
+      : { data: await this.processFile(file, ext) };
+  }
+
+  /**
+   * Read an upload the way execution will read it, so that a malformed upload still fails the
+   * request that uploaded it. The parsed content is of no use here and is dropped with its files.
+   * @param {File} file
+   * @returns {Promise<void>}
+   */
+  async validateFile(file) {
+    const { cleanupDirectory } = await this.loadFile(file, true);
+    await this.cleanUp(cleanupDirectory);
   }
 
   /**
@@ -371,40 +407,126 @@ class ImportManager {
    * @returns {Promise<Object.<string, ImportResult>>}
    */
   async importFromFile(file, importOptions = {}) {
+    const env = this.config.get('env');
+    if (!env?.startsWith('testing') && !importOptions.runningInJob) {
+      // The job loads the upload, so check it here to fail the request when it is malformed
+      await this.validateFile(file);
+
+      const uploadKey = await this.storeUpload(file);
+
+      try {
+        this.logging.info('[Background Job] site-content-import queued');
+        return await this.jobManager.addJob({
+          job: () => this.executeImport(uploadKey, file.name, importOptions),
+          offloaded: false,
+        });
+      } catch (err) {
+        await this.cleanUpUpload(uploadKey);
+        throw err;
+      }
+    }
+
     let loaded;
     if (importOptions.data) {
       loaded = { data: importOptions.data };
     } else {
       // Step 1: Handle converting the file to usable data
-      // Has to be completed outside of job to ensure file is processed before being deleted
       loaded = await this.loadFile(file);
     }
 
     debug('importFromFile completed file load', loaded.data);
 
-    const env = this.config.get('env');
-    if (!env?.startsWith('testing') && !importOptions.runningInJob) {
-      this.logging.info('[Background Job] site-content-import queued');
-      return this.jobManager.addJob({
-        job: () => this.executeImport(loaded, importOptions),
-        offloaded: false,
-      });
-    }
-
-    return this.processImport(loaded, importOptions);
+    return this.processImport(() => loaded, importOptions);
   }
 
   /**
-   * Run a queued import, logging when it starts and how it ends
-   * @param {LoadedImport} loaded
+   * Store the upload so that execution can read it back once the request, and the file it
+   * uploaded, are gone. It is stored under a key of our own rather than its file name.
+   * @param {File} file
+   * @returns {Promise<string>} the key the adapter stored the upload under
+   */
+  async storeUpload(file) {
+    // Streaming reads deliberately belong to the concrete adapters until the next
+    // major release can extend the third-party storage base contract, so an adapter
+    // without one fails the import that needs it rather than the boot before it.
+    if (typeof this.importsStorage?.readStream !== 'function') {
+      throw new errors.IncorrectUsageError({
+        message: 'The configured imports storage adapter cannot do streaming reads',
+        context: `Site content imports need a storage:imports adapter with a readStream method, and ${this.importsStorage?.constructor?.name || 'the configured adapter'} has none.`,
+      });
+    }
+
+    const attemptedKey = randomUUID();
+
+    try {
+      const url = await this.importsStorage.save(
+        { name: attemptedKey, path: file.path },
+        this.importsStorage.storagePath,
+      );
+
+      return this.importsStorage.urlToPath(url);
+    } catch (err) {
+      // The adapter may have stored bytes before it failed, and the key we attempted
+      // is the only name we have for them.
+      await this.cleanUpUpload(attemptedKey);
+      throw err;
+    }
+  }
+
+  /**
+   * Read a stored upload back and load it, as the file it was uploaded as. The stored upload
+   * and the local copy of it are removed once it is loaded, or has failed to load, so nothing
+   * of it outlives this call but the extracted directory a loaded archive owns.
+   * @param {string} uploadKey
+   * @param {string} fileName the name the file was uploaded with, which decides how it is read
+   * @returns {Promise<LoadedImport>}
+   */
+  async loadStoredUpload(uploadKey, fileName) {
+    let downloadDirectory;
+    try {
+      downloadDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'site-content-import-'));
+      const downloadPath = path.join(downloadDirectory, 'upload');
+      await pipeline(
+        await this.importsStorage.readStream({ path: uploadKey }),
+        fs.createWriteStream(downloadPath),
+      );
+      return await this.loadFile({ name: fileName, path: downloadPath });
+    } finally {
+      await this.cleanUp(downloadDirectory);
+      await this.cleanUpUpload(uploadKey);
+    }
+  }
+
+  /**
+   * Remove a stored upload once nothing needs it. A failure here never replaces the
+   * outcome of the import itself.
+   * @param {string} uploadKey
+   * @returns {Promise<void>}
+   */
+  async cleanUpUpload(uploadKey) {
+    try {
+      await this.importsStorage.delete(uploadKey);
+    } catch (err) {
+      this.logging.error(err, '[Background Job] site-content-import upload cleanup failed');
+    }
+  }
+
+  /**
+   * Run a queued import: read the stored upload back and import it, logging when it starts
+   * and how it ends
+   * @param {string} uploadKey
+   * @param {string} fileName the name the file was uploaded with
    * @param {ImportOptions} importOptions
    * @returns {Promise<Object.<string, ImportResult>|undefined>}
    */
-  async executeImport(loaded, importOptions) {
+  async executeImport(uploadKey, fileName, importOptions) {
     const startedAt = Date.now();
     this.logging.info('[Background Job] site-content-import started');
     try {
-      const result = await this.processImport(loaded, importOptions);
+      const result = await this.processImport(
+        () => this.loadStoredUpload(uploadKey, fileName),
+        importOptions,
+      );
       // processImport swallows import failures and resolves undefined,
       // so an absent result is the only signal that the import failed.
       if (result === undefined) {
@@ -427,16 +549,22 @@ class ImportManager {
   }
 
   /**
-   * Import loaded content, report on it, release the files it owns, and email the user how
-   * it went. A failed import is reported in that email and resolves undefined.
-   * @param {LoadedImport} loaded
+   * Load content and import it, report on it, release the files it owns, and email the user
+   * how it went. A failed import is reported in that email and resolves undefined.
+   * @param {() => LoadedImport|Promise<LoadedImport>} loadImport reads the content to import.
+   * It runs as the first step of the import, so failing to read is reported like any other
+   * import failure.
    * @param {ImportOptions} importOptions
    * @returns {Promise<Object.<string, ImportResult>|undefined>}
    */
-  async processImport(loaded, importOptions) {
+  async processImport(loadImport, importOptions) {
     const env = this.config.get('env');
+    let loaded;
     let importResult;
     try {
+      // Step 1: Load the content to import
+      loaded = await loadImport();
+
       // Step 2: Let the importers pre-process the data
       const importData = await this.preProcess(loaded.data);
 
@@ -454,7 +582,7 @@ class ImportManager {
       importResult = { data: { errors: errorDetails } };
     } finally {
       // Step 5: Cleanup the files this import owns
-      await this.cleanUp(loaded.cleanupDirectory);
+      await this.cleanUp(loaded?.cleanupDirectory);
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
