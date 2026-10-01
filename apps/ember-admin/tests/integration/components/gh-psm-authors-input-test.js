@@ -1,6 +1,6 @@
 import hbs from 'htmlbars-inline-precompile';
 import mockUsers from '../../../mirage/config/users';
-import {click, find, findAll, render, settled, waitUntil} from '@ember/test-helpers';
+import {click, find, findAll, render, settled, triggerEvent, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, selectChoose, typeInSearch} from 'ember-power-select/test-support/helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -51,6 +51,40 @@ describe('Integration: Component: gh-psm-authors-input', function () {
         expect(selected[0]).to.contain.text('Adam Author');
         expect(browseRequests(server).length, 'author browse requests').to.equal(requestCount);
     });
+
+    for (const open of [false, true]) {
+        it(`removes only the tapped author with the dropdown ${open ? 'open' : 'closed'}`, async function () {
+            server.create('user', {name: 'Adam Author'});
+            server.create('user', {name: 'Betty Blogger'});
+            server.create('user', {name: 'Charlie Contributor'});
+
+            const users = await this.store.query('user', {limit: 100});
+            this.set('selectedAuthors', users.toArray());
+
+            let updates = 0;
+            this.set('updateAuthors', (authors) => {
+                updates += 1;
+                this.set('selectedAuthors', authors);
+            });
+
+            await render(TEMPLATE);
+
+            if (open) {
+                await clickTrigger();
+            }
+
+            const removeButton = findAll('.ember-power-select-multiple-remove-btn')[1];
+            await triggerEvent(removeButton, 'touchstart');
+            await triggerEvent(removeButton, 'touchend');
+
+            expect(updates, 'selection updated once').to.equal(1);
+            expect(this.selectedAuthors.map(author => author.name))
+                .to.deep.equal(['Adam Author', 'Charlie Contributor']);
+            expect(findAll('[data-test-selected-token]').map(token => token.textContent.trim()))
+                .to.deep.equal(['Adam Author', 'Charlie Contributor']);
+            expect(find('.ember-power-select-trigger')).to.have.attribute('aria-expanded', 'false');
+        });
+    }
 
     it('loads authors page-by-page as the dropdown is used', async function () {
         server.createList('user', 150, {name: i => `Author ${String(i).padStart(3, '0')}`});

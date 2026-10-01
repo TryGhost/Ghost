@@ -1,7 +1,7 @@
 import hbs from 'htmlbars-inline-precompile';
 import mockPosts from '../../../mirage/config/posts';
 import mockTags from '../../../mirage/config/themes';
-import {click, find, findAll, render, settled, waitUntil} from '@ember/test-helpers';
+import {click, find, findAll, render, settled, triggerEvent, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, selectChoose, typeInSearch} from 'ember-power-select/test-support/helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -58,6 +58,26 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         expect(selected[0]).to.contain.text('Tag 1');
         expect(selected[1]).to.contain.text('Tag 3');
     });
+
+    for (const open of [false, true]) {
+        it(`removes only the tapped tag with the dropdown ${open ? 'open' : 'closed'}`, async function () {
+            await assignPostWithTags(this, 'one', 'two', 'three');
+            await render(hbs`<GhPsmTagsInput @post={{post}} />`);
+
+            if (open) {
+                await clickTrigger();
+            }
+
+            const removeButton = findAll('.ember-power-select-multiple-remove-btn')[1];
+            await triggerEvent(removeButton, 'touchstart');
+            await triggerEvent(removeButton, 'touchend');
+
+            expect(this.post.tags.mapBy('name')).to.deep.equal(['Tag 1', 'Tag 3']);
+            expect(findAll('[data-test-selected-token]').map(token => token.textContent.trim()))
+                .to.deep.equal(['Tag 1', 'Tag 3']);
+            expect(find('.ember-power-select-trigger')).to.have.attribute('aria-expanded', 'false');
+        });
+    }
 
     // skipped because FF 85 on Linux (CI) is failing. FF 85 on mac is fine.
     // possible difference in `localeCompare()` across systems
