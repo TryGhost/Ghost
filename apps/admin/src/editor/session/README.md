@@ -376,7 +376,10 @@ answers either that leaving loses nothing, and the navigation goes ahead, or
 that the writer has to confirm it. Until then the URL stays on the editor. The
 writer is asked to confirm instead when the engine fails to answer or has not
 answered within twenty seconds, which is longer than the transport keeps
-retrying a save, so a stalled save or a pending sign-in cannot pin the URL. A
+retrying a save, so a stalled save cannot pin the URL. The deadline does not run
+out while the writer is signing in again: signing in lets the leave go ahead,
+and cancelling asks. Once the deadline has run out, the next way out asks at
+once until the engine moves on. A
 Back or Forward is undone as it happens and replayed once the writer may leave,
 so they land on the entry it reached. Undoing it puts the editor back directly
 above that entry: a held Back drops the forward history, and a Forward or a hash
@@ -393,8 +396,9 @@ request that ran and failed is reported once, with the command it ran, the
 error, whether the post already had a server id, the post's persisted status,
 the id, and how long the request took. Queued work a failure dropped is not
 reported on its own. An expired session is reported only when re-authentication
-is abandoned, not when it is retried. A leave the writer has to
-confirm is reported with the reason codes the tracker holds the post dirty for.
+is abandoned, not when it is retried. A leave the engine answers with a
+confirmation is reported with the reason codes the tracker holds the post dirty
+for; one the editor asks about because the engine missed its deadline is not.
 A draft disposed with a title but a slug still derived from the default title is
 reported as an error. A throwing subscriber or slug listener is reported as an
 error, and so is a slug edit the generator rejected. A local copy that storage

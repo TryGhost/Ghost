@@ -5,6 +5,7 @@ import { createHashRouter, createMemoryRouter, RouterProvider, useLocation } fro
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { installHistoryPopGate } from '@/hooks/use-history-pop-navigation-guard';
 import { deferred } from '@/utils/deferred';
+import type { SaveEngineState } from '@/editor/engine/save-engine';
 import { LEAVE_DECISION_DEADLINE_MS } from './leave-guard';
 import { useEditorLeaveGuard, type EditorLeaveGuard } from './use-leave-guard';
 import { useEditorSessionKey, type EditorSessionHandle } from './use-editor-session';
@@ -293,12 +294,15 @@ describe('useEditorLeaveGuard', () => {
     }
   });
 
-  function renderHeldExit(leaveRequested: () => Promise<unknown>) {
+  function renderHeldExit(
+    leaveRequested: () => Promise<unknown>,
+    state: SaveEngineState = { kind: 'saving', intent: 'leave' },
+  ) {
     const view: { guard?: EditorLeaveGuard } = {};
     function Editor() {
       view.guard = useEditorLeaveGuard(
         {
-          state: { kind: 'saving', intent: 'leave' },
+          state,
           createdId: null,
           isDirty: () => true,
           leaveRequested,
@@ -338,6 +342,56 @@ describe('useEditorLeaveGuard', () => {
         guard().dialogProps.onOpenChange(false);
       });
       await waitFor(() => expect(router.state.location.pathname).toBe('/posts'));
+    } finally {
+      vi.useRealTimers();
+      router.dispose();
+    }
+  });
+
+  it('asks at once on the next exit while the engine is still where the deadline left it', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const { router, guard } = renderHeldExit(() => new Promise(() => {}));
+    try {
+      await act(async () => {
+        await router.navigate('/posts');
+      });
+      await act(() => vi.advanceTimersByTimeAsync(LEAVE_DECISION_DEADLINE_MS));
+      expect(guard().dialogProps.open).toBe(true);
+      act(() => guard().dialogProps.onOpenChange(false));
+
+      await act(async () => {
+        await router.navigate('/posts');
+      });
+      await act(() => vi.advanceTimersByTimeAsync(0));
+
+      expect(guard().dialogProps.open).toBe(true);
+    } finally {
+      vi.useRealTimers();
+      router.dispose();
+    }
+  });
+
+  it('waits out a sign-in that outlasts the deadline, and lets it decide the exit', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const decision = deferred<'proceed' | 'confirm'>();
+    const { router, guard } = renderHeldExit(() => decision.promise, {
+      kind: 'reauth-pending',
+      intent: 'leave',
+    });
+    try {
+      await act(async () => {
+        await router.navigate('/posts');
+      });
+      await act(() => vi.advanceTimersByTimeAsync(LEAVE_DECISION_DEADLINE_MS * 3));
+      expect(guard().dialogProps.open).toBe(false);
+
+      await act(async () => {
+        decision.resolve('proceed');
+        await decision.promise;
+      });
+
+      expect(router.state.location.pathname).toBe('/posts');
+      expect(guard().dialogProps.open).toBe(false);
     } finally {
       vi.useRealTimers();
       router.dispose();

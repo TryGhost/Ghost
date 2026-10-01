@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { PostType } from '@/editor/card-config';
-import { hasUnsavedWork, isCreatedIdUrlSwap, leaveDecisionWithin } from './leave-guard';
+import type { SaveEngineState } from '@/editor/engine/save-engine';
+import {
+  hasUnsavedWork,
+  isCreatedIdUrlSwap,
+  LEAVE_DECISION_DEADLINE_MS,
+  leaveDecisionWithin,
+} from './leave-guard';
 import { useEditorSessionKey, type EditorSessionHandle } from './use-editor-session';
 
 export interface EditorLeaveGuard {
@@ -44,6 +50,10 @@ export function useEditorLeaveGuard(
 
   const guardRef = useRef(guard);
   guardRef.current = guard;
+  const stateRef = useRef(session.state);
+  stateRef.current = session.state;
+  // The engine state a leave last ran out of time in: another leave in that state asks at once.
+  const lateStateRef = useRef<SaveEngineState | null>(null);
   // Stays set while an accepted exit is transitioning. React Router does not
   // consult blockers again in its `proceeding` state, so the deferred ID swap
   // must not race and replace that navigation either.
@@ -118,7 +128,13 @@ export function useEditorLeaveGuard(
       return;
     }
     isDecidingRef.current = true;
-    void leaveDecisionWithin(leaveRequested()).then((decision) => {
+    void leaveDecisionWithin(leaveRequested(), {
+      ms: stateRef.current === lateStateRef.current ? 0 : LEAVE_DECISION_DEADLINE_MS,
+      isSigningIn: () => stateRef.current.kind === 'reauth-pending',
+      onLate: () => {
+        lateStateRef.current = stateRef.current;
+      },
+    }).then((decision) => {
       if (!isMountedRef.current) {
         return;
       }

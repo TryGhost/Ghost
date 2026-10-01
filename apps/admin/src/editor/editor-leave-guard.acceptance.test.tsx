@@ -159,6 +159,44 @@ function fakeDeferredSave() {
   };
 }
 
+/** A draft whose saves find the session gone until `restoreSaves` answers them again. */
+function fakeExpiredSaves() {
+  fakeEditorChrome();
+  const loaded = post({
+    id: POST_ID,
+    title: 'Hello from React',
+    slug: 'hello-from-react',
+    status: 'draft',
+    lexical: buildLexicalParagraph('Hello from React'),
+    updated_at: LOADED_AT,
+    published_at: null,
+    tags: [],
+  });
+  const postRoute = new RegExp(`^/posts/${POST_ID}/\\?`);
+  fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
+    slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
+  }));
+  fakeAdminEndpoint('GET', postRoute, () => ({ posts: [loaded] }));
+  const expiredApi = fakeAdminEndpoint(
+    'PUT',
+    postRoute,
+    { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+    { status: 401 },
+  );
+
+  return {
+    expiredApi,
+    // Declared after the expired fake, so they take over from it.
+    restoreSaves: () => {
+      fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+      return fakeAdminEndpoint('PUT', postRoute, ({ body }) => {
+        const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+        return { posts: [{ ...loaded, ...submitted, updated_at: '2026-01-01T00:00:01.000Z' }] };
+      });
+    },
+  };
+}
+
 async function appendToBody(text: string) {
   const body = editorScreen.body();
   // One input event: a fast autosave must not split a keyboard sequence into several saves.
@@ -390,6 +428,29 @@ describe('Post editor leave guard', () => {
       vi.useRealTimers();
       resolveSave();
     }
+  });
+
+  it('lets a sign-in that outlasts the deadline carry the writer out without asking', async () => {
+    const { expiredApi, restoreSaves } = fakeExpiredSaves();
+    await openDirtyEditor(withoutAutosave(FLAG_ON));
+    const dialogInsertions = watchLeaveDialog();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldClearNativeTimers: true });
+    try {
+      await editorScreen.backLink('post').click();
+      await expect.element(editorScreen.reauthDialog()).toBeVisible();
+      expect(expiredApi.requests.length).toBe(1);
+
+      vi.advanceTimersByTime(LEAVE_DECISION_DEADLINE_MS * 2);
+    } finally {
+      vi.useRealTimers();
+    }
+    const restoredApi = restoreSaves();
+    await editorScreen.reauthPassword().fill('hunter22');
+    await editorScreen.reauthSignIn().click();
+
+    await expect.poll(currentRoute).toBe('/posts');
+    expect(restoredApi.requests.length).toBe(1);
+    expect(dialogInsertions()).toBe(0);
   });
 
   it('guards a native hash anchor out of the editor', async () => {
