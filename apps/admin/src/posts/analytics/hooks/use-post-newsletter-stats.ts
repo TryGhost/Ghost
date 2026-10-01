@@ -8,7 +8,9 @@ import { useMemo } from 'react';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { usePostTopLinks } from '@/posts/analytics/hooks/use-post-top-links';
 
-export const usePostNewsletterStats = () => {
+export const usePostNewsletterStats = ({
+  pauseLinkPolling = false,
+}: { pauseLinkPolling?: boolean } = {}) => {
   const { post, isPostLoading } = usePostAnalytics();
 
   const stats = useMemo(() => {
@@ -102,7 +104,7 @@ export const usePostNewsletterStats = () => {
     topLinks,
     isLoading: isClicksLoading,
     refetch: refetchTopLinks,
-  } = usePostTopLinks();
+  } = usePostTopLinks({ pausePolling: pauseLinkPolling });
 
   // Calculate average open and click rates across newsletters
   const averages = useMemo(() => {

@@ -126,13 +126,15 @@ const Newsletter: React.FC = () => {
     }
   }, [navigate, postId, isPostLoading, isStatusLoading, showNewsletterSection]);
 
+  // Link polling pauses while a link is being edited so the list doesn't
+  // re-sort under the edit field.
   const {
     stats,
     averageStats,
     topLinks,
     isLoading: isNewsletterStatsLoading,
     refetchTopLinks,
-  } = usePostNewsletterStats();
+  } = usePostNewsletterStats({ pauseLinkPolling: editingLinkId !== null });
   const { mutate: editLinks } = useBulkEditLinks();
 
   // Calculate feedback stats from the post data
