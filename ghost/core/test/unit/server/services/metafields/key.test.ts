@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict';
 import { PORT_FIELD } from '@tryghost/checkout';
-import {
-  KEY_CHARACTERS,
-  mintableKey,
-} from '../../../../../core/server/services/members-metafields/key';
+import { KEY_CHARACTERS, mintableKey } from '../../../../../core/server/services/metafields/key';
 
 describe('Custom field key minting', function () {
   it('separates words with underscores', function () {

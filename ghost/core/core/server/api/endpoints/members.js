@@ -9,7 +9,7 @@ const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
-const { ADMIN } = require('../../services/members-metafields');
+const { ADMIN } = require('../../services/metafields');
 
 // Shape the import service's outcome into the API response envelope: an inline import
 // reports its stats and label, a deferred one only how much it accepted.

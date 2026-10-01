@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { MEMBERS } from '../members-metafields';
-import type { MetafieldPlan, MetafieldValuesService } from '../members-metafields/values-service';
+import { MEMBERS } from '../metafields';
+import type { MetafieldPlan, MetafieldValuesService } from '../metafields/values-service';
 
 /**
  * A member's own account: what they are shown about themselves, and what they may

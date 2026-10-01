@@ -7,7 +7,7 @@ const { MemberCommentingCodec } = require('../services/members/commenting');
 const {
   METAFIELDS_RELATION,
   createMetafieldsFilterTransformer,
-} = require('../services/members-metafields/filter');
+} = require('../services/metafields/filter');
 
 const DEEP_OFFSET_THRESHOLD = 1000;
 

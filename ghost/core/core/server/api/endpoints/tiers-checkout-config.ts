@@ -1,4 +1,4 @@
-import { actingContext } from '../../services/members-metafields';
+import { actingContext } from '../../services/metafields';
 import { emptyCheckoutConfig } from '../../services/tier-checkout-config';
 import type { TierCheckoutConfig } from '../../services/tier-checkout-config';
 

@@ -3,9 +3,9 @@ import errors from '@tryghost/errors';
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
-import { DbMetafield, FIELD_STATUS } from '../members-metafields/schema';
-import { MEMBER_ACCESS, type MemberAccess } from '../members-metafields';
-import type { Metafield, RequestContext } from '../members-metafields';
+import { DbMetafield, FIELD_STATUS } from '../metafields/schema';
+import { MEMBER_ACCESS, type MemberAccess } from '../metafields';
+import type { Metafield, RequestContext } from '../metafields';
 import {
   MAX_CHECKOUT_LABEL_LENGTH,
   PORT_FIELD,

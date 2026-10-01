@@ -161,7 +161,7 @@ async function initCore({ ghostServer, config }) {
 
   // Member metafields service: knex-backed, wired once the DB is ready.
   debug('Begin: Member Metafields Service');
-  const memberMetafieldsService = require('./server/services/members-metafields');
+  const memberMetafieldsService = require('./server/services/metafields');
   memberMetafieldsService.init();
   debug('End: Member Metafields Service');
 
