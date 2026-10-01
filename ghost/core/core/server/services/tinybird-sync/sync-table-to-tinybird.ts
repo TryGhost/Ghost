@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import type { OptionsOfTextResponseBody, Response } from 'got';
 import type { ReadonlyDeep } from 'type-fest';
 import errors from '@tryghost/errors';
 import { fromDatabaseDate, toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
@@ -14,7 +15,10 @@ export type TinybirdSyncOptions = {
   trafficAnalyticsAuth: string;
   siteUuid: string;
   now: () => Date;
-  fetch: typeof globalThis.fetch;
+  request: (
+    url: URL,
+    options: OptionsOfTextResponseBody,
+  ) => Promise<Pick<Response<string>, 'statusCode' | 'body'>>;
   createId: () => string;
   batchSize: number;
   maxPayloadBytes: number;
@@ -103,9 +107,9 @@ function* chunkByPayloadLimits(
 async function postEvents(
   lines: string[],
   { table }: TinybirdSyncTarget,
-  { endpoint, trafficAnalyticsAuth, siteUuid, fetch, requestTimeoutMs }: TinybirdSyncOptions,
+  { endpoint, trafficAnalyticsAuth, siteUuid, request, requestTimeoutMs }: TinybirdSyncOptions,
 ): Promise<void> {
-  const response = await fetch(endpoint, {
+  const response = await request(endpoint, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${trafficAnalyticsAuth}`,
@@ -113,12 +117,18 @@ async function postEvents(
       'x-site-uuid': siteUuid,
     },
     body: lines.join('\n'),
+    timeout: { request: requestTimeoutMs },
     signal: AbortSignal.timeout(requestTimeoutMs),
+    retry: { limit: 0 },
+    // Preserve fetch's redirect behavior for POST requests.
+    methodRewriting: true,
+    maxRedirects: 20,
+    throwHttpErrors: false,
   });
 
-  if (!response.ok) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw new errors.InternalServerError({
-      message: `Traffic Analytics returned ${response.status} while syncing ${table}: ${await response.text()}`,
+      message: `Traffic Analytics returned ${response.statusCode} while syncing ${table}: ${response.body}`,
     });
   }
 }

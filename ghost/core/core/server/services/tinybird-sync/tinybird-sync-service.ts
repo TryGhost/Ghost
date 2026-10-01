@@ -5,7 +5,11 @@ import {
   type GetIngestConfigDependencies,
   type IngestConfig,
 } from './get-ingest-config';
-import { AUTOMATION_SYNC_TARGETS, syncTableToTinybird } from './sync-table-to-tinybird';
+import {
+  AUTOMATION_SYNC_TARGETS,
+  syncTableToTinybird,
+  type TinybirdSyncOptions,
+} from './sync-table-to-tinybird';
 import TinybirdSyncJob from './jobs/tinybird-sync-job';
 import type { JobsService } from '../jobs-service/jobs-service';
 import { randomFiveMinuteCron } from '../jobs-service/cron';
@@ -32,7 +36,7 @@ type TinybirdSyncDependencies = GetIngestConfigDependencies & {
   logging: Logger;
   random: () => number;
   now: () => Date;
-  fetch: typeof globalThis.fetch;
+  request: TinybirdSyncOptions['request'];
   createId: () => string;
 };
 
@@ -44,7 +48,7 @@ export function createTinybirdSyncService({
   logging,
   random,
   now,
-  fetch,
+  request,
   createId,
 }: TinybirdSyncDependencies) {
   let scheduled = false;
@@ -56,7 +60,7 @@ export function createTinybirdSyncService({
           knex,
           ...ingest,
           now,
-          fetch,
+          request,
           createId,
           batchSize: BATCH_SIZE,
           maxPayloadBytes: MAX_PAYLOAD_BYTES,
