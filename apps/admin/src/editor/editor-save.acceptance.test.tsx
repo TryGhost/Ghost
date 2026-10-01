@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
@@ -304,6 +305,27 @@ describe('Post editor saving', () => {
       updated_at: LOADED_AT,
     });
     expect(String(submittedPost(saveApi).lexical)).toContain('Hello from React and more');
+    await expect.element(editorScreen.saveToast('Post saved')).toBeVisible();
+  });
+
+  it('replaces the last save toast with the next one on a second Cmd-S', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await appendToBody(' and more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.element(editorScreen.saveToast('Post saved')).toBeVisible();
+
+    await appendToBody(' and again');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+
+    // Outlasts the dismissed toast's exit animation.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 500);
+    });
+    await expect(editorScreen.saveToast('Post saved')).toHaveCount(1);
   });
 
   it('lands a renamed draft clean, with the slug the server generated', async () => {
@@ -335,6 +357,10 @@ describe('Post editor saving', () => {
 
     await expect.element(editorScreen.status()).toHaveTextContent('Saving');
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    // Toasts render in order, so one raised after the save would follow its toast onto the screen.
+    toast('Later toast');
+    await expect.element(editorScreen.saveToast('Later toast')).toBeVisible();
+    await expect(editorScreen.saveToast('Post saved')).toHaveCount(0);
   });
 
   it('saves its own version when a refetch finds the post published elsewhere, and collides', async () => {
