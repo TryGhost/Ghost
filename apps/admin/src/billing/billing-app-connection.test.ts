@@ -147,6 +147,32 @@ describe('BillingAppConnection', () => {
     expect(iframe.src).toBe(src);
   });
 
+  it('does not resend a deep-linked route the iframe loaded with', () => {
+    locationSubRoute = '/domain';
+    const { connection, postMessage } = connect();
+    connection.setVisible(true);
+    connection.navigateToSubRoute('/domain');
+
+    connection.markLoaded();
+
+    expect(postMessage).not.toHaveBeenCalledWith(
+      { query: 'routeUpdate', response: '/domain' },
+      ORIGIN,
+    );
+  });
+
+  it('only lets the first request claim the deep-linked route', () => {
+    locationSubRoute = '/domain';
+    const { connection, iframe } = connect();
+    connection.setVisible(true);
+    connection.navigateToSubRoute('/plans');
+    expect(srcPath(iframe)).toBe('/plans');
+
+    connection.navigateToSubRoute('/domain');
+
+    expect(srcPath(iframe)).toBe('/domain');
+  });
+
   it('treats the root route and no route as the same destination', () => {
     const { connection, iframe } = connect();
     const src = iframe.src;
