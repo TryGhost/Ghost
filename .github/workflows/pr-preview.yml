@@ -46,11 +46,13 @@ jobs:
           # Profile names and the default are defined in Ghost-Moya, which reads
           # the label itself; these checks only surface mistakes on the PR.
           PROFILES=$(jq -r '[.labels[] | select(startswith("preview:"))] | join(", ")' <<< "$PR")
-          if [[ "$PROFILES" == *,* ]]; then
+          PROFILE_COUNT=$(jq '[.labels[] | select(startswith("preview:"))] | length' <<< "$PR")
+          if [ "$PROFILE_COUNT" -gt 1 ]; then
             echo "::error::Multiple preview profile labels ($PROFILES) — remove all but one"
             exit 1
           fi
-          if [ -n "$PROFILES" ] && ! [[ "${PROFILES#preview:}" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+          # Validate the JSON strings before command substitution strips newlines.
+          if ! jq -e '.labels | map(select(startswith("preview:"))) | all(test("^preview:[a-z0-9]+(-[a-z0-9]+)*\\z"))' <<< "$PR" > /dev/null; then
             echo "::error::Malformed profile label '${PROFILES}' — expected lowercase words separated by hyphens"
             exit 1
           fi
