@@ -1,26 +1,55 @@
-const errors = require('@tryghost/errors');
-const fs = require('fs-extra');
-const path = require('path');
+import fs from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import errors from '@tryghost/errors';
+import type Sharp from 'sharp';
 
-const DEFAULT_PROCESSING_TIMEOUT_SECONDS = 0; // 0 means no timeout
+// sharp is an optional dependency and costs native memory once loaded, so
+// it's only required when something needs it
+const nodeRequire = createRequire(import.meta.url);
+const loadSharp = (): typeof Sharp => nodeRequire('sharp');
+
+export const DEFAULT_PROCESSING_TIMEOUT_SECONDS = 0; // 0 means no timeout
+
+const TRANSFORM_FORMATS = ['gif', 'jpeg', 'jpg', 'png', 'webp', 'avif'] as const;
+
+export type TransformFormat = (typeof TRANSFORM_FORMATS)[number];
+
+export interface ResizeOptions {
+  width?: number;
+  height?: number;
+  /** Output format. Without one, the smaller of the original and resized image is returned */
+  format?: TransformFormat;
+  /** Defaults to true, or to whether `format` supports animation */
+  animated?: boolean;
+  withoutEnlargement?: boolean;
+  timeout?: number;
+}
+
+export interface ResizeFromPathOptions {
+  in: string;
+  out: string;
+  width?: number;
+  timeout?: number;
+}
 
 /**
  * Check if this tool can handle any file transformations as Sharp is an optional dependency
  */
-const canTransformFiles = () => {
+export const canTransformFiles = (): boolean => {
   try {
-    require('sharp');
+    loadSharp();
     return true;
-  } catch (err) {
+  } catch {
     return false;
   }
 };
 
 /**
  * Check if this tool can handle a particular extension
- * @param {String} ext the extension to check, including the leading dot
+ * @param ext the extension to check, including the leading dot
  */
-const canTransformFileExtension = (ext) => !['.ico'].includes(ext);
+export const canTransformFileExtension = (ext: string): boolean => !['.ico'].includes(ext);
 
 /**
  * Check if this tool can handle a particular extension, only to resize (= not convert format)
@@ -28,58 +57,36 @@ const canTransformFileExtension = (ext) => !['.ico'].includes(ext);
  * - We don't want to resize GIF's (because we would lose the animation)
  * So this is a 'should' instead of a 'could'. Because Sharp can handle them, but animations are lost.
  * This is 'resize' instead of 'transform', because for the transform we might want to convert a SVG to a PNG, which is perfectly possible.
- * @param {String} ext the extension to check, including the leading dot
+ * @param ext the extension to check, including the leading dot
  */
-const shouldResizeFileExtension = (ext) => !['.ico', '.svg', '.svgz'].includes(ext);
+export const shouldResizeFileExtension = (ext: string): boolean =>
+  !['.ico', '.svg', '.svgz'].includes(ext);
 
 /**
  * Can we output animation (prevents outputting animated JPGs that are just all the pages listed under each other)
  * Sharp doesn't support AVIF image sequences yet (animation)
- * @param {keyof import('sharp').FormatEnum} format the extension to check, EXCLUDING the leading dot
  */
-const doesFormatSupportAnimation = (format) => ['webp', 'gif'].includes(format);
+const doesFormatSupportAnimation = (format: TransformFormat): boolean =>
+  format === 'webp' || format === 'gif';
 
 /**
- * Check if this tool can convert to a particular format (used in the format option of ResizeFromBuffer)
- * @param {String} format the format to check, EXCLUDING the leading dot
- * @returns {ext is keyof import('sharp').FormatEnum}
+ * Check if this tool can convert to a particular format (used in the format option of resizeFromBuffer)
+ * @param format the format to check, EXCLUDING the leading dot
  */
-const canTransformToFormat = (format) =>
-  ['gif', 'jpeg', 'jpg', 'png', 'webp', 'avif'].includes(format);
-
-/**
- * @NOTE: Sharp cannot operate on the same image path, that's why we have to use in & out paths.
- *
- * We currently can't enable compression or having more config options, because of
- * https://github.com/lovell/sharp/issues/1360.
- *
- * Resize an image referenced by the `in` path and write it to the `out` path
- * @param {{in, out, width, timeout}} options
- */
-const unsafeResizeFromPath = (options = {}) => {
-  return fs
-    .readFile(options.in)
-    .then((data) => {
-      return unsafeResizeFromBuffer(data, {
-        width: options.width,
-        timeout: options.timeout,
-      });
-    })
-    .then((data) => {
-      return fs.writeFile(options.out, data);
-    });
-};
+export const canTransformToFormat = (format: string): format is TransformFormat =>
+  (TRANSFORM_FORMATS as readonly string[]).includes(format);
 
 /**
  * Resize an image
  *
- * @param {Buffer} originalBuffer image to resize
- * @param {{width?: number, height?: number, format?: keyof import('sharp').FormatEnum, animated?: boolean, withoutEnlargement?: boolean, timeout:? number}} [options]
- *  options.animated defaults to true for file formats where animation is supported (will always maintain animation if possible)
- * @returns {Promise<Buffer>} the resizedBuffer
+ * @param originalBuffer image to resize
+ * @returns the resized image, or the original when it is smaller and no format was requested
  */
-const unsafeResizeFromBuffer = async (originalBuffer, options = {}) => {
-  const sharp = require('sharp');
+const unsafeResizeFromBuffer = async (
+  originalBuffer: Buffer,
+  options: ResizeOptions = {},
+): Promise<Buffer> => {
+  const sharp = loadSharp();
 
   // Disable the internal libvips cache - https://sharp.pixelplumbing.com/api-utility#cache
   sharp.cache(false);
@@ -112,7 +119,8 @@ const unsafeResizeFromBuffer = async (originalBuffer, options = {}) => {
     if (options.format === 'jpeg') {
       s.jpeg({ mozjpeg: true }); // .jpeg sets format
     } else {
-      s = s.toFormat(options.format);
+      // sharp reads 'jpg' as 'jpeg', but its types only name the latter
+      s = s.toFormat(options.format === 'jpg' ? 'jpeg' : options.format);
     }
   } else if (metadata.format === 'jpeg') {
     s.jpeg({ mozjpeg: true }); // .jpeg sets format
@@ -125,46 +133,56 @@ const unsafeResizeFromBuffer = async (originalBuffer, options = {}) => {
 };
 
 /**
- * Internal utility to wrap all transform functions in error handling
- * Allows us to keep Sharp as an optional dependency
+ * @NOTE: Sharp cannot operate on the same image path, that's why we have to use in & out paths.
  *
- * @param {T} fn
- * @return {T}
- * @template {Function} T
+ * We currently can't enable compression or having more config options, because of
+ * https://github.com/lovell/sharp/issues/1360.
+ *
+ * Resize an image referenced by the `in` path and write it to the `out` path
+ */
+const unsafeResizeFromPath = async (options: ResizeFromPathOptions): Promise<void> => {
+  const data = await fs.readFile(options.in);
+  const resized = await unsafeResizeFromBuffer(data, {
+    width: options.width,
+    timeout: options.timeout,
+  });
+  await fs.writeFile(options.out, resized);
+};
+
+const toErrorDetail = (err: unknown): Error | string => (err instanceof Error ? err : String(err));
+
+/**
+ * Wraps a transform function in error handling, which allows us to keep Sharp
+ * as an optional dependency
  */
 const makeSafe =
-  (fn) =>
-  (...args) => {
+  <Args extends unknown[], Result>(fn: (...args: Args) => Promise<Result>) =>
+  async (...args: Args): Promise<Result> => {
     try {
-      require('sharp');
+      loadSharp();
     } catch (err) {
-      return Promise.reject(
-        new errors.InternalServerError({
-          message: "Sharp wasn't installed",
-          code: 'SHARP_INSTALLATION',
-          err: err,
-        }),
-      );
+      throw new errors.InternalServerError({
+        message: "Sharp wasn't installed",
+        code: 'SHARP_INSTALLATION',
+        err: toErrorDetail(err),
+      });
     }
-    return fn(...args).catch((err) => {
+
+    try {
+      return await fn(...args);
+    } catch (err) {
       throw new errors.InternalServerError({
         message: 'Unable to manipulate image.',
-        err: err,
+        err: toErrorDetail(err),
         code: 'IMAGE_PROCESSING',
       });
-    });
+    }
   };
 
-const generateOriginalImageName = (originalPath) => {
+export const generateOriginalImageName = (originalPath: string): string => {
   const parsedFileName = path.parse(originalPath);
   return path.join(parsedFileName.dir, `${parsedFileName.name}_o${parsedFileName.ext}`);
 };
 
-module.exports.canTransformFiles = canTransformFiles;
-module.exports.canTransformFileExtension = canTransformFileExtension;
-module.exports.shouldResizeFileExtension = shouldResizeFileExtension;
-module.exports.canTransformToFormat = canTransformToFormat;
-module.exports.generateOriginalImageName = generateOriginalImageName;
-module.exports.resizeFromPath = makeSafe(unsafeResizeFromPath);
-module.exports.resizeFromBuffer = makeSafe(unsafeResizeFromBuffer);
-module.exports.DEFAULT_PROCESSING_TIMEOUT_SECONDS = DEFAULT_PROCESSING_TIMEOUT_SECONDS;
+export const resizeFromPath = makeSafe(unsafeResizeFromPath);
+export const resizeFromBuffer = makeSafe(unsafeResizeFromBuffer);

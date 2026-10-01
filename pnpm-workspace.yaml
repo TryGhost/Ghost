@@ -248,10 +248,6 @@ catalogs:
   tailwind3:
     tailwindcss: 3.4.19
     eslint-plugin-tailwindcss: 3.18.3
-  # Exact source release pin from the TryGhost/SDK import; reassess when
-  # packages/image-transform is modernized
-  image-transform-migration:
-    fs-extra: 11.4.1
 
 overrides:
   cron-validate: 1.4.5

@@ -1,12 +1,7 @@
-const path = require('path');
+import path from 'node:path';
 
-// Helpers
-const getPath = function (filename) {
-    return path.join(__dirname, filename);
-};
+const getPath = (filename: string) => path.join(import.meta.dirname, filename);
 
-module.exports = {
-    inputJpeg: getPath('saw.jpg'),
-    inputPng: getPath('saw.png'),
-    inputWebp: getPath('tree.webp')
-};
+export const inputJpeg = getPath('saw.jpg');
+export const inputPng = getPath('saw.png');
+export const inputWebp = getPath('tree.webp');
