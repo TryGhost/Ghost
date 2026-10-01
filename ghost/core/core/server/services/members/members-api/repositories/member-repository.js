@@ -169,28 +169,38 @@ module.exports = class MemberRepository {
     this._automationsApi = automationsApi;
     this._Automation = Automation;
     this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
+  }
 
-    DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
-      if (!event.data.offerId) {
-        return;
-      }
-
-      // To be extra safe, check if the redemption already exists before adding it
-      const existingRedemption = await OfferRedemption.findOne({
-        member_id: event.data.memberId,
-        subscription_id: event.data.subscriptionId,
-        offer_id: event.data.offerId,
-      });
-
-      if (!existingRedemption) {
-        await OfferRedemption.add({
-          member_id: event.data.memberId,
-          subscription_id: event.data.subscriptionId,
-          offer_id: event.data.offerId,
-          created_at: event.timestamp || Date.now(),
-        });
-      }
-    });
+  /**
+   * Records that a subscription redeemed an offer, once: Stripe can deliver the same
+   * subscription update more than once, so a redemption already recorded is left alone.
+   * A new redemption sends `OfferRedemptionEvent` once the change commits.
+   *
+   * @param {{memberId: string, subscriptionId: string, offerId: string, createdAt?: Date}} redemption
+   * @param {object} [options] joins `options.transacting` when given
+   */
+  async recordOfferRedemption({ memberId, subscriptionId, offerId, createdAt }, options) {
+    const transacting = _.pick(options, 'transacting');
+    const existing = await this._OfferRedemption.findOne(
+      { member_id: memberId, subscription_id: subscriptionId, offer_id: offerId },
+      transacting,
+    );
+    if (existing) {
+      return;
+    }
+    await this._OfferRedemption.add(
+      {
+        member_id: memberId,
+        subscription_id: subscriptionId,
+        offer_id: offerId,
+        created_at: createdAt ?? new Date(),
+      },
+      transacting,
+    );
+    this.dispatchEvent(
+      OfferRedemptionEvent.create({ memberId, subscriptionId, offerId }, createdAt),
+      options,
+    );
   }
 
   /**
@@ -1623,7 +1633,6 @@ module.exports = class MemberRepository {
 
       // CASE: Record offer redemption when offer_id changes to a new non-null value
       // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
-      // The OfferRedemptionEvent handler has a dedup check for repeated webhook deliveries
       if (
         !isIncomplete &&
         !subscriptionToRecord &&
@@ -1633,15 +1642,15 @@ module.exports = class MemberRepository {
         const redemptionTimestamp =
           subscriptionData.discount_start ||
           updatedStripeCustomerSubscriptionModel.get('created_at');
-        const offerRedemptionEvent = OfferRedemptionEvent.create(
+        await this.recordOfferRedemption(
           {
             memberId: memberModel.id,
             offerId: subscriptionData.offer_id,
             subscriptionId: updatedStripeCustomerSubscriptionModel.id,
+            createdAt: redemptionTimestamp,
           },
-          redemptionTimestamp,
+          options,
         );
-        this.dispatchEvent(offerRedemptionEvent, options);
       }
 
       if (
@@ -1829,12 +1838,14 @@ module.exports = class MemberRepository {
       this.dispatchEvent(subscriptionCreatedEvent, options);
 
       if (offerId) {
-        const offerRedemptionEvent = OfferRedemptionEvent.create({
-          memberId: memberModel.id,
-          offerId: offerId,
-          subscriptionId: subscriptionToRecord.get('id'),
-        });
-        this.dispatchEvent(offerRedemptionEvent, options);
+        await this.recordOfferRedemption(
+          {
+            memberId: memberModel.id,
+            offerId: offerId,
+            subscriptionId: subscriptionToRecord.get('id'),
+          },
+          options,
+        );
       }
 
       if (getStatus(subscriptionToRecord) === 'active') {
