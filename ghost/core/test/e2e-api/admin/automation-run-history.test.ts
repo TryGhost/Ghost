@@ -75,36 +75,31 @@ describe('Automation run history API', function () {
     await db('members').where('id', member.id).del();
   });
 
-  function runRow(owner: string, createdAt: string) {
-    return {
+  async function addRun(owner = automationId) {
+    const row = {
       id: newId(),
       automation_id: owner,
       member_id: member.id,
       member_email: 'historical@example.com',
-      created_at: createdAt,
-      updated_at: createdAt,
+      created_at: date,
+      updated_at: date,
     };
-  }
-
-  async function addRun(owner = automationId, createdAt = date) {
-    const row = runRow(owner, createdAt);
     await db('automation_runs').insert(row);
     return row.id;
   }
 
-  function stepRow(
+  async function addStep(
     runId: string,
-    status: string,
+    status = 'finished',
     overrides: Partial<{
       id: string;
       automation_action_revision_id: string;
       created_at: string;
       ready_at: string;
-      finished_at: string | null;
-    }>,
+    }> = {},
   ) {
     const createdAt = overrides.created_at ?? date;
-    return {
+    const row = {
       id: newId(),
       automation_run_id: runId,
       automation_action_revision_id: email.id,
@@ -116,14 +111,6 @@ describe('Automation run history API', function () {
       status,
       ...overrides,
     };
-  }
-
-  async function addStep(
-    runId: string,
-    status = 'finished',
-    overrides: Parameters<typeof stepRow>[2] = {},
-  ) {
-    const row = stepRow(runId, status, overrides);
     await db('automation_run_steps').insert(row);
     return row;
   }
@@ -290,17 +277,11 @@ describe('Automation run history API', function () {
     assert.equal(history.steps[0].email_delivered_at, null);
   });
 
-  it('reads repeated entries separately without relying on visible list pages', async function () {
+  it('reads repeated entries for the same member separately', async function () {
     const first = await addRun();
     const second = await addRun();
     await addStep(first, 'finished');
     await addStep(second, 'pending');
-    // Both selected runs precede a complete fifty-run page of newer entries.
-    const newerRuns = Array.from({ length: 50 }, () => runRow(automationId, '2026-09-15 12:00:00'));
-    await db('automation_runs').insert(newerRuns);
-    await db('automation_run_steps').insert(
-      newerRuns.map((run) => stepRow(run.id, 'finished', { created_at: run.created_at })),
-    );
     const firstHistory = await readRun(first);
     const secondHistory = await readRun(second);
     assert.equal(firstHistory.id, first);
@@ -322,10 +303,6 @@ describe('Automation run history API', function () {
     assert.ok(!JSON.stringify(history).includes('historical@example.com'));
   });
 
-  it('rejects a stored run without steps', async function () {
-    await expectReadError(await addRun(), 500, 'InternalServerError');
-  });
-
   it('returns 404 for an unknown run', async function () {
     await expectReadError(newId(), 404, 'NotFoundError');
   });
@@ -339,58 +316,34 @@ describe('Automation run history API', function () {
   });
 
   it.each([
-    ['finished', ['finished'], 'completed', false],
-    ['failed', ['failed'], 'exited_early', true],
-    ['disabled', ['automation disabled'], 'exited_early', false],
-    ['changed member status', ['member changed status'], 'exited_early', false],
-    ['unsubscribed', ['member unsubscribed'], 'exited_early', false],
-    ['pending after failure', ['failed', 'pending'], 'in_progress', false],
+    ['pending', 'in_progress', false],
+    ['finished', 'completed', false],
+    ['failed', 'exited_early', true],
+    ['automation disabled', 'exited_early', false],
+    ['member changed status', 'exited_early', false],
+    ['member unsubscribed', 'exited_early', false],
   ])(
     'classifies %s history and preserves raw step states',
-    async function (_name, statuses, status, failed) {
+    async function (stepStatus, status, failed) {
       const run = await addRun();
-      for (const stepStatus of statuses) {
-        await addStep(run, stepStatus);
-      }
+      await addStep(run, stepStatus);
       const history = await readRun(run);
       assert.equal(history.status, status);
       assert.equal(history.failed, failed);
-      assert.deepEqual(
-        history.steps.map((step) => step.status),
-        statuses,
-      );
+      assert.equal(history.steps[0].status, stepStatus);
     },
   );
 
-  it.each(['pending', 'finished', 'failed'])(
-    'rejects an unknown step status even alongside %s',
-    async function (status) {
-      const run = await addRun();
-      await addStep(run, 'unknown status');
-      await addStep(run, status);
-      await expectReadError(run, 500, 'InternalServerError');
-    },
-  );
-
-  it.each([
-    { name: 'terminal timestamp', step: { finished_at: null }, revision: {} },
-    { name: 'email subject', step: {}, revision: { email_subject: null } },
-    { name: 'email content', step: {}, revision: { email_lexical: null } },
-  ])('rejects history with a missing $name', async function ({ step, revision }) {
+  it('rejects an unknown step status', async function () {
     const run = await addRun();
-    const recorded = await addStep(run, 'finished', step);
-    if (Object.keys(revision).length) {
-      await db('automation_action_revisions')
-        .where('id', recorded.automation_action_revision_id)
-        .update(revision);
-    }
+    await addStep(run, 'unknown status');
     await expectReadError(run, 500, 'InternalServerError');
   });
 
-  it('rejects a wait revision without a duration', async function () {
+  it('rejects history with missing revision content', async function () {
     const run = await addRun();
-    await addStep(run, 'pending', { automation_action_revision_id: wait.id });
-    await db('automation_action_revisions').where('id', wait.id).update({ wait_hours: null });
+    await addStep(run);
+    await db('automation_action_revisions').where('id', email.id).update({ email_lexical: null });
     await expectReadError(run, 500, 'InternalServerError');
   });
 

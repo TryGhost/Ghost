@@ -618,21 +618,28 @@ function buildRunHistoryStep(
 ): AutomationRunHistoryStep {
   const revision = { ...row, id: row.action_id, type: row.action_type };
   let action: AutomationRunHistoryAction;
-  if (row.action_type === 'wait') {
-    action = {
-      id: row.action_id,
-      type: 'wait',
-      data: { wait_hours: requireValue(revision, 'wait_hours') },
-    };
-  } else {
-    action = {
-      id: row.action_id,
-      type: 'send_email',
-      data: {
-        email_subject: requireValue(revision, 'email_subject'),
-        email_lexical: requireValue(revision, 'email_lexical'),
-      },
-    };
+  switch (row.action_type) {
+    case 'wait':
+      action = {
+        id: row.action_id,
+        type: 'wait',
+        data: { wait_hours: requireValue(revision, 'wait_hours') },
+      };
+      break;
+    case 'send_email':
+      action = {
+        id: row.action_id,
+        type: 'send_email',
+        data: {
+          email_subject: requireValue(revision, 'email_subject'),
+          email_lexical: requireValue(revision, 'email_lexical'),
+        },
+      };
+      break;
+    default: {
+      const _exhaustive: never = row.action_type;
+      throw new errors.InternalServerError({ message: `Unhandled action type: ${_exhaustive}` });
+    }
   }
   return {
     id: row.id,
@@ -650,13 +657,29 @@ function buildRunHistoryStep(
 }
 
 function getRunHistoryStatus(steps: AutomationRunHistoryStep[]): AutomationRunHistory['status'] {
-  if (steps.some((step) => step.status === 'pending')) {
-    return 'in_progress';
+  let status: AutomationRunHistory['status'] = 'completed';
+  for (const step of steps) {
+    switch (step.status) {
+      case 'pending':
+        status = 'in_progress';
+        break;
+      case 'finished':
+        break;
+      case 'automation disabled':
+      case 'failed':
+      case 'member changed status':
+      case 'member unsubscribed':
+        if (status !== 'in_progress') {
+          status = 'exited_early';
+        }
+        break;
+      default: {
+        const _exhaustive: never = step.status;
+        throw new errors.InternalServerError({ message: `Unhandled step status: ${_exhaustive}` });
+      }
+    }
   }
-  if (steps.some((step) => step.status !== 'finished')) {
-    return 'exited_early';
-  }
-  return 'completed';
+  return status;
 }
 
 function buildRunHistory(
