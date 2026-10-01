@@ -10,6 +10,7 @@ export type UpcomingRunSteps = { cards: HistoryCardData[]; message: string };
 export function mapUpcomingRunSteps(
   history: AutomationRunHistory,
   plan: AutomationRunPlan,
+  now = Date.now(),
 ): UpcomingRunSteps {
   if (history.status !== 'in_progress') {
     return { cards: [], message: '' };
@@ -33,6 +34,9 @@ export function mapUpcomingRunSteps(
   const visited = new Set([anchor]);
   const cards: HistoryCardData[] = [];
   let current = anchor;
+  // Eligibility is recorded; later execution dates are estimates. An overdue
+  // pending step can only continue from now, and each future wait adds its delay.
+  let expected = history.member ? Math.max(Date.parse(pending[0].ready_at), now) : undefined;
   while (true) {
     const edges = plan.edges.filter((edge) => edge.source_action_id === current);
     if (edges.length === 0) {
@@ -51,8 +55,11 @@ export function mapUpcomingRunSteps(
     switch (next.type) {
       case 'wait': {
         const duration = waitDuration(next.data.wait_hours);
-        if (!duration) {
+        if (next.data.wait_hours === null || !duration) {
           throw new Error('Invalid upcoming wait duration');
+        }
+        if (expected !== undefined) {
+          expected += next.data.wait_hours * 60 * 60 * 1000;
         }
         cards.push({ ...base, kind: 'wait', title: `Wait ${duration}` });
         break;
@@ -70,6 +77,13 @@ export function mapUpcomingRunSteps(
         break;
       default:
         throw new Error(`Unknown upcoming action: ${String(next satisfies never)}`);
+    }
+    if (expected !== undefined) {
+      cards[cards.length - 1].timestamp = {
+        label: 'est.',
+        value: new Date(expected).toISOString(),
+        estimated: true,
+      };
     }
     current = next.id;
   }
