@@ -87,7 +87,7 @@ module.exports = class CheckoutSessionEventService {
    * @param {object} deps.staffServiceEmails
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
-   * @param {Pick<import('../../../metafields/members/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
+   * @param {Pick<import('../../../metafields/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
    * @param {{updateWithMetafields: (data: object, options: {id: string}, plans: import('../../../metafields/values-service').MetafieldPlan[]) => Promise<unknown>}} deps.memberBREADService
    */
   constructor(deps) {

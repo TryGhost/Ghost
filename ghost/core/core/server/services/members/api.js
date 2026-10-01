@@ -277,7 +277,7 @@ function createApiInstance(config) {
     // the values service itself, and reading it at construction is what ties the
     // two together in boot order. Metafields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
-    metafieldValues: metafieldsService.values,
+    metafieldValues: metafieldsService.members.values,
   });
 
   return membersApiInstance;

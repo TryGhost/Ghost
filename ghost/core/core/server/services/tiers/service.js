@@ -39,7 +39,7 @@ class TiersServiceWrapper {
     // Boot builds the metafields services before this one, so both collaborators
     // are ready by the time this runs.
     const { TierCheckoutConfigService } = require('../tier-checkout-config');
-    const { bindings, definitions } = require('../metafields');
+    const { bindings, definitions } = require('../metafields').members;
     this.checkout = new TierCheckoutConfigService({
       knex: models.Base.knex,
       // A binding is where a collected value lands, and the same rows are what a completed

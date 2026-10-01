@@ -8,12 +8,12 @@ const MetafieldResource = z.object({
   name: z.string(),
   type: z.string(),
   status: z.string(),
-  access: z.object({ member: z.string() }),
+  access: z.object({ member: z.string().optional() }),
   created_at: z.date(),
   updated_at: z.date().nullable(),
 });
 
-/** Definitions as the response for a resource carries them, under the resource's name. */
+/** Definitions as the response for an entity's resource carries them, under its name. */
 export function toMetafieldsResponse(resource: string, fields: Metafield[]) {
   return {
     [resource]: z.array(MetafieldResource).parse(fields.map((field) => snakeKeys(field))),

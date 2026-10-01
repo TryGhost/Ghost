@@ -3,11 +3,10 @@ import type { Knex } from 'knex';
 import {
   FieldTypeSchema,
   MetafieldChangeEventFieldSchema,
-  type MetafieldChangeEntry,
   type MetafieldChangeSource,
 } from '@tryghost/metafield-types';
 import { DbDate } from '../../lib/db-types/date';
-import { MemberAccessSchema } from './access';
+import { AccessLevelSchema, type AccessColumn } from './access';
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
 // list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
@@ -15,6 +14,12 @@ import { MemberAccessSchema } from './access';
 export const FIELD_STATUS = { active: 'active', archived: 'archived' } as const;
 export type FieldStatus = (typeof FIELD_STATUS)[keyof typeof FIELD_STATUS];
 export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archived]);
+
+// Optional because an entity has a column only for the doors it opens fields to. Keyed by
+// every column there is, so a door added to `SURFACES` does not compile until it is here.
+const ACCESS_COLUMNS: { [C in AccessColumn]: z.ZodOptional<typeof AccessLevelSchema> } = {
+  member_access: AccessLevelSchema.optional(),
+};
 
 // The single source for the read projection and the knex table type below. `type` parses
 // as the field-type enum, so the row carries the narrow type and no codec needs a cast.
@@ -24,7 +29,7 @@ export const DbMetafield = z.object({
   name: z.string(),
   type: FieldTypeSchema,
   status: FieldStatusSchema,
-  member_access: MemberAccessSchema,
+  ...ACCESS_COLUMNS,
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });
@@ -52,18 +57,17 @@ export const WrittenBy = z.discriminatedUnion('type', [
 ]);
 export type WrittenBy = z.infer<typeof WrittenBy>;
 
-// One part of a member's value. What a `path` means is storage.ts's business, so the row
-// carries it as a plain string.
+// One part of a record's value, without the column naming the record: that one is named
+// after its entity, so it is the one column no two entities share.
 export const DbMetafieldValue = z.object({
   id: z.string(),
   metafield_key: z.string(),
-  member_id: z.string(),
   path: z.string(),
   // Nullable like the column, though nothing here writes a null: a part with no value
   // has no row.
   value_text: z.string().nullable(),
   // Plain columns rather than the `WrittenBy` union: the rule holds at the write
-  // boundary, so one malformed row cannot throw away a member's whole profile on read.
+  // boundary, so one malformed row cannot throw away a record's whole set of values on read.
   written_by_type: z.string(),
   // Null for the one writer that resolves nowhere: an import, until runs are tracked.
   written_by_id: z.string().nullable(),
@@ -74,7 +78,7 @@ export const DbMetafieldValue = z.object({
 type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
 // The field's key travels with the row so a value assembles without a second lookup, and
-// the record it belongs to under a name that does not depend on what kind of record it is.
+// the record it belongs to under one name whatever its entity calls it.
 //
 // `type` takes no part in the assembly and is here as a gate: a value whose type has left
 // the catalog is one the definitions list no longer returns either, so failing to parse
@@ -139,10 +143,12 @@ export const StoredFieldList = z.codec(z.string(), MetafieldChangeEventFields, {
   encode: (fields) => JSON.stringify(fields),
 });
 
-/** An entry as the table holds it. Writer and source are plain strings, as on the values table. */
-export const DbMetafieldChangeEvent = z.object({
+/**
+ * An entry as the table holds it, but for the column naming its record. Writer and source
+ * are plain strings, as on the values table.
+ */
+const ChangeEventColumns = z.object({
   id: z.string(),
-  member_id: z.string(),
   written_by_type: z.string(),
   written_by_id: z.string().nullable(),
   source: z.string(),
@@ -150,50 +156,39 @@ export const DbMetafieldChangeEvent = z.object({
   created_at: DbDate,
 });
 
+/** An entry read back, with its record under one name whatever its entity calls it. */
+export const DbMetafieldChangeEvent = ChangeEventColumns.extend({ entity_id: z.string() });
+
 /**
  * An entry as the table holds it, derived from the schema that reads it. The pairing of
  * writer and source is held by `WriteOrigin` at the write rather than by this row type.
  */
-export type MetafieldChangeEventRow = z.input<typeof DbMetafieldChangeEvent>;
+type MetafieldChangeEventRow = z.input<typeof ChangeEventColumns>;
 
-/** The member columns an entry is shown with: only what a feed row needs. */
-export const DbChangeEventMember = z.object({
-  id: z.string(),
-  uuid: z.string(),
-  name: z.string().nullable(),
-  email: z.string(),
-});
+/** An entry as the metafields domain reads it, before anything about its record is added. */
+export type MetafieldChangeRecord = z.output<typeof DbMetafieldChangeEvent>;
 
-/** An activity feed entry with its member, as the metafields domain reads it. */
-export type MetafieldChangeEvent = MetafieldChangeEntry<Date> & {
-  member: z.output<typeof DbChangeEventMember>;
-};
-
-/**
- * An entry and its member read back together. Parses and nothing else: what to do with an
- * entry that doesn't parse is the reading service's decision.
- */
-export const DbMetafieldChangeEventWithMember = z
-  .object({ event: DbMetafieldChangeEvent, member: DbChangeEventMember })
-  .transform(({ event, member }): MetafieldChangeEvent => ({ ...event, member }));
-
+// Keyed by pattern rather than by name: an entity adopts metafields by having tables with
+// these names, and holds them to these shapes by having them. The column naming the record
+// is the entity's own and so is absent from each, which is why every query naming it passes
+// the entity's column as a string.
 declare module 'knex/types/tables' {
   interface Tables {
-    members_metafields: Knex.CompositeTableType<
+    [definitions: `${string}_metafields`]: Knex.CompositeTableType<
       MetafieldRow,
       // `status` is DB-defaulted and only set via update, so it's absent here. The
       // rank is required: letting it default would land a new field at the top.
       Omit<z.input<typeof DbMetafield>, 'updated_at' | 'status'> & MetafieldRank,
       Partial<MetafieldRow>
     >;
-    members_metafield_values: Knex.CompositeTableType<
+    [values: `${string}_metafield_values`]: Knex.CompositeTableType<
       MetafieldValueRow,
       Omit<z.input<typeof DbMetafieldValue>, 'updated_at'>,
       Partial<MetafieldValueRow>
     >;
     // Read as the schema reads it; written with the date already in the string form SQLite
     // orders against the feed's time filters, which a `Date` would silently break.
-    members_metafield_change_events: Knex.CompositeTableType<
+    [changeEvents: `${string}_metafield_change_events`]: Knex.CompositeTableType<
       MetafieldChangeEventRow,
       Omit<MetafieldChangeEventRow, 'created_at'> & { created_at: string }
     >;
