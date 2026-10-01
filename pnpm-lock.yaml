@@ -1028,6 +1028,9 @@ importers:
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:*
         version: link:../../koenig/kg-clean-basic-html
+      '@tryghost/kg-converters':
+        specifier: workspace:*
+        version: link:../../koenig/kg-converters
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:*
         version: link:../../koenig/kg-unsplash-selector
