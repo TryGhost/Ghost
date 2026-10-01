@@ -493,8 +493,8 @@ function useLexicalConversion(postType: PostType) {
 function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
-  // Access and conversion are judged on the read that opens the editor. Later
-  // reads belong to its session; unmounting the editor would dispose it.
+  // Access and conversion are judged until the opening read settles. Later
+  // reads belong to the session; unmounting the editor would dispose it.
   const [openedWith, setOpenedWith] = useState<EditorRecord>();
   const navigate = useNavigate();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
@@ -513,6 +513,8 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
   const { state: conversion, convert } = useLexicalConversion(postType);
   const listPath = postType === 'page' ? '/pages' : '/posts';
+  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
+  const loadError = openedWith || loaded ? null : query.error;
 
   const opening = openedWith ? undefined : loaded;
   const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
@@ -538,8 +540,6 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     return <EditorSurface postType={postType} record={openedWith} />;
   }
 
-  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
-  const loadError = loaded ? null : query.error;
   const notFound = loadError instanceof APIError && loadError.response?.status === 404;
   if (notFound) {
     return <NotFound />;
@@ -582,8 +582,11 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     record = converted.record;
   }
 
-  // Set while rendering: the latch holds from the render that opens the editor.
-  setOpenedWith(record);
+  // Latched while rendering once the read settles: a reopened post's cached
+  // copy may be stale, so the refetch in flight still decides.
+  if (!query.isFetching) {
+    setOpenedWith(record);
+  }
   return <EditorSurface postType={postType} record={record} />;
 }
 

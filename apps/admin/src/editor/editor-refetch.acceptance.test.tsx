@@ -1,5 +1,6 @@
 import { describe, expect, it, onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
@@ -8,6 +9,7 @@ import {
   editorReadLanded,
   fakeAdminEndpoint,
   fakeEditorChrome,
+  fakePostsListScreen,
   post,
   renderAdminApp,
   staffRole,
@@ -321,6 +323,27 @@ describe('Post editor refetch', () => {
       await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
     },
   );
+
+  it('returns an Author to the list when the refetch of a reopened post finds them removed', async () => {
+    fakePostsListScreen();
+    const shared = fakeSharedPost(
+      { authors: [{ id: CURRENT_USER_ID }] },
+      { canSave: (stored) => mayEdit('Author', stored) },
+    );
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, bootAs('Author'));
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    await editorScreen.backLink('post').click();
+    await expect(editorScreen.root()).toHaveCount(0);
+
+    shared.theySave({ authors: [{ id: 'other-user' }] });
+    // A save to any post marks every post read stale, so the reopen starts from the cached copy.
+    await queryClient.invalidateQueries({ queryKey: [postsDataType] });
+    window.location.hash = `/editor/post/${POST_ID}`;
+
+    await expect.poll(() => shared.readApi.requests.length).toBeGreaterThan(1);
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.root()).toHaveCount(0);
+  });
 
   it('keeps the editor open when a refetch brings a version stored only as mobiledoc', async () => {
     const shared = fakeSharedPost();
