@@ -23,6 +23,7 @@ export const useVisibleAutomations = () => {
 
   return {
     automations,
+    automationCount: data?.automations?.length,
     error,
     isError,
     isLoading: isLoading || isSettingsLoading || isConfigLoading,

@@ -66,6 +66,7 @@ interface SegmentOption {
 export interface PostPreviewModalProps {
   subjectEditor?: EmailSubjectEditor;
   open: boolean;
+  animate?: boolean;
   postId: string;
   /** The post's public preview URL (`/p/:uuid/`), empty until the post has a uuid. */
   previewUrl: string;
@@ -85,6 +86,7 @@ export interface PostPreviewModalProps {
 export function PostPreviewModal({
   subjectEditor,
   open,
+  animate = true,
   postId,
   previewUrl,
   isPost = true,
@@ -314,6 +316,7 @@ export function PostPreviewModal({
 
   return (
     <FullscreenDialog
+      animate={animate}
       aria-describedby={undefined}
       data-testid={postPreviewModal}
       headerActions={
@@ -341,7 +344,7 @@ export function PostPreviewModal({
             Close
           </Button>
           {onPublish ? (
-            <Button disabled={publishDisabled} onClick={onPublish}>
+            <Button className="w-20 shrink-0" disabled={publishDisabled} onClick={onPublish}>
               Publish
             </Button>
           ) : null}

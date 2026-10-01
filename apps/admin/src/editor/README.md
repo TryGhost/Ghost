@@ -49,6 +49,13 @@ members" while the email is on its way and "Published and sent to N members"
 once the flow's email confirmation finds it submitted; an email-only send reads
 "Sent to N members" throughout.
 
+After successful completion, the editor follows the publish flow's celebration
+handoff to the destination screen. Pages return to `/pages`; scheduled posts
+and posts without email return to `/posts`. Immediately published posts with
+email, including email-only sends and posts that were emailed previously, open
+`/posts/analytics/:id`. Failed saves and failed sends keep the flow open so the
+writer can retry.
+
 ## Adding a settings section
 
 1. Add the section's id to `SETTINGS_SECTION_ORDER` in `settings/sections.ts`,
@@ -89,6 +96,10 @@ specific to the editor lives in `apps/admin/test-utils/acceptance/editor.ts`:
   server that rewrites what it was sent.
 - `submittedPost(capture, index)` reads the fields of a captured save, the most
   recent one by default.
+- `editorReadLanded(queryClient, version)` resolves once a read of `version` at
+  its `updated_at` is in the query cache and the editor has handled it, which is
+  the only sign of a read the editor refuses. `renderAdminApp` resolves with the
+  `queryClient`.
 - `fakeUnsplashPhotos()` serves one photo in the shape the picker lays out and
   inserts, and `UNSPLASH_PICKED` is the rendition the picker asks for.
 

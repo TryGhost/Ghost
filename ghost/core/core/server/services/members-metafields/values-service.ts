@@ -147,9 +147,27 @@ export class MetafieldValuesService {
     );
   }
 
+  /**
+   * The member's metafields, or undefined if they have none. Given an executor, reads
+   * inside that transaction.
+   */
+  async getValuesForMember(
+    memberId: string,
+    audience: Audience,
+    executor: Knex = this.knex,
+  ): Promise<Record<string, Record<string, unknown>> | undefined> {
+    return (await this.getValuesForMembers([memberId], audience, executor)).get(memberId);
+  }
+
+  /**
+   * Metafields for each member, keyed by member id. Only active fields the audience can
+   * read are included. Members with no metafields have no entry. Given an executor, reads
+   * inside that transaction.
+   */
   async getValuesForMembers(
     memberIds: string[],
     audience: Audience,
+    executor: Knex = this.knex,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (memberIds.length === 0) {
       return new Map();
@@ -159,7 +177,7 @@ export class MetafieldValuesService {
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const rows = await readableBy(
-      this.knex(VALUES_TABLE).join(
+      executor(VALUES_TABLE).join(
         FIELDS_TABLE,
         `${VALUES_TABLE}.metafield_key`,
         `${FIELDS_TABLE}.key`,
@@ -194,9 +212,11 @@ export class MetafieldValuesService {
       }
     }
 
-    const flat = valuesFromLeaves(leaves);
     return new Map(
-      memberIds.map((memberId) => [memberId, { [CUSTOM_NAMESPACE]: flat.get(memberId) ?? {} }]),
+      [...valuesFromLeaves(leaves)].map(([memberId, values]) => [
+        memberId,
+        { [CUSTOM_NAMESPACE]: values },
+      ]),
     );
   }
 
@@ -235,18 +255,6 @@ export class MetafieldValuesService {
       }
     }
     return identified;
-  }
-
-  /**
-   * Whether input names any values. Asks the shape question alone, with no catalog
-   * lookup, so it can be asked before a write is known to be permitted.
-   */
-  namesValues(input: unknown): boolean {
-    if (input === undefined) {
-      return false;
-    }
-
-    return Object.keys(this.parseValues(input)).length > 0;
   }
 
   /**

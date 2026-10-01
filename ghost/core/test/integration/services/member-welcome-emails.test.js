@@ -34,6 +34,8 @@ describe('Member Welcome Emails Integration', function () {
 
   beforeAll(async function () {
     await testUtils.setup('default')();
+    // Boot initialises signing keys before members; this suite skips boot
+    await require('../../../core/server/services/signing-keys').init();
     membersService = require('../../../core/server/services/members');
     await membersService.init();
     defaultEmailDesignSettingId = await db

@@ -116,8 +116,7 @@ type AutomationStepBase = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  // NOTE: This property will be removed once we support additional automation triggers.
-  automation_slug: null | string;
+  automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_status: 'inactive' | 'active';
   member_id: string | null;
   member_email: string;
@@ -150,6 +149,12 @@ export type AutomationStepTerminalStatus =
   | 'member changed status'
   | 'member unsubscribed';
 
+export type AutomationRunMember = {
+  id: string;
+  name: string | null;
+  email: string;
+};
+
 export type BrowseOptions = Readonly<{
   /**
    * Should stats be included?
@@ -161,7 +166,13 @@ export type BrowseOptions = Readonly<{
 
 export type AutomationsRepository = {
   browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
+  getNumberOfAutomations(): Promise<number>;
+  exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
+  getRunMembers(
+    automationId: string,
+    runIds: string[],
+  ): Promise<Map<string, AutomationRunMember | null>>;
   getAutomationActionLinks(
     automationId: string,
     actionId: string,

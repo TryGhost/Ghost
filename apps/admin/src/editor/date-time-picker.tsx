@@ -26,6 +26,7 @@ export interface DateTimePickerProps {
   /** Calendar days after this instant's site-timezone day are not selectable. */
   maxDate?: string | null;
   disabled?: boolean;
+  className?: string;
   dateLabel: string;
   timeLabel: string;
   dateTestId: string;
@@ -47,6 +48,7 @@ export function DateTimePicker({
   minDate,
   maxDate,
   disabled = false,
+  className,
   dateLabel,
   timeLabel,
   dateTestId,
@@ -108,7 +110,13 @@ export function DateTimePicker({
   const describedByProps = describedBy ? { 'aria-describedby': describedBy } : {};
 
   return (
-    <Grid aria-labelledby={labelledBy} columns={2} gap="sm" role={labelledBy ? 'group' : undefined}>
+    <Grid
+      aria-labelledby={labelledBy}
+      className={className}
+      columns={2}
+      gap="sm"
+      role={labelledBy ? 'group' : undefined}
+    >
       <InputGroup className="min-w-0" data-disabled={disabled}>
         <InputGroupAddon>
           <LucideIcon.CalendarDays />

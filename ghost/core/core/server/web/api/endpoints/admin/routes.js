@@ -301,6 +301,12 @@ module.exports = function apiRoutes() {
     http(api.automationActionLinks.browse),
   );
   router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
+  router.get(
+    '/automations/:id/performance-stats',
+    mw.authAdminApi,
+    http(api.automationPerformanceStats.read),
+  );
+  router.get('/automations/:id/runs', mw.authAdminApi, http(api.automationRuns.browse));
   router.post(
     '/automations/:id/email_preview',
     mw.authAdminApi,

@@ -12,7 +12,7 @@ import labs from '../../../../core/shared/labs';
 
 vi.mock('../../../../core/server/services/automations/automations-api', async (importOriginal) => {
   const actual = await importOriginal<typeof automationsApi>();
-  return { ...actual, browse: vi.fn() };
+  return { ...actual, browse: vi.fn(), getNumberOfAutomations: vi.fn() };
 });
 
 describe('Automations controller', function () {
@@ -65,6 +65,30 @@ describe('Automations controller', function () {
 
       assert.equal(await automationsController.browse.query(), emptyPage);
     });
+  });
+
+  describe('add', function () {
+    for (const count of [0, 19]) {
+      it(`returns NOT_IMPLEMENTED with ${count} automations`, async function () {
+        vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
+        await assert.rejects(automationsController.add.query(), {
+          statusCode: 501,
+          code: 'NOT_IMPLEMENTED',
+          message: 'Adding automations is not implemented.',
+        });
+      });
+    }
+
+    for (const count of [20, 21]) {
+      it(`rejects creation with ${count} automations`, async function () {
+        vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
+        await assert.rejects(automationsController.add.query(), {
+          errorType: 'HostLimitError',
+          statusCode: 403,
+          code: 'AUTOMATION_LIMIT_REACHED',
+        });
+      });
+    }
   });
 
   describe('poll', function () {
