@@ -532,9 +532,15 @@ describe('createEditorSession', () => {
     });
 
     it('stages a canvas field on a published post until an explicit save', async () => {
-      const { session, state } = sessionHarness({
-        record: record({ status: 'published', published_at: PUBLISHED_AT, feature_image: null }),
+      const published = record({
+        status: 'published',
+        published_at: PUBLISHED_AT,
+        feature_image: null,
       });
+      const { session, state } = sessionHarness(
+        { record: published, acknowledged: published },
+        { applied: serializedFields },
+      );
 
       session.patchFeatureImage({ feature_image: 'https://example.com/image.png' });
       session.commitField();
@@ -550,6 +556,7 @@ describe('createEditorSession', () => {
         feature_image: 'https://example.com/image.png',
         status: 'published',
       });
+      expect(session.isDirty()).toBe(false);
     });
 
     it('keeps a staged field after a rejected save', async () => {

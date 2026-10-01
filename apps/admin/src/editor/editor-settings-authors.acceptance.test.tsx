@@ -213,7 +213,7 @@ describe('Post settings authors', () => {
     );
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       authors: [{ id: NADIA.id }, { id: OWNER_ID }],
@@ -397,7 +397,7 @@ describe('Post settings authors', () => {
     await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       authors: [{ id: OWNER_ID }, { id: NADIA.id }],

@@ -164,7 +164,7 @@ describe('createEditorSession', () => {
       expect(session.isDirty()).toBe(false);
     });
 
-    it('saves a published post’s manual edit on its own, with nothing but the slug', async () => {
+    it('saves a published post’s manual edit on its own, over the saved canvas', async () => {
       const published = record({ status: 'published', published_at: PUBLISHED_AT });
       const { session, state } = sessionHarness({ record: published, acknowledged: published });
 
@@ -175,7 +175,10 @@ describe('createEditorSession', () => {
       expect(state.updates[0].payload).toEqual({
         id: 'abc123',
         updated_at: '2026-01-01T00:00:00.000Z',
+        title: 'Hello',
         slug: 'a-new-slug',
+        lexical: buildLexicalParagraph('Hello'),
+        feature_image: null,
       });
       expect(session.getSlug()).toBe('a-new-slug');
       expect(session.getSaveSnapshot().status).toBe('published');

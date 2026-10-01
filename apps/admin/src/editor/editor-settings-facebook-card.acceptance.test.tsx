@@ -210,7 +210,7 @@ describe('Post settings Facebook card', () => {
     await editorScreen.settingsFacebookDescription().click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       og_title: 'A better title for Facebook',

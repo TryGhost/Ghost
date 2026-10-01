@@ -256,7 +256,7 @@ describe('Post settings code injection', () => {
     await footEditor().click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       codeinjection_head: '<script>staged();</script>',

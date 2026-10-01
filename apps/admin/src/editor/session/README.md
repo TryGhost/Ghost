@@ -39,7 +39,9 @@ diverged from what the writer sees. The title input never shows it; substituting
 it on the way to the server is the save engine's own duty. The persisted
 identity — the id and the collision token — is moved by every acknowledgement
 and every reload and never by a read, so the next request carries the token of
-the version the session's content was built on.
+the version the session's content was built on. A settings save is no
+exception: it is acknowledged only while the server still holds the canvas the
+session last saved, as [What a save sends](#what-a-save-sends) describes.
 
 The snapshot the engine reads is that projection reduced to what the queue
 reasons about: the id with its collision token, both `null` until the create is
@@ -96,15 +98,17 @@ Its content stays pending; its publish/schedule/email target is not retained for
 automatic retry. Correcting the document and committing requests a new save that
 combines its current values. Unchanged invalid versions suppress background
 retries; an explicit retry still revalidates. Unrelated edits retain the warning
-until a preparation succeeds or a save attempt finds the document clean. Body edits on a blocked new post debounce too,
+until a preparation succeeds or a save attempt finds the document clean; a
+warning a settings save raised also goes once a settings attempt finds the
+settings back to their saved values, however much canvas is staged. Body edits on a blocked new post debounce too,
 and preparation occupies the save slot without displaying “Saving…”.
 
 Failures never discard pending content. Server validation, network errors and
 authentication expiry retain their recovery policies. A collision remains
 recoverable after a retry fails for a different reason. The save error's retry
 repeats a failed settings save on a post that is not a draft as a settings save,
-so it does not take the retained canvas with it; any other failed save is
-retried explicitly.
+so it does not take the retained canvas with it, and sends it even when the
+server refused those very values; any other failed save is retried explicitly.
 Only accepting a server reload discards outstanding local work. Successful
 acknowledgement clears pending content only when the reconciled live document
 is clean; edits made after submission remain pending.
@@ -129,13 +133,19 @@ without tiers. The publish flow's email extras — the newsletter, the recipient
 segment and the email-only flag — ride on the command that carried them rather
 than on the projection.
 
-A settings save on a post that is not a draft sends less: the id and the
-collision token, the settings fields that differ from the saved copy, the slug
-once a manual edit has moved it and a staged publish time. It sends no title,
-body, feature image or status, so the server keeps the status it holds and the
-canvas waits for Update. The excerpt is canvas while it is edited under the
-title and a settings field while the sidebar owns it; whichever route last
-staged it decides.
+A settings save on a post that is not a draft sends the id and the collision
+token, the settings fields that differ from the saved copy and a staged publish
+time, and beside them the canvas as it was last saved: the title, the slug (the
+writer's own once a manual edit has moved it), the body, the feature image, and
+the excerpt while it is edited under the title. Core checks the collision token
+only when a write changes a column of the posts row, and tags, authors, tiers
+and the fields it stores beside the post are not among them. The saved canvas
+makes a settings save collide when another writer has changed the canvas since,
+rather than be acknowledged with their token and their canvas; when nobody has,
+it changes nothing. The canvas the writer has staged and the status stay out of
+the request, so the canvas waits for Update and the server keeps the status it
+holds. The excerpt is canvas while it is edited under the title and a settings
+field while the sidebar owns it; whichever route last staged it decides.
 
 The whole payload is validated before the request: the title, then the settings
 rules above in their own order, then the publish time, then the author list. A
@@ -177,9 +187,11 @@ decide which settings fields the document adopts from it. A read at any other
 token is another writer's version, or the session's own save read before its
 acknowledgement landed; its content is not in the document, so the session keeps
 its token and its saved copy, marks nothing dirty and starts no save. The next
-save carries the token the writer's content was built on, and the server refuses
-it with a collision instead of letting it overwrite the newer version; reloading
-the document is the way onto that version. A refused read is offered again
+save carries the token the writer's content was built on, together with a
+canvas — the writer's own, or the saved copy for a settings save — so where the
+newer version's canvas differs the server refuses it with a collision instead
+of letting it overwrite that version; reloading the document is the way onto
+it. A refused read is offered again
 whenever the engine moves on, so a read of a save that was in flight is adopted
 once that save's acknowledgement has landed and the session holds its token.
 

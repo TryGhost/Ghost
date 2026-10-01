@@ -206,7 +206,7 @@ describe('Post settings publish date', () => {
     await setTime('08:15');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       published_at: moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
@@ -277,7 +277,7 @@ describe('Post settings publish date', () => {
     await setTime('07:45');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       published_at: moment.tz('2025-12-01 07:45', SYDNEY).toISOString(),

@@ -79,6 +79,11 @@ export interface ScheduleOptions extends PublishOptions {
   publishedAt: string;
 }
 
+export interface SettingsSaveOptions {
+  /** The writer asked again, so a version the server refused is sent once more. */
+  retry?: boolean;
+}
+
 /** Captured at dispatch and never re-derived from a later snapshot. */
 export interface SaveCommand {
   readonly kind: SaveIntent;
@@ -88,6 +93,8 @@ export interface SaveCommand {
   readonly requiresRevision: boolean;
   /** The target changed the status when captured; re-auth falls back to this when the snapshot is unreadable. */
   readonly requiresReconfirmation: boolean;
+  /** A writer's retry of a settings save, which suppression does not hold back. */
+  readonly retry?: boolean;
 }
 
 /** A persisted post always carries the server's updated_at; every update sends it for the collision check. */
@@ -236,7 +243,10 @@ export interface SaveEnginePorts<
 export interface SaveEngine {
   dispatch(kind: 'schedule', options: ScheduleOptions): Promise<SaveCompletion>;
   dispatch(kind: 'publish', options?: PublishOptions): Promise<SaveCompletion>;
-  dispatch(kind: Exclude<DispatchIntent, 'publish' | 'schedule'>): Promise<SaveCompletion>;
+  dispatch(kind: 'settings', options?: SettingsSaveOptions): Promise<SaveCompletion>;
+  dispatch(
+    kind: Exclude<DispatchIntent, 'publish' | 'schedule' | 'settings'>,
+  ): Promise<SaveCompletion>;
   getState(): SaveEngineState;
   getPendingSave(): PendingSave | null;
   subscribe(listener: (state: SaveEngineState) => void): () => void;
@@ -422,8 +432,13 @@ export function createSaveEngine<
   let debounce: Timer | null = null;
   let timedCycle: Timer | null = null;
   // The version controls automatic retries; local validation lasts until preparation passes or a clean attempt.
-  let hold: { version: number; source: 'local-validation' | 'server'; error: SaveError } | null =
-    null;
+  let hold: {
+    version: number;
+    source: 'local-validation' | 'server';
+    error: SaveError;
+    /** Raised by a settings-only attempt, so a settings attempt with nothing to carry releases it. */
+    settingsOnly?: boolean;
+  } | null = null;
   // A failed retry cannot prove a rejected collision token safe.
   let conflict: { updatedAt: string | null; error: SaveError; intent: SaveIntent } | null = null;
   let leaveInProgress: Promise<LeaveDecision> | null = null;
@@ -511,11 +526,11 @@ export function createSaveEngine<
     return conflict !== null && snapshot.updatedAt === conflict.updatedAt;
   }
 
-  function backgroundDropReason(kind: SaveIntent, snapshot: S): DropReason | null {
-    if (isDraftOnlyIntent(kind) && snapshot.status !== 'draft') {
+  function backgroundDropReason(command: SaveCommand, snapshot: S): DropReason | null {
+    if (isDraftOnlyIntent(command.kind) && snapshot.status !== 'draft') {
       return 'not-draft';
     }
-    if (isSuppressed(snapshot)) {
+    if (!command.retry && isSuppressed(snapshot)) {
       return 'suppressed';
     }
     if (isStale(snapshot)) {
@@ -688,14 +703,22 @@ export function createSaveEngine<
     return true;
   }
 
-  function releaseValidationOnClean(snapshot: S): void {
-    if (!snapshot.isDirty && hold?.source === 'local-validation') {
+  // A settings-only hold says nothing about the canvas, so clean settings release it.
+  function releaseValidationOnClean(command: SaveCommand, snapshot: S): void {
+    if (hold?.source !== 'local-validation') {
+      return;
+    }
+    const clean =
+      hold.settingsOnly && isSettingsOnly(command, snapshot)
+        ? !snapshot.settingsDirty
+        : !snapshot.isDirty;
+    if (clean) {
       hold = null;
     }
   }
 
   function dropReason(slot: Slot, snapshot: S): DropReason | null {
-    releaseValidationOnClean(snapshot);
+    releaseValidationOnClean(slot.command, snapshot);
     const { kind } = slot.command;
     if (!isBackgroundIntent(kind)) {
       return null;
@@ -706,7 +729,7 @@ export function createSaveEngine<
     if (!(isSettingsOnly(slot.command, snapshot) ? snapshot.settingsDirty : snapshot.isDirty)) {
       return 'clean';
     }
-    return backgroundDropReason(kind, snapshot);
+    return backgroundDropReason(slot.command, snapshot);
   }
 
   async function run(slot: Slot): Promise<void> {
@@ -719,6 +742,12 @@ export function createSaveEngine<
     } catch (cause) {
       failSlot(slot, toSaveError(cause), readSnapshot(), null);
       return;
+    }
+    // A settings-only request carries no canvas, so draft-only riders stay unsaved.
+    if (isSettingsOnly(slot.command, snapshot)) {
+      const riders = slot.waiters.filter((waiter) => isDraftOnlyIntent(waiter.command.kind));
+      slot.waiters = slot.waiters.filter((waiter) => !isDraftOnlyIntent(waiter.command.kind));
+      settle(riders, dropped('not-draft'));
     }
     const early = dropReason(slot, snapshot);
     if (early) {
@@ -769,6 +798,7 @@ export function createSaveEngine<
             version: snapshot.version,
             source: 'local-validation',
             error: preparation.error,
+            settingsOnly: isSettingsOnly(slot.command, snapshot),
           };
           inFlight = null;
           inFlightAbort = null;
@@ -882,7 +912,11 @@ export function createSaveEngine<
     failSlot(slot, error, snapshot, durationMs);
   }
 
-  function captureCommand(kind: DispatchIntent, snapshot: S | null, options?: PublishOptions) {
+  function captureCommand(
+    kind: DispatchIntent,
+    snapshot: S | null,
+    options?: PublishOptions & SettingsSaveOptions,
+  ): SaveCommand {
     if (isStatusIntent(kind) && snapshot) {
       const target = deriveTarget(kind, snapshot, options);
       return {
@@ -890,16 +924,20 @@ export function createSaveEngine<
         target,
         requiresRevision: false,
         requiresReconfirmation: target.status !== snapshot.status,
-      } satisfies SaveCommand;
+      };
     }
     return {
       kind,
       requiresRevision: kind === 'explicit' || kind === 'leave',
       requiresReconfirmation: false,
-    } satisfies SaveCommand;
+      ...(kind === 'settings' && options?.retry ? { retry: true } : {}),
+    };
   }
 
-  function dispatch(kind: DispatchIntent, options?: PublishOptions): Promise<SaveCompletion> {
+  function dispatch(
+    kind: DispatchIntent,
+    options?: PublishOptions & SettingsSaveOptions,
+  ): Promise<SaveCompletion> {
     return new Promise<SaveCompletion>((resolve) => {
       if (disposed) {
         resolve(dropped('disposed'));
@@ -930,8 +968,8 @@ export function createSaveEngine<
 
       // A clean refetch can keep the edit version unchanged; release local
       // validation before the version-based suppression check.
-      releaseValidationOnClean(snapshot);
-      const reason = backgroundDropReason(kind, snapshot);
+      releaseValidationOnClean(waiter.command, snapshot);
+      const reason = backgroundDropReason(waiter.command, snapshot);
       if (reason) {
         setState(deriveState());
         resolve(dropped(reason));
@@ -1007,7 +1045,7 @@ export function createSaveEngine<
     if (
       snapshot.status !== 'draft' ||
       !snapshot.isDirty ||
-      backgroundDropReason('autosave', snapshot)
+      backgroundDropReason(AUTOSAVE, snapshot)
     ) {
       return;
     }

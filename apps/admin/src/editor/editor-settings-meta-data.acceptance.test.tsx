@@ -260,7 +260,7 @@ describe('Post settings meta data', () => {
     await editorScreen.settingsMetaDescription().click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       meta_title: 'A better title for search',

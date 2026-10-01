@@ -381,7 +381,7 @@ describe('Post settings tags', () => {
     );
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       tags: [{ id: 'tag2' }, { id: 'tag1' }],
@@ -399,7 +399,7 @@ describe('Post settings tags', () => {
     await editorScreen.settingsTagOption('News').click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       tags: [{ id: 'tag1' }],

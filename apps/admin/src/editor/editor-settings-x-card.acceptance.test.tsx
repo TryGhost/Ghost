@@ -210,7 +210,7 @@ describe('Post settings X card', () => {
     await editorScreen.settingsXDescription().click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       twitter_title: 'A better title for X',
@@ -305,7 +305,7 @@ describe('Post settings X card', () => {
 
     await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       twitter_image: UPLOADED,

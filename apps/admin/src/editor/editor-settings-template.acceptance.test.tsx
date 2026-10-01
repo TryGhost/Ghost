@@ -173,7 +173,7 @@ describe('Post settings template', () => {
     await chooseTemplate('Full Feature');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({
+    expect(submittedPost(saveApi)).toMatchObject({
       id: POST_ID,
       updated_at: LOADED_AT,
       custom_template: 'custom-full-feature',

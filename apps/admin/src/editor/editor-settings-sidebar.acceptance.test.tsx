@@ -166,7 +166,11 @@ describe('Post settings sidebar', () => {
     await editorScreen.settingsFeatured().click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi)).toEqual({ id: POST_ID, updated_at: LOADED_AT, featured: true });
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      featured: true,
+    });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 

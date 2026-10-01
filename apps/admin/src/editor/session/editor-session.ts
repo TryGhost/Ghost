@@ -613,13 +613,20 @@ export function createEditorSession({
     let payload: EditorWritableData;
 
     if (settingsOnly) {
-      // The status stays as the server holds it; the slug and the publish time
-      // travel only once the writer has moved them.
+      // Core checks the token only when a posts-row column changes, so the saved
+      // canvas makes another writer's newer canvas collide and is a no-op otherwise.
       projection = { updated_at: request.snapshot.updatedAt };
-      payload = {};
+      payload = {
+        title: tracker.savedValue('title'),
+        slug: request.slug,
+        lexical: tracker.savedValue('lexical'),
+        feature_image: tracker.savedValue('feature_image'),
+      };
+      if (heldForUpdate('custom_excerpt')) {
+        payload.custom_excerpt = tracker.savedValue('custom_excerpt');
+      }
       if (tracker.isFieldDirty('slug')) {
         projection.slug = request.slug;
-        payload.slug = request.slug;
       }
       if (stagedPublishedAt !== null) {
         payload.published_at = request.target.publishedAt;
@@ -850,6 +857,8 @@ export function createEditorSession({
 
   function commitSettings(): void {
     void engine.dispatch('settings');
+    // The attempt can release a warning without moving the engine's state.
+    notifyChanged();
   }
 
   // An `unchanged` proposal means the machine kept the slug it already had. A
@@ -1008,11 +1017,9 @@ export function createEditorSession({
     // An explicit retry would also send the canvas edits a settings save left for Update.
     retrySave: () => {
       const state = engine.getState();
-      return engine.dispatch(
-        state.kind === 'error' && state.intent === 'settings' && status !== 'draft'
-          ? 'settings'
-          : 'explicit',
-      );
+      return state.kind === 'error' && state.intent === 'settings' && status !== 'draft'
+        ? engine.dispatch('settings', { retry: true })
+        : engine.dispatch('explicit');
     },
     dispatchPublish: (options) => engine.dispatch('publish', options),
     dispatchSchedule: (options) => engine.dispatch('schedule', options),

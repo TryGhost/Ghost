@@ -172,7 +172,7 @@ describe('Post settings show title and feature image', () => {
     await editorScreen.settingsShowTitle().click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPage(saveApi)).toEqual({
+    expect(submittedPage(saveApi)).toMatchObject({
       id: PAGE_ID,
       updated_at: LOADED_AT,
       show_title_and_feature_image: false,

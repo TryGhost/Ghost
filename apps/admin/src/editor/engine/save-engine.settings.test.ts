@@ -107,7 +107,7 @@ describe('settings saves', () => {
     expect(h.engine.getState()).toMatchObject({ pending: 'explicit' });
   });
 
-  it('saves the settings a field commit queued beside once a publish lands', async () => {
+  it('saves the settings a field commit queued beside once a publish lands, and drops the field', async () => {
     const h = setup({ settingsDirty: false });
     const publish = h.engine.dispatch('publish');
     await flush();
@@ -123,9 +123,10 @@ describe('settings saves', () => {
       target: { status: 'published' },
     });
 
+    // The settings-only request carried no canvas, so the field commit is not answered by it.
+    await expect(field).resolves.toEqual({ kind: 'dropped', reason: 'not-draft' });
     await h.succeed();
     await expect(settings).resolves.toMatchObject({ kind: 'saved', executedAs: 'settings' });
-    await expect(field).resolves.toMatchObject({ kind: 'saved', executedAs: 'settings' });
   });
 
   it('holds an invalid settings save as background work, without entering an error', async () => {
@@ -158,6 +159,36 @@ describe('settings saves', () => {
     await h.succeed();
     await expect(corrected).resolves.toMatchObject({ kind: 'saved' });
     expect(h.execute).toHaveBeenCalledTimes(2);
+  });
+
+  it('sends a writer’s retry of a settings save the server refused, at the same version', async () => {
+    const h = setup({ status: 'published', publishedAt: PAST, settingsDirty: true });
+    void h.engine.dispatch('settings');
+    await h.fail(validation);
+
+    const retry = h.engine.dispatch('settings', { retry: true });
+    await h.succeed();
+
+    await expect(retry).resolves.toMatchObject({ kind: 'saved', executedAs: 'settings' });
+    expect(h.requests).toHaveLength(2);
+    expect(h.requests[1].snapshot.version).toBe(h.requests[0].snapshot.version);
+  });
+
+  it('releases the hold its own settings raised once they are back to saved, with a body staged', async () => {
+    const h = setup({ status: 'published', publishedAt: PAST, settingsDirty: true });
+    h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
+    await h.engine.dispatch('settings');
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: validation });
+
+    h.edit();
+    h.patch({ settingsDirty: false });
+
+    await expect(h.engine.dispatch('settings')).resolves.toEqual({
+      kind: 'dropped',
+      reason: 'clean',
+    });
+    expect(h.engine.getPendingSave()).toEqual({ blockedBy: null });
+    expect(h.execute).not.toHaveBeenCalled();
   });
 
   it('runs a frozen settings save again after re-authentication without asking', async () => {

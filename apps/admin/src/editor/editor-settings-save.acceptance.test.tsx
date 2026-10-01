@@ -4,7 +4,6 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   fakeAdminEndpoint,
   fakeEditorChrome,
-  fakeEditorPost,
   fakeTags,
   post,
   renderAdminApp,
@@ -19,23 +18,107 @@ const POST_ID = 'abc123';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const FIRST_SAVE_AT = '2026-01-01T00:00:01.000Z';
+const THEIR_SAVE_AT = '2026-01-01T00:00:05.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const SCHEDULED_FOR = '2099-01-01T10:00:00.000Z';
 const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 const POLL = { timeout: 10_000 };
+const REFUSED = 'Validation failed for meta_title.';
 
 const NEWS = tag({ id: 'tag1', name: 'News', slug: 'news', visibility: 'public' });
 
+/** What a settings save sends beside the settings: the canvas as loaded. */
+const SAVED_CANVAS = {
+  title: 'Hello from React',
+  slug: 'hello-from-react',
+  lexical: buildLexicalParagraph('Hello from React'),
+  feature_image: null,
+};
+
+// The posts-row columns Core's collision check watches; relations and posts_meta are not among them.
+const POSTS_ROW = [
+  'title',
+  'slug',
+  'lexical',
+  'feature_image',
+  'custom_excerpt',
+  'featured',
+  'status',
+  'published_at',
+] as const;
+
 type SavedPost = ReturnType<typeof post>;
 
-/** A post whose saves answer as Ghost does, a tag submitted by id coming back whole. */
-function fakeSavedPost(overrides: Partial<SavedPost>) {
+function refusal(status: number, error: Record<string, string>): Response {
+  return new Response(JSON.stringify({ errors: [error] }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+/**
+ * A post that answers writes as Core does: one that changes a posts-row column
+ * collides unless it carries the server's token, and a tag sent by id comes back whole.
+ */
+function fakeCorePost(overrides: Partial<SavedPost>) {
   fakeEditorChrome();
   fakeTags([NEWS]);
-  return fakeEditorPost({ tags: [], featured: false, ...overrides }, (saved) => ({
-    ...saved,
-    tags: (saved.tags ?? []).map((submitted) => (submitted.id === NEWS.id ? NEWS : submitted)),
-  }));
+  let current = post({
+    id: POST_ID,
+    ...SAVED_CANVAS,
+    custom_excerpt: null,
+    tags: [],
+    featured: false,
+    updated_at: LOADED_AT,
+    ...overrides,
+  });
+  let saves = 0;
+  let refusals = 0;
+
+  fakeAdminEndpoint('GET', ROUTE, () => ({ posts: [current] }));
+  const saveApi = fakeAdminEndpoint('PUT', ROUTE, ({ body }) => {
+    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+    const movesRow = POSTS_ROW.some(
+      (key) => key in submitted && (submitted[key] ?? null) !== (current[key] ?? null),
+    );
+    if (movesRow && submitted.updated_at !== current.updated_at) {
+      return refusal(409, {
+        code: 'UPDATE_COLLISION',
+        type: 'UpdateCollisionError',
+        message: 'Saving failed! Someone else is editing this post.',
+      });
+    }
+    if (refusals > 0) {
+      refusals -= 1;
+      return refusal(422, {
+        type: 'ValidationError',
+        message: 'Validation error, cannot edit post.',
+        context: REFUSED,
+      });
+    }
+    saves += 1;
+    current = {
+      ...current,
+      ...submitted,
+      tags: (submitted.tags ?? current.tags ?? []).map((sent) =>
+        sent.id === NEWS.id ? NEWS : sent,
+      ),
+      updated_at: `2026-01-01T00:00:0${saves}.000Z`,
+    };
+    return { posts: [current] };
+  });
+
+  return {
+    saveApi,
+    /** Another writer saves the post meanwhile, which moves the server's token. */
+    writeElsewhere: (changes: Partial<SavedPost>) => {
+      current = { ...current, ...changes, updated_at: THEIR_SAVE_AT };
+    },
+    /** The server refuses the next write it would otherwise take. */
+    refuseNext: () => {
+      refusals += 1;
+    },
+  };
 }
 
 async function openSidebar() {
@@ -49,17 +132,21 @@ async function addNewsTag() {
   await editorScreen.settingsTagOption('News').click();
 }
 
+async function stageBodyEdit() {
+  await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+  await editorScreen.body().fill('Hello from React, edited');
+  await expect.element(editorScreen.updateButton()).toBeEnabled();
+}
+
 /**
  * The settings panel of a published, scheduled or sent post: each change saves
- * on its own, carrying the settings alone, while the canvas waits for Update.
+ * on its own over the saved canvas, while the writer's canvas waits for Update.
  */
 describe('Post settings saving', () => {
   it('saves a published post’s tag change at once, and leaves a staged body for Update', async () => {
-    const saveApi = fakeSavedPost({ status: 'published', published_at: PUBLISHED_AT });
+    const { saveApi } = fakeCorePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await editorScreen.body().fill('Hello from React, edited');
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await stageBodyEdit();
 
     await addNewsTag();
 
@@ -67,6 +154,7 @@ describe('Post settings saving', () => {
     expect(submittedPost(saveApi)).toEqual({
       id: POST_ID,
       updated_at: LOADED_AT,
+      ...SAVED_CANVAS,
       tags: [{ id: 'tag1' }],
     });
     expect(saveApi.lastRequest?.url).not.toContain('save_revision');
@@ -85,8 +173,29 @@ describe('Post settings saving', () => {
     await expect.poll(unsavedChangesGuarded).toBe(false);
   });
 
+  it('collides with another writer’s newer canvas instead of taking it, keeping the staged body', async () => {
+    const { saveApi, writeElsewhere } = fakeCorePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await stageBodyEdit();
+    writeElsewhere({ title: 'Their title', lexical: buildLexicalParagraph('Their body') });
+
+    await addNewsTag();
+
+    await expect
+      .element(editorScreen.conflictBanner())
+      .toHaveTextContent('Someone else is editing this post');
+    expect(saveApi.requests).toHaveLength(1);
+    expect(submittedPost(saveApi)).toMatchObject({ ...SAVED_CANVAS, updated_at: LOADED_AT });
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React, edited');
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('News');
+  });
+
   it('saves a scheduled post’s Featured switch at once without moving its schedule', async () => {
-    const saveApi = fakeSavedPost({ status: 'scheduled', published_at: SCHEDULED_FOR });
+    const { saveApi } = fakeCorePost({ status: 'scheduled', published_at: SCHEDULED_FOR });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openSidebar();
 
@@ -96,6 +205,7 @@ describe('Post settings saving', () => {
     expect(submittedPost(saveApi)).toEqual({
       id: POST_ID,
       updated_at: LOADED_AT,
+      ...SAVED_CANVAS,
       featured: true,
     });
     await expect.element(editorScreen.status()).toHaveTextContent('Scheduled');
@@ -103,8 +213,8 @@ describe('Post settings saving', () => {
     await expect.poll(unsavedChangesGuarded).toBe(false);
   });
 
-  it('saves a sent post’s tag change at once with the tags alone', async () => {
-    const saveApi = fakeSavedPost({ status: 'sent', published_at: PUBLISHED_AT });
+  it('saves a sent post’s tag change at once with the tags and the saved canvas', async () => {
+    const { saveApi } = fakeCorePost({ status: 'sent', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await addNewsTag();
@@ -113,6 +223,7 @@ describe('Post settings saving', () => {
     expect(submittedPost(saveApi)).toEqual({
       id: POST_ID,
       updated_at: LOADED_AT,
+      ...SAVED_CANVAS,
       tags: [{ id: 'tag1' }],
     });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
@@ -120,7 +231,7 @@ describe('Post settings saving', () => {
   });
 
   it('leaves the excerpt typed under the title for Update when a setting saves', async () => {
-    const saveApi = fakeSavedPost({ status: 'published', published_at: PUBLISHED_AT });
+    const { saveApi } = fakeCorePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(
       `/editor/post/${POST_ID}`,
       withoutAutosave({ labs: { editorReact: true, editorExcerpt: true } }),
@@ -134,6 +245,8 @@ describe('Post settings saving', () => {
     expect(submittedPost(saveApi)).toEqual({
       id: POST_ID,
       updated_at: LOADED_AT,
+      ...SAVED_CANVAS,
+      custom_excerpt: null,
       featured: true,
     });
     await expect.element(editorScreen.updateButton()).toBeEnabled();
@@ -144,47 +257,30 @@ describe('Post settings saving', () => {
     expect(submittedPost(saveApi)).toMatchObject({ custom_excerpt: 'A staged excerpt' });
   });
 
-  it('keeps a settings change whose save fails, and retries the settings alone', async () => {
-    fakeSavedPost({ status: 'published', published_at: PUBLISHED_AT });
-    const refused = fakeAdminEndpoint(
-      'PUT',
-      ROUTE,
-      { errors: [{ type: 'InternalServerError', message: 'The server stumbled.' }] },
-      { status: 500 },
-    );
+  it('keeps a settings change the server refuses, and retries it without the staged body', async () => {
+    const { saveApi, refuseNext } = fakeCorePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+    });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await editorScreen.body().fill('Hello from React, edited');
+    await stageBodyEdit();
+    refuseNext();
 
     await addNewsTag();
 
-    await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
-    expect(refused.requests).toHaveLength(1);
+    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(REFUSED);
+    expect(saveApi.requests).toHaveLength(1);
     await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('News');
     await expect.element(editorScreen.updateButton()).toBeEnabled();
     expect(unsavedChangesGuarded()).toBe(true);
 
-    const retried = fakeAdminEndpoint('PUT', ROUTE, {
-      posts: [
-        post({
-          id: POST_ID,
-          title: 'Hello from React',
-          slug: 'hello-from-react',
-          status: 'published',
-          published_at: PUBLISHED_AT,
-          lexical: buildLexicalParagraph('Hello from React'),
-          tags: [NEWS],
-          featured: false,
-          updated_at: FIRST_SAVE_AT,
-        }),
-      ],
-    });
     await editorScreen.retrySave().click();
 
-    await expect.poll(() => retried.requests.length, POLL).toBe(1);
-    expect(submittedPost(retried)).toEqual({
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(2);
+    expect(submittedPost(saveApi)).toEqual({
       id: POST_ID,
       updated_at: LOADED_AT,
+      ...SAVED_CANVAS,
       tags: [{ id: 'tag1' }],
     });
     await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
