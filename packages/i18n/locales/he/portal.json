@@ -297,6 +297,7 @@
     "Too many sign-up attempts, try again later": "",
     "Try free for {amount} days, then {originalPrice}.": "נסו בחינם למשך {amount} ימים, ואז {originalPrice}.",
     "Unable to initiate checkout session": "בעיה בהתחלת סשן קופה",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "פתחו גישה לכל הניוזלטרים על ידי הפכתכם למנוי בתשלום.",
     "Unsubscribe from all emails": "הסירו את המנוי מכל המיילים",
     "Unsubscribed": "הסרתם את המנוי",

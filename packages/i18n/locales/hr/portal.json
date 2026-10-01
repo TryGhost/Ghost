@@ -297,6 +297,7 @@
     "Too many sign-up attempts, try again later": "Previše pokušaja registracije, pokušajte ponovno kasnije",
     "Try free for {amount} days, then {originalPrice}.": "Probajte besplatno na {amount} dana, zatim {originalPrice}.",
     "Unable to initiate checkout session": "Nije moguće pokrenuti sesiju naplate",
+    "Unable to verify your request, please try again": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Otključajte pristup svim newsletterima plaćanjem pretplate.",
     "Unsubscribe from all emails": "Otkažite primanje svih poruka e-poštom",
     "Unsubscribed": "Otkazani ste",
