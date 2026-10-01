@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
-const mail = require('../../../../../core/server/services/mail');
+const mail = require('../../../../../core/server/lib/mail');
 const SettingsBreadService = require('../../../../../core/server/services/settings/settings-bread-service');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const { mockManager } = require('../../../../utils/e2e-framework');

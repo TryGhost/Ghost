@@ -22,7 +22,7 @@ let emailCount = 0;
 
 // Mockable services
 const MailgunClient = require('../../core/server/services/lib/mailgun-client');
-const mailService = require('../../core/server/services/mail/index');
+const mailService = require('../../core/server/lib/mail/index');
 const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');

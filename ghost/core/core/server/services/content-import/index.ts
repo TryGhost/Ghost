@@ -39,7 +39,7 @@ function makeImporter(): ContentCSVImporter {
   const mediaInlinerService = require('../media-inliner');
   const config = require('../../../shared/config');
   const ObjectID = require('bson-objectid').default;
-  const { GhostMailer } = require('../mail');
+  const { GhostMailer } = require('../../lib/mail');
   const ghostMailer = new GhostMailer();
 
   // Row aggregates and best-effort cleanup are intentionally reported without

@@ -116,7 +116,7 @@ class RecommendationServiceWrapper {
       recommendationMetadataService,
     });
 
-    const mail = require('../mail');
+    const mail = require('../../lib/mail');
     const mailer = new mail.GhostMailer();
     const emailService = {
       async send(to, subject, html, text) {
