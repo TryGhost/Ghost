@@ -77,7 +77,14 @@ export function ImportMembersModal({
   const importMemberTier = useFeatureFlag('importMemberTier');
 
   const canCreateCustomFields = useCustomFieldsAvailable();
-  const { data: customFieldsData, isError: customFieldsFailed } = useCustomFieldDefinitions();
+  // Asked for only once the dialog is open. It stays mounted behind the members list with
+  // `open` toggled, so an unconditional query is a request on every visit to a page that may
+  // never open it. Nothing is lost by waiting: a file cannot be chosen before the dialog is
+  // open, and the readiness check below already holds the first parse until the definitions
+  // land, behind the spinner the step shows whenever it has no parsed file.
+  const { data: customFieldsData, isError: customFieldsFailed } = useCustomFieldDefinitions({
+    enabled: open,
+  });
   // A field created from the mapping step is in here the moment it is created: the create
   // mutation puts it into the cached list, so there is no window where a row points at a
   // column the picker cannot name yet.
