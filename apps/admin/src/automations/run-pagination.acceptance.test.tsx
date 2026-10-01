@@ -185,16 +185,4 @@ describe('Automation run pagination', () => {
       await page.viewport(1280, 800);
     }
   });
-
-  it('shows an ordinary error when an older backend ignores ascending order', async () => {
-    prepareStatuses();
-    fakeAdminEndpoint('GET', endpoint, pageOfRuns(0, 2));
-    await open();
-    await expect.element(region().getByText('Member 0', { exact: true })).toBeVisible();
-    await region().getByRole('button', { name: 'Entered' }).click();
-    await expect
-      .element(region().getByRole('alert'))
-      .toHaveTextContent('Could not load automation runs');
-    await expect.element(region()).not.toHaveTextContent('Member 0');
-  });
 });

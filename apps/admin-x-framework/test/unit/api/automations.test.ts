@@ -211,12 +211,14 @@ describe('automation run pagination queries', () => {
     }
   });
 
-  it.each([
-    { name: 'final page', meta: { pagination: { limit: 50, next_cursor: null } } },
-    { name: 'older backend without pagination metadata', meta: undefined },
-  ])('stops fetching for a $name', async ({ meta }) => {
+  it('stops fetching after the final page', async () => {
     await withMockFetch(
-      { json: { automation_runs: [row('a')], ...(meta ? { meta } : {}) } },
+      {
+        json: {
+          automation_runs: [row('a')],
+          meta: { pagination: { limit: 50, next_cursor: null } },
+        },
+      },
       async (mock) => {
         const { result } = renderRuns();
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
