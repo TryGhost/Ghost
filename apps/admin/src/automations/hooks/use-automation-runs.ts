@@ -1,12 +1,11 @@
 import { keepPreviousData } from '@tanstack/react-query';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import {
   useBrowseAutomationRuns,
   type AutomationRunStatusFilter,
 } from '@tryghost/admin-x-framework/api/automations';
 import { performanceQueryOptions } from './performance-query-options';
-import { isSortedByEntry } from '@/automations/utils/automation-runs';
 import type { RunSortDirection } from '@/automations/types';
 
 export const useAutomationRuns = (
@@ -26,13 +25,7 @@ export const useAutomationRuns = (
       ...(direction === 'asc' ? { order: 'created_at asc' } : {}),
     },
   });
-  const loaded = query.data;
-  // An older Core ignores `order`; never present its rows under the wrong direction.
-  const unsupportedSort = useMemo(
-    () => !query.isPlaceholderData && !!loaded && !isSortedByEntry(loaded, direction),
-    [loaded, direction, query.isPlaceholderData],
-  );
-  const runs = unsupportedSort ? undefined : loaded;
+  const runs = query.data;
   // A failed later page keeps the loaded rows and retries only itself.
   const nextPageFailed = !query.isFetching && query.isFetchNextPageError;
   const failed = !query.isFetching && query.isError && !query.isFetchNextPageError;
@@ -44,7 +37,7 @@ export const useAutomationRuns = (
   return {
     runs,
     isLoading: query.isFetching && !query.isFetchingNextPage,
-    isError: failed || unsupportedSort,
+    isError: failed,
     retry: () => {
       void query.refetch();
     },

@@ -93,6 +93,7 @@ describe('automations api queries', () => {
     });
     const response = (id: string, status: AutomationRunStatusFilter) =>
       Response.json({
+        meta: { pagination: { limit: 50, next_cursor: null } },
         automation_runs: [
           { id, status, created_at: '2026-09-14T12:00:00.000Z', failed: false, member: null },
         ],
@@ -674,6 +675,7 @@ describe('automations api helpers', () => {
 });
 
 describe('automation run response validation', () => {
+  const meta = { pagination: { limit: 50, next_cursor: null } };
   const run: AutomationRun = {
     id: 'one',
     created_at: '2026-09-15T12:00:00.000Z',
@@ -683,10 +685,14 @@ describe('automation run response validation', () => {
   };
 
   it('accepts empty history and separate runs for the same member', () => {
-    expect(AutomationRunsResponseSchema.parse({ automation_runs: [] }).automation_runs).toEqual([]);
     expect(
-      AutomationRunsResponseSchema.safeParse({ automation_runs: [run, { ...run, id: 'two' }] })
-        .success,
+      AutomationRunsResponseSchema.parse({ meta, automation_runs: [] }).automation_runs,
+    ).toEqual([]);
+    expect(
+      AutomationRunsResponseSchema.safeParse({
+        meta,
+        automation_runs: [run, { ...run, id: 'two' }],
+      }).success,
     ).toBe(true);
   });
 
@@ -703,6 +709,6 @@ describe('automation run response validation', () => {
       body: { automation_runs: Array.from({ length: 51 }, (_, i) => ({ ...run, id: String(i) })) },
     },
   ])('rejects $name', ({ body }) => {
-    expect(AutomationRunsResponseSchema.safeParse(body).success).toBe(false);
+    expect(AutomationRunsResponseSchema.safeParse({ meta, ...body }).success).toBe(false);
   });
 });

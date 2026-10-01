@@ -69,8 +69,7 @@ the web analytics 1,000-day fetch window.
 
 The chart and cards share the request and cache, populated on first sidebar open
 and kept until navigation. Closing, reopening, focus, and reconnect do not refresh
-it. Failed requests, including a missing endpoint, replace the performance content
-with one error and retry button, without guessing whether the backend is older.
+it. Failed requests replace the performance content with one error and retry button.
 
 ## Run list
 

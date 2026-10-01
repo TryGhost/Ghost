@@ -205,15 +205,12 @@ export const AutomationRunsResponseSchema = z.object({
       (runs) => new Set(runs.map((run) => run.id)).size === runs.length,
       'Run IDs must be unique',
     ),
-  // Absent on an older Core, which then only ever serves the first page.
-  meta: z
-    .object({
-      pagination: z.object({
-        limit: z.number().int().positive(),
-        next_cursor: z.string().min(1).nullable(),
-      }),
-    })
-    .optional(),
+  meta: z.object({
+    pagination: z.object({
+      limit: z.number().int().positive(),
+      next_cursor: z.string().min(1).nullable(),
+    }),
+  }),
 });
 
 export type AutomationRun = z.infer<typeof AutomationRunSchema>;
@@ -247,7 +244,7 @@ export const useBrowseAutomationRuns = (
         });
     },
     defaultNextPageParams: (page, params) => {
-      const cursor = page.meta?.pagination.next_cursor;
+      const cursor = page.meta.pagination.next_cursor;
       return cursor ? { ...params, cursor } : undefined;
     },
   });

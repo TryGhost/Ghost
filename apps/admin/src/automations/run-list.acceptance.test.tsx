@@ -21,6 +21,7 @@ const close = () => page.getByRole('button', { name: 'Hide performance' }).click
 const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
 // Named cases make the member fallbacks and recorded statuses explicit.
 const runsResponse = () => ({
+  meta: { pagination: { limit: 50, next_cursor: null } },
   automation_runs: [
     run({ id: 'pending', status: 'in_progress' }),
     run({ id: 'repeat-entry' }),
@@ -88,7 +89,7 @@ describe('Automation run list', () => {
       /\/automations\/first\/runs\/\?timezone=[^&]+$/,
       async () => {
         await pending;
-        return { automation_runs: [] };
+        return { meta: { pagination: { limit: 50, next_cursor: null } }, automation_runs: [] };
       },
     );
     await renderAdminApp('/automations/first', flags);
@@ -173,7 +174,10 @@ describe('Automation run list', () => {
   it('shows only the error when an empty result fails to refresh, then restores the empty state on retry', async () => {
     prepareStatuses();
     const endpoint = /\/automations\/first\/runs\/\?timezone=[^&]+$/;
-    fakeAdminEndpoint('GET', endpoint, { automation_runs: [] });
+    fakeAdminEndpoint('GET', endpoint, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
+      automation_runs: [],
+    });
     const { queryClient } = await renderAdminApp('/automations/first', flags);
     await open();
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
@@ -187,7 +191,10 @@ describe('Automation run list', () => {
     expect(refresh.requests).toHaveLength(1);
     await expect.element(runsRegion()).not.toHaveTextContent('No entries yet');
 
-    fakeAdminEndpoint('GET', endpoint, { automation_runs: [] });
+    fakeAdminEndpoint('GET', endpoint, {
+      meta: { pagination: { limit: 50, next_cursor: null } },
+      automation_runs: [],
+    });
     await runsRegion().getByRole('button', { name: 'Retry' }).click();
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet');
     await expect.element(runsRegion().getByRole('alert')).not.toBeInTheDocument();

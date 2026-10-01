@@ -1,29 +1,12 @@
 import type { AutomationRun } from '@tryghost/admin-x-framework/api/automations';
 import { formatTimestamp } from '@tryghost/shade/utils';
 import { formatMemberName } from '@/members/api';
-import type { RunSortDirection } from '@/automations/types';
 
 const statusLabels = {
   in_progress: 'In progress',
   completed: 'Completed',
   exited_early: 'Exited early',
 } as const;
-
-const compareEntry = (a: AutomationRun, b: AutomationRun) => {
-  const byTime = Date.parse(a.created_at) - Date.parse(b.created_at);
-  if (byTime !== 0) {
-    return Math.sign(byTime);
-  }
-  if (a.id === b.id) {
-    return 0;
-  }
-  return a.id < b.id ? -1 : 1;
-};
-
-export const isSortedByEntry = (runs: AutomationRun[], direction: RunSortDirection) => {
-  const expected = direction === 'asc' ? -1 : 1;
-  return runs.every((run, index) => index === 0 || compareEntry(runs[index - 1], run) === expected);
-};
 
 export const mapAutomationRun = (run: AutomationRun) => ({
   id: run.id,
