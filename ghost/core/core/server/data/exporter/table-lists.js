@@ -68,6 +68,7 @@ const BACKUP_TABLES = [
   'gift_deliveries',
   'gifts',
   'gift_links',
+  'app_installations',
   'post_gift_links',
   'automations',
   'automation_actions',

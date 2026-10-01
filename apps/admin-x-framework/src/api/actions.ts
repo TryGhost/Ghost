@@ -204,6 +204,8 @@ export const getActionTitle = (action: Action) => {
     resourceType = 'security action';
   } else if (resourceType === 'member_custom_field') {
     resourceType = 'custom field';
+  } else if (resourceType === 'app_installation') {
+    resourceType = 'app';
   }
 
   // Because a `page` and `post` both use the same model, we store the

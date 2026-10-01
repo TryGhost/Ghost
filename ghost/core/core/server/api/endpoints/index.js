@@ -332,6 +332,10 @@ module.exports = {
     return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
   },
 
+  get appInstallations() {
+    return apiFramework.pipeline(require('./app-installations'), localUtils);
+  },
+
   get giftLinks() {
     return apiFramework.pipeline(require('./gift-links'), localUtils);
   },
