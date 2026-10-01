@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/ember';
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import sentryTestkit from 'sentry-testkit/browser';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {getSentryTestConfig} from '../../helpers/sentry';
-import {settled, waitUntil} from '@ember/test-helpers';
+import {settled, triggerKeyEvent, waitUntil} from '@ember/test-helpers';
 import {setupTest} from 'ember-mocha';
 
 const {sentryTransport, testkit} = sentryTestkit();
@@ -40,6 +41,37 @@ describe('Unit: Route: application', function () {
         route.send('openSettings');
 
         expect(router.transitionTo.calledOnceWithExactly('/settings'), 'settings opened').to.be.true;
+    });
+
+    describe('app-wide shortcuts', function () {
+        const modifiers = {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'};
+
+        beforeEach(function () {
+            sinon.stub(route, 'send');
+            route.registerShortcuts();
+        });
+
+        afterEach(function () {
+            route.removeShortcuts();
+        });
+
+        it('handles save and settings while an Ember route shows', async function () {
+            stateBridge.setReactRoutePattern(null);
+
+            await triggerKeyEvent(document.body, 'keydown', 83, modifiers);
+            await triggerKeyEvent(document.body, 'keydown', 188, modifiers);
+
+            expect(route.send.args.map(([action]) => action)).to.deep.equal(['save', 'openSettings']);
+        });
+
+        it('leaves save and settings to React while a React route shows', async function () {
+            stateBridge.setReactRoutePattern('/tags');
+
+            await triggerKeyEvent(document.body, 'keydown', 83, modifiers);
+            await triggerKeyEvent(document.body, 'keydown', 188, modifiers);
+
+            expect(route.send.called, 'shortcut action sent').to.be.false;
+        });
     });
 
     describe('Sentry route tag', function () {
