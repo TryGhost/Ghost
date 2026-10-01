@@ -111,6 +111,11 @@ async function setTime(value: string) {
   await leaveTimeField();
 }
 
+async function typeDate(value: string) {
+  await editorScreen.settingsPublishDate().fill(value);
+  await userEvent.tab();
+}
+
 /** The sidebar's Publish date section: when the post is published, in site time. */
 describe('Post settings publish date', () => {
   it.each(['untouched time', 'retyped time', 'reselected day'] as const)(
@@ -248,6 +253,105 @@ describe('Post settings publish date', () => {
     await expect
       .element(editorScreen.saveErrorBanner())
       .toHaveTextContent('Please choose a past date and time.');
+  });
+
+  it('takes a typed date, however far back, over the open calendar', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // A click opens the calendar but leaves the field to type in; typing closes it.
+    await editorScreen.settingsPublishDate().click();
+    await expect.element(page.getByRole('grid', { name: 'December 2025' })).toBeVisible();
+    await userEvent.keyboard(`${'{Backspace}'.repeat(10)}${'{Delete}'.repeat(10)}2015-03-14`);
+    await expect(page.getByRole('grid')).toHaveCount(0);
+    await userEvent.tab();
+
+    await expect.element(editorScreen.settingsPublishDate()).toHaveValue('2015-03-14');
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    expect(saveApi.requests).toHaveLength(0);
+
+    // The calendar reopens on the typed month.
+    await editorScreen.settingsPublishDate().click();
+    await expect.element(page.getByRole('grid', { name: 'March 2015' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).published_at).toBe(
+      moment.tz('2015-03-14 21:00', SYDNEY).toISOString(),
+    );
+  });
+
+  it.each([
+    ['2025-11-31', 'Invalid date'],
+    ['01/12/2025', 'Invalid date format, must be YYYY-MM-DD'],
+  ])('refuses %s as a typed date until it is corrected or discarded', async (typed, message) => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    await typeDate(typed);
+
+    await expect.element(editorScreen.settingsPublishDate()).toHaveValue(typed);
+    await expect
+      .element(editorScreen.settingsPublishDate())
+      .toHaveAttribute('aria-invalid', 'true');
+    await expect.element(editorScreen.settingsPublishDate()).toHaveAccessibleDescription(message);
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+
+    // Escape in the field puts the held date back.
+    await userEvent.tab({ shift: true });
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(editorScreen.settingsPublishDate()).toHaveValue('2025-12-01');
+    await expect
+      .element(editorScreen.settingsPublishDate())
+      .not.toHaveAttribute('aria-invalid', 'true');
+    await expect.element(editorScreen.settingsPublishDate()).not.toHaveAccessibleDescription();
+    expect(unsavedChangesGuarded()).toBe(false);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('keeps Cmd-S from saving past a refused date', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // A staged edit, so a save that ran past the date would send it.
+    await setTime('08:15');
+    await editorScreen.settingsPublishDate().fill('2025-11-31');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect
+      .element(editorScreen.settingsPublishDate())
+      .toHaveAccessibleDescription('Invalid date');
+    // The save shortcut blurs the field it saves from.
+    expect(document.activeElement).toBe(editorScreen.settingsPublishDate().element());
+
+    await editorScreen.settingsPublishDate().fill('2025-11-30');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).published_at).toBe(
+      moment.tz('2025-11-30 08:15', SYDNEY).toISOString(),
+    );
+  });
+
+  it('holds a typed date still to come to the past-date rule', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // The calendar stops at today, so only typing reaches a later day.
+    await typeDate(moment.tz(SYDNEY).add(1, 'year').format('YYYY-MM-DD'));
+
+    await expect
+      .element(editorScreen.settingsPublishDateError())
+      .toHaveTextContent('Please choose a past date and time.');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    expect(saveApi.requests).toHaveLength(0);
   });
 
   it('sends a scheduled post to the publish menu to be re-timed', async () => {

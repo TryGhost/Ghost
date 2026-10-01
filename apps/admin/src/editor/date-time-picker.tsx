@@ -1,6 +1,7 @@
 import moment from 'moment-timezone';
 import {
   Calendar,
+  FieldError,
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
@@ -11,11 +12,26 @@ import {
 } from '@tryghost/shade/components';
 import { Grid } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useState } from 'react';
+import { type KeyboardEvent, useId, useState } from 'react';
 import { siteCalendarDay } from '@/editor/publish/publish-copy';
 
 const DATE_FORMAT = 'YYYY-MM-DD';
 const TIME_FORMAT = 'HH:mm';
+
+const INVALID_DATE_FORMAT = 'Invalid date format, must be YYYY-MM-DD';
+const INVALID_DATE = 'Invalid date';
+
+/** The message refusing a typed date, or null for a real YYYY-MM-DD day. */
+function typedDateError(input: string, timezone: string): string | null {
+  if (!/^\d\d\d\d-\d\d-\d\d$/.test(input)) {
+    return INVALID_DATE_FORMAT;
+  }
+  return moment.tz(input, DATE_FORMAT, timezone).isValid() ? null : INVALID_DATE;
+}
+
+function isSaveChord(event: KeyboardEvent): boolean {
+  return (event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 's';
+}
 
 export interface DateTimePickerProps {
   /** The moment being edited, as an ISO instant. */
@@ -26,7 +42,10 @@ export interface DateTimePickerProps {
   /** Calendar days after this instant's site-timezone day are not selectable. */
   maxDate?: string | null;
   disabled?: boolean;
+  /** For the fields' grid. */
   className?: string;
+  /** For a typed date's refusal, rendered after the fields as a sibling the caller places. */
+  errorClassName?: string;
   dateLabel: string;
   timeLabel: string;
   dateTestId: string;
@@ -40,7 +59,8 @@ export interface DateTimePickerProps {
 
 /**
  * A date field, a time field and the site's timezone abbreviation. The writer
- * edits in the site's timezone; the caller is handed a real instant.
+ * edits in the site's timezone; the caller is handed a real instant. The date
+ * is typed as YYYY-MM-DD or picked from the calendar the field opens.
  */
 export function DateTimePicker({
   value,
@@ -49,6 +69,7 @@ export function DateTimePicker({
   maxDate,
   disabled = false,
   className,
+  errorClassName,
   dateLabel,
   timeLabel,
   dateTestId,
@@ -61,26 +82,74 @@ export function DateTimePicker({
   const current = moment.tz(value, timezone);
   // Null while the field is not being edited, so caller-side changes show through.
   const [timeDraft, setTimeDraft] = useState<string | null>(null);
+  const [dateDraft, setDateDraft] = useState<string | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const dateErrorId = useId();
+
+  const commitDay = (year: number, month: number, date: number) => {
+    const next = current.clone().set({ year, month, date, second: 0, millisecond: 0 });
+
+    if (!next.isSame(current, 'minute')) {
+      onChange(next.toDate());
+    }
+  };
+
+  const discardDateDraft = () => {
+    setDateDraft(null);
+    setDateError(null);
+  };
 
   const commitDate = (selected: Date | undefined) => {
     if (!selected) {
       return;
     }
 
+    setCalendarOpen(false);
+    discardDateDraft();
     // Read back the same way `siteCalendarDay` writes: local fields carry the
     // site-timezone day.
-    const next = current.clone().set({
-      year: selected.getFullYear(),
-      month: selected.getMonth(),
-      date: selected.getDate(),
-      second: 0,
-      millisecond: 0,
-    });
+    commitDay(selected.getFullYear(), selected.getMonth(), selected.getDate());
+  };
 
-    setCalendarOpen(false);
-    if (!next.isSame(current, 'minute')) {
-      onChange(next.toDate());
+  const commitTypedDate = () => {
+    if (dateDraft === null) {
+      return;
+    }
+
+    const error = dateDraft ? typedDateError(dateDraft, timezone) : null;
+    if (error) {
+      setDateError(error);
+      return;
+    }
+
+    discardDateDraft();
+    // An emptied field falls back to the date already held.
+    if (dateDraft) {
+      const [year, month, date] = dateDraft.split('-').map(Number);
+      commitDay(year, month - 1, date);
+    }
+  };
+
+  const onDateKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      setCalendarOpen(false);
+      commitTypedDate();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      discardDateDraft();
+      return;
+    }
+
+    const refusal = dateDraft ? typedDateError(dateDraft, timezone) : null;
+    if (refusal && isSaveChord(event)) {
+      // Keeps the document-level save shortcut from saving past a refused date.
+      event.preventDefault();
+      event.stopPropagation();
+      setDateError(refusal);
     }
   };
 
@@ -108,59 +177,80 @@ export function DateTimePicker({
 
   const invalidProps = invalid ? { 'aria-invalid': true } : {};
   const describedByProps = describedBy ? { 'aria-describedby': describedBy } : {};
+  const dateDescribedBy = [describedBy, dateError ? dateErrorId : null].filter(Boolean).join(' ');
 
   return (
-    <Grid
-      aria-labelledby={labelledBy}
-      className={className}
-      columns={2}
-      gap="sm"
-      role={labelledBy ? 'group' : undefined}
-    >
-      <InputGroup className="min-w-0" data-disabled={disabled}>
-        <InputGroupAddon>
-          <LucideIcon.CalendarDays />
-        </InputGroupAddon>
-        <Popover open={calendarOpen && !disabled} onOpenChange={setCalendarOpen}>
-          <PopoverTrigger asChild>
-            <InputGroupInput
-              aria-label={dateLabel}
-              className="min-w-0 text-left"
-              data-testid={dateTestId}
-              disabled={disabled}
-              value={current.format(DATE_FORMAT)}
-              readOnly
-              {...invalidProps}
-              {...describedByProps}
-            />
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              captionLayout="dropdown-months"
-              // Opening on the selected date's month, never today's.
-              defaultMonth={siteCalendarDay(value, timezone)}
-              disabled={[
-                ...(minDate ? [{ before: siteCalendarDay(minDate, timezone) }] : []),
-                ...(maxDate ? [{ after: siteCalendarDay(maxDate, timezone) }] : []),
-              ]}
-              mode="single"
-              selected={siteCalendarDay(value, timezone)}
-              onSelect={commitDate}
-            />
-          </PopoverContent>
-        </Popover>
-      </InputGroup>
-      <TimePicker
-        aria-label={timeLabel}
-        data-testid={timeTestId}
-        disabled={disabled}
-        suffix={current.format('z')}
-        value={timeDraft ?? current.format(TIME_FORMAT)}
-        onBlur={(event) => commitTime(event.target.value)}
-        onChange={(event) => setTimeDraft(event.target.value)}
-        {...invalidProps}
-        {...describedByProps}
-      />
-    </Grid>
+    <>
+      <Grid
+        aria-labelledby={labelledBy}
+        className={className}
+        columns={2}
+        gap="sm"
+        role={labelledBy ? 'group' : undefined}
+      >
+        <InputGroup className="min-w-0" data-disabled={disabled}>
+          <InputGroupAddon>
+            <LucideIcon.CalendarDays />
+          </InputGroupAddon>
+          <Popover open={calendarOpen && !disabled} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <InputGroupInput
+                aria-describedby={dateDescribedBy || undefined}
+                aria-invalid={invalid || dateError !== null || undefined}
+                aria-label={dateLabel}
+                autoComplete="off"
+                className="min-w-0"
+                data-testid={dateTestId}
+                disabled={disabled}
+                placeholder={DATE_FORMAT}
+                // The trigger would otherwise render the field as a button.
+                type="text"
+                value={dateDraft ?? current.format(DATE_FORMAT)}
+                onBlur={commitTypedDate}
+                onChange={(event) => {
+                  setDateDraft(event.target.value);
+                  setCalendarOpen(false);
+                }}
+                onKeyDown={onDateKeyDown}
+              />
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto p-0"
+              // Radix would move focus into the calendar; the field keeps it for typing.
+              onOpenAutoFocus={(event) => event.preventDefault()}
+            >
+              <Calendar
+                captionLayout="dropdown-months"
+                // Opening on the selected date's month, never today's.
+                defaultMonth={siteCalendarDay(value, timezone)}
+                disabled={[
+                  ...(minDate ? [{ before: siteCalendarDay(minDate, timezone) }] : []),
+                  ...(maxDate ? [{ after: siteCalendarDay(maxDate, timezone) }] : []),
+                ]}
+                mode="single"
+                selected={siteCalendarDay(value, timezone)}
+                onSelect={commitDate}
+              />
+            </PopoverContent>
+          </Popover>
+        </InputGroup>
+        <TimePicker
+          aria-label={timeLabel}
+          data-testid={timeTestId}
+          disabled={disabled}
+          suffix={current.format('z')}
+          value={timeDraft ?? current.format(TIME_FORMAT)}
+          onBlur={(event) => commitTime(event.target.value)}
+          onChange={(event) => setTimeDraft(event.target.value)}
+          {...invalidProps}
+          {...describedByProps}
+        />
+      </Grid>
+      {dateError ? (
+        <FieldError className={errorClassName} id={dateErrorId}>
+          {dateError}
+        </FieldError>
+      ) : null}
+    </>
   );
 }

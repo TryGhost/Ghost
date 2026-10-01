@@ -90,6 +90,22 @@ Remove are disabled and the preview shows the upload in progress. An edited
 image that fails to upload is reported, leaves the original in place, and is not
 counted as a saved edit.
 
+## Dates and times
+
+The publish date in the settings panel and the schedule in the publish flow
+share one pair of fields, edited in the site's timezone. The date is typed as
+`YYYY-MM-DD` or picked from the calendar a click on the field opens; the field
+keeps focus while the calendar is open, and typing closes it. A typed date is
+taken on blur or Enter, and Escape or an emptied field puts back the date
+already held. Text in another format is refused with
+`Invalid date format, must be YYYY-MM-DD`, and a day the calendar does not
+have, such as 30 February, with `Invalid date`. A refused date stays in the
+field, marked invalid and described by the message, until it is corrected or
+discarded; Cmd/Ctrl+S from the field saves nothing meanwhile. Typing reaches
+days the calendar does not offer: a publish date still to come is refused as a
+chosen time would be, and a schedule earlier than the flow allows moves up to
+the earliest it does.
+
 ## Save feedback
 
 The header's Update button, a contributor's Save button and Cmd/Ctrl+S report

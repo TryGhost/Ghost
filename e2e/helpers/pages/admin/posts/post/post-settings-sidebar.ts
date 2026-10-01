@@ -262,7 +262,6 @@ class UrlSection extends InlineSection {
 }
 
 class PublishDateSection extends InlineSection {
-  /** Read-only: the date is chosen from a calendar popover. */
   readonly dateInput: Locator;
   readonly timeInput: Locator;
   readonly error: Locator;
@@ -281,8 +280,8 @@ class PublishDateSection extends InlineSection {
   }
 
   /**
-   * Chooses `YYYY-MM-DD` in the calendar popover behind the read-only date
-   * field, paging month by month from wherever the calendar opens.
+   * Chooses `YYYY-MM-DD` in the calendar popover the date field opens, paging
+   * month by month from wherever the calendar opens.
    */
   async setDate(day: string): Promise<void> {
     const [year, month, date] = day.split('-').map(Number);

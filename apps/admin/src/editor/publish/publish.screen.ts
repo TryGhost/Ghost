@@ -18,6 +18,7 @@ import {
   publishRetryEmail,
   publishRevertToDraft,
   publishScheduleDate,
+  publishScheduleTime,
   publishSettingEmailRecipients,
   publishSettingPublishAt,
   publishSettingPublishType,
@@ -47,6 +48,7 @@ export const publishScreen = {
   /** The collapsed row's toggle button. */
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),
   scheduleDate: () => page.getByTestId(publishScheduleDate),
+  scheduleTime: () => page.getByTestId(publishScheduleTime),
   continueButton: () => page.getByTestId(publishContinue),
   previewButton: () => page.getByTestId(publishFlowPreview),
   recipientFree: () => page.getByTestId(publishRecipientFree),
