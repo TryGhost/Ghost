@@ -302,7 +302,16 @@ jobs:
           # itself per-app — instead we emit the matrix here and it skips when
           # the result is `[]`. The publish job's own is_main / event gates keep
           # tags and PRs from publishing regardless of what this lists.
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS")
+          # Publishing always uses real affected-ness, even when a CI file change
+          # widened the test lanes above to every project.
+          PUBLISH_PROJECTS="$AFFECTED_PROJECTS"
+          if [[ -z "$AFFECTED_ARG" ]]; then
+            PUBLISH_PROJECTS='[]'
+            if [[ "${{ env.IS_TAG }}" != 'true' ]]; then
+              PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
+            fi
+          fi
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
     outputs:
@@ -2466,7 +2475,39 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
 
+      # nx marks an app affected for dependency changes that may not reach its
+      # bundle (dev tooling, dedupes), so compare against what's live first.
+      # Built with the live version so portal's baked-in version can't differ.
+      - name: Check for bundle changes
+        id: bundle
+        working-directory: ${{ matrix.package_path }}
+        env:
+          PACKAGE_NAME: ${{ matrix.package_name }}
+        run: |
+          LATEST=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" --latest .)
+          if [ -z "$LATEST" ]; then
+            echo "No release in this major.minor line yet"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          npm pkg set version="$LATEST"
+          pnpm nx build "$PACKAGE_NAME"
+
+          PUBLISHED_DIR="$RUNNER_TEMP/published"
+          mkdir -p "$PUBLISHED_DIR"
+          npm pack "${PACKAGE_NAME}@${LATEST}" --pack-destination "$PUBLISHED_DIR"
+          tar -xzf "$PUBLISHED_DIR"/*.tgz -C "$PUBLISHED_DIR"
+
+          if diff -rq "$PUBLISHED_DIR/package/umd" umd; then
+            echo "Bundle matches ${PACKAGE_NAME}@${LATEST}, skipping publish"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Determine release version
+        if: steps.bundle.outputs.changed == 'true'
         id: release
         working-directory: ${{ matrix.package_path }}
         run: |
@@ -2487,20 +2528,24 @@ jobs:
           echo "current_major=$(echo "$NEXT_VERSION" | awk -F. '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Build the package
+        if: steps.bundle.outputs.changed == 'true'
         run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
+        if: steps.bundle.outputs.changed == 'true'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       # --provenance is explicit rather than relying on pnpm's auto-detection,
       # which degrades to a warning if it can't confirm visibility.
       - name: Publish to npm
+        if: steps.bundle.outputs.changed == 'true'
         working-directory: ${{ matrix.package_path }}
         run: |
           pnpm publish --access public --provenance --no-git-checks
 
       - name: Replace version placeholders in cdn-paths
+        if: steps.bundle.outputs.changed == 'true'
         id: cdn_paths
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
@@ -2509,9 +2554,11 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
+        if: steps.bundle.outputs.changed == 'true'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Purge jsDelivr cache
+        if: steps.bundle.outputs.changed == 'true'
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
