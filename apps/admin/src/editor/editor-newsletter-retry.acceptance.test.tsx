@@ -86,6 +86,21 @@ function fakeFailedSend(overrides: Partial<Post>, error: string | null = SEND_ER
     return { posts: [{ ...failed, email }] };
   });
 
+  // The flow shows Retry only when Core says the failed send is retryable.
+  fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+    email_statuses: [
+      {
+        id: EMAIL_ID,
+        sending: {
+          status: 'failed',
+          retryable: true,
+          failed_during: 'submitting',
+          progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+        },
+      },
+    ],
+  });
+
   return fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, () => {
     // Core patches only the status, so the pending email keeps its last error.
     email = { ...failedEmail, status: 'pending' };
