@@ -1,6 +1,8 @@
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 import { formatNumber } from '@tryghost/shade/utils';
-export type HistoryEmail = { subject: string | null };
+import { emailTextExcerpt } from './history-email-preview';
+
+export type HistoryEmail = { subject: string | null; text: string };
 
 export type HistoryCardState = 'occurred' | 'pending' | 'exited' | 'failed';
 export type HistoryTimestamp = {
@@ -46,7 +48,10 @@ function stepContent(step: Step, state: HistoryCardState) {
       return {
         kind: 'email' as const,
         title: state === 'occurred' ? 'Sent email' : 'Send email',
-        email: { subject: action.data.email_subject },
+        email: {
+          subject: action.data.email_subject,
+          text: emailTextExcerpt(action.data.email_lexical),
+        },
       };
     default:
       throw new Error(`Unknown history action: ${String(action satisfies never)}`);

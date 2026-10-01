@@ -1,14 +1,16 @@
 import React from 'react';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 
 export const EmailCardContent: React.FC<{
   className?: string;
   subject?: React.ReactNode;
-}> = ({ className, subject }) =>
-  subject ? (
+  message?: React.ReactNode;
+}> = ({ className, subject, message }) =>
+  subject || message ? (
     <Stack className={className} gap="md">
       {subject}
+      {message}
     </Stack>
   ) : null;
 
@@ -19,4 +21,25 @@ export const EmailCardSubject = ({ className, ...props }: React.ComponentProps<t
     role="group"
     {...props}
   />
+);
+
+export const EmailCardMessage = ({ className, ...props }: React.ComponentProps<typeof Box>) => (
+  <Box
+    className={cn('min-w-0 rounded-md border border-border-default p-4', className)}
+    role="region"
+    {...props}
+  />
+);
+
+export const EmailCardExcerpt: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className,
+}) => (
+  <Text
+    className={cn('line-clamp-6 break-words whitespace-pre-line', className)}
+    size="md"
+    tone="secondary"
+  >
+    {children}
+  </Text>
 );
