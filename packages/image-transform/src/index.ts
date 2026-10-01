@@ -7,7 +7,48 @@ import type Sharp from 'sharp';
 // sharp is an optional dependency and costs native memory once loaded, so
 // it's only required when something needs it
 const nodeRequire = createRequire(import.meta.url);
-const loadSharp = (): typeof Sharp => nodeRequire('sharp');
+
+// sharp picks its decoder from a file's contents, not its name. The libvips
+// loaders it may use are restricted process-wide when sharp loads, so the
+// restriction is in place before anything is decoded
+let pendingDecoders: string[] | null = null;
+let loadedSharp: typeof Sharp | undefined;
+
+const loadSharp = (): typeof Sharp => {
+  const sharp: typeof Sharp = nodeRequire('sharp');
+  loadedSharp = sharp;
+
+  if (pendingDecoders) {
+    sharp.block({ operation: ['VipsForeignLoad'] });
+    sharp.unblock({ operation: pendingDecoders });
+    pendingDecoders = null;
+  }
+
+  return sharp;
+};
+
+/**
+ * Limits the libvips loaders (e.g. `VipsForeignLoadPng`) sharp can decode
+ * with, or lifts the limit with `null`. Doesn't load sharp: the restriction
+ * is applied when sharp is first needed.
+ */
+export const setAllowedDecoders = (loaders: readonly string[] | null): void => {
+  if (loaders === null) {
+    pendingDecoders = null;
+    loadedSharp?.unblock({ operation: ['VipsForeignLoad'] });
+    return;
+  }
+
+  pendingDecoders = [...loaders];
+};
+
+/**
+ * Returns sharp with the decoder restriction applied. Use this rather than
+ * requiring sharp directly.
+ *
+ * @throws when sharp isn't installed
+ */
+export const getSharp = (): typeof Sharp => loadSharp();
 
 export const DEFAULT_PROCESSING_TIMEOUT_SECONDS = 0; // 0 means no timeout
 
