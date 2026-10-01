@@ -10,7 +10,9 @@ const path = require('path');
 const fs = require('fs-extra');
 
 // Stuff we are testing
-const ImportManager = require('../../../../../core/server/data/importer').init();
+const ImportManager = require('../../../../../core/server/data/importer').init({
+  jobsService: { dispatch: sinon.stub() },
+});
 
 const JSONHandler = require('../../../../../core/server/data/importer/handlers/json');
 const ImageHandler = Object.assign(

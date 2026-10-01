@@ -5,7 +5,7 @@ import { globSync } from 'glob';
 // @ts-expect-error This module lacks type definitions.
 import importer from '../../../../../core/server/data/importer';
 
-const importManager = importer.init();
+const importManager = importer.init({ jobsService: { dispatch() {} } });
 
 describe('Import Manager', function () {
   describe('extractZip', function () {

@@ -8,6 +8,7 @@ const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
 const errors = require('@tryghost/errors');
 const ImportArchive = require('./import-archive').default;
+const ContentImportJob = require('./jobs/content-import-job').default;
 
 const { emailTemplate } = require('./email-template');
 
@@ -28,7 +29,7 @@ const defaults = {
 
 class ImportManager {
   constructor({
-    jobManager,
+    jobsService,
     importsStorage,
     handlers,
     importers,
@@ -37,7 +38,7 @@ class ImportManager {
     urlUtils,
     logging,
   }) {
-    this.jobManager = jobManager;
+    this.jobsService = jobsService;
 
     /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default | import('../../adapters/storage/S3Storage').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
     this.importsStorage = importsStorage;
@@ -412,16 +413,20 @@ class ImportManager {
       // The job loads the upload, so check it here to fail the request when it is malformed
       await this.validateFile(file);
 
-      const uploadKey = await this.storeUpload(file);
+      const job = new ContentImportJob({
+        uploadKey: await this.storeUpload(file),
+        fileName: file.name,
+        emailRecipient: importOptions.user.email,
+        importTag: importOptions.importTag,
+        returnImportedData: importOptions.returnImportedData,
+        importPersistUser: importOptions.importPersistUser,
+      });
 
       try {
         this.logging.info('[Background Job] site-content-import queued');
-        return await this.jobManager.addJob({
-          job: () => this.executeImport(uploadKey, file.name, importOptions),
-          offloaded: false,
-        });
+        return await this.jobsService.dispatch(job);
       } catch (err) {
-        await this.cleanUpUpload(uploadKey);
+        await this.cleanUpUpload(job.uploadKey);
         throw err;
       }
     }
@@ -514,17 +519,21 @@ class ImportManager {
   /**
    * Run a queued import: read the stored upload back and import it, logging when it starts
    * and how it ends
-   * @param {string} uploadKey
-   * @param {string} fileName the name the file was uploaded with
-   * @param {ImportOptions} importOptions
+   * @param {ContentImportJob} job
    * @returns {Promise<Object.<string, ImportResult>|undefined>}
    */
-  async executeImport(uploadKey, fileName, importOptions) {
+  async executeImport(job) {
+    const importOptions = {
+      user: { email: job.emailRecipient },
+      importTag: job.importTag,
+      returnImportedData: job.returnImportedData,
+      importPersistUser: job.importPersistUser,
+    };
     const startedAt = Date.now();
     this.logging.info('[Background Job] site-content-import started');
     try {
       const result = await this.processImport(
-        () => this.loadStoredUpload(uploadKey, fileName),
+        () => this.loadStoredUpload(job.uploadKey, job.fileName),
         importOptions,
       );
       // processImport swallows import failures and resolves undefined,
@@ -534,8 +543,16 @@ class ImportManager {
           `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
         );
       } else {
+        const durationMs = Date.now() - startedAt;
         this.logging.info(
-          `[Background Job] site-content-import completed in ${Date.now() - startedAt}ms`,
+          {
+            system: {
+              event: 'site_content_import.completed',
+              import_groups: Object.keys(result).length,
+              duration_ms: durationMs,
+            },
+          },
+          `[Background Job] site-content-import completed in ${durationMs}ms`,
         );
       }
       return result;

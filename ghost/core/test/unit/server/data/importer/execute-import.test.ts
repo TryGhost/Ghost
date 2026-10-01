@@ -11,7 +11,7 @@ function subject(env = 'production') {
   const deps = {
     handlers: [],
     importers: [],
-    jobManager: { addJob: sinon.stub().resolves() },
+    jobsService: { dispatch: sinon.stub().resolves() },
     mailer: { send: sinon.stub().resolves() },
     config: { get: sinon.stub().returns(env) },
     urlUtils: {
@@ -177,33 +177,46 @@ describe('Site import execution', function () {
   });
 
   it('logs when a queued import starts and how it ends', async function () {
+    const job = {
+      uploadKey: 'upload-key',
+      fileName: 'export.json',
+      emailRecipient: options.user.email,
+    };
     const started = '[Background Job] site-content-import started';
     const completed = /^\[Background Job\] site-content-import completed in \d+ms$/;
     const failed = /^\[Background Job\] site-content-import failed after \d+ms$/;
 
     const succeeds = subject();
-    sinon.stub(succeeds.manager, 'processImport').resolves({});
-    assert.deepEqual(
-      await succeeds.manager.executeImport('upload-key', 'export.json', options),
-      {},
-    );
+    sinon.stub(succeeds.manager, 'processImport').resolves({ images: {}, data: {} });
+    assert.deepEqual(await succeeds.manager.executeImport(job), { images: {}, data: {} });
     sinon.assert.calledWith(succeeds.deps.logging.info.firstCall, started);
-    sinon.assert.calledWith(succeeds.deps.logging.info.secondCall, sinon.match(completed));
+    sinon.assert.calledWith(
+      succeeds.deps.logging.info.secondCall,
+      {
+        system: {
+          event: 'site_content_import.completed',
+          import_groups: 2,
+          duration_ms: sinon.match.number,
+        },
+      },
+      sinon.match(completed),
+    );
 
     // A failed import is swallowed by processImport, which resolves undefined
     const fails = subject();
     sinon.stub(fails.manager, 'processImport').resolves(undefined);
-    assert.equal(
-      await fails.manager.executeImport('upload-key', 'export.json', options),
-      undefined,
-    );
+    assert.equal(await fails.manager.executeImport(job), undefined);
     sinon.assert.calledWith(fails.deps.logging.info.firstCall, started);
     sinon.assert.calledWith(fails.deps.logging.info.secondCall, sinon.match(failed));
+    sinon.assert.neverCalledWith(
+      fails.deps.logging.info,
+      sinon.match({ system: { event: 'site_content_import.completed' } }),
+    );
 
     const throws = subject();
     const error = new Error('email failed');
     sinon.stub(throws.manager, 'processImport').rejects(error);
-    await assert.rejects(throws.manager.executeImport('upload-key', 'export.json', options), error);
+    await assert.rejects(throws.manager.executeImport(job), error);
     sinon.assert.calledWith(throws.deps.logging.error, error, sinon.match(failed));
   });
 
@@ -212,7 +225,7 @@ describe('Site import execution', function () {
       const { manager, deps } = subject(env);
       const direct = env === 'production' ? { runningInJob: true } : {};
       await manager.importFromFile(null, { ...options, ...direct, data: {} });
-      sinon.assert.notCalled(deps.jobManager.addJob);
+      sinon.assert.notCalled(deps.jobsService.dispatch);
       assert.equal(deps.mailer.send.callCount, env === 'production' ? 1 : 0);
     }
   });
@@ -222,7 +235,7 @@ describe('Site import execution', function () {
     const error = new Error('invalid upload');
     sinon.stub(manager, 'loadFile').rejects(error);
     await assert.rejects(manager.importFromFile({ name: 'bad.json' }, options), error);
-    sinon.assert.notCalled(deps.jobManager.addJob);
+    sinon.assert.notCalled(deps.jobsService.dispatch);
     sinon.assert.notCalled(deps.mailer.send);
   });
 });
