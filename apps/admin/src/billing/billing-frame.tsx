@@ -26,8 +26,8 @@ import {
   billingAdminPath,
   billingAlerts,
   billingSubRoute,
+  initialBillingSubRoute,
   isBillingAppRoute,
-  isBillingPath,
   markDunningPaymentSettled,
   takePayNowReturnRoute,
 } from './billing-protocol';
@@ -96,17 +96,8 @@ function BillingAppFrame({
       new BillingAppConnection(billingUrl, {
         // As Ember's pro routes queue the route before its iframe exists: a
         // child route loads without the query, the root keeps `?action=…`
-        getLocationSubRoute: () => {
-          const { pathname, search } = locationRef.current;
-          if (!isBillingPath(pathname)) {
-            return null;
-          }
-          const subRoute = billingSubRoute(pathname);
-          if (subRoute) {
-            return subRoute;
-          }
-          return new URLSearchParams(search).has('action') ? search : '/';
-        },
+        getLocationSubRoute: () =>
+          initialBillingSubRoute(locationRef.current.pathname, locationRef.current.search),
         getReportContext: () => ({
           isForceUpgrade: forceUpgradeRef.current === true,
           routeName: billingSubRoute(locationRef.current.pathname) ? 'pro.pro-sub' : 'pro.index',

@@ -33,6 +33,22 @@ export function billingAdminPath(subRoute: string): string {
 }
 
 /**
+ * The billing app route the iframe loads for an Admin URL, as Ember's pro
+ * routes queue it before the iframe exists: a child route loads without its
+ * query, the overview keeps `?action=…`, and non-billing pages load the root.
+ */
+export function initialBillingSubRoute(pathname: string, search: string): string | null {
+  if (!isBillingPath(pathname)) {
+    return null;
+  }
+  const subRoute = billingSubRoute(pathname);
+  if (subRoute) {
+    return subRoute;
+  }
+  return new URLSearchParams(search).has('action') ? search : '/';
+}
+
+/**
  * A billing app route as reported by the app: a path, never a URL, and never
  * one with dot segments — the router resolves `/pro/../x` to `/x`, which would
  * let a route report reach any Admin screen.
