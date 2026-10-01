@@ -19,6 +19,7 @@ import {
 import { snippetConfirmModal } from '@tryghost/test-data/selectors/editor';
 import type { CardConfigSnippet, CardConfigSnippetInput } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { toSnippetValue } from './snippet-value';
 
 type PendingSnippetAction =
   | { kind: 'update'; snippet: Snippet; value: string }
@@ -52,22 +53,24 @@ export function usePostSnippets({ canManage }: { canManage: boolean }): PostSnip
   const [pending, setPending] = useState<PendingSnippetAction | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  const records = useMemo(
+  const entries = useMemo(
     () =>
       (browsed ?? [])
-        .filter((snippet) => snippet.lexical !== null)
-        .sort((a, b) => a.name.localeCompare(b.name)),
+        .map((snippet) => ({ snippet, value: toSnippetValue(snippet) }))
+        .filter((entry): entry is { snippet: Snippet; value: string } => entry.value !== null)
+        .sort((a, b) => a.snippet.name.localeCompare(b.snippet.name)),
     [browsed],
   );
+  const records = useMemo(() => browsed ?? [], [browsed]);
 
   const snippets = useMemo<CardConfigSnippet[]>(
     () =>
-      records.map((snippet) => ({
+      entries.map(({ snippet, value }) => ({
         id: snippet.id,
         name: snippet.name,
-        value: snippet.lexical ?? '',
+        value,
       })),
-    [records],
+    [entries],
   );
 
   const createSnippet = useCallback(

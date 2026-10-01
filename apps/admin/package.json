@@ -40,6 +40,7 @@
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/kg-clean-basic-html": "workspace:*",
+    "@tryghost/kg-converters": "workspace:*",
     "@tryghost/kg-unsplash-selector": "workspace:*",
     "@tryghost/koenig-lexical": "workspace:*",
     "@tryghost/metafield-types": "workspace:*",
