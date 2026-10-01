@@ -30,6 +30,7 @@ export interface StateBridge {
   navigateToBillingSubRoute?: (subRoute: string) => void;
   setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   setReactFullScreen?: (isFullScreen: boolean) => void;
+  setReactRoutePattern?: (routePattern: string | null) => void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
     callback: (event: StateBridgeEventMap[K]) => void,
@@ -359,6 +360,13 @@ export function syncEmberPostListQueryParams(
 export function syncEmberFullScreen(isFullScreen: boolean): () => void {
   return waitForStateBridge((stateBridge) => {
     stateBridge.setReactFullScreen?.(isFullScreen);
+  });
+}
+
+/** Tells Ember the pattern of the React route showing, or null while Ember shows its own. */
+export function syncEmberRoutePattern(routePattern: string | null): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setReactRoutePattern?.(routePattern);
   });
 }
 

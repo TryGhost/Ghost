@@ -123,12 +123,6 @@ const features: Feature[] = [
     flag: 'editorReact',
   },
   {
-    title: 'React global search',
-    description:
-      'Serves the Cmd/Ctrl+K search modal from the React app instead of the Ember modal. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'globalSearchReact',
-  },
-  {
     title: 'React sign-in screens',
     description:
       'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
