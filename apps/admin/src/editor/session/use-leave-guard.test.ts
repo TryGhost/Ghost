@@ -8,7 +8,7 @@ import { deferred } from '@/utils/deferred';
 import type { SaveEngineState } from '@/editor/engine/save-engine';
 import { LEAVE_DECISION_DEADLINE_MS } from './leave-guard';
 import { useEditorLeaveGuard, type EditorLeaveGuard } from './use-leave-guard';
-import { useEditorSessionKey, type EditorSessionHandle } from './use-editor-session';
+import type { EditorSessionHandle } from './use-editor-session';
 
 describe('useEditorLeaveGuard', () => {
   const reached: string[] = [];
@@ -151,21 +151,16 @@ describe('useEditorLeaveGuard', () => {
         }, []);
         return createElement('main');
       }
-      // Keyed like the editor screen, so entries with the same session key share one editor.
-      function EditorRoute() {
-        return createElement(Editor, { key: useEditorSessionKey() });
-      }
-      // Both editor entries carry one session key in their router state.
-      const sharedSession = { usr: { editorSession: 'shared' } };
-      window.history.replaceState(sharedSession, '', '#/editor/post/first');
+      window.history.replaceState(null, '', '#/editor/post/first');
       window.history.pushState(null, '', '#/posts');
-      window.history.pushState(sharedSession, '', '#/editor/post/second');
+      window.history.pushState(null, '', '#/editor/post/second');
+      // One editor stays mounted across both entries, as it does when an exit stays on its post.
       const router = createHashRouter([
-        { path: '/editor/*', element: createElement(EditorRoute) },
+        { path: '/editor/*', element: createElement(Editor) },
         { path: '/posts', element: 'Posts' },
       ]);
       // Hash anchors leave their entries without a router index.
-      window.history.replaceState(sharedSession, '');
+      window.history.replaceState(null, '');
       render(createElement(RouterProvider, { router }));
       try {
         await traverse(() => window.history.go(-2), '#/editor/post/first');

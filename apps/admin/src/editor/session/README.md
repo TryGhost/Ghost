@@ -15,10 +15,13 @@ starts no timer, request or outside subscription, so a session discarded without
 `dispose()` leaves nothing running. A new post always gets its own; nothing is
 carried from one new post to the next. Once a create acquires an id the URL is
 replaced from new to edit as a state-driven effect, with the screen keyed on the
-session so the switch does not remount the editor. The key is the history entry
-together with the post's URL, so moving to another post's URL builds a new
-session even between entries the router did not create, such as two posts
-opened by URL. A URL that differs only by a trailing slash keeps the session.
+session so the switch does not remount the editor.
+
+The screen keeps a session while navigation stays on its post, counting the id
+a create acquired and ignoring a trailing slash, whichever history entry the
+navigation reaches, including one the router did not create. Any other post, a
+new one included, gets a new session, so two posts opened by URL each get their
+own.
 
 Requests are made without the transport's session-expiry redirect, so an expired
 session is surfaced in place rather than navigating away from unsaved content.

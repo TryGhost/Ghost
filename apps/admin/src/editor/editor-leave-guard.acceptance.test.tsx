@@ -708,6 +708,41 @@ describe('Post editor leave guard on history pops', () => {
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
   });
 
+  it('keeps a created post’s editor and unsaved text when a hash change reaches its URL again', async () => {
+    const { createApi, resolveCreate } = fakeNewPost();
+    await openByHashChange('/editor/post', withoutAutosave(FLAG_ON));
+    await appendToBody('First words');
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    resolveCreate();
+    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+    await appendToBody(' and then some');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    const editor = editorScreen.root().element();
+
+    window.location.hash = `/editor/post/${NEW_POST_ID}/`;
+
+    // Only the created post's own editor puts its URL back without the slash.
+    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+    expect(editor.isConnected).toBe(true);
+    await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+  });
+
+  it('opens a new post when a hash change reaches the new-post URL from a post created there', async () => {
+    const { createApi, resolveCreate } = fakeNewPost();
+    await openByHashChange('/editor/post', withoutAutosave(FLAG_ON));
+    await appendToBody('First words');
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    resolveCreate();
+    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+
+    window.location.hash = '/editor/post';
+
+    await expect.element(editorScreen.wordCount()).toHaveTextContent('0 words');
+    expect(currentRoute()).toBe('/editor/post');
+  });
+
   it('stays put when the URL only drops its trailing slash', async () => {
     const saveApi = fakeEditablePost({ status: 'published', published_at: LOADED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}/`, withFastAutosave(FLAG_ON));
