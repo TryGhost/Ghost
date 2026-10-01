@@ -10,7 +10,6 @@ import type { ConfirmStatus } from '@/editor/publish/use-publish-flow';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 
 export interface CompleteWithEmailErrorStepProps {
-  canRetry: boolean;
   post: PublishFlowPost;
   emailErrorMessage: string;
   willOnlyEmail: boolean;
@@ -21,7 +20,6 @@ export interface CompleteWithEmailErrorStepProps {
 }
 
 export function CompleteWithEmailErrorStep({
-  canRetry,
   post,
   emailErrorMessage,
   willOnlyEmail,
@@ -58,24 +56,22 @@ export function CompleteWithEmailErrorStep({
         </Banner>
       ) : null}
 
-      {canRetry && (
-        <Inline>
-          <Button
-            className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"
-            data-testid={publishRetryEmail}
-            disabled={status === 'running'}
-            size="lg"
-            variant="destructive"
-            onClick={onRetry}
-          >
-            {status === 'running'
-              ? 'Sending'
-              : partial
-                ? 'Send remaining emails'
-                : 'Retry sending email'}
-          </Button>
-        </Inline>
-      )}
+      <Inline>
+        <Button
+          className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"
+          data-testid={publishRetryEmail}
+          disabled={status === 'running'}
+          size="lg"
+          variant="destructive"
+          onClick={onRetry}
+        >
+          {status === 'running'
+            ? 'Sending'
+            : partial
+              ? 'Send remaining emails'
+              : 'Retry sending email'}
+        </Button>
+      </Inline>
     </Stack>
   );
 }

@@ -9,12 +9,6 @@ import type { NewsletterInput } from './publish-options';
 const transport = vi.hoisted(() => ({ fetchApi: vi.fn(), retryEmail: vi.fn() }));
 vi.mock('@tryghost/admin-x-framework/hooks', () => ({ useFetchApi: () => transport.fetchApi }));
 vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
-  useEmailSendingStatus: () => ({
-    isFetchedAfterMount: true,
-    isError: false,
-    refetch: vi.fn(),
-    data: { email_statuses: [{ sending: { status: 'failed', retryable: true } }] },
-  }),
   useRetryEmail: () => ({ mutateAsync: transport.retryEmail }),
 }));
 
