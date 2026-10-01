@@ -115,6 +115,19 @@ describe('SendingStatusService', function () {
     );
   }
 
+  it('derives retry eligibility from current batches on every read', async function () {
+    await addEmail({ status: 'failed', emailCount: 20 });
+    await addBatch({ status: 'failed', createdAt: '2026-09-02 12:00:00' });
+    await addBatch({ status: 'submitted', createdAt: '2026-09-02 12:00:00' });
+    const ordinaryFailure = await service.statusFor('email-id');
+    assert.equal(ordinaryFailure?.sending.status, 'failed');
+    assert.equal(Reflect.get(ordinaryFailure!.sending, 'retryable'), true);
+
+    await knex('email_batches').where('id', 'batch-1').update({ status: 'submitting' });
+    const unknownOutcome = await service.statusFor('email-id');
+    assert.equal(Reflect.get(unknownOutcome!.sending, 'retryable'), false);
+  });
+
   it('returns null when the email does not exist', async function () {
     assert.equal(await service.statusFor('missing-email'), null);
   });

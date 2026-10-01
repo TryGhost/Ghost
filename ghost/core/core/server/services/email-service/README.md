@@ -345,6 +345,18 @@ attempts, so a retried email reports submitting with frozen progress while it
 waits for its job, and `failed_during` is the same derivation applied to a
 failed email.
 
+Failed status includes `retryable`, derived from the current email and batch
+state. A failed email is retryable unless any batch is still `submitting`: the
+provider may have accepted that batch even though Ghost did not record the
+outcome. `EmailService.retryEmail` re-reads the same status before queuing a
+retry, for both the retry endpoint and post saves. Admin requires an explicit
+`retryable: true`; older Core responses without the field hide Retry without
+requiring access to the batch-browsing endpoint.
+
+Post saves also check retry eligibility during preflight, before committing the
+post transition, so a rejected retry leaves the post unchanged. The retry method
+checks again before queuing the email.
+
 The rough ETA measures recent recipient throughput, including work completed by
 concurrent workers. It stays `null` until enough timing samples are available in
 the current phase and attempt, so short sends may finish without showing an ETA.

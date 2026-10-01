@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
 import { SessionExpiredError } from '../../../src/utils/errors';
 import {
+  EmailStatusesResponseSchema,
   useBrowseEmailBatches,
   useEmailSendingStatus,
   useRetryEmail,
@@ -18,6 +19,27 @@ const unauthorized = {
 };
 
 describe('emails api', () => {
+  it.each([true, false, undefined])(
+    'preserves retry eligibility %s and accepts older Core responses',
+    (retryable) => {
+      const response = EmailStatusesResponseSchema.parse({
+        email_statuses: [
+          {
+            id: 'email-1',
+            sending: {
+              status: 'failed',
+              failed_during: 'submitting',
+              progress: { completed: 0, total: 10, estimated_seconds_remaining: null },
+              ...(retryable === undefined ? {} : { retryable }),
+            },
+          },
+        ],
+      });
+      expect(response.email_statuses[0].sending).toMatchObject({ status: 'failed' });
+      expect(Reflect.get(response.email_statuses[0].sending, 'retryable')).toBe(retryable);
+    },
+  );
+
   it('reads filtered email batches via the batches endpoint', async () => {
     await withMockFetch(
       {

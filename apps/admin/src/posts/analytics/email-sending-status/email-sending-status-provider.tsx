@@ -7,7 +7,7 @@ import {
   newsletterBasicStatsDataType,
   newsletterClickStatsDataType,
 } from '@tryghost/admin-x-framework/api/stats';
-import { useBrowseEmailBatches, useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
+import { useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
@@ -44,22 +44,6 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
 
   const status = statusQuery.status;
   const sendingStatus = status?.sending.status;
-  const shouldQueryBatches = Boolean(enabled && emailId && sendingStatus === 'failed');
-  const batchesQuery = useBrowseEmailBatches(emailId ?? '', {
-    enabled: shouldQueryBatches,
-    searchParams: { filter: 'status:submitting', fields: 'id,status', limit: '1' },
-    defaultErrorHandler: false,
-    refetchOnWindowFocus: true,
-    retry: false,
-    staleTime: 0,
-  });
-  const hasUnknownDeliveryOutcome = Boolean(
-    shouldQueryBatches &&
-    (batchesQuery.isFetching ||
-      batchesQuery.isError ||
-      !batchesQuery.data ||
-      batchesQuery.data.batches.some((batch) => batch.status === 'submitting')),
-  );
   const lastHandledSendingState = useRef<string | null>(null);
   const retryInFlight = useRef(false);
   const [refreshedSubmittedEmailId, setRefreshedSubmittedEmailId] = useState<string | null>(null);
@@ -147,7 +131,6 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
       newsletterDataHiddenReason,
       hasNewsletterAnalytics,
       isEmailSent,
-      hasUnknownDeliveryOutcome,
       isRetrying,
       retrySending,
     }),
@@ -158,7 +141,6 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
       newsletterDataHiddenReason,
       hasNewsletterAnalytics,
       isEmailSent,
-      hasUnknownDeliveryOutcome,
       isRetrying,
       retrySending,
     ],

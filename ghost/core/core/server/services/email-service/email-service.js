@@ -27,6 +27,7 @@ const messages = {
   emailSendingDisabled: `Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`,
   retryEmailStatusError: 'Can only retry emails for published posts',
   retryEmailNotFailed: 'Only failed emails can be retried',
+  retryEmailUnknownOutcome: 'Cannot retry email because the delivery outcome is unknown',
 };
 
 // Resume scanner won't pick up `pending` or `submitting` rows older than this. Rows beyond
@@ -41,6 +42,7 @@ const RESUMABLE_EMAIL_STATUSES = ['pending', 'submitting'];
 class EmailService {
   #batchSendingService;
   #sendingService;
+  #sendingStatusService;
   #models;
   #settingsCache;
   #emailRenderer;
@@ -57,6 +59,7 @@ class EmailService {
    * @param {object} dependencies
    * @param {BatchSendingService} dependencies.batchSendingService
    * @param {SendingService} dependencies.sendingService
+   * @param {import('./sending-status-service').SendingStatusService} dependencies.sendingStatusService
    * @param {object} dependencies.models
    * @param {object} dependencies.models.Email
    * @param {object} [dependencies.models.EmailBatch] - Required for resumeInterruptedSends breadcrumbs
@@ -73,6 +76,7 @@ class EmailService {
   constructor({
     batchSendingService,
     sendingService,
+    sendingStatusService,
     models,
     settingsCache,
     emailRenderer,
@@ -92,6 +96,7 @@ class EmailService {
     this.#limitService = limitService;
     this.#membersRepository = membersRepository;
     this.#sendingService = sendingService;
+    this.#sendingStatusService = sendingStatusService;
     this.#verificationTrigger = verificationTrigger;
     this.#emailAnalyticsJobs = emailAnalyticsJobs;
     this.#domainWarmingService = domainWarmingService;
@@ -388,6 +393,8 @@ class EmailService {
       });
     }
 
+    await this.checkCanRetryEmail(email.id);
+
     await this.checkLimits();
 
     // Claim the retry in the database: another request may have already scheduled
@@ -415,6 +422,22 @@ class EmailService {
       throw e;
     }
     return pendingEmail;
+  }
+
+  /**
+   * Validates retry eligibility before a post save or a retry is queued.
+   * @param {string} emailId
+   * @returns {Promise<void>}
+   */
+  async checkCanRetryEmail(emailId) {
+    // Re-read persisted state: the caller's email or eligibility can be stale.
+    const status = await this.#sendingStatusService.statusFor(emailId);
+    if (status?.sending.status !== 'failed') {
+      throw new errors.BadRequestError({ message: tpl(messages.retryEmailNotFailed) });
+    }
+    if (!status.sending.retryable) {
+      throw new errors.BadRequestError({ message: tpl(messages.retryEmailUnknownOutcome) });
+    }
   }
 
   /**
