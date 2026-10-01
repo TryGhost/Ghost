@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
-import { MetafieldBindingsService } from '../../../../../core/server/services/metafields/bindings-service';
+import { MetafieldBindingsService } from '../../../../../../core/server/services/metafields/members/bindings-service';
 
 // What a port resolves to. Every port here resolves to the same field, because where a
 // value lands is not what any of these are about.
