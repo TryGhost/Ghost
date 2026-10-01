@@ -772,13 +772,13 @@ async function ensureAutomation(
     slug: string;
     trigger_tier_scope: AutomationTriggerTierScope;
   }>,
-): Promise<AutomationRow> {
+): Promise<Pick<AutomationRow, 'id'>> {
   const now = toDatabaseDate(new Date());
-  const id = ObjectId().toHexString();
 
+  // Insert the automation if it doesn't exist.
   await trx('automations')
     .insert({
-      id,
+      id: ObjectId().toHexString(),
       status: 'inactive',
       name: defaults.name,
       description: defaults.description,
@@ -790,7 +790,13 @@ async function ensureAutomation(
     .onConflict('slug')
     .ignore();
 
-  return requireAutomation(await loadAutomationBySlug(trx, defaults.slug), defaults.slug);
+  const row = await trx('automations').select('id').where('slug', defaults.slug).first();
+  if (!row) {
+    throw new errors.InternalServerError({
+      message: `Default automation ${defaults.slug} was missing`,
+    });
+  }
+  return row;
 }
 
 async function ensureWelcomeEmailAction(
@@ -1377,17 +1383,6 @@ async function loadAutomation(
   const row = await trx('automations')
     .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .where('id', automationId)
-    .first();
-  return row ?? null;
-}
-
-async function loadAutomationBySlug(
-  trx: Knex.Transaction,
-  slug: string,
-): Promise<AutomationRow | null> {
-  const row = await trx('automations')
-    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
-    .where('slug', slug)
     .first();
   return row ?? null;
 }
