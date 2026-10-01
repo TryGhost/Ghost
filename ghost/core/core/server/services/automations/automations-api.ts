@@ -1,3 +1,8 @@
+import {
+  normalizeMemberSearch,
+  searchCursorScope,
+  browseMemberSearch,
+} from './automation-member-search';
 import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
@@ -222,6 +227,34 @@ export async function browseRuns(automationId: string, options: Record<string, u
     status: parsedStatus.data ?? null,
     direction: parsedOrder.data === 'created_at asc' ? 'asc' : 'desc',
   };
+  const query = normalizeMemberSearch(options.search);
+  if (query) {
+    const searchScope = searchCursorScope(
+      requestedScope,
+      config.get('tinybird:stats:id') || settingsCache.get('site_uuid'),
+      query,
+    );
+    const continuation =
+      cursor === undefined
+        ? undefined
+        : decodeRunCursor(cursor, searchScope, {
+            preserveEndDate: options.date_to === undefined,
+          });
+    if (!(await repository.exists(automationId))) {
+      throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
+    }
+    const client = getTinybirdClient();
+    if (!client) {
+      throw new errors.InternalServerError({ message: tpl(messages.tinybirdRunsFailed) });
+    }
+    return browseMemberSearch(
+      knex,
+      client,
+      continuation?.scope ?? searchScope,
+      query,
+      continuation?.position,
+    );
+  }
   const continuation =
     cursor === undefined
       ? undefined
