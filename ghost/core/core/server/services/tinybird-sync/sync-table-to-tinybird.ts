@@ -110,6 +110,7 @@ async function postEvents(
     headers: {
       Authorization: `Bearer ${trafficAnalyticsAuth}`,
       'Content-Type': 'application/x-ndjson',
+      'User-Agent': 'Ghost(https://github.com/TryGhost/Ghost)',
       'x-site-uuid': siteUuid,
     },
     body: lines.join('\n'),
