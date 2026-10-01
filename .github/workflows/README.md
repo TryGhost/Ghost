@@ -77,5 +77,3 @@ it never checks out PR code. Ghost-Moya builds the preview adapter image and run
 smoke tests on a separate runner with no deployment secrets or OIDC. Publishing
 imports image data without running it, and deployment pins the registry digest.
 Inherited base-image ONBUILD instructions and adapter validation are PR code too.
-Keep GCP auth outputs out of Docker contexts and release packages; `.dockerignore`
-and the workspace packing hook exclude generated credentials and Git metadata.

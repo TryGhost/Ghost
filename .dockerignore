@@ -40,14 +40,3 @@ compose.yml
 
 # Ignore local config files (.json and .jsonc)
 ghost/core/config.local.json*
-
-# google-github-actions/auth writes these into the checkout by default.
-**/gha-creds-*.json
-**/.git
-**/.env
-**/.env.*
-**/*credentials*.json
-**/*.pem
-**/*.key
-.aws
-.config/gcloud
