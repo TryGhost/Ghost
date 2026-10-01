@@ -52,7 +52,11 @@ selection or Retry fetches it again; there is no polling or refresh control.
 
 Recorded cards use the action revisions and timestamps returned by the history
 endpoint, including saved email subjects and send/delivery evidence. Active runs
-stop at their recorded pending step; future workflow steps are not shown yet.
+also fetch the saved workflow and show the remaining path after the pending step,
+with upcoming cards distinct from recorded events. Both requests must succeed;
+a failure shows the history error state and Retry reloads both. Upcoming cards
+have no projected dates yet. A removed pending action or inactive automation
+explains why no further path is shown.
 Completed runs do not get an invented end timestamp.
 
 Email snippets show up to 400 characters of ordinary text from the saved revision,

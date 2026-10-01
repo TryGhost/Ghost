@@ -4,7 +4,7 @@ import { emailTextExcerpt } from './history-email-preview';
 
 export type HistoryEmail = { subject: string | null; text: string };
 
-export type HistoryCardState = 'occurred' | 'pending' | 'exited' | 'failed';
+export type HistoryCardState = 'occurred' | 'pending' | 'exited' | 'failed' | 'planned';
 export type HistoryTimestamp = {
   label: string;
   value: string;
@@ -41,7 +41,13 @@ function stepContent(step: Step, state: HistoryCardState) {
       if (!duration) {
         throw new Error('Invalid recorded wait duration');
       }
-      const verbs = { occurred: 'Waited', pending: 'Waiting', exited: 'Wait', failed: 'Wait' };
+      const verbs = {
+        occurred: 'Waited',
+        pending: 'Waiting',
+        exited: 'Wait',
+        failed: 'Wait',
+        planned: 'Wait',
+      };
       return { kind: 'wait' as const, title: `${verbs[state]} ${duration}` };
     }
     case 'send_email':

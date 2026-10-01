@@ -20,6 +20,11 @@ const states = {
     border: 'border-state-info border-dashed',
     icon: 'bg-state-info/15 text-state-info',
   },
+  planned: {
+    Icon: LucideIcon.Circle,
+    border: 'border-border-default',
+    icon: 'bg-muted text-muted-foreground',
+  },
   exited: {
     Icon: ExitedGlyph,
     border: 'border-border-strong',
@@ -31,6 +36,14 @@ const states = {
     icon: 'bg-state-danger/15 text-state-danger',
   },
 } satisfies Record<HistoryCardState, { Icon: React.ElementType; border: string; icon: string }>;
+
+const kindIcons = {
+  trigger: LucideIcon.Zap,
+  email: LucideIcon.Mail,
+  wait: LucideIcon.Hourglass,
+  end: LucideIcon.LogOut,
+  event: LucideIcon.LogOut,
+} satisfies Record<HistoryCardData['kind'], React.ElementType>;
 
 const HistoryTime: React.FC<{ timestamp: HistoryTimestamp }> = ({ timestamp }) => {
   const date = new Date(timestamp.value);
@@ -65,13 +78,11 @@ export const HistoryCard: React.FC<React.PropsWithChildren<{ card: HistoryCardDa
 }) => {
   const { Icon: StateIcon, border, icon } = states[card.state];
   let Icon = StateIcon;
-  if (card.state === 'exited' && card.kind !== 'event' && card.kind !== 'end') {
-    Icon = LucideIcon.LogOut;
-    if (card.kind === 'email') {
-      Icon = LucideIcon.Mail;
-    } else if (card.kind === 'wait') {
-      Icon = LucideIcon.Hourglass;
-    }
+  if (
+    card.state === 'planned' ||
+    (card.state === 'exited' && card.kind !== 'event' && card.kind !== 'end')
+  ) {
+    Icon = kindIcons[card.kind];
   }
   return (
     <AutomationCard aria-label={card.title} className={border}>
