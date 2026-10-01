@@ -22,6 +22,7 @@ const {
 } = require('../../../automations/events/start-automations-poll-event');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
+const schema = require('../../../../data/schema');
 const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
@@ -63,6 +64,39 @@ const MEMBER_STATUSES = ['free', 'paid', 'comped', 'gift'];
  * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
  */
 
+/**
+ * The attribution columns shared by the member and subscription created records.
+ *
+ * The URLs, referrer and UTM tags come from the visitor's browser and have no length
+ * limit, so each is cut to its column's length: a value too long to store would
+ * otherwise fail the signup or Stripe webhook it is recorded with.
+ *
+ * @param {'members_created_events' | 'members_subscription_created_events'} table
+ * @param {Partial<import('../../../member-attribution/attribution-builder').Attribution> | undefined} attribution
+ */
+function attributionColumns(table, attribution) {
+  const columns = schema.tables[table];
+  /** @param {'attribution_url' | 'referrer_source' | 'referrer_medium' | 'referrer_url' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content'} column */
+  const fitted = (column, /** @type {string | null | undefined} */ value) =>
+    // By character rather than UTF-16 unit, as the column counts them, so an emoji
+    // is never split in half.
+    value ? Array.from(value).slice(0, columns[column].maxlength).join('') : null;
+
+  return {
+    attribution_id: attribution?.id ?? null,
+    attribution_url: fitted('attribution_url', attribution?.url),
+    attribution_type: attribution?.type ?? null,
+    referrer_source: fitted('referrer_source', attribution?.referrerSource),
+    referrer_medium: fitted('referrer_medium', attribution?.referrerMedium),
+    referrer_url: fitted('referrer_url', attribution?.referrerUrl),
+    utm_source: fitted('utm_source', attribution?.utmSource),
+    utm_medium: fitted('utm_medium', attribution?.utmMedium),
+    utm_campaign: fitted('utm_campaign', attribution?.utmCampaign),
+    utm_term: fitted('utm_term', attribution?.utmTerm),
+    utm_content: fitted('utm_content', attribution?.utmContent),
+  };
+}
+
 module.exports = class MemberRepository {
   /**
    * @param {object} deps
@@ -74,6 +108,8 @@ module.exports = class MemberRepository {
    * @param {any} deps.MemberPaidSubscriptionEvent
    * @param {any} deps.MemberStatusEvent
    * @param {any} deps.MemberProductEvent
+   * @param {any} deps.MemberCreatedEvent
+   * @param {any} deps.SubscriptionCreatedEvent
    * @param {any} deps.StripeCustomer
    * @param {any} deps.StripeCustomerSubscription
    * @param {any} deps.OfferRedemption
@@ -96,6 +132,8 @@ module.exports = class MemberRepository {
     MemberPaidSubscriptionEvent,
     MemberStatusEvent,
     MemberProductEvent,
+    MemberCreatedEvent: MemberCreatedEventModel,
+    SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
     StripeCustomer,
     StripeCustomerSubscription,
     OfferRedemption,
@@ -117,6 +155,8 @@ module.exports = class MemberRepository {
     this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
     this._MemberStatusEvent = MemberStatusEvent;
     this._MemberProductEvent = MemberProductEvent;
+    this._MemberCreatedEvent = MemberCreatedEventModel;
+    this._SubscriptionCreatedEvent = SubscriptionCreatedEventModel;
     this._OfferRedemption = OfferRedemption;
     this._StripeCustomer = StripeCustomer;
     this._StripeCustomerSubscription = StripeCustomerSubscription;
@@ -657,6 +697,19 @@ module.exports = class MemberRepository {
         }
       }
     }
+    // Saved with the member rather than by a subscriber to the event below, so a read
+    // straight after the create already shows where the member came from.
+    await this._MemberCreatedEvent.add(
+      {
+        member_id: member.id,
+        created_at: eventData.created_at,
+        source,
+        batch_id: options.batch_id ?? null,
+        ...attributionColumns('members_created_events', data.attribution),
+      },
+      options,
+    );
+
     this.dispatchEvent(
       MemberCreatedEvent.create(
         {
@@ -1759,6 +1812,19 @@ module.exports = class MemberRepository {
         attribution: attribution,
         batchId: options.batch_id,
       });
+
+      // Saved with the subscription, as the member's created record is, so a read
+      // straight after already shows where the subscription came from.
+      await this._SubscriptionCreatedEvent.add(
+        {
+          member_id: memberModel.id,
+          subscription_id: subscriptionToRecord.get('id'),
+          created_at: subscriptionCreatedEvent.timestamp,
+          batch_id: options.batch_id ?? null,
+          ...attributionColumns('members_subscription_created_events', attribution),
+        },
+        options,
+      );
 
       this.dispatchEvent(subscriptionCreatedEvent, options);
 

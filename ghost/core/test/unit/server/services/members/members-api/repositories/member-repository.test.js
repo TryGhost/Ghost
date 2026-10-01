@@ -47,6 +47,8 @@ describe('MemberRepository', function () {
       MemberProductEvent,
       MemberStatusEvent,
       MemberSubscribeEventModel: MemberSubscribeEvent,
+      MemberCreatedEvent: { add: sinon.stub().resolves() },
+      SubscriptionCreatedEvent: { add: sinon.stub().resolves() },
       OfferRedemption: mockOfferRedemption,
       StripeCustomer,
       StripeCustomerSubscription,
