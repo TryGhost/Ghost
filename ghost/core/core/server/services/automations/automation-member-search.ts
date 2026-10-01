@@ -1,5 +1,5 @@
 import errors from '@tryghost/errors';
-import type { Knex } from 'knex';
+import type { AutomationRunMember, AutomationsRepository } from './automations-repository';
 import { z } from 'zod';
 import {
   encodeRunCursor,
@@ -17,11 +17,9 @@ import {
 // Internal work limits are independent of the public fifty-result page size.
 export const SEARCH_LIMITS = {
   page: 50,
-  smallSet: 2000,
   candidates: 5000,
   batches: 4,
   softMs: 1500,
-  sqlMs: 2500,
   httpMs: 3000,
   queryBytes: 4096,
 } as const;
@@ -37,48 +35,11 @@ export function normalizeMemberSearch(value: unknown): string {
   }
   return value.trim();
 }
-export function memberSearchPattern(query: string) {
-  return `%${query.replace(/[!%_]/g, (character) => `!${character}`)}%`;
-}
 export function searchCursorScope(scope: RunCursorScope, site: string, query: string) {
   return { ...scope, ...memberSearchScope(site, query) };
 }
 type SearchScope = ReturnType<typeof searchCursorScope>;
-type MemberRow = { run_id: string; id: string; name: string | null; email: string };
-type SearchRun = AutomationRunRow & { member: Omit<MemberRow, 'run_id'> | null };
-export const MEMBER_SEARCH_PREDICATE =
-  "(members.name LIKE ? ESCAPE '!' OR members.email LIKE ? ESCAPE '!')";
-function isMysql(knex: Knex) {
-  return ['mysql', 'mysql2'].includes(knex.client.config.client);
-}
-
-export function withSearchTimeout<T extends Knex.QueryBuilder>(knex: Knex, query: T): T {
-  if (isMysql(knex)) {
-    query.hintComment('MAX_EXECUTION_TIME(2000)').timeout(SEARCH_LIMITS.sqlMs, { cancel: true });
-  }
-  return query;
-}
-
-async function readMembers(knex: Knex, automationId: string, ids: string[], query?: string) {
-  const members = new Map<string, Omit<MemberRow, 'run_id'>>();
-  // SQLite has a lower binding limit. Each lookup is bounded by primary-key IDs.
-  const size = isMysql(knex) ? SEARCH_LIMITS.candidates : 500;
-  for (let offset = 0; offset < ids.length; offset += size) {
-    let lookup = knex('automation_runs as runs')
-      .join('members', 'members.id', 'runs.member_id')
-      .where('runs.automation_id', automationId)
-      .whereIn('runs.id', ids.slice(offset, offset + size))
-      .select<MemberRow[]>('runs.id as run_id', 'members.id', 'members.name', 'members.email');
-    if (query !== undefined) {
-      const pattern = memberSearchPattern(query);
-      lookup = lookup.whereRaw(MEMBER_SEARCH_PREDICATE, [pattern, pattern]);
-    }
-    for (const { run_id: runId, ...member } of await withSearchTimeout(knex, lookup)) {
-      members.set(runId, member);
-    }
-  }
-  return members;
-}
+type SearchRun = AutomationRunRow & { member: AutomationRunMember | null };
 const candidateSchema = z.union([
   automationRunRowSchema,
   z.object({
@@ -133,26 +94,8 @@ async function fetchCandidates(
   }
   return parsed.data;
 }
-// Null means the probe overflowed, not that the search is exhausted.
-export async function probeMemberSearch(knex: Knex, automationId: string, query: string) {
-  if (!isMysql(knex)) {
-    return null;
-  }
-  const pattern = memberSearchPattern(query);
-  const rows = await withSearchTimeout(
-    knex,
-    knex('members')
-      .join('automation_runs as runs', 'runs.member_id', 'members.id')
-      .where('runs.automation_id', automationId)
-      .whereRaw(MEMBER_SEARCH_PREDICATE, [pattern, pattern])
-      .select<{ id: string }[]>('runs.id')
-      .limit(SEARCH_LIMITS.smallSet + 1),
-  );
-  return rows.length <= SEARCH_LIMITS.smallSet ? rows.map((row) => row.id) : null;
-}
-
 export async function browseMemberSearch(
-  knex: Knex,
+  repository: Pick<AutomationsRepository, 'probeMemberSearch' | 'getRunMembers'>,
   client: TinybirdClient,
   scope: SearchScope,
   query: string,
@@ -175,7 +118,7 @@ export async function browseMemberSearch(
       },
     },
   });
-  const probe = await probeMemberSearch(knex, scope.automation_id, query);
+  const probe = await repository.probeMemberSearch(scope.automation_id, query);
   if (probe !== null) {
     if (probe.length === 0) {
       return result([], undefined, 'exhausted');
@@ -184,8 +127,7 @@ export async function browseMemberSearch(
       requireValidRun,
     );
     const page = rows.slice(0, SEARCH_LIMITS.page);
-    const members = await readMembers(
-      knex,
+    const members = await repository.getRunMembers(
       scope.automation_id,
       page.map((row) => row.id),
     );
@@ -200,8 +142,7 @@ export async function browseMemberSearch(
   let position = after;
   for (let batch = 0; batch < SEARCH_LIMITS.batches; batch++) {
     const rows = await fetchCandidates(client, scope, SEARCH_LIMITS.candidates, position);
-    const members = await readMembers(
-      knex,
+    const members = await repository.getRunMembers(
       scope.automation_id,
       rows.map((row) => row.id),
       query,

@@ -256,7 +256,7 @@ export async function browseRuns(automationId: string, options: Record<string, u
   }
 
   if (searchScope) {
-    return browseMemberSearch(knex, client, searchScope, query, continuation?.position);
+    return browseMemberSearch(repository, client, searchScope, query, continuation?.position);
   }
 
   // One extra row tells us whether a next page exists without a separate count.
