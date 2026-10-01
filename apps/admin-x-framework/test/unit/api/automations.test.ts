@@ -122,14 +122,14 @@ describe('automations api queries', () => {
       );
       await waitFor(() => expect(completedRequests).toBe(1));
       rerender({ scope: 'visit:1', status: 'exited_early' });
-      await waitFor(() => expect(result.current.data?.[0].id).toBe('exited'));
+      await waitFor(() => expect(result.current.data?.runs[0].id).toBe('exited'));
       rerender({ scope: 'visit:2', status: 'completed' });
-      await waitFor(() => expect(result.current.data?.[0].id).toBe('fresh'));
+      await waitFor(() => expect(result.current.data?.runs[0].id).toBe('fresh'));
       finish(response('late', 'completed'));
       // Wait for every request to settle using the public client API before checking the result.
       await waitFor(() => expect(queryClient.isFetching()).toBe(0));
       expect(completedRequests).toBe(2);
-      expect(result.current.data?.[0].id).toBe('fresh');
+      expect(result.current.data?.runs[0].id).toBe('fresh');
     } finally {
       finish(response('late', 'completed'));
       fetch.mockRestore();
@@ -190,7 +190,7 @@ describe('automation run pagination queries', () => {
         await result.current.fetchNextPage();
       });
       await waitFor(() =>
-        expect(result.current.data).toEqual([row('a', 'First observed name'), row('b')]),
+        expect(result.current.data?.runs).toEqual([row('a', 'First observed name'), row('b')]),
       );
       expect(requests).toHaveLength(2);
       expect(requests[0].pathname).toBe('/ghost/api/admin/automations/automation-id/runs/');
@@ -228,7 +228,7 @@ describe('automation run pagination queries', () => {
           await result.current.fetchNextPage();
         });
         expect(mock.calls).toHaveLength(1);
-        expect(result.current.data).toEqual([row('a')]);
+        expect(result.current.data?.runs).toEqual([row('a')]);
       },
     );
   });
