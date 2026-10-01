@@ -276,6 +276,26 @@ describe('Post preview modal', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it('closes the preview on an Escape pressed inside a same-origin site frame', async () => {
+    fakePreviewWorld();
+    const onOpenChange = vi.fn();
+    await renderPreviewModal({
+      onOpenChange,
+      previewUrl: `${window.location.origin}/p/post-uuid/`,
+    });
+
+    const frame = previewScreen.browserFrame().element() as HTMLIFrameElement;
+    // The frame's listener attaches on load, which this test cannot observe directly.
+    await expect
+      .poll(() => {
+        frame.contentDocument?.body?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+        );
+        return onOpenChange.mock.calls;
+      })
+      .toContainEqual([false]);
+  });
+
   it('previews as a public visitor', async () => {
     fakePreviewWorld();
     await renderPreviewModal();
