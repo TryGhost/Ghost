@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
@@ -16,6 +16,7 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { LEAVE_DECISION_DEADLINE_MS } from '@/editor/session/leave-guard';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { deferred } from '@/utils/deferred';
 
@@ -366,6 +367,29 @@ describe('Post editor leave guard', () => {
     await editorScreen.stayInEditor().click();
     await expect(editorScreen.leaveDialog()).toHaveCount(0);
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+  });
+
+  it('asks before leaving when the save on the way out never answers', async () => {
+    const { saveApi, resolveSave } = fakeDeferredSave();
+    await openDirtyEditor(withoutAutosave(FLAG_ON));
+    // Only the deadline's clock is faked; requests, rendering and polling stay on real time.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldClearNativeTimers: true });
+    try {
+      await editorScreen.backLink('post').click();
+      await expect.poll(() => saveApi.requests.length).toBe(1);
+
+      vi.advanceTimersByTime(LEAVE_DECISION_DEADLINE_MS);
+
+      await expect.element(editorScreen.leaveDialog()).toBeVisible();
+      vi.useRealTimers();
+      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+      await editorScreen.leaveEditor().click();
+      await expect.poll(currentRoute).toBe('/posts');
+      await expect(editorScreen.root()).toHaveCount(0);
+    } finally {
+      vi.useRealTimers();
+      resolveSave();
+    }
   });
 
   it('guards a native hash anchor out of the editor', async () => {

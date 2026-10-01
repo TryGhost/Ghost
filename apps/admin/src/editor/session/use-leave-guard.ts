@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { PostType } from '@/editor/card-config';
-import { hasUnsavedWork, isCreatedIdUrlSwap } from './leave-guard';
+import { hasUnsavedWork, isCreatedIdUrlSwap, leaveDecisionWithin } from './leave-guard';
 import { useEditorSessionKey, type EditorSessionHandle } from './use-editor-session';
 
 export interface EditorLeaveGuard {
@@ -118,7 +118,7 @@ export function useEditorLeaveGuard(
       return;
     }
     isDecidingRef.current = true;
-    void leaveRequested().then((decision) => {
+    void leaveDecisionWithin(leaveRequested()).then((decision) => {
       if (!isMountedRef.current) {
         return;
       }

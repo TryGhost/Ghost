@@ -373,7 +373,10 @@ While the post holds unsaved work, every way out of the editor is put to the
 save engine: a link, the browser's Back and Forward buttons, and any other
 change to the URL's hash. The engine finishes or saves what is outstanding and
 answers either that leaving loses nothing, and the navigation goes ahead, or
-that the writer has to confirm it. Until then the URL stays on the editor. A
+that the writer has to confirm it. Until then the URL stays on the editor. The
+writer is asked to confirm instead when the engine fails to answer or has not
+answered within twenty seconds, which is longer than the transport keeps
+retrying a save, so a stalled save or a pending sign-in cannot pin the URL. A
 Back or Forward is undone as it happens and replayed once the writer may leave,
 so they land on the entry it reached. Undoing it puts the editor back directly
 above that entry: a held Back drops the forward history, and a Forward or a hash

@@ -5,6 +5,7 @@ import { createHashRouter, createMemoryRouter, RouterProvider, useLocation } fro
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { installHistoryPopGate } from '@/hooks/use-history-pop-navigation-guard';
 import { deferred } from '@/utils/deferred';
+import { LEAVE_DECISION_DEADLINE_MS } from './leave-guard';
 import { useEditorLeaveGuard, type EditorLeaveGuard } from './use-leave-guard';
 import { useEditorSessionKey, type EditorSessionHandle } from './use-editor-session';
 
@@ -287,6 +288,81 @@ describe('useEditorLeaveGuard', () => {
 
       await waitFor(() => expect(router.state.location.pathname).toBe('/editor/post/new789'));
       expect(leaveRequested).not.toHaveBeenCalled();
+    } finally {
+      router.dispose();
+    }
+  });
+
+  function renderHeldExit(leaveRequested: () => Promise<unknown>) {
+    const view: { guard?: EditorLeaveGuard } = {};
+    function Editor() {
+      view.guard = useEditorLeaveGuard(
+        {
+          state: { kind: 'saving', intent: 'leave' },
+          createdId: null,
+          isDirty: () => true,
+          leaveRequested,
+        } as unknown as EditorSessionHandle,
+        'post',
+      );
+      return createElement('main', { 'data-testid': 'editor' });
+    }
+    const router = createMemoryRouter(
+      [
+        { path: '/editor/post/abc', element: createElement(Editor) },
+        { path: '/posts', element: 'Posts' },
+      ],
+      { initialEntries: ['/editor/post/abc'] },
+    );
+    const screen = render(createElement(RouterProvider, { router }));
+    return { router, screen, guard: () => view.guard! };
+  }
+
+  it('asks before leaving once a held exit outlasts the deadline, and Leave still goes', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const { router, guard } = renderHeldExit(() => new Promise(() => {}));
+    try {
+      await act(async () => {
+        await router.navigate('/posts');
+      });
+      await act(() => vi.advanceTimersByTimeAsync(LEAVE_DECISION_DEADLINE_MS - 1));
+      expect(guard().dialogProps.open).toBe(false);
+
+      await act(() => vi.advanceTimersByTimeAsync(1));
+
+      expect(guard().dialogProps.open).toBe(true);
+      expect(router.state.location.pathname).toBe('/editor/post/abc');
+      vi.useRealTimers();
+      act(() => {
+        guard().dialogProps.onConfirm();
+        guard().dialogProps.onOpenChange(false);
+      });
+      await waitFor(() => expect(router.state.location.pathname).toBe('/posts'));
+    } finally {
+      vi.useRealTimers();
+      router.dispose();
+    }
+  });
+
+  it('asks before leaving when the leave decision fails, and Stay keeps the editor', async () => {
+    const leaveRequested = vi.fn().mockRejectedValue(new Error('Leave decision failed'));
+    const { router, screen, guard } = renderHeldExit(leaveRequested);
+    try {
+      await act(async () => {
+        await router.navigate('/posts');
+      });
+
+      await waitFor(() => expect(guard().dialogProps.open).toBe(true));
+      act(() => guard().dialogProps.onOpenChange(false));
+
+      expect(guard().dialogProps.open).toBe(false);
+      expect(router.state.location.pathname).toBe('/editor/post/abc');
+      expect(screen.getByTestId('editor')).toBeInTheDocument();
+      await act(async () => {
+        await router.navigate('/posts');
+      });
+      await waitFor(() => expect(guard().dialogProps.open).toBe(true));
+      expect(leaveRequested).toHaveBeenCalledTimes(2);
     } finally {
       router.dispose();
     }
