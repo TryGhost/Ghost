@@ -437,6 +437,25 @@ describe('Publish flow', () => {
     },
   );
 
+  it('opens the schedule calendar from its button and picks a day from the keyboard', async () => {
+    await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByRole('radio', { name: 'Schedule for later' }).click();
+    await userEvent.tab();
+    await expect.element(publishScreen.scheduleCalendarButton()).toHaveFocus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect
+      .element(page.getByRole('gridcell', { selected: true }).getByRole('button'))
+      .toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}{Enter}');
+
+    await expect(page.getByRole('grid')).toHaveCount(0);
+    await expect.element(publishScreen.scheduleCalendarButton()).toHaveFocus();
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-04');
+  });
+
   it('schedules a typed date, however far off', async () => {
     const { dispatch } = await renderPublishFlow({
       now: () => new Date('2026-09-03T20:00:00.000Z'),

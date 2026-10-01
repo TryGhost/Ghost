@@ -1,5 +1,6 @@
 import { page } from 'vitest/browser';
 import {
+  chooseDateButton,
   publicPreviewWarningDialog,
   publishAlreadySent,
   publishBackToSettings,
@@ -48,6 +49,10 @@ export const publishScreen = {
   /** The collapsed row's toggle button. */
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),
   scheduleDate: () => page.getByTestId(publishScheduleDate),
+  scheduleCalendarButton: () =>
+    page
+      .getByTestId(publishSettingPublishAt)
+      .getByRole('button', { name: chooseDateButton, exact: true }),
   scheduleTime: () => page.getByTestId(publishScheduleTime),
   continueButton: () => page.getByTestId(publishContinue),
   previewButton: () => page.getByTestId(publishFlowPreview),

@@ -4,6 +4,7 @@ import {
   addFeatureImageLabel,
   addXImageLabel,
   analyticsBackLink,
+  chooseDateButton,
   conflictCancelReloadButton,
   conflictCopyContentButton,
   conflictDiscardAndReloadButton,
@@ -257,6 +258,10 @@ export const editorScreen = {
     page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
   settingsTemplateSlugMatch: () => page.getByTestId(settingsTemplateSlugMatch),
   settingsPublishDate: () => page.getByTestId(settingsPublishDate),
+  settingsPublishDateCalendarButton: () =>
+    page
+      .getByTestId(postSettingsSidebar)
+      .getByRole('button', { name: chooseDateButton, exact: true }),
   settingsPublishTime: () => page.getByTestId(settingsPublishTime),
   settingsPublishDateError: () => page.getByTestId(settingsPublishDateError),
   settingsPublishDateNote: () => page.getByTestId(settingsPublishDateNote),
