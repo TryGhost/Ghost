@@ -23,11 +23,13 @@ through the slug machine, and the Publish date section stages the publish time,
 which is the save engine's command target. Both are then subject to the same
 engine policy as everything else.
 
-The meta and social-card text fields are held to the widths their columns give
-them, 300 characters for a title and 500 for a description. Past one of those
-the field says so where the writer is typing and nothing is saved — not the
-field itself, and not a save the writer asks for, which is refused with the same
-message rather than sent and answered with a server error.
+The excerpt, the header and footer code, and the meta and social-card text
+fields are held to the lengths the server accepts: 300 characters for the
+excerpt, 65,535 for each code field, 300 for a meta or card title and 500 for a
+description, counted by code point so a multibyte character counts once. Past
+one of those the field says so where the writer is typing and nothing is saved —
+not the field itself, and not a save the writer asks for, which is refused with
+the same message rather than sent and answered with a server error.
 
 ## Sections
 
@@ -218,7 +220,8 @@ the cards describe before any save.
 
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
-sidebar owns it. Either way the same session binding is behind it.
+sidebar owns it. Either way the same session binding and the same limit are
+behind it, and the message for an excerpt past its limit sits under the field.
 
 ## Authors
 
@@ -329,7 +332,8 @@ editors are named for a page rather than a post.
 Closing the pane commits the editor the writer was in, and a field cleared back
 to empty is stored as no value, as the excerpt is. A post saved before that
 convention holds an empty string rather than no value, so clearing such a field
-back to empty counts as a change until the next save.
+back to empty counts as a change until the next save. An editor past its limit
+is marked invalid, with the message between its label and the code.
 
 Escape inside either editor leaves the pane open. An open completion list or a
 selection wider than the cursor takes it first; otherwise it frees the editor's

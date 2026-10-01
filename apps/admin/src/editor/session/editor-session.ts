@@ -43,6 +43,7 @@ import {
   publishedAtInFuture,
   settingsFieldError,
   tiersIncomplete,
+  titleError,
   validatedFieldsOf,
   type EditorSettingsPatch,
   type EditorSettingsFields,
@@ -550,7 +551,8 @@ export function createEditorSession({
     projection: EditablePostPatch,
   ): string | null {
     const creatingDraft = request.snapshot.id === null && request.target.status === 'draft';
-    const invalid = settingsFieldError(validatedFieldsOf(live), creatingDraft);
+    const invalid =
+      titleError(request.title) ?? settingsFieldError(validatedFieldsOf(live), creatingDraft);
     if (invalid) {
       return invalid;
     }

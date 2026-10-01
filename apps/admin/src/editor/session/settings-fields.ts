@@ -1,3 +1,4 @@
+import isLength from 'validator/es/lib/isLength.js';
 import type { EditablePostProjection } from '@/editor/engine/change-tracker';
 import { pick } from '@/editor/engine/pick';
 import type { PostStatus } from '@/editor/engine/save-engine';
@@ -78,7 +79,10 @@ export function identityFor(
   return fields[key];
 }
 
-/** The column widths the schema gives these fields. */
+/** The longest values the server accepts for these fields. */
+export const TITLE_MAX = 255;
+export const EXCERPT_MAX = 300;
+export const CODE_INJECTION_MAX = 65535;
 export const EMAIL_SUBJECT_MAX = 300;
 export const EMAIL_SUBJECT_TOO_LONG = `Email subject cannot be longer than ${EMAIL_SUBJECT_MAX} characters.`;
 export const META_TITLE_MAX = 300;
@@ -88,6 +92,11 @@ export const OG_DESCRIPTION_MAX = 500;
 export const X_TITLE_MAX = 300;
 export const X_DESCRIPTION_MAX = 500;
 
+export const TITLE_TOO_LONG = `Title cannot be longer than ${TITLE_MAX} characters.`;
+export const EXCERPT_TOO_LONG = `Excerpt cannot be longer than ${EXCERPT_MAX} characters.`;
+export const CODE_INJECTION_HEAD_TOO_LONG = `Header code cannot be longer than ${CODE_INJECTION_MAX} characters.`;
+export const CODE_INJECTION_FOOT_TOO_LONG = `Footer code cannot be longer than ${CODE_INJECTION_MAX} characters.`;
+
 /** The field names read as the pane's own labels read. */
 export const META_TITLE_TOO_LONG = `Meta title cannot be longer than ${META_TITLE_MAX} characters.`;
 export const META_DESCRIPTION_TOO_LONG = `Meta description cannot be longer than ${META_DESCRIPTION_MAX} characters.`;
@@ -95,6 +104,11 @@ export const OG_TITLE_TOO_LONG = `Facebook title cannot be longer than ${OG_TITL
 export const OG_DESCRIPTION_TOO_LONG = `Facebook description cannot be longer than ${OG_DESCRIPTION_MAX} characters.`;
 export const X_TITLE_TOO_LONG = `X title cannot be longer than ${X_TITLE_MAX} characters.`;
 export const X_DESCRIPTION_TOO_LONG = `X description cannot be longer than ${X_DESCRIPTION_MAX} characters.`;
+
+/** Counted as Core's model validator counts: trimmed, and an emoji with its presentation selector once. */
+export function titleError(title: string): string | null {
+  return isLength(title.trim(), { max: TITLE_MAX }) ? null : TITLE_TOO_LONG;
+}
 
 /** `visibility: 'tiers'` with no tiers: the write contract drops the pair. */
 export function tiersIncomplete(
@@ -119,7 +133,7 @@ export function publishedAtInFuture(
   return !Number.isNaN(time) && time >= now;
 }
 
-/** Counted as symbols, so a multibyte character counts once. */
+/** Counted as the API's schema counts: by code point, so a multibyte character counts once. */
 export function overLength(value: string | null, max: number): boolean {
   return Array.from(value ?? '').length > max;
 }
@@ -129,6 +143,9 @@ export const VALIDATED_SETTINGS_FIELD_KEYS = [
   'email_subject',
   'visibility',
   'tiers',
+  'custom_excerpt',
+  'codeinjection_head',
+  'codeinjection_foot',
   'meta_title',
   'meta_description',
   'canonical_url',
@@ -154,6 +171,9 @@ const LENGTH_RULES: Record<
   { max: number; message: string }
 > = {
   email_subject: { max: EMAIL_SUBJECT_MAX, message: EMAIL_SUBJECT_TOO_LONG },
+  custom_excerpt: { max: EXCERPT_MAX, message: EXCERPT_TOO_LONG },
+  codeinjection_head: { max: CODE_INJECTION_MAX, message: CODE_INJECTION_HEAD_TOO_LONG },
+  codeinjection_foot: { max: CODE_INJECTION_MAX, message: CODE_INJECTION_FOOT_TOO_LONG },
   meta_title: { max: META_TITLE_MAX, message: META_TITLE_TOO_LONG },
   meta_description: { max: META_DESCRIPTION_MAX, message: META_DESCRIPTION_TOO_LONG },
   og_title: { max: OG_TITLE_MAX, message: OG_TITLE_TOO_LONG },

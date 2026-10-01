@@ -1,5 +1,5 @@
 import { Fragment, memo, type ReactNode, useEffect, useId } from 'react';
-import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
+import { FieldError, Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import {
@@ -14,6 +14,7 @@ import {
   settingsFeaturedToggle,
 } from '@tryghost/test-data/selectors/editor';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
+import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { PublishDateSection } from './publish-date-section';
@@ -50,11 +51,15 @@ const MemoUrlSection = memo(UrlSection);
 
 const ExcerptSection = memo(function ExcerptSection({ session }: { session: EditorSettingsPort }) {
   const inputId = useId();
+  const errorId = useId();
+  const error = settingsFieldErrorFor('custom_excerpt', session.settings);
 
   return (
     <SettingsSection>
       <Label htmlFor={inputId}>Excerpt</Label>
       <Textarea
+        aria-describedby={error ? errorId : undefined}
+        aria-invalid={!!error}
         data-testid={settingsExcerptInput}
         id={inputId}
         rows={3}
@@ -62,6 +67,7 @@ const ExcerptSection = memo(function ExcerptSection({ session }: { session: Edit
         onBlur={session.commitSettings}
         onChange={(event) => session.bind.onExcerptChange(event.target.value)}
       />
+      {error ? <FieldError id={errorId}>{error}</FieldError> : null}
     </SettingsSection>
   );
 });

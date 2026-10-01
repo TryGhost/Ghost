@@ -49,6 +49,7 @@ import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
 import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
+import { settingsFieldErrorFor, titleError } from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
@@ -363,9 +364,11 @@ function EditorContent({
               {...session.bind}
               autofocusTitle={!record}
               cardConfig={currentCardConfig}
+              excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
               featureImage={featureImage}
               postType={postType}
               showExcerpt={showExcerpt}
+              titleError={titleError(session.bind.title)}
               onExcerptBlur={session.commitSettings}
               onTkCountChange={setTkCount}
             />
