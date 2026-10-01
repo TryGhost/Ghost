@@ -50,8 +50,6 @@ import {
 import { NotFound } from './shared/not-found';
 import { type AuthRouteHandle, authRoutes, useAuthScreensOwner } from './auth/api';
 
-const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
-
 const appRoutes: RouteObject[] = [
   {
     // Role-based landing dispatch, including the hosted-signup
@@ -182,7 +180,9 @@ const appRoutes: RouteObject[] = [
     // both sides of the `editorReact` flag.
     path: '/editor/*',
     Component: EditorGate,
-    handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
+    // Blocked in force upgrade by React's guard: Ember's own gate stands down
+    // while React owns billing, so it cannot be relied on for this route.
+    handle: { hideAdminSidebar: true } satisfies AdminRouteHandle,
   },
   { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
   { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },

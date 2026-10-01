@@ -77,6 +77,8 @@ export class BillingAppConnection {
   private retryTimeout: ReturnType<typeof setTimeout> | null = null;
   private srcSubRoute: string | null = null;
   private pendingSubRoute: string | null = null;
+  // The iframe src came from the billing route the Admin URL showed at load
+  private srcClaimsLocation = false;
 
   private attempts = 0;
   private attemptSequence = 0;
@@ -155,6 +157,16 @@ export class BillingAppConnection {
     }
 
     if (this.loaded && this.post({ query: 'routeUpdate', response: subRoute })) {
+      return;
+    }
+
+    // The first route the screen asks for after a cold deep link is the one the
+    // iframe is already loading: Ember queues it before its iframe exists and
+    // never sends it again, which would override the app's own first redirect
+    const claimed =
+      this.srcClaimsLocation && normalizeSubRoute(subRoute) === normalizeSubRoute(this.srcSubRoute);
+    this.srcClaimsLocation = false;
+    if (claimed) {
       return;
     }
 
@@ -285,7 +297,9 @@ export class BillingAppConnection {
     this.srcSetAt = Date.now();
     this.resetDiagnostics();
 
+    const fromLocation = this.pendingSubRoute === null;
     const subRoute = this.pendingSubRoute ?? this.options.getLocationSubRoute();
+    this.srcClaimsLocation = fromLocation && subRoute !== null;
     iframe.src = this.iframeUrl(subRoute);
     this.srcSubRoute = subRoute;
     this.pendingSubRoute = null;

@@ -438,6 +438,57 @@ describe('Ghost(Pro) billing', () => {
     expect(loads(messages)[0]?.searchParams.get('action')).toBe('checkout');
   });
 
+  it.each([true, false])(
+    'holds the editor on billing during a force upgrade (billingReact %s)',
+    async (billingReact) => {
+      await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+      await renderBilling('/editor/post', {
+        role: 'Administrator',
+        hostSettings: { forceUpgrade: true },
+        billingReact,
+      });
+
+      await expect.poll(currentRoute).toBe('/pro');
+    },
+  );
+
+  it('shows billing full size to contributors held by a force upgrade', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    await renderBilling('/pro', { role: 'Contributor', hostSettings: { forceUpgrade: true } });
+
+    await expect.element(billingScreen.frame()).toBeVisible();
+    const { height, width } = billingScreen.frame().element().getBoundingClientRect();
+    expect(height).toBeGreaterThan(200);
+    expect(width).toBeGreaterThan(200);
+  });
+
+  it('sends a hidden billing app nothing when Admin leaves billing', async () => {
+    fakeTags([]);
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro');
+    await expect.element(billingScreen.frame()).toBeVisible();
+    await billingAppSettled(messages);
+    const sent = received(messages, 'query').length;
+
+    window.location.hash = '#/tags';
+    await expect.element(tagsScreen.newTagLink()).toBeVisible();
+    await billingAppSettled(messages);
+
+    expect(received(messages, 'query').slice(sent)).toEqual([]);
+    expect(loads(messages)).toHaveLength(1);
+  });
+
+  it('does not resend a deep-linked route once the billing app is ready', async () => {
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro/domain');
+    await expect.element(billingScreen.frame()).toBeVisible();
+    await billingAppSettled(messages);
+
+    expect(received(messages, 'query').filter(({ query }) => query === 'routeUpdate')).toEqual([]);
+  });
+
   it('leaves billing to Ember while the flag is off', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     await renderBilling('/pro', { billingReact: false });

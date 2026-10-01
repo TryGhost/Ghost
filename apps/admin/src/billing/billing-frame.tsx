@@ -28,6 +28,7 @@ import {
   billingSubRoute,
   initialBillingSubRoute,
   isBillingAppRoute,
+  isBillingPath,
   markDunningPaymentSettled,
   takePayNowReturnRoute,
 } from './billing-protocol';
@@ -80,7 +81,9 @@ function BillingAppFrame({
   const { data: config } = useBrowseConfig();
   const { data: currentUser } = useCurrentUser();
   const forceUpgrade = useForceUpgrade();
-  const visible = useBillingScreenOpen();
+  // The route's store flips only in its unmount cleanup, after this frame has
+  // rendered the next location — the path keeps that render from counting as open
+  const visible = useBillingScreenOpen() && isBillingPath(location.pathname);
   const automations = useFeatureFlag('automations');
   const dunningWarnings = useFeatureFlag('dunningWarnings');
 
@@ -114,6 +117,8 @@ function BillingAppFrame({
   // The Admin path just synced from a billing app route report, consumed by
   // the navigation it causes so that report is not echoed back to the app
   const syncedPathRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
+  const latestReportRef = useRef(0);
 
   useEffect(
     () => (frameRef.current ? connection.attach(frameRef.current) : undefined),
@@ -123,7 +128,13 @@ function BillingAppFrame({
   useEffect(() => connection.setVisible(visible), [connection, visible]);
 
   // Another owner (or none) after this frame leaves must not inherit its reports
-  useEffect(() => () => setBillingSubscriptionState(null), []);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      setBillingSubscriptionState(null);
+    };
+  }, []);
 
   // Back/forward, links and search results moving between billing routes. The
   // key catches re-selecting the route showing; the path and search catch hash
@@ -242,10 +253,21 @@ function BillingAppFrame({
     // As Ember's billing iframe does: listeners and alerts wait for the plan's
     // fresh config, so a changed dunning block decides the overdue alert
     void queryClient.refetchQueries({ queryKey: ['SettingsResponseType'] }).catch(() => {});
+    latestReportRef.current += 1;
+    const report = latestReportRef.current;
     await Promise.all([
       queryClient.refetchQueries({ queryKey: ['ConfigResponseType'] }).catch(() => {}),
-      applyEmberBillingSubscriptionUpdate({ subscription: message.subscription, checkoutRoute }),
+      // Ember's limits failing to reload must not hold back React's state
+      applyEmberBillingSubscriptionUpdate({
+        subscription: message.subscription,
+        checkoutRoute,
+      }).catch(() => {}),
     ]);
+
+    // A newer report or another owner has taken over while this one waited
+    if (!mountedRef.current || report !== latestReportRef.current) {
+      return;
+    }
 
     setBillingSubscriptionState({ subscription: message.subscription });
     checkoutRouteRef.current = checkoutRoute;
