@@ -2,7 +2,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
 const mappers = require('./mappers');
-const { visibleMetafields } = require('../../../../../services/members/utils');
+const { visibleMetafields } = require('../../../../../services/metafields/payload');
 const { createCSVTransform } = require('./members-csv-transform');
 const { createCSVStreamResponse } = require('./stream-csv-response');
 module.exports = {

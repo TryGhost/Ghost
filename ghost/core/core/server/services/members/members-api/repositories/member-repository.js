@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
-const { ADMIN } = require('../../../members-metafields');
+const { ADMIN } = require('../../../metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
@@ -116,7 +116,7 @@ module.exports = class MemberRepository {
    * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
    * @param {any} deps.productRepository
    * @param {any} deps.offersAPI
-   * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues
+   * @param {import('../../../metafields/values-service').MetafieldValuesService} deps.metafieldValues
    * @param {ITokenService} deps.tokenService
    * @param {any} deps.newslettersService
    * @param {Pick<automationsApi, 'trigger'>} deps.automationsApi
@@ -1152,7 +1152,7 @@ module.exports = class MemberRepository {
     // transaction, and kept on the deleted member, whose member.deleted webhook is sent
     // once the transaction commits.
     const destroy = async (transacting) => {
-      const previousMetafields = await this._metafieldValues.getValuesForMember(
+      const previousMetafields = await this._metafieldValues.getValues(
         member.id,
         ADMIN,
         transacting,

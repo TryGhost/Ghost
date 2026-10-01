@@ -1,6 +1,7 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const { ADMIN, adminWriteOrigin } = require('../../../members-metafields');
+const { ADMIN } = require('../../../metafields');
+const { planAdminWrite } = require('../../../metafields/payload');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -9,8 +10,6 @@ const messages = {
   stripeNotConnected: 'Missing Stripe connection.',
   memberAlreadyExists: 'Member already exists.',
   memberNotFound: 'Member not found.',
-  metafieldsWithoutWriter:
-    'Custom field values cannot be set by a request with no authenticated user or integration.',
 };
 
 // Stored in the action's `context.action_name`; Admin maps it to a display label.
@@ -47,7 +46,7 @@ module.exports = class MemberBREADService {
    * @param {import('../../../settings-helpers/settings-helpers')} deps.settingsHelpers
    * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
    * @param {IGiftsModule} deps.giftService
-   * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues Required: boot builds it before the members service
+   * @param {import('../../../metafields/values-service').MetafieldValuesService} deps.metafieldValues Required: boot builds it before the members service
    * @param {<T>(fn: (transacting: import('knex').Knex.Transaction) => Promise<T>) => Promise<T>} deps.transaction
    *   Runs `fn` in a database transaction.
    */
@@ -94,12 +93,12 @@ module.exports = class MemberBREADService {
    * The member's metafields as this audience may see them, empty if they have none.
    *
    * @param {string} memberId
-   * @param {import('../../../members-metafields').Audience} audience
+   * @param {import('../../../metafields').Audience} audience
    * @param {{transacting?: import('knex').Knex.Transaction}} [options] reads inside this transaction
    * @returns {Promise<Record<string, Record<string, unknown>>>}
    */
   async readMetafieldsForMember(memberId, audience, { transacting } = {}) {
-    return (await this.metafieldValues.getValuesForMember(memberId, audience, transacting)) ?? {};
+    return (await this.metafieldValues.getValues(memberId, audience, transacting)) ?? {};
   }
 
   /**
@@ -107,11 +106,11 @@ module.exports = class MemberBREADService {
    * empty object.
    *
    * @param {string[]} memberIds
-   * @param {import('../../../members-metafields').Audience} audience
+   * @param {import('../../../metafields').Audience} audience
    * @returns {Promise<Map<string, Record<string, Record<string, unknown>>>>}
    */
   async readMetafieldsForMembers(memberIds, audience) {
-    const byMember = await this.metafieldValues.getValuesForMembers(memberIds, audience);
+    const byMember = await this.metafieldValues.getValuesForMany(memberIds, audience);
     return new Map(memberIds.map((memberId) => [memberId, byMember.get(memberId) ?? {}]));
   }
 
@@ -389,7 +388,7 @@ module.exports = class MemberBREADService {
   /**
    * @param {object} data
    * @param {object} [options]
-   * @param {import('../../../members-metafields').Audience | null} options.metafieldsFor
+   * @param {import('../../../metafields').Audience | null} options.metafieldsFor
    *   Who the extra fields a publisher defined are being read for, or null to leave them
    *   off entirely. Null is not the same as "nobody may see them": it means this caller
    *   never shows them, so fetching them is two database queries whose results are thrown
@@ -468,43 +467,16 @@ module.exports = class MemberBREADService {
   }
 
   /**
-   * Takes the metafields out of an Admin API member payload and plans their write. Throws on
-   * an invalid value, or when the request has no user or integration to name as the writer.
+   * Takes the metafields out of an Admin API member payload and plans their write.
    *
    * @private
    * @param {object} data the member payload, whose `metafields` key is removed
    * @param {object} options
-   * @returns {Promise<import('../../../members-metafields/values-service').MetafieldPlan | null>}
+   * @returns {Promise<import('../../../metafields/payload').AdminWritePlan | null>}
    *   null when there is nothing to write
    */
   async planStaffMetafields(data, options) {
-    const metafields = this.metafieldValues.unwrapWire(data.metafields);
-    delete data.metafields;
-    if (metafields === undefined) {
-      return null;
-    }
-
-    // Planned before the member is touched, so a bad value refuses the whole request.
-    const writes = await this.metafieldValues.planWrite(metafields, ADMIN);
-    if (writes.length === 0) {
-      return null;
-    }
-
-    // Every value reaching here was typed into the Admin API, so the writer is
-    // whoever made the request — the same pair the action log records, so the two
-    // agree about who did it rather than one saying only that it was "admin".
-    //
-    // The only route to this branch is the authenticated Admin API, so an anonymous
-    // request is a mistake somewhere upstream rather than a writer to invent a name
-    // for. Refusing keeps every stored writer resolvable.
-    const origin = adminWriteOrigin(options.context);
-    if (!origin) {
-      throw new errors.IncorrectUsageError({
-        message: tpl(messages.metafieldsWithoutWriter),
-      });
-    }
-
-    return { writes, origin };
+    return planAdminWrite(this.metafieldValues, data, options.context);
   }
 
   /**
@@ -514,7 +486,7 @@ module.exports = class MemberBREADService {
    * @private
    * @param {object} data the member attributes
    * @param {object} options
-   * @param {import('../../../members-metafields/values-service').MetafieldPlan} metafields
+   * @param {import('../../../metafields/values-service').MetafieldPlan} metafields
    */
   async createWithMetafields(data, options, { writes, origin }) {
     return this.transaction(async (transacting) => {
@@ -687,7 +659,7 @@ module.exports = class MemberBREADService {
    *
    * @param {object} data the member attributes to change
    * @param {object} options must name the member by `id`
-   * @param {import('../../../members-metafields/values-service').MetafieldPlan[]} plans
+   * @param {import('../../../metafields/values-service').MetafieldPlan[]} plans
    *   applied in order, so where two write one field the last is what it holds
    */
   async updateWithMetafields(data, options, plans) {

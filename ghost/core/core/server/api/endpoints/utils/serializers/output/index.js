@@ -81,7 +81,7 @@ module.exports = {
   },
 
   get members_metafields() {
-    return require('./member-metafields');
+    return require('./metafield-definitions');
   },
 
   get tiers() {

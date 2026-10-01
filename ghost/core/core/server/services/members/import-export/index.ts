@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-types/csv';
-import { INTERNAL, type Audience, type WriteOrigin } from '../../members-metafields';
+import { INTERNAL, type Audience, type WriteOrigin } from '../../metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -67,7 +67,7 @@ interface MetafieldsServices {
     browse(options: { namespace?: string }, audience: Audience): Promise<MetafieldDefinition[]>;
   };
   values: {
-    getValuesForMembers(
+    getValuesForMany(
       memberIds: string[],
       audience: Audience,
     ): Promise<Map<string, Record<string, unknown>>>;
@@ -203,7 +203,7 @@ export function makeExporter({
       // are always present -- no not-initialised state to guard.
       activeDefinitions: async (): Promise<MetafieldDefinition[]> =>
         definitions.browse({}, INTERNAL),
-      valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds, INTERNAL),
+      valuesForMembers: (memberIds) => values.getValuesForMany(memberIds, INTERNAL),
     },
   });
 
