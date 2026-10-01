@@ -1,4 +1,5 @@
 const { BadRequestError } = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -129,7 +130,7 @@ class PostEmailHandler {
     if (!postEmail) {
       email = await this.emailService.createEmail(model, { preflight });
     } else if (postEmail.get('status') === 'failed') {
-      email = await this.#retryEmail(postEmail);
+      email = await this.#retryEmail(postEmail, model.id);
     }
 
     if (email) {
@@ -138,13 +139,16 @@ class PostEmailHandler {
     }
   }
 
-  async #retryEmail(email) {
+  async #retryEmail(email, postId) {
     try {
       return await this.emailService.retryEmail(email);
     } catch (err) {
       if (err.code === RETRY_UNKNOWN_OUTCOME_CODE) {
         // The post is already saved. An unknown delivery outcome only withholds
         // the resend, leaving the email failed.
+        logging.warn(
+          `Post ${postId} was saved without retrying email ${email.id}: delivery outcome is unknown`,
+        );
         return;
       }
       if (err.code !== 'BULK_EMAIL_RETRY_NOT_FAILED') {
