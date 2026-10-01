@@ -7,8 +7,10 @@ import {
   fakeAdminStats,
   fakeAdminEndpoint,
   fakeMembers,
+  fakeNewsletters,
   fakePosts,
   fakePostsListScreen,
+  fakeSnippets,
   fakeTinybirdPipe,
   fakeTinybirdToken,
   post,
@@ -17,6 +19,7 @@ import {
   webAnalyticsBootOverrides,
   type TinybirdPipeCapture,
 } from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
 import { membersScreen } from '@/members/members.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
@@ -739,6 +742,32 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.webTrafficTab()).toBeVisible();
     await expect.element(postAnalyticsScreen.growthTab()).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.growthCard()).not.toBeInTheDocument();
+  });
+});
+
+describe('Post analytics edit', () => {
+  it('opens the editor with a way back to the analytics screen it left', async () => {
+    seedPostAnalyticsWorld();
+    fakeSnippets([]);
+    fakeNewsletters([]);
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), { posts: [seededPost()] });
+    await renderAdminApp(`/posts/analytics/${POST_ID}/web`, {
+      labs: { editorReact: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
+    await postAnalyticsScreen.moreActionsButton().click();
+    await postAnalyticsScreen.editPostMenuItem().click();
+
+    await expect.poll(currentRoute).toBe(`/editor/post/${POST_ID}`);
+    await expect
+      .element(editorScreen.analyticsBackLink())
+      .toHaveAttribute('href', `#/posts/analytics/${POST_ID}/web`);
+    await editorScreen.analyticsBackLink().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/web`);
+    await expect.element(postAnalyticsScreen.locationsCard()).toBeVisible();
   });
 });
 

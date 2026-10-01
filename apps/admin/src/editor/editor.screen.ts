@@ -3,6 +3,7 @@ import {
   addFacebookImageLabel,
   addFeatureImageLabel,
   addXImageLabel,
+  analyticsBackLink,
   conflictCancelReloadButton,
   conflictCopyContentButton,
   conflictDiscardAndReloadButton,
@@ -355,6 +356,7 @@ export const editorScreen = {
       name: postType === 'page' ? pagesBackLink : postsBackLink,
       exact: true,
     }),
+  analyticsBackLink: () => page.getByRole('link', { name: analyticsBackLink, exact: true }),
   /** Whether keyboard focus is inside the primary Koenig body. */
   bodyHasFocus: (): boolean =>
     document.querySelector(`[data-testid="${editorBody}"]`)?.contains(document.activeElement) ??

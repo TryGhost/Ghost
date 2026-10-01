@@ -13,6 +13,7 @@ export const postAnalyticsScreen = {
 
   // Header actions
   moreActionsButton: () => page.getByRole('button', { name: 'More post actions' }),
+  editPostMenuItem: () => page.getByRole('menuitem', { name: 'Edit post' }),
   deletePostMenuItem: () => page.getByRole('menuitem', { name: 'Delete post' }),
   confirmDeleteButton: () =>
     page.getByRole('alertdialog').getByRole('button', { name: 'Delete', exact: true }),

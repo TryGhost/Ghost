@@ -139,6 +139,7 @@ export const updateFlowPreviousEmail = 'update-flow-previous-email';
 // accessible names
 export const postsBackLink = 'Posts';
 export const pagesBackLink = 'Pages';
+export const analyticsBackLink = 'Analytics';
 export const webPreviewTab = 'Web';
 export const emailPreviewTab = 'Email';
 export const desktopPreviewToggle = 'Desktop';

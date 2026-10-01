@@ -56,6 +56,19 @@ email, including email-only sends and posts that were emailed previously, open
 `/posts/analytics/:id`. Failed saves and failed sends keep the flow open so the
 writer can retry.
 
+## Leaving the editor
+
+The header's back link returns a post to the posts list and a page to the pages
+list, with the filters and sort order the list was left with. A post opened
+from its analytics screen or from the analytics overview instead reads
+"Analytics" and returns to the screen it was opened from, path and query string
+included. Those screens pass `editorReturnState()` from `api.ts` as router
+state, and the editor accepts only a path under `/posts/analytics/` or
+`/analytics`. The return survives a reload, since it lives in the history
+entry, but a new post never gets it. While the link leads to analytics, the
+status line is hidden unless the post's newsletter failed to send or a save
+failed.
+
 ## Adding a settings section
 
 1. Add the section's id to `SETTINGS_SECTION_ORDER` in `settings/sections.ts`,
