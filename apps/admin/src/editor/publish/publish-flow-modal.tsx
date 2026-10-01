@@ -218,7 +218,6 @@ function PublishFlowDialog({
         <Stack className="mx-auto w-full max-w-156 px-6 pt-[max(9.6rem,18vh)] pb-16" gap="xl">
           {step === 'email-error' && flow.emailErrorMessage ? (
             <CompleteWithEmailErrorStep
-              canRetry={flow.canRetryEmail}
               emailErrorMessage={flow.emailErrorMessage}
               mailgunConfigured={site.mailgunConfigured}
               post={post}

@@ -20,6 +20,10 @@ export const EmailBatchSchema = z.object({
   status: EmailBatchStatusSchema,
 });
 
+export const EmailBatchesResponseSchema = z.object({
+  batches: z.array(EmailBatchSchema),
+});
+
 export const EmailSendingPhaseSchema = z.enum(['preparing', 'submitting']);
 
 export const EmailSendingProgressSchema = z.object({
@@ -41,8 +45,6 @@ export const EmailSendingStateSchema = z.discriminatedUnion('status', [
     status: z.literal('failed'),
     progress: EmailSendingProgressSchema,
     failed_during: EmailSendingPhaseSchema,
-    // Older Core versions omit eligibility; only an explicit true enables retry.
-    retryable: z.boolean().optional(),
   }),
 ]);
 
@@ -61,8 +63,16 @@ export type EmailSendingState = z.infer<typeof EmailSendingStateSchema>;
 export type EmailSendingStatus = z.infer<typeof EmailSendingStatusSchema>;
 export type EmailStatusesResponseType = z.infer<typeof EmailStatusesResponseSchema>;
 export type EmailBatch = z.infer<typeof EmailBatchSchema>;
+export type EmailBatchesResponseType = z.infer<typeof EmailBatchesResponseSchema>;
 
 const emailStatusesDataType = 'EmailStatusesResponseType';
+const emailBatchesDataType = 'EmailBatchesResponseType';
+
+export const useBrowseEmailBatches = createQueryWithId<EmailBatchesResponseType>({
+  dataType: emailBatchesDataType,
+  path: (id) => `/emails/${id}/batches/`,
+  parseResponse: (data) => EmailBatchesResponseSchema.parse(data),
+});
 
 export const useEmailSendingStatus = createQueryWithId<EmailStatusesResponseType>({
   dataType: emailStatusesDataType,
