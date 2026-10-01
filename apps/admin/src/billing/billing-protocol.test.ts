@@ -31,6 +31,13 @@ describe('billing routes', () => {
     expect(isBillingAppRoute('https://evil.example.com')).toBe(false);
     expect(isBillingAppRoute(undefined)).toBe(false);
   });
+
+  it('rejects dot segments, which would resolve outside the billing route', () => {
+    expect(isBillingAppRoute('/plans?interval=year')).toBe(true);
+    for (const route of ['/../settings/staff', '/a/./b', '/a/..', '/%2E%2e/tags', '/a\\b']) {
+      expect(isBillingAppRoute(route)).toBe(false);
+    }
+  });
 });
 
 describe('adminDestinationRoute', () => {

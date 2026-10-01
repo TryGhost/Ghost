@@ -7,7 +7,7 @@ import { parseDunningConfig } from '@tryghost/admin-x-framework/api/dunning';
 import { isOwnerUser, type UsersResponseType } from '@tryghost/admin-x-framework/api/users';
 import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
-import { useFeatureFlag, useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { AlertsStore } from '@/alerts';
@@ -40,10 +40,6 @@ import {
 interface BillingFrameProps {
   alerts: AlertsStore;
   isEmberOwned: (pathname: string) => boolean;
-}
-
-interface BillingLocationState {
-  fromBillingApp?: boolean;
 }
 
 interface IdentitiesResponse {
@@ -81,7 +77,6 @@ function BillingAppFrame({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fetchApi = useFetchApi();
-  const handleError = useHandleError();
   const { data: config } = useBrowseConfig();
   const { data: currentUser } = useCurrentUser();
   const forceUpgrade = useForceUpgrade();
@@ -114,6 +109,9 @@ function BillingAppFrame({
   // null until the billing app's token request has resolved who is asking
   const isOwnerRef = useRef<boolean | null>(null);
   const checkoutRouteRef = useRef<string | null>(null);
+  // The Admin path just synced from a billing app route report, consumed by
+  // the navigation it causes so that report is not echoed back to the app
+  const syncedPathRef = useRef<string | null>(null);
 
   useEffect(
     () => (frameRef.current ? connection.attach(frameRef.current) : undefined),
@@ -122,10 +120,16 @@ function BillingAppFrame({
 
   useEffect(() => connection.setVisible(visible), [connection, visible]);
 
-  // Back/forward, links and search results moving between billing routes.
-  // Keyed on the location key so re-selecting the route showing still syncs.
+  // Another owner (or none) after this frame leaves must not inherit its reports
+  useEffect(() => () => setBillingSubscriptionState(null), []);
+
+  // Back/forward, links and search results moving between billing routes. The
+  // key catches re-selecting the route showing; the path and search catch hash
+  // links and history entries, which all share the key 'default'.
   useEffect(() => {
-    if (!visible || (location.state as BillingLocationState | null)?.fromBillingApp) {
+    const syncedPath = syncedPathRef.current;
+    syncedPathRef.current = null;
+    if (!visible || syncedPath === `${location.pathname}${location.search}`) {
       return;
     }
 
@@ -138,7 +142,7 @@ function BillingAppFrame({
     }
 
     connection.navigateToSubRoute(billingSubRoute(location.pathname) ?? '/');
-  }, [connection, visible, location.key]);
+  }, [connection, visible, location.key, location.pathname, location.search]);
 
   const syncRoute = (route: unknown) => {
     if (!visibleRef.current || !isBillingAppRoute(route)) {
@@ -148,10 +152,8 @@ function BillingAppFrame({
     const path = billingAdminPath(route);
     const { pathname, search } = locationRef.current;
     if (`${pathname}${search}` !== path) {
-      navigate(path, {
-        replace: true,
-        state: { fromBillingApp: true } satisfies BillingLocationState,
-      });
+      syncedPathRef.current = path;
+      navigate(path, { replace: true });
     }
   };
 
@@ -175,7 +177,7 @@ function BillingAppFrame({
         respondWithoutToken();
         return;
       }
-      handleError(error);
+      throw error;
     }
   };
 
@@ -301,7 +303,6 @@ function BillingAppFrame({
         ref={frameRef}
         allow="clipboard-write"
         className="absolute inset-0 size-full border-0"
-        id="billing-frame"
         title="Billing"
       />
       {visible && !loaded && !failed && (
