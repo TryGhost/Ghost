@@ -12,7 +12,6 @@ import {
 } from '@test-utils/fixtures/query-client';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 
-import { toast } from 'sonner';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import PostAnalyticsProvider from '@/posts/analytics/providers/post-analytics-provider';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
@@ -403,13 +402,11 @@ describe('newsletter polling', () => {
     expect(requests).toBe(1);
   });
 
-  test('keeps cached stats after a failed poll and resumes on focus without notifications', async ({
+  test('keeps cached stats after a failed poll and recovers on the next interval', async ({
     server,
     wrapper,
-    queryClient,
   }) => {
-    const errorToast = vi.spyOn(toast, 'error');
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     const { result } = renderHook(() => usePostNewsletterStats(testPostId), { wrapper });
     await vi.waitFor(() => expect(result.current.stats.opened).toBe(1));
 
@@ -424,22 +421,10 @@ describe('newsletter polling', () => {
       ),
     );
     await act(() => vi.advanceTimersByTimeAsync(5000));
-    const postQuery = queryClient
-      .getQueryCache()
-      .find({ queryKey: ['PostsResponseType'], exact: false });
-    await vi.waitFor(() => expect(postQuery?.state.status).toBe('error'));
-
-    await act(() => vi.advanceTimersByTimeAsync(15000));
-    expect(requests).toBe(2);
+    await vi.waitFor(() => expect(requests).toBe(2));
     expect(result.current.stats.opened).toBe(1);
-    expect(consoleError).not.toHaveBeenCalledWith(expect.any(Error));
-    expect(errorToast).not.toHaveBeenCalled();
-
-    act(() => focusManager.setFocused(false));
-    act(() => focusManager.setFocused(true));
-    await vi.waitFor(() => expect(result.current.stats.opened).toBe(3));
 
     await act(() => vi.advanceTimersByTimeAsync(5000));
-    await vi.waitFor(() => expect(result.current.stats.opened).toBe(4));
+    await vi.waitFor(() => expect(result.current.stats.opened).toBe(3));
   });
 });

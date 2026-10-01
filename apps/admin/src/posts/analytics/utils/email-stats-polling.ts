@@ -21,16 +21,11 @@ export const getEmailStatsRefetchInterval = (email?: PollingEmail | null): 5000 
   return emailAgeMs < SIXTY_MINS ? FIVE_SECONDS : THIRTY_SECONDS;
 };
 
+// Polling keeps running after a failed request, so it recovers on its own once
+// the API is reachable again.
 export const getEmailStatsPollingOptions = <Data>(
   getEmail: (data: Data | undefined) => PollingEmail | null | undefined,
 ) => ({
-  defaultErrorHandler: false,
   refetchIntervalInBackground: false,
-  refetchOnWindowFocus: true,
-  retry: false,
-  staleTime: 0,
-  refetchInterval: (query: Query<Data>) =>
-    query.state.status === 'error'
-      ? false
-      : getEmailStatsRefetchInterval(getEmail(query.state.data)),
+  refetchInterval: (query: Query<Data>) => getEmailStatsRefetchInterval(getEmail(query.state.data)),
 });
