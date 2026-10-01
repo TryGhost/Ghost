@@ -2491,6 +2491,9 @@ importers:
       '@tryghost/api-framework':
         specifier: workspace:*
         version: link:../../packages/api-framework
+      '@tryghost/app-contracts':
+        specifier: workspace:*
+        version: link:../../packages/app-contracts
       '@tryghost/bookshelf-plugins':
         specifier: 2.3.17
         version: 2.3.17(supports-color@10.2.2)

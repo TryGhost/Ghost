@@ -2647,4 +2647,24 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
+  // One site's approval of one app. Still in development: see ./in-development.ts.
+  //
+  // A row is never deleted and never revived. Uninstalling ends it, and installing the same
+  // app again adds a new row, so every past install stays on record. Who installed or
+  // uninstalled an app, and when, is in `actions`.
+  app_installations: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    // The ID from the app's manifest. Kept on every row, active or not.
+    app_id: { type: 'string', maxlength: 191, nullable: false, index: true },
+    // The same ID while the installation is active, and null once it is uninstalled. This
+    // is what says whether an installation is active. Being unique, it is also what lets a
+    // site have only one active installation per app however two installs race, while any
+    // number of ended ones share the null.
+    active_app_id: { type: 'string', maxlength: 191, nullable: true, unique: true },
+    manifest_url: { type: 'string', maxlength: 2000, nullable: false },
+    // The validated manifest this installation runs with, as JSON.
+    manifest: { type: 'text', maxlength: 65535, nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
 };

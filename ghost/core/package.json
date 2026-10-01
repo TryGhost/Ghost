@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.68.1-rc.0",
+  "version": "6.69.0-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -94,6 +94,7 @@
     "@tryghost/adapter-base-sso": "workspace:*",
     "@tryghost/admin-api-schema": "workspace:*",
     "@tryghost/api-framework": "workspace:*",
+    "@tryghost/app-contracts": "workspace:*",
     "@tryghost/bookshelf-plugins": "2.3.17",
     "@tryghost/brute-knex": "catalog:",
     "@tryghost/checkout": "workspace:*",
