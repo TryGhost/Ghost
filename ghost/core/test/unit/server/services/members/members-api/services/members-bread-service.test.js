@@ -9,8 +9,8 @@ const moment = require('moment');
 // it the same way, otherwise a test fails on a dependency the code is entitled to
 // assume rather than on the behaviour it is checking.
 const createMetafieldValuesStub = () => ({
-  getValuesForMembers: sinon.stub().resolves(new Map()),
-  getValuesForMember: sinon.stub().resolves(undefined),
+  getValuesForMany: sinon.stub().resolves(new Map()),
+  getValues: sinon.stub().resolves(undefined),
   unwrapWire: sinon.stub().callsFake((input) => input),
   planWrite: sinon.stub().resolves([]),
   applyWrite: sinon.stub().resolves(),

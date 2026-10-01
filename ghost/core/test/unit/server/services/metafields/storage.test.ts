@@ -116,10 +116,10 @@ describe('custom field value storage', function () {
   describe('rows become every member’s values', function () {
     it('gathers each value from every row belonging to it', function () {
       const values = valuesFromLeaves([
-        { member_id: 'm1', key: 'home_address', path: 'city', value_text: 'London' },
-        { member_id: 'm1', key: 'nickname', path: ROOT_PATH, value_text: 'Bex' },
-        { member_id: 'm2', key: 'home_address', path: 'country', value_text: 'IE' },
-        { member_id: 'm1', key: 'home_address', path: 'line1', value_text: '1 High St' },
+        { entity_id: 'm1', key: 'home_address', path: 'city', value_text: 'London' },
+        { entity_id: 'm1', key: 'nickname', path: ROOT_PATH, value_text: 'Bex' },
+        { entity_id: 'm2', key: 'home_address', path: 'country', value_text: 'IE' },
+        { entity_id: 'm1', key: 'home_address', path: 'line1', value_text: '1 High St' },
       ]);
 
       // m1's address arrives split by two unrelated rows; nothing depends on the

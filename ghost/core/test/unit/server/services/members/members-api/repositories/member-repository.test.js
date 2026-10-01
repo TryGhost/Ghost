@@ -54,7 +54,7 @@ describe('MemberRepository', function () {
       offersAPI,
       automationsApi,
       productRepository,
-      metafieldValues: { getValuesForMember: async () => undefined },
+      metafieldValues: { getValues: async () => undefined },
       stripeAPIService,
       tokenService,
       ...overrides,

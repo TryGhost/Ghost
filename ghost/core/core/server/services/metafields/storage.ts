@@ -6,7 +6,7 @@ import errors from '@tryghost/errors';
 //
 // Nothing here may consult a field type. Values arrive already parsed against their own,
 // and rows are rebuilt as what they were written as rather than as what the type says
-// today, so a type that changes shape does not rewrite what members already have.
+// today, so a type that changes shape does not rewrite what records already hold.
 
 /** Also the notation a segment filter addresses a part by, so the two cannot drift. */
 const SEPARATOR = '.';
@@ -20,7 +20,7 @@ export interface Leaf {
 }
 
 export interface StoredLeaf extends Leaf {
-  member_id: string;
+  entity_id: string;
   key: string;
 }
 
@@ -87,7 +87,7 @@ export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
 
     const last = segments.pop() as string;
     // A segment already holding a string is replaced rather than descended into: this
-    // runs over every member of a list response, so a contradictory pair of paths
+    // runs over every record of a list response, so a contradictory pair of paths
     // should cost one odd value rather than the whole response.
     const parent = segments.reduce<Record<string, unknown>>((target, segment) => {
       if (!isRecord(target[segment])) {
@@ -101,27 +101,27 @@ export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
   return value;
 }
 
-/** Every member's values, keyed by member and then field key; a member with no rows is absent. */
+/** Every record's values, keyed by record and then field key; a record with no rows is absent. */
 export function valuesFromLeaves(
   leaves: readonly StoredLeaf[],
 ): Map<string, Record<string, unknown>> {
-  const byMemberAndField = new Map<string, Map<string, Leaf[]>>();
+  const byRecordAndField = new Map<string, Map<string, Leaf[]>>();
 
-  for (const { member_id: memberId, key, path, value_text: valueText } of leaves) {
-    const fields = byMemberAndField.get(memberId) ?? new Map<string, Leaf[]>();
+  for (const { entity_id: entityId, key, path, value_text: valueText } of leaves) {
+    const fields = byRecordAndField.get(entityId) ?? new Map<string, Leaf[]>();
     const forField = fields.get(key) ?? [];
     forField.push({ path, value_text: valueText });
     fields.set(key, forField);
-    byMemberAndField.set(memberId, fields);
+    byRecordAndField.set(entityId, fields);
   }
 
-  const byMember = new Map<string, Record<string, unknown>>();
-  for (const [memberId, fields] of byMemberAndField) {
-    byMember.set(
-      memberId,
+  const byRecord = new Map<string, Record<string, unknown>>();
+  for (const [entityId, fields] of byRecordAndField) {
+    byRecord.set(
+      entityId,
       Object.fromEntries([...fields].map(([key, forField]) => [key, valueFromLeaves(forField)])),
     );
   }
 
-  return byMember;
+  return byRecord;
 }

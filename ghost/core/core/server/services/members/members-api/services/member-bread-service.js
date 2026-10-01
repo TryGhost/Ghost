@@ -99,7 +99,7 @@ module.exports = class MemberBREADService {
    * @returns {Promise<Record<string, Record<string, unknown>>>}
    */
   async readMetafieldsForMember(memberId, audience, { transacting } = {}) {
-    return (await this.metafieldValues.getValuesForMember(memberId, audience, transacting)) ?? {};
+    return (await this.metafieldValues.getValues(memberId, audience, transacting)) ?? {};
   }
 
   /**
@@ -111,7 +111,7 @@ module.exports = class MemberBREADService {
    * @returns {Promise<Map<string, Record<string, Record<string, unknown>>>>}
    */
   async readMetafieldsForMembers(memberIds, audience) {
-    const byMember = await this.metafieldValues.getValuesForMembers(memberIds, audience);
+    const byMember = await this.metafieldValues.getValuesForMany(memberIds, audience);
     return new Map(memberIds.map((memberId) => [memberId, byMember.get(memberId) ?? {}]));
   }
 
