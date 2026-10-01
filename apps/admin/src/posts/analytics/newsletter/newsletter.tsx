@@ -530,7 +530,8 @@ const Newsletter: React.FC = () => {
                     <DataList className="">
                       <DataListBody>
                         {paginatedTopLinks?.map((link) => {
-                          const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                          const percentage =
+                            stats.clicked > 0 ? Math.min(link.count / stats.clicked, 1) : 0;
                           const linkId = link.link.link_id;
                           const title = link.link.title;
                           const url = link.link.to;
