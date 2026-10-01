@@ -33,12 +33,6 @@ function sanitizeCaption(caption: string | null): string {
   });
 }
 
-function makeInert(element: HTMLDivElement | null) {
-  if (element) {
-    element.inert = true;
-  }
-}
-
 function RevisionBody({
   editor,
   lexical,
@@ -60,10 +54,8 @@ function RevisionBody({
 
   return (
     <div
-      // Cards stay selectable and editable under both of the above, so the whole
-      // body is inert. React 18 has no `inert` prop.
-      ref={makeInert}
-      className="koenig-react-editor koenig-lexical"
+      // Koenig cards select on their own mousedown, which neither lock above stops.
+      className="koenig-react-editor koenig-lexical [&_[data-kg-card]]:pointer-events-none"
       data-testid={postHistoryPreviewBody}
     >
       <KoenigComposer

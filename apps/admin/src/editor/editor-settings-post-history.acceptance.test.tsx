@@ -293,7 +293,7 @@ describe('Post settings post history', () => {
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
   });
 
-  it('keeps the cards in a previewed version out of reach', async () => {
+  it('does not let a card in the previewed version be selected', async () => {
     const withCallout = postRevision({
       ...NEWEST,
       lexical: JSON.stringify({
@@ -326,12 +326,7 @@ describe('Post settings post history', () => {
     await card.click({ force: true });
     await card.click({ force: true });
 
-    expect(
-      editorScreen
-        .postHistoryPreviewBody()
-        .element()
-        .querySelector('[data-kg-card-selected="true"]'),
-    ).toBeNull();
+    expect(editorScreen.postHistoryPreviewSelectedCard()).toBeNull();
   });
 
   it('shows the version’s feature image in the preview', async () => {
