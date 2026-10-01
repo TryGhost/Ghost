@@ -4,11 +4,14 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { getMemberSuppressionInfo, toggleMemberNewsletter } from './member-detail-edit';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
+import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   useRemoveMemberEmailSuppression,
   useMembersFetching,
 } from '@tryghost/admin-x-framework/api/members';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
+import type { MemberEditableFields } from './member-detail-edit';
 
 interface MemberNewslettersFieldProps {
   // Optional so the create screen (/members/new) can render the toggles
@@ -18,17 +21,23 @@ interface MemberNewslettersFieldProps {
   memberId?: string;
   emailSuppression?: Member['email_suppression'];
   subscribedIds: string[];
+  updatesAndAnnouncements: boolean;
   disabled?: boolean;
-  onChange: (subscribedIds: string[]) => void;
+  onChange: (
+    patch: Partial<Pick<MemberEditableFields, 'newsletters' | 'updatesAndAnnouncements'>>,
+  ) => void;
 }
 
 const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
   memberId,
   emailSuppression,
   subscribedIds,
+  updatesAndAnnouncements,
   disabled,
   onChange,
 }) => {
+  const canChangeUpdatesAndAnnouncements = useFeatureFlag('automations');
+  const siteTitle = useBrowseSite().data?.site.title;
   // A new member can't be suppressed yet — skip the suppression branch
   // entirely by treating a missing memberId as "not suppressed".
   const suppression = memberId ? getMemberSuppressionInfo(emailSuppression) : null;
@@ -54,8 +63,9 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
   const reEnableBusy =
     removeSuppression.isPending || (removeSuppression.isSuccess && membersRefetching);
 
-  const noNewsletters = !suppression && (isLoading || newsletters.length === 0);
-  if (noNewsletters) {
+  const nothingToShow =
+    !suppression && (isLoading || (newsletters.length === 0 && !canChangeUpdatesAndAnnouncements));
+  if (nothingToShow) {
     return null;
   }
 
@@ -83,7 +93,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
       data-testid="member-newsletters-field"
     >
       <h3 className="text-base font-semibold" id="member-newsletters-heading">
-        Newsletters
+        {canChangeUpdatesAndAnnouncements ? 'Email preferences' : 'Newsletters'}
       </h3>
       <Card>
         <CardContent className="p-6">
@@ -144,15 +154,35 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                         data-testid="member-subscription-toggle"
                         disabled={disabled}
                         onCheckedChange={() =>
-                          onChange(toggleMemberNewsletter(subscribedIds, newsletter.id))
+                          onChange({
+                            newsletters: toggleMemberNewsletter(subscribedIds, newsletter.id),
+                          })
                         }
                       />
                     </li>
                   );
                 })}
+                {canChangeUpdatesAndAnnouncements && (
+                  <li className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                    <div className="min-w-0">
+                      <div className="font-medium">Updates &amp; announcements</div>
+                      <p className="truncate text-sm text-muted-foreground">
+                        Occasional updates from {siteTitle}
+                      </p>
+                    </div>
+                    <Switch
+                      aria-label="Updates & announcements"
+                      checked={updatesAndAnnouncements}
+                      data-testid="member-updates-toggle"
+                      disabled={disabled}
+                      onCheckedChange={(checked) => onChange({ updatesAndAnnouncements: checked })}
+                    />
+                  </li>
+                )}
               </ul>
               <p className="mt-4 text-sm text-muted-foreground">
-                If disabled, member will <em>not</em> receive newsletter emails
+                If disabled, member will <em>not</em> receive{' '}
+                {canChangeUpdatesAndAnnouncements ? 'those emails' : 'newsletter emails'}
               </p>
             </>
           )}

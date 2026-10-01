@@ -441,6 +441,50 @@ test.describe('Ghost Admin - Member Detail', () => {
     });
   });
 
+  test.describe('Updates & announcements', () => {
+    test.use({ labs: { automations: true } });
+
+    test('toggling persists the new state', async ({ page }) => {
+      const member = await memberFactory.create({ email: 'updates-toggle@ghost.org' });
+
+      await page.goto(memberPath(member.id));
+      await expect(
+        page.getByRole('heading', { name: 'Email preferences', exact: true }),
+      ).toBeVisible();
+      await expect(memberDetailsPage.updatesAndAnnouncementsToggle).toBeVisible();
+      const initiallyChecked = await memberDetailsPage.updatesAndAnnouncementsToggle.isChecked();
+
+      await memberDetailsPage.updatesAndAnnouncementsToggle.click();
+      await memberDetailsPage.save();
+      await page.reload();
+
+      await expect(memberDetailsPage.updatesAndAnnouncementsToggle).toBeChecked({
+        checked: !initiallyChecked,
+      });
+    });
+
+    test('new member - toggle is on by default and persists when turned off', async ({ page }) => {
+      await page.goto(memberPath('new'));
+      await expect(memberDetailsPage.updatesAndAnnouncementsToggle).toBeChecked();
+
+      await memberDetailsPage.emailInput.fill('new-updates-off@ghost.org');
+      await memberDetailsPage.updatesAndAnnouncementsToggle.click();
+      await memberDetailsPage.saveButton.click();
+      await expect(page).toHaveURL(/#\/members\/(?!new)[^/]+$/);
+      await page.reload();
+
+      await expect(memberDetailsPage.updatesAndAnnouncementsToggle).not.toBeChecked();
+    });
+  });
+
+  test('updates & announcements - hidden without the automations flag', async ({ page }) => {
+    const member = await memberFactory.create({ email: 'no-updates-toggle@ghost.org' });
+
+    await page.goto(memberPath(member.id));
+    await expect(page.getByRole('heading', { name: 'Newsletters', exact: true })).toBeVisible();
+    await expect(memberDetailsPage.updatesAndAnnouncementsToggle).toHaveCount(0);
+  });
+
   test('activity feed - view-all link points at this members full activity', async ({ page }) => {
     const member = await memberFactory.create({
       name: 'Activity Target',

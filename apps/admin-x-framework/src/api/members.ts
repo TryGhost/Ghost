@@ -103,6 +103,8 @@ export type Member = {
   status: 'free' | 'paid' | 'comped' | 'gift';
   note?: string;
   subscribed: boolean;
+  // null opts in when subscribed to any newsletter.
+  enable_updates_and_announcements?: boolean | null;
   labels?: MemberLabel[];
   tiers?: MemberTier[];
   newsletters?: MemberNewsletter[];
@@ -400,6 +402,7 @@ export type NewMember = {
   // explicitly so the outcome doesn't drift if the server-side default
   // ever changes; the React admin now matches.
   newsletters?: Array<{ id: string }>;
+  enable_updates_and_announcements?: boolean;
 };
 
 export const useAddMember = createMutation<MembersResponseType, NewMember>({
@@ -743,6 +746,7 @@ export interface EditMemberData {
   subscribed?: boolean;
   labels?: Array<{ name: string; slug?: string }>;
   newsletters?: Array<{ id: string }>;
+  enable_updates_and_announcements?: boolean;
   tiers?: Array<{ id: string; expiry_at?: string | null }>;
   // The server applies this as a merge: only the keys present are written, and `null` clears
   // a value. Every key is checked against the fields the site has defined; naming one that

@@ -57,6 +57,7 @@ export class MemberDetailsPage extends AdminPage {
   readonly labelsInput: Locator;
   readonly labels: Locator;
   readonly newsletterSubscriptionToggles: Locator;
+  readonly updatesAndAnnouncementsToggle: Locator;
 
   readonly saveButton: Locator;
   readonly savedButton: Locator;
@@ -102,6 +103,9 @@ export class MemberDetailsPage extends AdminPage {
     this.newsletterSubscriptionToggles = page
       .getByTestId(memberSubscriptionToggle)
       .filter({ visible: true });
+    this.updatesAndAnnouncementsToggle = page.getByRole('switch', {
+      name: 'Updates & announcements',
+    });
 
     this.saveButton = page.getByRole('button', { name: 'Save' });
     this.savedButton = page.getByRole('button', { name: 'Saved' });
