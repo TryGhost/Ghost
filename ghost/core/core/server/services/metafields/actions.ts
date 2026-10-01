@@ -2,6 +2,12 @@ import logging from '@tryghost/logging';
 import type { MemberAccess } from './access';
 import type { WriteOrigin } from './schema';
 
+/** A write made through the Admin API, by a member of staff or an integration. */
+export type AdminWriteOrigin = Extract<
+  WriteOrigin,
+  { writtenBy: { type: 'user' } } | { writtenBy: { type: 'integration' } }
+>;
+
 export interface Actor {
   id: string;
   type: 'user' | 'integration';
@@ -42,7 +48,7 @@ export function actingContext(context: unknown): RequestContext {
  * `actingContext`, so the values a request writes and the history it records name the
  * same writer. Null when nobody is acting, which no Admin API write should be.
  */
-export function adminWriteOrigin(context: unknown): WriteOrigin | null {
+export function adminWriteOrigin(context: unknown): AdminWriteOrigin | null {
   const { actor } = actingContext(context);
   if (!actor) {
     return null;

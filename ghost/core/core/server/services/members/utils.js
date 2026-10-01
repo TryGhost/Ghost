@@ -1,3 +1,5 @@
+const { visibleMetafields } = require('../metafields/payload');
+
 function formatNewsletterResponse(newsletters) {
   return newsletters.map(({ id, uuid, name, description, sort_order: sortOrder }) => {
     return {
@@ -11,20 +13,6 @@ function formatNewsletterResponse(newsletters) {
 }
 
 module.exports.formatNewsletterResponse = formatNewsletterResponse;
-
-/**
- * A member's metafields as a response shows them, or undefined to leave the key off when
- * the member has none. Most sites define no metafields, so their member responses read
- * exactly as they did before metafields existed.
- *
- * @param {Record<string, Record<string, unknown>> | undefined} metafields
- * @returns {Record<string, Record<string, unknown>> | undefined}
- */
-function visibleMetafields(metafields) {
-  return metafields && Object.keys(metafields).length > 0 ? metafields : undefined;
-}
-
-module.exports.visibleMetafields = visibleMetafields;
 module.exports.formattedMemberResponse = function formattedMemberResponse(member) {
   if (!member) {
     return null;

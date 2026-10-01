@@ -1,6 +1,7 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const { ADMIN, adminWriteOrigin } = require('../../../metafields');
+const { ADMIN } = require('../../../metafields');
+const { planAdminWrite } = require('../../../metafields/payload');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -9,8 +10,6 @@ const messages = {
   stripeNotConnected: 'Missing Stripe connection.',
   memberAlreadyExists: 'Member already exists.',
   memberNotFound: 'Member not found.',
-  metafieldsWithoutWriter:
-    'Custom field values cannot be set by a request with no authenticated user or integration.',
 };
 
 // Stored in the action's `context.action_name`; Admin maps it to a display label.
@@ -468,43 +467,16 @@ module.exports = class MemberBREADService {
   }
 
   /**
-   * Takes the metafields out of an Admin API member payload and plans their write. Throws on
-   * an invalid value, or when the request has no user or integration to name as the writer.
+   * Takes the metafields out of an Admin API member payload and plans their write.
    *
    * @private
    * @param {object} data the member payload, whose `metafields` key is removed
    * @param {object} options
-   * @returns {Promise<import('../../../metafields/values-service').MetafieldPlan | null>}
+   * @returns {Promise<import('../../../metafields/payload').AdminWritePlan | null>}
    *   null when there is nothing to write
    */
   async planStaffMetafields(data, options) {
-    const metafields = this.metafieldValues.unwrapWire(data.metafields);
-    delete data.metafields;
-    if (metafields === undefined) {
-      return null;
-    }
-
-    // Planned before the member is touched, so a bad value refuses the whole request.
-    const writes = await this.metafieldValues.planWrite(metafields, ADMIN);
-    if (writes.length === 0) {
-      return null;
-    }
-
-    // Every value reaching here was typed into the Admin API, so the writer is
-    // whoever made the request — the same pair the action log records, so the two
-    // agree about who did it rather than one saying only that it was "admin".
-    //
-    // The only route to this branch is the authenticated Admin API, so an anonymous
-    // request is a mistake somewhere upstream rather than a writer to invent a name
-    // for. Refusing keeps every stored writer resolvable.
-    const origin = adminWriteOrigin(options.context);
-    if (!origin) {
-      throw new errors.IncorrectUsageError({
-        message: tpl(messages.metafieldsWithoutWriter),
-      });
-    }
-
-    return { writes, origin };
+    return planAdminWrite(this.metafieldValues, data, options.context);
   }
 
   /**

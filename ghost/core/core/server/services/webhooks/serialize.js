@@ -14,7 +14,7 @@ const SERIALIZED_KEYS = {
   },
 };
 
-const { visibleMetafields } = require('../members/utils');
+const { visibleMetafields } = require('../metafields/payload');
 
 const loadRequiredUrlRelations = async (model, urlService) => {
   const required = urlService.getRequiredRelations();
