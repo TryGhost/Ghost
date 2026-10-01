@@ -1,4 +1,6 @@
+import CardContext from '../../../context/CardContext';
 import CenterAlignIcon from '../../../assets/icons/kg-align-center.svg?react';
+import DOMPurify from 'dompurify';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
 import PropTypes from 'prop-types';
@@ -7,6 +9,7 @@ import {Button} from '../Button';
 import {ButtonGroupSetting, DropdownSetting, InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {CardVisibilityMessage} from '../CardVisibilityMessage.jsx';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
+import {useContext} from 'react';
 
 export function EmailCtaCard({
     alignment = 'left',
@@ -25,6 +28,8 @@ export function EmailCtaCard({
     updateButtonText,
     updateButtonUrl
 }) {
+    const {readOnly} = useContext(CardContext);
+    const previewUrl = readOnly && DOMPurify.isValidAttribute('a', 'href', buttonUrl) ? buttonUrl : undefined;
     const alignmentOpts = [
         {
             label: 'Left',
@@ -87,7 +92,7 @@ export function EmailCtaCard({
                 {/* Button */}
                 { (showButton && (isEditing || (buttonText && buttonUrl))) &&
                     <div className={`mt-6 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }>
-                        <Button color={'accent'} dataTestId="cta-button" placeholder="Add button text" value={buttonText}/>
+                        <Button color={'accent'} dataTestId="cta-button" href={previewUrl} placeholder="Add button text" value={buttonText}/>
                     </div>
                 }
 

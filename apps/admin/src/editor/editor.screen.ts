@@ -204,6 +204,17 @@ export const editorScreen = {
 
   settingsToggle: () => page.getByTestId(settingsMenuToggle),
   settingsSidebar: () => page.getByTestId(postSettingsSidebar),
+  /** The settings fields scroll independently of their fixed heading. */
+  settingsScrollPane: (): HTMLElement => {
+    const sidebar = page.getByTestId(postSettingsSidebar).element();
+    const pane = Array.from(sidebar.querySelectorAll('div')).find((element) =>
+      ['auto', 'scroll'].includes(getComputedStyle(element).overflowY),
+    );
+    if (!pane) {
+      throw new Error('The editor settings have no scroll surface');
+    }
+    return pane;
+  },
   settingsExcerpt: () => page.getByTestId(settingsExcerptInput),
   /** A section's failed-browse notice, wherever the sidebar shows one. */
   settingsLoadError: () => page.getByTestId(settingsLoadError),

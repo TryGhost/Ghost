@@ -1,4 +1,6 @@
+import CardContext from '../../../../../context/CardContext';
 import CenterAlignIcon from '../../../../../assets/icons/kg-align-center.svg?react';
+import DOMPurify from 'dompurify';
 import ExpandIcon from '../../../../../assets/icons/kg-expand.svg?react';
 import ImgBgIcon from '../../../../../assets/icons/kg-img-bg.svg?react';
 import ImgFullIcon from '../../../../../assets/icons/kg-img-full.svg?react';
@@ -21,7 +23,7 @@ import {ReadOnlyOverlay} from '../../../ReadOnlyOverlay';
 import {Tooltip} from '../../../Tooltip';
 import {getAccentColor} from '../../../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
-import {useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 // Header Card Version 2
 export function HeaderCard({alignment,
     buttonEnabled,
@@ -62,6 +64,8 @@ export function HeaderCard({alignment,
     handleButtonUrlBlur,
     handleButtonUrl,
     setFileInputRef}) {
+    const {readOnly} = useContext(CardContext);
+    const previewUrl = readOnly && DOMPurify.isValidAttribute('a', 'href', buttonUrl) ? buttonUrl : undefined;
     const [backgroundColorPickerExpanded, setBackgroundColorPickerExpanded] = useState(false);
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
@@ -347,7 +351,8 @@ export function HeaderCard({alignment,
                                     className={`text-${alignment} w-full ${(layout === 'regular') ? 'peer-[.koenig-lexical]:mt-8' : (layout === 'wide') ? 'peer-[.koenig-lexical]:mt-8 md:w-2/3' : (layout === 'full') ? 'peer-[.koenig-lexical]:mt-8 md:w-2/3 peer-[.koenig-lexical]:md:mt-8 xl:w-1/2' : 'max-w-[500px] peer-[.koenig-lexical]:mt-8 peer-[.koenig-lexical]:md:mt-8'}`}>
                                     <Button
                                         dataTestId="header-card-button"
-                                        disabled={true}
+                                        disabled={!previewUrl}
+                                        href={previewUrl}
                                         placeholder='Add button text'
                                         size={getButtonSize(layout)}
                                         style={buttonColor ? {

@@ -1,4 +1,6 @@
+import CardContext from '../../../context/CardContext';
 import CenterAlignIcon from '../../../assets/icons/kg-align-center.svg?react';
+import DOMPurify from 'dompurify';
 import ImmersiveLayoutIcon from '../../../assets/icons/kg-layout-immersive.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor.jsx';
 import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
@@ -15,7 +17,7 @@ import {RestrictContentPlugin} from '../../../index.js';
 import {VisibilitySettings} from '../VisibilitySettings.jsx';
 import {getAccentColor} from '../../../utils/getAccentColor.js';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
-import {useState} from 'react';
+import {useContext, useState} from 'react';
 
 const getTheme = () => ({
     ...defaultTheme,
@@ -120,6 +122,8 @@ export function CallToActionCard({
     linkColor = 'text',
     showVisibilitySettings = false
 }) {
+    const {readOnly} = useContext(CardContext);
+    const previewUrl = readOnly && DOMPurify.isValidAttribute('a', 'href', buttonUrl) ? buttonUrl : undefined;
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
     const {isLoading, progress} = imageUploader || {};
@@ -401,6 +405,7 @@ export function CallToActionCard({
                                     color={'accent'}
                                     data-test-cta-button-current-url={buttonUrl}
                                     dataTestId="cta-button"
+                                    href={previewUrl}
                                     placeholder="Add button text"
                                     size={layout === 'immersive' && imageSrc ? 'medium' : 'small'}
                                     style={buttonColor !== 'accent' ? {

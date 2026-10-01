@@ -1,3 +1,4 @@
+import CardContext from '../../../../context/CardContext';
 import DeleteIcon from '../../../../assets/icons/kg-trash.svg?react';
 import React from 'react';
 import WandIcon from '../../../../assets/icons/kg-wand.svg?react';
@@ -17,6 +18,7 @@ export function ProductCardImage({
     openImageEditor,
     isEditing
 }) {
+    const {readOnly} = React.useContext(CardContext);
     const fileInputRef = React.useRef(null);
 
     const onRemove = (e) => {
@@ -45,7 +47,7 @@ export function ProductCardImage({
                                 size='small'
                             />
 
-                            <form onChange={onImgChange}>
+                            {!readOnly && <form onChange={onImgChange}>
                                 <input
                                     ref={fileInputRef}
                                     accept={imgMimeTypes.join(',')}
@@ -53,7 +55,7 @@ export function ProductCardImage({
                                     name="image-input"
                                     type='file'
                                 />
-                            </form>
+                            </form>}
                         </>
                     )
                     : (

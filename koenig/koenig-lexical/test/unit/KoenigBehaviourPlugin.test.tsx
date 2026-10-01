@@ -131,6 +131,27 @@ describe('KoenigBehaviourPlugin missing selections', () => {
         expect(handled).toBe(true);
     });
 
+    it('blocks deletion immediately when the editor becomes read-only', () => {
+        let cardKey;
+        let handled;
+        act(() => {
+            editor.update(() => {
+                const card = $createCodeBlockNode({code: 'Saved code'});
+                cardKey = card.getKey();
+                $getRoot().append(card);
+            }, {discrete: true});
+
+            editor.setEditable(false);
+            handled = editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey});
+        });
+
+        expect(onError).not.toHaveBeenCalled();
+        expect(handled).toBe(false);
+        editor.getEditorState().read(() => {
+            expect($getRoot().getFirstChild().getKey()).toBe(cardKey);
+        });
+    });
+
     it('disables card commands while read-only and restores them when editing resumes', () => {
         let cardKey;
         act(() => {

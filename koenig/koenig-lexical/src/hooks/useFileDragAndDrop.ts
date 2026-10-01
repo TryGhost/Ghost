@@ -1,12 +1,14 @@
-import {useEffect, useState} from 'react';
+import CardContext from '../context/CardContext';
+import {useContext, useEffect, useState} from 'react';
 
 export default function useFileDragAndDrop({handleDrop, disabled = false}) {
+    const {readOnly} = useContext(CardContext);
     const [ref, setRef] = useState(null);
     const [isDraggedOver, setDraggedOver] = useState(false);
 
     useEffect(() => {
         const node = ref;
-        if (!node || disabled) {
+        if (!node || disabled || readOnly) {
             return;
         }
 
@@ -52,7 +54,7 @@ export default function useFileDragAndDrop({handleDrop, disabled = false}) {
             node.removeEventListener('dragleave', onDragLeave);
             node.removeEventListener('drop', onDrop);
         };
-    }, [handleDrop, ref, disabled]);
+    }, [handleDrop, ref, disabled, readOnly]);
 
     return {setRef, isDraggedOver};
 }
