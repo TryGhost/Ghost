@@ -33,6 +33,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @service billing;
     @service feature;
     @service membersUtils;
+    @service router;
     @service search;
     @service session;
     @service settings;
