@@ -12,11 +12,10 @@ const MetafieldResource = z.object({
   created_at: z.date(),
   updated_at: z.date().nullable(),
 });
-const MetafieldsResponse = z.object({ members_metafields: z.array(MetafieldResource) });
 
-export const toMetafieldsResponse = z
-  .array(Metafield)
-  .transform((fields): z.input<typeof MetafieldsResponse> => ({
-    members_metafields: fields.map((field) => snakeKeys(field)),
-  }))
-  .pipe(MetafieldsResponse);
+/** Definitions as the response for an entity's resource carries them, under its name. */
+export function toMetafieldsResponse(resource: string, fields: Metafield[]) {
+  return {
+    [resource]: z.array(MetafieldResource).parse(fields.map((field) => snakeKeys(field))),
+  };
+}

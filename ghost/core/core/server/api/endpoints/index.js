@@ -1,5 +1,6 @@
 const apiFramework = require('@tryghost/api-framework');
 const localUtils = require('./utils');
+const { withDefinitionsSerializer } = require('./utils/metafield-definitions');
 
 // ESLint Override Notice
 // This is a valid index.js file - it just exports a lot of stuff!
@@ -118,10 +119,6 @@ module.exports = {
 
   get members() {
     return apiFramework.pipeline(require('./members'), localUtils);
-  },
-
-  get membersMetafields() {
-    return apiFramework.pipeline(require('./member-metafields'), localUtils);
   },
 
   get tiersCheckoutConfig() {
@@ -325,7 +322,11 @@ module.exports = {
   },
 
   get memberMetafieldsMembers() {
-    return apiFramework.pipeline(require('./member-metafields-members'), localUtils, 'members');
+    return apiFramework.pipeline(
+      require('./member-metafields-members'),
+      withDefinitionsSerializer(localUtils, 'members_metafields'),
+      'members',
+    );
   },
 
   get giftsMembers() {
