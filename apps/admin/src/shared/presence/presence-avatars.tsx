@@ -42,7 +42,7 @@ export function PresenceAvatars({
                 tabIndex={0}
               >
                 <Avatar
-                  className="size-7 border-2 border-white"
+                  className="size-7 border-2 border-background"
                   initials={user.name
                     .trim()
                     .split(/\s+/)
