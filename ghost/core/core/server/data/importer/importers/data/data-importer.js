@@ -30,8 +30,8 @@ DataImporter = {
     preProcess: function preProcess(importData) {
         debug('preProcess');
         importData.preProcessedByData = true;
-        return importData;
-    },
+            return importData;
+        },
 
     init: function init(importData) {
         importers.users = new UsersImporter(importData.data);
