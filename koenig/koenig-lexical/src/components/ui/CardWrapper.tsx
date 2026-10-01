@@ -24,6 +24,7 @@ interface CardWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
     isDragging?: boolean;
     isEditing?: boolean;
     isSelected?: boolean;
+    readOnly?: boolean;
     isVisibilityActive?: boolean;
     onIndicatorClick?: (event: React.MouseEvent) => void;
     wrapperStyle?: string;
@@ -38,6 +39,7 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
     isDragging,
     isEditing,
     isSelected,
+    readOnly = false,
     isVisibilityActive,
     onIndicatorClick,
     wrapperStyle,
@@ -50,7 +52,7 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
         } else if (((wrapperStyle === 'code-card') && isEditing)) {
             return '-mx-6';
         } else if (wrapperStyle === 'wide') {
-            return 'hover:-mx-3 hover:px-3';
+            return readOnly ? '' : 'hover:-mx-3 hover:px-3';
         } else {
             return 'border';
         }
@@ -60,7 +62,7 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
         'relative border-transparent caret-grey-800',
         isSelected ? 'z-20' : 'z-10', // ensure setting panels sit above other cards
         isSelected && !isDragging ? 'shadow-[0_0_0_2px] shadow-green' : '',
-        !isSelected && !isDragging ? 'hover:shadow-[0_0_0_1px] hover:shadow-green' : '',
+        !readOnly && !isSelected && !isDragging ? 'hover:shadow-[0_0_0_1px] hover:shadow-green' : '',
         CARD_WIDTH_CLASSES[cardWidth] || '',
         wrapperClass()
     ].join(' ');

@@ -159,12 +159,19 @@ describe('Post editor feature image', () => {
   it('opens a post whose caption carries markup without making it unsaved', async () => {
     const saveApi = fakeSavablePost({
       feature_image: UPLOADED,
-      feature_image_caption: 'Photo by <a href="https://example.com/j">Jane</a>',
+      feature_image_caption: '<p>Photo by <a href="https://example.com/j">Jane</a></p>',
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     // The caption editor has loaded and re-serialized what it was given.
     await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Photo by Jane');
+    // Lexical reconciles its imported selection after rendering the caption.
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+    expect(editorScreen.featureImageCaption().element().contains(document.activeElement)).toBe(
+      false,
+    );
     await editorScreen.titleInput().click();
 
     await expect.poll(() => saveApi.requests.length).toBe(0);

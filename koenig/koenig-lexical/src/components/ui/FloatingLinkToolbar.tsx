@@ -29,6 +29,12 @@ export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}) {
             }
 
             editor.update(() => {
+                // Other editors can be on the page, including read-only previews.
+                if (!editor.getRootElement()?.contains(event.target)) {
+                    setLinkNode(null);
+                    return;
+                }
+
                 const node = $getNearestNodeFromDOMNode(event.target);
                 setTargetElem(event.target);
                 const isLink = $isLinkNode(node) || $isLinkNode(node?.getParent());

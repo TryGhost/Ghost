@@ -17,7 +17,7 @@ export const SettingsNavigationRow = forwardRef<
       {...props}
     >
       {icon}
-      <Text as="span" className="flex-1" size="sm" weight="medium">
+      <Text as="span" className="flex-1 text-control!" weight="medium">
         {children}
       </Text>
       <LucideIcon.ChevronRight className="size-4 shrink-0 text-text-tertiary" />

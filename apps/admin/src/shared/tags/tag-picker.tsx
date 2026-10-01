@@ -1,4 +1,4 @@
-import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useCallback, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { escapeNqlString } from '@tryghost/nql-string';
@@ -90,7 +90,12 @@ export function TagPicker({
 
   return (
     <ChipPicker<Tag, TagLike>
-      chipVariant={(tag) => (isInternalTag(tag) ? 'default' : 'secondary')}
+      chipClassName={(tag) =>
+        isInternalTag(tag)
+          ? 'border-border bg-secondary/30 text-secondary-foreground/70'
+          : undefined
+      }
+      chipVariant={(tag) => (isInternalTag(tag) ? 'outline' : 'secondary')}
       createRow={{
         offer: (typed, offered) => searchSettled && canCreateTag(typed, offered, selected),
         render: (typed) => (
@@ -116,7 +121,7 @@ export function TagPicker({
       placeholder="Select or enter tags..."
       renderOption={(tag, { chosen }) => (
         <>
-          <span className={cn('truncate', isInternalTag(tag) && 'font-medium')}>{tag.name}</span>
+          <span className="truncate">{tag.name}</span>
           {/* Names are not unique; the slug is what tells two of them apart. */}
           <span className="ms-auto truncate font-mono text-xs text-muted-foreground">
             {tag.slug}

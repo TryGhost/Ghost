@@ -1,6 +1,6 @@
 import React from 'react';
 import {$generateHtmlFromNodes, $generateNodesFromDOM} from '@lexical/html';
-import {$getRoot, $insertNodes} from 'lexical';
+import {$getRoot, $insertNodes, $setSelection} from 'lexical';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -36,6 +36,10 @@ export const HtmlOutputPlugin = ({html = '', setHtml}) => {
 
             // Insert them at a selection.
             $insertNodes(filteredNodes);
+
+            // This selection only loads the initial HTML; leaving it active
+            // would focus the editor when Lexical reconciles the DOM.
+            $setSelection(null);
         });
         // We only do this for init
         // eslint-disable-next-line react-hooks/exhaustive-deps

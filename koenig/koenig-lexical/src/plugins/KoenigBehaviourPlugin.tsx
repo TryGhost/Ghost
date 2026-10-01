@@ -1,4 +1,5 @@
 import React from 'react';
+import useLexicalEditable from '@lexical/react/useLexicalEditable';
 import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createEmbedNode} from '../nodes/EmbedNode';
@@ -118,6 +119,7 @@ function $removeOrReplaceNodeWithParagraph(editor, node) {
 }
 
 function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested}) {
+    const isEditable = useLexicalEditable();
     const {
         selectedCardKey,
         setSelectedCardKey,
@@ -191,6 +193,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
     // cards should be selected on up/down and when deleting content around them.
     // Trigger `cursorDidExitAtTop` prop if present and cursor at beginning of doc
     React.useEffect(() => {
+        // Lexical's read-only mode does not disable custom commands. Keep card
+        // selection and editing handlers out of previews, including nested editors.
+        if (!isEditable) {
+            return;
+        }
+
         return mergeRegister(
             editor.registerUpdateListener(({editorState, tags}) => {
                 // ignore updates triggered by other users or by card node exportJSON calls

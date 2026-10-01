@@ -58,6 +58,7 @@ export function AuthorsPicker({
 
   return (
     <ChipPicker<User, AuthorOption>
+      chipVariant={() => 'secondary'}
       describedBy={describedBy}
       emptyMessage={loading ? 'Loading authors...' : 'No authors found'}
       getKey={(person) => person.id}

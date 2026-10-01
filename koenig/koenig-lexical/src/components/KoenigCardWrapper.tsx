@@ -1,6 +1,7 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import useLexicalEditable from '@lexical/react/useLexicalEditable';
 import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
@@ -22,6 +23,7 @@ interface KoenigCardWrapperProps {
 const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}: KoenigCardWrapperProps) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
+    const isEditable = useLexicalEditable();
     const [cardType, setCardType] = React.useState(null);
     const [captionHasFocus, setCaptionHasFocus] = React.useState(null);
     const [cardWidth, setCardWidth] = React.useState<CardWidth>(width || 'regular');
@@ -30,7 +32,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
 
-    const isSelected = selectedCardKey === nodeKey;
+    const isSelected = isEditable && selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
 
     const handleVisibilityToggle = React.useCallback((event) => {
@@ -57,6 +59,9 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
             editor.registerCommand(
                 CLICK_COMMAND,
                 (event) => {
+                    if (!editor.isEditable()) {
+                        return false;
+                    }
                     if (!skipClick.current && containerRef.current.contains(event.target)) {
                         const cardNode = $getNodeByKey(nodeKey);
                         const clickedDifferentEditor = !cardNode;
@@ -120,6 +125,9 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
         const container = containerRef.current;
 
         function handleMousedown(event) {
+            if (!editor.isEditable()) {
+                return;
+            }
             if (!isSelected && !isEditing) {
                 editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey});
 
@@ -157,6 +165,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
 
     return (
         <CardContext.Provider value={{
+            readOnly: !isEditable,
             isSelected,
             captionHasFocus,
             isEditing,
@@ -177,6 +186,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 isEditing={isEditing}
                 isSelected={isSelected}
                 isVisibilityActive={isVisibilityActive}
+                readOnly={!isEditable}
                 wrapperStyle={wrapperStyle}
                 onIndicatorClick={handleVisibilityToggle}
             >

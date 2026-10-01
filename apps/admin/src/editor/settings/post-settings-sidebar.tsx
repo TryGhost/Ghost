@@ -1,6 +1,7 @@
 import { Fragment, memo, type ReactNode, useEffect, useId } from 'react';
 import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
-import { Box, Inline, Text } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { cn } from '@tryghost/shade/utils';
 import {
   canAccessSettings,
   isAuthorOrContributor,
@@ -183,18 +184,24 @@ export function PostSettingsSidebar({
     }
   }, [open, subviews]);
   const panelLabel = `${postType === 'page' ? 'Page' : 'Post'} settings`;
+  const content = SETTINGS_SECTION_ORDER.map((id) => (
+    <Fragment key={id}>
+      {!open && id === 'post-history' ? <Separator className="my-3" /> : null}
+      {open && open.id !== id ? null : sections[id]}
+    </Fragment>
+  ));
 
   return (
     <SubviewContext.Provider value={subviews}>
       <Box className="absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw] lg:static lg:shrink-0">
         <aside
           aria-label={open?.title ?? panelLabel}
-          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-x-hidden overflow-y-auto rounded-xl border border-border bg-sidebar"
+          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar"
           data-testid={postSettingsSidebar}
         >
-          <Box className="min-h-full opacity-(--editor-settings-progress,1)">
+          <Stack className="h-full min-h-0 opacity-(--editor-settings-progress,1)" gap="none">
             {open ? null : (
-              <Box className="sticky top-0 z-10 bg-sidebar">
+              <Box className="z-10 shrink-0 bg-sidebar">
                 <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
                   <Text as="h2" className="pl-1" size="lg" weight="semibold">
                     {panelLabel}
@@ -206,13 +213,16 @@ export function PostSettingsSidebar({
                 </Inline>
               </Box>
             )}
-            {SETTINGS_SECTION_ORDER.map((id) => (
-              <Fragment key={id}>
-                {!open && id === 'post-history' ? <Separator className="my-3" /> : null}
-                {open && open.id !== id ? null : sections[id]}
-              </Fragment>
-            ))}
-          </Box>
+            <Stack
+              className={cn(
+                'min-h-0 flex-1',
+                open ? 'overflow-hidden' : 'overflow-x-hidden overflow-y-auto [&>*]:shrink-0',
+              )}
+              gap="none"
+            >
+              {content}
+            </Stack>
+          </Stack>
         </aside>
       </Box>
     </SubviewContext.Provider>

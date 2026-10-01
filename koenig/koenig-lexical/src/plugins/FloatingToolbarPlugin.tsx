@@ -1,4 +1,5 @@
 import React from 'react';
+import useLexicalEditable from '@lexical/react/useLexicalEditable';
 import {$getSelection, $isParagraphNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_LOW, KEY_MODIFIER_COMMAND} from 'lexical';
 import {$isAtLinkSearchNode} from '@tryghost/kg-default-nodes';
 import {$isLinkNode} from '@lexical/link';
@@ -8,6 +9,11 @@ import {getSelectedNode} from '../utils/getSelectedNode';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export default function FloatingToolbarPlugin({anchorElem = document.body, isSnippetsEnabled, hiddenFormats = []}) {
+    const isEditable = useLexicalEditable();
+    return isEditable ? <EditableFloatingToolbar anchorElem={anchorElem} hiddenFormats={hiddenFormats} isSnippetsEnabled={isSnippetsEnabled} /> : null;
+}
+
+function EditableFloatingToolbar({anchorElem, isSnippetsEnabled, hiddenFormats}) {
     const [editor] = useLexicalComposerContext();
     return useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenFormats);
 }
@@ -80,7 +86,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
     }, [setToolbarType, toolbarItemType]);
 
     React.useEffect(() => {
-        editor.registerCommand(
+        return editor.registerCommand(
             KEY_MODIFIER_COMMAND,
             (event) => {
                 const {keyCode, ctrlKey, metaKey, shiftKey} = event;
