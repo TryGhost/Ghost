@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
 
-export const usePostTopLinks = () => {
+export const usePostTopLinks = ({ pausePolling = false }: { pausePolling?: boolean } = {}) => {
   const { post, postId } = usePostAnalytics();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
   const emailTrackClicksEnabled = useEmailTrackClicks();
@@ -16,7 +16,7 @@ export const usePostTopLinks = () => {
     isLoading,
     refetch,
   } = useTopLinks({
-    ...getEmailStatsPollingOptions(() => post?.email),
+    ...(pausePolling ? {} : getEmailStatsPollingOptions(() => post?.email)),
     enabled: !!emailTrackClicksEnabled && !isNewsletterDataHidden,
     searchParams: {
       filter: `post_id:'${postId}'`,

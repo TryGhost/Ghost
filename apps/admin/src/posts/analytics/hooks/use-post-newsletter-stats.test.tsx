@@ -422,4 +422,23 @@ describe('newsletter polling', () => {
     await act(() => vi.advanceTimersByTimeAsync(5000));
     await vi.waitFor(() => expect(result.current.stats.opened).toBe(3));
   });
+
+  test('pauses link polling while requested', async ({ server, wrapper }) => {
+    const fetchLinks = vi.fn(() => HttpResponse.json({ links: [] }));
+    server.use(http.get(LINKS_API_URL, fetchLinks));
+
+    const { rerender } = renderHook(
+      ({ pauseLinkPolling }) => usePostNewsletterStats({ pauseLinkPolling }),
+      { wrapper, initialProps: { pauseLinkPolling: false } },
+    );
+    await vi.waitFor(() => expect(fetchLinks).toHaveBeenCalledOnce());
+
+    rerender({ pauseLinkPolling: true });
+    await act(() => vi.advanceTimersByTimeAsync(15000));
+    expect(fetchLinks).toHaveBeenCalledOnce();
+
+    rerender({ pauseLinkPolling: false });
+    await act(() => vi.advanceTimersByTimeAsync(5000));
+    await vi.waitFor(() => expect(fetchLinks).toHaveBeenCalledTimes(2));
+  });
 });
