@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import { getMailgunError } from '../../../../../core/server/services/lib/mailgun-error';
+import { getMailgunError } from '../../../../../core/server/lib/mailgun/mailgun-error';
 
 describe('getMailgunError', function () {
   it('returns the original error from a Mailgun rejection', function () {

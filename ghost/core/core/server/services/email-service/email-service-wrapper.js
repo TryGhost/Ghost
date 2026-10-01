@@ -34,7 +34,7 @@ class EmailServiceWrapper {
     const { Post, Newsletter, Email, EmailBatch, EmailRecipient, Member } = require('../../models');
     const urlService = require('../url');
     const getRequiredUrlRelations = () => urlService.getRequiredRelations();
-    const MailgunClient = require('../lib/mailgun-client');
+    const MailgunClient = require('../../lib/mailgun/mailgun-client');
     const configService = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
