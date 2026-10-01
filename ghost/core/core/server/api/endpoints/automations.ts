@@ -20,6 +20,25 @@ type EditFrame = {
   };
 };
 
+const assertCanAddAutomations = (): void => {
+  if (!labs.isSet('automations') || !labs.isSet('automationsPerTier')) {
+    throw new errors.NotFoundError({ message: 'Creating automations is not enabled.' });
+  }
+};
+
+const assertNotAddingTooManyAutomations = async (): Promise<void> => {
+  // There's a race condition here: publishers COULD create multiple
+  // automations if they hammer this endpoint. This is acceptable because
+  // this is a soft limit.
+  const numberOfAutomations = await automationsApi.getNumberOfAutomations();
+  if (numberOfAutomations >= MAX_AUTOMATIONS) {
+    throw new errors.HostLimitError({
+      code: 'AUTOMATION_LIMIT_REACHED',
+      message: `Cannot create more than ${MAX_AUTOMATIONS} automations.`,
+    });
+  }
+};
+
 export const controller = {
   docName: 'automations',
 
@@ -57,17 +76,8 @@ export const controller = {
     },
     permissions: true,
     async query() {
-      // There's a race condition here: publishers COULD create multiple
-      // automations if they hammer this endpoint. This is acceptable because
-      // this is a soft limit.
-      const numberOfAutomations = await automationsApi.getNumberOfAutomations();
-      if (numberOfAutomations >= MAX_AUTOMATIONS) {
-        throw new errors.HostLimitError({
-          code: 'AUTOMATION_LIMIT_REACHED',
-          message: `Cannot create more than ${MAX_AUTOMATIONS} automations.`,
-        });
-      }
-
+      assertCanAddAutomations();
+      await assertNotAddingTooManyAutomations();
       // TODO(NY-1637) Implement this endpoint.
       throw new errors.InternalServerError({
         statusCode: 501,
