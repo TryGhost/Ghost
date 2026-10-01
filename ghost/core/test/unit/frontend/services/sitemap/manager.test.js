@@ -276,6 +276,15 @@ describe('Unit: sitemap/manager', function () {
         }
       });
 
+      it('seals the generators it swaps in', async function () {
+        const siteMapManager = makeManager();
+        await siteMapManager.getIndexXml();
+
+        for (const type of ['posts', 'pages', 'tags', 'authors']) {
+          assert.equal(siteMapManager[type].sealed, true, `${type} generator was left writable`);
+        }
+      });
+
       it('swaps the index generator with the generators it counts', async function () {
         const siteMapManager = makeManager();
         await siteMapManager.getIndexXml();

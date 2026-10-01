@@ -1,4 +1,5 @@
 const moment = require('moment');
+const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils').default;
 const sitemapXml = require('./sitemap-xml');
 
@@ -11,20 +12,46 @@ class BaseSiteMapGenerator {
     // Not keyed by id: every build fills a fresh generator, so nothing
     // overwrites a record.
     this.records = [];
-    // Record indexes, newest record first. Dropped wherever siteMapContent is.
+    // Record indexes, newest record first. Dropped when the records are, and
+    // whenever a change invalidates the rendered pages.
     this.sortedIndexes = null;
+    // Kept apart from records so it survives releaseRecords().
+    this.count = 0;
+    // Set once the manager serves this generator: see seal().
+    this.sealed = false;
     this.siteMapContent = new Map();
     this.lastModified = 0;
     this.maxPerPage = 50000;
   }
 
   /**
-   * How many resources this generator holds. Read by the index generator to
-   * work out how many pages the type needs, so it does not have to know how
-   * they are stored.
+   * How many resources this generator covers, which outlives the records
+   * themselves. Read with pageCount by the index generator, so it does not
+   * have to know how the resources are stored.
    */
   get size() {
-    return this.records.length;
+    return this.count;
+  }
+
+  get pageCount() {
+    return Math.ceil(this.count / this.maxPerPage);
+  }
+
+  /**
+   * Whether the records have been dropped because every page is rendered.
+   * A released generator still serves its pages.
+   */
+  get released() {
+    return this.records === null;
+  }
+
+  /**
+   * Called by the manager when it starts serving this generator. A build
+   * fills a generator and then swaps it in; nothing adds to it afterwards,
+   * and anything that tried would render pages the cache already holds.
+   */
+  seal() {
+    this.sealed = true;
   }
 
   hasCanonicalUrl(datum, url) {
@@ -100,6 +127,12 @@ class BaseSiteMapGenerator {
   }
 
   addUrl(url, datum) {
+    if (this.sealed || this.released) {
+      throw new errors.IncorrectUsageError({
+        message: `Cannot add a url to the ${this.name} sitemap generator once it is in use`,
+      });
+    }
+
     if (this.hasCanonicalUrl(datum, url)) {
       return;
     }
@@ -186,22 +219,52 @@ class BaseSiteMapGenerator {
   }
 
   getXml(page = 1) {
+    // One cache key per page, whatever a caller passes: a fractional page
+    // would otherwise render a window straddling two pages, and both it and
+    // a numeric string would take a cache entry of their own, which is
+    // counted below to decide when the records are no longer needed.
+    page = Number(page);
+
     if (this.siteMapContent.has(page)) {
       return this.siteMapContent.get(page);
     }
 
+    // Not cached, so no page number a request carries can grow the map. A
+    // released generator has every in-range page cached, so it only gets here
+    // with an out-of-range page.
+    if (!Number.isInteger(page) || !(page >= 1 && page <= this.pageCount)) {
+      return null;
+    }
+
     const content = this.generateXmlFromNodes(page);
     this.siteMapContent.set(page, content);
+
+    if (this.siteMapContent.size === this.pageCount) {
+      this.releaseRecords();
+    }
+
     return content;
+  }
+
+  /**
+   * Once every page is rendered, the pages hold everything the records did.
+   * Keeping the records past that point holds the sitemap in memory twice.
+   */
+  releaseRecords() {
+    this.records = null;
+    this.sortedIndexes = null;
   }
 
   addRecord(record) {
     this.records.push(record);
+    this.count += 1;
   }
 
   reset() {
     this.records = [];
     this.sortedIndexes = null;
+    this.count = 0;
+    this.sealed = false;
     this.siteMapContent.clear();
     this.lastModified = 0;
   }
