@@ -368,8 +368,7 @@
   },
   "bulkEmail": {
     "batchSize": 1000,
-    "captureLinkClickBadMemberUuid": false,
-    "perRecipientMessageId": false
+    "captureLinkClickBadMemberUuid": false
   },
   "disableJSBackups": false,
   "disableMigrationBackups": false,
