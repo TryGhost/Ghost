@@ -174,9 +174,12 @@ failure, a payload the server refuses as too large and a 422 become
 saves the way a validation failure does or it retries on every edit; a 404
 becomes `not-found`; and anything else becomes `unknown`.
 
-A `validation` failure the server reports carries the server's reason as its
-message. The server sends that reason as the error's context beside a generic
-summary, and the summary is used only when there is no context.
+A `validation` or `host-limit` failure the server reports carries the server's
+reason as its message. The server sends that reason as the error's context
+beside a generic summary, and the summary is used only when there is no context.
+The save-error banner shows a host limit's reason with its "please upgrade"
+phrase linked to the host's upgrade screen, `/pro` unless the host configures
+another, and keeps the content and the banner's retry.
 
 ## Adopting the server's answer
 

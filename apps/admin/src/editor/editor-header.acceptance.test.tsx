@@ -1254,6 +1254,39 @@ describe('Editor header actions', () => {
       expect(saveApi.requests).toHaveLength(0);
     });
 
+    it('shows the reason the server gave for refusing a publish over a limit', async () => {
+      publishChrome();
+      fakeEmailsSent(100);
+      fakeSavablePost();
+      const refusedPublish = fakeAdminEndpoint(
+        'PUT',
+        new RegExp(`^/posts/${POST_ID}/\\?`),
+        {
+          errors: [
+            {
+              type: 'HostLimitError',
+              message: 'Host Limit error, cannot edit post.',
+              context: MEMBERS_LIMIT_MESSAGE,
+            },
+          ],
+        },
+        { status: 403 },
+      );
+      // The site is under its limit when the flow checks, so only the server refuses.
+      await renderAdminApp(`/editor/post/${POST_ID}`, onHostPlan({ members: 20 }));
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await publishThroughFlow();
+
+      await expect.element(publishScreen.confirmError()).toHaveTextContent(MEMBERS_LIMIT_MESSAGE);
+      await expect
+        .element(publishScreen.confirmError().getByRole('link', { name: 'please upgrade' }))
+        .toHaveAttribute('href', '#/pro');
+      await expect(publishScreen.complete()).toHaveCount(0);
+      expect(submittedPost(refusedPublish)).toMatchObject({ status: 'published' });
+      expect(refusedPublish.requests).toHaveLength(1);
+    });
+
     it('offers no email while a send would exceed the monthly emails limit', async () => {
       publishChrome({ newsletters: 1 });
       fakeEmailsSent(300);
