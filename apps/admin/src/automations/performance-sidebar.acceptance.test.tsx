@@ -1,60 +1,19 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import type {
-  AutomationDetail,
-  AutomationPerformanceStats,
-} from '@tryghost/admin-x-framework/api/automations';
+import {
+  flags,
+  response,
+  read as readAutomation,
+  setupEmbeddedRootFontSize,
+} from './run-list.test-utils';
 
-// Production inherits this root sizing from Ember's patterns/global.css.
-// This full-app test host does not load Ember's stylesheet.
-let originalRootFontSize: string;
-beforeAll(() => {
-  originalRootFontSize = document.documentElement.style.fontSize;
-  document.documentElement.style.fontSize = '62.5%';
-});
-afterAll(() => {
-  document.documentElement.style.fontSize = originalRootFontSize;
-});
+setupEmbeddedRootFontSize();
 
-const flags = {
-  labs: { automations: true, automationRunAnalytics: true, automationsTinybirdSync: true },
+const read = (id: string) => {
+  fakeAdminEndpoint('GET', new RegExp(`/automations/${id}/runs/\\?`), { automation_runs: [] });
+  return readAutomation(id);
 };
-const detail = (id: string): AutomationDetail => ({
-  id,
-  name: 'Welcome series',
-  description: '',
-  slug: 'member-welcome-email-free',
-  status: 'active',
-  created_at: '2026-01-01T00:00:00Z',
-  updated_at: '2026-01-01T00:00:00Z',
-  actions: [{ id: `${id}-wait`, type: 'wait', data: { wait_hours: 24 } }],
-  edges: [],
-});
-// Counts and daily entries describe the same runs; every default response is valid.
-const response = (id: string, counts = { inProgress: 118, completed: 1260, exitedEarly: 54 }) => {
-  const total = counts.inProgress + counts.completed + counts.exitedEarly;
-  const data: AutomationPerformanceStats = {
-    automation_id: id,
-    total_run_count: total,
-    in_progress_run_count: counts.inProgress,
-    completed_run_count: counts.completed,
-    exited_early_run_count: counts.exitedEarly,
-    entries: [
-      { date: '2026-06-22', count: Math.floor(total / 2) },
-      { date: '2026-06-23', count: Math.ceil(total / 2) },
-    ],
-    entry_window: {
-      date_from: '2026-06-22',
-      date_to: '2026-06-24',
-      bucket: 'day',
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    },
-  };
-  return { automation_performance_stats: [data] };
-};
-const read = (id: string) =>
-  fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [detail(id)] });
 const statsUrl = (id: string) =>
   `/automations/${id}/performance-stats/?${new URLSearchParams({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}`;
 const prepare = (id = 'first') => {
@@ -63,12 +22,12 @@ const prepare = (id = 'first') => {
 };
 const entries = () => page.getByRole('region', { name: 'Total entries' });
 const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
-const statusCard = (name: string) => statuses().getByRole('group', { name, exact: true });
+const statusCard = (name: string) => statuses().getByRole('button', { name, exact: true });
 const open = () => page.getByRole('button', { name: 'Show performance' }).click();
 const close = () => page.getByRole('button', { name: 'Hide performance' }).click();
 
 describe('Performance sidebar data and errors', () => {
-  it('fetches only when opened and renders three display-only status cards', async () => {
+  it('fetches only when opened and renders three status cards', async () => {
     const request = prepare();
     await renderAdminApp('/automations/first', flags);
     await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
@@ -80,7 +39,7 @@ describe('Performance sidebar data and errors', () => {
     await expect
       .element(statuses().getByRole('status'))
       .toHaveTextContent('Statistics loaded. 118 in progress, 1,260 completed, 54 exited early.');
-    await expect.element(statuses().getByRole('button')).not.toBeInTheDocument();
+    await expect(statuses().getByRole('button')).toHaveCount(3);
     await expect.element(entries()).toHaveTextContent('1,432');
     await expect
       .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
@@ -124,7 +83,8 @@ describe('Performance sidebar data and errors', () => {
     await expect.element(statusCard('Completed')).not.toHaveTextContent('0');
     await expect.element(entries().getByRole('status')).toHaveTextContent('Loading total entries');
     finish();
-    await expect.element(entries()).toHaveTextContent('No entries yet');
+    await expect.element(entries().getByRole('figure')).toBeVisible();
+    await expect.element(entries()).not.toHaveTextContent('No entries');
     for (const name of ['In progress', 'Completed', 'Exited early']) {
       await expect.element(statusCard(name)).toHaveTextContent('0');
     }
@@ -152,7 +112,7 @@ describe('Performance sidebar data and errors', () => {
       await open();
       await expect
         .element(page.getByRole('alert'))
-        .toHaveTextContent('Could not load performance data.');
+        .toHaveTextContent('Could not load performance data');
       await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(1);
       await expect.element(entries()).not.toBeInTheDocument();
       await expect.element(statuses()).not.toBeInTheDocument();
@@ -179,7 +139,7 @@ describe('Performance sidebar data and errors', () => {
     await open();
     await expect
       .element(page.getByRole('alert'))
-      .toHaveTextContent('Could not load performance data.');
+      .toHaveTextContent('Could not load performance data');
     await expect.element(entries()).not.toBeInTheDocument();
     await expect.element(statuses()).not.toBeInTheDocument();
   });
@@ -275,7 +235,7 @@ describe('Performance sidebar layout', () => {
     await expect.poll(() => document.querySelector('aside')?.getBoundingClientRect().width).toBe(0);
     const panel = chartElement.closest('aside')!;
     const cards = ['In progress', 'Completed', 'Exited early'].map((name) =>
-      panel.querySelector(`[role="group"][aria-label="${name}"]`)!,
+      panel.querySelector(`button[aria-label="${name}"]`)!,
     );
     const expectedCardWidths = cards.map((card) => card.getBoundingClientRect().width);
     // Pause the real CSS transition and seek through it, independent of frame timing.

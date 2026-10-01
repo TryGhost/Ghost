@@ -5,6 +5,10 @@ import { createTestQueryClient, renderHookWithProviders } from '../../../src/tes
 import { withMockFetch } from '../../utils/mock-fetch';
 import {
   AutomationAction,
+  AutomationRunsResponseSchema,
+  type AutomationRun,
+  type AutomationRunStatusFilter,
+  useBrowseAutomationRuns,
   AutomationDetail,
   AutomationSendEmailAction,
   InsertActionAnchor,
@@ -80,6 +84,56 @@ describe('automations api queries', () => {
         );
       },
     );
+  });
+  it('isolates a late response when returning to the same status in a new query scope', async () => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(currentUserQueryKey, { staleTime: Infinity });
+    queryClient.setQueryData(currentUserQueryKey, {
+      users: [{ id: 'user-id', name: 'Test User', email: 'test@example.com', roles: [] }],
+    });
+    const response = (id: string, status: AutomationRunStatusFilter) =>
+      Response.json({
+        automation_runs: [
+          { id, status, created_at: '2026-09-14T12:00:00.000Z', failed: false, member: null },
+        ],
+      });
+    let finish!: (response: Response) => void;
+    const pending = new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+    let completedRequests = 0;
+    const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const status = new URL(String(input)).searchParams.get('status');
+      if (status === 'completed') {
+        completedRequests += 1;
+        return completedRequests === 1 ? pending : response('fresh', 'completed');
+      }
+      return response('exited', 'exited_early');
+    });
+    try {
+      const { result, rerender } = renderHookWithProviders(
+        ({ scope, status }: { scope: string; status: AutomationRunStatusFilter }) =>
+          useBrowseAutomationRuns('automation-id', scope, {
+            searchParams: { status },
+            staleTime: Infinity,
+          }),
+        { queryClient, initialProps: { scope: 'visit:0', status: 'completed' } },
+      );
+      await waitFor(() => expect(completedRequests).toBe(1));
+      rerender({ scope: 'visit:1', status: 'exited_early' });
+      await waitFor(() => expect(result.current.data?.automation_runs[0].id).toBe('exited'));
+      rerender({ scope: 'visit:2', status: 'completed' });
+      await waitFor(() => expect(result.current.data?.automation_runs[0].id).toBe('fresh'));
+      finish(response('late', 'completed'));
+      // Wait for every request to settle using the public client API before checking the result.
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      expect(completedRequests).toBe(2);
+      expect(result.current.data?.automation_runs[0].id).toBe('fresh');
+    } finally {
+      finish(response('late', 'completed'));
+      fetch.mockRestore();
+      queryClient.clear();
+    }
   });
 });
 
@@ -520,5 +574,39 @@ describe('automations api helpers', () => {
         }),
       ).toThrow(/is not a send_email action/);
     });
+  });
+});
+
+describe('automation run response validation', () => {
+  const run: AutomationRun = {
+    id: 'one',
+    created_at: '2026-09-15T12:00:00.000Z',
+    status: 'completed',
+    failed: false,
+    member: { id: 'member', name: ' Alex ', email: 'alex@example.com' },
+  };
+
+  it('accepts empty history and separate runs for the same member', () => {
+    expect(AutomationRunsResponseSchema.parse({ automation_runs: [] }).automation_runs).toEqual([]);
+    expect(
+      AutomationRunsResponseSchema.safeParse({ automation_runs: [run, { ...run, id: 'two' }] })
+        .success,
+    ).toBe(true);
+  });
+
+  it.each([
+    { name: 'missing envelope', body: {} },
+    { name: 'missing failure flag', body: { automation_runs: [{ ...run, failed: undefined }] } },
+    { name: 'invalid failure flag', body: { automation_runs: [{ ...run, failed: 'true' }] } },
+    { name: 'unknown status', body: { automation_runs: [{ ...run, status: 'future' }] } },
+    { name: 'invalid timestamp', body: { automation_runs: [{ ...run, created_at: 'invalid' }] } },
+    { name: 'missing member', body: { automation_runs: [{ ...run, member: undefined }] } },
+    { name: 'duplicate run', body: { automation_runs: [run, run] } },
+    {
+      name: 'more than fifty runs',
+      body: { automation_runs: Array.from({ length: 51 }, (_, i) => ({ ...run, id: String(i) })) },
+    },
+  ])('rejects $name', ({ body }) => {
+    expect(AutomationRunsResponseSchema.safeParse(body).success).toBe(false);
   });
 });

@@ -10,7 +10,7 @@ export const TotalEntriesChart: React.FC<{ data: AutomationEntriesChartData }> =
       <Text className="tabular-nums" size="2xl" weight="semibold">
         {data.total}
       </Text>
-      <figure aria-label="Automation entries" className="relative">
+      <figure aria-label="Automation entries">
         <figcaption className="sr-only">
           Automation entries from {data.startDate} to {data.endDate}, in {data.timezone}.
         </figcaption>
@@ -23,15 +23,6 @@ export const TotalEntriesChart: React.FC<{ data: AutomationEntriesChartData }> =
           showYAxisValues={false}
           yAxisRange={[0, data.max]}
         />
-        {data.empty && (
-          <Text
-            className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center"
-            size="sm"
-            tone="secondary"
-          >
-            {data.allTime ? 'No entries yet' : 'No entries in this period'}
-          </Text>
-        )}
       </figure>
     </>
   );

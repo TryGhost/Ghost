@@ -69,8 +69,8 @@ the web analytics 1,000-day fetch window.
 
 The chart and cards share the request and cache, populated on first sidebar open
 and kept until navigation. Closing, reopening, focus, and reconnect do not refresh
-it. Failed requests, including a missing endpoint, show an inline error and retry
-without guessing whether the backend is older.
+it. Failed requests, including a missing endpoint, replace the performance content
+with one error and retry button, without guessing whether the backend is older.
 
 ## Run list
 
@@ -134,6 +134,20 @@ returned timestamp and ID. It is bound to the automation, status, direction, ent
 malformed or mismatched cursors return 422. Core requests one extra row to decide
 whether to return a next cursor and hydrates only the visible page. These are live
 reads, not a snapshot: status changes can affect later pages.
+
+In Admin, the list loads on first sidebar open and stays cached through closing
+and reopening. Selecting a status card filters only the list; selecting it again
+clears the status filter. Each selection fetches fresh rows while the chart and
+counts stay unchanged. Previous rows remain visible during status requests, with
+a delayed loading indicator. Date changes clear previous rows and load both the
+summary and list for the selected period. Initial list loading uses one compact
+placeholder row rather than filling the panel with skeleton rows.
+
+Empty-state messages appear only in the list: "No entries yet" for all time,
+"No entries in this period" for a date filter, and "No matching entries" for a
+status filter. Empty histories and periods keep the zero chart visible; status
+filters do not change it. A failed list request shows its own retry action without
+replacing a successful chart or status counts.
 
 ## Availability
 

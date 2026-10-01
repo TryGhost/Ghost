@@ -1,24 +1,31 @@
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
 import React, { useId, useState } from 'react';
+import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
 import { Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
+import { RunList } from './run-list';
 import { PerformanceDateFilter } from './performance-date-filter';
 import {
   createPerformanceDateRange,
   PERFORMANCE_RANGES,
 } from '@/automations/utils/performance-date-range';
 
-const PerformanceContent: React.FC<{ automationId: string; dateRange: PerformanceDateRange }> = ({
-  automationId,
-  dateRange,
-}) => {
+const PerformanceContent: React.FC<{
+  automationId: string;
+  dateRange: PerformanceDateRange;
+  queryScope: string;
+  runQueryScope: string;
+  selectedStatus: AutomationRunStatusFilter | null;
+  onStatusChange: (status: AutomationRunStatusFilter) => void;
+}> = ({ automationId, dateRange, queryScope, runQueryScope, selectedStatus, onStatusChange }) => {
   const { chart, counts, isLoading, isError, retry } = useAutomationPerformanceStats(
     automationId,
     dateRange,
+    queryScope,
   );
 
   if (isError) {
@@ -31,7 +38,7 @@ const PerformanceContent: React.FC<{ automationId: string; dateRange: Performanc
         role="alert"
       >
         <Text size="sm" tone="secondary">
-          Could not load performance data.
+          Could not load performance data
         </Text>
         <Button size="sm" variant="outline" onClick={retry}>
           Retry
@@ -43,7 +50,19 @@ const PerformanceContent: React.FC<{ automationId: string; dateRange: Performanc
   return (
     <>
       <TotalEntries chart={chart} isLoading={isLoading} />
-      <StatusCounts data={counts} isLoading={isLoading} />
+      <StatusCounts
+        data={counts}
+        isLoading={isLoading}
+        selectedStatus={selectedStatus}
+        onStatusChange={onStatusChange}
+      />
+      <RunList
+        key={`${automationId}:${JSON.stringify(dateRange.searchParams)}`}
+        automationId={automationId}
+        dateRange={dateRange}
+        queryScope={runQueryScope}
+        status={selectedStatus}
+      />
     </>
   );
 };
@@ -51,10 +70,14 @@ const PerformanceContent: React.FC<{ automationId: string; dateRange: Performanc
 export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automationId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
+  const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
+  const [queryRevision, setQueryRevision] = useState(0);
   const [dateRange, setDateRange] = useState(() => createPerformanceDateRange('all'));
   const rangeLabel = PERFORMANCE_RANGES.find((range) => range.value === dateRange.value)!.label;
   const panelId = useId();
   const headingId = useId();
+  // List selections refetch runs without invalidating the date-range summary.
+  const runQueryScope = `${panelId}:${queryRevision}`;
 
   return (
     <>
@@ -119,7 +142,17 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
                   <LucideIcon.X strokeWidth={2} />
                 </Button>
               )}
-              <PerformanceContent automationId={automationId} dateRange={dateRange} />
+              <PerformanceContent
+                automationId={automationId}
+                dateRange={dateRange}
+                queryScope={panelId}
+                runQueryScope={runQueryScope}
+                selectedStatus={status}
+                onStatusChange={(selected) => {
+                  setStatus(status === selected ? null : selected);
+                  setQueryRevision((revision) => revision + 1);
+                }}
+              />
             </Stack>
           )}
         </Stack>

@@ -17,12 +17,10 @@ export const mapAutomationEntryStats = (
   }));
   return {
     showHours: hourly,
-    allTime: range === STATS_RANGES.allTime.value,
     total: formatNumber(stats.total_run_count),
     points,
     range: hourly ? 1 : getEffectiveChartRange(range, stats.entries, { fieldName: 'count' }),
     max: Math.max(1, ...points.map((point) => point.value)),
-    empty: stats.entries.every((entry) => entry.count === 0),
     startDate: stats.entry_window.date_from,
     endDate: hourly ? stats.entry_window.date_from : stats.entries[stats.entries.length - 1].date,
     timezone: stats.entry_window.timezone,

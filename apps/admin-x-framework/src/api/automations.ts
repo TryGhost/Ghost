@@ -146,9 +146,10 @@ export const useReadAutomationPerformanceStats = (
   options?: Parameters<
     ReturnType<typeof createQuery<z.infer<typeof AutomationPerformanceStatsResponseSchema>>>
   >[0],
+  queryScope = '',
 ) => {
   const useQuery = createQuery<z.infer<typeof AutomationPerformanceStatsResponseSchema>>({
-    dataType: 'AutomationPerformanceStatsResponseType',
+    dataType: `AutomationPerformanceStatsResponseType:${queryScope}`,
     path: `/automations/${id}/performance-stats/`,
     parseResponse: (data) =>
       AutomationPerformanceStatsResponseSchema.refine(
@@ -173,6 +174,49 @@ export const useReadAutomationPerformanceStats = (
         .parse(data),
   });
   return useQuery(options);
+};
+
+export const AutomationRunSchema = z.object({
+  id: z.string().min(1),
+  created_at: z.iso.datetime(),
+  status: z.enum(['in_progress', 'completed', 'exited_early']),
+  failed: z.boolean(),
+  member: z
+    .object({
+      id: z.string().min(1),
+      name: z.string().nullable(),
+      email: z.string(),
+    })
+    .nullable(),
+});
+
+export const AutomationRunsResponseSchema = z.object({
+  automation_runs: z
+    .array(AutomationRunSchema)
+    .max(50)
+    .refine(
+      (runs) => new Set(runs.map((run) => run.id)).size === runs.length,
+      'Run IDs must be unique',
+    ),
+});
+
+export type AutomationRun = z.infer<typeof AutomationRunSchema>;
+export type AutomationRunStatusFilter = AutomationRun['status'];
+
+export const useBrowseAutomationRuns = (
+  id: string,
+  queryScope: string,
+  options: Parameters<
+    ReturnType<typeof createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>>
+  >[1],
+) => {
+  // Keep results from different sidebar visits and filter selections in separate cache entries.
+  const useQuery = createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>({
+    dataType: `AutomationRunsResponseType:${queryScope}`,
+    path: (automationId) => `/automations/${automationId}/runs/`,
+    parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
+  });
+  return useQuery(id, options);
 };
 
 const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({
