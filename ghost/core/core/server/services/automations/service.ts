@@ -87,7 +87,11 @@ export class AutomationsService {
             time: schedulerPollTime.getTime(),
             key,
             getIdempotencyKey: (url) =>
-              getSchedulerIdempotencyKey({ namespace: 'automations', date, url }),
+              getSchedulerIdempotencyKey({
+                namespace: 'automations',
+                date: schedulerPollTime,
+                url,
+              }),
           }),
         );
       } catch (err) {
