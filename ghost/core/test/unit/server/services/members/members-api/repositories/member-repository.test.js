@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
 const labs = require('../../../../../../../core/shared/labs');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
 const {
@@ -54,6 +55,7 @@ describe('MemberRepository', function () {
       offersAPI,
       automationsApi,
       productRepository,
+      metafieldValues: { getValuesForMember: async () => undefined },
       stripeAPIService,
       tokenService,
       ...overrides,
@@ -2794,6 +2796,75 @@ describe('MemberRepository', function () {
     });
   });
 
+  describe('update - Stripe customer email', function () {
+    let updateCustomerEmail;
+
+    beforeEach(function () {
+      updateCustomerEmail = sinon.stub().resolves();
+      stripeAPIService = { configured: true, updateCustomerEmail };
+      MemberEmailChangeEvent = { add: sinon.stub().resolves() };
+      MemberStatusEvent = { add: sinon.stub().resolves() };
+      Member = {
+        findOne: sinon.stub().resolves({
+          get: sinon.stub().withArgs('email').returns('old@example.com'),
+          related: sinon.stub().returns({ models: [] }),
+          load: sinon.stub().resolves(),
+        }),
+        edit: sinon.stub().resolves({
+          id: 'member_1',
+          attributes: { email: 'new@example.com', status: 'free' },
+          _previousAttributes: { email: 'old@example.com', status: 'free' },
+          _changed: { email: 'old@example.com' },
+          get: sinon.stub().withArgs('email').returns('new@example.com'),
+          related: sinon
+            .stub()
+            .withArgs('stripeCustomers')
+            .returns({
+              fetch: sinon.stub().resolves(),
+              models: [{ get: sinon.stub().withArgs('customer_id').returns('cus_1') }],
+            }),
+        }),
+      };
+    });
+
+    /** A transaction whose outcome the test decides. */
+    function pendingTransaction() {
+      let commit;
+      let rollBack;
+      const executionPromise = new Promise((resolve, reject) => {
+        commit = resolve;
+        rollBack = reject;
+      });
+      return { transacting: { executionPromise }, commit, rollBack };
+    }
+
+    it('sends the new address once the edit commits', async function () {
+      const { transacting, commit } = pendingTransaction();
+
+      await buildRepo().update({ email: 'new@example.com' }, { id: 'member_1', transacting });
+      sinon.assert.notCalled(updateCustomerEmail);
+
+      commit();
+      await transacting.executionPromise;
+      await new Promise(setImmediate);
+
+      sinon.assert.calledOnceWithExactly(updateCustomerEmail, 'cus_1', 'new@example.com');
+    });
+
+    it('sends nothing when the edit rolls back, and logs that it did not', async function () {
+      const loggingError = sinon.stub(logging, 'error');
+      const { transacting, rollBack } = pendingTransaction();
+
+      await buildRepo().update({ email: 'new@example.com' }, { id: 'member_1', transacting });
+      rollBack(new Error('rolled back'));
+      await transacting.executionPromise.catch(() => {});
+      await new Promise(setImmediate);
+
+      sinon.assert.notCalled(updateCustomerEmail);
+      sinon.assert.calledOnce(loggingError);
+    });
+  });
+
   describe('update - member status', function () {
     let memberEdit;
     let existingProducts;
@@ -3015,6 +3086,7 @@ describe('MemberRepository', function () {
           }),
         }),
         destroy: sinon.stub().resolves(),
+        transaction: (fn) => fn('a-transaction'),
       };
 
       const repo = buildRepo();

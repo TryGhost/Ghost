@@ -9,7 +9,7 @@ import { defaultUnsplashConfig, type TopLevelFrameworkProps } from '@tryghost/ad
  */
 export function createFrameworkProps(
   overrides: Partial<TopLevelFrameworkProps> = {},
-): TopLevelFrameworkProps {
+): TopLevelFrameworkProps & { queryClient: QueryClient } {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -32,7 +32,7 @@ export function createFrameworkProps(
     onUpdate: () => {},
     onInvalidate: () => {},
     onDelete: () => {},
-    queryClient,
     ...overrides,
+    queryClient: overrides.queryClient ?? queryClient,
   };
 }

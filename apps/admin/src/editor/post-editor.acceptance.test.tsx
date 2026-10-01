@@ -317,6 +317,29 @@ describe('Post editor', () => {
     await expect(editorScreen.body()).toHaveCount(0);
   });
 
+  it('shows the load error when the post cannot be read, and opens it on retry', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ type: 'InternalServerError', message: 'Boom' }] },
+      { status: 500 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.loadError()).toHaveTextContent('Couldn’t load this post.');
+    await expect(editorScreen.body()).toHaveCount(0);
+
+    // A later handler for the same route wins: the retried read finds the post.
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [post({ id: POST_ID, lexical: buildLexicalParagraph('Hello from React') })],
+    });
+    await editorScreen.retryLoad().click();
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+  });
+
   it('shows a 404 for a post that does not exist', async () => {
     fakeEditorChrome();
     fakeAdminEndpoint(

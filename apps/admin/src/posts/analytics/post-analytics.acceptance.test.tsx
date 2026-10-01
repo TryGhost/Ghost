@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { page } from 'vitest/browser';
 import { focusManager } from '@tanstack/react-query';
 
@@ -15,6 +15,7 @@ import {
   renderAdminApp,
   settingsResponse,
   webAnalyticsBootOverrides,
+  type TinybirdPipeCapture,
 } from '@test-utils/acceptance';
 import { membersScreen } from '@/members/members.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
@@ -242,6 +243,8 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     await expect.element(page.getByText(/500 of 1,000/)).toBeVisible();
     await expect.element(page.getByText('Your newsletter is being sent')).toBeVisible();
+    await expect.element(page.getByText(/^Published on your site on/)).toBeVisible();
+    await expect.element(page.getByText(/^Published and sent/)).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
 
     await postAnalyticsScreen.newsletterTab().click();
@@ -259,7 +262,7 @@ describe('Post analytics overview', () => {
     await expect
       .poll(() => statusRequestCount, { timeout: 3500 })
       .toBeGreaterThan(pendingStatusRequestCount);
-    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(0);
@@ -268,6 +271,8 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText('1,000').first()).toBeVisible();
     await expect.element(page.getByText('400').first()).toBeVisible();
     await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeEnabled();
+    await expect.element(page.getByText(/^Published and sent to 1,000 members on/)).toBeVisible();
+    await expect.element(page.getByText(/^Published on your site on/)).not.toBeInTheDocument();
   });
 
   it('shows only recipient counts until a sending estimate is available', async () => {
@@ -293,21 +298,101 @@ describe('Post analytics overview', () => {
     });
 
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .element(postAnalyticsScreen.emailSendingStatusLine())
       .not.toHaveTextContent('minute');
     estimate = 30;
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .element(postAnalyticsScreen.emailSendingStatusLine())
       .toHaveTextContent('Less than 1 minute left');
   });
 
-  it('moves a failed send and its retry action into the banner', async () => {
+  it('does not show a send as complete while its status is loading', async () => {
+    seedPostAnalyticsWorld({
+      email: { id: EMAIL_ID, email_count: 1000, opened_count: 0, status: 'submitting' },
+    });
+    let releaseStatus = () => {};
+    const statusReleased = new Promise<void>((resolve) => {
+      releaseStatus = resolve;
+    });
+    // A held request would block teardown if an assertion fails first.
+    onTestFinished(() => releaseStatus());
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, async () => {
+      await statusReleased;
+      return {
+        email_statuses: [
+          {
+            id: EMAIL_ID,
+            sending: {
+              status: 'submitting',
+              progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+            },
+          },
+        ],
+      };
+    });
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(page.getByText(/^Published on your site on/)).toBeVisible();
+    await expect.element(page.getByText(/^Published and sent/)).not.toBeInTheDocument();
+
+    releaseStatus();
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
+    await expect.element(page.getByText(/^Published on your site on/)).toBeVisible();
+  });
+
+  it('only shows an email-only post as sent once the send finishes', async () => {
+    seedPostAnalyticsWorld({
+      email_only: true,
+      status: 'sent',
+      email: { id: EMAIL_ID, email_count: 1000, opened_count: 0, status: 'submitting' },
+    });
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'submitting',
+            progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
+    await expect.element(page.getByText(/^Sent\b/)).not.toBeInTheDocument();
+  });
+
+  it('shows the recipient count for a sent email-only post', async () => {
+    seedPostAnalyticsWorld({ email_only: true, status: 'sent' });
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(page.getByText(/^Sent to 1,000 members on/)).toBeVisible();
+  });
+
+  it('shows a failed send and its retry action under the title', async () => {
     const postOverrides = {
       email: {
         id: EMAIL_ID,
@@ -368,7 +453,7 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     // Keep submission visible until asserted, regardless of how many polls CI runs.
     hasCompleted = true;
-    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
   });
 
   it('shows a generic failure without retry when a batch has an unknown delivery outcome', async () => {
@@ -403,7 +488,7 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText(/only partially sent/)).toBeVisible();
     await expect
       .element(
-        postAnalyticsScreen.emailSendingStatusBanner().getByRole('button', { name: /send|retry/i }),
+        postAnalyticsScreen.emailSendingStatusLine().getByRole('button', { name: /send|retry/i }),
       )
       .not.toBeInTheDocument();
     await expect
@@ -471,10 +556,10 @@ describe('Post analytics overview', () => {
     });
 
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent(/Preparing emails\s*10% complete · 1,000 total/);
+      .element(postAnalyticsScreen.emailSendingStatusLine())
+      .toHaveTextContent('Preparing emails · 10% complete · 1,000 total');
     await expect
-      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .element(postAnalyticsScreen.emailSendingStatusLine())
       .not.toHaveTextContent('minute');
     // Advance the fake server only after the initial state is visible: extra
     // mount-time requests must not race the assertion straight into failure.
@@ -510,7 +595,7 @@ describe('Post analytics overview', () => {
 
     await expect.element(page.getByText('Newsletter performance')).toBeVisible();
     await expect.element(page.getByText('Your newsletter is being sent')).not.toBeInTheDocument();
-    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
     await expect.poll(() => statusApi.requests.length).toBe(1);
     await app.unmount();
   });
@@ -575,7 +660,7 @@ describe('Post analytics overview', () => {
       boot: webAnalyticsBootOverrides(),
     });
 
-    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusLine()).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.newsletterTab()).not.toBeInTheDocument();
     expect(statusApi.requests).toHaveLength(0);
   });
@@ -608,6 +693,7 @@ describe('Post analytics overview', () => {
     });
 
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
+    await expect.element(page.getByText(/^Published and sent on/)).toBeVisible();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
     const overviewKpiRequestCount = kpisApi.requests.length;
 
@@ -740,24 +826,18 @@ describe('Post analytics web', () => {
     await renderAdminApp(`/posts/analytics/${POST_ID}/web`, { boot: webAnalyticsBootOverrides() });
 
     await expect.element(postAnalyticsScreen.locationRow('US')).toHaveTextContent('United States');
-    const initialKpiRequestCount = kpisApi.requests.length;
-    const initialLocationsRequestCount = topLocationsApi.requests.length;
-    const initialSourcesRequestCount = topSourcesApi.requests.length;
 
     await postAnalyticsScreen.locationRow('US').click();
 
     await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/web?location=US`);
     await expect.element(postAnalyticsScreen.filterContainer()).toHaveTextContent('Location');
-    await expect.poll(() => kpisApi.requests.length).toBeGreaterThan(initialKpiRequestCount);
-    await expect
-      .poll(() => topLocationsApi.requests.length)
-      .toBeGreaterThan(initialLocationsRequestCount);
-    await expect
-      .poll(() => topSourcesApi.requests.length)
-      .toBeGreaterThan(initialSourcesRequestCount);
-    expect(kpisApi.lastRequest?.params.get('location')).toBe('US');
-    expect(topLocationsApi.lastRequest?.params.get('location')).toBe('US');
-    expect(topSourcesApi.lastRequest?.params.get('location')).toBe('US');
+    // The applied filter looks up its location options on the same pipe, deliberately
+    // without the location it filters by, so the filtered request need not come last.
+    const sentLocation = (pipeApi: TinybirdPipeCapture) =>
+      pipeApi.requests.some(({ params }) => params.get('location') === 'US');
+    await expect.poll(() => sentLocation(kpisApi)).toBe(true);
+    await expect.poll(() => sentLocation(topLocationsApi)).toBe(true);
+    await expect.poll(() => sentLocation(topSourcesApi)).toBe(true);
   });
 });
 

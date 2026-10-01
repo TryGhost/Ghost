@@ -56,7 +56,9 @@ export async function setupAutomationsFixture(): Promise<void> {
       created_at: timestamp(0),
       updated_at: timestamp(0),
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+      trigger_tier_scope: 'free',
       name: 'Free member welcome flow',
+      description: 'Welcome new free members after they sign up.',
       status: 'active',
     },
     {
@@ -64,7 +66,9 @@ export async function setupAutomationsFixture(): Promise<void> {
       created_at: timestamp(1),
       updated_at: timestamp(1),
       slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+      trigger_tier_scope: 'all_paid',
       name: 'Paid member welcome flow',
+      description: 'Welcome new paid members after they start their subscription.',
       status: 'active',
     },
   ];

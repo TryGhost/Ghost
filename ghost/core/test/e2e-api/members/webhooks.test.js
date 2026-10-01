@@ -13,6 +13,11 @@ const {
 const models = require('../../../core/server/models');
 const modelEvents = require('../../../core/server/lib/common/events');
 const createWebhookSerializer = require('../../../core/server/services/webhooks/serialize');
+// No routing relations to load, and a member with no custom fields.
+const serializeWebhook = createWebhookSerializer({
+  urlService: { getRequiredRelations: () => [] },
+  readMemberMetafields: async () => undefined,
+});
 const urlServiceUtils = require('../../utils/url-service-utils');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const DomainEvents = require('@tryghost/domain-events');
@@ -437,10 +442,7 @@ describe('Members API', function () {
       );
 
       // The payload a webhook subscriber actually receives must show both states
-      const webhookBody = await createWebhookSerializer({ getRequiredRelations: () => [] })(
-        'member.edited',
-        memberEditedEvents[0],
-      );
+      const webhookBody = await serializeWebhook('member.edited', memberEditedEvents[0]);
       assert.equal(
         webhookBody.member.current.subscriptions[0].cancel_at_period_end,
         true,
@@ -606,10 +608,7 @@ describe('Members API', function () {
 
       assert.equal(reinstateEvents.length, 1, 'Reinstating should emit exactly one member.edited');
 
-      const webhookBody = await createWebhookSerializer({ getRequiredRelations: () => [] })(
-        'member.edited',
-        reinstateEvents[0],
-      );
+      const webhookBody = await serializeWebhook('member.edited', reinstateEvents[0]);
       assert.equal(
         webhookBody.member.current.subscriptions[0].cancel_at_period_end,
         false,
@@ -714,10 +713,7 @@ describe('Members API', function () {
         'Cancelling one of two subscriptions should emit exactly one member.edited',
       );
 
-      const webhookBody = await createWebhookSerializer({ getRequiredRelations: () => [] })(
-        'member.edited',
-        captured[0],
-      );
+      const webhookBody = await serializeWebhook('member.edited', captured[0]);
       const currentSubs = webhookBody.member.current.subscriptions;
       const previousSubs = webhookBody.member.previous.subscriptions;
 
@@ -1599,7 +1595,7 @@ describe('Members API', function () {
 
         assert.ok(member, 'the member was still created');
         assert.deepEqual(
-          member.metafields.custom,
+          member.metafields?.custom ?? {},
           {},
           'nothing was collected, and nothing else was disturbed',
         );
@@ -1647,11 +1643,15 @@ describe('Members API', function () {
         });
 
         assert.equal(
-          member.metafields.custom[fieldKeys.recipient],
+          member.metafields?.custom?.[fieldKeys.recipient],
           undefined,
           'no recipient name was kept',
         );
-        assert.equal(member.metafields.custom[fieldKeys.address], undefined, 'no address was kept');
+        assert.equal(
+          member.metafields?.custom?.[fieldKeys.address],
+          undefined,
+          'no address was kept',
+        );
       });
 
       // The acceptance criterion this whole thing turns on: a value Stripe collected
@@ -1754,7 +1754,7 @@ describe('Members API', function () {
         const member = await sendCheckoutWebhook('checkout-collected-nothing@email.com', {});
 
         assert.equal(member.status, 'paid');
-        assert.deepEqual(member.metafields.custom, {});
+        assert.deepEqual(member.metafields?.custom ?? {}, {});
       });
 
       // A checkout session can be started with nothing but an email address, and typing

@@ -1,7 +1,7 @@
 import { PageHeader } from '@tryghost/shade/patterns';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
-import EmailSendingStatusBanner from '@/posts/analytics/email-sending-status/email-sending-status-banner';
+import PostAnalyticsEmailSendingStatus from '@/posts/analytics/email-sending-status/post-analytics-email-sending-status';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertDialog,
@@ -29,19 +29,14 @@ import {
   PageMenuItem,
 } from '@tryghost/shade/components';
 import { H1 } from '@tryghost/shade/primitives';
-import {
-  LucideIcon,
-  formatDisplayDate,
-  formatDisplayTime,
-  formatNumber,
-} from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useIsEmberOwnedRoute } from '@/routes';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
+import { getPostPublicationSummary } from '@/posts/analytics/utils/post-publication-summary';
 import {
-  isEmailOnly,
   isPublishedOnly,
   trackEvent,
   useActiveVisitors,
@@ -53,7 +48,7 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
 import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 import { useShade } from '@tryghost/shade/app';
 import { useQueryClient } from '@tanstack/react-query';
@@ -71,22 +66,25 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const queryClient = useQueryClient();
   const { mutateAsync: deletePost } = useDeletePost();
   const handleError = useHandleError();
+  const improveSendingUI = useFeatureFlag('improveSendingUI');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
-  const { hasNewsletterAnalytics, status: emailSendingStatus } = useEmailSendingStatusContext();
+  const { hasNewsletterAnalytics, isEmailSent } = useEmailSendingStatusContext();
   const canManageGiftLink = useCanManageGiftLink(post);
   const editorPath = `/editor/post/${postId}`;
   // Whether the editor needs a hash navigation depends on the `editorReact` flag.
   const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
-  const siteTimezone = getSiteTimezone(settings);
-  const isPublishedPost = post?.status === 'published';
-  const hasFailedEmail = emailSendingStatus?.sending.status === 'failed';
-  const showPublishedOnSite = isPublishedPost && (!hasNewsletterAnalytics || hasFailedEmail);
-  const showPublishedAndSent = isPublishedPost && hasNewsletterAnalytics && !hasFailedEmail;
+  const publicationSummary =
+    post &&
+    getPostPublicationSummary(post, {
+      isEmailSent,
+      improveSendingUI,
+      timezone: getSiteTimezone(settings),
+    });
 
   // Track once per open — canManageGiftLink can flip while the modal is open
   // (current-user query resolving), which must not re-fire the event.
@@ -315,20 +313,15 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                   >
                     {post?.title}
                   </H1>
-                  {post?.published_at && (
+                  {publicationSummary && (
                     <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
-                      {isEmailOnly(post) &&
-                        `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {showPublishedOnSite &&
-                        `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {showPublishedAndSent &&
-                        `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                      {publicationSummary}
                     </div>
                   )}
+                  <PostAnalyticsEmailSendingStatus key={postId} />
                 </div>
               </div>
             )}
-            <EmailSendingStatusBanner />
           </div>
         </div>
       </header>

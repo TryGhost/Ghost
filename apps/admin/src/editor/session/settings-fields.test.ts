@@ -26,6 +26,7 @@ import {
 const VALID = {
   visibility: 'public',
   tiers: [],
+  email_subject: null,
   meta_title: null,
   meta_description: null,
   canonical_url: null,
@@ -67,6 +68,13 @@ describe('validatedFieldsOf', () => {
 });
 
 describe('settingsFieldError', () => {
+  it('validates the email subject on every save, counting Unicode characters', () => {
+    expect(settingsFieldError({ ...VALID, email_subject: '𝔘'.repeat(300) }, false)).toBeNull();
+    expect(settingsFieldError({ ...VALID, email_subject: '𝔘'.repeat(301) }, false)).toBe(
+      'Email subject cannot be longer than 300 characters.',
+    );
+    expect(settingsFieldError({ ...VALID, email_subject: '' }, false)).toBeNull();
+  });
   it('passes fields that break no rule', () => {
     expect(settingsFieldError(VALID, false)).toBeNull();
   });

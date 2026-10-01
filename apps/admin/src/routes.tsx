@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   type AdminRouteHandle,
   type RouteObject,
@@ -6,6 +6,7 @@ import {
   lazyComponent,
   matchRoutes,
   redirect,
+  useLocation,
 } from '@tryghost/admin-x-framework';
 
 // ActivityPub
@@ -16,10 +17,11 @@ import { AnalyticsProvider, analyticsRouteChildren } from './analytics/api';
 import MyProfileRedirect from './my-profile-redirect';
 
 // Ember
-import { EmberFallback, ForceUpgradeGuard } from './ember-bridge';
+import { EmberFallback, ForceUpgradeGuard, syncEmberRoutePattern } from './ember-bridge';
 import HomeRedirect from './home-redirect';
 import { EmberListWithGiftLinks } from './gift-link-modal-host';
 import { EditorGate } from './editor-gate';
+import { lazyRestoreScreen } from './editor/api';
 import { PagesListGate, PostsListGate } from './posts-list-gate';
 import { MemberActivityGate } from './member-activity-gate';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
@@ -50,7 +52,7 @@ import { type AuthRouteHandle, authRoutes, useAuthScreensOwner } from './auth/ap
 
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
-const EMBER_ROUTES: string[] = ['/pro/*', '/restore'];
+const EMBER_ROUTES: string[] = ['/pro/*'];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
 
@@ -199,6 +201,7 @@ const appRoutes: RouteObject[] = [
     handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
   },
   { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
+  { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },
   {
     path: '/migrate/*',
     lazy: lazyComponent(lazyMigrateScreen),
@@ -273,4 +276,25 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
 
 export function useIsEmberOwnedRoute(pathname: string): boolean {
   return useEmberOwnedRouteMatcher()(pathname);
+}
+
+/** The matched route's path pattern, e.g. `/tags/:tagSlug`, never the path's own ids or slugs. */
+function matchedRoutePattern(pathname: string): string {
+  let pattern = '';
+  for (const { route } of matchRoutes(routes, pathname) ?? []) {
+    if (route.path) {
+      // An absolute child path already repeats its parents' paths
+      pattern = route.path.startsWith('/') ? route.path : `${pattern}/${route.path}`;
+    }
+  }
+  return pattern.replace(/\/\/+/g, '/') || '/';
+}
+
+/** Tells Ember which route pattern React is showing, or null while Ember serves the screen. */
+export function useSyncEmberRoutePattern(): void {
+  const { pathname } = useLocation();
+  const isEmberOwned = useIsEmberOwnedRoute(pathname);
+  const routePattern = isEmberOwned ? null : matchedRoutePattern(pathname);
+
+  useEffect(() => syncEmberRoutePattern(routePattern), [routePattern]);
 }

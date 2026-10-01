@@ -1,9 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { InAppProviders, fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
-import { publishRecipientFree } from '@tryghost/test-data/selectors/editor';
+import {
+  publishRecipientFree,
+  publishRecipientSegments,
+  publishSettingEmailRecipients,
+} from '@tryghost/test-data/selectors/editor';
 
 import { PublishFlowModal } from '@/editor/publish/publish-flow-modal';
 import { UpdateFlowModal } from '@/editor/publish/update-flow-modal';
@@ -186,6 +190,23 @@ describe('Publish flow', () => {
     });
   });
 
+  it('keeps confirmation pending during navigation without showing completion', async () => {
+    const { onCompleted } = await renderPublishFlow({ showCompletion: false });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+    // The caller has started navigation, but the destination may still be loading.
+    await expect.element(publishScreen.confirm()).toBeVisible();
+    await expect.element(publishScreen.confirmButton()).toBeDisabled();
+    await expect(publishScreen.complete()).toHaveCount(0);
+    expect(JSON.parse(localStorage.getItem('ghost-last-published-post') ?? 'null')).toEqual({
+      id: POST_ID,
+      type: 'post',
+    });
+  });
+
   it('holds the confirm button through the email poll so the publish cannot be dispatched twice', async () => {
     const email = { status: 'pending' };
     fakeEmailPolling(email);
@@ -323,6 +344,50 @@ describe('Publish flow', () => {
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
+  it('rotates disclosure chevrons only 180 degrees alongside legacy Admin CSS', async () => {
+    const legacyStyle = document.createElement('style');
+    legacyStyle.textContent = '.rotate-180 { transform: rotate(180deg); }';
+    document.head.appendChild(legacyStyle);
+    onTestFinished(() => legacyStyle.remove());
+    await renderPublishFlow();
+
+    const trigger = publishScreen.setting('publish-type');
+    const chevron = () => trigger.element().querySelector(':scope > svg')!;
+    expect(getComputedStyle(chevron()).rotate).toBe('none');
+
+    await trigger.click();
+    await expect.poll(() => getComputedStyle(chevron()).rotate).toBe('180deg');
+    expect(getComputedStyle(chevron()).transform).toBe('none');
+
+    await trigger.click();
+    await expect.poll(() => getComputedStyle(chevron()).rotate).toBe('none');
+    expect(getComputedStyle(chevron()).transform).toBe('none');
+  });
+
+  it('keeps timing radios in place when scheduling fields appear and disappear', async () => {
+    await renderPublishFlow();
+    await publishScreen.setting('publish-at').click();
+
+    const now = page.getByRole('radio', { name: 'Set it live now' });
+    const schedule = page.getByRole('radio', { name: 'Schedule for later' });
+    await expect.element(now).toBeVisible();
+
+    const radioSpacing = () => {
+      const first = now.element().getBoundingClientRect();
+      const second = schedule.element().getBoundingClientRect();
+      return { x: second.x - first.x, y: second.y - first.y };
+    };
+    const before = radioSpacing();
+
+    await schedule.click();
+    await expect.element(publishScreen.scheduleDate()).toBeVisible();
+    expect(radioSpacing()).toEqual(before);
+
+    await now.click();
+    await expect.element(publishScreen.scheduleDate()).not.toBeInTheDocument();
+    expect(radioSpacing()).toEqual(before);
+  });
+
   it('gives each publish-at radio its own id, reached from exactly one label', async () => {
     await renderPublishFlow();
 
@@ -408,6 +473,63 @@ describe('Publish flow', () => {
     await expect.element(publishScreen.options()).toBeInTheDocument();
   });
 
+  it('keeps recipient section height stable while a new newsletter count loads', async () => {
+    let finishCounts = () => {};
+    const countsPending = new Promise<void>((resolve) => {
+      finishCounts = resolve;
+    });
+    fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, async ({ url }) => {
+      const isMonthly = new URL(url).searchParams.get('filter')?.includes('monthly');
+      if (isMonthly) {
+        await countsPending;
+      }
+      return {
+        members: [],
+        meta: {
+          pagination: {
+            page: 1,
+            limit: 1,
+            pages: 1,
+            total: isMonthly ? 5 : 20,
+            next: null,
+            prev: null,
+          },
+        },
+      };
+    });
+    await renderPublishFlow({
+      site: {
+        ...SITE,
+        newsletters: [
+          ...SITE.newsletters,
+          {
+            slug: 'monthly',
+            name: 'Monthly',
+            status: 'active',
+            visibility: 'members',
+            sortOrder: 1,
+          },
+        ],
+      },
+    });
+    await publishScreen.setting('email-recipients').click();
+    await expect.element(publishScreen.recipientFree()).toHaveAccessibleName('Free (20)');
+    const section = page.getByTestId(publishSettingEmailRecipients);
+    const before = section.element().getBoundingClientRect().height;
+
+    try {
+      await page.getByRole('combobox', { name: 'Newsletter' }).click();
+      await page.getByRole('option', { name: 'Monthly', exact: true }).click();
+      await expect.element(publishScreen.recipientFree()).toHaveAccessibleName('Free');
+      expect(section.element().getBoundingClientRect().height).toBe(before);
+    } finally {
+      finishCounts();
+    }
+
+    await expect.element(publishScreen.recipientFree()).toHaveAccessibleName('Free (5)');
+    expect(section.element().getBoundingClientRect().height).toBe(before);
+  });
+
   it('loads every page before exposing tier and label recipients', async () => {
     const pagination = (pageNumber: number) => ({
       page: pageNumber,
@@ -448,12 +570,163 @@ describe('Publish flow', () => {
     await expect.poll(() => labelsApi.requests.length).toBe(2);
     await expect.element(page.getByLabelText('Specific people')).toBeInTheDocument();
     await page.getByLabelText('Specific people').click();
-    await expect.element(page.getByLabelText('First tier')).toBeInTheDocument();
-    await expect.element(page.getByLabelText('Last tier')).toBeInTheDocument();
-    await expect.element(page.getByLabelText('First label')).toBeInTheDocument();
-    await expect.element(page.getByLabelText('Last label')).toBeInTheDocument();
+    await page.getByPlaceholder('Search labels and tiers...').click();
+    await expect.element(page.getByRole('option', { name: 'First tier' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'Last tier' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'First label' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'Last label' })).toBeInTheDocument();
     expect(new URL(tiersApi.requests[1].url).searchParams.get('page')).toBe('2');
     expect(new URL(labelsApi.requests[1].url).searchParams.get('page')).toBe('2');
+  });
+
+  it('groups specific recipients into active tiers, archived tiers, and labels', async () => {
+    fakeAdminEndpoint('GET', /^\/tiers\/\?/, {
+      tiers: [
+        { slug: 'legacy', name: 'Legacy tier', active: false },
+        { slug: 'supporter', name: 'Supporter', active: true },
+      ],
+    });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [{ slug: 'vip', name: 'VIP' }],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: 'status:free',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+    await page.getByLabelText('Specific people').click();
+    const search = page.getByRole('combobox');
+    await search.click();
+
+    await expect
+      .element(
+        page
+          .getByRole('group', { name: 'Active tiers' })
+          .getByRole('option', { name: 'Supporter' }),
+      )
+      .toBeVisible();
+    await expect
+      .element(
+        page
+          .getByRole('group', { name: 'Archived tiers' })
+          .getByRole('option', { name: 'Legacy tier' }),
+      )
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('group', { name: 'Labels' }).getByRole('option', { name: 'VIP' }))
+      .toBeVisible();
+
+    await search.fill('Legacy');
+    await expect(page.getByRole('group', { name: 'Active tiers' })).toHaveCount(0);
+    await expect(page.getByRole('group', { name: 'Labels' })).toHaveCount(0);
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByRole('button', { name: 'Remove Legacy tier' })).toBeVisible();
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeVisible();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'tier:legacy' },
+    });
+  });
+
+  it('searches existing recipient labels without offering label management', async () => {
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [
+        { slug: 'vip', name: 'VIP' },
+        { slug: 'staff', name: 'Staff' },
+      ],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: 'status:free',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+    await page.getByLabelText('Specific people').click();
+    const search = page.getByRole('combobox');
+    await search.fill('VIP');
+    await expect.element(page.getByRole('option', { name: 'VIP' })).toBeVisible();
+    await expect(page.getByRole('option', { name: 'Staff' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Edit label/ })).toHaveCount(0);
+    await page.getByRole('option', { name: 'VIP' }).click();
+    await search.fill('New label');
+    await expect.element(page.getByText('No labels found')).toBeVisible();
+    await expect(page.getByRole('option', { name: /Create/ })).toHaveCount(0);
+
+    // Turning the segment audience off and back on retains the selected label.
+    await page.getByLabelText('Specific people').click();
+    await expect(page.getByRole('combobox')).toHaveCount(0);
+    await page.getByLabelText('Specific people').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'label:vip' },
+    });
+  });
+
+  it('selects and removes specific recipients with the keyboard', async () => {
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [
+        { slug: 'vip', name: 'VIP' },
+        { slug: 'staff', name: 'Staff' },
+      ],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: 'status:free',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+    await page.getByLabelText('Specific people').click();
+    const picker = page.getByTestId(publishRecipientSegments);
+    const search = page.getByRole('combobox');
+    await search.click();
+    await expect.element(page.getByRole('option', { name: 'VIP' })).toBeVisible();
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(picker.getByRole('button', { name: 'Remove Staff' })).toBeVisible();
+    await userEvent.keyboard('{Enter}');
+    await expect(picker.getByRole('button', { name: 'Remove Staff' })).toHaveCount(0);
+    await userEvent.keyboard('{ArrowUp}{Enter}');
+    await expect.element(picker.getByRole('button', { name: 'Remove VIP' })).toBeVisible();
+    await userEvent.keyboard('{Backspace}');
+    await expect(picker.getByRole('button', { name: 'Remove VIP' })).toHaveCount(0);
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(picker.getByRole('button', { name: 'Remove Staff' })).toBeVisible();
+    const activeId = search.element().getAttribute('aria-activedescendant');
+    expect(activeId).toBeTruthy();
+    expect(document.getElementById(activeId ?? '')).toHaveTextContent('Staff');
+    await userEvent.keyboard('{Escape}');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect.element(search).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(publishScreen.options()).toBeVisible();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(page.getByRole('listbox')).toBeVisible();
+    await expect.element(search).toHaveAttribute('aria-expanded', 'true');
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'label:staff' },
+    });
   });
 
   it('gates the flow behind the TK reminder', async () => {
@@ -771,6 +1044,24 @@ describe('Publish flow', () => {
     await publishScreen.retryEmailButton().click();
 
     await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(retryApi.requests).toHaveLength(1);
+  });
+
+  it('keeps the email retry pending during navigation without showing completion', async () => {
+    fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
+    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
+    const { onCompleted } = await renderPublishFlow({ showCompletion: false });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await publishScreen.retryEmailButton().click();
+
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+    await expect.element(publishScreen.emailError()).toBeVisible();
+    await expect.element(publishScreen.retryEmailButton()).toBeDisabled();
+    await expect(publishScreen.complete()).toHaveCount(0);
     expect(retryApi.requests).toHaveLength(1);
   });
 

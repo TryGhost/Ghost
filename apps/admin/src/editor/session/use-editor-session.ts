@@ -34,6 +34,7 @@ import {
 import type { RestoredRevision } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
+import { createLocalRevisionWriter } from '@/editor/local-revisions';
 import {
   reportEditorError,
   reportLeaveConfirmation,
@@ -213,6 +214,11 @@ export function useEditorSession({
       onError: reportEditorError,
       onSaveFailed: (failure) => reportSaveFailure(failure, postType),
       onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, postType),
+      localRevisions: createLocalRevisionWriter({
+        type: postType,
+        storage: () => window.localStorage,
+        onError: reportEditorError,
+      }),
       transport: {
         create: async (payload: EditorCreatePayload) => {
           const current = transport.current;
@@ -267,6 +273,22 @@ export function useEditorSession({
     };
   }, [session]);
 
+  // A closing or backgrounded tab never unmounts the editor, and a discarded one never fires `pagehide`.
+  useEffect(() => {
+    const flush = () => session.flushLocalRevision();
+    const flushWhenHidden = () => {
+      if (document.visibilityState === 'hidden') {
+        flush();
+      }
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', flushWhenHidden);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', flushWhenHidden);
+    };
+  }, [session]);
+
   const view = useSyncExternalStore(session.subscribe, session.getView);
   const { state, pendingSave, title: engineTitle, slug, settings, publishTime } = view;
 
@@ -314,18 +336,20 @@ export function useEditorSession({
   });
   const saved = postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
 
+  // Only the version the session holds may replace what the screen describes. A
+  // refused read is offered again as the engine moves on: a landing save may claim it.
+  const acceptedRead = useRef<EditorRecord | undefined>(undefined);
   useEffect(() => {
-    if (!saved) {
+    if (!saved || saved === acceptedRead.current) {
       return;
     }
-    // The screen's query and a reload both answer with the post; only a valid,
-    // non-older collision token may replace what the screen describes.
     if (session.recordRefetched(saved)) {
+      acceptedRead.current = saved;
       setLoadedRecord(saved);
     }
-  }, [saved, session]);
+  }, [saved, session, state]);
 
-  // Its own request: a failed refetch of the screen's query replaces the editor.
+  // Its own request: a query refetch would land before the session could refuse the copy.
   const reload = useCallback(async (): Promise<ReloadOutcome> => {
     if (!persistedId) {
       return 'failed';

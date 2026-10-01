@@ -32,6 +32,8 @@ export interface StateBridge {
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
   navigateToBillingSubRoute?: (subRoute: string) => void;
   setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
+  setReactFullScreen?: (isFullScreen: boolean) => void;
+  setReactRoutePattern?: (routePattern: string | null) => void;
   connectNotificationsHost?: (host: EmberNotificationsHost) => () => void;
   on<K extends keyof StateBridgeEventMap>(
     event: K,
@@ -367,6 +369,20 @@ export function syncEmberPostListQueryParams(
 ): () => void {
   return waitForStateBridge((stateBridge) => {
     stateBridge.setPostListQueryParams?.(resource, params);
+  });
+}
+
+/** Tells Ember whether React's current route hides the admin sidebar. */
+export function syncEmberFullScreen(isFullScreen: boolean): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setReactFullScreen?.(isFullScreen);
+  });
+}
+
+/** Tells Ember the pattern of the React route showing, or null while Ember shows its own. */
+export function syncEmberRoutePattern(routePattern: string | null): () => void {
+  return waitForStateBridge((stateBridge) => {
+    stateBridge.setReactRoutePattern?.(routePattern);
   });
 }
 

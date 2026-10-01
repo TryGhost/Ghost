@@ -4,6 +4,8 @@ import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { EmberProvider, EmberFallback, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
+import { useSyncEmberFullScreen } from './layout/sidebar-visibility';
+import { useSyncEmberRoutePattern } from './routes';
 import {
   useEmberAuthSync,
   useEmberDataSync,
@@ -30,6 +32,8 @@ function App() {
   useEmberAuthSync();
   useEmberDataSync();
   useEmberListReturnSync();
+  useSyncEmberFullScreen();
+  useSyncEmberRoutePattern();
   useEmberNotificationsHost(alerts);
   useServerNotifications(alerts);
   useAuthNotice(Boolean(currentUser));

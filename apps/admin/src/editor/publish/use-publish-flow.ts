@@ -1,7 +1,10 @@
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
+import { pagesDataType } from '@tryghost/admin-x-framework/api/pages';
+import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
 import {
   confirmationResponseSchema,
   publishedPostCountResponseSchema,
@@ -38,6 +41,7 @@ export interface PublishFlowOptions {
   /** The machine's clock, injected for tests. */
   now?: () => Date;
   dispatch: PublishDispatcher;
+  showCompletion?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
 }
@@ -86,13 +90,14 @@ const UNKNOWN_RETRY_ERROR = 'Unknown Error occurred when attempting to resend';
 export const EMAIL_UNCONFIRMED =
   'We couldn’t confirm the newsletter was sent. Check the post’s email status from the posts list.';
 
-function initialEmailError(post: PublishFlowPost): string | null {
+/** The error the flow opens on: set only for a published or sent post whose email failed. */
+export function initialEmailError(post: PublishFlowPost): string | null {
   const didEmailFail =
     post.displayName === 'post' &&
     (post.status === 'published' || post.status === 'sent') &&
     post.email?.status === 'failed';
 
-  return didEmailFail ? (post.email?.error ?? UNKNOWN_EMAIL_ERROR) : null;
+  return didEmailFail ? post.email?.error || UNKNOWN_EMAIL_ERROR : null;
 }
 
 export function usePublishFlow({
@@ -102,10 +107,12 @@ export function usePublishFlow({
   limits,
   now,
   dispatch,
+  showCompletion = true,
   onBeforePublish,
   onCompleted,
 }: PublishFlowOptions): PublishFlow {
   const fetchApi = useFetchApi();
+  const queryClient = useQueryClient();
   const { mutateAsync: retryEmailRequest } = useRetryEmail();
   const [, refresh] = useReducer((tick: number) => tick + 1, 0);
 
@@ -180,6 +187,18 @@ export function usePublishFlow({
         },
       }),
     [fetchApi, retryEmailRequest],
+  );
+
+  // The poll reads around the query cache, so a settled send refreshes the post reads.
+  const refreshPostReads = useCallback(
+    (outcome: EmailConfirmationOutcome) => {
+      if (outcome.kind !== 'cancelled') {
+        void queryClient.invalidateQueries({
+          queryKey: [post.displayName === 'page' ? pagesDataType : postsDataType],
+        });
+      }
+    },
+    [post.displayName, queryClient],
   );
 
   const [step, setStep] = useState<PublishStep>(() =>
@@ -340,18 +359,20 @@ export function usePublishFlow({
         return;
       }
       completedRef.current = true;
-      setEmailErrorMessage(null);
-      setConfirmStatus('success');
-      setStep('complete');
-      // The server stamps the publish time; this is the closest the client has.
-      setCompletedAt(new Date().toISOString());
+      if (showCompletion) {
+        setEmailErrorMessage(null);
+        setConfirmStatus('success');
+        setStep('complete');
+        // The server stamps the publish time; this is the closest the client has.
+        setCompletedAt(new Date().toISOString());
+      }
       try {
         writePublishCelebration({ postId: post.id, displayName: post.displayName, isScheduled });
       } finally {
         onCompleted?.({ postId: post.id, isScheduled, hasEmail });
       }
     },
-    [onCompleted, post.displayName, post.id],
+    [onCompleted, post.displayName, post.id, showCompletion],
   );
 
   const applyEmailOutcome = useCallback(
@@ -361,7 +382,7 @@ export function usePublishFlow({
       }
 
       if (outcome.kind === 'failed') {
-        setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
+        setEmailErrorMessage(outcome.error || UNKNOWN_EMAIL_ERROR);
         setStep('email-error');
         setConfirmStatus('idle');
         return;
@@ -464,6 +485,7 @@ export function usePublishFlow({
         return;
       }
 
+      refreshPostReads(outcome);
       applyEmailOutcome(outcome, isScheduled);
       return;
     }
@@ -477,6 +499,7 @@ export function usePublishFlow({
     machine,
     onBeforePublish,
     post.id,
+    refreshPostReads,
     state,
   ]);
 
@@ -499,6 +522,7 @@ export function usePublishFlow({
 
     try {
       const outcome = await confirmation.retryAndConfirm(post.id, emailId);
+      refreshPostReads(outcome);
 
       if (!activeRef.current) {
         return;
@@ -507,7 +531,7 @@ export function usePublishFlow({
       if (outcome.kind === 'failed' || outcome.kind === 'cancelled') {
         retryRunningRef.current = false;
         if (outcome.kind === 'failed') {
-          setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
+          setEmailErrorMessage(outcome.error || UNKNOWN_EMAIL_ERROR);
         }
         setRetryStatus('idle');
         return;
@@ -516,7 +540,9 @@ export function usePublishFlow({
       if (outcome.kind !== 'submitted') {
         setEmailNote(EMAIL_UNCONFIRMED);
       }
-      setRetryStatus('success');
+      if (showCompletion) {
+        setRetryStatus('success');
+      }
       complete(false, outcome.kind !== 'not-needed');
     } catch (error) {
       if (activeRef.current) {
@@ -525,7 +551,7 @@ export function usePublishFlow({
         setRetryStatus('failure');
       }
     }
-  }, [complete, confirmation, post.id]);
+  }, [complete, confirmation, post.id, refreshPostReads, showCompletion]);
 
   return {
     ...optionActions,
