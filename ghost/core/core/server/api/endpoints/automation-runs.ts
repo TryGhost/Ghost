@@ -4,7 +4,7 @@ const controller = {
   docName: 'automation_runs',
   browse: {
     headers: { cacheInvalidate: false },
-    options: ['id', 'status', 'date_from', 'date_to', 'timezone', 'order', 'cursor'],
+    options: ['id', 'status', 'date_from', 'date_to', 'timezone', 'order', 'cursor', 'search'],
     validation: { options: { id: { required: true } } },
     permissions: { docName: 'automations', method: 'read' },
     async query(frame: { options: { id: string } & Record<string, unknown> }) {

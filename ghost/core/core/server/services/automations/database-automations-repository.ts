@@ -44,6 +44,23 @@ import {
 import { getStaleLockCutoff } from './stale-lock-cutoff';
 import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
 
+// Keep within api_automation_run_search's complete-match run_ids limit.
+const MEMBER_SEARCH_PROBE_LIMIT = 2000;
+const MEMBER_SEARCH_PREDICATE =
+  "(members.name LIKE ? ESCAPE '!' OR members.email LIKE ? ESCAPE '!')";
+function memberSearchPattern(query: string) {
+  return `%${query.replace(/[!%_]/g, (character) => `!${character}`)}%`;
+}
+function isMysql(knex: Knex) {
+  return ['mysql', 'mysql2'].includes(knex.client.config.client);
+}
+function withSearchTimeout<T extends Knex.QueryBuilder>(knex: Knex, query: T): T {
+  if (isMysql(knex)) {
+    query.hintComment('MAX_EXECUTION_TIME(2000)').timeout(2500, { cancel: true });
+  }
+  return query;
+}
+
 const HOUR_MS = 60 * 60 * 1000;
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
   {
@@ -275,26 +292,47 @@ export function createDatabaseAutomationsRepository({
       return knex.transaction((trx) => loadRunHistory(trx, automationId, runId));
     },
 
-    async getRunMembers(automationId, runIds) {
-      if (runIds.length === 0) {
-        return new Map();
+    async getRunMembers(automationId, runIds, search) {
+      const members = new Map<string, AutomationRunMember | null>();
+      // SQLite has a lower binding limit. Each lookup is bounded by primary-key IDs.
+      const batchSize = isMysql(knex) ? 5000 : 500;
+      for (let offset = 0; offset < runIds.length; offset += batchSize) {
+        const lookup = knex('automation_runs as runs')
+          .leftJoin('members', 'members.id', 'runs.member_id')
+          .where('runs.automation_id', automationId)
+          .whereIn('runs.id', runIds.slice(offset, offset + batchSize))
+          .select<
+            { run_id: string; id: string | null; name: string | null; email: string | null }[]
+          >('runs.id as run_id', 'members.id', 'members.name', 'members.email');
+        if (search !== undefined) {
+          const pattern = memberSearchPattern(search);
+          lookup.whereRaw(MEMBER_SEARCH_PREDICATE, [pattern, pattern]);
+        }
+        for (const row of await withSearchTimeout(knex, lookup)) {
+          members.set(
+            row.run_id,
+            row.id && row.email ? { id: row.id, name: row.name, email: row.email } : null,
+          );
+        }
       }
-      const rows = await knex('automation_runs as runs')
-        .leftJoin('members', 'members.id', 'runs.member_id')
-        .where('runs.automation_id', automationId)
-        .whereIn('runs.id', runIds)
-        .select<{ run_id: string; id: string | null; name: string | null; email: string | null }[]>(
-          'runs.id as run_id',
-          'members.id',
-          'members.name',
-          'members.email',
-        );
-      return new Map<string, AutomationRunMember | null>(
-        rows.map((row) => [
-          row.run_id,
-          row.id && row.email ? { id: row.id, name: row.name, email: row.email } : null,
-        ]),
+      return members;
+    },
+
+    async probeMemberSearch(automationId, query) {
+      if (!isMysql(knex)) {
+        return null;
+      }
+      const pattern = memberSearchPattern(query);
+      const rows = await withSearchTimeout(
+        knex,
+        knex('members')
+          .join('automation_runs as runs', 'runs.member_id', 'members.id')
+          .where('runs.automation_id', automationId)
+          .whereRaw(MEMBER_SEARCH_PREDICATE, [pattern, pattern])
+          .select<{ id: string }[]>('runs.id')
+          .limit(MEMBER_SEARCH_PROBE_LIMIT + 1),
       );
+      return rows.length <= MEMBER_SEARCH_PROBE_LIMIT ? rows.map((row) => row.id) : null;
     },
 
     async getAutomationActionLinks(automationId, actionId) {
