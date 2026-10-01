@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import os from 'os';
 import path from 'path';
 import express from 'express';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import request from 'supertest';
 import type LocalFilesStorageClass from '../../../../../core/server/adapters/storage/LocalFilesStorage';
 
@@ -18,7 +18,9 @@ describe('Local Files Storage', function () {
     let app: express.Express;
 
     async function writeFile(name: string, contents: string): Promise<string> {
-      await fs.outputFile(path.join(contentPath, 'files', '2026', '09', name), contents);
+      const outputPath = path.join(contentPath, 'files', '2026', '09', name);
+      await fs.mkdir(path.dirname(outputPath), { recursive: true });
+      await fs.writeFile(outputPath, contents);
       return `/2026/09/${name}`;
     }
 
@@ -32,7 +34,7 @@ describe('Local Files Storage', function () {
 
     afterEach(async function () {
       await configUtils.restore();
-      await fs.remove(contentPath);
+      await fs.rm(contentPath, { recursive: true, force: true });
     });
 
     const executableFiles = [

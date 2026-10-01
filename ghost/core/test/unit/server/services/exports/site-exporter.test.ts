@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import os from 'os';
 import path from 'path';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { once } from 'node:events';
 import { PassThrough, Readable, Writable, pipeline } from 'stream';
 import {
@@ -63,7 +64,7 @@ async function stageThemeZip(
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'site-exporter-theme-'));
   const zipPath = path.join(dir, 'theme.zip');
   await fs.writeFile(zipPath, contents);
-  return { zipPath, cleanup: () => fs.remove(dir) };
+  return { zipPath, cleanup: () => fs.rm(dir, { recursive: true, force: true }) };
 }
 
 /** Polls a condition instead of sleeping a fixed time — loaded CI machines
@@ -231,10 +232,7 @@ describe('SiteExporter', function () {
     await waitFor(() => source.destroyed, 'the members stream to be destroyed');
 
     // …and the staged theme zip must be removed
-    await waitFor(
-      async () => !(await fs.pathExists(staged.zipPath)),
-      'the staged theme zip to be removed',
-    );
+    await waitFor(async () => !existsSync(staged.zipPath), 'the staged theme zip to be removed');
   });
 
   it('removes a theme zip that finishes staging after the client disconnects', async function () {
@@ -270,7 +268,7 @@ describe('SiteExporter', function () {
     resolveZip(staged);
 
     await waitFor(
-      async () => !(await fs.pathExists(staged.zipPath)),
+      async () => !existsSync(staged.zipPath),
       'the late-staged theme zip to be removed',
     );
   });

@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const request = require('supertest');
 const express = require('express');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const config = require('../../../../../core/shared/config');
 const { servePublicFile } = require('../../../../../core/frontend/web/routers/serve-public-file');
 

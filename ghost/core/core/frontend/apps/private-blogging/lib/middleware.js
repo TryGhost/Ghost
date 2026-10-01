@@ -1,4 +1,4 @@
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const path = require('path');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils').default;

@@ -56,19 +56,18 @@ module.exports = {
     },
 
     postBuild: function (results) {
-        const fs = this.project.require('fs-extra');
         const walkSync = this.project.require('walk-sync');
 
         const assetsOut = path.join(path.dirname(require.resolve('ghost')), `core/built/admin`);
-        fs.removeSync(assetsOut);
-        fs.ensureDirSync(assetsOut);
+        fs.rmSync(assetsOut, {recursive: true, force: true});
+        fs.mkdirSync(assetsOut, {recursive: true});
 
         // the dist folder contains more than just index.html and /assets, especially
         // for development builds but for Ghost's purposes it only needs to serve
         // index.html and /assets
 
         // copy the index.html file
-        fs.copySync(`${results.directory}/index.html`, `${assetsOut}/index.html`, {overwrite: true, dereference: true});
+        fs.cpSync(`${results.directory}/index.html`, `${assetsOut}/index.html`, {recursive: true, dereference: true});
 
         // get all the `/assets` files, except the `icons` folder
         const assets = walkSync(results.directory + '/assets', {
@@ -88,7 +87,7 @@ module.exports = {
         assets.forEach(function (relativePath) {
             if (relativePath.slice(-1) === '/') { return; }
 
-            fs.copySync(`${results.directory}/assets/${relativePath}`, `${assetsOut}/assets/${relativePath}`, {overwrite: true, dereference: true});
+            fs.cpSync(`${results.directory}/assets/${relativePath}`, `${assetsOut}/assets/${relativePath}`, {recursive: true, dereference: true});
         });
 
         // copy assets for each admin-x app
@@ -97,9 +96,10 @@ module.exports = {
             const assetsAdminXPath = `${assetsOut}/assets/${app}`;
             if (fs.existsSync(adminXPath)) {
                 if (this.env === 'production') {
-                    fs.copySync(adminXPath, assetsAdminXPath, {overwrite: true, dereference: true});
+                    fs.cpSync(adminXPath, assetsAdminXPath, {recursive: true, dereference: true});
                 } else {
-                    fs.ensureSymlinkSync(adminXPath, assetsAdminXPath);
+                    fs.mkdirSync(path.dirname(assetsAdminXPath), {recursive: true});
+                    fs.symlinkSync(path.resolve(adminXPath), assetsAdminXPath);
                 }
             } else if (this.env === 'production') {
                 // In dev the admin-x apps may not have finished their first
@@ -118,8 +118,8 @@ module.exports = {
 
             if (fs.existsSync(koenigLexicalPath)) {
                 const embedRendererPath = path.join(koenigLexicalPath, 'embed-renderer');
-                fs.copySync(koenigLexicalPath, assetsKoenigLexicalPath, {
-                    overwrite: true,
+                fs.cpSync(koenigLexicalPath, assetsKoenigLexicalPath, {
+                    recursive: true,
                     dereference: true,
                     // The renderer executes arbitrary embed HTML and must only
                     // ship in core/built/embed-renderer for separate-origin hosting.

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const models = require('../../models');
 const routeSettings = require('../../services/route-settings');
 const { BadRequestError } = require('@tryghost/errors');

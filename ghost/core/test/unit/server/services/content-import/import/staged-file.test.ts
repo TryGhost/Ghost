@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import sinon from 'sinon';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import LocalStorageBase from '../../../../../../core/server/adapters/storage/LocalStorageBase';
@@ -24,8 +25,8 @@ describe('content import staged file', function () {
 
   afterEach(async function () {
     sinon.restore();
-    await fs.remove(sourceDirectory);
-    await fs.remove(storagePath);
+    await fs.rm(sourceDirectory, { recursive: true, force: true });
+    await fs.rm(storagePath, { recursive: true, force: true });
   });
 
   it('copies uploads to unique files and removes them idempotently', async function () {
@@ -41,13 +42,13 @@ describe('content import staged file', function () {
 
     await stager.remove(first);
     await stager.remove(first);
-    assert.equal(await fs.pathExists(first.path), false);
-    assert.equal(await fs.pathExists(second.path), true);
+    assert.equal(existsSync(first.path), false);
+    assert.equal(existsSync(second.path), true);
   });
 
   it('removes a partial staged file when the copy fails', async function () {
     const stager = createImportFileStager(importsStore);
-    sinon.stub(fs, 'copy').callsFake(async (_src: unknown, dest: unknown) => {
+    sinon.stub(fs, 'cp').callsFake(async (_src: unknown, dest: unknown) => {
       await fs.writeFile(dest as string, 'partial');
       throw new Error('copy failed');
     });

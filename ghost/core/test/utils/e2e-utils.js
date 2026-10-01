@@ -1,7 +1,7 @@
 // Utility Packages
 const debug = require('@tryghost/debug')('test');
 const _ = require('lodash');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
@@ -60,26 +60,28 @@ const prepareContentFolder = async (options) => {
    */
   configUtils.set('paths:contentPath', contentFolderForTests);
 
-  await fs.ensureDir(contentFolderForTests);
-  await fs.ensureDir(path.join(contentFolderForTests, 'data'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'themes'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'images'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'logs'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'adapters'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'settings'));
+  await fs.mkdir(contentFolderForTests, { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'data'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'themes'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'images'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'logs'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'adapters'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'settings'), { recursive: true });
 
   if (options.copyThemes) {
     // Copy all themes into the new test content folder. Default active theme is always source. If you want to use a different theme, you have to set the active theme (e.g. stub)
-    await fs.copy(
+    await fs.cp(
       path.join(__dirname, 'fixtures', 'themes'),
       path.join(contentFolderForTests, 'themes'),
+      { recursive: true },
     );
   }
 
   // Copy theme even if frontend is disabled, as admin can use source when viewing themes section
-  await fs.copy(
+  await fs.cp(
     path.join(__dirname, 'fixtures', 'themes', 'source'),
     path.join(contentFolderForTests, 'themes', 'source'),
+    { recursive: true },
   );
 
   if (options.redirectsFile) {
@@ -87,19 +89,21 @@ const prepareContentFolder = async (options) => {
   }
 
   if (options.routesFilePath) {
-    await fs.copy(
+    await fs.cp(
       options.routesFilePath,
       path.join(contentFolderForTests, 'settings', 'routes.yaml'),
+      { recursive: true },
     );
   } else if (options.copySettings) {
-    await fs.copy(
+    await fs.cp(
       path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'),
       path.join(contentFolderForTests, 'settings', 'routes.yaml'),
+      { recursive: true },
     );
   }
 
   // Used by newsletter fixtures
-  await fs.ensureDir(path.join(contentFolderForTests, 'images', '2022', '05'));
+  await fs.mkdir(path.join(contentFolderForTests, 'images', '2022', '05'), { recursive: true });
   const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
   await fs.writeFile(path.join(contentFolderForTests, 'images', '2022', '05', 'test.jpg'), GIF1x1);
 };

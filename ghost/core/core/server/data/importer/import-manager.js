@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const path = require('path');
 const os = require('node:os');
 const { randomUUID } = require('node:crypto');
@@ -363,7 +363,7 @@ class ImportManager {
     }
 
     try {
-      await fs.remove(cleanupDirectory);
+      await fs.promises.rm(cleanupDirectory, { recursive: true, force: true });
     } catch (err) {
       this.logging.error(
         new errors.InternalServerError({
@@ -489,7 +489,7 @@ class ImportManager {
   async loadStoredUpload(uploadKey, fileName) {
     let downloadDirectory;
     try {
-      downloadDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'site-content-import-'));
+      downloadDirectory = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'site-content-import-'));
       const downloadPath = path.join(downloadDirectory, 'upload');
       await pipeline(
         await this.importsStorage.readStream({ path: uploadKey }),

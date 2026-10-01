@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import path from 'path';
 import { globSync } from 'glob';
 import ImportArchive from '../../../data/importer/import-archive';
@@ -42,7 +42,7 @@ export async function prepareImportSource(
   const cleanup = async () => {
     if (!cleaned) {
       cleaned = true;
-      await fs.remove(directory);
+      await fs.rm(directory, { recursive: true, force: true });
     }
   };
 

@@ -2,7 +2,7 @@ import { describe, it, beforeAll, afterEach, afterAll } from 'vitest';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import sinon from 'sinon';
 import {
   GetObjectCommand,

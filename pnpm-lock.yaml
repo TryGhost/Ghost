@@ -521,9 +521,6 @@ catalogs:
     form-data:
       specifier: 4.0.6
       version: 4.0.6
-    fs-extra:
-      specifier: 11.3.6
-      version: 11.3.6
     glob:
       specifier: 13.0.6
       version: 13.0.6
@@ -1817,9 +1814,6 @@ importers:
       flexsearch:
         specifier: 0.7.43
         version: 0.7.43
-      fs-extra:
-        specifier: 'catalog:'
-        version: 11.3.6
       ghost:
         specifier: workspace:*
         version: link:../../ghost/core
@@ -2771,9 +2765,6 @@ importers:
       form-data:
         specifier: 'catalog:'
         version: 4.0.6
-      fs-extra:
-        specifier: 'catalog:'
-        version: 11.3.6
       ghost-storage-base:
         specifier: workspace:*
         version: link:../../packages/adapters/storage-base
@@ -3000,9 +2991,6 @@ importers:
       '@types/express-brute':
         specifier: 'catalog:'
         version: 1.0.6
-      '@types/fs-extra':
-        specifier: 11.0.4
-        version: 11.0.4
       '@types/js-yaml':
         specifier: 4.0.9
         version: 4.0.9
@@ -3927,9 +3915,6 @@ importers:
       fast-average-color:
         specifier: 9.5.2
         version: 9.5.2
-      fs-extra:
-        specifier: 'catalog:'
-        version: 11.3.6
       globals:
         specifier: 'catalog:'
         version: 17.7.0
@@ -10002,9 +9987,6 @@ packages:
   '@types/express@4.17.25':
     resolution: {integrity: sha512-dVd04UKsfpINUnK0yBoYHDF3xu7xVH4BuDotC/xGuycx4CgbP48X/KF/586bcObxT0HENHXEU8Nqtu6NR+eKhw==}
 
-  '@types/fs-extra@11.0.4':
-    resolution: {integrity: sha512-yTbItCNreRooED33qjunPthRcSjERP1r4MqCZc7wv0u2sUkzTFp45tgUfS5+r7FrZPdmCCNflLhVSP/o+SemsQ==}
-
   '@types/fs-extra@5.1.0':
     resolution: {integrity: sha512-AInn5+UBFIK9FK5xc9yP5e3TQSPNNgjHByqYcj9g5elVBnDQcQL7PlO1CIRy2gWlbwK7UPYqi7vRvFA44dCmYQ==}
 
@@ -10049,9 +10031,6 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
-
-  '@types/jsonfile@6.1.4':
-    resolution: {integrity: sha512-D5qGUYwjvnNNextdU59/+fI+spnwtTFmyQP0h+PfIOSkNfpU6AOICUOkm4i0OnSk+NyjdPJrxCDro0sJsWlRpQ==}
 
   '@types/jsonwebtoken@9.0.10':
     resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
@@ -29083,11 +29062,6 @@ snapshots:
       '@types/qs': 6.15.1
       '@types/serve-static': 1.15.10
 
-  '@types/fs-extra@11.0.4':
-    dependencies:
-      '@types/jsonfile': 6.1.4
-      '@types/node': 22.20.1
-
   '@types/fs-extra@5.1.0':
     dependencies:
       '@types/node': 22.20.1
@@ -29138,10 +29112,6 @@ snapshots:
       undici-types: 8.10.0
 
   '@types/json-schema@7.0.15': {}
-
-  '@types/jsonfile@6.1.4':
-    dependencies:
-      '@types/node': 22.20.1
 
   '@types/jsonwebtoken@9.0.10':
     dependencies:

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const yaml = require('js-yaml');
 const path = require('path');
 const yamlParser = require('../../../../../core/server/services/route-settings/yaml-parser');
