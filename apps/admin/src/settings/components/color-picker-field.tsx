@@ -156,8 +156,8 @@ const ColorPickerField = ({
         setOpen(nextOpen);
       }}
     >
-      {/* The title and trigger each sit in a control-height band so the row lines
-          up with other form rows, with any hint flowing beneath the title */}
+      {/* The trigger sits in a control-height band and the title is padded to center
+          its first line on it, so any hint sits directly beneath the title */}
       <Inline
         align="start"
         className={`w-full ${direction === 'ltr' ? 'flex-row-reverse' : ''}`}
@@ -167,7 +167,9 @@ const ColorPickerField = ({
       >
         {title && (
           <label className="min-w-0 flex-1 cursor-pointer text-left" htmlFor={triggerId}>
-            <span className="flex min-h-(--control-height) items-center font-medium">{title}</span>
+            <span className="block pt-[calc((var(--control-height)-1lh)/2)] font-medium">
+              {title}
+            </span>
             {hint && (
               <FieldDescription className={error ? 'text-destructive' : undefined}>
                 {hint}

@@ -77,13 +77,13 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({ setting, setSetting }) => {
         </Field>
       );
     case 'boolean':
-      // The label and switch each sit in a control-height band so the row lines
-      // up with other form rows, with any description flowing beneath the label
+      // The switch sits in a control-height band and the label is padded to center
+      // its first line on it, so any description sits directly beneath the label
       return (
         <Field orientation="horizontal">
           <FieldContent>
             <FieldLabel
-              className="min-h-(--control-height) items-center"
+              className="pt-[calc((var(--control-height)-1lh)/2)]"
               htmlFor={`theme-setting-${setting.key}`}
             >
               {humanizeSettingKey(setting.key)}
