@@ -28,11 +28,12 @@ import {
   useProtoAutomations,
   useStripeConnected,
 } from '@/automations/proto/shared/store';
-import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import {
+  ArchiveAutomationDialog,
+  PublishAutomationDialog,
   TurnOffAutomationDialog,
-  TurnOnAutomationDialog,
-} from '@/automations/proto/shared/lifecycle-dialogs';
+} from './dialogs';
+import { getRunData } from '@/automations/proto/shared/mock';
 import { NEW_AUTOMATION_ID } from './creation-variant';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 
@@ -40,8 +41,8 @@ import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 //
 // Toasts on this screen share one format: "Automation" and the past tense of
 // exactly what you just did — created, saved, published, updated, archived,
-// unarchived, duplicated. No names, no actions, no second line. Turning off has
-// none: the badge flipping to Off is the feedback, in the place you're looking.
+// unarchived, duplicated, turned off. No names, no actions, no second line. The
+// one exception is the error toast refusing an incomplete Publish or Update.
 //
 // This is the lane where automations can be made and removed. Phase 1's list is
 // read-only and stays that way.
@@ -62,6 +63,11 @@ const VIEWS: { value: ViewKey; label: string }[] = [
   { value: 'archived', label: 'Archived automations' },
   { value: 'all', label: 'All automations' },
 ];
+
+// Members mid-flow in a row's automation — what Turn off and Archive tell you
+// they'll exit (see ./dialogs). Nobody is in progress in one that's off.
+const inProgressCount = (entry: ProtoAutomation): number =>
+  entry.automation.status === 'active' ? getRunData(entry.automation.id).metrics.in_progress : 0;
 
 const AutomationsList: React.FC = () => {
   const navigate = useNavigate();
@@ -165,7 +171,14 @@ const AutomationsList: React.FC = () => {
   // draft.
   const handleToggleStatus = (entry: ProtoAutomation) => {
     if (entry.automation.status === 'active') {
-      setPendingTurnOff(entry);
+      // Only asks when someone would be exited — with nobody in progress,
+      // turning off just happens.
+      if (inProgressCount(entry) > 0) {
+        setPendingTurnOff(entry);
+      } else {
+        setAutomationStatus(entry.automation.id, 'inactive');
+        toast.success('Automation turned off');
+      }
       return;
     }
     setPendingPublish(entry);
@@ -187,8 +200,7 @@ const AutomationsList: React.FC = () => {
     }
     setPendingTurnOff(null);
     setAutomationStatus(pendingTurnOff.automation.id, 'inactive');
-    // No toast, matching the detail screen: the row's badge flips to Off in
-    // place, which is the confirmation.
+    toast.success('Automation turned off');
   };
 
   const visible = automations.filter(
@@ -301,8 +313,7 @@ const AutomationsList: React.FC = () => {
       {/* The delete confirm that used to live here went with the action — see
                 setAutomationArchived in shared/store for why the write is still around. */}
       <ArchiveAutomationDialog
-        live={pendingArchive?.automation.status === 'active'}
-        name={pendingArchive?.automation.name ?? ''}
+        inProgressCount={pendingArchive ? inProgressCount(pendingArchive) : 0}
         open={Boolean(pendingArchive)}
         onConfirm={confirmArchive}
         onOpenChange={() => setPendingArchive(null)}
@@ -311,13 +322,13 @@ const AutomationsList: React.FC = () => {
       {/* The lifecycle confirms, shared with the detail header's buttons. No
                 pending spinner here: the list's write is the store alone, with no
                 canvas repainting behind the dialog to wait for. */}
-      <TurnOnAutomationDialog
+      <PublishAutomationDialog
         open={Boolean(pendingPublish)}
-        pending={false}
         onConfirm={confirmPublish}
         onOpenChange={() => setPendingPublish(null)}
       />
       <TurnOffAutomationDialog
+        inProgressCount={pendingTurnOff ? inProgressCount(pendingTurnOff) : 0}
         open={Boolean(pendingTurnOff)}
         onConfirm={confirmTurnOff}
         onOpenChange={() => setPendingTurnOff(null)}

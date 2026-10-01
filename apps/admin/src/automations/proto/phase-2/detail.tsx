@@ -9,9 +9,6 @@ import {
   AlertDialogTitle,
   Button,
   EmptyIndicator,
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -32,12 +29,12 @@ import {
   useStripeConnected,
 } from '@/automations/proto/shared/store';
 import { NEW_AUTOMATION_ID } from './creation-variant';
-import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import {
-  PublishChangesDialog,
+  ArchiveAutomationDialog,
+  PublishAutomationDialog,
   TurnOffAutomationDialog,
-  TurnOnAutomationDialog,
-} from '@/automations/proto/shared/lifecycle-dialogs';
+  UpdateAutomationDialog,
+} from './dialogs';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar } from './header-bar';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
@@ -154,6 +151,10 @@ const AutomationFloat: React.FC = () => {
   // they're confirmed, so they're written straight to the store rather than
   // waiting on Save with the rest of the edits.
   const liveStatus: LiveStatus = savedAutomation?.status ?? 'inactive';
+  // Members mid-flow right now — what Turn off, Update and Archive tell you
+  // they'll affect (see ./dialogs). The fixture's in-progress figure while live;
+  // an automation that's off has nobody in progress.
+  const inProgressCount = liveStatus === 'active' ? (scenario?.metrics.in_progress ?? 0) : 0;
   const [stopOpen, setStopOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
@@ -171,7 +172,6 @@ const AutomationFloat: React.FC = () => {
   // The Publish button's blocked popover — the answer to pressing Publish while
   // the automation can't go live. One piece of state serves both lifecycle
   // states' primaries; only one of them is ever rendered.
-  const [publishBlockedOpen, setPublishBlockedOpen] = useState(false);
   // Set when the screen is deliberately navigating away — Delete, and the first
   // Save of a new automation, which swaps /new for a real id.
   //
@@ -543,11 +543,13 @@ const AutomationFloat: React.FC = () => {
 
   // Publish, while off: take the automation live. It confirms first (the
   // "Publish automation?" dialog), and a draft that fails validation is blocked
-  // at the press — popover, and the canvas showing every warning it holds.
+  // at the press — an error toast, and the canvas showing every warning it holds.
   const handlePublishAttempt = () => {
     if (!canGoLive) {
+      // The refusal is an error toast, the spec's one non-success toast — and
+      // the canvas reveals every highlight it holds, grace periods included.
       revealWarnings();
-      setPublishBlockedOpen(true);
+      toast.error('Fix highlighted issues to publish.');
       return;
     }
     setStartOpen(true);
@@ -559,8 +561,10 @@ const AutomationFloat: React.FC = () => {
   // has to hold up.)
   const handlePublishChangesClick = () => {
     if (!canGoLive) {
+      // The refusal is an error toast, the spec's one non-success toast — and
+      // the canvas reveals every highlight it holds, grace periods included.
       revealWarnings();
-      setPublishBlockedOpen(true);
+      toast.error('Fix highlighted issues to publish.');
       return;
     }
     setPublishOpen(true);
@@ -645,6 +649,17 @@ const AutomationFloat: React.FC = () => {
   const handleStop = () => {
     setStopOpen(false);
     setAutomationStatus(id, 'inactive');
+    toast.success('Automation turned off');
+  };
+
+  // Turning off only asks when someone would be exited: with members in
+  // progress, the dialog says how many; with none, it just happens.
+  const handleTurnOffClick = () => {
+    if (inProgressCount > 0) {
+      setStopOpen(true);
+      return;
+    }
+    handleStop();
   };
 
   // The header's actions — phase 1's per-state pair, restored after the
@@ -660,25 +675,11 @@ const AutomationFloat: React.FC = () => {
   // disabled for validity. Phase 2 has states phase 1 can't reach — no trigger
   // chosen, tiers unanswered — and a greyed-out Publish is a dead end: it says
   // no without saying why. Pressing it while blocked answers at the point of
-  // the press — the popover names the deal, and the canvas shows every warning
+  // the press — the error toast names the deal, and the canvas shows every warning
   // it holds, grace periods included.
   //
   // No save indicator. Flickering "Saving…" on every keystroke draws the eye to
   // plumbing rather than to anything the publisher can act on.
-  //
-  // Same popover on both primaries: same refusal, same dress as the card
-  // warnings' popovers (w-72, one text-md sentence) — the same kind of answer,
-  // raised from a control instead of a card. Only one primary renders at a
-  // time, so they can share the one piece of open-state.
-  const blockedPopover = (button: React.ReactNode) => (
-    <Popover open={publishBlockedOpen} onOpenChange={setPublishBlockedOpen}>
-      <PopoverAnchor asChild>{button}</PopoverAnchor>
-      {/* Shade's own popover: its p-5, no set width and its own type, so it hugs the line. */}
-      <PopoverContent align="end">
-        <p>Fix highlighted issues to publish.</p>
-      </PopoverContent>
-    </Popover>
-  );
 
   const chromeActions =
     liveStatus === 'inactive' ? (
@@ -689,20 +690,18 @@ const AutomationFloat: React.FC = () => {
         <Button disabled={!hasChanges} variant="outline" onClick={handleSave}>
           Save
         </Button>
-        {blockedPopover(<Button onClick={handlePublishAttempt}>Publish</Button>)}
+        <Button onClick={handlePublishAttempt}>Publish</Button>
       </>
     ) : (
       <>
-        <Button variant="outline" onClick={() => setStopOpen(true)}>
+        <Button variant="outline" onClick={handleTurnOffClick}>
           Turn off
         </Button>
         {/* "Update", the post editor's word for pushing edits to something
             that's already live — and the right-panel concept's. */}
-        {blockedPopover(
-          <Button disabled={!hasChanges} onClick={handlePublishChangesClick}>
-            Update
-          </Button>,
-        )}
+        <Button disabled={!hasChanges} onClick={handlePublishChangesClick}>
+          Update
+        </Button>
       </>
     );
 
@@ -850,6 +849,9 @@ const AutomationFloat: React.FC = () => {
                 // An email's report opens as a modal here: the side panel owns the
                 // right edge, where the other lanes' sheet slides in.
                 analyticsSurface="modal"
+                // The messaging spec's wording: the trigger's settings reset, and
+                // the rest of the flow is untouched.
+                changeTriggerDescription="Your settings on this trigger will be reset. All other steps in this automation will remain unchanged."
                 draft={draftFlow}
                 // The exit sentence lives in Settings now, under Exit conditions.
                 exitsOnTriggerCard={false}
@@ -993,13 +995,18 @@ const AutomationFloat: React.FC = () => {
       </div>
 
       {/* Lifecycle confirms — turning the automation on, and taking it off. */}
-      <TurnOnAutomationDialog
+      <PublishAutomationDialog
         open={startOpen}
         pending={publishing}
         onConfirm={handleStart}
         onOpenChange={setStartOpen}
       />
-      <TurnOffAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
+      <TurnOffAutomationDialog
+        inProgressCount={inProgressCount}
+        open={stopOpen}
+        onConfirm={handleStop}
+        onOpenChange={setStopOpen}
+      />
 
       {/* The details editor is the side panel's Settings tab — before that a
                 sheet, a popover from the title, and a dialog with three footers
@@ -1011,15 +1018,15 @@ const AutomationFloat: React.FC = () => {
                 tells nobody anything; the number of members mid-flow is what actually
                 decides it. */}
       <ArchiveAutomationDialog
-        live={liveStatus === 'active'}
-        name={automation.name}
+        inProgressCount={inProgressCount}
         open={archiveOpen}
         onConfirm={handleArchive}
         onOpenChange={setArchiveOpen}
       />
 
       {/* Publish — a deliberate confirm when the automation is already live. */}
-      <PublishChangesDialog
+      <UpdateAutomationDialog
+        inProgressCount={inProgressCount}
         open={publishOpen}
         pending={publishing}
         onConfirm={publishChanges}
@@ -1039,17 +1046,17 @@ const AutomationFloat: React.FC = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+            <AlertDialogTitle>Leave without saving?</AlertDialogTitle>
             <AlertDialogDescription>
-              Your changes will be lost if you leave this automation.
+              Your changes will be lost if you leave without saving.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {/* Work is genuinely lost here, so the dialog says so in the shipping
                         editor's own words and colours the confirm destructive. */}
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep working</AlertDialogCancel>
+            <AlertDialogCancel>Stay</AlertDialogCancel>
             <Button variant="destructive" onClick={() => navigationBlocker.proceed?.()}>
-              Discard changes
+              Leave
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

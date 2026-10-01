@@ -1157,6 +1157,9 @@ interface EditCanvasProps {
   // fix. 'field': Shade's own field states — the faulty field goes red with its
   // message under it, and the card takes a matching red border. Phase 2.
   faultDisplay?: 'alert' | 'field';
+  // The Change trigger confirm's body, when a lane's messaging spec words it
+  // differently. Absent, the canvas's own sentence.
+  changeTriggerDescription?: string;
   // The create-button variant's pre-create state (see CREATION_SLOT): the
   // empty trigger card's options become SELECTIONS with a Create button
   // beneath, and pressing it hands the chosen config up instead of applying
@@ -1183,6 +1186,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   analyticsSurface = 'sheet',
   exitsOnTriggerCard = true,
   faultDisplay = 'alert',
+  changeTriggerDescription,
   onCreateAutomation,
   hideControls = false,
 }) => {
@@ -1855,7 +1859,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Change trigger?</AlertDialogTitle>
             <AlertDialogDescription>
-              The settings and exit conditions you’ve set for this trigger will be reset.
+              {changeTriggerDescription ??
+                'The settings and exit conditions you’ve set for this trigger will be reset.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
