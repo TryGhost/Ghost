@@ -2936,9 +2936,6 @@ importers:
       semver:
         specifier: 'catalog:'
         version: 7.8.5
-      sharp:
-        specifier: 'catalog:'
-        version: 0.35.5(@types/node@22.20.1)
       simple-dom:
         specifier: 1.4.0
         version: 1.4.0
@@ -3111,6 +3108,9 @@ importers:
       qs:
         specifier: 6.16.0
         version: 6.16.0
+      sharp:
+        specifier: 'catalog:'
+        version: 0.35.5(@types/node@22.20.1)
       sinon:
         specifier: 'catalog:'
         version: 22.1.0
