@@ -5,7 +5,7 @@ import {
   csvColumnsForField,
   fieldValuesFromCsvRow,
   isMetafieldColumn,
-} from '../src/csv.ts';
+} from '../src/index.ts';
 
 // The behavioural outcomes — an export carrying the right columns, an exported
 // file re-importing without remapping — are proven end-to-end through the member
