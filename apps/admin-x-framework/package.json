@@ -86,6 +86,7 @@
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tryghost/limit-service": "workspace:*",
+    "@tryghost/metafield-csv": "workspace:*",
     "@tryghost/metafield-types": "workspace:*",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/shade": "workspace:*",

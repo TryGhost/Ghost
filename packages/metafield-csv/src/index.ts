@@ -1,6 +1,6 @@
-import { subFieldsOf, type FieldType } from './index.ts';
-import { QUALIFIER, SEPARATOR, formatIdentity } from './identity.ts';
-import type { FieldIdentityString } from './identity.ts';
+import { subFieldsOf, type FieldType } from '@tryghost/metafield-types/structure';
+import { QUALIFIER, SEPARATOR, formatIdentity } from '@tryghost/metafield-types/identity';
+import type { FieldIdentityString } from '@tryghost/metafield-types/identity';
 
 /**
  * How a field's value maps onto CSV columns.
