@@ -68,6 +68,10 @@ await renderAdminApp("/tags", {labs: {someFlag: true}});
 // autosave fires at once (`withFastAutosave()`):
 await renderAdminApp("/editor/post/abc123", withoutAutosave({labs: {editorReact: true}}));
 
+// Router state the screen would have been navigated to with, e.g. the editor
+// opened from an analytics screen:
+await renderAdminApp("/editor/post/abc123", {labs: {editorReact: true}, locationState: {editorReturn: "/analytics"}});
+
 // Persisted user state, e.g. what's-new preferences:
 const me = currentUserResponse();
 me.users[0].accessibility = JSON.stringify({whatsNew: {lastSeenDate: "2025-01-01T00:00:00.000Z"}});
