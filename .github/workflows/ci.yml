@@ -1111,6 +1111,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      - name: Upload Admin acceptance results
+        if: always() && matrix.app == '@tryghost/admin'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: admin-acceptance-results-${{ matrix.shardIndex }}
+          path: apps/admin/test-results/acceptance.json
+          if-no-files-found: ignore
+          retention-days: 30
+
       - uses: tryghost/actions/actions/slack-build@470d6b8a9ee6244de1de7179c5007c88133a0184 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
