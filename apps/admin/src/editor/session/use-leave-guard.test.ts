@@ -155,15 +155,17 @@ describe('useEditorLeaveGuard', () => {
       function EditorRoute() {
         return createElement(Editor, { key: useEditorSessionKey() });
       }
-      window.history.replaceState(null, '', '#/editor/post/first');
+      // Both editor entries carry one session key in their router state.
+      const sharedSession = { usr: { editorSession: 'shared' } };
+      window.history.replaceState(sharedSession, '', '#/editor/post/first');
       window.history.pushState(null, '', '#/posts');
-      window.history.pushState(null, '', '#/editor/post/second');
+      window.history.pushState(sharedSession, '', '#/editor/post/second');
       const router = createHashRouter([
         { path: '/editor/*', element: createElement(EditorRoute) },
         { path: '/posts', element: 'Posts' },
       ]);
       // Hash anchors leave their entries without a router index.
-      window.history.replaceState(null, '');
+      window.history.replaceState(sharedSession, '');
       render(createElement(RouterProvider, { router }));
       try {
         await traverse(() => window.history.go(-2), '#/editor/post/first');

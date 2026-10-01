@@ -40,6 +40,7 @@ import {
   reportLeaveConfirmation,
   reportSaveFailure,
 } from '@/editor/report-error';
+import { withoutTrailingSlash } from '@/hooks/use-history-pop-navigation-guard';
 import { contentToText } from './content-text';
 import {
   createEditorSession,
@@ -67,13 +68,15 @@ interface EditorSessionLocationState {
 }
 
 /**
- * Identifies the editing session behind the current URL. A create replaces the
- * URL and carries the key forward, so the same session survives the swap.
+ * Identifies the editing session behind the current URL: its history entry and
+ * post. A create replaces the URL and carries the key forward, so the same
+ * session survives the swap.
  */
 export function useEditorSessionKey(): string {
   const location = useLocation();
   const state = location.state as EditorSessionLocationState | null;
-  return state?.editorSession ?? location.key;
+  // Entries the router did not create all share the key `default`.
+  return state?.editorSession ?? `${location.key}:${withoutTrailingSlash(location.pathname)}`;
 }
 
 export interface EditorSessionBinding {
