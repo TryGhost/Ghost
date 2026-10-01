@@ -143,8 +143,12 @@ export function EditorHeaderActions({
       fallback: session.title,
       hasUnsavedChanges: session.isDirty(),
       isSaving,
+      saveError:
+        session.state.kind === 'error' || session.state.kind === 'conflict'
+          ? session.state.error
+          : null,
       onChange: (value) => session.stageSettings({ email_subject: value }),
-      onSave: saveBeforePreview,
+      onCommit: session.commitSettings,
     },
     isPost: postType === 'post',
     newsletterSlug: post.newsletter ?? undefined,
