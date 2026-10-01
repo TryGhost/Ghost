@@ -13,6 +13,7 @@ const {
 const { default: ObjectID } = require('bson-objectid');
 const db = require('../../../../data/db');
 const { memberAvatarImage } = require('../../member-avatar');
+const { browseMemberChangeEvents } = require('../../../metafields/members/change-events');
 
 /**
  * This mongo transformer ignores the provided filter option and replaces the filter with a custom filter that was provided to the transformer. Allowing us to set a mongo filter instead of a string based NQL filter.
@@ -1028,7 +1029,7 @@ module.exports = class EventRepository {
         )(filter)
       : undefined;
 
-    const { events, total } = await this._metafieldValues.browseChangeEvents({
+    const { events, total } = await browseMemberChangeEvents(this._metafieldValues, {
       // The feed's limit arrives as the request sent it, which can be a numeric string
       // or `all`; the service takes a number, or nothing for every entry.
       limit: options.limit === 'all' ? undefined : Number(options.limit),

@@ -159,11 +159,11 @@ async function initCore({ ghostServer, config }) {
   giftLinksService.init();
   debug('End: Gift Links Service');
 
-  // Member metafields service: knex-backed, wired once the DB is ready.
-  debug('Begin: Member Metafields Service');
-  const memberMetafieldsService = require('./server/services/metafields');
-  memberMetafieldsService.init();
-  debug('End: Member Metafields Service');
+  // Metafields service: knex-backed, wired once the DB is ready.
+  debug('Begin: Metafields Service');
+  const metafieldsService = require('./server/services/metafields');
+  metafieldsService.init();
+  debug('End: Metafields Service');
 
   if (ghostServer) {
     // Jobs Service allows parts of Ghost to run in the background
