@@ -65,16 +65,26 @@ class SettingsMenu extends BasePage {
   }
 }
 
+/** The session-expired sign-in prompt of either editor. */
 class ReAuthenticateModal extends BasePage {
   readonly modal: Locator;
   readonly passwordInput: Locator;
   readonly signInButton: Locator;
 
-  constructor(page: Page) {
+  constructor(
+    page: Page,
+    { implementation = 'ember' }: { implementation?: PostEditorImplementation } = {},
+  ) {
     super(page);
 
-    this.modal = page.locator('[data-test-modal="re-authenticate"]');
-    this.passwordInput = this.modal.getByLabel('Your password');
+    const react = implementation === 'react';
+
+    this.modal = react
+      ? page.getByTestId(editorReauthDialog)
+      : page.locator('[data-test-modal="re-authenticate"]');
+    this.passwordInput = react
+      ? this.modal.getByLabel('Password', { exact: true })
+      : this.modal.getByLabel('Your password');
     this.signInButton = this.modal.getByRole('button', { name: /Sign in/ });
   }
 
@@ -291,13 +301,12 @@ export class PostEditorPage extends AdminPage {
    * really "arrow-left Posts".
    */
   readonly backButton: Locator;
-  /** The session-expired sign-in prompt of either editor. */
-  readonly reauthPrompt: Locator;
   /** React's update-collision banner. */
   readonly conflictBanner: Locator;
 
   /** Ember's settings menu. */
   readonly settingsMenu: SettingsMenu;
+  /** The session-expired sign-in prompt of either editor. */
   readonly reauthenticateModal: ReAuthenticateModal;
 
   /** React only: the header, the settings sidebar and the feature image. */
@@ -351,14 +360,11 @@ export class PostEditorPage extends AdminPage {
     this.backButton = react ? this.header.backLink : page.locator('[data-test-breadcrumb]');
 
     this.settingsMenu = new SettingsMenu(page);
-    this.reauthenticateModal = new ReAuthenticateModal(page);
+    this.reauthenticateModal = new ReAuthenticateModal(page, { implementation });
 
     this.settings = new PostSettingsSidebar(page, this.settingsToggleButton);
     this.featureImage = new FeatureImage(page);
 
-    this.reauthPrompt = react
-      ? page.getByTestId(editorReauthDialog)
-      : this.reauthenticateModal.modal;
     this.conflictBanner = page.getByTestId(editorConflictBanner);
   }
 
