@@ -1,5 +1,5 @@
 // Switch these lines once there are useful utils
-const testUtils = require('../utils');
+const testUtils = require('../utils/index.ts');
 const fs = require('fs-extra');
 const errors = require('@tryghost/errors');
 

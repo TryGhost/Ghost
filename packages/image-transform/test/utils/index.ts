@@ -5,9 +5,9 @@
  */
 
 // Require overrides - these add globals for tests
-require('./overrides');
+require('./overrides.ts');
 
 // Require assertions - adds custom should assertions
-require('./assertions');
+require('./assertions.ts');
 
-module.exports.modules = require('./modules');
+module.exports.modules = require('./modules.ts');
